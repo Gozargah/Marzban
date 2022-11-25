@@ -13,16 +13,6 @@ from fastapi import Depends, HTTPException
 USERNAME_REGEXP = re.compile(r'^(?=\w{3,32}\b)[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*$')
 
 
-def get_inbound(proxy_type: ProxyTypes):
-    if isinstance(proxy_type, ProxyTypes):
-        proxy_type = proxy_type.value
-
-    try:
-        return INBOUND_TAGS[proxy_type]
-    except KeyError:
-        raise ValueError(proxy_type)
-
-
 @app.post("/user", tags=['User'], response_model=UserResponse)
 def add_user(new_user: UserCreate,
              db: Session = Depends(get_db),
@@ -42,8 +32,8 @@ def add_user(new_user: UserCreate,
             detail="Username only can be 3 to 32 characters and contain a-z, 0-9, and underscores in between.")
 
     try:
-        inbound = get_inbound(new_user.proxy_type)
-    except ValueError:
+        inbound = INBOUND_TAGS[new_user.proxy_type]
+    except KeyError:
         raise HTTPException(status_code=400, detail=f"Proxy type {new_user.proxy_type} not supported")
 
     try:
@@ -107,7 +97,7 @@ def modify_user(username: str,
             dbuser = crud.update_user_status(db, dbuser, UserStatus.limited)
 
     user = UserResponse.from_orm(dbuser)
-    inbound = get_inbound(user.proxy_type)
+    inbound = INBOUND_TAGS[user.proxy_type]
     account = user.get_account()
 
     try:
@@ -133,7 +123,7 @@ def remove_user(username: str,
     if not (dbuser := crud.get_user(db, username)):
         raise HTTPException(status_code=404, detail="User not found")
 
-    inbound = get_inbound(dbuser.proxy_type)
+    inbound = INBOUND_TAGS[dbuser.proxy_type]
     crud.remove_user(db, dbuser)
 
     try:
