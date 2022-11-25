@@ -1,0 +1,85 @@
+{
+    "inbounds": [
+        {
+            "listen": "0.0.0.0",
+            "port": 8443,
+            "protocol": "vmess",
+            "settings": {
+                "clients": []
+            },
+            "streamSettings": {
+                "network": "ws",
+                "wsSettings": {
+                    "path": "/"
+                }
+            },
+            "tag": "VMESS_INBOUND"
+        },
+        {
+            "listen": "0.0.0.0",
+            "port": 8880,
+            "protocol": "vless",
+            "settings": {
+                "clients": [],
+                "decryption": "none"
+            },
+            "streamSettings": {
+                "network": "ws",
+                "wsSettings": {
+                    "path": "/"
+                }
+            },
+            "tag": "VLESS_INBOUND"
+        },
+        {
+            "listen": "0.0.0.0",
+            "port": 2053,
+            "protocol": "shadowsocks",
+            "settings": {
+                "clients": []
+            },
+            "network": "tcp,udp",
+            "tag": "SHADOWSOCKS_INBOUND"
+        },
+        {
+            "listen": "0.0.0.0",
+            "port": 8080,
+            "protocol": "trojan",
+            "settings": {
+                "clients": []
+            },
+            "network": "tcp,udp",
+            "tag": "TROJAN_INBOUND"
+        }
+    ],
+    "outbounds": [
+        {
+            "protocol": "freedom",
+            "settings": {},
+            "tag": "DIRECT"
+        },
+        {
+            "protocol": "blackhole",
+            "settings": {},
+            "tag": "BLOCK"
+        }
+    ],
+    "routing": {
+        "rules": [
+            {
+                "ip": [
+                    "geoip:private"
+                ],
+                "outboundTag": "BLOCK",
+                "type": "field"
+            },
+            {
+                "domain": [
+                    "localhost"
+                ],
+                "outboundTag": "BLOCK",
+                "type": "field"
+            }
+        ]
+    }
+}
