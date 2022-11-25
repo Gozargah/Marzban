@@ -1,11 +1,11 @@
-from datetime import datetime
 import re
-import sqlalchemy
+from datetime import datetime
+from typing import List
 
+import sqlalchemy
 from app import app, jwt, logger, xray
-from app.db import get_db, Session, crud
+from app.db import Session, crud, get_db
 from app.models.admin import Admin
-from app.models.proxy import ProxyTypes
 from app.models.user import UserCreate, UserModify, UserResponse, UserStatus
 from app.xray import INBOUND_TAGS
 from fastapi import Depends, HTTPException
@@ -59,10 +59,11 @@ def get_user(username: str,
     """
     Get users information
     """
-    if dbuser := crud.get_user(db, username):
-        return dbuser
+    dbuser = crud.get_user(db, username)
+    if not dbuser:
+        raise HTTPException(status_code=404, detail="User not found")
 
-    raise HTTPException(status_code=404, detail="User not found")
+    return dbuser
 
 
 @app.put("/user/{username}", tags=['User'], response_model=UserResponse)
@@ -79,7 +80,8 @@ def modify_user(username: str,
     - **proxy_type** must be specified when settings field is set
     """
 
-    if not (dbuser := crud.get_user(db, username)):
+    dbuser = crud.get_user(db, username)
+    if not dbuser:
         raise HTTPException(status_code=404, detail="User not found")
 
     dbuser = crud.update_user(db, dbuser, modified_user)
@@ -120,7 +122,8 @@ def remove_user(username: str,
     Remove a user
     """
 
-    if not (dbuser := crud.get_user(db, username)):
+    dbuser = crud.get_user(db, username)
+    if not dbuser:
         raise HTTPException(status_code=404, detail="User not found")
 
     inbound = INBOUND_TAGS[dbuser.proxy_type]
@@ -135,7 +138,7 @@ def remove_user(username: str,
     return {}
 
 
-@app.get("/users", tags=['User'], response_model=list[UserResponse])
+@app.get("/users", tags=['User'], response_model=List[UserResponse])
 def get_users(offset: int = None,
               limit: int = None,
               db: Session = Depends(get_db),

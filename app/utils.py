@@ -5,6 +5,7 @@ import secrets
 import socket
 import urllib.parse as urlparse
 from dataclasses import dataclass
+from typing import Union
 from uuid import UUID
 
 from config import XRAY_HOSTS
@@ -39,7 +40,7 @@ def check_port(port: int) -> bool:
 
 def vmess_link(remark: str,
                address: str,
-               id: str | UUID,
+               id: Union[str, UUID],
                host='',
                net='tcp',
                path='',
@@ -65,7 +66,7 @@ def vmess_link(remark: str,
 
 def vless_link(remark: str,
                address: str,
-               id: str | UUID,
+               id: Union[str, UUID],
                net='ws',
                path='',
                tls=False,

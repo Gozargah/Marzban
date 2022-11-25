@@ -2,6 +2,7 @@ alembic==1.8.1
 anyio==3.6.2
 APScheduler==3.9.1.post1
 async-timeout==4.0.2
+backports.zoneinfo==0.2.1
 bcrypt==4.0.1
 certifi==2022.9.24
 cffi==1.15.1
@@ -13,11 +14,13 @@ ecdsa==0.18.0
 fastapi==0.86.0
 fastapi-responses==0.2.1
 greenlet==2.0.1
-grpcio==1.44.0
+grpcio==1.50.0
 grpcio-tools==1.44.0
 h11==0.14.0
 httptools==0.5.0
 idna==3.4
+importlib-metadata==5.1.0
+importlib-resources==5.10.0
 Mako==1.2.4
 MarkupSafe==2.1.1
 packaging==21.3
@@ -50,3 +53,4 @@ uvloop==0.17.0
 watchfiles==0.18.1
 websockets==10.4
 wrapt==1.14.1
+zipp==3.10.0

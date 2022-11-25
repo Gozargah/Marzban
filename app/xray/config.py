@@ -1,10 +1,11 @@
 import json
 from pathlib import PosixPath
+from typing import Union
 
 
 class XRayConfig(dict):
     def __init__(self,
-                 config: dict | str | PosixPath = {},
+                 config: Union[dict, str, PosixPath] = {},
                  api_host: str = "127.0.0.1",
                  api_port: int = 8080):
         if isinstance(config, str):

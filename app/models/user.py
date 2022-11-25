@@ -1,9 +1,9 @@
 from enum import Enum
+from typing import Union, List
 from pydantic import BaseModel, validator
 
 from app.models.proxy import ProxyTypes, ProxySettings
 from app.utils import get_share_links
-from app import xray
 from xray_api.types.account import Account
 
 
@@ -57,8 +57,8 @@ class UserResponse(User):
     username: str
     status: UserStatus
     used_traffic: int
-    settings: dict | ProxyTypes
-    links: list[str] = []
+    settings: Union[dict, ProxyTypes]
+    links: List[str] = []
 
     class Config:
         orm_mode = True

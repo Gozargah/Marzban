@@ -63,7 +63,7 @@ def compile_proto_from_source(dist):
 
 
 def fix_proto_imports(dist):
-    curr_dir = Path(__file__).parent
+    curr_dir = Path(__file__).resolve().parent
     parent_dir = curr_dir.parent
 
     imports = []
