@@ -2,7 +2,7 @@ alembic==1.8.1
 anyio==3.6.2
 APScheduler==3.9.1.post1
 async-timeout==4.0.2
-backports.zoneinfo==0.2.1
+backports.zoneinfo==0.2.1;python_version<"3.9"
 bcrypt==4.0.1
 certifi==2022.9.24
 cffi==1.15.1
