@@ -4,7 +4,8 @@ from app.db import get_users, get_db, engine, User
 from app.models.user import UserResponse, UserStatus
 from app.xray import INBOUND_TAGS
 
-if sqlalchemy.inspect(engine).has_table(User.__tablename__):
+
+def add_users_from_db():
     for db in get_db():
         for user in get_users(db, status=UserStatus.active):
             account = UserResponse.from_orm(user).get_account()
@@ -13,3 +14,7 @@ if sqlalchemy.inspect(engine).has_table(User.__tablename__):
                 xray.api.add_inbound_user(inbound, account)
             except xray.exc.EmailExistsError:
                 pass
+
+
+if sqlalchemy.inspect(engine).has_table(User.__tablename__):
+    add_users_from_db()
