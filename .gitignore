@@ -151,3 +151,4 @@ cython_debug/
 .env
 v2ray-core
 xray-core
+xray-dev.json
