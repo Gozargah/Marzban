@@ -1,0 +1,21 @@
+services:
+  xray-server:
+    build: .
+    restart: on-failure
+
+    env_file:
+      - .env
+    environment:
+      UVICORN_HOST: 0.0.0.0
+      UVICORN_PORT: 8000 # API port inside container 
+      SQLALCHEMY_DATABASE_URL: "sqlite:////var/lib/xray-server/db.sqlite3"
+
+    ports:
+      - "8000:8000" # API
+      - "443:443" # VMess
+      - "80:80" # VLESS
+      - "8080:8080" # Shadowsocks
+      - "8443:8443" # Trojan
+
+    volumes:
+      - /var/lib/xray-server:/var/lib/xray-server

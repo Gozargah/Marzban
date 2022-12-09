@@ -2,7 +2,7 @@
     "inbounds": [
         {
             "listen": "0.0.0.0",
-            "port": 8443,
+            "port": 443,
             "protocol": "vmess",
             "settings": {
                 "clients": []
@@ -17,7 +17,7 @@
         },
         {
             "listen": "0.0.0.0",
-            "port": 8880,
+            "port": 80,
             "protocol": "vless",
             "settings": {
                 "clients": [],
@@ -33,7 +33,7 @@
         },
         {
             "listen": "0.0.0.0",
-            "port": 2053,
+            "port": 8080,
             "protocol": "shadowsocks",
             "settings": {
                 "clients": []
@@ -43,7 +43,7 @@
         },
         {
             "listen": "0.0.0.0",
-            "port": 8080,
+            "port": 8443,
             "protocol": "trojan",
             "settings": {
                 "clients": []
