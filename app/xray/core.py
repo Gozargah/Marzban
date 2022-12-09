@@ -49,7 +49,8 @@ class XRayCore:
         self._process.stdin.close()
 
         # Wait for XRay to get started
-        while log := self._process.stdout.readline().decode().strip('\n'):
+        while _ := self._process.stdout.readline().decode().strip('\n'):
+            log = _
             logger.debug(log)
             if 'core: Xray' in log and 'started' in log:
                 logger.info(log)
