@@ -5,4 +5,6 @@
 - [ ] reset users traffic option
 - [ ] disable user option
 - [ ] filters on get users
-- [ ] dockerise the project
+- [x] dockerise the project
+- [ ] readme completion
+- [ ] add an example directory for xray configs
