@@ -1,5 +1,3 @@
-import atexit
-
 from app.utils import check_port
 from app.xray.config import XRayConfig
 from app.xray.core import XRayCore
@@ -20,16 +18,7 @@ finally:
     del api_port
 
 
-core = XRayCore(XRAY_EXECUTABLE_PATH, XRAY_ASSETS_PATH)
-core.start(config)
-
-
-@atexit.register
-def stop_core():
-    if core.started:
-        core.stop()
-
-
+core = XRayCore(config, XRAY_EXECUTABLE_PATH, XRAY_ASSETS_PATH)
 api = XRay(config.api_host, config.api_port)
 
 

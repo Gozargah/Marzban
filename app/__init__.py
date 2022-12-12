@@ -4,10 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi_responses import custom_openapi
 from apscheduler.schedulers.background import BackgroundScheduler
 
-
 app = FastAPI()
 app.openapi = custom_openapi(app)
-scheduler = BackgroundScheduler()
+scheduler = BackgroundScheduler({'apscheduler.job_defaults.max_instances': 5})
 logger = logging.getLogger('uvicorn.error')
 app.add_middleware(
     CORSMiddleware,

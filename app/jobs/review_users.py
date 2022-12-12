@@ -19,12 +19,23 @@ def review():
             else:
                 continue
 
-            update_user_status(db, user, status)
             inbound = INBOUND_TAGS[user.proxy_type]
             try:
                 xray.api.remove_inbound_user(tag=inbound, email=user.username)
+
             except xray.exc.EmailNotFoundError:
                 pass
+
+            except xray.exceptions.ConnectionError:
+                try:
+                    xray.core.restart()
+                except ProcessLookupError:
+                    pass
+
+                return
+
+            update_user_status(db, user, status)
+
             logger.info(f"User \"{user.username}\" status changed to {status}")
 
 
