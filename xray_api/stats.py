@@ -1,7 +1,10 @@
 import typing
 from dataclasses import dataclass
 
+import grpc
+
 from .base import XRayBase
+from .exceptions import RelatedError
 from .proto.app.stats.command import command_pb2, command_pb2_grpc
 
 
@@ -50,8 +53,13 @@ class OutboundStatsResponse:
 
 class Stats(XRayBase):
     def get_sys_stats(self) -> SysStatsResponse:
-        stub = command_pb2_grpc.StatsServiceStub(self._channel)
-        r = stub.GetSysStats(command_pb2.SysStatsRequest())
+        try:
+            stub = command_pb2_grpc.StatsServiceStub(self._channel)
+            r = stub.GetSysStats(command_pb2.SysStatsRequest())
+
+        except grpc.RpcError as e:
+            raise RelatedError(e)
+
         return SysStatsResponse(
             num_goroutine=r.NumGoroutine,
             num_gc=r.NumGC,
@@ -66,8 +74,13 @@ class Stats(XRayBase):
         )
 
     def query_stats(self, pattern: str, reset: bool = False) -> typing.Iterable[StatResponse]:
-        stub = command_pb2_grpc.StatsServiceStub(self._channel)
-        r = stub.QueryStats(command_pb2.QueryStatsRequest(pattern=pattern, reset=reset))
+        try:
+            stub = command_pb2_grpc.StatsServiceStub(self._channel)
+            r = stub.QueryStats(command_pb2.QueryStatsRequest(pattern=pattern, reset=reset))
+
+        except grpc.RpcError as e:
+            raise RelatedError(e)
+
         for stat in r.stat:
             type, name, _, link = stat.name.split('>>>')
             yield StatResponse(name, type, link, stat.value)

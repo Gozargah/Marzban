@@ -34,6 +34,14 @@ class TagNotFoundError(XrayError):
         super().__init__(details)
 
 
+class ConnectionError(XrayError):
+    REGEXP = re.compile(r"Failed to connect to remote host|Socket closed|Broken pipe")
+
+    def __init__(self, details, tag):
+        self.tag = tag
+        super().__init__(details)
+
+
 class UnkownError(XrayError):
     def __init__(self, details=''):
         super().__init__(details)
@@ -42,10 +50,11 @@ class UnkownError(XrayError):
 class RelatedError(XrayError):
     def __new__(cls, error: grpc.RpcError):
         details = error.details()
-        for e in (EmailExistsError, EmailNotFoundError, TagNotFoundError):
+        for e in (EmailExistsError, EmailNotFoundError, TagNotFoundError, ConnectionError):
             args = e.REGEXP.findall(details)
             if not args:
                 continue
+
             return e(details, *args)
 
         return UnkownError(details)
