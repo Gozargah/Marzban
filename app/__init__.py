@@ -17,6 +17,6 @@ app.add_middleware(
 )
 
 
-from app import views, jobs  # noqa
+from app import views, jobs, dashboard  # noqa
 
 scheduler.start()
