@@ -1,21 +1,49 @@
+import atexit
+import os
 import subprocess
-from app import app
-from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
+from app import app
+from config import DEBUG, UVICORN_PORT
+from fastapi.staticfiles import StaticFiles
+
 path = '/dashboard'
-files = Path(__file__).parent / 'frontend/static'
+base_dir = Path(__file__).parent
+build_dir = base_dir / 'build'
 
 
-def build(base):
-    proc = subprocess.Popen(['yarn', 'build', '--base', base,  '--outDir', files], cwd=files.parent)
+def build():
+    proc = subprocess.Popen(
+        ['npm', 'run', 'build', '--', '--base', path,  '--outDir', build_dir],
+        cwd=base_dir
+    )
     return proc.wait()
 
 
-if not files.is_dir():
-    build(path)
+def run_dev():
+    proc = subprocess.Popen(
+        ['npm', 'run', 'dev', '--', '--clearScreen', 'false'],
+        env={**os.environ, 'VITE_BASE_API': f'http://127.0.0.1:{UVICORN_PORT}'},
+        cwd=base_dir
+    )
+
+    atexit.register(proc.terminate)
 
 
-app.mount(path,
-          StaticFiles(directory=files, html=True),
-          name="dashboard")
+def run_build():
+    if not build_dir.is_dir():
+        build()
+
+    app.mount(
+        path,
+        StaticFiles(directory=build_dir, html=True),
+        name="dashboard"
+    )
+
+
+@app.on_event("startup")
+def startup():
+    if DEBUG is True:
+        run_dev()
+    else:
+        run_build()

@@ -1,7 +1,7 @@
 import time
 
 import sqlalchemy
-from app import xray
+from app import xray, app
 from app.db import User, engine, get_db, get_users
 from app.models.user import UserResponse, UserStatus
 
@@ -32,4 +32,6 @@ def add_users_from_db():
                     pass
 
 
-xray.core.start()
+@app.on_event("startup")
+def app_startup():
+    xray.core.start()

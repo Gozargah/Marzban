@@ -19,4 +19,7 @@ app.add_middleware(
 
 from app import views, jobs, dashboard  # noqa
 
-scheduler.start()
+
+@app.on_event("startup")
+def startup():
+    scheduler.start()

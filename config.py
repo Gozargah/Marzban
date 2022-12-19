@@ -16,6 +16,9 @@ UVICORN_HOST = config("UVICORN_HOST", default="127.0.0.1")
 UVICORN_PORT = config("UVICORN_PORT", cast=int, default=8000)
 
 
+DEBUG = config("DEBUG", default=False, cast=bool)
+
+
 XRAY_JSON = config("XRAY_JSON", default="./xray.json")
 XRAY_EXECUTABLE_PATH = config("XRAY_EXECUTABLE_PATH", default="/usr/local/bin/xray")
 XRAY_ASSETS_PATH = config("XRAY_ASSETS_PATH", default="/usr/local/share/xray")
