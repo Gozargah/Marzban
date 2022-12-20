@@ -16,8 +16,10 @@ if sqlalchemy.inspect(engine).has_table(JWT.__tablename__):
 
 
 def create_access_token(username: str) -> str:
-    expire = datetime.utcnow() + timedelta(minutes=JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
-    data = {"sub": username, "exp": expire}
+    data = {"sub": username}
+    if JWT_ACCESS_TOKEN_EXPIRE_MINUTES > 0:
+        expire = datetime.utcnow() + timedelta(minutes=JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+        data["exp"] = expire
     encoded_jwt = jwt.encode(data, JWT_SECRET_KEY, algorithm="HS256")
     return encoded_jwt
 

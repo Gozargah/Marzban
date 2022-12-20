@@ -17,6 +17,7 @@ UVICORN_PORT = config("UVICORN_PORT", cast=int, default=8000)
 
 
 DEBUG = config("DEBUG", default=False, cast=bool)
+DOCS = config("DOCS", default=True, cast=bool)
 
 
 XRAY_JSON = config("XRAY_JSON", default="./xray.json")
