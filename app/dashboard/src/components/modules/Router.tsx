@@ -21,9 +21,9 @@ export const router = createBrowserRouter(
       loader: fetchAdminLoader,
     },
     {
-      path: "/login",
+      path: "/login/",
       element: <Login />,
     },
   ],
-  { basename: "/dashboard" }
+  { basename: import.meta.env.BASE_URL }
 );
