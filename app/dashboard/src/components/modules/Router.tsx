@@ -12,15 +12,18 @@ const fetchAdminLoader = () => {
   });
 };
 
-export const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Dashboard />,
-    errorElement: <Login />,
-    loader: fetchAdminLoader,
-  },
-  {
-    path: "/login",
-    element: <Login />,
-  },
-]);
+export const router = createBrowserRouter(
+  [
+    {
+      path: "/",
+      element: <Dashboard />,
+      errorElement: <Login />,
+      loader: fetchAdminLoader,
+    },
+    {
+      path: "/login",
+      element: <Login />,
+    },
+  ],
+  { basename: "/dashboard" }
+);
