@@ -1,7 +1,8 @@
 from datetime import timedelta
 
-from app import app, jwt
+from app import app
 from app.models.admin import Admin, Token
+from app.utils.jwt import create_admin_token, current_admin
 from config import ADMINS
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -22,7 +23,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token = jwt.create_access_token(username=form_data.username)
+    access_token = create_admin_token(username=form_data.username)
     return {
         "access_token": access_token,
         "token_type": "bearer"
@@ -30,5 +31,5 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
 
 @app.get("/admin", tags=['Admin'], response_model=Admin)
-async def current_admin(admin: Admin = Depends(jwt.current_user)):
+async def current_admin(admin: Admin = Depends(current_admin)):
     return {"username": admin}

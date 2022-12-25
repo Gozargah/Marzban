@@ -1,10 +1,10 @@
-from email.policy import default
 import os
-from sqlalchemy import Column, Integer, BigInteger, String, Enum, JSON
+from datetime import datetime
 
 from app.db.base import Base
 from app.models.proxy import ProxyTypes
 from app.models.user import UserStatus
+from sqlalchemy import Column, Integer, BigInteger, String, Enum, JSON, DateTime
 
 
 class User(Base):
@@ -18,6 +18,7 @@ class User(Base):
     used_traffic = Column(BigInteger, default=0)
     data_limit = Column(BigInteger, nullable=True)
     expire = Column(Integer, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 
 class System(Base):

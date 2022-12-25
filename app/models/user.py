@@ -1,9 +1,11 @@
+from datetime import datetime
 from enum import Enum
-from typing import Union, List
-from pydantic import BaseModel, validator
+from typing import List, Union
 
-from app.models.proxy import ProxyTypes, ProxySettings
-from app.utils import get_share_links
+from app.models.proxy import ProxySettings, ProxyTypes
+from app.utils.jwt import create_subscription_token
+from app.utils.share import get_share_links
+from pydantic import BaseModel, validator
 from xray_api.types.account import Account
 
 
@@ -58,7 +60,9 @@ class UserResponse(User):
     status: UserStatus
     used_traffic: int
     settings: Union[dict, ProxyTypes]
+    created_at: datetime
     links: List[str] = []
+    sub_token: str = ''
 
     class Config:
         orm_mode = True
@@ -69,4 +73,10 @@ class UserResponse(User):
             if isinstance(values['settings'], ProxySettings):
                 return get_share_links(values['proxy_type'], values['settings'].dict())
             return get_share_links(values['proxy_type'], values['settings'])
+        return v
+
+    @validator('sub_token', pre=False, always=True)
+    def validate_sub_token(cls, v, values, **kwargs):
+        if not v:
+            return create_subscription_token(values['username'])
         return v

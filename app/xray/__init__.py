@@ -1,4 +1,4 @@
-from app.utils import check_port
+#from app.utils import check_port
 from app.xray.config import XRayConfig
 from app.xray.core import XRayCore
 from xray_api import XRay
@@ -11,8 +11,8 @@ from config import XRAY_ASSETS_PATH, XRAY_EXECUTABLE_PATH, XRAY_JSON
 # Search for a free API port from 8080
 try:
     for api_port in range(8080, 65536):
-        if not check_port(api_port):
-            break
+        # if not check_port(api_port):
+        break
 finally:
     config = XRayConfig(XRAY_JSON, api_port=api_port)
     del api_port
