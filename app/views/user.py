@@ -8,11 +8,9 @@ from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.user import UserCreate, UserModify, UserResponse, UserStatus
 from app.utils.jwt import current_admin, get_subscription_payload
-from app.utils.share import get_clash_config, get_v2ray_sub
+from app.utils.share import get_clash_sub, get_v2ray_sub
 from app.xray import INBOUND_TAGS
 from fastapi import Depends, Header, HTTPException, Response
-
-USERNAME_REGEXP = re.compile(r'^(?=\w{3,32}\b)[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*$')
 
 
 @app.post("/user", tags=['User'], response_model=UserResponse)
@@ -25,30 +23,26 @@ def add_user(new_user: UserCreate,
     - **username** must have 3 to 32 characters and is allowed to contain a-z, 0-9, and underscores in between
     - **expire** must be an UTC timestamp
     - **data_limit** must be in Bytes, e.g. 1073741824B = 1GB
-    - **proxy_type** vmess, vless, trojan or shadowsocks
+    - **proxies** a dictionary of proxies, supported proxies: vmess, vless, trojan or shadowsocks
     """
-
-    if not USERNAME_REGEXP.match(new_user.username):
-        raise HTTPException(
-            status_code=400,
-            detail="Username only can be 3 to 32 characters and contain a-z, 0-9, and underscores in between.")
+    # TODO expire should be datetime instead of timestamp
 
     try:
-        inbound = INBOUND_TAGS[new_user.proxy_type]
-    except KeyError:
-        raise HTTPException(status_code=400, detail=f"Proxy type {new_user.proxy_type} not supported")
+        [INBOUND_TAGS[t] for t in new_user.proxies]
+    except KeyError as exc:
+        raise HTTPException(status_code=400, detail=f"Proxy type {exc.args[0]} not supported")
 
     try:
         dbuser = crud.create_user(db, new_user)
     except sqlalchemy.exc.IntegrityError:
         raise HTTPException(status_code=409, detail="User already exists.")
 
-    account = new_user.get_account()
-
-    try:
-        xray.api.add_inbound_user(tag=inbound, user=account)
-    except xray.exc.EmailExistsError:
-        pass
+    for proxy_type in new_user.proxies:
+        account = new_user.get_account(proxy_type)
+        try:
+            xray.api.add_inbound_user(tag=INBOUND_TAGS[proxy_type], user=account)
+        except xray.exc.EmailExistsError:
+            pass
 
     logger.info(f"New user \"{dbuser.username}\" added")
     return dbuser
@@ -78,8 +72,7 @@ def modify_user(username: str,
 
     - set **expire** to 0 to make the user unlimited in time
     - set **data_limit** to 0 to make the user unlimited in data
-    - **settings** depends on what type of proxy user have
-    - **proxy_type** must be specified when settings field is set
+    - **proxies** a dictionary of proxies, supported proxies: vmess, vless, trojan or shadowsocks
     """
 
     dbuser = crud.get_user(db, username)
@@ -101,16 +94,17 @@ def modify_user(username: str,
             dbuser = crud.update_user_status(db, dbuser, UserStatus.limited)
 
     user = UserResponse.from_orm(dbuser)
-    inbound = INBOUND_TAGS[user.proxy_type]
-    account = user.get_account()
 
-    try:
-        xray.api.remove_inbound_user(tag=inbound, email=username)
-    except xray.exc.EmailNotFoundError:
-        pass
+    for proxy_type in user.proxies:
+        account = user.get_account(proxy_type)
+        inbound = INBOUND_TAGS[proxy_type]
+        try:
+            xray.api.remove_inbound_user(tag=inbound, email=user.username)
+        except xray.exc.EmailNotFoundError:
+            pass
 
-    if user.status == UserStatus.active:
-        xray.api.add_inbound_user(tag=inbound, user=account)
+        if user.status == UserStatus.active:
+            xray.api.add_inbound_user(tag=inbound, user=account)
 
     logger.info(f"User \"{user.username}\" modified")
     return user
@@ -128,13 +122,12 @@ def remove_user(username: str,
     if not dbuser:
         raise HTTPException(status_code=404, detail="User not found")
 
-    inbound = INBOUND_TAGS[dbuser.proxy_type]
     crud.remove_user(db, dbuser)
-
-    try:
-        xray.api.remove_inbound_user(tag=inbound, email=username)
-    except xray.exc.EmailNotFoundError:
-        pass
+    for proxy in dbuser.proxies:
+        try:
+            xray.api.remove_inbound_user(tag=INBOUND_TAGS[proxy.type], email=username)
+        except xray.exc.EmailNotFoundError:
+            pass
 
     logger.info(f"User \"{username}\" deleted")
     return {}
@@ -162,15 +155,16 @@ def user_subcription(token: str,
     if not sub:
         return Response(status_code=204)
 
-    user = crud.get_user(db, sub['username'])
-    if not user or user.created_at > sub['created_at']:
+    dbuser = crud.get_user(db, sub['username'])
+    if not dbuser or dbuser.created_at > sub['created_at']:
         return Response(status_code=204)
+    user = UserResponse.from_orm(dbuser)
 
     if application.startswith('Clash'):
-        conf = get_clash_config(user.proxy_type, user.settings).to_yaml()
+        conf = get_clash_sub(user.username, user.proxies).to_yaml()
         return Response(content=conf, media_type="text/yaml",
                         headers={"content-disposition": f'attachment; filename="{user.username}"'})
     else:
-        conf = get_v2ray_sub(user.proxy_type, user.settings)
+        conf = get_v2ray_sub(user.links)
         return Response(content=conf, media_type="text/plain",
                         headers={"content-disposition": f'attachment; filename="{user.username}"'})

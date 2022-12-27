@@ -50,7 +50,7 @@ async def current_admin(token: str = Depends(oauth2_scheme)) -> str:
 
 
 def create_subscription_token(username: str) -> str:
-    data = {"sub": username, "access": "subscription", "iat": datetime.utcnow()}
+    data = {"sub": username, "access": "subscription", "iat": datetime.utcnow()+timedelta(seconds=1)}
     encoded_jwt = jwt.encode(data, JWT_SECRET_KEY, algorithm="HS256")
     return encoded_jwt
 

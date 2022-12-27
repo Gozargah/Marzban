@@ -2,7 +2,7 @@ import json
 
 from sqlalchemy.orm import Session
 
-from app.db.models import JWT, User, System
+from app.db.models import JWT, User, System, Proxy
 from app.models.user import UserCreate, UserModify, UserStatus
 
 
@@ -33,10 +33,10 @@ def get_users_count(db: Session, status: UserStatus = None):
 
 
 def create_user(db: Session, user: UserCreate):
+    proxies = [Proxy(type=t.value, settings=s.dict(no_obj=True)) for t, s in user.proxies.items()]
     dbuser = User(
         username=user.username,
-        proxy_type=user.proxy_type,
-        settings=json.loads(user.settings.json()),
+        proxies=proxies,
         data_limit=(user.data_limit or None),
         expire=(user.expire or None)
     )
@@ -53,8 +53,18 @@ def remove_user(db: Session, dbuser: User):
 
 
 def update_user(db: Session, dbuser: User, modify: UserModify):
-    if modify.settings is not None:
-        dbuser.settings = json.loads(modify.settings.json())
+    if modify.proxies is not None:
+        for proxy_type, settings in modify.proxies.items():
+            dbproxy = db.query(Proxy) \
+                .where(Proxy.user == dbuser, Proxy.type == proxy_type) \
+                .first()
+            if dbproxy:
+                dbproxy.settings = settings.dict(no_obj=True)
+            else:
+                dbuser.proxies.append(Proxy(type=proxy_type, settings=settings.dict(no_obj=True)))
+        for proxy in dbuser.proxies:
+            if proxy.type not in modify.proxies:
+                db.delete(proxy)
 
     if modify.data_limit is not None:
         dbuser.data_limit = (modify.data_limit or None)

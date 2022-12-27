@@ -253,20 +253,13 @@ class ClashConfiguration(object):
                                      'udp': True})
 
 
-def get_share_links(protocol: str, settings: str):
-    links = []
-    for host in XRAY_HOSTS:
-        links.append(ShareLink(host['remark'], host['hostname'], protocol, settings))
-    return links
-
-
-def get_clash_config(protocol: str, settings: str):
+def get_clash_sub(username: str, proxies: dict):
     conf = ClashConfiguration()
     for host in XRAY_HOSTS:
-        conf.add(host['remark'], host['hostname'], protocol, settings)
+        for proxy_type, settings in proxies.items():
+            conf.add(host['remark'], host['hostname'], proxy_type, settings.dict(no_obj=True))
     return conf
 
 
-def get_v2ray_sub(protocol: str, settings: str):
-    links = get_share_links(protocol, settings)
+def get_v2ray_sub(links: list):
     return base64.b64encode('\n'.join(links).encode()).decode()

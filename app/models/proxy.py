@@ -1,15 +1,12 @@
+import json
 from enum import Enum
 from multiprocessing.sharedctypes import Value
 from uuid import UUID, uuid4
 
 from app.utils.system import random_password
-from pydantic import BaseModel, Field
-from xray_api.types.account import (
-    ShadowsocksAccount,
-    TrojanAccount,
-    VLESSAccount,
-    VMessAccount
-)
+from pydantic import BaseModel, Field, validator
+from xray_api.types.account import (ShadowsocksAccount, TrojanAccount,
+                                    VLESSAccount, VMessAccount)
 
 
 class ProxyTypes(str, Enum):
@@ -48,10 +45,12 @@ class ProxySettings(BaseModel):
 
     @classmethod
     def from_dict(cls, proxy_type: ProxyTypes, _dict: dict):
-        try:
-            return ProxyTypes(proxy_type).settings_model.parse_obj(_dict)
-        except ValueError:
-            raise NotImplementedError(f'Proxy type "{proxy_type}" not supported')
+        return ProxyTypes(proxy_type).settings_model.parse_obj(_dict)
+
+    def dict(self, *, no_obj=False, **kwargs):
+        if no_obj:
+            return json.loads(self.json())
+        return super().dict(**kwargs)
 
 
 class VMessSettings(ProxySettings):
