@@ -78,7 +78,7 @@ export const UserDialog: FC<{
       method: "DELETE",
     })
       .then(() => {
-        mutate("users");
+        mutate("/users");
         closeDialog();
       })
       .finally(setDeleting.bind(null, false));
@@ -102,7 +102,7 @@ export const UserDialog: FC<{
       body,
     })
       .then(() => {
-        mutate("users");
+        mutate("/users");
         closeDialog();
       })
       .catch((err) => {
