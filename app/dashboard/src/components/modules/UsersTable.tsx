@@ -166,7 +166,7 @@ export const UserTable = () => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  let { data: users, isValidating } = useSWR("users");
+  let { data: users, isValidating } = useSWR("/users");
 
   const usersList = (users || []).filter((user: any) =>
     user.username.includes(search)
@@ -211,129 +211,135 @@ export const UserTable = () => {
         </HStack>
       </HStack>
       {(isValidating || (!isValidating && users && users.length > 0)) && (
-        <Table marginTop={5}>
-          <Thead>
-            <Tr>
-              <Th>Username</Th>
-              <Th>Protocol</Th>
-              <Th>Bandwidth</Th>
-              <Th>Status</Th>
-              <Th textAlign="center">Actions</Th>
-            </Tr>
-          </Thead>
-          {users && (
-            <Tbody>
-              {users &&
-                usersList.map((user: any) => {
-                  return (
-                    <Tr key={user.username}>
-                      <Td>{user.username}</Td>
-                      <Td>
-                        <Text as="span" textTransform="capitalize">
-                          <Text>{user.proxy_type}</Text>
-                        </Text>
-                      </Td>
-                      <Td>
-                        <Badge
-                          colorScheme={status[user.status].bandWidthColor}
-                          rounded="full"
-                          display="inline-flex"
-                          px={3}
-                          py={1}
-                          experimental_spaceX={1}
-                          alignItems="center"
-                        >
-                          <BandWidthIcon />
-                          <Text
-                            fontSize=".875rem"
-                            lineHeight="1.25rem"
-                            fontWeight="normal"
-                            letterSpacing="tighter"
-                          >
-                            {formatBytes(user.used_traffic) +
-                              " / " +
-                              (!user.data_limit
-                                ? "∞"
-                                : formatBytes(user.data_limit))}
+        <Box overflow="auto" m={5}>
+          <Table marginTop={5}>
+            <Thead>
+              <Tr>
+                <Th pl={0}>Username</Th>
+                <Th>Protocol</Th>
+                <Th>Bandwidth</Th>
+                <Th>Status</Th>
+                <Th textAlign="center" pr={0}>
+                  Actions
+                </Th>
+              </Tr>
+            </Thead>
+            {users && (
+              <Tbody>
+                {users &&
+                  usersList.map((user: any) => {
+                    return (
+                      <Tr key={user.username}>
+                        <Td pl={0}>{user.username}</Td>
+                        <Td>
+                          <Text as="span" textTransform="capitalize">
+                            <Text>{user.proxy_type}</Text>
                           </Text>
-                        </Badge>
-                      </Td>
-                      <Td>
-                        <div className="status">
+                        </Td>
+                        <Td>
                           <Badge
-                            colorScheme={status[user.status].statusColor}
+                            colorScheme={status[user.status].bandWidthColor}
                             rounded="full"
                             display="inline-flex"
                             px={3}
                             py={1}
-                            experimental_spaceX={2}
+                            experimental_spaceX={1}
                             alignItems="center"
                           >
-                            <ActiveStatusIcon />
+                            <BandWidthIcon />
                             <Text
-                              textTransform="capitalize"
                               fontSize=".875rem"
                               lineHeight="1.25rem"
                               fontWeight="normal"
                               letterSpacing="tighter"
                             >
-                              {user.status}
+                              {formatBytes(user.used_traffic) +
+                                " / " +
+                                (!user.data_limit
+                                  ? "∞"
+                                  : formatBytes(user.data_limit))}
                             </Text>
                           </Badge>
-                          {user.expire > 0 ? (
-                            <Text
-                              marginTop="mt-2"
-                              color="gray.400"
-                              fontWeight="medium"
+                        </Td>
+                        <Td>
+                          <div className="status">
+                            <Badge
+                              colorScheme={status[user.status].statusColor}
+                              rounded="full"
+                              display="inline-flex"
+                              px={3}
+                              py={1}
+                              experimental_spaceX={2}
+                              alignItems="center"
                             >
-                              {user.status == "expired" ? "Expired" : "Expires"}{" "}
-                              on{" "}
-                              <Text fontWeight={"bold"} as="span">
-                                {dayjs(user.expire * 1000)
-                                  .utc()
-                                  .format("LL")}
+                              <ActiveStatusIcon />
+                              <Text
+                                textTransform="capitalize"
+                                fontSize=".875rem"
+                                lineHeight="1.25rem"
+                                fontWeight="normal"
+                                letterSpacing="tighter"
+                              >
+                                {user.status}
                               </Text>
-                            </Text>
-                          ) : null}
-                        </div>
+                            </Badge>
+                            {user.expire > 0 ? (
+                              <Text
+                                marginTop="mt-2"
+                                color="gray.400"
+                                fontWeight="medium"
+                              >
+                                {user.status == "expired"
+                                  ? "Expired"
+                                  : "Expires"}{" "}
+                                on{" "}
+                                <Text fontWeight={"bold"} as="span">
+                                  {dayjs(user.expire * 1000)
+                                    .utc()
+                                    .format("LL")}
+                                </Text>
+                              </Text>
+                            ) : null}
+                          </div>
+                        </Td>
+                        <Td pr={0}>
+                          <StatusButtons
+                            user={user}
+                            onUserSelected={handleEditingUser}
+                          />
+                        </Td>
+                      </Tr>
+                    );
+                  })}
+              </Tbody>
+            )}
+            {isValidating && !users && (
+              <Tbody>
+                {[1, 2, 3, 4].map((i) => {
+                  return (
+                    <Tr key={i}>
+                      <Td>
+                        <Skeleton inline />
                       </Td>
                       <Td>
-                        <StatusButtons
-                          user={user}
-                          onUserSelected={handleEditingUser}
-                        />
+                        <Skeleton inline />
+                      </Td>
+                      <Td>
+                        <Skeleton inline />
+                      </Td>
+                      <Td>
+                        <Skeleton inline />
+                      </Td>
+                      <Td>
+                        <Skeleton inline />
                       </Td>
                     </Tr>
                   );
                 })}
-            </Tbody>
-          )}
-          {isValidating && !users && (
-            <Tbody>
-              {[1, 2, 3, 4].map((i) => {
-                return (
-                  <Tr key={i}>
-                    <Td>
-                      <Skeleton inline />
-                    </Td>
-                    <Td>
-                      <Skeleton inline />
-                    </Td>
-                    <Td>
-                      <Skeleton inline />
-                    </Td>
-                    <Td>
-                      <Skeleton inline />
-                    </Td>
-                    <Td>
-                      <Skeleton inline />
-                    </Td>
-                  </Tr>
-                );
-              })}
-            </Tbody>
-          )}
-        </Table>
+              </Tbody>
+            )}
+          </Table>
+        </Box>
       )}
       {!isValidating && usersList.length == 0 && (
         <EmptySection
