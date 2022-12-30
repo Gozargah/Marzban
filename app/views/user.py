@@ -1,4 +1,3 @@
-import re
 from datetime import datetime
 from typing import List, Union
 
@@ -136,19 +135,25 @@ def remove_user(username: str,
 @app.get("/users", tags=['User'], response_model=List[UserResponse])
 def get_users(offset: int = None,
               limit: int = None,
+              username: str = None,
+              status: UserStatus = None,
               db: Session = Depends(get_db),
               admin: Admin = Depends(current_admin)):
     """
     Get all users
     """
 
-    return crud.get_users(db, offset, limit)
+    return crud.get_users(db, offset, limit, username, status)
 
 
-@app.get("/sub/{token}", tags=['User'],)
+@app.get("/sub/{token}", tags=['User'])
 def user_subcription(token: str,
                      db: Session = Depends(get_db),
                      user_agent: Union[str, None] = Header(default=None)):
+    """
+    Subscription link, V2ray and Clash supported
+    """
+
     application = user_agent.split('/')[0]
 
     sub = get_subscription_payload(token)

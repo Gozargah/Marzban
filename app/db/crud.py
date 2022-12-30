@@ -1,9 +1,8 @@
-import json
+from typing import Union
 
-from sqlalchemy.orm import Session
-
-from app.db.models import JWT, User, System, Proxy
+from app.db.models import JWT, Proxy, System, User
 from app.models.user import UserCreate, UserModify, UserStatus
+from sqlalchemy.orm import Session
 
 
 def get_user(db: Session, username: str):
@@ -14,14 +13,23 @@ def get_user_by_id(db: Session, user_id: int):
     return db.query(User).filter(User.id == user_id).first()
 
 
-def get_users(db: Session, offset: int = None, limit: int = None, status: UserStatus = None):
+def get_users(db: Session,
+              offset: int = None,
+              limit: int = None,
+              username: str = None,
+              status: Union[UserStatus, list] = None):
     query = db.query(User)
     if offset:
         query = query.offset(offset)
     if limit:
         query = query.limit(limit)
+    if username:
+        query = query.filter(User.username.ilike(f'{username}%'))
     if status:
-        query = query.filter(User.status == status)
+        if isinstance(status, list):
+            query = query.filter(User.status.in_(status))
+        else:
+            query = query.filter(User.status == status)
     return query.all()
 
 
