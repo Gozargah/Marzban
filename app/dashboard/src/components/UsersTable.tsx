@@ -5,13 +5,6 @@ import {
   chakra,
   HStack,
   IconButton,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Slider,
   SliderFilledTrack,
   SliderProps,
@@ -26,7 +19,6 @@ import {
   Thead,
   Tooltip,
   Tr,
-  useDisclosure,
 } from "@chakra-ui/react";
 import {
   CheckIcon,
@@ -183,12 +175,13 @@ type UsageSliderProps = {
 const UsageSlider: FC<UsageSliderProps> = (props) => {
   const { used, total, ...restOfProps } = props;
   const isUnlimited = total === 0 || total === null;
+  const isReached = !isUnlimited && (used / total) * 100 >= 100;
   return (
     <>
       <Slider
         orientation="horizontal"
-        value={isUnlimited ? 100 : used / total}
-        colorScheme="primary"
+        value={isUnlimited ? 100 : Math.min((used / total) * 100, 100)}
+        colorScheme={isReached ? "red" : "primary"}
         {...restOfProps}
       >
         <SliderTrack h="6px" borderRadius="full">
