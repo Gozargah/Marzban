@@ -1,92 +1,181 @@
 import {
   Box,
+  chakra,
   HStack,
+  SimpleGrid,
+  Text,
+  useCheckbox,
+  useCheckboxGroup,
   useRadio,
   useRadioGroup,
   UseRadioProps,
+  VStack,
 } from "@chakra-ui/react";
+import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import { FC, forwardRef, PropsWithChildren } from "react";
 import { ControllerRenderProps } from "react-hook-form";
 
-const RadioCard: FC<
-  PropsWithChildren<UseRadioProps & { disabled?: boolean }>
-> = ({ disabled, ...props }) => {
-  const { getInputProps, getCheckboxProps } = useRadio(props);
+const CheckedIcon = chakra(CheckCircleIcon, {
+  baseStyle: {
+    strokeWidth: "2px",
+    w: 5,
+    h: 5,
+  },
+});
 
-  const input = getInputProps();
-  const checkbox = getCheckboxProps();
+const UnCheckedIcon = chakra(XCircleIcon, {
+  baseStyle: {
+    strokeWidth: "2px",
+    w: 5,
+    h: 5,
+  },
+});
+
+const RadioCard: FC<
+  PropsWithChildren<
+    UseRadioProps & { disabled?: boolean; title: string; description: string }
+  >
+> = ({ disabled, title, description, ...props }) => {
+  const { getCheckboxProps, getInputProps, getLabelProps, htmlProps } =
+    useCheckbox(props);
 
   return (
     <Box as="label">
-      <input {...input} />
+      <input {...getInputProps()} />
       <Box
-        {...checkbox}
+        w="fll"
+        position="relative"
+        {...htmlProps}
         cursor="pointer"
         borderRadius="md"
-        color={!disabled ? "gray.600" : "gray.500"}
+        border="1px solid"
+        borderColor={"gray.200"}
         _dark={{
-          color: !disabled ? "gray.400" : "gray.400",
+          borderColor: "gray.600",
         }}
         _checked={{
-          bg: !disabled ? "blue.500" : "blue.300",
-          color: "white",
+          bg: "gray.50",
+          outline: "2px",
+          boxShadow: "outline",
+          outlineColor: "primary.500",
+          borderColor: "transparent",
           fontWeight: "medium",
           _dark: {
-            bg: !disabled ? "blue.500" : "blue.200",
-            color: !disabled ? "white" : "blackAlpha.500",
+            bg: "gray.750",
+            borderColor: "transparent",
+          },
+          "& > svg": {
+            opacity: 1,
+            "&.checked": {
+              display: "block",
+            },
+            "&.unchecked": {
+              display: "none",
+            },
+          },
+          "& p": {
+            opacity: 1,
+          },
+        }}
+        __css={{
+          "& > svg": {
+            opacity: 0.3,
+            "&.checked": {
+              display: "none",
+            },
+            "&.unchecked": {
+              display: "block",
+            },
+          },
+          "& p": {
+            opacity: 0.8,
           },
         }}
         textTransform="capitalize"
-        px={2}
-        py={1}
-        fontSize="sm"
+        px={3}
+        py={2}
+        fontWeight="medium"
+        {...getCheckboxProps()}
       >
-        {props.children}
+        <CheckedIcon
+          className="checked"
+          color="primary.200"
+          position="absolute"
+          right="3"
+          top="3"
+        />
+        <UnCheckedIcon
+          className="unchecked"
+          color="primary.200"
+          position="absolute"
+          right="3"
+          top="3"
+        />
+        <Text
+          fontSize="sm"
+          color="gray.700"
+          _dark={{ color: "gray.300" }}
+          {...getLabelProps()}
+        >
+          {title}
+        </Text>
+        <Text
+          fontWeight="medium"
+          color="gray.600"
+          _dark={{ color: "gray.400" }}
+          fontSize="xs"
+        >
+          {description}
+        </Text>
       </Box>
     </Box>
   );
 };
 
+export type RadioListType = {
+  title: string;
+  description: string;
+};
+
 export type RadioGroupProps = {
-  list: string[];
+  list: RadioListType[];
   disabled?: boolean;
 } & ControllerRenderProps;
 
 export const RadioGroup = forwardRef<any, RadioGroupProps>(
   ({ name, list, onChange, disabled, ...props }, ref) => {
-    const { getRootProps, getRadioProps } = useRadioGroup({
-      name,
-      defaultValue: list[0],
-      onChange,
+    const { getCheckboxProps } = useCheckboxGroup({
+      defaultValue: Object.keys(props.value),
+      onChange: (value) => {
+        onChange({
+          target: {
+            value: value.reduce((ac, a) => ({ ...ac, [a]: {} }), {}),
+            name,
+          },
+        });
+      },
     });
 
-    const group = getRootProps();
-
     return (
-      <HStack
-        {...group}
-        bg={disabled ? "gray.100" : "transparent"}
-        _dark={{
-          bg: disabled ? "gray.700" : "transparent",
-          borderColor: "whiteAlpha.300",
-        }}
-        border="1px solid"
-        borderColor="gray.200"
-        overflow="hidden"
-        rounded="md"
-        p="1"
+      <SimpleGrid
         ref={ref}
-        experimental_spaceX={1}
+        experimental_spaceY={1}
+        alignItems="flex-start"
+        columns={1}
+        spacing={1}
       >
         {list.map((value) => {
-          const radio = getRadioProps({ value });
           return (
-            <RadioCard disabled={disabled} key={value} {...radio}>
-              {value}
-            </RadioCard>
+            <RadioCard
+              disabled={disabled}
+              key={value.title}
+              title={value.title}
+              description={value.description}
+              {...getCheckboxProps({ value: value.title })}
+            />
           );
         })}
-      </HStack>
+      </SimpleGrid>
     );
   }
 );

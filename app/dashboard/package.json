@@ -10,12 +10,11 @@
     "postinstall": "npm run gen:theme-typings"
   },
   "dependencies": {
-    "@chakra-ui/react": "^2.4.1",
+    "@chakra-ui/react": "^2.4.5",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
     "@heroicons/react": "^2.0.12",
     "@hookform/resolvers": "^2.9.10",
-    "@tremor/react": "^1.0.7",
     "classnames": "^2.3.2",
     "dayjs": "^1.11.6",
     "framer-motion": "^7.6.6",
@@ -41,6 +40,7 @@
     "@vitejs/plugin-react": "^2.1.0",
     "autoprefixer": "^10.4.12",
     "postcss": "^8.4.18",
+    "sass": "^1.57.1",
     "tailwindcss": "^3.1.8",
     "typescript": "^4.6.4",
     "vite": "^3.1.0"

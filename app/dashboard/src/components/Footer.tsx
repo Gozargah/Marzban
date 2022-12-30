@@ -31,9 +31,9 @@ export const Footer: FC<BoxProps> = (props) => {
   const location = useLocation();
 
   return (
-    <HStack w="full" px="3" py="5" position="relative" {...props}>
+    <HStack w="full" py="0" position="relative" {...props}>
       {location.pathname !== "/login" && (
-        <RouterLink to="/login" left="1rem" position="absolute">
+        <RouterLink to="/login" left="0" position="absolute">
           <Button size="sm">Log out</Button>
         </RouterLink>
       )}
@@ -41,7 +41,8 @@ export const Footer: FC<BoxProps> = (props) => {
         display="inline-block"
         flexGrow={1}
         textAlign="center"
-        color="gray.400"
+        color="gray.500"
+        fontSize="xs"
       >
         Made with ❤️ in{" "}
         <Link color="blue.400" href="https://github.com/gozargah">
@@ -53,7 +54,7 @@ export const Footer: FC<BoxProps> = (props) => {
         aria-label="switch theme"
         onClick={toggleColorMode}
         position="absolute"
-        right="1rem"
+        right="0"
       >
         {colorMode === "light" ? <DarkIcon /> : <LightIcon />}
       </IconButton>

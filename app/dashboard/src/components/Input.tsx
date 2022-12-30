@@ -1,4 +1,5 @@
 import {
+  chakra,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -7,6 +8,7 @@ import {
   InputLeftAddon,
   InputProps as ChakraInputProps,
   InputRightAddon,
+  InputRightElement,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -14,8 +16,16 @@ import {
   NumberInputFieldProps,
   NumberInputStepper,
 } from "@chakra-ui/react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import classNames from "classnames";
 import React, { PropsWithChildren, ReactNode } from "react";
+
+const ClearIcon = chakra(XMarkIcon, {
+  baseStyle: {
+    w: 4,
+    h: 4,
+  },
+});
 
 export type InputProps = PropsWithChildren<
   {
@@ -33,8 +43,8 @@ export type InputProps = PropsWithChildren<
     disabled?: boolean;
     step?: string;
     label?: string;
-  } & ChakraInputProps &
-    NumberInputFieldProps
+    clearable?: boolean;
+  } & ChakraInputProps
 >;
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -54,10 +64,21 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       value,
       onClick,
       error,
+      clearable = false,
       ...props
     },
     ref
   ) => {
+    const clear = () => {
+      if (onChange)
+        onChange({
+          target: {
+            value: "",
+            name,
+          },
+        });
+    };
+    const { size = "md" } = props;
     const Component = type == "number" ? NumberInputField : ChakraInput;
     const Wrapper = type == "number" ? NumberInput : React.Fragment;
     const wrapperProps =
@@ -74,21 +95,24 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             onClick,
             disabled,
             flexGrow: 1,
+            size,
           }
         : {};
     return (
       <FormControl isInvalid={!!error}>
         {label && <FormLabel>{label}</FormLabel>}
         <InputGroup
+          size={size}
           w="full"
           rounded="md"
           _focusWithin={{
             outline: "2px solid",
-            outlineColor: "blue.500",
+            outlineColor: "primary.200",
           }}
         >
           {startAdornment && <InputLeftAddon>{startAdornment}</InputLeftAddon>}
           <Wrapper {...wrapperProps}>
+            {/* @ts-ignore */}
             <Component
               name={name}
               ref={ref}
@@ -124,7 +148,21 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               </>
             )}
           </Wrapper>
-          {endAdornment && <InputRightAddon>{endAdornment}</InputRightAddon>}
+          {endAdornment && (
+            <InputRightAddon borderRadius={"6px"} bg="transparent">
+              {endAdornment}
+            </InputRightAddon>
+          )}
+          {clearable && value && value.length && (
+            <InputRightElement
+              borderRadius={"6px"}
+              bg="transparent"
+              onClick={clear}
+              cursor="pointer"
+            >
+              <ClearIcon />
+            </InputRightElement>
+          )}
         </InputGroup>
         {!!error && <FormErrorMessage>{error}</FormErrorMessage>}
       </FormControl>
