@@ -147,7 +147,7 @@ const UserStatus: FC<UserStatusProps> = ({
           fontWeight="medium"
           letterSpacing="tighter"
         >
-          active
+          {userStatus}
         </Text>
       </Badge>
       {expiryDate && (
