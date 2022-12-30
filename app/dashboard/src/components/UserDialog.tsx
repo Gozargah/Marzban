@@ -140,7 +140,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
         onClose();
       })
       .catch((err) => {
-        if (err?.response?.status === 409)
+        if (err?.response?.status === 409 || err?.response?.status === 400)
           setError(err?.response?._data?.detail);
         if (err?.response?.status === 422) {
           Object.keys(err.response._data.detail).forEach((key) => {
@@ -190,7 +190,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
           <ModalBody>
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3} mt={4}>
               <VStack justifyContent="space-between">
-                <VStack gap={1} gridAutoRows="min-content">
+                <VStack gap={1} gridAutoRows="min-content" w="full">
                   <FormControl>
                     <FormLabel>Username</FormLabel>
                     <Input
@@ -302,7 +302,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                   </FormControl>
                 </VStack>
                 {error && (
-                  <Alert status="error">
+                  <Alert status="error" display={{ base: "none", md: "flex" }}>
                     <AlertIcon />
                     {error}
                   </Alert>
@@ -347,6 +347,16 @@ export const UserDialog: FC<UserDialogProps> = () => {
                 </FormErrorMessage>
               </FormControl>
             </SimpleGrid>
+            {error && (
+              <Alert
+                mt="3"
+                status="error"
+                display={{ base: "flex", md: "none" }}
+              >
+                <AlertIcon />
+                {error}
+              </Alert>
+            )}
           </ModalBody>
           <ModalFooter mt="3">
             <HStack justifyContent="space-between" w="full" gap={3}>
