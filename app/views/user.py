@@ -74,6 +74,11 @@ def modify_user(username: str,
     - **proxies** a dictionary of proxies, supported proxies: vmess, vless, trojan or shadowsocks
     """
 
+    try:
+        [INBOUND_TAGS[t] for t in modified_user.proxies]
+    except KeyError as exc:
+        raise HTTPException(status_code=400, detail=f"Proxy type {exc.args[0]} not supported")
+
     dbuser = crud.get_user(db, username)
     if not dbuser:
         raise HTTPException(status_code=404, detail="User not found")

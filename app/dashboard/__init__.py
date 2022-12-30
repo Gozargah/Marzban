@@ -15,10 +15,11 @@ build_dir = base_dir / 'build'
 def build():
     proc = subprocess.Popen(
         ['npm', 'run', 'build', '--', '--base', path,  '--outDir', build_dir],
-				env={**os.environ, 'VITE_BASE_API': '/'},
+        env={**os.environ, 'VITE_BASE_API': '/'},
         cwd=base_dir
     )
-    return proc.wait()
+    proc.wait()
+    os.symlink(build_dir / 'index.html', build_dir / '404.html')
 
 
 def run_dev():
