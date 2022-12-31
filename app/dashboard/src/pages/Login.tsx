@@ -75,7 +75,7 @@ export const Login: FC = () => {
           <VStack alignItems="center" w="full">
             <LogoIcon />
             <Text fontSize="2xl" fontWeight="semibold">
-              Login in to you account
+              Login to you account
             </Text>
             <Text color="gray.600" _dark={{ color: "gray.400" }}>
               Welcome back, please enter your details
