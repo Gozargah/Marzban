@@ -47,6 +47,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
             type="tel"
             placeholder="Search"
             defaultValue={filters.search || ""}
+            borderColor="light-border"
             onChange={onChange}
           />
           {loading && (

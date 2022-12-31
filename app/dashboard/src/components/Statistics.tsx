@@ -1,12 +1,4 @@
-import {
-  Box,
-  BoxProps,
-  Card,
-  chakra,
-  ChakraComponent,
-  HStack,
-  Text,
-} from "@chakra-ui/react";
+import { Box, BoxProps, Card, chakra, HStack, Text } from "@chakra-ui/react";
 import {
   ChartBarIcon,
   ChartPieIcon,
@@ -58,7 +50,8 @@ const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
     <Card
       p={6}
       borderWidth="1px"
-      borderColor="#EAECF0"
+      borderColor="light-border"
+      bg="#F9FAFB"
       _dark={{ borderColor: "gray.600", bg: "gray.750" }}
       borderStyle="solid"
       boxShadow="none"

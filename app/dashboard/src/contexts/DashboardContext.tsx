@@ -23,12 +23,14 @@ type DashboardStateType = {
   filteredUsers: User[];
   loading: boolean;
   filters: FilterType;
+  qrcodeLinks: string[] | null;
 };
 type DashboardActionsType =
   | { type: "EditingUser"; user: User | null }
   | { type: "DeletingUser"; user: User | null }
   | { type: "CreatingNewUser"; isOpen: boolean }
-  | { type: "FilterChange"; filters: FilterType };
+  | { type: "FilterChange"; filters: FilterType }
+  | { type: "SetQrCode"; links: string[] | null };
 
 type DashboardContextType = {
   onCreateUser: (isOpen: boolean) => void;
@@ -39,12 +41,14 @@ type DashboardContextType = {
   deleteUser: (user: User) => Promise<void>;
   createUser: (user: UserCreate) => Promise<void>;
   editUser: (user: UserCreate) => Promise<void>;
+  setQRCode: (links: string[] | null) => void;
 } & DashboardStateType;
 
 const dashboardContextInitialValue: DashboardContextType = {
   editingUser: null,
   deletingUser: null,
   isCreatingNewUser: false,
+  qrcodeLinks: null,
   users: [],
   filteredUsers: [],
   loading: true,
@@ -54,6 +58,7 @@ const dashboardContextInitialValue: DashboardContextType = {
   onDeletingUser: (user) => {},
   refetchUsers: () => {},
   onFilterChange: (filters) => {},
+  setQRCode: (links) => {},
   deleteUser: (user) => {
     return new Promise(() => {});
   },
@@ -86,6 +91,8 @@ const dashboardReducer: Reducer<DashboardStateType, DashboardActionsType> = (
       return { ...state, deletingUser: action.user };
     case "FilterChange":
       return { ...state, filters: action.filters };
+    case "SetQrCode":
+      return { ...state, qrcodeLinks: action.links };
     default:
       return state;
   }
@@ -158,6 +165,13 @@ export const DashboardProvider: FC<DashboardProviderProps> = ({ children }) => {
     });
   }, []);
 
+  const setQRCode = useCallback((links: string[] | null) => {
+    dispatch({
+      type: "SetQrCode",
+      links,
+    });
+  }, []);
+
   const filteredUsers = useMemo(() => {
     if (!users) return [];
     return users.filter(
@@ -178,6 +192,7 @@ export const DashboardProvider: FC<DashboardProviderProps> = ({ children }) => {
     deleteUser,
     createUser,
     editUser,
+    setQRCode,
   };
 
   return (

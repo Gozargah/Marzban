@@ -8,6 +8,7 @@ import { Filters } from "../components/Filters";
 import { useDashboard } from "../contexts/DashboardContext";
 import { UserDialog } from "../components/UserDialog";
 import { DeleteUserModal } from "../components/DeleteUserModal";
+import { QRCodeDialog } from "../components/QRCodeDialog";
 
 export const Dashboard: FC = () => {
   const { onCreateUser } = useDashboard();
@@ -35,6 +36,7 @@ export const Dashboard: FC = () => {
         <UsersTable mt="4" />
         <UserDialog />
         <DeleteUserModal />
+        <QRCodeDialog />
       </Box>
       <Footer />
     </VStack>

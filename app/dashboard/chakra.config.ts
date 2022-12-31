@@ -5,6 +5,7 @@ export const theme = extendTheme({
     body: `Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif`,
   },
   colors: {
+    "light-border": "#d2d2d4",
     primary: {
       50: "#9cb7f2",
       100: "#88a9ef",
@@ -84,32 +85,48 @@ export const theme = extendTheme({
           borderSpacing: 0,
         },
         thead: {
-          borderBottomColor: "#EAECF0",
+          borderBottomColor: "light-border",
         },
         th: {
           background: "#F9FAFB",
-          borderTop: "1px solid #eaecf0",
+          borderColor: "light-border !important",
+          borderBottomColor: "light-border !important",
+          borderTop: "1px solid ",
+          borderTopColor: "light-border !important",
           _first: {
-            borderLeft: "1px solid #eaecf0",
+            borderLeft: "1px solid",
+            borderColor: "light-border !important",
           },
           _last: {
-            borderRight: "1px solid #eaecf0",
+            borderRight: "1px solid",
+            borderColor: "light-border !important",
           },
           _dark: {
-            borderColor: "gray.600",
+            borderColor: "gray.600 !important",
             background: "gray.750",
           },
         },
         td: {
           transition: "all .1s ease-out",
+          borderColor: "light-border",
+          borderBottomColor: "light-border !important",
           _first: {
-            borderLeft: "1px solid #eaecf0",
+            borderLeft: "1px solid",
+            borderColor: "light-border",
+            _dark: {
+              borderColor: "gray.600",
+            },
           },
           _last: {
-            borderRight: "1px solid #eaecf0",
+            borderRight: "1px solid",
+            borderColor: "light-border",
+            _dark: {
+              borderColor: "gray.600",
+            },
           },
           _dark: {
             borderColor: "gray.600",
+            borderBottomColor: "gray.600 !important",
           },
         },
         tr: {
@@ -117,7 +134,7 @@ export const theme = extendTheme({
             cursor: "pointer",
             _hover: {
               "& > td": {
-                bg: "gray.100",
+                bg: "gray.200",
               },
               _dark: {
                 "& > td": {
