@@ -26,7 +26,7 @@ import {
   ExclamationCircleIcon,
   LinkIcon,
   NoSymbolIcon,
-  PencilIcon,
+  QrCodeIcon,
   TrashIcon,
   WifiIcon,
 } from "@heroicons/react/24/outline";
@@ -62,7 +62,7 @@ const SubscriptionLinkIcon = chakra(LinkIcon, {
   },
 });
 
-const EditIcon = chakra(PencilIcon, {
+const QRIcon = chakra(QrCodeIcon, {
   baseStyle: {
     w: 5,
     h: 5,
@@ -216,6 +216,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
     users: totalUsers,
     onDeletingUser,
     onEditingUser,
+    setQRCode,
   } = useDashboard();
   const isFiltered = users.length !== totalUsers.length;
   const [copied, setCopied] = useState([-1, -1, false]);
@@ -333,22 +334,20 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                         </Tooltip>
                       </div>
                     </CopyToClipboard>
-                    <Tooltip label="Edit" placement="top">
+                    <Tooltip label="QR Code" placement="top">
                       <IconButton
-                        aria-label="edit"
+                        aria-label="qr code"
                         bg="transparent"
                         _dark={{
                           _hover: {
                             bg: "gray.700",
                           },
                         }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          onEditingUser(user);
+                        onClick={() => {
+                          setQRCode(user.links);
                         }}
                       >
-                        <EditIcon />
+                        <QRIcon />
                       </IconButton>
                     </Tooltip>
                     <Tooltip label="Delete" placement="top">
