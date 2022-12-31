@@ -31,13 +31,13 @@ import {
   WifiIcon,
 } from "@heroicons/react/24/outline";
 import { FC, useEffect, useState } from "react";
-import { ReactComponent as AddFileIcon } from "../assets/add_file.svg";
-import { formatBytes } from "../utils/formatByte";
-import { User, UserStatus as UserStatusType } from "types/User";
-import { useDashboard } from "../contexts/DashboardContext";
-import { relativeExpiryDate } from "../utils/dateFormatter";
+import { ReactComponent as AddFileIcon } from "assets/add_file.svg";
+import { formatBytes } from "utils/formatByte";
+import { UserStatus as UserStatusType } from "types/User";
+import { useDashboard } from "contexts/DashboardContext";
+import { relativeExpiryDate } from "utils/dateFormatter";
 import CopyToClipboard from "react-copy-to-clipboard";
-import { getSubLink } from "../utils/subscriptionLink";
+import { getSubLink } from "utils/subscriptionLink";
 
 const EmptySectionIcon = chakra(AddFileIcon);
 

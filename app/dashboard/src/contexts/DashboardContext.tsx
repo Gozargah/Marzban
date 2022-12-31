@@ -7,7 +7,7 @@ import React, {
   useMemo,
   useReducer,
 } from "react";
-import { fetch } from "../service/http";
+import { fetch } from "service/http";
 import useSWR, { mutate as globalMutate } from "swr";
 import { User, UserCreate } from "types/User";
 
@@ -201,3 +201,5 @@ export const DashboardProvider: FC<DashboardProviderProps> = ({ children }) => {
     </DashboardContext.Provider>
   );
 };
+
+export default DashboardProvider;

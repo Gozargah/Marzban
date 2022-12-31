@@ -6,7 +6,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { FC, PropsWithChildren, ReactElement, ReactNode } from "react";
 import useSWR from "swr";
-import { formatBytes, numberWithCommas } from "../utils/formatByte";
+import { formatBytes, numberWithCommas } from "utils/formatByte";
 
 const TotalUsersIcon = chakra(UsersIcon, {
   baseStyle: {

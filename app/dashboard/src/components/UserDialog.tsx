@@ -24,7 +24,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { PencilIcon, UserPlusIcon } from "@heroicons/react/24/outline";
-import { useDashboard } from "../contexts/DashboardContext";
+import { useDashboard } from "contexts/DashboardContext";
 import { FC, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { User, UserCreate } from "types/User";
@@ -35,7 +35,7 @@ import { Input } from "./Input";
 import ReactDatePicker from "react-datepicker";
 import dayjs from "dayjs";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { relativeExpiryDate } from "../utils/dateFormatter";
+import { relativeExpiryDate } from "utils/dateFormatter";
 import { DeleteIcon } from "./DeleteUserModal";
 
 const iconProps = {

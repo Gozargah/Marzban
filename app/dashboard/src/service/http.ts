@@ -1,5 +1,5 @@
 import { $fetch as ohMyFetch, FetchOptions } from "ohmyfetch";
-import { getAuthToken } from "../utils/authStorage";
+import { getAuthToken } from "utils/authStorage";
 
 export const $fetch = ohMyFetch.create({
   baseURL: import.meta.env.VITE_BASE_API,

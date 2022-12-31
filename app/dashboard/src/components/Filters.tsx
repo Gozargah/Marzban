@@ -11,7 +11,7 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { useDashboard } from "../contexts/DashboardContext";
+import { useDashboard } from "contexts/DashboardContext";
 import React, { FC } from "react";
 
 const SearchIcon = chakra(MagnifyingGlassIcon, {

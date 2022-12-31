@@ -17,10 +17,10 @@ import { FC, useEffect, useState } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { Footer } from "../components/Footer";
-import { Input } from "../components/Input";
-import { fetch } from "../service/http";
-import { setAuthToken } from "../utils/authStorage";
+import { Footer } from "components/Footer";
+import { Input } from "components/Input";
+import { fetch } from "service/http";
+import { setAuthToken } from "utils/authStorage";
 
 const schema = z.object({
   username: z.string().min(1, "This field is required"),
@@ -75,7 +75,7 @@ export const Login: FC = () => {
           <VStack alignItems="center" w="full">
             <LogoIcon />
             <Text fontSize="2xl" fontWeight="semibold">
-              Login to you account
+              Login to your account
             </Text>
             <Text color="gray.600" _dark={{ color: "gray.400" }}>
               Welcome back, please enter your details
@@ -124,3 +124,5 @@ export const Login: FC = () => {
     </VStack>
   );
 };
+
+export default Login;

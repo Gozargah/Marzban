@@ -15,7 +15,7 @@ import {
 import { FC, useState } from "react";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { Icon } from "./Icon";
-import { useDashboard } from "../contexts/DashboardContext";
+import { useDashboard } from "contexts/DashboardContext";
 
 export const DeleteIcon = chakra(TrashIcon, {
   baseStyle: {

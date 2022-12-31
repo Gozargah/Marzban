@@ -33,7 +33,7 @@ export const QRCodeDialog: FC = () => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
-      <ModalContent mx="3" w="full" maxW="4xl">
+      <ModalContent mx="3" w="fit-content" maxW="3xl">
         <ModalHeader pt={6}>
           <Icon color="primary">
             <QRIcon color="white" />
@@ -48,13 +48,7 @@ export const QRCodeDialog: FC = () => {
               alignItems="center"
               justifyContent="center"
             >
-              {[
-                ...qrcodeLinks,
-                ...qrcodeLinks,
-                ...qrcodeLinks,
-                ...qrcodeLinks,
-                ...qrcodeLinks,
-              ]?.map((link) => {
+              {qrcodeLinks.map((link) => {
                 return <QRCode size={180} p="2" value={link} />;
               })}
             </HStack>

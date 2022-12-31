@@ -22,3 +22,5 @@ node_modules
 *.sw?
 
 .env
+
+stats.html

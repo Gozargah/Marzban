@@ -4,8 +4,8 @@ import ReactDOM from "react-dom/client";
 import { SWRConfig } from "swr";
 import { theme } from "../chakra.config";
 import App from "./App";
-import "./index.scss";
-import { fetcher } from "./service/http";
+import "index.scss";
+import { fetcher } from "service/http";
 import dayjs from "dayjs";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
 import Timezone from "dayjs/plugin/timezone";
@@ -22,7 +22,6 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <ChakraProvider theme={theme}>
       <SWRConfig
         value={{
-          // provider: () => new Map(),
           fetcher,
           revalidateIfStale: false,
           revalidateOnFocus: false,
