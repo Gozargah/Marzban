@@ -4,7 +4,7 @@ APScheduler==3.9.1.post1
 async-timeout==4.0.2
 backports.zoneinfo==0.2.1;python_version<"3.9"
 bcrypt==4.0.1
-certifi==2022.9.24
+certifi==2022.12.7
 cffi==1.15.1
 charset-normalizer==2.1.1
 click==8.1.3
