@@ -8,6 +8,8 @@ load_dotenv()
 # Disable IPv6
 requests.packages.urllib3.util.connection.HAS_IPV6 = False
 
+SERVER_IP = requests.get("https://ifconfig.io/ip").text.strip()
+
 
 SQLALCHEMY_DATABASE_URL = config("SQLALCHEMY_DATABASE_URL", default="sqlite:///db.sqlite3")
 
@@ -28,11 +30,10 @@ XRAY_HOSTS = [
         "remark": h.rsplit('@', 1)[0],
         "hostname": h.rsplit('@', 1)[1]
     }
-    for h in filter(bool, config(
-        "XRAY_HOSTS",
-        default=f'Marz@{requests.get("https://ifconfig.io/ip").text}'
-    ).split("\n"))
+    for h in filter(bool, config("XRAY_HOSTS", default=f'Marz@{SERVER_IP}').split("\n"))
 ]
+XRAY_SUBSCRIPTION_URL_PREFIX = config("XRAY_SUBSCRIPTION_URL_PREFIX",
+                                      default=f'http://{SERVER_IP}:{UVICORN_PORT}').strip('/')
 
 
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = config("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=1440)

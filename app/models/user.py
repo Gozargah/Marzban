@@ -6,7 +6,7 @@ from typing import Dict, List
 from app.models.proxy import ProxySettings, ProxyTypes
 from app.utils.jwt import create_subscription_token
 from app.utils.share import ShareLink
-from config import XRAY_HOSTS
+from config import XRAY_HOSTS, XRAY_SUBSCRIPTION_URL_PREFIX
 from pydantic import BaseModel, validator
 from xray_api.types.account import Account
 
@@ -91,7 +91,7 @@ class UserResponse(User):
     used_traffic: int
     created_at: datetime
     links: List[str] = []
-    sub_token: str = ''
+    subscription_url: str = ''
     proxies: dict
 
     class Config:
@@ -110,10 +110,11 @@ class UserResponse(User):
             return links
         return v
 
-    @validator('sub_token', pre=False, always=True)
-    def validate_sub_token(cls, v, values, **kwargs):
+    @validator('subscription_url', pre=False, always=True)
+    def validate_subscription_url(cls, v, values, **kwargs):
         if not v:
-            return create_subscription_token(values['username'])
+            token = create_subscription_token(values['username'])
+            return f'{XRAY_SUBSCRIPTION_URL_PREFIX}/sub/{token}'
         return v
 
     @validator('proxies', pre=True, always=True)
