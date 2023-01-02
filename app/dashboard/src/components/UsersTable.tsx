@@ -37,7 +37,6 @@ import { UserStatus as UserStatusType } from "types/User";
 import { useDashboard } from "contexts/DashboardContext";
 import { relativeExpiryDate } from "utils/dateFormatter";
 import CopyToClipboard from "react-copy-to-clipboard";
-import { getSubLink } from "utils/subscriptionLink";
 
 const EmptySectionIcon = chakra(AddFileIcon);
 
