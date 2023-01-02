@@ -1,4 +1,4 @@
-# Dashboard UI for xray-server
+# Dashboard UI for marzban
 
 ## Requirements
 
@@ -23,9 +23,9 @@ Copy `example.env` to `.env` then set the backend api address:
 
 #### Environment variables
 
-| Name          | Description                                                                                  |
-| ------------- | -------------------------------------------------------------------------------------------- |
-| VITE_BASE_API | The api url of the deployed backend ([Xray-server](https://github.com/gozargah/xray-server)) |
+| Name          | Description                                                                          |
+| ------------- | ------------------------------------------------------------------------------------ |
+| VITE_BASE_API | The api url of the deployed backend ([Marzban](https://github.com/gozargah/Marzban)) |
 
 ## Start development server
 

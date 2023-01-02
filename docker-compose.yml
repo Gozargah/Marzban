@@ -1,5 +1,5 @@
 services:
-  xray-server:
+  marzban:
     build: .
     restart: on-failure
 
@@ -8,7 +8,7 @@ services:
     environment:
       UVICORN_HOST: 0.0.0.0
       UVICORN_PORT: 8000 # API port inside container 
-      SQLALCHEMY_DATABASE_URL: "sqlite:////var/lib/xray-server/db.sqlite3"
+      SQLALCHEMY_DATABASE_URL: "sqlite:////var/lib/marzban/db.sqlite3"
 
     ports:
       - "8000:8000" # API
@@ -18,4 +18,4 @@ services:
       - "8443:8443" # Trojan
 
     volumes:
-      - /var/lib/xray-server:/var/lib/xray-server
+      - /var/lib/marzban:/var/lib/marzban
