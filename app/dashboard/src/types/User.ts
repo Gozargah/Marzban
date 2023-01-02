@@ -1,17 +1,19 @@
 export type UserStatus = "active" | "limited" | "expired";
-export type User = {
-  proxies: {
-    vmess?: {
-      id?: string;
-    };
-    vless?: {
-      id?: string;
-    };
-    trojan?: { password?: string };
-    shadowsocks?: {
-      password?: string;
-    };
+export type ProxyKeys = ("vmess" | "vless" | "trojan" | "shadowsocks")[];
+export type ProxyType = {
+  vmess?: {
+    id?: string;
   };
+  vless?: {
+    id?: string;
+  };
+  trojan?: { password?: string };
+  shadowsocks?: {
+    password?: string;
+  };
+};
+export type User = {
+  proxies: ProxyType;
   expire: number | null;
   data_limit: number | null;
   username: string;

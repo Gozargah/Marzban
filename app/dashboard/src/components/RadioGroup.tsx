@@ -145,11 +145,11 @@ export type RadioGroupProps = {
 export const RadioGroup = forwardRef<any, RadioGroupProps>(
   ({ name, list, onChange, disabled, ...props }, ref) => {
     const { getCheckboxProps } = useCheckboxGroup({
-      defaultValue: Object.keys(props.value),
+      defaultValue: props.value,
       onChange: (value) => {
         onChange({
           target: {
-            value: value.reduce((ac, a) => ({ ...ac, [a]: {} }), {}),
+            value,
             name,
           },
         });

@@ -27,7 +27,7 @@ import { PencilIcon, UserPlusIcon } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { User, UserCreate } from "types/User";
+import { ProxyKeys, ProxyType, User, UserCreate } from "types/User";
 import { z } from "zod";
 import { Icon } from "./Icon";
 import { RadioGroup } from "./RadioGroup";
@@ -37,10 +37,6 @@ import dayjs from "dayjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { relativeExpiryDate } from "utils/dateFormatter";
 import { DeleteIcon } from "./DeleteUserModal";
-
-const iconProps = {
-  baseStyle: { w: 4, h: 4 },
-};
 
 const AddUserIcon = chakra(UserPlusIcon, {
   baseStyle: {
@@ -58,44 +54,46 @@ const EditUserIcon = chakra(PencilIcon, {
 
 const schema = z.object({
   username: z.string().min(1, { message: "Required" }),
-  proxies: z
-    .object({
-      vmess: z.any().nullable(),
-      vless: z.any().nullable(),
-      trojan: z.any().nullable(),
-      shadowsocks: z.any().nullable(),
-    })
-    .refine((value) => Object.keys(value).length > 0, {
-      message: "Please select at least one protocol",
-    }),
+  proxies: z.array(z.string()).refine((value) => value.length > 0, {
+    message: "Please select at least one protocol",
+  }),
   data_limit: z.number().min(0, "The minimum number is 0").nullable(),
   expire: z.number().nullable(),
 });
 
-const formatUser = (user: User) => {
-  return {
-    ...user,
-    data_limit: user.data_limit
-      ? (user.data_limit / 1073741824).toFixed(3)
-      : null,
-    expire: user.expire ? user.expire * 1000 : null,
-  };
-};
-
 export type UserDialogProps = {};
 
-const getDefaultValues = (): UserCreate => ({
-  proxies: {
-    vmess: {},
-    vless: {},
-    trojan: {},
-    shadowsocks: {},
-  },
+export type FormType = Omit<UserCreate, "proxies"> & { proxies: ProxyKeys };
+
+const formatUser = (user: User): FormType => {
+  return {
+    ...user,
+    proxies: Object.keys(user.proxies) as ProxyKeys,
+  };
+};
+const getDefaultValues = (): FormType => ({
+  proxies: ["vmess", "vless", "trojan", "shadowsocks"],
   data_limit: null,
   expire: null,
   username: "",
 });
 
+const mergeProxies = (
+  proxyKeys: ProxyKeys,
+  proxyType: ProxyType | undefined
+): ProxyType => {
+  const proxies: ProxyType = proxyKeys.reduce(
+    (ac, a) => ({ ...ac, [a]: {} }),
+    {}
+  );
+  if (!proxyType) return proxies;
+  proxyKeys.forEach((proxy) => {
+    if (proxyType[proxy]) {
+      proxies[proxy] = proxyType[proxy];
+    }
+  });
+  return proxies;
+};
 export const UserDialog: FC<UserDialogProps> = () => {
   const {
     editingUser,
@@ -112,7 +110,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const [error, setError] = useState<string | null>("");
   const toast = useToast();
 
-  const form = useForm({
+  const form = useForm<FormType>({
     defaultValues: getDefaultValues(),
     resolver: zodResolver(schema),
   });
@@ -123,12 +121,16 @@ export const UserDialog: FC<UserDialogProps> = () => {
     onEditingUser(null);
   };
 
-  const submit = (values: UserCreate) => {
+  const submit = (values: FormType) => {
     setLoading(true);
     const methods = { edited: editUser, created: createUser };
     const method = isEditing ? "edited" : "created";
     setError(null);
-    methods[method](values)
+    let body: UserCreate = {
+      ...values,
+      proxies: mergeProxies(values.proxies, editingUser?.proxies),
+    };
+    methods[method](body)
       .then(() => {
         toast({
           title: `User ${values.username} ${method}.`,
@@ -161,7 +163,8 @@ export const UserDialog: FC<UserDialogProps> = () => {
 
   useEffect(() => {
     if (editingUser) {
-      form.reset(editingUser);
+      console.log(formatUser(editingUser));
+      form.reset(formatUser(editingUser));
     }
   }, [editingUser]);
 
@@ -366,7 +369,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                     <IconButton
                       aria-label="Delete"
                       size="sm"
-                      onClick={() => onDeletingUser(form.getValues() as User)}
+                      onClick={() => onDeletingUser(editingUser)}
                     >
                       <DeleteIcon />
                     </IconButton>
