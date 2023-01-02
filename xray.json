@@ -48,7 +48,6 @@
             "settings": {
                 "clients": []
             },
-            "network": "tcp,udp",
             "tag": "TROJAN_INBOUND"
         }
     ],
