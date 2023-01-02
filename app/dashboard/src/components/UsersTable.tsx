@@ -242,7 +242,6 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
         <Tbody>
           {users?.map((user, i) => {
             const proxyLinks = user.links.join("\r\n");
-            const subscriptionLink = getSubLink(user.sub_token);
             return (
               <Tr
                 key={user.username}
@@ -269,7 +268,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                     }}
                   >
                     <CopyToClipboard
-                      text={subscriptionLink}
+                      text={user.subscription_url}
                       onCopy={() => {
                         setCopied([i, 0, true]);
                       }}

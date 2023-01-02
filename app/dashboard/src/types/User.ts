@@ -20,7 +20,7 @@ export type User = {
   used_traffic: number;
   status: UserStatus;
   links: string[];
-  sub_token: string;
+  subscription_url: string;
 };
 
 export type UserCreate = Pick<
