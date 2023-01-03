@@ -1,3 +1,4 @@
+from random import randint
 from typing import Dict
 
 from app.utils.system import check_port
@@ -13,7 +14,7 @@ from config import (XRAY_ASSETS_PATH, XRAY_EXECUTABLE_PATH,
 
 # Search for a free API port from 8080
 try:
-    for api_port in range(8080, 65536):
+    for api_port in range(randint(10000, 60000), 65536):
         if not check_port(api_port):
             break
 finally:
