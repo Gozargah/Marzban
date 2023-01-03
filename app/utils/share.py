@@ -6,51 +6,76 @@ from typing import List, Union
 from uuid import UUID
 
 import yaml
-from app.xray import INBOUND_PORTS, INBOUND_STREAMS
+from app.xray import INBOUNDS
 from config import XRAY_HOSTS
 
 
 class ShareLink(str):
     def __new__(cls, remark: str, host: str, protocol: str, settings: dict):
         if protocol == 'vmess':
-            return cls.vmess(remark=remark,
-                             address=host,
-                             id=settings['id'],
-                             net=INBOUND_STREAMS[protocol]['net'],
-                             tls=INBOUND_STREAMS[protocol]['tls'],
-                             sni=INBOUND_STREAMS[protocol]['sni'],
-                             host=INBOUND_STREAMS[protocol]['sni'],
-                             path=INBOUND_STREAMS[protocol]['path'])
+            links = []
+            for i in INBOUNDS[protocol]:
+                links.append(
+                    cls.vmess(remark=remark,
+                              address=host,
+                              port=i['port'],
+                              id=settings['id'],
+                              net=i['stream']['net'],
+                              tls=i['stream']['tls'],
+                              sni=i['stream']['sni'],
+                              host=i['stream']['sni'],
+                              path=i['stream']['path'])
+                )
+            return '\n'.join(links)
 
         if protocol == 'vless':
-            return cls.vless(remark=remark,
-                             address=host,
-                             id=settings['id'],
-                             net=INBOUND_STREAMS[protocol]['net'],
-                             tls=INBOUND_STREAMS[protocol]['tls'],
-                             sni=INBOUND_STREAMS[protocol]['sni'],
-                             host=INBOUND_STREAMS[protocol]['sni'],
-                             path=INBOUND_STREAMS[protocol]['path'])
+            links = []
+            for i in INBOUNDS[protocol]:
+                links.append(
+                    cls.vless(remark=remark,
+                              address=host,
+                              port=i['port'],
+                              id=settings['id'],
+                              net=i['stream']['net'],
+                              tls=i['stream']['tls'],
+                              sni=i['stream']['sni'],
+                              host=i['stream']['sni'],
+                              path=i['stream']['path'])
+                )
+            return '\n'.join(links)
 
         if protocol == 'trojan':
-            return cls.trojan(remark=remark,
-                              address=host,
-                              password=settings['password'],
-                              net=INBOUND_STREAMS[protocol]['net'],
-                              tls=INBOUND_STREAMS[protocol]['tls'],
-                              sni=INBOUND_STREAMS[protocol]['sni'],
-                              host=INBOUND_STREAMS[protocol]['sni'],
-                              path=INBOUND_STREAMS[protocol]['path'])
+            links = []
+            for i in INBOUNDS[protocol]:
+                links.append(
+                    cls.trojan(remark=remark,
+                               address=host,
+                               port=i['port'],
+                               password=settings['password'],
+                               net=i['stream']['net'],
+                               tls=i['stream']['tls'],
+                               sni=i['stream']['sni'],
+                               host=i['stream']['sni'],
+                               path=i['stream']['path'])
+                )
+            return '\n'.join(links)
 
         if protocol == 'shadowsocks':
-            return cls.shadowsocks(remark=remark,
-                                   address=host,
-                                   password=settings['password'])
+            links = []
+            for i in INBOUNDS[protocol]:
+                links.append(
+                    cls.shadowsocks(remark=remark,
+                                    address=host,
+                                    port=i['port'],
+                                    password=settings['password'])
+                )
+            return '\n'.join(links)
 
     @classmethod
     def vmess(cls,
               remark: str,
               address: str,
+              port: int,
               id: Union[str, UUID],
               host='',
               net='tcp',
@@ -65,7 +90,7 @@ class ShareLink(str):
             'id': str(id),
             'net': net,
             'path': urlparse.quote(path),
-            'port': INBOUND_PORTS['vmess'],
+            'port': port,
             'ps': remark,
             'scy': 'auto',
             'sni': sni,
@@ -78,6 +103,7 @@ class ShareLink(str):
     def vless(cls,
               remark: str,
               address: str,
+              port: int,
               id: Union[str, UUID],
               net='ws',
               path='',
@@ -85,7 +111,7 @@ class ShareLink(str):
               host='',
               sni=''):
         return "vless://" + \
-            f"{id}@{address}:{INBOUND_PORTS['vless']}?" + \
+            f"{id}@{address}:{port}?" + \
             urlparse.urlencode({
                 "security": "tls" if tls else "none",
                 "type": net,
@@ -99,6 +125,7 @@ class ShareLink(str):
     def trojan(cls,
                remark: str,
                address: str,
+               port: int,
                password: str,
                net='tcp',
                path='',
@@ -106,7 +133,7 @@ class ShareLink(str):
                host='',
                sni=''):
         return "trojan://" + \
-            f"{urlparse.quote(password, safe=':')}@{address}:{INBOUND_PORTS['trojan']}?" + \
+            f"{urlparse.quote(password, safe=':')}@{address}:{port}?" + \
             urlparse.urlencode({
                 "security": "tls" if tls else "none",
                 "type": net,
@@ -119,11 +146,12 @@ class ShareLink(str):
     def shadowsocks(cls,
                     remark: str,
                     address: str,
+                    port: int,
                     password: str,
                     security='chacha20-ietf-poly1305'):
         return "ss://" + \
             base64.b64encode(f'{security}:{password}'.encode()).decode() + \
-            f"@{address}:{INBOUND_PORTS['shadowsocks']}#{urlparse.quote(remark)}"
+            f"@{address}:{port}#{urlparse.quote(remark)}"
 
 
 class ClashConfiguration(object):
@@ -165,33 +193,40 @@ class ClashConfiguration(object):
 
     def add(self, remark: str, host: str, protocol: str, settings: dict):
         if protocol == 'vmess':
-            return self.add_vmess(remark=remark,
-                                  address=host,
-                                  id=settings['id'],
-                                  net=INBOUND_STREAMS[protocol]['net'],
-                                  tls=INBOUND_STREAMS[protocol]['tls'],
-                                  sni=INBOUND_STREAMS[protocol]['sni'],
-                                  host=INBOUND_STREAMS[protocol]['sni'],
-                                  path=INBOUND_STREAMS[protocol]['path'])
+            for i in INBOUNDS[protocol]:
+                self.add_vmess(remark=remark,
+                               address=host,
+                               port=i['port'],
+                               id=settings['id'],
+                               net=i['stream']['net'],
+                               tls=i['stream']['tls'],
+                               sni=i['stream']['sni'],
+                               host=i['stream']['sni'],
+                               path=i['stream']['path'])
 
         if protocol == 'trojan':
-            return self.add_trojan(remark=remark,
-                                   address=host,
-                                   password=settings['password'],
-                                   net=INBOUND_STREAMS[protocol]['net'],
-                                   tls=INBOUND_STREAMS[protocol]['tls'],
-                                   sni=INBOUND_STREAMS[protocol]['sni'],
-                                   host=INBOUND_STREAMS[protocol]['sni'],
-                                   path=INBOUND_STREAMS[protocol]['path'])
+            for i in INBOUNDS[protocol]:
+                self.add_trojan(remark=remark,
+                                address=host,
+                                port=i['port'],
+                                password=settings['password'],
+                                net=i['stream']['net'],
+                                tls=i['stream']['tls'],
+                                sni=i['stream']['sni'],
+                                host=i['stream']['sni'],
+                                path=i['stream']['path'])
 
         if protocol == 'shadowsocks':
-            return self.add_shadowsocks(remark=remark,
-                                        address=host,
-                                        password=settings['password'])
+            for i in INBOUNDS[protocol]:
+                self.add_shadowsocks(remark=remark,
+                                     address=host,
+                                     port=i['port'],
+                                     password=settings['password'])
 
     def add_vmess(self,
                   remark: str,
                   address: str,
+                  port: int,
                   id: Union[str, UUID],
                   host='',
                   net='tcp',
@@ -202,7 +237,7 @@ class ClashConfiguration(object):
         self.data['proxies'].append({'name': remark,
                                      'type': 'vmess',
                                      'server': address,
-                                     'port': INBOUND_PORTS['vmess'],
+                                     'port': port,
                                      'uuid': id,
                                      'alterId': 0,
                                      'cipher': 'auto',
@@ -218,6 +253,7 @@ class ClashConfiguration(object):
     def add_trojan(self,
                    remark: str,
                    address: str,
+                   port: int,
                    password: str,
                    net='tcp',
                    path='',
@@ -228,7 +264,7 @@ class ClashConfiguration(object):
         self.data['proxies'].append({"name": remark,
                                      "type": "trojan",
                                      "server": address,
-                                     "port": INBOUND_PORTS['trojan'],
+                                     "port": port,
                                      "password": password,
                                      "network": net,
                                      "udp": True,
@@ -241,13 +277,14 @@ class ClashConfiguration(object):
     def add_shadowsocks(self,
                         remark: str,
                         address: str,
+                        port: int,
                         password: str,
                         security='chacha20-ietf-poly1305'):
         remark = self._remark_validation(remark)
         self.data['proxies'].append({'name': remark,
                                      'type': 'ss',
                                      'server': address,
-                                     'port': INBOUND_PORTS['shadowsocks'],
+                                     'port': port,
                                      'cipher': security,
                                      'password': password,
                                      'udp': True})

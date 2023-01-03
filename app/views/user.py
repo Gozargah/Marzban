@@ -8,7 +8,7 @@ from app.models.admin import Admin
 from app.models.user import UserCreate, UserModify, UserResponse, UserStatus
 from app.utils.jwt import current_admin, get_subscription_payload
 from app.utils.share import get_clash_sub, get_v2ray_sub
-from app.xray import INBOUND_TAGS
+from app.xray import INBOUNDS
 from fastapi import Depends, Header, HTTPException, Response
 
 
@@ -27,7 +27,7 @@ def add_user(new_user: UserCreate,
     # TODO expire should be datetime instead of timestamp
 
     try:
-        [INBOUND_TAGS[t] for t in new_user.proxies]
+        [INBOUNDS[t] for t in new_user.proxies]
     except KeyError as exc:
         raise HTTPException(status_code=400, detail=f"Proxy type {exc.args[0]} not supported")
 
@@ -38,10 +38,11 @@ def add_user(new_user: UserCreate,
 
     for proxy_type in new_user.proxies:
         account = new_user.get_account(proxy_type)
-        try:
-            xray.api.add_inbound_user(tag=INBOUND_TAGS[proxy_type], user=account)
-        except xray.exc.EmailExistsError:
-            pass
+        for inbound in INBOUNDS[proxy_type]:
+            try:
+                xray.api.add_inbound_user(tag=inbound['tag'], user=account)
+            except xray.exc.EmailExistsError:
+                pass
 
     logger.info(f"New user \"{dbuser.username}\" added")
     return dbuser
@@ -75,7 +76,7 @@ def modify_user(username: str,
     """
 
     try:
-        [INBOUND_TAGS[t] for t in modified_user.proxies]
+        [INBOUNDS[t] for t in modified_user.proxies]
     except KeyError as exc:
         raise HTTPException(status_code=400, detail=f"Proxy type {exc.args[0]} not supported")
 
@@ -101,14 +102,14 @@ def modify_user(username: str,
 
     for proxy_type in user.proxies:
         account = user.get_account(proxy_type)
-        inbound = INBOUND_TAGS[proxy_type]
-        try:
-            xray.api.remove_inbound_user(tag=inbound, email=user.username)
-        except xray.exc.EmailNotFoundError:
-            pass
+        for inbound in INBOUNDS[proxy_type]:
+            try:
+                xray.api.remove_inbound_user(tag=inbound['tag'], email=user.username)
+            except xray.exc.EmailNotFoundError:
+                pass
 
-        if user.status == UserStatus.active:
-            xray.api.add_inbound_user(tag=inbound, user=account)
+            if user.status == UserStatus.active:
+                xray.api.add_inbound_user(tag=inbound['tag'], user=account)
 
     logger.info(f"User \"{user.username}\" modified")
     return user

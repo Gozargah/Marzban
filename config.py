@@ -1,3 +1,4 @@
+from email.policy import default
 import requests
 from decouple import config
 from dotenv import load_dotenv
@@ -23,6 +24,7 @@ DOCS = config("DOCS", default=True, cast=bool)
 
 
 XRAY_JSON = config("XRAY_JSON", default="./xray.json")
+XRAY_FALLBACK_INBOUND_TAG = config("XRAY_FALLBACK_INBOUND_TAG", cast=str, default="")
 XRAY_EXECUTABLE_PATH = config("XRAY_EXECUTABLE_PATH", default="/usr/local/bin/xray")
 XRAY_ASSETS_PATH = config("XRAY_ASSETS_PATH", default="/usr/local/share/xray")
 XRAY_HOSTS = [

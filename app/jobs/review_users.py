@@ -3,7 +3,7 @@ from datetime import datetime
 from app import logger, scheduler, xray
 from app.db import get_users, get_db, update_user_status
 from app.models.user import UserStatus
-from app.xray import INBOUND_TAGS
+from app.xray import INBOUNDS
 
 
 def review():
@@ -20,17 +20,17 @@ def review():
                 continue
 
             for proxy_type in user.proxies:
-                inbound = INBOUND_TAGS[proxy_type]
-                try:
-                    xray.api.remove_inbound_user(tag=inbound, email=user.username)
-                except xray.exc.EmailNotFoundError:
-                    pass
-                except xray.exceptions.ConnectionError:
+                for inbound in INBOUNDS[proxy_type]:
                     try:
-                        xray.core.restart()
-                    except ProcessLookupError:
+                        xray.api.remove_inbound_user(tag=inbound['tag'], email=user.username)
+                    except xray.exc.EmailNotFoundError:
                         pass
-                    return
+                    except xray.exceptions.ConnectionError:
+                        try:
+                            xray.core.restart()
+                        except ProcessLookupError:
+                            pass
+                        return
 
             update_user_status(db, user, status)
 

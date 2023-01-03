@@ -1,5 +1,33 @@
+// vmess, vless, shadowsocks and trojan on different ports
+// to set tls for an inbound, do the same as the commented section of "VLESS_INBOUND"
 {
     "inbounds": [
+        {
+            "listen": "0.0.0.0",
+            "port": 80,
+            "protocol": "vless",
+            "settings": {
+                "clients": [],
+                "decryption": "none"
+            },
+            "streamSettings": {
+                "network": "ws",
+                "wsSettings": {
+                    "path": "/"
+                }
+                // "security": "tls",
+                // "tlsSettings": {
+                //     "serverName": "SERVER_NAME",
+                //     "certificates": [
+                //         {
+                //             "certificateFile": "CERT_FILE_PATH",
+                //             "keyFile": "KEY_FILE_PATH"
+                //         }
+                //     ]
+                // }
+            },
+            "tag": "VLESS_INBOUND"
+        },
         {
             "listen": "0.0.0.0",
             "port": 443,
@@ -17,23 +45,7 @@
         },
         {
             "listen": "0.0.0.0",
-            "port": 80,
-            "protocol": "vless",
-            "settings": {
-                "clients": [],
-                "decryption": "none"
-            },
-            "streamSettings": {
-                "network": "ws",
-                "wsSettings": {
-                    "path": "/"
-                }
-            },
-            "tag": "VLESS_INBOUND"
-        },
-        {
-            "listen": "0.0.0.0",
-            "port": 8080,
+            "port": 8880,
             "protocol": "shadowsocks",
             "settings": {
                 "clients": []
@@ -47,6 +59,22 @@
             "protocol": "trojan",
             "settings": {
                 "clients": []
+            },
+            "streamSettings": {
+                "network": "ws",
+                "wsSettings": {
+                    "path": "/"
+                }
+                // "security": "tls",
+                // "tlsSettings": {
+                //     "serverName": "SERVER_NAME",
+                //     "certificates": [
+                //         {
+                //             "certificateFile": "CERT_FILE_PATH",
+                //             "keyFile": "KEY_FILE_PATH"
+                //         }
+                //     ]
+                // }
             },
             "tag": "TROJAN_INBOUND"
         }

@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import PosixPath
 from typing import Union
 
@@ -11,15 +12,18 @@ class XRayConfig(dict):
         if isinstance(config, str):
             try:
                 # considering string as json
-                config = json.loads(config)
+                jdata = re.sub(r'\/\/(.*)', '', config)
+                config = json.loads(jdata)
             except json.JSONDecodeError:
                 # considering string as file path
                 with open(config, 'r') as file:
-                    config = json.loads(file.read())
+                    jdata = re.sub(r'\/\/(.*)', '', file.read())
+                    config = json.loads(jdata)
 
         if isinstance(config, PosixPath):
             with open(config, 'r') as file:
-                config = json.loads(file.read())
+                jdata = re.sub(r'\/\/(.*)', '', file.read())
+                config = json.loads(jdata)
 
         self.api_host = api_host
         self.api_port = api_port
