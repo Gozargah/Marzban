@@ -12,7 +12,7 @@
 //
 // TLS:
 //  fallback inbound which is "TROJAN_FALLBACK_INBOUND" here will do all TLS-Termination
-//  if you uncomment the commented security of tls in there and set the required variables
+//  you have to uncomment the commented section of inbound's security and fill required variables
 //
 {
     "log": {
