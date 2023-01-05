@@ -129,10 +129,11 @@ def remove_user(username: str,
 
     crud.remove_user(db, dbuser)
     for proxy in dbuser.proxies:
-        try:
-            xray.api.remove_inbound_user(tag=INBOUND_TAGS[proxy.type], email=username)
-        except xray.exc.EmailNotFoundError:
-            pass
+        for inbound in INBOUNDS[proxy.type]:
+            try:
+                xray.api.remove_inbound_user(tag=inbound['tag'], email=username)
+            except xray.exc.EmailNotFoundError:
+                pass
 
     logger.info(f"User \"{username}\" deleted")
     return {}
