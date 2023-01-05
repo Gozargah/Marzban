@@ -10,6 +10,7 @@ def review():
     now = datetime.utcnow().timestamp()
     for db in get_db():
         for user in get_users(db, status=UserStatus.active):
+
             limited = user.data_limit and user.used_traffic >= user.data_limit
             expired = user.expire and user.expire <= now
             if limited:
@@ -19,8 +20,8 @@ def review():
             else:
                 continue
 
-            for proxy_type in user.proxies:
-                for inbound in INBOUNDS[proxy_type]:
+            for proxy in user.proxies:
+                for inbound in INBOUNDS[proxy.type]:
                     try:
                         xray.api.remove_inbound_user(tag=inbound['tag'], email=user.username)
                     except xray.exc.EmailNotFoundError:
@@ -37,4 +38,4 @@ def review():
             logger.info(f"User \"{user.username}\" status changed to {status}")
 
 
-scheduler.add_job(review, 'interval', seconds=15)
+scheduler.add_job(review, 'interval', seconds=5)
