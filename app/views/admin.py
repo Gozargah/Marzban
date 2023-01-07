@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from app import app
 from app.models.admin import Admin, Token
 from app.utils.jwt import create_admin_token, current_admin
@@ -15,7 +13,7 @@ def is_admin(username: str, password: str):
         return False
 
 
-@app.post("/admin/token", tags=['Admin'], response_model=Token)
+@app.post("/api/admin/token/", tags=['Admin'], response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     if not is_admin(form_data.username, form_data.password):
         raise HTTPException(
@@ -30,6 +28,6 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     }
 
 
-@app.get("/admin", tags=['Admin'], response_model=Admin)
+@app.get("/api/admin/", tags=['Admin'], response_model=Admin)
 async def current_admin(admin: Admin = Depends(current_admin)):
     return {"username": admin}

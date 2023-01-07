@@ -1,18 +1,17 @@
 from datetime import datetime
-from typing import List, Union
+from typing import List
 
 import sqlalchemy
 from app import app, logger, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.user import UserCreate, UserModify, UserResponse, UserStatus
-from app.utils.jwt import current_admin, get_subscription_payload
-from app.utils.share import get_clash_sub, get_v2ray_sub
+from app.utils.jwt import current_admin
 from app.xray import INBOUNDS
-from fastapi import Depends, Header, HTTPException, Response
+from fastapi import Depends, HTTPException
 
 
-@app.post("/user", tags=['User'], response_model=UserResponse)
+@app.post("/api/user/", tags=['User'], response_model=UserResponse)
 def add_user(new_user: UserCreate,
              db: Session = Depends(get_db),
              admin: Admin = Depends(current_admin)):
@@ -48,7 +47,7 @@ def add_user(new_user: UserCreate,
     return dbuser
 
 
-@app.get("/user/{username}", tags=['User'], response_model=UserResponse)
+@app.get("/api/user/{username}/", tags=['User'], response_model=UserResponse)
 def get_user(username: str,
              db: Session = Depends(get_db),
              admin: Admin = Depends(current_admin)):
@@ -62,7 +61,7 @@ def get_user(username: str,
     return dbuser
 
 
-@app.put("/user/{username}", tags=['User'], response_model=UserResponse)
+@app.put("/api/user/{username}/", tags=['User'], response_model=UserResponse)
 def modify_user(username: str,
                 modified_user: UserModify,
                 db: Session = Depends(get_db),
@@ -115,7 +114,7 @@ def modify_user(username: str,
     return user
 
 
-@app.delete("/user/{username}", tags=['User'])
+@app.delete("/api/user/{username}/", tags=['User'])
 def remove_user(username: str,
                 db: Session = Depends(get_db),
                 admin: Admin = Depends(current_admin)):
@@ -139,7 +138,7 @@ def remove_user(username: str,
     return {}
 
 
-@app.get("/users", tags=['User'], response_model=List[UserResponse])
+@app.get("/api/users/", tags=['User'], response_model=List[UserResponse])
 def get_users(offset: int = None,
               limit: int = None,
               username: str = None,
@@ -151,32 +150,3 @@ def get_users(offset: int = None,
     """
 
     return crud.get_users(db, offset, limit, username, status)
-
-
-@app.get("/sub/{token}", tags=['User'])
-def user_subcription(token: str,
-                     db: Session = Depends(get_db),
-                     user_agent: Union[str, None] = Header(default=None)):
-    """
-    Subscription link, V2ray and Clash supported
-    """
-
-    application = user_agent.split('/')[0]
-
-    sub = get_subscription_payload(token)
-    if not sub:
-        return Response(status_code=204)
-
-    dbuser = crud.get_user(db, sub['username'])
-    if not dbuser or dbuser.created_at > sub['created_at']:
-        return Response(status_code=204)
-    user = UserResponse.from_orm(dbuser)
-
-    if application.startswith('Clash'):
-        conf = get_clash_sub(user.username, user.proxies).to_yaml()
-        return Response(content=conf, media_type="text/yaml",
-                        headers={"content-disposition": f'attachment; filename="{user.username}"'})
-    else:
-        conf = get_v2ray_sub(user.links)
-        return Response(content=conf, media_type="text/plain",
-                        headers={"content-disposition": f'attachment; filename="{user.username}"'})

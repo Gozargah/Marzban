@@ -9,7 +9,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/admin/token")  # Admin view url
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/admin/token")  # Admin view url
 
 global JWT_SECRET_KEY
 

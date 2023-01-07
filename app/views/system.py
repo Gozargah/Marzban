@@ -9,7 +9,7 @@ from app.utils.system import memory_usage
 from app.utils.jwt import current_admin
 
 
-@app.get("/system", tags=["System"], response_model=SystemStats)
+@app.get("/api/system/", tags=["System"], response_model=SystemStats)
 def system_stats(db: Session = Depends(get_db), admin: Admin = Depends(current_admin)):
     mem = memory_usage()
     system = crud.get_system_usage(db)
