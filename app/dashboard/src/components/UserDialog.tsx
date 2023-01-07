@@ -201,7 +201,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       type="text"
                       borderRadius="6px"
                       error={form.formState.errors.username?.message}
-                      disabled={disabled}
+                      disabled={disabled || isEditing}
                       {...form.register("username")}
                     />
                   </FormControl>

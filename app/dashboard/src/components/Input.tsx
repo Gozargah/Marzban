@@ -109,6 +109,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             outline: "2px solid",
             outlineColor: "primary.200",
           }}
+          bg={disabled ? "gray.100" : "transparent"}
+          _dark={{ bg: disabled ? "gray.600" : "transparent" }}
         >
           {startAdornment && <InputLeftAddon>{startAdornment}</InputLeftAddon>}
           <Wrapper {...wrapperProps}>
