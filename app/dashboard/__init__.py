@@ -19,7 +19,10 @@ def build():
         cwd=base_dir
     )
     proc.wait()
-    os.symlink(build_dir / 'index.html', build_dir / '404.html')
+    with open(build_dir / 'index.html', 'r') as file:
+        html = file.read()
+    with open(build_dir / '404.html', 'w') as file:
+        file.write(html)
 
 
 def run_dev():
