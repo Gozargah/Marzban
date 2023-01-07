@@ -7,6 +7,7 @@ export const $fetch = ohMyFetch.create({
 
 export const fetcher = (url: string, ops: FetchOptions<"json"> = {}) => {
   const token = getAuthToken();
+  if (url.at(-1) !== "/") url = url + "/";
   if (token) {
     ops["headers"] = {
       ...(ops?.headers || {}),

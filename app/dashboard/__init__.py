@@ -15,7 +15,7 @@ build_dir = base_dir / 'build'
 def build():
     proc = subprocess.Popen(
         ['npm', 'run', 'build', '--', '--base', path,  '--outDir', build_dir],
-        env={**os.environ, 'VITE_BASE_API': '/'},
+        env={**os.environ, 'VITE_BASE_API': '/api/'},
         cwd=base_dir
     )
     proc.wait()
@@ -28,7 +28,7 @@ def build():
 def run_dev():
     proc = subprocess.Popen(
         ['npm', 'run', 'dev', '--', '--base', path, '--clearScreen', 'false'],
-        env={**os.environ, 'VITE_BASE_API': f'http://127.0.0.1:{UVICORN_PORT}'},
+        env={**os.environ, 'VITE_BASE_API': f'http://127.0.0.1:{UVICORN_PORT}/api/'},
         cwd=base_dir
     )
 
