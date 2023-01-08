@@ -72,7 +72,7 @@ const formatUser = (user: User): FormType => {
   };
 };
 const getDefaultValues = (): FormType => ({
-  proxies: ["vmess", "vless", "trojan", "shadowsocks"],
+  proxies: ["vmess", "vless", "trojan"],
   data_limit: null,
   expire: null,
   username: "",

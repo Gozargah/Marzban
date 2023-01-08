@@ -35,3 +35,13 @@ table thead {
     border-top-right-radius: 8px;
   }
 }
+.slick-prev {
+  left: -40px;
+}
+.slick-next {
+  right: -40px;
+}
+.slick-prev,
+.slick-next {
+  z-index: 100;
+}
