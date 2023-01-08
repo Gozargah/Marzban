@@ -11,7 +11,7 @@ from app.xray import INBOUNDS
 from fastapi import Depends, HTTPException
 
 
-@app.post("/api/user/", tags=['User'], response_model=UserResponse)
+@app.post("/api/user", tags=['User'], response_model=UserResponse)
 def add_user(new_user: UserCreate,
              db: Session = Depends(get_db),
              admin: Admin = Depends(current_admin)):
@@ -47,7 +47,7 @@ def add_user(new_user: UserCreate,
     return dbuser
 
 
-@app.get("/api/user/{username}/", tags=['User'], response_model=UserResponse)
+@app.get("/api/user/{username}", tags=['User'], response_model=UserResponse)
 def get_user(username: str,
              db: Session = Depends(get_db),
              admin: Admin = Depends(current_admin)):
@@ -61,7 +61,7 @@ def get_user(username: str,
     return dbuser
 
 
-@app.put("/api/user/{username}/", tags=['User'], response_model=UserResponse)
+@app.put("/api/user/{username}", tags=['User'], response_model=UserResponse)
 def modify_user(username: str,
                 modified_user: UserModify,
                 db: Session = Depends(get_db),
@@ -114,7 +114,7 @@ def modify_user(username: str,
     return user
 
 
-@app.delete("/api/user/{username}/", tags=['User'])
+@app.delete("/api/user/{username}", tags=['User'])
 def remove_user(username: str,
                 db: Session = Depends(get_db),
                 admin: Admin = Depends(current_admin)):
@@ -138,7 +138,7 @@ def remove_user(username: str,
     return {}
 
 
-@app.get("/api/users/", tags=['User'], response_model=List[UserResponse])
+@app.get("/api/users", tags=['User'], response_model=List[UserResponse])
 def get_users(offset: int = None,
               limit: int = None,
               username: str = None,

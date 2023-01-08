@@ -13,7 +13,7 @@ def is_admin(username: str, password: str):
         return False
 
 
-@app.post("/api/admin/token/", tags=['Admin'], response_model=Token)
+@app.post("/api/admin/token", tags=['Admin'], response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     if not is_admin(form_data.username, form_data.password):
         raise HTTPException(
@@ -28,6 +28,6 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     }
 
 
-@app.get("/api/admin/", tags=['Admin'], response_model=Admin)
+@app.get("/api/admin", tags=['Admin'], response_model=Admin)
 async def current_admin(admin: Admin = Depends(current_admin)):
     return {"username": admin}
