@@ -151,7 +151,7 @@ export const DashboardProvider: FC<DashboardProviderProps> = ({ children }) => {
   }, []);
 
   const createUser = useCallback((body: UserCreate) => {
-    return fetch(`/user/`, { method: "POST", body }).then(() => {
+    return fetch(`/user`, { method: "POST", body }).then(() => {
       onEditingUser(null);
       refetchUsers();
       globalMutate("/system");
