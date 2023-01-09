@@ -5,6 +5,7 @@ import sqlalchemy
 from app import app, logger, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
+from app.models.proxy import ProxyTypes
 from app.models.user import UserCreate, UserModify, UserResponse, UserStatus
 from app.utils.jwt import current_admin
 from app.xray import INBOUNDS
@@ -99,15 +100,14 @@ def modify_user(username: str,
 
     user = UserResponse.from_orm(dbuser)
 
-    for proxy_type in user.proxies:
-        account = user.get_account(proxy_type)
+    for proxy_type in ProxyTypes:
         for inbound in INBOUNDS[proxy_type]:
             try:
                 xray.api.remove_inbound_user(tag=inbound['tag'], email=user.username)
             except xray.exc.EmailNotFoundError:
                 pass
-
-            if user.status == UserStatus.active:
+            if proxy_type in user.proxies and user.status == UserStatus.active:
+                account = user.get_account(proxy_type)
                 xray.api.add_inbound_user(tag=inbound['tag'], user=account)
 
     logger.info(f"User \"{user.username}\" modified")
