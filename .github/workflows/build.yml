@@ -20,9 +20,11 @@ jobs:
           node-version: 16.17.0
 
       - name: Install dependencies
-        run: npm i
+        working-directory: ./app/dashboard
+        run: npm ci
 
       - name: Build project
+        working-directory: ./app/dashboard
         run: npm run build --if-present
 
       - name: Commit & Push build
