@@ -1,0 +1,61 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - 'dev'
+
+jobs:
+  build-docker-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup nodejs
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.17.0
+
+      - name: Install dependencies
+        working-directory: ./app/dashboard
+        run: npm ci
+
+      - name: Build project
+        working-directory: ./app/dashboard
+        run: VITE_BASE_API=/api/ npm run build --if-present -- --outDir build --base '/dashboard/'
+
+      - name: Create 404.html
+        working-directory: ./app/dashboard
+        run: cp ./build/index.html ./build/404.html
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            gozargah/marzban:latest
+            gozargah/marzban:${{github.ref_name}}
+            ghcr.io/gozargah/marzban:latest
+            ghcr.io/gozargah/marzban:${{github.ref_name}}
