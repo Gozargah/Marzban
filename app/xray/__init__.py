@@ -88,7 +88,7 @@ for inbound in config['inbounds']:
 
     INBOUNDS[inbound['protocol']].append(settings)
 
-print(INBOUNDS)
+
 __all__ = [
     "config",
     "core",

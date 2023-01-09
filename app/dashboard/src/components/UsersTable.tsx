@@ -267,7 +267,11 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                     }}
                   >
                     <CopyToClipboard
-                      text={user.subscription_url}
+                      text={
+                        user.subscription_url.startsWith('/')
+                          ? window.location.origin + user.subscription_url
+                          : user.subscription_url
+                      }
                       onCopy={() => {
                         setCopied([i, 0, true]);
                       }}

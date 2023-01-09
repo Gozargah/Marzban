@@ -35,11 +35,10 @@ XRAY_HOSTS = [
         "remark": h.rsplit('@', 1)[0],
         "hostname": h.rsplit('@', 1)[1]
     }
-    for h in filter(bool, config("XRAY_HOSTS", default=f'Marz@{SERVER_IP}').split("\n"))
+    for h in filter(bool, config("XRAY_HOSTS", default=f'🚀 Marz@{SERVER_IP}').split("\n"))
 ]
 XRAY_EXCLUDE_INBOUND_TAGS = config("XRAY_EXCLUDE_INBOUND_TAGS", default='').split()
-XRAY_SUBSCRIPTION_URL_PREFIX = config("XRAY_SUBSCRIPTION_URL_PREFIX",
-                                      default=f'http://{SERVER_IP}:{UVICORN_PORT}').strip('/')
+XRAY_SUBSCRIPTION_URL_PREFIX = config("XRAY_SUBSCRIPTION_URL_PREFIX", default="").strip("/")
 
 
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = config("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=1440)
