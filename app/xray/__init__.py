@@ -9,8 +9,8 @@ from xray_api import exceptions
 from xray_api import exceptions as exc
 from xray_api import types
 
-from config import (XRAY_ASSETS_PATH, XRAY_EXECUTABLE_PATH,
-                    XRAY_FALLBACK_INBOUND_TAG, XRAY_JSON)
+from config import (XRAY_ASSETS_PATH, XRAY_EXCLUDE_INBOUND_TAGS,
+                    XRAY_EXECUTABLE_PATH, XRAY_FALLBACK_INBOUND_TAG, XRAY_JSON)
 
 # Search for a free API port from 8080
 try:
@@ -29,7 +29,10 @@ api = XRay(config.api_host, config.api_port)
 # protocol: list_of_inbounds
 # inbound contains tag, port, stream settings
 # stream settings contains net, tls, sni, path
-INBOUNDS: Dict[str, list] = {i['protocol']: [] for i in config['inbounds']}
+INBOUNDS: Dict[str, list] = {
+    i['protocol']: []
+    for i in filter(lambda i: i.get('tag') not in XRAY_EXCLUDE_INBOUND_TAGS, config['inbounds'])
+}
 FALLBACK_INBOUND = config.get_inbound(XRAY_FALLBACK_INBOUND_TAG)
 
 
@@ -40,6 +43,9 @@ for inbound in config['inbounds']:
         settings['tag'] = inbound['tag']
     except KeyError:
         raise ValueError("one inbound have no tag")
+
+    if inbound['tag'] in XRAY_EXCLUDE_INBOUND_TAGS:
+        continue
 
     try:
         settings['port'] = inbound['port']
@@ -82,7 +88,7 @@ for inbound in config['inbounds']:
 
     INBOUNDS[inbound['protocol']].append(settings)
 
-
+print(INBOUNDS)
 __all__ = [
     "config",
     "core",

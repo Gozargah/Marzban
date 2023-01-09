@@ -37,6 +37,7 @@ XRAY_HOSTS = [
     }
     for h in filter(bool, config("XRAY_HOSTS", default=f'Marz@{SERVER_IP}').split("\n"))
 ]
+XRAY_EXCLUDE_INBOUND_TAGS = config("XRAY_EXCLUDE_INBOUND_TAGS", default='').split()
 XRAY_SUBSCRIPTION_URL_PREFIX = config("XRAY_SUBSCRIPTION_URL_PREFIX",
                                       default=f'http://{SERVER_IP}:{UVICORN_PORT}').strip('/')
 
