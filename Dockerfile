@@ -1,10 +1,12 @@
-FROM python:3.10-alpine
+FROM python:3.10-slim
 
 ENV PYTHONUNBUFFERED 1
 
 WORKDIR /code
 
-RUN apk add bash build-base linux-headers
+RUN  apt-get update \
+    && apt-get install -y wget \
+    && rm -rf /var/lib/apt/lists/*
 RUN wget -O - https://raw.githubusercontent.com/teddysun/across/master/docker/xray/xray.sh | bash \
     && ln -s /usr/bin/xray /usr/local/bin/xray \
     && mkdir -p /usr/local/share/xray/ \
