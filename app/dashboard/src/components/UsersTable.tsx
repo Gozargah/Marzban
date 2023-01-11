@@ -1,5 +1,4 @@
 import {
-  Badge,
   Box,
   Button,
   chakra,
@@ -8,7 +7,6 @@ import {
   Slider,
   SliderFilledTrack,
   SliderProps,
-  SliderThumb,
   SliderTrack,
   Table,
   TableProps,
@@ -23,141 +21,28 @@ import {
 import {
   CheckIcon,
   ClipboardIcon,
-  ExclamationCircleIcon,
   LinkIcon,
-  NoSymbolIcon,
   QrCodeIcon,
-  WifiIcon,
 } from "@heroicons/react/24/outline";
 import { FC, useEffect, useState } from "react";
 import { ReactComponent as AddFileIcon } from "assets/add_file.svg";
 import { formatBytes } from "utils/formatByte";
-import { UserStatus as UserStatusType } from "types/User";
 import { useDashboard } from "contexts/DashboardContext";
-import { relativeExpiryDate } from "utils/dateFormatter";
 import CopyToClipboard from "react-copy-to-clipboard";
+import { UserBadge } from "./UserBadge";
 
 const EmptySectionIcon = chakra(AddFileIcon);
 
-const CopyIcon = chakra(ClipboardIcon, {
+const iconProps = {
   baseStyle: {
     w: 5,
     h: 5,
-  },
-});
-
-const CopiedIcon = chakra(CheckIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-  },
-});
-
-const SubscriptionLinkIcon = chakra(LinkIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-  },
-});
-
-const QRIcon = chakra(QrCodeIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-  },
-});
-
-const ActiveStatusIcon = chakra(WifiIcon, {
-  baseStyle: {
-    strokeWidth: "2px",
-    w: 4,
-    h: 4,
-  },
-});
-const LimitedIcon = chakra(NoSymbolIcon, {
-  baseStyle: {
-    strokeWidth: "2px",
-    w: 4,
-    h: 4,
-  },
-});
-
-const ExpiredIcon = chakra(ExclamationCircleIcon, {
-  baseStyle: {
-    strokeWidth: "2px",
-    w: 4,
-    h: 4,
-  },
-});
-const status: {
-  [key: string]: {
-    statusColor: string;
-    bandWidthColor: string;
-  };
-} = {
-  active: {
-    statusColor: "green",
-    bandWidthColor: "green",
-  },
-  expired: {
-    statusColor: "gray",
-    bandWidthColor: "gray",
-  },
-  limited: {
-    statusColor: "red",
-    bandWidthColor: "red",
   },
 };
-type UserStatusProps = {
-  expiryDate?: number | null;
-  status: UserStatusType;
-};
-const UserStatus: FC<UserStatusProps> = ({
-  expiryDate,
-  status: userStatus,
-}) => {
-  let date = relativeExpiryDate(expiryDate);
-  return (
-    <>
-      <Badge
-        colorScheme={status[userStatus].statusColor}
-        rounded="full"
-        display="inline-flex"
-        px={3}
-        py={1}
-        experimental_spaceX={2}
-        alignItems="center"
-      >
-        {userStatus === "active" && <ActiveStatusIcon />}
-        {userStatus === "limited" && <LimitedIcon />}
-        {userStatus === "expired" && <ExpiredIcon />}
-        <Text
-          textTransform="capitalize"
-          fontSize=".875rem"
-          lineHeight="1.25rem"
-          fontWeight="medium"
-          letterSpacing="tighter"
-        >
-          {userStatus}
-        </Text>
-      </Badge>
-      {expiryDate && (
-        <Text
-          display="inline-block"
-          fontSize="xs"
-          fontWeight="medium"
-          ml="2"
-          color="gray.600"
-          _dark={{
-            color: "gray.400",
-          }}
-        >
-          {date}
-        </Text>
-      )}
-    </>
-  );
-};
+const CopyIcon = chakra(ClipboardIcon, iconProps);
+const CopiedIcon = chakra(CheckIcon, iconProps);
+const SubscriptionLinkIcon = chakra(LinkIcon, iconProps);
+const QRIcon = chakra(QrCodeIcon, iconProps);
 
 type UsageSliderProps = {
   used: number;
@@ -240,7 +125,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               >
                 <Td minW="150px">{user.username}</Td>
                 <Td width="350px">
-                  <UserStatus expiryDate={user.expire} status={user.status} />
+                  <UserBadge expiryDate={user.expire} status={user.status} />
                 </Td>
                 <Td width="300px" minW="200px">
                   <UsageSlider
