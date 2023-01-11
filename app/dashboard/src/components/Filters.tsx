@@ -4,17 +4,25 @@ import {
   Grid,
   GridItem,
   HStack,
+  IconButton,
   Input,
   InputGroup,
   InputLeftElement,
   InputRightElement,
   Spinner,
 } from "@chakra-ui/react";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
 import React, { FC } from "react";
 
 const SearchIcon = chakra(MagnifyingGlassIcon, {
+  baseStyle: {
+    w: 4,
+    h: 4,
+  },
+});
+
+const ClearIcon = chakra(XMarkIcon, {
   baseStyle: {
     w: 4,
     h: 4,
@@ -29,6 +37,12 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
     onFilterChange({
       ...filters,
       search: e.target.value,
+    });
+  };
+  const clear = () => {
+    onFilterChange({
+      ...filters,
+      search: "",
     });
   };
   return (
@@ -46,15 +60,24 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
           <Input
             type="tel"
             placeholder="Search"
-            defaultValue={filters.search || ""}
+            value={filters.search || ""}
             borderColor="light-border"
             onChange={onChange}
           />
-          {loading && (
-            <InputRightElement>
-              <Spinner size="xs" />
-            </InputRightElement>
-          )}
+
+          <InputRightElement>
+            {loading && <Spinner size="xs" />}
+            {filters.search.length > 0 && (
+              <IconButton
+                onClick={clear}
+                aria-label="clear"
+                size="xs"
+                variant="ghost"
+              >
+                <ClearIcon />
+              </IconButton>
+            )}
+          </InputRightElement>
         </InputGroup>
       </GridItem>
       {/* <GridItem colSpan={2}>
