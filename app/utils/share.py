@@ -168,7 +168,7 @@ class ClashConfiguration(object):
         d = copy.deepcopy(self.data)
         d['proxy-groups'].append({'name': '♻️ Automatic',
                                   'type': 'url-test',
-                                  'url': 'http://cp.cloudflare.com/',
+                                  'url': 'http://www.gstatic.com/generate_204',
                                   'interval': 300,
                                   'proxies': self.proxy_remarks})
         return yaml.dump(d, allow_unicode=True)
