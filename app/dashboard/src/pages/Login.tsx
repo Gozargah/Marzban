@@ -21,16 +21,18 @@ import { Footer } from "components/Footer";
 import { Input } from "components/Input";
 import { fetch } from "service/http";
 import { setAuthToken } from "utils/authStorage";
+import { ReactComponent as Logo } from "assets/logo.svg";
 
 const schema = z.object({
   username: z.string().min(1, "This field is required"),
   password: z.string().min(1, "This field is required"),
 });
 
-export const LogoIcon = chakra(BoltIcon, {
+export const LogoIcon = chakra(Logo, {
   baseStyle: {
-    w: 10,
-    h: 10,
+    strokeWidth: "10px",
+    w: 12,
+    h: 12,
   },
 });
 
@@ -69,7 +71,7 @@ export const Login: FC = () => {
       .finally(setLoading.bind(null, false));
   };
   return (
-    <VStack justifyContent="space-between" minH="100vh">
+    <VStack justifyContent="space-between" minH="100vh" p="6">
       <HStack w="full" justifyContent="center" alignItems="center">
         <Box w="full" maxW="340px" mt="6">
           <VStack alignItems="center" w="full">
