@@ -15,6 +15,7 @@ RUN wget -O - https://raw.githubusercontent.com/teddysun/across/master/docker/xr
 
 COPY . /code
 
+RUN pip install --no-cache-dir --upgrade pyproject-toml
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 CMD ["bash", "-c", "alembic upgrade head; python main.py"]
