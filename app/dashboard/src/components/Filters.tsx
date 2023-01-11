@@ -11,28 +11,30 @@ import {
   InputRightElement,
   Spinner,
 } from "@chakra-ui/react";
-import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowPathIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import classNames from "classnames";
 import { useDashboard } from "contexts/DashboardContext";
 import React, { FC } from "react";
 
-const SearchIcon = chakra(MagnifyingGlassIcon, {
+const iconProps = {
   baseStyle: {
     w: 4,
     h: 4,
   },
-});
+};
 
-const ClearIcon = chakra(XMarkIcon, {
-  baseStyle: {
-    w: 4,
-    h: 4,
-  },
-});
+const SearchIcon = chakra(MagnifyingGlassIcon, iconProps);
+const ClearIcon = chakra(XMarkIcon, iconProps);
+const ReloadIcon = chakra(ArrowPathIcon, iconProps);
 
 export type FilterProps = {} & BoxProps;
 
 export const Filters: FC<FilterProps> = ({ ...props }) => {
-  const { loading, filters, onFilterChange } = useDashboard();
+  const { loading, filters, onFilterChange, refetchUsers } = useDashboard();
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onFilterChange({
       ...filters,
@@ -80,15 +82,22 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
           </InputRightElement>
         </InputGroup>
       </GridItem>
-      {/* <GridItem colSpan={2}>
-        <HStack justifyContent="flex-end"> */}
-      {/* <Select placeholder="Filter by status" w="auto">
-            <option value="option1">Active</option>
-            <option value="option2">Expired</option>
-            <option value="option3">Limited</option>
-          </Select> */}
-      {/* </HStack>
-      </GridItem> */}
+      <GridItem colSpan={2}>
+        <HStack justifyContent="flex-end" alignItems="center" h="full">
+          <IconButton
+            aria-label="refresh users"
+            disabled={loading}
+            onClick={refetchUsers}
+            size="sm"
+          >
+            <ReloadIcon
+              className={classNames({
+                "animate-spin": loading,
+              })}
+            />
+          </IconButton>
+        </HStack>
+      </GridItem>
     </Grid>
   );
 };
