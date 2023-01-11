@@ -4,8 +4,8 @@ ENV PYTHONUNBUFFERED 1
 
 WORKDIR /code
 
-RUN  apt-get update \
-    && apt-get install -y wget \
+RUN apt-get update \
+    && apt-get install -y wget gcc python3-dev \
     && rm -rf /var/lib/apt/lists/*
 RUN wget -O - https://raw.githubusercontent.com/teddysun/across/master/docker/xray/xray.sh | bash \
     && ln -s /usr/bin/xray /usr/local/bin/xray \
@@ -15,7 +15,8 @@ RUN wget -O - https://raw.githubusercontent.com/teddysun/across/master/docker/xr
 
 COPY . /code
 
-RUN pip install --no-cache-dir --upgrade pyproject-toml
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+
+RUN apt-get remove -y wget gcc python3-dev
 
 CMD ["bash", "-c", "alembic upgrade head; python main.py"]
