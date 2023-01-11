@@ -169,7 +169,7 @@ class ClashConfiguration(object):
         d['proxy-groups'].append({'name': '♻️ Automatic',
                                   'type': 'url-test',
                                   'url': 'http://cp.cloudflare.com/',
-                                  'interval': 60,
+                                  'interval': 300,
                                   'proxies': self.proxy_remarks})
         return yaml.dump(d, allow_unicode=True)
 
