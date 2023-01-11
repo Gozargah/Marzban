@@ -27,7 +27,6 @@ import {
   LinkIcon,
   NoSymbolIcon,
   QrCodeIcon,
-  TrashIcon,
   WifiIcon,
 } from "@heroicons/react/24/outline";
 import { FC, useEffect, useState } from "react";
@@ -62,13 +61,6 @@ const SubscriptionLinkIcon = chakra(LinkIcon, {
 });
 
 const QRIcon = chakra(QrCodeIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-  },
-});
-
-const DeleteIcon = chakra(TrashIcon, {
   baseStyle: {
     w: 5,
     h: 5,
@@ -213,7 +205,6 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
   const {
     filteredUsers: users,
     users: totalUsers,
-    onDeletingUser,
     onEditingUser,
     setQRCode,
   } = useDashboard();
@@ -268,7 +259,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   >
                     <CopyToClipboard
                       text={
-                        user.subscription_url.startsWith('/')
+                        user.subscription_url.startsWith("/")
                           ? window.location.origin + user.subscription_url
                           : user.subscription_url
                       }
@@ -350,25 +341,6 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                         }}
                       >
                         <QRIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip label="Delete" placement="top">
-                      <IconButton
-                        aria-label="delete"
-                        p={2}
-                        bg="transparent"
-                        _dark={{
-                          _hover: {
-                            bg: "gray.700",
-                          },
-                        }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          onDeletingUser(user);
-                        }}
-                      >
-                        <DeleteIcon />
                       </IconButton>
                     </Tooltip>
                   </HStack>
