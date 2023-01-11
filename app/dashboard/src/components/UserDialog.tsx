@@ -20,6 +20,7 @@ import {
   SimpleGrid,
   Spinner,
   Text,
+  Tooltip,
   useToast,
   VStack,
 } from "@chakra-ui/react";
@@ -366,13 +367,15 @@ export const UserDialog: FC<UserDialogProps> = () => {
               <HStack>
                 {isEditing && (
                   <>
-                    <IconButton
-                      aria-label="Delete"
-                      size="sm"
-                      onClick={() => onDeletingUser(editingUser)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                    <Tooltip label="Delete" placement="top">
+                      <IconButton
+                        aria-label="Delete"
+                        size="sm"
+                        onClick={() => onDeletingUser(editingUser)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
                   </>
                 )}
               </HStack>
