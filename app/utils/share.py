@@ -234,21 +234,23 @@ class ClashConfiguration(object):
                   sni='',
                   tls=False):
         remark = self._remark_validation(remark)
-        self.data['proxies'].append({'name': remark,
-                                     'type': 'vmess',
-                                     'server': address,
-                                     'port': port,
-                                     'uuid': id,
-                                     'alterId': 0,
-                                     'cipher': 'auto',
-                                     'udp': True,
-                                     'tls': tls,
-                                     'servername': sni,
-                                     'network': net,
-                                     f'{net}-opts': {
-                                         'path': path,
-                                         'host': host
-                                     }})
+        node = {'name': remark,
+                'type': 'vmess',
+                'server': address,
+                'port': port,
+                'uuid': id,
+                'alterId': 0,
+                'cipher': 'auto',
+                'udp': True,
+                f'{net}-opts': {
+                    'path': path
+                }}
+        if tls is True:
+            node.update({'tls': tls,
+                         'servername': sni,
+                         'network': net})
+            node[f'{net}-opts']['headers'] = {'Host': host}
+        self.data['proxies'].append(node)
 
     def add_trojan(self,
                    remark: str,
