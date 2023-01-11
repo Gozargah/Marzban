@@ -101,7 +101,7 @@ def modify_user(username: str,
     user = UserResponse.from_orm(dbuser)
 
     for proxy_type in ProxyTypes:
-        for inbound in INBOUNDS[proxy_type]:
+        for inbound in INBOUNDS.get(proxy_type, []):
             try:
                 xray.api.remove_inbound_user(tag=inbound['tag'], email=user.username)
             except xray.exc.EmailNotFoundError:
