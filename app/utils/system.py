@@ -1,7 +1,8 @@
-import os
 import secrets
 import socket
 from dataclasses import dataclass
+
+import psutil
 
 
 @dataclass
@@ -12,8 +13,8 @@ class MemoryStat():
 
 
 def memory_usage() -> MemoryStat:
-    total, used, free = map(int, os.popen('free -t -b').readlines()[-1].split()[1:])
-    return MemoryStat(total=total, used=used, free=free)
+    mem = psutil.virtual_memory()
+    return MemoryStat(total=mem.total, used=mem.used, free=mem.free)
 
 
 def random_password() -> str:

@@ -26,6 +26,7 @@ MarkupSafe==2.1.1
 packaging==21.3
 passlib==1.7.4
 protobuf==3.20.3
+psutil==5.9.4
 pyasn1==0.4.8
 pycparser==2.21
 pydantic==1.10.2
