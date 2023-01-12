@@ -13,13 +13,16 @@ from config import (
 if __name__ == "__main__":
     # Do NOT change workers count for now
     # multi-workers support isn't implemented yet for APScheduler and XRay module
-    uvicorn.run(
-        "main:app",
-        host=('127.0.0.1' if DEBUG else UVICORN_HOST),
-        port=UVICORN_PORT,
-        uds=(None if DEBUG else UVICORN_UDS),
-        ssl_certfile=UVICORN_SSL_CERTFILE,
-        ssl_keyfile=UVICORN_SSL_KEYFILE,
-        workers=1,
-        reload=DEBUG
-    )
+    try:
+        uvicorn.run(
+            "main:app",
+            host=('127.0.0.1' if DEBUG else UVICORN_HOST),
+            port=UVICORN_PORT,
+            uds=(None if DEBUG else UVICORN_UDS),
+            ssl_certfile=UVICORN_SSL_CERTFILE,
+            ssl_keyfile=UVICORN_SSL_KEYFILE,
+            workers=1,
+            reload=DEBUG
+        )
+    except FileNotFoundError:  # to prevent error on removing unix sock
+        pass
