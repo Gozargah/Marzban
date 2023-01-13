@@ -1,18 +1,4 @@
 from sqlalchemy.orm import Session
-
-from .models import User, System, JWT
-from .crud import (
-    get_user,
-    get_user_by_id,
-    get_users,
-    create_user,
-    remove_user,
-    update_user,
-    update_user_status,
-    get_system_usage,
-    get_jwt_secret_key
-)
-
 from .base import Base, SessionLocal, engine  # noqa
 
 
@@ -23,6 +9,20 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+from .models import User, System, JWT  # noqa
+from .crud import (  # noqa
+    get_user,
+    get_user_by_id,
+    get_users,
+    create_user,
+    remove_user,
+    update_user,
+    update_user_status,
+    get_system_usage,
+    get_jwt_secret_key
+)
 
 
 __all__ = [

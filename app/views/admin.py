@@ -1,22 +1,23 @@
 from typing import List
+
 import sqlalchemy
 from app import app
 from app.db import Session, crud, get_db
 from app.models.admin import Admin, AdminCreate, AdminInDB, AdminModify, Token
-from app.utils.jwt import create_admin_token, current_admin
+from app.utils.jwt import create_admin_token
 from config import SUDOERS
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 
-def is_sudo(username: str, password: str):
+def authenticate_sudo(username: str, password: str):
     try:
         return password == SUDOERS[username]
     except KeyError:
         return False
 
 
-def is_admin(db: Session, username: str, password: str):
+def authenticate_admin(db: Session, username: str, password: str):
     dbadmin = crud.get_admin(db, username)
     if not dbadmin:
         return False
@@ -27,17 +28,11 @@ def is_admin(db: Session, username: str, password: str):
 @app.post("/api/admin/token", tags=['Admin'], response_model=Token)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
                            db: Session = Depends(get_db)):
-    if is_sudo(form_data.username, form_data.password):
-        return {
-            "access_token": create_admin_token(username=''),
-            "token_type": "bearer"
-        }
+    if authenticate_sudo(form_data.username, form_data.password):
+        return Token(access_token=create_admin_token(form_data.username, is_sudo=True))
 
-    if is_admin(db, form_data.username, form_data.password):
-        return {
-            "access_token": create_admin_token(username=form_data.username),
-            "token_type": "bearer"
-        }
+    if authenticate_admin(db, form_data.username, form_data.password):
+        return Token(access_token=create_admin_token(form_data.username))
 
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -46,13 +41,13 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
     )
 
 
-@app.post("/api/admin", tags=['Admin'], response_model=Admin)
+@ app.post("/api/admin", tags=['Admin'], response_model=Admin)
 def create_admin(new_admin: AdminCreate,
                  db: Session = Depends(get_db),
-                 admin: str = Depends(current_admin)):
+                 admin: Admin = Depends(Admin.get_current)):
 
-    if admin != '':  # isn't sudo
-        raise HTTPException(status_code=403, detail="You can't create admin")
+    if not admin.is_sudo:
+        raise HTTPException(status_code=403, detail="You're not allowed")
 
     try:
         dbadmin = crud.create_admin(db, new_admin)
@@ -62,13 +57,13 @@ def create_admin(new_admin: AdminCreate,
     return dbadmin
 
 
-@app.put("/api/admin/{username}", tags=['Admin'], response_model=Admin)
+@ app.put("/api/admin/{username}", tags=['Admin'], response_model=Admin)
 def modify_admin(username: str,
                  modified_admin: AdminModify,
                  db: Session = Depends(get_db),
-                 admin: str = Depends(current_admin)):
-    if admin != '' or admin != username:  # isn't sudo
-        raise HTTPException(status_code=403, detail="You are not allowed to do this")
+                 admin: Admin = Depends(Admin.get_current)):
+    if not admin.is_sudo or admin.username != username:
+        raise HTTPException(status_code=403, detail="You're not allowed")
 
     dbadmin = crud.get_admin(db, username)
     if not dbadmin:
@@ -78,12 +73,12 @@ def modify_admin(username: str,
     return dbadmin
 
 
-@app.delete("/api/admin/{username}", tags=['Admin'])
+@ app.delete("/api/admin/{username}", tags=['Admin'])
 def remove_admin(username: str,
                  db: Session = Depends(get_db),
-                 admin: str = Depends(current_admin)):
-    if admin != '':  # isn't sudo
-        raise HTTPException(status_code=403, detail="You can't remove admin")
+                 admin: Admin = Depends(Admin.get_current)):
+    if not admin.is_sudo:
+        raise HTTPException(status_code=403, detail="You're not allowed")
 
     dbadmin = crud.get_admin(db, username)
     if not dbadmin:
@@ -93,19 +88,19 @@ def remove_admin(username: str,
     return {}
 
 
-@app.get("/api/admin", tags=['Admin'], response_model=Admin)
-def get_current_admin(admin: str = Depends(current_admin)):
-    return Admin(username=admin)
+@ app.get("/api/admin", tags=['Admin'], response_model=Admin)
+def get_current_admin(admin: Admin = Depends(Admin.get_current)):
+    return admin
 
 
-@app.get("/api/admins", tags=['Admin'], response_model=List[Admin])
+@ app.get("/api/admins", tags=['Admin'], response_model=List[Admin])
 def get_admins(offset: int = None,
                limit: int = None,
                username: str = None,
                db: Session = Depends(get_db),
-               admin: str = Depends(current_admin)):
+               admin: Admin = Depends(Admin.get_current)):
 
-    if admin != '':  # isn't sudo
+    if not admin.is_sudo:
         raise HTTPException(status_code=403, detail="You're not allowed")
 
     return crud.get_admins(db, offset, limit, username)

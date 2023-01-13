@@ -4,9 +4,9 @@ from typing import List
 import sqlalchemy
 from app import app, logger, xray
 from app.db import Session, crud, get_db
+from app.models.admin import Admin
 from app.models.proxy import ProxyTypes
 from app.models.user import UserCreate, UserModify, UserResponse, UserStatus
-from app.utils.jwt import current_admin
 from app.xray import INBOUNDS
 from fastapi import Depends, HTTPException
 
@@ -14,7 +14,7 @@ from fastapi import Depends, HTTPException
 @app.post("/api/user", tags=['User'], response_model=UserResponse)
 def add_user(new_user: UserCreate,
              db: Session = Depends(get_db),
-             admin: str = Depends(current_admin)):
+             admin: Admin = Depends(Admin.get_current)):
     """
     Add a new user
 
@@ -31,8 +31,11 @@ def add_user(new_user: UserCreate,
         raise HTTPException(status_code=400, detail=f"Proxy type {exc.args[0]} not supported")
 
     try:
-        dbadmin = crud.get_admin(db, admin)
-        dbuser = crud.create_user(db, new_user, dbadmin)
+        if admin.is_sudo:
+            dbuser = crud.create_user(db, new_user)
+        else:
+            dbuser = crud.create_user(db, new_user,
+                                      admin=crud.get_admin(db, admin.username))
     except sqlalchemy.exc.IntegrityError:
         raise HTTPException(status_code=409, detail="User already exists")
 
@@ -51,13 +54,16 @@ def add_user(new_user: UserCreate,
 @app.get("/api/user/{username}", tags=['User'], response_model=UserResponse)
 def get_user(username: str,
              db: Session = Depends(get_db),
-             admin: str = Depends(current_admin)):
+             admin: Admin = Depends(Admin.get_current)):
     """
     Get users information
     """
     dbuser = crud.get_user(db, username)
     if not dbuser:
         raise HTTPException(status_code=404, detail="User not found")
+
+    if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
+        raise HTTPException(status_code=403, detail="You're not allowed")
 
     return dbuser
 
@@ -66,7 +72,7 @@ def get_user(username: str,
 def modify_user(username: str,
                 modified_user: UserModify,
                 db: Session = Depends(get_db),
-                admin: str = Depends(current_admin)):
+                admin: Admin = Depends(Admin.get_current)):
     """
     Modify a user
 
@@ -83,6 +89,9 @@ def modify_user(username: str,
     dbuser = crud.get_user(db, username)
     if not dbuser:
         raise HTTPException(status_code=404, detail="User not found")
+
+    if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
+        raise HTTPException(status_code=403, detail="You're not allowed")
 
     dbuser = crud.update_user(db, dbuser, modified_user)
 
@@ -117,7 +126,7 @@ def modify_user(username: str,
 @app.delete("/api/user/{username}", tags=['User'])
 def remove_user(username: str,
                 db: Session = Depends(get_db),
-                admin: str = Depends(current_admin)):
+                admin: Admin = Depends(Admin.get_current)):
     """
     Remove a user
     """
@@ -125,6 +134,9 @@ def remove_user(username: str,
     dbuser = crud.get_user(db, username)
     if not dbuser:
         raise HTTPException(status_code=404, detail="User not found")
+
+    if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
+        raise HTTPException(status_code=403, detail="You're not allowed")
 
     crud.remove_user(db, dbuser)
     for proxy in dbuser.proxies:
@@ -144,12 +156,9 @@ def get_users(offset: int = None,
               username: str = None,
               status: UserStatus = None,
               db: Session = Depends(get_db),
-              admin: str = Depends(current_admin)):
+              admin: Admin = Depends(Admin.get_current)):
     """
     Get all users
     """
-    dbadmin = crud.get_admin(db, admin)
-    if admin != '' and not dbadmin:  # isn't sudo
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
+    dbadmin = crud.get_admin(db, admin.username)
     return crud.get_users(db, offset, limit, username, status, dbadmin)
