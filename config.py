@@ -31,8 +31,8 @@ XRAY_EXECUTABLE_PATH = config("XRAY_EXECUTABLE_PATH", default="/usr/local/bin/xr
 XRAY_ASSETS_PATH = config("XRAY_ASSETS_PATH", default="/usr/local/share/xray")
 XRAY_HOSTS = [
     {
-        "remark": h.rsplit('@', 1)[0],
-        "hostname": h.rsplit('@', 1)[1]
+        "remark": h.rsplit('@', 1)[0].format(SERVER_IP=SERVER_IP),
+        "hostname": h.rsplit('@', 1)[1].format(SERVER_IP=SERVER_IP)
     }
     for h in filter(bool, config("XRAY_HOSTS", default=f'🚀 Marz@{SERVER_IP}').split("\n"))
 ]
