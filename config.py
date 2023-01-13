@@ -1,4 +1,3 @@
-from email.policy import default
 import requests
 from decouple import config
 from dotenv import load_dotenv
@@ -45,6 +44,6 @@ JWT_ACCESS_TOKEN_EXPIRE_MINUTES = config("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", cast
 
 
 # USERNAME: PASSWORD
-ADMINS = {
-    config("ADMIN_USERNAME", default="admin"): config("ADMIN_PASSWORD", default="admin")
+SUDOERS = {
+    config("SUDO_USERNAME", default="admin"): config("SUDO_PASSWORD", default="admin")
 }

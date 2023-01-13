@@ -8,6 +8,16 @@ from sqlalchemy import Column, Integer, BigInteger, String, Enum, JSON, DateTime
 from sqlalchemy.orm import relationship
 
 
+class Admin(Base):
+    __tablename__ = "admins"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+    users = relationship("User", back_populates="admin")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -18,6 +28,8 @@ class User(Base):
     used_traffic = Column(BigInteger, default=0)
     data_limit = Column(BigInteger, nullable=True)
     expire = Column(Integer, nullable=True)
+    admin_id = Column(Integer, ForeignKey("admins.id"))
+    admin = relationship("Admin", back_populates="users")
     created_at = Column(DateTime, default=datetime.utcnow)
 
 

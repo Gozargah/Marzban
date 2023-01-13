@@ -34,7 +34,7 @@ def startup():
 
 
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
+def validation_exception_handler(request: Request, exc: RequestValidationError):
     details = {}
     for error in exc.errors():
         details[error["loc"][1]] = error["msg"]

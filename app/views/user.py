@@ -4,7 +4,6 @@ from typing import List
 import sqlalchemy
 from app import app, logger, xray
 from app.db import Session, crud, get_db
-from app.models.admin import Admin
 from app.models.proxy import ProxyTypes
 from app.models.user import UserCreate, UserModify, UserResponse, UserStatus
 from app.utils.jwt import current_admin
@@ -15,7 +14,7 @@ from fastapi import Depends, HTTPException
 @app.post("/api/user", tags=['User'], response_model=UserResponse)
 def add_user(new_user: UserCreate,
              db: Session = Depends(get_db),
-             admin: Admin = Depends(current_admin)):
+             admin: str = Depends(current_admin)):
     """
     Add a new user
 
@@ -32,9 +31,10 @@ def add_user(new_user: UserCreate,
         raise HTTPException(status_code=400, detail=f"Proxy type {exc.args[0]} not supported")
 
     try:
-        dbuser = crud.create_user(db, new_user)
+        dbadmin = crud.get_admin(db, admin)
+        dbuser = crud.create_user(db, new_user, dbadmin)
     except sqlalchemy.exc.IntegrityError:
-        raise HTTPException(status_code=409, detail="User already exists.")
+        raise HTTPException(status_code=409, detail="User already exists")
 
     for proxy_type in new_user.proxies:
         account = new_user.get_account(proxy_type)
@@ -51,7 +51,7 @@ def add_user(new_user: UserCreate,
 @app.get("/api/user/{username}", tags=['User'], response_model=UserResponse)
 def get_user(username: str,
              db: Session = Depends(get_db),
-             admin: Admin = Depends(current_admin)):
+             admin: str = Depends(current_admin)):
     """
     Get users information
     """
@@ -66,7 +66,7 @@ def get_user(username: str,
 def modify_user(username: str,
                 modified_user: UserModify,
                 db: Session = Depends(get_db),
-                admin: Admin = Depends(current_admin)):
+                admin: str = Depends(current_admin)):
     """
     Modify a user
 
@@ -117,7 +117,7 @@ def modify_user(username: str,
 @app.delete("/api/user/{username}", tags=['User'])
 def remove_user(username: str,
                 db: Session = Depends(get_db),
-                admin: Admin = Depends(current_admin)):
+                admin: str = Depends(current_admin)):
     """
     Remove a user
     """
@@ -144,9 +144,12 @@ def get_users(offset: int = None,
               username: str = None,
               status: UserStatus = None,
               db: Session = Depends(get_db),
-              admin: Admin = Depends(current_admin)):
+              admin: str = Depends(current_admin)):
     """
     Get all users
     """
+    dbadmin = crud.get_admin(db, admin)
+    if admin != '' and not dbadmin:  # isn't sudo
+        raise HTTPException(status_code=401, detail="Not authenticated")
 
-    return crud.get_users(db, offset, limit, username, status)
+    return crud.get_users(db, offset, limit, username, status, dbadmin)

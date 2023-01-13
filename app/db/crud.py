@@ -1,6 +1,7 @@
 from typing import Union
 
-from app.db.models import JWT, Proxy, System, User
+from app.db.models import JWT, Admin, Proxy, System, User
+from app.models.admin import AdminCreate, AdminModify
 from app.models.user import UserCreate, UserModify, UserStatus
 from sqlalchemy.orm import Session
 
@@ -17,8 +18,11 @@ def get_users(db: Session,
               offset: int = None,
               limit: int = None,
               username: str = None,
-              status: Union[UserStatus, list] = None):
+              status: Union[UserStatus, list] = None,
+              admin: Admin = None):
     query = db.query(User)
+    if admin:
+        query = query.filter(User.admin == admin)
     if offset:
         query = query.offset(offset)
     if limit:
@@ -40,13 +44,14 @@ def get_users_count(db: Session, status: UserStatus = None):
     return query.count()
 
 
-def create_user(db: Session, user: UserCreate):
+def create_user(db: Session, user: UserCreate, admin: Admin = None):
     proxies = [Proxy(type=t.value, settings=s.dict(no_obj=True)) for t, s in user.proxies.items()]
     dbuser = User(
         username=user.username,
         proxies=proxies,
         data_limit=(user.data_limit or None),
-        expire=(user.expire or None)
+        expire=(user.expire or None),
+        admin=admin
     )
     db.add(dbuser)
     db.commit()
@@ -98,3 +103,45 @@ def get_system_usage(db: Session):
 
 def get_jwt_secret_key(db: Session):
     return db.query(JWT).first().secret_key
+
+
+def get_admin(db: Session, username: str):
+    return db.query(Admin).filter(Admin.username == username).first()
+
+
+def create_admin(db: Session, admin: AdminCreate):
+    dbadmin = Admin(
+        username=admin.username,
+        hashed_password=admin.hashed_password
+    )
+    db.add(dbadmin)
+    db.commit()
+    db.refresh(dbadmin)
+    return dbadmin
+
+
+def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify):
+    dbadmin.hashed_password = modified_admin.hashed_password
+    db.commit()
+    db.refresh(dbadmin)
+    return dbadmin
+
+
+def remove_admin(db: Session, dbadmin: Admin):
+    db.delete(dbadmin)
+    db.commit()
+    return dbadmin
+
+
+def get_admins(db: Session,
+               offset: int = None,
+               limit: int = None,
+               username: str = None):
+    query = db.query(Admin)
+    if offset:
+        query = query.offset(offset)
+    if limit:
+        query = query.limit(limit)
+    if username:
+        query = query.filter(User.username.ilike(f'{username}%'))
+    return query.all()

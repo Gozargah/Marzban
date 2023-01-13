@@ -1,33 +1,111 @@
+from typing import List
+import sqlalchemy
 from app import app
-from app.models.admin import Admin, Token
+from app.db import Session, crud, get_db
+from app.models.admin import Admin, AdminCreate, AdminInDB, AdminModify, Token
 from app.utils.jwt import create_admin_token, current_admin
-from config import ADMINS
+from config import SUDOERS
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 
-def is_admin(username: str, password: str):
+def is_sudo(username: str, password: str):
     try:
-        return password == ADMINS[username]
+        return password == SUDOERS[username]
     except KeyError:
         return False
 
 
+def is_admin(db: Session, username: str, password: str):
+    dbadmin = crud.get_admin(db, username)
+    if not dbadmin:
+        return False
+    admin = AdminInDB.from_orm(dbadmin)
+    return admin.verify_password(password)
+
+
 @app.post("/api/admin/token", tags=['Admin'], response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    if not is_admin(form_data.username, form_data.password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token = create_admin_token(username=form_data.username)
-    return {
-        "access_token": access_token,
-        "token_type": "bearer"
-    }
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
+                           db: Session = Depends(get_db)):
+    if is_sudo(form_data.username, form_data.password):
+        return {
+            "access_token": create_admin_token(username=''),
+            "token_type": "bearer"
+        }
+
+    if is_admin(db, form_data.username, form_data.password):
+        return {
+            "access_token": create_admin_token(username=form_data.username),
+            "token_type": "bearer"
+        }
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Incorrect username or password",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+
+@app.post("/api/admin", tags=['Admin'], response_model=Admin)
+def create_admin(new_admin: AdminCreate,
+                 db: Session = Depends(get_db),
+                 admin: str = Depends(current_admin)):
+
+    if admin != '':  # isn't sudo
+        raise HTTPException(status_code=403, detail="You can't create admin")
+
+    try:
+        dbadmin = crud.create_admin(db, new_admin)
+    except sqlalchemy.exc.IntegrityError:
+        raise HTTPException(status_code=409, detail="Admin already exists")
+
+    return dbadmin
+
+
+@app.put("/api/admin/{username}", tags=['Admin'], response_model=Admin)
+def modify_admin(username: str,
+                 modified_admin: AdminModify,
+                 db: Session = Depends(get_db),
+                 admin: str = Depends(current_admin)):
+    if admin != '' or admin != username:  # isn't sudo
+        raise HTTPException(status_code=403, detail="You are not allowed to do this")
+
+    dbadmin = crud.get_admin(db, username)
+    if not dbadmin:
+        raise HTTPException(status_code=404, detail="Admin not found")
+
+    dbadmin = crud.update_admin(db, dbadmin, modified_admin)
+    return dbadmin
+
+
+@app.delete("/api/admin/{username}", tags=['Admin'])
+def remove_admin(username: str,
+                 db: Session = Depends(get_db),
+                 admin: str = Depends(current_admin)):
+    if admin != '':  # isn't sudo
+        raise HTTPException(status_code=403, detail="You can't remove admin")
+
+    dbadmin = crud.get_admin(db, username)
+    if not dbadmin:
+        raise HTTPException(status_code=404, detail="Admin not found")
+
+    dbadmin = crud.remove_admin(db, dbadmin)
+    return {}
 
 
 @app.get("/api/admin", tags=['Admin'], response_model=Admin)
-async def current_admin(admin: Admin = Depends(current_admin)):
-    return {"username": admin}
+def get_current_admin(admin: str = Depends(current_admin)):
+    return Admin(username=admin)
+
+
+@app.get("/api/admins", tags=['Admin'], response_model=List[Admin])
+def get_admins(offset: int = None,
+               limit: int = None,
+               username: str = None,
+               db: Session = Depends(get_db),
+               admin: str = Depends(current_admin)):
+
+    if admin != '':  # isn't sudo
+        raise HTTPException(status_code=403, detail="You're not allowed")
+
+    return crud.get_admins(db, offset, limit, username)
