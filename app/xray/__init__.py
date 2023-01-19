@@ -1,3 +1,4 @@
+import json
 from random import randint
 from typing import Dict
 
@@ -64,30 +65,29 @@ for inbound in config['inbounds']:
         "path": ""
     }
 
-    if inbound.get('streamSettings'):
-        settings['stream']['net'] = inbound['streamSettings'].get('network', 'tcp')
+    if stream := inbound.get('streamSettings'):
+        net = stream.get('network', 'tcp')
+        net_settings = stream.get(f"{net}Settings", {})
+        security = stream.get("security")
+        tls_settings = stream.get(f"{security}Settings")
 
-        net_settings = inbound['streamSettings'].get(f"{settings['stream']['net']}Settings", {})
-        settings['stream']['path'] = net_settings.get('path', '')
+        if not inbound.get('port') and inbound['tag'] != XRAY_FALLBACK_INBOUND_TAG:
+            # probably this is a fallback
+            security = FALLBACK_INBOUND.get('streamSettings', {}).get('security')
+            tls_settings = FALLBACK_INBOUND.get('streamSettings', {}).get(f"{security}Settings")
 
-        if net_settings.get('acceptProxyProtocol') and not inbound.get('port'):
-            # it's likely that this is a inbound of a fallback inbound
-            settings['stream']['tls'] = FALLBACK_INBOUND['streamSettings'].get('security') in ('tls', 'xtls')
-            settings['stream']['sni'] = (
-                FALLBACK_INBOUND['streamSettings'].get('tlsSettings') or
-                FALLBACK_INBOUND['streamSettings'].get('xtlsSettings') or
-                {}
-            ).get('serverName', '')
+        settings['stream']['net'] = net
+        settings['stream']['tls'] = security in ('tls', 'xtls')
+
+        if tls_settings:
+            settings['stream']['sni'] = tls_settings.get('serverName', '')
+
+        if net == 'grpc':
+            settings['stream']['path'] = net_settings.get('serviceName', '')
         else:
-            settings['stream']['tls'] = inbound['streamSettings'].get('security') in ('tls', 'xtls')
-            settings['stream']['sni'] = (
-                inbound['streamSettings'].get('tlsSettings') or
-                inbound['streamSettings'].get('xtlsSettings') or
-                {}
-            ).get('serverName', '')
+            settings['stream']['path'] = net_settings.get('path', '')
 
     INBOUNDS[inbound['protocol']].append(settings)
-
 
 __all__ = [
     "config",

@@ -110,16 +110,21 @@ class ShareLink(str):
               tls=False,
               host='',
               sni=''):
+
+        opts = {
+            "security": "tls" if tls else "none",
+            "type": net,
+            "host": host,
+            "sni": sni
+        }
+        if net == 'grpc':
+            opts['serviceName'] = urlparse.quote(path)
+        else:
+            opts['path'] = urlparse.quote(path)
+
         return "vless://" + \
             f"{id}@{address}:{port}?" + \
-            urlparse.urlencode({
-                "security": "tls" if tls else "none",
-                "type": net,
-                "path": urlparse.quote(path),
-                "host": host,
-                "encryption": "none",
-                "sni": sni
-            }) + f"#{( urlparse.quote(remark))}"
+            urlparse.urlencode(opts) + f"#{( urlparse.quote(remark))}"
 
     @classmethod
     def trojan(cls,
@@ -132,15 +137,21 @@ class ShareLink(str):
                tls=False,
                host='',
                sni=''):
+
+        opts = {
+            "security": "tls" if tls else "none",
+            "type": net,
+            "host": host,
+            "sni": sni
+        }
+        if net == 'grpc':
+            opts['serviceName'] = urlparse.quote(path)
+        else:
+            opts['path'] = urlparse.quote(path)
+
         return "trojan://" + \
             f"{urlparse.quote(password, safe=':')}@{address}:{port}?" + \
-            urlparse.urlencode({
-                "security": "tls" if tls else "none",
-                "type": net,
-                "path": urlparse.quote(path),
-                "host": host,
-                "sni": sni
-            }) + f"#{urlparse.quote(remark)}"
+            urlparse.urlencode(opts) + f"#{urlparse.quote(remark)}"
 
     @classmethod
     def shadowsocks(cls,
