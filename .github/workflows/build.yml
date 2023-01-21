@@ -31,7 +31,7 @@ jobs:
       - name: Commit & Push build
         uses: actions-js/push@master
         with:
-          branch: ${GITHUB_REF##*/}
+          branch: 'dev'
           message: 'Build frontend ${{github.ref_name}}'
           github_token: ${{secrets.GITHUB_TOKEN}}
 
