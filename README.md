@@ -24,13 +24,13 @@
     <a href="#">
         <img src="https://img.shields.io/github/license/gozargah/marzban?style=flat-square" />
     </a>
-    <a href="#">
+    <a href="https://t.me/+nruLVyc3rS40NzNk">
         <img src="https://img.shields.io/badge/telegram-group-blue?style=flat-square&logo=telegram" />
     </a>
     <a href="#">
         <img src="https://img.shields.io/badge/twitter-commiunity-blue?style=flat-square&logo=twitter" />
     </a>
-    <a>
+    <a href="#">
         <img src="https://img.shields.io/github/stars/gozargah/marzban?style=social" />
     </a>
 </p>
