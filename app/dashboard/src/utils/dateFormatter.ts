@@ -10,7 +10,7 @@ export const relativeExpiryDate = (expiryDate: number | null | undefined) => {
     ) {
       date = "Expires " + dayjs().to(dayjs(expiryDate * 1000).utc());
     } else {
-      date = "Expired " + dayjs().from(dayjs(expiryDate * 1000).utc());
+      date = "Expired " + dayjs().to(dayjs(expiryDate * 1000).utc());
     }
   }
   return date;
