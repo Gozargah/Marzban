@@ -80,7 +80,7 @@ Marzban is user-friendly, feature-rich and reliable. It lets you to create diffe
 
 # Installation guide
 
-We stronly recommend use our Docker images to run on production. It's easier to maintaine and upgrade.
+> We stronly recommend use our Docker images to run on production. It's easier to maintain and upgrade.
 
 ## Install with docker
 
@@ -120,6 +120,8 @@ cp .env.example .env
 nano .env
 ```
 
+> Check [configurations](#Configurations) section for more information
+
 Eventually, launch the application using command below
 
 ```bash
@@ -128,7 +130,29 @@ python3 main.py
 
 My default the app will be run on `http://localhost:8000/dashboard`. You can configure it using changing the `UVICORN_HOST` and `UVICORN_PORT` environment variables.
 
-Check [configurations](#Configurations) section for more information
+## Configuration
+> You can set settings below using environment variables or placing them in `.env` file.
+
+| Variable                        | Description                                                                                           |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| SUDO_USERNAME                   | Superuser's username (default: admin)                                                                 |
+| SUDO_PASSWORD                   | Superuser's password (default: admin)                                                                 |
+| SQLALCHEMY_DATABASE_URL         | Database URL ([SQLAlchemy's docs](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)) |
+| UVICORN_HOST                    | Bind application to this host (default: `0.0.0.0`)                                                    |
+| UVICORN_PORT                    | Bind application to this port (default: `8000`)                                                       |
+| UVICORN_UDS                     | Bind application to a UNIX domain socket                                                              |
+| UVICORN_SSL_CERTFILE            | SSL certificate file to have application on https                                                     |
+| UVICORN_SSL_KEYFILE             | SSL key file to have application on https                                                             |
+| XRAY_HOSTS                      | Xray hosts in different lines with `remark@hostname` format (default: `🚀 Marz@SERVER_IP`)             |
+| XRAY_JSON                       | Path of Xray's json config file (default: `xray.json`)                                                |
+| XRAY_EXECUTABLE_PATH            | Path of Xray binary (default: `/usr/local/bin/xray`)                                                  |
+| XRAY_ASSETS_PATH                | Path of Xray assets (default: `/usr/local/share/xray`)                                                |
+| XRAY_SUBSCRIPTION_URL_PREFIX    | Prefix of subscription URLs                                                                           |
+| XRAY_FALLBACK_INBOUND_TAG       | Tag of the inbound that includes fallbacks, needed in the case you're using fallbacks                 |
+| XRAY_EXCLUDE_INBOUND_TAGS       | Tags of the inbounds that shouldn't be managed and included in links by application                   |
+| JWT_ACCESS_TOKEN_EXPIRE_MINUTES | Expire time for the Access Tokens in minutes, `0` considered as infinite (default: `1440`)            |
+| DOCS                            | Whether API documents should be available on `/docs` and `/redoc` or not (default: `False`)           |
+| DEBUG                           | Debug mode for development (default: `False`)                                                         |
 
 ### Marzban is young and under development
 

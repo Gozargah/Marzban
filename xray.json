@@ -1,10 +1,27 @@
-// vmess, vless, shadowsocks and trojan on different ports
-// to set tls for an inbound, do the same as the commented section of "VLESS_INBOUND"
 {
+    "log": {
+        "loglevel": "info"
+    },
     "inbounds": [
         {
+            "tag": "VMESS_INBOUND",
             "listen": "0.0.0.0",
-            "port": 80,
+            "port": 2053,
+            "protocol": "vmess",
+            "settings": {
+                "clients": []
+            },
+            "streamSettings": {
+                "network": "ws",
+                "wsSettings": {
+                    "path": "/"
+                }
+            }
+        },
+        {
+            "tag": "VLESS_INBOUND",
+            "listen": "0.0.0.0",
+            "port": 2083,
             "protocol": "vless",
             "settings": {
                 "clients": [],
@@ -15,6 +32,7 @@
                 "wsSettings": {
                     "path": "/"
                 }
+                // ,
                 // "security": "tls",
                 // "tlsSettings": {
                 //     "serverName": "SERVER_NAME",
@@ -23,39 +41,16 @@
                 //             "certificateFile": "CERT_FILE_PATH",
                 //             "keyFile": "KEY_FILE_PATH"
                 //         }
-                //     ]
+                //     ],
+                //     "minVersion": "1.2",
+                //     "cipherSuites": "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
                 // }
-            },
-            "tag": "VLESS_INBOUND"
+            }
         },
         {
+            "tag": "TROJAN_INBOUND",
             "listen": "0.0.0.0",
-            "port": 443,
-            "protocol": "vmess",
-            "settings": {
-                "clients": []
-            },
-            "streamSettings": {
-                "network": "ws",
-                "wsSettings": {
-                    "path": "/"
-                }
-            },
-            "tag": "VMESS_INBOUND"
-        },
-        {
-            "listen": "0.0.0.0",
-            "port": 8880,
-            "protocol": "shadowsocks",
-            "settings": {
-                "clients": []
-            },
-            "network": "tcp,udp",
-            "tag": "SHADOWSOCKS_INBOUND"
-        },
-        {
-            "listen": "0.0.0.0",
-            "port": 8443,
+            "port": 2087,
             "protocol": "trojan",
             "settings": {
                 "clients": []
@@ -65,6 +60,7 @@
                 "wsSettings": {
                     "path": "/"
                 }
+                // ,
                 // "security": "tls",
                 // "tlsSettings": {
                 //     "serverName": "SERVER_NAME",
@@ -73,10 +69,21 @@
                 //             "certificateFile": "CERT_FILE_PATH",
                 //             "keyFile": "KEY_FILE_PATH"
                 //         }
-                //     ]
+                //     ],
+                //     "minVersion": "1.2",
+                //     "cipherSuites": "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
                 // }
-            },
-            "tag": "TROJAN_INBOUND"
+            }
+        },
+        {
+            "tag": "SHADOWSOCKS_INBOUND",
+            "listen": "0.0.0.0",
+            "port": 2096,
+            "protocol": "shadowsocks",
+            "settings": {
+                "clients": [],
+                "network": "tcp,udp"
+            }
         }
     ],
     "outbounds": [
