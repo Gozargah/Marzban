@@ -24,7 +24,7 @@
     <a href="#">
         <img src="https://img.shields.io/github/license/gozargah/marzban?style=flat-square" />
     </a>
-    <a href="https://t.me/+nruLVyc3rS40NzNk">
+    <a href="https://t.me/gozargah_marzban">
         <img src="https://img.shields.io/badge/telegram-group-blue?style=flat-square&logo=telegram" />
     </a>
     <a href="#">
@@ -38,7 +38,7 @@
 
 <p align="center">
   <a href="httpps://github.com/gozargah/marzban" target="_blank" rel="noopener noreferrer" >
-    <img src="https://github.com/Gozargah/Marzban-docs/raw/master/screenshots/preview.png" alt="Elk screenshots" width="600" height="auto">
+    <img src="https://github.com/Gozargah/Marzban-docs/raw/master/screenshots/preview.png" alt="Marzban screenshots" width="600" height="auto">
   </a>
 </p>
 
