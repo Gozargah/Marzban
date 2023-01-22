@@ -89,13 +89,16 @@ We've made some prebuilt docker configurations based on different needs. To run 
 ## Manual install
 
 Install xray on your machine
+
 You can install it using [Xray-install](https://github.com/XTLS/Xray-install)
 
 ```bash
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
 ```
 
-Clone the project and install the dependencies. You need Python>=3.8 as a minimum
+Clone the project and install the dependencies.
+
+You need Python>=3.8
 
 ```bash
 git clone https://github.com/Gozargah/Marzban.git
@@ -112,7 +115,9 @@ alembic upgrade head
 ```
 
 Now it's time to configuration
+
 Make a copy of `.env.example` file, take a look and edit it using a text editor like `nano`.
+
 You probably like to modify the admin credentials.
 
 ```bash
@@ -128,7 +133,7 @@ Eventually, launch the application using command below
 python3 main.py
 ```
 
-My default the app will be run on `http://localhost:8000/dashboard`. You can configure it using changing the `UVICORN_HOST` and `UVICORN_PORT` environment variables.
+By default the app will be run on `http://localhost:8000/dashboard`. You can configure it using changing the `UVICORN_HOST` and `UVICORN_PORT` environment variables.
 
 ## Configuration
 > You can set settings below using environment variables or placing them in `.env` file.
@@ -160,7 +165,7 @@ Check [open issues](https://github.com/gozargah/marzban/issues) to help the prog
 
 Also please share [your ideas](https://github.com/Gozargah/Marzban/issues/new?assignees=&labels=enhancement&template=feature_request.md&title=Feature+title)!
 
-If this project has helped you in any way, we will be happy if you help us to continue the maintenance of this project by [donation]().
+If this project has helped you in any way, we will be happy if you help us to continue the maintenance of this project by [donation](https://opencollective.com/marzban).
 
 ## License
 
