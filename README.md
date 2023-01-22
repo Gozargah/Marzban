@@ -18,13 +18,13 @@
     <a href="#">
         <img src="https://img.shields.io/github/actions/workflow/status/gozargah/marzban/build.yml?style=flat-square" />
     </a>
-    <a href="#">
+    <a href="https://hub.docker.com/r/gozargah/marzban" target="_blank">
         <img src="https://img.shields.io/docker/pulls/gozargah/marzban?style=flat-square&logo=docker" />
     </a>
     <a href="#">
         <img src="https://img.shields.io/github/license/gozargah/marzban?style=flat-square" />
     </a>
-    <a href="https://t.me/gozargah_marzban">
+    <a href="https://t.me/gozargah_marzban" target="_blank">
         <img src="https://img.shields.io/badge/telegram-group-blue?style=flat-square&logo=telegram" />
     </a>
     <a href="#">
