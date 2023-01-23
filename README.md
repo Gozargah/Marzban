@@ -103,6 +103,7 @@ You need Python>=3.8
 ```bash
 git clone https://github.com/Gozargah/Marzban.git
 cd Marzban
+wget -qO- https://bootstrap.pypa.io/get-pip.py | python3 -
 python3 -m pip install -r requirements.txt
 ```
 
