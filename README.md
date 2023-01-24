@@ -34,7 +34,6 @@
         <img src="https://img.shields.io/github/stars/gozargah/marzban?style=social" />
     </a>
 </p>
-<br/>
 
 <p align="center">
 	<a href="./README.md">

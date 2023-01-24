@@ -34,7 +34,15 @@
         <img src="https://img.shields.io/github/stars/gozargah/marzban?style=social" />
     </a>
 </p>
-<br/>
+<p align="center">
+	<a href="./README.md">
+	English
+	</a>
+	/
+	<a href="./README-fa.md">
+	فارسی
+	</a>
+</p>
 
 <p align="center">
   <a href="httpps://github.com/gozargah/marzban" target="_blank" rel="noopener noreferrer" >
