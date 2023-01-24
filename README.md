@@ -37,6 +37,16 @@
 <br/>
 
 <p align="center">
+	<a href="./README.md">
+	English
+	</a>
+	/
+	<a href="./README-fa.md">
+	فارسی
+	</a>
+</p>
+
+<p align="center">
   <a href="httpps://github.com/gozargah/marzban" target="_blank" rel="noopener noreferrer" >
     <img src="https://github.com/Gozargah/Marzban-docs/raw/master/screenshots/preview.png" alt="Elk screenshots" width="600" height="auto">
   </a>
@@ -131,6 +141,7 @@ python3 main.py
 My default the app will be run on `http://localhost:8000/dashboard`. You can configure it using changing the `UVICORN_HOST` and `UVICORN_PORT` environment variables.
 
 ## Configuration
+
 > You can set settings below using environment variables or placing them in `.env` file.
 
 | Variable                        | Description                                                                                           |
@@ -143,7 +154,7 @@ My default the app will be run on `http://localhost:8000/dashboard`. You can con
 | UVICORN_UDS                     | Bind application to a UNIX domain socket                                                              |
 | UVICORN_SSL_CERTFILE            | SSL certificate file to have application on https                                                     |
 | UVICORN_SSL_KEYFILE             | SSL key file to have application on https                                                             |
-| XRAY_HOSTS                      | Xray hosts in different lines with `remark@hostname` format (default: `🚀 Marz@SERVER_IP`)             |
+| XRAY_HOSTS                      | Xray hosts in different lines with `remark@hostname` format (default: `🚀 Marz@SERVER_IP`)            |
 | XRAY_JSON                       | Path of Xray's json config file (default: `xray.json`)                                                |
 | XRAY_EXECUTABLE_PATH            | Path of Xray binary (default: `/usr/local/bin/xray`)                                                  |
 | XRAY_ASSETS_PATH                | Path of Xray assets (default: `/usr/local/share/xray`)                                                |
@@ -160,7 +171,7 @@ Check [open issues](https://github.com/gozargah/marzban/issues) to help the prog
 
 Also please share [your ideas](https://github.com/Gozargah/Marzban/issues/new?assignees=&labels=enhancement&template=feature_request.md&title=Feature+title)!
 
-If this project has helped you in any way, we will be happy if you help us to continue the maintenance of this project by [donation]().
+If this project has helped you in any way, we will be happy if you help us to continue the maintenance of this project by [donation](https://opencollective.com/marzban).
 
 ## License
 
