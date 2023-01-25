@@ -2,17 +2,18 @@ from datetime import datetime
 from typing import List
 
 import sqlalchemy
-from app import app, logger, xray
+from app import app, logger, telegram, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.proxy import ProxyTypes
 from app.models.user import UserCreate, UserModify, UserResponse, UserStatus
 from app.xray import INBOUNDS
-from fastapi import Depends, HTTPException
+from fastapi import BackgroundTasks, Depends, HTTPException
 
 
 @app.post("/api/user", tags=['User'], response_model=UserResponse)
 def add_user(new_user: UserCreate,
+             bg: BackgroundTasks,
              db: Session = Depends(get_db),
              admin: Admin = Depends(Admin.get_current)):
     """
@@ -47,11 +48,16 @@ def add_user(new_user: UserCreate,
             except xray.exc.EmailExistsError:
                 pass
 
+    bg.add_task(
+        telegram.report_new_user,
+        username=dbuser.username,
+        by=admin.username
+    )
     logger.info(f"New user \"{dbuser.username}\" added")
     return dbuser
 
 
-@app.get("/api/user/{username}", tags=['User'], response_model=UserResponse)
+@ app.get("/api/user/{username}", tags=['User'], response_model=UserResponse)
 def get_user(username: str,
              db: Session = Depends(get_db),
              admin: Admin = Depends(Admin.get_current)):
@@ -68,9 +74,10 @@ def get_user(username: str,
     return dbuser
 
 
-@app.put("/api/user/{username}", tags=['User'], response_model=UserResponse)
+@ app.put("/api/user/{username}", tags=['User'], response_model=UserResponse)
 def modify_user(username: str,
                 modified_user: UserModify,
+                bg: BackgroundTasks,
                 db: Session = Depends(get_db),
                 admin: Admin = Depends(Admin.get_current)):
     """
@@ -97,15 +104,31 @@ def modify_user(username: str,
 
     if modified_user.expire is not None and dbuser.status != UserStatus.limited:
         if not dbuser.expire or dbuser.expire > datetime.utcnow().timestamp():
-            dbuser = crud.update_user_status(db, dbuser, UserStatus.active)
+            status = UserStatus.active
         else:
-            dbuser = crud.update_user_status(db, dbuser, UserStatus.expired)
+            status = UserStatus.expired
+        dbuser = crud.update_user_status(db, dbuser, status)
+
+        bg.add_task(
+            telegram.report_status_change,
+            username=dbuser.username,
+            status=status
+        )
+        logger.info(f"User \"{dbuser.username}\" status changed to {status}")
 
     if modified_user.data_limit is not None and dbuser.status != UserStatus.expired:
         if not dbuser.data_limit or dbuser.used_traffic < dbuser.data_limit:
-            dbuser = crud.update_user_status(db, dbuser, UserStatus.active)
+            status = UserStatus.active
         else:
-            dbuser = crud.update_user_status(db, dbuser, UserStatus.limited)
+            status = UserStatus.limited
+        dbuser = crud.update_user_status(db, dbuser, status)
+
+        bg.add_task(
+            telegram.report_status_change,
+            username=dbuser.username,
+            status=status
+        )
+        logger.info(f"User \"{dbuser.username}\" status changed to {status}")
 
     user = UserResponse.from_orm(dbuser)
 
@@ -119,12 +142,18 @@ def modify_user(username: str,
                 account = user.get_account(proxy_type)
                 xray.api.add_inbound_user(tag=inbound['tag'], user=account)
 
+    bg.add_task(
+        telegram.report_user_modification,
+        username=dbuser.username,
+        by=admin.username
+    )
     logger.info(f"User \"{user.username}\" modified")
     return user
 
 
-@app.delete("/api/user/{username}", tags=['User'])
+@ app.delete("/api/user/{username}", tags=['User'])
 def remove_user(username: str,
+                bg: BackgroundTasks,
                 db: Session = Depends(get_db),
                 admin: Admin = Depends(Admin.get_current)):
     """
@@ -145,12 +174,16 @@ def remove_user(username: str,
                 xray.api.remove_inbound_user(tag=inbound['tag'], email=username)
             except xray.exc.EmailNotFoundError:
                 pass
-
+    bg.add_task(
+        telegram.report_user_deletion,
+        username=dbuser.username,
+        by=admin.username
+    )
     logger.info(f"User \"{username}\" deleted")
     return {}
 
 
-@app.get("/api/users", tags=['User'], response_model=List[UserResponse])
+@ app.get("/api/users", tags=['User'], response_model=List[UserResponse])
 def get_users(offset: int = None,
               limit: int = None,
               username: str = None,

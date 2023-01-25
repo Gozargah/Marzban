@@ -1,14 +1,14 @@
 from datetime import datetime
 
-from app import logger, scheduler, xray
-from app.db import get_users, get_db, update_user_status
+from app import logger, scheduler, telegram, xray
+from app.db import GetDB, get_users, update_user_status
 from app.models.user import UserStatus
 from app.xray import INBOUNDS
 
 
 def review():
     now = datetime.utcnow().timestamp()
-    for db in get_db():
+    with GetDB() as db:
         for user in get_users(db, status=UserStatus.active):
 
             limited = user.data_limit and user.used_traffic >= user.data_limit
@@ -35,6 +35,10 @@ def review():
 
             update_user_status(db, user, status)
 
+            try:
+                telegram.report_status_change(user.username, status)
+            except Exception:
+                pass
             logger.info(f"User \"{user.username}\" status changed to {status}")
 
 

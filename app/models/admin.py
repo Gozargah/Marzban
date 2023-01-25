@@ -33,7 +33,6 @@ class Admin(BaseModel):
         )
 
         payload = get_admin_payload(token)
-        print(payload)
         if not payload:
             raise exc
 

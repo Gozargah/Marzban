@@ -1,15 +1,15 @@
 import time
 
 import sqlalchemy
-from app import xray, app
-from app.db import User, engine, get_db, get_users
+from app import app, xray
+from app.db import GetDB, User, engine, get_users
 from app.models.user import UserResponse, UserStatus
 
 
 @xray.core.on_start
 def add_users_from_db():
     if sqlalchemy.inspect(engine).has_table(User.__tablename__):
-        for db in get_db():
+        with GetDB() as db:
 
             # to prevent ConnectionError while adding users
             tries = 0

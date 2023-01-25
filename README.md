@@ -98,6 +98,7 @@ We've made some prebuilt docker configurations based on different needs. To run 
 ## Manual install
 
 Install xray on your machine
+
 You can install it using [Xray-install](https://github.com/XTLS/Xray-install)
 
 ```bash

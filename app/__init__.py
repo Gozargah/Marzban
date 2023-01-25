@@ -1,3 +1,4 @@
+from datetime import timezone
 import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -14,7 +15,7 @@ app = FastAPI(
     redoc_url='/redoc' if DOCS else None
 )
 app.openapi = custom_openapi(app)
-scheduler = BackgroundScheduler({'apscheduler.job_defaults.max_instances': 5})
+scheduler = BackgroundScheduler({'apscheduler.job_defaults.max_instances': 5}, timezone='UTC')
 logger = logging.getLogger('uvicorn.error')
 app.add_middleware(
     CORSMiddleware,
@@ -25,7 +26,7 @@ app.add_middleware(
 )
 
 
-from app import dashboard, jobs, views  # noqa
+from app import dashboard, jobs, views, telegram  # noqa
 
 
 @app.on_event("startup")
