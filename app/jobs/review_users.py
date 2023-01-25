@@ -35,6 +35,10 @@ def review():
 
             update_user_status(db, user, status)
 
+            try:
+                telegram.report_status_change(user.username, status)
+            except Exception:
+                pass
             logger.info(f"User \"{user.username}\" status changed to {status}")
 
 
