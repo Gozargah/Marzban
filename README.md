@@ -34,7 +34,16 @@
         <img src="https://img.shields.io/github/stars/gozargah/marzban?style=social" />
     </a>
 </p>
-<br/>
+
+<p align="center">
+	<a href="./README.md">
+	English
+	</a>
+	/
+	<a href="./README-fa.md">
+	فارسی
+	</a>
+</p>
 
 <p align="center">
   <a href="httpps://github.com/gozargah/marzban" target="_blank" rel="noopener noreferrer" >
@@ -126,7 +135,7 @@ cp .env.example .env
 nano .env
 ```
 
-> Check [configurations](#Configurations) section for more information
+> Check [configurations](#Configuration) section for more information
 
 Eventually, launch the application using command below
 
@@ -137,6 +146,7 @@ python3 main.py
 By default the app will be run on `http://localhost:8000/dashboard`. You can configure it using changing the `UVICORN_HOST` and `UVICORN_PORT` environment variables.
 
 ## Configuration
+
 > You can set settings below using environment variables or placing them in `.env` file.
 
 | Variable                        | Description                                                                                           |
@@ -149,7 +159,7 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | UVICORN_UDS                     | Bind application to a UNIX domain socket                                                              |
 | UVICORN_SSL_CERTFILE            | SSL certificate file to have application on https                                                     |
 | UVICORN_SSL_KEYFILE             | SSL key file to have application on https                                                             |
-| XRAY_HOSTS                      | Xray hosts in different lines with `remark@hostname` format (default: `🚀 Marz@SERVER_IP`)             |
+| XRAY_HOSTS                      | Xray hosts in different lines with `remark@hostname` format (default: `🚀 Marz@SERVER_IP`)            |
 | XRAY_JSON                       | Path of Xray's json config file (default: `xray.json`)                                                |
 | XRAY_EXECUTABLE_PATH            | Path of Xray binary (default: `/usr/local/bin/xray`)                                                  |
 | XRAY_ASSETS_PATH                | Path of Xray assets (default: `/usr/local/share/xray`)                                                |
