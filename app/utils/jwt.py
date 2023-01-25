@@ -11,9 +11,9 @@ global JWT_SECRET_KEY
 
 @app.on_event("startup")
 def set_jwt_secret_key():
-    from app.db import JWT, engine, get_db, get_jwt_secret_key
+    from app.db import JWT, engine, GetDB, get_jwt_secret_key
     if sqlalchemy.inspect(engine).has_table(JWT.__tablename__):
-        for db in get_db():
+        with GetDB() as db:
             global JWT_SECRET_KEY
             JWT_SECRET_KEY = get_jwt_secret_key(db)
 
