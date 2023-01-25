@@ -18,22 +18,23 @@
     <a href="#">
         <img src="https://img.shields.io/github/actions/workflow/status/gozargah/marzban/build.yml?style=flat-square" />
     </a>
-    <a href="#">
+    <a href="https://hub.docker.com/r/gozargah/marzban" target="_blank">
         <img src="https://img.shields.io/docker/pulls/gozargah/marzban?style=flat-square&logo=docker" />
     </a>
     <a href="#">
         <img src="https://img.shields.io/github/license/gozargah/marzban?style=flat-square" />
     </a>
-    <a href="#">
+    <a href="https://t.me/gozargah_marzban" target="_blank">
         <img src="https://img.shields.io/badge/telegram-group-blue?style=flat-square&logo=telegram" />
     </a>
     <a href="#">
         <img src="https://img.shields.io/badge/twitter-commiunity-blue?style=flat-square&logo=twitter" />
     </a>
-    <a>
+    <a href="#">
         <img src="https://img.shields.io/github/stars/gozargah/marzban?style=social" />
     </a>
 </p>
+
 <p align="center">
 	<a href="./README.md">
 	English
@@ -108,6 +109,7 @@ bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release
 ```bash
 git clone https://github.com/Gozargah/Marzban.git
 cd Marzban
+wget -qO- https://bootstrap.pypa.io/get-pip.py | python3 -
 python3 -m pip install -r requirements.txt
 ```
 

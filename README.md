@@ -18,19 +18,19 @@
     <a href="#">
         <img src="https://img.shields.io/github/actions/workflow/status/gozargah/marzban/build.yml?style=flat-square" />
     </a>
-    <a href="#">
+    <a href="https://hub.docker.com/r/gozargah/marzban" target="_blank">
         <img src="https://img.shields.io/docker/pulls/gozargah/marzban?style=flat-square&logo=docker" />
     </a>
     <a href="#">
         <img src="https://img.shields.io/github/license/gozargah/marzban?style=flat-square" />
     </a>
-    <a href="#">
+    <a href="https://t.me/gozargah_marzban" target="_blank">
         <img src="https://img.shields.io/badge/telegram-group-blue?style=flat-square&logo=telegram" />
     </a>
     <a href="#">
         <img src="https://img.shields.io/badge/twitter-commiunity-blue?style=flat-square&logo=twitter" />
     </a>
-    <a>
+    <a href="#">
         <img src="https://img.shields.io/github/stars/gozargah/marzban?style=social" />
     </a>
 </p>
@@ -47,7 +47,7 @@
 
 <p align="center">
   <a href="httpps://github.com/gozargah/marzban" target="_blank" rel="noopener noreferrer" >
-    <img src="https://github.com/Gozargah/Marzban-docs/raw/master/screenshots/preview.png" alt="Elk screenshots" width="600" height="auto">
+    <img src="https://github.com/Gozargah/Marzban-docs/raw/master/screenshots/preview.png" alt="Marzban screenshots" width="600" height="auto">
   </a>
 </p>
 
@@ -104,11 +104,14 @@ You can install it using [Xray-install](https://github.com/XTLS/Xray-install)
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
 ```
 
-Clone the project and install the dependencies. You need Python>=3.8 as a minimum
+Clone the project and install the dependencies.
+
+You need Python>=3.8
 
 ```bash
 git clone https://github.com/Gozargah/Marzban.git
 cd Marzban
+wget -qO- https://bootstrap.pypa.io/get-pip.py | python3 -
 python3 -m pip install -r requirements.txt
 ```
 
@@ -121,7 +124,9 @@ alembic upgrade head
 ```
 
 Now it's time to configuration
+
 Make a copy of `.env.example` file, take a look and edit it using a text editor like `nano`.
+
 You probably like to modify the admin credentials.
 
 ```bash
@@ -129,7 +134,7 @@ cp .env.example .env
 nano .env
 ```
 
-> Check [configurations](#Configurations) section for more information
+> Check [configurations](#Configuration) section for more information
 
 Eventually, launch the application using command below
 
@@ -137,7 +142,7 @@ Eventually, launch the application using command below
 python3 main.py
 ```
 
-My default the app will be run on `http://localhost:8000/dashboard`. You can configure it using changing the `UVICORN_HOST` and `UVICORN_PORT` environment variables.
+By default the app will be run on `http://localhost:8000/dashboard`. You can configure it using changing the `UVICORN_HOST` and `UVICORN_PORT` environment variables.
 
 ## Configuration
 
