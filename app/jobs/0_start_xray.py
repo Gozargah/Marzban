@@ -26,7 +26,7 @@ def add_users_from_db():
             for user in get_users(db, status=UserStatus.active):
                 for proxy in user.proxies:
                     account = UserResponse.from_orm(user).get_account(proxy.type)
-                    for inbound in xray.INBOUNDS[proxy.type]:
+                    for inbound in xray.INBOUNDS.get(proxy.type, []):
                         try:
                             xray.api.add_inbound_user(tag=inbound['tag'], user=account)
                         except xray.exc.EmailExistsError:

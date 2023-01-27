@@ -14,7 +14,7 @@ class ShareLink(str):
     def __new__(cls, remark: str, host: str, protocol: str, settings: dict):
         if protocol == 'vmess':
             links = []
-            for i in INBOUNDS[protocol]:
+            for i in INBOUNDS.get(protocol, []):
                 links.append(
                     cls.vmess(remark=remark,
                               address=host,
@@ -30,7 +30,7 @@ class ShareLink(str):
 
         if protocol == 'vless':
             links = []
-            for i in INBOUNDS[protocol]:
+            for i in INBOUNDS.get(protocol, []):
                 links.append(
                     cls.vless(remark=remark,
                               address=host,
@@ -46,7 +46,7 @@ class ShareLink(str):
 
         if protocol == 'trojan':
             links = []
-            for i in INBOUNDS[protocol]:
+            for i in INBOUNDS.get(protocol, []):
                 links.append(
                     cls.trojan(remark=remark,
                                address=host,
@@ -62,7 +62,7 @@ class ShareLink(str):
 
         if protocol == 'shadowsocks':
             links = []
-            for i in INBOUNDS[protocol]:
+            for i in INBOUNDS.get(protocol, []):
                 links.append(
                     cls.shadowsocks(remark=remark,
                                     address=host,
@@ -204,7 +204,7 @@ class ClashConfiguration(object):
 
     def add(self, remark: str, host: str, protocol: str, settings: dict):
         if protocol == 'vmess':
-            for i in INBOUNDS[protocol]:
+            for i in INBOUNDS.get(protocol, []):
                 self.add_vmess(remark=remark,
                                address=host,
                                port=i['port'],
@@ -216,7 +216,7 @@ class ClashConfiguration(object):
                                path=i['stream']['path'])
 
         if protocol == 'trojan':
-            for i in INBOUNDS[protocol]:
+            for i in INBOUNDS.get(protocol, []):
                 self.add_trojan(remark=remark,
                                 address=host,
                                 port=i['port'],
@@ -228,7 +228,7 @@ class ClashConfiguration(object):
                                 path=i['stream']['path'])
 
         if protocol == 'shadowsocks':
-            for i in INBOUNDS[protocol]:
+            for i in INBOUNDS.get(protocol, []):
                 self.add_shadowsocks(remark=remark,
                                      address=host,
                                      port=i['port'],

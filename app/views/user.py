@@ -29,7 +29,7 @@ def add_user(new_user: UserCreate,
     try:
         [INBOUNDS[t] for t in new_user.proxies]
     except KeyError as exc:
-        raise HTTPException(status_code=400, detail=f"Proxy type {exc.args[0]} not supported")
+        raise HTTPException(status_code=400, detail=f"Protocol {exc.args[0]} is disabled on your server")
 
     try:
         if admin.is_sudo:
@@ -42,7 +42,7 @@ def add_user(new_user: UserCreate,
 
     for proxy_type in new_user.proxies:
         account = new_user.get_account(proxy_type)
-        for inbound in INBOUNDS[proxy_type]:
+        for inbound in INBOUNDS.get(proxy_type, []):
             try:
                 xray.api.add_inbound_user(tag=inbound['tag'], user=account)
             except xray.exc.EmailExistsError:
@@ -91,7 +91,7 @@ def modify_user(username: str,
     try:
         [INBOUNDS[t] for t in modified_user.proxies]
     except KeyError as exc:
-        raise HTTPException(status_code=400, detail=f"Proxy type {exc.args[0]} not supported")
+        raise HTTPException(status_code=400, detail=f"Protocol {exc.args[0]} is disabled on your server")
 
     dbuser = crud.get_user(db, username)
     if not dbuser:
@@ -169,7 +169,7 @@ def remove_user(username: str,
 
     crud.remove_user(db, dbuser)
     for proxy in dbuser.proxies:
-        for inbound in INBOUNDS[proxy.type]:
+        for inbound in INBOUNDS.get(proxy.type, []):
             try:
                 xray.api.remove_inbound_user(tag=inbound['tag'], email=username)
             except xray.exc.EmailNotFoundError:
