@@ -30,8 +30,13 @@ from app import dashboard, jobs, views, telegram  # noqa
 
 
 @app.on_event("startup")
-def startup():
+def on_startup():
     scheduler.start()
+
+
+@app.on_event("shutdown")
+def on_shutdown():
+    scheduler.shutdown()
 
 
 @app.exception_handler(RequestValidationError)
