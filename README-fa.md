@@ -85,6 +85,8 @@
 
 - پشتیبانی از **TLS**
 
+- **ربات تلگرام**
+
 - قابلیت ایجاد **چندین مدیر** (تکمیل نشده است)
 
 # راهنمای نصب
@@ -159,10 +161,17 @@ python3 main.py
 | پیشوند (یا هاست) آدرس های اشتراکی (زمانی کاربرد دارد که نیاز دارید دامنه subscription link ها با دامنه پنل متفاوت باشد) |  XRAY_SUBSCRIPTION_URL_PREFIX   |
 |                                                                        تگ inboundای که به عنوان fallback استفاده میشود. |    XRAY_FALLBACK_INBOUND_TAG    |
 |                                                تگ های inbound ای که لازم نیست در کانفیگ های ساخته شده وجود داشته باشند. |    XRAY_EXCLUDE_INBOUND_TAGS    |
+|                                                       توکن ربات تلگرام (دریافت از [@botfather](https://t.me/botfather)) |       TELEGRAM_API_TOKEN        |
+|                                          آیدی عددی ادمین در تلگرام (دریافت از [@userinfobot](https://t.me/userinfobot)) |        TELEGRAM_ADMIN_ID        |
+|                                                                                               اجرای ربات از طریق پروکسی |       TELEGRAM_PROXY_URL        |
 |                            مدت زمان انقضا توکن دسترسی به پنل مرزبان, `0` به معنای بدون تاریخ انقضا است (پیشفرض: `1440`) | JWT_ACCESS_TOKEN_EXPIRE_MINUTES |
 |                                                       فعال سازی داکیومنتیشن به آدرس `/docs` و `/redoc`(پیشفرض: `False`) |              DOCS               |
 |                                                                     فعالسازی حالت توسعه (development) (پیشفرض: `False`) |              DEBUG              |
 
+
+## ربات تلگرام
+مرزبان دارای یک ربات تلگرام است که شما با فعال سازی آن، میتوانید سرور را مدیریت و اعلان ها را در تلگرام دریافت کنید.
+> متغیر های `TELEGRAM_API_TOKEN` و `TELEGRAM_ADMIN_ID` را در بخش [تنظیمات](#تنظیمات) بررسی کنید.
 
 ### شما و مرزبان
 

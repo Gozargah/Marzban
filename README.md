@@ -85,6 +85,8 @@ Marzban is user-friendly, feature-rich and reliable. It lets you to create diffe
 
 - **TLS** support
 
+- Integrated **Telegram Bot**
+
 - **Multi-admin** support (WIP)
 
 # Installation guide
@@ -135,7 +137,7 @@ cp .env.example .env
 nano .env
 ```
 
-> Check [configurations](#Configuration) section for more information
+> Check [configurations](#configuration) section for more information
 
 Eventually, launch the application using command below
 
@@ -159,16 +161,24 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | UVICORN_UDS                     | Bind application to a UNIX domain socket                                                              |
 | UVICORN_SSL_CERTFILE            | SSL certificate file to have application on https                                                     |
 | UVICORN_SSL_KEYFILE             | SSL key file to have application on https                                                             |
-| XRAY_HOSTS                      | Xray hosts in different lines with `remark@hostname` format (default: `🚀 Marz@SERVER_IP`)            |
+| XRAY_HOSTS                      | Xray hosts in different lines with `remark@hostname` format (default: `🚀 Marz@SERVER_IP`)             |
 | XRAY_JSON                       | Path of Xray's json config file (default: `xray.json`)                                                |
 | XRAY_EXECUTABLE_PATH            | Path of Xray binary (default: `/usr/local/bin/xray`)                                                  |
 | XRAY_ASSETS_PATH                | Path of Xray assets (default: `/usr/local/share/xray`)                                                |
 | XRAY_SUBSCRIPTION_URL_PREFIX    | Prefix of subscription URLs                                                                           |
 | XRAY_FALLBACK_INBOUND_TAG       | Tag of the inbound that includes fallbacks, needed in the case you're using fallbacks                 |
 | XRAY_EXCLUDE_INBOUND_TAGS       | Tags of the inbounds that shouldn't be managed and included in links by application                   |
+| TELEGRAM_API_TOKEN              | Telegram bot API token  (get token from [@botfather](https://t.me/botfather))                         |
+| TELEGRAM_ADMIN_ID               | Numeric Telegram ID of admin (use [@userinfobot](https://t.me/userinfobot) to found your ID)          |
+| TELEGRAM_PROXY_URL              | Run Telegram Bot over proxy                                                                           |
 | JWT_ACCESS_TOKEN_EXPIRE_MINUTES | Expire time for the Access Tokens in minutes, `0` considered as infinite (default: `1440`)            |
 | DOCS                            | Whether API documents should be available on `/docs` and `/redoc` or not (default: `False`)           |
 | DEBUG                           | Debug mode for development (default: `False`)                                                         |
+
+
+## Telegram Bot
+Marzban has an integrated Telegram Bot that you can activate to get notifications and manage server.
+> Check `TELEGRAM_API_TOKEN` & `TELEGRAM_ADMIN_ID` variables in [configurations](#configuration)
 
 ### Marzban is young and under development
 
