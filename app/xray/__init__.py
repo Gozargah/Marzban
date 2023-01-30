@@ -62,7 +62,8 @@ for inbound in config['inbounds']:
         "net": "tcp",
         "tls": False,
         "sni": "",
-        "path": ""
+        "path": "",
+        "header_type": ""
     }
 
     if stream := inbound.get('streamSettings'):
@@ -82,7 +83,15 @@ for inbound in config['inbounds']:
         if tls_settings:
             settings['stream']['sni'] = tls_settings.get('serverName', '')
 
-        if net == 'grpc':
+        if net == 'tcp':
+            path_settings = net_settings.get('header', {}).get('request', {}).get('path')
+            if path_settings and isinstance(path_settings, str):
+                raise ValueError(f"Path settings in {inbound['tag']} must be a list, not str\n"
+                                 "https://xtls.github.io/config/transports/tcp.html#httpheaderobject")
+            if path_settings and isinstance(path_settings, list):
+                settings['stream']['path'] = path_settings[0]
+                settings['stream']['header_type'] = 'http'
+        elif net == 'grpc':
             settings['stream']['path'] = net_settings.get('serviceName', '')
         else:
             settings['stream']['path'] = net_settings.get('path', '')

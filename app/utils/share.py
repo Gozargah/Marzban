@@ -24,7 +24,8 @@ class ShareLink(str):
                               tls=i['stream']['tls'],
                               sni=i['stream']['sni'],
                               host=i['stream']['sni'],
-                              path=i['stream']['path'])
+                              path=i['stream']['path'],
+                              type=i['stream']['header_type'])
                 )
             return '\n'.join(links)
 
@@ -40,7 +41,8 @@ class ShareLink(str):
                               tls=i['stream']['tls'],
                               sni=i['stream']['sni'],
                               host=i['stream']['sni'],
-                              path=i['stream']['path'])
+                              path=i['stream']['path'],
+                              type=i['stream']['header_type'])
                 )
             return '\n'.join(links)
 
@@ -56,7 +58,8 @@ class ShareLink(str):
                                tls=i['stream']['tls'],
                                sni=i['stream']['sni'],
                                host=i['stream']['sni'],
-                               path=i['stream']['path'])
+                               path=i['stream']['path'],
+                               type=i['stream']['header_type'])
                 )
             return '\n'.join(links)
 
@@ -109,13 +112,15 @@ class ShareLink(str):
               path='',
               tls=False,
               host='',
-              sni=''):
+              sni='',
+              type=''):
 
         opts = {
             "security": "tls" if tls else "none",
             "type": net,
             "host": host,
-            "sni": sni
+            "sni": sni,
+            "headerType": type
         }
         if net == 'grpc':
             opts['serviceName'] = urlparse.quote(path)
@@ -136,13 +141,15 @@ class ShareLink(str):
                path='',
                tls=False,
                host='',
-               sni=''):
+               sni='',
+               type=''):
 
         opts = {
             "security": "tls" if tls else "none",
             "type": net,
             "host": host,
-            "sni": sni
+            "sni": sni,
+            "headerType": type
         }
         if net == 'grpc':
             opts['serviceName'] = urlparse.quote(path)
