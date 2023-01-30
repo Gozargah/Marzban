@@ -71,7 +71,7 @@ for inbound in config['inbounds']:
         security = stream.get("security")
         tls_settings = stream.get(f"{security}Settings")
 
-        if not inbound.get('port') and inbound['tag'] != XRAY_FALLBACK_INBOUND_TAG:
+        if net_settings.get('acceptProxyProtocol') == True and inbound['tag'] != XRAY_FALLBACK_INBOUND_TAG:
             # probably this is a fallback
             security = FALLBACK_INBOUND.get('streamSettings', {}).get('security')
             tls_settings = FALLBACK_INBOUND.get('streamSettings', {}).get(f"{security}Settings")
