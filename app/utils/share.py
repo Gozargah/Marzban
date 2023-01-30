@@ -23,7 +23,7 @@ class ShareLink(str):
                               net=i['stream']['net'],
                               tls=i['stream']['tls'],
                               sni=i['stream']['sni'],
-                              host=i['stream']['sni'],
+                              host=i['stream']['host'],
                               path=i['stream']['path'],
                               type=i['stream']['header_type'])
                 )
@@ -40,7 +40,7 @@ class ShareLink(str):
                               net=i['stream']['net'],
                               tls=i['stream']['tls'],
                               sni=i['stream']['sni'],
-                              host=i['stream']['sni'],
+                              host=i['stream']['host'],
                               path=i['stream']['path'],
                               type=i['stream']['header_type'])
                 )
@@ -57,7 +57,7 @@ class ShareLink(str):
                                net=i['stream']['net'],
                                tls=i['stream']['tls'],
                                sni=i['stream']['sni'],
-                               host=i['stream']['sni'],
+                               host=i['stream']['host'],
                                path=i['stream']['path'],
                                type=i['stream']['header_type'])
                 )
@@ -219,7 +219,7 @@ class ClashConfiguration(object):
                                net=i['stream']['net'],
                                tls=i['stream']['tls'],
                                sni=i['stream']['sni'],
-                               host=i['stream']['sni'],
+                               host=i['stream']['host'],
                                path=i['stream']['path'])
 
         if protocol == 'trojan':
@@ -231,7 +231,7 @@ class ClashConfiguration(object):
                                 net=i['stream']['net'],
                                 tls=i['stream']['tls'],
                                 sni=i['stream']['sni'],
-                                host=i['stream']['sni'],
+                                host=i['stream']['host'],
                                 path=i['stream']['path'])
 
         if protocol == 'shadowsocks':

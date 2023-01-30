@@ -63,6 +63,7 @@ for inbound in config['inbounds']:
         "tls": False,
         "sni": "",
         "path": "",
+        "host": "",
         "header_type": ""
     }
 
@@ -71,6 +72,7 @@ for inbound in config['inbounds']:
         net_settings = stream.get(f"{net}Settings", {})
         security = stream.get("security")
         tls_settings = stream.get(f"{security}Settings")
+        headers = net_settings.get('header', {}).get('headers', {}) or net_settings.get('headers', {})
 
         if net_settings.get('acceptProxyProtocol') == True and inbound['tag'] != XRAY_FALLBACK_INBOUND_TAG:
             # probably this is a fallback
@@ -79,6 +81,12 @@ for inbound in config['inbounds']:
 
         settings['stream']['net'] = net
         settings['stream']['tls'] = security in ('tls', 'xtls')
+
+        host = headers.get('Host')
+        if isinstance(host, str):
+            settings['stream']['host'] = host
+        elif isinstance(host, list):
+            settings['stream']['host'] = host[0]
 
         if tls_settings:
             settings['stream']['sni'] = tls_settings.get('serverName', '')
