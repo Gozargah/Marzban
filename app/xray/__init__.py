@@ -13,7 +13,7 @@ from xray_api import types
 from config import (XRAY_ASSETS_PATH, XRAY_EXCLUDE_INBOUND_TAGS,
                     XRAY_EXECUTABLE_PATH, XRAY_FALLBACK_INBOUND_TAG, XRAY_JSON)
 
-# Search for a free API port from 8080
+# Search for a free API port
 try:
     for api_port in range(randint(10000, 60000), 65536):
         if not check_port(api_port):
