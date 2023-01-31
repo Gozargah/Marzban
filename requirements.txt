@@ -34,8 +34,8 @@ pyasn1==0.4.8
 pycparser==2.21
 pydantic==1.10.4
 pyparsing==3.0.9
-python-decouple==3.7
-python-dotenv==0.21.1
+python-decouple==3.6
+python-dotenv==0.21.0
 python-jose==3.3.0
 python-multipart==0.0.5
 pytz-deprecation-shim==0.1.0.post0
