@@ -21,7 +21,7 @@ def review():
                 continue
 
             for proxy in user.proxies:
-                for inbound in INBOUNDS(proxy.type, []):
+                for inbound in INBOUNDS.get(proxy.type, []):
                     try:
                         xray.api.remove_inbound_user(tag=inbound['tag'], email=user.username)
                     except xray.exc.EmailNotFoundError:
