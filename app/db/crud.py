@@ -1,6 +1,6 @@
 from typing import Union
 
-from app.db.models import JWT, Admin, Proxy, System, User
+from app.db.models import JWT, Admin, Proxy, System, User, UserUsageResetLogs
 from app.models.admin import AdminCreate, AdminModify
 from app.models.user import UserCreate, UserModify, UserStatus
 from sqlalchemy.orm import Session
@@ -87,6 +87,20 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
 
     db.commit()
     db.refresh(dbuser)
+    return dbuser
+
+def reset_user_data_usage(db:Session, dbuser:User):
+    usage_log = UserUsageResetLogs(
+        user=dbuser,
+        used_traffic_at_reset=dbuser.used_traffic,
+    )
+    db.add(usage_log)
+    
+    dbuser.used_traffic = 0
+    dbuser.status = UserStatus.active.value
+    db.add(dbuser)
+    
+    db.commit()
     return dbuser
 
 

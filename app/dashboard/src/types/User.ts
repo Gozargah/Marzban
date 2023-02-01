@@ -16,6 +16,7 @@ export type User = {
   proxies: ProxyType;
   expire: number | null;
   data_limit: number | null;
+  lifetime_used_traffic: number;
   username: string;
   used_traffic: number;
   status: UserStatus;

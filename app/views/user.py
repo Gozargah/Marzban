@@ -149,6 +149,22 @@ def remove_user(username: str,
     logger.info(f"User \"{username}\" deleted")
     return {}
 
+@app.post("/api/user/{username}/reset", tags=['User'], response_model=UserResponse)
+def reset_user_data_usage(username: str,
+                db: Session = Depends(get_db),
+                admin: Admin = Depends(Admin.get_current)):
+    """
+    Reset user data usage
+    """
+    dbuser = crud.get_user(db, username)
+    if not dbuser:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
+        raise HTTPException(status_code=403, detail="You're not allowed")
+    
+    user = crud.reset_user_data_usage(db=db, dbuser=dbuser)
+    return user
 
 @app.get("/api/users", tags=['User'], response_model=List[UserResponse])
 def get_users(offset: int = None,
