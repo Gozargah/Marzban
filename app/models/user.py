@@ -18,12 +18,20 @@ class UserStatus(str, Enum):
     disabled = "disabled"
     limited = "limited"
     expired = "expired"
+    
+class UserDataLimitResetStrategy(str,Enum):
+    no_reset = "no_reset"
+    day = "day"
+    week = "week"
+    month = "month"
+    year = "year"
 
 
 class User(BaseModel):
     proxies: Dict[ProxyTypes, ProxySettings] = {}
     expire: int = None
     data_limit: int = None
+    usage_reset_strategy: UserDataLimitResetStrategy = UserDataLimitResetStrategy.no_reset
 
     @validator('proxies', pre=True, always=True)
     def validate_proxies(cls, v, values, **kwargs):
@@ -89,6 +97,7 @@ class UserResponse(User):
     username: str
     status: UserStatus
     used_traffic: int
+    lifetime_used_traffic: int = 0
     created_at: datetime
     links: List[str] = []
     subscription_url: str = ''

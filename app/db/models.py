@@ -33,6 +33,11 @@ class User(Base):
     admin_id = Column(Integer, ForeignKey("admins.id"))
     admin = relationship("Admin", back_populates="users")
     created_at = Column(DateTime, default=datetime.utcnow)
+    
+    
+    @property
+    def lifetime_used_traffic(self):
+        return sum([log.used_traffic_at_reset for log in self.usage_logs]) + self.used_traffic
 
 class UserUsageResetLogs(Base):
     __tablename__ = "user_usage_logs"
