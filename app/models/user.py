@@ -31,7 +31,7 @@ class User(BaseModel):
     proxies: Dict[ProxyTypes, ProxySettings] = {}
     expire: int = None
     data_limit: int = None
-    usage_reset_strategy: UserDataLimitResetStrategy = UserDataLimitResetStrategy.no_reset
+    data_limit_reset_strategy: UserDataLimitResetStrategy = UserDataLimitResetStrategy.no_reset
 
     @validator('proxies', pre=True, always=True)
     def validate_proxies(cls, v, values, **kwargs):
@@ -59,6 +59,7 @@ class User(BaseModel):
 
 class UserCreate(User):
     username: str
+    data_limit_reset_strategy: UserDataLimitResetStrategy = UserDataLimitResetStrategy.no_reset
 
     class Config:
         schema_extra = {
@@ -80,6 +81,7 @@ class UserModify(User):
     expire: int = None
     data_limit: int = None
     proxies: Dict[ProxyTypes, ProxySettings] = None
+    data_limit_reset_strategy: UserDataLimitResetStrategy = UserDataLimitResetStrategy.no_reset
 
     class Config:
         schema_extra = {

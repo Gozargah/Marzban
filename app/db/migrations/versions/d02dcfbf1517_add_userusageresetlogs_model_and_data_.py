@@ -27,7 +27,7 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_user_usage_logs_id'), 'user_usage_logs', ['id'], unique=False)
-    op.add_column('users', sa.Column('data_limit_reset_strategy', sa.Integer(), nullable=True))
+    op.add_column('users', sa.Column('data_limit_reset_strategy', sa.Enum("no_reset", "day","week", "month", "year", name="userdatalimitresetstrategy"), nullable=False, server_default="no_reset"))
     # ### end Alembic commands ###
 
 

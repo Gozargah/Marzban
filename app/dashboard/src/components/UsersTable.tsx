@@ -114,6 +114,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
             <Th>status</Th>
             <Th>banding usage</Th>
             <Th>lifetime usage</Th>
+            <Th>reset every</Th>
             <Th></Th>
           </Tr>
         </Thead>
@@ -138,6 +139,9 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   />
                 </Td>
                 <Td>{formatBytes(user.lifetime_used_traffic)}</Td>
+                <Td textTransform="capitalize">
+                  {user.data_limit_reset_strategy}
+                </Td>
                 <Td width="150px">
                   <HStack
                     justifyContent="flex-end"

@@ -27,7 +27,7 @@ class User(Base):
     status = Column(Enum(UserStatus), default=UserStatus.active)
     used_traffic = Column(BigInteger, default=0)
     data_limit = Column(BigInteger, nullable=True)
-    data_limit_reset_strategy = Column(Integer,default=UserDataLimitResetStrategy.no_reset)
+    data_limit_reset_strategy = Column(Enum(UserDataLimitResetStrategy),default=UserDataLimitResetStrategy.no_reset)
     usage_logs = relationship("UserUsageResetLogs", back_populates="user")
     expire = Column(Integer, nullable=True)
     admin_id = Column(Integer, ForeignKey("admins.id"))

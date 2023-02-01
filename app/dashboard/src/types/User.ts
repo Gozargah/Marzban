@@ -12,10 +12,21 @@ export type ProxyType = {
     password?: string;
   };
 };
+
+export const dataLimitResetStrategy = [
+  "no_reset",
+  "day",
+  "week",
+  "month",
+  "year",
+] as const;
+type DataLimitResetStrategy = typeof dataLimitResetStrategy[number];
+
 export type User = {
   proxies: ProxyType;
   expire: number | null;
   data_limit: number | null;
+  data_limit_reset_strategy: DataLimitResetStrategy;
   lifetime_used_traffic: number;
   username: string;
   used_traffic: number;
@@ -26,5 +37,5 @@ export type User = {
 
 export type UserCreate = Pick<
   User,
-  "proxies" | "expire" | "data_limit" | "username"
+  "proxies" | "expire" | "data_limit" | "username" | "data_limit_reset_strategy"
 >;
