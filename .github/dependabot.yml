@@ -4,13 +4,16 @@ updates:
     directory: "/" 
     schedule:
       interval: "daily"
+    target-branch: "develop"
       
   - package-ecosystem: "npm" 
     directory: "/app/dashboard/" 
     schedule:
       interval: "daily"
+    target-branch: "develop"
       
   - package-ecosystem: "github-actions"
     directory: "/" 
     schedule:
       interval: "daily"
+    target-branch: "develop"
