@@ -23,6 +23,7 @@ import {
   ClipboardIcon,
   LinkIcon,
   QrCodeIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import { FC, useEffect, useState } from "react";
 import { ReactComponent as AddFileIcon } from "assets/add_file.svg";
@@ -92,6 +93,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
     users: totalUsers,
     onEditingUser,
     setQRCode,
+    resetDataUsage,
   } = useDashboard();
   const isFiltered = users.length !== totalUsers.length;
   const [copied, setCopied] = useState([-1, -1, false]);
@@ -111,6 +113,8 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
             <Th>Username</Th>
             <Th>status</Th>
             <Th>banding usage</Th>
+            <Th>lifetime usage</Th>
+            <Th>reset every</Th>
             <Th></Th>
           </Tr>
         </Thead>
@@ -133,6 +137,10 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                     total={user.data_limit}
                     colorScheme={user.status === "limited" ? "red" : "primary"}
                   />
+                </Td>
+                <Td>{formatBytes(user.lifetime_used_traffic)}</Td>
+                <Td textTransform="capitalize">
+                  {user.data_limit_reset_strategy}
                 </Td>
                 <Td width="150px">
                   <HStack
@@ -226,6 +234,23 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                         }}
                       >
                         <QRIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip label="Reset User data Usage" placement="top">
+                      <IconButton
+                        size="xs"
+                        aria-label="reset user data usage"
+                        bg="transparent"
+                        _dark={{
+                          _hover: {
+                            bg: "gray.700",
+                          },
+                        }}
+                        onClick={() => {
+                          resetDataUsage(user);
+                        }}
+                      >
+                        <ArrowPathIcon />
                       </IconButton>
                     </Tooltip>
                   </HStack>

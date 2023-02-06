@@ -1,8 +1,7 @@
-from typing import Union
-
-from app.db.models import JWT, Admin, Proxy, System, User
+from typing import Union, List
+from app.db.models import JWT, Admin, Proxy, System, User, UserUsageResetLogs
 from app.models.admin import AdminCreate, AdminModify
-from app.models.user import UserCreate, UserModify, UserStatus
+from app.models.user import UserCreate, UserModify, UserStatus, UserDataLimitResetStrategy
 from sqlalchemy.orm import Session
 
 
@@ -19,7 +18,8 @@ def get_users(db: Session,
               limit: int = None,
               username: str = None,
               status: Union[UserStatus, list] = None,
-              admin: Admin = None):
+              admin: Admin = None,
+              reset_strategy: Union[UserDataLimitResetStrategy, list] = None) -> List[User]:
     query = db.query(User)
     if admin:
         query = query.filter(User.admin == admin)
@@ -34,6 +34,11 @@ def get_users(db: Session,
             query = query.filter(User.status.in_(status))
         else:
             query = query.filter(User.status == status)
+    if reset_strategy:
+        if isinstance(reset_strategy, list):
+            query = query.filter(User.data_limit_reset_strategy.in_(reset_strategy))
+        else:
+            query = query.filter(User.data_limit_reset_strategy == reset_strategy)
     return query.all()
 
 
@@ -51,7 +56,8 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None):
         proxies=proxies,
         data_limit=(user.data_limit or None),
         expire=(user.expire or None),
-        admin=admin
+        admin=admin,
+        data_limit_reset_strategy=user.data_limit_reset_strategy
     )
     db.add(dbuser)
     db.commit()
@@ -85,8 +91,25 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
     if modify.expire is not None:
         dbuser.expire = (modify.expire or None)
 
+    if modify.data_limit_reset_strategy is not None:
+        dbuser.data_limit_reset_strategy = modify.data_limit_reset_strategy.value
+        
     db.commit()
     db.refresh(dbuser)
+    return dbuser
+
+def reset_user_data_usage(db:Session, dbuser:User):
+    usage_log = UserUsageResetLogs(
+        user=dbuser,
+        used_traffic_at_reset=dbuser.used_traffic,
+    )
+    db.add(usage_log)
+    
+    dbuser.used_traffic = 0
+    dbuser.status = UserStatus.active.value
+    db.add(dbuser)
+    
+    db.commit()
     return dbuser
 
 

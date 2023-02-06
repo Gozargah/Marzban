@@ -42,6 +42,7 @@ type DashboardContextType = {
   createUser: (user: UserCreate) => Promise<void>;
   editUser: (user: UserCreate) => Promise<void>;
   setQRCode: (links: string[] | null) => void;
+  resetDataUsage: (user: User) => Promise<void>;
 } & DashboardStateType;
 
 const dashboardContextInitialValue: DashboardContextType = {
@@ -66,6 +67,9 @@ const dashboardContextInitialValue: DashboardContextType = {
     return new Promise(() => {});
   },
   editUser: (user) => {
+    return new Promise(() => {});
+  },
+  resetDataUsage: (user) => {
     return new Promise(() => {});
   },
 };
@@ -165,6 +169,15 @@ export const DashboardProvider: FC<DashboardProviderProps> = ({ children }) => {
     });
   }, []);
 
+  const resetDataUsage = useCallback((user: User) => {
+    return fetch(`/user/${user.username}/reset`, { method: "POST" }).then(
+      () => {
+        onEditingUser(null);
+        refetchUsers();
+      }
+    );
+  }, []);
+
   const setQRCode = useCallback((links: string[] | null) => {
     dispatch({
       type: "SetQrCode",
@@ -193,6 +206,7 @@ export const DashboardProvider: FC<DashboardProviderProps> = ({ children }) => {
     createUser,
     editUser,
     setQRCode,
+    resetDataUsage,
   };
 
   return (
