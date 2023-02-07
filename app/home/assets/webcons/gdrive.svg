@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   sodipodi:docname="gdrive.svg"
+   version="1.1"
+   width="240"
+   viewBox="0 0 240 240"
+   height="240"
+   enable-background="new 0 0 512 512"
+   id="Capa_1">
+  <metadata
+     id="metadata45">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs43" />
+  <sodipodi:namedview
+     inkscape:current-layer="Capa_1"
+     inkscape:window-maximized="0"
+     inkscape:window-y="28"
+     inkscape:window-x="45"
+     inkscape:cy="256"
+     inkscape:cx="256"
+     inkscape:zoom="1.125"
+     inkscape:pagecheckerboard="true"
+     showgrid="false"
+     id="namedview41"
+     inkscape:window-height="740"
+     inkscape:window-width="1321"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <g
+     transform="matrix(0.390625,0,0,0.390625,20,20)"
+     id="g38">
+    <g
+       id="g14">
+      <g
+         id="g12">
+        <g
+           id="g10">
+          <g
+             id="g8">
+            <g
+               id="g6">
+              <g
+                 id="g4">
+                <circle
+                   id="circle2"
+                   r="256"
+                   fill="#bfe1ff"
+                   cy="256"
+                   cx="256" />
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <path
+       id="path16"
+       fill="#87c7ff"
+       d="M 512,256.232 325.358,69.59 212.746,152.705 142.204,425.2 227.428,510.424 C 236.808,511.465 246.342,512 256,512 397.308,512 511.875,397.51 512,256.232 Z" />
+    <g
+       id="g20">
+      <path
+         id="path18"
+         fill="#7584f2"
+         d="m 142.203,425.2 h 234.333 l 81.283,-109.286 -108.879,-9.377 -24.77,9.377 H 142.203 Z" />
+    </g>
+    <g
+       id="g24">
+      <path
+         id="path22"
+         fill="#606aea"
+         d="m 457.819,315.914 -108.879,-9.377 -24.77,9.377 H 256.121 V 425.2 h 120.415 z" />
+    </g>
+    <g
+       id="g28">
+      <path
+         id="path26"
+         fill="#06b26b"
+         d="M 58.655,315.914 142.203,425.2 310.001,98.347 191.116,69.59 Z" />
+    </g>
+    <g
+       id="g32">
+      <path
+         id="path30"
+         fill="#ffce00"
+         d="M 457.819,315.914 H 324.17 L 191.71,69.59 h 133.648 z" />
+    </g>
+    <g
+       id="g36">
+      <path
+         id="path34"
+         fill="#ffb30b"
+         d="M 457.819,315.914 325.358,69.59 h -69.237 v 119.779 l 68.049,126.545 z" />
+    </g>
+  </g>
+</svg>

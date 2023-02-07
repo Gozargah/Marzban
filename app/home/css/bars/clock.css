@@ -1,0 +1,12 @@
+#clock {
+	color: var(--base-color);
+	font-size: 11pt;
+	font-family: roboto-bold, sans-serif;
+	font-weight: 700;
+
+	/* Center lock */
+	text-align: center;
+   	position: relative;
+	top: 50%;
+	transform: translateY(-50%);
+}

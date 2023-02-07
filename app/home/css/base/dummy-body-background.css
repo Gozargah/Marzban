@@ -1,0 +1,22 @@
+/* Filter for body's lazy loaded background */
+
+#dummyBodyBackground {
+	background: var(--base-body-bg);
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	transition: all 3s;
+}
+
+.dummyBackgroundBlur {
+	filter: blur(5px);
+}
+
+.dummyBackgroundHide {
+	opacity: 0;
+}

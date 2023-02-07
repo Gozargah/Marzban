@@ -1,0 +1,161 @@
+.weatherSettings {
+	font-family: roboto, sans-serif;
+	font-weight: 400;
+	width: 100%;
+	height: auto;
+	position: relative;
+	border-radius: 6px;
+	color: var(--base-color);
+	background: var(--base-container);
+	margin-top: 10px;
+}
+
+#weatherSettingsPadding {
+	padding: 10px;
+	height: auto;
+}
+
+#weatherSettingsHeader {
+	height: 32px;
+	width: 100%;
+
+	display: flex;
+	flex-direction: row;
+	justify-content: left;
+}
+
+#weatherSettingsHeaderIcon {
+	background-image: url('../../assets/ui-icons/weather.svg');
+}
+
+/* Main settings */
+.weatherSettingsGroups {
+	height: auto;
+	width: 100%;
+	margin-top: 5px;
+
+	transition: all var(--transition-speed);
+}
+
+.weatherSettingsLabels {
+	font-family: roboto, sans-serif;
+	font-size: 11pt;
+	font-weight: 400;
+	text-align: left;
+}
+
+.hideWeatherSettings {
+	height: 0;
+	opacity: 0;
+	pointer-events: none;
+	transition:
+				height var(--transition-speed),
+				opacity var(--transition-speed);
+}
+
+.weatherSettingsInputs {
+	height: 32px;
+	width: 100%;
+	box-sizing: border-box;
+	margin-top: 5px;
+	border: none;
+	text-align: center;
+	border-radius: 6px;
+
+	background: var(--panel-bg);
+	font-family: roboto, sans-serif;
+	font-size: 12pt;
+	font-weight: 400;
+	color: var(--base-color);
+
+	/* Center vertically */
+	display: flex;
+  	justify-content: center;
+  	align-items: center;
+}
+
+#weatherSelectUnits,
+#weatherSelectLocator {
+	background: var(--base-container);
+	color: var(--base-color);
+
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+}
+
+#weatherSelectUnits:hover,
+#weatherSelectLocator:hover {
+	outline: none;
+	cursor: pointer;
+	background: var(--base-hover-bg);
+}
+
+#weatherSelectUnits:focus,
+#weatherSelectLocator:focus {
+	outline: none;
+	background: var(--base-focus-bg);
+}
+
+#weatherSelectUnits:active,
+#weatherSelectLocator:active {
+	outline: none;
+	background: var(--base-active-bg);
+}
+
+#weatherSelectUnits option,
+#weatherSelectLocator option {
+	color: initial;
+	border: none;
+}
+
+#weatherSettingsApply,
+#weatherSettingsReset {
+	margin-top: 0;
+	border: none;
+	background: var(--base-container);
+}
+
+#weatherSettingsApply {
+	margin-left: 2.5px;
+}
+
+#weatherSettingsReset {
+	margin-right: 2.5px;
+}
+
+#weatherSettingsApply:hover,
+#weatherSettingsReset:hover {
+	outline: none;
+	cursor: pointer;
+	background: var(--base-hover-bg);
+}
+
+#weatherSettingsApply:active,
+#weatherSettingsReset:active {
+	outline: none;
+	background: var(--base-active-bg);
+}
+
+#weatherSettingsApply:focus,
+#weatherSettingsReset:focus {
+	outline: none;
+	background: var(--base-focus-bg);
+}
+
+#weatherSettingsButtons {
+	display: flex;
+	flex-direction: row;
+	justify-content: left;
+}
+
+#weatherSettingsContainer {
+	height: auto;
+}
+
+@media screen and (max-width: 470px) {
+	.weatherSettings {
+		width: 96vw;
+		box-sizing: border-box;
+	}
+}

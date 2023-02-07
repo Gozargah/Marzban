@@ -1,0 +1,224 @@
+#weatherScreen {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 6vh 12vw;
+
+	transform: scale(0);
+	opacity: 0;
+	z-index: 0;
+	transition:
+				transform var(--transition-speed),
+				opacity var(--transition-speed),
+				z-index var(--transition-speed);
+}
+
+.screen#weatherScreen.showWeatherScreen {
+	transform: scale(1);
+	opacity: 1;
+	z-index: 3;
+}
+
+#weatherScreenContainer {
+	overflow: hidden;
+
+	/* Align vertically center */
+	margin: 0;
+	position: absolute;
+	top: 50%;
+	-ms-transform: translateY(-50%);
+	transform: translateY(-50%);
+}
+
+#weatherTodayIcon {
+	background: url('../../assets/weather-icons/weather-error.svg');
+	background-size: cover;
+	width: 128px;
+	height: 128px;
+
+	position: relative;
+	left: 50%;
+	-ms-transform: translateX(-50%);
+	transform: translateX(-50%);
+}
+
+#weatherTodayLocation {
+	color: var(--base-color);
+	font-family: roboto, sans-serif;
+	font-weight: 400;
+	font-size: 16pt;
+	text-align: center;
+	position: relative;
+}
+
+#weatherTodayDescription {
+	color: var(--base-color);
+	font-family: roboto-bold, sans-serif;
+	font-weight: 700;
+	font-size: 20pt;
+	text-align: center;
+	position: relative;
+}
+
+#weatherHourDataTodayContainer,
+.weatherDataHour {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
+.hourDataIcon {
+	height: 22px;
+	width: 22px;
+	background-size: cover;
+}
+
+.hourDataLabel {
+	color: var(--base-color);
+	font-family: roboto, sans-serif;
+	font-weight: 400;
+	font-size: 14pt;
+	text-align: center;
+}
+
+#sunriseHourDataIcon {
+	background-image: url("../../assets/weather-icons/sunrise.svg");
+	background-size: cover;
+}
+
+#sunsetHourDataIcon {
+	background-image: url("../../assets/weather-icons/sunset.svg");
+	background-size: cover;
+	margin-left: 5px;
+}
+
+#updateHourDataIcon {
+	background-image: url("../../assets/weather-icons/refresh.svg");
+	background-size: cover;
+	margin-left: 5px;
+}
+
+.weatherForecast {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+}
+
+/* Forecast Container */
+.weatherForecastDay {
+	text-align: center;
+	margin-top: 20px;
+
+	float: left;
+	clear: both;
+	margin-left: 10px;
+}
+
+/* Add fixed geometry to weatherForecastDay children */
+.weatherForecastDay > div {
+	width: 100px;
+	height: 60px;
+}
+
+.weatherForecastDayIconContainer {
+	clear: both;
+}
+
+.weatherForecastDayIcon {
+	background: url('../../assets/weather-icons/weather-error.svg');
+	background-size: cover;
+	width: 48px;
+	height: 48px;
+
+	position: relative;
+	left: 50%;
+	-ms-transform: translateX(-50%);
+	transform: translateX(-50%);
+}
+
+/* Center */
+.weatherForecastDayDetails {
+	clear: both;
+}
+
+.weatherForecastDayDetailsTemperature,
+.weatherForecastDayDetailsDescription,
+.weatherForecastDayDate {
+	color: var(--base-color);
+	font-family: roboto, sans-serif;
+	font-weight: 400;
+	font-size: 11pt;
+	text-align: center;
+}
+
+.weatherForecastDayDateName {
+	font-weight: 900;
+	font-size: 14pt;
+}
+
+/* Right side */
+.weatherForecastDayDate {
+	clear: both;
+}
+
+@media screen and (max-width: 470px) {
+	#weatherScreen {
+		padding: 6vh 18vw 0 18vw;
+	}
+}
+
+@media screen and (max-height: 799px) {
+	#weatherScreen {
+		padding-top: 40px;
+	}
+}
+
+@media screen and (max-width: 470px) {
+	.weatherForecast {
+		display: inline-block;
+		flex-direction: row;
+		justify-content: center;
+	}
+
+	/* Forecast Container */
+	.weatherForecastDay {
+		text-align: center;
+		margin-top: 20px;
+
+		float: none;
+		clear: none;
+		margin-left: 0;
+	}
+
+	/* Add fixed geometry to weatherForecastDay children */
+	.weatherForecastDay > div {
+		width: 75px;
+		height: 50px;
+	}
+
+	.weatherForecastDayIconContainer {
+		float: left;
+		clear: none;
+	}
+
+	.weatherForecastDayDateName {
+		font-weight: 400;
+		font-size: 12pt;
+	}
+
+	/* Center */
+	.weatherForecastDayDetails {
+		display: inline-block;
+		margin: 0 auto;
+		clear: none;
+	}
+
+	/* Right side */
+	.weatherForecastDayDate {
+		float: right;
+		clear: none;
+	}
+}

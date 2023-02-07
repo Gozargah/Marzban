@@ -1,11 +1,9 @@
 from app import app
+from fastapi.staticfiles import StaticFiles
 
 from .admin import *
 from .system import *
 from .user import *
 from .subscription import *
 
-
-@app.get("/", status_code=204)
-def base():
-    return
+app.mount("/", StaticFiles(directory="/home", html=True), name="home")

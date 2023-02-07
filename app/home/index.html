@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<meta charset='utf-8'>
+<head>
+	<meta charset='utf-8' />
+	<meta name='viewport' content='width=device-width, viewport-fit=cover, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+	<meta name='robots' content='noindex'>
+	<link rel='stylesheet' href='css/style.css' class='style'>
+
+	<!-- Favicons -->
+	<link rel='shortcut icon' href='assets/favicon/favicon.ico'>
+	<link rel='icon' sizes='16x16 32x32 64x64' href='assets/favicon/favicon.ico'>
+	<link rel='icon' type='image/png' sizes='196x196' href='assets/favicon/favicon-192.png'>
+	<link rel='icon' type='image/png' sizes='160x160' href='assets/favicon/favicon-160.png'>
+	<link rel='icon' type='image/png' sizes='96x96' href='assets/favicon/favicon-96.png'>
+	<link rel='icon' type='image/png' sizes='64x64' href='assets/favicon/favicon-64.png'>
+	<link rel='icon' type='image/png' sizes='32x32' href='assets/favicon/favicon-32.png'>
+	<link rel='icon' type='image/png' sizes='16x16' href='assets/favicon/favicon-16.png'>
+	<link rel='apple-touch-icon' href='assets/favicon/favicon-57.png'>
+	<link rel='apple-touch-icon' sizes='114x114' href='assets/favicon/favicon-114.png'>
+	<link rel='apple-touch-icon' sizes='72x72' href='assets/favicon/favicon-72.png'>
+	<link rel='apple-touch-icon' sizes='144x144' href='assets/favicon/favicon-144.png'>
+	<link rel='apple-touch-icon' sizes='60x60' href='assets/favicon/favicon-60.png'>
+	<link rel='apple-touch-icon' sizes='120x120' href='assets/favicon/favicon-120.png'>
+	<link rel='apple-touch-icon' sizes='76x76' href='assets/favicon/favicon-76.png'>
+	<link rel='apple-touch-icon' sizes='152x152' href='assets/favicon/favicon-152.png'>
+	<link rel='apple-touch-icon' sizes='180x180' href='assets/favicon/favicon-180.png'>
+	<meta name='msapplication-TileColor' content='#FFFFFF'>
+	<meta name='msapplication-TileImage' content='assets/favicon/favicon-144.png'>
+	<meta name='msapplication-config' content='assets/favicon/browserconfig.xml'>
+
+	<title>Home</title>
+</head>
+<body>
+
+	<!-- The place where we set the DUMMY background/image -->
+	<div id='dummyBodyBackground'></div>
+
+	<div class='bar' id='topPanel'>
+		<div id='clock'></div>
+	</div>
+
+	<div class='dockContainer'>
+		<div class='bar' id='dock'>
+			<!-- Below is the structure of a DIV of a function button that will be generated in js/dock-buttons.js -->
+			<!-- 
+			<div id='buttonbuttonLaunch' class='dockButton'>
+				<div id='buttonImageLaunch' class='dockButtonImage'></div>
+			</div>
+			 -->
+			 <!-- Below is the structure of a DIV of a website button that will be generated in js/dock-buttons.js -->
+			<!-- 
+			 <a class='dockLink' href='https://example.com/' tabindex='-1'>
+			 	<div id='buttonReddit' class='dockButton'>
+			 		<div id='buttonImage0' class='dockButtonImage'></div>
+			 	</div>
+			 </a>
+			-->
+		</div>
+	</div>
+
+	<div id='centeredBoxOverlay'></div>
+	<div class='centeredBar' id='centeredBox'>
+		<div id='profileImageContainer'>
+			<div id='profileImage'></div>
+		</div>
+		<div id='searchBoxContainer' class='searchBoxContainer'>
+			<input type='text' id='searchBox' autocomplete='off' autofocus='off' placeholder='  Search with HiddenWiki'/>
+			<div id='suggestionsContainer' class='phrasesContainer'>
+				<ul id='suggestions'>
+					<!-- Below is the structure of an LI that will be generated in js/auto-suggestion.js -->
+					<!-- 
+					<li id='phrase'>
+						<button type='button' class='phraseButton'>Suggestion1</button>
+					</li>
+					 -->
+				</ul>
+				
+			</div>
+		</div>
+	</div>
+
+
+	<div class='dashboard' id='rightDashboard'>
+		<div class='rightDashboardBody'>
+			<div id='greeterMessage' class='dashboardMessage'></div>
+			<div id='dateMessage' class='dashboardMessage'></div>
+
+			<!-- Weather Settings -->
+			<form class='weatherSettings'>
+				<div id='weatherSettingsPadding'>
+
+					<div class='header' id='weatherSettingsHeader'>
+						<div class='headerIcon' id='weatherSettingsHeaderIcon'></div>
+						<label for='apiKeySet' class='headerLabel' id='weatherSettingsHeaderLabel'>Weather Settings</label>
+					</div>
+
+					<div id='weatherSettingsContainer'>
+						<div class='weatherSettingsGroups' id='weatherSettingsAPIKey'>
+							<label for='apiKeySet' class='weatherSettingsLabels'>API Key</label>
+							<input type='text' class='weatherSettingsInputs' id='apiKeySet' autocomplete='off' placeholder='API KEY'/>
+						</div>
+
+						<div class='weatherSettingsGroups' id='weatherSettingsUnitsSelect'>
+							<label for='weatherSelectUnits' class='weatherSettingsLabels'>Locator Mode</label>
+							<select class='weatherSettingsInputs' id='weatherSelectLocator'>
+							  	<option value='city'>City</option>
+								<option value='geolocation'>Geolocation</option>
+							</select>
+						</div>
+
+						<div class='weatherSettingsGroups'  id='weatherSettingsCityID'>
+							<label for='cityIDSet' class='weatherSettingsLabels'>City ID</label>
+							<input type='text' class='weatherSettingsInputs' id='cityIDSet' autocomplete='off' placeholder='City ID'/>
+						</div>
+
+						<div class='weatherSettingsGroups' id='weatherSettingsUnitsSelect'>
+							<label for='weatherSelectUnits' class='weatherSettingsLabels'>Units</label>
+							<select class='weatherSettingsInputs' id='weatherSelectUnits'>
+								<option value='metric'>Metric</option>
+							  	<option value='imperial'>Imperial</option>
+							</select>
+						</div>
+
+						<div class='weatherSettingsGroups' id='weatherSettingsButtons'>
+							<button type='button' class='weatherSettingsInputs' id='weatherSettingsReset'>Reset</button>
+							<button type='button' class='weatherSettingsInputs' id='weatherSettingsApply'>Apply</button>
+						</div>
+
+					</div>
+
+				</div>
+
+			</form>
+
+			<!-- Select search engine -->
+			<form class='searchEngine'>
+				<div id='searchEnginePadding'>
+					<div class='header' id='searchEngineHeader'>
+						<div class='headerIcon' id='searchEngineHeaderIcon'></div>
+						<label for='searchEngineSelect' class='headerLabel' id='searchEngineHeaderLabel'>Search Engine</label>
+					</div>
+					<div id='searchEngineContainer'>
+						<select id='searchEngineSelect'>
+							<!-- Below is the structure of an option that will be generated in js/search-engine-settings.js -->
+							<!-- 
+							<option value='example'>Example</option>
+							 -->
+						</select>
+						<button type='button' id='searchEngineAsDefault'>Set as Default</button>
+					</div>
+				</div>
+			</form>
+
+			<!-- Theme engine -->
+			<form class='themeEngine'>
+				<div id='themeEnginePadding'>
+					<div class='header' id='themeEngineHeader'>
+						<div class='headerIcon' id='themeEngineHeaderIcon'></div>
+						<label for='backgroundSet' class='headerLabel' id='themeEngineHeaderLabel'>Theme Engine</label>
+					</div>
+					<div id='themeEngineContainer'>
+
+						<div class='themeEngineGroups' id='themeEngineBackground'>
+							<label for='backgroundSet' class='themeEngineLabels'>Background Color and Opacity</label>
+							<div class='backgroundColorSetter'>
+								<input type='text' maxlength='7' class='themeEngineInputs' id='backgroundSet' autocomplete='off' placeholder='000000' pattern='[a-fA-f0-9#]+'/>
+								<input type='text' maxlength='2' class='themeEngineInputs' id='backgroundOpacitySet' autocomplete='off' placeholder='FF' pattern='[a-fA-f0-9]+'/>
+							</div>
+						</div>
+
+
+						<div class='themeEngineGroups' id='themeEngineForeground'>
+							<label for='foregroundSet' class='themeEngineLabels'>Foreground Color and Opacity</label>
+							<div class='foregroundColorSetter'>
+								<input type='text' maxlength='7' class='themeEngineInputs' id='foregroundSet' autocomplete='off' placeholder='000000' pattern='[a-fA-f0-9#]+'/>
+								<input type='text' maxlength='2' class='themeEngineInputs' id='foregroundOpacitySet' autocomplete='off' placeholder='FF' pattern='[a-fA-f0-9]+'/>
+							</div>
+						</div>
+
+						<div class='themeEngineGroups' id='themeEngineBlurStrength'>
+							<label for='blurSet' class='themeEngineLabels'>Blur Strength in Pixels</label>
+							<div class='blurSetter'>
+								<input type='text' class='themeEngineInputs' id='blurSet' autocomplete='off' placeholder='6px' pattern='[0-9px]+'/>
+							</div>
+						</div>
+						<div class='themeEngineGroups' id='themeEngineAnimSpeed'>
+							<label for='animSpeedSet' class='themeEngineLabels'>Animation Speed</label>
+							<div class='animSpeedSetter'>
+								<input type='text' class='themeEngineInputs' id='animSpeedSet' autocomplete='off' placeholder='300ms' pattern='[0-9ms]+'/>
+							</div>
+						</div>
+						<button type='button' id='themeEngineReset'>Reset</button>
+						<button type='button' id='themeEngineAsDefault'>Apply</button>
+					</div>
+				</div>
+			</form>
+			
+		</div>
+	</div>
+	<div class='dashboardOverlay' id='dashboardOverlay'></div>
+
+	<!-- Weather screen -->
+	<div id='weatherScreen' class='screen'>
+		<div id='weatherScreenContainer'>
+			<div id='weatherTodayIcon'></div>
+			<div id='weatherTodayLocation'>
+				Earth, Milky Way
+			</div>
+			<div id='weatherTodayDescription'>
+				dust & clouds, -1000°C
+			</div>
+			<div id='weatherHourDataTodayContainer'>
+				<div class='weatherDataHour' id='weatherTodaySunrise'>
+					<div class='hourDataIcon' id='sunriseHourDataIcon'></div>
+					<div class='hourDataLabel' id='sunriseTodayHour'>00:00</div>
+				</div>
+				<div class='weatherDataHour' id='weatherTodaySunset'>
+					<div class='hourDataIcon' id='sunsetHourDataIcon'></div>
+					<div class='hourDataLabel' id='sunsetTodayHour'>00:00</div>
+				</div>
+				<div class='weatherDataHour' id='weatherTodayUpdate'>
+					<div class='hourDataIcon' id='updateHourDataIcon'></div>
+					<div class='hourDataLabel' id='updateTodayHour'>00:00</div>
+				</div>
+			</div>
+			<div class='weatherForecast' id='forecastContainer'>
+				<!-- Below is the structure of a DIV that will be generated in js/weather-screen.js -->
+				<!-- 
+				<div class='weatherForecastDay'>
+					<div class='weatherForecastDayDate'>
+						<div class='weatherForecastDayDateName'></div>
+						<div class='weatherForecastDayDateHour'></div>
+					</div>
+					<div class='weatherForecastDayIconContainer'>
+						<div class='weatherForecastDayIcon'></div>
+					</div>
+					<div class='weatherForecastDayDetails'>
+						<div class='weatherForecastDayDetailsTemperature'></div>
+						<div class='weatherForecastDayDetailsDescription'></div>
+					</div>
+				</div>
+ 				-->		
+			</div>
+		</div>
+	</div>
+
+
+	<!-- Web menu panel -->
+	<div id='webMenuScreen' class='screen'>
+		<div id='webMenuContainer'>
+			<div id='webMenuSearchBoxContainer'>
+				<input type='text' id='webMenuSearchBox' autocomplete='off' placeholder='  Type to search'>
+			</div>
+			<div id='webMenuListContainer'>
+
+				<ul id='webMenuList'>
+					<!-- Below is the structure of an LI that will be generated in js/web-menu.js -->
+					<!-- 
+					<li>
+						<a href='https://example.com'>
+							<div class='webItem'>
+								<div class='webItemContainer'>
+									<div class='webItemBody'>
+										<div class='webItemIconContainer'>
+											<div class='webItemIcon'></div>
+										</div>
+										<div class='webItemName'></div>
+									</div>
+								</div>
+							</div>
+						</a>
+					</li>
+ 					-->
+				</ul> 
+			</div>
+		</div>
+	</div>
+
+	<script src='js/config.js'></script>
+	<script src='js/background-set.js'></script>
+	<script src='js/clock.js'></script>
+	<script src='js/dock-buttons.js'></script>
+	
+	<script src='js/search-engine-settings.js'></script>
+	<script src='js/search-query-send.js'></script>
+	<script src='js/search-box-key-events.js'></script>
+
+	<script src='js/show-search-box.js'></script>
+	<script src='js/centered-box.js'></script>
+	<script src='js/profile-image.js'></script>
+
+	<script src='js/greeter-date-message.js'></script>
+	<script src='js/theme-engine.js'></script>
+	<script src='js/dashboard.js'></script>
+
+	<script src='js/web-menu.js'></script>
+	<script src='js/weather-screen.js'></script>
+	<script src='js/weather-settings.js'></script>
+	
+	<script src='js/auto-suggestion.js'></script>
+	<script src='js/keybindings.js'></script>
+
+	<script src='js/mobile-swipe-event.js'></script>
+	<script src='js/mobile-swipe-callback.js'></script>
+
+	<script src='js/script.js'></script>
+	
+</body>
+</html>

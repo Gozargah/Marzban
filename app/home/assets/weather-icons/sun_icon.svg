@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="240"
+   height="240"
+   viewBox="0 0 63.5 63.5"
+   version="1.1"
+   id="svg3922"
+   inkscape:version="0.92.4 5da689c313, 2019-01-14"
+   sodipodi:docname="sun_icon.svg">
+  <defs
+     id="defs3916" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#222222"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.35"
+     inkscape:cx="-31.428571"
+     inkscape:cy="445.639"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1321"
+     inkscape:window-height="740"
+     inkscape:window-x="45"
+     inkscape:window-y="28"
+     inkscape:window-maximized="0"
+     inkscape:pagecheckerboard="true"
+     units="px" />
+  <metadata
+     id="metadata3919">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-233.5)">
+    <path
+       inkscape:connector-curvature="0"
+       style="clip-rule:evenodd;fill:#fcde00;fill-rule:evenodd;stroke-width:1.556373"
+       d="m 30.193614,238.79167 h 3.11277 v 9.33824 h -3.11277 z m 1.556354,38.90931 c 6.876065,0 12.451005,-5.57488 12.451005,-12.45094 0,-6.87606 -5.57494,-12.45101 -12.451005,-12.45101 -6.876061,0 -12.450943,5.57495 -12.450943,12.45101 0,6.87606 5.574882,12.45094 12.450943,12.45094 z m 1.556416,14.00736 v -9.33824 h -3.11277 v 9.33824 z M 5.2916665,266.80639 v -3.11276 h 9.3382415 v 3.11276 z m 52.9166665,-3.11276 h -9.338242 v 3.11276 h 9.338242 z m -45.488135,-14.95984 2.200709,-2.2007 5.501825,5.50177 -2.200709,2.2007 z m 31.91501,27.51354 -2.202291,2.2023 5.503354,5.50177 2.200704,-2.20071 z m -29.401421,8.03248 -2.200767,-2.20071 5.501825,-5.50336 2.200709,2.20071 z m 27.513539,-31.91189 2.202297,2.2007 5.501767,-5.50176 -2.200709,-2.2023 z"
+       id="path489" />
+  </g>
+</svg>

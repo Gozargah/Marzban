@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   sodipodi:docname="gmail.svg"
+   version="1.1"
+   width="240"
+   viewBox="0 0 240 240"
+   height="240"
+   enable-background="new 0 0 32 32"
+   id="Bold">
+  <metadata
+     id="metadata11">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs9" />
+  <sodipodi:namedview
+     inkscape:current-layer="Bold"
+     inkscape:window-maximized="0"
+     inkscape:window-y="28"
+     inkscape:window-x="45"
+     inkscape:cy="256"
+     inkscape:cx="256"
+     inkscape:zoom="1.125"
+     inkscape:pagecheckerboard="true"
+     showgrid="false"
+     id="namedview7"
+     inkscape:window-height="740"
+     inkscape:window-width="1321"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <g
+     transform="matrix(0.390625,0,0,0.390625,-109.86111,31.458333)"
+     id="g1600">
+    <rect
+       x="396.44446"
+       y="34.666668"
+       style="fill:#eceff1"
+       width="384"
+       height="384"
+       id="rect2" />
+    <polygon
+       style="fill:#cfd8dc"
+       points="448,448 448,148.672 256,296.384 "
+       id="polygon4"
+       transform="translate(332.44444,-29.333333)" />
+    <path
+       style="fill:#f44336"
+       d="m 796.44444,34.666667 h -16 l -192,151.616003 -192,-151.616003 h -16 c -26.496,0 -48,21.504 -48,48 V 370.66667 c 0,26.496 21.504,48 48,48 h 16 v -299.328 l 192,147.68 192,-147.712 v 299.36 h 16 c 26.496,0 48,-21.504 48,-48 V 82.666667 c 0,-26.496 -21.504,-48 -48,-48 z"
+       id="path6" />
+    <g
+       id="g8"
+       transform="translate(332.44444,-29.333333)" />
+    <g
+       id="g10"
+       transform="translate(332.44444,-29.333333)" />
+    <g
+       id="g12"
+       transform="translate(332.44444,-29.333333)" />
+    <g
+       id="g14"
+       transform="translate(332.44444,-29.333333)" />
+    <g
+       id="g16"
+       transform="translate(332.44444,-29.333333)" />
+    <g
+       id="g18"
+       transform="translate(332.44444,-29.333333)" />
+    <g
+       id="g20"
+       transform="translate(332.44444,-29.333333)" />
+    <g
+       id="g22"
+       transform="translate(332.44444,-29.333333)" />
+    <g
+       id="g24"
+       transform="translate(332.44444,-29.333333)" />
+    <g
+       id="g26"
+       transform="translate(332.44444,-29.333333)" />
+    <g
+       id="g28"
+       transform="translate(332.44444,-29.333333)" />
+    <g
+       id="g30"
+       transform="translate(332.44444,-29.333333)" />
+    <g
+       id="g32"
+       transform="translate(332.44444,-29.333333)" />
+    <g
+       id="g34"
+       transform="translate(332.44444,-29.333333)" />
+    <g
+       id="g36"
+       transform="translate(332.44444,-29.333333)" />
+  </g>
+</svg>

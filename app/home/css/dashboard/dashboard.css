@@ -1,0 +1,92 @@
+.dashboard {
+	background: var(--panel-bg);
+	height: 100%;
+	z-index: 7;
+	/* border-radius: var(--rounded-radius); */
+	backdrop-filter: blur(var(--blur-strength));
+
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.rightDashboardBody {
+	margin: 10px;
+	height: auto;
+	width: 330px;
+}
+
+#rightDashboard {
+	width: 0;
+	top: 0;
+	right: 0;
+	position: absolute;
+	overflow-x: hidden;
+	overflow-y: auto;
+	box-sizing: border-box;
+	scrollbar-width: none;
+	transition: width var(--transition-speed);
+}
+
+/* Hide scrollbar */
+#rightDashboard::-webkit-scrollbar {
+	display: none;
+}
+
+/* Show dashboard */
+.dashboard#rightDashboard.showRightDashboard {
+	width: 350px;
+	z-index: 7;
+	scrollbar-width: none;
+}
+
+/* Overlay */
+.dashboardOverlay {
+	position: absolute;
+	visibility: hidden;
+	
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	
+	margin: 0;
+	padding: 0;
+	
+	z-index: -2;
+	filter: blur(var(--blur-strength)) brightness(70%);
+	transition:
+				visibility var(--transition-speed),
+				z-index var(--transition-speed);
+}
+
+.dashboardOverlay.showDashboardOverlay {
+	visibility: visible;
+	z-index: 6;
+}
+
+@media screen and (max-width: 470px) {
+	.dashboard#rightDashboard.showRightDashboard {
+		width: 100vw;
+		margin-right: 0;
+	}
+}
+
+.headerIcon {
+	background-size: cover;
+	margin-right: 10px;
+	width: 28px;
+	height: 28px;
+}
+
+.headerLabel {
+	font-family: roboto-bold, sans-serif;
+	font-weight: bold;
+	font-size: 14pt;
+	text-align: left;
+	margin-top: auto;
+	margin-bottom: auto;
+}

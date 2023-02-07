@@ -1,0 +1,17 @@
+.dashboardMessage {
+	color: var(--base-color);
+	word-wrap: break-word;
+	margin: 5px;
+}
+
+.dashboardMessage#greeterMessage {
+	font-size: 32pt;
+	font-family: roboto-light, sans-serif;
+	font-weight: 300;
+}
+
+.dashboardMessage#dateMessage {
+	font-size: 12pt;
+	font-family: roboto, sans-serif;
+	font-weight: 400;
+}

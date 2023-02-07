@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   sodipodi:docname="youtube.svg"
+   id="svg4"
+   version="1.1"
+   width="240"
+   viewBox="0 0 240 240"
+   height="240"
+   enable-background="new 0 0 24 24">
+  <metadata
+     id="metadata10">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs8" />
+  <sodipodi:namedview
+     inkscape:current-layer="svg4"
+     inkscape:window-maximized="0"
+     inkscape:window-y="28"
+     inkscape:window-x="45"
+     inkscape:cy="256"
+     inkscape:cx="256"
+     inkscape:zoom="1.125"
+     inkscape:pagecheckerboard="true"
+     showgrid="false"
+     id="namedview6"
+     inkscape:window-height="740"
+     inkscape:window-width="1321"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <path
+     style="stroke-width:8.32758"
+     id="path2"
+     fill="#e53935"
+     d="m 24.475699,168.92209 c 4.080512,14.47333 16.563549,17.1215 17.396306,17.62948 20.544131,5.59613 135.697865,5.61279 156.550115,0 14.28179,-4.13047 16.90498,-16.79672 17.3963,-17.62948 5.43791,-28.93 5.796,-66.64559 -0.24982,-99.472899 l 0.24982,1.632205 c -4.08051,-14.473328 -16.56354,-17.121498 -17.3963,-17.62948 -20.26932,-5.504528 -135.722846,-5.712717 -156.550115,0 -14.281793,4.138806 -16.904979,16.796722 -17.396306,17.62948 -5.820976,30.403984 -6.112441,65.288194 0,97.840694 z m 75.664361,-18.5122 V 89.676874 l 52.1806,30.412306 z" />
+</svg>

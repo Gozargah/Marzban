@@ -1,0 +1,47 @@
+#profileImageContainer {
+	background: var(--base-bg);
+	backdrop-filter: blur(var(--blur-strength));
+
+	height: 138px;
+	width: 138px;
+	border-radius: 50%;
+	pointer-events: initial;
+	
+	margin: 0 auto;
+	margin-bottom: 110px;
+	position: relative;
+
+   	flex-flow: column wrap;
+	display: flex;
+  	justify-content: center;
+  	align-items: center;
+}
+
+#profileImage {
+	background-image: url('../../assets/user.png');
+	height: 128px;
+	width: 128px;
+	border-radius: 50%;
+	background-size: cover;
+	
+   	flex-flow: column wrap;
+	display: flex;
+  	justify-content: center;
+  	align-items: center;
+}
+
+.rotateProfileAnim {
+	animation: rotate var(--transition-speed) 1;
+	animation-iteration-count: 1;
+	animation-play-state: paused;
+}
+
+@keyframes rotate {
+	from {
+		transform: rotate(0deg);
+	}
+	
+	to {
+		transform: rotate(360deg);
+	}
+}

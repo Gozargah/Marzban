@@ -1,0 +1,25 @@
+#centeredBoxOverlay {
+	background: transparent;
+	opacity: 0;
+	backdrop-filter: blur(0) brightness(100%);
+	
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	
+	margin: 0;
+	padding: 0;
+	z-index: -1;
+	transition:
+				opacity var(--transition-speed),
+				z-index var(--transition-speed),
+				backdrop-filter var(--transition-speed);
+}
+
+#centeredBoxOverlay.showOverlay {
+	opacity: 1;
+	z-index: 0;
+	backdrop-filter: blur(var(--blur-strength)) brightness(70%);
+}

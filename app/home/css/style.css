@@ -1,0 +1,31 @@
+/* Load all CSS */
+@import url('base/normalize.css');
+@import url('base/font-face.css');
+@import url('base/base.css');
+@import url('base/dummy-body-background.css');
+
+/* Bars and Panels */
+@import url('bars/bar.css');
+@import url('bars/top-panel.css');
+@import url('bars/clock.css');
+@import url('bars/dock.css');
+@import url('bars/dock-buttons.css');
+
+/* Centered box and Contents */
+@import url('centeredbox/centered-box.css');
+@import url('centeredbox/centered-box-overlay.css');
+@import url('centeredbox/profile-image.css');
+@import url('centeredbox/search-box.css');
+@import url('centeredbox/auto-suggestion.css');
+
+/* Screens */
+@import url('screens/screens.css');
+@import url('screens/weather-screen.css');
+@import url('screens/web-menu.css');
+
+/* Dashboard and Settings */
+@import url('dashboard/dashboard.css');
+@import url('dashboard/greeter-date-message.css');
+@import url('dashboard/search-engine-settings.css');
+@import url('dashboard/weather-settings.css');
+@import url('dashboard/theme-engine.css');

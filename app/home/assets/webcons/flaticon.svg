@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   sodipodi:docname="1841783.svg"
+   version="1.1"
+   width="240"
+   viewBox="0 0 240 240"
+   height="240"
+   enable-background="new 0 0 512 512"
+   id="Capa_1">
+  <metadata
+     id="metadata911">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs909" />
+  <sodipodi:namedview
+     inkscape:current-layer="Capa_1"
+     inkscape:window-maximized="1"
+     inkscape:window-y="28"
+     inkscape:window-x="45"
+     inkscape:cy="256"
+     inkscape:cx="256"
+     inkscape:zoom="1.0703125"
+     inkscape:pagecheckerboard="true"
+     showgrid="false"
+     id="namedview907"
+     inkscape:window-height="740"
+     inkscape:window-width="1321"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <g
+     transform="matrix(1.8360773,0,0,1.8360773,19.999964,-350.03671)"
+     id="g917">
+    <path
+       id="Shape_2_"
+       d="M 44.171,260.62 H 55.609 L 65.757,243.919 H 33.937 L 23.445,226.794 H 76.248 L 86.396,210.093 H 8.482 c -3.096,0 -5.848,1.611 -7.396,4.239 -1.462,2.628 -1.462,5.85 0.086,8.393 l 46.009,75.114 c 1.548,2.543 4.3,4.069 7.224,4.069 2.924,0 5.676,-1.526 7.224,-4.069 l 2.666,-4.324 z"
+       fill="#0e2a47" />
+    <g
+       id="Shape_3_"
+       fill="#69e781"
+       transform="translate(63.629)">
+      <path
+         d="M 21.821,226.794 H 41.6 l 2.494,-4.069 c 1.548,-2.543 1.634,-5.765 0.086,-8.393 -1.462,-2.628 -4.3,-4.239 -7.396,-4.239 h -4.816 z"
+         id="path901" />
+      <path
+         d="m 17.005,234.763 -21.5,35.183 9.804,16.108 31.389,-51.291 z"
+         id="path903" />
+    </g>
+  </g>
+</svg>

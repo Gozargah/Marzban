@@ -1,0 +1,123 @@
+.searchEngine {
+	font-family: roboto, sans-serif;
+	font-weight: 400;
+	width: 100%;
+	height: auto;
+	position: relative;
+	border-radius: 6px;
+	color: var(--base-color);
+	background: var(--base-container);
+	margin-top: 10px;
+}
+
+#searchEnginePadding {
+	padding: 10px;
+	height: auto;
+}
+
+#searchEngineHeader {
+	height: 32px;
+	width: 100%;
+
+	display: flex;
+	flex-direction: row;
+	justify-content: left;
+}
+
+#searchEngineHeaderIcon {
+	background-image: url('../../assets/ui-icons/internet.svg');
+}
+
+#searchEngineContainer {
+	margin-top: 5px;
+}
+
+#searchEngineSelect {
+	height: 32px;
+	width: 100%;
+	box-sizing: border-box;
+	margin-top: 5px;
+	border: none;
+
+	text-align: center;
+	border-radius: 6px;
+	color: var(--base-color);
+	background: var(--base-container);
+	
+	font-family: roboto, sans-serif;
+	font-size: 12pt;
+	font-weight: 400;
+	
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+}
+
+#searchEngineSelect:hover {
+	outline: none;
+	cursor: pointer;
+	background: var(--base-hover-bg);
+}
+
+#searchEngineSelect:focus {
+	outline: none;
+	background: var(--base-focus-bg);
+}
+
+#searchEngineSelect:active {
+	outline: none;
+	background: var(--base-active-bg);
+}
+
+#searchEngineSelect option {
+	color: initial;
+	border: none;
+}
+
+select::-ms-expand {
+  display: none;
+}
+
+#searchEngineAsDefault {
+	background: var(--base-container);
+	color: var(--base-color);
+	text-align: center;
+
+	font-family: roboto, sans-serif;
+	font-size: 12pt;
+	font-weight: 400;
+
+	width: 100%;
+	height: 32px;
+	margin-top: 5px;
+	border-radius: 6px;
+	cursor: pointer;
+	border: none;
+
+	/* Center vertically */
+	display: flex;
+  	justify-content: center;
+  	align-items: center;
+}
+
+#searchEngineAsDefault:hover {
+	outline: none;
+	background: var(--base-hover-bg);
+}
+
+#searchEngineAsDefault:active {
+	outline: none;
+	background: var(--base-active-bg);
+}
+
+#searchEngineAsDefault:focus {
+	outline: none;
+	background: var(--base-focus-bg);
+}
+
+@media screen and (max-width: 470px) {
+	.searchEngine {
+		width: 96vw;
+		box-sizing: border-box;
+	}
+}

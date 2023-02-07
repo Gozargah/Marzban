@@ -1,0 +1,25 @@
+.screen {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	margin: 0;
+	background: var(--panel-bg);
+	
+	overflow: hidden;
+	backdrop-filter: blur(var(--blur-strength));
+
+	/* Disable user touch/select on text elements */
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+
+	/* Dont increase the geometry by using padding */
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   sodipodi:docname="interneting-is-hard.svg"
+   id="svg16"
+   version="1.1"
+   viewBox="0 0 240 240"
+   height="240"
+   width="240">
+  <metadata
+     id="metadata20">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>interneting-is-hard-logo</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     inkscape:current-layer="svg16"
+     inkscape:window-maximized="0"
+     inkscape:window-y="28"
+     inkscape:window-x="45"
+     inkscape:cy="5.6687095"
+     inkscape:cx="-13.509605"
+     inkscape:zoom="1.5652174"
+     inkscape:pagecheckerboard="true"
+     showgrid="false"
+     id="namedview18"
+     inkscape:window-height="740"
+     inkscape:window-width="1321"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <!-- Generator: Sketch 39.1 (31720) - http://www.bohemiancoding.com/sketch -->
+  <title
+     id="title2">interneting-is-hard-logo</title>
+  <desc
+     id="desc4">Created with Sketch.</desc>
+  <defs
+     id="defs6" />
+  <g
+     transform="matrix(1.7726704,0,0,1.7726704,17.14807,38.610406)"
+     fill-rule="evenodd"
+     fill="none"
+     stroke-width="1"
+     stroke="none"
+     id="Page-1">
+    <g
+       id="interneting-is-hard-logo">
+      <g
+         transform="translate(1,1)"
+         id="Group">
+        <path
+           fill="#b2d6ff"
+           id="Combined-Shape"
+           d="m 45.094768,13.654773 c -15.533842,1.536765 -30.138594,7.349894 -42.4158113,16.775284 -2.72285791,2.090376 -2.61398283,4.821483 -0.5236071,7.544341 2.0903757,2.722858 5.3706693,4.406375 8.0935274,2.316 C 20.62609,32.323667 32.944404,27.394852 46.07289,26.05019 45.692126,21.240311 45.348224,16.885028 45.094768,13.654773 Z M 67.36013,26.086145 c 13.420118,1.43705 26.035255,6.604468 36.59911,14.869475 2.70359,2.115244 5.54473,0.345156 7.65998,-2.358429 2.11524,-2.703584 2.70359,-5.316873 0,-7.432116 C 99.144388,21.404952 84.211122,15.323448 68.341517,13.689749 68.086876,16.924502 67.741888,21.279365 67.36013,26.086145 Z" />
+        <path
+           fill="#5995da"
+           id="Combined-Shape-Copy"
+           d="m 61.18834,64.53504 c 0,0 4.48687,-56.1591995 4.48687,-56.5630088 0,-4.5078675 -4.009291,-7.56975043 -8.955002,-7.56975043 -4.94571,0 -8.955001,3.06188293 -8.955001,7.56975043 0,0.4025016 4.472379,56.5630088 4.472379,56.5630088 0,0 0.526199,2.332186 4.482622,2.332182 3.956423,-4e-6 4.468132,-2.332182 4.468132,-2.332182 z" />
+        <path
+           fill="#b2d6ff"
+           id="path10"
+           d="m 47.30601,41.599067 c -8.548731,1.033809 -16.637219,4.126994 -23.665762,9.001473 -2.820753,1.956267 -2.316926,5.190759 -0.36066,8.011513 1.956267,2.820753 4.624173,4.159604 7.444926,2.203338 5.23061,-3.627565 11.220315,-5.961701 17.567411,-6.810655 -0.289113,-3.635421 -0.630308,-7.927758 -0.985915,-12.405669 z m 17.832841,12.379122 c 6.720066,0.865337 13.050648,3.396861 18.506665,7.359442 2.777486,2.017225 5.744736,0.58631 7.761961,-2.191175 2.017225,-2.777487 2.320543,-5.849767 -0.456943,-7.866992 -7.298585,-5.300796 -15.809471,-8.648036 -24.822778,-9.704204 -0.35658,4.475608 -0.698788,8.766719 -0.988905,12.402929 z" />
+        <circle
+           r="7.769381"
+           cy="81.655441"
+           cx="56.720207"
+           fill="#5995da"
+           id="Oval-2-Copy-34" />
+      </g>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   sodipodi:docname="instagram.svg"
+   id="svg915"
+   version="1.1"
+   width="240"
+   viewBox="0 0 240 240"
+   height="240"
+   enable-background="new 0 0 24 24">
+  <metadata
+     id="metadata921">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs919" />
+  <sodipodi:namedview
+     inkscape:current-layer="svg915"
+     inkscape:window-maximized="0"
+     inkscape:window-y="28"
+     inkscape:window-x="45"
+     inkscape:cy="31.782989"
+     inkscape:cx="256"
+     inkscape:zoom="1.0703125"
+     inkscape:pagecheckerboard="true"
+     showgrid="false"
+     id="namedview917"
+     inkscape:window-height="740"
+     inkscape:window-width="1321"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <linearGradient
+     y2="-84.046997"
+     y1="-72.705002"
+     x2="-26.555"
+     x1="-37.105999"
+     gradientUnits="userSpaceOnUse"
+     gradientTransform="matrix(0,-1.982,-1.844,0,-132.522,-51.077)"
+     id="SVGID_1_">
+    <stop
+       id="stop904"
+       stop-color="#fd5"
+       offset="0" />
+    <stop
+       id="stop906"
+       stop-color="#ff543e"
+       offset=".5" />
+    <stop
+       id="stop908"
+       stop-color="#c837ab"
+       offset="1" />
+  </linearGradient>
+  <g
+     transform="matrix(8.3093919,0,0,8.3093919,20.581853,20.299246)"
+     id="g925">
+    <path
+       style="fill:url(#SVGID_1_)"
+       d="M 1.5,1.633 C -0.386,3.592 0,5.673 0,11.995 c 0,5.25 -0.916,10.513 3.878,11.752 1.497,0.385 14.761,0.385 16.256,-0.002 1.996,-0.515 3.62,-2.134 3.842,-4.957 C 24.007,18.394 24.007,5.603 23.975,5.201 23.739,2.194 21.888,0.461 19.449,0.11 18.89,0.029 18.778,0.005 15.91,0 5.737,0.005 3.507,-0.448 1.5,1.633 Z"
+       fill="url(#SVGID_1_)"
+       id="path911" />
+    <path
+       d="m 11.998,3.139 c -3.631,0 -7.079,-0.323 -8.396,3.057 -0.544,1.396 -0.465,3.209 -0.465,5.805 0,2.278 -0.073,4.419 0.465,5.804 1.314,3.382 4.79,3.058 8.394,3.058 3.477,0 7.062,0.362 8.395,-3.058 0.545,-1.41 0.465,-3.196 0.465,-5.804 0,-3.462 0.191,-5.697 -1.488,-7.375 -1.7,-1.7 -3.999,-1.487 -7.374,-1.487 z m -0.794,1.597 c 7.574,-0.012 8.538,-0.854 8.006,10.843 -0.189,4.137 -3.339,3.683 -7.211,3.683 -7.06,0 -7.263,-0.202 -7.263,-7.265 0,-7.145 0.56,-7.257 6.468,-7.263 z m 5.524,1.471 c -0.587,0 -1.063,0.476 -1.063,1.063 0,0.587 0.476,1.063 1.063,1.063 0.587,0 1.063,-0.476 1.063,-1.063 0,-0.587 -0.476,-1.063 -1.063,-1.063 z m -4.73,1.243 c -2.513,0 -4.55,2.038 -4.55,4.551 0,2.513 2.037,4.55 4.55,4.55 2.513,0 4.549,-2.037 4.549,-4.55 0,-2.513 -2.036,-4.551 -4.549,-4.551 z m 0,1.597 c 3.905,0 3.91,5.908 0,5.908 -3.904,0 -3.91,-5.908 0,-5.908 z"
+       fill="#ffffff"
+       id="path913" />
+  </g>
+</svg>

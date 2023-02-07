@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   height="240"
+   width="240"
+   sodipodi:docname="stackoverflow.svg"
+   id="svg8"
+   version="1.1"
+   viewBox="0 0 240 240">
+  <metadata
+     id="metadata14">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs12" />
+  <sodipodi:namedview
+     inkscape:current-layer="svg8"
+     inkscape:window-maximized="0"
+     inkscape:window-y="28"
+     inkscape:window-x="45"
+     inkscape:cy="273.25553"
+     inkscape:cx="-592.28706"
+     inkscape:zoom="0.36396103"
+     inkscape:pagecheckerboard="true"
+     showgrid="false"
+     id="namedview10"
+     inkscape:window-height="740"
+     inkscape:window-width="1321"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <style
+     id="style2">.st0{fill:#bcbbbb}.st1{fill:#f48023}</style>
+  <g
+     transform="matrix(2.3094688,0,0,2.3094688,-16.60508,-14.411084)"
+     id="g841">
+    <path
+       class="st0"
+       d="M 84.4,93.8 V 70.6 h 7.7 v 30.9 H 22.6 V 70.6 h 7.7 v 23.2 z"
+       id="path4" />
+    <path
+       class="st1"
+       d="m 38.8,68.4 37.8,7.9 1.6,-7.6 -37.8,-7.9 z m 5,-18 35,16.3 3.2,-7 L 47,43.3 Z M 53.5,33.2 83.2,57.9 88.1,52 58.4,27.3 Z m 19.2,-18.3 -6.2,4.6 23,31 6.2,-4.6 z M 38,86 H 76.6 V 78.3 H 38 Z"
+       id="path6" />
+  </g>
+</svg>

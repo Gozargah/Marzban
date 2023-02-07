@@ -1,0 +1,238 @@
+#webMenuScreen {
+	z-index: 0;
+	padding: 40px 12vw 6vh 12vw;
+
+	opacity: 0;
+	transform: scale(0);
+	transition:
+				transform var(--transition-speed),
+				opacity var(--transition-speed),
+				z-index var(--transition-speed);
+}
+
+@media screen and (max-width: 470px) {
+	#webMenuScreen {
+		padding: 6vh 18vw 0 18vw;
+	}
+}
+
+/* Show web menu */
+.screen#webMenuScreen.showWebMenu {
+	transform: scale(1);
+	opacity: 1;
+	z-index: 3;
+}
+
+#webMenuContainer {
+	background: transparent;
+	max-height: 100vh;
+
+	overflow: hidden;
+}
+
+#webMenuSearchBox {
+	background: var(--base-bg);
+
+	text-align: center;
+	font-family: roboto-bold, sans-serif;
+	font-weight: 700;
+	color: var(--panel-color);
+	
+	border: none;
+	border-radius: 6px;
+	
+	width: 225px;
+	height: 36px;
+	margin: 0;
+
+	transition: all var(--transition-speed);
+}
+
+#webMenuSearchBox::placeholder {
+	font-family: roboto-bold, fantasque-sans-mono, sans-serif;
+	font-weight: 700;
+}
+
+@media screen and (max-width: 470px) {
+	#webMenuSearchBox {
+		width: 50vw;
+	}
+}
+
+#webMenuSearchBoxContainer {
+	/* Center horizontally */
+	position: relative;
+	display: flex;
+	flex-flow: column wrap;
+	align-items: center;
+
+	margin-bottom: 20px;
+}
+
+/* Web menu list */
+
+/* UL */
+#webMenuList {
+	list-style-type: none;
+	padding: 0;
+	margin: 0 auto;
+	flex-grow: 1;
+	text-align: justify;
+
+	background: transparent;
+}
+
+/* List */
+#webMenuList li {
+	/* Align list horizontally */
+	display: inline-block;
+}
+
+@media screen and (max-width: 470px) {
+	#webMenuList li {
+		display: inline;
+	}
+}
+
+#webMenuList li.selected {
+	background: var(--base-active-bg);
+	border-radius: var(--rounded-radius);
+	transition: transform var(--transition-speed);
+}
+
+/* Child of li */
+.webItem {
+	background: transparent;
+	width: 128px;
+	height: 128px;
+	margin: 5px;
+	cursor: pointer;
+	border-radius: var(--rounded-radius);
+}
+
+.webItem:hover {
+	box-shadow: 0 0 0 1px var(--base-hover-bg) inset;
+}
+
+.webItem:active {
+	background: var(--base-active-bg);
+	box-shadow: 0 0 0 1px var(--base-hover-bg) inset;
+	border-radius: var(--rounded-radius);
+}
+
+.webItemFocus {
+	width: 128px;
+	height: 128px;
+	margin: 5px;
+	border-radius: var(--rounded-radius);
+	background: var(--base-hover-bg);
+}
+
+.webItemFocus:hover {
+	background: var(--base-hover-bg);
+}
+
+.webItemFocus:active {
+	background: var(--base-active-bg);
+}
+
+/* Contains web icon and label */
+.webItemContainer {
+	/* Align vertically */
+	margin: 0 auto;
+	position: relative;
+	top: 50%;
+	-webkit-transform: translateY(-50%);
+
+	/* Align horizontally */
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+
+	padding: 5px;
+}
+
+/* Web icon container */
+.webItemIconContainer {
+	position: relative;
+	display: flex;
+	flex-flow: column wrap;
+	align-items: center;
+}
+
+.webItemIcon {
+	height: 64px;
+	width: 64px;
+	margin-bottom: 0;
+	background-size: cover;
+}
+
+/* Web label/name */
+.webItemName {
+	text-align: center;
+	font-size: 11pt;
+	font-family: roboto, sans-serif;
+	font-weight: 400;
+	word-wrap: break-word;
+	color: var(--base-color);
+}
+
+#webMenuListContainer {
+	position: relative;
+	display: flex;
+  	justify-content: center;
+  	max-height: 70vh;
+	overflow-y: auto;
+
+	/* Fade transparency */
+	/* -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%); */
+	/* mask-image: linear-gradient(to bottom, black 85%, transparent 100%); */
+}
+
+/* Stretch list item if screen width < 470px */
+@media screen and (max-width: 470px) {
+	#webMenuList {
+		flex-grow: 1;
+	}
+	
+	.webItem {
+		width: auto;
+	}
+
+	.webItem:hover {
+		-ms-transform: scale(1);
+		-webkit-transform: scale(1);
+		transform: scale(1);
+	}
+
+	.webItemFocus {
+		-ms-transform: scale(1);
+		-webkit-transform: scale(1);
+		transform: scale(1);
+	}
+
+	#webMenuListContainer {
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+	}
+
+	#webMenuListContainer::-webkit-scrollbar {
+		display: none;
+	}
+}
+
+/* The a href container/main web menu button container */
+.webMenuLink {
+	/* Act as div */
+	display: block;
+
+	/* Remove outlines */
+	text-decoration: none;
+	outline: 0;
+	border: none;
+	-moz-outline-style: none;
+
+	/* Disable dragging */
+	user-select: none;
+	-webkit-user-drag: none;
+}

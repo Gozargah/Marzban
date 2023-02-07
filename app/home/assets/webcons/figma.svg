@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   sodipodi:docname="figma-1.svg"
+   version="1.1"
+   height="240"
+   width="240"
+   viewBox="0 0 240 240"
+   id="Layer_1">
+  <metadata
+     id="metadata18">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Figma.logo</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs16" />
+  <sodipodi:namedview
+     inkscape:current-layer="Layer_1"
+     inkscape:window-maximized="0"
+     inkscape:window-y="28"
+     inkscape:window-x="45"
+     inkscape:cy="1250"
+     inkscape:cx="833.5"
+     inkscape:zoom="0.2304"
+     inkscape:pagecheckerboard="true"
+     showgrid="false"
+     id="namedview14"
+     inkscape:window-height="740"
+     inkscape:window-width="1321"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <style
+     id="style2">.st0{fill:#0acf83}.st1{fill:#a259ff}.st2{fill:#f24e1e}.st3{fill:#ff7262}.st4{fill:#1abcfe}</style>
+  <title
+     id="title4">Figma.logo</title>
+  <desc
+     id="desc6">Created using Figma</desc>
+  <g
+     transform="matrix(0.66666667,0,0,0.66666667,53.333333,20)"
+     id="g848">
+    <path
+       id="path0_fill"
+       class="st0"
+       d="m 50,300 c 27.6,0 50,-22.4 50,-50 V 200 H 50 c -27.6,0 -50,22.4 -50,50 0,27.6 22.4,50 50,50 z" />
+    <path
+       id="path1_fill"
+       class="st1"
+       d="m 0,150 c 0,-27.6 22.4,-50 50,-50 h 50 V 200 H 50 C 22.4,200 0,177.6 0,150 Z" />
+    <path
+       id="path1_fill_1_"
+       class="st2"
+       d="M 0,50 C 0,22.4 22.4,0 50,0 h 50 V 100 H 50 C 22.4,100 0,77.6 0,50 Z" />
+    <path
+       id="path2_fill"
+       class="st3"
+       d="m 100,0 h 50 c 27.6,0 50,22.4 50,50 0,27.6 -22.4,50 -50,50 h -50 z" />
+    <path
+       id="path3_fill"
+       class="st4"
+       d="m 200,150 c 0,27.6 -22.4,50 -50,50 -27.6,0 -50,-22.4 -50,-50 0,-27.6 22.4,-50 50,-50 27.6,0 50,22.4 50,50 z" />
+  </g>
+</svg>

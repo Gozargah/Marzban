@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="240"
+   height="240"
+   viewBox="0 0 63.5 63.5"
+   version="1.1"
+   id="svg3778"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   sodipodi:docname="dscattered_clouds.svg">
+  <defs
+     id="defs3772" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.5"
+     inkscape:cx="543.25098"
+     inkscape:cy="-187.84046"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1366"
+     inkscape:window-height="768"
+     inkscape:window-x="-34"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     units="px"
+     inkscape:pagecheckerboard="true" />
+  <metadata
+     id="metadata3775">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-233.5)">
+    <path
+       inkscape:connector-curvature="0"
+       style="clip-rule:evenodd;opacity:0.8;fill:#ffffff;fill-rule:evenodd;stroke-width:1.60353529"
+       d="m 45.380214,258.03445 c -0.481208,0 -0.954127,0.0303 -1.42236,0.083 -1.877703,-6.52635 -7.882972,-11.30812 -15.013883,-11.30812 -8.635034,0 -15.634488,6.99946 -15.634488,15.63449 0,0.72157 0.06607,1.42873 0.16182,2.12467 -4.6278218,0.69758 -8.1796361,4.67914 -8.1796361,9.50097 0,5.31249 4.308664,9.62121 9.6212091,9.62121 h 30.467153 c 7.084428,0 12.828304,-5.74388 12.828304,-12.82831 0,-7.08442 -5.743876,-12.82824 -12.828304,-12.82824 z"
+       id="path493" />
+  </g>
+</svg>

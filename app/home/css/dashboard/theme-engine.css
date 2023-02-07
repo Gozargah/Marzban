@@ -1,0 +1,142 @@
+.themeEngine {
+	font-family: roboto, sans-serif;
+	font-weight: 400;
+
+	width: 100%;
+	height: auto;
+	position: relative;
+	border-radius: 6px;
+	color: var(--base-color);
+	background: var(--base-container);
+	margin-top: 10px;
+}
+
+#themeEnginePadding {
+	padding: 10px;
+	height: auto;
+}
+
+#themeEngineHeader {
+	height: 32px;
+	width: 100%;
+
+	display: flex;
+	flex-direction: row;
+	justify-content: left;
+}
+
+#themeEngineHeaderIcon {
+	background-image: url('../../assets/ui-icons/theme.svg');
+}
+
+#themeEngineContainer {
+	margin-top: 5px;
+}
+
+#themeEngineReset,
+#themeEngineAsDefault {
+	background: var(--base-container);
+	color: var(--base-color);
+	text-align: center;
+	font-family: roboto, sans-serif;
+	font-size: 12pt;
+	font-weight: 400;
+
+	width: 100%;
+	height: 32px;
+	margin-top: 5px;
+	border-radius: 6px;
+	cursor: pointer;
+	border: none;
+
+	/* Center vertically */
+	display: flex;
+  	justify-content: center;
+  	align-items: center;
+}
+
+#themeEngineReset:hover,
+#themeEngineAsDefault:hover {
+	background: var(--base-hover-bg);
+}
+
+#themeEngineReset:active,
+#themeEngineAsDefault:active {
+	background: var(--base-active-bg);
+}
+
+#themeEngineReset:focus,
+#themeEngineAsDefault:focus {
+	outline: none;
+	background: var(--base-focus-bg);
+}
+
+.themeEngineGroups {
+	margin-top: 5px;
+}
+
+.themeEngineLabels {
+	font-family: roboto, sans-serif;
+	color: var(--base-color);
+	font-size: 11pt;
+	font-weight: 400;
+}
+
+.backgroundColorSetter,
+.foregroundColorSetter,
+.blurSetter,
+.animSpeedSetter {
+	/* Align div inside horizontally */
+	display: flex;
+	flex-direction: row;
+	justify-content: left;
+
+	margin-top: 5px;
+	box-sizing: border-box;
+}
+
+#backgroundSet,
+#foregroundSet,
+#backgroundOpacitySet,
+#foregroundOpacitySet {
+	margin-right: 2.5px;
+	height: 32px;
+	width: 100%;
+	box-sizing: border-box;
+
+	border: none;
+	text-align: center;
+	border-radius: 6px;
+	
+	font-family: roboto, sans-serif;
+	font-size: 12pt;
+	font-weight: 400;
+	color: var(--base-color);
+	background: var(--panel-bg);
+}
+
+#backgroundOpacitySet,
+#foregroundOpacitySet {
+	margin-left: 2.5px;
+	margin-right: 0;
+	width: 25%;
+}
+
+#blurSet,
+#animSpeedSet {
+	height: 32px;
+	width: 100%;
+	box-sizing: border-box;
+	border: none;
+	text-align: center;
+	border-radius: 6px;
+	color: var(--base-color);
+	background: var(--panel-bg);
+}
+
+@media screen and (max-width: 470px) {
+	.themeEngine {
+		width: 96vw;
+		box-sizing: border-box;
+	}
+}

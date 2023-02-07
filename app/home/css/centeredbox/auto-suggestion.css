@@ -1,0 +1,117 @@
+/* Container */
+.phrasesContainer {
+	position: absolute;
+
+	width: 100vw;
+	height: auto;
+
+	display: table;
+	margin: 0 auto;
+
+	opacity: 0;
+	transition: opacity var(--transition-speed);
+
+	/* Disable user touch/select on text elements */
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+/* Show suggestion */
+#suggestionsContainer.suggestionsShow {
+	opacity: 1;
+}
+
+/* UL */
+#suggestions {
+	
+	height: auto;
+	width: 50vw;
+
+	/* Center ul horizontally */
+	margin: 0 auto;
+	list-style: none;
+
+	/* Remove the fucking padding */
+	/* It took me an hour to fix this piece of shit */
+	padding: 0;
+
+	/* Allow centering of children */
+	display: table;
+  	table-layout: fixed;
+}
+
+/* LI */
+#phrase {
+	/* Align list horizontally */
+	justify-content: center;
+
+	height: auto;
+
+	/* Always stack and center horizontally */
+	/* display: table-cell; */
+	/* width: auto; */
+  	/* text-align: center; */
+
+  	/* Always stack and center vertically */
+  	display: inline-flex;
+  	width: 100%;
+  	text-align: center;
+}
+
+/* LI's Child */
+.phraseButton {
+
+	background: transparent;
+	border: none;
+	outline: none;
+
+	color: var(--base-color);
+	font-size: 12pt;
+	font-family: roboto-bold, sans-serif;
+	font-weight: 700;
+	text-align: center;
+
+	border-radius: 6px;
+	vertical-align: middle;
+	padding: 10px;
+}
+
+/* Focus */
+.phraseButton:focus {
+	background: var(--base-bg);
+}
+
+/* Active */
+.phraseButton:active {
+	background: var(--base-active-bg);
+}
+
+@media screen and (max-height: 539px) and (min-height: 341px) {
+	#suggestions {
+		height: auto;
+		width: 100vw;
+	}
+
+	/* The Li */
+	#phrase {
+		/* Always stack and center horizontally */
+	  	display: table-cell;
+	  	text-align: center;
+
+	  	justify-content: space-between;
+	  	
+	  	padding: 0;
+	  	width: 20px;
+	}
+}
+
+@media screen and (max-height: 340px) {
+	/* Hide */
+	#suggestionsContainer.phrasesContainer {
+		opacity: 0;
+	}
+}

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   sodipodi:docname="Commons-logo.svg"
+   id="svg29"
+   viewBox="-305 -516 240 240"
+   height="240"
+   width="240"
+   version="1.1">
+  <metadata
+     id="metadata33">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Wikimedia Commons Logo</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     inkscape:current-layer="svg29"
+     inkscape:window-maximized="0"
+     inkscape:window-y="28"
+     inkscape:window-x="45"
+     inkscape:cy="628.49934"
+     inkscape:cx="512"
+     inkscape:zoom="0.41860465"
+     inkscape:pagecheckerboard="true"
+     showgrid="false"
+     id="namedview31"
+     inkscape:window-height="740"
+     inkscape:window-width="1321"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <title
+     id="title2">Wikimedia Commons Logo</title>
+  <defs
+     id="defs7">
+    <clipPath
+       id="c">
+      <circle
+         cy="0"
+         cx="0"
+         id="circle4"
+         r="298" />
+    </clipPath>
+  </defs>
+  <g
+     transform="matrix(0.24600246,0,0,0.24600246,-185,-369.30873)"
+     id="g870">
+    <circle
+       r="100"
+       fill="#990000"
+       id="circle9"
+       cx="0"
+       cy="0" />
+    <g
+       fill="#006699"
+       id="g27">
+      <g
+         id="arrow"
+         clip-path="url(#c)">
+        <path
+           d="M -11,180 V 298 H 11 V 180"
+           id="path11" />
+        <path
+           d="M -43,185 0,110 43,185"
+           id="path13" />
+      </g>
+      <g
+         id="arrows3">
+        <use
+           xlink:href="#arrow"
+           transform="rotate(45)"
+           id="use16"
+           x="0"
+           y="0"
+           width="100%"
+           height="100%" />
+        <use
+           xlink:href="#arrow"
+           transform="rotate(90)"
+           id="use18"
+           x="0"
+           y="0"
+           width="100%"
+           height="100%" />
+        <use
+           xlink:href="#arrow"
+           transform="rotate(135)"
+           id="use20"
+           x="0"
+           y="0"
+           width="100%"
+           height="100%" />
+      </g>
+      <use
+         xlink:href="#arrows3"
+         transform="scale(-1,1)"
+         id="use23"
+         x="0"
+         y="0"
+         width="100%"
+         height="100%" />
+      <path
+         id="blue_path"
+         transform="rotate(-45)"
+         stroke="#006699"
+         stroke-width="84"
+         fill="none"
+         d="M 0,-256 A 256,256 0 1 0 256,0 c 0,-100 -101,-150 -6,-275" />
+      <path
+         id="arrow_top"
+         d="m -23,-515 c 0,0 -36,135 -80,185 -44,50 116,-62 170,-5 54,57 -90,-180 -90,-180 z" />
+    </g>
+  </g>
+</svg>
