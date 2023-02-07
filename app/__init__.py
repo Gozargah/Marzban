@@ -25,7 +25,7 @@ app.add_middleware(
 )
 
 
-from app import dashboard, jobs, views  # noqa
+from app import dashboard, jobs, views, home  # noqa
 
 
 @app.on_event("startup")
