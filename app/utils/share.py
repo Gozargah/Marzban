@@ -11,7 +11,7 @@ from config import XRAY_HOSTS
 
 
 class ShareLink(str):
-    def __new__(cls, remark: str, host: str, protocol: str, settings: dict):
+    def __new__(cls, remark: str, host: str, protocol: str, settings: dict, sni: str = None):
         if protocol == 'vmess':
             links = []
             for i in INBOUNDS.get(protocol, []):
@@ -22,7 +22,7 @@ class ShareLink(str):
                               id=settings['id'],
                               net=i['stream']['net'],
                               tls=i['stream']['tls'],
-                              sni=i['stream']['sni'],
+                              sni=i['stream']['sni'] if sni is None else sni,
                               host=i['stream']['host'],
                               path=i['stream']['path'],
                               type=i['stream']['header_type'])
@@ -39,8 +39,8 @@ class ShareLink(str):
                               id=settings['id'],
                               net=i['stream']['net'],
                               tls=i['stream']['tls'],
-                              sni=i['stream']['sni'],
-                              host=i['stream']['host'],
+                              sni=i['stream']['sni'] if sni is None else sni,
+                              host=i['stream']['host'] if sni is None else sni,
                               path=i['stream']['path'],
                               type=i['stream']['header_type'])
                 )
@@ -56,8 +56,8 @@ class ShareLink(str):
                                password=settings['password'],
                                net=i['stream']['net'],
                                tls=i['stream']['tls'],
-                               sni=i['stream']['sni'],
-                               host=i['stream']['host'],
+                               sni=i['stream']['sni'] if sni is None else sni,
+                               host=i['stream']['host'] if sni is None else sni,
                                path=i['stream']['path'],
                                type=i['stream']['header_type'])
                 )
@@ -209,7 +209,7 @@ class ClashConfiguration(object):
                 return new
             c += 1
 
-    def add(self, remark: str, host: str, protocol: str, settings: dict):
+    def add(self, remark: str, host: str, protocol: str, settings: dict, sni: str = None):
         if protocol == 'vmess':
             for i in INBOUNDS.get(protocol, []):
                 self.add_vmess(remark=remark,
@@ -218,8 +218,8 @@ class ClashConfiguration(object):
                                id=settings['id'],
                                net=i['stream']['net'],
                                tls=i['stream']['tls'],
-                               sni=i['stream']['sni'],
-                               host=i['stream']['host'],
+                               sni=i['stream']['sni'] if sni is None else sni,
+                               host=i['stream']['host'] if sni is None else sni,
                                path=i['stream']['path'])
 
         if protocol == 'trojan':
@@ -230,8 +230,8 @@ class ClashConfiguration(object):
                                 password=settings['password'],
                                 net=i['stream']['net'],
                                 tls=i['stream']['tls'],
-                                sni=i['stream']['sni'],
-                                host=i['stream']['host'],
+                                sni=i['stream']['sni'] if sni is None else sni,
+                                host=i['stream']['host'] if sni is None else sni,
                                 path=i['stream']['path'])
 
         if protocol == 'shadowsocks':
@@ -314,7 +314,8 @@ def get_clash_sub(username: str, proxies: dict):
     conf = ClashConfiguration()
     for host in XRAY_HOSTS:
         for proxy_type, settings in proxies.items():
-            conf.add(host['remark'], host['hostname'], proxy_type, settings.dict(no_obj=True))
+            conf.add(host['remark'], host['hostname'],
+                     proxy_type, settings.dict(no_obj=True), sni=host['sni'])
     return conf
 
 

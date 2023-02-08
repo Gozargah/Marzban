@@ -117,7 +117,9 @@ class UserResponse(User):
                     link = ShareLink(f"{host['remark']} ({values['username']})",
                                      host['hostname'],
                                      proxy_type,
-                                     settings.dict())
+                                     settings.dict(),
+                                     sni=host["sni"]
+                                    )
                     links.extend(link.split('\n'))
             return links
         return v
