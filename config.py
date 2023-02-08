@@ -32,8 +32,8 @@ XRAY_ASSETS_PATH = config("XRAY_ASSETS_PATH", default="/usr/local/share/xray")
 XRAY_HOSTS = [
     {
         "remark": h.rsplit('@', 1)[0].format(SERVER_IP=SERVER_IP),
-        "hostname": h.rsplit('@', 1)[1].format(SERVER_IP=SERVER_IP),
-        "sni": h.rsplit('@', 1)[2].format(SERVER_IP=SERVER_IP) if len(h.rsplit('@', 1)) > 2 else None
+        "hostname": h.rsplit('@', 1)[1],
+        "sni": h.rsplit('@', 1)[2] if len(h.rsplit('@', 1)) > 2 else None
     }
     for h in filter(bool, config("XRAY_HOSTS", default=f'🚀 Marz@{SERVER_IP}').split("\n"))
 ]
