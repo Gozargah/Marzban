@@ -54,9 +54,23 @@ def user_subcription(token: str,
     else:
         conf = get_v2ray_sub(user.links)
         uri: str = f"STATUS=🚀↑↓:{format_bytes(user.used_traffic)}/{format_bytes(user.data_limit)}|💡Expires:{user.expire}\r\n"
-        return Response(content=conf, media_type="text/plain",
-                        headers={
-                            "profile-update-interval": "24",
-                            "subscription-userinfo": f"upload={(user.used_traffic)}; download=0; total={(user.data_limit)}; expire={user.expire}",
-                            "content-disposition": f'attachment; filename="{user.username}"'
-                        })
+        return Response(
+            content=conf, media_type="text/plain",
+            headers={"profile-update-interval": "24",
+                     "subscription-userinfo":
+                     f"upload={(user.used_traffic)}; download=0; total={(user.data_limit)}; expire={user.expire}",
+                     "content-disposition": f'attachment; filename="{user.username}"'})
+
+
+@app.get("/sub/{token}/info", tags=['Subscription'], response_model=UserResponse)
+def user_subcription_info(token: str,
+                          db: Session = Depends(get_db)):
+    sub = get_subscription_payload(token)
+    if not sub:
+        return Response(status_code=404)
+
+    dbuser = crud.get_user(db, sub['username'])
+    if not dbuser or dbuser.created_at > sub['created_at']:
+        return Response(status_code=404)
+
+    return dbuser
