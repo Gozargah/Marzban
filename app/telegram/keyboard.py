@@ -19,8 +19,15 @@ class BotKeyboard:
         return keyboard
 
     @staticmethod
-    def user_menu(user_info, with_back: bool = True, page: int = 1):
+    def user_menu(user_info, with_back: bool = True, page: int = 1, view_user: bool = False):
         keyboard = types.InlineKeyboardMarkup()
+        if view_user:
+            keyboard.add(
+                types.InlineKeyboardButton(
+                    text='View User',
+                    callback_data=f"user:{user_info['username']}:1"
+                )
+            )
         keyboard.add(
             types.InlineKeyboardButton(
                 text='Suspend User' if user_info['status'] == 'active' else 'Activate User',
