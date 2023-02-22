@@ -76,8 +76,14 @@ class BotKeyboard:
         for user in users:
             row = []
             for p in user:
+                status = {
+                    'active': '✅',
+                    'expired': '🕰',
+                    'limited': '📵',
+                    'disabled': '❌'
+                }
                 row.append(types.InlineKeyboardButton(
-                    text=f"{p.username} ({'✅' if p.status == 'active' else '❌'})",
+                    text=f"{p.username} ({status[p.status]})",
                     callback_data=f'user:{p.username}:{page}'
                 ))
             keyboard.row(*row)
