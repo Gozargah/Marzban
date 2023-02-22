@@ -93,22 +93,23 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
 
     if modify.data_limit_reset_strategy is not None:
         dbuser.data_limit_reset_strategy = modify.data_limit_reset_strategy.value
-        
+
     db.commit()
     db.refresh(dbuser)
     return dbuser
 
-def reset_user_data_usage(db:Session, dbuser:User):
+
+def reset_user_data_usage(db: Session, dbuser: User):
     usage_log = UserUsageResetLogs(
         user=dbuser,
         used_traffic_at_reset=dbuser.used_traffic,
     )
     db.add(usage_log)
-    
+
     dbuser.used_traffic = 0
     dbuser.status = UserStatus.active.value
     db.add(dbuser)
-    
+
     db.commit()
     return dbuser
 

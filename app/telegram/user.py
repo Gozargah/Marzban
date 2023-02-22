@@ -1,4 +1,3 @@
-from app.utils.readable import readable_size
 from datetime import datetime
 from app.db import GetDB, crud
 from app.models.user import UserResponse
@@ -6,6 +5,8 @@ from app.telegram import bot
 from pytz import UTC
 from telebot.custom_filters import ChatFilter
 from telebot.util import extract_arguments
+
+from app.utils.system import readable_size
 
 bot.add_custom_filter(ChatFilter())
 
@@ -18,6 +19,7 @@ get_user_text = """
 *Created at*: `{created_at}`
 *Proxy protocols*: `{protocols}`
 """
+
 
 @bot.message_handler(commands=['usage'])
 def usage_command(message):
