@@ -43,20 +43,30 @@ def user_subcription(token: str,
         return Response(status_code=204)
     user = UserResponse.from_orm(dbuser)
 
+    response_headers = {
+        "content-disposition": f'attachment; filename="{user.username}"',
+        "profile-update-interval": "12",
+        "subscription-userinfo": f"upload=0; download={user.used_traffic}; total={user.data_limit}; expire={user.expire}"
+    }
+
     if application.startswith('Clash'):
         conf = get_clash_sub(user.username, user.proxies).to_yaml()
-        return Response(content=conf, media_type="text/yaml",
-                        headers={
-                            "content-disposition": f'attachment; filename="{user.username}"',
-                            "profile-update-interval": "24",
-                            "subscription-userinfo": f"upload={(user.used_traffic)}; download=0; total={(user.data_limit)}; expire={user.expire}",
-                        })
+        return Response(content=conf, media_type="text/yaml", headers=response_headers)
+
     else:
         conf = get_v2ray_sub(user.links)
-        uri: str = f"STATUS=🚀↑↓:{format_bytes(user.used_traffic)}/{format_bytes(user.data_limit)}|💡Expires:{user.expire}\r\n"
-        return Response(content=conf, media_type="text/plain",
-                        headers={
-                            "profile-update-interval": "24",
-                            "subscription-userinfo": f"upload={(user.used_traffic)}; download=0; total={(user.data_limit)}; expire={user.expire}",
-                            "content-disposition": f'attachment; filename="{user.username}"'
-                        })
+        return Response(content=conf, media_type="text/plain", headers=response_headers)
+
+
+@app.get("/sub/{token}/info", tags=['Subscription'], response_model=UserResponse)
+def user_subcription_info(token: str,
+                          db: Session = Depends(get_db)):
+    sub = get_subscription_payload(token)
+    if not sub:
+        return Response(status_code=404)
+
+    dbuser = crud.get_user(db, sub['username'])
+    if not dbuser or dbuser.created_at > sub['created_at']:
+        return Response(status_code=404)
+
+    return dbuser
