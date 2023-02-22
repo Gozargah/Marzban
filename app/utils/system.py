@@ -1,3 +1,4 @@
+import math
 import secrets
 import socket
 from dataclasses import dataclass
@@ -16,6 +17,27 @@ class MemoryStat():
 class CPUStat():
     cores: int
     percent: int
+
+
+class MemoryStorage:
+    def __init__(self):
+        self._data = {}
+
+    def set(self, key, value):
+        self._data[key] = value
+
+    def get(self, key, default=None):
+        return self._data.get(key) or default
+
+    def delete(self, key):
+        self._data.pop(key, None)
+
+    def clear(self):
+        self._data.clear()
+
+
+# Store data in memory
+mem_store = MemoryStorage()
 
 
 def cpu_usage() -> CPUStat:
@@ -40,3 +62,13 @@ def check_port(port: int) -> bool:
         return False
     finally:
         s.close()
+
+
+def readable_size(size_bytes):
+    if size_bytes == 0:
+        return "0B"
+    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+    i = int(math.floor(math.log(size_bytes, 1024)))
+    p = math.pow(1024, i)
+    s = round(size_bytes / p, 2)
+    return f'{s} {size_name[i]}'
