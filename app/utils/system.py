@@ -27,7 +27,7 @@ class MemoryStorage:
         self._data[key] = value
 
     def get(self, key, default=None):
-        return self._data.get(key) or default
+        return self._data.get(key, default)
 
     def delete(self, key):
         self._data.pop(key, None)
