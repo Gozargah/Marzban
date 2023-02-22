@@ -2,13 +2,14 @@ import math
 import re
 from datetime import datetime
 
+import sqlalchemy
 from telebot import types
 from telebot.custom_filters import AdvancedCustomFilter
 from telebot.util import user_link
 
 from app import xray
 from app.db import GetDB, crud
-from app.models.user import UserResponse, UserStatus
+from app.models.user import UserResponse, UserStatus, UserCreate
 from app.telegram import bot
 from app.telegram.keyboard import BotKeyboard
 from app.utils.system import cpu_usage, memory_usage, readable_size, mem_store
@@ -117,7 +118,7 @@ def delete_user_command(call: types.CallbackQuery):
 
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('suspend:'), is_admin=True)
-def delete_user_command(call: types.CallbackQuery):
+def suspend_user_command(call: types.CallbackQuery):
     bot.answer_callback_query(
         call.id,
         '⚠️ This feature is not implemented yet.',
@@ -142,7 +143,7 @@ def users_command(call: types.CallbackQuery):
     with GetDB() as db:
         total_pages = math.ceil(crud.get_users_count(db) / 10)
         users = crud.get_users(db, offset=(page - 1) * 10, limit=10)
-        text = '👥 Users: (Page {page}/{total_pages})'.format(page=page, total_pages=total_pages)
+        text = '👥 Users: (Page {page}/{total_pages})\n❌ Disabled\n🕰 Expired\n✅ Active\n📵 Limited\n'.format(page=page, total_pages=total_pages)
     bot.edit_message_text(
         text,
         call.message.chat.id,
@@ -260,6 +261,13 @@ def add_user_data_limit_step(message: types.Message, username: str):
             reply_markup=BotKeyboard.main_menu()
         )
     try:
+        if float(message.text) < 0:
+            wait_msg = bot.send_message(
+                message.chat.id,
+                '❌ Data limit must be greater or equal to 0.',
+                reply_markup=BotKeyboard.cancel_action()
+            )
+            return bot.register_next_step_handler(wait_msg, add_user_data_limit_step, username=username)
         data_limit = float(message.text) * 1024 * 1024 * 1024
     except ValueError:
         wait_msg = bot.send_message(
@@ -284,10 +292,18 @@ def add_user_expire_step(message: types.Message, username: str, data_limit: int)
             reply_markup=BotKeyboard.main_menu()
         )
     try:
+        today = datetime.today()
         if message.text != '0':
             expire_date = datetime.strptime(message.text, "%Y-%m-%d")
         else:
             expire_date = None
+        if expire_date and expire_date < today:
+            wait_msg = bot.send_message(
+                message.chat.id,
+                '❌ Expire date must be greater than today.',
+                reply_markup=BotKeyboard.cancel_action()
+            )
+            return bot.register_next_step_handler(wait_msg, add_user_expire_step, username=username, data_limit=data_limit)
     except ValueError:
         wait_msg = bot.send_message(
             message.chat.id,
@@ -301,9 +317,9 @@ def add_user_expire_step(message: types.Message, username: str, data_limit: int)
 
     bot.send_message(
         message.chat.id,
-        'Select Protocols:\nUsernames: {}\nData Limit: {} GB\nExpiry Date {}'.format(
+        'Select Protocols:\nUsernames: {}\nData Limit: {}\nExpiry Date {}'.format(
             mem_store.get('username'),
-            mem_store.get('data_limit') / 1024 / 1024 / 1024 if mem_store.get('data_limit') else "Unlimited",
+            readable_size(mem_store.get('data_limit')) if mem_store.get('data_limit') else "Unlimited",
             mem_store.get('expire_date').strftime("%Y-%m-%d") if mem_store.get('expire_date') else 'Never'
         ),
         reply_markup=BotKeyboard.select_protocols([])
@@ -322,11 +338,11 @@ def select_protocols(call: types.CallbackQuery):
         protocols.append(protocol)
     mem_store.set('protocols', protocols)
     bot.edit_message_text(
-        'Select Protocols:\nUsernames: {}\nData Limit: {} GB\nExpiry Date {}'.format(
+        'Select Protocols:\nUsernames: {}\nData Limit: {}\nExpiry Date: {}'.format(
             mem_store.get('username'),
-            mem_store.get('data_limit') / 1024 / 1024 / 1024 if mem_store.get('data_limit') else "Unlimited",
+            readable_size(mem_store.get('data_limit')) if mem_store.get('data_limit') else "Unlimited",
             mem_store.get('expire_date').strftime("%Y-%m-%d") if mem_store.get('expire_date') else 'Never'
-            ),
+        ),
         call.message.chat.id,
         call.message.message_id,
         reply_markup=BotKeyboard.select_protocols(protocols)
@@ -362,7 +378,74 @@ def confirm_user_command(call: types.CallbackQuery):
             reply_markup=BotKeyboard.main_menu()
         )
     elif data == 'add_user':
-        return bot.answer_callback_query(
-            call.id,
-            '❌ This feature is not available yet.',
+        if mem_store.get('username') is None :
+            try:
+                bot.delete_message(call.message.chat.id, call.message.message_id)
+            except: # noqa
+                pass
+            return bot.send_message(
+                call.message.chat.id,
+                '❌ Bot reload detected. Please start over.',
+                reply_markup=BotKeyboard.main_menu()
+            )
+        if not mem_store.get('protocols'):
+            return bot.answer_callback_query(
+                call.id,
+                '❌ No protocols selected.',
+                show_alert=True
+            )
+        new_user = UserCreate(
+            username=mem_store.get('username'),
+            expire=mem_store.get('expire_date').timestamp() if mem_store.get('expire_date') else None,
+            data_limit=mem_store.get('data_limit') if mem_store.get('data_limit') else None,
+            proxies={k: {} for k in mem_store.get('protocols')}
+        )
+        try:
+            [INBOUNDS[t] for t in new_user.proxies]
+        except KeyError as exc:
+            return bot.answer_callback_query(
+                call.id,
+                f'❌ Protocol {exc.args[0]} is disabled on your server',
+                show_alert=True
+            )
+
+        try:
+            with GetDB() as db:
+                db_user = crud.create_user(db, new_user)
+        except sqlalchemy.exc.IntegrityError:
+            return bot.answer_callback_query(
+                call.id,
+                '❌ Username already exists.',
+                show_alert=True
+            )
+
+        for proxy_type in new_user.proxies:
+            account = new_user.get_account(proxy_type)
+            for inbound in INBOUNDS.get(proxy_type, []):
+                try:
+                    xray.api.add_inbound_user(tag=inbound['tag'], user=account)
+                except xray.exc.EmailExistsError:
+                    pass
+
+        text = """
+✅ User added successfully.
+┌ Username: {}
+├ Data Limit: {}
+├ Expire Date: {}
+└ Protocols: {}
+""".format(
+            db_user.username,
+            readable_size(db_user.data_limit) if db_user.data_limit else "Unlimited",
+            mem_store.get('expire_date').strftime("%Y-%m-%d") if db_user.expire else 'Never',
+            ', '.join([p.type for p in db_user.proxies])
+        )
+        bot.edit_message_text(
+            text,
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=BotKeyboard.user_menu({
+                'username': db_user.username,
+                'id': db_user.id,
+                'status': 'active'
+            })
         )
