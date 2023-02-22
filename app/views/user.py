@@ -50,14 +50,18 @@ def add_user(new_user: UserCreate,
 
     bg.add_task(
         telegram.report_new_user,
+        user_id=dbuser.id,
         username=dbuser.username,
+        usage=dbuser.data_limit,
+        expire_date=dbuser.expire,
+        proxies=dbuser.proxies,
         by=admin.username
     )
     logger.info(f"New user \"{dbuser.username}\" added")
     return dbuser
 
 
-@ app.get("/api/user/{username}", tags=['User'], response_model=UserResponse)
+@app.get("/api/user/{username}", tags=['User'], response_model=UserResponse)
 def get_user(username: str,
              db: Session = Depends(get_db),
              admin: Admin = Depends(Admin.get_current)):
@@ -74,7 +78,7 @@ def get_user(username: str,
     return dbuser
 
 
-@ app.put("/api/user/{username}", tags=['User'], response_model=UserResponse)
+@app.put("/api/user/{username}", tags=['User'], response_model=UserResponse)
 def modify_user(username: str,
                 modified_user: UserModify,
                 bg: BackgroundTasks,
@@ -132,26 +136,41 @@ def modify_user(username: str,
 
     user = UserResponse.from_orm(dbuser)
 
+    modified_proxies = []
     for proxy_type in ProxyTypes:
         for inbound in INBOUNDS.get(proxy_type, []):
             try:
                 xray.api.remove_inbound_user(tag=inbound['tag'], email=user.username)
+                modified_proxies.append({
+                    'status': 'removed',
+                    'inbound': inbound['tag'],
+                })
             except xray.exc.EmailNotFoundError:
                 pass
             if proxy_type in user.proxies and user.status == UserStatus.active:
                 account = user.get_account(proxy_type)
                 xray.api.add_inbound_user(tag=inbound['tag'], user=account)
+                modified_proxies.append({
+                    'status': 'added',
+                    'inbound': inbound['tag'],
+                })
+
+    # remove duplicate modified proxies
+    modified_proxies = [dict(t) for t in {tuple(d.items()) for d in modified_proxies}]
 
     bg.add_task(
         telegram.report_user_modification,
         username=dbuser.username,
-        by=admin.username
+        usage=dbuser.data_limit,
+        expire_date=dbuser.expire,
+        by=admin.username,
+        modified_proxies=modified_proxies
     )
     logger.info(f"User \"{user.username}\" modified")
     return user
 
 
-@ app.delete("/api/user/{username}", tags=['User'])
+@app.delete("/api/user/{username}", tags=['User'])
 def remove_user(username: str,
                 bg: BackgroundTasks,
                 db: Session = Depends(get_db),
@@ -182,10 +201,11 @@ def remove_user(username: str,
     logger.info(f"User \"{username}\" deleted")
     return {}
 
+
 @app.post("/api/user/{username}/reset", tags=['User'], response_model=UserResponse)
 def reset_user_data_usage(username: str,
-                db: Session = Depends(get_db),
-                admin: Admin = Depends(Admin.get_current)):
+                          db: Session = Depends(get_db),
+                          admin: Admin = Depends(Admin.get_current)):
     """
     Reset user data usage
     """
@@ -195,11 +215,12 @@ def reset_user_data_usage(username: str,
 
     if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
         raise HTTPException(status_code=403, detail="You're not allowed")
-    
+
     user = crud.reset_user_data_usage(db=db, dbuser=dbuser)
     return user
 
-@ app.get("/api/users", tags=['User'], response_model=List[UserResponse])
+
+@app.get("/api/users", tags=['User'], response_model=List[UserResponse])
 def get_users(offset: int = None,
               limit: int = None,
               username: str = None,
