@@ -11,7 +11,7 @@ click==8.1.3
 cryptography==39.0.1
 Deprecated==1.2.13
 ecdsa==0.18.0
-fastapi==0.86.0
+fastapi==0.92.0
 fastapi-responses==0.2.1
 greenlet==2.0.1
 grpcio==1.50.0
