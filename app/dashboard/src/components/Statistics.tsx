@@ -131,12 +131,27 @@ export const Statistics: FC<BoxProps> = (props) => {
       {...props}
     >
       <StatisticCard
-        title="total users"
-        content={systemData && numberWithCommas(systemData.total_user)}
+        title="active users"
+        content={
+          systemData && (
+            <HStack alignItems="flex-end">
+              <Text>{numberWithCommas(systemData.users_active)}</Text>
+              <Text
+                fontWeight="normal"
+                fontSize="lg"
+                as="span"
+                display="inline-block"
+                pb="5px"
+              >
+                / {numberWithCommas(systemData.total_user)}
+              </Text>
+            </HStack>
+          )
+        }
         icon={<TotalUsersIcon />}
       />
       <StatisticCard
-        title="bandwidth usage"
+        title="data usage"
         content={
           systemData &&
           formatBytes(
@@ -149,10 +164,17 @@ export const Statistics: FC<BoxProps> = (props) => {
         title="memory usage"
         content={
           systemData && (
-            <HStack alignItems="center">
-              <Text>{formatBytes(systemData.mem_used, 1)}</Text>
-              <Text fontWeight="normal" fontSize="lg" as="span">
-                / {formatBytes(systemData.mem_total, 1)}
+            <HStack alignItems="flex-end">
+              <Text>{formatBytes(systemData.mem_used, 1, true)[0]}</Text>
+              <Text
+                fontWeight="normal"
+                fontSize="lg"
+                as="span"
+                display="inline-block"
+                pb="5px"
+              >
+                {formatBytes(systemData.mem_used, 1, true)[1]} /{" "}
+                {formatBytes(systemData.mem_total, 1)}
               </Text>
             </HStack>
           )

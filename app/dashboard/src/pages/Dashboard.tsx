@@ -9,9 +9,9 @@ import { useDashboard } from "contexts/DashboardContext";
 import { UserDialog } from "components/UserDialog";
 import { DeleteUserModal } from "components/DeleteUserModal";
 import { QRCodeDialog } from "components/QRCodeDialog";
+import { HostsDialog } from "components/HostsDialog";
 
 export const Dashboard: FC = () => {
-  const { onCreateUser } = useDashboard();
   return (
     <VStack
       justifyContent="space-between"
@@ -20,23 +20,14 @@ export const Dashboard: FC = () => {
       experimental_spaceY={4}
     >
       <Box w="full">
-        <Header
-          actions={
-            <Button
-              colorScheme="primary"
-              size="sm"
-              onClick={() => onCreateUser(true)}
-            >
-              Create user
-            </Button>
-          }
-        />
+        <Header />
         <Statistics mt="4" />
-        <Filters mt="4" />
-        <UsersTable mt="4" />
+        <Filters />
+        <UsersTable />
         <UserDialog />
         <DeleteUserModal />
         <QRCodeDialog />
+        <HostsDialog />
       </Box>
       <Footer />
     </VStack>

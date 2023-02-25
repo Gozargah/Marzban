@@ -1,9 +1,9 @@
+import itertools
 from datetime import datetime
 
 from app import logger, scheduler, telegram, xray
 from app.db import GetDB, get_users, update_user_status
 from app.models.user import UserStatus
-from app.xray import INBOUNDS
 
 
 def review():
@@ -20,18 +20,20 @@ def review():
             else:
                 continue
 
-            for proxy in user.proxies:
-                for inbound in INBOUNDS.get(proxy.type, []):
+            inbound_tags = itertools.chain.from_iterable(user.inbounds.values())
+            for inbound_tag in inbound_tags:
+                try:
+                    xray.api.remove_inbound_user(tag=inbound_tag, email=user.username)
+                except xray.exc.EmailNotFoundError:
+                    pass
+
+                except xray.exceptions.ConnectionError:
                     try:
-                        xray.api.remove_inbound_user(tag=inbound['tag'], email=user.username)
-                    except xray.exc.EmailNotFoundError:
+                        xray.core.restart()
+                    except ProcessLookupError:
                         pass
-                    except xray.exceptions.ConnectionError:
-                        try:
-                            xray.core.restart()
-                        except ProcessLookupError:
-                            pass
-                        return
+
+                    return  # stop reviewing temporarily
 
             update_user_status(db, user, status)
 
@@ -39,6 +41,7 @@ def review():
                 telegram.report_status_change(user.username, status)
             except Exception:
                 pass
+
             logger.info(f"User \"{user.username}\" status changed to {status}")
 
 

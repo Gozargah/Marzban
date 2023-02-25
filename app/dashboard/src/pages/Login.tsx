@@ -20,7 +20,7 @@ import { z } from "zod";
 import { Footer } from "components/Footer";
 import { Input } from "components/Input";
 import { fetch } from "service/http";
-import { setAuthToken } from "utils/authStorage";
+import { removeAuthToken, setAuthToken } from "utils/authStorage";
 import { ReactComponent as Logo } from "assets/logo.svg";
 
 const schema = z.object({
@@ -49,6 +49,7 @@ export const Login: FC = () => {
     resolver: zodResolver(schema),
   });
   useEffect(() => {
+    removeAuthToken();
     if (location.pathname !== "/login") {
       navigate("/login", { replace: true });
     }

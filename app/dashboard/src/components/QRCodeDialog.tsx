@@ -12,6 +12,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Text,
+  VStack,
 } from "@chakra-ui/react";
 import { Icon } from "./Icon";
 import {
@@ -53,11 +54,12 @@ const QRIcon = chakra(QrCodeIcon, {
 });
 
 export const QRCodeDialog: FC = () => {
-  const { qrcodeLinks, setQRCode } = useDashboard();
-  const isOpen = qrcodeLinks !== null;
+  const { QRcodeLinks, setQRCode, setSubLink, subscribeUrl } = useDashboard();
+  const isOpen = QRcodeLinks !== null;
   const [index, setIndex] = useState(0);
   const onClose = () => {
     setQRCode(null);
+    setSubLink(null);
   };
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -69,8 +71,40 @@ export const QRCodeDialog: FC = () => {
           </Icon>
         </ModalHeader>
         <ModalCloseButton mt={3} />
-        {qrcodeLinks && (
-          <ModalBody w="440px" display="flex" justifyContent="center">
+        {QRcodeLinks && (
+          <ModalBody
+            gap={{
+              base: "20px",
+              lg: "50px",
+            }}
+            pr={{
+              lg: "60px",
+            }}
+            px={{
+              base: "50px",
+            }}
+            display="flex"
+            justifyContent="center"
+            flexDirection={{
+              base: "column",
+              lg: "row",
+            }}
+          >
+            {subscribeUrl && (
+              <VStack>
+                <QRCode
+                  mx="auto"
+                  size={300}
+                  p="2"
+                  level={"L"}
+                  includeMargin={false}
+                  value={subscribeUrl}
+                />
+                <Text display="block" textAlign="center" pb={3} mt={1}>
+                  Subscribe Link
+                </Text>
+              </VStack>
+            )}
             <Box w="300px">
               <Slider
                 centerPadding="0px"
@@ -103,7 +137,7 @@ export const QRCodeDialog: FC = () => {
                   </IconButton>
                 }
               >
-                {qrcodeLinks.map((link, i) => {
+                {QRcodeLinks.map((link, i) => {
                   return (
                     <HStack key={i}>
                       <QRCode
@@ -119,7 +153,7 @@ export const QRCodeDialog: FC = () => {
                 })}
               </Slider>
               <Text display="block" textAlign="center" pb={3} mt={1}>
-                {index + 1} / {qrcodeLinks.length}
+                {index + 1} / {QRcodeLinks.length}
               </Text>
             </Box>
           </ModalBody>

@@ -1,6 +1,6 @@
 import json
 from enum import Enum
-from multiprocessing.sharedctypes import Value
+from typing import List, Union
 from uuid import UUID, uuid4
 
 from app.utils.system import random_password
@@ -41,7 +41,6 @@ class ProxyTypes(str, Enum):
 
 
 class ProxySettings(BaseModel):
-    pass
 
     @classmethod
     def from_dict(cls, proxy_type: ProxyTypes, _dict: dict):
@@ -68,3 +67,21 @@ class TrojanSettings(ProxySettings):
 
 class ShadowsocksSettings(ProxySettings):
     password: str = Field(default_factory=random_password)
+
+
+class ProxyHost(BaseModel):
+    remark: str
+    address: str
+    port: Union[int, None] = None
+    inbound_tag: str = None
+
+    class Config:
+        orm_mode = True
+
+
+class ProxyInbound(BaseModel):
+    tag: str
+    protocol: ProxyTypes
+    network: str
+    tls: bool
+    port: int

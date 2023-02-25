@@ -65,7 +65,15 @@ const schema = z.object({
   proxies: z.array(z.string()).refine((value) => value.length > 0, {
     message: "Please select at least one protocol",
   }),
-  data_limit: z.number().min(0, "The minimum number is 0").nullable(),
+  data_limit: z
+    .string()
+    .min(0, "The minimum number is 0")
+    .or(z.number())
+    .nullable()
+    .transform((str) => {
+      if (str) return parseFloat(String(str));
+      return str;
+    }),
   expire: z.number().nullable(),
   data_limit_reset_strategy: z.string(),
 });
@@ -77,6 +85,9 @@ export type FormType = Omit<UserCreate, "proxies"> & { proxies: ProxyKeys };
 const formatUser = (user: User): FormType => {
   return {
     ...user,
+    data_limit: user.data_limit
+      ? Number((user.data_limit / 1073741824).toFixed(6))
+      : user.data_limit,
     proxies: Object.keys(user.proxies) as ProxyKeys,
   };
 };
@@ -138,6 +149,9 @@ export const UserDialog: FC<UserDialogProps> = () => {
     setError(null);
     let body: UserCreate = {
       ...values,
+      data_limit: values.data_limit
+        ? values.data_limit * 1073741824
+        : values.data_limit,
       proxies: mergeProxies(values.proxies, editingUser?.proxies),
     };
     methods[method](body)
@@ -173,7 +187,6 @@ export const UserDialog: FC<UserDialogProps> = () => {
 
   useEffect(() => {
     if (editingUser) {
-      console.log(formatUser(editingUser));
       form.reset(formatUser(editingUser));
     }
   }, [editingUser]);
@@ -215,63 +228,41 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       {...form.register("username")}
                     />
                   </FormControl>
-                  <HStack>
-                    <FormControl>
-                      <FormLabel>Bandwidth Limit</FormLabel>
-                      <Controller
-                        control={form.control}
-                        name="data_limit"
-                        render={({ field }) => {
-                          return (
-                            <Input
-                              endAdornment="GB"
-                              type="number"
-                              size="sm"
-                              borderRadius="6px"
-                              onChange={(value) => {
-                                field.onChange(
-                                  value && value.length
-                                    ? Number(
-                                        (
-                                          parseFloat(value) * 1073741824
-                                        ).toFixed(3)
+                  <FormControl>
+                    <FormLabel>Bandwidth Limit</FormLabel>
+                    <Controller
+                      control={form.control}
+                      name="data_limit"
+                      render={({ field }) => {
+                        return (
+                          <Input
+                            endAdornment="GB"
+                            type="number"
+                            size="sm"
+                            borderRadius="6px"
+                            onChange={(value) => {
+                              field.onChange(
+                                value && value.length
+                                  ? Number(
+                                      (parseFloat(value) * 1073741824).toFixed(
+                                        3
                                       )
-                                    : 0
-                                );
-                              }}
-                              disabled={disabled}
-                              error={form.formState.errors.data_limit?.message}
-                              value={
-                                field.value
-                                  ? String(field.value / 1073741824)
-                                  : undefined
-                              }
-                            />
-                          );
-                        }}
-                      />
-                    </FormControl>
-                    <FormControl>
-                      <FormLabel>Reset Every</FormLabel>
-                      <Select
-                        size="sm"
-                        borderRadius="6px"
-                        disabled={disabled}
-                        textTransform="capitalize"
-                        {...form.register("data_limit_reset_strategy")}
-                      >
-                        {dataLimitResetStrategy.map((strategy) => (
-                          <option
-                            style={{ textTransform: "capitalize" }}
-                            key={strategy}
-                            value={strategy}
-                          >
-                            {strategy.replace("_", " ")}
-                          </option>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </HStack>
+                                    )
+                                  : 0
+                              );
+                            }}
+                            disabled={disabled}
+                            error={form.formState.errors.data_limit?.message}
+                            value={
+                              field.value
+                                ? String(field.value / 1073741824)
+                                : undefined
+                            }
+                          />
+                        );
+                      }}
+                    />
+                  </FormControl>
                   <FormControl>
                     <FormLabel>Expiry Date</FormLabel>
                     <Controller
