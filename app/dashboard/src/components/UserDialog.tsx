@@ -29,13 +29,7 @@ import { PencilIcon, UserPlusIcon } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import {
-  ProxyKeys,
-  ProxyType,
-  User,
-  UserCreate,
-  dataLimitResetStrategy,
-} from "types/User";
+import { ProxyKeys, ProxyType, User, UserCreate } from "types/User";
 import { z } from "zod";
 import { Icon } from "./Icon";
 import { RadioGroup } from "./RadioGroup";
@@ -71,7 +65,7 @@ const schema = z.object({
     .or(z.number())
     .nullable()
     .transform((str) => {
-      if (str) return parseFloat(String(str));
+      if (str) return Number((parseFloat(String(str)) * 1073741824).toFixed(5));
       return str;
     }),
   expire: z.number().nullable(),
@@ -86,7 +80,7 @@ const formatUser = (user: User): FormType => {
   return {
     ...user,
     data_limit: user.data_limit
-      ? Number((user.data_limit / 1073741824).toFixed(6))
+      ? Number((user.data_limit / 1073741824).toFixed(5))
       : user.data_limit,
     proxies: Object.keys(user.proxies) as ProxyKeys,
   };
@@ -149,9 +143,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
     setError(null);
     let body: UserCreate = {
       ...values,
-      data_limit: values.data_limit
-        ? values.data_limit * 1073741824
-        : values.data_limit,
+      data_limit: values.data_limit,
       proxies: mergeProxies(values.proxies, editingUser?.proxies),
     };
     methods[method](body)
@@ -229,7 +221,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                     />
                   </FormControl>
                   <FormControl>
-                    <FormLabel>Bandwidth Limit</FormLabel>
+                    <FormLabel>Data Limit</FormLabel>
                     <Controller
                       control={form.control}
                       name="data_limit"
@@ -240,23 +232,11 @@ export const UserDialog: FC<UserDialogProps> = () => {
                             type="number"
                             size="sm"
                             borderRadius="6px"
-                            onChange={(value) => {
-                              field.onChange(
-                                value && value.length
-                                  ? Number(
-                                      (parseFloat(value) * 1073741824).toFixed(
-                                        3
-                                      )
-                                    )
-                                  : 0
-                              );
-                            }}
+                            onChange={field.onChange}
                             disabled={disabled}
                             error={form.formState.errors.data_limit?.message}
                             value={
-                              field.value
-                                ? String(field.value / 1073741824)
-                                : undefined
+                              field.value ? String(field.value) : undefined
                             }
                           />
                         );

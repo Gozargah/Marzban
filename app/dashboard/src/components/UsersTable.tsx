@@ -155,9 +155,9 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
       <Table {...props}>
         <Thead zIndex="docked" position="relative">
           <Tr>
-            <Th>Username</Th>
+            <Th>username</Th>
             <Th>status</Th>
-            <Th>bandwidth usage</Th>
+            <Th>data usage</Th>
             <Th></Th>
           </Tr>
         </Thead>
