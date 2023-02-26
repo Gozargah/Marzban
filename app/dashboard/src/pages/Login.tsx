@@ -85,7 +85,7 @@ export const Login: FC = () => {
             </Text>
           </VStack>
           <form onSubmit={handleSubmit(login)}>
-            <VStack mt={4} experimental_spaceY={4}>
+            <VStack mt={4} rowGap={4}>
               <FormControl>
                 <FormLabel>Username</FormLabel>
                 <Input

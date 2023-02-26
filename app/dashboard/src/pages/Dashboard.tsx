@@ -13,12 +13,7 @@ import { HostsDialog } from "components/HostsDialog";
 
 export const Dashboard: FC = () => {
   return (
-    <VStack
-      justifyContent="space-between"
-      minH="100vh"
-      p="6"
-      experimental_spaceY={4}
-    >
+    <VStack justifyContent="space-between" minH="100vh" p="6" rowGap={4}>
       <Box w="full">
         <Header />
         <Statistics mt="4" />

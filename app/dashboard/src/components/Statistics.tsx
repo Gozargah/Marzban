@@ -61,7 +61,7 @@ const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
       justifyContent="space-between"
       flexDirection="row"
     >
-      <HStack alignItems="center" experimental_spaceX="4">
+      <HStack alignItems="center" columnGap="4">
         <Box
           p="2"
           position="relative"
@@ -125,9 +125,10 @@ export const Statistics: FC<BoxProps> = (props) => {
     <HStack
       justifyContent="space-between"
       gap={0}
-      experimental_spaceX={{ lg: "4", md: "0" }}
-      experimental_spaceY={{ lg: "0", base: "4" }}
-      display={{ lg: "flex", md: "block" }}
+      columnGap={{ lg: 4, md: 0 }}
+      rowGap={{ lg: 0, base: 4 }}
+      display="flex"
+      flexDirection={{ lg: "row", base: "column" }}
       {...props}
     >
       <StatisticCard

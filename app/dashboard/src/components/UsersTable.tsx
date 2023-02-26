@@ -50,9 +50,18 @@ const QRIcon = chakra(QrCodeIcon, iconProps);
 type UsageSliderProps = {
   used: number;
   total: number | null;
+  dataLimitResetStrategy: string | null;
+  totalUsedTraffic: number;
 } & SliderProps;
+
 const UsageSlider: FC<UsageSliderProps> = (props) => {
-  const { used, total, ...restOfProps } = props;
+  const {
+    used,
+    total,
+    dataLimitResetStrategy,
+    totalUsedTraffic,
+    ...restOfProps
+  } = props;
   const isUnlimited = total === 0 || total === null;
   const isReached = !isUnlimited && (used / total) * 100 >= 100;
   return (
@@ -67,7 +76,8 @@ const UsageSlider: FC<UsageSliderProps> = (props) => {
           <SliderFilledTrack borderRadius="full" />
         </SliderTrack>
       </Slider>
-      <Text
+      <HStack
+        justifyContent="space-between"
         fontSize="xs"
         fontWeight="medium"
         color="gray.600"
@@ -75,15 +85,21 @@ const UsageSlider: FC<UsageSliderProps> = (props) => {
           color: "gray.400",
         }}
       >
-        {formatBytes(used)} /{" "}
-        {isUnlimited ? (
-          <Text as="span" fontFamily="system-ui">
-            ∞
-          </Text>
-        ) : (
-          formatBytes(total)
-        )}
-      </Text>
+        <Text>
+          {formatBytes(used)} /{" "}
+          {isUnlimited ? (
+            <Text as="span" fontFamily="system-ui">
+              ∞
+            </Text>
+          ) : (
+            formatBytes(total) +
+            (dataLimitResetStrategy && dataLimitResetStrategy !== "no_reset"
+              ? " per " + dataLimitResetStrategy
+              : "")
+          )}
+        </Text>
+        <Text>Total: {formatBytes(totalUsedTraffic)}</Text>
+      </HStack>
     </>
   );
 };
@@ -95,7 +111,6 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
     users: totalUsers,
     onEditingUser,
     setQRCode,
-    resetDataUsage,
     setSubLink,
   } = useDashboard();
   const marginTop =
@@ -142,13 +157,10 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
           <Tr>
             <Th>Username</Th>
             <Th>status</Th>
-            <Th>banding usage</Th>
-            <Th>lifetime usage</Th>
-            <Th>reset every</Th>
-            <Th>data usage</Th>
+            <Th>bandwidth usage</Th>
             <Th></Th>
-          </Tr >
-        </Thead >
+          </Tr>
+        </Thead>
         <Tbody>
           {users?.map((user, i) => {
             const proxyLinks = user.links.join("\r\n");
@@ -159,21 +171,19 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 onClick={() => onEditingUser(user)}
               >
                 <Td minW="150px">{user.username}</Td>
-                <Td width="400px" minW="280px">
+                <Td width="400px" minW="180px">
                   <UserBadge expiryDate={user.expire} status={user.status} />
                 </Td>
-                <Td width="350px" minW="230px">
+                <Td width="350px" minW="250px">
                   <UsageSlider
+                    totalUsedTraffic={user.lifetime_used_traffic}
+                    dataLimitResetStrategy={user.data_limit_reset_strategy}
                     used={user.used_traffic}
                     total={user.data_limit}
                     colorScheme={user.status === "limited" ? "red" : "primary"}
                   />
                 </Td>
-                <Td>{formatBytes(user.lifetime_used_traffic)}</Td>
-                <Td textTransform="capitalize">
-                  {user.data_limit_reset_strategy}
-                </Td>
-                <Td width="150px">
+                <Td width="200px">
                   <HStack
                     justifyContent="flex-end"
                     onClick={(e) => {
@@ -268,32 +278,15 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                         <QRIcon />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip label="Reset User data Usage" placement="top">
-                      <IconButton
-                        size="xs"
-                        aria-label="reset user data usage"
-                        bg="transparent"
-                        _dark={{
-                          _hover: {
-                            bg: "gray.700",
-                          },
-                        }}
-                        onClick={() => {
-                          resetDataUsage(user);
-                        }}
-                      >
-                        <ArrowPathIcon />
-                      </IconButton>
-                    </Tooltip>
                   </HStack>
                 </Td>
               </Tr>
             );
           })}
         </Tbody>
-      </Table >
+      </Table>
       {users.length == 0 && <EmptySection isFiltered={isFiltered} />}
-    </Box >
+    </Box>
   );
 };
 
@@ -317,7 +310,7 @@ const EmptySection: FC<EmptySectionProps> = ({ isFiltered }) => {
       display="flex"
       alignItems="center"
       flexDirection="column"
-      experimental_spaceY={4}
+      gap={4}
     >
       <EmptySectionIcon
         maxHeight="200px"

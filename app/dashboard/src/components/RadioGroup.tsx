@@ -159,7 +159,7 @@ export const RadioGroup = forwardRef<any, RadioGroupProps>(
     return (
       <SimpleGrid
         ref={ref}
-        experimental_spaceY={1}
+        gap={3}
         alignItems="flex-start"
         columns={1}
         spacing={1}

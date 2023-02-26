@@ -19,8 +19,9 @@ export const dataLimitResetStrategy = [
   "week",
   "month",
   "year",
-] as const;
-type DataLimitResetStrategy = typeof dataLimitResetStrategy[number];
+];
+
+type DataLimitResetStrategy = (typeof dataLimitResetStrategy)[number];
 
 export type User = {
   proxies: ProxyType;

@@ -34,35 +34,6 @@ type DashboardStateType = {
   setSubLink: (subscribeURL: string | null) => void;
   onEditingHosts: (isEditingHosts: boolean) => void;
   resetDataUsage: (user: User) => Promise<void>;
-} & DashboardStateType;
-
-const dashboardContextInitialValue: DashboardContextType = {
-  editingUser: null,
-  deletingUser: null,
-  isCreatingNewUser: false,
-  qrcodeLinks: null,
-  users: [],
-  filteredUsers: [],
-  loading: true,
-  filters: { search: "" },
-  onCreateUser: () => { },
-  onEditingUser: (user) => { },
-  onDeletingUser: (user) => { },
-  refetchUsers: () => { },
-  onFilterChange: (filters) => { },
-  setQRCode: (links) => { },
-  deleteUser: (user) => {
-    return new Promise(() => { });
-  },
-  createUser: (user) => {
-    return new Promise(() => { });
-  },
-  editUser: (user) => {
-    return new Promise(() => { });
-  },
-  resetDataUsage: (user) => {
-    return new Promise(() => { });
-  },
 };
 
 const fetchUsers = (query: FilterType): Promise<User[]> => {
@@ -76,6 +47,41 @@ const fetchUsers = (query: FilterType): Promise<User[]> => {
       useDashboard.setState({ loading: false });
     });
 };
+
+type HostsSchema = Record<
+  string,
+  {
+    remark: string;
+    address: string;
+    port: number | null;
+    inbound_tag: string;
+  }[]
+>;
+
+type HostsStore = {
+  isLoading: boolean;
+  isPostLoading: boolean;
+  hosts: HostsSchema;
+  fetchHosts: () => void;
+  setHosts: (hosts: HostsSchema) => Promise<void>;
+};
+export const useHosts = create<HostsStore>((set) => ({
+  isLoading: false,
+  isPostLoading: false,
+  hosts: {},
+  fetchHosts: () => {
+    set({ isLoading: true });
+    fetch("/hosts")
+      .then((hosts) => set({ hosts }))
+      .finally(() => set({ isLoading: false }));
+  },
+  setHosts: (body) => {
+    set({ isPostLoading: true });
+    return fetch("/hosts", { method: "PUT", body }).finally(() => {
+      set({ isPostLoading: false });
+    });
+  },
+}));
 
 export const useDashboard = create<
   DashboardStateType,
@@ -128,7 +134,7 @@ export const useDashboard = create<
       editUser: (body: UserCreate) => {
         return fetch(`/user/${body.username}`, { method: "PUT", body }).then(
           () => {
-            set({ editingUser: null });
+            get().onEditingUser(null);
             get().refetchUsers();
           }
         );
@@ -138,6 +144,14 @@ export const useDashboard = create<
       },
       setSubLink: (subscribeUrl) => {
         set({ subscribeUrl });
+      },
+      resetDataUsage: (user) => {
+        return fetch(`/user/${user.username}/reset`, { method: "POST" }).then(
+          () => {
+            get().onEditingUser(null);
+            get().refetchUsers();
+          }
+        );
       },
     }),
     (state): ComputedStore => {
@@ -149,146 +163,5 @@ export const useDashboard = create<
     }
   )
 );
-
-
-// export const useDashboard = () => useContext(DashboardContext);
-
-// type DashboardProviderProps = PropsWithChildren<{}>;
-
-// const dashboardReducer: Reducer<DashboardStateType, DashboardActionsType> = (
-//   state,
-//   action
-// ) => {
-//   switch (action.type) {
-//     case "CreatingNewUser":
-//       return { ...state, isCreatingNewUser: action.isOpen };
-//     case "EditingUser":
-//       return { ...state, editingUser: action.user };
-//     case "DeletingUser":
-//       return { ...state, deletingUser: action.user };
-//     case "FilterChange":
-//       return { ...state, filters: action.filters };
-//     case "SetQrCode":
-//       return { ...state, qrcodeLinks: action.links };
-//     default:
-//       return state;
-//   }
-// };
-
-// export const DashboardProvider: FC<DashboardProviderProps> = ({ children }) => {
-//   const [state, dispatch] = useReducer(
-//     dashboardReducer,
-//     dashboardContextInitialValue
-//   );
-
-//   const {
-//     data: users,
-//     isValidating: usersLoading,
-//     mutate,
-//   } = useSWR<User[]>("/users");
-
-//   const onCreateUser = useCallback((isOpen: boolean) => {
-//     dispatch({
-//       type: "CreatingNewUser",
-//       isOpen,
-//     });
-//   }, []);
-//   const refetchUsers = useCallback(() => {
-//     mutate();
-//   }, []);
-
-//   const onEditingUser = useCallback((user: User | null) => {
-//     dispatch({
-//       type: "EditingUser",
-//       user,
-//     });
-//   }, []);
-
-//   const onDeletingUser = useCallback((user: User | null) => {
-//     dispatch({
-//       type: "DeletingUser",
-//       user,
-//     });
-//   }, []);
-
-//   const onFilterChange = useCallback((filters: FilterType) => {
-//     dispatch({
-//       type: "FilterChange",
-//       filters,
-//     });
-//   }, []);
-
-//   const deleteUser = useCallback((user: User) => {
-//     onEditingUser(null);
-//     return fetch(`/user/${user.username}`, { method: "DELETE" }).then(() => {
-//       onDeletingUser(null);
-//       refetchUsers();
-//       globalMutate("/system");
-//     });
-//   }, []);
-
-//   const createUser = useCallback((body: UserCreate) => {
-//     return fetch(`/user`, { method: "POST", body }).then(() => {
-//       onEditingUser(null);
-//       refetchUsers();
-//       globalMutate("/system");
-//     });
-//   }, []);
-
-//   const editUser = useCallback((body: UserCreate) => {
-//     return fetch(`/user/${body.username}`, { method: "PUT", body }).then(() => {
-//       onEditingUser(null);
-//       refetchUsers();
-//     });
-//   }, []);
-
-//   const resetDataUsage = useCallback((user: User) => {
-//     return fetch(`/user/${user.username}/reset`, { method: "POST" }).then(
-//       () => {
-//         onEditingUser(null);
-//         refetchUsers();
-//       }
-//     );
-//   }, []);
-
-//   const setQRCode = useCallback((links: string[] | null) => {
-//     dispatch({
-//       type: "SetQrCode",
-//       links,
-//     });
-//   }, []);
-
-//   const filteredUsers = useMemo(() => {
-//     if (!users) return [];
-//     return users.filter(
-//       (user) => user.username.indexOf(state.filters.search) > -1
-//     );
-//   }, [state.filters, users]);
-
-//   const states: DashboardContextType = {
-//     ...state,
-//     users: users || [],
-//     filteredUsers,
-//     loading: usersLoading,
-//     refetchUsers,
-//     onEditingUser,
-//     onDeletingUser,
-//     onCreateUser,
-//     onFilterChange,
-//     deleteUser,
-//     createUser,
-//     editUser,
-//     setQRCode,
-//     resetDataUsage,
-//   };
-
-//   return (
-//     <DashboardContext.Provider value={states}>
-//       {children}
-//     </DashboardContext.Provider>
-//   );
-// };
-
-// export default DashboardProvider;
 
 fetchUsers(useDashboard.getState().filters);

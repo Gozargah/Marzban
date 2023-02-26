@@ -54,7 +54,7 @@ export const UserBadge: FC<UserStatusProps> = ({
         display="inline-flex"
         px={3}
         py={1}
-        experimental_spaceX={2}
+        columnGap={2}
         alignItems="center"
       >
         {userStatus === "active" && <ActiveStatusIcon />}
