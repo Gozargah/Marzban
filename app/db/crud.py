@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Tuple, Union
 
 from app.db.models import (JWT, Admin, Proxy, ProxyHost, ProxyInbound, System,
                            User, UserUsageResetLogs)
@@ -55,7 +55,8 @@ def get_users(db: Session,
               username: str = None,
               status: Union[UserStatus, list] = None,
               admin: Admin = None,
-              reset_strategy: Union[UserDataLimitResetStrategy, list] = None) -> List[User]:
+              reset_strategy: Union[UserDataLimitResetStrategy, list] = None,
+              return_with_count: bool = False) -> Union[List[User], Tuple[List[User], int]]:
     query = db.query(User)
     if username:
         query = query.filter(User.username.ilike(f'%{username}%'))
@@ -75,6 +76,10 @@ def get_users(db: Session,
         query = query.offset(offset)
     if limit:
         query = query.limit(limit)
+
+    if return_with_count is True:
+        return query.all(), query.count()
+
     return query.all()
 
 

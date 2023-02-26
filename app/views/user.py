@@ -210,7 +210,7 @@ def reset_user_data_usage(username: str,
     return user
 
 
-@app.get("/api/users", tags=['User'], response_model=List[UserResponse])
+@app.get("/api/users", tags=['User'], response_model=dict)
 def get_users(offset: int = None,
               limit: int = None,
               username: str = None,
@@ -221,4 +221,7 @@ def get_users(offset: int = None,
     Get all users
     """
     dbadmin = crud.get_admin(db, admin.username)
-    yield from crud.get_users(db, offset, limit, username, status, dbadmin)
+    users, count = crud.get_users(db, offset, limit, username, status, dbadmin,
+                                  return_with_count=True)
+
+    return {"users": users, "total": count}
