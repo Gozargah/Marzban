@@ -242,16 +242,26 @@ export const HostsDialog: FC = () => {
     onEditingHosts(false);
   };
   const handleFormSubmit = (hosts: z.infer<typeof hostsSchema>) => {
-    setHosts(hosts).then(() => {
-      toast({
-        title: `Hosts saved successfully`,
-        status: "success",
-        isClosable: true,
-        position: "top",
-        duration: 3000,
+    setHosts(hosts)
+      .then(() => {
+        toast({
+          title: `Hosts saved successfully`,
+          status: "success",
+          isClosable: true,
+          position: "top",
+          duration: 3000,
+        });
+        refetchUsers();
+      })
+      .catch((e) => {
+        toast({
+          title: e.response?._data?.detail,
+          status: "error",
+          isClosable: true,
+          position: "top",
+          duration: 3000,
+        });
       });
-      refetchUsers();
-    });
   };
 
   const toggleAccordion = (index: number) => {
