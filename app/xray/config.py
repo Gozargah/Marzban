@@ -94,7 +94,7 @@ class XRayConfig(dict):
     def get_outbound(self, tag) -> dict:
         for outbound in self['outbounds']:
             if outbound['tag'] == tag:
-                outbound
+                return outbound
 
     def to_json(self, **json_kwargs):
         return json.dumps(self, **json_kwargs)
