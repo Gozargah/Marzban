@@ -30,7 +30,7 @@ class V2rayShareLink(str):
             'aid': '0',
             'host': host,
             'id': str(id),
-            'network': net,
+            'net': net,
             'path': urlparse.quote(path),
             'port': port,
             'ps': remark,
