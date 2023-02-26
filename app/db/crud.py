@@ -57,14 +57,8 @@ def get_users(db: Session,
               admin: Admin = None,
               reset_strategy: Union[UserDataLimitResetStrategy, list] = None) -> List[User]:
     query = db.query(User)
-    if admin:
-        query = query.filter(User.admin == admin)
-    if offset:
-        query = query.offset(offset)
-    if limit:
-        query = query.limit(limit)
     if username:
-        query = query.filter(User.username.ilike(f'{username}%'))
+        query = query.filter(User.username.ilike(f'%{username}%'))
     if status:
         if isinstance(status, list):
             query = query.filter(User.status.in_(status))
@@ -75,6 +69,12 @@ def get_users(db: Session,
             query = query.filter(User.data_limit_reset_strategy.in_(reset_strategy))
         else:
             query = query.filter(User.data_limit_reset_strategy == reset_strategy)
+    if admin:
+        query = query.filter(User.admin == admin)
+    if offset:
+        query = query.offset(offset)
+    if limit:
+        query = query.limit(limit)
     return query.all()
 
 
@@ -219,10 +219,10 @@ def get_admins(db: Session,
                limit: int = None,
                username: str = None):
     query = db.query(Admin)
+    if username:
+        query = query.filter(User.username.ilike(f'%{username}%'))
     if offset:
         query = query.offset(offset)
     if limit:
         query = query.limit(limit)
-    if username:
-        query = query.filter(User.username.ilike(f'{username}%'))
     return query.all()
