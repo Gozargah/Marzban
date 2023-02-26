@@ -25,7 +25,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
-    proxies = relationship("Proxy", back_populates="user", cascade="all, delete-orphan", lazy="subquery")
+    proxies = relationship("Proxy", back_populates="user", cascade="all, delete-orphan")
     status = Column(Enum(UserStatus), default=UserStatus.active)
     used_traffic = Column(BigInteger, default=0)
     data_limit = Column(BigInteger, nullable=True)
