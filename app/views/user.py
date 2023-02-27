@@ -215,13 +215,31 @@ def get_users(offset: int = None,
               limit: int = None,
               username: str = None,
               status: UserStatus = None,
+              sort: str = None,
               db: Session = Depends(get_db),
               admin: Admin = Depends(Admin.get_current)):
     """
     Get all users
     """
     dbadmin = crud.get_admin(db, admin.username)
-    users, count = crud.get_users(db, offset, limit, username, status, dbadmin,
+
+    if sort is not None:
+        opts = sort.strip(',').split(',')
+        sort = []
+        for opt in opts:
+            try:
+                sort.append(crud.UsersSortingOptions[opt])
+            except KeyError:
+                raise HTTPException(status_code=400,
+                                    detail=f'"{opt}" is not a valid sort option')
+
+    users, count = crud.get_users(db=db,
+                                  offset=offset,
+                                  limit=limit,
+                                  username=username,
+                                  status=status,
+                                  sort=sort,
+                                  admin=dbadmin,
                                   return_with_count=True)
 
     return {"users": users, "total": count}

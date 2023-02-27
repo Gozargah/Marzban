@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import List, Tuple, Union
 
 from app.db.models import (JWT, Admin, Proxy, ProxyHost, ProxyInbound, System,
@@ -49,11 +50,26 @@ def get_user_by_id(db: Session, user_id: int):
     return db.query(User).filter(User.id == user_id).first()
 
 
+UsersSortingOptions = Enum('UsersSortingOptions', {
+    'username': User.username.asc(),
+    'used_traffic': User.used_traffic.asc(),
+    'data_limit': User.data_limit.asc(),
+    'expire': User.expire.asc(),
+    'created_at': User.created_at.asc(),
+    '-username': User.username.desc(),
+    '-used_traffic': User.used_traffic.desc(),
+    '-data_limit': User.data_limit.desc(),
+    '-expire': User.expire.desc(),
+    '-created_at': User.created_at.desc(),
+})
+
+
 def get_users(db: Session,
               offset: int = None,
               limit: int = None,
               username: str = None,
               status: Union[UserStatus, list] = None,
+              sort: List[UsersSortingOptions] = None,
               admin: Admin = None,
               reset_strategy: Union[UserDataLimitResetStrategy, list] = None,
               return_with_count: bool = False) -> Union[List[User], Tuple[List[User], int]]:
@@ -76,6 +92,8 @@ def get_users(db: Session,
         query = query.offset(offset)
     if limit:
         query = query.limit(limit)
+    if sort:
+        query = query.order_by(*(opt.value for opt in sort))
 
     if return_with_count is True:
         return query.all(), query.count()
