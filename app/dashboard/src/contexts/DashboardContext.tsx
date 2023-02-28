@@ -2,14 +2,12 @@ import { fetch } from "service/http";
 import { mutate as globalMutate } from "swr";
 import { User, UserCreate } from "types/User";
 import { create } from "zustand";
-import { computed } from "zustand-computed";
 
 export type FilterType = {
-  search: string;
-};
-
-type ComputedStore = {
-  filteredUsers: User[];
+  username?: string;
+  limit?: number;
+  offset?: number;
+  status?: "active" | "disabled" | "limited" | "expired";
 };
 
 type DashboardStateType = {
@@ -18,7 +16,7 @@ type DashboardStateType = {
   deletingUser: User | null;
   users: {
     users: User[];
-    total: number
+    total: number;
   };
   loading: boolean;
   filters: FilterType;
@@ -88,86 +86,69 @@ export const useHosts = create<HostsStore>((set) => ({
   },
 }));
 
-export const useDashboard = create<
-  DashboardStateType,
-  [["chrisvander/zustand-computed", ComputedStore]]
->(
-  computed(
-    (set, get) => ({
-      editingUser: null,
-      deletingUser: null,
-      isCreatingNewUser: false,
-      QRcodeLinks: null,
-      subscribeUrl: null,
-      users: {
-        users: [],
-        total: 0
-      },
-      loading: true,
-      isEditingHosts: false,
-      filters: { search: "" },
-      refetchUsers: () => {
-        fetchUsers(get().filters);
-      },
-      onCreateUser: (isCreatingNewUser) => set({ isCreatingNewUser }),
-      onEditingUser: (editingUser) => {
-        set({ editingUser });
-      },
-      onDeletingUser: (deletingUser) => {
-        set({ deletingUser });
-      },
-      onFilterChange: (filters) => {
-        set({ filters });
-      },
-      setQRCode: (QRcodeLinks) => {
-        set({ QRcodeLinks });
-      },
-      deleteUser: (user: User) => {
-        set({ editingUser: null });
-        return fetch(`/user/${user.username}`, { method: "DELETE" }).then(
-          () => {
-            set({ deletingUser: null });
-            get().refetchUsers();
-            globalMutate("/system");
-          }
-        );
-      },
-      createUser: (body: UserCreate) => {
-        return fetch(`/user`, { method: "POST", body }).then(() => {
-          set({ editingUser: null });
-          get().refetchUsers();
-          globalMutate("/system");
-        });
-      },
-      editUser: (body: UserCreate) => {
-        return fetch(`/user/${body.username}`, { method: "PUT", body }).then(
-          () => {
-            get().onEditingUser(null);
-            get().refetchUsers();
-          }
-        );
-      },
-      onEditingHosts: (isEditingHosts: boolean) => {
-        set({ isEditingHosts });
-      },
-      setSubLink: (subscribeUrl) => {
-        set({ subscribeUrl });
-      },
-      resetDataUsage: (user) => {
-        return fetch(`/user/${user.username}/reset`, { method: "POST" }).then(
-          () => {
-            get().onEditingUser(null);
-            get().refetchUsers();
-          }
-        );
-      },
-    }),
-    (state): ComputedStore => {
-      return {
-        filteredUsers: state.users.users.filter(
-          (user) => user.username.indexOf(state.filters.search) > -1
-        ),
-      };
-    }
-  )
-);
+export const useDashboard = create<DashboardStateType>((set, get) => ({
+  editingUser: null,
+  deletingUser: null,
+  isCreatingNewUser: false,
+  QRcodeLinks: null,
+  subscribeUrl: null,
+  users: {
+    users: [],
+    total: 0,
+  },
+  loading: true,
+  isEditingHosts: false,
+  filters: { username: "", limit: 15 },
+  refetchUsers: () => {
+    fetchUsers(get().filters);
+  },
+  onCreateUser: (isCreatingNewUser) => set({ isCreatingNewUser }),
+  onEditingUser: (editingUser) => {
+    set({ editingUser });
+  },
+  onDeletingUser: (deletingUser) => {
+    set({ deletingUser });
+  },
+  onFilterChange: (filters) => {
+    set({ filters });
+    get().refetchUsers();
+  },
+  setQRCode: (QRcodeLinks) => {
+    set({ QRcodeLinks });
+  },
+  deleteUser: (user: User) => {
+    set({ editingUser: null });
+    return fetch(`/user/${user.username}`, { method: "DELETE" }).then(() => {
+      set({ deletingUser: null });
+      get().refetchUsers();
+      globalMutate("/system");
+    });
+  },
+  createUser: (body: UserCreate) => {
+    return fetch(`/user`, { method: "POST", body }).then(() => {
+      set({ editingUser: null });
+      get().refetchUsers();
+      globalMutate("/system");
+    });
+  },
+  editUser: (body: UserCreate) => {
+    return fetch(`/user/${body.username}`, { method: "PUT", body }).then(() => {
+      get().onEditingUser(null);
+      get().refetchUsers();
+    });
+  },
+  onEditingHosts: (isEditingHosts: boolean) => {
+    set({ isEditingHosts });
+  },
+  setSubLink: (subscribeUrl) => {
+    set({ subscribeUrl });
+  },
+  resetDataUsage: (user) => {
+    return fetch(`/user/${user.username}/reset`, { method: "POST" }).then(
+      () => {
+        get().onEditingUser(null);
+        get().refetchUsers();
+      }
+    );
+  },
+}));

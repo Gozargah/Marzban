@@ -33,6 +33,7 @@ import { formatBytes } from "utils/formatByte";
 import { useDashboard } from "contexts/DashboardContext";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { UserBadge } from "./UserBadge";
+import { Pagination } from "./Pagination";
 
 const EmptySectionIcon = chakra(AddFileIcon);
 
@@ -107,7 +108,7 @@ const UsageSlider: FC<UsageSliderProps> = (props) => {
 type UsersTableProps = {} & TableProps;
 export const UsersTable: FC<UsersTableProps> = (props) => {
   const {
-    filteredUsers: users,
+    users,
     users: totalUsers,
     onEditingUser,
     setQRCode,
@@ -291,6 +292,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
           })}
         </Tbody>
       </Table>
+      <Pagination />
       {users.length == 0 && <EmptySection isFiltered={isFiltered} />}
     </Box>
   );

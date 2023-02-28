@@ -1,6 +1,6 @@
 import { Box, Button, VStack } from "@chakra-ui/react";
 import { Statistics } from "../components/Statistics";
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { Footer } from "components/Footer";
 import { Header } from "components/Header";
 import { UsersTable } from "components/UsersTable";
@@ -12,6 +12,7 @@ import { QRCodeDialog } from "components/QRCodeDialog";
 import { HostsDialog } from "components/HostsDialog";
 
 export const Dashboard: FC = () => {
+  useEffect(useDashboard.getState().refetchUsers, []);
   return (
     <VStack justifyContent="space-between" minH="100vh" p="6" rowGap={4}>
       <Box w="full">

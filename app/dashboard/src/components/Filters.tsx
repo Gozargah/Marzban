@@ -40,13 +40,13 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onFilterChange({
       ...filters,
-      search: e.target.value,
+      username: e.target.value,
     });
   };
   const clear = () => {
     onFilterChange({
       ...filters,
-      search: "",
+      username: "",
     });
   };
   return (
@@ -74,14 +74,14 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
           <InputLeftElement pointerEvents="none" children={<SearchIcon />} />
           <Input
             placeholder="Search"
-            value={filters.search || ""}
+            value={filters.username || ""}
             borderColor="light-border"
             onChange={onChange}
           />
 
           <InputRightElement>
             {loading && <Spinner size="xs" />}
-            {filters.search.length > 0 && (
+            {filters.username && filters.username.length > 0 && (
               <IconButton
                 onClick={clear}
                 aria-label="clear"

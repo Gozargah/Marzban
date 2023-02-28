@@ -99,7 +99,6 @@ const AccordionInbound: FC<AccordionInboundType> = ({
     name: hostKey,
   });
   const { errors } = form.formState;
-  console.log(errors);
   const accordionErrors = errors[hostKey];
   const handleAddHost = () => {
     addHost({
