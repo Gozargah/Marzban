@@ -11,19 +11,26 @@ from config import XRAY_HOSTS
 
 
 class ShareLink(str):
-    def __new__(cls, remark: str, host: str, protocol: str, settings: dict):
+    def __new__(cls,
+                remark: str,
+                address: str,
+                protocol: str,
+                settings: dict,
+                *,
+                custom_sni: str = "",
+                custom_host: str = ""):
         if protocol == 'vmess':
             links = []
             for i in INBOUNDS.get(protocol, []):
                 links.append(
                     cls.vmess(remark=remark,
-                              address=host,
+                              address=address,
                               port=i['port'],
                               id=settings['id'],
                               net=i['stream']['net'],
                               tls=i['stream']['tls'],
-                              sni=i['stream']['sni'],
-                              host=i['stream']['host'],
+                              sni=custom_sni or i['stream']['sni'],
+                              host=custom_host or i['stream']['host'],
                               path=i['stream']['path'],
                               type=i['stream']['header_type'])
                 )
@@ -34,13 +41,13 @@ class ShareLink(str):
             for i in INBOUNDS.get(protocol, []):
                 links.append(
                     cls.vless(remark=remark,
-                              address=host,
+                              address=address,
                               port=i['port'],
                               id=settings['id'],
                               net=i['stream']['net'],
                               tls=i['stream']['tls'],
-                              sni=i['stream']['sni'],
-                              host=i['stream']['host'],
+                              sni=custom_sni or i['stream']['sni'],
+                              host=custom_host or i['stream']['host'],
                               path=i['stream']['path'],
                               type=i['stream']['header_type'])
                 )
@@ -51,13 +58,13 @@ class ShareLink(str):
             for i in INBOUNDS.get(protocol, []):
                 links.append(
                     cls.trojan(remark=remark,
-                               address=host,
+                               address=address,
                                port=i['port'],
                                password=settings['password'],
                                net=i['stream']['net'],
                                tls=i['stream']['tls'],
-                               sni=i['stream']['sni'],
-                               host=i['stream']['host'],
+                               sni=custom_sni or i['stream']['sni'],
+                               host=custom_host or i['stream']['host'],
                                path=i['stream']['path'],
                                type=i['stream']['header_type'])
                 )
@@ -68,7 +75,7 @@ class ShareLink(str):
             for i in INBOUNDS.get(protocol, []):
                 links.append(
                     cls.shadowsocks(remark=remark,
-                                    address=host,
+                                    address=address,
                                     port=i['port'],
                                     password=settings['password'])
                 )
@@ -209,35 +216,42 @@ class ClashConfiguration(object):
                 return new
             c += 1
 
-    def add(self, remark: str, host: str, protocol: str, settings: dict):
+    def add(self,
+            remark: str,
+            address: str,
+            protocol: str,
+            settings: dict,
+            *,
+            custom_sni: str = "",
+            custom_host: str = ""):
         if protocol == 'vmess':
             for i in INBOUNDS.get(protocol, []):
                 self.add_vmess(remark=remark,
-                               address=host,
+                               address=address,
                                port=i['port'],
                                id=settings['id'],
                                net=i['stream']['net'],
                                tls=i['stream']['tls'],
-                               sni=i['stream']['sni'],
-                               host=i['stream']['host'],
+                               sni=custom_sni or i['stream']['sni'],
+                               host=custom_host or i['stream']['host'],
                                path=i['stream']['path'])
 
         if protocol == 'trojan':
             for i in INBOUNDS.get(protocol, []):
                 self.add_trojan(remark=remark,
-                                address=host,
+                                address=address,
                                 port=i['port'],
                                 password=settings['password'],
                                 net=i['stream']['net'],
                                 tls=i['stream']['tls'],
-                                sni=i['stream']['sni'],
-                                host=i['stream']['host'],
+                                sni=custom_sni or i['stream']['sni'],
+                                host=custom_host or i['stream']['host'],
                                 path=i['stream']['path'])
 
         if protocol == 'shadowsocks':
             for i in INBOUNDS.get(protocol, []):
                 self.add_shadowsocks(remark=remark,
-                                     address=host,
+                                     address=address,
                                      port=i['port'],
                                      password=settings['password'])
 
@@ -314,7 +328,12 @@ def get_clash_sub(username: str, proxies: dict):
     conf = ClashConfiguration()
     for host in XRAY_HOSTS:
         for proxy_type, settings in proxies.items():
-            conf.add(host['remark'], host['hostname'], proxy_type, settings.dict(no_obj=True))
+            conf.add(host['remark'],
+                     host['address'],
+                     proxy_type,
+                     settings.dict(no_obj=True),
+                     custom_sni=host['sni'],
+                     custom_host=host['host'])
     return conf
 
 

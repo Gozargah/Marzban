@@ -115,9 +115,11 @@ class UserResponse(User):
             for host in XRAY_HOSTS:
                 for proxy_type, settings in values.get('proxies', {}).items():
                     link = ShareLink(f"{host['remark']} ({values['username']})",
-                                     host['hostname'],
+                                     host['address'],
                                      proxy_type,
-                                     settings.dict())
+                                     settings.dict(),
+                                     custom_sni=host['sni'],
+                                     custom_host=host['host'])
                     links.extend(link.split('\n'))
             return links
         return v

@@ -1,8 +1,30 @@
 import requests
 from decouple import config
 from dotenv import load_dotenv
+import json
 
-load_dotenv()
+load_dotenv(override=True)
+
+
+def _render_xray_host_line(host_line: str, server_ip: str = ""):
+    try:
+        host_line_dict = json.loads(host_line)
+        return {
+            "remark": host_line_dict.get("remark", "").format(SERVER_IP=server_ip),
+            "address": host_line_dict.get("address", "").format(SERVER_IP=server_ip),
+            "sni": host_line_dict.get("sni", "").format(SERVER_IP=server_ip),
+            "host": host_line_dict.get("host", "").format(SERVER_IP=server_ip),
+        }
+    except json.JSONDecodeError:
+        pass  # fallback to simple "remark@address" syntax
+
+    remark, address = host_line.rsplit("@", 1)
+    return {
+        "remark": remark.format(SERVER_IP=server_ip),
+        "address": address.format(SERVER_IP=server_ip),
+        "sni": "",
+        "host": ""
+    }
 
 
 # Disable IPv6
@@ -30,11 +52,9 @@ XRAY_FALLBACK_INBOUND_TAG = config("XRAY_FALLBACK_INBOUND_TAG", cast=str, defaul
 XRAY_EXECUTABLE_PATH = config("XRAY_EXECUTABLE_PATH", default="/usr/local/bin/xray")
 XRAY_ASSETS_PATH = config("XRAY_ASSETS_PATH", default="/usr/local/share/xray")
 XRAY_HOSTS = [
-    {
-        "remark": h.rsplit('@', 1)[0].format(SERVER_IP=SERVER_IP),
-        "hostname": h.rsplit('@', 1)[1].format(SERVER_IP=SERVER_IP)
-    }
-    for h in filter(bool, config("XRAY_HOSTS", default=f'🚀 Marz@{SERVER_IP}').split("\n"))
+    _render_xray_host_line(host_line, SERVER_IP)
+    for host_line in map(str.strip, config("XRAY_HOSTS", default=f'🚀 Marz@{SERVER_IP}').split("\n"))
+    if host_line and not host_line.startswith("#")
 ]
 XRAY_EXCLUDE_INBOUND_TAGS = config("XRAY_EXCLUDE_INBOUND_TAGS", default='').split()
 XRAY_SUBSCRIPTION_URL_PREFIX = config("XRAY_SUBSCRIPTION_URL_PREFIX", default="").strip("/")
