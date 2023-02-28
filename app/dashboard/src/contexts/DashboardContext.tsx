@@ -169,5 +169,3 @@ export const useDashboard = create<
     }
   )
 );
-
-fetchUsers(useDashboard.getState().filters);
