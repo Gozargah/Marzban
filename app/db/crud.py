@@ -76,29 +76,39 @@ def get_users(db: Session,
               reset_strategy: Union[UserDataLimitResetStrategy, list] = None,
               return_with_count: bool = False) -> Union[List[User], Tuple[List[User], int]]:
     query = db.query(User)
+
     if username:
         query = query.filter(User.username.ilike(f'%{username}%'))
+
     if status:
         if isinstance(status, list):
             query = query.filter(User.status.in_(status))
         else:
             query = query.filter(User.status == status)
+
     if reset_strategy:
         if isinstance(reset_strategy, list):
             query = query.filter(User.data_limit_reset_strategy.in_(reset_strategy))
         else:
             query = query.filter(User.data_limit_reset_strategy == reset_strategy)
+
     if admin:
         query = query.filter(User.admin == admin)
+
+    # count it before applying limit and offset
+    if return_with_count:
+        count = query.count()
+
     if offset:
         query = query.offset(offset)
     if limit:
         query = query.limit(limit)
+
     if sort:
         query = query.order_by(*(opt.value for opt in sort))
 
-    if return_with_count is True:
-        return query.all(), query.count()
+    if return_with_count:
+        return query.all(), count
 
     return query.all()
 
