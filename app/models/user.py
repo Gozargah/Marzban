@@ -214,3 +214,8 @@ class UserResponse(User):
         if isinstance(v, list):
             v = {p.type: p.settings for p in v}
         return super().validate_proxies(v, values, **kwargs)
+
+
+class UsersResponse(BaseModel):
+    users: List[UserResponse]
+    total: int
