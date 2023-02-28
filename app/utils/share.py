@@ -246,46 +246,46 @@ class ClashConfiguration(object):
                                      'udp': True})
 
 
-def get_v2ray_link(remark: str, host: str, port: int, protocol: str, settings: dict, stream: dict):
+def get_v2ray_link(remark: str, address: str, port: int, sni: str, host: str, protocol: str, settings: dict, stream: dict):
     if protocol == 'vmess':
         return V2rayShareLink.vmess(remark=remark,
-                                    address=host,
+                                    address=address,
                                     port=port,
                                     id=settings['id'],
                                     net=stream['network'],
                                     tls=stream['tls'],
-                                    sni=stream['sni'],
-                                    host=stream['host'],
+                                    sni=sni or stream['sni'],
+                                    host=host or stream['host'],
                                     path=stream['path'],
                                     type=stream['header_type'])
 
     if protocol == 'vless':
         return V2rayShareLink.vless(remark=remark,
-                                    address=host,
+                                    address=address,
                                     port=port,
                                     id=settings['id'],
                                     net=stream['network'],
                                     tls=stream['tls'],
-                                    sni=stream['sni'],
-                                    host=stream['host'],
+                                    sni=sni or stream['sni'],
+                                    host=host or stream['host'],
                                     path=stream['path'],
                                     type=stream['header_type'])
 
     if protocol == 'trojan':
         return V2rayShareLink.trojan(remark=remark,
-                                     address=host,
+                                     address=address,
                                      port=port,
                                      password=settings['password'],
                                      net=stream['network'],
                                      tls=stream['tls'],
-                                     sni=stream['sni'],
-                                     host=stream['host'],
+                                     sni=sni or stream['sni'],
+                                     host=host or stream['host'],
                                      path=stream['path'],
                                      type=stream['header_type'])
 
     if protocol == 'shadowsocks':
         return V2rayShareLink.shadowsocks(remark=remark,
-                                          address=host,
+                                          address=address,
                                           port=port,
                                           password=settings['password'])
 
@@ -309,8 +309,10 @@ def generate_v2ray_links(username: str, proxies: dict, inbounds: dict) -> list:
             for host in XrayStore.HOSTS.get(tag, []):
                 addr = host['address'].format(SERVER_IP=SERVER_IP)
                 links.append(get_v2ray_link(remark=f"{host['remark']} ({username})",
-                                            host=addr,
+                                            address=addr,
                                             port=host['port'] or inbound['port'],
+                                            sni=host['sni'],
+                                            host=host['host'],
                                             protocol=protocol,
                                             settings=settings.dict(),
                                             stream=stream))

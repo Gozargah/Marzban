@@ -107,6 +107,8 @@ class ProxyHost(Base):
     remark = Column(String, unique=False, nullable=False)
     address = Column(String, unique=False, nullable=False)
     port = Column(Integer, nullable=True)
+    sni = Column(String, unique=False, nullable=False, default="")
+    host = Column(String, unique=False, nullable=False, default="")
     inbound_tag = Column(String, ForeignKey("inbounds.tag"), nullable=False)
     inbound = relationship("ProxyInbound", back_populates="hosts")
 

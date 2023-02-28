@@ -34,6 +34,8 @@ def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostMo
             remark=host.remark,
             address=host.address,
             port=host.port,
+            sni=host.sni,
+            host=host.host,
             inbound=inbound
         ) for host in modified_hosts
     ]

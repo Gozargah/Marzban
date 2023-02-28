@@ -57,6 +57,8 @@ type HostsSchema = Record<
     remark: string;
     address: string;
     port: number | null;
+    sni: string;
+    host: string;
     inbound_tag: string;
   }[]
 >;

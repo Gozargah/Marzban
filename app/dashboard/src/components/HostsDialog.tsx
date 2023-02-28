@@ -62,6 +62,8 @@ const hostsSchema = z.record(
             return Number(parseInt(value));
           return null;
         }),
+      sni: z.string(),
+      host: z.string(),
       inbound_tag: z.string(),
     })
   )
@@ -102,6 +104,8 @@ const AccordionInbound: FC<AccordionInboundType> = ({
   const handleAddHost = () => {
     addHost({
       inbound_tag: hostKey,
+      host: "",
+      sni: "",
       port: null,
       address: "",
       remark: "",
@@ -184,7 +188,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                   <Input
                     size="sm"
                     borderRadius="4px"
-                    placeholder="Address (e.g. google.com)"
+                    placeholder="Address (e.g. example.com)"
                     {...form.register(hostKey + "." + index + ".address")}
                   />
                   {accordionErrors && accordionErrors[index]?.address && (
@@ -200,6 +204,32 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                   {...form.register(hostKey + "." + index + ".port")}
                 />
               </HStack>
+              <FormControl
+                isInvalid={!!(accordionErrors && accordionErrors[index]?.sni)}
+              >
+                <Input
+                  size="sm"
+                  borderRadius="4px"
+                  placeholder="SNI (e.g. example.com)"
+                  {...form.register(hostKey + "." + index + ".sni")}
+                />
+                {accordionErrors && accordionErrors[index]?.sni && (
+                  <Error>{accordionErrors[index]?.sni?.message}</Error>
+                )}
+              </FormControl>
+              <FormControl
+                isInvalid={!!(accordionErrors && accordionErrors[index]?.host)}
+              >
+                <Input
+                  size="sm"
+                  borderRadius="4px"
+                  placeholder="Host (e.g. example.com)"
+                  {...form.register(hostKey + "." + index + ".host")}
+                />
+                {accordionErrors && accordionErrors[index]?.host && (
+                  <Error>{accordionErrors[index]?.host?.message}</Error>
+                )}
+              </FormControl>
             </VStack>
           ))}
           <Button

@@ -7,7 +7,9 @@ class XrayStore:
             {
                 "remark": "",
                 "address": "",
-                "port": None
+                "port": None,
+                "sni": "",
+                "host": "",
             }
         ]
     }
@@ -26,7 +28,9 @@ class XrayStore:
                         {
                             "remark": host.remark,
                             "address": host.address,
-                            "port": host.port
+                            "port": host.port,
+                            "sni": host.sni,
+                            "host": host.host,
                         }
                     )
 
