@@ -6,7 +6,7 @@ from app import app, logger, telegram, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.proxy import ProxyTypes
-from app.models.user import User, UserCreate, UserModify, UserResponse, UserStatus
+from app.models.user import User, UserCreate, UserModify, UserResponse, UsersResponse, UserStatus
 from fastapi import BackgroundTasks, Depends, HTTPException
 
 
@@ -210,7 +210,7 @@ def reset_user_data_usage(username: str,
     return user
 
 
-@app.get("/api/users", tags=['User'], response_model=dict)
+@app.get("/api/users", tags=['User'], response_model=UsersResponse)
 def get_users(offset: int = None,
               limit: int = None,
               username: str = None,

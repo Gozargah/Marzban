@@ -112,6 +112,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
     onEditingUser,
     setQRCode,
     setSubLink,
+    refetchUsers,
   } = useDashboard();
   const marginTop =
     useBreakpointValue({
@@ -119,8 +120,13 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
       lg: 72,
     }) || 72;
 
-  const isFiltered = users.length !== totalUsers.length;
+  const isFiltered = users.length !== totalUsers.total;
   const [copied, setCopied] = useState([-1, -1, false]);
+
+  // Fetch users on first load
+  useEffect(() => {
+    refetchUsers();
+  }, [refetchUsers]);
 
   useEffect(() => {
     if (copied[2]) {
