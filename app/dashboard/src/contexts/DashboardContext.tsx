@@ -16,7 +16,10 @@ type DashboardStateType = {
   isCreatingNewUser: boolean;
   editingUser: User | null | undefined;
   deletingUser: User | null;
-  users: User[];
+  users: {
+    users: User[];
+    total: number
+  };
   loading: boolean;
   filters: FilterType;
   subscribeUrl: string | null;
@@ -94,7 +97,10 @@ export const useDashboard = create<
       isCreatingNewUser: false,
       QRcodeLinks: null,
       subscribeUrl: null,
-      users: [],
+      users: {
+        users: [],
+        total: 0
+      },
       loading: true,
       isEditingHosts: false,
       filters: { search: "" },
@@ -156,7 +162,7 @@ export const useDashboard = create<
     }),
     (state): ComputedStore => {
       return {
-        filteredUsers: state.users.filter(
+        filteredUsers: state.users.users.filter(
           (user) => user.username.indexOf(state.filters.search) > -1
         ),
       };

@@ -119,7 +119,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
       lg: 72,
     }) || 72;
 
-  const isFiltered = users.length !== totalUsers.length;
+  const isFiltered = users.length !== totalUsers.total;
   const [copied, setCopied] = useState([-1, -1, false]);
 
   useEffect(() => {
