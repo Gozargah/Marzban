@@ -34,7 +34,7 @@ XRAY_HOSTS = [
         "remark": h.rsplit('@', 1)[0].format(SERVER_IP=SERVER_IP),
         "hostname": h.rsplit('@', 1)[1].format(SERVER_IP=SERVER_IP)
     }
-    for h in filter(bool, config("XRAY_HOSTS", default=f'🚀 Marz@{SERVER_IP}').split("\n"))
+    for h in map(str.strip, config("XRAY_HOSTS", default=f'🚀 Marz@{SERVER_IP}').strip().split('\n'))
 ]
 XRAY_EXCLUDE_INBOUND_TAGS = config("XRAY_EXCLUDE_INBOUND_TAGS", default='').split()
 XRAY_SUBSCRIPTION_URL_PREFIX = config("XRAY_SUBSCRIPTION_URL_PREFIX", default="").strip("/")
