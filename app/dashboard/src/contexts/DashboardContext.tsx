@@ -98,7 +98,7 @@ export const useDashboard = create<DashboardStateType>((set, get) => ({
   },
   loading: true,
   isEditingHosts: false,
-  filters: { username: "", limit: 15 },
+  filters: { username: "", limit: 10 },
   refetchUsers: () => {
     fetchUsers(get().filters);
   },
