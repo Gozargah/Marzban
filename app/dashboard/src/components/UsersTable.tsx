@@ -108,7 +108,7 @@ const UsageSlider: FC<UsageSliderProps> = (props) => {
 type UsersTableProps = {} & TableProps;
 export const UsersTable: FC<UsersTableProps> = (props) => {
   const {
-    users,
+    users: { users },
     users: totalUsers,
     onEditingUser,
     setQRCode,
@@ -158,7 +158,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
   }, [tableFixHead]);
 
   return (
-    <Box id="users-table" overflowX="auto" maxW="100vw">
+    <Box id="users-table" overflowX="auto">
       <Table {...props}>
         <Thead zIndex="docked" position="relative">
           <Tr>
@@ -291,9 +291,15 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
             );
           })}
         </Tbody>
+        {users.length == 0 && (
+          <Tr>
+            <Td colSpan={4}>
+              <EmptySection isFiltered={isFiltered} />
+            </Td>
+          </Tr>
+        )}
       </Table>
       <Pagination />
-      {users.length == 0 && <EmptySection isFiltered={isFiltered} />}
     </Box>
   );
 };
@@ -306,19 +312,13 @@ const EmptySection: FC<EmptySectionProps> = ({ isFiltered }) => {
   const { onCreateUser } = useDashboard();
   return (
     <Box
-      borderWidth="1px"
-      borderStyle="solid"
-      borderTop={0}
-      borderBottomRadius="8px"
       padding="5"
-      _dark={{
-        borderColor: "gray.600",
-      }}
       py="8"
       display="flex"
       alignItems="center"
       flexDirection="column"
       gap={4}
+      w="full"
     >
       <EmptySectionIcon
         maxHeight="200px"

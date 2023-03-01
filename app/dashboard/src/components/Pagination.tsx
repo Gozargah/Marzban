@@ -76,17 +76,16 @@ function generatePageItems(total: number, current: number, width: number) {
 }
 
 export const Pagination: FC = () => {
-  const { data: systemData, isValidating: isLoading } = useSWR("/system");
-
-  const { filters, onFilterChange } = useDashboard();
+  const {
+    filters,
+    onFilterChange,
+    users: { total },
+  } = useDashboard();
   const { limit: perPage, offset } = filters;
 
-  if (isLoading) return <span>...</span>;
-
   const page = (offset || 0) / (perPage || 1);
-  const noPages = Math.ceil(systemData.total_user / (perPage || 1));
+  const noPages = Math.ceil(total / (perPage || 1));
   const pages = generatePageItems(noPages, page, 7);
-  console.log(noPages, page, systemData.total_user, perPage);
 
   const changePage = (page: number) => {
     onFilterChange({
@@ -103,10 +102,11 @@ export const Pagination: FC = () => {
   };
 
   return (
-    <HStack justifyContent="space-between" mt={4}>
+    <HStack justifyContent="space-between" mt={4} overflow="auto" w="full">
       <Box>
         <HStack>
           <Select
+            minW="60px"
             value={perPage}
             onChange={handlePageSizeChange}
             size="sm"
@@ -126,7 +126,7 @@ export const Pagination: FC = () => {
         <Button
           leftIcon={<PrevIcon />}
           onClick={changePage.bind(null, page - 1)}
-          isDisabled={page === 0}
+          isDisabled={page === 0 || noPages === 0}
         >
           Previous
         </Button>
@@ -147,7 +147,7 @@ export const Pagination: FC = () => {
         <Button
           rightIcon={<NextIcon />}
           onClick={changePage.bind(null, page + 1)}
-          isDisabled={page + 1 === noPages}
+          isDisabled={page + 1 === noPages || noPages === 0}
         >
           Next
         </Button>

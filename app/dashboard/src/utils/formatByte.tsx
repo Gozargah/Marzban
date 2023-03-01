@@ -12,5 +12,5 @@ export function formatBytes(bytes: number, decimals = 2, asArray = false) {
 }
 
 export const numberWithCommas = (x: number) => {
-  if (x) return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  if (x !== null) return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
