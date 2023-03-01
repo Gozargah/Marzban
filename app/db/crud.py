@@ -99,13 +99,13 @@ def get_users(db: Session,
     if return_with_count:
         count = query.count()
 
+    if sort:
+        query = query.order_by(*(opt.value for opt in sort))
+
     if offset:
         query = query.offset(offset)
     if limit:
         query = query.limit(limit)
-
-    if sort:
-        query = query.order_by(*(opt.value for opt in sort))
 
     if return_with_count:
         return query.all(), count
