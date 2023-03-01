@@ -73,9 +73,8 @@ class ProxyHost(BaseModel):
     remark: str
     address: str
     port: Union[int, None] = None
-    sni: str
-    host: str
-    inbound_tag: str = None
+    sni: str = ""
+    host: str = ""
 
     class Config:
         orm_mode = True
