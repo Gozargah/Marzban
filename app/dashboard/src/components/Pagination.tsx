@@ -4,7 +4,6 @@ import {
   ButtonGroup,
   chakra,
   HStack,
-  IconButton,
   Select,
   Text,
 } from "@chakra-ui/react";
@@ -14,7 +13,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
 import { ChangeEvent, FC } from "react";
-import useSWR from "swr";
 
 const PrevIcon = chakra(ArrowLongLeftIcon, {
   baseStyle: {

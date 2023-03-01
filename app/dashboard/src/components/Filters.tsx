@@ -40,12 +40,14 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onFilterChange({
       ...filters,
+      offset: 0,
       username: e.target.value,
     });
   };
   const clear = () => {
     onFilterChange({
       ...filters,
+      offset: 0,
       username: "",
     });
   };

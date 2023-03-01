@@ -34,6 +34,7 @@ import { useDashboard } from "contexts/DashboardContext";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { UserBadge } from "./UserBadge";
 import { Pagination } from "./Pagination";
+import classNames from "classnames";
 
 const EmptySectionIcon = chakra(AddFileIcon);
 
@@ -174,7 +175,9 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
             return (
               <Tr
                 key={user.username}
-                className="interactive"
+                className={classNames("interactive", {
+                  "last-row": i === users.length - 1,
+                })}
                 onClick={() => onEditingUser(user)}
               >
                 <Td minW="150px">{user.username}</Td>
@@ -290,16 +293,21 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               </Tr>
             );
           })}
-        </Tbody>
-        {users.length == 0 && (
-          <Tr>
-            <Td colSpan={4}>
-              <EmptySection isFiltered={isFiltered} />
+          {users.length == 0 && (
+            <Tr>
+              <Td colSpan={4}>
+                <EmptySection isFiltered={isFiltered} />
+              </Td>
+            </Tr>
+          )}
+
+          <Tr p="0">
+            <Td colSpan={4} p={0} border="0 !important">
+              <Pagination />
             </Td>
           </Tr>
-        )}
+        </Tbody>
       </Table>
-      <Pagination />
     </Box>
   );
 };
