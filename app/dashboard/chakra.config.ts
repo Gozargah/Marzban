@@ -36,6 +36,10 @@ export const theme = extendTheme({
         field: {
           _dark: {
             borderColor: "gray.600",
+            borderRadius: "6px",
+          },
+          _light: {
+            borderRadius: "6px",
           },
         },
       },

@@ -23,6 +23,7 @@ type DashboardStateType = {
   subscribeUrl: string | null;
   QRcodeLinks: string[] | null;
   isEditingHosts: boolean;
+  resetUsageUser: User | null;
   onCreateUser: (isOpen: boolean) => void;
   onEditingUser: (user: User | null) => void;
   onDeletingUser: (user: User | null) => void;
@@ -98,7 +99,8 @@ export const useDashboard = create<DashboardStateType>((set, get) => ({
   },
   loading: true,
   isEditingHosts: false,
-  filters: { username: "", limit: 10, sort: '-created_at' },
+  resetUsageUser: null,
+  filters: { username: "", limit: 10, sort: "-created_at" },
   refetchUsers: () => {
     fetchUsers(get().filters);
   },
@@ -146,7 +148,7 @@ export const useDashboard = create<DashboardStateType>((set, get) => ({
   resetDataUsage: (user) => {
     return fetch(`/user/${user.username}/reset`, { method: "POST" }).then(
       () => {
-        get().onEditingUser(null);
+        set({ resetUsageUser: null });
         get().refetchUsers();
       }
     );

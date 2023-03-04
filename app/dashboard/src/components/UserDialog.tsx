@@ -1,7 +1,6 @@
 import {
   Alert,
   AlertIcon,
-  Box,
   Button,
   chakra,
   FormControl,
@@ -28,7 +27,7 @@ import {
 import { PencilIcon, UserPlusIcon } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC, useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { ProxyKeys, ProxyType, User, UserCreate } from "types/User";
 import { z } from "zod";
 import { Icon } from "./Icon";
@@ -39,6 +38,7 @@ import dayjs from "dayjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { relativeExpiryDate } from "utils/dateFormatter";
 import { DeleteIcon } from "./DeleteUserModal";
+import { resetStrategy } from "constants/UserSettings";
 
 const AddUserIcon = chakra(UserPlusIcon, {
   baseStyle: {
@@ -66,7 +66,7 @@ const schema = z.object({
     .nullable()
     .transform((str) => {
       if (str) return Number((parseFloat(String(str)) * 1073741824).toFixed(5));
-      return str;
+      return 0;
     }),
   expire: z.number().nullable(),
   data_limit_reset_strategy: z.string(),
@@ -130,11 +130,16 @@ export const UserDialog: FC<UserDialogProps> = () => {
     resolver: zodResolver(schema),
   });
 
-  const onClose = () => {
-    form.reset(getDefaultValues());
-    onCreateUser(false);
-    onEditingUser(null);
-  };
+  const [dataLimit] = useWatch({
+    control: form.control,
+    name: ["data_limit"],
+  });
+
+  useEffect(() => {
+    if (editingUser) {
+      form.reset(formatUser(editingUser));
+    }
+  }, [editingUser]);
 
   const submit = (values: FormType) => {
     setLoading(true);
@@ -145,6 +150,10 @@ export const UserDialog: FC<UserDialogProps> = () => {
       ...values,
       data_limit: values.data_limit,
       proxies: mergeProxies(values.proxies, editingUser?.proxies),
+      data_limit_reset_strategy:
+        values.data_limit && values.data_limit > 0
+          ? values.data_limit_reset_strategy
+          : "no_reset",
     };
     methods[method](body)
       .then(() => {
@@ -177,11 +186,15 @@ export const UserDialog: FC<UserDialogProps> = () => {
       });
   };
 
-  useEffect(() => {
-    if (editingUser) {
-      form.reset(formatUser(editingUser));
-    }
-  }, [editingUser]);
+  const onClose = () => {
+    form.reset(getDefaultValues());
+    onCreateUser(false);
+    onEditingUser(null);
+  };
+
+  const handleResetUsage = () => {
+    useDashboard.setState({ resetUsageUser: editingUser });
+  };
 
   const disabled = loading;
 
@@ -235,14 +248,34 @@ export const UserDialog: FC<UserDialogProps> = () => {
                             onChange={field.onChange}
                             disabled={disabled}
                             error={form.formState.errors.data_limit?.message}
-                            value={
-                              field.value ? String(field.value) : undefined
-                            }
+                            value={field.value ? String(field.value) : ""}
                           />
                         );
                       }}
                     />
                   </FormControl>
+                  {dataLimit && dataLimit > 0 && (
+                    <FormControl>
+                      <FormLabel>Periodic Usage Reset</FormLabel>
+                      <Controller
+                        control={form.control}
+                        name="data_limit_reset_strategy"
+                        render={({ field }) => {
+                          return (
+                            <Select size="sm" {...field}>
+                              {resetStrategy.map((s) => {
+                                return (
+                                  <option key={s.value} value={s.value}>
+                                    {s.title}
+                                  </option>
+                                );
+                              })}
+                            </Select>
+                          );
+                        }}
+                      />
+                    </FormControl>
+                  )}
                   <FormControl>
                     <FormLabel>Expiry Date</FormLabel>
                     <Controller
@@ -365,8 +398,22 @@ export const UserDialog: FC<UserDialogProps> = () => {
             )}
           </ModalBody>
           <ModalFooter mt="3">
-            <HStack justifyContent="space-between" w="full" gap={3}>
-              <HStack>
+            <HStack
+              justifyContent="space-between"
+              w="full"
+              gap={3}
+              flexDirection={{
+                base: "column",
+                sm: "row",
+              }}
+            >
+              <HStack
+                justifyContent="flex-start"
+                w={{
+                  base: "full",
+                  sm: "unset",
+                }}
+              >
                 {isEditing && (
                   <>
                     <Tooltip label="Delete" placement="top">
@@ -378,10 +425,13 @@ export const UserDialog: FC<UserDialogProps> = () => {
                         <DeleteIcon />
                       </IconButton>
                     </Tooltip>
+                    <Button onClick={handleResetUsage} size="sm">
+                      Reset Usage
+                    </Button>
                   </>
                 )}
               </HStack>
-              <HStack w="full" maxW={{ lg: "50%", base: "full" }}>
+              <HStack w="full" maxW={{ md: "50%", base: "full" }}>
                 <Button
                   onClick={onClose}
                   size="sm"

@@ -13,15 +13,12 @@ export type ProxyType = {
   };
 };
 
-export const dataLimitResetStrategy = [
-  "no_reset",
-  "day",
-  "week",
-  "month",
-  "year",
-];
-
-type DataLimitResetStrategy = (typeof dataLimitResetStrategy)[number];
+export type DataLimitResetStrategy =
+  | "no_reset"
+  | "day"
+  | "week"
+  | "month"
+  | "year";
 
 export type User = {
   proxies: ProxyType;
