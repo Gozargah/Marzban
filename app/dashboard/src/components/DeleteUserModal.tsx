@@ -11,6 +11,7 @@ import {
   ModalOverlay,
   Spinner,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import { FC, useState } from "react";
 import { TrashIcon } from "@heroicons/react/24/outline";
@@ -29,14 +30,25 @@ export type DeleteUserModalProps = {};
 export const DeleteUserModal: FC<DeleteUserModalProps> = () => {
   const [loading, setLoading] = useState(false);
   const { deletingUser: user, onDeletingUser, deleteUser } = useDashboard();
-
+  const toast = useToast();
   const onClose = () => {
     onDeletingUser(null);
   };
   const onDelete = () => {
     if (user) {
       setLoading(true);
-      deleteUser(user).then(onClose).finally(setLoading.bind(null, false));
+      deleteUser(user)
+        .then(() => {
+          toast({
+            title: `${user.username} deleted successfully.`,
+            status: "success",
+            isClosable: true,
+            position: "top",
+            duration: 3000,
+          });
+        })
+        .then(onClose)
+        .finally(setLoading.bind(null, false));
     }
   };
   return (
@@ -51,7 +63,7 @@ export const DeleteUserModal: FC<DeleteUserModalProps> = () => {
         <ModalCloseButton mt={3} />
         <ModalBody>
           <Text fontWeight="semibold" fontSize="lg">
-            Delete user
+            Delete User
           </Text>
           {user && (
             <Text
