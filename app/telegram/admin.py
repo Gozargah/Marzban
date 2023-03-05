@@ -12,9 +12,13 @@ from app.db import GetDB, crud
 from app.models.user import UserCreate, UserResponse, UserStatus
 from app.telegram import bot
 from app.telegram.keyboard import BotKeyboard
-from app.utils.system import cpu_usage, mem_store, memory_usage, readable_size
+from app.utils.store import MemoryStorage
+from app.utils.system import cpu_usage, memory_usage, readable_size
 from app.utils.xray import xray_add_user, xray_remove_user
 from config import TELEGRAM_ADMIN_ID
+
+
+mem_store = MemoryStorage()
 
 
 class IsAdminFilter(AdvancedCustomFilter):
