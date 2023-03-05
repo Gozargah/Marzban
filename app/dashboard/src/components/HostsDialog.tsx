@@ -64,7 +64,6 @@ const hostsSchema = z.record(
         }),
       sni: z.string(),
       host: z.string(),
-      inbound_tag: z.string(),
     })
   )
 );
@@ -102,7 +101,6 @@ const AccordionInbound: FC<AccordionInboundType> = ({
   const accordionErrors = errors[hostKey];
   const handleAddHost = () => {
     addHost({
-      inbound_tag: hostKey,
       host: "",
       sni: "",
       port: null,
@@ -112,6 +110,8 @@ const AccordionInbound: FC<AccordionInboundType> = ({
   };
   useEffect(() => {
     if (accordionErrors && !isOpen) {
+      console.log(accordionErrors);
+      console.log(form.getValues(hostKey));
       toggleAccordion();
     }
   }, [accordionErrors]);
