@@ -1,14 +1,15 @@
 import re
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List
+from typing import Dict, List, Union
+
+from pydantic import BaseModel, Field, validator
 
 from app import xray
 from app.models.proxy import ProxySettings, ProxyTypes
 from app.utils.jwt import create_subscription_token
 from app.utils.share import generate_v2ray_links
 from config import XRAY_SUBSCRIPTION_URL_PREFIX
-from pydantic import BaseModel, validator
 from xray_api.types.account import Account
 
 USERNAME_REGEXP = re.compile(r'^(?=\w{3,32}\b)[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*$')
@@ -32,7 +33,7 @@ class UserDataLimitResetStrategy(str, Enum):
 class User(BaseModel):
     proxies: Dict[ProxyTypes, ProxySettings] = {}
     expire: int = None
-    data_limit: int = None
+    data_limit: Union[None, int] = Field(gt=-1, default=None, description="data_limit can be 0 or greater")
     data_limit_reset_strategy: UserDataLimitResetStrategy = UserDataLimitResetStrategy.no_reset
     inbounds: Dict[ProxyTypes, List[str]] = {}
 
