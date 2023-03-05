@@ -35,6 +35,16 @@ table thead {
     border-top-right-radius: 8px;
   }
 }
+
+.last-row {
+  td:first-of-type {
+    border-bottom-left-radius: 8px;
+  }
+  td:last-of-type {
+    border-bottom-right-radius: 8px;
+  }
+}
+
 .slick-prev {
   left: -40px;
 }
@@ -44,4 +54,7 @@ table thead {
 .slick-prev,
 .slick-next {
   z-index: 100;
+}
+.chakra-popover__popper {
+  z-index: 9999 !important;
 }

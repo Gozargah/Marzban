@@ -11,14 +11,15 @@ import {
   ModalOverlay,
   Spinner,
   Text,
+  Toast,
   useToast,
 } from "@chakra-ui/react";
-import { FC, useState } from "react";
-import { TrashIcon } from "@heroicons/react/24/outline";
+import { FC, useEffect, useRef, useState } from "react";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { Icon } from "./Icon";
 import { useDashboard } from "contexts/DashboardContext";
 
-export const DeleteIcon = chakra(TrashIcon, {
+export const ResetIcon = chakra(ArrowPathIcon, {
   baseStyle: {
     w: 5,
     h: 5,
@@ -27,28 +28,38 @@ export const DeleteIcon = chakra(TrashIcon, {
 
 export type DeleteUserModalProps = {};
 
-export const DeleteUserModal: FC<DeleteUserModalProps> = () => {
+export const ResetUserUsageModal: FC<DeleteUserModalProps> = () => {
   const [loading, setLoading] = useState(false);
-  const { deletingUser: user, onDeletingUser, deleteUser } = useDashboard();
+  const { resetUsageUser: user, resetDataUsage } = useDashboard();
   const toast = useToast();
   const onClose = () => {
-    onDeletingUser(null);
+    useDashboard.setState({ resetUsageUser: null });
   };
-  const onDelete = () => {
+  const onReset = () => {
     if (user) {
       setLoading(true);
-      deleteUser(user)
+      resetDataUsage(user)
         .then(() => {
           toast({
-            title: `${user.username} deleted successfully.`,
+            title: `${user.username}'s usage has reset successfully.`,
             status: "success",
             isClosable: true,
             position: "top",
             duration: 3000,
           });
         })
-        .then(onClose)
-        .finally(setLoading.bind(null, false));
+        .catch(() => {
+          toast({
+            title: `Usage reset failed, please try again.`,
+            status: "error",
+            isClosable: true,
+            position: "top",
+            duration: 3000,
+          });
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     }
   };
   return (
@@ -56,14 +67,14 @@ export const DeleteUserModal: FC<DeleteUserModalProps> = () => {
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
       <ModalContent mx="3">
         <ModalHeader pt={6}>
-          <Icon color="red">
-            <DeleteIcon />
+          <Icon color="blue">
+            <ResetIcon />
           </Icon>
         </ModalHeader>
         <ModalCloseButton mt={3} />
         <ModalBody>
           <Text fontWeight="semibold" fontSize="lg">
-            Delete User
+            Reset User Usage
           </Text>
           {user && (
             <Text
@@ -72,7 +83,7 @@ export const DeleteUserModal: FC<DeleteUserModalProps> = () => {
               _dark={{ color: "gray.400" }}
               color="gray.600"
             >
-              Are you sure you want to delete <b>{user.username}</b>?
+              Are you sure you want to reset <b>{user.username}</b>'s usage?
             </Text>
           )}
         </ModalBody>
@@ -83,11 +94,11 @@ export const DeleteUserModal: FC<DeleteUserModalProps> = () => {
           <Button
             size="sm"
             w="full"
-            colorScheme="red"
-            onClick={onDelete}
+            colorScheme="blue"
+            onClick={onReset}
             leftIcon={loading ? <Spinner size="xs" /> : undefined}
           >
-            Delete
+            Reset
           </Button>
         </ModalFooter>
       </ModalContent>

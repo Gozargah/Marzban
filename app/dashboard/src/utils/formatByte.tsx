@@ -1,4 +1,4 @@
-export function formatBytes(bytes: number, decimals = 2) {
+export function formatBytes(bytes: number, decimals = 2, asArray = false) {
   if (!+bytes) return "0 B";
 
   const k = 1024;
@@ -6,10 +6,11 @@ export function formatBytes(bytes: number, decimals = 2) {
   const sizes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
 
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+  if (!asArray)
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+  else return [parseFloat((bytes / Math.pow(k, i)).toFixed(dm)), sizes[i]];
 }
 
 export const numberWithCommas = (x: number) => {
-  if (x) return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  if (x !== null) return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };

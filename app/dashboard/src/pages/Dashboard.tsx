@@ -1,6 +1,6 @@
 import { Box, Button, VStack } from "@chakra-ui/react";
 import { Statistics } from "../components/Statistics";
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { Footer } from "components/Footer";
 import { Header } from "components/Header";
 import { UsersTable } from "components/UsersTable";
@@ -9,34 +9,23 @@ import { useDashboard } from "contexts/DashboardContext";
 import { UserDialog } from "components/UserDialog";
 import { DeleteUserModal } from "components/DeleteUserModal";
 import { QRCodeDialog } from "components/QRCodeDialog";
+import { HostsDialog } from "components/HostsDialog";
+import { ResetUserUsageModal } from "components/ResetUserUsageModal";
 
 export const Dashboard: FC = () => {
-  const { onCreateUser } = useDashboard();
+  useEffect(useDashboard.getState().refetchUsers, []);
   return (
-    <VStack
-      justifyContent="space-between"
-      minH="100vh"
-      p="6"
-      experimental_spaceY={4}
-    >
+    <VStack justifyContent="space-between" minH="100vh" p="6" rowGap={4}>
       <Box w="full">
-        <Header
-          actions={
-            <Button
-              colorScheme="primary"
-              size="sm"
-              onClick={() => onCreateUser(true)}
-            >
-              Create user
-            </Button>
-          }
-        />
+        <Header />
         <Statistics mt="4" />
-        <Filters mt="4" />
-        <UsersTable mt="4" />
+        <Filters />
+        <UsersTable />
         <UserDialog />
         <DeleteUserModal />
         <QRCodeDialog />
+        <HostsDialog />
+        <ResetUserUsageModal />
       </Box>
       <Footer />
     </VStack>

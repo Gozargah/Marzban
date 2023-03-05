@@ -3,10 +3,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List
 
+from app import xray
 from app.models.proxy import ProxySettings, ProxyTypes
 from app.utils.jwt import create_subscription_token
-from app.utils.share import ShareLink
-from config import XRAY_HOSTS, XRAY_SUBSCRIPTION_URL_PREFIX
+from app.utils.share import generate_v2ray_links
+from config import XRAY_SUBSCRIPTION_URL_PREFIX
 from pydantic import BaseModel, validator
 from xray_api.types.account import Account
 
@@ -18,8 +19,9 @@ class UserStatus(str, Enum):
     disabled = "disabled"
     limited = "limited"
     expired = "expired"
-    
-class UserDataLimitResetStrategy(str,Enum):
+
+
+class UserDataLimitResetStrategy(str, Enum):
     no_reset = "no_reset"
     day = "day"
     week = "week"
@@ -32,6 +34,7 @@ class User(BaseModel):
     expire: int = None
     data_limit: int = None
     data_limit_reset_strategy: UserDataLimitResetStrategy = UserDataLimitResetStrategy.no_reset
+    inbounds: Dict[ProxyTypes, List[str]] = {}
 
     @validator('proxies', pre=True, always=True)
     def validate_proxies(cls, v, values, **kwargs):
@@ -59,40 +62,122 @@ class User(BaseModel):
 
 class UserCreate(User):
     username: str
-    data_limit_reset_strategy: UserDataLimitResetStrategy = UserDataLimitResetStrategy.no_reset
 
     class Config:
         schema_extra = {
             "example": {
+                "username": "user1234",
                 "proxies": {
-                    "vmess": {},
-                    "vless": {"id": "62711da4-80eb-7772-5c0a-c2e7677d0c7b"},
-                    "trojan": {},
-                    "shadowsocks": {"password": "ThisIsSecret"}
+                    "vmess": {
+                        "id": "35e4e39c-7d5c-4f4b-8b71-558e4f37ff53"
+                    },
+                    "vless": {}
+                },
+                "inbounds": {
+                    "vmess": [
+                        "VMESS_INBOUND"
+                    ],
+                    "vless": [
+                        "VLESS_INBOUND"
+                    ]
                 },
                 "expire": 0,
                 "data_limit": 0,
-                "username": "string"
+                "data_limit_reset_strategy": "no_reset"
             }
         }
 
+    @property
+    def excluded_inbounds(self):
+        excluded = {}
+        for proxy_type in self.proxies:
+            excluded[proxy_type] = []
+            for inbound in xray.config.inbounds_by_protocol.get(proxy_type, []):
+                if not inbound['tag'] in self.inbounds.get(proxy_type, []):
+                    excluded[proxy_type].append(inbound['tag'])
+
+        return excluded
+
+    @validator('inbounds', pre=True, always=True)
+    def validate_inbounds(cls, inbounds, values, **kwargs):
+        proxies = values.get('proxies', [])
+
+        # delete inbounds that are for protocols not activated
+        for proxy_type in inbounds.copy():
+            if proxy_type not in proxies:
+                del inbounds[proxy_type]
+
+        # check by proxies to ensure that every protocol has inbounds set
+        for proxy_type in proxies:
+            tags = inbounds.get(proxy_type)
+
+            if isinstance(tags, list) and not tags:
+                raise ValueError(f"{proxy_type} inbounds cannot be empty")
+
+            elif tags:
+                for tag in tags:
+                    if tag not in xray.config.inbounds_by_tag:
+                        raise ValueError(f"Inbound {tag} doesn't exist")
+
+            else:
+                inbounds[proxy_type] = [i['tag'] for i in xray.config.inbounds_by_protocol.get(proxy_type, [])]
+
+        return inbounds
+
 
 class UserModify(User):
-    expire: int = None
-    data_limit: int = None
-    proxies: Dict[ProxyTypes, ProxySettings] = None
-    data_limit_reset_strategy: UserDataLimitResetStrategy = UserDataLimitResetStrategy.no_reset
-
     class Config:
         schema_extra = {
             "example": {
                 "proxies": {
-                    "vless": {"id": "62711da4-80eb-7772-5c0a-c2e7677d0c7b"}
+                    "vmess": {
+                        "id": "35e4e39c-7d5c-4f4b-8b71-558e4f37ff53"
+                    },
+                    "vless": {}
+                },
+                "inbounds": {
+                    "vmess": [
+                        "VMESS_INBOUND"
+                    ],
+                    "vless": [
+                        "VLESS_INBOUND"
+                    ]
                 },
                 "expire": 0,
-                "data_limit": 0
+                "data_limit": 0,
+                "data_limit_reset_strategy": "no_reset"
             }
         }
+
+    @property
+    def excluded_inbounds(self):
+        excluded = {}
+        for proxy_type in self.inbounds:
+            excluded[proxy_type] = []
+            for inbound in xray.config.inbounds_by_protocol.get(proxy_type, []):
+                if not inbound['tag'] in self.inbounds.get(proxy_type, []):
+                    excluded[proxy_type].append(inbound['tag'])
+
+        return excluded
+
+    @validator('inbounds', pre=True, always=True)
+    def validate_inbounds(cls, inbounds, values, **kwargs):
+        # check with inbounds, "proxies" is optional on modifying
+        # so inbounds particularly can be modified
+        if inbounds:
+            for proxy_type, tags in inbounds.items():
+                if not tags:
+                    raise ValueError(f"{proxy_type} inbounds cannot be empty")
+
+                for tag in tags:
+                    if tag not in xray.config.inbounds_by_tag:
+                        raise ValueError(f"Inbound {tag} doesn't exist")
+
+        return inbounds
+
+    @validator('proxies', pre=True, always=True)
+    def validate_proxies(cls, v):
+        return {proxy_type: ProxySettings.from_dict(proxy_type, v.get(proxy_type, {})) for proxy_type in v}
 
 
 class UserResponse(User):
@@ -104,6 +189,7 @@ class UserResponse(User):
     links: List[str] = []
     subscription_url: str = ''
     proxies: dict
+    excluded_inbounds: Dict[ProxyTypes, List[str]] = {}
 
     class Config:
         orm_mode = True
@@ -111,15 +197,9 @@ class UserResponse(User):
     @validator('links', pre=False, always=True)
     def validate_links(cls, v, values, **kwargs):
         if not v:
-            links = []
-            for host in XRAY_HOSTS:
-                for proxy_type, settings in values.get('proxies', {}).items():
-                    link = ShareLink(f"{host['remark']} ({values['username']})",
-                                     host['hostname'],
-                                     proxy_type,
-                                     settings.dict())
-                    links.extend(link.split('\n'))
-            return links
+            return generate_v2ray_links(values.get('proxies', {}),
+                                        values.get('inbounds', {}),
+                                        extra_data=values)
         return v
 
     @validator('subscription_url', pre=False, always=True)
@@ -134,3 +214,8 @@ class UserResponse(User):
         if isinstance(v, list):
             v = {p.type: p.settings for p in v}
         return super().validate_proxies(v, values, **kwargs)
+
+
+class UsersResponse(BaseModel):
+    users: List[UserResponse]
+    total: int

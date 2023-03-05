@@ -62,7 +62,7 @@ def modify_admin(username: str,
                  modified_admin: AdminModify,
                  db: Session = Depends(get_db),
                  admin: Admin = Depends(Admin.get_current)):
-    if not admin.is_sudo or admin.username != username:
+    if not (admin.is_sudo or admin.username == username):
         raise HTTPException(status_code=403, detail="You're not allowed")
 
     dbadmin = crud.get_admin(db, username)

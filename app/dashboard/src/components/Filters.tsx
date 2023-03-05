@@ -1,5 +1,6 @@
 import {
   BoxProps,
+  Button,
   chakra,
   Grid,
   GridItem,
@@ -34,17 +35,20 @@ const ReloadIcon = chakra(ArrowPathIcon, iconProps);
 export type FilterProps = {} & BoxProps;
 
 export const Filters: FC<FilterProps> = ({ ...props }) => {
-  const { loading, filters, onFilterChange, refetchUsers } = useDashboard();
+  const { loading, filters, onFilterChange, refetchUsers, onCreateUser } =
+    useDashboard();
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onFilterChange({
       ...filters,
-      search: e.target.value,
+      offset: 0,
+      username: e.target.value,
     });
   };
   const clear = () => {
     onFilterChange({
       ...filters,
-      search: "",
+      offset: 0,
+      username: "",
     });
   };
   return (
@@ -53,23 +57,33 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
         lg: "repeat(3, 1fr)",
         base: "repeat(1, 1fr)",
       }}
-      gap={4}
+      position="sticky"
+      top={0}
+      mx="-6"
+      px="6"
+      rowGap={4}
+      gap={{
+        lg: 4,
+        base: 0,
+      }}
+      bg="var(--chakra-colors-chakra-body-bg)"
+      py={4}
+      zIndex="docked"
       {...props}
     >
-      <GridItem colSpan={1}>
+      <GridItem colSpan={1} order={{ base: 2, lg: 1 }}>
         <InputGroup>
           <InputLeftElement pointerEvents="none" children={<SearchIcon />} />
           <Input
-            type="tel"
             placeholder="Search"
-            value={filters.search || ""}
+            value={filters.username || ""}
             borderColor="light-border"
             onChange={onChange}
           />
 
           <InputRightElement>
             {loading && <Spinner size="xs" />}
-            {filters.search.length > 0 && (
+            {filters.username && filters.username.length > 0 && (
               <IconButton
                 onClick={clear}
                 aria-label="clear"
@@ -82,13 +96,14 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
           </InputRightElement>
         </InputGroup>
       </GridItem>
-      <GridItem colSpan={2}>
+      <GridItem colSpan={2} order={{ base: 1, lg: 2 }}>
         <HStack justifyContent="flex-end" alignItems="center" h="full">
           <IconButton
             aria-label="refresh users"
             disabled={loading}
             onClick={refetchUsers}
             size="sm"
+            variant="outline"
           >
             <ReloadIcon
               className={classNames({
@@ -96,6 +111,14 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
               })}
             />
           </IconButton>
+          <Button
+            colorScheme="primary"
+            size="sm"
+            onClick={() => onCreateUser(true)}
+            px={5}
+          >
+            Create User
+          </Button>
         </HStack>
       </GridItem>
     </Grid>
