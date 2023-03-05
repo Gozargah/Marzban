@@ -219,18 +219,6 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                   </Badge>{" "}
                                   The usage limit of the user
                                 </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}PROTOCOL{"}"}
-                                  </Badge>{" "}
-                                  Proxy protocol (e.g. VMess)
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}TRANSPORT{"}"}
-                                  </Badge>{" "}
-                                  Proxy transport method (e.g. ws)
-                                </Text>
                               </Box>
                             </PopoverBody>
                           </PopoverContent>

@@ -312,13 +312,11 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> lis
         if not settings:
             continue
 
-        format_variables.update({"PROTOCOL": protocol.name})
         for tag in tags:
             inbound = xray.config.inbounds_by_tag.get(tag)
             if not inbound:
                 continue
 
-            format_variables.update({"TRANSPORT": inbound['network']})
             stream = inbound.copy()
             stream['sni'] = stream['sni'].replace('*', salt)
             stream['host'] = stream['host'].replace('*', salt)
@@ -354,13 +352,11 @@ def generate_clash_subscription(proxies: dict, inbounds: dict, extra_data: dict)
         if not settings:
             continue
 
-        format_variables.update({"PROTOCOL": protocol})
         for tag in tags:
             inbound = xray.config.inbounds_by_tag.get(tag)
             if not inbound:
                 continue
 
-            format_variables.update({"TRANSPORT": inbound['network']})
             stream = inbound.copy()
             stream['sni'] = stream['sni'].replace('*', salt)
             stream['host'] = stream['host'].replace('*', salt)
