@@ -7,9 +7,16 @@ from typing import Union
 from uuid import UUID
 
 import yaml
+
 from app import xray
 from app.utils.store import XrayStore
+from app.utils.system import readable_size
 from config import SERVER_IP
+
+
+class FormatVariables(dict):
+    def __missing__(self, key):
+        return key.join("{}")
 
 
 class V2rayShareLink(str):
@@ -290,26 +297,34 @@ def get_v2ray_link(remark: str, address: str, port: int, sni: str, host: str, pr
                                           password=settings['password'])
 
 
-def generate_v2ray_links(username: str, proxies: dict, inbounds: dict) -> list:
+def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> list:
     links = []
     salt = secrets.token_urlsafe(12).lower()
+    format_variables = FormatVariables({
+        "SERVER_IP": SERVER_IP,
+        "USERNAME": extra_data.get('username', '{USERNAME}'),
+        "DATA_USAGE": readable_size(extra_data.get('used_traffic')),
+        "DATA_LIMIT": readable_size(extra_data.get('data_limit')) if extra_data.get('data_limit') else '∞'
+    })
+
     for protocol, tags in inbounds.items():
         settings = proxies.get(protocol)
         if not settings:
             continue
 
+        format_variables.update({"PROTOCOL": protocol.name})
         for tag in tags:
             inbound = xray.config.inbounds_by_tag.get(tag)
             if not inbound:
                 continue
 
+            format_variables.update({"TRANSPORT": inbound['network']})
             stream = inbound.copy()
             stream['sni'] = stream['sni'].replace('*', salt)
             stream['host'] = stream['host'].replace('*', salt)
             for host in XrayStore.HOSTS.get(tag, []):
-                addr = host['address'].format(SERVER_IP=SERVER_IP)
-                links.append(get_v2ray_link(remark=f"{host['remark']} ({username})",
-                                            address=addr,
+                links.append(get_v2ray_link(remark=host['remark'].format_map(format_variables),
+                                            address=host['address'].format_map(format_variables),
                                             port=host['port'] or inbound['port'],
                                             sni=host['sni'],
                                             host=host['host'],
@@ -324,28 +339,35 @@ def generate_v2ray_subscription(links: list) -> str:
     return base64.b64encode('\n'.join(links).encode()).decode()
 
 
-def generate_clash_subscription(username: str, proxies: dict, inbounds: dict) -> str:
+def generate_clash_subscription(proxies: dict, inbounds: dict, extra_data: dict) -> str:
     conf = ClashConfiguration()
     salt = secrets.token_urlsafe(12).lower()
+    format_variables = FormatVariables({
+        "SERVER_IP": SERVER_IP,
+        "USERNAME": extra_data.get('username', '{USERNAME}'),
+        "DATA_USAGE": readable_size(extra_data.get('used_traffic')),
+        "DATA_LIMIT": readable_size(extra_data.get('data_limit')) if extra_data.get('data_limit') else '∞'
+    })
 
     for protocol, tags in inbounds.items():
         settings = proxies.get(protocol)
         if not settings:
             continue
 
+        format_variables.update({"PROTOCOL": protocol})
         for tag in tags:
             inbound = xray.config.inbounds_by_tag.get(tag)
             if not inbound:
                 continue
 
+            format_variables.update({"TRANSPORT": inbound['network']})
             stream = inbound.copy()
             stream['sni'] = stream['sni'].replace('*', salt)
             stream['host'] = stream['host'].replace('*', salt)
             for host in XrayStore.HOSTS.get(tag, []):
-                addr = host['address'].format(SERVER_IP=SERVER_IP)
                 conf.add(
-                    remark=host['remark'],
-                    host=addr,
+                    remark=host['remark'].format_map(format_variables),
+                    host=host['address'].format_map(format_variables),
                     port=host['port'] or inbound['port'],
                     protocol=protocol,
                     settings=settings.dict(no_obj=True),

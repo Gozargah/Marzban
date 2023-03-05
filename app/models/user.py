@@ -197,9 +197,9 @@ class UserResponse(User):
     @validator('links', pre=False, always=True)
     def validate_links(cls, v, values, **kwargs):
         if not v:
-            return generate_v2ray_links(values['username'],
-                                        values.get('proxies', {}),
-                                        values.get('inbounds', {}))
+            return generate_v2ray_links(values.get('proxies', {}),
+                                        values.get('inbounds', {}),
+                                        extra_data=values)
         return v
 
     @validator('subscription_url', pre=False, always=True)

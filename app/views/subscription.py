@@ -37,7 +37,7 @@ def user_subcription(token: str,
     }
 
     if application.startswith('Clash'):
-        conf = generate_clash_subscription(user.username, user.proxies, user.inbounds)
+        conf = generate_clash_subscription(user.proxies, user.inbounds, user.dict())
         return Response(content=conf, media_type="text/yaml", headers=response_headers)
 
     else:

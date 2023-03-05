@@ -15,7 +15,7 @@ def get_or_create_inbound(db: Session, inbound_tag: str):
     if not inbound:
         inbound = ProxyInbound(tag=inbound_tag)
         db.add(inbound)
-        host = ProxyHost(remark="🚀 Marz", address="{SERVER_IP}", inbound=inbound)
+        host = ProxyHost(remark="🚀 Marz ({USERNAME})", address="{SERVER_IP}", inbound=inbound)
         db.add(host)
         db.commit()
         db.refresh(inbound)
