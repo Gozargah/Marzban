@@ -6,6 +6,7 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  Badge,
   Box,
   Button,
   chakra,
@@ -14,19 +15,30 @@ import {
   HStack,
   IconButton,
   Input,
+  InputGroup,
+  InputRightElement,
+  Kbd,
   Modal,
   ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverCloseButton,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTrigger,
+  Portal,
   Text,
   Tooltip,
   useToast,
   VStack,
 } from "@chakra-ui/react";
 import { Icon } from "./Icon";
-import { LinkIcon } from "@heroicons/react/24/outline";
+import { LinkIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import {
@@ -43,6 +55,15 @@ const ModalIcon = chakra(LinkIcon, {
   baseStyle: {
     w: 5,
     h: 5,
+  },
+});
+
+const InfoIcon = chakra(InformationCircleIcon, {
+  baseStyle: {
+    w: 4,
+    h: 4,
+    color: "gray.400",
+    cursor: "pointer",
   },
 });
 
@@ -151,16 +172,60 @@ const AccordionInbound: FC<AccordionInboundType> = ({
             >
               <HStack w="100%" alignItems="flex-start">
                 <FormControl
+                  position="relative"
+                  zIndex={10}
                   isInvalid={
                     !!(accordionErrors && accordionErrors[index]?.remark)
                   }
                 >
-                  <Input
-                    {...form.register(hostKey + "." + index + ".remark")}
-                    size="sm"
-                    borderRadius="4px"
-                    placeholder="Remark"
-                  />
+                  <InputGroup>
+                    <Input
+                      {...form.register(hostKey + "." + index + ".remark")}
+                      size="sm"
+                      borderRadius="4px"
+                      placeholder="Remark"
+                    />
+                    <InputRightElement>
+                      <Popover isLazy placement="right">
+                        <PopoverTrigger>
+                          <Box mt="-8px">
+                            <InfoIcon />
+                          </Box>
+                        </PopoverTrigger>
+                        <Portal>
+                          <PopoverContent>
+                            <PopoverArrow />
+                            <PopoverCloseButton />
+                            <PopoverBody>
+                              <Box fontSize="xs">
+                                <Text pr="20px">
+                                  Use these variables to make it dynamic
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}USERNAME{"}"}
+                                  </Badge>{" "}
+                                  the username of the user
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}DATA_USAGE{"}"}
+                                  </Badge>{" "}
+                                  The current usage of the user
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}DATA_LIMIT{"}"}
+                                  </Badge>{" "}
+                                  The usage limit of the user
+                                </Text>
+                              </Box>
+                            </PopoverBody>
+                          </PopoverContent>
+                        </Portal>
+                      </Popover>
+                    </InputRightElement>
+                  </InputGroup>
                   {accordionErrors && accordionErrors[index]?.remark && (
                     <Error>{accordionErrors[index]?.remark?.message}</Error>
                   )}
@@ -184,12 +249,42 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                     !!(accordionErrors && accordionErrors[index]?.address)
                   }
                 >
-                  <Input
-                    size="sm"
-                    borderRadius="4px"
-                    placeholder="Address (e.g. example.com)"
-                    {...form.register(hostKey + "." + index + ".address")}
-                  />
+                  <InputGroup>
+                    <Input
+                      size="sm"
+                      borderRadius="4px"
+                      placeholder="Address (e.g. example.com)"
+                      {...form.register(hostKey + "." + index + ".address")}
+                    />
+                    <InputRightElement>
+                      <Popover isLazy placement="right">
+                        <PopoverTrigger>
+                          <Box mt="-8px">
+                            <InfoIcon />
+                          </Box>
+                        </PopoverTrigger>
+                        <Portal>
+                          <PopoverContent>
+                            <PopoverArrow />
+                            <PopoverCloseButton />
+                            <PopoverBody>
+                              <Box fontSize="xs">
+                                <Text pr="20px">
+                                  Use these variables to make it dynamic
+                                </Text>
+                                <Text>
+                                  <Badge>
+                                    {"{"}SERVER_IP{"}"}
+                                  </Badge>{" "}
+                                  Current server ip address
+                                </Text>
+                              </Box>
+                            </PopoverBody>
+                          </PopoverContent>
+                        </Portal>
+                      </Popover>
+                    </InputRightElement>
+                  </InputGroup>
                   {accordionErrors && accordionErrors[index]?.address && (
                     <Error>{accordionErrors[index]?.address?.message}</Error>
                   )}

@@ -55,3 +55,6 @@ table thead {
 .slick-next {
   z-index: 100;
 }
+.chakra-popover__popper {
+  z-index: 9999 !important;
+}
