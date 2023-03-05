@@ -1,7 +1,7 @@
 import math
 import re
 from datetime import datetime
-
+from dateutil.relativedelta import relativedelta
 import sqlalchemy
 from telebot import types
 from telebot.custom_filters import AdvancedCustomFilter
@@ -278,7 +278,7 @@ def add_user_data_limit_step(message: types.Message, username: str):
         return bot.register_next_step_handler(wait_msg, add_user_data_limit_step, username=username)
     bot.send_message(
         message.chat.id,
-        '⬆️ Enter Expire Date (YYYY-MM-DD):\n⚠️ Send 0 for never expire.',
+        '⬆️ Enter Expire Date (YYYY-MM-DD)\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|Y) :\n⚠️ Send 0 for never expire.',
         reply_markup=BotKeyboard.cancel_action()
     )
     bot.register_next_step_handler(message, add_user_expire_step, username=username, data_limit=data_limit)
@@ -293,8 +293,18 @@ def add_user_expire_step(message: types.Message, username: str, data_limit: int)
         )
     try:
         today = datetime.today()
-        if message.text != '0':
-            expire_date = datetime.strptime(message.text, "%Y-%m-%d")
+        if re.match(r'^[0-9]{1,3}(M|m|Y|y)$', message.text):
+            expire_date = today
+            number_pattern = r'^[0-9]{1,3}'
+            number = int(re.findall(number_pattern, message.text)[0])
+            symbol_pattern = r'(M|m|Y|y)$'
+            symbol = re.findall(symbol_pattern, message.text)[0].upper()
+            if symbol == 'M':
+                expire_date = today + relativedelta(months=number)
+            elif symbol == 'Y':
+                expire_date = today + relativedelta(years=number)
+        elif message.text != '0':
+            expire_date = datetime.strptime(message.text, "%Y-%m-%d") 
         else:
             expire_date = None
         if expire_date and expire_date < today:
@@ -307,7 +317,7 @@ def add_user_expire_step(message: types.Message, username: str, data_limit: int)
     except ValueError:
         wait_msg = bot.send_message(
             message.chat.id,
-            '❌ Expire date must be in YYYY-MM-DD format.',
+            '❌ Expire date must be in YYYY-MM-DD format.\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|Y)',
             reply_markup=BotKeyboard.cancel_action()
         )
         return bot.register_next_step_handler(wait_msg, add_user_expire_step, username=username, data_limit=data_limit)
