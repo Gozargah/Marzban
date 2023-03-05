@@ -23,6 +23,9 @@ import {
   useToast,
   VStack,
   Select,
+  Collapse,
+  Box,
+  Flex,
 } from "@chakra-ui/react";
 import { PencilIcon, UserPlusIcon } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
@@ -221,8 +224,12 @@ export const UserDialog: FC<UserDialogProps> = () => {
           <ModalBody>
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3} mt={4}>
               <VStack justifyContent="space-between">
-                <VStack gap={1} gridAutoRows="min-content" w="full">
-                  <FormControl>
+                <Flex
+                  flexDirection="column"
+                  gridAutoRows="min-content"
+                  w="full"
+                >
+                  <FormControl mb={"10px"}>
                     <FormLabel>Username</FormLabel>
                     <Input
                       size="sm"
@@ -233,7 +240,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       {...form.register("username")}
                     />
                   </FormControl>
-                  <FormControl>
+                  <FormControl mb={"10px"}>
                     <FormLabel>Data Limit</FormLabel>
                     <Controller
                       control={form.control}
@@ -254,8 +261,12 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       }}
                     />
                   </FormControl>
-                  {dataLimit && dataLimit > 0 && (
-                    <FormControl>
+                  <Collapse
+                    in={!!(dataLimit && dataLimit > 0)}
+                    animateOpacity
+                    style={{ width: "100%" }}
+                  >
+                    <FormControl height="66px">
                       <FormLabel>Periodic Usage Reset</FormLabel>
                       <Controller
                         control={form.control}
@@ -275,8 +286,8 @@ export const UserDialog: FC<UserDialogProps> = () => {
                         }}
                       />
                     </FormControl>
-                  )}
-                  <FormControl>
+                  </Collapse>
+                  <FormControl mb={"10px"}>
                     <FormLabel>Expiry Date</FormLabel>
                     <Controller
                       name="expire"
@@ -339,7 +350,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       }}
                     />
                   </FormControl>
-                </VStack>
+                </Flex>
                 {error && (
                   <Alert status="error" display={{ base: "none", md: "flex" }}>
                     <AlertIcon />
