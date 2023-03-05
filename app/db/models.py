@@ -41,6 +41,10 @@ class User(Base):
         return sum([log.used_traffic_at_reset for log in self.usage_logs]) + self.used_traffic
 
     @property
+    def last_traffic_reset_time(self):
+        return self.usage_logs[-1].reset_at if self.usage_logs else self.created_at
+
+    @property
     def excluded_inbounds(self):
         _ = {}
         for proxy in self.proxies:

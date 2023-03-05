@@ -2,30 +2,14 @@ from datetime import datetime
 from typing import List
 
 import sqlalchemy
+from fastapi import BackgroundTasks, Depends, HTTPException
+
 from app import app, logger, telegram, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
-from app.models.proxy import ProxyTypes
-from app.models.user import User, UserCreate, UserModify, UserResponse, UsersResponse, UserStatus
-from fastapi import BackgroundTasks, Depends, HTTPException
-
-
-def xray_add_user(user: User):
-    for proxy_type, inbound_tags in user.inbounds.items():
-        account = user.get_account(proxy_type)
-        for inbound_tag in inbound_tags:
-            try:
-                xray.api.add_inbound_user(tag=inbound_tag, user=account)
-            except xray.exc.EmailExistsError:
-                pass
-
-
-def xray_remove_user(user: User):
-    for inbound_tag in xray.config.inbounds_by_tag:
-        try:
-            xray.api.remove_inbound_user(tag=inbound_tag, email=user.username)
-        except xray.exc.EmailNotFoundError:
-            pass
+from app.models.user import (UserCreate, UserModify, UserResponse,
+                             UsersResponse, UserStatus)
+from app.utils.xray import xray_add_user, xray_remove_user
 
 
 @app.post("/api/user", tags=['User'], response_model=UserResponse)

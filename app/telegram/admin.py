@@ -3,16 +3,18 @@ import re
 from datetime import datetime
 
 import sqlalchemy
-from app import xray
-from app.db import GetDB, crud
-from app.models.user import User, UserCreate, UserResponse, UserStatus
-from app.telegram import bot
-from app.telegram.keyboard import BotKeyboard
-from app.utils.system import cpu_usage, mem_store, memory_usage, readable_size
-from config import TELEGRAM_ADMIN_ID
 from telebot import types
 from telebot.custom_filters import AdvancedCustomFilter
 from telebot.util import user_link
+
+from app import xray
+from app.db import GetDB, crud
+from app.models.user import UserCreate, UserResponse, UserStatus
+from app.telegram import bot
+from app.telegram.keyboard import BotKeyboard
+from app.utils.system import cpu_usage, mem_store, memory_usage, readable_size
+from app.utils.xray import xray_add_user, xray_remove_user
+from config import TELEGRAM_ADMIN_ID
 
 
 class IsAdminFilter(AdvancedCustomFilter):
@@ -28,24 +30,6 @@ class IsAdminFilter(AdvancedCustomFilter):
 
 
 bot.add_custom_filter(IsAdminFilter())
-
-
-def xray_add_user(user: User):
-    for proxy_type, inbound_tags in user.inbounds.items():
-        account = user.get_account(proxy_type)
-        for inbound_tag in inbound_tags:
-            try:
-                xray.api.add_inbound_user(tag=inbound_tag, user=account)
-            except xray.exc.EmailExistsError:
-                pass
-
-
-def xray_remove_user(user: User):
-    for inbound_tag in xray.config.inbounds_by_tag:
-        try:
-            xray.api.remove_inbound_user(tag=inbound_tag, email=user.username)
-        except xray.exc.EmailNotFoundError:
-            pass
 
 
 def get_system_info():
