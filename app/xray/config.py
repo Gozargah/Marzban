@@ -124,7 +124,8 @@ class XRayConfig(dict):
                 "sni": "",
                 "path": "",
                 "host": "",
-                "header_type": ""
+                "header_type": "",
+                "is_fallback": False
             }
 
             # port settings
@@ -138,6 +139,7 @@ class XRayConfig(dict):
                     )
                 try:
                     settings['port'] = self._fallbacks_inbound['port']
+                    settings['is_fallback'] = True
                 except KeyError:
                     raise ValueError("fallbacks inbound doesn't have port")
 
@@ -148,7 +150,7 @@ class XRayConfig(dict):
                 security = stream.get("security")
                 tls_settings = stream.get(f"{security}Settings")
 
-                if net_settings.get('acceptProxyProtocol') == True and inbound['tag'] != XRAY_FALLBACKS_INBOUND_TAG:
+                if settings['is_fallback'] is True:
                     # probably this is a fallback
                     security = self._fallbacks_inbound.get('streamSettings', {}).get('security')
                     tls_settings = self._fallbacks_inbound.get('streamSettings', {}).get(f"{security}Settings")
