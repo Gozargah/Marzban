@@ -9,6 +9,7 @@ import {
   SliderProps,
   SliderTrack,
   Table,
+  TableContainer,
   TableProps,
   Tbody,
   Td,
@@ -17,6 +18,7 @@ import {
   Thead,
   Tooltip,
   Tr,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import {
   CheckIcon,
@@ -25,12 +27,14 @@ import {
   QrCodeIcon,
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
-import { FC, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { ReactComponent as AddFileIcon } from "assets/add_file.svg";
 import { formatBytes } from "utils/formatByte";
 import { useDashboard } from "contexts/DashboardContext";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { UserBadge } from "./UserBadge";
+import { Pagination } from "./Pagination";
+import classNames from "classnames";
 
 const EmptySectionIcon = chakra(AddFileIcon);
 
@@ -48,9 +52,18 @@ const QRIcon = chakra(QrCodeIcon, iconProps);
 type UsageSliderProps = {
   used: number;
   total: number | null;
+  dataLimitResetStrategy: string | null;
+  totalUsedTraffic: number;
 } & SliderProps;
+
 const UsageSlider: FC<UsageSliderProps> = (props) => {
-  const { used, total, ...restOfProps } = props;
+  const {
+    used,
+    total,
+    dataLimitResetStrategy,
+    totalUsedTraffic,
+    ...restOfProps
+  } = props;
   const isUnlimited = total === 0 || total === null;
   const isReached = !isUnlimited && (used / total) * 100 >= 100;
   return (
@@ -65,7 +78,8 @@ const UsageSlider: FC<UsageSliderProps> = (props) => {
           <SliderFilledTrack borderRadius="full" />
         </SliderTrack>
       </Slider>
-      <Text
+      <HStack
+        justifyContent="space-between"
         fontSize="xs"
         fontWeight="medium"
         color="gray.600"
@@ -73,15 +87,21 @@ const UsageSlider: FC<UsageSliderProps> = (props) => {
           color: "gray.400",
         }}
       >
-        {formatBytes(used)} /{" "}
-        {isUnlimited ? (
-          <Text as="span" fontFamily="system-ui">
-            ∞
-          </Text>
-        ) : (
-          formatBytes(total)
-        )}
-      </Text>
+        <Text>
+          {formatBytes(used)} /{" "}
+          {isUnlimited ? (
+            <Text as="span" fontFamily="system-ui">
+              ∞
+            </Text>
+          ) : (
+            formatBytes(total) +
+            (dataLimitResetStrategy && dataLimitResetStrategy !== "no_reset"
+              ? " per " + dataLimitResetStrategy
+              : "")
+          )}
+        </Text>
+        <Text>Total: {formatBytes(totalUsedTraffic)}</Text>
+      </HStack>
     </>
   );
 };
@@ -89,14 +109,26 @@ const UsageSlider: FC<UsageSliderProps> = (props) => {
 type UsersTableProps = {} & TableProps;
 export const UsersTable: FC<UsersTableProps> = (props) => {
   const {
-    filteredUsers: users,
+    users: { users },
     users: totalUsers,
     onEditingUser,
     setQRCode,
-    resetDataUsage,
+    setSubLink,
+    refetchUsers,
   } = useDashboard();
-  const isFiltered = users.length !== totalUsers.length;
+  const marginTop =
+    useBreakpointValue({
+      base: 120,
+      lg: 72,
+    }) || 72;
+
+  const isFiltered = users.length !== totalUsers.total;
   const [copied, setCopied] = useState([-1, -1, false]);
+
+  // Fetch users on first load
+  useEffect(() => {
+    refetchUsers();
+  }, [refetchUsers]);
 
   useEffect(() => {
     if (copied[2]) {
@@ -105,16 +137,35 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
       }, 1000);
     }
   }, [copied]);
+
+  const tableFixHead = useCallback(() => {
+    const el = document.querySelectorAll("#users-table")[0] as HTMLElement;
+    const sT = window.scrollY;
+
+    document.querySelectorAll("#users-table thead th").forEach((th: any) => {
+      const transformY =
+        el.offsetTop - marginTop <= sT ? sT - el.offsetTop + marginTop : 0;
+      th.style.transform = `translateY(${transformY}px)`;
+    });
+  }, [marginTop, users]);
+
+  useEffect(() => {
+    window.addEventListener("scroll", tableFixHead);
+    window.addEventListener("resize", tableFixHead);
+    return () => {
+      window.removeEventListener("scroll", tableFixHead);
+      window.removeEventListener("resize", tableFixHead);
+    };
+  }, [tableFixHead]);
+
   return (
-    <Box overflowX="auto" maxW="100vw">
+    <Box id="users-table" overflowX="auto">
       <Table {...props}>
-        <Thead>
+        <Thead zIndex="docked" position="relative">
           <Tr>
-            <Th>Username</Th>
+            <Th>username</Th>
             <Th>status</Th>
-            <Th>banding usage</Th>
-            <Th>lifetime usage</Th>
-            <Th>reset every</Th>
+            <Th>data usage</Th>
             <Th></Th>
           </Tr>
         </Thead>
@@ -124,25 +175,25 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
             return (
               <Tr
                 key={user.username}
-                className="interactive"
+                className={classNames("interactive", {
+                  "last-row": i === users.length - 1,
+                })}
                 onClick={() => onEditingUser(user)}
               >
                 <Td minW="150px">{user.username}</Td>
-                <Td width="350px">
+                <Td width="400px" minW="180px">
                   <UserBadge expiryDate={user.expire} status={user.status} />
                 </Td>
-                <Td width="300px" minW="200px">
+                <Td width="350px" minW="250px">
                   <UsageSlider
+                    totalUsedTraffic={user.lifetime_used_traffic}
+                    dataLimitResetStrategy={user.data_limit_reset_strategy}
                     used={user.used_traffic}
                     total={user.data_limit}
                     colorScheme={user.status === "limited" ? "red" : "primary"}
                   />
                 </Td>
-                <Td>{formatBytes(user.lifetime_used_traffic)}</Td>
-                <Td textTransform="capitalize">
-                  {user.data_limit_reset_strategy}
-                </Td>
-                <Td width="150px">
+                <Td width="200px">
                   <HStack
                     justifyContent="flex-end"
                     onClick={(e) => {
@@ -231,26 +282,10 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                         }}
                         onClick={() => {
                           setQRCode(user.links);
+                          setSubLink(user.subscription_url);
                         }}
                       >
                         <QRIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip label="Reset User data Usage" placement="top">
-                      <IconButton
-                        size="xs"
-                        aria-label="reset user data usage"
-                        bg="transparent"
-                        _dark={{
-                          _hover: {
-                            bg: "gray.700",
-                          },
-                        }}
-                        onClick={() => {
-                          resetDataUsage(user);
-                        }}
-                      >
-                        <ArrowPathIcon />
                       </IconButton>
                     </Tooltip>
                   </HStack>
@@ -258,9 +293,21 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               </Tr>
             );
           })}
+          {users.length == 0 && (
+            <Tr>
+              <Td colSpan={4}>
+                <EmptySection isFiltered={isFiltered} />
+              </Td>
+            </Tr>
+          )}
+
+          <Tr p="0">
+            <Td colSpan={4} p={0} border="0 !important">
+              <Pagination />
+            </Td>
+          </Tr>
         </Tbody>
       </Table>
-      {users.length == 0 && <EmptySection isFiltered={isFiltered} />}
     </Box>
   );
 };
@@ -273,19 +320,13 @@ const EmptySection: FC<EmptySectionProps> = ({ isFiltered }) => {
   const { onCreateUser } = useDashboard();
   return (
     <Box
-      borderWidth="1px"
-      borderStyle="solid"
-      borderTop={0}
-      borderBottomRadius="8px"
       padding="5"
-      _dark={{
-        borderColor: "gray.600",
-      }}
       py="8"
       display="flex"
       alignItems="center"
       flexDirection="column"
-      experimental_spaceY={4}
+      gap={4}
+      w="full"
     >
       <EmptySectionIcon
         maxHeight="200px"
@@ -321,7 +362,7 @@ const EmptySection: FC<EmptySectionProps> = ({ isFiltered }) => {
           colorScheme="primary"
           onClick={() => onCreateUser(true)}
         >
-          Create user
+          Create User
         </Button>
       )}
     </Box>

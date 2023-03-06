@@ -1,5 +1,6 @@
 import atexit
 import subprocess
+import threading
 
 from app.xray.config import XRayConfig
 from app import logger
@@ -71,7 +72,7 @@ class XRayCore:
 
         # execute on start functions
         for func in self._on_start_funcs:
-            func()
+            threading.Thread(target=func).start()
 
     def stop(self):
         self.process.terminate()
@@ -81,7 +82,7 @@ class XRayCore:
 
         # execute on stop functions
         for func in self._on_stop_funcs:
-            func()
+            threading.Thread(target=func).start()
 
     def restart(self):
         self.stop()

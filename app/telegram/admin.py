@@ -9,12 +9,16 @@ from telebot.util import user_link
 
 from app import xray
 from app.db import GetDB, crud
-from app.models.user import UserResponse, UserStatus, UserCreate
+from app.models.user import UserCreate, UserResponse, UserStatus
 from app.telegram import bot
 from app.telegram.keyboard import BotKeyboard
-from app.utils.system import cpu_usage, memory_usage, readable_size, mem_store
-from app.xray import INBOUNDS
+from app.utils.store import MemoryStorage
+from app.utils.system import cpu_usage, memory_usage, readable_size
+from app.utils.xray import xray_add_user, xray_remove_user
 from config import TELEGRAM_ADMIN_ID
+
+
+mem_store = MemoryStorage()
 
 
 class IsAdminFilter(AdvancedCustomFilter):
@@ -31,13 +35,15 @@ class IsAdminFilter(AdvancedCustomFilter):
 
 bot.add_custom_filter(IsAdminFilter())
 
-welcome_text = """
-{user_link} Welcome to Marzban Telegram-Bot Admin Panel.
-Here you can manage your users and proxies.
-To get started, use the buttons below.
-"""
 
-system_text = """⚙️ System statistics:
+def get_system_info():
+    mem = memory_usage()
+    cpu = cpu_usage()
+    with GetDB() as db:
+        bandwidth = crud.get_system_usage(db)
+        total_users = crud.get_users_count(db)
+        users_active = crud.get_users_count(db, UserStatus.active)
+    return """⚙️ System statistics:
 *CPU Cores*: `{cpu_cores}`
 *CPU Usage*: `{cpu_percent}%`
 ➖➖➖➖➖➖➖
@@ -52,17 +58,7 @@ system_text = """⚙️ System statistics:
 *Total Users*: `{total_users}`
 *Active Users*: `{active_users}`
 *Deactive Users*: `{deactive_users}`
-"""
-
-
-def get_system_info():
-    mem = memory_usage()
-    cpu = cpu_usage()
-    with GetDB() as db:
-        bandwidth = crud.get_system_usage(db)
-        total_users = crud.get_users_count(db)
-        users_active = crud.get_users_count(db, UserStatus.active)
-    return system_text.format(
+""".format(
         cpu_cores=cpu.cores,
         cpu_percent=cpu.percent,
         total_memory=readable_size(mem.total),
@@ -79,7 +75,11 @@ def get_system_info():
 
 @bot.message_handler(commands=['start', 'help'], is_admin=True)
 def help_command(message: types.Message):
-    return bot.reply_to(message, welcome_text.format(
+    return bot.reply_to(message, """
+{user_link} Welcome to Marzban Telegram-Bot Admin Panel.
+Here you can manage your users and proxies.
+To get started, use the buttons below.
+""".format(
         user_link=user_link(message.from_user)
     ), parse_mode="html", reply_markup=BotKeyboard.main_menu())
 
@@ -143,7 +143,12 @@ def users_command(call: types.CallbackQuery):
     with GetDB() as db:
         total_pages = math.ceil(crud.get_users_count(db) / 10)
         users = crud.get_users(db, offset=(page - 1) * 10, limit=10)
-        text = '👥 Users: (Page {page}/{total_pages})\n❌ Disabled\n🕰 Expired\n✅ Active\n📵 Limited\n'.format(page=page, total_pages=total_pages)
+        text = """👥 Users: (Page {page}/{total_pages})
+❌ Disabled
+🕰 Expired
+✅ Active
+📵 Limited""".format(page=page, total_pages=total_pages)
+
     bot.edit_message_text(
         text,
         call.message.chat.id,
@@ -313,7 +318,8 @@ def add_user_expire_step(message: types.Message, username: str, data_limit: int)
                 '❌ Expire date must be greater than today.',
                 reply_markup=BotKeyboard.cancel_action()
             )
-            return bot.register_next_step_handler(wait_msg, add_user_expire_step, username=username, data_limit=data_limit)
+            return bot.register_next_step_handler(
+                wait_msg, add_user_expire_step, username=username, data_limit=data_limit)
     except ValueError:
         wait_msg = bot.send_message(
             message.chat.id,
@@ -362,23 +368,21 @@ def select_protocols(call: types.CallbackQuery):
 @bot.callback_query_handler(func=lambda call: call.data.startswith('confirm:'), is_admin=True)
 def confirm_user_command(call: types.CallbackQuery):
     data = call.data.split(':')[1]
+
     if data == 'delete':
         username = call.data.split(':')[2]
         with GetDB() as db:
-            user = crud.get_user(db, username)
-            for proxy in user.proxies:
-                for inbound in INBOUNDS.get(proxy.type, []):
-                    try:
-                        xray.api.remove_inbound_user(tag=inbound['tag'], email=username)
-                    except xray.exc.EmailNotFoundError:
-                        pass
-            crud.remove_user(db, user)
+            dbuser = crud.get_user(db, username)
+            crud.remove_user(db, dbuser)
+            xray_remove_user(dbuser)
+
         return bot.edit_message_text(
             '✅ User deleted.',
             call.message.chat.id,
             call.message.message_id,
             reply_markup=BotKeyboard.main_menu()
         )
+
     elif data == 'restart':
         m = bot.edit_message_text('🔄 Restarting XRay core...', call.message.chat.id, call.message.message_id)
         xray.core.restart()
@@ -387,37 +391,40 @@ def confirm_user_command(call: types.CallbackQuery):
             m.chat.id, m.message_id,
             reply_markup=BotKeyboard.main_menu()
         )
+
     elif data == 'add_user':
-        if mem_store.get('username') is None :
+        if mem_store.get('username') is None:
             try:
                 bot.delete_message(call.message.chat.id, call.message.message_id)
-            except: # noqa
+            except Exception:
                 pass
             return bot.send_message(
                 call.message.chat.id,
                 '❌ Bot reload detected. Please start over.',
                 reply_markup=BotKeyboard.main_menu()
             )
+
         if not mem_store.get('protocols'):
             return bot.answer_callback_query(
                 call.id,
                 '❌ No protocols selected.',
                 show_alert=True
             )
+
         new_user = UserCreate(
             username=mem_store.get('username'),
             expire=mem_store.get('expire_date').timestamp() if mem_store.get('expire_date') else None,
             data_limit=mem_store.get('data_limit') if mem_store.get('data_limit') else None,
             proxies={k: {} for k in mem_store.get('protocols')}
         )
-        try:
-            [INBOUNDS[t] for t in new_user.proxies]
-        except KeyError as exc:
-            return bot.answer_callback_query(
-                call.id,
-                f'❌ Protocol {exc.args[0]} is disabled on your server',
-                show_alert=True
-            )
+
+        for proxy_type in new_user.proxies:
+            if not xray.config.inbounds_by_protocol.get(proxy_type):
+                return bot.answer_callback_query(
+                    call.id,
+                    f'❌ Protocol {proxy_type} is disabled on your server',
+                    show_alert=True
+                )
 
         try:
             with GetDB() as db:
@@ -429,13 +436,7 @@ def confirm_user_command(call: types.CallbackQuery):
                 show_alert=True
             )
 
-        for proxy_type in new_user.proxies:
-            account = new_user.get_account(proxy_type)
-            for inbound in INBOUNDS.get(proxy_type, []):
-                try:
-                    xray.api.add_inbound_user(tag=inbound['tag'], user=account)
-                except xray.exc.EmailExistsError:
-                    pass
+        xray_add_user(new_user)
 
         text = """
 ✅ User added successfully.

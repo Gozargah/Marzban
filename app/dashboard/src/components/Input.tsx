@@ -41,7 +41,7 @@ export type InputProps = PropsWithChildren<
     name?: string;
     error?: string;
     disabled?: boolean;
-    step?: string;
+    step?: number;
     label?: string;
     clearable?: boolean;
   } & ChakraInputProps
@@ -84,6 +84,17 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const wrapperProps =
       type == "number"
         ? {
+            keepWithinRange: true,
+            precision: 5,
+            format: (value: string | number) => {
+              return isNaN(parseFloat(String(value)))
+                ? value
+                : Number(parseFloat(String(value)).toFixed(5)) === 0
+                ? value
+                : Number(parseFloat(String(value)).toFixed(5));
+            },
+            min: 0,
+            step,
             name,
             type,
             placeholder,
@@ -127,8 +138,6 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               value={value}
               onClick={onClick}
               disabled={disabled}
-              roundedLeft={startAdornment ? "0" : "md"}
-              roundedRight={endAdornment ? "0" : "md"}
               flexGrow={1}
               _focusVisible={{
                 outline: "none",
@@ -139,7 +148,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               _disabled={{
                 cursor: "not-allowed",
               }}
+              borderRadius="0px !important"
               {...props}
+              roundedLeft={startAdornment ? "0" : "md"}
+              roundedRight={endAdornment ? "0" : "md"}
             />
             {type == "number" && (
               <>
@@ -151,13 +163,18 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             )}
           </Wrapper>
           {endAdornment && (
-            <InputRightAddon borderRadius={"6px"} bg="transparent">
+            <InputRightAddon
+              borderLeftRadius={0}
+              borderRightRadius="6px"
+              bg="transparent"
+            >
               {endAdornment}
             </InputRightAddon>
           )}
           {clearable && value && value.length && (
             <InputRightElement
-              borderRadius={"6px"}
+              borderLeftRadius={0}
+              borderRightRadius="6px"
               bg="transparent"
               onClick={clear}
               cursor="pointer"

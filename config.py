@@ -8,7 +8,11 @@ load_dotenv()
 # Disable IPv6
 requests.packages.urllib3.util.connection.HAS_IPV6 = False
 
-SERVER_IP = requests.get("https://ifconfig.io/ip").text.strip()
+try:
+    SERVER_IP = requests.get("https://ifconfig.io/ip", timeout=5).text.strip()
+except requests.exceptions.ConnectTimeout:
+    print("Failed to get SERVER_IP, using 127.0.0.1 instead")
+    SERVER_IP = "127.0.0.1"
 
 
 SQLALCHEMY_DATABASE_URL = config("SQLALCHEMY_DATABASE_URL", default="sqlite:///db.sqlite3")
@@ -26,16 +30,10 @@ DOCS = config("DOCS", default=False, cast=bool)
 
 
 XRAY_JSON = config("XRAY_JSON", default="./xray.json")
-XRAY_FALLBACK_INBOUND_TAG = config("XRAY_FALLBACK_INBOUND_TAG", cast=str, default="")
+XRAY_FALLBACKS_INBOUND_TAG = config("XRAY_FALLBACKS_INBOUND_TAG", cast=str, default="") \
+    or config("XRAY_FALLBACK_INBOUND_TAG", cast=str, default="")
 XRAY_EXECUTABLE_PATH = config("XRAY_EXECUTABLE_PATH", default="/usr/local/bin/xray")
 XRAY_ASSETS_PATH = config("XRAY_ASSETS_PATH", default="/usr/local/share/xray")
-XRAY_HOSTS = [
-    {
-        "remark": h.rsplit('@', 1)[0].format(SERVER_IP=SERVER_IP),
-        "hostname": h.rsplit('@', 1)[1].format(SERVER_IP=SERVER_IP)
-    }
-    for h in map(str.strip, config("XRAY_HOSTS", default=f'🚀 Marz@{SERVER_IP}').strip().split('\n'))
-]
 XRAY_EXCLUDE_INBOUND_TAGS = config("XRAY_EXCLUDE_INBOUND_TAGS", default='').split()
 XRAY_SUBSCRIPTION_URL_PREFIX = config("XRAY_SUBSCRIPTION_URL_PREFIX", default="").strip("/")
 

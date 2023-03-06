@@ -154,12 +154,11 @@ python3 main.py
 |                                                                               اجرای مرزبان بر روی یک Unix domain socket |           UVICORN_UDS           |
 |                                                                              آدرس گواهی SSL به جهت ایمن کردن پنل مرزبان |      UVICORN_SSL_CERTFILE       |
 |                                                                                                     آدرس کلید گواهی SSL |       UVICORN_SSL_KEYFILE       |
-|                              آدرس هاست های Xray هرکدام در یک خط. با فرمت `remark@hostname` (پیشفرض: `🚀 Marz@SERVER_IP`) |           XRAY_HOSTS            |
 |                                                                       مسیر فایل json تنظیمات xray (پیشفرض: `xray.json`) |            XRAY_JSON            |
 |                                                                        مسیر باینری xray (پیشفرض: `/usr/local/bin/xray`) |      XRAY_EXECUTABLE_PATH       |
 |                                                                   مسیر asset های xray (پیشفرض: `/usr/local/share/xray`) |        XRAY_ASSETS_PATH         |
 | پیشوند (یا هاست) آدرس های اشتراکی (زمانی کاربرد دارد که نیاز دارید دامنه subscription link ها با دامنه پنل متفاوت باشد) |  XRAY_SUBSCRIPTION_URL_PREFIX   |
-|                                                                        تگ inboundای که به عنوان fallback استفاده میشود. |    XRAY_FALLBACK_INBOUND_TAG    |
+|                                                                        تگ inboundای که به عنوان fallback استفاده میشود. |   XRAY_FALLBACKS_INBOUND_TAG    |
 |                                                تگ های inbound ای که لازم نیست در کانفیگ های ساخته شده وجود داشته باشند. |    XRAY_EXCLUDE_INBOUND_TAGS    |
 |                                                       توکن ربات تلگرام (دریافت از [@botfather](https://t.me/botfather)) |       TELEGRAM_API_TOKEN        |
 |                                          آیدی عددی ادمین در تلگرام (دریافت از [@userinfobot](https://t.me/userinfobot)) |        TELEGRAM_ADMIN_ID        |

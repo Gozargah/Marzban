@@ -1,7 +1,6 @@
 import {
   Alert,
   AlertIcon,
-  Box,
   Button,
   chakra,
   FormControl,
@@ -24,18 +23,15 @@ import {
   useToast,
   VStack,
   Select,
+  Collapse,
+  Box,
+  Flex,
 } from "@chakra-ui/react";
 import { PencilIcon, UserPlusIcon } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC, useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import {
-  ProxyKeys,
-  ProxyType,
-  User,
-  UserCreate,
-  dataLimitResetStrategy,
-} from "types/User";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { ProxyKeys, ProxyType, User, UserCreate } from "types/User";
 import { z } from "zod";
 import { Icon } from "./Icon";
 import { RadioGroup } from "./RadioGroup";
@@ -45,6 +41,7 @@ import dayjs from "dayjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { relativeExpiryDate } from "utils/dateFormatter";
 import { DeleteIcon } from "./DeleteUserModal";
+import { resetStrategy } from "constants/UserSettings";
 
 const AddUserIcon = chakra(UserPlusIcon, {
   baseStyle: {
@@ -65,7 +62,15 @@ const schema = z.object({
   proxies: z.array(z.string()).refine((value) => value.length > 0, {
     message: "Please select at least one protocol",
   }),
-  data_limit: z.number().min(0, "The minimum number is 0").nullable(),
+  data_limit: z
+    .string()
+    .min(0, "The minimum number is 0")
+    .or(z.number())
+    .nullable()
+    .transform((str) => {
+      if (str) return Number((parseFloat(String(str)) * 1073741824).toFixed(5));
+      return 0;
+    }),
   expire: z.number().nullable(),
   data_limit_reset_strategy: z.string(),
 });
@@ -77,6 +82,9 @@ export type FormType = Omit<UserCreate, "proxies"> & { proxies: ProxyKeys };
 const formatUser = (user: User): FormType => {
   return {
     ...user,
+    data_limit: user.data_limit
+      ? Number((user.data_limit / 1073741824).toFixed(5))
+      : user.data_limit,
     proxies: Object.keys(user.proxies) as ProxyKeys,
   };
 };
@@ -125,11 +133,16 @@ export const UserDialog: FC<UserDialogProps> = () => {
     resolver: zodResolver(schema),
   });
 
-  const onClose = () => {
-    form.reset(getDefaultValues());
-    onCreateUser(false);
-    onEditingUser(null);
-  };
+  const [dataLimit] = useWatch({
+    control: form.control,
+    name: ["data_limit"],
+  });
+
+  useEffect(() => {
+    if (editingUser) {
+      form.reset(formatUser(editingUser));
+    }
+  }, [editingUser]);
 
   const submit = (values: FormType) => {
     setLoading(true);
@@ -138,7 +151,12 @@ export const UserDialog: FC<UserDialogProps> = () => {
     setError(null);
     let body: UserCreate = {
       ...values,
+      data_limit: values.data_limit,
       proxies: mergeProxies(values.proxies, editingUser?.proxies),
+      data_limit_reset_strategy:
+        values.data_limit && values.data_limit > 0
+          ? values.data_limit_reset_strategy
+          : "no_reset",
     };
     methods[method](body)
       .then(() => {
@@ -171,12 +189,15 @@ export const UserDialog: FC<UserDialogProps> = () => {
       });
   };
 
-  useEffect(() => {
-    if (editingUser) {
-      console.log(formatUser(editingUser));
-      form.reset(formatUser(editingUser));
-    }
-  }, [editingUser]);
+  const onClose = () => {
+    form.reset(getDefaultValues());
+    onCreateUser(false);
+    onEditingUser(null);
+  };
+
+  const handleResetUsage = () => {
+    useDashboard.setState({ resetUsageUser: editingUser });
+  };
 
   const disabled = loading;
 
@@ -203,8 +224,12 @@ export const UserDialog: FC<UserDialogProps> = () => {
           <ModalBody>
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3} mt={4}>
               <VStack justifyContent="space-between">
-                <VStack gap={1} gridAutoRows="min-content" w="full">
-                  <FormControl>
+                <Flex
+                  flexDirection="column"
+                  gridAutoRows="min-content"
+                  w="full"
+                >
+                  <FormControl mb={"10px"}>
                     <FormLabel>Username</FormLabel>
                     <Input
                       size="sm"
@@ -215,64 +240,54 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       {...form.register("username")}
                     />
                   </FormControl>
-                  <HStack>
-                    <FormControl>
-                      <FormLabel>Bandwidth Limit</FormLabel>
+                  <FormControl mb={"10px"}>
+                    <FormLabel>Data Limit</FormLabel>
+                    <Controller
+                      control={form.control}
+                      name="data_limit"
+                      render={({ field }) => {
+                        return (
+                          <Input
+                            endAdornment="GB"
+                            type="number"
+                            size="sm"
+                            borderRadius="6px"
+                            onChange={field.onChange}
+                            disabled={disabled}
+                            error={form.formState.errors.data_limit?.message}
+                            value={field.value ? String(field.value) : ""}
+                          />
+                        );
+                      }}
+                    />
+                  </FormControl>
+                  <Collapse
+                    in={!!(dataLimit && dataLimit > 0)}
+                    animateOpacity
+                    style={{ width: "100%" }}
+                  >
+                    <FormControl height="66px">
+                      <FormLabel>Periodic Usage Reset</FormLabel>
                       <Controller
                         control={form.control}
-                        name="data_limit"
+                        name="data_limit_reset_strategy"
                         render={({ field }) => {
                           return (
-                            <Input
-                              endAdornment="GB"
-                              type="number"
-                              size="sm"
-                              borderRadius="6px"
-                              onChange={(value) => {
-                                field.onChange(
-                                  value && value.length
-                                    ? Number(
-                                        (
-                                          parseFloat(value) * 1073741824
-                                        ).toFixed(3)
-                                      )
-                                    : 0
+                            <Select size="sm" {...field}>
+                              {resetStrategy.map((s) => {
+                                return (
+                                  <option key={s.value} value={s.value}>
+                                    {s.title}
+                                  </option>
                                 );
-                              }}
-                              disabled={disabled}
-                              error={form.formState.errors.data_limit?.message}
-                              value={
-                                field.value
-                                  ? String(field.value / 1073741824)
-                                  : undefined
-                              }
-                            />
+                              })}
+                            </Select>
                           );
                         }}
                       />
                     </FormControl>
-                    <FormControl>
-                      <FormLabel>Reset Every</FormLabel>
-                      <Select
-                        size="sm"
-                        borderRadius="6px"
-                        disabled={disabled}
-                        textTransform="capitalize"
-                        {...form.register("data_limit_reset_strategy")}
-                      >
-                        {dataLimitResetStrategy.map((strategy) => (
-                          <option
-                            style={{ textTransform: "capitalize" }}
-                            key={strategy}
-                            value={strategy}
-                          >
-                            {strategy.replace("_", " ")}
-                          </option>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </HStack>
-                  <FormControl>
+                  </Collapse>
+                  <FormControl mb={"10px"}>
                     <FormLabel>Expiry Date</FormLabel>
                     <Controller
                       name="expire"
@@ -335,7 +350,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       }}
                     />
                   </FormControl>
-                </VStack>
+                </Flex>
                 {error && (
                   <Alert status="error" display={{ base: "none", md: "flex" }}>
                     <AlertIcon />
@@ -394,8 +409,22 @@ export const UserDialog: FC<UserDialogProps> = () => {
             )}
           </ModalBody>
           <ModalFooter mt="3">
-            <HStack justifyContent="space-between" w="full" gap={3}>
-              <HStack>
+            <HStack
+              justifyContent="space-between"
+              w="full"
+              gap={3}
+              flexDirection={{
+                base: "column",
+                sm: "row",
+              }}
+            >
+              <HStack
+                justifyContent="flex-start"
+                w={{
+                  base: "full",
+                  sm: "unset",
+                }}
+              >
                 {isEditing && (
                   <>
                     <Tooltip label="Delete" placement="top">
@@ -407,10 +436,13 @@ export const UserDialog: FC<UserDialogProps> = () => {
                         <DeleteIcon />
                       </IconButton>
                     </Tooltip>
+                    <Button onClick={handleResetUsage} size="sm">
+                      Reset Usage
+                    </Button>
                   </>
                 )}
               </HStack>
-              <HStack w="full" maxW={{ lg: "50%", base: "full" }}>
+              <HStack w="full" maxW={{ md: "50%", base: "full" }}>
                 <Button
                   onClick={onClose}
                   size="sm"

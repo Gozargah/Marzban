@@ -2,13 +2,14 @@ from datetime import datetime
 from typing import List
 
 import sqlalchemy
+from fastapi import BackgroundTasks, Depends, HTTPException
+
 from app import app, logger, telegram, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
-from app.models.proxy import ProxyTypes
-from app.models.user import UserCreate, UserModify, UserResponse, UserStatus
-from app.xray import INBOUNDS
-from fastapi import BackgroundTasks, Depends, HTTPException
+from app.models.user import (UserCreate, UserModify, UserResponse,
+                             UsersResponse, UserStatus)
+from app.utils.xray import xray_add_user, xray_remove_user
 
 
 @app.post("/api/user", tags=['User'], response_model=UserResponse)
@@ -22,14 +23,14 @@ def add_user(new_user: UserCreate,
     - **username** must have 3 to 32 characters and is allowed to contain a-z, 0-9, and underscores in between
     - **expire** must be an UTC timestamp
     - **data_limit** must be in Bytes, e.g. 1073741824B = 1GB
-    - **proxies** a dictionary of proxies, supported proxies: vmess, vless, trojan or shadowsocks
+    - **proxies** dictionary of protocol:settings
+    - **inbounds** dictionary of protocol:inbound_tags, empty means all inbounds
     """
     # TODO expire should be datetime instead of timestamp
 
-    try:
-        [INBOUNDS[t] for t in new_user.proxies]
-    except KeyError as exc:
-        raise HTTPException(status_code=400, detail=f"Protocol {exc.args[0]} is disabled on your server")
+    for proxy_type in new_user.proxies:
+        if not xray.config.inbounds_by_protocol.get(proxy_type):
+            raise HTTPException(status_code=400, detail=f"Protocol {proxy_type} is disabled on your server")
 
     try:
         if admin.is_sudo:
@@ -40,13 +41,7 @@ def add_user(new_user: UserCreate,
     except sqlalchemy.exc.IntegrityError:
         raise HTTPException(status_code=409, detail="User already exists")
 
-    for proxy_type in new_user.proxies:
-        account = new_user.get_account(proxy_type)
-        for inbound in INBOUNDS.get(proxy_type, []):
-            try:
-                xray.api.add_inbound_user(tag=inbound['tag'], user=account)
-            except xray.exc.EmailExistsError:
-                pass
+    xray_add_user(new_user)
 
     bg.add_task(
         telegram.report_new_user,
@@ -87,15 +82,15 @@ def modify_user(username: str,
     """
     Modify a user
 
-    - set **expire** to 0 to make the user unlimited in time
-    - set **data_limit** to 0 to make the user unlimited in data
-    - **proxies** a dictionary of proxies, supported proxies: vmess, vless, trojan or shadowsocks
+    - set **expire** to 0 to make the user unlimited in time, null to no change
+    - set **data_limit** to 0 to make the user unlimited in data, null to no change
+    - **proxies** dictionary of protocol:settings, empty means no change
+    - **inbounds** dictionary of protocol:inbound_tags, empty means no change
     """
 
-    try:
-        [INBOUNDS[t] for t in modified_user.proxies]
-    except KeyError as exc:
-        raise HTTPException(status_code=400, detail=f"Protocol {exc.args[0]} is disabled on your server")
+    for proxy_type in modified_user.proxies:
+        if not xray.config.inbounds_by_protocol.get(proxy_type):
+            raise HTTPException(status_code=400, detail=f"Protocol {proxy_type} is disabled on your server")
 
     dbuser = crud.get_user(db, username)
     if not dbuser:
@@ -136,35 +131,17 @@ def modify_user(username: str,
 
     user = UserResponse.from_orm(dbuser)
 
-    modified_proxies = []
-    for proxy_type in ProxyTypes:
-        for inbound in INBOUNDS.get(proxy_type, []):
-            try:
-                xray.api.remove_inbound_user(tag=inbound['tag'], email=user.username)
-                modified_proxies.append({
-                    'status': 'removed',
-                    'inbound': inbound['tag'],
-                })
-            except xray.exc.EmailNotFoundError:
-                pass
-            if proxy_type in user.proxies and user.status == UserStatus.active:
-                account = user.get_account(proxy_type)
-                xray.api.add_inbound_user(tag=inbound['tag'], user=account)
-                modified_proxies.append({
-                    'status': 'added',
-                    'inbound': inbound['tag'],
-                })
-
-    # remove duplicate modified proxies
-    modified_proxies = [dict(t) for t in {tuple(d.items()) for d in modified_proxies}]
+    xray_remove_user(user)
+    if user.status == UserStatus.active:
+        xray_add_user(user)
 
     bg.add_task(
         telegram.report_user_modification,
         username=dbuser.username,
         usage=dbuser.data_limit,
         expire_date=dbuser.expire,
+        proxies=dbuser.proxies,
         by=admin.username,
-        modified_proxies=modified_proxies
     )
     logger.info(f"User \"{user.username}\" modified")
     return user
@@ -187,12 +164,9 @@ def remove_user(username: str,
         raise HTTPException(status_code=403, detail="You're not allowed")
 
     crud.remove_user(db, dbuser)
-    for proxy in dbuser.proxies:
-        for inbound in INBOUNDS.get(proxy.type, []):
-            try:
-                xray.api.remove_inbound_user(tag=inbound['tag'], email=username)
-            except xray.exc.EmailNotFoundError:
-                pass
+
+    xray_remove_user(dbuser)
+
     bg.add_task(
         telegram.report_user_deletion,
         username=dbuser.username,
@@ -220,15 +194,36 @@ def reset_user_data_usage(username: str,
     return user
 
 
-@app.get("/api/users", tags=['User'], response_model=List[UserResponse])
+@app.get("/api/users", tags=['User'], response_model=UsersResponse)
 def get_users(offset: int = None,
               limit: int = None,
               username: str = None,
               status: UserStatus = None,
+              sort: str = None,
               db: Session = Depends(get_db),
               admin: Admin = Depends(Admin.get_current)):
     """
     Get all users
     """
     dbadmin = crud.get_admin(db, admin.username)
-    return crud.get_users(db, offset, limit, username, status, dbadmin)
+
+    if sort is not None:
+        opts = sort.strip(',').split(',')
+        sort = []
+        for opt in opts:
+            try:
+                sort.append(crud.UsersSortingOptions[opt])
+            except KeyError:
+                raise HTTPException(status_code=400,
+                                    detail=f'"{opt}" is not a valid sort option')
+
+    users, count = crud.get_users(db=db,
+                                  offset=offset,
+                                  limit=limit,
+                                  username=username,
+                                  status=status,
+                                  sort=sort,
+                                  admin=dbadmin,
+                                  return_with_count=True)
+
+    return {"users": users, "total": count}
