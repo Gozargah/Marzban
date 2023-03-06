@@ -17,12 +17,8 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column("hosts", sa.Column("sni", sa.String(), nullable=True))
-    op.add_column("hosts", sa.Column("host", sa.String(), nullable=True))
-    op.execute("UPDATE hosts SET sni = '', host = '';")
-    with op.batch_alter_table('hosts') as batch_op:
-        batch_op.alter_column("sni", nullable=False)
-        batch_op.alter_column("host", nullable=False)
+    op.add_column("hosts", sa.Column("sni", sa.String(256), nullable=True))
+    op.add_column("hosts", sa.Column("host", sa.String(256), nullable=True))
 
 
 def downgrade() -> None:

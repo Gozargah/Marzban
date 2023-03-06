@@ -14,8 +14,8 @@ class Admin(Base):
     __tablename__ = "admins"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
+    username = Column(String(34), unique=True, index=True)
+    hashed_password = Column(String(128))
     users = relationship("User", back_populates="admin")
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -24,12 +24,14 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True)
+    username = Column(String(34), unique=True, index=True)
     proxies = relationship("Proxy", back_populates="user", cascade="all, delete-orphan")
     status = Column(Enum(UserStatus), default=UserStatus.active)
     used_traffic = Column(BigInteger, default=0)
     data_limit = Column(BigInteger, nullable=True)
-    data_limit_reset_strategy = Column(Enum(UserDataLimitResetStrategy), default=UserDataLimitResetStrategy.no_reset)
+    data_limit_reset_strategy = Column(
+        Enum(UserDataLimitResetStrategy),
+        nullable=False, default=UserDataLimitResetStrategy.no_reset)
     usage_logs = relationship("UserUsageResetLogs", back_populates="user")
     expire = Column(Integer, nullable=True)
     admin_id = Column(Integer, ForeignKey("admins.id"))
@@ -97,7 +99,7 @@ class ProxyInbound(Base):
     __tablename__ = "inbounds"
 
     id = Column(Integer, primary_key=True)
-    tag = Column(String, unique=True, nullable=False, index=True)
+    tag = Column(String(256), unique=True, nullable=False, index=True)
     hosts = relationship("ProxyHost", back_populates="inbound", cascade="all, delete-orphan")
 
 
@@ -108,12 +110,12 @@ class ProxyHost(Base):
     # )
 
     id = Column(Integer, primary_key=True)
-    remark = Column(String, unique=False, nullable=False)
-    address = Column(String, unique=False, nullable=False)
+    remark = Column(String(256), unique=False, nullable=False)
+    address = Column(String(256), unique=False, nullable=False)
     port = Column(Integer, nullable=True)
-    sni = Column(String, unique=False, nullable=False, default="")
-    host = Column(String, unique=False, nullable=False, default="")
-    inbound_tag = Column(String, ForeignKey("inbounds.tag"), nullable=False)
+    sni = Column(String(256), unique=False, nullable=False, default="")
+    host = Column(String(256), unique=False, nullable=False, default="")
+    inbound_tag = Column(String(256), ForeignKey("inbounds.tag"), nullable=False)
     inbound = relationship("ProxyInbound", back_populates="hosts")
 
 
