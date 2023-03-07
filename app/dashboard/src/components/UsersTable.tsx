@@ -229,7 +229,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   zIndex={1}
                   w="100%"
                 >
-                  Status {filters.status ? ": " + filters.status : ""}
+                  Status{filters.status ? ": " + filters.status : ""}
                 </Text>
                 <Select
                   fontSize="xs"
@@ -239,13 +239,8 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   p={0}
                   border={0}
                   h="auto"
+                  w="auto"
                   icon={<></>}
-                  _dark={{
-                    color: "white",
-                  }}
-                  _light={{
-                    color: "black",
-                  }}
                   _focusVisible={{
                     border: "0 !important",
                   }}
