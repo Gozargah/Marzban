@@ -136,9 +136,9 @@ export const UserDialog: FC<UserDialogProps> = () => {
     resolver: zodResolver(schema),
   });
 
-  const [dataLimit, status] = useWatch({
+  const [dataLimit] = useWatch({
     control: form.control,
-    name: ["data_limit", "status"],
+    name: ["data_limit"],
   });
 
   useEffect(() => {
@@ -383,15 +383,15 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                     cursor="pointer"
                                     textTransform="capitalize"
                                   >
-                                    {status}
+                                    {field.value}
                                   </FormLabel>
                                   <Switch
                                     colorScheme="primary"
                                     disabled={
-                                      status !== "active" &&
-                                      status !== "disabled"
+                                      field.value !== "active" &&
+                                      field.value !== "disabled"
                                     }
-                                    defaultChecked={status === "active"}
+                                    isChecked={field.value === "active"}
                                     onChange={(e) => {
                                       if (e.target.checked) {
                                         field.onChange("active");
