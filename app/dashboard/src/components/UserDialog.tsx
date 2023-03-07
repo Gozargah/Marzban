@@ -26,6 +26,7 @@ import {
   Collapse,
   Flex,
   Switch,
+  Box,
 } from "@chakra-ui/react";
 import { PencilIcon, UserPlusIcon } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
@@ -358,8 +359,18 @@ export const UserDialog: FC<UserDialogProps> = () => {
                   </FormControl>
                   {isEditing && (
                     <FormControl>
-                      <HStack justifyContent="space-between">
-                        <FormLabel cursor="pointer">Status</FormLabel>
+                      <HStack
+                        justifyContent="space-between"
+                        alignItems="center"
+                        spacing={0}
+                      >
+                        <FormLabel
+                          cursor="pointer"
+                          mb="0"
+                          textTransform="capitalize"
+                        >
+                          Status
+                        </FormLabel>
                         <HStack>
                           <Controller
                             name="status"
@@ -367,8 +378,15 @@ export const UserDialog: FC<UserDialogProps> = () => {
                             render={({ field }) => {
                               return (
                                 <>
+                                  <FormLabel
+                                    mr="0"
+                                    cursor="pointer"
+                                    textTransform="capitalize"
+                                  >
+                                    {status}
+                                  </FormLabel>
                                   <Switch
-                                    size="sm"
+                                    colorScheme="primary"
                                     disabled={
                                       status !== "active" &&
                                       status !== "disabled"
@@ -382,12 +400,6 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                       }
                                     }}
                                   />
-                                  <FormLabel
-                                    cursor="pointer"
-                                    textTransform="capitalize"
-                                  >
-                                    {status}
-                                  </FormLabel>
                                 </>
                               );
                             }}
