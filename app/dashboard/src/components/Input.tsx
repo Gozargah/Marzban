@@ -13,7 +13,6 @@ import {
   NumberIncrementStepper,
   NumberInput,
   NumberInputField,
-  NumberInputFieldProps,
   NumberInputStepper,
 } from "@chakra-ui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -148,7 +147,6 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               _disabled={{
                 cursor: "not-allowed",
               }}
-              borderRadius="0px !important"
               {...props}
               roundedLeft={startAdornment ? "0" : "md"}
               roundedRight={endAdornment ? "0" : "md"}

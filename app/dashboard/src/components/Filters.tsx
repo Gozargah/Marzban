@@ -19,7 +19,8 @@ import {
 } from "@heroicons/react/24/outline";
 import classNames from "classnames";
 import { useDashboard } from "contexts/DashboardContext";
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
+import debounce from "lodash.debounce";
 
 const iconProps = {
   baseStyle: {
@@ -33,18 +34,24 @@ const ClearIcon = chakra(XMarkIcon, iconProps);
 const ReloadIcon = chakra(ArrowPathIcon, iconProps);
 
 export type FilterProps = {} & BoxProps;
+const setSearchField = debounce((username: string) => {
+  useDashboard.getState().onFilterChange({
+    ...useDashboard.getState().filters,
+    offset: 0,
+    username,
+  });
+}, 300);
 
 export const Filters: FC<FilterProps> = ({ ...props }) => {
   const { loading, filters, onFilterChange, refetchUsers, onCreateUser } =
     useDashboard();
+  const [search, setSearch] = useState("");
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onFilterChange({
-      ...filters,
-      offset: 0,
-      username: e.target.value,
-    });
+    setSearch(e.target.value);
+    setSearchField(e.target.value);
   };
   const clear = () => {
+    setSearch("");
     onFilterChange({
       ...filters,
       offset: 0,
@@ -76,7 +83,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
           <InputLeftElement pointerEvents="none" children={<SearchIcon />} />
           <Input
             placeholder="Search"
-            value={filters.username || ""}
+            value={search}
             borderColor="light-border"
             onChange={onChange}
           />

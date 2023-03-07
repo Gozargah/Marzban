@@ -26,6 +26,7 @@ import {
   LinkIcon,
   QrCodeIcon,
   ArrowPathIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 import { FC, useCallback, useEffect, useState } from "react";
 import { ReactComponent as AddFileIcon } from "assets/add_file.svg";
@@ -49,7 +50,12 @@ const CopyIcon = chakra(ClipboardIcon, iconProps);
 const CopiedIcon = chakra(CheckIcon, iconProps);
 const SubscriptionLinkIcon = chakra(LinkIcon, iconProps);
 const QRIcon = chakra(QrCodeIcon, iconProps);
-
+const SortIcon = chakra(ChevronDownIcon, {
+  baseStyle: {
+    width: "15px",
+    height: "15px",
+  },
+});
 type UsageSliderProps = {
   used: number;
   total: number | null;
@@ -106,16 +112,30 @@ const UsageSlider: FC<UsageSliderProps> = (props) => {
     </>
   );
 };
-
+export type SortType = {
+  sort: string;
+  column: string;
+};
+export const Sort: FC<SortType> = ({ sort, column }) => {
+  if (sort.includes(column))
+    return (
+      <SortIcon
+        transform={sort.startsWith("-") ? "rotate(180deg)" : undefined}
+      />
+    );
+  return null;
+};
 type UsersTableProps = {} & TableProps;
 export const UsersTable: FC<UsersTableProps> = (props) => {
   const {
+    filters,
     users: { users },
     users: totalUsers,
     onEditingUser,
     setQRCode,
     setSubLink,
     refetchUsers,
+    onFilterChange,
   } = useDashboard();
   const marginTop =
     useBreakpointValue({
@@ -158,15 +178,46 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
       window.removeEventListener("resize", tableFixHead);
     };
   }, [tableFixHead]);
-
+  const handleSort = (column: string) => {
+    let newSort = filters.sort;
+    if (newSort.includes(column)) {
+      if (newSort.startsWith("-")) {
+        newSort = "-created_at";
+      } else {
+        newSort = "-" + column;
+      }
+    } else {
+      newSort = column;
+    }
+    onFilterChange({
+      sort: newSort,
+    });
+  };
   return (
     <Box id="users-table" overflowX="auto">
       <Table {...props}>
         <Thead zIndex="docked" position="relative">
           <Tr>
-            <Th>username</Th>
-            <Th>status</Th>
-            <Th>data usage</Th>
+            <Th cursor={"pointer"} onClick={handleSort.bind(null, "username")}>
+              <HStack>
+                <span>username</span>
+                <Sort sort={filters.sort} column="username" />
+              </HStack>
+            </Th>
+            <Th cursor={"pointer"}>
+              <HStack>
+                <span>status</span>
+              </HStack>
+            </Th>
+            <Th
+              cursor={"pointer"}
+              onClick={handleSort.bind(null, "used_traffic")}
+            >
+              <HStack>
+                <span>data usage</span>
+                <Sort sort={filters.sort} column="used_traffic" />
+              </HStack>
+            </Th>
             <Th></Th>
           </Tr>
         </Thead>

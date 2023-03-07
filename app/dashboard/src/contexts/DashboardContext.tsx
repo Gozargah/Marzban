@@ -7,6 +7,7 @@ export type FilterType = {
   username?: string;
   limit?: number;
   offset?: number;
+  sort: string;
   status?: "active" | "disabled" | "limited" | "expired";
 };
 
@@ -28,7 +29,7 @@ type DashboardStateType = {
   onEditingUser: (user: User | null) => void;
   onDeletingUser: (user: User | null) => void;
   refetchUsers: () => void;
-  onFilterChange: (filters: FilterType) => void;
+  onFilterChange: (filters: Partial<FilterType>) => void;
   deleteUser: (user: User) => Promise<void>;
   createUser: (user: UserCreate) => Promise<void>;
   editUser: (user: UserCreate) => Promise<void>;
@@ -111,7 +112,12 @@ export const useDashboard = create<DashboardStateType>((set, get) => ({
     set({ deletingUser });
   },
   onFilterChange: (filters) => {
-    set({ filters });
+    set({
+      filters: {
+        ...get().filters,
+        ...filters,
+      },
+    });
     get().refetchUsers();
   },
   setQRCode: (QRcodeLinks) => {
