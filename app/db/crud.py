@@ -184,7 +184,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
 
     if modify.data_limit is not None:
         dbuser.data_limit = (modify.data_limit or None)
-        if dbuser.status not in (UserStatus.expired, UserStatus.deactive):
+        if dbuser.status not in (UserStatus.expired, UserStatus.disabled):
             if not dbuser.data_limit or dbuser.used_traffic < dbuser.data_limit:
                 dbuser.status = UserStatus.active
             else:
@@ -192,7 +192,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
 
     if modify.expire is not None:
         dbuser.expire = (modify.expire or None)
-        if dbuser.status not in (UserStatus.limited, UserStatus.deactive):
+        if dbuser.status not in (UserStatus.limited, UserStatus.disabled):
             if not dbuser.expire or dbuser.expire > datetime.utcnow().timestamp():
                 dbuser.status = UserStatus.active
             else:

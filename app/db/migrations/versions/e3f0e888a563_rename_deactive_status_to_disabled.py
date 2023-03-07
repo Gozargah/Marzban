@@ -1,8 +1,8 @@
-"""deactive user status
+"""rename deactive status to disabled
 
-Revision ID: 51e941ed9018
-Revises: b15eba6e5867
-Create Date: 2023-03-07 19:15:24.287031
+Revision ID: e3f0e888a563
+Revises: 51e941ed9018
+Create Date: 2023-03-08 02:03:33.534948
 
 """
 from alembic import op
@@ -10,18 +10,17 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '51e941ed9018'
-down_revision = 'b15eba6e5867'
+revision = 'e3f0e888a563'
+down_revision = '51e941ed9018'
 branch_labels = None
 depends_on = None
-
 
 # Describing of enum
 enum_name = "status"
 temp_enum_name = f"temp_{enum_name}"
-old_values = ('active', 'limited', 'expired')
-new_values = ("deactive", *old_values)
-downgrade_to = ("deactive", "active")  # on downgrade convert [0] to [1]
+old_values = ('deactive', 'active', 'limited', 'expired')
+new_values = ('disabled', 'active', 'limited', 'expired')
+downgrade_to = ("disabled", "deactive")  # on downgrade convert [0] to [1]
 old_type = sa.Enum(*old_values, name=enum_name)
 new_type = sa.Enum(*new_values, name=enum_name)
 temp_type = sa.Enum(*new_values, name=temp_enum_name)

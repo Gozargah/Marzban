@@ -145,7 +145,7 @@ def users_command(call: types.CallbackQuery):
         users = crud.get_users(db, offset=(page - 1) * 10, limit=10)
         text = """👥 Users: (Page {page}/{total_pages})
 ✅ Active
-❌ Deactive
+❌ Disabled
 🕰 Expired
 📵 Limited""".format(page=page, total_pages=total_pages)
 

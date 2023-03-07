@@ -4,7 +4,7 @@ from typing import List, Union
 from uuid import UUID, uuid4
 
 from app.utils.system import random_password
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field
 from xray_api.types.account import (ShadowsocksAccount, TrojanAccount,
                                     VLESSAccount, VMessAccount)
 

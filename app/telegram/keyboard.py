@@ -87,7 +87,7 @@ class BotKeyboard:
                     'active': '✅',
                     'expired': '🕰',
                     'limited': '📵',
-                    'deactive': '❌'
+                    'disabled': '❌'
                 }
                 row.append(types.InlineKeyboardButton(
                     text=f"{p.username} ({status[p.status]})",

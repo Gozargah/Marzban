@@ -17,14 +17,14 @@ USERNAME_REGEXP = re.compile(r'^(?=\w{3,32}\b)[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*$')
 
 class UserStatus(str, Enum):
     active = "active"
-    deactive = "deactive"
+    deactive = "disabled"
     limited = "limited"
     expired = "expired"
 
 
 class UserStatusModify(str, Enum):
     active = "active"
-    deactive = "deactive"
+    deactive = "disabled"
 
 
 class UserDataLimitResetStrategy(str, Enum):
