@@ -17,10 +17,9 @@ const iconProps = {
   },
 };
 const ActiveStatusIcon = chakra(WifiIcon, iconProps);
-const DeactiveStatusIcon = chakra(NoSymbolIcon, iconProps);
+const DisabledStatusIcon = chakra(NoSymbolIcon, iconProps);
 const LimitedStatusIcon = chakra(ExclamationCircleIcon, iconProps);
 const ExpiredStatusIcon = chakra(ClockIcon, iconProps);
-
 
 type UserStatusProps = {
   expiryDate?: number | null;
@@ -43,7 +42,7 @@ export const UserBadge: FC<UserStatusProps> = ({
         alignItems="center"
       >
         {userStatus === "active" && <ActiveStatusIcon />}
-        {userStatus === "deactive" && <DeactiveStatusIcon />}
+        {userStatus === "disabled" && <DisabledStatusIcon />}
         {userStatus === "limited" && <LimitedStatusIcon />}
         {userStatus === "expired" && <ExpiredStatusIcon />}
         <Text

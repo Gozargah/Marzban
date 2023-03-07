@@ -4,6 +4,7 @@ import {
   chakra,
   HStack,
   IconButton,
+  Select,
   Slider,
   SliderFilledTrack,
   SliderProps,
@@ -193,23 +194,74 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
       sort: newSort,
     });
   };
+  const handleStatusFilter = (e: any) => {
+    onFilterChange({
+      status: e.target.value.length > 0 ? e.target.value : undefined,
+    });
+  };
   return (
     <Box id="users-table" overflowX="auto">
       <Table {...props}>
         <Thead zIndex="docked" position="relative">
           <Tr>
-            <Th cursor={"pointer"} onClick={handleSort.bind(null, "username")}>
+            <Th
+              minW="150px"
+              cursor={"pointer"}
+              onClick={handleSort.bind(null, "username")}
+            >
               <HStack>
                 <span>username</span>
                 <Sort sort={filters.sort} column="username" />
               </HStack>
             </Th>
-            <Th cursor={"pointer"}>
-              <HStack>
-                <span>status</span>
+            <Th width="400px" minW="180px" cursor={"pointer"}>
+              <HStack spacing={0} position="relative">
+                <Text
+                  position="absolute"
+                  _dark={{
+                    bg: "gray.750",
+                  }}
+                  _light={{
+                    bg: "#F9FAFB",
+                  }}
+                  userSelect="none"
+                  pointerEvents="none"
+                  zIndex={1}
+                  w="100%"
+                >
+                  Status {filters.status ? ": " + filters.status : ""}
+                </Text>
+                <Select
+                  fontSize="xs"
+                  fontWeight="extrabold"
+                  textTransform="uppercase"
+                  cursor="pointer"
+                  p={0}
+                  border={0}
+                  h="auto"
+                  icon={<></>}
+                  _dark={{
+                    color: "white",
+                  }}
+                  _light={{
+                    color: "black",
+                  }}
+                  _focusVisible={{
+                    border: "0 !important",
+                  }}
+                  onChange={handleStatusFilter}
+                >
+                  <option></option>
+                  <option>active</option>
+                  <option>disabled</option>
+                  <option>limited</option>
+                  <option>expired</option>
+                </Select>
               </HStack>
             </Th>
             <Th
+              width="350px"
+              minW="250px"
               cursor={"pointer"}
               onClick={handleSort.bind(null, "used_traffic")}
             >
@@ -218,7 +270,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 <Sort sort={filters.sort} column="used_traffic" />
               </HStack>
             </Th>
-            <Th></Th>
+            <Th width="200px"></Th>
           </Tr>
         </Thead>
         <Tbody>

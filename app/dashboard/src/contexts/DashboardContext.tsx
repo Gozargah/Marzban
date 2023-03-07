@@ -1,3 +1,4 @@
+import { Filter } from "rollup-plugin-visualizer/dist/shared/create-filter";
 import { fetch } from "service/http";
 import { mutate as globalMutate } from "swr";
 import { User, UserCreate } from "types/User";
@@ -40,6 +41,9 @@ type DashboardStateType = {
 };
 
 const fetchUsers = (query: FilterType): Promise<User[]> => {
+  for (const key in query) {
+    if (!query[key as keyof FilterType]) delete query[key as keyof FilterType];
+  }
   useDashboard.setState({ loading: true });
   return fetch("/users", { query })
     .then((users) => {
