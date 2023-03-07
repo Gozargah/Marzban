@@ -49,7 +49,7 @@ def report_new_user(user_id: int, username: str, by: str, expire_date: int, usag
     )
 
 
-def report_user_modification(username: str, by: str, expire_date: int, usage: str, proxies: list):
+def report_user_modification(username: str, expire_date: int, usage: str, proxies: list, by: str):
     text = """
 ⨀ User Modified by <b>{by}</b>
 ➖➖➖➖➖➖➖
@@ -57,7 +57,6 @@ def report_user_modification(username: str, by: str, expire_date: int, usage: st
 ├ Usage: <b>{usage}</b>
 ├ Expiry Date <b>{expire_date}</b>
 └ Protocols: {protocols}
-
     """.format(
         by=escape_html(by),
         username=escape_html(username),

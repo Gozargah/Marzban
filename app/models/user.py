@@ -17,9 +17,14 @@ USERNAME_REGEXP = re.compile(r'^(?=\w{3,32}\b)[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*$')
 
 class UserStatus(str, Enum):
     active = "active"
-    disabled = "disabled"
+    deactive = "deactive"
     limited = "limited"
     expired = "expired"
+
+
+class UserStatusModify(str, Enum):
+    active = "active"
+    deactive = "deactive"
 
 
 class UserDataLimitResetStrategy(str, Enum):
@@ -127,6 +132,9 @@ class UserCreate(User):
 
 
 class UserModify(User):
+    status: UserStatusModify = None
+    data_limit_reset_strategy: UserDataLimitResetStrategy = None
+
     class Config:
         schema_extra = {
             "example": {
@@ -146,7 +154,8 @@ class UserModify(User):
                 },
                 "expire": 0,
                 "data_limit": 0,
-                "data_limit_reset_strategy": "no_reset"
+                "data_limit_reset_strategy": "no_reset",
+                "status": "active"
             }
         }
 

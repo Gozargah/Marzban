@@ -144,9 +144,9 @@ def users_command(call: types.CallbackQuery):
         total_pages = math.ceil(crud.get_users_count(db) / 10)
         users = crud.get_users(db, offset=(page - 1) * 10, limit=10)
         text = """👥 Users: (Page {page}/{total_pages})
-❌ Disabled
-🕰 Expired
 ✅ Active
+❌ Deactive
+🕰 Expired
 📵 Limited""".format(page=page, total_pages=total_pages)
 
     bot.edit_message_text(
