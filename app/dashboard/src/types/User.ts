@@ -33,7 +33,14 @@ export type User = {
   subscription_url: string;
 };
 
-export type UserCreate = Pick<
-  User,
-  "proxies" | "expire" | "data_limit" | "username" | "data_limit_reset_strategy"
+export type UserCreate = Partial<
+  Pick<
+    User,
+    | "proxies"
+    | "expire"
+    | "data_limit"
+    | "username"
+    | "data_limit_reset_strategy"
+    | "status"
+  >
 >;

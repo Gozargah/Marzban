@@ -24,7 +24,6 @@ export const resetStrategy: { title: string; value: DataLimitResetStrategy }[] =
     },
   ];
 
-
 export const statusColors: {
   [key: string]: {
     statusColor: string;
@@ -35,7 +34,7 @@ export const statusColors: {
     statusColor: "green",
     bandWidthColor: "primary",
   },
-  deactive: {
+  disabled: {
     statusColor: "gray",
     bandWidthColor: "gray",
   },
