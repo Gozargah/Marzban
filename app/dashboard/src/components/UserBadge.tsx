@@ -1,9 +1,11 @@
 import { Badge, chakra, Text } from "@chakra-ui/react";
 import {
   ExclamationCircleIcon,
+  ClockIcon,
   NoSymbolIcon,
   WifiIcon,
 } from "@heroicons/react/24/outline";
+import { statusColors } from "constants/UserSettings";
 import { FC } from "react";
 import { UserStatus as UserStatusType } from "types/User";
 import { relativeExpiryDate } from "utils/dateFormatter";
@@ -15,28 +17,11 @@ const iconProps = {
   },
 };
 const ActiveStatusIcon = chakra(WifiIcon, iconProps);
-const LimitedIcon = chakra(NoSymbolIcon, iconProps);
-const ExpiredIcon = chakra(ExclamationCircleIcon, iconProps);
+const DeactiveStatusIcon = chakra(NoSymbolIcon, iconProps);
+const LimitedStatusIcon = chakra(ExclamationCircleIcon, iconProps);
+const ExpiredStatusIcon = chakra(ClockIcon, iconProps);
 
-const status: {
-  [key: string]: {
-    statusColor: string;
-    bandWidthColor: string;
-  };
-} = {
-  active: {
-    statusColor: "green",
-    bandWidthColor: "green",
-  },
-  expired: {
-    statusColor: "gray",
-    bandWidthColor: "gray",
-  },
-  limited: {
-    statusColor: "red",
-    bandWidthColor: "red",
-  },
-};
+
 type UserStatusProps = {
   expiryDate?: number | null;
   status: UserStatusType;
@@ -49,7 +34,7 @@ export const UserBadge: FC<UserStatusProps> = ({
   return (
     <>
       <Badge
-        colorScheme={status[userStatus].statusColor}
+        colorScheme={statusColors[userStatus].statusColor}
         rounded="full"
         display="inline-flex"
         px={3}
@@ -58,8 +43,9 @@ export const UserBadge: FC<UserStatusProps> = ({
         alignItems="center"
       >
         {userStatus === "active" && <ActiveStatusIcon />}
-        {userStatus === "limited" && <LimitedIcon />}
-        {userStatus === "expired" && <ExpiredIcon />}
+        {userStatus === "deactive" && <DeactiveStatusIcon />}
+        {userStatus === "limited" && <LimitedStatusIcon />}
+        {userStatus === "expired" && <ExpiredStatusIcon />}
         <Text
           textTransform="capitalize"
           fontSize=".875rem"

@@ -1,4 +1,4 @@
-export type UserStatus = "active" | "limited" | "expired";
+export type UserStatus = "active" | "deactive" | "limited" | "expired";
 export type ProxyKeys = ("vmess" | "vless" | "trojan" | "shadowsocks")[];
 export type ProxyType = {
   vmess?: {

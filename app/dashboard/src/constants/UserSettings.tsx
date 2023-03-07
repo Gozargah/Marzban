@@ -23,3 +23,28 @@ export const resetStrategy: { title: string; value: DataLimitResetStrategy }[] =
       value: "year",
     },
   ];
+
+
+export const statusColors: {
+  [key: string]: {
+    statusColor: string;
+    bandWidthColor: string;
+  };
+} = {
+  active: {
+    statusColor: "green",
+    bandWidthColor: "primary",
+  },
+  deactive: {
+    statusColor: "gray",
+    bandWidthColor: "gray",
+  },
+  expired: {
+    statusColor: "orange",
+    bandWidthColor: "orange",
+  },
+  limited: {
+    statusColor: "red",
+    bandWidthColor: "red",
+  },
+};

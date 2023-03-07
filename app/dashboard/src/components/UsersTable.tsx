@@ -35,6 +35,7 @@ import CopyToClipboard from "react-copy-to-clipboard";
 import { UserBadge } from "./UserBadge";
 import { Pagination } from "./Pagination";
 import classNames from "classnames";
+import { statusColors } from "constants/UserSettings";
 
 const EmptySectionIcon = chakra(AddFileIcon);
 
@@ -190,7 +191,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                     dataLimitResetStrategy={user.data_limit_reset_strategy}
                     used={user.used_traffic}
                     total={user.data_limit}
-                    colorScheme={user.status === "limited" ? "red" : "primary"}
+                    colorScheme={statusColors[user.status].bandWidthColor}
                   />
                 </Td>
                 <Td width="200px">
