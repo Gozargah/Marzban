@@ -238,14 +238,52 @@ export const UserDialog: FC<UserDialogProps> = () => {
                 >
                   <FormControl mb={"10px"}>
                     <FormLabel>Username</FormLabel>
-                    <Input
-                      size="sm"
-                      type="text"
-                      borderRadius="6px"
-                      error={form.formState.errors.username?.message}
-                      disabled={disabled || isEditing}
-                      {...form.register("username")}
-                    />
+                    <HStack>
+                      <Input
+                        size="sm"
+                        type="text"
+                        borderRadius="6px"
+                        error={form.formState.errors.username?.message}
+                        disabled={disabled || isEditing}
+                        {...form.register("username")}
+                      />
+                      {isEditing &&
+                        <HStack px={1}>
+                          <Controller
+                            name="status"
+                            control={form.control}
+                            render={({ field }) => {
+                              return (
+                                <Tooltip
+                                  placement="top"
+                                  label={'status: ' + field.value}
+                                  textTransform="capitalize"
+                                >
+                                  <Box>
+                                    <Switch
+                                      colorScheme="primary"
+                                      disabled={
+                                        field.value !== "active" &&
+                                        field.value !== "disabled"
+                                      }
+                                      isChecked={field.value === "active"}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          field.onChange("active");
+                                        } else {
+                                          field.onChange("disabled");
+                                        }
+                                      }}
+                                    />
+                                  </Box>
+                                </Tooltip>
+                              );
+                            }}
+                          />
+                        </HStack>
+                      }
+
+                    </HStack>
                   </FormControl>
                   <FormControl mb={"10px"}>
                     <FormLabel>Data Limit</FormLabel>
@@ -322,13 +360,13 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                   target: {
                                     value: date
                                       ? dayjs(
-                                          dayjs(date)
-                                            .set("hour", 23)
-                                            .set("minute", 59)
-                                            .set("second", 59)
-                                        )
-                                          .utc()
-                                          .valueOf() / 1000
+                                        dayjs(date)
+                                          .set("hour", 23)
+                                          .set("minute", 59)
+                                          .set("second", 59)
+                                      )
+                                        .utc()
+                                        .valueOf() / 1000
                                       : 0,
                                     name: "expire",
                                   },
@@ -357,57 +395,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       }}
                     />
                   </FormControl>
-                  {isEditing && (
-                    <FormControl>
-                      <HStack
-                        justifyContent="space-between"
-                        alignItems="center"
-                        spacing={0}
-                      >
-                        <FormLabel
-                          cursor="pointer"
-                          mb="0"
-                          textTransform="capitalize"
-                        >
-                          Status
-                        </FormLabel>
-                        <HStack>
-                          <Controller
-                            name="status"
-                            control={form.control}
-                            render={({ field }) => {
-                              return (
-                                <>
-                                  <FormLabel
-                                    mr="0"
-                                    cursor="pointer"
-                                    textTransform="capitalize"
-                                  >
-                                    {field.value}
-                                  </FormLabel>
-                                  <Switch
-                                    colorScheme="primary"
-                                    disabled={
-                                      field.value !== "active" &&
-                                      field.value !== "disabled"
-                                    }
-                                    isChecked={field.value === "active"}
-                                    onChange={(e) => {
-                                      if (e.target.checked) {
-                                        field.onChange("active");
-                                      } else {
-                                        field.onChange("disabled");
-                                      }
-                                    }}
-                                  />
-                                </>
-                              );
-                            }}
-                          />
-                        </HStack>
-                      </HStack>
-                    </FormControl>
-                  )}
+
                 </Flex>
                 {error && (
                   <Alert status="error" display={{ base: "none", md: "flex" }}>
