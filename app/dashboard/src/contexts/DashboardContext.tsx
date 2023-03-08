@@ -1,3 +1,4 @@
+import { Filter } from "rollup-plugin-visualizer/dist/shared/create-filter";
 import { fetch } from "service/http";
 import { mutate as globalMutate } from "swr";
 import { User, UserCreate } from "types/User";
@@ -7,6 +8,7 @@ export type FilterType = {
   username?: string;
   limit?: number;
   offset?: number;
+  sort: string;
   status?: "active" | "disabled" | "limited" | "expired";
 };
 
@@ -28,7 +30,7 @@ type DashboardStateType = {
   onEditingUser: (user: User | null) => void;
   onDeletingUser: (user: User | null) => void;
   refetchUsers: () => void;
-  onFilterChange: (filters: FilterType) => void;
+  onFilterChange: (filters: Partial<FilterType>) => void;
   deleteUser: (user: User) => Promise<void>;
   createUser: (user: UserCreate) => Promise<void>;
   editUser: (user: UserCreate) => Promise<void>;
@@ -39,6 +41,9 @@ type DashboardStateType = {
 };
 
 const fetchUsers = (query: FilterType): Promise<User[]> => {
+  for (const key in query) {
+    if (!query[key as keyof FilterType]) delete query[key as keyof FilterType];
+  }
   useDashboard.setState({ loading: true });
   return fetch("/users", { query })
     .then((users) => {
@@ -111,7 +116,12 @@ export const useDashboard = create<DashboardStateType>((set, get) => ({
     set({ deletingUser });
   },
   onFilterChange: (filters) => {
-    set({ filters });
+    set({
+      filters: {
+        ...get().filters,
+        ...filters,
+      },
+    });
     get().refetchUsers();
   },
   setQRCode: (QRcodeLinks) => {

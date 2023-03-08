@@ -1,5 +1,8 @@
+from datetime import datetime
 from enum import Enum
 from typing import List, Optional, Tuple, Union
+
+from sqlalchemy.orm import Session
 
 from app.db.models import (JWT, Admin, Proxy, ProxyHost, ProxyInbound, System,
                            User, UserUsageResetLogs)
@@ -7,7 +10,6 @@ from app.models.admin import AdminCreate, AdminModify
 from app.models.proxy import ProxyHost as ProxyHostModify
 from app.models.user import (UserCreate, UserDataLimitResetStrategy,
                              UserModify, UserStatus)
-from sqlalchemy.orm import Session
 
 
 def get_or_create_inbound(db: Session, inbound_tag: str):
@@ -178,11 +180,24 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
             if dbproxy:
                 dbproxy.excluded_inbounds = [get_or_create_inbound(db, tag) for tag in tags]
 
+    if modify.status is not None:
+        dbuser.status = modify.status
+
     if modify.data_limit is not None:
         dbuser.data_limit = (modify.data_limit or None)
+        if dbuser.status not in (UserStatus.expired, UserStatus.disabled):
+            if not dbuser.data_limit or dbuser.used_traffic < dbuser.data_limit:
+                dbuser.status = UserStatus.active
+            else:
+                dbuser.status = UserStatus.limited
 
     if modify.expire is not None:
         dbuser.expire = (modify.expire or None)
+        if dbuser.status not in (UserStatus.limited, UserStatus.disabled):
+            if not dbuser.expire or dbuser.expire > datetime.utcnow().timestamp():
+                dbuser.status = UserStatus.active
+            else:
+                dbuser.status = UserStatus.expired
 
     if modify.data_limit_reset_strategy is not None:
         dbuser.data_limit_reset_strategy = modify.data_limit_reset_strategy.value

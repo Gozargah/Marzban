@@ -1,4 +1,4 @@
-export type UserStatus = "active" | "limited" | "expired";
+export type UserStatus = "active" | "disabled" | "limited" | "expired";
 export type ProxyKeys = ("vmess" | "vless" | "trojan" | "shadowsocks")[];
 export type ProxyType = {
   vmess?: {
@@ -33,7 +33,14 @@ export type User = {
   subscription_url: string;
 };
 
-export type UserCreate = Pick<
-  User,
-  "proxies" | "expire" | "data_limit" | "username" | "data_limit_reset_strategy"
+export type UserCreate = Partial<
+  Pick<
+    User,
+    | "proxies"
+    | "expire"
+    | "data_limit"
+    | "username"
+    | "data_limit_reset_strategy"
+    | "status"
+  >
 >;

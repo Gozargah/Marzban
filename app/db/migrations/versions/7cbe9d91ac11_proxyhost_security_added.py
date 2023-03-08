@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "7cbe9d91ac11"
-down_revision = "b15eba6e5867"
+down_revision = "e3f0e888a563"
 branch_labels = None
 depends_on = None
 
@@ -24,7 +24,7 @@ def upgrade() -> None:
             "security",
             sa.Enum("inbound_default", "none", "tls", name="proxyhostsecurity"),
             nullable=False,
-            default_server="inbound_default"
+            server_default="inbound_default"
         ),
     )
 

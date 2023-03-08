@@ -99,51 +99,28 @@ def modify_user(username: str,
     if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
         raise HTTPException(status_code=403, detail="You're not allowed")
 
+    old_status = dbuser.status
     dbuser = crud.update_user(db, dbuser, modified_user)
-
-    if modified_user.expire is not None and dbuser.status != UserStatus.limited:
-        if not dbuser.expire or dbuser.expire > datetime.utcnow().timestamp():
-            status = UserStatus.active
-        else:
-            status = UserStatus.expired
-        dbuser = crud.update_user_status(db, dbuser, status)
-
-        bg.add_task(
-            telegram.report_status_change,
-            username=dbuser.username,
-            status=status
-        )
-        logger.info(f"User \"{dbuser.username}\" status changed to {status}")
-
-    if modified_user.data_limit is not None and dbuser.status != UserStatus.expired:
-        if not dbuser.data_limit or dbuser.used_traffic < dbuser.data_limit:
-            status = UserStatus.active
-        else:
-            status = UserStatus.limited
-        dbuser = crud.update_user_status(db, dbuser, status)
-
-        bg.add_task(
-            telegram.report_status_change,
-            username=dbuser.username,
-            status=status
-        )
-        logger.info(f"User \"{dbuser.username}\" status changed to {status}")
-
     user = UserResponse.from_orm(dbuser)
 
     xray_remove_user(user)
     if user.status == UserStatus.active:
         xray_add_user(user)
 
-    bg.add_task(
-        telegram.report_user_modification,
-        username=dbuser.username,
-        usage=dbuser.data_limit,
-        expire_date=dbuser.expire,
-        proxies=dbuser.proxies,
-        by=admin.username,
-    )
+    bg.add_task(telegram.report_user_modification,
+                username=dbuser.username,
+                usage=dbuser.data_limit,
+                expire_date=dbuser.expire,
+                proxies=dbuser.proxies,
+                by=admin.username)
     logger.info(f"User \"{user.username}\" modified")
+
+    if user.status != old_status:
+        bg.add_task(telegram.report_status_change,
+                    username=user.username,
+                    status=user.status)
+        logger.info(f"User \"{dbuser.username}\" status changed from {old_status} to {user.status}")
+
     return user
 
 

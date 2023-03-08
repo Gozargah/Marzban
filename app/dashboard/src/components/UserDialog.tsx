@@ -24,8 +24,9 @@ import {
   VStack,
   Select,
   Collapse,
-  Box,
   Flex,
+  Switch,
+  Box,
 } from "@chakra-ui/react";
 import { PencilIcon, UserPlusIcon } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
@@ -73,6 +74,7 @@ const schema = z.object({
     }),
   expire: z.number().nullable(),
   data_limit_reset_strategy: z.string(),
+  status: z.string(),
 });
 
 export type UserDialogProps = {};
@@ -94,6 +96,7 @@ const getDefaultValues = (): FormType => ({
   expire: null,
   username: "",
   data_limit_reset_strategy: "no_reset",
+  status: "active",
 });
 
 const mergeProxies = (
@@ -157,6 +160,10 @@ export const UserDialog: FC<UserDialogProps> = () => {
         values.data_limit && values.data_limit > 0
           ? values.data_limit_reset_strategy
           : "no_reset",
+      status:
+        values.status === "active" || values.status === "disabled"
+          ? values.status
+          : undefined,
     };
     methods[method](body)
       .then(() => {
@@ -231,14 +238,52 @@ export const UserDialog: FC<UserDialogProps> = () => {
                 >
                   <FormControl mb={"10px"}>
                     <FormLabel>Username</FormLabel>
-                    <Input
-                      size="sm"
-                      type="text"
-                      borderRadius="6px"
-                      error={form.formState.errors.username?.message}
-                      disabled={disabled || isEditing}
-                      {...form.register("username")}
-                    />
+                    <HStack>
+                      <Input
+                        size="sm"
+                        type="text"
+                        borderRadius="6px"
+                        error={form.formState.errors.username?.message}
+                        disabled={disabled || isEditing}
+                        {...form.register("username")}
+                      />
+                      {isEditing &&
+                        <HStack px={1}>
+                          <Controller
+                            name="status"
+                            control={form.control}
+                            render={({ field }) => {
+                              return (
+                                <Tooltip
+                                  placement="top"
+                                  label={'status: ' + field.value}
+                                  textTransform="capitalize"
+                                >
+                                  <Box>
+                                    <Switch
+                                      colorScheme="primary"
+                                      disabled={
+                                        field.value !== "active" &&
+                                        field.value !== "disabled"
+                                      }
+                                      isChecked={field.value === "active"}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          field.onChange("active");
+                                        } else {
+                                          field.onChange("disabled");
+                                        }
+                                      }}
+                                    />
+                                  </Box>
+                                </Tooltip>
+                              );
+                            }}
+                          />
+                        </HStack>
+                      }
+
+                    </HStack>
                   </FormControl>
                   <FormControl mb={"10px"}>
                     <FormLabel>Data Limit</FormLabel>
@@ -315,13 +360,13 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                   target: {
                                     value: date
                                       ? dayjs(
-                                          dayjs(date)
-                                            .set("hour", 23)
-                                            .set("minute", 59)
-                                            .set("second", 59)
-                                        )
-                                          .utc()
-                                          .valueOf() / 1000
+                                        dayjs(date)
+                                          .set("hour", 23)
+                                          .set("minute", 59)
+                                          .set("second", 59)
+                                      )
+                                        .utc()
+                                        .valueOf() / 1000
                                       : 0,
                                     name: "expire",
                                   },
@@ -350,6 +395,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       }}
                     />
                   </FormControl>
+
                 </Flex>
                 {error && (
                   <Alert status="error" display={{ base: "none", md: "flex" }}>

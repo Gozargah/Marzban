@@ -22,6 +22,11 @@ class UserStatus(str, Enum):
     expired = "expired"
 
 
+class UserStatusModify(str, Enum):
+    active = "active"
+    disabled = "disabled"
+
+
 class UserDataLimitResetStrategy(str, Enum):
     no_reset = "no_reset"
     day = "day"
@@ -127,6 +132,9 @@ class UserCreate(User):
 
 
 class UserModify(User):
+    status: UserStatusModify = None
+    data_limit_reset_strategy: UserDataLimitResetStrategy = None
+
     class Config:
         schema_extra = {
             "example": {
@@ -146,7 +154,8 @@ class UserModify(User):
                 },
                 "expire": 0,
                 "data_limit": 0,
-                "data_limit_reset_strategy": "no_reset"
+                "data_limit_reset_strategy": "no_reset",
+                "status": "active"
             }
         }
 

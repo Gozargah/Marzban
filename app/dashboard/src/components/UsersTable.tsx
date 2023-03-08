@@ -4,6 +4,7 @@ import {
   chakra,
   HStack,
   IconButton,
+  Select,
   Slider,
   SliderFilledTrack,
   SliderProps,
@@ -26,6 +27,7 @@ import {
   LinkIcon,
   QrCodeIcon,
   ArrowPathIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 import { FC, useCallback, useEffect, useState } from "react";
 import { ReactComponent as AddFileIcon } from "assets/add_file.svg";
@@ -35,6 +37,7 @@ import CopyToClipboard from "react-copy-to-clipboard";
 import { UserBadge } from "./UserBadge";
 import { Pagination } from "./Pagination";
 import classNames from "classnames";
+import { statusColors } from "constants/UserSettings";
 
 const EmptySectionIcon = chakra(AddFileIcon);
 
@@ -48,7 +51,12 @@ const CopyIcon = chakra(ClipboardIcon, iconProps);
 const CopiedIcon = chakra(CheckIcon, iconProps);
 const SubscriptionLinkIcon = chakra(LinkIcon, iconProps);
 const QRIcon = chakra(QrCodeIcon, iconProps);
-
+const SortIcon = chakra(ChevronDownIcon, {
+  baseStyle: {
+    width: "15px",
+    height: "15px",
+  },
+});
 type UsageSliderProps = {
   used: number;
   total: number | null;
@@ -105,16 +113,30 @@ const UsageSlider: FC<UsageSliderProps> = (props) => {
     </>
   );
 };
-
+export type SortType = {
+  sort: string;
+  column: string;
+};
+export const Sort: FC<SortType> = ({ sort, column }) => {
+  if (sort.includes(column))
+    return (
+      <SortIcon
+        transform={sort.startsWith("-") ? "rotate(180deg)" : undefined}
+      />
+    );
+  return null;
+};
 type UsersTableProps = {} & TableProps;
 export const UsersTable: FC<UsersTableProps> = (props) => {
   const {
+    filters,
     users: { users },
     users: totalUsers,
     onEditingUser,
     setQRCode,
     setSubLink,
     refetchUsers,
+    onFilterChange,
   } = useDashboard();
   const marginTop =
     useBreakpointValue({
@@ -157,16 +179,93 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
       window.removeEventListener("resize", tableFixHead);
     };
   }, [tableFixHead]);
-
+  const handleSort = (column: string) => {
+    let newSort = filters.sort;
+    if (newSort.includes(column)) {
+      if (newSort.startsWith("-")) {
+        newSort = "-created_at";
+      } else {
+        newSort = "-" + column;
+      }
+    } else {
+      newSort = column;
+    }
+    onFilterChange({
+      sort: newSort,
+    });
+  };
+  const handleStatusFilter = (e: any) => {
+    onFilterChange({
+      status: e.target.value.length > 0 ? e.target.value : undefined,
+    });
+  };
   return (
     <Box id="users-table" overflowX="auto">
       <Table {...props}>
         <Thead zIndex="docked" position="relative">
           <Tr>
-            <Th>username</Th>
-            <Th>status</Th>
-            <Th>data usage</Th>
-            <Th></Th>
+            <Th
+              minW="150px"
+              cursor={"pointer"}
+              onClick={handleSort.bind(null, "username")}
+            >
+              <HStack>
+                <span>username</span>
+                <Sort sort={filters.sort} column="username" />
+              </HStack>
+            </Th>
+            <Th width="400px" minW="180px" cursor={"pointer"}>
+              <HStack spacing={0} position="relative">
+                <Text
+                  position="absolute"
+                  _dark={{
+                    bg: "gray.750",
+                  }}
+                  _light={{
+                    bg: "#F9FAFB",
+                  }}
+                  userSelect="none"
+                  pointerEvents="none"
+                  zIndex={1}
+                  w="100%"
+                >
+                  Status{filters.status ? ": " + filters.status : ""}
+                </Text>
+                <Select
+                  fontSize="xs"
+                  fontWeight="extrabold"
+                  textTransform="uppercase"
+                  cursor="pointer"
+                  p={0}
+                  border={0}
+                  h="auto"
+                  w="auto"
+                  icon={<></>}
+                  _focusVisible={{
+                    border: "0 !important",
+                  }}
+                  onChange={handleStatusFilter}
+                >
+                  <option></option>
+                  <option>active</option>
+                  <option>disabled</option>
+                  <option>limited</option>
+                  <option>expired</option>
+                </Select>
+              </HStack>
+            </Th>
+            <Th
+              width="350px"
+              minW="250px"
+              cursor={"pointer"}
+              onClick={handleSort.bind(null, "used_traffic")}
+            >
+              <HStack>
+                <span>data usage</span>
+                <Sort sort={filters.sort} column="used_traffic" />
+              </HStack>
+            </Th>
+            <Th width="200px"></Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -190,7 +289,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                     dataLimitResetStrategy={user.data_limit_reset_strategy}
                     used={user.used_traffic}
                     total={user.data_limit}
-                    colorScheme={user.status === "limited" ? "red" : "primary"}
+                    colorScheme={statusColors[user.status].bandWidthColor}
                   />
                 </Td>
                 <Td width="200px">
