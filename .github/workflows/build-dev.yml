@@ -49,4 +49,4 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/gozargah/marzban:${{github.ref_name}}
+            ghcr.io/shalgham-hub/marzban:${{github.ref_name}}
