@@ -1,6 +1,8 @@
 from datetime import datetime
 from enum import Enum
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union
+
+from sqlalchemy.orm import Session
 
 from sqlalchemy.orm import Session
 
@@ -38,7 +40,8 @@ def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostMo
             port=host.port,
             sni=host.sni,
             host=host.host,
-            inbound=inbound
+            inbound=inbound,
+            security=host.security
         ) for host in modified_hosts
     ]
     db.commit()
@@ -69,13 +72,13 @@ UsersSortingOptions = Enum('UsersSortingOptions', {
 
 
 def get_users(db: Session,
-              offset: int = None,
-              limit: int = None,
-              username: str = None,
-              status: Union[UserStatus, list] = None,
-              sort: List[UsersSortingOptions] = None,
-              admin: Admin = None,
-              reset_strategy: Union[UserDataLimitResetStrategy, list] = None,
+              offset: Optional[int] = None,
+              limit: Optional[int] = None,
+              username: Optional[str] = None,
+              status: Optional[Union[UserStatus, list]] = None,
+              sort: Optional[List[UsersSortingOptions]] = None,
+              admin: Optional[Admin] = None,
+              reset_strategy: Optional[Union[UserDataLimitResetStrategy, list]] = None,
               return_with_count: bool = False) -> Union[List[User], Tuple[List[User], int]]:
     query = db.query(User)
 

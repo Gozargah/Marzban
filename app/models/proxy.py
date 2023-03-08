@@ -40,8 +40,13 @@ class ProxyTypes(str, Enum):
             return ShadowsocksSettings
 
 
-class ProxySettings(BaseModel):
+class ProxyHostSecurity(str, Enum):
+    inbound_default = "inbound_default"
+    none = "none"
+    tls = "tls"
 
+
+class ProxySettings(BaseModel):
     @classmethod
     def from_dict(cls, proxy_type: ProxyTypes, _dict: dict):
         return ProxyTypes(proxy_type).settings_model.parse_obj(_dict)
@@ -75,6 +80,7 @@ class ProxyHost(BaseModel):
     port: Union[int, None] = None
     sni: str = ""
     host: str = ""
+    security: ProxyHostSecurity = ProxyHostSecurity.inbound_default
 
     class Config:
         orm_mode = True
