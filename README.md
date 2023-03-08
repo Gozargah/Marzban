@@ -200,23 +200,24 @@ By following these steps, you can ensure that you have a backup of all your Marz
 
 
 # Telegram Bot
-مرزبان دارای یک ربات تلگرام داخلی است که می تواند مدیریت سرور، ایجاد و حذف کاربر و ارسال نوتیفیکیشن را انجام دهد. این ربات را می توان با انجام چند مرحله ساده به راحتی فعال کرد
+Marzban comes with an integrated Telegram bot that can handle server management, user creation and removal, and send notifications. This bot can be easily enabled by following a few simple steps, and it provides a convenient way to interact with Marzban without having to log in to the server every time.
 
-برای فعال کردن ربات تلگرام:
+To enable Telegram Bot:
 
-1. در تنظیمات، متغیر`TELEGRAM_API_TOKEN` را به API TOKEN ربات تلگرام خود تنظیم کنید.
-2. همینطور، متغیر`TELEGRAM_ADMIN_ID` را به شناسه عددی حساب تلگرام خود تنظیم کنید. شما می‌توانید شناسه خود را از [@userinfobot] (https://t.me/userinfobot) دریافت کنید.
+1. set `TELEGRAM_API_TOKEN` to your bot's API Token
+2. set `TELEGRAM_ADMIN_ID` to your Telegram account's numeric ID, you can get your ID from [@userinfobot](https://t.me/userinfobot)
 
 
 # Donation
-اگر مرزبان را برای شما مفید بوده و می‌خواهید از توسعه آن حمایت کنید، می‌توانید در یکی از طریق یکی از شبکه های کریپتو زیر کمک مالی کنید:
+If you found Marzban useful and would like to support its development, you can make a donation in one of the following crypto networks:
 
-- شبکه TRON (TRX): `TX8kJoDcowQPBFTYHAJR36GyoUKP1Xwzkb`
-- شبکه ETH، BNB، MATIC: `0xFdc9ad32454FA4fc4733270FCc12ddBFb68b83F7`
-- شبکه بیت کوین: `bc1qpys2nefgsjjgae3g3gqy9crsv3h3rm96tlkz0v`
-- شبکه Dogecoin: `DJAocBAu8y6LwhDKUktLAyzV8xyoFeHH6R`
+- TRON (TRX) network: `TX8kJoDcowQPBFTYHAJR36GyoUKP1Xwzkb`
+- ETH, BNB, MATIC network: `0xFdc9ad32454FA4fc4733270FCc12ddBFb68b83F7`
+- Bitcoin network: `bc1qpys2nefgsjjgae3g3gqy9crsv3h3rm96tlkz0v`
+- Dogecoin network: `DJAocBAu8y6LwhDKUktLAyzV8xyoFeHH6R`
 
-از حمایت شما متشکرم!
+
+Thank you for your support!
 
 
 # License
