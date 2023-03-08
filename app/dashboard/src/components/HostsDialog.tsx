@@ -226,6 +226,12 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                   </Badge>{" "}
                                   The usage limit of the user
                                 </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}DAYS_LEFT{"}"}
+                                  </Badge>{" "}
+                                  Remaining days of the user
+                                </Text>
                               </Box>
                             </PopoverBody>
                           </PopoverContent>

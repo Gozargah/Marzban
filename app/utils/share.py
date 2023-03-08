@@ -12,6 +12,7 @@ from app import xray
 from app.utils.store import XrayStore
 from app.utils.system import readable_size
 from config import SERVER_IP
+from datetime import datetime as dt
 
 
 class FormatVariables(dict):
@@ -301,11 +302,23 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
 def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> list:
     links = []
     salt = secrets.token_urlsafe(12).lower()
+
+    if (extra_data.get('expire') or 0) > 0:
+        days_left = (dt.fromtimestamp(extra_data['expire']) - dt.now()).days + 1
+        if not days_left > 0:
+            days_left = 0
+    else:
+        days_left = '∞'
+
+    data_limit = readable_size(extra_data.get('data_limit')) \
+        if extra_data.get('data_limit') else '∞'
+
     format_variables = FormatVariables({
         "SERVER_IP": SERVER_IP,
         "USERNAME": extra_data.get('username', '{USERNAME}'),
         "DATA_USAGE": readable_size(extra_data.get('used_traffic')),
-        "DATA_LIMIT": readable_size(extra_data.get('data_limit')) if extra_data.get('data_limit') else '∞'
+        "DATA_LIMIT": data_limit,
+        "DAYS_LEFT": days_left
     })
 
     for protocol, tags in inbounds.items():
@@ -342,11 +355,23 @@ def generate_v2ray_subscription(links: list) -> str:
 def generate_clash_subscription(proxies: dict, inbounds: dict, extra_data: dict) -> str:
     conf = ClashConfiguration()
     salt = secrets.token_urlsafe(12).lower()
+
+    if (extra_data.get('expire') or 0) > 0:
+        days_left = (dt.fromtimestamp(extra_data['expire']) - dt.now()).days + 1
+        if not days_left > 0:
+            days_left = 0
+    else:
+        days_left = '∞'
+
+    data_limit = readable_size(extra_data.get('data_limit')) \
+        if extra_data.get('data_limit') else '∞'
+
     format_variables = FormatVariables({
         "SERVER_IP": SERVER_IP,
         "USERNAME": extra_data.get('username', '{USERNAME}'),
         "DATA_USAGE": readable_size(extra_data.get('used_traffic')),
-        "DATA_LIMIT": readable_size(extra_data.get('data_limit')) if extra_data.get('data_limit') else '∞'
+        "DATA_LIMIT": data_limit,
+        "DAYS_LEFT": days_left
     })
 
     for protocol, tags in inbounds.items():
