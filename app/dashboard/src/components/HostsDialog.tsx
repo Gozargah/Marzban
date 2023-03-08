@@ -12,6 +12,7 @@ import {
   chakra,
   FormControl,
   FormErrorMessage,
+  FormLabel,
   HStack,
   IconButton,
   Input,
@@ -32,6 +33,7 @@ import {
   PopoverHeader,
   PopoverTrigger,
   Portal,
+  Select,
   Text,
   Tooltip,
   useToast,
@@ -42,6 +44,7 @@ import { LinkIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import {
+  Controller,
   FormProvider,
   useFieldArray,
   useForm,
@@ -50,6 +53,8 @@ import {
 import { DeleteIcon } from "./DeleteUserModal";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { proxyHostSecurity } from "constants/ProxyHosts";
+import { ProxyHostSecurity } from "types/ProxyHosts";
 
 const ModalIcon = chakra(LinkIcon, {
   baseStyle: {
@@ -85,6 +90,7 @@ const hostsSchema = z.record(
         }),
       sni: z.string(),
       host: z.string(),
+      security: z.string(),
     })
   )
 );
@@ -127,6 +133,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
       port: null,
       address: "",
       remark: "",
+      security: "inbound_default",
     });
   };
   useEffect(() => {
@@ -323,6 +330,21 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                 {accordionErrors && accordionErrors[index]?.host && (
                   <Error>{accordionErrors[index]?.host?.message}</Error>
                 )}
+              </FormControl>
+              <FormControl height="66px">
+                <FormLabel>Security</FormLabel>
+                <Select
+                  size="sm"
+                  {...form.register(hostKey + "." + index + ".security")}
+                >
+                  {proxyHostSecurity.map((s) => {
+                    return (
+                      <option key={s.value} value={s.value}>
+                        {s.title}
+                      </option>
+                    );
+                  })}
+                </Select>
               </FormControl>
             </VStack>
           ))}

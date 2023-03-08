@@ -1,4 +1,9 @@
+from typing import TYPE_CHECKING, Sequence
 from app import app, xray
+from app.models.proxy import ProxyHostSecurity
+
+if TYPE_CHECKING:
+    from app.db.models import ProxyHost
 
 
 class XrayStore:
@@ -10,6 +15,7 @@ class XrayStore:
                 "port": None,
                 "sni": "",
                 "host": "",
+                "tls": None,
             }
         ]
     }
@@ -21,7 +27,7 @@ class XrayStore:
         cls.HOSTS = {}
         with GetDB() as db:
             for inbound_tag in xray.config.inbounds_by_tag:
-                hosts = crud.get_hosts(db, inbound_tag)
+                hosts: Sequence[ProxyHost] = crud.get_hosts(db, inbound_tag)
                 cls.HOSTS[inbound_tag] = []
                 for host in hosts:
                     cls.HOSTS[inbound_tag].append(
@@ -31,6 +37,11 @@ class XrayStore:
                             "port": host.port,
                             "sni": host.sni,
                             "host": host.host,
+                            # None means the tls is not specified by host itself and
+                            #  complies with its inbound's settings.
+                            "tls": None
+                            if host.security == ProxyHostSecurity.inbound_default
+                            else host.security == ProxyHostSecurity.tls,
                         }
                     )
 

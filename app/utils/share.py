@@ -324,6 +324,8 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> lis
                     'port': host['port'] or inbound['port'],
                     'sni': (host['sni'] or inbound['sni']).replace('*', salt),
                     'host': (host['host'] or inbound['host']).replace('*', salt),
+                    # None means host tls complies with inbound's tls settings.
+                    'tls': inbound['tls'] if host['tls'] is None else host['tls']
                 })
                 links.append(get_v2ray_link(remark=host['remark'].format_map(format_variables),
                                             address=host['address'].format_map(format_variables),

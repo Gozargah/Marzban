@@ -5,8 +5,12 @@ from uuid import UUID, uuid4
 
 from app.utils.system import random_password
 from pydantic import BaseModel, Field, validator
-from xray_api.types.account import (ShadowsocksAccount, TrojanAccount,
-                                    VLESSAccount, VMessAccount)
+from xray_api.types.account import (
+    ShadowsocksAccount,
+    TrojanAccount,
+    VLESSAccount,
+    VMessAccount,
+)
 
 
 class ProxyTypes(str, Enum):
@@ -40,8 +44,13 @@ class ProxyTypes(str, Enum):
             return ShadowsocksSettings
 
 
-class ProxySettings(BaseModel):
+class ProxyHostSecurity(str, Enum):
+    inbound_default = "inbound_default"
+    none = "none"
+    tls = "tls"
 
+
+class ProxySettings(BaseModel):
     @classmethod
     def from_dict(cls, proxy_type: ProxyTypes, _dict: dict):
         return ProxyTypes(proxy_type).settings_model.parse_obj(_dict)
@@ -75,6 +84,7 @@ class ProxyHost(BaseModel):
     port: Union[int, None] = None
     sni: str = ""
     host: str = ""
+    security: ProxyHostSecurity = ProxyHostSecurity.inbound_default
 
     class Config:
         orm_mode = True
