@@ -168,6 +168,7 @@ def reset_user_data_usage(username: str,
         raise HTTPException(status_code=403, detail="You're not allowed")
 
     user = crud.reset_user_data_usage(db=db, dbuser=dbuser)
+    xray_add_user(user)
     return user
 
 
