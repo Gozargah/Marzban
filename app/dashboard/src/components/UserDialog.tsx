@@ -151,8 +151,6 @@ export const UserDialog: FC<UserDialogProps> = () => {
     resolver: zodResolver(schema),
   });
 
-  console.log(form.formState.errors);
-
   const [dataLimit] = useWatch({
     control: form.control,
     name: ["data_limit"],

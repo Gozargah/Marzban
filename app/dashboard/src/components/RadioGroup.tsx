@@ -19,6 +19,7 @@ import {
 import {
   CheckCircleIcon,
   Cog6ToothIcon,
+  EllipsisVerticalIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
 import {
@@ -33,27 +34,11 @@ import {
   useWatch,
 } from "react-hook-form";
 
-const CheckedIcon = chakra(CheckCircleIcon, {
+const SettingsIcon = chakra(EllipsisVerticalIcon, {
   baseStyle: {
     strokeWidth: "2px",
-    w: 4,
-    h: 4,
-  },
-});
-
-const UnCheckedIcon = chakra(XCircleIcon, {
-  baseStyle: {
-    strokeWidth: "2px",
-    w: 4,
-    h: 4,
-  },
-});
-
-const SettingsIcon = chakra(Cog6ToothIcon, {
-  baseStyle: {
-    strokeWidth: "2px",
-    w: 4,
-    h: 4,
+    w: 5,
+    h: 5,
   },
 });
 
@@ -193,10 +178,15 @@ const RadioCard: FC<
     (useDashboard.getState().inbounds.get(title as ProtocolType) || [])
       .length !== inBoundDefaultValue.length;
 
-  console.log(title, inBoundDefaultValue);
+  const protocolHasInbound =
+    (useDashboard.getState().inbounds.get(title as ProtocolType) || []).length >
+    0;
+
+  const shouldBeDisabled = !protocolHasInbound;
+
   return (
-    <AccordionItem border={0}>
-      <Box as="label" position="relative">
+    <AccordionItem border={0} isDisabled={!protocolHasInbound}>
+      <Box as={shouldBeDisabled ? "span" : "label"} position="relative">
         {isPartialSelected && (
           <Box
             position="absolute"
@@ -214,13 +204,15 @@ const RadioCard: FC<
           w="fll"
           position="relative"
           {...htmlProps}
-          cursor="pointer"
+          cursor={shouldBeDisabled ? "not-allowed" : "pointer"}
           borderRadius="md"
           border="1px solid"
           borderColor={"gray.200"}
           _dark={{
             borderColor: "gray.600",
+            bg: shouldBeDisabled ? "#364154" : "transparent",
           }}
+          bg={shouldBeDisabled ? "gray.100" : "transparent"}
           _checked={{
             bg: "gray.50",
             outline: "2px",
@@ -265,50 +257,37 @@ const RadioCard: FC<
           fontWeight="medium"
           {...getCheckboxProps()}
         >
-          <CheckedIcon
-            className="checked"
-            color="primary.200"
-            position="absolute"
-            right="3"
-            top="2"
-          />
-          <UnCheckedIcon
-            className="unchecked"
-            color="primary.200"
-            position="absolute"
-            right="3"
-            top="2"
-          />
-
           <AccordionButton
-            display={inputProps.checked ? "block" : "none"}
+            display={
+              inputProps.checked && protocolHasInbound ? "block" : "none"
+            }
             as="span"
             className="checked"
             color="primary.200"
             position="absolute"
             right="3"
-            bottom="2"
+            top="3"
             w="auto"
             p={0}
             onClick={toggleAccordion}
           >
-            <IconButton size="sx" aria-label="inbound settings">
+            <IconButton size="sm" aria-label="inbound settings">
               <SettingsIcon />
             </IconButton>
           </AccordionButton>
 
           <Text
             fontSize="sm"
-            color="gray.700"
-            _dark={{ color: "gray.300" }}
+            color={shouldBeDisabled ? "gray.400" : "gray.700"}
+            _dark={{ color: shouldBeDisabled ? "gray.500" : "gray.300" }}
             {...getLabelProps()}
           >
             {title}
           </Text>
           <Text
             fontWeight="medium"
-            color="gray.600"
-            _dark={{ color: "gray.400" }}
+            color={shouldBeDisabled ? "gray.400" : "gray.600"}
+            _dark={{ color: shouldBeDisabled ? "gray.500" : "gray.400" }}
             fontSize="xs"
           >
             {description}
