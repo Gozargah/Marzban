@@ -29,10 +29,16 @@ import {
   Box,
 } from "@chakra-ui/react";
 import { PencilIcon, UserPlusIcon } from "@heroicons/react/24/outline";
-import { useDashboard } from "contexts/DashboardContext";
+import { ProtocolType, useDashboard } from "contexts/DashboardContext";
 import { FC, useEffect, useState } from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
-import { ProxyKeys, ProxyType, User, UserCreate } from "types/User";
+import { Controller, FormProvider, useForm, useWatch } from "react-hook-form";
+import {
+  ProxyKeys,
+  ProxyType,
+  User,
+  UserCreate,
+  UserInbounds,
+} from "types/User";
 import { z } from "zod";
 import { Icon } from "./Icon";
 import { RadioGroup } from "./RadioGroup";
@@ -75,6 +81,7 @@ const schema = z.object({
   expire: z.number().nullable(),
   data_limit_reset_strategy: z.string(),
   status: z.string(),
+  inbounds: z.record(z.string(), z.array(z.string())),
 });
 
 export type UserDialogProps = {};
@@ -90,14 +97,22 @@ const formatUser = (user: User): FormType => {
     proxies: Object.keys(user.proxies) as ProxyKeys,
   };
 };
-const getDefaultValues = (): FormType => ({
-  proxies: ["vmess", "vless", "trojan"],
-  data_limit: null,
-  expire: null,
-  username: "",
-  data_limit_reset_strategy: "no_reset",
-  status: "active",
-});
+const getDefaultValues = (): FormType => {
+  const defaultInbounds = Object.fromEntries(useDashboard.getState().inbounds);
+  const inbounds: UserInbounds = {};
+  for (const key in defaultInbounds) {
+    inbounds[key] = defaultInbounds[key].map((i) => i.tag);
+  }
+  return {
+    proxies: ["vmess", "vless", "trojan"] as ProxyKeys,
+    data_limit: null,
+    expire: null,
+    username: "",
+    data_limit_reset_strategy: "no_reset",
+    status: "active",
+    inbounds,
+  };
+};
 
 const mergeProxies = (
   proxyKeys: ProxyKeys,
@@ -136,6 +151,8 @@ export const UserDialog: FC<UserDialogProps> = () => {
     resolver: zodResolver(schema),
   });
 
+  console.log(form.formState.errors);
+
   const [dataLimit] = useWatch({
     control: form.control,
     name: ["data_limit"],
@@ -152,6 +169,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
     const methods = { edited: editUser, created: createUser };
     const method = isEditing ? "edited" : "created";
     setError(null);
+
     let body: UserCreate = {
       ...values,
       data_limit: values.data_limit,
@@ -163,8 +181,9 @@ export const UserDialog: FC<UserDialogProps> = () => {
       status:
         values.status === "active" || values.status === "disabled"
           ? values.status
-          : undefined,
+          : "active",
     };
+
     methods[method](body)
       .then(() => {
         toast({
@@ -211,308 +230,315 @@ export const UserDialog: FC<UserDialogProps> = () => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl">
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
-      <ModalContent mx="3">
-        <form onSubmit={form.handleSubmit(submit)}>
-          <ModalHeader pt={6}>
-            <HStack gap={2}>
-              <Icon color="primary">
-                {isEditing ? (
-                  <EditUserIcon color="white" />
-                ) : (
-                  <AddUserIcon color="white" />
-                )}
-              </Icon>
-              <Text fontWeight="semibold" fontSize="lg">
-                {isEditing ? "Edit" : "Create new"} user
-              </Text>
-            </HStack>
-          </ModalHeader>
-          <ModalCloseButton mt={3} disabled={disabled} />
-          <ModalBody>
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3} mt={4}>
-              <VStack justifyContent="space-between">
-                <Flex
-                  flexDirection="column"
-                  gridAutoRows="min-content"
-                  w="full"
-                >
-                  <FormControl mb={"10px"}>
-                    <FormLabel>Username</FormLabel>
-                    <HStack>
-                      <Input
-                        size="sm"
-                        type="text"
-                        borderRadius="6px"
-                        error={form.formState.errors.username?.message}
-                        disabled={disabled || isEditing}
-                        {...form.register("username")}
-                      />
-                      {isEditing &&
-                        <HStack px={1}>
-                          <Controller
-                            name="status"
-                            control={form.control}
-                            render={({ field }) => {
-                              return (
-                                <Tooltip
-                                  placement="top"
-                                  label={'status: ' + field.value}
-                                  textTransform="capitalize"
-                                >
-                                  <Box>
-                                    <Switch
-                                      colorScheme="primary"
-                                      disabled={
-                                        field.value !== "active" &&
-                                        field.value !== "disabled"
-                                      }
-                                      isChecked={field.value === "active"}
-                                      onChange={(e) => {
-                                        if (e.target.checked) {
-                                          field.onChange("active");
-                                        } else {
-                                          field.onChange("disabled");
-                                        }
-                                      }}
-                                    />
-                                  </Box>
-                                </Tooltip>
-                              );
-                            }}
-                          />
-                        </HStack>
-                      }
-
-                    </HStack>
-                  </FormControl>
-                  <FormControl mb={"10px"}>
-                    <FormLabel>Data Limit</FormLabel>
-                    <Controller
-                      control={form.control}
-                      name="data_limit"
-                      render={({ field }) => {
-                        return (
-                          <Input
-                            endAdornment="GB"
-                            type="number"
-                            size="sm"
-                            borderRadius="6px"
-                            onChange={field.onChange}
-                            disabled={disabled}
-                            error={form.formState.errors.data_limit?.message}
-                            value={field.value ? String(field.value) : ""}
-                          />
-                        );
-                      }}
-                    />
-                  </FormControl>
-                  <Collapse
-                    in={!!(dataLimit && dataLimit > 0)}
-                    animateOpacity
-                    style={{ width: "100%" }}
+      <FormProvider {...form}>
+        <ModalContent mx="3">
+          <form onSubmit={form.handleSubmit(submit)}>
+            <ModalHeader pt={6}>
+              <HStack gap={2}>
+                <Icon color="primary">
+                  {isEditing ? (
+                    <EditUserIcon color="white" />
+                  ) : (
+                    <AddUserIcon color="white" />
+                  )}
+                </Icon>
+                <Text fontWeight="semibold" fontSize="lg">
+                  {isEditing ? "Edit" : "Create new"} user
+                </Text>
+              </HStack>
+            </ModalHeader>
+            <ModalCloseButton mt={3} disabled={disabled} />
+            <ModalBody>
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3} mt={4}>
+                <VStack justifyContent="space-between">
+                  <Flex
+                    flexDirection="column"
+                    gridAutoRows="min-content"
+                    w="full"
                   >
-                    <FormControl height="66px">
-                      <FormLabel>Periodic Usage Reset</FormLabel>
+                    <FormControl mb={"10px"}>
+                      <FormLabel>Username</FormLabel>
+                      <HStack>
+                        <Input
+                          size="sm"
+                          type="text"
+                          borderRadius="6px"
+                          error={form.formState.errors.username?.message}
+                          disabled={disabled || isEditing}
+                          {...form.register("username")}
+                        />
+                        {isEditing && (
+                          <HStack px={1}>
+                            <Controller
+                              name="status"
+                              control={form.control}
+                              render={({ field }) => {
+                                return (
+                                  <Tooltip
+                                    placement="top"
+                                    label={"status: " + field.value}
+                                    textTransform="capitalize"
+                                  >
+                                    <Box>
+                                      <Switch
+                                        colorScheme="primary"
+                                        disabled={
+                                          field.value !== "active" &&
+                                          field.value !== "disabled"
+                                        }
+                                        isChecked={field.value === "active"}
+                                        onChange={(e) => {
+                                          if (e.target.checked) {
+                                            field.onChange("active");
+                                          } else {
+                                            field.onChange("disabled");
+                                          }
+                                        }}
+                                      />
+                                    </Box>
+                                  </Tooltip>
+                                );
+                              }}
+                            />
+                          </HStack>
+                        )}
+                      </HStack>
+                    </FormControl>
+                    <FormControl mb={"10px"}>
+                      <FormLabel>Data Limit</FormLabel>
                       <Controller
                         control={form.control}
-                        name="data_limit_reset_strategy"
+                        name="data_limit"
                         render={({ field }) => {
                           return (
-                            <Select size="sm" {...field}>
-                              {resetStrategy.map((s) => {
-                                return (
-                                  <option key={s.value} value={s.value}>
-                                    {s.title}
-                                  </option>
-                                );
-                              })}
-                            </Select>
+                            <Input
+                              endAdornment="GB"
+                              type="number"
+                              size="sm"
+                              borderRadius="6px"
+                              onChange={field.onChange}
+                              disabled={disabled}
+                              error={form.formState.errors.data_limit?.message}
+                              value={field.value ? String(field.value) : ""}
+                            />
                           );
                         }}
                       />
                     </FormControl>
-                  </Collapse>
-                  <FormControl mb={"10px"}>
-                    <FormLabel>Expiry Date</FormLabel>
-                    <Controller
-                      name="expire"
-                      control={form.control}
-                      render={({ field }) => {
-                        function createDateAsUTC(num: number) {
-                          return dayjs(
-                            dayjs(num * 1000)
-                              .utc()
-                              .format("MMMM D, YYYY")
-                          ).toDate();
-                        }
-                        return (
-                          <>
-                            <ReactDatePicker
-                              dateFormat="MMMM d, yyy"
-                              minDate={new Date()}
-                              selected={
-                                field.value
-                                  ? createDateAsUTC(field.value)
-                                  : undefined
-                              }
-                              onChange={(date: Date) => {
-                                field.onChange({
-                                  target: {
-                                    value: date
-                                      ? dayjs(
-                                        dayjs(date)
-                                          .set("hour", 23)
-                                          .set("minute", 59)
-                                          .set("second", 59)
-                                      )
-                                        .utc()
-                                        .valueOf() / 1000
-                                      : 0,
-                                    name: "expire",
-                                  },
-                                });
-                              }}
-                              customInput={
-                                <Input
-                                  size="sm"
-                                  type="text"
-                                  borderRadius="6px"
-                                  clearable
-                                  disabled={disabled}
-                                  error={form.formState.errors.expire?.message}
-                                />
-                              }
-                            />
-                            {field.value ? (
-                              <FormHelperText>
-                                {relativeExpiryDate(field.value)}
-                              </FormHelperText>
-                            ) : (
-                              ""
-                            )}
-                          </>
-                        );
-                      }}
-                    />
-                  </FormControl>
-
-                </Flex>
-                {error && (
-                  <Alert status="error" display={{ base: "none", md: "flex" }}>
-                    <AlertIcon />
-                    {error}
-                  </Alert>
-                )}
-              </VStack>
-              <FormControl isInvalid={!!form.formState.errors.proxies?.message}>
-                <FormLabel>Protocols</FormLabel>
-                <Controller
-                  control={form.control}
-                  name="proxies"
-                  render={({ field }) => {
-                    return (
-                      <RadioGroup
-                        list={[
-                          {
-                            title: "vmess",
-                            description: "Fast and secure",
-                          },
-                          {
-                            title: "vless",
-                            description: "Lightweight, fast and secure",
-                          },
-                          {
-                            title: "trojan",
-                            description:
-                              "Lightweight, secure and lightening fast",
-                          },
-                          {
-                            title: "shadowsocks",
-                            description:
-                              "Fast and secure, but not efficient as others",
-                          },
-                        ]}
-                        disabled={disabled}
-                        {...field}
+                    <Collapse
+                      in={!!(dataLimit && dataLimit > 0)}
+                      animateOpacity
+                      style={{ width: "100%" }}
+                    >
+                      <FormControl height="66px">
+                        <FormLabel>Periodic Usage Reset</FormLabel>
+                        <Controller
+                          control={form.control}
+                          name="data_limit_reset_strategy"
+                          render={({ field }) => {
+                            return (
+                              <Select size="sm" {...field}>
+                                {resetStrategy.map((s) => {
+                                  return (
+                                    <option key={s.value} value={s.value}>
+                                      {s.title}
+                                    </option>
+                                  );
+                                })}
+                              </Select>
+                            );
+                          }}
+                        />
+                      </FormControl>
+                    </Collapse>
+                    <FormControl mb={"10px"}>
+                      <FormLabel>Expiry Date</FormLabel>
+                      <Controller
+                        name="expire"
+                        control={form.control}
+                        render={({ field }) => {
+                          function createDateAsUTC(num: number) {
+                            return dayjs(
+                              dayjs(num * 1000)
+                                .utc()
+                                .format("MMMM D, YYYY")
+                            ).toDate();
+                          }
+                          return (
+                            <>
+                              <ReactDatePicker
+                                dateFormat="MMMM d, yyy"
+                                minDate={new Date()}
+                                selected={
+                                  field.value
+                                    ? createDateAsUTC(field.value)
+                                    : undefined
+                                }
+                                onChange={(date: Date) => {
+                                  field.onChange({
+                                    target: {
+                                      value: date
+                                        ? dayjs(
+                                            dayjs(date)
+                                              .set("hour", 23)
+                                              .set("minute", 59)
+                                              .set("second", 59)
+                                          )
+                                            .utc()
+                                            .valueOf() / 1000
+                                        : 0,
+                                      name: "expire",
+                                    },
+                                  });
+                                }}
+                                customInput={
+                                  <Input
+                                    size="sm"
+                                    type="text"
+                                    borderRadius="6px"
+                                    clearable
+                                    disabled={disabled}
+                                    error={
+                                      form.formState.errors.expire?.message
+                                    }
+                                  />
+                                }
+                              />
+                              {field.value ? (
+                                <FormHelperText>
+                                  {relativeExpiryDate(field.value)}
+                                </FormHelperText>
+                              ) : (
+                                ""
+                              )}
+                            </>
+                          );
+                        }}
                       />
-                    );
-                  }}
-                />
-                <FormErrorMessage>
-                  {form.formState.errors.proxies?.message}
-                </FormErrorMessage>
-              </FormControl>
-            </SimpleGrid>
-            {error && (
-              <Alert
-                mt="3"
-                status="error"
-                display={{ base: "flex", md: "none" }}
-              >
-                <AlertIcon />
-                {error}
-              </Alert>
-            )}
-          </ModalBody>
-          <ModalFooter mt="3">
-            <HStack
-              justifyContent="space-between"
-              w="full"
-              gap={3}
-              flexDirection={{
-                base: "column",
-                sm: "row",
-              }}
-            >
+                    </FormControl>
+                  </Flex>
+                  {error && (
+                    <Alert
+                      status="error"
+                      display={{ base: "none", md: "flex" }}
+                    >
+                      <AlertIcon />
+                      {error}
+                    </Alert>
+                  )}
+                </VStack>
+                <FormControl
+                  isInvalid={!!form.formState.errors.proxies?.message}
+                >
+                  <FormLabel>Protocols</FormLabel>
+                  <Controller
+                    control={form.control}
+                    name="proxies"
+                    render={({ field }) => {
+                      return (
+                        <RadioGroup
+                          list={[
+                            {
+                              title: "vmess",
+                              description: "Fast and secure",
+                            },
+                            {
+                              title: "vless",
+                              description: "Lightweight, fast and secure",
+                            },
+                            {
+                              title: "trojan",
+                              description:
+                                "Lightweight, secure and lightening fast",
+                            },
+                            {
+                              title: "shadowsocks",
+                              description:
+                                "Fast and secure, but not efficient as others",
+                            },
+                          ]}
+                          disabled={disabled}
+                          {...field}
+                        />
+                      );
+                    }}
+                  />
+                  <FormErrorMessage>
+                    {form.formState.errors.proxies?.message}
+                  </FormErrorMessage>
+                </FormControl>
+              </SimpleGrid>
+              {error && (
+                <Alert
+                  mt="3"
+                  status="error"
+                  display={{ base: "flex", md: "none" }}
+                >
+                  <AlertIcon />
+                  {error}
+                </Alert>
+              )}
+            </ModalBody>
+            <ModalFooter mt="3">
               <HStack
-                justifyContent="flex-start"
-                w={{
-                  base: "full",
-                  sm: "unset",
+                justifyContent="space-between"
+                w="full"
+                gap={3}
+                flexDirection={{
+                  base: "column",
+                  sm: "row",
                 }}
               >
-                {isEditing && (
-                  <>
-                    <Tooltip label="Delete" placement="top">
-                      <IconButton
-                        aria-label="Delete"
-                        size="sm"
-                        onClick={() => onDeletingUser(editingUser)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Button onClick={handleResetUsage} size="sm">
-                      Reset Usage
-                    </Button>
-                  </>
-                )}
-              </HStack>
-              <HStack w="full" maxW={{ md: "50%", base: "full" }}>
-                <Button
-                  onClick={onClose}
-                  size="sm"
-                  variant="outline"
-                  w="full"
-                  disabled={disabled}
+                <HStack
+                  justifyContent="flex-start"
+                  w={{
+                    base: "full",
+                    sm: "unset",
+                  }}
                 >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  colorScheme="primary"
-                  leftIcon={loading ? <Spinner size="xs" /> : undefined}
-                  w="full"
-                  disabled={disabled}
-                >
-                  {isEditing ? "Edit user" : "Create user"}
-                </Button>
+                  {isEditing && (
+                    <>
+                      <Tooltip label="Delete" placement="top">
+                        <IconButton
+                          aria-label="Delete"
+                          size="sm"
+                          onClick={() => onDeletingUser(editingUser)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Button onClick={handleResetUsage} size="sm">
+                        Reset Usage
+                      </Button>
+                    </>
+                  )}
+                </HStack>
+                <HStack w="full" maxW={{ md: "50%", base: "full" }}>
+                  <Button
+                    onClick={onClose}
+                    size="sm"
+                    variant="outline"
+                    w="full"
+                    disabled={disabled}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    colorScheme="primary"
+                    leftIcon={loading ? <Spinner size="xs" /> : undefined}
+                    w="full"
+                    disabled={disabled}
+                  >
+                    {isEditing ? "Edit user" : "Create user"}
+                  </Button>
+                </HStack>
               </HStack>
-            </HStack>
-          </ModalFooter>
-        </form>
-      </ModalContent>
+            </ModalFooter>
+          </form>
+        </ModalContent>
+      </FormProvider>
     </Modal>
   );
 };

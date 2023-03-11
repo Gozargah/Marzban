@@ -20,6 +20,9 @@ export type DataLimitResetStrategy =
   | "month"
   | "year";
 
+export type UserInbounds = {
+  [key: string]: string[];
+};
 export type User = {
   proxies: ProxyType;
   expire: number | null;
@@ -31,16 +34,16 @@ export type User = {
   status: UserStatus;
   links: string[];
   subscription_url: string;
+  inbounds: UserInbounds;
 };
 
-export type UserCreate = Partial<
-  Pick<
-    User,
-    | "proxies"
-    | "expire"
-    | "data_limit"
-    | "username"
-    | "data_limit_reset_strategy"
-    | "status"
-  >
+export type UserCreate = Pick<
+  User,
+  | "inbounds"
+  | "proxies"
+  | "expire"
+  | "data_limit"
+  | "data_limit_reset_strategy"
+  | "username"
+  | "status"
 >;

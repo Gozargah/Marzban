@@ -138,8 +138,6 @@ const AccordionInbound: FC<AccordionInboundType> = ({
   };
   useEffect(() => {
     if (accordionErrors && !isOpen) {
-      console.log(accordionErrors);
-      console.log(form.getValues(hostKey));
       toggleAccordion();
     }
   }, [accordionErrors]);

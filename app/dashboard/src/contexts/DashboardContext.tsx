@@ -1,4 +1,3 @@
-import { Filter } from "rollup-plugin-visualizer/dist/shared/create-filter";
 import { fetch } from "service/http";
 import { mutate as globalMutate } from "swr";
 import { User, UserCreate } from "types/User";
@@ -11,6 +10,16 @@ export type FilterType = {
   sort: string;
   status?: "active" | "disabled" | "limited" | "expired";
 };
+export type ProtocolType = "vmess" | "vless" | "trojan" | "shadowsocks";
+
+export type InboundType = {
+  tag: string;
+  protocol: ProtocolType;
+  network: string;
+  tls: boolean;
+  port: number;
+};
+export type Inbounds = Map<ProtocolType, InboundType[]>;
 
 type DashboardStateType = {
   isCreatingNewUser: boolean;
@@ -20,6 +29,7 @@ type DashboardStateType = {
     users: User[];
     total: number;
   };
+  inbounds: Inbounds;
   loading: boolean;
   filters: FilterType;
   subscribeUrl: string | null;
@@ -49,6 +59,18 @@ const fetchUsers = (query: FilterType): Promise<User[]> => {
     .then((users) => {
       useDashboard.setState({ users });
       return users;
+    })
+    .finally(() => {
+      useDashboard.setState({ loading: false });
+    });
+};
+
+export const fetchInbounds = () => {
+  return fetch("/inbounds")
+    .then((inbounds: Inbounds) => {
+      useDashboard.setState({
+        inbounds: new Map(Object.entries(inbounds)) as Inbounds,
+      });
     })
     .finally(() => {
       useDashboard.setState({ loading: false });
@@ -105,6 +127,7 @@ export const useDashboard = create<DashboardStateType>((set, get) => ({
   isEditingHosts: false,
   resetUsageUser: null,
   filters: { username: "", limit: 10, sort: "-created_at" },
+  inbounds: new Map(),
   refetchUsers: () => {
     fetchUsers(get().filters);
   },
