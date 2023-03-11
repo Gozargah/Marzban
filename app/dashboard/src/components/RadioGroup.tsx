@@ -325,7 +325,7 @@ const RadioCard: FC<
         pt={3}
       >
         <SimpleGrid gap={2} alignItems="flex-start" columns={1} spacing={1}>
-          {(inbounds.get(title as ProtocolType) as InboundType[]).map(
+          {((inbounds.get(title as ProtocolType) as InboundType[]) || []).map(
             (inbound) => {
               return (
                 <InboundCard
