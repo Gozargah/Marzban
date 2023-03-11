@@ -127,7 +127,8 @@ const InboundCard: FC<
           >
             <Text isTruncated {...getLabelProps()} fontSize="xs">
               {inbound.tag}
-              <Text as="span">{inbound.network}</Text>
+              {' '}
+              <Text as="span">({inbound.network})</Text>
             </Text>
             {inbound.tls && (
               <Badge fontSize="xs" opacity=".8" size="xs">
