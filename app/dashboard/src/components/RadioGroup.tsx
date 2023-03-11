@@ -120,13 +120,13 @@ const InboundCard: FC<
           <HStack
             justify="space-between"
             w="full"
-            maxW={inbound.tls ? "calc(100% - 20px)" : "full"}
+            maxW="calc(100% - 20px)"
             spacing={0}
             gap={2}
             overflow="hidden"
           >
             <Text isTruncated {...getLabelProps()} fontSize="xs">
-              {inbound.tag} asdf asdf asdf-{" "}
+              {inbound.tag}
               <Text as="span">{inbound.network}</Text>
             </Text>
             {inbound.tls && (
