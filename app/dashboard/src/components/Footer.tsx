@@ -1,4 +1,5 @@
 import { BoxProps, HStack, Link, Text } from "@chakra-ui/react";
+import { ORGANIZATION_URL } from "constants/Project";
 import { FC } from "react";
 
 export const Footer: FC<BoxProps> = (props) => {
@@ -12,7 +13,7 @@ export const Footer: FC<BoxProps> = (props) => {
         fontSize="xs"
       >
         Made with ❤️ in{" "}
-        <Link color="blue.400" href="https://github.com/gozargah">
+        <Link color="blue.400" href={ORGANIZATION_URL}>
           Gozargah
         </Link>
       </Text>
