@@ -81,7 +81,12 @@ const schema = z.object({
   expire: z.number().nullable(),
   data_limit_reset_strategy: z.string(),
   status: z.string(),
-  inbounds: z.record(z.string(), z.array(z.string())),
+  inbounds: z.record(z.string(), z.array(z.string())).transform((ins) => {
+    Object.keys(ins).forEach((protocol) => {
+      if (Array.isArray(ins[protocol]) && !ins[protocol]?.length) delete ins[protocol];
+    })
+    return ins
+  }),
 });
 
 export type UserDialogProps = {};
@@ -388,13 +393,13 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                     target: {
                                       value: date
                                         ? dayjs(
-                                            dayjs(date)
-                                              .set("hour", 23)
-                                              .set("minute", 59)
-                                              .set("second", 59)
-                                          )
-                                            .utc()
-                                            .valueOf() / 1000
+                                          dayjs(date)
+                                            .set("hour", 23)
+                                            .set("minute", 59)
+                                            .set("second", 59)
+                                        )
+                                          .utc()
+                                          .valueOf() / 1000
                                         : 0,
                                       name: "expire",
                                     },
