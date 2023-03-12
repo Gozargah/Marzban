@@ -14,7 +14,7 @@ ecdsa==0.18.0
 fastapi==0.92.0
 fastapi-responses==0.2.1
 greenlet==2.0.1
-grpcio==1.50.0
+grpcio==1.51.3
 grpcio-tools==1.44.0
 h11==0.14.0
 httptools==0.5.0
