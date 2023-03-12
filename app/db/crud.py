@@ -258,7 +258,8 @@ def get_admin(db: Session, username: str):
 def create_admin(db: Session, admin: AdminCreate):
     dbadmin = Admin(
         username=admin.username,
-        hashed_password=admin.hashed_password
+        hashed_password=admin.hashed_password,
+        is_sudo=admin.is_sudo
     )
     db.add(dbadmin)
     db.commit()
@@ -267,6 +268,7 @@ def create_admin(db: Session, admin: AdminCreate):
 
 
 def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify):
+    dbadmin.is_sudo = modified_admin.is_sudo
     dbadmin.hashed_password = modified_admin.hashed_password
     db.commit()
     db.refresh(dbadmin)

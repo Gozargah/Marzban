@@ -17,7 +17,7 @@ class Token(BaseModel):
 
 class Admin(BaseModel):
     username: str
-    is_sudo: bool = False
+    is_sudo: bool
 
     class Config:
         orm_mode = True
@@ -56,6 +56,7 @@ class AdminCreate(Admin):
 
 class AdminModify(BaseModel):
     password: str
+    is_sudo: bool
 
     @property
     def hashed_password(self):

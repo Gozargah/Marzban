@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from app import app, xray
 from app.db import Session, crud, get_db
@@ -15,10 +15,7 @@ from fastapi import Depends, HTTPException
 def get_system_stats(db: Session = Depends(get_db), admin: Admin = Depends(Admin.get_current)):
     mem = memory_usage()
     system = crud.get_system_usage(db)
-
-    dbadmin = None
-    if not admin.is_sudo:
-        dbadmin = crud.get_admin(db, admin.username)
+    dbadmin: Union[Admin, None] = crud.get_admin(db, admin.username)
 
     total_user = crud.get_users_count(db, admin=dbadmin)
     users_active = crud.get_users_count(db, status=UserStatus.active, admin=dbadmin)

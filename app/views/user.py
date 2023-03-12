@@ -33,11 +33,8 @@ def add_user(new_user: UserCreate,
             raise HTTPException(status_code=400, detail=f"Protocol {proxy_type} is disabled on your server")
 
     try:
-        if admin.is_sudo:
-            dbuser = crud.create_user(db, new_user)
-        else:
-            dbuser = crud.create_user(db, new_user,
-                                      admin=crud.get_admin(db, admin.username))
+        dbuser = crud.create_user(db, new_user,
+                                  admin=crud.get_admin(db, admin.username))
     except sqlalchemy.exc.IntegrityError:
         raise HTTPException(status_code=409, detail="User already exists")
 

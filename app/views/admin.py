@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import sqlalchemy
 from app import app
@@ -10,29 +10,29 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 
-def authenticate_sudo(username: str, password: str):
+def authenticate_env_sudo(username: str, password: str) -> bool:
     try:
         return password == SUDOERS[username]
     except KeyError:
         return False
 
 
-def authenticate_admin(db: Session, username: str, password: str):
+def authenticate_admin(db: Session, username: str, password: str) -> Optional[Admin]:
     dbadmin = crud.get_admin(db, username)
     if not dbadmin:
-        return False
-    admin = AdminInDB.from_orm(dbadmin)
-    return admin.verify_password(password)
+        return None
+
+    return dbadmin if AdminInDB.from_orm(dbadmin).verify_password(password) else None
 
 
 @app.post("/api/admin/token", tags=['Admin'], response_model=Token)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
                            db: Session = Depends(get_db)):
-    if authenticate_sudo(form_data.username, form_data.password):
+    if authenticate_env_sudo(form_data.username, form_data.password):
         return Token(access_token=create_admin_token(form_data.username, is_sudo=True))
 
-    if authenticate_admin(db, form_data.username, form_data.password):
-        return Token(access_token=create_admin_token(form_data.username))
+    if dbadmin := authenticate_admin(db, form_data.username, form_data.password):
+        return Token(access_token=create_admin_token(form_data.username, is_sudo=dbadmin.is_sudo))
 
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -41,7 +41,7 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
     )
 
 
-@ app.post("/api/admin", tags=['Admin'], response_model=Admin)
+@app.post("/api/admin", tags=['Admin'], response_model=Admin)
 def create_admin(new_admin: AdminCreate,
                  db: Session = Depends(get_db),
                  admin: Admin = Depends(Admin.get_current)):
@@ -57,7 +57,7 @@ def create_admin(new_admin: AdminCreate,
     return dbadmin
 
 
-@ app.put("/api/admin/{username}", tags=['Admin'], response_model=Admin)
+@app.put("/api/admin/{username}", tags=['Admin'], response_model=Admin)
 def modify_admin(username: str,
                  modified_admin: AdminModify,
                  db: Session = Depends(get_db),
@@ -65,15 +65,26 @@ def modify_admin(username: str,
     if not (admin.is_sudo or admin.username == username):
         raise HTTPException(status_code=403, detail="You're not allowed")
 
+    # If a non-sudoer admin is making itself a sudoer
+    if (admin.username == username) and (modified_admin.is_sudo and not admin.is_sudo):
+        raise HTTPException(status_code=403, detail="You can't make yourself sudoer!")
+
     dbadmin = crud.get_admin(db, username)
     if not dbadmin:
         raise HTTPException(status_code=404, detail="Admin not found")
+
+    # If a sudoer admin wants to edit another sudoer
+    if (username != admin.username) and dbadmin.is_sudo:
+        raise HTTPException(
+            status_code=403,
+            detail=("You're not allowed to edit another sudoers account. Use marzban-cli instead.",),
+        )
 
     dbadmin = crud.update_admin(db, dbadmin, modified_admin)
     return dbadmin
 
 
-@ app.delete("/api/admin/{username}", tags=['Admin'])
+@app.delete("/api/admin/{username}", tags=['Admin'])
 def remove_admin(username: str,
                  db: Session = Depends(get_db),
                  admin: Admin = Depends(Admin.get_current)):
@@ -84,16 +95,22 @@ def remove_admin(username: str,
     if not dbadmin:
         raise HTTPException(status_code=404, detail="Admin not found")
 
+    if dbadmin.is_sudo:
+        raise HTTPException(
+            status_code=403,
+            detail=("You're not allowed to delete sudoers accounts. Use marzban-cli instead."),
+        )
+
     dbadmin = crud.remove_admin(db, dbadmin)
     return {}
 
 
-@ app.get("/api/admin", tags=['Admin'], response_model=Admin)
+@app.get("/api/admin", tags=["Admin"], response_model=Admin)
 def get_current_admin(admin: Admin = Depends(Admin.get_current)):
     return admin
 
 
-@ app.get("/api/admins", tags=['Admin'], response_model=List[Admin])
+@app.get("/api/admins", tags=['Admin'], response_model=List[Admin])
 def get_admins(offset: int = None,
                limit: int = None,
                username: str = None,

@@ -15,6 +15,7 @@ from sqlalchemy import (
     Integer,
     String,
     Table,
+    Boolean,
     UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
@@ -28,6 +29,7 @@ class Admin(Base):
     hashed_password = Column(String(128))
     users = relationship("User", back_populates="admin")
     created_at = Column(DateTime, default=datetime.utcnow)
+    is_sudo = Column(Boolean, default=False)
 
 
 class User(Base):
