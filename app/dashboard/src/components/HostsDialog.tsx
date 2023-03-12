@@ -88,8 +88,8 @@ const hostsSchema = z.record(
             return Number(parseInt(value));
           return null;
         }),
-      sni: z.string(),
-      host: z.string(),
+      sni: z.string().nullable(),
+      host: z.string().nullable(),
       security: z.string(),
     })
   )
