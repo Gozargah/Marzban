@@ -33,7 +33,7 @@ pydantic==1.10.2
 pyparsing==3.0.9
 pyTelegramBotAPI==4.9.0
 python-decouple==3.6
-python-dotenv==0.21.0
+python-dotenv==1.0.0
 python-jose==3.3.0
 python-multipart==0.0.5
 pytz==2022.6
