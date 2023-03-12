@@ -2,6 +2,7 @@ import { fetch } from "service/http";
 import { mutate as globalMutate } from "swr";
 import { User, UserCreate } from "types/User";
 import { create } from "zustand";
+import { subscribeWithSelector } from "zustand/middleware";
 
 export type FilterType = {
   username?: string;
@@ -113,76 +114,80 @@ export const useHosts = create<HostsStore>((set) => ({
   },
 }));
 
-export const useDashboard = create<DashboardStateType>((set, get) => ({
-  editingUser: null,
-  deletingUser: null,
-  isCreatingNewUser: false,
-  QRcodeLinks: null,
-  subscribeUrl: null,
-  users: {
-    users: [],
-    total: 0,
-  },
-  loading: true,
-  isEditingHosts: false,
-  resetUsageUser: null,
-  filters: { username: "", limit: 10, sort: "-created_at" },
-  inbounds: new Map(),
-  refetchUsers: () => {
-    fetchUsers(get().filters);
-  },
-  onCreateUser: (isCreatingNewUser) => set({ isCreatingNewUser }),
-  onEditingUser: (editingUser) => {
-    set({ editingUser });
-  },
-  onDeletingUser: (deletingUser) => {
-    set({ deletingUser });
-  },
-  onFilterChange: (filters) => {
-    set({
-      filters: {
-        ...get().filters,
-        ...filters,
-      },
-    });
-    get().refetchUsers();
-  },
-  setQRCode: (QRcodeLinks) => {
-    set({ QRcodeLinks });
-  },
-  deleteUser: (user: User) => {
-    set({ editingUser: null });
-    return fetch(`/user/${user.username}`, { method: "DELETE" }).then(() => {
-      set({ deletingUser: null });
+export const useDashboard = create(
+  subscribeWithSelector<DashboardStateType>((set, get) => ({
+    editingUser: null,
+    deletingUser: null,
+    isCreatingNewUser: false,
+    QRcodeLinks: null,
+    subscribeUrl: null,
+    users: {
+      users: [],
+      total: 0,
+    },
+    loading: true,
+    isEditingHosts: false,
+    resetUsageUser: null,
+    filters: { username: "", limit: 10, sort: "-created_at" },
+    inbounds: new Map(),
+    refetchUsers: () => {
+      fetchUsers(get().filters);
+    },
+    onCreateUser: (isCreatingNewUser) => set({ isCreatingNewUser }),
+    onEditingUser: (editingUser) => {
+      set({ editingUser });
+    },
+    onDeletingUser: (deletingUser) => {
+      set({ deletingUser });
+    },
+    onFilterChange: (filters) => {
+      set({
+        filters: {
+          ...get().filters,
+          ...filters,
+        },
+      });
       get().refetchUsers();
-      globalMutate("/system");
-    });
-  },
-  createUser: (body: UserCreate) => {
-    return fetch(`/user`, { method: "POST", body }).then(() => {
+    },
+    setQRCode: (QRcodeLinks) => {
+      set({ QRcodeLinks });
+    },
+    deleteUser: (user: User) => {
       set({ editingUser: null });
-      get().refetchUsers();
-      globalMutate("/system");
-    });
-  },
-  editUser: (body: UserCreate) => {
-    return fetch(`/user/${body.username}`, { method: "PUT", body }).then(() => {
-      get().onEditingUser(null);
-      get().refetchUsers();
-    });
-  },
-  onEditingHosts: (isEditingHosts: boolean) => {
-    set({ isEditingHosts });
-  },
-  setSubLink: (subscribeUrl) => {
-    set({ subscribeUrl });
-  },
-  resetDataUsage: (user) => {
-    return fetch(`/user/${user.username}/reset`, { method: "POST" }).then(
-      () => {
-        set({ resetUsageUser: null });
+      return fetch(`/user/${user.username}`, { method: "DELETE" }).then(() => {
+        set({ deletingUser: null });
         get().refetchUsers();
-      }
-    );
-  },
-}));
+        globalMutate("/system");
+      });
+    },
+    createUser: (body: UserCreate) => {
+      return fetch(`/user`, { method: "POST", body }).then(() => {
+        set({ editingUser: null });
+        get().refetchUsers();
+        globalMutate("/system");
+      });
+    },
+    editUser: (body: UserCreate) => {
+      return fetch(`/user/${body.username}`, { method: "PUT", body }).then(
+        () => {
+          get().onEditingUser(null);
+          get().refetchUsers();
+        }
+      );
+    },
+    onEditingHosts: (isEditingHosts: boolean) => {
+      set({ isEditingHosts });
+    },
+    setSubLink: (subscribeUrl) => {
+      set({ subscribeUrl });
+    },
+    resetDataUsage: (user) => {
+      return fetch(`/user/${user.username}/reset`, { method: "POST" }).then(
+        () => {
+          set({ resetUsageUser: null });
+          get().refetchUsers();
+        }
+      );
+    },
+  }))
+);

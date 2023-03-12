@@ -111,9 +111,7 @@ const InboundCard: FC<
             overflow="hidden"
           >
             <Text isTruncated {...getLabelProps()} fontSize="xs">
-              {inbound.tag}
-              {' '}
-              <Text as="span">({inbound.network})</Text>
+              {inbound.tag} <Text as="span">({inbound.network})</Text>
             </Text>
             {inbound.tls && (
               <Badge fontSize="xs" opacity=".8" size="xs">
@@ -182,7 +180,7 @@ const RadioCard: FC<
     (useDashboard.getState().inbounds.get(title as ProtocolType) || []).length >
     0;
 
-  const shouldBeDisabled = !protocolHasInbound;
+  const shouldBeDisabled = !isSelected && !protocolHasInbound;
 
   return (
     <AccordionItem border={0} isDisabled={!protocolHasInbound}>

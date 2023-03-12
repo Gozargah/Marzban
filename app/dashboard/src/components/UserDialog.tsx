@@ -104,7 +104,7 @@ const getDefaultValues = (): FormType => {
     inbounds[key] = defaultInbounds[key].map((i) => i.tag);
   }
   return {
-    proxies: ["vmess", "vless", "trojan"] as ProxyKeys,
+    proxies: Object.keys(defaultInbounds) as ProxyKeys,
     data_limit: null,
     expire: null,
     username: "",
@@ -150,6 +150,17 @@ export const UserDialog: FC<UserDialogProps> = () => {
     defaultValues: getDefaultValues(),
     resolver: zodResolver(schema),
   });
+
+  useEffect(
+    () =>
+      useDashboard.subscribe(
+        (state) => state.inbounds,
+        () => {
+          form.reset(getDefaultValues());
+        }
+      ),
+    []
+  );
 
   const [dataLimit] = useWatch({
     control: form.control,
