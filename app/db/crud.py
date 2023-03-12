@@ -15,7 +15,7 @@ from app.models.user import (UserCreate, UserDataLimitResetStrategy,
 
 
 def add_default_host(db: Session, inbound: ProxyInbound):
-    host = ProxyHost(remark="🚀 Marz ({USERNAME})", address="{SERVER_IP}", inbound=inbound)
+    host = ProxyHost(remark="🚀 Marz ({USERNAME}) [{TRANSPORT}]", address="{SERVER_IP}", inbound=inbound)
     db.add(host)
     db.commit()
 
