@@ -14,20 +14,32 @@ from app.models.user import (UserCreate, UserDataLimitResetStrategy,
                              UserModify, UserStatus)
 
 
+def add_default_host(db: Session, inbound: ProxyInbound):
+    host = ProxyHost(remark="🚀 Marz ({USERNAME})", address="{SERVER_IP}", inbound=inbound)
+    db.add(host)
+    db.commit()
+
+
 def get_or_create_inbound(db: Session, inbound_tag: str):
     inbound = db.query(ProxyInbound).filter(ProxyInbound.tag == inbound_tag).first()
     if not inbound:
         inbound = ProxyInbound(tag=inbound_tag)
         db.add(inbound)
-        host = ProxyHost(remark="🚀 Marz ({USERNAME})", address="{SERVER_IP}", inbound=inbound)
-        db.add(host)
         db.commit()
+        add_default_host(db, inbound)
         db.refresh(inbound)
+    elif not inbound.hosts:
+        add_default_host(db, inbound)
+        db.refresh(inbound)
+
     return inbound
 
 
 def get_hosts(db: Session, inbound_tag: str):
     inbound = get_or_create_inbound(db, inbound_tag)
+    if not inbound.hosts:
+        add_default_host(db, inbound)
+        db.refresh(inbound)
     return inbound.hosts
 
 
