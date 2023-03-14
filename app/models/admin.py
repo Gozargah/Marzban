@@ -1,3 +1,4 @@
+from typing import Optional
 from app.db import Session, crud, get_db
 from app.utils.jwt import get_admin_payload
 from config import SUDOERS
@@ -61,6 +62,10 @@ class AdminModify(BaseModel):
     @property
     def hashed_password(self):
         return pwd_context.hash(self.password)
+
+
+class AdminPartialModify(AdminModify):
+    __annotations__ = {k: Optional[v] for k, v in AdminModify.__annotations__.items()}
 
 
 class AdminInDB(Admin):

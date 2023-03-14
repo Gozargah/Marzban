@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.db.models import (JWT, Admin, Proxy, ProxyHost, ProxyInbound, System,
                            User, UserUsageResetLogs)
-from app.models.admin import AdminCreate, AdminModify
+from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
 from app.models.proxy import ProxyHost as ProxyHostModify
 from app.models.user import (UserCreate, UserDataLimitResetStrategy,
                              UserModify, UserStatus)
@@ -270,6 +270,17 @@ def create_admin(db: Session, admin: AdminCreate):
 def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify):
     dbadmin.is_sudo = modified_admin.is_sudo
     dbadmin.hashed_password = modified_admin.hashed_password
+    db.commit()
+    db.refresh(dbadmin)
+    return dbadmin
+
+
+def partial_update_admin(db: Session, dbadmin: Admin, modified_admin: AdminPartialModify):
+    if modified_admin.is_sudo is not None:
+        dbadmin.is_sudo = modified_admin.is_sudo
+    if modified_admin.password is not None:
+        dbadmin.hashed_password = modified_admin.hashed_password
+
     db.commit()
     db.refresh(dbadmin)
     return dbadmin
