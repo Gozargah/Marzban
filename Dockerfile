@@ -12,7 +12,7 @@ RUN curl -L https://github.com/Gozargah/Marzban-scripts/raw/master/install_lates
 
 COPY . /code
 
-RUN pip install --upgrade -r /code/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 RUN apt-get remove -y curl unzip gcc python3-dev
 
