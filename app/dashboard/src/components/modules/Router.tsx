@@ -1,4 +1,4 @@
-import { createHashRouter } from "react-router-dom";
+import { createBrowserRouter, createHashRouter } from "react-router-dom";
 import { Dashboard } from "../../pages/Dashboard";
 import { Login } from "../../pages/Login";
 import { fetch } from "../../service/http";
@@ -12,7 +12,7 @@ const fetchAdminLoader = () => {
   });
 };
 
-export const router = createHashRouter(
+export const router = createBrowserRouter(
   [
     {
       path: "/",
