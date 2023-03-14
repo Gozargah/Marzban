@@ -84,8 +84,8 @@ type HostsSchema = Record<
     remark: string;
     address: string;
     port: number | null;
-    sni: string;
-    host: string;
+    sni: string | null;
+    host: string | null;
   }[]
 >;
 
