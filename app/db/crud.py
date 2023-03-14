@@ -282,12 +282,12 @@ def remove_admin(db: Session, dbadmin: Admin):
 
 
 def get_admins(db: Session,
-               offset: int = None,
-               limit: int = None,
-               username: str = None):
+               offset: Optional[int] = None,
+               limit: Optional[int] = None,
+               username: Optional[str] = None):
     query = db.query(Admin)
     if username:
-        query = query.filter(User.username.ilike(f'%{username}%'))
+        query = query.filter(Admin.username.ilike(f'%{username}%'))
     if offset:
         query = query.offset(offset)
     if limit:
