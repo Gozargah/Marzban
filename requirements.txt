@@ -57,3 +57,5 @@ websockets==10.4
 wrapt==1.14.1
 zipp==3.10.0
 python-dateutil==2.8.2
+typer==0.7.0
+rich==13.3.2

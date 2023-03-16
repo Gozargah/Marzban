@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.db.models import (JWT, Admin, Proxy, ProxyHost, ProxyInbound, System,
                            User, UserUsageResetLogs)
-from app.models.admin import AdminCreate, AdminModify
+from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
 from app.models.proxy import ProxyHost as ProxyHostModify
 from app.models.user import (UserCreate, UserDataLimitResetStrategy,
                              UserModify, UserStatus)
@@ -258,7 +258,8 @@ def get_admin(db: Session, username: str):
 def create_admin(db: Session, admin: AdminCreate):
     dbadmin = Admin(
         username=admin.username,
-        hashed_password=admin.hashed_password
+        hashed_password=admin.hashed_password,
+        is_sudo=admin.is_sudo
     )
     db.add(dbadmin)
     db.commit()
@@ -267,7 +268,19 @@ def create_admin(db: Session, admin: AdminCreate):
 
 
 def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify):
+    dbadmin.is_sudo = modified_admin.is_sudo
     dbadmin.hashed_password = modified_admin.hashed_password
+    db.commit()
+    db.refresh(dbadmin)
+    return dbadmin
+
+
+def partial_update_admin(db: Session, dbadmin: Admin, modified_admin: AdminPartialModify):
+    if modified_admin.is_sudo is not None:
+        dbadmin.is_sudo = modified_admin.is_sudo
+    if modified_admin.password is not None:
+        dbadmin.hashed_password = modified_admin.hashed_password
+
     db.commit()
     db.refresh(dbadmin)
     return dbadmin
@@ -280,12 +293,12 @@ def remove_admin(db: Session, dbadmin: Admin):
 
 
 def get_admins(db: Session,
-               offset: int = None,
-               limit: int = None,
-               username: str = None):
+               offset: Optional[int] = None,
+               limit: Optional[int] = None,
+               username: Optional[str] = None):
     query = db.query(Admin)
     if username:
-        query = query.filter(User.username.ilike(f'%{username}%'))
+        query = query.filter(Admin.username.ilike(f'%{username}%'))
     if offset:
         query = query.offset(offset)
     if limit:
