@@ -3,6 +3,7 @@ import copy
 import json
 import secrets
 import urllib.parse as urlparse
+from datetime import datetime as dt
 from typing import Union
 from uuid import UUID
 
@@ -10,9 +11,9 @@ import yaml
 
 from app import xray
 from app.utils.store import XrayStore
-from app.utils.system import readable_size
-from config import SERVER_IP
-from datetime import datetime as dt
+from app.utils.system import get_public_ip, readable_size
+
+SERVER_IP = get_public_ip()
 
 
 class FormatVariables(dict):

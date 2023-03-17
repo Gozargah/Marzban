@@ -43,6 +43,17 @@ def check_port(port: int) -> bool:
         s.close()
 
 
+def get_public_ip():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        return s.getsockname()[0]
+    except socket.error:
+        return '127.0.0.1'
+    finally:
+        s.close()
+
+
 def readable_size(size_bytes):
     if size_bytes == 0:
         return "0B"

@@ -3,7 +3,7 @@ import typer
 import readline  # noqa
 import cli.admin
 
-app = typer.Typer()
+app = typer.Typer(no_args_is_help=True)
 app.add_typer(cli.admin.app, name="admin")
 
 

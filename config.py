@@ -1,18 +1,7 @@
-import requests
 from decouple import config
 from dotenv import load_dotenv
 
 load_dotenv()
-
-
-# Disable IPv6
-requests.packages.urllib3.util.connection.HAS_IPV6 = False
-
-try:
-    SERVER_IP = requests.get("https://ifconfig.io/ip", timeout=5).text.strip()
-except requests.exceptions.ConnectTimeout:
-    print("Failed to get SERVER_IP, using 127.0.0.1 instead")
-    SERVER_IP = "127.0.0.1"
 
 
 SQLALCHEMY_DATABASE_URL = config("SQLALCHEMY_DATABASE_URL", default="sqlite:///db.sqlite3")
