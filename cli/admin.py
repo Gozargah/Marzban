@@ -12,7 +12,7 @@ from app.db.models import Admin
 from app.models.admin import AdminCreate, AdminPartialModify
 from . import utils
 
-app = typer.Typer()
+app = typer.Typer(no_args_is_help=True)
 console = Console()
 
 PASSWORD_ENVIRON_NAME = "MARZBAN_ADMIN_PASSWORD"
