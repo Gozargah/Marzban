@@ -179,20 +179,13 @@ def user_command(call: types.CallbackQuery):
 ├ Expiry Date <b>{expire_date}</b>
 ├ Protocols: {protocols}
 └ Subscription URL: <code>{url}</code>
-┌ Proxies:
-{proxies}
         """.format(
         username=user.username,
         usage=readable_size(user.used_traffic) if user.used_traffic else "Unlimited",
         usage_limit=readable_size(user.data_limit) if user.data_limit else "Unlimited",
         expire_date=datetime.fromtimestamp(user.expire).strftime("%Y-%m-%d") if user.expire else "Never",
         protocols=",".join([proxy for proxy in user.proxies]),
-        url=user.subscription_url,
-        proxies="" if not user.proxies else "\n".join([
-            "<code>{link}</code>".format(
-                link=link,
-            ) for link in user.links
-        ])
+        url=user.subscription_url
     )
     bot.edit_message_text(
         text,
