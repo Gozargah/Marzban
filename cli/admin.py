@@ -1,6 +1,8 @@
 from typing import Optional, Union
+from sqlalchemy.sql.functions import user
 
 import typer
+from decouple import config
 from rich.table import Table
 from rich.console import Console
 from rich.panel import Panel
@@ -8,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.db import GetDB
 from app.db import crud
-from app.db.models import Admin
+from app.db.models import Admin, User
 from app.models.admin import AdminCreate, AdminPartialModify
 from . import utils
 
@@ -49,7 +51,7 @@ def list_admins(
 @app.command(name="delete")
 def delete_admin(
     username: str = typer.Option(..., *FLAGS["username"], prompt=True),
-    yes_to_all: bool = typer.Option(False, *FLAGS["yes_to_all"], help="Skips confirmation")
+    yes_to_all: bool = typer.Option(False, *FLAGS["yes_to_all"], help="Skips confirmations")
 ):
     with GetDB() as db:
         admin: Union[Admin, None] = crud.get_admin(db, username=username)
@@ -106,3 +108,44 @@ def update_admin(username: str = typer.Option(..., *FLAGS["username"], prompt=Tr
 
         crud.partial_update_admin(db, admin, _get_modify_model(admin))
         utils.success(f'Admin "{username}" updated successfully.')
+
+
+@app.command(name="import-from-env")
+def import_from_env(yes_to_all: bool = typer.Option(False, *FLAGS["yes_to_all"], help="Skips confirmation")):
+    username, password = config("SUDO_USERNAME"), config("SUDO_PASSWORD")
+
+    if not (username and password):
+        utils.error("Unable to retrieve username and password.\n"
+                    "Make sure both SUDO_USERNAME and SUDO_PASSWORD are set.")
+
+    with GetDB() as db:
+        admin: Union[None, Admin] = None
+
+        # If env admin already exists
+        if current_admin := crud.get_admin(db, username=username):
+            if not yes_to_all and not typer.confirm(
+                f'Admin "{username}" already exists. Do you want to sync it with env?', default=None
+            ):
+                utils.error("Aborted.")
+
+            admin = crud.partial_update_admin(
+                db,
+                current_admin,
+                AdminPartialModify(password=password, is_sudo=True)
+            )
+        # If env admin does not exist yet
+        else:
+            admin = crud.create_admin(db, AdminCreate(
+                username=username,
+                password=password,
+                is_sudo=True
+            ))
+
+        updated_user_count = db.query(User).filter_by(admin_id=None).update({"admin_id": admin.id})
+        db.commit()
+
+        utils.success(
+            f'Admin "{username}" imported successfully.\n'
+            f"{updated_user_count} users' admin_id set to the {username}'s id.\n"
+            'You must delete SUDO_USERNAME and SUDO_PASSWORD from your env file now.'
+        )
