@@ -302,7 +302,7 @@ def add_user_expire_step(message: types.Message, username: str, data_limit: int)
             elif symbol == 'Y':
                 expire_date = today + relativedelta(years=number)
         elif message.text != '0':
-            expire_date = datetime.strptime(message.text, "%Y-%m-%d") 
+            expire_date = datetime.strptime(message.text, "%Y-%m-%d")
         else:
             expire_date = None
         if expire_date and expire_date < today:
@@ -422,6 +422,7 @@ def confirm_user_command(call: types.CallbackQuery):
         try:
             with GetDB() as db:
                 db_user = crud.create_user(db, new_user)
+                proxies = db_user.proxies
         except sqlalchemy.exc.IntegrityError:
             return bot.answer_callback_query(
                 call.id,
@@ -441,7 +442,7 @@ def confirm_user_command(call: types.CallbackQuery):
             db_user.username,
             readable_size(db_user.data_limit) if db_user.data_limit else "Unlimited",
             mem_store.get('expire_date').strftime("%Y-%m-%d") if db_user.expire else 'Never',
-            ', '.join([p.type for p in db_user.proxies])
+            ', '.join([p.type for p in proxies])
         )
         bot.edit_message_text(
             text,
