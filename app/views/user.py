@@ -197,7 +197,7 @@ def get_users(offset: int = None,
                                   username=username,
                                   status=status,
                                   sort=sort,
-                                  admin=dbadmin,
+                                  admin=dbadmin if not admin.is_sudo else None,
                                   return_with_count=True)
 
     return {"users": users, "total": count}

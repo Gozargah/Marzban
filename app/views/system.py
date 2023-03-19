@@ -17,8 +17,8 @@ def get_system_stats(db: Session = Depends(get_db), admin: Admin = Depends(Admin
     system = crud.get_system_usage(db)
     dbadmin: Union[Admin, None] = crud.get_admin(db, admin.username)
 
-    total_user = crud.get_users_count(db, admin=dbadmin)
-    users_active = crud.get_users_count(db, status=UserStatus.active, admin=dbadmin)
+    total_user = crud.get_users_count(db, admin=dbadmin if not admin.is_sudo else None)
+    users_active = crud.get_users_count(db, status=UserStatus.active, admin=dbadmin if not admin.is_sudo else None)
 
     return SystemStats(
         mem_total=mem.total,
