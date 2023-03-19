@@ -1,12 +1,11 @@
 from typing import Optional, Union
-from sqlalchemy.sql.functions import user
 
 import typer
-from decouple import config
 from rich.table import Table
 from rich.console import Console
 from rich.panel import Panel
 from sqlalchemy.exc import IntegrityError
+from decouple import config, UndefinedValueError
 
 from app.db import GetDB
 from app.db import crud
@@ -111,8 +110,14 @@ def update_admin(username: str = typer.Option(..., *FLAGS["username"], prompt=Tr
 
 
 @app.command(name="import-from-env")
-def import_from_env(yes_to_all: bool = typer.Option(False, *FLAGS["yes_to_all"], help="Skips confirmation")):
-    username, password = config("SUDO_USERNAME"), config("SUDO_PASSWORD")
+def import_from_env(yes_to_all: bool = typer.Option(False, *FLAGS["yes_to_all"], help="Skips confirmations")):
+    try:
+        username, password = config("SUDO_USERNAME"), config("SUDO_PASSWORD")
+    except UndefinedValueError:
+        utils.error(
+            "Unable to get SUDO_USERNAME and/or SUDO_PASSWORD.\n"
+            "Make sure you have set them in the env file or as environment variables."
+        )
 
     if not (username and password):
         utils.error("Unable to retrieve username and password.\n"
