@@ -63,6 +63,7 @@
 - [How to use API](#how-to-use-api)
 - [How to Backup Marzban](#how-to-backup-marzban)
 - [Telegram Bot](#telegram-bot)
+- [Marzban CLI](#marzban-cli)
 - [Donation](#donation)
 - [License](#license)
 - [Contributors](#contributors)
@@ -94,6 +95,7 @@ Marzban is user-friendly, feature-rich and reliable. It lets you to create diffe
 - **TLS** support
 - Integrated **Telegram Bot**
 - **Multi-admin** support (WIP)
+- Integrated **Command Line Interface (CLI)**
 
 # Installation guide
 
@@ -137,6 +139,14 @@ Then run the following command to run the database migration scripts
 alembic upgrade head
 ```
 
+If you want to use `marzban-cli`, you should link it to a file in your `$PATH`, make it executable, and install the auto-completion.
+
+```bash
+sudo ln -s $(pwd)/marzban-cli.py /usr/bin/marzban-cli
+sudo chmod +x /usr/bin/marzban-cli
+marzban-cli --install-completion
+```
+
 Now it's time to configuration
 
 Make a copy of `.env.example` file, take a look and edit it using a text editor like `nano`.
@@ -164,8 +174,8 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 
 | Variable                        | Description                                                                                           |
 | ------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| SUDO_USERNAME                   | Superuser's username (default: admin)                                                                 |
-| SUDO_PASSWORD                   | Superuser's password (default: admin)                                                                 |
+| SUDO_USERNAME                   | Superuser's username |
+| SUDO_PASSWORD                   | Superuser's password |
 | SQLALCHEMY_DATABASE_URL         | Database URL ([SQLAlchemy's docs](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)) |
 | UVICORN_HOST                    | Bind application to this host (default: `0.0.0.0`)                                                    |
 | UVICORN_PORT                    | Bind application to this port (default: `8000`)                                                       |
@@ -206,6 +216,22 @@ To enable Telegram Bot:
 
 1. set `TELEGRAM_API_TOKEN` to your bot's API Token
 2. set `TELEGRAM_ADMIN_ID` to your Telegram account's numeric ID, you can get your ID from [@userinfobot](https://t.me/userinfobot)
+
+
+# Marzban CLI
+Marzban comes with an integrated CLI named `marzban-cli` which allows administrators to have direct interaction with it.
+
+If you use docker for Marzban, you should use `docker exec` or `docker-compose exec` to access the container's interactive shell.
+
+For example, navigate to marzban's `docker-compose.yml` directory and run the following command:
+
+```bash
+$ sudo docker-compose exec -it marzban bash
+```
+
+The Marzban CLI will be accessible through `marzban-cli` command anywhere!
+
+For more information, You can read [Marzban CLI's documentation](./cli/README.md).
 
 
 # Donation

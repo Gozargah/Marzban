@@ -33,6 +33,7 @@ def list_admins(
     limit: Optional[int] = typer.Option(None, *FLAGS["limit"]),
     username: Optional[str] = typer.Option(None, *FLAGS["username"], help="Search by username"),
 ):
+    """Displays a table of admins"""
     with GetDB() as db:
         table = Table("Username", "Is sudo", "Created at")
         admins: list[Admin] = crud.get_admins(db, offset=offset, limit=limit, username=username)
@@ -52,6 +53,11 @@ def delete_admin(
     username: str = typer.Option(..., *FLAGS["username"], prompt=True),
     yes_to_all: bool = typer.Option(False, *FLAGS["yes_to_all"], help="Skips confirmations")
 ):
+    """
+    Deletes the specified admin
+
+    Confirmations can be skipped using `--yes/-y` option.
+    """
     with GetDB() as db:
         admin: Union[Admin, None] = crud.get_admin(db, username=username)
         if not admin:
@@ -67,10 +73,15 @@ def delete_admin(
 @app.command(name="create")
 def create_admin(
     username: str = typer.Option(..., *FLAGS["username"], prompt=True),
-    is_sudo: bool = typer.Option(False, *FLAGS["is_sudo"], prompt=True),
+    is_sudo: bool = typer.Option(None, *FLAGS["is_sudo"], prompt=True),
     password: str = typer.Option(..., prompt=True, confirmation_prompt=True,
                                  hide_input=True, hidden=True, envvar=PASSWORD_ENVIRON_NAME)
 ):
+    """
+    Creates an admin
+
+    Password can also be set using the `MARZBAN_ADMIN_PASSWORD` environment variable for non-interactive usages.
+    """
     with GetDB() as db:
         try:
             crud.create_admin(db, AdminCreate(username=username, password=password, is_sudo=is_sudo))
@@ -81,6 +92,12 @@ def create_admin(
 
 @app.command(name="update")
 def update_admin(username: str = typer.Option(..., *FLAGS["username"], prompt=True)):
+    """
+    Updates the specified admin
+
+    NOTE: This command CAN NOT be used non-interactively.
+    """
+
     def _get_modify_model(admin: Admin):
         console.print(
             Panel(f'Editing "{username}". Just press "Enter" to leave each field unchanged.')
@@ -111,6 +128,15 @@ def update_admin(username: str = typer.Option(..., *FLAGS["username"], prompt=Tr
 
 @app.command(name="import-from-env")
 def import_from_env(yes_to_all: bool = typer.Option(False, *FLAGS["yes_to_all"], help="Skips confirmations")):
+    """
+    Imports the sudo admin from env
+
+    Confirmations can be skipped using `--yes/-y` option.
+
+    What does it do?
+      - Creates a sudo admin according to `SUDO_USERNAME` and `SUDO_PASSWORD`.
+      - Links any user which doesn't have an `admin_id` to the imported sudo admin.
+    """
     try:
         username, password = config("SUDO_USERNAME"), config("SUDO_PASSWORD")
     except UndefinedValueError:
