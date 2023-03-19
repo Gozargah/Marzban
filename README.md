@@ -94,8 +94,8 @@ Marzban is user-friendly, feature-rich and reliable. It lets you to create diffe
 - Customizable xray configuration
 - **TLS** support
 - Integrated **Telegram Bot**
-- **Multi-admin** support (WIP)
 - Integrated **Command Line Interface (CLI)**
+- **Multi-admin** support (WIP)
 
 # Installation guide
 
@@ -139,7 +139,7 @@ Then run the following command to run the database migration scripts
 alembic upgrade head
 ```
 
-If you want to use `marzban-cli`, you should link it to a file in your `$PATH`, make it executable, and install the auto-completion.
+If you want to use `marzban-cli`, you should link it to a file in your `$PATH`, make it executable, and install the auto-completion:
 
 ```bash
 sudo ln -s $(pwd)/marzban-cli.py /usr/bin/marzban-cli
