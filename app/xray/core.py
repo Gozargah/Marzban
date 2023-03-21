@@ -68,16 +68,20 @@ class XRayCore:
         self._process.stdin.close()
 
         # Wait for XRay to get started
+        log = ''
         while True:
-            log = self._process.stdout.readline().strip('\n')
-            logger.debug(log)
-            if not log and self._process.poll() is not None:
+            output = self._process.stdout.readline()
+            if output == '' and self._process.poll() is not None:
                 break
 
-            if log.endswith('started'):
-                logger.info(log)
-                self.started = True
-                break
+            if output:
+                log = output.strip('\n')
+                logger.debug(log)
+
+                if log.endswith('started'):
+                    logger.info(log)
+                    self.started = True
+                    break
 
         if not self.started:
             raise RuntimeError("Failed to run XRay", log)
