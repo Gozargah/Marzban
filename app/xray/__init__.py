@@ -20,7 +20,7 @@ finally:
     del api_port
 
 
-core = XRayCore(config, XRAY_EXECUTABLE_PATH, XRAY_ASSETS_PATH)
+core = XRayCore(XRAY_EXECUTABLE_PATH, XRAY_ASSETS_PATH)
 api = XRay(config.api_host, config.api_port)
 
 

@@ -8,13 +8,11 @@ from app import logger
 
 class XRayCore:
     def __init__(self,
-                 config: XRayConfig,
                  executable_path: str = "/usr/bin/xray",
                  assets_path: str = "/usr/share/xray"):
         self.executable_path = executable_path
         self.assets_path = assets_path
         self.started = False
-        self.config = config
         self._process = None
         self._on_start_funcs = []
         self._on_stop_funcs = []
@@ -35,10 +33,9 @@ class XRayCore:
             while True:
                 try:
                     output = self._process.stdout.readline().strip('\n')
+                    if output == '' and self._process.poll() is not None:
+                        break
                 except AttributeError:
-                    break
-
-                if output == '' and self._process.poll() is not None:
                     break
 
                 # if output:
@@ -46,12 +43,12 @@ class XRayCore:
 
         threading.Thread(target=reader).start()
 
-    def start(self):
+    def start(self, config: XRayConfig):
         if self.started is True:
             raise RuntimeError("Xray is started already")
 
-        if self.config.get('log', {}).get('logLevel') in ('none', 'error'):
-            self.config['log']['logLevel'] = 'warning'
+        if config.get('log', {}).get('logLevel') in ('none', 'error'):
+            config['log']['logLevel'] = 'warning'
 
         cmd = [
             self.executable_path,
@@ -66,7 +63,7 @@ class XRayCore:
             stdout=subprocess.PIPE,
             universal_newlines=True
         )
-        self._process.stdin.write(self.config.to_json())
+        self._process.stdin.write(config.to_json())
         self._process.stdin.flush()
         self._process.stdin.close()
 
@@ -101,9 +98,9 @@ class XRayCore:
         for func in self._on_stop_funcs:
             threading.Thread(target=func).start()
 
-    def restart(self):
+    def restart(self, config: XRayConfig):
         self.stop()
-        self.start()
+        self.start(config)
 
     def on_start(self, func: callable):
         self._on_start_funcs.append(func)

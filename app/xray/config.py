@@ -1,5 +1,6 @@
 import json
 import re
+from copy import deepcopy
 from pathlib import PosixPath
 from typing import Union
 
@@ -37,6 +38,7 @@ class XRayConfig(dict):
         self.inbounds_by_protocol = {}
         self.inbounds_by_tag = {}
         self._fallbacks_inbound = self.get_inbound(XRAY_FALLBACKS_INBOUND_TAG)
+        self._addr_clients_by_tag = {}
         self._resolve_inbounds()
 
         self._apply_api()
@@ -114,6 +116,12 @@ class XRayConfig(dict):
         for inbound in self['inbounds']:
             if inbound['tag'] in XRAY_EXCLUDE_INBOUND_TAGS:
                 continue
+
+            if not inbound.get('settings'):
+                inbound['settings'] = {}
+            if not inbound['settings'].get('clients'):
+                inbound['settings']['clients'] = []
+            self._addr_clients_by_tag[inbound['tag']] = inbound['settings']['clients']
 
             settings = {
                 "tag": inbound["tag"],
@@ -216,6 +224,14 @@ class XRayConfig(dict):
             except KeyError:
                 self.inbounds_by_protocol[inbound['protocol']] = [settings]
 
+    def add_inbound_client(self, inbound_tag: str, email: str, settings: dict):
+        client = {"email": email, **settings}
+        try:
+            self._addr_clients_by_tag[inbound_tag].append(client)
+        except KeyError:
+            return
+        return client
+
     def get_inbound(self, tag) -> dict:
         for inbound in self['inbounds']:
             if inbound['tag'] == tag:
@@ -228,3 +244,6 @@ class XRayConfig(dict):
 
     def to_json(self, **json_kwargs):
         return json.dumps(self, **json_kwargs)
+
+    def copy(self):
+        return deepcopy(self)
