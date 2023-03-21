@@ -1,8 +1,9 @@
 import math
 import re
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
+
 import sqlalchemy
+from dateutil.relativedelta import relativedelta
 from telebot import types
 from telebot.custom_filters import AdvancedCustomFilter
 from telebot.util import user_link
@@ -14,9 +15,9 @@ from app.telegram import bot
 from app.telegram.keyboard import BotKeyboard
 from app.utils.store import MemoryStorage
 from app.utils.system import cpu_usage, memory_usage, readable_size
-from app.utils.xray import xray_add_user, xray_remove_user
+from app.utils.xray import (xray_add_user, xray_config_include_db_clients,
+                            xray_remove_user)
 from config import TELEGRAM_ADMIN_ID
-
 
 mem_store = MemoryStorage()
 
@@ -277,8 +278,7 @@ def add_user_data_limit_step(message: types.Message, username: str):
     bot.send_message(
         message.chat.id,
         '⬆️ Enter Expire Date (YYYY-MM-DD)\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|Y) :\n⚠️ Send 0 for never expire.',
-        reply_markup=BotKeyboard.cancel_action()
-    )
+        reply_markup=BotKeyboard.cancel_action())
     bot.register_next_step_handler(message, add_user_expire_step, username=username, data_limit=data_limit)
 
 
@@ -378,7 +378,9 @@ def confirm_user_command(call: types.CallbackQuery):
 
     elif data == 'restart':
         m = bot.edit_message_text('🔄 Restarting XRay core...', call.message.chat.id, call.message.message_id)
-        xray.core.restart()
+        xray.core.restart(
+            xray_config_include_db_clients(xray.config)
+        )
         bot.edit_message_text(
             '✅ XRay core restarted successfully.',
             m.chat.id, m.message_id,

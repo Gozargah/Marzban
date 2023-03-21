@@ -8,13 +8,11 @@ from app import logger
 
 class XRayCore:
     def __init__(self,
-                 config: XRayConfig,
                  executable_path: str = "/usr/bin/xray",
                  assets_path: str = "/usr/share/xray"):
         self.executable_path = executable_path
         self.assets_path = assets_path
         self.started = False
-        self.config = config
         self._process = None
         self._on_start_funcs = []
         self._on_stop_funcs = []
@@ -22,10 +20,7 @@ class XRayCore:
             "XRAY_LOCATION_ASSET": assets_path
         }
 
-        @atexit.register
-        def stop_core():
-            if self.started:
-                self.stop()
+        atexit.register(lambda: self.stop() if self.started else None)
 
     @property
     def process(self):
@@ -33,12 +28,27 @@ class XRayCore:
             raise ProcessLookupError("Xray has not been started")
         return self._process
 
-    def start(self):
+    def _read_process_stdout(self):
+        def reader():
+            while True:
+                try:
+                    output = self._process.stdout.readline().strip('\n')
+                    if output == '' and self._process.poll() is not None:
+                        break
+                except AttributeError:
+                    break
+
+                # if output:
+                #     logger.info(output)
+
+        threading.Thread(target=reader).start()
+
+    def start(self, config: XRayConfig):
         if self.started is True:
             raise RuntimeError("Xray is started already")
 
-        if self.config.get('log', {}).get('logLevel') in ('none', 'error'):
-            self.config['log']['logLevel'] = 'warning'
+        if config.get('log', {}).get('logLevel') in ('none', 'error'):
+            config['log']['logLevel'] = 'warning'
 
         cmd = [
             self.executable_path,
@@ -50,25 +60,33 @@ class XRayCore:
             cmd,
             env=self._env,
             stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE
+            stdout=subprocess.PIPE,
+            universal_newlines=True
         )
-        self._process.stdin.write(
-            self.config.to_json().encode()
-        )
+        self._process.stdin.write(config.to_json())
         self._process.stdin.flush()
         self._process.stdin.close()
 
         # Wait for XRay to get started
-        while _ := self._process.stdout.readline().decode().strip('\n'):
-            log = _
-            logger.debug(log)
-            if 'core: Xray' in log and 'started' in log:
-                logger.info(log)
-                self.started = True
+        log = ''
+        while True:
+            output = self._process.stdout.readline()
+            if output == '' and self._process.poll() is not None:
                 break
+
+            if output:
+                log = output.strip('\n')
+                logger.debug(log)
+
+                if log.endswith('started'):
+                    logger.info(log)
+                    self.started = True
+                    break
 
         if not self.started:
             raise RuntimeError("Failed to run XRay", log)
+
+        self._read_process_stdout()
 
         # execute on start functions
         for func in self._on_start_funcs:
@@ -84,9 +102,9 @@ class XRayCore:
         for func in self._on_stop_funcs:
             threading.Thread(target=func).start()
 
-    def restart(self):
+    def restart(self, config: XRayConfig):
         self.stop()
-        self.start()
+        self.start(config)
 
     def on_start(self, func: callable):
         self._on_start_funcs.append(func)
