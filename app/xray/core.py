@@ -22,16 +22,29 @@ class XRayCore:
             "XRAY_LOCATION_ASSET": assets_path
         }
 
-        @atexit.register
-        def stop_core():
-            if self.started:
-                self.stop()
+        atexit.register(lambda: self.stop() if self.started else None)
 
     @property
     def process(self):
         if self._process is None:
             raise ProcessLookupError("Xray has not been started")
         return self._process
+
+    def _read_process_stdout(self):
+        def reader():
+            while True:
+                try:
+                    output = self._process.stdout.readline().strip('\n')
+                except AttributeError:
+                    break
+
+                if output == '' and self._process.poll() is not None:
+                    break
+
+                # if output:
+                #     logger.info(output)
+
+        threading.Thread(target=reader).start()
 
     def start(self):
         if self.started is True:
@@ -50,25 +63,29 @@ class XRayCore:
             cmd,
             env=self._env,
             stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE
+            stdout=subprocess.PIPE,
+            universal_newlines=True
         )
-        self._process.stdin.write(
-            self.config.to_json().encode()
-        )
+        self._process.stdin.write(self.config.to_json())
         self._process.stdin.flush()
         self._process.stdin.close()
 
         # Wait for XRay to get started
-        while _ := self._process.stdout.readline().decode().strip('\n'):
-            log = _
+        while True:
+            log = self._process.stdout.readline().strip('\n')
             logger.debug(log)
-            if 'core: Xray' in log and 'started' in log:
+            if not log and self._process.poll() is not None:
+                break
+
+            if log.endswith('started'):
                 logger.info(log)
                 self.started = True
                 break
 
         if not self.started:
             raise RuntimeError("Failed to run XRay", log)
+
+        self._read_process_stdout()
 
         # execute on start functions
         for func in self._on_start_funcs:
