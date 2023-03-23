@@ -3,21 +3,17 @@ import copy
 import json
 import secrets
 import urllib.parse as urlparse
+from datetime import datetime as dt
 from typing import Union
 from uuid import UUID
 
 import yaml
 
 from app import xray
+from app.models.proxy import FormatVariables
 from app.utils.store import XrayStore
 from app.utils.system import readable_size
 from config import SERVER_IP
-from datetime import datetime as dt
-
-
-class FormatVariables(dict):
-    def __missing__(self, key):
-        return key.join("{}")
 
 
 class V2rayShareLink(str):
