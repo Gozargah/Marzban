@@ -10,7 +10,7 @@ from telebot.util import user_link
 
 from app import xray
 from app.db import GetDB, crud
-from app.models.user import UserCreate, UserResponse, UserStatus
+from app.models.user import UserCreate, UserResponse, UserStatus, UserModify, UserStatusModify
 from app.telegram import bot
 from app.telegram.keyboard import BotKeyboard
 from app.utils.store import MemoryStorage
@@ -118,14 +118,28 @@ def delete_user_command(call: types.CallbackQuery):
     )
 
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith('suspend:'), is_admin=True)
+@bot.callback_query_handler(func=lambda call: call.data.startswith("suspend:"), is_admin=True)
 def suspend_user_command(call: types.CallbackQuery):
-    bot.answer_callback_query(
-        call.id,
-        '⚠️ This feature is not implemented yet.',
-        show_alert=True
+    username = call.data.split(":")[1]
+    bot.edit_message_text(
+        f"⚠️ Are you sure? This will suspend user `{username}`.",
+        call.message.chat.id,
+        call.message.message_id,
+        parse_mode="markdown",
+        reply_markup=BotKeyboard.confirm_action(action="suspend", username=username),
     )
 
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("activate:"), is_admin=True)
+def activate_user_command(call: types.CallbackQuery):
+    username = call.data.split(":")[1]
+    bot.edit_message_text(
+        f"⚠️ Are you sure? This will activate user `{username}`.",
+        call.message.chat.id,
+        call.message.message_id,
+        parse_mode="markdown",
+        reply_markup=BotKeyboard.confirm_action(action="activate", username=username),
+    )
 
 @bot.callback_query_handler(func=lambda call: call.data == 'cancel', is_admin=True)
 def cancel_command(call: types.CallbackQuery):
@@ -375,7 +389,31 @@ def confirm_user_command(call: types.CallbackQuery):
             call.message.message_id,
             reply_markup=BotKeyboard.main_menu()
         )
+    elif data == "suspend":
+        username = call.data.split(":")[2]
+        with GetDB() as db:
+            dbuser = crud.get_user(db, username)
+            crud.update_user(db, dbuser, UserModify(status=UserStatusModify.disabled))
+            xray_remove_user(dbuser)
+        return bot.edit_message_text(
+            "✅ User suspended.",
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=BotKeyboard.main_menu()
+        )
+    elif data == "activate":
+        username = call.data.split(":")[2]
+        with GetDB() as db:
+            dbuser = crud.get_user(db, username)
+            crud.update_user(db, dbuser, UserModify(status=UserStatusModify.active))
+            xray_add_user(dbuser)
 
+        return bot.edit_message_text(
+            "✅ User activated.",
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=BotKeyboard.main_menu()
+        )
     elif data == 'restart':
         m = bot.edit_message_text('🔄 Restarting XRay core...', call.message.chat.id, call.message.message_id)
         xray.core.restart(
