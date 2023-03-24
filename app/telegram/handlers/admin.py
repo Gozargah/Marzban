@@ -5,36 +5,20 @@ from datetime import datetime
 import sqlalchemy
 from dateutil.relativedelta import relativedelta
 from telebot import types
-from telebot.custom_filters import AdvancedCustomFilter
 from telebot.util import user_link
 
 from app import xray
 from app.db import GetDB, crud
 from app.models.user import UserCreate, UserResponse, UserStatus, UserModify, UserStatusModify
 from app.telegram import bot
-from app.telegram.keyboard import BotKeyboard
+from app.telegram.utils.keyboard import BotKeyboard
 from app.utils.store import MemoryStorage
 from app.utils.system import cpu_usage, memory_usage, readable_size
 from app.utils.xray import (xray_add_user, xray_config_include_db_clients,
                             xray_remove_user)
-from config import TELEGRAM_ADMIN_ID
 
+from app.telegram.utils.custom_filters import cb_query_equals, cb_query_startswith
 mem_store = MemoryStorage()
-
-
-class IsAdminFilter(AdvancedCustomFilter):
-    key = 'is_admin'
-
-    def check(self, message, text):
-        """
-        :meta private:
-        """
-        if isinstance(message, types.CallbackQuery):
-            return message.from_user.id == TELEGRAM_ADMIN_ID
-        return message.chat.id == TELEGRAM_ADMIN_ID
-
-
-bot.add_custom_filter(IsAdminFilter())
 
 
 def get_system_info():
@@ -85,7 +69,7 @@ To get started, use the buttons below.
     ), parse_mode="html", reply_markup=BotKeyboard.main_menu())
 
 
-@bot.callback_query_handler(func=lambda call: call.data == 'system', is_admin=True)
+@bot.callback_query_handler(cb_query_equals('system'), is_admin=True)
 def system_command(call: types.CallbackQuery):
     return bot.edit_message_text(
         get_system_info(),
@@ -96,7 +80,7 @@ def system_command(call: types.CallbackQuery):
     )
 
 
-@bot.callback_query_handler(func=lambda call: call.data == 'restart', is_admin=True)
+@bot.callback_query_handler(cb_query_equals('restart'), is_admin=True)
 def restart_command(call: types.CallbackQuery):
     bot.edit_message_text(
         '⚠️ Are you sure? This will restart Xray core.',
@@ -106,7 +90,7 @@ def restart_command(call: types.CallbackQuery):
     )
 
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith('delete:'), is_admin=True)
+@bot.callback_query_handler(cb_query_startswith('delete:'), is_admin=True)
 def delete_user_command(call: types.CallbackQuery):
     username = call.data.split(':')[1]
     bot.edit_message_text(
@@ -114,11 +98,12 @@ def delete_user_command(call: types.CallbackQuery):
         call.message.chat.id,
         call.message.message_id,
         parse_mode="markdown",
-        reply_markup=BotKeyboard.confirm_action(action='delete', username=username)
+        reply_markup=BotKeyboard.confirm_action(
+            action='delete', username=username)
     )
 
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith("suspend:"), is_admin=True)
+@bot.callback_query_handler(cb_query_startswith("suspend:"), is_admin=True)
 def suspend_user_command(call: types.CallbackQuery):
     username = call.data.split(":")[1]
     bot.edit_message_text(
@@ -126,11 +111,12 @@ def suspend_user_command(call: types.CallbackQuery):
         call.message.chat.id,
         call.message.message_id,
         parse_mode="markdown",
-        reply_markup=BotKeyboard.confirm_action(action="suspend", username=username),
+        reply_markup=BotKeyboard.confirm_action(
+            action="suspend", username=username),
     )
 
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith("activate:"), is_admin=True)
+@bot.callback_query_handler(cb_query_startswith("activate:"), is_admin=True)
 def activate_user_command(call: types.CallbackQuery):
     username = call.data.split(":")[1]
     bot.edit_message_text(
@@ -138,10 +124,12 @@ def activate_user_command(call: types.CallbackQuery):
         call.message.chat.id,
         call.message.message_id,
         parse_mode="markdown",
-        reply_markup=BotKeyboard.confirm_action(action="activate", username=username),
+        reply_markup=BotKeyboard.confirm_action(
+            action="activate", username=username),
     )
 
-@bot.callback_query_handler(func=lambda call: call.data == 'cancel', is_admin=True)
+
+@bot.callback_query_handler(cb_query_equals('cancel'), is_admin=True)
 def cancel_command(call: types.CallbackQuery):
     return bot.edit_message_text(
         get_system_info(),
@@ -152,7 +140,7 @@ def cancel_command(call: types.CallbackQuery):
     )
 
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith('users:'), is_admin=True)
+@bot.callback_query_handler(cb_query_startswith('users:'), is_admin=True)
 def users_command(call: types.CallbackQuery):
     page = int(call.data.split(':')[1]) if len(call.data.split(':')) > 1 else 1
     with GetDB() as db:
@@ -169,11 +157,12 @@ def users_command(call: types.CallbackQuery):
         call.message.chat.id,
         call.message.message_id,
         parse_mode="Markdown",
-        reply_markup=BotKeyboard.user_list(users, page, total_pages=total_pages)
+        reply_markup=BotKeyboard.user_list(
+            users, page, total_pages=total_pages)
     )
 
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith('user:'), is_admin=True)
+@bot.callback_query_handler(cb_query_startswith('user:'), is_admin=True)
 def user_command(call: types.CallbackQuery):
     username = call.data.split(':')[1]
     page = int(call.data.split(':')[2]) if len(call.data.split(':')) > 2 else 1
@@ -196,9 +185,12 @@ def user_command(call: types.CallbackQuery):
 └ Subscription URL: <code>{url}</code>
         """.format(
         username=user.username,
-        usage=readable_size(user.used_traffic) if user.used_traffic else "Unlimited",
-        usage_limit=readable_size(user.data_limit) if user.data_limit else "Unlimited",
-        expire_date=datetime.fromtimestamp(user.expire).strftime("%Y-%m-%d") if user.expire else "Never",
+        usage=readable_size(
+            user.used_traffic) if user.used_traffic else "Unlimited",
+        usage_limit=readable_size(
+            user.data_limit) if user.data_limit else "Unlimited",
+        expire_date=datetime.fromtimestamp(user.expire).strftime(
+            "%Y-%m-%d") if user.expire else "Never",
         protocols=",".join([proxy for proxy in user.proxies]),
         url=user.subscription_url
     )
@@ -214,7 +206,7 @@ def user_command(call: types.CallbackQuery):
     )
 
 
-@bot.callback_query_handler(func=lambda call: call.data == 'add_user', is_admin=True)
+@bot.callback_query_handler(cb_query_equals('add_user'), is_admin=True)
 def add_user_command(call: types.CallbackQuery):
     try:
         bot.delete_message(call.message.chat.id, call.message.message_id)
@@ -263,7 +255,8 @@ def add_user_username_step(message: types.Message):
         '⬆️ Enter Data Limit (GB):\n⚠️ Send 0 for unlimited.',
         reply_markup=BotKeyboard.cancel_action()
     )
-    bot.register_next_step_handler(message, add_user_data_limit_step, username=message.text)
+    bot.register_next_step_handler(
+        message, add_user_data_limit_step, username=message.text)
 
 
 def add_user_data_limit_step(message: types.Message, username: str):
@@ -293,7 +286,8 @@ def add_user_data_limit_step(message: types.Message, username: str):
         message.chat.id,
         '⬆️ Enter Expire Date (YYYY-MM-DD)\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|Y) :\n⚠️ Send 0 for never expire.',
         reply_markup=BotKeyboard.cancel_action())
-    bot.register_next_step_handler(message, add_user_expire_step, username=username, data_limit=data_limit)
+    bot.register_next_step_handler(
+        message, add_user_expire_step, username=username, data_limit=data_limit)
 
 
 def add_user_expire_step(message: types.Message, username: str, data_limit: int):
@@ -342,14 +336,16 @@ def add_user_expire_step(message: types.Message, username: str, data_limit: int)
         message.chat.id,
         'Select Protocols:\nUsernames: {}\nData Limit: {}\nExpiry Date {}'.format(
             mem_store.get('username'),
-            readable_size(mem_store.get('data_limit')) if mem_store.get('data_limit') else "Unlimited",
-            mem_store.get('expire_date').strftime("%Y-%m-%d") if mem_store.get('expire_date') else 'Never'
+            readable_size(mem_store.get('data_limit')) if mem_store.get(
+                'data_limit') else "Unlimited",
+            mem_store.get('expire_date').strftime(
+                "%Y-%m-%d") if mem_store.get('expire_date') else 'Never'
         ),
         reply_markup=BotKeyboard.select_protocols([])
     )
 
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith('select:'), is_admin=True)
+@bot.callback_query_handler(cb_query_startswith('select:'), is_admin=True)
 def select_protocols(call: types.CallbackQuery):
     if not mem_store.get('username'):
         return bot.answer_callback_query(call.id, '❌ No user selected.', show_alert=True)
@@ -363,8 +359,10 @@ def select_protocols(call: types.CallbackQuery):
     bot.edit_message_text(
         'Select Protocols:\nUsernames: {}\nData Limit: {}\nExpiry Date: {}'.format(
             mem_store.get('username'),
-            readable_size(mem_store.get('data_limit')) if mem_store.get('data_limit') else "Unlimited",
-            mem_store.get('expire_date').strftime("%Y-%m-%d") if mem_store.get('expire_date') else 'Never'
+            readable_size(mem_store.get('data_limit')) if mem_store.get(
+                'data_limit') else "Unlimited",
+            mem_store.get('expire_date').strftime(
+                "%Y-%m-%d") if mem_store.get('expire_date') else 'Never'
         ),
         call.message.chat.id,
         call.message.message_id,
@@ -372,7 +370,7 @@ def select_protocols(call: types.CallbackQuery):
     )
 
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith('confirm:'), is_admin=True)
+@bot.callback_query_handler(cb_query_startswith('confirm:'), is_admin=True)
 def confirm_user_command(call: types.CallbackQuery):
     data = call.data.split(':')[1]
 
@@ -393,7 +391,8 @@ def confirm_user_command(call: types.CallbackQuery):
         username = call.data.split(":")[2]
         with GetDB() as db:
             dbuser = crud.get_user(db, username)
-            crud.update_user(db, dbuser, UserModify(status=UserStatusModify.disabled))
+            crud.update_user(db, dbuser, UserModify(
+                status=UserStatusModify.disabled))
             xray_remove_user(dbuser)
         return bot.edit_message_text(
             "✅ User suspended.",
@@ -405,7 +404,8 @@ def confirm_user_command(call: types.CallbackQuery):
         username = call.data.split(":")[2]
         with GetDB() as db:
             dbuser = crud.get_user(db, username)
-            crud.update_user(db, dbuser, UserModify(status=UserStatusModify.active))
+            crud.update_user(db, dbuser, UserModify(
+                status=UserStatusModify.active))
             xray_add_user(dbuser)
 
         return bot.edit_message_text(
@@ -415,7 +415,8 @@ def confirm_user_command(call: types.CallbackQuery):
             reply_markup=BotKeyboard.main_menu()
         )
     elif data == 'restart':
-        m = bot.edit_message_text('🔄 Restarting XRay core...', call.message.chat.id, call.message.message_id)
+        m = bot.edit_message_text(
+            '🔄 Restarting XRay core...', call.message.chat.id, call.message.message_id)
         xray.core.restart(
             xray_config_include_db_clients(xray.config)
         )
@@ -428,7 +429,8 @@ def confirm_user_command(call: types.CallbackQuery):
     elif data == 'add_user':
         if mem_store.get('username') is None:
             try:
-                bot.delete_message(call.message.chat.id, call.message.message_id)
+                bot.delete_message(call.message.chat.id,
+                                   call.message.message_id)
             except Exception:
                 pass
             return bot.send_message(
@@ -446,8 +448,10 @@ def confirm_user_command(call: types.CallbackQuery):
 
         new_user = UserCreate(
             username=mem_store.get('username'),
-            expire=mem_store.get('expire_date').timestamp() if mem_store.get('expire_date') else None,
-            data_limit=mem_store.get('data_limit') if mem_store.get('data_limit') else None,
+            expire=mem_store.get('expire_date').timestamp(
+            ) if mem_store.get('expire_date') else None,
+            data_limit=mem_store.get('data_limit') if mem_store.get(
+                'data_limit') else None,
             proxies={k: {} for k in mem_store.get('protocols')}
         )
 
@@ -480,8 +484,10 @@ def confirm_user_command(call: types.CallbackQuery):
 └ Protocols: {}
 """.format(
             db_user.username,
-            readable_size(db_user.data_limit) if db_user.data_limit else "Unlimited",
-            mem_store.get('expire_date').strftime("%Y-%m-%d") if db_user.expire else 'Never',
+            readable_size(
+                db_user.data_limit) if db_user.data_limit else "Unlimited",
+            mem_store.get('expire_date').strftime(
+                "%Y-%m-%d") if db_user.expire else 'Never',
             ', '.join([p.type for p in proxies])
         )
         bot.edit_message_text(
