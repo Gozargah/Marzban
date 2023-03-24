@@ -4,7 +4,7 @@ from app import logger
 from app.telegram import bot
 from telebot.apihelper import ApiTelegramException
 from datetime import datetime
-from app.telegram.keyboard import BotKeyboard
+from app.telegram.utils.keyboard import BotKeyboard
 from app.utils.system import readable_size
 from config import TELEGRAM_ADMIN_ID
 from telebot.formatting import escape_html

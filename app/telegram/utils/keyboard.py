@@ -38,6 +38,12 @@ class BotKeyboard:
                 callback_data=f"delete:{user_info['username']}"
             ),
         )
+        keyboard.add(
+            types.InlineKeyboardButton(
+            text='Edit User',
+            callback_data=f"edit:{user_info['username']}"
+            )
+        )
         if with_back:
             keyboard.add(
                 types.InlineKeyboardButton(
