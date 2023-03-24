@@ -118,9 +118,7 @@ def delete_user_command(call: types.CallbackQuery):
     )
 
 
-@bot.callback_query_handler(
-    func=lambda call: call.data.startswith("suspend:"), is_admin=True
-)
+@bot.callback_query_handler(func=lambda call: call.data.startswith("suspend:"), is_admin=True)
 def suspend_user_command(call: types.CallbackQuery):
     username = call.data.split(":")[1]
     bot.edit_message_text(
@@ -132,9 +130,7 @@ def suspend_user_command(call: types.CallbackQuery):
     )
 
 
-@bot.callback_query_handler(
-    func=lambda call: call.data.startswith("activate:"), is_admin=True
-)
+@bot.callback_query_handler(func=lambda call: call.data.startswith("activate:"), is_admin=True)
 def activate_user_command(call: types.CallbackQuery):
     username = call.data.split(":")[1]
     bot.edit_message_text(
@@ -403,7 +399,7 @@ def confirm_user_command(call: types.CallbackQuery):
             "✅ User suspended.",
             call.message.chat.id,
             call.message.message_id,
-            reply_markup=BotKeyboard.main_menu(),
+            reply_markup=BotKeyboard.main_menu()
         )
     elif data == "activate":
         username = call.data.split(":")[2]
@@ -416,7 +412,7 @@ def confirm_user_command(call: types.CallbackQuery):
             "✅ User activated.",
             call.message.chat.id,
             call.message.message_id,
-            reply_markup=BotKeyboard.main_menu(),
+            reply_markup=BotKeyboard.main_menu()
         )
     elif data == 'restart':
         m = bot.edit_message_text('🔄 Restarting XRay core...', call.message.chat.id, call.message.message_id)
