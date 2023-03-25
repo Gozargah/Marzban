@@ -58,6 +58,20 @@ def get_system_info():
     )
 
 
+def schedule_delete_message(*message_ids: int) -> None:
+    messages: list[int] = mem_store.get("messages_to_delete", [])
+    for mid in message_ids:
+        messages.append(mid)
+    mem_store.set("messages_to_delete", messages)
+
+
+def cleanup_messages(chat_id: int) -> None:
+    messages: list[int] = mem_store.get("messages_to_delete", [])
+    for message_id in messages:
+        bot.delete_message(chat_id, message_id)
+    mem_store.set("messages_to_delete", [])
+
+
 @bot.message_handler(commands=['start', 'help'], is_admin=True)
 def help_command(message: types.Message):
     return bot.reply_to(message, """
@@ -129,6 +143,54 @@ def activate_user_command(call: types.CallbackQuery):
     )
 
 
+@bot.callback_query_handler(cb_query_startswith("edit:"), is_admin=True)
+def edit_command(call: types.CallbackQuery):
+    username = call.data.split(":")[1]
+    with GetDB() as db:
+        dbuser = crud.get_user(db, username)
+        if not dbuser:
+            return bot.answer_callback_query(
+                call.id,
+                '❌ User not found.',
+                show_alert=True
+            )
+        user = UserResponse.from_orm(dbuser)
+    mem_store.set('username', username)
+    mem_store.set('data_limit', dbuser.data_limit)
+    mem_store.set('expire_date', datetime.fromtimestamp(dbuser.expire)
+                  if dbuser.expire else None)
+    mem_store.set('protocols', {
+        protocol.value: inbounds for protocol, inbounds in dbuser.inbounds.items()})
+    bot.edit_message_text(
+        f"📝 Editing user `{username}`",
+        call.message.chat.id,
+        call.message.message_id,
+        parse_mode="markdown",
+        reply_markup=BotKeyboard.select_protocols(
+            user.inbounds,
+            "edit",
+            username=username,
+            data_limit=dbuser.data_limit,
+            expire_date=mem_store.get("expire_date"),
+        )
+    )
+
+
+@bot.callback_query_handler(cb_query_startswith('help_edit:'), is_admin=True)
+def help_edit_command(call: types.CallbackQuery):
+    action = call.data.split(":")[1]
+    if action == "data":
+        text = "❕Press the 'Edit' button to edit the Data limit!"
+    elif action == "expire":
+        text = "❕Press the 'Edit' button to edit the Expire date!"
+
+    bot.answer_callback_query(
+        call.id,
+        text=text,
+        show_alert=True
+    )
+
+
 @bot.callback_query_handler(cb_query_equals('cancel'), is_admin=True)
 def cancel_command(call: types.CallbackQuery):
     return bot.edit_message_text(
@@ -138,6 +200,118 @@ def cancel_command(call: types.CallbackQuery):
         parse_mode="MarkdownV2",
         reply_markup=BotKeyboard.main_menu()
     )
+
+
+@bot.callback_query_handler(cb_query_startswith('edit_user:'), is_admin=True)
+def edit_user_command(call: types.CallbackQuery):
+    _, username, action = call.data.split(":")
+    schedule_delete_message(call.message.message_id)
+    if action == "data":
+        msg = bot.send_message(
+            call.message.chat.id,
+            '⬆️ Enter Data Limit (GB):\n⚠️ Send 0 for unlimited.',
+            reply_markup=BotKeyboard.cancel_action()
+        )
+        bot.register_next_step_handler(
+            call.message, edit_user_data_limit_step, username)
+        schedule_delete_message(msg.message_id)
+    elif action == "expire":
+        msg = bot.send_message(
+            call.message.chat.id,
+            '⬆️ Enter Expire Date (YYYY-MM-DD)\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|Y) :\n⚠️ Send 0 for never expire.',
+            reply_markup=BotKeyboard.cancel_action())
+        bot.register_next_step_handler(
+            call.message, edit_user_expire_step, username=username)
+        schedule_delete_message(msg.message_id)
+
+
+def edit_user_data_limit_step(message: types.Message, username: str):
+    if message.text == 'Cancel':
+        return bot.send_message(
+            message.chat.id,
+            '✅ Cancelled.'
+        )
+    try:
+        if float(message.text) < 0:
+            wait_msg = bot.send_message(
+                message.chat.id,
+                '❌ Data limit must be greater or equal to 0.',
+                reply_markup=BotKeyboard.cancel_action()
+            )
+            schedule_delete_message(wait_msg.message_id)
+            return bot.register_next_step_handler(wait_msg, edit_user_data_limit_step, username=username)
+        data_limit = float(message.text) * 1024 * 1024 * 1024
+    except ValueError:
+        wait_msg = bot.send_message(
+            message.chat.id,
+            '❌ Data limit must be a number.',
+            reply_markup=BotKeyboard.cancel_action()
+        )
+        schedule_delete_message(wait_msg.message_id)
+        return bot.register_next_step_handler(wait_msg, edit_user_data_limit_step, username=username)
+    mem_store.set('data_limit', data_limit)
+    schedule_delete_message(message.message_id)
+    bot.send_message(
+        message.chat.id,
+        f"📝 Editing user `{username}`",
+        parse_mode="markdown",
+        reply_markup=BotKeyboard.select_protocols(mem_store.get(
+            "protocols"), "edit", username=username, data_limit=data_limit, expire_date=mem_store.get("expire_date"))
+    )
+    cleanup_messages(message.chat.id)
+
+
+def edit_user_expire_step(message: types.Message, username: str,):
+    if message.text == 'Cancel':
+        return bot.send_message(
+            message.chat.id,
+            '✅ Cancelled.',
+            reply_markup=BotKeyboard.main_menu()
+        )
+    try:
+        today = datetime.today()
+        if re.match(r'^[0-9]{1,3}(M|m|Y|y)$', message.text):
+            expire_date = today
+            number_pattern = r'^[0-9]{1,3}'
+            number = int(re.findall(number_pattern, message.text)[0])
+            symbol_pattern = r'(M|m|Y|y)$'
+            symbol = re.findall(symbol_pattern, message.text)[0].upper()
+            if symbol == 'M':
+                expire_date = today + relativedelta(months=number)
+            elif symbol == 'Y':
+                expire_date = today + relativedelta(years=number)
+        elif message.text != '0':
+            expire_date = datetime.strptime(message.text, "%Y-%m-%d")
+        else:
+            expire_date = None
+        if expire_date and expire_date < today:
+            wait_msg = bot.send_message(
+                message.chat.id,
+                '❌ Expire date must be greater than today.',
+                reply_markup=BotKeyboard.cancel_action()
+            )
+            schedule_delete_message(wait_msg.message_id)
+            return bot.register_next_step_handler(
+                wait_msg, edit_user_expire_step, username=username)
+    except ValueError:
+        wait_msg = bot.send_message(
+            message.chat.id,
+            '❌ Expire date must be in YYYY-MM-DD format.\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|Y)',
+            reply_markup=BotKeyboard.cancel_action()
+        )
+        schedule_delete_message(wait_msg.message_id)
+        return bot.register_next_step_handler(wait_msg, edit_user_expire_step, username=username)
+
+    mem_store.set('expire_date', expire_date)
+    schedule_delete_message(message.message_id)
+    bot.send_message(
+        message.chat.id,
+        f"📝 Editing user `{username}`",
+        parse_mode="markdown",
+        reply_markup=BotKeyboard.select_protocols(mem_store.get(
+            "protocols"), "edit", username=username, data_limit=mem_store.get("data_limit"), expire_date=expire_date)
+    )
+    cleanup_messages(message.chat.id)
 
 
 @bot.callback_query_handler(cb_query_startswith('users:'), is_admin=True)
@@ -341,32 +515,79 @@ def add_user_expire_step(message: types.Message, username: str, data_limit: int)
             mem_store.get('expire_date').strftime(
                 "%Y-%m-%d") if mem_store.get('expire_date') else 'Never'
         ),
-        reply_markup=BotKeyboard.select_protocols([])
+        reply_markup=BotKeyboard.select_protocols({}, action="create")
     )
 
 
-@bot.callback_query_handler(cb_query_startswith('select:'), is_admin=True)
-def select_protocols(call: types.CallbackQuery):
-    if not mem_store.get('username'):
+@bot.callback_query_handler(cb_query_startswith('select_inbound:'), is_admin=True)
+def select_inbounds(call: types.CallbackQuery):
+    if not (username := mem_store.get('username')):
         return bot.answer_callback_query(call.id, '❌ No user selected.', show_alert=True)
-    protocols = mem_store.get('protocols', [])
-    protocol = call.data.split(':')[1]
-    if protocol in protocols:
-        protocols.remove(protocol)
-    else:
-        protocols.append(protocol)
+    protocols: dict[str, list[str]] = mem_store.get('protocols', {})
+    _, inbound, action = call.data.split(':')
+    for protocol, inbounds in xray.config.inbounds_by_protocol.items():
+        for i in inbounds:
+            if i['tag'] != inbound:
+                continue
+            if not inbound in protocols[protocol]:
+                protocols[protocol].append(inbound)
+            else:
+                protocols[protocol].remove(inbound)
+            if len(protocols[protocol]) < 1:
+                del protocols[protocol]
+
     mem_store.set('protocols', protocols)
+
+    if action == "edit":
+        return bot.edit_message_text(
+            call.message.text,
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=BotKeyboard.select_protocols(
+                protocols,
+                "edit",
+                username=username,
+                data_limit=mem_store.get("data_limit"),
+                expire_date=mem_store.get("expire_date"))
+        )
     bot.edit_message_text(
-        'Select Protocols:\nUsernames: {}\nData Limit: {}\nExpiry Date: {}'.format(
-            mem_store.get('username'),
-            readable_size(mem_store.get('data_limit')) if mem_store.get(
-                'data_limit') else "Unlimited",
-            mem_store.get('expire_date').strftime(
-                "%Y-%m-%d") if mem_store.get('expire_date') else 'Never'
-        ),
+        call.message.text,
         call.message.chat.id,
         call.message.message_id,
-        reply_markup=BotKeyboard.select_protocols(protocols)
+        reply_markup=BotKeyboard.select_protocols(protocols, "create")
+    )
+
+
+@bot.callback_query_handler(cb_query_startswith('select_protocol:'), is_admin=True)
+def select_protocols(call: types.CallbackQuery):
+    if not (username := mem_store.get('username')):
+        return bot.answer_callback_query(call.id, '❌ No user selected.', show_alert=True)
+    protocols: dict[str, list[str]] = mem_store.get('protocols', {})
+    _, protocol, action = call.data.split(':')
+    if protocol in protocols:
+        del protocols[protocol]
+    else:
+        protocols.update(
+            {protocol: [inbound['tag'] for inbound in xray.config.inbounds_by_protocol[protocol]]})
+    mem_store.set('protocols', protocols)
+
+    if action == "edit":
+        return bot.edit_message_text(
+            call.message.text,
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=BotKeyboard.select_protocols(
+                protocols,
+                "edit",
+                username=username,
+                data_limit=mem_store.get("data_limit"),
+                expire_date=mem_store.get("expire_date"))
+        )
+    bot.edit_message_text(
+        call.message.text,
+        call.message.chat.id,
+        call.message.message_id,
+        reply_markup=BotKeyboard.select_protocols(protocols, action="create")
     )
 
 
@@ -426,6 +647,77 @@ def confirm_user_command(call: types.CallbackQuery):
             reply_markup=BotKeyboard.main_menu()
         )
 
+    elif data == 'edit_user':
+        if (username := mem_store.get('username')) is None:
+            try:
+                bot.delete_message(call.message.chat.id,
+                                   call.message.message_id)
+            except Exception:
+                pass
+            return bot.send_message(
+                call.message.chat.id,
+                '❌ Bot reload detected. Please start over.',
+                reply_markup=BotKeyboard.main_menu()
+            )
+
+        if not mem_store.get('protocols'):
+            return bot.answer_callback_query(
+                call.id,
+                '❌ No inbounds selected.',
+                show_alert=True
+            )
+
+        inbounds: dict[str, list[str]] = {
+            k: v for k, v in mem_store.get('protocols').items() if v}
+
+        with GetDB() as db:
+            db_user = crud.get_user(db, username)
+            if not db_user:
+                return bot.answer_callback_query(call.id, text=f"User not found!", show_alert=True)
+
+            proxies = {p.type.value: p.settings for p in db_user.proxies}
+
+            for protocol in xray.config.inbounds_by_protocol:
+                if protocol in inbounds and protocol not in db_user.inbounds:
+                    proxies.update({protocol: {}})
+                elif protocol in db_user.inbounds and protocol not in inbounds:
+                    del proxies[protocol]
+
+            modify = UserModify(
+                expire=mem_store.get('expire_date').timestamp(
+                ) if mem_store.get('expire_date') else 0,
+                data_limit=mem_store.get("data_limit"),
+                proxies=proxies,
+                inbounds=inbounds
+            )
+            db_user = crud.update_user(db, db_user, modify)
+            proxies = db_user.proxies
+
+        text = """
+✅ User Updated successfully.
+┌ Username: {}
+├ Data Limit: {}
+├ Expire Date: {}
+└ Protocols: {}
+""".format(
+            db_user.username,
+            readable_size(
+                db_user.data_limit) if db_user.data_limit else "Unlimited",
+            datetime.fromtimestamp(db_user.expire).strftime(
+                "%Y-%m-%d") if db_user.expire else 'Never',
+            ', '.join([p.type for p in proxies])
+        )
+        bot.edit_message_text(
+            text,
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=BotKeyboard.user_menu({
+                'username': db_user.username,
+                'id': db_user.id,
+                'status': db_user.status
+            }, view_user=True)
+        )
+
     elif data == 'add_user':
         if mem_store.get('username') is None:
             try:
@@ -442,17 +734,20 @@ def confirm_user_command(call: types.CallbackQuery):
         if not mem_store.get('protocols'):
             return bot.answer_callback_query(
                 call.id,
-                '❌ No protocols selected.',
+                '❌ No inbounds selected.',
                 show_alert=True
             )
 
+        inbounds: dict[str, list[str]] = {
+            k: v for k, v in mem_store.get('protocols').items() if v}
         new_user = UserCreate(
             username=mem_store.get('username'),
             expire=mem_store.get('expire_date').timestamp(
             ) if mem_store.get('expire_date') else None,
             data_limit=mem_store.get('data_limit') if mem_store.get(
                 'data_limit') else None,
-            proxies={k: {} for k in mem_store.get('protocols')}
+            proxies={p: {} for p in inbounds},
+            inbounds=inbounds
         )
 
         for proxy_type in new_user.proxies:

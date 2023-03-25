@@ -1,4 +1,11 @@
+from datetime import datetime as dt
+from typing import Literal
+
 from telebot import types  # noqa
+
+from app import xray
+from app.models.user import UserResponse
+from app.utils.system import readable_size
 
 
 class BotKeyboard:
@@ -40,8 +47,8 @@ class BotKeyboard:
         )
         keyboard.add(
             types.InlineKeyboardButton(
-            text='Edit User',
-            callback_data=f"edit:{user_info['username']}"
+                text='Edit User',
+                callback_data=f"edit:{user_info['username']}"
             )
         )
         if with_back:
@@ -125,22 +132,67 @@ class BotKeyboard:
         return keyboard
 
     @staticmethod
-    def select_protocols(selected: list):
+    def select_protocols(selected_protocols: dict[str, list[str]],
+                         action: Literal["edit", "create"],
+                         username: str = None,
+                         data_limit: int = None,
+                         expire_date: dt = None):
         keyboard = types.InlineKeyboardMarkup()
-        protocols = ['vmess', 'vless', 'trojan', 'shadowsocks']
-        protocols = [protocols[i:i + 2] for i in range(0, len(protocols), 2)]
-        for protocol in protocols:
-            row = []
-            for p in protocol:
-                row.append(types.InlineKeyboardButton(
-                    text=f"{p.upper()} {'✅' if p in selected else '❌'}",
-                    callback_data=f'select:{p}'
-                ))
-            keyboard.row(*row)
+
+        if action == "edit":
+            keyboard.add(
+                types.InlineKeyboardButton(
+                    text="⚠️ Data Limit:",
+                    callback_data=f"help_edit:data"
+                )
+            )
+            keyboard.add(
+                types.InlineKeyboardButton(
+                    text=f"{readable_size(data_limit) if data_limit else 'Unlimited'}",
+                    callback_data=f"help_edit:data"
+                ),
+                types.InlineKeyboardButton(
+                    text="✏️Edit",
+                    callback_data=f"edit_user:{username}:data"
+                )
+            )
+            keyboard.add(
+                types.InlineKeyboardButton(
+                    text="📅 Expire Date:",
+                    callback_data=f"help_edit:expire"
+                )
+            )
+            keyboard.add(
+                types.InlineKeyboardButton(
+                    text=f"{expire_date.strftime('%Y-%m-%d') if expire_date else 'Never'}",
+                    callback_data=f"help_edit:expire"
+                ),
+                types.InlineKeyboardButton(
+                    text="✏️Edit",
+                    callback_data=f"edit_user:{username}:expire"
+                )
+            )
+
+        for protocol, inbounds in xray.config.inbounds_by_protocol.items():
+            keyboard.add(
+                types.InlineKeyboardButton(
+                    text=f"🌐 {protocol.upper()} {'✅' if protocol in selected_protocols else '❌'}",
+                    callback_data=f'select_protocol:{protocol}:{action}'
+                )
+            )
+            if protocol in selected_protocols:
+                for inbound in inbounds:
+                    keyboard.add(
+                        types.InlineKeyboardButton(
+                            text=f"«{inbound['tag']}» {'✅' if inbound['tag'] in selected_protocols[protocol] else '❌'}",
+                            callback_data=f'select_inbound:{inbound["tag"]}:{action}'
+                        )
+                    )
+
         keyboard.add(
             types.InlineKeyboardButton(
                 text='Done',
-                callback_data='confirm:add_user'
+                callback_data='confirm:add_user' if action == "create" else 'confirm:edit_user'
             )
         )
         keyboard.add(
