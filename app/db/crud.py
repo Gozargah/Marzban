@@ -4,10 +4,8 @@ from typing import List, Optional, Tuple, Union
 
 from sqlalchemy.orm import Session
 
-from sqlalchemy.orm import Session
-
-from app.db.models import (JWT, Admin, Proxy, ProxyHost, ProxyInbound, System,
-                           User, UserUsageResetLogs)
+from app.db.models import (JWT, Admin, Proxy, ProxyHost, ProxyInbound,
+                           ProxyTypes, System, User, UserUsageResetLogs)
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
 from app.models.proxy import ProxyHost as ProxyHostModify
 from app.models.user import (UserCreate, UserDataLimitResetStrategy,
@@ -173,6 +171,7 @@ def remove_user(db: Session, dbuser: User):
 
 
 def update_user(db: Session, dbuser: User, modify: UserModify):
+    added_proxies: dict[ProxyTypes, Proxy] = {}
     if modify.proxies:
         for proxy_type, settings in modify.proxies.items():
             dbproxy = db.query(Proxy) \
@@ -181,16 +180,17 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
             if dbproxy:
                 dbproxy.settings = settings.dict(no_obj=True)
             else:
-                dbuser.proxies.append(Proxy(type=proxy_type, settings=settings.dict(no_obj=True)))
+                new_proxy = Proxy(ype=proxy_type, settings=settings.dict(no_obj=True))
+                dbuser.proxies.append(new_proxy)
+                added_proxies.update({proxy_type: new_proxy})
         for proxy in dbuser.proxies:
             if proxy.type not in modify.proxies:
                 db.delete(proxy)
-
     if modify.inbounds:
         for proxy_type, tags in modify.excluded_inbounds.items():
             dbproxy = db.query(Proxy) \
                 .where(Proxy.user == dbuser, Proxy.type == proxy_type) \
-                .first()
+                .first() or added_proxies.get(proxy_type)
             if dbproxy:
                 dbproxy.excluded_inbounds = [get_or_create_inbound(db, tag) for tag in tags]
 
