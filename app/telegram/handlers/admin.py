@@ -1,6 +1,8 @@
 import math
 import re
+import io
 from datetime import datetime
+import qrcode
 
 import sqlalchemy
 from dateutil.relativedelta import relativedelta
@@ -379,6 +381,57 @@ def user_command(call: types.CallbackQuery):
             'status': user.status,
         }, page=page)
     )
+
+
+@bot.callback_query_handler(cb_query_startswith("links:"), is_admin=True)
+def links_command(call: types.CallbackQuery):
+    username = call.data.split(":")[1]
+
+    with GetDB() as db:
+        dbuser = crud.get_user(db, username)
+        if not dbuser:
+            return bot.answer_callback_query(call.id, "User not found!", show_alert=True)
+
+        user = UserResponse.from_orm(dbuser)
+
+    text = ""
+    for link in user.links:
+        text += f"`{link}`\n\n"
+
+    bot.edit_message_text(
+        text,
+        call.message.chat.id,
+        call.message.message_id,
+        parse_mode="markdown",
+        reply_markup=BotKeyboard.show_links(username)
+    )
+
+
+@bot.callback_query_handler(cb_query_startswith("genqr:"), is_admin=True)
+def genqr_command(call: types.CallbackQuery):
+    username = call.data.split(":")[1]
+
+    with GetDB() as db:
+        dbuser = crud.get_user(db, username)
+        if not dbuser:
+            return bot.answer_callback_query(call.id, "User not found!", show_alert=True)
+
+        user = UserResponse.from_orm(dbuser)
+
+    bot.answer_callback_query(call.id, "Generating Qr code...")
+
+    for link in user.links:
+        f = io.BytesIO()
+        qr = qrcode.QRCode(border=6)
+        qr.add_data(link)
+        qr.make_image().save(f)
+        f.seek(0)
+        bot.send_photo(
+            call.message.chat.id,
+            photo=f,
+            caption=f"`{link}`",
+            parse_mode="markdown"
+        )
 
 
 @bot.callback_query_handler(cb_query_equals('add_user'), is_admin=True)
