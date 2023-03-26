@@ -1,9 +1,9 @@
+import io
 import math
 import re
-import io
 from datetime import datetime
-import qrcode
 
+import qrcode
 import sqlalchemy
 from dateutil.relativedelta import relativedelta
 from telebot import types
@@ -11,15 +11,17 @@ from telebot.util import user_link
 
 from app import xray
 from app.db import GetDB, crud
-from app.models.user import UserCreate, UserResponse, UserStatus, UserModify, UserStatusModify
+from app.models.user import (UserCreate, UserModify, UserResponse, UserStatus,
+                             UserStatusModify)
 from app.telegram import bot
+from app.telegram.utils.custom_filters import (cb_query_equals,
+                                               cb_query_startswith)
 from app.telegram.utils.keyboard import BotKeyboard
 from app.utils.store import MemoryStorage
 from app.utils.system import cpu_usage, memory_usage, readable_size
 from app.utils.xray import (xray_add_user, xray_config_include_db_clients,
                             xray_remove_user)
 
-from app.telegram.utils.custom_filters import cb_query_equals, cb_query_startswith
 mem_store = MemoryStorage()
 
 
@@ -339,6 +341,25 @@ def users_command(call: types.CallbackQuery):
     )
 
 
+def get_user_info_text(
+        username: str, sub_url: str, inbounds: dict, data_limit: int | None = None, usage: int | None = None, expire: int |
+        None = None) -> str:
+    protocols = ""
+    for p, inbounds in inbounds.items():
+        protocols += f"\n├─ <b>{p.upper()}</b>\n"
+        protocols += "├───" + ", ".join([f"<code>{i}</code>" for i in inbounds])
+    text = f"""
+📊 User Info:
+┌ Username: <b>{username}</b>
+├ Usage Limit: <b>{readable_size(data_limit) if data_limit else 'Unlimited'}</b>
+├ Used Traffic: <b>{readable_size(usage) if usage else "-"}</b>
+├ Expiry Date <b>{datetime.fromtimestamp(expire).strftime('%Y-%m-%d') if expire else 'Never'}</b>
+├ Protocols: {protocols}
+└ Subscription URL: <code>{sub_url}</code>
+        """
+    return text
+
+
 @bot.callback_query_handler(cb_query_startswith('user:'), is_admin=True)
 def user_command(call: types.CallbackQuery):
     username = call.data.split(':')[1]
@@ -352,35 +373,16 @@ def user_command(call: types.CallbackQuery):
                 show_alert=True
             )
         user = UserResponse.from_orm(dbuser)
-    text = """
-📊 User Info:
-┌ Username: <b>{username}</b>
-├ Usage Limit: <b>{usage_limit}</b>
-├ Used Traffic: <b>{usage}</b>
-├ Expiry Date <b>{expire_date}</b>
-├ Protocols: {protocols}
-└ Subscription URL: <code>{url}</code>
-        """.format(
-        username=user.username,
-        usage=readable_size(
-            user.used_traffic) if user.used_traffic else "Unlimited",
-        usage_limit=readable_size(
-            user.data_limit) if user.data_limit else "Unlimited",
-        expire_date=datetime.fromtimestamp(user.expire).strftime(
-            "%Y-%m-%d") if user.expire else "Never",
-        protocols=",".join([proxy for proxy in user.proxies]),
-        url=user.subscription_url
-    )
+
+    text = get_user_info_text(
+        username=username, sub_url=user.subscription_url, inbounds=user.inbounds,
+        data_limit=user.data_limit, usage=user.used_traffic, expire=user.expire),
     bot.edit_message_text(
         text,
-        call.message.chat.id,
-        call.message.message_id,
-        parse_mode="HTML",
-        reply_markup=BotKeyboard.user_menu({
-            'username': user.username,
-            'status': user.status,
-        }, page=page)
-    )
+        call.message.chat.id, call.message.message_id, parse_mode="HTML",
+        reply_markup=BotKeyboard.user_menu(
+            {'username': user.username, 'status': user.status, },
+            page=page))
 
 
 @bot.callback_query_handler(cb_query_startswith("links:"), is_admin=True)
@@ -747,24 +749,21 @@ def confirm_user_command(call: types.CallbackQuery):
             db_user = crud.update_user(db, db_user, modify)
             proxies = db_user.proxies
 
-        text = """
-✅ User Updated successfully.
-┌ Username: {}
-├ Data Limit: {}
-├ Expire Date: {}
-└ Protocols: {}
-""".format(
-            db_user.username,
-            readable_size(
-                db_user.data_limit) if db_user.data_limit else "Unlimited",
-            datetime.fromtimestamp(db_user.expire).strftime(
-                "%Y-%m-%d") if db_user.expire else 'Never',
-            ', '.join([p.type for p in proxies])
-        )
+            user = UserResponse.from_orm(db_user)
+
+        bot.answer_callback_query(call.id, "✅ User updated successfully.")
+        text = get_user_info_text(username=user.username,
+                                  sub_url=user.subscription_url,
+                                  inbounds=user.inbounds,
+                                  data_limit=user.data_limit,
+                                  usage=user.used_traffic,
+                                  expire=user.expire
+                                  )
         bot.edit_message_text(
             text,
             call.message.chat.id,
             call.message.message_id,
+            parse_mode="HTML",
             reply_markup=BotKeyboard.user_menu({
                 'username': db_user.username,
                 'id': db_user.id,
@@ -816,6 +815,7 @@ def confirm_user_command(call: types.CallbackQuery):
             with GetDB() as db:
                 db_user = crud.create_user(db, new_user)
                 proxies = db_user.proxies
+                user = UserResponse.from_orm(dbuser)
         except sqlalchemy.exc.IntegrityError:
             return bot.answer_callback_query(
                 call.id,
@@ -825,24 +825,18 @@ def confirm_user_command(call: types.CallbackQuery):
 
         xray_add_user(new_user)
 
-        text = """
-✅ User added successfully.
-┌ Username: {}
-├ Data Limit: {}
-├ Expire Date: {}
-└ Protocols: {}
-""".format(
-            db_user.username,
-            readable_size(
-                db_user.data_limit) if db_user.data_limit else "Unlimited",
-            mem_store.get('expire_date').strftime(
-                "%Y-%m-%d") if db_user.expire else 'Never',
-            ', '.join([p.type for p in proxies])
-        )
+        text = "✅ User added successfully" + get_user_info_text(username=user.username,
+                                                                sub_url=user.subscription_url,
+                                                                inbounds=user.inbounds,
+                                                                data_limit=user.data_limit,
+                                                                usage=user.used_traffic,
+                                                                expire=user.expire
+                                                                )
         bot.edit_message_text(
             text,
             call.message.chat.id,
             call.message.message_id,
+            parse_mode="HTML",
             reply_markup=BotKeyboard.user_menu({
                 'username': db_user.username,
                 'id': db_user.id,

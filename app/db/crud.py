@@ -181,7 +181,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
             if dbproxy:
                 dbproxy.settings = settings.dict(no_obj=True)
             else:
-                new_proxy = Proxy(ype=proxy_type, settings=settings.dict(no_obj=True))
+                new_proxy = Proxy(type=proxy_type, settings=settings.dict(no_obj=True))
                 dbuser.proxies.append(new_proxy)
                 added_proxies.update({proxy_type: new_proxy})
         for proxy in dbuser.proxies:
