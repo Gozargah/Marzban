@@ -40,8 +40,14 @@ class BotKeyboard:
         )
         keyboard.add(
             types.InlineKeyboardButton(
-            text='Edit User',
-            callback_data=f"edit:{user_info['username']}"
+                text='Show Links',
+                callback_data=f"links:{user_info['username']}"
+            )
+        )
+        keyboard.add(
+            types.InlineKeyboardButton(
+                text='Edit User',
+                callback_data=f"edit:{user_info['username']}"
             )
         )
         if with_back:
@@ -51,6 +57,24 @@ class BotKeyboard:
                     callback_data=f'users:{page}'
                 )
             )
+        return keyboard
+
+    @staticmethod
+    def show_links(username: str):
+        keyboard = types.InlineKeyboardMarkup()
+
+        keyboard.add(
+            types.InlineKeyboardButton(
+                text="Generate Qr code",
+                callback_data=f'genqr:{username}'
+            )
+        )
+        keyboard.add(
+            types.InlineKeyboardButton(
+                text='Back',
+                callback_data=f'user:{username}'
+            )
+        )
         return keyboard
 
     @staticmethod
