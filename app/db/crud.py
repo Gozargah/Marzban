@@ -5,11 +5,12 @@ from typing import List, Optional, Tuple, Union
 from sqlalchemy.orm import Session
 
 from app.db.models import (JWT, Admin, Proxy, ProxyHost, ProxyInbound,
-                           ProxyTypes, System, User, UserUsageResetLogs)
+                           ProxyTypes, System, User, UserUsageResetLogs, UserTemplate)
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
 from app.models.proxy import ProxyHost as ProxyHostModify
 from app.models.user import (UserCreate, UserDataLimitResetStrategy,
                              UserModify, UserStatus)
+from app.models.user_template import UserTemplateCreate, UserTemplateModify, UserTemplateResponse
 
 
 def add_default_host(db: Session, inbound: ProxyInbound):
@@ -304,3 +305,64 @@ def get_admins(db: Session,
     if limit:
         query = query.limit(limit)
     return query.all()
+
+
+def create_user_template(db: Session, user_template: UserTemplateCreate) -> UserTemplate:
+    inbound_tags: list[str] = []
+    for _, i in user_template.inbounds.items():
+        inbound_tags.extend(i)
+    dbuser_template = UserTemplate(
+        name=user_template.name,
+        data_limit=user_template.data_limit,
+        expire_duration=user_template.expire_duration,
+        username_prefix=user_template.username_prefix,
+        username_suffix=user_template.username_suffix,
+        inbounds=db.query(ProxyInbound).filter(ProxyInbound.tag.in_(inbound_tags)).all()
+    )
+    db.add(dbuser_template)
+    db.commit()
+    db.refresh(dbuser_template)
+    return dbuser_template
+
+
+def update_user_template(
+        db: Session, dbuser_template: UserTemplate, modified_user_template: UserTemplateModify) -> UserTemplate:
+    if modified_user_template.name is not None:
+        dbuser_template.name = modified_user_template.name
+    if modified_user_template.data_limit is not None:
+        dbuser_template.data_limit = modified_user_template.data_limit
+    if modified_user_template.expire_duration is not None:
+        dbuser_template.expire_duration = modified_user_template.expire_duration
+    if modified_user_template.username_prefix is not None:
+        dbuser_template.username_prefix = modified_user_template.username_prefix
+    if modified_user_template.username_suffix is not None:
+        dbuser_template.username_suffix = modified_user_template.username_suffix
+
+    if modified_user_template.inbounds:
+        inbound_tags: list[str] = []
+        for _, i in modified_user_template.inbounds.items():
+            inbound_tags.extend(i)
+        dbuser_template.inbounds = db.query(ProxyInbound).filter(ProxyInbound.tag.in_(inbound_tags)).all()
+
+    db.commit()
+    db.refresh(dbuser_template)
+    return dbuser_template
+
+
+def remove_user_template(db: Session, dbuser_template: UserTemplate):
+    db.delete(dbuser_template)
+    db.commit()
+
+
+def get_user_template(db: Session, user_template_id: int) -> UserTemplate:
+    return db.query(UserTemplate).filter(UserTemplate.id == user_template_id).first()
+
+
+def get_user_templates(db: Session, offset: int | None = None, limit: int | None = None) -> list[UserTemplate]:
+    dbuser_templates = db.query(UserTemplate)
+    if offset:
+        dbuser_templates = dbuser_templates.offset(offset)
+    if limit:
+        dbuser_templates = dbuser_templates.limit(limit)
+
+    return dbuser_templates.all()

@@ -1,24 +1,14 @@
 import os
 from datetime import datetime
 
+from sqlalchemy import (JSON, BigInteger, Boolean, Column, DateTime, Enum,
+                        ForeignKey, Integer, String, Table, UniqueConstraint)
+from sqlalchemy.orm import relationship
+
 from app import xray
 from app.db.base import Base
-from app.models.proxy import ProxyTypes, ProxyHostSecurity
+from app.models.proxy import ProxyHostSecurity, ProxyTypes
 from app.models.user import UserDataLimitResetStrategy, UserStatus
-from sqlalchemy import (
-    JSON,
-    BigInteger,
-    Column,
-    DateTime,
-    Enum,
-    ForeignKey,
-    Integer,
-    String,
-    Table,
-    Boolean,
-    UniqueConstraint,
-)
-from sqlalchemy.orm import relationship
 
 
 class Admin(Base):
@@ -89,6 +79,28 @@ excluded_inbounds_association = Table(
     Column("proxy_id", ForeignKey("proxies.id")),
     Column("inbound_tag", ForeignKey("inbounds.tag")),
 )
+
+template_inbounds_association = Table(
+    "template_inbounds_association",
+    Base.metadata,
+    Column("user_template_id", ForeignKey("user_templates.id")),
+    Column("inbound_tag", ForeignKey("inbounds.tag")),
+)
+
+
+class UserTemplate(Base):
+    __tablename__ = "user_templates"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(64), nullable=False, unique=True)
+    data_limit = Column(Integer, default=0)
+    expire_duration = Column(Integer, default=0)  # in seconds
+    username_prefix = Column(String(20), nullable=True)
+    username_suffix = Column(String(20), nullable=True)
+
+    inbounds = relationship(
+        "ProxyInbound", secondary=template_inbounds_association
+    )
 
 
 class UserUsageResetLogs(Base):

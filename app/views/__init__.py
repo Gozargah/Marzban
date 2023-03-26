@@ -1,9 +1,10 @@
 from app import app
 
 from .admin import *
+from .subscription import *
 from .system import *
 from .user import *
-from .subscription import *
+from .user_template import *
 
 
 @app.get("/", status_code=204)
