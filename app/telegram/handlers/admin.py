@@ -229,7 +229,8 @@ def edit_user_data_limit_step(message: types.Message, username: str):
     if message.text == 'Cancel':
         return bot.send_message(
             message.chat.id,
-            '✅ Cancelled.'
+            '✅ Cancelled.',
+            reply_markup=types.ReplyKeyboardRemove()
         )
     try:
         if float(message.text) < 0:
@@ -266,7 +267,7 @@ def edit_user_expire_step(message: types.Message, username: str,):
         return bot.send_message(
             message.chat.id,
             '✅ Cancelled.',
-            reply_markup=BotKeyboard.main_menu()
+            reply_markup=types.ReplyKeyboardRemove()
         )
     try:
         today = datetime.today()
