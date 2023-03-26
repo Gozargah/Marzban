@@ -219,10 +219,18 @@ class BotKeyboard:
                 callback_data='confirm:add_user' if action == "create" else 'confirm:edit_user'
             )
         )
-        keyboard.add(
-            types.InlineKeyboardButton(
-                text='Cancel',
-                callback_data='cancel'
+        if action == "edit":
+            keyboard.add(
+                types.InlineKeyboardButton(
+                    text='Cancel',
+                    callback_data=f'user:{username}'
+                )
             )
-        )
+        else:
+            keyboard.add(
+                types.InlineKeyboardButton(
+                    text='Cancel',
+                    callback_data='cancel'
+                )
+            )
         return keyboard
