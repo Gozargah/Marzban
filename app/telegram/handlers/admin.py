@@ -320,7 +320,7 @@ def users_command(call: types.CallbackQuery):
     page = int(call.data.split(':')[1]) if len(call.data.split(':')) > 1 else 1
     with GetDB() as db:
         total_pages = math.ceil(crud.get_users_count(db) / 10)
-        users = crud.get_users(db, offset=(page - 1) * 10, limit=10)
+        users = crud.get_users(db, offset=(page - 1) * 10, limit=10, sort=[crud.UsersSortingOptions["-created_at"]])
         text = """👥 Users: (Page {page}/{total_pages})
 ✅ Active
 ❌ Disabled
