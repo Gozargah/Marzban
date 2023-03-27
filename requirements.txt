@@ -39,7 +39,7 @@ python-multipart==0.0.5
 pytz==2022.6
 pytz-deprecation-shim==0.1.0.post0
 PyYAML==6.0
-redis==4.3.5
+redis==4.5.3
 requests==2.28.1
 rsa==4.9
 six==1.16.0
