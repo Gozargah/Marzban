@@ -9,6 +9,7 @@ from app import xray
 from app.db.base import Base
 from app.models.proxy import ProxyHostSecurity, ProxyTypes
 from app.models.user import UserDataLimitResetStrategy, UserStatus
+from app.models.node import NodeStatus
 
 
 class Admin(Base):
@@ -174,3 +175,18 @@ class JWT(Base):
     secret_key = Column(
         String(64), nullable=False, default=lambda: os.urandom(32).hex()
     )
+
+
+class Node(Base):
+    __tablename__ = "nodes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(256, collation='NOCASE'), unique=True)
+    address = Column(String(256), unique=False, nullable=False)
+    port = Column(Integer, unique=False, nullable=False)
+    api_port = Column(Integer, unique=False, nullable=False)
+    certificate = Column(String(2048), unique=False, nullable=False)
+    status = Column(Enum(NodeStatus), nullable=False, default=NodeStatus.inactive)
+    last_status_change = Column(DateTime, default=datetime.utcnow)
+    message = Column(String(1024), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)

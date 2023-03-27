@@ -3,12 +3,12 @@ from random import randint
 from app.utils.system import check_port
 from app.xray.config import XRayConfig
 from app.xray.core import XRayCore
+from app.xray.node import XRayNode
+from config import XRAY_ASSETS_PATH, XRAY_EXECUTABLE_PATH, XRAY_JSON
 from xray_api import XRay
 from xray_api import exceptions
 from xray_api import exceptions as exc
 from xray_api import types
-
-from config import XRAY_ASSETS_PATH, XRAY_EXECUTABLE_PATH, XRAY_JSON
 
 # Search for a free API port
 try:
@@ -30,5 +30,8 @@ __all__ = [
     "api",
     "exceptions",
     "exc",
-    "types"
+    "types",
+    "XRayConfig",
+    "XRayCore",
+    "XRayNode",
 ]

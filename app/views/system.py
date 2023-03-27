@@ -1,14 +1,15 @@
 from typing import Dict, List, Union
 
+from fastapi import Depends, HTTPException
+
 from app import app, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.proxy import ProxyHost, ProxyInbound, ProxyTypes
 from app.models.system import SystemStats
 from app.models.user import UserStatus
-from app.utils.system import memory_usage
 from app.utils.store import XrayStore
-from fastapi import Depends, HTTPException
+from app.utils.system import memory_usage
 
 
 @app.get("/api/system", tags=["System"], response_model=SystemStats)
