@@ -9,7 +9,6 @@ from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.user import (UserCreate, UserModify, UserResponse,
                              UsersResponse, UserStatus)
-from app.utils.xray import xray_add_user, xray_remove_user
 
 
 @app.post("/api/user", tags=['User'], response_model=UserResponse)
@@ -38,7 +37,7 @@ def add_user(new_user: UserCreate,
     except sqlalchemy.exc.IntegrityError:
         raise HTTPException(status_code=409, detail="User already exists")
 
-    xray_add_user(new_user)
+    xray.operations.add_user(new_user)
 
     bg.add_task(
         telegram.report_new_user,
@@ -100,9 +99,9 @@ def modify_user(username: str,
     dbuser = crud.update_user(db, dbuser, modified_user)
     user = UserResponse.from_orm(dbuser)
 
-    xray_remove_user(user)
+    xray.operations.remove_user(user)
     if user.status == UserStatus.active:
-        xray_add_user(user)
+        xray.operations.add_user(user)
 
     bg.add_task(telegram.report_user_modification,
                 username=dbuser.username,
@@ -139,7 +138,7 @@ def remove_user(username: str,
 
     crud.remove_user(db, dbuser)
 
-    xray_remove_user(dbuser)
+    xray.operations.remove_user(dbuser)
 
     bg.add_task(
         telegram.report_user_deletion,

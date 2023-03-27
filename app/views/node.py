@@ -1,5 +1,3 @@
-from app import app, xray
-from app.models.node import NodeStatus, NodeCreate, NodeResponse, NodeModify
 from datetime import datetime
 from typing import List
 
@@ -9,9 +7,9 @@ from fastapi import BackgroundTasks, Depends, HTTPException
 from app import app, logger, telegram, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
+from app.models.node import NodeCreate, NodeModify, NodeResponse, NodeStatus
 from app.models.user import (UserCreate, UserModify, UserResponse,
                              UsersResponse, UserStatus)
-from app.utils.xray import xray_add_user, xray_remove_user
 
 
 @app.post("/api/node", tags=['Node'], response_model=NodeResponse)

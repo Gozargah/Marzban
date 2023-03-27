@@ -19,7 +19,6 @@ from app.telegram.utils.custom_filters import (cb_query_equals,
 from app.telegram.utils.keyboard import BotKeyboard
 from app.utils.store import MemoryStorage
 from app.utils.system import cpu_usage, memory_usage, readable_size
-from app.utils.xray import xray_add_user, xray_remove_user
 
 mem_store = MemoryStorage()
 
@@ -655,7 +654,7 @@ def confirm_user_command(call: types.CallbackQuery):
         with GetDB() as db:
             dbuser = crud.get_user(db, username)
             crud.remove_user(db, dbuser)
-            xray_remove_user(dbuser)
+            xray.operations.remove_user(dbuser)
 
         return bot.edit_message_text(
             '✅ User deleted.',
@@ -669,7 +668,7 @@ def confirm_user_command(call: types.CallbackQuery):
             dbuser = crud.get_user(db, username)
             crud.update_user(db, dbuser, UserModify(
                 status=UserStatusModify.disabled))
-            xray_remove_user(dbuser)
+            xray.operations.remove_user(dbuser)
         return bot.edit_message_text(
             "✅ User suspended.",
             call.message.chat.id,
@@ -682,7 +681,7 @@ def confirm_user_command(call: types.CallbackQuery):
             dbuser = crud.get_user(db, username)
             crud.update_user(db, dbuser, UserModify(
                 status=UserStatusModify.active))
-            xray_add_user(dbuser)
+            xray.operations.add_user(dbuser)
 
         return bot.edit_message_text(
             "✅ User activated.",
@@ -822,7 +821,7 @@ def confirm_user_command(call: types.CallbackQuery):
                 show_alert=True
             )
 
-        xray_add_user(new_user)
+        xray.operations.add_user(new_user)
 
         text = """
 ✅ User added successfully.
