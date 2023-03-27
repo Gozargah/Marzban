@@ -1,9 +1,9 @@
+import io
 import math
 import re
-import io
 from datetime import datetime
-import qrcode
 
+import qrcode
 import sqlalchemy
 from dateutil.relativedelta import relativedelta
 from telebot import types
@@ -11,15 +11,16 @@ from telebot.util import user_link
 
 from app import xray
 from app.db import GetDB, crud
-from app.models.user import UserCreate, UserResponse, UserStatus, UserModify, UserStatusModify
+from app.models.user import (UserCreate, UserModify, UserResponse, UserStatus,
+                             UserStatusModify)
 from app.telegram import bot
+from app.telegram.utils.custom_filters import (cb_query_equals,
+                                               cb_query_startswith)
 from app.telegram.utils.keyboard import BotKeyboard
 from app.utils.store import MemoryStorage
 from app.utils.system import cpu_usage, memory_usage, readable_size
-from app.utils.xray import (xray_add_user, xray_config_include_db_clients,
-                            xray_remove_user)
+from app.utils.xray import xray_add_user, xray_remove_user
 
-from app.telegram.utils.custom_filters import cb_query_equals, cb_query_startswith
 mem_store = MemoryStorage()
 
 
@@ -692,9 +693,7 @@ def confirm_user_command(call: types.CallbackQuery):
     elif data == 'restart':
         m = bot.edit_message_text(
             '🔄 Restarting XRay core...', call.message.chat.id, call.message.message_id)
-        xray.core.restart(
-            xray_config_include_db_clients(xray.config)
-        )
+        xray.core.restart(xray.config.include_db_users())
         bot.edit_message_text(
             '✅ XRay core restarted successfully.',
             m.chat.id, m.message_id,

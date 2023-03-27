@@ -4,7 +4,6 @@ from app import scheduler, xray
 from app.db import engine
 from app.db.models import System, User
 from sqlalchemy import bindparam, update
-from app.utils.xray import xray_config_include_db_clients
 
 
 def record_users_usage():
@@ -17,9 +16,7 @@ def record_users_usage():
 
         except xray.exceptions.ConnectionError:
             try:
-                xray.core.restart(
-                    xray_config_include_db_clients(xray.config)
-                )
+                xray.core.restart(xray.config.include_db_users())
             except ProcessLookupError:
                 pass
 
@@ -48,9 +45,7 @@ def record_outbounds_usage():
 
         except xray.exceptions.ConnectionError:
             try:
-                xray.core.restart(
-                    xray_config_include_db_clients(xray.config)
-                )
+                xray.core.restart(xray.config.include_db_users())
             except ProcessLookupError:
                 pass
 

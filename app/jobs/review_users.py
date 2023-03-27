@@ -4,7 +4,6 @@ from datetime import datetime
 from app import logger, scheduler, telegram, xray
 from app.db import GetDB, get_users, update_user_status
 from app.models.user import UserStatus
-from app.utils.xray import xray_config_include_db_clients
 
 
 def review():
@@ -30,9 +29,7 @@ def review():
 
                 except xray.exceptions.ConnectionError:
                     try:
-                        xray.core.restart(
-                            xray_config_include_db_clients(xray.config)
-                        )
+                        xray.core.restart(xray.config.include_db_users())
                     except ProcessLookupError:
                         pass
 

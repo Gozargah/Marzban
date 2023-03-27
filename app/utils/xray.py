@@ -23,21 +23,3 @@ def xray_remove_user(user: User):
             xray.api.remove_inbound_user(tag=inbound_tag, email=user.username)
         except xray.exc.EmailNotFoundError:
             pass
-
-
-def xray_config_include_db_clients(config: XRayConfig):
-    config = config.copy()
-
-    with GetDB() as db:
-        for user in get_users(db, status=UserStatus.active):
-            proxies_settings = {
-                p.type: ProxySettings.from_dict(p.type, p.settings).dict(no_obj=True)
-                for p in user.proxies
-            }
-            for proxy_type, inbound_tags in user.inbounds.items():
-                for inbound_tag in inbound_tags:
-                    config.add_inbound_client(inbound_tag,
-                                              user.username,
-                                              proxies_settings[proxy_type])
-
-    return config

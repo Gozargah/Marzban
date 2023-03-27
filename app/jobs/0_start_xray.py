@@ -1,12 +1,9 @@
 from app import app, xray
-from app.utils.xray import xray_config_include_db_clients
 
 
 @app.on_event("startup")
 def app_startup():
-    xray.core.start(
-        xray_config_include_db_clients(xray.config)
-    )
+    xray.core.start(xray.config.include_db_users())
 
 
 @app.on_event("shutdown")
