@@ -6,8 +6,8 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, Field, validator
 
 from app.utils.system import random_password
-from xray_api.types.account import (ShadowsocksAccount, TrojanAccount,
-                                    VLESSAccount, VMessAccount)
+from xray_api.types.account import (ShadowsocksAccount, ShadowsocksMethods,
+                                    TrojanAccount, VLESSAccount, VMessAccount)
 
 
 class ProxyTypes(str, Enum):
@@ -67,6 +67,7 @@ class TrojanSettings(ProxySettings):
 
 class ShadowsocksSettings(ProxySettings):
     password: str = Field(default_factory=random_password)
+    method: ShadowsocksMethods = ShadowsocksMethods.CHACHA20_POLY1305
 
 
 class ProxyHostSecurity(str, Enum):
