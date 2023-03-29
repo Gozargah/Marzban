@@ -10,15 +10,11 @@ from uuid import UUID
 import yaml
 
 from app import xray
+from app.models.proxy import FormatVariables
 from app.utils.store import XrayStore
 from app.utils.system import get_public_ip, readable_size
 
 SERVER_IP = get_public_ip()
-
-
-class FormatVariables(dict):
-    def __missing__(self, key):
-        return key.join("{}")
 
 
 class V2rayShareLink(str):
