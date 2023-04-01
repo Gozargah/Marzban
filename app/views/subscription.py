@@ -46,7 +46,7 @@ def user_subcription(token: str,
         )
     }
 
-    if 'Clash' in user_agent:
+    if 'Clash' or 'Stash' in user_agent:
         conf = generate_clash_subscription(user.proxies, user.inbounds, user.dict())
         return Response(content=conf, media_type="text/yaml", headers=response_headers)
 
