@@ -7,4 +7,4 @@ class SystemStats(BaseModel):
     total_user: int
     users_active: int
     incoming_bandwidth: int
-    outgoing_bandwith: int
+    outgoing_bandwidth: int
