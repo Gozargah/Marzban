@@ -156,7 +156,7 @@ export const Statistics: FC<BoxProps> = (props) => {
         content={
           systemData &&
           formatBytes(
-            systemData.incoming_bandwidth + systemData.outgoing_bandwith
+            systemData.incoming_bandwidth + systemData.outgoing_bandwidth
           )
         }
         icon={<NetworkIcon />}
