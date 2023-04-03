@@ -1,9 +1,10 @@
 import itertools
 from datetime import datetime
 
-from app import logger, scheduler, telegram, xray
+from app import logger, scheduler, xray
 from app.db import GetDB, get_users, update_user_status
 from app.models.user import UserStatus
+from app.utils import report
 from app.utils.xray import xray_config_include_db_clients
 
 
@@ -40,10 +41,7 @@ def review():
 
             update_user_status(db, user, status)
 
-            try:
-                telegram.report_status_change(user.username, status)
-            except Exception:
-                pass
+            report.status_change(user.username, status)
 
             logger.info(f"User \"{user.username}\" status changed to {status}")
 
