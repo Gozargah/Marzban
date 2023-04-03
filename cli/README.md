@@ -15,6 +15,7 @@ $ marzban-cli [OPTIONS] COMMAND [ARGS]...
 **Commands**:
 
 * `admin`
+* `subscription`
 
 ## `marzban-cli admin`
 
@@ -120,6 +121,64 @@ NOTE: This command CAN NOT be used non-interactively.
 
 ```console
 $ marzban-cli admin update [OPTIONS]
+```
+
+**Options**:
+
+* `-u, --username TEXT`: [required]
+* `--help`: Show this message and exit.
+
+## `marzban-cli subscription`
+
+**Usage**:
+
+```console
+$ marzban-cli subscription [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `get-config`: Generates a subscription config.
+* `get-link`: Prints the given user's subscription link.
+
+### `marzban-cli subscription get-config`
+
+Generates a subscription config.
+
+Generates a subscription config for the given user in the given format.
+
+The output will be written in the output file when the `output-file` is present,
+  otherwise will be shown in the terminal.
+
+**Usage**:
+
+```console
+$ marzban-cli subscription get-config [OPTIONS]
+```
+
+**Options**:
+
+* `-u, --username TEXT`: [required]
+* `-f, --format [v2ray|clash]`: [required]
+* `-o, --output TEXT`: Writes the generated config in the file if provided
+* `--base64`: Encodes output in base64 format if present
+* `--help`: Show this message and exit.
+
+### `marzban-cli subscription get-link`
+
+Prints the given user's subscription link.
+
+NOTE: This command needs `XRAY_SUBSCRIPTION_URL_PREFIX` environment variable to be set
+  in order to work correctly.
+
+**Usage**:
+
+```console
+$ marzban-cli subscription get-link [OPTIONS]
 ```
 
 **Options**:
