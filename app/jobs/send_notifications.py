@@ -1,4 +1,4 @@
-from app import logger, scheduler
+from app import logger, scheduler, app
 from typing import Any
 from app.utils.notification import queue
 import config
@@ -38,12 +38,11 @@ def send_notifications():
         pass
 
 
-def on_shutdown():
-    if config.WEBHOOK_ADDRESS:
+if config.WEBHOOK_ADDRESS:
+    @app.on_event("shutdown")
+    def app_shutdown():
         logger.info("Sending pending notificatios before shutdown...")
         send_notifications()
 
-
-if config.WEBHOOK_ADDRESS:
     logger.info("Send webhook job started")
     scheduler.add_job(send_notifications, "interval", seconds=30)

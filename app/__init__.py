@@ -38,9 +38,6 @@ def on_startup():
 def on_shutdown():
     scheduler.shutdown()
 
-    from app.jobs import send_notifications
-    send_notifications.on_shutdown()
-
 
 @app.exception_handler(RequestValidationError)
 def validation_exception_handler(request: Request, exc: RequestValidationError):
