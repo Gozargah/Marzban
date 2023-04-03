@@ -1,0 +1,13 @@
+{% autoescape false %}
+
+{{ conf | except("proxy-groups") | yaml }}
+
+proxy-groups:
+- name: '♻️ Automatic'
+  type: 'url-test'
+  url: 'http://www.gstatic.com/generate_204'
+  interval: 300
+  proxies: {{ proxy_remarks }}
+{{ conf.get("proxy-groups", []) | yaml }}
+
+{% endautoescape %}

@@ -34,6 +34,8 @@ TELEGRAM_PROXY_URL = config("TELEGRAM_PROXY_URL", default=None)
 
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = config("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=1440)
 
+TEMPLATES_DIRECTORY = config("TEMPLATES_DIRECTORY", default="app/template")
+CLASH_SUBSCRIPTION_TEMPLATE = config("CLASH_SUBSCRIPTION_TEMPLATE", default="clash/default.yml")
 
 # USERNAME: PASSWORD
 SUDOERS = {config("SUDO_USERNAME"): config("SUDO_PASSWORD")} if config("SUDO_USERNAME", None) else {}
