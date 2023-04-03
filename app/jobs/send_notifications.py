@@ -38,6 +38,12 @@ def send_notifications():
         pass
 
 
+def on_shutdown():
+    if config.WEBHOOK_ADDRESS:
+        logger.info("Sending pending notificatios before shutdown...")
+        send_notifications()
+
+
 if config.WEBHOOK_ADDRESS:
     logger.info("Send webhook job started")
     scheduler.add_job(send_notifications, "interval", seconds=30)
