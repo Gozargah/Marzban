@@ -181,6 +181,8 @@ python3 main.py
 | پیشوند (یا هاست) آدرس های اشتراکی (زمانی کاربرد دارد که نیاز دارید دامنه subscription link ها با دامنه پنل متفاوت باشد) |  XRAY_SUBSCRIPTION_URL_PREFIX   |
 |                                                                        تگ inboundای که به عنوان fallback استفاده میشود. |   XRAY_FALLBACKS_INBOUND_TAG    |
 |                                                تگ های inbound ای که لازم نیست در کانفیگ های ساخته شده وجود داشته باشند. |    XRAY_EXCLUDE_INBOUND_TAGS    |
+|                                                                    آدرس محل template های مرزبان (پیشفرض: `app/templates`) |    TEMPLATES_DIRECTORY    |
+|                                         template مورد استفاده برای تولید کانفیگ های Clash (پیشفرض: `clash/default.yml`) |    CLASH_SUBSCRIPTION_TEMPLATE     |
 |                                                       توکن ربات تلگرام (دریافت از [@botfather](https://t.me/botfather)) |       TELEGRAM_API_TOKEN        |
 |                                          آیدی عددی ادمین در تلگرام (دریافت از [@userinfobot](https://t.me/userinfobot)) |        TELEGRAM_ADMIN_ID        |
 |                                                                                               اجرای ربات از طریق پروکسی |       TELEGRAM_PROXY_URL        |
