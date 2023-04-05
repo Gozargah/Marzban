@@ -1,13 +1,19 @@
 from typing import Union
-from fastapi.templating import Jinja2Templates
 
-from config import TEMPLATES_DIRECTORY
+import jinja2
+
+from config import CUSTOM_TEMPLATES_DIRECTORY
 from .filters import CUSTOM_FILTERS
 
 
-templates = Jinja2Templates(directory=TEMPLATES_DIRECTORY)
-templates.env.filters.update(CUSTOM_FILTERS)
+template_directories = ["app/templates"]
+if CUSTOM_TEMPLATES_DIRECTORY:
+    # User's templates have priority over default templates
+    template_directories.insert(0, CUSTOM_TEMPLATES_DIRECTORY)
+
+env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_directories))
+env.filters.update(CUSTOM_FILTERS)
 
 
 def render_to_string(template: str, context: Union[dict, None] = None) -> str:
-    return templates.get_template(template).render(context or {})
+    return env.get_template(template).render(context or {})

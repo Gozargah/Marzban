@@ -1,5 +1,3 @@
-{% autoescape false %}
-
 {{ conf | except("proxy-groups") | yaml }}
 
 proxy-groups:
@@ -10,5 +8,3 @@ proxy-groups:
   proxies:
   {{ proxy_remarks | yaml | indent(2) }}
 {{ conf.get("proxy-groups", []) | yaml }}
-
-{% endautoescape %}
