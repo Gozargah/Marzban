@@ -128,8 +128,6 @@ class V2rayShareLink(str):
 class ClashConfiguration(object):
     def __init__(self):
         self.data = {
-            'port': 7890,
-            'mode': 'Global',
             'proxies': [],
             'proxy-groups': [],
             # Some clients rely on "rules" option and will fail without it.

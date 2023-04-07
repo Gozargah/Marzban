@@ -1,4 +1,7 @@
-{{ conf | except("proxy-groups") | yaml }}
+mode: Global
+port: 7890
+
+{{ conf | except("proxy-groups", "port", "mode") | yaml }}
 
 proxy-groups:
 - name: '♻️ Automatic'
