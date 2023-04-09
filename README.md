@@ -167,6 +167,7 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | SUDO_USERNAME                   | Superuser's username (default: admin)                                                                 |
 | SUDO_PASSWORD                   | Superuser's password (default: admin)                                                                 |
 | SQLALCHEMY_DATABASE_URL         | Database URL ([SQLAlchemy's docs](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)) |
+| DASHBOARD_ROUTE                 | Dashboard's route (default: dashboard)                                                                |
 | UVICORN_HOST                    | Bind application to this host (default: `0.0.0.0`)                                                    |
 | UVICORN_PORT                    | Bind application to this port (default: `8000`)                                                       |
 | UVICORN_UDS                     | Bind application to a UNIX domain socket                                                              |

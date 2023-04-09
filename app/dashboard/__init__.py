@@ -4,10 +4,10 @@ import subprocess
 from pathlib import Path
 
 from app import app
-from config import DEBUG, UVICORN_PORT
+from config import DEBUG, UVICORN_PORT, DASHBOARD_ROUTE
 from fastapi.staticfiles import StaticFiles
 
-path = '/dashboard/'
+path = f'/{DASHBOARD_ROUTE}/'
 base_dir = Path(__file__).parent
 build_dir = base_dir / 'build'
 

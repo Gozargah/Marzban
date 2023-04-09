@@ -49,3 +49,5 @@ JWT_ACCESS_TOKEN_EXPIRE_MINUTES = config("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", cast
 SUDOERS = {
     config("SUDO_USERNAME", default="admin"): config("SUDO_PASSWORD", default="admin")
 }
+
+DASHBOARD_ROUTE = config("DASHBOARD_ROUTE", default="dashboard").replace('/', '')
