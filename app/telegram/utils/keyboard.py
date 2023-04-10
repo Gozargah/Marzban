@@ -1,11 +1,17 @@
 from datetime import datetime as dt
+from itertools import islice
 from typing import Literal
 
 from telebot import types  # noqa
 
 from app import xray
-from app.models.user import UserResponse
 from app.utils.system import readable_size
+
+
+def chunk_dict(data: dict, size: int = 2):
+    it = iter(data)
+    for i in range(0, len(data), size):
+        yield {k: data[k] for k in islice(it, size)}
 
 
 class BotKeyboard:
@@ -23,6 +29,33 @@ class BotKeyboard:
         keyboard.add(
             types.InlineKeyboardButton(text='➕ Create User', callback_data='add_user')
         )
+        keyboard.add(
+            types.InlineKeyboardButton(text='➕ Create User from Template', callback_data='template_add_user')
+        )
+        return keyboard
+
+    @staticmethod
+    def templates_menu(templates: dict[str, int]):
+        keyboard = types.InlineKeyboardMarkup()
+
+        for chunk in chunk_dict(templates):
+            row = []
+            for name, id in chunk.items():
+                row.append(
+                    types.InlineKeyboardButton(
+                        text=name,
+                        callback_data=f"template_add_user:{id}"
+                    )
+                )
+            keyboard.add(*row)
+
+        keyboard.add(
+            types.InlineKeyboardButton(
+                text='Back',
+                callback_data='cancel'
+            )
+        )
+
         return keyboard
 
     @staticmethod
@@ -110,6 +143,17 @@ class BotKeyboard:
         return keyboard
 
     @staticmethod
+    def inline_cancel_action(callback_data: str = "cancel"):
+        keyboard = types.InlineKeyboardMarkup()
+        keyboard.add(
+            types.InlineKeyboardButton(
+                text="Cancel",
+                callback_data=callback_data
+            )
+        )
+        return keyboard
+
+    @staticmethod
     def user_list(users: list, page: int, total_pages: int):
         keyboard = types.InlineKeyboardMarkup()
         if len(users) >= 2:
@@ -157,13 +201,13 @@ class BotKeyboard:
 
     @staticmethod
     def select_protocols(selected_protocols: dict[str, list[str]],
-                         action: Literal["edit", "create"],
+                         action: Literal["edit", "create", "create_from_template"],
                          username: str = None,
                          data_limit: int = None,
                          expire_date: dt = None):
         keyboard = types.InlineKeyboardMarkup()
 
-        if action == "edit":
+        if action in ["edit", "create_from_template"]:
             keyboard.add(
                 types.InlineKeyboardButton(
                     text="⚠️ Data Limit:",
@@ -216,13 +260,21 @@ class BotKeyboard:
         keyboard.add(
             types.InlineKeyboardButton(
                 text='Done',
-                callback_data='confirm:add_user' if action == "create" else 'confirm:edit_user'
+                callback_data='confirm:edit_user' if action == "edit" else 'confirm:add_user'
             )
         )
-        keyboard.add(
-            types.InlineKeyboardButton(
-                text='Cancel',
-                callback_data='cancel'
+        if action == "edit":
+            keyboard.add(
+                types.InlineKeyboardButton(
+                    text='Cancel',
+                    callback_data=f'user:{username}'
+                )
             )
-        )
+        else:
+            keyboard.add(
+                types.InlineKeyboardButton(
+                    text='Cancel',
+                    callback_data='cancel'
+                )
+            )
         return keyboard

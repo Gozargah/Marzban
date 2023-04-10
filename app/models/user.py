@@ -38,7 +38,7 @@ class UserDataLimitResetStrategy(str, Enum):
 class User(BaseModel):
     proxies: Dict[ProxyTypes, ProxySettings] = {}
     expire: int = None
-    data_limit: Union[None, int] = Field(gt=-1, default=None, description="data_limit can be 0 or greater")
+    data_limit: Union[None, int] = Field(ge=0, default=None, description="data_limit can be 0 or greater")
     data_limit_reset_strategy: UserDataLimitResetStrategy = UserDataLimitResetStrategy.no_reset
     inbounds: Dict[ProxyTypes, List[str]] = {}
 

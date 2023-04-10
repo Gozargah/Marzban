@@ -7,9 +7,9 @@ from app import xray
 
 class UserTemplate(BaseModel):
     name: str | None = None
-    data_limit: int | None = Field(gt=-1, default=None, description="data_limit can be 0 or greater")
+    data_limit: int | None = Field(ge=0, default=None, description="data_limit can be 0 or greater")
     expire_duration: int | None = Field(
-        gt=-1, default=None, description="expire_duration can be 0 or greater in seconds")
+        ge=0, default=None, description="expire_duration can be 0 or greater in seconds")
     username_prefix: str | None = Field(max_length=20, min_length=1, default=None)
     username_suffix: str | None = Field(max_length=20, min_length=1, default=None)
 
