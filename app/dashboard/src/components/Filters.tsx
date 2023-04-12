@@ -43,7 +43,7 @@ const setSearchField = debounce((username: string) => {
 }, 300);
 
 export const Filters: FC<FilterProps> = ({ ...props }) => {
-  const { loading, filters, onFilterChange, refetchUsers, onCreateUser } =
+  const { loading, filters, onFilterChange, refetchUsers, onResetAllUsage, onCreateUser } =
     useDashboard();
   const [search, setSearch] = useState("");
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,6 +118,14 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
               })}
             />
           </IconButton>
+          <Button
+            colorScheme="primary"
+            size="sm"
+            onClick={() => onResetAllUsage(true)}
+            px={5}
+          >
+            Reset All Usage
+          </Button>
           <Button
             colorScheme="primary"
             size="sm"
