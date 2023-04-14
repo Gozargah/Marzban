@@ -18,6 +18,7 @@ import { FC, useEffect, useRef, useState } from "react";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { Icon } from "./Icon";
 import { useDashboard } from "contexts/DashboardContext";
+import { useTranslation } from "react-i18next";
 
 export const ResetIcon = chakra(ArrowPathIcon, {
   baseStyle: {
@@ -31,6 +32,7 @@ export type DeleteUserModalProps = {};
 export const ResetAllUsageModal: FC<DeleteUserModalProps> = () => {
   const [loading, setLoading] = useState(false);
   const { isResetingAllUsage, onResetAllUsage, resetAllUsage } = useDashboard();
+  const { t } = useTranslation();
   const toast = useToast();
   const onClose = () => {
     onResetAllUsage(false);
@@ -40,7 +42,7 @@ export const ResetAllUsageModal: FC<DeleteUserModalProps> = () => {
     resetAllUsage()
     .then(() => {
         toast({
-        title: 'All usage has reset successfully.',
+        title: t("resetAllUsage.success"),
         status: "success",
         isClosable: true,
         position: "top",
@@ -49,7 +51,7 @@ export const ResetAllUsageModal: FC<DeleteUserModalProps> = () => {
     })
     .catch(() => {
         toast({
-        title: `Usage reset failed, please try again.`,
+        title: t("resetAllUsage.error"),
         status: "error",
         isClosable: true,
         position: "top",
@@ -72,7 +74,7 @@ export const ResetAllUsageModal: FC<DeleteUserModalProps> = () => {
         <ModalCloseButton mt={3} />
         <ModalBody>
           <Text fontWeight="semibold" fontSize="lg">
-            Reset All Usage
+            {t("resetAllUsage.title")}
           </Text>
           {isResetingAllUsage && (
             <Text
@@ -81,13 +83,13 @@ export const ResetAllUsageModal: FC<DeleteUserModalProps> = () => {
               _dark={{ color: "gray.400" }}
               color="gray.600"
             >
-              Are you sure you want to reset all usage?
+              {t("resetAllUsage.prompt")}
             </Text>
           )}
         </ModalBody>
         <ModalFooter display="flex">
           <Button size="sm" onClick={onClose} mr={3} w="full" variant="outline">
-            Cancel
+            {t("cancel")}
           </Button>
           <Button
             size="sm"
@@ -96,7 +98,7 @@ export const ResetAllUsageModal: FC<DeleteUserModalProps> = () => {
             onClick={onReset}
             leftIcon={loading ? <Spinner size="xs" /> : undefined}
           >
-            Reset
+            {t("reset")}
           </Button>
         </ModalFooter>
       </ModalContent>

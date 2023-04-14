@@ -9,6 +9,7 @@ import { statusColors } from "constants/UserSettings";
 import { FC } from "react";
 import { UserStatus as UserStatusType } from "types/User";
 import { relativeExpiryDate } from "utils/dateFormatter";
+import { useTranslation } from "react-i18next";
 const iconProps = {
   baseStyle: {
     strokeWidth: "2px",
@@ -29,7 +30,8 @@ export const UserBadge: FC<UserStatusProps> = ({
   expiryDate,
   status: userStatus,
 }) => {
-  let date = relativeExpiryDate(expiryDate);
+  const { t } = useTranslation();
+  const { status, time } = relativeExpiryDate(expiryDate);
   return (
     <>
       <Badge
@@ -66,7 +68,7 @@ export const UserBadge: FC<UserStatusProps> = ({
             color: "gray.400",
           }}
         >
-          {date}
+          {t(status, {time:time})}
         </Text>
       )}
     </>

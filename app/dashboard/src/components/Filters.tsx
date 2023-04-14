@@ -21,6 +21,7 @@ import classNames from "classnames";
 import { useDashboard } from "contexts/DashboardContext";
 import React, { FC, useState } from "react";
 import debounce from "lodash.debounce";
+import { useTranslation } from "react-i18next";
 
 const iconProps = {
   baseStyle: {
@@ -45,6 +46,7 @@ const setSearchField = debounce((username: string) => {
 export const Filters: FC<FilterProps> = ({ ...props }) => {
   const { loading, filters, onFilterChange, refetchUsers, onResetAllUsage, onCreateUser } =
     useDashboard();
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -82,7 +84,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
         <InputGroup>
           <InputLeftElement pointerEvents="none" children={<SearchIcon />} />
           <Input
-            placeholder="Search"
+            placeholder={t("search") || "Search"}
             value={search}
             borderColor="light-border"
             onChange={onChange}
@@ -124,7 +126,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
             onClick={() => onResetAllUsage(true)}
             px={5}
           >
-            Reset All Usage
+            {t("resetAllUsage")}
           </Button>
           <Button
             colorScheme="primary"
@@ -132,7 +134,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
             onClick={() => onCreateUser(true)}
             px={5}
           >
-            Create User
+            {t("createUser")}
           </Button>
         </HStack>
       </GridItem>
