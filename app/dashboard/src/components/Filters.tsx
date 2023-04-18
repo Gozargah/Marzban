@@ -62,6 +62,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
   };
   return (
     <Grid
+      id="filters"
       templateColumns={{
         lg: "repeat(3, 1fr)",
         base: "repeat(1, 1fr)",
