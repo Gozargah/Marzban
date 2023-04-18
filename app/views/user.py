@@ -1,7 +1,7 @@
 import sqlalchemy
 from fastapi import BackgroundTasks, Depends, HTTPException
 
-from app import app, logger, telegram, xray
+from app import app, logger, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.user import (UserCreate, UserModify, UserResponse,

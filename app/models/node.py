@@ -6,8 +6,10 @@ from typing import Union
 
 
 class NodeStatus(str, Enum):
-    active = "active"
-    inactive = "inactive"
+    connected = "connected"
+    connecting = "connecting"
+    error = "error"
+    disabled = "disabled"
 
 
 class Node(BaseModel):

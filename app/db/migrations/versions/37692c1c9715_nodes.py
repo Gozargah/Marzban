@@ -25,10 +25,12 @@ def upgrade() -> None:
     sa.Column('port', sa.Integer(), nullable=False),
     sa.Column('api_port', sa.Integer(), nullable=False),
     sa.Column('certificate', sa.String(length=2048), nullable=False),
-    sa.Column('status', sa.Enum('active', 'inactive', name='nodestatus'), nullable=False),
+    sa.Column('status', sa.Enum('connected','connecting','error','disabled', name='nodestatus'), nullable=False),
     sa.Column('last_status_change', sa.DateTime(), nullable=True),
     sa.Column('message', sa.String(length=1024), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('uplink', sa.BigInteger(), nullable=True),
+    sa.Column('downlink', sa.BigInteger(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
     )
