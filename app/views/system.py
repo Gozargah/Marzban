@@ -27,7 +27,7 @@ def get_system_stats(db: Session = Depends(get_db), admin: Admin = Depends(Admin
         total_user=total_user,
         users_active=users_active,
         incoming_bandwidth=system.uplink,
-        outgoing_bandwith=system.downlink,
+        outgoing_bandwidth=system.downlink,
     )
 
 
