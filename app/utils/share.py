@@ -329,9 +329,9 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> lis
                 continue
 
             format_variables.update({"TRANSPORT": inbound['network']})
-            inbound = inbound.copy()
+            host_inbound = inbound.copy()
             for host in XrayStore.HOSTS.get(tag, []):
-                inbound.update({
+                host_inbound.update({
                     'port': host['port'] or inbound['port'],
                     'sni': (host['sni'] or inbound['sni']).replace('*', salt),
                     'host': (host['host'] or inbound['host']).replace('*', salt),
@@ -340,7 +340,7 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> lis
                 })
                 links.append(get_v2ray_link(remark=host['remark'].format_map(format_variables),
                                             address=host['address'].format_map(format_variables),
-                                            inbound=inbound,
+                                            inbound=host_inbound,
                                             settings=settings.dict()))
 
     return links
@@ -384,9 +384,9 @@ def generate_clash_subscription(proxies: dict, inbounds: dict, extra_data: dict)
                 continue
 
             format_variables.update({"TRANSPORT": inbound['network']})
-            inbound = inbound.copy()
+            host_inbound = inbound.copy()
             for host in XrayStore.HOSTS.get(tag, []):
-                inbound.update({
+                host_inbound.update({
                     'port': host['port'] or inbound['port'],
                     'sni': (host['sni'] or inbound['sni']).replace('*', salt),
                     'host': (host['host'] or inbound['host']).replace('*', salt),
@@ -396,7 +396,7 @@ def generate_clash_subscription(proxies: dict, inbounds: dict, extra_data: dict)
                 conf.add(
                     remark=host['remark'].format_map(format_variables),
                     address=host['address'].format_map(format_variables),
-                    inbound=inbound,
+                    inbound=host_inbound,
                     settings=settings.dict(no_obj=True),
                 )
 
