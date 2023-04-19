@@ -197,6 +197,7 @@ class ClashConfiguration(object):
                 'server': address,
                 'port': port,
                 'uuid': id,
+                'network': net,
                 'alterId': 0,
                 'cipher': 'auto',
                 'udp': True,
@@ -207,8 +208,7 @@ class ClashConfiguration(object):
             node[f'{net}-opts']['headers'] = {'Host': host}
         if tls:
             node.update({'tls': tls,
-                         'servername': sni,
-                         'network': net})
+                         'servername': sni})
         self.data['proxies'].append(node)
 
     def add_trojan(self,
