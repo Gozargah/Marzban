@@ -1,23 +1,23 @@
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
+import LanguageDetector from "i18next-browser-languagedetector";
 import dayjs from "dayjs";
-import 'dayjs/locale/zh-CN'
+import "dayjs/locale/zh-CN";
 
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
-  .on('languageChanged', (lng) => {
+  .on("languageChanged", (lng) => {
     dayjs.locale(lng);
   })
   .init({
     debug: true,
-    fallbackLng: 'en',
+    fallbackLng: "en",
     interpolation: {
       escapeValue: false,
     },
     detection: {
-      caches: ['localStorage', 'sessionStorage', 'cookie'],
+      caches: ["localStorage", "sessionStorage", "cookie"],
     },
     resources: {
       en: {
@@ -35,8 +35,8 @@ i18n
           // Login
           "login.password": "Password",
           "login.login": "Login",
-          "login.loginYourAccount": 'Login to your account',
-          "login.welcomeBack": 'Welcome back, please enter your details',
+          "login.loginYourAccount": "Login to your account",
+          "login.welcomeBack": "Welcome back, please enter your details",
 
           // Header
           "header.hostsSetting": "Hosts Settings",
@@ -45,13 +45,15 @@ i18n
 
           // DeleteUserModal
           "deleteUser.title": "Delete User",
-          "deleteUser.prompt": "Are you sure you want to delete <b>{{username}}</b>?",
+          "deleteUser.prompt":
+            "Are you sure you want to delete <b>{{username}}</b>?",
           "deleteUser.deleteSuccess": "{{username}} deleted successfully.",
 
           // UsersTable
           "usersTable.status": "status",
-          "usersTable.dataUsage": "dataUsage",
-          "usersTable.noUserMatched": "It seems there is no user matched with what you are looking for",
+          "usersTable.dataUsage": "data usage",
+          "usersTable.noUserMatched":
+            "It seems there is no user matched with what you are looking for",
           "usersTable.noUser": "There is no user added to the system",
           "usersTable.copyLink": "Copy Subscription Link",
           "usersTable.copied": "Copied",
@@ -72,7 +74,8 @@ i18n
           "userDialog.vmessDesc": "Fast and secure",
           "userDialog.vlessDesc": "Lightweight, fast and secure",
           "userDialog.trojanDesc": "Lightweight, secure and lightening fast",
-          "userDialog.shadowsocksDesc": "Fast and secure, but not efficient as others",
+          "userDialog.shadowsocksDesc":
+            "Fast and secure, but not efficient as others",
           "userDialog.resetStrategyNo": "No",
           "userDialog.resetStrategyDaily": "Daily",
           "userDialog.resetStrategyWeekly": "Weekly",
@@ -80,7 +83,8 @@ i18n
           "userDialog.resetStrategyAnnually": "Annually",
 
           // HostsDialog
-          "hostsDialog.title": "Using this setting, you are able to assign specific address for each inbound.",
+          "hostsDialog.title":
+            "Using this setting, you are able to assign specific address for each inbound.",
           "hostsDialog.desc": "Use these variables to make it dynamic",
           "hostsDialog.username": "the username of the user",
           "hostsDialog.dataUsage": "The current usage of the user",
@@ -105,25 +109,26 @@ i18n
           next: "Next",
           createNewUser: "Create new user",
           search: "Search",
-          resetAllUsage: "Reset All Usage",
+          resetAllUsage: "Reset Statistics",
 
           // QRCodeDialog
           "qrcodeDialog.sublink": "Subscribe Link",
 
           // ResetUserUsageModal
-          "resetUserUsage.prompt": "Are you sure you want to reset <b>{{username}}</b>'s usage?",
+          "resetUserUsage.prompt":
+            "Are you sure you want to reset <b>{{username}}</b>'s usage?",
           "resetUserUsage.title": "Reset User Usage",
-          "resetUserUsage.success": "{{username}}'s usage has reset successfully.",
+          "resetUserUsage.success":
+            "{{username}}'s usage has reset successfully.",
           "resetUserUsage.error": "Usage reset failed, please try again.",
 
           // ResetAllUsageModal
-          "resetAllUsage.title": "Reset All Usage",
-          "resetAllUsage.prompt": "Are you sure you want to reset all usage?",
+          "resetAllUsage.title": "Reset Statistics",
+          "resetAllUsage.prompt":
+            "This action clears all of the user's data usage completely. Are you sure you want to reset all usage? This action can not be undone!",
           "resetAllUsage.success": "All usage has reset successfully.",
           "resetAllUsage.error": "Usage reset failed, please try again.",
-
-          hello:""
-        }
+        },
       },
       zh: {
         translation: {
@@ -140,8 +145,8 @@ i18n
           // page login
           "login.password": "密码",
           "login.login": "登录",
-          "login.loginYourAccount": '登录您的帐号',
-          "login.welcomeBack": '欢迎回来，请输入您的详细信息',
+          "login.loginYourAccount": "登录您的帐号",
+          "login.welcomeBack": "欢迎回来，请输入您的详细信息",
 
           // Header
           "header.hostsSetting": "设置",
@@ -215,7 +220,8 @@ i18n
           "qrcodeDialog.sublink": "订阅链接",
 
           // ResetUserUsageModal
-          "resetUserUsage.prompt": "您确定要重置<b>{{username}}</b>的流量统计吗？",
+          "resetUserUsage.prompt":
+            "您确定要重置<b>{{username}}</b>的流量统计吗？",
           "resetUserUsage.title": "重置用户流量统计",
           "resetUserUsage.success": "{{username}}的流量统计重置完成。",
           "resetUserUsage.error": "重置失败，请稍候再试",
@@ -226,10 +232,10 @@ i18n
           "resetAllUsage.success": "所有流量统计重置完成。",
           "resetAllUsage.error": "重置失败，请稍候再试！",
 
-          hello:""
-        }
-      }
-    }
+          hello: "",
+        },
+      },
+    },
   });
 
 export default i18n;

@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   chakra,
   Modal,
@@ -11,16 +10,15 @@ import {
   ModalOverlay,
   Spinner,
   Text,
-  Toast,
   useToast,
 } from "@chakra-ui/react";
-import { FC, useEffect, useRef, useState } from "react";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import { FC, useState } from "react";
+import { DocumentMinusIcon } from "@heroicons/react/24/outline";
 import { Icon } from "./Icon";
 import { useDashboard } from "contexts/DashboardContext";
 import { useTranslation } from "react-i18next";
 
-export const ResetIcon = chakra(ArrowPathIcon, {
+export const ResetIcon = chakra(DocumentMinusIcon, {
   baseStyle: {
     w: 5,
     h: 5,
@@ -40,35 +38,35 @@ export const ResetAllUsageModal: FC<DeleteUserModalProps> = () => {
   const onReset = () => {
     setLoading(true);
     resetAllUsage()
-    .then(() => {
+      .then(() => {
         toast({
-        title: t("resetAllUsage.success"),
-        status: "success",
-        isClosable: true,
-        position: "top",
-        duration: 3000,
+          title: t("resetAllUsage.success"),
+          status: "success",
+          isClosable: true,
+          position: "top",
+          duration: 3000,
         });
-    })
-    .catch(() => {
+      })
+      .catch(() => {
         toast({
-        title: t("resetAllUsage.error"),
-        status: "error",
-        isClosable: true,
-        position: "top",
-        duration: 3000,
+          title: t("resetAllUsage.error"),
+          status: "error",
+          isClosable: true,
+          position: "top",
+          duration: 3000,
         });
-    })
-    .finally(() => {
+      })
+      .finally(() => {
         setLoading(false);
-    });
+      });
   };
   return (
     <Modal isCentered isOpen={isResetingAllUsage} onClose={onClose} size="sm">
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
       <ModalContent mx="3">
         <ModalHeader pt={6}>
-          <Icon color="blue">
-            <ResetIcon />
+          <Icon color="primary">
+            <ResetIcon color="white" />
           </Icon>
         </ModalHeader>
         <ModalCloseButton mt={3} />
@@ -94,7 +92,7 @@ export const ResetAllUsageModal: FC<DeleteUserModalProps> = () => {
           <Button
             size="sm"
             w="full"
-            colorScheme="blue"
+            colorScheme="primary"
             onClick={onReset}
             leftIcon={loading ? <Spinner size="xs" /> : undefined}
           >
