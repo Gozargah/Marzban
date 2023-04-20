@@ -1,12 +1,12 @@
 import {
   Accordion,
   AccordionButton,
-  AccordionIcon,
   AccordionItem,
   AccordionPanel,
   Box,
   Button,
   chakra,
+  ExpandedIndex,
   HStack,
   IconButton,
   Select,
@@ -15,7 +15,6 @@ import {
   SliderProps,
   SliderTrack,
   Table,
-  TableContainer,
   TableProps,
   Tbody,
   Td,
@@ -32,10 +31,10 @@ import {
   ClipboardIcon,
   LinkIcon,
   QrCodeIcon,
-  ArrowPathIcon,
   ChevronDownIcon,
+  PencilIcon,
 } from "@heroicons/react/24/outline";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, Fragment, useEffect, useState } from "react";
 import { ReactComponent as AddFileIcon } from "assets/add_file.svg";
 import { formatBytes } from "utils/formatByte";
 import { useDashboard } from "contexts/DashboardContext";
@@ -44,7 +43,7 @@ import { UserBadge } from "./UserBadge";
 import { Pagination } from "./Pagination";
 import classNames from "classnames";
 import { statusColors, resetStrategy } from "constants/UserSettings";
-import { DataLimitResetStrategy, User } from "types/User";
+import { User } from "types/User";
 import { useTranslation } from "react-i18next";
 import { t } from "i18next";
 
@@ -57,9 +56,11 @@ const iconProps = {
   },
 };
 const CopyIcon = chakra(ClipboardIcon, iconProps);
+const AccordionArrowIcon = chakra(ChevronDownIcon, iconProps);
 const CopiedIcon = chakra(CheckIcon, iconProps);
 const SubscriptionLinkIcon = chakra(LinkIcon, iconProps);
 const QRIcon = chakra(QrCodeIcon, iconProps);
+const EditIcon = chakra(PencilIcon, iconProps);
 const SortIcon = chakra(ChevronDownIcon, {
   baseStyle: {
     width: "15px",
@@ -82,7 +83,39 @@ const getResetStrategy = (strategy: string): string => {
   }
   return "No";
 };
-
+const UsageSliderCompact: FC<UsageSliderProps> = (props) => {
+  const { used, total, dataLimitResetStrategy, totalUsedTraffic } = props;
+  const isUnlimited = total === 0 || total === null;
+  return (
+    <HStack
+      justifyContent="space-between"
+      fontSize="xs"
+      fontWeight="medium"
+      color="gray.600"
+      _dark={{
+        color: "gray.400",
+      }}
+    >
+      <Text>
+        {formatBytes(used)} /{" "}
+        {isUnlimited ? (
+          <Text as="span" fontFamily="system-ui">
+            ∞
+          </Text>
+        ) : (
+          formatBytes(total) +
+          (dataLimitResetStrategy && dataLimitResetStrategy !== "no_reset"
+            ? " " +
+              t(
+                "userDialog.resetStrategy" +
+                  getResetStrategy(dataLimitResetStrategy)
+              )
+            : "")
+        )}
+      </Text>
+    </HStack>
+  );
+};
 const UsageSlider: FC<UsageSliderProps> = (props) => {
   const {
     used,
@@ -123,7 +156,11 @@ const UsageSlider: FC<UsageSliderProps> = (props) => {
           ) : (
             formatBytes(total) +
             (dataLimitResetStrategy && dataLimitResetStrategy !== "no_reset"
-              ? " " + t("userDialog.resetStrategy" + getResetStrategy(dataLimitResetStrategy))
+              ? " " +
+                t(
+                  "userDialog.resetStrategy" +
+                    getResetStrategy(dataLimitResetStrategy)
+                )
               : "")
           )}
         </Text>
@@ -152,22 +189,22 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
     users: { users },
     users: totalUsers,
     onEditingUser,
-    setQRCode,
-    setSubLink,
     onFilterChange,
   } = useDashboard();
 
   const { t } = useTranslation();
-
-  const marginTop = useBreakpointValue({base: 120, lg: 72}) || 72;
+  const [selectedRow, setSelectedRow] = useState<ExpandedIndex | undefined>(
+    undefined
+  );
+  const marginTop = useBreakpointValue({ base: 120, lg: 72 }) || 72;
   const [top, setTop] = useState(`${marginTop}px`);
 
-  const useTable = useBreakpointValue({base: false, md: true});
+  const useTable = useBreakpointValue({ base: false, md: true });
 
   useEffect(() => {
     const el = document.querySelectorAll("#filters")[0] as HTMLElement;
     setTop(`${el.offsetHeight}px`);
-  });  
+  });
 
   const isFiltered = users.length !== totalUsers.total;
 
@@ -191,84 +228,192 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
       status: e.target.value.length > 0 ? e.target.value : undefined,
     });
   };
+
+  const toggleAccordion = (index: number) => {
+    setSelectedRow(index === selectedRow ? undefined : index);
+  };
+
   return (
-    <Box id="users-table" overflowX={{base: "auto", md: "unset"}}>
+    <Box id="users-table" overflowX={{ base: "auto", md: "unset" }}>
       <Accordion
         allowMultiple
-        display={{base: "block", md: "none"}} 
+        display={{ base: "block", md: "none" }}
+        index={selectedRow}
       >
-        {!useTable && users?.map((user, i) => {
-          return (
-            <AccordionItem
-              borderTopRadius={i == 0 ? "md" : "none"}
-              borderBottomRadius={i == (users.length - 1) ? "md" : "none"}
-              borderLeftWidth="thin"
-              borderRightWidth="thin"
-              borderColor="light-border"
-              _dark ={{borderColor: "gray.600"}}
-            >
-              {({isExpanded}) => (
-                <>
-                  <h2>
-                    <AccordionButton>
-                      <Box as="span" flex='1' textAlign='left'>
+        <Table orientation="vertical" {...props}>
+          <Thead zIndex="docked" position="relative">
+            <Tr>
+              <Th
+                position="sticky"
+                top={{ base: "unset", md: top }}
+                minW="140px"
+                cursor={"pointer"}
+              >
+                <HStack>
+                  <span>{t("users")}</span>
+                  <Sort sort={filters.sort} column="username" />
+                </HStack>
+              </Th>
+              <Th
+                position="sticky"
+                top={{ base: "unset", md: top }}
+                minW="100px"
+                cursor={"pointer"}
+              >
+                <HStack>
+                  <span>{t("status")}</span>
+                  <Sort sort={filters.sort} column="username" />
+                </HStack>
+              </Th>
+              <Th
+                position="sticky"
+                top={{ base: "unset", md: top }}
+                minW="130px"
+                cursor={"pointer"}
+                pr={0}
+              >
+                <HStack>
+                  <span>{t("dataUsage")}</span>
+                  <Sort sort={filters.sort} column="username" />
+                </HStack>
+              </Th>
+              <Th
+                position="sticky"
+                top={{ base: "unset", md: top }}
+                minW="40px"
+                w="40px"
+                p={0}
+                cursor={"pointer"}
+              ></Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {!useTable &&
+              users?.map((user, i) => {
+                return (
+                  <Fragment key={user.username}>
+                    <Tr onClick={toggleAccordion.bind(null, i)}>
+                      <Td borderBottom={0} minW="140px">
                         {user.username}
-                      </Box>
-                      <Box mr="1.5" visibility={isExpanded ? "hidden" : "visible"}>
-                        <UserBadge expiryDate={null} status={user.status} />
-                      </Box>
-                      <AccordionIcon />
-                    </AccordionButton>
-                  </h2>
-                  <AccordionPanel
-                    cursor="pointer"
-                    pb={4} 
-                    onClick={() => onEditingUser(user)}
-                  >
-                    <VStack justifyContent="space-between" spacing="4">
-                      <VStack alignItems="flex-start" w="full" spacing={1}>
-                        <Text textTransform="capitalize" fontSize="sm" fontWeight="bold">
-                          {t("usersTable.status")}
-                        </Text>
-                        <Box w="full" pl="4" pr="4">
-                          <UserBadge expiryDate={user.expire} status={user.status} />
-                        </Box>
-                      </VStack>
-                      <VStack alignItems="flex-start" w="full" spacing={-1}>
-                        <Text textTransform="capitalize" fontSize="sm" fontWeight="bold">
-                          {t("usersTable.dataUsage")}
-                        </Text>
-                        <Box width="full" minW="230px" pl="4" pr="4">
-                          <UsageSlider
-                            totalUsedTraffic={user.lifetime_used_traffic}
-                            dataLimitResetStrategy={user.data_limit_reset_strategy}
-                            used={user.used_traffic}
-                            total={user.data_limit}
-                            colorScheme={statusColors[user.status].bandWidthColor}
-                          />
-                        </Box>
-                      </VStack>
-                      <Box>
-                        <ActionButtons user={user} />
-                      </Box>
-                    </VStack>
-                  </AccordionPanel>
-                </>
-              )}
-            </AccordionItem>
-          );
-        })}
+                      </Td>
+                      <Td borderBottom={0} minW="100px">
+                        <UserBadge
+                          compact
+                          expiryDate={user.expire}
+                          status={user.status}
+                        />
+                      </Td>
+                      <Td borderBottom={0} minW="130px" pr={0}>
+                        <UsageSliderCompact
+                          totalUsedTraffic={user.lifetime_used_traffic}
+                          dataLimitResetStrategy={
+                            user.data_limit_reset_strategy
+                          }
+                          used={user.used_traffic}
+                          total={user.data_limit}
+                          colorScheme={statusColors[user.status].bandWidthColor}
+                        />
+                      </Td>
+                      <Td p={0} borderBottom={0} w="40px" minW="40px">
+                        <AccordionArrowIcon
+                          color="gray.600"
+                          _dark={{
+                            color: "gray.400",
+                          }}
+                          transition="transform .2s ease-out"
+                          transform={
+                            selectedRow === i ? "rotate(180deg)" : "0deg"
+                          }
+                        />
+                      </Td>
+                    </Tr>
+                    <Tr
+                      className="collapsible"
+                      onClick={toggleAccordion.bind(null, i)}
+                    >
+                      <Td p={0} colSpan={4}>
+                        <AccordionItem border={0}>
+                          <AccordionButton display="none"></AccordionButton>
+                          <AccordionPanel border={0} cursor="pointer" py={4}>
+                            <VStack justifyContent="space-between" spacing="4">
+                              <VStack
+                                alignItems="flex-start"
+                                w="full"
+                                spacing={-1}
+                              >
+                                <Text
+                                  textTransform="capitalize"
+                                  fontSize="xs"
+                                  fontWeight="bold"
+                                  color="gray.600"
+                                  _dark={{
+                                    color: "gray.400",
+                                  }}
+                                >
+                                  {t("usersTable.dataUsage")}
+                                </Text>
+                                <Box width="full" minW="230px">
+                                  <UsageSlider
+                                    totalUsedTraffic={
+                                      user.lifetime_used_traffic
+                                    }
+                                    dataLimitResetStrategy={
+                                      user.data_limit_reset_strategy
+                                    }
+                                    used={user.used_traffic}
+                                    total={user.data_limit}
+                                    colorScheme={
+                                      statusColors[user.status].bandWidthColor
+                                    }
+                                  />
+                                </Box>
+                              </VStack>
+                              <HStack w="full" justifyContent="space-between">
+                                <Box>
+                                  <ActionButtons user={user} />
+                                </Box>
+                                <Tooltip
+                                  label={t("userDialog.editUser")}
+                                  placement="top"
+                                >
+                                  <IconButton
+                                    aria-label="Edit user"
+                                    bg="transparent"
+                                    _dark={{
+                                      _hover: {
+                                        bg: "gray.700",
+                                      },
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onEditingUser(user);
+                                    }}
+                                  >
+                                    <EditIcon />
+                                  </IconButton>
+                                </Tooltip>
+                              </HStack>
+                            </VStack>
+                          </AccordionPanel>
+                        </AccordionItem>
+                      </Td>
+                    </Tr>
+                  </Fragment>
+                );
+              })}
+          </Tbody>
+        </Table>
       </Accordion>
       <Table
         orientation="vertical"
-        display={{base: "none", md: "table"}} 
+        display={{ base: "none", md: "table" }}
         {...props}
       >
         <Thead zIndex="docked" position="relative">
           <Tr>
             <Th
               position="sticky"
-              top={{base: "unset", md: top}}
+              top={{ base: "unset", md: top }}
               minW="140px"
               cursor={"pointer"}
               onClick={handleSort.bind(null, "username")}
@@ -280,7 +425,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
             </Th>
             <Th
               position="sticky"
-              top={{base: "unset", md: top}}
+              top={{ base: "unset", md: top }}
               width="400px"
               minW="150px"
               cursor={"pointer"}
@@ -299,7 +444,8 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   zIndex={1}
                   w="100%"
                 >
-                  {t("usersTable.status")}{filters.status ? ": " + filters.status : ""}
+                  {t("usersTable.status")}
+                  {filters.status ? ": " + filters.status : ""}
                 </Text>
                 <Select
                   fontSize="xs"
@@ -326,7 +472,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
             </Th>
             <Th
               position="sticky"
-              top={{base: "unset", md: top}}
+              top={{ base: "unset", md: top }}
               width="350px"
               minW="230px"
               cursor={"pointer"}
@@ -339,41 +485,42 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
             </Th>
             <Th
               position="sticky"
-              top={{base: "unset", md: top}}
+              top={{ base: "unset", md: top }}
               width="200px"
               minW="180px"
             />
           </Tr>
         </Thead>
         <Tbody>
-          {useTable && users?.map((user, i) => {
-            return (
-              <Tr
-                key={user.username}
-                className={classNames("interactive", {
-                  "last-row": i === users.length - 1,
-                })}
-                onClick={() => onEditingUser(user)}
-              >
-                <Td minW="140px">{user.username}</Td>
-                <Td width="400px" minW="150px">
-                  <UserBadge expiryDate={user.expire} status={user.status} />
-                </Td>
-                <Td width="350px" minW="230px">
-                  <UsageSlider
-                    totalUsedTraffic={user.lifetime_used_traffic}
-                    dataLimitResetStrategy={user.data_limit_reset_strategy}
-                    used={user.used_traffic}
-                    total={user.data_limit}
-                    colorScheme={statusColors[user.status].bandWidthColor}
-                  />
-                </Td>
-                <Td width="200px" minW="180px">
-                 <ActionButtons user={user} />
-                </Td>
-              </Tr>
-            );
-          })}
+          {useTable &&
+            users?.map((user, i) => {
+              return (
+                <Tr
+                  key={user.username}
+                  className={classNames("interactive", {
+                    "last-row": i === users.length - 1,
+                  })}
+                  onClick={() => onEditingUser(user)}
+                >
+                  <Td minW="140px">{user.username}</Td>
+                  <Td width="400px" minW="150px">
+                    <UserBadge expiryDate={user.expire} status={user.status} />
+                  </Td>
+                  <Td width="350px" minW="230px">
+                    <UsageSlider
+                      totalUsedTraffic={user.lifetime_used_traffic}
+                      dataLimitResetStrategy={user.data_limit_reset_strategy}
+                      used={user.used_traffic}
+                      total={user.data_limit}
+                      colorScheme={statusColors[user.status].bandWidthColor}
+                    />
+                  </Td>
+                  <Td width="200px" minW="180px">
+                    <ActionButtons user={user} />
+                  </Td>
+                </Tr>
+              );
+            })}
           {users.length == 0 && (
             <Tr>
               <Td colSpan={4}>
@@ -393,10 +540,7 @@ type ActionButtonsProps = {
 };
 
 const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
-  const {
-    setQRCode,
-    setSubLink,
-  } = useDashboard();
+  const { setQRCode, setSubLink } = useDashboard();
 
   const proxyLinks = user.links.join("\r\n");
 
@@ -477,11 +621,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
                 },
               }}
             >
-              {copied[0] == 1 && copied[1] ? (
-                <CopiedIcon />
-              ) : (
-                <CopyIcon />
-              )}
+              {copied[0] == 1 && copied[1] ? <CopiedIcon /> : <CopyIcon />}
             </IconButton>
           </Tooltip>
         </div>
@@ -547,9 +687,7 @@ const EmptySection: FC<EmptySectionProps> = ({ isFiltered }) => {
         }}
       />
       <Text fontWeight="medium" color="gray.600" _dark={{ color: "gray.400" }}>
-        {isFiltered
-          ? t('usersTable.noUserMatched')
-          : t('usersTable.noUser')}
+        {isFiltered ? t("usersTable.noUserMatched") : t("usersTable.noUser")}
       </Text>
       {!isFiltered && (
         <Button

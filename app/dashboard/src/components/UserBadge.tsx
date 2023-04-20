@@ -25,10 +25,12 @@ const ExpiredStatusIcon = chakra(ClockIcon, iconProps);
 type UserStatusProps = {
   expiryDate?: number | null;
   status: UserStatusType;
+  compact?: boolean;
 };
 export const UserBadge: FC<UserStatusProps> = ({
   expiryDate,
   status: userStatus,
+  compact = false,
 }) => {
   const { t } = useTranslation();
   const dateInfo = relativeExpiryDate(expiryDate);
@@ -43,14 +45,16 @@ export const UserBadge: FC<UserStatusProps> = ({
         columnGap={2}
         alignItems="center"
       >
-        {userStatus === "active" && <ActiveStatusIcon />}
-        {userStatus === "disabled" && <DisabledStatusIcon />}
-        {userStatus === "limited" && <LimitedStatusIcon />}
-        {userStatus === "expired" && <ExpiredStatusIcon />}
+        {userStatus === "active" && <ActiveStatusIcon w={compact ? 3 : 4} />}
+        {userStatus === "disabled" && (
+          <DisabledStatusIcon w={compact ? 3 : 4} />
+        )}
+        {userStatus === "limited" && <LimitedStatusIcon w={compact ? 3 : 4} />}
+        {userStatus === "expired" && <ExpiredStatusIcon w={compact ? 3 : 4} />}
         <Text
           textTransform="capitalize"
-          fontSize=".875rem"
-          lineHeight="1.25rem"
+          fontSize={compact ? ".7rem" : ".875rem"}
+          lineHeight={compact ? "1rem" : "1.25rem"}
           fontWeight="medium"
           letterSpacing="tighter"
         >
@@ -68,7 +72,7 @@ export const UserBadge: FC<UserStatusProps> = ({
             color: "gray.400",
           }}
         >
-          {t(dateInfo.status, {time: dateInfo.time})}
+          {t(dateInfo.status, { time: dateInfo.time })}
         </Text>
       )}
     </>
