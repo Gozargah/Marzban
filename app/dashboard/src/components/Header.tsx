@@ -26,6 +26,7 @@ import GitHubButton from "react-github-btn";
 import { DONATION_URL, REPO_URL } from "constants/Project";
 import { useTranslation } from "react-i18next";
 import { Language } from "./Language";
+import { updateThemeColor } from "utils/themeColor";
 
 const DarkIcon = chakra(MoonIcon, {
   baseStyle: {
@@ -109,7 +110,10 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
           size="sm"
           variant="outline"
           aria-label="switch theme"
-          onClick={toggleColorMode}
+          onClick={() => {
+            updateThemeColor(colorMode == "dark" ? "light" : "dark");
+            toggleColorMode();
+          }}
         >
           {colorMode === "light" ? <DarkIcon /> : <LightIcon />}
         </IconButton>
