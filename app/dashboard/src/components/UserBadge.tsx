@@ -31,7 +31,7 @@ export const UserBadge: FC<UserStatusProps> = ({
   status: userStatus,
 }) => {
   const { t } = useTranslation();
-  const { status, time } = relativeExpiryDate(expiryDate);
+  const dateInfo = relativeExpiryDate(expiryDate);
   return (
     <>
       <Badge
@@ -68,7 +68,7 @@ export const UserBadge: FC<UserStatusProps> = ({
             color: "gray.400",
           }}
         >
-          {t(status, {time:time})}
+          {t(dateInfo.status, {time: dateInfo.time})}
         </Text>
       )}
     </>

@@ -103,8 +103,16 @@ export const Pagination: FC = () => {
   const { t } = useTranslation();
 
   return (
-    <HStack justifyContent="space-between" mt={4} overflow="auto" w="full">
-      <Box>
+    <HStack
+      justifyContent="space-between"
+      mt={4}
+      w="full"
+      display="flex"
+      columnGap={{ lg: 4, md: 0 }}
+      rowGap={{ md: 0, base: 4 }}
+      flexDirection={{ md: "row", base: "column" }}
+    >
+      <Box order={{ base: 2, md: 1 }}>
         <HStack>
           <Select
             minW="60px"
@@ -123,7 +131,7 @@ export const Pagination: FC = () => {
         </HStack>
       </Box>
 
-      <ButtonGroup size="sm" isAttached variant="outline">
+      <ButtonGroup size="sm" isAttached variant="outline" order={{ base: 1, md: 2 }}>
         <Button
           leftIcon={<PrevIcon />}
           onClick={changePage.bind(null, page - 1)}

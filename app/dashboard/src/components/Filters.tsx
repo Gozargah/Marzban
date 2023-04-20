@@ -62,8 +62,10 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
   };
   return (
     <Grid
+      id="filters"
       templateColumns={{
         lg: "repeat(3, 1fr)",
+        md: "repeat(4, 1fr)",
         base: "repeat(1, 1fr)",
       }}
       position="sticky"
@@ -80,7 +82,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
       zIndex="docked"
       {...props}
     >
-      <GridItem colSpan={1} order={{ base: 2, lg: 1 }}>
+      <GridItem colSpan={{base: 1, md: 2, lg: 1}} order={{ base: 2, md: 1 }}>
         <InputGroup>
           <InputLeftElement pointerEvents="none" children={<SearchIcon />} />
           <Input
@@ -105,7 +107,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
           </InputRightElement>
         </InputGroup>
       </GridItem>
-      <GridItem colSpan={2} order={{ base: 1, lg: 2 }}>
+      <GridItem colSpan={2} order={{ base: 1, md: 2 }}>
         <HStack justifyContent="flex-end" alignItems="center" h="full">
           <IconButton
             aria-label="refresh users"

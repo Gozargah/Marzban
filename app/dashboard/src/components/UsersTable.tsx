@@ -1,4 +1,9 @@
 import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
   Box,
   Button,
   chakra,
@@ -20,6 +25,7 @@ import {
   Tooltip,
   Tr,
   useBreakpointValue,
+  VStack,
 } from "@chakra-ui/react";
 import {
   CheckIcon,
@@ -38,7 +44,7 @@ import { UserBadge } from "./UserBadge";
 import { Pagination } from "./Pagination";
 import classNames from "classnames";
 import { statusColors, resetStrategy } from "constants/UserSettings";
-import { DataLimitResetStrategy } from "types/User";
+import { DataLimitResetStrategy, User } from "types/User";
 import { useTranslation } from "react-i18next";
 import { t } from "i18next";
 
@@ -150,42 +156,21 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
     setSubLink,
     onFilterChange,
   } = useDashboard();
-  const marginTop =
-    useBreakpointValue({
-      base: 120,
-      lg: 72,
-    }) || 72;
+
+  const { t } = useTranslation();
+
+  const marginTop = useBreakpointValue({base: 120, lg: 72}) || 72;
+  const [top, setTop] = useState(`${marginTop}px`);
+
+  const useTable = useBreakpointValue({base: false, md: true});
+
+  useEffect(() => {
+    const el = document.querySelectorAll("#filters")[0] as HTMLElement;
+    setTop(`${el.offsetHeight}px`);
+  });  
 
   const isFiltered = users.length !== totalUsers.total;
-  const [copied, setCopied] = useState([-1, -1, false]);
 
-  useEffect(() => {
-    if (copied[2]) {
-      setTimeout(() => {
-        setCopied([-1, -1, false]);
-      }, 1000);
-    }
-  }, [copied]);
-
-  const tableFixHead = useCallback(() => {
-    const el = document.querySelectorAll("#users-table")[0] as HTMLElement;
-    const sT = window.scrollY;
-
-    document.querySelectorAll("#users-table thead th").forEach((th: any) => {
-      const transformY =
-        el.offsetTop - marginTop <= sT ? sT - el.offsetTop + marginTop : 0;
-      th.style.transform = `translateY(${transformY}px)`;
-    });
-  }, [marginTop, users]);
-
-  useEffect(() => {
-    window.addEventListener("scroll", tableFixHead);
-    window.addEventListener("resize", tableFixHead);
-    return () => {
-      window.removeEventListener("scroll", tableFixHead);
-      window.removeEventListener("resize", tableFixHead);
-    };
-  }, [tableFixHead]);
   const handleSort = (column: string) => {
     let newSort = filters.sort;
     if (newSort.includes(column)) {
@@ -206,14 +191,85 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
       status: e.target.value.length > 0 ? e.target.value : undefined,
     });
   };
-  const { t } = useTranslation();
   return (
-    <Box id="users-table" overflowX="auto">
-      <Table {...props}>
+    <Box id="users-table" overflowX={{base: "auto", md: "unset"}}>
+      <Accordion
+        allowMultiple
+        display={{base: "block", md: "none"}} 
+      >
+        {!useTable && users?.map((user, i) => {
+          return (
+            <AccordionItem
+              borderTopRadius={i == 0 ? "md" : "none"}
+              borderBottomRadius={i == (users.length - 1) ? "md" : "none"}
+              borderLeftWidth="thin"
+              borderRightWidth="thin"
+              borderColor="light-border"
+              _dark ={{borderColor: "gray.600"}}
+            >
+              {({isExpanded}) => (
+                <>
+                  <h2>
+                    <AccordionButton>
+                      <Box as="span" flex='1' textAlign='left'>
+                        {user.username}
+                      </Box>
+                      <Box mr="1.5" visibility={isExpanded ? "hidden" : "visible"}>
+                        <UserBadge expiryDate={null} status={user.status} />
+                      </Box>
+                      <AccordionIcon />
+                    </AccordionButton>
+                  </h2>
+                  <AccordionPanel
+                    cursor="pointer"
+                    pb={4} 
+                    onClick={() => onEditingUser(user)}
+                  >
+                    <VStack justifyContent="space-between" spacing="4">
+                      <VStack alignItems="flex-start" w="full" spacing={1}>
+                        <Text textTransform="capitalize" fontSize="sm" fontWeight="bold">
+                          {t("usersTable.status")}
+                        </Text>
+                        <Box w="full" pl="4" pr="4">
+                          <UserBadge expiryDate={user.expire} status={user.status} />
+                        </Box>
+                      </VStack>
+                      <VStack alignItems="flex-start" w="full" spacing={-1}>
+                        <Text textTransform="capitalize" fontSize="sm" fontWeight="bold">
+                          {t("usersTable.dataUsage")}
+                        </Text>
+                        <Box width="full" minW="230px" pl="4" pr="4">
+                          <UsageSlider
+                            totalUsedTraffic={user.lifetime_used_traffic}
+                            dataLimitResetStrategy={user.data_limit_reset_strategy}
+                            used={user.used_traffic}
+                            total={user.data_limit}
+                            colorScheme={statusColors[user.status].bandWidthColor}
+                          />
+                        </Box>
+                      </VStack>
+                      <Box>
+                        <ActionButtons user={user} />
+                      </Box>
+                    </VStack>
+                  </AccordionPanel>
+                </>
+              )}
+            </AccordionItem>
+          );
+        })}
+      </Accordion>
+      <Table
+        orientation="vertical"
+        display={{base: "none", md: "table"}} 
+        {...props}
+      >
         <Thead zIndex="docked" position="relative">
           <Tr>
             <Th
-              minW="150px"
+              position="sticky"
+              top={{base: "unset", md: top}}
+              minW="140px"
               cursor={"pointer"}
               onClick={handleSort.bind(null, "username")}
             >
@@ -222,7 +278,13 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 <Sort sort={filters.sort} column="username" />
               </HStack>
             </Th>
-            <Th width="400px" minW="180px" cursor={"pointer"}>
+            <Th
+              position="sticky"
+              top={{base: "unset", md: top}}
+              width="400px"
+              minW="150px"
+              cursor={"pointer"}
+            >
               <HStack spacing={0} position="relative">
                 <Text
                   position="absolute"
@@ -263,8 +325,10 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               </HStack>
             </Th>
             <Th
+              position="sticky"
+              top={{base: "unset", md: top}}
               width="350px"
-              minW="250px"
+              minW="230px"
               cursor={"pointer"}
               onClick={handleSort.bind(null, "used_traffic")}
             >
@@ -273,12 +337,16 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 <Sort sort={filters.sort} column="used_traffic" />
               </HStack>
             </Th>
-            <Th width="200px"></Th>
+            <Th
+              position="sticky"
+              top={{base: "unset", md: top}}
+              width="200px"
+              minW="180px"
+            />
           </Tr>
         </Thead>
         <Tbody>
-          {users?.map((user, i) => {
-            const proxyLinks = user.links.join("\r\n");
+          {useTable && users?.map((user, i) => {
             return (
               <Tr
                 key={user.username}
@@ -287,11 +355,11 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 })}
                 onClick={() => onEditingUser(user)}
               >
-                <Td minW="150px">{user.username}</Td>
-                <Td width="400px" minW="180px">
+                <Td minW="140px">{user.username}</Td>
+                <Td width="400px" minW="150px">
                   <UserBadge expiryDate={user.expire} status={user.status} />
                 </Td>
-                <Td width="350px" minW="250px">
+                <Td width="350px" minW="230px">
                   <UsageSlider
                     totalUsedTraffic={user.lifetime_used_traffic}
                     dataLimitResetStrategy={user.data_limit_reset_strategy}
@@ -300,102 +368,8 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                     colorScheme={statusColors[user.status].bandWidthColor}
                   />
                 </Td>
-                <Td width="200px">
-                  <HStack
-                    justifyContent="flex-end"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }}
-                  >
-                    <CopyToClipboard
-                      text={
-                        user.subscription_url.startsWith("/")
-                          ? window.location.origin + user.subscription_url
-                          : user.subscription_url
-                      }
-                      onCopy={() => {
-                        setCopied([i, 0, true]);
-                      }}
-                    >
-                      <div>
-                        <Tooltip
-                          label={
-                            copied[0] === i && copied[1] == 0 && copied[2]
-                              ? t("usersTable.copied")
-                              : t("usersTable.copyLink")
-                          }
-                          placement="top"
-                        >
-                          <IconButton
-                            aria-label="copy subscription link"
-                            bg="transparent"
-                            _dark={{
-                              _hover: {
-                                bg: "gray.700",
-                              },
-                            }}
-                          >
-                            {copied[0] === i && copied[1] == 0 && copied[2] ? (
-                              <CopiedIcon />
-                            ) : (
-                              <SubscriptionLinkIcon />
-                            )}
-                          </IconButton>
-                        </Tooltip>
-                      </div>
-                    </CopyToClipboard>
-                    <CopyToClipboard
-                      text={proxyLinks}
-                      onCopy={() => {
-                        setCopied([i, 1, true]);
-                      }}
-                    >
-                      <div>
-                        <Tooltip
-                          label={
-                            copied[0] === i && copied[1] == 1 && copied[2]
-                              ? t("usersTable.copied")
-                              : t("usersTable.copyConfigs")
-                          }
-                          placement="top"
-                        >
-                          <IconButton
-                            aria-label="copy configs"
-                            bg="transparent"
-                            _dark={{
-                              _hover: {
-                                bg: "gray.700",
-                              },
-                            }}
-                          >
-                            {copied[0] === i && copied[1] == 1 && copied[2] ? (
-                              <CopiedIcon />
-                            ) : (
-                              <CopyIcon />
-                            )}
-                          </IconButton>
-                        </Tooltip>
-                      </div>
-                    </CopyToClipboard>
-                    <Tooltip label="QR Code" placement="top">
-                      <IconButton
-                        aria-label="qr code"
-                        bg="transparent"
-                        _dark={{
-                          _hover: {
-                            bg: "gray.700",
-                          },
-                        }}
-                        onClick={() => {
-                          setQRCode(user.links);
-                          setSubLink(user.subscription_url);
-                        }}
-                      >
-                        <QRIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </HStack>
+                <Td width="200px" minW="180px">
+                 <ActionButtons user={user} />
                 </Td>
               </Tr>
             );
@@ -407,15 +381,129 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               </Td>
             </Tr>
           )}
-
-          <Tr p="0">
-            <Td colSpan={4} p={0} border="0 !important">
-              <Pagination />
-            </Td>
-          </Tr>
         </Tbody>
       </Table>
+      <Pagination />
     </Box>
+  );
+};
+
+type ActionButtonsProps = {
+  user: User;
+};
+
+const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
+  const {
+    setQRCode,
+    setSubLink,
+  } = useDashboard();
+
+  const proxyLinks = user.links.join("\r\n");
+
+  const [copied, setCopied] = useState([-1, false]);
+  useEffect(() => {
+    if (copied[1]) {
+      setTimeout(() => {
+        setCopied([-1, false]);
+      }, 1000);
+    }
+  }, [copied]);
+  return (
+    <HStack
+      justifyContent="flex-end"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
+      <CopyToClipboard
+        text={
+          user.subscription_url.startsWith("/")
+            ? window.location.origin + user.subscription_url
+            : user.subscription_url
+        }
+        onCopy={() => {
+          setCopied([0, true]);
+        }}
+      >
+        <div>
+          <Tooltip
+            label={
+              copied[0] == 0 && copied[1]
+                ? t("usersTable.copied")
+                : t("usersTable.copyLink")
+            }
+            placement="top"
+          >
+            <IconButton
+              aria-label="copy subscription link"
+              bg="transparent"
+              _dark={{
+                _hover: {
+                  bg: "gray.700",
+                },
+              }}
+            >
+              {copied[0] == 0 && copied[1] ? (
+                <CopiedIcon />
+              ) : (
+                <SubscriptionLinkIcon />
+              )}
+            </IconButton>
+          </Tooltip>
+        </div>
+      </CopyToClipboard>
+      <CopyToClipboard
+        text={proxyLinks}
+        onCopy={() => {
+          setCopied([1, true]);
+        }}
+      >
+        <div>
+          <Tooltip
+            label={
+              copied[0] == 1 && copied[1]
+                ? t("usersTable.copied")
+                : t("usersTable.copyConfigs")
+            }
+            placement="top"
+          >
+            <IconButton
+              aria-label="copy configs"
+              bg="transparent"
+              _dark={{
+                _hover: {
+                  bg: "gray.700",
+                },
+              }}
+            >
+              {copied[0] == 1 && copied[1] ? (
+                <CopiedIcon />
+              ) : (
+                <CopyIcon />
+              )}
+            </IconButton>
+          </Tooltip>
+        </div>
+      </CopyToClipboard>
+      <Tooltip label="QR Code" placement="top">
+        <IconButton
+          aria-label="qr code"
+          bg="transparent"
+          _dark={{
+            _hover: {
+              bg: "gray.700",
+            },
+          }}
+          onClick={() => {
+            setQRCode(user.links);
+            setSubLink(user.subscription_url);
+          }}
+        >
+          <QRIcon />
+        </IconButton>
+      </Tooltip>
+    </HStack>
   );
 };
 
