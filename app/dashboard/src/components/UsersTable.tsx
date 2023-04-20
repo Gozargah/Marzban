@@ -37,7 +37,10 @@ import CopyToClipboard from "react-copy-to-clipboard";
 import { UserBadge } from "./UserBadge";
 import { Pagination } from "./Pagination";
 import classNames from "classnames";
-import { statusColors } from "constants/UserSettings";
+import { statusColors, resetStrategy } from "constants/UserSettings";
+import { DataLimitResetStrategy } from "types/User";
+import { useTranslation } from "react-i18next";
+import { t } from "i18next";
 
 const EmptySectionIcon = chakra(AddFileIcon);
 
@@ -63,6 +66,16 @@ type UsageSliderProps = {
   dataLimitResetStrategy: string | null;
   totalUsedTraffic: number;
 } & SliderProps;
+
+const getResetStrategy = (strategy: string): string => {
+  for (var i = 0; i < resetStrategy.length; i++) {
+    const entry = resetStrategy[i];
+    if (entry.value == strategy) {
+      return entry.title;
+    }
+  }
+  return "No";
+};
 
 const UsageSlider: FC<UsageSliderProps> = (props) => {
   const {
@@ -104,7 +117,7 @@ const UsageSlider: FC<UsageSliderProps> = (props) => {
           ) : (
             formatBytes(total) +
             (dataLimitResetStrategy && dataLimitResetStrategy !== "no_reset"
-              ? " per " + dataLimitResetStrategy
+              ? " " + t("userDialog.resetStrategy" + getResetStrategy(dataLimitResetStrategy))
               : "")
           )}
         </Text>
@@ -193,6 +206,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
       status: e.target.value.length > 0 ? e.target.value : undefined,
     });
   };
+  const { t } = useTranslation();
   return (
     <Box id="users-table" overflowX="auto">
       <Table {...props}>
@@ -204,7 +218,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               onClick={handleSort.bind(null, "username")}
             >
               <HStack>
-                <span>username</span>
+                <span>{t("username")}</span>
                 <Sort sort={filters.sort} column="username" />
               </HStack>
             </Th>
@@ -223,7 +237,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   zIndex={1}
                   w="100%"
                 >
-                  Status{filters.status ? ": " + filters.status : ""}
+                  {t("usersTable.status")}{filters.status ? ": " + filters.status : ""}
                 </Text>
                 <Select
                   fontSize="xs"
@@ -255,7 +269,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               onClick={handleSort.bind(null, "used_traffic")}
             >
               <HStack>
-                <span>data usage</span>
+                <span>{t("usersTable.dataUsage")}</span>
                 <Sort sort={filters.sort} column="used_traffic" />
               </HStack>
             </Th>
@@ -308,8 +322,8 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                         <Tooltip
                           label={
                             copied[0] === i && copied[1] == 0 && copied[2]
-                              ? "Copied"
-                              : "Copy Subscription Link"
+                              ? t("usersTable.copied")
+                              : t("usersTable.copyLink")
                           }
                           placement="top"
                         >
@@ -341,8 +355,8 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                         <Tooltip
                           label={
                             copied[0] === i && copied[1] == 1 && copied[2]
-                              ? "Copied"
-                              : "Copy Configs"
+                              ? t("usersTable.copied")
+                              : t("usersTable.copyConfigs")
                           }
                           placement="top"
                         >
@@ -446,8 +460,8 @@ const EmptySection: FC<EmptySectionProps> = ({ isFiltered }) => {
       />
       <Text fontWeight="medium" color="gray.600" _dark={{ color: "gray.400" }}>
         {isFiltered
-          ? "It seems there is no user matched with what you are looking for"
-          : "There is no user added to the system"}
+          ? t('usersTable.noUserMatched')
+          : t('usersTable.noUser')}
       </Text>
       {!isFiltered && (
         <Button
@@ -455,7 +469,7 @@ const EmptySection: FC<EmptySectionProps> = ({ isFiltered }) => {
           colorScheme="primary"
           onClick={() => onCreateUser(true)}
         >
-          Create User
+          {t("createUser")}
         </Button>
       )}
     </Box>

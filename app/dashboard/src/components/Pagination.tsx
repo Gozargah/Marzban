@@ -13,6 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
 import { ChangeEvent, FC } from "react";
+import { useTranslation } from "react-i18next";
 
 const PrevIcon = chakra(ArrowLongLeftIcon, {
   baseStyle: {
@@ -99,6 +100,8 @@ export const Pagination: FC = () => {
     });
   };
 
+  const { t } = useTranslation();
+
   return (
     <HStack justifyContent="space-between" mt={4} overflow="auto" w="full">
       <Box>
@@ -115,7 +118,7 @@ export const Pagination: FC = () => {
             <option>30</option>
           </Select>
           <Text whiteSpace={"nowrap"} fontSize="sm">
-            Items per page
+            {t("itemsPerPage")}
           </Text>
         </HStack>
       </Box>
@@ -126,7 +129,7 @@ export const Pagination: FC = () => {
           onClick={changePage.bind(null, page - 1)}
           isDisabled={page === 0 || noPages === 0}
         >
-          Previous
+          {t("previous")}
         </Button>
         {pages.map((pageIndex) => {
           if (typeof pageIndex === "string")
@@ -147,7 +150,7 @@ export const Pagination: FC = () => {
           onClick={changePage.bind(null, page + 1)}
           isDisabled={page + 1 === noPages || noPages === 0}
         >
-          Next
+          {t("next")}
         </Button>
       </ButtonGroup>
     </HStack>

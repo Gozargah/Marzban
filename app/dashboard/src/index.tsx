@@ -5,6 +5,7 @@ import { SWRConfig } from "swr";
 import { theme } from "../chakra.config";
 import App from "./App";
 import "index.scss";
+import "locales/i18n"
 import { fetcher } from "service/http";
 import dayjs from "dayjs";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
