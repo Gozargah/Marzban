@@ -44,7 +44,7 @@ const setSearchField = debounce((username: string) => {
 }, 300);
 
 export const Filters: FC<FilterProps> = ({ ...props }) => {
-  const { loading, filters, onFilterChange, refetchUsers, onResetAllUsage, onCreateUser } =
+  const { loading, filters, onFilterChange, refetchUsers, onCreateUser } =
     useDashboard();
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
@@ -82,7 +82,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
       zIndex="docked"
       {...props}
     >
-      <GridItem colSpan={{base: 1, md: 2, lg: 1}} order={{ base: 2, md: 1 }}>
+      <GridItem colSpan={{ base: 1, md: 2, lg: 1 }} order={{ base: 2, md: 1 }}>
         <InputGroup>
           <InputLeftElement pointerEvents="none" children={<SearchIcon />} />
           <Input
@@ -122,14 +122,6 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
               })}
             />
           </IconButton>
-          <Button
-            colorScheme="primary"
-            size="sm"
-            onClick={() => onResetAllUsage(true)}
-            px={5}
-          >
-            {t("resetAllUsage")}
-          </Button>
           <Button
             colorScheme="primary"
             size="sm"
