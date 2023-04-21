@@ -13,7 +13,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
 import { ChangeEvent, FC } from "react";
-import { useTranslation } from "react-i18next";
 
 const PrevIcon = chakra(ArrowLongLeftIcon, {
   baseStyle: {
@@ -100,19 +99,9 @@ export const Pagination: FC = () => {
     });
   };
 
-  const { t } = useTranslation();
-
   return (
-    <HStack
-      justifyContent="space-between"
-      mt={4}
-      w="full"
-      display="flex"
-      columnGap={{ lg: 4, md: 0 }}
-      rowGap={{ md: 0, base: 4 }}
-      flexDirection={{ md: "row", base: "column" }}
-    >
-      <Box order={{ base: 2, md: 1 }}>
+    <HStack justifyContent="space-between" mt={4} overflow="auto" w="full">
+      <Box>
         <HStack>
           <Select
             minW="60px"
@@ -126,18 +115,18 @@ export const Pagination: FC = () => {
             <option>30</option>
           </Select>
           <Text whiteSpace={"nowrap"} fontSize="sm">
-            {t("itemsPerPage")}
+            Items per page
           </Text>
         </HStack>
       </Box>
 
-      <ButtonGroup size="sm" isAttached variant="outline" order={{ base: 1, md: 2 }}>
+      <ButtonGroup size="sm" isAttached variant="outline">
         <Button
           leftIcon={<PrevIcon />}
           onClick={changePage.bind(null, page - 1)}
           isDisabled={page === 0 || noPages === 0}
         >
-          {t("previous")}
+          Previous
         </Button>
         {pages.map((pageIndex) => {
           if (typeof pageIndex === "string")
@@ -158,7 +147,7 @@ export const Pagination: FC = () => {
           onClick={changePage.bind(null, page + 1)}
           isDisabled={page + 1 === noPages || noPages === 0}
         >
-          {t("next")}
+          Next
         </Button>
       </ButtonGroup>
     </HStack>

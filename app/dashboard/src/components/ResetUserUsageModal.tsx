@@ -18,7 +18,6 @@ import { FC, useEffect, useRef, useState } from "react";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { Icon } from "./Icon";
 import { useDashboard } from "contexts/DashboardContext";
-import { useTranslation, Trans } from "react-i18next";
 
 export const ResetIcon = chakra(ArrowPathIcon, {
   baseStyle: {
@@ -32,7 +31,6 @@ export type DeleteUserModalProps = {};
 export const ResetUserUsageModal: FC<DeleteUserModalProps> = () => {
   const [loading, setLoading] = useState(false);
   const { resetUsageUser: user, resetDataUsage } = useDashboard();
-  const { t } = useTranslation();
   const toast = useToast();
   const onClose = () => {
     useDashboard.setState({ resetUsageUser: null });
@@ -43,7 +41,7 @@ export const ResetUserUsageModal: FC<DeleteUserModalProps> = () => {
       resetDataUsage(user)
         .then(() => {
           toast({
-            title: t("resetUserUsage.success", {username: user.username}),
+            title: `${user.username}'s usage has reset successfully.`,
             status: "success",
             isClosable: true,
             position: "top",
@@ -52,7 +50,7 @@ export const ResetUserUsageModal: FC<DeleteUserModalProps> = () => {
         })
         .catch(() => {
           toast({
-            title: t("resetUserUsage.error"),
+            title: `Usage reset failed, please try again.`,
             status: "error",
             isClosable: true,
             position: "top",
@@ -76,7 +74,7 @@ export const ResetUserUsageModal: FC<DeleteUserModalProps> = () => {
         <ModalCloseButton mt={3} />
         <ModalBody>
           <Text fontWeight="semibold" fontSize="lg">
-            {t("resetUserUsage.title")}
+            Reset User Usage
           </Text>
           {user && (
             <Text
@@ -85,16 +83,13 @@ export const ResetUserUsageModal: FC<DeleteUserModalProps> = () => {
               _dark={{ color: "gray.400" }}
               color="gray.600"
             >
-              <Trans
-                components={{b: <b /> }}>
-                {t("resetUserUsage.prompt", {username: user.username})}
-              </Trans>
+              Are you sure you want to reset <b>{user.username}</b>'s usage?
             </Text>
           )}
         </ModalBody>
         <ModalFooter display="flex">
           <Button size="sm" onClick={onClose} mr={3} w="full" variant="outline">
-            {t("cancel")}
+            Cancel
           </Button>
           <Button
             size="sm"
@@ -103,7 +98,7 @@ export const ResetUserUsageModal: FC<DeleteUserModalProps> = () => {
             onClick={onReset}
             leftIcon={loading ? <Spinner size="xs" /> : undefined}
           >
-            {t("reset")}
+            Reset
           </Button>
         </ModalFooter>
       </ModalContent>

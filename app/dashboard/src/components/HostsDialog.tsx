@@ -1,5 +1,5 @@
 import { useDashboard, useHosts } from "../contexts/DashboardContext";
-import { FC, useEffect, useRef, useState, useTransition } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import {
   Accordion,
   AccordionButton,
@@ -55,7 +55,6 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { proxyHostSecurity } from "constants/ProxyHosts";
 import { ProxyHostSecurity } from "types/ProxyHosts";
-import { useTranslation } from "react-i18next";
 
 const ModalIcon = chakra(LinkIcon, {
   baseStyle: {
@@ -126,7 +125,6 @@ const AccordionInbound: FC<AccordionInboundType> = ({
     name: hostKey,
   });
   const { errors } = form.formState;
-  const { t } = useTranslation();
   const accordionErrors = errors[hostKey];
   const handleAddHost = () => {
     addHost({
@@ -206,43 +204,55 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             <PopoverBody>
                               <Box fontSize="xs">
                                 <Text pr="20px">
-                                  {t("hostsDialog.desc")}
+                                  Use these variables to make it dynamic
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
                                     {"{"}USERNAME{"}"}
                                   </Badge>{" "}
-                                  {t("hostsDialog.username")}
+                                  the username of the user
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
                                     {"{"}DATA_USAGE{"}"}
                                   </Badge>{" "}
-                                  {t("hostsDialog.dataUsage")}
+                                  The current usage of the user
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
                                     {"{"}DATA_LIMIT{"}"}
                                   </Badge>{" "}
-                                  {t("hostsDialog.dataLimit")}
+                                  The usage limit of the user
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
                                     {"{"}DAYS_LEFT{"}"}
                                   </Badge>{" "}
-                                  {t('hostsDialog.remaingDays')}
+                                  Remaining days of the user
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
                                     {"{"}PROTOCOL{"}"}
                                   </Badge>{" "}
-                                  {t('hostsDialog.proxyProtocol')}
+                                  Proxy protocol (e.g. VMess)
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
                                     {"{"}TRANSPORT{"}"}
                                   </Badge>{" "}
-                                  {t("hostsDialog.proxyMethod")}
+                                  Proxy transport method (e.g. ws)
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}PROTOCOL{"}"}
+                                  </Badge>{" "}
+                                  Proxy protocol (e.g. VMess)
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}TRANSPORT{"}"}
+                                  </Badge>{" "}
+                                  Proxy transport method (e.g. ws)
                                 </Text>
                               </Box>
                             </PopoverBody>
@@ -295,13 +305,13 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             <PopoverBody>
                               <Box fontSize="xs">
                                 <Text pr="20px">
-                                  {t("hostsDialog.desc")}
+                                  Use these variables to make it dynamic
                                 </Text>
                                 <Text>
                                   <Badge>
                                     {"{"}SERVER_IP{"}"}
                                   </Badge>{" "}
-                                  {t("hostsDialog.currentServer")}
+                                  Current server ip address
                                 </Text>
                               </Box>
                             </PopoverBody>
@@ -350,7 +360,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                 )}
               </FormControl>
               <FormControl height="66px">
-                <FormLabel>{t("hostsDialog.security")}</FormLabel>
+                <FormLabel>Security</FormLabel>
                 <Select
                   size="sm"
                   {...form.register(hostKey + "." + index + ".security")}
@@ -374,7 +384,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
             fontWeight={"normal"}
             onClick={handleAddHost}
           >
-            {t('hostsDialog.addHost')}
+            Add host
           </Button>
         </VStack>
       </AccordionPanel>
@@ -386,7 +396,6 @@ export const HostsDialog: FC = () => {
   const { isEditingHosts, onEditingHosts, refetchUsers } = useDashboard();
   const { isLoading, hosts, fetchHosts, isPostLoading, setHosts } = useHosts();
   const toast = useToast();
-  const { t } = useTranslation();
   const [openAccordions, setOpenAccordions] = useState<any>({});
 
   useEffect(() => {
@@ -410,7 +419,7 @@ export const HostsDialog: FC = () => {
     setHosts(hosts)
       .then(() => {
         toast({
-          title: t("hostsDialog.savedSuccess"),
+          title: `Hosts saved successfully`,
           status: "success",
           isClosable: true,
           position: "top",
@@ -464,9 +473,10 @@ export const HostsDialog: FC = () => {
           <FormProvider {...form}>
             <form onSubmit={form.handleSubmit(handleFormSubmit)}>
               <Text mb={3} opacity={0.8} fontSize="sm">
-                {t("hostsDialog.title")}
+                Using this setting, you are able to assign specific address for
+                each inbound.
               </Text>
-              {isLoading && t("hostsDialog.loading")}
+              {isLoading && "loading..."}
               {!isLoading &&
                 hosts &&
                 (Object.keys(hosts).length > 0 ? (
@@ -504,7 +514,7 @@ export const HostsDialog: FC = () => {
                   isLoading={isPostLoading}
                   disabled={isPostLoading}
                 >
-                  {t("hostsDialog.apply")}
+                  Apply
                 </Button>
               </HStack>
             </form>

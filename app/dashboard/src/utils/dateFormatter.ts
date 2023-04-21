@@ -1,18 +1,17 @@
 import dayjs from "dayjs";
 
 export const relativeExpiryDate = (expiryDate: number | null | undefined) => {
-  let dateInfo = {status: "", time: ""}
+  let date = "";
   if (expiryDate) {
     if (
       dayjs(expiryDate * 1000)
         .utc()
         .isAfter(dayjs().utc())
     ) {
-      dateInfo.status = "expires";
+      date = "Expires " + dayjs().to(dayjs(expiryDate * 1000).utc());
     } else {
-      dateInfo.status = "expired";
+      date = "Expired " + dayjs().to(dayjs(expiryDate * 1000).utc());
     }
-    dateInfo.time = dayjs().to(dayjs(expiryDate * 1000).utc());
   }
-  return dateInfo;
+  return date;
 };

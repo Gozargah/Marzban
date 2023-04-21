@@ -17,7 +17,6 @@ import { FC, useState } from "react";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { Icon } from "./Icon";
 import { useDashboard } from "contexts/DashboardContext";
-import { useTranslation, Trans } from "react-i18next";
 
 export const DeleteIcon = chakra(TrashIcon, {
   baseStyle: {
@@ -31,7 +30,6 @@ export type DeleteUserModalProps = {};
 export const DeleteUserModal: FC<DeleteUserModalProps> = () => {
   const [loading, setLoading] = useState(false);
   const { deletingUser: user, onDeletingUser, deleteUser } = useDashboard();
-  const { t } = useTranslation();
   const toast = useToast();
   const onClose = () => {
     onDeletingUser(null);
@@ -42,7 +40,7 @@ export const DeleteUserModal: FC<DeleteUserModalProps> = () => {
       deleteUser(user)
         .then(() => {
           toast({
-            title: t("deleteUser.deleteSuccess", {username: user.username}),
+            title: `${user.username} deleted successfully.`,
             status: "success",
             isClosable: true,
             position: "top",
@@ -65,7 +63,7 @@ export const DeleteUserModal: FC<DeleteUserModalProps> = () => {
         <ModalCloseButton mt={3} />
         <ModalBody>
           <Text fontWeight="semibold" fontSize="lg">
-            {t("deleteUser.title")}
+            Delete User
           </Text>
           {user && (
             <Text
@@ -74,16 +72,13 @@ export const DeleteUserModal: FC<DeleteUserModalProps> = () => {
               _dark={{ color: "gray.400" }}
               color="gray.600"
             >
-              <Trans
-                components={{b: <b /> }}>
-                {t("deleteUser.prompt", {username: user.username})}
-              </Trans>
+              Are you sure you want to delete <b>{user.username}</b>?
             </Text>
           )}
         </ModalBody>
         <ModalFooter display="flex">
           <Button size="sm" onClick={onClose} mr={3} w="full" variant="outline">
-            {t("cancel")}
+            Cancel
           </Button>
           <Button
             size="sm"
@@ -92,7 +87,7 @@ export const DeleteUserModal: FC<DeleteUserModalProps> = () => {
             onClick={onDelete}
             leftIcon={loading ? <Spinner size="xs" /> : undefined}
           >
-            {t("delete")}
+            Delete
           </Button>
         </ModalFooter>
       </ModalContent>
