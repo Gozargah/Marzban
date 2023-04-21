@@ -65,8 +65,8 @@ export const ResetAllUsageModal: FC<DeleteUserModalProps> = () => {
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
       <ModalContent mx="3">
         <ModalHeader pt={6}>
-          <Icon color="primary">
-            <ResetIcon color="white" />
+          <Icon color="red">
+            <ResetIcon />
           </Icon>
         </ModalHeader>
         <ModalCloseButton mt={3} />
@@ -92,7 +92,7 @@ export const ResetAllUsageModal: FC<DeleteUserModalProps> = () => {
           <Button
             size="sm"
             w="full"
-            colorScheme="primary"
+            colorScheme="red"
             onClick={onReset}
             leftIcon={loading ? <Spinner size="xs" /> : undefined}
           >
