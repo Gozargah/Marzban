@@ -26,11 +26,13 @@ type UserStatusProps = {
   expiryDate?: number | null;
   status: UserStatusType;
   compact?: boolean;
+  showDetail?: boolean;
 };
 export const UserBadge: FC<UserStatusProps> = ({
   expiryDate,
   status: userStatus,
   compact = false,
+  showDetail = true,
 }) => {
   const { t } = useTranslation();
   const dateInfo = relativeExpiryDate(expiryDate);
@@ -51,7 +53,7 @@ export const UserBadge: FC<UserStatusProps> = ({
         )}
         {userStatus === "limited" && <LimitedStatusIcon w={compact ? 3 : 4} />}
         {userStatus === "expired" && <ExpiredStatusIcon w={compact ? 3 : 4} />}
-        <Text
+        {showDetail && (<Text
           textTransform="capitalize"
           fontSize={compact ? ".7rem" : ".875rem"}
           lineHeight={compact ? "1rem" : "1.25rem"}
@@ -60,8 +62,9 @@ export const UserBadge: FC<UserStatusProps> = ({
         >
           {userStatus}
         </Text>
+        )}
       </Badge>
-      {expiryDate && (
+      {showDetail && expiryDate && (
         <Text
           display="inline-block"
           fontSize="xs"

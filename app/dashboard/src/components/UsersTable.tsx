@@ -103,14 +103,7 @@ const UsageSliderCompact: FC<UsageSliderProps> = (props) => {
             ∞
           </Text>
         ) : (
-          formatBytes(total) +
-          (dataLimitResetStrategy && dataLimitResetStrategy !== "no_reset"
-            ? " " +
-              t(
-                "userDialog.resetStrategy" +
-                  getResetStrategy(dataLimitResetStrategy)
-              )
-            : "")
+          formatBytes(total)
         )}
       </Text>
     </HStack>
@@ -164,7 +157,7 @@ const UsageSlider: FC<UsageSliderProps> = (props) => {
               : "")
           )}
         </Text>
-        <Text>Total: {formatBytes(totalUsedTraffic)}</Text>
+        <Text>{t("usersTable.total")}: {formatBytes(totalUsedTraffic)}</Text>
       </HStack>
     </>
   );
@@ -198,7 +191,6 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
   );
   const marginTop = useBreakpointValue({ base: 120, lg: 72 }) || 72;
   const [top, setTop] = useState(`${marginTop}px`);
-
   const useTable = useBreakpointValue({ base: false, md: true });
 
   useEffect(() => {
@@ -246,7 +238,9 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               <Th
                 position="sticky"
                 top={{ base: "unset", md: top }}
-                minW="140px"
+                minW="120px"
+                pl={4} 
+                pr={4}
                 cursor={"pointer"}
               >
                 <HStack>
@@ -257,31 +251,33 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               <Th
                 position="sticky"
                 top={{ base: "unset", md: top }}
-                minW="100px"
+                minW="50px"
+                pl={0}
+                pr={0}
                 cursor={"pointer"}
               >
                 <HStack>
-                  <span>{t("status")}</span>
+                  <span>{t("usersTable.status")}</span>
                   <Sort sort={filters.sort} column="username" />
                 </HStack>
               </Th>
               <Th
                 position="sticky"
                 top={{ base: "unset", md: top }}
-                minW="130px"
+                minW="100px"
                 cursor={"pointer"}
                 pr={0}
               >
                 <HStack>
-                  <span>{t("dataUsage")}</span>
+                  <span>{t("usersTable.dataUsage")}</span>
                   <Sort sort={filters.sort} column="username" />
                 </HStack>
               </Th>
               <Th
                 position="sticky"
                 top={{ base: "unset", md: top }}
-                minW="40px"
-                w="40px"
+                minW="32px"
+                w="32px"
                 p={0}
                 cursor={"pointer"}
               ></Th>
@@ -296,17 +292,18 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                       onClick={toggleAccordion.bind(null, i)}
                       cursor="pointer"
                     >
-                      <Td borderBottom={0} minW="140px">
+                      <Td borderBottom={0} minW="100px" pl={4} pr={4}>
                         {user.username}
                       </Td>
-                      <Td borderBottom={0} minW="100px">
+                      <Td borderBottom={0} minW="50px" pl={0} pr={0}>
                         <UserBadge
                           compact
+                          showDetail={false}
                           expiryDate={user.expire}
                           status={user.status}
                         />
                       </Td>
-                      <Td borderBottom={0} minW="130px" pr={0}>
+                      <Td borderBottom={0} minW="100px" pr={0}>
                         <UsageSliderCompact
                           totalUsedTraffic={user.lifetime_used_traffic}
                           dataLimitResetStrategy={
@@ -317,7 +314,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                           colorScheme={statusColors[user.status].bandWidthColor}
                         />
                       </Td>
-                      <Td p={0} borderBottom={0} w="40px" minW="40px">
+                      <Td p={0} borderBottom={0} w="32px" minW="32px">
                         <AccordionArrowIcon
                           color="gray.600"
                           _dark={{
@@ -344,6 +341,30 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                             py={3}
                           >
                             <VStack justifyContent="space-between" spacing="4">
+                              <VStack
+                                alignItems="flex-start"
+                                w="full"
+                                spacing={2}
+                              >
+                                <Text
+                                  textTransform="capitalize"
+                                  fontSize="xs"
+                                  fontWeight="bold"
+                                  color="gray.600"
+                                  _dark={{
+                                    color: "gray.400",
+                                  }}
+                                >
+                                  {t("usersTable.status")}
+                                </Text>
+                                <Box width="full" minW="230px">
+                                  <UserBadge
+                                    compact
+                                    expiryDate={user.expire}
+                                    status={user.status}
+                                  />
+                                </Box>
+                              </VStack>
                               <VStack
                                 alignItems="flex-start"
                                 w="full"
