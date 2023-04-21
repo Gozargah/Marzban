@@ -24,9 +24,6 @@ import { FC, ReactNode, useState } from "react";
 import { Link } from "react-router-dom";
 import GitHubButton from "react-github-btn";
 import { DONATION_URL, REPO_URL } from "constants/Project";
-import { useTranslation } from "react-i18next";
-import { Language } from "./Language";
-import { updateThemeColor } from "utils/themeColor";
 
 const DarkIcon = chakra(MoonIcon, {
   baseStyle: {
@@ -69,7 +66,6 @@ const NOTIFICATION_KEY = "marzban-menu-notification";
 
 export const Header: FC<HeaderProps> = ({ actions }) => {
   const { onEditingHosts } = useDashboard();
-  const { t, i18n } = useTranslation();
   const { colorMode, toggleColorMode } = useColorMode();
   const [notificationsChecked, setNotificationChecked] = useState(
     localStorage.getItem(NOTIFICATION_KEY)
@@ -84,7 +80,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
   return (
     <HStack gap={2} justifyContent="space-between">
       <Text as="h1" fontWeight="semibold" fontSize="2xl">
-        {t("users")}
+        Users
       </Text>
       <HStack alignItems="center">
         <Box
@@ -110,14 +106,10 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
           size="sm"
           variant="outline"
           aria-label="switch theme"
-          onClick={() => {
-            updateThemeColor(colorMode == "dark" ? "light" : "dark");
-            toggleColorMode();
-          }}
+          onClick={toggleColorMode}
         >
           {colorMode === "light" ? <DarkIcon /> : <LightIcon />}
         </IconButton>
-        <Language />
         <Menu onClose={handleOnClose}>
           <MenuButton
             as={IconButton}
@@ -140,7 +132,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
               icon={<HostsIcon />}
               onClick={onEditingHosts.bind(null, true)}
             >
-              {t("header.hostsSetting")}
+              Hosts Settings
             </MenuItem>
             <Link to={DONATION_URL} target="_blank">
               <MenuItem
@@ -149,7 +141,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                 icon={<DonationIcon />}
                 position="relative"
               >
-                {t("header.donation")}{" "}
+                Donation{" "}
                 {!notificationsChecked && (
                   <NotificationCircle top="3" right="2" />
                 )}
@@ -157,7 +149,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
             </Link>
             <Link to="/login">
               <MenuItem maxW="170px" fontSize="sm" icon={<LogoutIcon />}>
-                {t("header.logout")}
+                Log out
               </MenuItem>
             </Link>
           </MenuList>
