@@ -24,6 +24,7 @@ import { QRCodeCanvas } from "qrcode.react";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Slider from "react-slick";
+import { useTranslation } from "react-i18next";
 
 const QRCode = chakra(QRCodeCanvas);
 const NextIcon = chakra(ChevronRightIcon, {
@@ -57,6 +58,7 @@ export const QRCodeDialog: FC = () => {
   const { QRcodeLinks, setQRCode, setSubLink, subscribeUrl } = useDashboard();
   const isOpen = QRcodeLinks !== null;
   const [index, setIndex] = useState(0);
+  const { t } = useTranslation();
   const onClose = () => {
     setQRCode(null);
     setSubLink(null);
@@ -101,7 +103,7 @@ export const QRCodeDialog: FC = () => {
                   value={subscribeUrl}
                 />
                 <Text display="block" textAlign="center" pb={3} mt={1}>
-                  Subscribe Link
+                  {t("qrcodeDialog.sublink")}
                 </Text>
               </VStack>
             )}

@@ -11,6 +11,7 @@ import { DeleteUserModal } from "components/DeleteUserModal";
 import { QRCodeDialog } from "components/QRCodeDialog";
 import { HostsDialog } from "components/HostsDialog";
 import { ResetUserUsageModal } from "components/ResetUserUsageModal";
+import { ResetAllUsageModal } from "components/ResetAllUsageModal";
 
 export const Dashboard: FC = () => {
   useEffect(() => {
@@ -29,6 +30,7 @@ export const Dashboard: FC = () => {
         <QRCodeDialog />
         <HostsDialog />
         <ResetUserUsageModal />
+        <ResetAllUsageModal />
       </Box>
       <Footer />
     </VStack>

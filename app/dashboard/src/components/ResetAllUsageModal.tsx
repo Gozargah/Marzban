@@ -11,15 +11,16 @@ import {
   ModalOverlay,
   Spinner,
   Text,
+  Toast,
   useToast,
 } from "@chakra-ui/react";
-import { FC, useState } from "react";
-import { TrashIcon } from "@heroicons/react/24/outline";
+import { FC, useEffect, useRef, useState } from "react";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { Icon } from "./Icon";
 import { useDashboard } from "contexts/DashboardContext";
-import { useTranslation, Trans } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-export const DeleteIcon = chakra(TrashIcon, {
+export const ResetIcon = chakra(ArrowPathIcon, {
   baseStyle: {
     w: 5,
     h: 5,
@@ -28,56 +29,61 @@ export const DeleteIcon = chakra(TrashIcon, {
 
 export type DeleteUserModalProps = {};
 
-export const DeleteUserModal: FC<DeleteUserModalProps> = () => {
+export const ResetAllUsageModal: FC<DeleteUserModalProps> = () => {
   const [loading, setLoading] = useState(false);
-  const { deletingUser: user, onDeletingUser, deleteUser } = useDashboard();
+  const { isResetingAllUsage, onResetAllUsage, resetAllUsage } = useDashboard();
   const { t } = useTranslation();
   const toast = useToast();
   const onClose = () => {
-    onDeletingUser(null);
+    onResetAllUsage(false);
   };
-  const onDelete = () => {
-    if (user) {
-      setLoading(true);
-      deleteUser(user)
-        .then(() => {
-          toast({
-            title: t("deleteUser.deleteSuccess", {username: user.username}),
-            status: "success",
-            isClosable: true,
-            position: "top",
-            duration: 3000,
-          });
-        })
-        .then(onClose)
-        .finally(setLoading.bind(null, false));
-    }
+  const onReset = () => {
+    setLoading(true);
+    resetAllUsage()
+    .then(() => {
+        toast({
+        title: t("resetAllUsage.success"),
+        status: "success",
+        isClosable: true,
+        position: "top",
+        duration: 3000,
+        });
+    })
+    .catch(() => {
+        toast({
+        title: t("resetAllUsage.error"),
+        status: "error",
+        isClosable: true,
+        position: "top",
+        duration: 3000,
+        });
+    })
+    .finally(() => {
+        setLoading(false);
+    });
   };
   return (
-    <Modal isCentered isOpen={!!user} onClose={onClose} size="sm">
+    <Modal isCentered isOpen={isResetingAllUsage} onClose={onClose} size="sm">
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
       <ModalContent mx="3">
         <ModalHeader pt={6}>
-          <Icon color="red">
-            <DeleteIcon />
+          <Icon color="blue">
+            <ResetIcon />
           </Icon>
         </ModalHeader>
         <ModalCloseButton mt={3} />
         <ModalBody>
           <Text fontWeight="semibold" fontSize="lg">
-            {t("deleteUser.title")}
+            {t("resetAllUsage.title")}
           </Text>
-          {user && (
+          {isResetingAllUsage && (
             <Text
               mt={1}
               fontSize="sm"
               _dark={{ color: "gray.400" }}
               color="gray.600"
             >
-              <Trans
-                components={{b: <b /> }}>
-                {t("deleteUser.prompt", {username: user.username})}
-              </Trans>
+              {t("resetAllUsage.prompt")}
             </Text>
           )}
         </ModalBody>
@@ -88,11 +94,11 @@ export const DeleteUserModal: FC<DeleteUserModalProps> = () => {
           <Button
             size="sm"
             w="full"
-            colorScheme="red"
-            onClick={onDelete}
+            colorScheme="blue"
+            onClick={onReset}
             leftIcon={loading ? <Spinner size="xs" /> : undefined}
           >
-            {t("delete")}
+            {t("reset")}
           </Button>
         </ModalFooter>
       </ModalContent>
