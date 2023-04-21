@@ -16,22 +16,12 @@ from . import utils
 app = typer.Typer(no_args_is_help=True)
 console = Console()
 
-PASSWORD_ENVIRON_NAME = "MARZBAN_ADMIN_PASSWORD"
-
-FLAGS = {
-    "username": ("--username", "-u"),
-    "limit": ("--limit", "-l"),
-    "offset": ("--offset", "-o"),
-    "yes_to_all": ("--yes", "-y"),
-    "is_sudo": ("--sudo/--no-sudo",),
-}
-
 
 @app.command(name="list")
 def list_admins(
-    offset: Optional[int] = typer.Option(None, *FLAGS["offset"]),
-    limit: Optional[int] = typer.Option(None, *FLAGS["limit"]),
-    username: Optional[str] = typer.Option(None, *FLAGS["username"], help="Search by username"),
+    offset: Optional[int] = typer.Option(None, *utils.FLAGS["offset"]),
+    limit: Optional[int] = typer.Option(None, *utils.FLAGS["limit"]),
+    username: Optional[str] = typer.Option(None, *utils.FLAGS["username"], help="Search by username"),
 ):
     """Displays a table of admins"""
     with GetDB() as db:
@@ -50,8 +40,8 @@ def list_admins(
 
 @app.command(name="delete")
 def delete_admin(
-    username: str = typer.Option(..., *FLAGS["username"], prompt=True),
-    yes_to_all: bool = typer.Option(False, *FLAGS["yes_to_all"], help="Skips confirmations")
+    username: str = typer.Option(..., *utils.FLAGS["username"], prompt=True),
+    yes_to_all: bool = typer.Option(False, *utils.FLAGS["yes_to_all"], help="Skips confirmations")
 ):
     """
     Deletes the specified admin
@@ -72,10 +62,10 @@ def delete_admin(
 
 @app.command(name="create")
 def create_admin(
-    username: str = typer.Option(..., *FLAGS["username"], prompt=True),
-    is_sudo: bool = typer.Option(None, *FLAGS["is_sudo"], prompt=True),
+    username: str = typer.Option(..., *utils.FLAGS["username"], prompt=True),
+    is_sudo: bool = typer.Option(None, *utils.FLAGS["is_sudo"], prompt=True),
     password: str = typer.Option(..., prompt=True, confirmation_prompt=True,
-                                 hide_input=True, hidden=True, envvar=PASSWORD_ENVIRON_NAME)
+                                 hide_input=True, hidden=True, envvar=utils.PASSWORD_ENVIRON_NAME)
 ):
     """
     Creates an admin
@@ -91,7 +81,7 @@ def create_admin(
 
 
 @app.command(name="update")
-def update_admin(username: str = typer.Option(..., *FLAGS["username"], prompt=True)):
+def update_admin(username: str = typer.Option(..., *utils.FLAGS["username"], prompt=True)):
     """
     Updates the specified admin
 
@@ -127,7 +117,7 @@ def update_admin(username: str = typer.Option(..., *FLAGS["username"], prompt=Tr
 
 
 @app.command(name="import-from-env")
-def import_from_env(yes_to_all: bool = typer.Option(False, *FLAGS["yes_to_all"], help="Skips confirmations")):
+def import_from_env(yes_to_all: bool = typer.Option(False, *utils.FLAGS["yes_to_all"], help="Skips confirmations")):
     """
     Imports the sudo admin from env
 
