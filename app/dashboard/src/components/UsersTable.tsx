@@ -292,7 +292,10 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               users?.map((user, i) => {
                 return (
                   <Fragment key={user.username}>
-                    <Tr onClick={toggleAccordion.bind(null, i)}>
+                    <Tr
+                      onClick={toggleAccordion.bind(null, i)}
+                      cursor="pointer"
+                    >
                       <Td borderBottom={0} minW="140px">
                         {user.username}
                       </Td>
@@ -334,7 +337,12 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                       <Td p={0} colSpan={4}>
                         <AccordionItem border={0}>
                           <AccordionButton display="none"></AccordionButton>
-                          <AccordionPanel border={0} cursor="pointer" py={4}>
+                          <AccordionPanel
+                            border={0}
+                            cursor="pointer"
+                            px={6}
+                            py={3}
+                          >
                             <VStack justifyContent="space-between" spacing="4">
                               <VStack
                                 alignItems="flex-start"
