@@ -1,14 +1,16 @@
 from random import randint
+from typing import Dict
 
 from app.utils.system import check_port
+from app.xray import operations
 from app.xray.config import XRayConfig
 from app.xray.core import XRayCore
-from xray_api import XRay
+from app.xray.node import XRayNode
+from config import XRAY_ASSETS_PATH, XRAY_EXECUTABLE_PATH, XRAY_JSON
+from xray_api import XRay as XRayAPI
 from xray_api import exceptions
 from xray_api import exceptions as exc
 from xray_api import types
-
-from config import XRAY_ASSETS_PATH, XRAY_EXECUTABLE_PATH, XRAY_JSON
 
 # Search for a free API port
 try:
@@ -21,14 +23,20 @@ finally:
 
 
 core = XRayCore(XRAY_EXECUTABLE_PATH, XRAY_ASSETS_PATH)
-api = XRay(config.api_host, config.api_port)
+api = XRayAPI(config.api_host, config.api_port)
+nodes: Dict[int, XRayNode] = {}
 
 
 __all__ = [
     "config",
     "core",
     "api",
+    "nodes",
+    "operations",
     "exceptions",
     "exc",
-    "types"
+    "types",
+    "XRayConfig",
+    "XRayCore",
+    "XRayNode",
 ]

@@ -3,10 +3,11 @@ from enum import Enum
 from typing import List, Union
 from uuid import UUID, uuid4
 
+from pydantic import BaseModel, Field, validator
+
 from app.utils.system import random_password
-from pydantic import BaseModel, Field
-from xray_api.types.account import (ShadowsocksAccount, TrojanAccount,
-                                    VLESSAccount, VMessAccount)
+from xray_api.types.account import (ShadowsocksAccount, ShadowsocksMethods,
+                                    TrojanAccount, VLESSAccount, VMessAccount)
 
 
 class ProxyTypes(str, Enum):
@@ -66,12 +67,18 @@ class TrojanSettings(ProxySettings):
 
 class ShadowsocksSettings(ProxySettings):
     password: str = Field(default_factory=random_password)
+    method: ShadowsocksMethods = ShadowsocksMethods.CHACHA20_POLY1305
 
 
 class ProxyHostSecurity(str, Enum):
     inbound_default = "inbound_default"
     none = "none"
     tls = "tls"
+
+
+class FormatVariables(dict):
+    def __missing__(self, key):
+        return key.join("{}")
 
 
 class ProxyHost(BaseModel):
@@ -84,6 +91,24 @@ class ProxyHost(BaseModel):
 
     class Config:
         orm_mode = True
+
+    @validator('remark', pre=False, always=True)
+    def validate_remark(cls, v):
+        try:
+            v.format_map(FormatVariables())
+        except ValueError as exc:
+            raise ValueError('Invalid formatting variables')
+
+        return v
+
+    @validator('address', pre=False, always=True)
+    def validate_address(cls, v):
+        try:
+            v.format_map(FormatVariables())
+        except ValueError as exc:
+            raise ValueError('Invalid formatting variables')
+
+        return v
 
 
 class ProxyInbound(BaseModel):

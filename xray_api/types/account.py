@@ -1,4 +1,5 @@
 from abc import ABC, abstractproperty
+from enum import Enum
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -7,7 +8,7 @@ from ..proto.common.serial.typed_message_pb2 import TypedMessage
 from ..proto.proxy.shadowsocks.config_pb2 import \
     Account as ShadowsocksAccountPb2
 from ..proto.proxy.shadowsocks.config_pb2 import \
-    CipherType as ShadowsocksCipherType
+    CipherType as ShadowsocksCiphers
 from ..proto.proxy.trojan.config_pb2 import Account as TrojanAccountPb2
 from ..proto.proxy.vless.account_pb2 import Account as VLESSAccountPb2
 from ..proto.proxy.vmess.account_pb2 import Account as VMessAccountPb2
@@ -51,9 +52,19 @@ class TrojanAccount(Account):
         return Message(TrojanAccountPb2(password=self.password))
 
 
+class ShadowsocksMethods(Enum):
+    AES_128_GCM = 'aes-128-gcm'
+    AES_256_GCM = 'aes-256-gcm'
+    CHACHA20_POLY1305 = 'chacha20-poly1305'
+
+
 class ShadowsocksAccount(Account):
     password: str
-    cipher_type: str = "CHACHA20_POLY1305"
+    method: ShadowsocksMethods = ShadowsocksMethods.CHACHA20_POLY1305
+
+    @property
+    def cipher_type(self):
+        return self.method.name
 
     @property
     def message(self):

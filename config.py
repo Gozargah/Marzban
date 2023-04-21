@@ -39,3 +39,7 @@ CLASH_SUBSCRIPTION_TEMPLATE = config("CLASH_SUBSCRIPTION_TEMPLATE", default="cla
 
 # USERNAME: PASSWORD
 SUDOERS = {config("SUDO_USERNAME"): config("SUDO_PASSWORD")} if config("SUDO_USERNAME", None) else {}
+
+
+WEBHOOK_ADDRESS = config("WEBHOOK_ADDRESS", default=None)
+WEBHOOK_SECRET = config("WEBHOOK_SECRET", default=None)

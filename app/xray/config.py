@@ -1,9 +1,14 @@
+from __future__ import annotations
+
 import json
 import re
 from copy import deepcopy
 from pathlib import PosixPath
 from typing import Union
 
+from app.db import GetDB, get_users
+from app.models.proxy import ProxySettings
+from app.models.user import UserStatus
 from config import XRAY_EXCLUDE_INBOUND_TAGS, XRAY_FALLBACKS_INBOUND_TAG
 
 
@@ -247,3 +252,19 @@ class XRayConfig(dict):
 
     def copy(self):
         return deepcopy(self)
+
+    def include_db_users(self) -> XRayConfig:
+        config = self.copy()
+
+        with GetDB() as db:
+            for user in get_users(db, status=UserStatus.active):
+                proxies_settings = {
+                    p.type: ProxySettings.from_dict(p.type, p.settings).dict(no_obj=True)
+                    for p in user.proxies
+                }
+                for proxy_type, inbound_tags in user.inbounds.items():
+                    for inbound_tag in inbound_tags:
+                        config.add_inbound_client(inbound_tag,
+                                                  user.username,
+                                                  proxies_settings[proxy_type])
+        return config

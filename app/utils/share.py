@@ -10,6 +10,7 @@ import yaml
 
 from app import xray
 from app.templates import render_to_string
+from app.models.proxy import FormatVariables
 from app.utils.store import XrayStore
 from app.utils.system import get_public_ip, readable_size
 if TYPE_CHECKING:
@@ -19,11 +20,6 @@ from config import CLASH_SUBSCRIPTION_TEMPLATE
 
 
 SERVER_IP = get_public_ip()
-
-
-class FormatVariables(dict):
-    def __missing__(self, key):
-        return key.join("{}")
 
 
 class V2rayShareLink(str):
@@ -211,6 +207,7 @@ class ClashConfiguration(object):
                 'server': address,
                 'port': port,
                 'uuid': id,
+                'network': net,
                 'alterId': 0,
                 'cipher': 'auto',
                 'udp': True,
@@ -221,8 +218,8 @@ class ClashConfiguration(object):
         if host:
             node[f'{net}-opts']['headers'] = {'Host': host}
         if tls:
-            node.update({'tls': tls, 'servername': sni})
-
+            node.update({'tls': tls,
+                         'servername': sni})
         self.data['proxies'].append(node)
 
     def add_trojan(self,
@@ -343,9 +340,9 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> lis
                 continue
 
             format_variables.update({"TRANSPORT": inbound['network']})
-            inbound = inbound.copy()
+            host_inbound = inbound.copy()
             for host in XrayStore.HOSTS.get(tag, []):
-                inbound.update({
+                host_inbound.update({
                     'port': host['port'] or inbound['port'],
                     'sni': (host['sni'] or inbound['sni']).replace('*', salt),
                     'host': (host['host'] or inbound['host']).replace('*', salt),
@@ -354,7 +351,7 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> lis
                 })
                 links.append(get_v2ray_link(remark=host['remark'].format_map(format_variables),
                                             address=host['address'].format_map(format_variables),
-                                            inbound=inbound,
+                                            inbound=host_inbound,
                                             settings=settings.dict()))
 
     return links
@@ -398,9 +395,9 @@ def generate_clash_subscription(proxies: dict, inbounds: dict, extra_data: dict)
                 continue
 
             format_variables.update({"TRANSPORT": inbound['network']})
-            inbound = inbound.copy()
+            host_inbound = inbound.copy()
             for host in XrayStore.HOSTS.get(tag, []):
-                inbound.update({
+                host_inbound.update({
                     'port': host['port'] or inbound['port'],
                     'sni': (host['sni'] or inbound['sni']).replace('*', salt),
                     'host': (host['host'] or inbound['host']).replace('*', salt),
@@ -410,7 +407,7 @@ def generate_clash_subscription(proxies: dict, inbounds: dict, extra_data: dict)
                 conf.add(
                     remark=host['remark'].format_map(format_variables),
                     address=host['address'].format_map(format_variables),
-                    inbound=inbound,
+                    inbound=host_inbound,
                     settings=settings.dict(no_obj=True),
                 )
 

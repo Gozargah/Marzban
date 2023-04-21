@@ -1,15 +1,12 @@
-from datetime import datetime
-from typing import List
-
 import sqlalchemy
 from fastapi import BackgroundTasks, Depends, HTTPException
 
-from app import app, logger, telegram, xray
+from app import app, logger, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.user import (UserCreate, UserModify, UserResponse,
                              UsersResponse, UserStatus)
-from app.utils.xray import xray_add_user, xray_remove_user
+from app.utils import report
 
 
 @app.post("/api/user", tags=['User'], response_model=UserResponse)
@@ -38,10 +35,10 @@ def add_user(new_user: UserCreate,
     except sqlalchemy.exc.IntegrityError:
         raise HTTPException(status_code=409, detail="User already exists")
 
-    xray_add_user(new_user)
+    xray.operations.add_user(new_user)
 
     bg.add_task(
-        telegram.report_new_user,
+        report.user_created,
         user_id=dbuser.id,
         username=dbuser.username,
         usage=dbuser.data_limit,
@@ -100,11 +97,11 @@ def modify_user(username: str,
     dbuser = crud.update_user(db, dbuser, modified_user)
     user = UserResponse.from_orm(dbuser)
 
-    xray_remove_user(user)
+    xray.operations.remove_user(user)
     if user.status == UserStatus.active:
-        xray_add_user(user)
+        xray.operations.add_user(user)
 
-    bg.add_task(telegram.report_user_modification,
+    bg.add_task(report.user_updated,
                 username=dbuser.username,
                 usage=dbuser.data_limit,
                 expire_date=dbuser.expire,
@@ -113,7 +110,7 @@ def modify_user(username: str,
     logger.info(f"User \"{user.username}\" modified")
 
     if user.status != old_status:
-        bg.add_task(telegram.report_status_change,
+        bg.add_task(report.status_change,
                     username=user.username,
                     status=user.status)
         logger.info(f"User \"{dbuser.username}\" status changed from {old_status} to {user.status}")
@@ -139,10 +136,10 @@ def remove_user(username: str,
 
     crud.remove_user(db, dbuser)
 
-    xray_remove_user(dbuser)
+    xray.operations.remove_user(dbuser)
 
     bg.add_task(
-        telegram.report_user_deletion,
+        report.user_deleted,
         username=dbuser.username,
         by=admin.username
     )

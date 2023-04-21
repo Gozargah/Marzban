@@ -20,8 +20,6 @@ from app.telegram.utils.custom_filters import (cb_query_equals,
 from app.telegram.utils.keyboard import BotKeyboard
 from app.utils.store import MemoryStorage
 from app.utils.system import cpu_usage, memory_usage, readable_size
-from app.utils.xray import (xray_add_user, xray_config_include_db_clients,
-                            xray_remove_user)
 
 mem_store = MemoryStorage()
 
@@ -823,7 +821,7 @@ def confirm_user_command(call: types.CallbackQuery):
         with GetDB() as db:
             dbuser = crud.get_user(db, username)
             crud.remove_user(db, dbuser)
-            xray_remove_user(dbuser)
+            xray.operations.remove_user(dbuser)
 
         return bot.edit_message_text(
             '✅ User deleted.',
@@ -837,7 +835,7 @@ def confirm_user_command(call: types.CallbackQuery):
             dbuser = crud.get_user(db, username)
             crud.update_user(db, dbuser, UserModify(
                 status=UserStatusModify.disabled))
-            xray_remove_user(dbuser)
+            xray.operations.remove_user(dbuser)
         return bot.edit_message_text(
             "✅ User suspended.",
             call.message.chat.id,
@@ -850,7 +848,7 @@ def confirm_user_command(call: types.CallbackQuery):
             dbuser = crud.get_user(db, username)
             crud.update_user(db, dbuser, UserModify(
                 status=UserStatusModify.active))
-            xray_add_user(dbuser)
+            xray.operations.add_user(dbuser)
 
         return bot.edit_message_text(
             "✅ User activated.",
@@ -861,9 +859,7 @@ def confirm_user_command(call: types.CallbackQuery):
     elif data == 'restart':
         m = bot.edit_message_text(
             '🔄 Restarting XRay core...', call.message.chat.id, call.message.message_id)
-        xray.core.restart(
-            xray_config_include_db_clients(xray.config)
-        )
+        xray.core.restart(xray.config.include_db_users())
         bot.edit_message_text(
             '✅ XRay core restarted successfully.',
             m.chat.id, m.message_id,
@@ -917,6 +913,10 @@ def confirm_user_command(call: types.CallbackQuery):
             proxies = db_user.proxies
 
             user = UserResponse.from_orm(db_user)
+
+        xray_remove_user(db_user)
+        if user.status == UserStatus.active:
+            xray_add_user(db_user)
 
         bot.answer_callback_query(call.id, "✅ User updated successfully.")
         text = get_user_info_text(username=user.username,
@@ -990,7 +990,7 @@ def confirm_user_command(call: types.CallbackQuery):
                 show_alert=True
             )
 
-        xray_add_user(new_user)
+        xray.operations.add_user(new_user)
 
         text = "✅ User added successfully" + get_user_info_text(username=user.username,
                                                                 sub_url=user.subscription_url,

@@ -4,13 +4,15 @@ from typing import List, Optional, Tuple, Union
 
 from sqlalchemy.orm import Session
 
-from app.db.models import (JWT, Admin, Proxy, ProxyHost, ProxyInbound,
-                           ProxyTypes, System, User, UserUsageResetLogs, UserTemplate)
+from app.db.models import (JWT, Admin, Node, Proxy, ProxyHost, ProxyInbound,
+                           ProxyTypes, System, User, UserTemplate,
+                           UserUsageResetLogs)
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
+from app.models.node import NodeCreate, NodeModify, NodeStatus
 from app.models.proxy import ProxyHost as ProxyHostModify
 from app.models.user import (UserCreate, UserDataLimitResetStrategy,
                              UserModify, UserStatus)
-from app.models.user_template import UserTemplateCreate, UserTemplateModify, UserTemplateResponse
+from app.models.user_template import UserTemplateCreate, UserTemplateModify
 
 
 def add_default_host(db: Session, inbound: ProxyInbound):
@@ -366,3 +368,72 @@ def get_user_templates(db: Session, offset: int | None = None, limit: int | None
         dbuser_templates = dbuser_templates.limit(limit)
 
     return dbuser_templates.all()
+
+
+def get_node(db: Session, name: str):
+    return db.query(Node).filter(Node.name == name).first()
+
+
+def get_node_by_id(db: Session, node_id: int):
+    return db.query(Node).filter(Node.id == node_id).first()
+
+
+def get_nodes(db: Session, status: Optional[Union[NodeStatus, list]] = None):
+    query = db.query(Node)
+
+    if status:
+        if isinstance(status, list):
+            query = query.filter(Node.status.in_(status))
+        else:
+            query = query.filter(Node.status == status)
+
+    return query.all()
+
+
+def create_node(db: Session, node: NodeCreate):
+    dbnode = Node(name=node.name,
+                  address=node.address,
+                  port=node.port,
+                  api_port=node.api_port,
+                  certificate=node.certificate)
+
+    db.add(dbnode)
+    db.commit()
+    db.refresh(dbnode)
+    return dbnode
+
+
+def remove_node(db: Session, dbnode: Node):
+    db.delete(dbnode)
+    db.commit()
+    return dbnode
+
+
+def update_node(db: Session, dbnode: Node, modify: NodeModify):
+    if modify.name is not None:
+        dbnode.name = modify.name
+
+    if modify.address is not None:
+        dbnode.address = modify.address
+
+    if modify.port is not None:
+        dbnode.port = modify.port
+
+    if modify.api_port is not None:
+        dbnode.api_port = modify.api_port
+
+    if modify.certificate is not None:
+        dbnode.certificate = modify.certificate
+
+    db.commit()
+    db.refresh(dbnode)
+    return dbnode
+
+
+def update_node_status(db: Session, dbnode: Node, status: NodeStatus, message: str = None):
+    dbnode.status = status
+    dbnode.message = message
+    dbnode.last_status_change = datetime.utcnow()
+    db.commit()
+    db.refresh(dbnode)
+    return dbnode

@@ -189,6 +189,8 @@ python3 main.py
 |                            مدت زمان انقضا توکن دسترسی به پنل مرزبان, `0` به معنای بدون تاریخ انقضا است (پیشفرض: `1440`) | JWT_ACCESS_TOKEN_EXPIRE_MINUTES |
 |                                                       فعال سازی داکیومنتیشن به آدرس `/docs` و `/redoc`(پیشفرض: `False`) |              DOCS               |
 |                                                                     فعالسازی حالت توسعه (development) (پیشفرض: `False`) |              DEBUG              |
+| WEBHOOK_ADDRESS                 |  آدرس webhook که تغییرات حالت یک کاربر به آن ارسال می‌شوند. اگر این متغیر مقدار داشته باشد، ارسال پیام‌ها انجام می‌شوند.        |
+| WEBHOOK_SECRET                  | متغیری که به عنوان `x-webhook-secret` در header ارسال می‌شود. (پیشفرض: `None`) |
 
 
 # استفاده از API
@@ -227,6 +229,33 @@ $ sudo docker-compose exec -it marzban bash
 رابط خط فرمان (CLI) مرزبان از طریق دستور `marzban-cli` هرکجا در دسترس خواهد بود!
 
 برای کسب اطلاعات بیشتر می توانید [مستندات CLI مرزبان](./cli/README.md) را مطالعه کنید.
+
+
+# ارسال اعلان‌ها به آدرس وبهوک
+شما می‌توانید آدرسی را برای مرزبان فراهم کنید تا تغییرات کاربران را به صورت اعلان برای شما ارسال کند.
+
+اعلان‌ها به صورت یک درخواست POST به آدرسی که در `WEBHOOK_ADDRESS` فراهم شده به همراه مقدار تعیین شده در `WEBHOOK_SECRET` به عنوان `x-webhook-secret` در header درخواست ارسال می‌شوند.
+
+نمونه‌ای از درخواست ارسال شده توسط مرزبان:
+
+```
+Headers:
+Host: 0.0.0.0:9000
+User-Agent: python-requests/2.28.1
+Accept-Encoding: gzip, deflate
+Accept: */*
+Connection: keep-alive
+x-webhook-secret: something-very-very-secret
+Content-Length: 107
+Content-Type: application/json
+
+
+
+Body:
+{"username": "marzban_test_user", "action": "user_updated", "enqueued_at": 1680506457.636369, "tries": 0}
+```
+
+انواع مختلف actionهایی که مرزبان ارسال می‌کند: `user_created`, `user_updated`, `user_deleted`, `user_limited`, `user_expired`, `user_disabled`, `user_enabled`
 
 
 # کمک مالی

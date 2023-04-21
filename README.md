@@ -196,6 +196,8 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | JWT_ACCESS_TOKEN_EXPIRE_MINUTES | Expire time for the Access Tokens in minutes, `0` considered as infinite (default: `1440`)            |
 | DOCS                            | Whether API documents should be available on `/docs` and `/redoc` or not (default: `False`)           |
 | DEBUG                           | Debug mode for development (default: `False`)                                                         |
+| WEBHOOK_ADDRESS                 | Webhook address to send notifications to. Webhook notifications will be sent if this value was set.        |
+| WEBHOOK_SECRET                  | Webhook secret will be sent with each request as `x-webhook-secret` in the header (default: `None`) |
 
 
 # How to use API
@@ -234,6 +236,33 @@ $ sudo docker-compose exec -it marzban bash
 The Marzban CLI will be accessible through `marzban-cli` command anywhere!
 
 For more information, You can read [Marzban CLI's documentation](./cli/README.md).
+
+
+# Webhook notifications
+You can set a webhook address and Marzban will send the notifications to that address.
+
+the requests will be sent as a post request to the adress provided by `WEBHOOK_ADDRESS` with `WEBHOOK_SECRET` as `x-webhook-secret` in the headers.
+
+Example request sent from Marzban:
+
+```
+Headers:
+Host: 0.0.0.0:9000
+User-Agent: python-requests/2.28.1
+Accept-Encoding: gzip, deflate
+Accept: */*
+Connection: keep-alive
+x-webhook-secret: something-very-very-secret
+Content-Length: 107
+Content-Type: application/json
+
+
+
+Body:
+{"username": "marzban_test_user", "action": "user_updated", "enqueued_at": 1680506457.636369, "tries": 0}
+```
+
+Different action typs are: `user_created`, `user_updated`, `user_deleted`, `user_limited`, `user_expired`, `user_disabled`, `user_enabled`
 
 
 # Donation

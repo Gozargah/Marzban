@@ -5,6 +5,7 @@ from .subscription import *
 from .system import *
 from .user import *
 from .user_template import *
+from .node import *
 
 
 @app.get("/", status_code=204)
