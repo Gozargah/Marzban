@@ -2,7 +2,7 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import dayjs from "dayjs";
-import "dayjs/locale/zh-CN";
+import "dayjs/locale/zh-cn";
 
 i18n
   .use(LanguageDetector)
@@ -58,6 +58,7 @@ i18n
           "usersTable.copyLink": "Copy Subscription Link",
           "usersTable.copied": "Copied",
           "usersTable.copyConfigs": "Copy Configs",
+          "usersTable.total": "Total",
 
           // UserDialog
           "userDialog.dataLimit": "Data Limit",
@@ -166,6 +167,7 @@ i18n
           "usersTable.copyLink": "复制订阅链接",
           "usersTable.copied": "已复制",
           "usersTable.copyConfigs": "复制配置",
+          "usersTable.total": "总共",
 
           // UserDialog
           "userDialog.dataLimit": "流量限制",
@@ -227,9 +229,10 @@ i18n
           "resetUserUsage.error": "重置失败，请稍候再试",
 
           // ResetAllUsageModal
-          "resetAllUsage.title": "重置所有流量统计",
-          "resetAllUsage.prompt": "您确定要重置所有流量统计吗？",
-          "resetAllUsage.success": "所有流量统计重置完成。",
+          "resetAllUsage.title": "重置所有统计",
+          "resetAllUsage.prompt":
+            "此操作将清除所有用户统计，您确定要执行此操作吗？此操作不可撤销！",
+          "resetAllUsage.success": "所有统计重置完成。",
           "resetAllUsage.error": "重置失败，请稍候再试！",
 
           hello: "",
