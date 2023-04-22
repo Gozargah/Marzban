@@ -174,6 +174,43 @@ systemctl enable /var/lib/marzban/marzban.service
 systemctl start marzban
 ```
 
+配合 nignx 使用：
+```
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name  example.com;
+
+    ssl_certificate      /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key  /etc/letsencrypt/live/example.com/privkey.pem;
+
+    location ~* /(dashboard|api|docs|redoc) {
+        proxy_pass http://0.0.0.0:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+或
+```
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name  marzban.example.com;
+
+    ssl_certificate      /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key  /etc/letsencrypt/live/example.com/privkey.pem;
+
+    location / {
+        proxy_pass http://0.0.0.0:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+
 默认情况下，应用将在 `http://localhost:8000/dashboard` 上运行。您可以通过更改 `UVICORN_HOST` 和 `UVICORN_PORT` 环境变量来进行配置。
 
 # 配置
