@@ -10,6 +10,7 @@ from app.models.system import SystemStats
 from app.models.user import UserStatus
 from app.utils.store import XrayStore
 from app.utils.system import memory_usage
+from app import __version__
 
 
 @app.get("/api/system", tags=["System"], response_model=SystemStats)
@@ -22,6 +23,7 @@ def get_system_stats(db: Session = Depends(get_db), admin: Admin = Depends(Admin
     users_active = crud.get_users_count(db, status=UserStatus.active, admin=dbadmin if not admin.is_sudo else None)
 
     return SystemStats(
+        version=__version__,
         mem_total=mem.total,
         mem_used=mem.used,
         total_user=total_user,
