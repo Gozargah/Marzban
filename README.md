@@ -43,6 +43,10 @@
 	<a href="./README-fa.md">
 	فارسی
 	</a>
+  /
+  <a href="./README-zh-cn.md">
+	简体中文
+	</a>
 </p>
 
 <p align="center">
@@ -154,6 +158,12 @@ Eventually, launch the application using command below
 
 ```bash
 python3 main.py
+```
+
+You also can use linux systemctl
+```
+systemctl enable /var/lib/marzban/marzban.service
+systemctl start marzban
 ```
 
 By default the app will be run on `http://localhost:8000/dashboard`. You can configure it using changing the `UVICORN_HOST` and `UVICORN_PORT` environment variables.

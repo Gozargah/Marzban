@@ -43,6 +43,10 @@
 	<a href="./README-fa.md">
 	فارسی
 	</a>
+  /
+  <a href="./README-zh-cn.md">
+	简体中文
+	</a>
 </p>
 
 <p align="center">
