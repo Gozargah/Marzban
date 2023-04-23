@@ -10,6 +10,7 @@ import {
   Box,
   Button,
   chakra,
+  Checkbox,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -33,12 +34,19 @@ import {
   Portal,
   Select,
   Text,
+  Textarea,
   Tooltip,
   useToast,
   VStack,
 } from "@chakra-ui/react";
+import { Input as CustomInput } from "./Input";
 import { Icon } from "./Icon";
-import { LinkIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
+import {
+  LinkIcon,
+  InformationCircleIcon,
+  PlusIcon as HeroIconPlusIcon,
+  SquaresPlusIcon,
+} from "@heroicons/react/24/outline";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import {
@@ -51,12 +59,19 @@ import { DeleteIcon } from "./DeleteUserModal";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { proxyHostSecurity } from "constants/Proxies";
-import { useTranslation } from "react-i18next";
 
-const ModalIcon = chakra(LinkIcon, {
+const ModalIcon = chakra(SquaresPlusIcon, {
   baseStyle: {
     w: 5,
     h: 5,
+  },
+});
+
+const PlusIcon = chakra(HeroIconPlusIcon, {
+  baseStyle: {
+    w: 5,
+    h: 5,
+    strokeWidth: 2,
   },
 });
 
@@ -122,7 +137,6 @@ const AccordionInbound: FC<AccordionInboundType> = ({
     name: hostKey,
   });
   const { errors } = form.formState;
-  const { t } = useTranslation();
   const accordionErrors = errors[hostKey];
   const handleAddHost = () => {
     addHost({
@@ -201,42 +215,56 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             <PopoverCloseButton />
                             <PopoverBody>
                               <Box fontSize="xs">
-                                <Text pr="20px">{t("hostsDialog.desc")}</Text>
+                                <Text pr="20px">
+                                  Use these variables to make it dynamic
+                                </Text>
                                 <Text mt={1}>
                                   <Badge>
                                     {"{"}USERNAME{"}"}
                                   </Badge>{" "}
-                                  {t("hostsDialog.username")}
+                                  the username of the user
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
                                     {"{"}DATA_USAGE{"}"}
                                   </Badge>{" "}
-                                  {t("hostsDialog.dataUsage")}
+                                  The current usage of the user
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
                                     {"{"}DATA_LIMIT{"}"}
                                   </Badge>{" "}
-                                  {t("hostsDialog.dataLimit")}
+                                  The usage limit of the user
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
                                     {"{"}DAYS_LEFT{"}"}
                                   </Badge>{" "}
-                                  {t("hostsDialog.remaingDays")}
+                                  Remaining days of the user
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
                                     {"{"}PROTOCOL{"}"}
                                   </Badge>{" "}
-                                  {t("hostsDialog.proxyProtocol")}
+                                  Proxy protocol (e.g. VMess)
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
                                     {"{"}TRANSPORT{"}"}
                                   </Badge>{" "}
-                                  {t("hostsDialog.proxyMethod")}
+                                  Proxy transport method (e.g. ws)
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}PROTOCOL{"}"}
+                                  </Badge>{" "}
+                                  Proxy protocol (e.g. VMess)
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}TRANSPORT{"}"}
+                                  </Badge>{" "}
+                                  Proxy transport method (e.g. ws)
                                 </Text>
                               </Box>
                             </PopoverBody>
@@ -288,12 +316,14 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             <PopoverCloseButton />
                             <PopoverBody>
                               <Box fontSize="xs">
-                                <Text pr="20px">{t("hostsDialog.desc")}</Text>
+                                <Text pr="20px">
+                                  Use these variables to make it dynamic
+                                </Text>
                                 <Text>
                                   <Badge>
                                     {"{"}SERVER_IP{"}"}
                                   </Badge>{" "}
-                                  {t("hostsDialog.currentServer")}
+                                  Current server ip address
                                 </Text>
                               </Box>
                             </PopoverBody>
@@ -342,7 +372,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                 )}
               </FormControl>
               <FormControl height="66px">
-                <FormLabel>{t("hostsDialog.security")}</FormLabel>
+                <FormLabel>Security</FormLabel>
                 <Select
                   size="sm"
                   {...form.register(hostKey + "." + index + ".security")}
@@ -366,7 +396,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
             fontWeight={"normal"}
             onClick={handleAddHost}
           >
-            {t("hostsDialog.addHost")}
+            Add host
           </Button>
         </VStack>
       </AccordionPanel>
@@ -374,35 +404,130 @@ const AccordionInbound: FC<AccordionInboundType> = ({
   );
 };
 
-export const HostsDialog: FC = () => {
-  const { isEditingHosts, onEditingHosts, refetchUsers } = useDashboard();
+type AddNodeFormType = {
+  toggleAccordion: () => void;
+};
+const AddNodeForm: FC<AddNodeFormType> = ({ toggleAccordion }) => {
+  const form = useForm();
+  const handleAddNode = () => {};
+  return (
+    <AccordionItem
+      border="1px solid"
+      _dark={{ borderColor: "gray.600" }}
+      _light={{ borderColor: "gray.200" }}
+      borderRadius="4px"
+      p={1}
+      w="full"
+    >
+      <AccordionButton px={2} borderRadius="3px" onClick={toggleAccordion}>
+        <Text
+          as="span"
+          fontWeight="medium"
+          fontSize="sm"
+          flex="1"
+          textAlign="left"
+          color="gray.700"
+          _dark={{ color: "gray.300" }}
+          display="flex"
+          gap={1}
+        >
+          <PlusIcon display={"inline-block"} />{" "}
+          <span>Add New Marzban Node</span>
+        </Text>
+      </AccordionButton>
+      <AccordionPanel px={2} py={4}>
+        <form onSubmit={handleAddNode}>
+          <VStack>
+            <FormControl>
+              <CustomInput label="Name" size="sm" placeholder="Marzban-S2" />
+            </FormControl>
+            <HStack alignItems="flex-start">
+              <FormControl w="50%">
+                <CustomInput
+                  label="Address"
+                  size="sm"
+                  placeholder="51.20.12.13"
+                />
+              </FormControl>
+              <FormControl w="25%">
+                <CustomInput label="Port" size="sm" placeholder="62050" />
+              </FormControl>
+              <FormControl w="25%">
+                <CustomInput label="API Port" size="sm" placeholder="62051" />
+              </FormControl>
+            </HStack>
+            <FormControl>
+              <FormLabel>Certificate</FormLabel>
+              <Textarea
+                w="full"
+                fontSize="10px"
+                fontFamily="monospace"
+                overflowWrap="normal"
+                noOfLines={10}
+                rows={10}
+                placeholder="-----BEGIN CERTIFICATE-----
+							XzBWUjjMrWf/0rWV5fDl7b4RU8AjeviG1RmEc64ueZ3s6q1LI6DJX1+qGuqDEvp
+							g1gctfdLMARuV6LkLiGy5k2FGAW/tfepEyySA/N9WhcHg+rZ4/x1thP0eYJPQ2YJ
+							XFSa6Zv8LPLCz5iMbo0FjNlKyZo3699PtyBFXt3zyfTPmiy19RVGTziHqJ9NR9kW
+							kBwvFzIy+qPc/dJAk435hVaV3pRBC7Pl2Y7k/pJxxlC07PkACXuhwtUGhQrHYWkK
+							Il8rJ9cs0zwC1BOmqoS3Ez22dgtT7FucvIJ1MGP8oUAudMmrXDxx/d7CmnD5q1v4
+							iLlV21kNnWuvjS1orTwvuW3aagb6tvEEEmlMhw5a2B8sl71sQ6sxWidgRaOSGW7l
+							emFyZ2FoMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA0BvDh0eU78EJ
+							AjimHyBb+3tFs7KaOPu9G5xgbQWUWccukMDXqybqiUDSfU/T5/+XM8CKq/Fu0DB=&#10;-----END CERTIFICATE-----"
+              />
+            </FormControl>
+            <FormControl py={1}>
+              <Checkbox>
+                <FormLabel m={0}>
+                  Add this node as a new host for every inbound
+                </FormLabel>
+              </Checkbox>
+            </FormControl>
+            <Button
+              variant="solid"
+              type="submit"
+              colorScheme="primary"
+              size="sm"
+              px={5}
+              w="full"
+            >
+              Add Node
+            </Button>
+          </VStack>
+        </form>
+      </AccordionPanel>
+    </AccordionItem>
+  );
+};
+
+export const NodesDialog: FC = () => {
+  const { isEditingNodes, onEditingNodes, refetchUsers } = useDashboard();
   const { isLoading, hosts, fetchHosts, isPostLoading, setHosts } = useHosts();
   const toast = useToast();
-  const { t } = useTranslation();
   const [openAccordions, setOpenAccordions] = useState<any>({});
 
   useEffect(() => {
-    if (isEditingHosts) fetchHosts();
-  }, [isEditingHosts]);
+    if (isEditingNodes) fetchHosts();
+  }, [isEditingNodes]);
   const form = useForm<z.infer<typeof hostsSchema>>({
     resolver: zodResolver(hostsSchema),
   });
 
   useEffect(() => {
-    if (hosts && isEditingHosts) {
+    if (hosts && isEditingNodes) {
       form.reset(hosts);
     }
   }, [hosts]);
 
   const onClose = () => {
     setOpenAccordions({});
-    onEditingHosts(false);
+    onEditingNodes(false);
   };
   const handleFormSubmit = (hosts: z.infer<typeof hostsSchema>) => {
     setHosts(hosts)
       .then(() => {
         toast({
-          title: t("hostsDialog.savedSuccess"),
+          title: `Hosts saved successfully`,
           status: "success",
           isClosable: true,
           position: "top",
@@ -410,31 +535,18 @@ export const HostsDialog: FC = () => {
         });
         refetchUsers();
       })
-      .catch((err) => {
-        if (err?.response?.status === 409 || err?.response?.status === 400) {
-          toast({
-            title: err.response?._data?.detail,
-            status: "error",
-            isClosable: true,
-            position: "top",
-            duration: 3000,
-          });
-        }
-        if (err?.response?.status === 422) {
-          Object.keys(err.response._data.detail).forEach((key) => {
-            toast({
-              title: err.response._data.detail[key] + " (" + key + ")",
-              status: "error",
-              isClosable: true,
-              position: "top",
-              duration: 3000,
-            });
-          });
-        }
+      .catch((e) => {
+        toast({
+          title: e.response?._data?.detail,
+          status: "error",
+          isClosable: true,
+          position: "top",
+          duration: 3000,
+        });
       });
   };
 
-  const toggleAccordion = (index: number) => {
+  const toggleAccordion = (index: number | string) => {
     if (openAccordions[String(index)]) {
       delete openAccordions[String(index)];
     } else openAccordions[String(index)] = {};
@@ -443,7 +555,7 @@ export const HostsDialog: FC = () => {
   };
 
   return (
-    <Modal isOpen={isEditingHosts} onClose={onClose}>
+    <Modal isOpen={isEditingNodes} onClose={onClose}>
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
       <ModalContent mx="3" w="fit-content" maxW="3xl">
         <ModalHeader pt={6}>
@@ -456,9 +568,10 @@ export const HostsDialog: FC = () => {
           <FormProvider {...form}>
             <form onSubmit={form.handleSubmit(handleFormSubmit)}>
               <Text mb={3} opacity={0.8} fontSize="sm">
-                {t("hostsDialog.title")}
+                Using Marzban-Node, you are able to scale up your connection
+                quality by adding different nodes on different servers.
               </Text>
-              {isLoading && t("hostsDialog.loading")}
+              {isLoading && "loading..."}
               {!isLoading &&
                 hosts &&
                 (Object.keys(hosts).length > 0 ? (
@@ -479,6 +592,11 @@ export const HostsDialog: FC = () => {
                           />
                         );
                       })}
+                      <AddNodeForm
+                        toggleAccordion={() =>
+                          toggleAccordion(Object.keys(hosts).length)
+                        }
+                      />
                     </VStack>
                   </Accordion>
                 ) : (
@@ -496,7 +614,7 @@ export const HostsDialog: FC = () => {
                   isLoading={isPostLoading}
                   disabled={isPostLoading}
                 >
-                  {t("hostsDialog.apply")}
+                  Apply
                 </Button>
               </HStack>
             </form>

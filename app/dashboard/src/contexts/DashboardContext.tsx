@@ -18,7 +18,7 @@ export type InboundType = {
   protocol: ProtocolType;
   network: string;
   tls: boolean;
-  port: number;
+  port?: number;
 };
 export type Inbounds = Map<ProtocolType, InboundType[]>;
 
@@ -36,6 +36,7 @@ type DashboardStateType = {
   subscribeUrl: string | null;
   QRcodeLinks: string[] | null;
   isEditingHosts: boolean;
+  isEditingNodes: boolean;
   isResetingAllUsage: boolean;
   resetUsageUser: User | null;
   onCreateUser: (isOpen: boolean) => void;
@@ -51,6 +52,7 @@ type DashboardStateType = {
   setQRCode: (links: string[] | null) => void;
   setSubLink: (subscribeURL: string | null) => void;
   onEditingHosts: (isEditingHosts: boolean) => void;
+  onEditingNodes: (isEditingHosts: boolean) => void;
   resetDataUsage: (user: User) => Promise<void>;
 };
 
@@ -131,6 +133,7 @@ export const useDashboard = create(
     loading: true,
     isResetingAllUsage: false,
     isEditingHosts: false,
+    isEditingNodes: false,
     resetUsageUser: null,
     filters: { username: "", limit: 10, sort: "-created_at" },
     inbounds: new Map(),
@@ -190,6 +193,9 @@ export const useDashboard = create(
     },
     onEditingHosts: (isEditingHosts: boolean) => {
       set({ isEditingHosts });
+    },
+    onEditingNodes: (isEditingNodes: boolean) => {
+      set({ isEditingNodes });
     },
     setSubLink: (subscribeUrl) => {
       set({ subscribeUrl });

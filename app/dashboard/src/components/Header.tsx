@@ -17,6 +17,7 @@ import {
   DocumentMinusIcon,
   LinkIcon,
   MoonIcon,
+  SquaresPlusIcon,
   SunIcon,
 } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
@@ -55,6 +56,7 @@ const SettingsIcon = chakra(Bars3Icon, iconProps);
 const LogoutIcon = chakra(ArrowLeftOnRectangleIcon, iconProps);
 const DonationIcon = chakra(CurrencyDollarIcon, iconProps);
 const HostsIcon = chakra(LinkIcon, iconProps);
+const NodesIcon = chakra(SquaresPlusIcon, iconProps);
 const ResetUsageIcon = chakra(DocumentMinusIcon, iconProps);
 const NotificationCircle = chakra(Box, {
   baseStyle: {
@@ -69,7 +71,7 @@ const NotificationCircle = chakra(Box, {
 const NOTIFICATION_KEY = "marzban-menu-notification";
 
 export const Header: FC<HeaderProps> = ({ actions }) => {
-  const { onEditingHosts, onResetAllUsage } = useDashboard();
+  const { onEditingHosts, onResetAllUsage, onEditingNodes } = useDashboard();
   const { t } = useTranslation();
   const { colorMode, toggleColorMode } = useColorMode();
   const [notificationsChecked, setNotificationChecked] = useState(
@@ -142,6 +144,14 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
               onClick={onEditingHosts.bind(null, true)}
             >
               {t("header.hostsSetting")}
+            </MenuItem>
+            <MenuItem
+              maxW="170px"
+              fontSize="sm"
+              icon={<NodesIcon />}
+              onClick={onEditingNodes.bind(null, true)}
+            >
+              {t("header.nodesSetting")}
             </MenuItem>
             <MenuItem
               maxW="170px"

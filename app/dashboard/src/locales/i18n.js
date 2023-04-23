@@ -42,6 +42,7 @@ i18n
 
           // Header
           "header.hostsSetting": "Hosts Settings",
+          "header.nodesSetting": "Nodes Settings",
           "header.donation": "Donation",
           "header.logout": "Log out",
 
@@ -159,6 +160,7 @@ i18n
 
           // Header
           "header.hostsSetting": "设置",
+          "header.nodesSetting": "节点设置",
           "header.donation": "捐赠",
           "header.logout": "退出",
 
