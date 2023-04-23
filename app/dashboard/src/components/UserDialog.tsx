@@ -67,8 +67,21 @@ const EditUserIcon = chakra(PencilIcon, {
 
 const schema = z.object({
   username: z.string().min(1, { message: "Required" }),
-  proxies: z.array(z.string()).refine((value) => value.length > 0, {
-    message: "Please select at least one protocol",
+  selected_proxies: z.array(z.string()).refine((value) => value.length > 0, {
+    message: "userDialog.selectOneProtocol",
+  }),
+  proxies: z.record(z.string(), z.record(z.string(), z.any())).transform((ins) => {
+    const deleteIfEmpty = (obj: any, key: string) => {
+      if (obj && obj[key] === "") {
+        delete obj[key];
+      }
+    }
+    deleteIfEmpty(ins.vmess, "id");
+    deleteIfEmpty(ins.vless, "id");
+    deleteIfEmpty(ins.trojan, "password");
+    deleteIfEmpty(ins.shadowsocks, "password");
+    deleteIfEmpty(ins.shadowsocks, "method");
+    return ins;
   }),
   data_limit: z
     .string()
@@ -86,13 +99,13 @@ const schema = z.object({
     Object.keys(ins).forEach((protocol) => {
       if (Array.isArray(ins[protocol]) && !ins[protocol]?.length) delete ins[protocol];
     })
-    return ins
+    return ins;
   }),
 });
 
 export type UserDialogProps = {};
 
-export type FormType = Omit<UserCreate, "proxies"> & { proxies: ProxyKeys };
+export type FormType = Pick<UserCreate, keyof UserCreate> & { selected_proxies: ProxyKeys };
 
 const formatUser = (user: User): FormType => {
   return {
@@ -100,7 +113,7 @@ const formatUser = (user: User): FormType => {
     data_limit: user.data_limit
       ? Number((user.data_limit / 1073741824).toFixed(5))
       : user.data_limit,
-    proxies: Object.keys(user.proxies) as ProxyKeys,
+    selected_proxies: Object.keys(user.proxies) as ProxyKeys,
   };
 };
 const getDefaultValues = (): FormType => {
@@ -110,13 +123,17 @@ const getDefaultValues = (): FormType => {
     inbounds[key] = defaultInbounds[key].map((i) => i.tag);
   }
   return {
-    proxies: Object.keys(defaultInbounds) as ProxyKeys,
+    selected_proxies: Object.keys(defaultInbounds) as ProxyKeys,
     data_limit: null,
     expire: null,
     username: "",
     data_limit_reset_strategy: "no_reset",
     status: "active",
     inbounds,
+    proxies: Object.keys(defaultInbounds).reduce(
+      (ac, a) => ({ ...ac, [a]: {}}),
+      {}
+    )
   };
 };
 
@@ -186,10 +203,12 @@ export const UserDialog: FC<UserDialogProps> = () => {
     const method = isEditing ? "edited" : "created";
     setError(null);
 
+    const {selected_proxies, ...rest} = values;
+
     let body: UserCreate = {
-      ...values,
+      ...rest,
       data_limit: values.data_limit,
-      proxies: mergeProxies(values.proxies, editingUser?.proxies),
+      proxies: mergeProxies(selected_proxies, values.proxies),
       data_limit_reset_strategy:
         values.data_limit && values.data_limit > 0
           ? values.data_limit_reset_strategy
@@ -199,7 +218,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
           ? values.status
           : "active",
     };
-
+    
     methods[method](body)
       .then(() => {
         toast({
@@ -216,6 +235,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
           setError(err?.response?._data?.detail);
         if (err?.response?.status === 422) {
           Object.keys(err.response._data.detail).forEach((key) => {
+            setError(err?.response._data.detail[key] as string);
             form.setError(
               key as "proxies" | "username" | "data_limit" | "expire",
               {
@@ -235,6 +255,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
     form.reset(getDefaultValues());
     onCreateUser(false);
     onEditingUser(null);
+    setError(null);
   };
 
   const handleResetUsage = () => {
@@ -445,12 +466,12 @@ export const UserDialog: FC<UserDialogProps> = () => {
                   )}
                 </VStack>
                 <FormControl
-                  isInvalid={!!form.formState.errors.proxies?.message}
+                  isInvalid={!!form.formState.errors.selected_proxies?.message}
                 >
                   <FormLabel>{t("userDialog.protocols")}</FormLabel>
                   <Controller
                     control={form.control}
-                    name="proxies"
+                    name="selected_proxies"
                     render={({ field }) => {
                       return (
                         <RadioGroup
@@ -479,7 +500,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                     }}
                   />
                   <FormErrorMessage>
-                    {form.formState.errors.proxies?.message}
+                    {t(form.formState.errors.selected_proxies?.message as string)}
                   </FormErrorMessage>
                 </FormControl>
               </SimpleGrid>
