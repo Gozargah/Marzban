@@ -1,5 +1,8 @@
-from fastapi import Depends, HTTPException
+from typing import List
+
 import sqlalchemy
+from fastapi import Depends, HTTPException
+
 from app import app
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
@@ -76,7 +79,7 @@ def remove_user_template(id: int,
     return crud.remove_user_template(db, dbuser_template)
 
 
-@app.get("/api/user_template", tags=['User Template'], response_model=list[UserTemplateResponse])
+@app.get("/api/user_template", tags=['User Template'], response_model=List[UserTemplateResponse])
 def get_user_templates(
         offset: int = None, limit: int = None, db: Session = Depends(get_db),
         admin: Admin = Depends(Admin.get_current)):

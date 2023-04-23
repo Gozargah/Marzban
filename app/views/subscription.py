@@ -6,8 +6,7 @@ from app import app
 from app.db import Session, crud, get_db
 from app.models.user import UserResponse
 from app.utils.jwt import get_subscription_payload
-from app.utils.share import (generate_clash_subscription,
-                             generate_v2ray_subscription)
+from app.utils.share import generate_subscription
 
 
 @app.get("/sub/{token}/", tags=['Subscription'])
@@ -47,11 +46,11 @@ def user_subcription(token: str,
     }
 
     if 'Clash' in user_agent:
-        conf = generate_clash_subscription(user.proxies, user.inbounds, user.dict())
+        conf = generate_subscription(user=user, config_format="clash", as_base64=False)
         return Response(content=conf, media_type="text/yaml", headers=response_headers)
 
     else:
-        conf = generate_v2ray_subscription(user.links)
+        conf = generate_subscription(user=user, config_format="v2ray", as_base64=True)
         return Response(content=conf, media_type="text/plain", headers=response_headers)
 
 

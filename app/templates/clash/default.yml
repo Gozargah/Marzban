@@ -1,0 +1,13 @@
+mode: Global
+port: 7890
+
+{{ conf | except("proxy-groups", "port", "mode") | yaml }}
+
+proxy-groups:
+- name: '♻️ Automatic'
+  type: 'url-test'
+  url: 'http://www.gstatic.com/generate_204'
+  interval: 300
+  proxies:
+  {{ proxy_remarks | yaml | indent(2) }}
+{{ conf.get("proxy-groups", []) | yaml }}

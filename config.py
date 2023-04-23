@@ -34,9 +34,11 @@ TELEGRAM_PROXY_URL = config("TELEGRAM_PROXY_URL", default=None)
 
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = config("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=1440)
 
+CUSTOM_TEMPLATES_DIRECTORY = config("CUSTOM_TEMPLATES_DIRECTORY", default=None)
+CLASH_SUBSCRIPTION_TEMPLATE = config("CLASH_SUBSCRIPTION_TEMPLATE", default="clash/default.yml")
 
 # USERNAME: PASSWORD
-SUDOERS = {config("SUDO_USERNAME"): config("SUDO_PASSWORD")} if config("SUDO_USERNAME", None) else {}
+SUDOERS = {config("SUDO_USERNAME", "admin"): config("SUDO_PASSWORD", "admin")}
 
 
 WEBHOOK_ADDRESS = config("WEBHOOK_ADDRESS", default=None)

@@ -18,7 +18,7 @@ export type InboundType = {
   protocol: ProtocolType;
   network: string;
   tls: boolean;
-  port: number;
+  port?: number;
 };
 export type Inbounds = Map<ProtocolType, InboundType[]>;
 
@@ -36,11 +36,15 @@ type DashboardStateType = {
   subscribeUrl: string | null;
   QRcodeLinks: string[] | null;
   isEditingHosts: boolean;
+  isEditingNodes: boolean;
+  isResetingAllUsage: boolean;
   resetUsageUser: User | null;
   onCreateUser: (isOpen: boolean) => void;
   onEditingUser: (user: User | null) => void;
   onDeletingUser: (user: User | null) => void;
+  onResetAllUsage:(isResetingAllUsage: boolean) => void;
   refetchUsers: () => void;
+  resetAllUsage: () => Promise<void>;
   onFilterChange: (filters: Partial<FilterType>) => void;
   deleteUser: (user: User) => Promise<void>;
   createUser: (user: UserCreate) => Promise<void>;
@@ -48,6 +52,7 @@ type DashboardStateType = {
   setQRCode: (links: string[] | null) => void;
   setSubLink: (subscribeURL: string | null) => void;
   onEditingHosts: (isEditingHosts: boolean) => void;
+  onEditingNodes: (isEditingHosts: boolean) => void;
   resetDataUsage: (user: User) => Promise<void>;
 };
 
@@ -126,13 +131,24 @@ export const useDashboard = create(
       total: 0,
     },
     loading: true,
+    isResetingAllUsage: false,
     isEditingHosts: false,
+    isEditingNodes: false,
     resetUsageUser: null,
     filters: { username: "", limit: 10, sort: "-created_at" },
     inbounds: new Map(),
     refetchUsers: () => {
       fetchUsers(get().filters);
     },
+    resetAllUsage: () => {
+      return fetch(`/users/reset`, { method: "POST" }).then(
+        () => {
+          get().onResetAllUsage(false);
+          get().refetchUsers();
+        }
+      );
+    },
+    onResetAllUsage: (isResetingAllUsage) => set({ isResetingAllUsage }),
     onCreateUser: (isCreatingNewUser) => set({ isCreatingNewUser }),
     onEditingUser: (editingUser) => {
       set({ editingUser });
@@ -177,6 +193,9 @@ export const useDashboard = create(
     },
     onEditingHosts: (isEditingHosts: boolean) => {
       set({ isEditingHosts });
+    },
+    onEditingNodes: (isEditingNodes: boolean) => {
+      set({ isEditingNodes });
     },
     setSubLink: (subscribeUrl) => {
       set({ subscribeUrl });

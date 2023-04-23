@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from sqlalchemy.orm import Session
 
@@ -174,7 +174,7 @@ def remove_user(db: Session, dbuser: User):
 
 
 def update_user(db: Session, dbuser: User, modify: UserModify):
-    added_proxies: dict[ProxyTypes, Proxy] = {}
+    added_proxies: Dict[ProxyTypes, Proxy] = {}
     if modify.proxies:
         for proxy_type, settings in modify.proxies.items():
             dbproxy = db.query(Proxy) \
@@ -237,6 +237,22 @@ def reset_user_data_usage(db: Session, dbuser: User):
 
     db.commit()
     return dbuser
+
+
+def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
+    query = db.query(User)
+
+    if admin:
+        query = query.filter(User.admin == admin)
+
+    for dbuser in query.all():
+        dbuser.used_traffic = 0
+        if dbuser.status not in (UserStatus.expired or UserStatus.disabled):
+            dbuser.status = UserStatus.active
+        dbuser.usage_logs.clear()
+        db.add(dbuser)
+
+    db.commit()
 
 
 def update_user_status(db: Session, dbuser: User, status: UserStatus):
@@ -310,7 +326,7 @@ def get_admins(db: Session,
 
 
 def create_user_template(db: Session, user_template: UserTemplateCreate) -> UserTemplate:
-    inbound_tags: list[str] = []
+    inbound_tags: List[str] = []
     for _, i in user_template.inbounds.items():
         inbound_tags.extend(i)
     dbuser_template = UserTemplate(
@@ -341,7 +357,7 @@ def update_user_template(
         dbuser_template.username_suffix = modified_user_template.username_suffix
 
     if modified_user_template.inbounds:
-        inbound_tags: list[str] = []
+        inbound_tags: List[str] = []
         for _, i in modified_user_template.inbounds.items():
             inbound_tags.extend(i)
         dbuser_template.inbounds = db.query(ProxyInbound).filter(ProxyInbound.tag.in_(inbound_tags)).all()
@@ -360,7 +376,8 @@ def get_user_template(db: Session, user_template_id: int) -> UserTemplate:
     return db.query(UserTemplate).filter(UserTemplate.id == user_template_id).first()
 
 
-def get_user_templates(db: Session, offset: int | None = None, limit: int | None = None) -> list[UserTemplate]:
+def get_user_templates(
+        db: Session, offset: Union[int, None] = None, limit: Union[int, None] = None) -> List[UserTemplate]:
     dbuser_templates = db.query(UserTemplate)
     if offset:
         dbuser_templates = dbuser_templates.offset(offset)

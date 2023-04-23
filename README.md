@@ -188,6 +188,8 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | XRAY_SUBSCRIPTION_URL_PREFIX    | Prefix of subscription URLs                                                                           |
 | XRAY_FALLBACKS_INBOUND_TAG      | Tag of the inbound that includes fallbacks, needed in the case you're using fallbacks                 |
 | XRAY_EXCLUDE_INBOUND_TAGS       | Tags of the inbounds that shouldn't be managed and included in links by application                   |
+| CUSTOM_TEMPLATES_DIRECTORY      | Customized templates directory (default: `app/templates`)                                             |
+| CLASH_SUBSCRIPTION_TEMPLATE     | The template that will be used for generating clash configs (default: `clash/default.yml`)            |
 | TELEGRAM_API_TOKEN              | Telegram bot API token  (get token from [@botfather](https://t.me/botfather))                         |
 | TELEGRAM_ADMIN_ID               | Numeric Telegram ID of admin (use [@userinfobot](https://t.me/userinfobot) to found your ID)          |
 | TELEGRAM_PROXY_URL              | Run Telegram Bot over proxy                                                                           |

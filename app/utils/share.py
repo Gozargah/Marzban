@@ -1,18 +1,23 @@
 import base64
-import copy
 import json
 import secrets
 import urllib.parse as urlparse
 from datetime import datetime as dt
-from typing import Union
+from typing import TYPE_CHECKING, Literal, Union
 from uuid import UUID
 
 import yaml
 
 from app import xray
+from app.templates import render_to_string
 from app.models.proxy import FormatVariables
 from app.utils.store import XrayStore
 from app.utils.system import get_public_ip, readable_size
+if TYPE_CHECKING:
+    from app.models.user import UserResponse
+
+from config import CLASH_SUBSCRIPTION_TEMPLATE
+
 
 SERVER_IP = get_public_ip()
 
@@ -119,21 +124,25 @@ class V2rayShareLink(str):
 class ClashConfiguration(object):
     def __init__(self):
         self.data = {
-            'port': 7890,
-            'mode': 'Global',
             'proxies': [],
-            'proxy-groups': []
+            'proxy-groups': [],
+            # Some clients rely on "rules" option and will fail without it.
+            'rules': []
         }
         self.proxy_remarks = []
 
     def to_yaml(self):
-        d = copy.deepcopy(self.data)
-        d['proxy-groups'].append({'name': '♻️ Automatic',
-                                  'type': 'url-test',
-                                  'url': 'http://www.gstatic.com/generate_204',
-                                  'interval': 300,
-                                  'proxies': self.proxy_remarks})
-        return yaml.dump(d, allow_unicode=True)
+        return yaml.dump(
+            yaml.load(
+                render_to_string(
+                    CLASH_SUBSCRIPTION_TEMPLATE,
+                    {"conf": self.data, "proxy_remarks": self.proxy_remarks}
+                ),
+                Loader=yaml.SafeLoader
+            ),
+            sort_keys=False,
+            allow_unicode=True
+        )
 
     def __str__(self) -> str:
         return self.to_yaml()
@@ -403,3 +412,23 @@ def generate_clash_subscription(proxies: dict, inbounds: dict, extra_data: dict)
                 )
 
     return conf.to_yaml()
+
+
+def generate_subscription(
+    user: "UserResponse",
+    config_format: Literal["v2ray", "clash"],
+    as_base64: bool
+) -> str:
+    kwargs = {"proxies": user.proxies, "inbounds": user.inbounds, "extra_data": user.__dict__}
+
+    if config_format == 'v2ray':
+        config = "\n".join(generate_v2ray_links(**kwargs))
+    elif config_format == 'clash':
+        config = generate_clash_subscription(**kwargs)
+    else:
+        raise ValueError(f'Unsupported format "{config_format}"')
+
+    if as_base64:
+        config = base64.b64encode(config.encode()).decode()
+
+    return config

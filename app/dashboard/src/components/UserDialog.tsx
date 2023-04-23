@@ -49,6 +49,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { relativeExpiryDate } from "utils/dateFormatter";
 import { DeleteIcon } from "./DeleteUserModal";
 import { resetStrategy } from "constants/UserSettings";
+import { useTranslation } from "react-i18next";
 
 const AddUserIcon = chakra(UserPlusIcon, {
   baseStyle: {
@@ -66,8 +67,21 @@ const EditUserIcon = chakra(PencilIcon, {
 
 const schema = z.object({
   username: z.string().min(1, { message: "Required" }),
-  proxies: z.array(z.string()).refine((value) => value.length > 0, {
-    message: "Please select at least one protocol",
+  selected_proxies: z.array(z.string()).refine((value) => value.length > 0, {
+    message: "userDialog.selectOneProtocol",
+  }),
+  proxies: z.record(z.string(), z.record(z.string(), z.any())).transform((ins) => {
+    const deleteIfEmpty = (obj: any, key: string) => {
+      if (obj && obj[key] === "") {
+        delete obj[key];
+      }
+    }
+    deleteIfEmpty(ins.vmess, "id");
+    deleteIfEmpty(ins.vless, "id");
+    deleteIfEmpty(ins.trojan, "password");
+    deleteIfEmpty(ins.shadowsocks, "password");
+    deleteIfEmpty(ins.shadowsocks, "method");
+    return ins;
   }),
   data_limit: z
     .string()
@@ -85,13 +99,13 @@ const schema = z.object({
     Object.keys(ins).forEach((protocol) => {
       if (Array.isArray(ins[protocol]) && !ins[protocol]?.length) delete ins[protocol];
     })
-    return ins
+    return ins;
   }),
 });
 
 export type UserDialogProps = {};
 
-export type FormType = Omit<UserCreate, "proxies"> & { proxies: ProxyKeys };
+export type FormType = Pick<UserCreate, keyof UserCreate> & { selected_proxies: ProxyKeys };
 
 const formatUser = (user: User): FormType => {
   return {
@@ -99,7 +113,7 @@ const formatUser = (user: User): FormType => {
     data_limit: user.data_limit
       ? Number((user.data_limit / 1073741824).toFixed(5))
       : user.data_limit,
-    proxies: Object.keys(user.proxies) as ProxyKeys,
+    selected_proxies: Object.keys(user.proxies) as ProxyKeys,
   };
 };
 const getDefaultValues = (): FormType => {
@@ -109,13 +123,19 @@ const getDefaultValues = (): FormType => {
     inbounds[key] = defaultInbounds[key].map((i) => i.tag);
   }
   return {
-    proxies: Object.keys(defaultInbounds) as ProxyKeys,
+    selected_proxies: Object.keys(defaultInbounds) as ProxyKeys,
     data_limit: null,
     expire: null,
     username: "",
     data_limit_reset_strategy: "no_reset",
     status: "active",
     inbounds,
+    proxies: {
+      vless: { id: "", flow: "" },
+      vmess: { id: ""},
+      trojan: { password: "" },
+      shadowsocks: { password: "", method: "" }
+    }
   };
 };
 
@@ -150,6 +170,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
   const toast = useToast();
+  const { t } = useTranslation();
 
   const form = useForm<FormType>({
     defaultValues: getDefaultValues(),
@@ -184,10 +205,12 @@ export const UserDialog: FC<UserDialogProps> = () => {
     const method = isEditing ? "edited" : "created";
     setError(null);
 
+    const {selected_proxies, ...rest} = values;
+
     let body: UserCreate = {
-      ...values,
+      ...rest,
       data_limit: values.data_limit,
-      proxies: mergeProxies(values.proxies, editingUser?.proxies),
+      proxies: mergeProxies(selected_proxies, values.proxies),
       data_limit_reset_strategy:
         values.data_limit && values.data_limit > 0
           ? values.data_limit_reset_strategy
@@ -197,11 +220,11 @@ export const UserDialog: FC<UserDialogProps> = () => {
           ? values.status
           : "active",
     };
-
+    
     methods[method](body)
       .then(() => {
         toast({
-          title: `User ${values.username} ${method}.`,
+          title: t(isEditing ? "userDialog.userEdited" : "userDialog.userCreated", {username: values.username}),
           status: "success",
           isClosable: true,
           position: "top",
@@ -214,6 +237,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
           setError(err?.response?._data?.detail);
         if (err?.response?.status === 422) {
           Object.keys(err.response._data.detail).forEach((key) => {
+            setError(err?.response._data.detail[key] as string);
             form.setError(
               key as "proxies" | "username" | "data_limit" | "expire",
               {
@@ -233,6 +257,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
     form.reset(getDefaultValues());
     onCreateUser(false);
     onEditingUser(null);
+    setError(null);
   };
 
   const handleResetUsage = () => {
@@ -257,7 +282,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                   )}
                 </Icon>
                 <Text fontWeight="semibold" fontSize="lg">
-                  {isEditing ? "Edit" : "Create new"} user
+                  {isEditing ? t("userDialog.editUserTitle") : t("createNewUser")}
                 </Text>
               </HStack>
             </ModalHeader>
@@ -271,7 +296,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                     w="full"
                   >
                     <FormControl mb={"10px"}>
-                      <FormLabel>Username</FormLabel>
+                      <FormLabel>{t('username')}</FormLabel>
                       <HStack>
                         <Input
                           size="sm"
@@ -319,7 +344,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       </HStack>
                     </FormControl>
                     <FormControl mb={"10px"}>
-                      <FormLabel>Data Limit</FormLabel>
+                      <FormLabel>{t("userDialog.dataLimit")}</FormLabel>
                       <Controller
                         control={form.control}
                         name="data_limit"
@@ -345,7 +370,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       style={{ width: "100%" }}
                     >
                       <FormControl height="66px">
-                        <FormLabel>Periodic Usage Reset</FormLabel>
+                        <FormLabel>{t("userDialog.periodicUsageReset")}</FormLabel>
                         <Controller
                           control={form.control}
                           name="data_limit_reset_strategy"
@@ -355,7 +380,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                 {resetStrategy.map((s) => {
                                   return (
                                     <option key={s.value} value={s.value}>
-                                      {s.title}
+                                      {t("userDialog.resetStrategy" + s.title)}
                                     </option>
                                   );
                                 })}
@@ -366,7 +391,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       </FormControl>
                     </Collapse>
                     <FormControl mb={"10px"}>
-                      <FormLabel>Expiry Date</FormLabel>
+                      <FormLabel>{t("userDialog.expiryDate")}</FormLabel>
                       <Controller
                         name="expire"
                         control={form.control}
@@ -375,13 +400,14 @@ export const UserDialog: FC<UserDialogProps> = () => {
                             return dayjs(
                               dayjs(num * 1000)
                                 .utc()
-                                .format("MMMM D, YYYY")
+                                // .format("MMMM D, YYYY") // exception with: dayjs.locale(lng);
                             ).toDate();
                           }
+                          const { status, time } = relativeExpiryDate(field.value);
                           return (
                             <>
                               <ReactDatePicker
-                                dateFormat="MMMM d, yyy"
+                                dateFormat={t("dateFormat") || "MMMM d, yyy"}
                                 minDate={new Date()}
                                 selected={
                                   field.value
@@ -420,7 +446,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                               />
                               {field.value ? (
                                 <FormHelperText>
-                                  {relativeExpiryDate(field.value)}
+                                  {t(status, {time:time})}
                                 </FormHelperText>
                               ) : (
                                 ""
@@ -442,33 +468,31 @@ export const UserDialog: FC<UserDialogProps> = () => {
                   )}
                 </VStack>
                 <FormControl
-                  isInvalid={!!form.formState.errors.proxies?.message}
+                  isInvalid={!!form.formState.errors.selected_proxies?.message}
                 >
-                  <FormLabel>Protocols</FormLabel>
+                  <FormLabel>{t("userDialog.protocols")}</FormLabel>
                   <Controller
                     control={form.control}
-                    name="proxies"
+                    name="selected_proxies"
                     render={({ field }) => {
                       return (
                         <RadioGroup
                           list={[
                             {
                               title: "vmess",
-                              description: "Fast and secure",
+                              description:t("userDialog.vmessDesc"),
                             },
                             {
                               title: "vless",
-                              description: "Lightweight, fast and secure",
+                              description: t("userDialog.vlessDesc"),
                             },
                             {
                               title: "trojan",
-                              description:
-                                "Lightweight, secure and lightening fast",
+                              description: t("userDialog.trojanDesc"),
                             },
                             {
                               title: "shadowsocks",
-                              description:
-                                "Fast and secure, but not efficient as others",
+                              description: t("userDialog.shadowsocksDesc"),
                             },
                           ]}
                           disabled={disabled}
@@ -478,7 +502,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                     }}
                   />
                   <FormErrorMessage>
-                    {form.formState.errors.proxies?.message}
+                    {t(form.formState.errors.selected_proxies?.message as string)}
                   </FormErrorMessage>
                 </FormControl>
               </SimpleGrid>
@@ -512,7 +536,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                 >
                   {isEditing && (
                     <>
-                      <Tooltip label="Delete" placement="top">
+                      <Tooltip label={t("delete")} placement="top">
                         <IconButton
                           aria-label="Delete"
                           size="sm"
@@ -522,7 +546,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                         </IconButton>
                       </Tooltip>
                       <Button onClick={handleResetUsage} size="sm">
-                        Reset Usage
+                        {t("userDialog.resetUsage")}
                       </Button>
                     </>
                   )}
@@ -535,7 +559,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                     w="full"
                     disabled={disabled}
                   >
-                    Cancel
+                    {t("cancel")}
                   </Button>
                   <Button
                     type="submit"
@@ -545,7 +569,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                     w="full"
                     disabled={disabled}
                   >
-                    {isEditing ? "Edit user" : "Create user"}
+                    {isEditing ? t('userDialog.editUser') : t("createUser")}
                   </Button>
                 </HStack>
               </HStack>
