@@ -9,8 +9,8 @@ load_dotenv()
 requests.packages.urllib3.util.connection.HAS_IPV6 = False
 
 try:
-    SERVER_IP = requests.get("https://ifconfig.io/ip", timeout=5).text.strip()
-except requests.exceptions.ConnectTimeout:
+    SERVER_IP = requests.get("https://api.ipify.org", timeout=5).text.strip()
+except requests.exceptions.RequestException:
     print("Failed to get SERVER_IP, using 127.0.0.1 instead")
     SERVER_IP = "127.0.0.1"
 
