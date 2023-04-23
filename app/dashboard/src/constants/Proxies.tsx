@@ -16,6 +16,11 @@ export const proxyHostSecurity: { title: string; value: ProxyHostSecurity }[] =
     },
   ];
 
+export const vlessFlows = [
+  "none",
+  "xtls-rprx-vision",
+];  
+
 export const shadowsocksMethods = [
   "aes-128-gcm",
   "aes-256-gcm",

@@ -27,7 +27,7 @@ import {
   EllipsisVerticalIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
-import { shadowsocksMethods } from "constants/Proxies";
+import { shadowsocksMethods, vlessFlows } from "constants/Proxies";
 import {
   InboundType,
   ProtocolType,
@@ -383,15 +383,19 @@ const RadioCard: FC<
                 <Text fontSize="sm" pb={1}>
                   Flow
                 </Text>
-                <Input
+                <Select
                   fontSize="xs"
                   size="sm"
                   borderRadius="6px"
-                  pl={2}
-                  pr={2}
-                  placeholder="none or xtls-rprx-vision"
+                  placeholder={t("default") + ": none"}
                   {...form.register("proxies.vless.flow")}
-                />
+                >
+                  {vlessFlows.map((flow) => (
+                    <option key={flow} value={flow}>
+                      {flow}
+                    </option>
+                  ))}
+                </Select>
               </FormControl>
             </VStack>
           )}
