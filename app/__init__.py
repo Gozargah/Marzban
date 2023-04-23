@@ -1,8 +1,6 @@
-from datetime import timezone
 import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from config import DOCS
 from fastapi import FastAPI, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
@@ -10,7 +8,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi_responses import custom_openapi
 
+from config import DOCS
+
+__version__ = "0.2.6"
+
+
 app = FastAPI(
+    title="MarzbanAPI",
+    description="Unified GUI Censorship Resistant Solution Powered by Xray",
+    version=__version__,
     docs_url='/docs' if DOCS else None,
     redoc_url='/redoc' if DOCS else None
 )
@@ -26,7 +32,7 @@ app.add_middleware(
 )
 
 
-from app import dashboard, jobs, views, telegram  # noqa
+from app import dashboard, jobs, telegram, views  # noqa
 
 
 @app.on_event("startup")

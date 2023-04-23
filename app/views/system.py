@@ -10,6 +10,7 @@ from app.models.system import SystemStats
 from app.models.user import UserStatus
 from app.utils.store import XrayStore
 from app.utils.system import memory_usage, cpu_usage, realtime_bandwith
+from app import __version__
 
 
 @app.get("/api/system", tags=["System"], response_model=SystemStats)
@@ -24,6 +25,7 @@ def get_system_stats(db: Session = Depends(get_db), admin: Admin = Depends(Admin
     realtime_bandwidth_stats = realtime_bandwith()
 
     return SystemStats(
+        version=__version__,
         mem_total=mem.total,
         mem_used=mem.used,
         cpu_cores=cpu.cores,
