@@ -130,10 +130,12 @@ const getDefaultValues = (): FormType => {
     data_limit_reset_strategy: "no_reset",
     status: "active",
     inbounds,
-    proxies: Object.keys(defaultInbounds).reduce(
-      (ac, a) => ({ ...ac, [a]: {}}),
-      {}
-    )
+    proxies: {
+      vless: { id: "", flow: "" },
+      vmess: { id: ""},
+      trojan: { password: "" },
+      shadowsocks: { password: "", method: "" }
+    }
   };
 };
 

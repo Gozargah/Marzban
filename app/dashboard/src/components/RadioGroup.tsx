@@ -345,7 +345,7 @@ const RadioCard: FC<
                   pl={2}
                   pr={2}
                   placeholder={t("userDialog.generatedByDefault") || ""}
-                  {...form.register("proxies.vmess.id", {shouldUnregister: true})}
+                  {...form.register("proxies.vmess.id")}
                 />
               </FormControl>
             </VStack>
@@ -361,7 +361,7 @@ const RadioCard: FC<
                   pl={2}
                   pr={2}
                   placeholder={t("userDialog.generatedByDefault") || ""}
-                  {...form.register("proxies.vless.id", {shouldUnregister: true})}
+                  {...form.register("proxies.vless.id")}
                 />
               </FormControl>
               <FormControl height="66px">
@@ -373,7 +373,7 @@ const RadioCard: FC<
                   pl={2}
                   pr={2}
                   placeholder="none or xtls-rprx-vision"
-                  {...form.register("proxies.vless.flow", {shouldUnregister: true})}
+                  {...form.register("proxies.vless.flow")}
                 />
               </FormControl>
             </VStack>
@@ -389,7 +389,7 @@ const RadioCard: FC<
                   pl={2}
                   pr={2}
                   placeholder={t("userDialog.generatedByDefault") || ""}
-                  {...form.register("proxies.trojan.password", {shouldUnregister: true})}
+                  {...form.register("proxies.trojan.password")}
                 />
               </FormControl>
             </VStack>
@@ -405,7 +405,7 @@ const RadioCard: FC<
                   pl={2}
                   pr={2}
                   placeholder={t("userDialog.generatedByDefault") || ""}
-                  {...form.register("proxies.shadowsocks.password", {shouldUnregister: true})}
+                  {...form.register("proxies.shadowsocks.password")}
                 />
               </FormControl>
               <FormControl height="66px">
@@ -417,7 +417,7 @@ const RadioCard: FC<
                   pl={2}
                   pr={2}
                   placeholder={t("default") + ": chacha20-poly1305"}
-                  {...form.register("proxies.shadowsocks.method", {shouldUnregister: true})}
+                  {...form.register("proxies.shadowsocks.method")}
                 />
               </FormControl>
             </VStack>
