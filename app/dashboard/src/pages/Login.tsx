@@ -11,9 +11,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import {
-  ArrowRightOnRectangleIcon,
-  BoltIcon } from "@heroicons/react/24/outline";
+import { ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FC, useEffect, useState } from "react";
 import { FieldValues, useForm } from "react-hook-form";
@@ -44,6 +42,7 @@ const LoginIcon = chakra(ArrowRightOnRectangleIcon, {
   baseStyle: {
     w: 5,
     h: 5,
+    strokeWidth: "2px",
   },
 });
 
@@ -100,44 +99,46 @@ export const Login: FC = () => {
                 {t("login.welcomeBack")}
               </Text>
             </VStack>
-            <form onSubmit={handleSubmit(login)}>
-              <VStack mt={4} rowGap={4}>
-                <FormControl>
-                  {/* <FormLabel>{t("username")}</FormLabel> */}
-                  <Input
+            <Box w="full" maxW="300px" m="auto" pt="4">
+              <form onSubmit={handleSubmit(login)}>
+                <VStack mt={4} rowGap={2}>
+                  <FormControl>
+                    {/* <FormLabel>{t("username")}</FormLabel> */}
+                    <Input
+                      w="full"
+                      placeholder={t("username") || "Username"}
+                      {...register("username")}
+                      error={errors?.username?.message as string}
+                    />
+                  </FormControl>
+                  <FormControl>
+                    {/* <FormLabel>{t("password")}</FormLabel> */}
+                    <Input
+                      w="full"
+                      type="password"
+                      placeholder={t("password") || "Password"}
+                      {...register("password")}
+                      error={errors?.password?.message as string}
+                    />
+                  </FormControl>
+                  {error && (
+                    <Alert status="error" rounded="md">
+                      <AlertIcon />
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                  <Button
+                    isLoading={loading}
+                    type="submit"
                     w="full"
-                    placeholder={t("username") || "Username"}
-                    {...register("username")}
-                    error={errors?.username?.message as string}
-                  />
-                </FormControl>
-                <FormControl>
-                  {/* <FormLabel>{t("password")}</FormLabel> */}
-                  <Input
-                    w="full"
-                    type="password"
-                    placeholder={t("password") || "Password"}
-                    {...register("password")}
-                    error={errors?.password?.message as string}
-                  />
-                </FormControl>
-                {error && (
-                  <Alert status="error" rounded="md">
-                    <AlertIcon />
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-                <Button
-                  isLoading={loading}
-                  type="submit"
-                  w="full"
-                  colorScheme="primary"
-                >
-                  {<LoginIcon marginRight={1} />}
-                  {t("login")}
-                </Button>
-              </VStack>
-            </form>
+                    colorScheme="primary"
+                  >
+                    {<LoginIcon marginRight={1} />}
+                    {t("login")}
+                  </Button>
+                </VStack>
+              </form>
+            </Box>
           </Box>
         </HStack>
       </Box>
