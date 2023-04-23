@@ -138,7 +138,7 @@ export const useDashboard = create(
       fetchUsers(get().filters);
     },
     resetAllUsage: () => {
-      return fetch(`/user/reset`, { method: "POST" }).then(
+      return fetch(`/users/reset`, { method: "POST" }).then(
         () => {
           get().onResetAllUsage(false);
           get().refetchUsers();

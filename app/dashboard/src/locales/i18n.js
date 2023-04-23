@@ -110,7 +110,7 @@ i18n
           next: "Next",
           createNewUser: "Create new user",
           search: "Search",
-          resetAllUsage: "Reset Statistics",
+          resetAllUsage: "Reset All Usages",
 
           // QRCodeDialog
           "qrcodeDialog.sublink": "Subscribe Link",
@@ -124,9 +124,9 @@ i18n
           "resetUserUsage.error": "Usage reset failed, please try again.",
 
           // ResetAllUsageModal
-          "resetAllUsage.title": "Reset Statistics",
+          "resetAllUsage.title": "Reset data usage for all users",
           "resetAllUsage.prompt":
-            "This action clears all of the user's data usage completely. Are you sure you want to reset all usage? This action can not be undone!",
+            "This action clears all of the users' data usage completely. Are you sure you want to reset all usage? THIS CANNOT BE UNDONE!",
           "resetAllUsage.success": "All usage has reset successfully.",
           "resetAllUsage.error": "Usage reset failed, please try again.",
         },
@@ -216,7 +216,7 @@ i18n
           next: "下一页",
           createNewUser: "创建新用户",
           search: "搜索",
-          resetAllUsage: "重置所有统计",
+          resetAllUsage: "重置所有用法",
 
           // QRCodeDialog
           "qrcodeDialog.sublink": "订阅链接",
@@ -229,9 +229,9 @@ i18n
           "resetUserUsage.error": "重置失败，请稍候再试",
 
           // ResetAllUsageModal
-          "resetAllUsage.title": "重置所有统计",
+          "resetAllUsage.title": "重置所有用户的数据使用情况",
           "resetAllUsage.prompt":
-            "此操作将清除所有用户统计，您确定要执行此操作吗？此操作不可撤销！",
+            "此操作将清除所有用户统计，您确定要执行此操作吗？ 这不能被撤消！",
           "resetAllUsage.success": "所有统计重置完成。",
           "resetAllUsage.error": "重置失败，请稍候再试！",
 

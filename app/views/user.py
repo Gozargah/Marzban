@@ -205,12 +205,13 @@ def get_users(offset: int = None,
 
     return {"users": users, "total": count}
 
-@app.post("/api/user/reset", tags=['User'])
-def reset_user_data_usage(db: Session = Depends(get_db),
-                          admin: Admin = Depends(Admin.get_current)):
+
+@app.post("/api/users/reset", tags=['User'])
+def reset_users_data_usage(db: Session = Depends(get_db),
+                           admin: Admin = Depends(Admin.get_current)):
     """
-    Reset all data usage
+    Reset all users data usage
     """
     dbadmin = crud.get_admin(db, admin.username)
-    crud.reset_all_usage(db=db, admin=dbadmin)
+    crud.reset_all_users_data_usage(db=db, admin=dbadmin)
     return {}
