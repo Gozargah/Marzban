@@ -13,6 +13,7 @@ import {
   IconButton,
   Input,
   Kbd,
+  Select,
   SimpleGrid,
   Text,
   useCheckbox,
@@ -26,6 +27,7 @@ import {
   EllipsisVerticalIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
+import { shadowsocksMethods } from "constants/Proxies";
 import {
   InboundType,
   ProtocolType,
@@ -308,8 +310,10 @@ const RadioCard: FC<
         pb={3}
         roundedBottom="5px"
         pt={3}
+        _dark={{ bg: inputProps.checked && "gray.750" }}
       >
-        <VStack w="full"
+        <VStack
+          w="full"
           rowGap={2}
           borderStyle="solid"
           borderWidth="1px"
@@ -317,27 +321,36 @@ const RadioCard: FC<
           pl={3}
           pr={3}
           pt={1.5}
+          _dark={{ bg: "gray.700" }}
         >
           <VStack alignItems="flex-start" w="full">
             <Text fontSize="sm">{t("inbound")}</Text>
-            <SimpleGrid gap={2} alignItems="flex-start" w="full" columns={1} spacing={1}>
-              {((inbounds.get(title as ProtocolType) as InboundType[]) || []).map(
-                (inbound) => {
-                  return (
-                    <InboundCard
-                      key={inbound.tag}
-                      {...getInboundCheckboxProps({ value: inbound.tag })}
-                      inbound={inbound}
-                    />
-                  );
-                }
-              )}
+            <SimpleGrid
+              gap={2}
+              alignItems="flex-start"
+              w="full"
+              columns={1}
+              spacing={1}
+            >
+              {(
+                (inbounds.get(title as ProtocolType) as InboundType[]) || []
+              ).map((inbound) => {
+                return (
+                  <InboundCard
+                    key={inbound.tag}
+                    {...getInboundCheckboxProps({ value: inbound.tag })}
+                    inbound={inbound}
+                  />
+                );
+              })}
             </SimpleGrid>
           </VStack>
           {title === "vmess" && isSelected && (
             <VStack alignItems="flex-start" w="full">
               <FormControl height="66px">
-                <Text fontSize="sm" pb={1}>ID</Text>
+                <Text fontSize="sm" pb={1}>
+                  ID
+                </Text>
                 <Input
                   fontSize="xs"
                   size="sm"
@@ -353,7 +366,9 @@ const RadioCard: FC<
           {title === "vless" && isSelected && (
             <VStack alignItems="flex-start" w="full">
               <FormControl height="66px">
-                <Text fontSize="sm" pb={1}>ID</Text>
+                <Text fontSize="sm" pb={1}>
+                  ID
+                </Text>
                 <Input
                   fontSize="xs"
                   size="sm"
@@ -365,7 +380,9 @@ const RadioCard: FC<
                 />
               </FormControl>
               <FormControl height="66px">
-                <Text fontSize="sm" pb={1}>Flow</Text>
+                <Text fontSize="sm" pb={1}>
+                  Flow
+                </Text>
                 <Input
                   fontSize="xs"
                   size="sm"
@@ -381,7 +398,9 @@ const RadioCard: FC<
           {title === "trojan" && isSelected && (
             <VStack alignItems="flex-start" w="full">
               <FormControl height="66px">
-                <Text fontSize="sm" pb={1}>{t("password")}</Text>
+                <Text fontSize="sm" pb={1}>
+                  {t("password")}
+                </Text>
                 <Input
                   fontSize="xs"
                   size="sm"
@@ -397,7 +416,9 @@ const RadioCard: FC<
           {title === "shadowsocks" && isSelected && (
             <VStack alignItems="flex-start" w="full">
               <FormControl height="66px">
-                <Text fontSize="sm" pb={1}>{t("password")}</Text>
+                <Text fontSize="sm" pb={1}>
+                  {t("password")}
+                </Text>
                 <Input
                   fontSize="xs"
                   size="sm"
@@ -409,16 +430,22 @@ const RadioCard: FC<
                 />
               </FormControl>
               <FormControl height="66px">
-                <Text fontSize="sm" pb={1}>{t("userDialog.method")}</Text>
-                <Input
+                <Text fontSize="sm" pb={1}>
+                  {t("userDialog.method")}
+                </Text>
+                <Select
                   fontSize="xs"
                   size="sm"
                   borderRadius="6px"
-                  pl={2}
-                  pr={2}
                   placeholder={t("default") + ": chacha20-poly1305"}
                   {...form.register("proxies.shadowsocks.method")}
-                />
+                >
+                  {shadowsocksMethods.map((method) => (
+                    <option key={method} value={method}>
+                      {method}
+                    </option>
+                  ))}
+                </Select>
               </FormControl>
             </VStack>
           )}

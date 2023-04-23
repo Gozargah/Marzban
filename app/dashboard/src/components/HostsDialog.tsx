@@ -53,7 +53,7 @@ import {
 import { DeleteIcon } from "./DeleteUserModal";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { proxyHostSecurity } from "constants/ProxyHosts";
+import { proxyHostSecurity } from "constants/Proxies";
 import { ProxyHostSecurity } from "types/ProxyHosts";
 import { useTranslation } from "react-i18next";
 
@@ -205,9 +205,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             <PopoverCloseButton />
                             <PopoverBody>
                               <Box fontSize="xs">
-                                <Text pr="20px">
-                                  {t("hostsDialog.desc")}
-                                </Text>
+                                <Text pr="20px">{t("hostsDialog.desc")}</Text>
                                 <Text mt={1}>
                                   <Badge>
                                     {"{"}USERNAME{"}"}
@@ -230,13 +228,13 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                   <Badge>
                                     {"{"}DAYS_LEFT{"}"}
                                   </Badge>{" "}
-                                  {t('hostsDialog.remaingDays')}
+                                  {t("hostsDialog.remaingDays")}
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
                                     {"{"}PROTOCOL{"}"}
                                   </Badge>{" "}
-                                  {t('hostsDialog.proxyProtocol')}
+                                  {t("hostsDialog.proxyProtocol")}
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
@@ -294,9 +292,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             <PopoverCloseButton />
                             <PopoverBody>
                               <Box fontSize="xs">
-                                <Text pr="20px">
-                                  {t("hostsDialog.desc")}
-                                </Text>
+                                <Text pr="20px">{t("hostsDialog.desc")}</Text>
                                 <Text>
                                   <Badge>
                                     {"{"}SERVER_IP{"}"}
@@ -374,7 +370,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
             fontWeight={"normal"}
             onClick={handleAddHost}
           >
-            {t('hostsDialog.addHost')}
+            {t("hostsDialog.addHost")}
           </Button>
         </VStack>
       </AccordionPanel>
@@ -437,7 +433,7 @@ export const HostsDialog: FC = () => {
               position: "top",
               duration: 3000,
             });
-          })
+          });
         }
       });
   };
