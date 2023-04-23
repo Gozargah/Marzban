@@ -1,6 +1,6 @@
 from datetime import datetime as dt
 from itertools import islice
-from typing import Literal
+from typing import Literal, Dict, List
 
 from telebot import types  # noqa
 
@@ -35,7 +35,7 @@ class BotKeyboard:
         return keyboard
 
     @staticmethod
-    def templates_menu(templates: dict[str, int]):
+    def templates_menu(templates: Dict[str, int]):
         keyboard = types.InlineKeyboardMarkup()
 
         for chunk in chunk_dict(templates):
@@ -200,7 +200,7 @@ class BotKeyboard:
         return keyboard
 
     @staticmethod
-    def select_protocols(selected_protocols: dict[str, list[str]],
+    def select_protocols(selected_protocols: Dict[str, List[str]],
                          action: Literal["edit", "create", "create_from_template"],
                          username: str = None,
                          data_limit: int = None,

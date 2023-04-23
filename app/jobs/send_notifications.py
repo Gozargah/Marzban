@@ -1,5 +1,5 @@
 from app import logger, scheduler, app
-from typing import Any
+from typing import Any, Dict
 from app.utils.notification import queue
 import config
 from requests import Session
@@ -11,7 +11,7 @@ session = Session()
 headers = {"x-webhook-secret": config.WEBHOOK_SECRET} if config.WEBHOOK_SECRET else None
 
 
-def send(data: dict[Any, Any]) -> bool:
+def send(data: Dict[Any, Any]) -> bool:
     try:
         r = session.post(config.WEBHOOK_ADDRESS, json=data, headers=headers)
         if r.status_code == 200:
