@@ -7,6 +7,7 @@ import {
 import { FC, PropsWithChildren, ReactElement, ReactNode } from "react";
 import useSWR from "swr";
 import { formatBytes, numberWithCommas } from "utils/formatByte";
+import { useTranslation } from "react-i18next";
 
 const TotalUsersIcon = chakra(UsersIcon, {
   baseStyle: {
@@ -121,6 +122,7 @@ export const Statistics: FC<BoxProps> = (props) => {
     revalidateOnReconnect: true,
     refreshInterval: 5000,
   });
+  const { t } = useTranslation();
   return (
     <HStack
       justifyContent="space-between"
@@ -132,7 +134,7 @@ export const Statistics: FC<BoxProps> = (props) => {
       {...props}
     >
       <StatisticCard
-        title="active users"
+        title={t("activeUsers")}
         content={
           systemData && (
             <HStack alignItems="flex-end">
@@ -152,7 +154,7 @@ export const Statistics: FC<BoxProps> = (props) => {
         icon={<TotalUsersIcon />}
       />
       <StatisticCard
-        title="data usage"
+        title={t("dataUsage")}
         content={
           systemData &&
           formatBytes(
@@ -162,7 +164,7 @@ export const Statistics: FC<BoxProps> = (props) => {
         icon={<NetworkIcon />}
       />
       <StatisticCard
-        title="memory usage"
+        title={t("memoryUsage")}
         content={
           systemData && (
             <HStack alignItems="flex-end">

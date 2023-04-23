@@ -239,6 +239,22 @@ def reset_user_data_usage(db: Session, dbuser: User):
     return dbuser
 
 
+def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
+    query = db.query(User)
+
+    if admin:
+        query = query.filter(User.admin == admin)
+
+    for dbuser in query.all():
+        dbuser.used_traffic = 0
+        if dbuser.status not in (UserStatus.expired or UserStatus.disabled):
+            dbuser.status = UserStatus.active
+        dbuser.usage_logs.clear()
+        db.add(dbuser)
+
+    db.commit()
+
+
 def update_user_status(db: Session, dbuser: User, status: UserStatus):
     dbuser.status = status
     db.commit()

@@ -1,7 +1,12 @@
 import {
+  Accordion,
+  AccordionButton,
+  AccordionItem,
+  AccordionPanel,
   Box,
   Button,
   chakra,
+  ExpandedIndex,
   HStack,
   IconButton,
   Select,
@@ -10,7 +15,6 @@ import {
   SliderProps,
   SliderTrack,
   Table,
-  TableContainer,
   TableProps,
   Tbody,
   Td,
@@ -20,16 +24,17 @@ import {
   Tooltip,
   Tr,
   useBreakpointValue,
+  VStack,
 } from "@chakra-ui/react";
 import {
   CheckIcon,
   ClipboardIcon,
   LinkIcon,
   QrCodeIcon,
-  ArrowPathIcon,
   ChevronDownIcon,
+  PencilIcon,
 } from "@heroicons/react/24/outline";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, Fragment, useEffect, useState } from "react";
 import { ReactComponent as AddFileIcon } from "assets/add_file.svg";
 import { formatBytes } from "utils/formatByte";
 import { useDashboard } from "contexts/DashboardContext";
@@ -37,7 +42,10 @@ import CopyToClipboard from "react-copy-to-clipboard";
 import { UserBadge } from "./UserBadge";
 import { Pagination } from "./Pagination";
 import classNames from "classnames";
-import { statusColors } from "constants/UserSettings";
+import { statusColors, resetStrategy } from "constants/UserSettings";
+import { User } from "types/User";
+import { useTranslation } from "react-i18next";
+import { t } from "i18next";
 
 const EmptySectionIcon = chakra(AddFileIcon);
 
@@ -48,9 +56,11 @@ const iconProps = {
   },
 };
 const CopyIcon = chakra(ClipboardIcon, iconProps);
+const AccordionArrowIcon = chakra(ChevronDownIcon, iconProps);
 const CopiedIcon = chakra(CheckIcon, iconProps);
 const SubscriptionLinkIcon = chakra(LinkIcon, iconProps);
 const QRIcon = chakra(QrCodeIcon, iconProps);
+const EditIcon = chakra(PencilIcon, iconProps);
 const SortIcon = chakra(ChevronDownIcon, {
   baseStyle: {
     width: "15px",
@@ -64,6 +74,41 @@ type UsageSliderProps = {
   totalUsedTraffic: number;
 } & SliderProps;
 
+const getResetStrategy = (strategy: string): string => {
+  for (var i = 0; i < resetStrategy.length; i++) {
+    const entry = resetStrategy[i];
+    if (entry.value == strategy) {
+      return entry.title;
+    }
+  }
+  return "No";
+};
+const UsageSliderCompact: FC<UsageSliderProps> = (props) => {
+  const { used, total, dataLimitResetStrategy, totalUsedTraffic } = props;
+  const isUnlimited = total === 0 || total === null;
+  return (
+    <HStack
+      justifyContent="space-between"
+      fontSize="xs"
+      fontWeight="medium"
+      color="gray.600"
+      _dark={{
+        color: "gray.400",
+      }}
+    >
+      <Text>
+        {formatBytes(used)} /{" "}
+        {isUnlimited ? (
+          <Text as="span" fontFamily="system-ui">
+            ∞
+          </Text>
+        ) : (
+          formatBytes(total)
+        )}
+      </Text>
+    </HStack>
+  );
+};
 const UsageSlider: FC<UsageSliderProps> = (props) => {
   const {
     used,
@@ -104,11 +149,15 @@ const UsageSlider: FC<UsageSliderProps> = (props) => {
           ) : (
             formatBytes(total) +
             (dataLimitResetStrategy && dataLimitResetStrategy !== "no_reset"
-              ? " per " + dataLimitResetStrategy
+              ? " " +
+                t(
+                  "userDialog.resetStrategy" +
+                    getResetStrategy(dataLimitResetStrategy)
+                )
               : "")
           )}
         </Text>
-        <Text>Total: {formatBytes(totalUsedTraffic)}</Text>
+        <Text>{t("usersTable.total")}: {formatBytes(totalUsedTraffic)}</Text>
       </HStack>
     </>
   );
@@ -133,46 +182,24 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
     users: { users },
     users: totalUsers,
     onEditingUser,
-    setQRCode,
-    setSubLink,
     onFilterChange,
   } = useDashboard();
-  const marginTop =
-    useBreakpointValue({
-      base: 120,
-      lg: 72,
-    }) || 72;
+
+  const { t } = useTranslation();
+  const [selectedRow, setSelectedRow] = useState<ExpandedIndex | undefined>(
+    undefined
+  );
+  const marginTop = useBreakpointValue({ base: 120, lg: 72 }) || 72;
+  const [top, setTop] = useState(`${marginTop}px`);
+  const useTable = useBreakpointValue({ base: false, md: true });
+
+  useEffect(() => {
+    const el = document.querySelectorAll("#filters")[0] as HTMLElement;
+    setTop(`${el.offsetHeight}px`);
+  });
 
   const isFiltered = users.length !== totalUsers.total;
-  const [copied, setCopied] = useState([-1, -1, false]);
 
-  useEffect(() => {
-    if (copied[2]) {
-      setTimeout(() => {
-        setCopied([-1, -1, false]);
-      }, 1000);
-    }
-  }, [copied]);
-
-  const tableFixHead = useCallback(() => {
-    const el = document.querySelectorAll("#users-table")[0] as HTMLElement;
-    const sT = window.scrollY;
-
-    document.querySelectorAll("#users-table thead th").forEach((th: any) => {
-      const transformY =
-        el.offsetTop - marginTop <= sT ? sT - el.offsetTop + marginTop : 0;
-      th.style.transform = `translateY(${transformY}px)`;
-    });
-  }, [marginTop, users]);
-
-  useEffect(() => {
-    window.addEventListener("scroll", tableFixHead);
-    window.addEventListener("resize", tableFixHead);
-    return () => {
-      window.removeEventListener("scroll", tableFixHead);
-      window.removeEventListener("resize", tableFixHead);
-    };
-  }, [tableFixHead]);
   const handleSort = (column: string) => {
     let newSort = filters.sort;
     if (newSort.includes(column)) {
@@ -193,22 +220,245 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
       status: e.target.value.length > 0 ? e.target.value : undefined,
     });
   };
+
+  const toggleAccordion = (index: number) => {
+    setSelectedRow(index === selectedRow ? undefined : index);
+  };
+
   return (
-    <Box id="users-table" overflowX="auto">
-      <Table {...props}>
+    <Box id="users-table" overflowX={{ base: "auto", md: "unset" }}>
+      <Accordion
+        allowMultiple
+        display={{ base: "block", md: "none" }}
+        index={selectedRow}
+      >
+        <Table orientation="vertical" {...props}>
+          <Thead zIndex="docked" position="relative">
+            <Tr>
+              <Th
+                position="sticky"
+                top={{ base: "unset", md: top }}
+                minW="120px"
+                pl={4} 
+                pr={4}
+                cursor={"pointer"}
+              >
+                <HStack>
+                  <span>{t("users")}</span>
+                  <Sort sort={filters.sort} column="username" />
+                </HStack>
+              </Th>
+              <Th
+                position="sticky"
+                top={{ base: "unset", md: top }}
+                minW="50px"
+                pl={0}
+                pr={0}
+                cursor={"pointer"}
+              >
+                <HStack>
+                  <span>{t("usersTable.status")}</span>
+                  <Sort sort={filters.sort} column="username" />
+                </HStack>
+              </Th>
+              <Th
+                position="sticky"
+                top={{ base: "unset", md: top }}
+                minW="100px"
+                cursor={"pointer"}
+                pr={0}
+              >
+                <HStack>
+                  <span>{t("usersTable.dataUsage")}</span>
+                  <Sort sort={filters.sort} column="username" />
+                </HStack>
+              </Th>
+              <Th
+                position="sticky"
+                top={{ base: "unset", md: top }}
+                minW="32px"
+                w="32px"
+                p={0}
+                cursor={"pointer"}
+              ></Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {!useTable &&
+              users?.map((user, i) => {
+                return (
+                  <Fragment key={user.username}>
+                    <Tr
+                      onClick={toggleAccordion.bind(null, i)}
+                      cursor="pointer"
+                    >
+                      <Td borderBottom={0} minW="100px" pl={4} pr={4}>
+                        {user.username}
+                      </Td>
+                      <Td borderBottom={0} minW="50px" pl={0} pr={0}>
+                        <UserBadge
+                          compact
+                          showDetail={false}
+                          expiryDate={user.expire}
+                          status={user.status}
+                        />
+                      </Td>
+                      <Td borderBottom={0} minW="100px" pr={0}>
+                        <UsageSliderCompact
+                          totalUsedTraffic={user.lifetime_used_traffic}
+                          dataLimitResetStrategy={
+                            user.data_limit_reset_strategy
+                          }
+                          used={user.used_traffic}
+                          total={user.data_limit}
+                          colorScheme={statusColors[user.status].bandWidthColor}
+                        />
+                      </Td>
+                      <Td p={0} borderBottom={0} w="32px" minW="32px">
+                        <AccordionArrowIcon
+                          color="gray.600"
+                          _dark={{
+                            color: "gray.400",
+                          }}
+                          transition="transform .2s ease-out"
+                          transform={
+                            selectedRow === i ? "rotate(180deg)" : "0deg"
+                          }
+                        />
+                      </Td>
+                    </Tr>
+                    <Tr
+                      className="collapsible"
+                      onClick={toggleAccordion.bind(null, i)}
+                    >
+                      <Td p={0} colSpan={4}>
+                        <AccordionItem border={0}>
+                          <AccordionButton display="none"></AccordionButton>
+                          <AccordionPanel
+                            border={0}
+                            cursor="pointer"
+                            px={6}
+                            py={3}
+                          >
+                            <VStack justifyContent="space-between" spacing="4">
+                              <VStack
+                                alignItems="flex-start"
+                                w="full"
+                                spacing={2}
+                              >
+                                <Text
+                                  textTransform="capitalize"
+                                  fontSize="xs"
+                                  fontWeight="bold"
+                                  color="gray.600"
+                                  _dark={{
+                                    color: "gray.400",
+                                  }}
+                                >
+                                  {t("usersTable.status")}
+                                </Text>
+                                <Box width="full" minW="230px">
+                                  <UserBadge
+                                    compact
+                                    expiryDate={user.expire}
+                                    status={user.status}
+                                  />
+                                </Box>
+                              </VStack>
+                              <VStack
+                                alignItems="flex-start"
+                                w="full"
+                                spacing={-1}
+                              >
+                                <Text
+                                  textTransform="capitalize"
+                                  fontSize="xs"
+                                  fontWeight="bold"
+                                  color="gray.600"
+                                  _dark={{
+                                    color: "gray.400",
+                                  }}
+                                >
+                                  {t("usersTable.dataUsage")}
+                                </Text>
+                                <Box width="full" minW="230px">
+                                  <UsageSlider
+                                    totalUsedTraffic={
+                                      user.lifetime_used_traffic
+                                    }
+                                    dataLimitResetStrategy={
+                                      user.data_limit_reset_strategy
+                                    }
+                                    used={user.used_traffic}
+                                    total={user.data_limit}
+                                    colorScheme={
+                                      statusColors[user.status].bandWidthColor
+                                    }
+                                  />
+                                </Box>
+                              </VStack>
+                              <HStack w="full" justifyContent="space-between">
+                                <Box>
+                                  <ActionButtons user={user} />
+                                </Box>
+                                <Tooltip
+                                  label={t("userDialog.editUser")}
+                                  placement="top"
+                                >
+                                  <IconButton
+                                    aria-label="Edit user"
+                                    bg="transparent"
+                                    _dark={{
+                                      _hover: {
+                                        bg: "gray.700",
+                                      },
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onEditingUser(user);
+                                    }}
+                                  >
+                                    <EditIcon />
+                                  </IconButton>
+                                </Tooltip>
+                              </HStack>
+                            </VStack>
+                          </AccordionPanel>
+                        </AccordionItem>
+                      </Td>
+                    </Tr>
+                  </Fragment>
+                );
+              })}
+          </Tbody>
+        </Table>
+      </Accordion>
+      <Table
+        orientation="vertical"
+        display={{ base: "none", md: "table" }}
+        {...props}
+      >
         <Thead zIndex="docked" position="relative">
           <Tr>
             <Th
-              minW="150px"
+              position="sticky"
+              top={{ base: "unset", md: top }}
+              minW="140px"
               cursor={"pointer"}
               onClick={handleSort.bind(null, "username")}
             >
               <HStack>
-                <span>username</span>
+                <span>{t("username")}</span>
                 <Sort sort={filters.sort} column="username" />
               </HStack>
             </Th>
-            <Th width="400px" minW="180px" cursor={"pointer"}>
+            <Th
+              position="sticky"
+              top={{ base: "unset", md: top }}
+              width="400px"
+              minW="150px"
+              cursor={"pointer"}
+            >
               <HStack spacing={0} position="relative">
                 <Text
                   position="absolute"
@@ -223,7 +473,8 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   zIndex={1}
                   w="100%"
                 >
-                  Status{filters.status ? ": " + filters.status : ""}
+                  {t("usersTable.status")}
+                  {filters.status ? ": " + filters.status : ""}
                 </Text>
                 <Select
                   fontSize="xs"
@@ -249,143 +500,56 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               </HStack>
             </Th>
             <Th
+              position="sticky"
+              top={{ base: "unset", md: top }}
               width="350px"
-              minW="250px"
+              minW="230px"
               cursor={"pointer"}
               onClick={handleSort.bind(null, "used_traffic")}
             >
               <HStack>
-                <span>data usage</span>
+                <span>{t("usersTable.dataUsage")}</span>
                 <Sort sort={filters.sort} column="used_traffic" />
               </HStack>
             </Th>
-            <Th width="200px"></Th>
+            <Th
+              position="sticky"
+              top={{ base: "unset", md: top }}
+              width="200px"
+              minW="180px"
+            />
           </Tr>
         </Thead>
         <Tbody>
-          {users?.map((user, i) => {
-            const proxyLinks = user.links.join("\r\n");
-            return (
-              <Tr
-                key={user.username}
-                className={classNames("interactive", {
-                  "last-row": i === users.length - 1,
-                })}
-                onClick={() => onEditingUser(user)}
-              >
-                <Td minW="150px">{user.username}</Td>
-                <Td width="400px" minW="180px">
-                  <UserBadge expiryDate={user.expire} status={user.status} />
-                </Td>
-                <Td width="350px" minW="250px">
-                  <UsageSlider
-                    totalUsedTraffic={user.lifetime_used_traffic}
-                    dataLimitResetStrategy={user.data_limit_reset_strategy}
-                    used={user.used_traffic}
-                    total={user.data_limit}
-                    colorScheme={statusColors[user.status].bandWidthColor}
-                  />
-                </Td>
-                <Td width="200px">
-                  <HStack
-                    justifyContent="flex-end"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }}
-                  >
-                    <CopyToClipboard
-                      text={
-                        user.subscription_url.startsWith("/")
-                          ? window.location.origin + user.subscription_url
-                          : user.subscription_url
-                      }
-                      onCopy={() => {
-                        setCopied([i, 0, true]);
-                      }}
-                    >
-                      <div>
-                        <Tooltip
-                          label={
-                            copied[0] === i && copied[1] == 0 && copied[2]
-                              ? "Copied"
-                              : "Copy Subscription Link"
-                          }
-                          placement="top"
-                        >
-                          <IconButton
-                            aria-label="copy subscription link"
-                            bg="transparent"
-                            _dark={{
-                              _hover: {
-                                bg: "gray.700",
-                              },
-                            }}
-                          >
-                            {copied[0] === i && copied[1] == 0 && copied[2] ? (
-                              <CopiedIcon />
-                            ) : (
-                              <SubscriptionLinkIcon />
-                            )}
-                          </IconButton>
-                        </Tooltip>
-                      </div>
-                    </CopyToClipboard>
-                    <CopyToClipboard
-                      text={proxyLinks}
-                      onCopy={() => {
-                        setCopied([i, 1, true]);
-                      }}
-                    >
-                      <div>
-                        <Tooltip
-                          label={
-                            copied[0] === i && copied[1] == 1 && copied[2]
-                              ? "Copied"
-                              : "Copy Configs"
-                          }
-                          placement="top"
-                        >
-                          <IconButton
-                            aria-label="copy configs"
-                            bg="transparent"
-                            _dark={{
-                              _hover: {
-                                bg: "gray.700",
-                              },
-                            }}
-                          >
-                            {copied[0] === i && copied[1] == 1 && copied[2] ? (
-                              <CopiedIcon />
-                            ) : (
-                              <CopyIcon />
-                            )}
-                          </IconButton>
-                        </Tooltip>
-                      </div>
-                    </CopyToClipboard>
-                    <Tooltip label="QR Code" placement="top">
-                      <IconButton
-                        aria-label="qr code"
-                        bg="transparent"
-                        _dark={{
-                          _hover: {
-                            bg: "gray.700",
-                          },
-                        }}
-                        onClick={() => {
-                          setQRCode(user.links);
-                          setSubLink(user.subscription_url);
-                        }}
-                      >
-                        <QRIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </HStack>
-                </Td>
-              </Tr>
-            );
-          })}
+          {useTable &&
+            users?.map((user, i) => {
+              return (
+                <Tr
+                  key={user.username}
+                  className={classNames("interactive", {
+                    "last-row": i === users.length - 1,
+                  })}
+                  onClick={() => onEditingUser(user)}
+                >
+                  <Td minW="140px">{user.username}</Td>
+                  <Td width="400px" minW="150px">
+                    <UserBadge expiryDate={user.expire} status={user.status} />
+                  </Td>
+                  <Td width="350px" minW="230px">
+                    <UsageSlider
+                      totalUsedTraffic={user.lifetime_used_traffic}
+                      dataLimitResetStrategy={user.data_limit_reset_strategy}
+                      used={user.used_traffic}
+                      total={user.data_limit}
+                      colorScheme={statusColors[user.status].bandWidthColor}
+                    />
+                  </Td>
+                  <Td width="200px" minW="180px">
+                    <ActionButtons user={user} />
+                  </Td>
+                </Tr>
+              );
+            })}
           {users.length == 0 && (
             <Tr>
               <Td colSpan={4}>
@@ -393,15 +557,122 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               </Td>
             </Tr>
           )}
-
-          <Tr p="0">
-            <Td colSpan={4} p={0} border="0 !important">
-              <Pagination />
-            </Td>
-          </Tr>
         </Tbody>
       </Table>
+      <Pagination />
     </Box>
+  );
+};
+
+type ActionButtonsProps = {
+  user: User;
+};
+
+const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
+  const { setQRCode, setSubLink } = useDashboard();
+
+  const proxyLinks = user.links.join("\r\n");
+
+  const [copied, setCopied] = useState([-1, false]);
+  useEffect(() => {
+    if (copied[1]) {
+      setTimeout(() => {
+        setCopied([-1, false]);
+      }, 1000);
+    }
+  }, [copied]);
+  return (
+    <HStack
+      justifyContent="flex-end"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
+      <CopyToClipboard
+        text={
+          user.subscription_url.startsWith("/")
+            ? window.location.origin + user.subscription_url
+            : user.subscription_url
+        }
+        onCopy={() => {
+          setCopied([0, true]);
+        }}
+      >
+        <div>
+          <Tooltip
+            label={
+              copied[0] == 0 && copied[1]
+                ? t("usersTable.copied")
+                : t("usersTable.copyLink")
+            }
+            placement="top"
+          >
+            <IconButton
+              aria-label="copy subscription link"
+              bg="transparent"
+              _dark={{
+                _hover: {
+                  bg: "gray.700",
+                },
+              }}
+            >
+              {copied[0] == 0 && copied[1] ? (
+                <CopiedIcon />
+              ) : (
+                <SubscriptionLinkIcon />
+              )}
+            </IconButton>
+          </Tooltip>
+        </div>
+      </CopyToClipboard>
+      <CopyToClipboard
+        text={proxyLinks}
+        onCopy={() => {
+          setCopied([1, true]);
+        }}
+      >
+        <div>
+          <Tooltip
+            label={
+              copied[0] == 1 && copied[1]
+                ? t("usersTable.copied")
+                : t("usersTable.copyConfigs")
+            }
+            placement="top"
+          >
+            <IconButton
+              aria-label="copy configs"
+              bg="transparent"
+              _dark={{
+                _hover: {
+                  bg: "gray.700",
+                },
+              }}
+            >
+              {copied[0] == 1 && copied[1] ? <CopiedIcon /> : <CopyIcon />}
+            </IconButton>
+          </Tooltip>
+        </div>
+      </CopyToClipboard>
+      <Tooltip label="QR Code" placement="top">
+        <IconButton
+          aria-label="qr code"
+          bg="transparent"
+          _dark={{
+            _hover: {
+              bg: "gray.700",
+            },
+          }}
+          onClick={() => {
+            setQRCode(user.links);
+            setSubLink(user.subscription_url);
+          }}
+        >
+          <QRIcon />
+        </IconButton>
+      </Tooltip>
+    </HStack>
   );
 };
 
@@ -445,9 +716,7 @@ const EmptySection: FC<EmptySectionProps> = ({ isFiltered }) => {
         }}
       />
       <Text fontWeight="medium" color="gray.600" _dark={{ color: "gray.400" }}>
-        {isFiltered
-          ? "It seems there is no user matched with what you are looking for"
-          : "There is no user added to the system"}
+        {isFiltered ? t("usersTable.noUserMatched") : t("usersTable.noUser")}
       </Text>
       {!isFiltered && (
         <Button
@@ -455,7 +724,7 @@ const EmptySection: FC<EmptySectionProps> = ({ isFiltered }) => {
           colorScheme="primary"
           onClick={() => onCreateUser(true)}
         >
-          Create User
+          {t("createUser")}
         </Button>
       )}
     </Box>

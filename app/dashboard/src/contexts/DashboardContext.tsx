@@ -36,11 +36,14 @@ type DashboardStateType = {
   subscribeUrl: string | null;
   QRcodeLinks: string[] | null;
   isEditingHosts: boolean;
+  isResetingAllUsage: boolean;
   resetUsageUser: User | null;
   onCreateUser: (isOpen: boolean) => void;
   onEditingUser: (user: User | null) => void;
   onDeletingUser: (user: User | null) => void;
+  onResetAllUsage:(isResetingAllUsage: boolean) => void;
   refetchUsers: () => void;
+  resetAllUsage: () => Promise<void>;
   onFilterChange: (filters: Partial<FilterType>) => void;
   deleteUser: (user: User) => Promise<void>;
   createUser: (user: UserCreate) => Promise<void>;
@@ -126,6 +129,7 @@ export const useDashboard = create(
       total: 0,
     },
     loading: true,
+    isResetingAllUsage: false,
     isEditingHosts: false,
     resetUsageUser: null,
     filters: { username: "", limit: 10, sort: "-created_at" },
@@ -133,6 +137,15 @@ export const useDashboard = create(
     refetchUsers: () => {
       fetchUsers(get().filters);
     },
+    resetAllUsage: () => {
+      return fetch(`/users/reset`, { method: "POST" }).then(
+        () => {
+          get().onResetAllUsage(false);
+          get().refetchUsers();
+        }
+      );
+    },
+    onResetAllUsage: (isResetingAllUsage) => set({ isResetingAllUsage }),
     onCreateUser: (isCreatingNewUser) => set({ isCreatingNewUser }),
     onEditingUser: (editingUser) => {
       set({ editingUser });
