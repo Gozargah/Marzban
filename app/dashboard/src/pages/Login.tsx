@@ -116,7 +116,7 @@ export const Login: FC = () => {
                   <Input
                     w="full"
                     type="password"
-                    placeholder={t("login.password") || "Password"}
+                    placeholder={t("password") || "Password"}
                     {...register("password")}
                     error={errors?.password?.message as string}
                   />
@@ -134,7 +134,7 @@ export const Login: FC = () => {
                   colorScheme="primary"
                 >
                   {<LoginIcon marginRight={1} />}
-                  {t("login.login")}
+                  {t("login")}
                 </Button>
               </VStack>
             </form>
