@@ -195,7 +195,7 @@ systemctl enable /var/lib/marzban/marzban.service
 systemctl start marzban
 ```
 
-配合 nignx 使用：
+配合 nginx 使用：
 ```
 server {
     listen 443 ssl http2;
@@ -268,7 +268,7 @@ Marzban 提供了 REST API，使开发人员能够以编程方式与 Marzban 服
 
 # 如何备份 Marzban
 
-定期备份Marzban文件是预防系统故障或意外删除导致数据丢失的好习惯。以下是备份 Marzban 的步骤：
+定期备份 Marzban 文件是预防系统故障或意外删除导致数据丢失的好习惯。以下是备份 Marzban 的步骤：
 
 1. 默认情况下，所有重要的 Marzban 文件都保存在 `/var/lib/marzban` ( Docker 版本)中。将整个 `/var/lib/marzban` 目录复制到您选择的备份位置，比如外部硬盘或云存储。
 2. 此外，请确保备份您的 `env` 文件，其中包含您的配置变量，以及您的 `Xray` 配置文件。
@@ -282,8 +282,8 @@ Marzban 配备了一个集成的 Telegram bot，可以处理服务器管理、�
 
 启用 Telegram bot：
 
-1. 将 `TELEGRAM_API_TOKEN` 设置为您的机器人 API Token。
-2. 将 `TELEGRAM_ADMIN_ID` 设置为您的 Telegram 帐户的数字 ID，您可以从 [@userinfobot](https://t.me/userinfobot) 中获取自己的 ID。
+1. 将 `TELEGRAM_API_TOKEN` 设置为您的 bot API Token。
+2. 将 `TELEGRAM_ADMIN_ID` 设置为您的 Telegram ID，您可以从 [@userinfobot](https://t.me/userinfobot) 中获取自己的 ID。
 
 
 # 捐赠
