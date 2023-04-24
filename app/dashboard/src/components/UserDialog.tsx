@@ -134,7 +134,7 @@ const getDefaultValues = (): FormType => {
       vless: { id: "", flow: "" },
       vmess: { id: ""},
       trojan: { password: "" },
-      shadowsocks: { password: "", method: "" }
+      shadowsocks: { password: "", method: "chacha20-poly1305" }
     }
   };
 };
