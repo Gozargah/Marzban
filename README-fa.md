@@ -183,6 +183,49 @@ nano .env
 python3 main.py
 ```
 
+اجرا با استفاده از systemctl در لینوکس
+```
+systemctl enable /var/lib/marzban/marzban.service
+systemctl start marzban
+```
+
+اجرا با nginx
+```
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name  example.com;
+
+    ssl_certificate      /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key  /etc/letsencrypt/live/example.com/privkey.pem;
+
+    location ~* /(dashboard|api|docs|redoc|openapi.json) {
+        proxy_pass http://0.0.0.0:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+or
+```
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name  marzban.example.com;
+
+    ssl_certificate      /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key  /etc/letsencrypt/live/example.com/privkey.pem;
+
+    location / {
+        proxy_pass http://0.0.0.0:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+
 به صورت پیشفرض مرزبان در آدرس `http://localhost:8000/dashboard` اجرا میشود. شما میتوانید با تغییر `UVICORN_HOST` و `UVICORN_PORT`، هاست و پورت را تغییر دهید.
 
 # تنظیمات
