@@ -26,8 +26,8 @@ import { useTranslation } from "react-i18next";
 import { Language } from "components/Language";
 
 const schema = z.object({
-  username: z.string().min(1, "This field is required"),
-  password: z.string().min(1, "This field is required"),
+  username: z.string().min(1, "login.fieldRequired"),
+  password: z.string().min(1, "login.fieldRequired"),
 });
 
 export const LogoIcon = chakra(Logo, {
@@ -103,22 +103,20 @@ export const Login: FC = () => {
               <form onSubmit={handleSubmit(login)}>
                 <VStack mt={4} rowGap={2}>
                   <FormControl>
-                    {/* <FormLabel>{t("username")}</FormLabel> */}
                     <Input
                       w="full"
                       placeholder={t("username") || "Username"}
                       {...register("username")}
-                      error={errors?.username?.message as string}
+                      error={t(errors?.username?.message as string) || ""}
                     />
                   </FormControl>
                   <FormControl>
-                    {/* <FormLabel>{t("password")}</FormLabel> */}
                     <Input
                       w="full"
                       type="password"
                       placeholder={t("password") || "Password"}
                       {...register("password")}
-                      error={errors?.password?.message as string}
+                      error={t(errors?.password?.message as string) || ""}
                     />
                   </FormControl>
                   {error && (

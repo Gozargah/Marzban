@@ -34,11 +34,11 @@ i18n
           expired: "Expired {{time}}",
           dateFormat: "MMMM d, yyy",
           inbound: "Inbound",
-          default: "Default",
 
           // Login
           "login.loginYourAccount": "Login to your account",
           "login.welcomeBack": "Welcome back, please enter your details",
+          "login.fieldRequired": "This field is required",
 
           // Header
           "header.hostsSetting": "Hosts Settings",
@@ -152,11 +152,11 @@ i18n
           expired: "{{time}}失效",
           dateFormat: "MM/dd/yyyy",
           inbound: "入站",
-          default: "默认",
 
           // page login
           "login.loginYourAccount": "登录您的帐号",
           "login.welcomeBack": "欢迎回来，请输入您的详细信息",
+          "login.fieldRequired": "此项必填",
 
           // Header
           "header.hostsSetting": "设置",
