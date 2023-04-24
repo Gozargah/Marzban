@@ -35,21 +35,27 @@ class VMessAccount(Account):
         return Message(VMessAccountPb2(id=str(self.id), alter_id=0))
 
 
+class XTLSFlows(Enum):
+    NONE = ''
+    VISION = 'xtls-rprx-vision'
+
+
 class VLESSAccount(Account):
     id: UUID
-    flow: str = ""
+    flow: XTLSFlows = XTLSFlows.NONE
 
     @property
     def message(self):
-        return Message(VLESSAccountPb2(id=str(self.id), flow=self.flow))
+        return Message(VLESSAccountPb2(id=str(self.id), flow=self.flow.value))
 
 
 class TrojanAccount(Account):
     password: str
+    flow: XTLSFlows = XTLSFlows.NONE
 
     @property
     def message(self):
-        return Message(TrojanAccountPb2(password=self.password))
+        return Message(TrojanAccountPb2(password=self.password, flow=self.flow.value))
 
 
 class ShadowsocksMethods(Enum):
