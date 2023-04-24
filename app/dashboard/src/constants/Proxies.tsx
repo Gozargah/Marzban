@@ -17,8 +17,8 @@ export const proxyHostSecurity: { title: string; value: ProxyHostSecurity }[] =
   ];
 
 export const vlessFlows = [
-  "none",
-  "xtls-rprx-vision",
+  { title: "none", value: "" },
+  { title: "xtls-rprx-vision", value: "xtls-rprx-vision"},
 ];  
 
 export const shadowsocksMethods = [

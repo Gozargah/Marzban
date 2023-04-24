@@ -387,12 +387,11 @@ const RadioCard: FC<
                   fontSize="xs"
                   size="sm"
                   borderRadius="6px"
-                  placeholder={t("default") + ": none"}
                   {...form.register("proxies.vless.flow")}
                 >
-                  {vlessFlows.map((flow) => (
-                    <option key={flow} value={flow}>
-                      {flow}
+                  {vlessFlows.map((entry) => (
+                    <option key={entry.title} value={entry.value}>
+                      {entry.title}
                     </option>
                   ))}
                 </Select>
@@ -441,7 +440,6 @@ const RadioCard: FC<
                   fontSize="xs"
                   size="sm"
                   borderRadius="6px"
-                  placeholder={t("default") + ": chacha20-poly1305"}
                   {...form.register("proxies.shadowsocks.method")}
                 >
                   {shadowsocksMethods.map((method) => (
