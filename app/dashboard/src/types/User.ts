@@ -8,7 +8,10 @@ export type ProxyType = {
     id?: string;
     flow?: string;
   };
-  trojan?: { password?: string };
+  trojan?: {
+    password?: string;
+    flow?: string;
+  };
   shadowsocks?: {
     password?: string;
     method?: string;

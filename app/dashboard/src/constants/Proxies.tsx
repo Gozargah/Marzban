@@ -16,7 +16,7 @@ export const proxyHostSecurity: { title: string; value: ProxyHostSecurity }[] =
     },
   ];
 
-export const vlessFlows = [
+export const XTLSFlows = [
   { title: "none", value: "" },
   { title: "xtls-rprx-vision", value: "xtls-rprx-vision"},
 ];  

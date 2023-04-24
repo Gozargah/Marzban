@@ -7,7 +7,8 @@ from pydantic import BaseModel, Field, validator
 
 from app.utils.system import random_password
 from xray_api.types.account import (ShadowsocksAccount, ShadowsocksMethods,
-                                    TrojanAccount, VLESSAccount, VMessAccount)
+                                    TrojanAccount, VLESSAccount, VMessAccount,
+                                    XTLSFlows)
 
 
 class ProxyTypes(str, Enum):
@@ -58,11 +59,12 @@ class VMessSettings(ProxySettings):
 
 class VLESSSettings(ProxySettings):
     id: UUID = Field(default_factory=uuid4)
-    flow: str = ""
+    flow: XTLSFlows = XTLSFlows.NONE
 
 
 class TrojanSettings(ProxySettings):
     password: str = Field(default_factory=random_password)
+    flow: XTLSFlows = XTLSFlows.NONE
 
 
 class ShadowsocksSettings(ProxySettings):

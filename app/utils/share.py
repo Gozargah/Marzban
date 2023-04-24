@@ -41,7 +41,7 @@ class V2rayShareLink(str):
             'host': host,
             'id': str(id),
             'net': net,
-            'path': urlparse.quote(path),
+            'path': path,
             'port': port,
             'ps': remark,
             'scy': 'auto',
@@ -62,19 +62,21 @@ class V2rayShareLink(str):
               tls=False,
               host='',
               sni='',
-              type=''):
+              type='',
+              flow=''):
 
         opts = {
             "security": "tls" if tls else "none",
             "type": net,
             "host": host,
             "sni": sni,
-            "headerType": type
+            "headerType": type,
+            "flow": flow
         }
         if net == 'grpc':
-            opts['serviceName'] = urlparse.quote(path)
+            opts['serviceName'] = path
         else:
-            opts['path'] = urlparse.quote(path)
+            opts['path'] = path
 
         return "vless://" + \
             f"{id}@{address}:{port}?" + \
@@ -91,19 +93,21 @@ class V2rayShareLink(str):
                tls=False,
                host='',
                sni='',
-               type=''):
+               type='',
+               flow=''):
 
         opts = {
             "security": "tls" if tls else "none",
             "type": net,
             "host": host,
             "sni": sni,
-            "headerType": type
+            "headerType": type,
+            "flow": flow
         }
         if net == 'grpc':
-            opts['serviceName'] = urlparse.quote(path)
+            opts['serviceName'] = path
         else:
-            opts['path'] = urlparse.quote(path)
+            opts['path'] = path
 
         return "trojan://" + \
             f"{urlparse.quote(password, safe=':')}@{address}:{port}?" + \
@@ -280,6 +284,7 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
                                     address=address,
                                     port=inbound['port'],
                                     id=settings['id'],
+                                    flow=settings.get('flow', ''),
                                     net=inbound['network'],
                                     tls=inbound['tls'],
                                     sni=inbound['sni'],
@@ -292,6 +297,7 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
                                      address=address,
                                      port=inbound['port'],
                                      password=settings['password'],
+                                     flow=settings.get('flow', ''),
                                      net=inbound['network'],
                                      tls=inbound['tls'],
                                      sni=inbound['sni'],
