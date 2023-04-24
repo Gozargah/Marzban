@@ -58,15 +58,17 @@
 
 ## 目录
 - [概览](#概览)
-  - [为什么要使用 Marzban？](#为什么要使用-Marzban)
+  - [为什么要使用 Marzban?](#为什么要使用-marzban)
     - [特性](#特性)
 - [安装指南](#安装指南)
-  - [使用 Docker 进行安装（推荐）](#使用-Docker-进行安装（推荐）)
-  - [手动安装（高级）](#手动安装（高级）)
+  - [使用 Docker 进行安装（推荐）](#使用-docker-进行安装推荐)
+    - [Marzban.sh](#marzbansh)
+  - [手动安装（高级）](#手动安装高级)
+  - [手动安装（高级）](#手动安装高级-1)
 - [配置](#配置)
-- [如何使用 API](#如何使用-API)
-- [如何备份 Marzban](#如何备份-Marzban)
-- [Telegram Bot](#telegram-bot)
+- [如何使用 API](#如何使用-api)
+- [如何备份 Marzban](#如何备份-marzban)
+- [Telegram bot](#telegram-bot)
 - [捐赠](#捐赠)
 - [许可](#许可)
 - [贡献者](#贡献者)
@@ -113,6 +115,25 @@ Marzban 是一个用户友好、功能丰富且可靠的工具。它让您可以
 - [fully-single-port](https://github.com/Gozargah/Marzban-examples/tree/master/fully-single-port/)
 - [single-port-proxy](https://github.com/Gozargah/Marzban-examples/tree/master/single-port-proxy/)
 - [multi-port](https://github.com/Gozargah/Marzban-examples/tree/master/multi-port/)
+
+### Marzban.sh
+一旦您选择了您最喜欢的设置，Marzban.sh 将为您进行安装！
+
+使用以下命令获取 Marzban.sh
+```bash
+curl -L https://github.com/Gozargah/Marzban-scripts/raw/master/get-marzban.sh | sudo bash
+```
+
+然后只需运行以下命令
+```bash
+marzban.sh install
+```
+这将在您的机器上的 `/opt/marzban` 中安装 Marzban
+
+另外，通过运行以下命令查看 Marzban.sh 的帮助消息
+```bash
+marzban.sh --help
+```
 
 ## 手动安装（高级）
 
@@ -217,28 +238,28 @@ server {
 
 > 您可以使用环境变量或将其放置在 `env` 或 `.env` 文件中来设置以下设置。
 
-| 变量                        | 描述                                                                                           |
-| ------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| SUDO_USERNAME                   | 管理员用户名（默认: admin）                                                                |
-| SUDO_PASSWORD                   | 管理员密码（默认: admin）                                                                |
-| SQLALCHEMY_DATABASE_URL         | 数据库文档（[SQLAlchemy's docs](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)）|
-| UVICORN_HOST                    | 绑定应用程序到此主机（默认为 `0.0.0.0`）                                                   |
-| UVICORN_PORT                    | 绑定应用程序到此端口（默认为 `8000`）                                                      |
-| UVICORN_UDS                     | 将应用程序绑定到一个 UNIX 域套接字                                                              |
-| UVICORN_SSL_CERTFILE            | SSL 证书文件路径                                                     |
-| UVICORN_SSL_KEYFILE             | SSL 密钥文件路径                                                             |
-| XRAY_JSON                       | Xray 的 json 配置文件路径（默认: `xray.json`）                                               |
-| XRAY_EXECUTABLE_PATH            | Xray 的执行程序路径: `/usr/local/bin/xray`）                                                 |
-| XRAY_ASSETS_PATH                | Xray 的资源目录: `/usr/local/share/xray`）                                               |
-| XRAY_SUBSCRIPTION_URL_PREFIX    | 订阅URL的前缀                                                                           |
-| XRAY_FALLBACKS_INBOUND_TAG      | 包含 fallbacks 的入站标记, 在您需要使用 fallbacks 配置此项                 |
-| XRAY_EXCLUDE_INBOUND_TAGS       | 不需要此应用程序管理或在链接中包含的入站标记                   |
-| TELEGRAM_API_TOKEN              | Telegram bot API 令牌（可以从 [@botfather](https://t.me/botfather) 获取）                       |
-| TELEGRAM_ADMIN_ID               | 管理员的 Telegram ID（可以使用 [@userinfobot](https://t.me/userinfobot) 查找您的 ID）         |
-| TELEGRAM_PROXY_URL              | 在代理下运行 Telegram bot。                                                                           |
-| JWT_ACCESS_TOKEN_EXPIRE_MINUTES | Access Tokens 的过期时间，以分钟为单位，`0` 表示无限期（默认为 `1440` 分钟）           |
-| DOCS                            | API 文档是否应该在 `/docs` 和 `/redoc` 上提供（默认为 `False`          |
-| DEBUG                           | 开发者调试模式（默认: `False`）                                                        |
+| 变量                            | 描述                                                                                                 |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| SUDO_USERNAME                   | 管理员用户名（默认: admin）                                                                          |
+| SUDO_PASSWORD                   | 管理员密码（默认: admin）                                                                            |
+| SQLALCHEMY_DATABASE_URL         | 数据库文档（[SQLAlchemy's docs](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)） |
+| UVICORN_HOST                    | 绑定应用程序到此主机（默认为 `0.0.0.0`）                                                             |
+| UVICORN_PORT                    | 绑定应用程序到此端口（默认为 `8000`）                                                                |
+| UVICORN_UDS                     | 将应用程序绑定到一个 UNIX 域套接字                                                                   |
+| UVICORN_SSL_CERTFILE            | SSL 证书文件路径                                                                                     |
+| UVICORN_SSL_KEYFILE             | SSL 密钥文件路径                                                                                     |
+| XRAY_JSON                       | Xray 的 json 配置文件路径（默认: `xray.json`）                                                       |
+| XRAY_EXECUTABLE_PATH            | Xray 的执行程序路径: `/usr/local/bin/xray`）                                                         |
+| XRAY_ASSETS_PATH                | Xray 的资源目录: `/usr/local/share/xray`）                                                           |
+| XRAY_SUBSCRIPTION_URL_PREFIX    | 订阅URL的前缀                                                                                        |
+| XRAY_FALLBACKS_INBOUND_TAG      | 包含 fallbacks 的入站标记, 在您需要使用 fallbacks 配置此项                                           |
+| XRAY_EXCLUDE_INBOUND_TAGS       | 不需要此应用程序管理或在链接中包含的入站标记                                                         |
+| TELEGRAM_API_TOKEN              | Telegram bot API 令牌（可以从 [@botfather](https://t.me/botfather) 获取）                            |
+| TELEGRAM_ADMIN_ID               | 管理员的 Telegram ID（可以使用 [@userinfobot](https://t.me/userinfobot) 查找您的 ID）                |
+| TELEGRAM_PROXY_URL              | 在代理下运行 Telegram bot。                                                                          |
+| JWT_ACCESS_TOKEN_EXPIRE_MINUTES | Access Tokens 的过期时间，以分钟为单位，`0` 表示无限期（默认为 `1440` 分钟）                         |
+| DOCS                            | API 文档是否应该在 `/docs` 和 `/redoc` 上提供（默认为 `False`                                        |
+| DEBUG                           | 开发者调试模式（默认: `False`）                                                                      |
 
 
 # 如何使用 API
