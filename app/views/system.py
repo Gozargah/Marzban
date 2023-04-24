@@ -8,7 +8,7 @@ from app.models.admin import Admin
 from app.models.proxy import ProxyHost, ProxyInbound, ProxyTypes
 from app.models.system import SystemStats
 from app.models.user import UserStatus
-from app.utils.store import XrayStore
+from app.utils.store import XRAY_STORE
 from app.utils.system import memory_usage, cpu_usage, realtime_bandwith
 from app import __version__
 
@@ -70,7 +70,7 @@ def modify_hosts(modified_hosts: Dict[str, List[ProxyHost]],
     for inbound_tag, hosts in modified_hosts.items():
         crud.update_hosts(db, inbound_tag, hosts)
 
-    XrayStore.update_hosts()
+    XRAY_STORE.update_hosts()
 
     hosts = {}
     for inbound_tag in xray.config.inbounds_by_tag:

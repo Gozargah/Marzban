@@ -11,7 +11,7 @@ import yaml
 from app import xray
 from app.templates import render_to_string
 from app.models.proxy import FormatVariables
-from app.utils.store import XrayStore
+from app.utils.store import XRAY_STORE
 from app.utils.system import get_public_ip, readable_size
 if TYPE_CHECKING:
     from app.models.user import UserResponse
@@ -341,7 +341,7 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> lis
 
             format_variables.update({"TRANSPORT": inbound['network']})
             host_inbound = inbound.copy()
-            for host in XrayStore.HOSTS.get(tag, []):
+            for host in XRAY_STORE.hosts.get(tag, []):
                 host_inbound.update({
                     'port': host['port'] or inbound['port'],
                     'sni': (host['sni'] or inbound['sni']).replace('*', salt),
@@ -396,7 +396,7 @@ def generate_clash_subscription(proxies: dict, inbounds: dict, extra_data: dict)
 
             format_variables.update({"TRANSPORT": inbound['network']})
             host_inbound = inbound.copy()
-            for host in XrayStore.HOSTS.get(tag, []):
+            for host in XRAY_STORE.hosts.get(tag, []):
                 host_inbound.update({
                     'port': host['port'] or inbound['port'],
                     'sni': (host['sni'] or inbound['sni']).replace('*', salt),
