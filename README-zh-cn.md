@@ -44,7 +44,7 @@
 	فارسی
 	</a>
     /
-    <a href="./README-zh-cn.md">
+  <a href="./README-zh-cn.md">
 	简体中文
 	</a>
 </p>
@@ -64,7 +64,6 @@
   - [使用 Docker 进行安装（推荐）](#使用-docker-进行安装推荐)
     - [Marzban.sh](#marzbansh)
   - [手动安装（高级）](#手动安装高级)
-  - [手动安装（高级）](#手动安装高级-1)
 - [配置](#配置)
 - [如何使用 API](#如何使用-api)
 - [如何备份 Marzban](#如何备份-marzban)
@@ -137,12 +136,6 @@ marzban.sh --help
 
 ## 手动安装（高级）
 
-在您的机器上安装xray
-
-您可以使用 [Xray-install](https://github.com/XTLS/Xray-install) 进行安装。
-
-## 手动安装（高级）
-
 在您的机器上安装 xray
 
 您可以使用 [Xray-install](https://github.com/XTLS/Xray-install) 脚本进行安装：
@@ -208,6 +201,24 @@ server {
     location ~* /(dashboard|api|docs|redoc|openapi.json) {
         proxy_pass http://0.0.0.0:8000;
         proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # xray-core ws-path: /
+    # client ws-path: /marzban/me/2087
+    #
+    # 所有流量通过 443 端口进行代理，然后分发至真正的 xray 端口（2087、2088 等等）。
+    # 路径中的 “/marzban” 可以改为任意合法 URL 字符.
+    #
+    # /${path}/${username}/${xray-port}
+    location ~* /marzban/.+/(.+)$ {
+        proxy_redirect off;
+        proxy_pass http://127.0.0.1:$1/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $http_host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
