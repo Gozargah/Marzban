@@ -3,7 +3,7 @@ import { Badge, Text } from "@chakra-ui/react";
 import { statusColors } from "constants/UserSettings";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { UserStatus as UserStatusType } from "types/User";
+import { Status as UserStatusType } from "types/User";
 import { relativeExpiryDate } from "utils/dateFormatter";
 
 type UserStatusProps = {
@@ -31,7 +31,7 @@ export const StatusBadge: FC<UserStatusProps> = ({
         display="inline-flex"
         px={3}
         py={1}
-        columnGap={2}
+        columnGap={compact ? 1 : 2}
         alignItems="center"
       >
         <Icon w={compact ? 3 : 4} />
