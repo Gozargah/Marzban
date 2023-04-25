@@ -1,6 +1,7 @@
+import { StatisticsQueryKey } from "components/Statistics";
 import { fetch } from "service/http";
-import { mutate as globalMutate } from "swr";
 import { User, UserCreate } from "types/User";
+import { queryClient } from "utils/react-query";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 
@@ -42,7 +43,7 @@ type DashboardStateType = {
   onCreateUser: (isOpen: boolean) => void;
   onEditingUser: (user: User | null) => void;
   onDeletingUser: (user: User | null) => void;
-  onResetAllUsage:(isResetingAllUsage: boolean) => void;
+  onResetAllUsage: (isResetingAllUsage: boolean) => void;
   refetchUsers: () => void;
   resetAllUsage: () => Promise<void>;
   onFilterChange: (filters: Partial<FilterType>) => void;
@@ -141,12 +142,10 @@ export const useDashboard = create(
       fetchUsers(get().filters);
     },
     resetAllUsage: () => {
-      return fetch(`/users/reset`, { method: "POST" }).then(
-        () => {
-          get().onResetAllUsage(false);
-          get().refetchUsers();
-        }
-      );
+      return fetch(`/users/reset`, { method: "POST" }).then(() => {
+        get().onResetAllUsage(false);
+        get().refetchUsers();
+      });
     },
     onResetAllUsage: (isResetingAllUsage) => set({ isResetingAllUsage }),
     onCreateUser: (isCreatingNewUser) => set({ isCreatingNewUser }),
@@ -173,14 +172,14 @@ export const useDashboard = create(
       return fetch(`/user/${user.username}`, { method: "DELETE" }).then(() => {
         set({ deletingUser: null });
         get().refetchUsers();
-        globalMutate("/system");
+        queryClient.invalidateQueries(StatisticsQueryKey);
       });
     },
     createUser: (body: UserCreate) => {
       return fetch(`/user`, { method: "POST", body }).then(() => {
         set({ editingUser: null });
         get().refetchUsers();
-        globalMutate("/system");
+        queryClient.invalidateQueries(StatisticsQueryKey);
       });
     },
     editUser: (body: UserCreate) => {

@@ -19,8 +19,8 @@ import {
 } from "@heroicons/react/24/outline";
 import classNames from "classnames";
 import { useDashboard } from "contexts/DashboardContext";
-import React, { FC, useState } from "react";
 import debounce from "lodash.debounce";
+import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const iconProps = {
@@ -32,7 +32,7 @@ const iconProps = {
 
 const SearchIcon = chakra(MagnifyingGlassIcon, iconProps);
 const ClearIcon = chakra(XMarkIcon, iconProps);
-const ReloadIcon = chakra(ArrowPathIcon, iconProps);
+export const ReloadIcon = chakra(ArrowPathIcon, iconProps);
 
 export type FilterProps = {} & BoxProps;
 const setSearchField = debounce((username: string) => {

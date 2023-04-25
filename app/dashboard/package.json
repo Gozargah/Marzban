@@ -31,11 +31,11 @@
     "react-hook-form": "^7.39.1",
     "react-i18next": "^12.2.0",
     "react-loading-skeleton": "^3.1.0",
+    "react-query": "^3.39.3",
     "react-router-dom": "^6.4.3",
     "react-slick": "^0.29.0",
     "rollup-plugin-visualizer": "^5.9.0",
     "slick-carousel": "^1.8.1",
-    "swr": "^1.3.0",
     "vite-tsconfig-paths": "^4.0.3",
     "zod": "^3.19.1",
     "zustand-computed": "^1.3.3"
