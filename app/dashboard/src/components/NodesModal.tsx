@@ -1,14 +1,12 @@
-import { useDashboard, useHosts } from "../contexts/DashboardContext";
-import { FC, useEffect, useState } from "react";
 import {
   Accordion,
   AccordionButton,
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
-  Badge,
   Box,
   Button,
+  ButtonProps,
   chakra,
   Checkbox,
   FormControl,
@@ -16,49 +14,49 @@ import {
   FormLabel,
   HStack,
   IconButton,
-  Input,
-  InputGroup,
-  InputRightElement,
   Modal,
   ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Popover,
-  PopoverArrow,
-  PopoverBody,
-  PopoverCloseButton,
-  PopoverContent,
-  PopoverTrigger,
-  Portal,
-  Select,
   Text,
-  Textarea,
   Tooltip,
   useToast,
   VStack,
 } from "@chakra-ui/react";
-import { Input as CustomInput } from "./Input";
-import { Icon } from "./Icon";
 import {
-  LinkIcon,
   InformationCircleIcon,
   PlusIcon as HeroIconPlusIcon,
   SquaresPlusIcon,
 } from "@heroicons/react/24/outline";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
-import {
-  FormProvider,
-  useFieldArray,
-  useForm,
-  useFormContext,
-} from "react-hook-form";
-import { DeleteIcon } from "./DeleteUserModal";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { proxyHostSecurity } from "constants/Proxies";
+import {
+  FetchNodesQueryKey,
+  getNodeDefaultValues,
+  NodeSchema,
+  NodeType,
+  useNodes,
+  useNodesQuery,
+} from "contexts/NodesContext";
+import { FC, ReactNode, useState } from "react";
+import { useForm, UseFormReturn } from "react-hook-form";
+import { UseMutateFunction, useMutation, useQueryClient } from "react-query";
+import "slick-carousel/slick/slick-theme.css";
+import "slick-carousel/slick/slick.css";
+import { UserStatus } from "types/User";
+import {
+  generateErrorMessage,
+  generateSuccessMessage,
+} from "utils/toastHandler";
+import { useDashboard } from "../contexts/DashboardContext";
+import { DeleteNodeModal } from "./DeleteNodeModal";
+import { DeleteIcon } from "./DeleteUserModal";
+import { ReloadIcon } from "./Filters";
+import { Icon } from "./Icon";
+import { Input as CustomInput } from "./Input";
+import { StatusBadge } from "./StatusBadge";
+import { Textarea } from "./Textarea";
 
 const ModalIcon = chakra(SquaresPlusIcon, {
   baseStyle: {
@@ -84,29 +82,6 @@ const InfoIcon = chakra(InformationCircleIcon, {
   },
 });
 
-const hostsSchema = z.record(
-  z.string().min(1),
-  z.array(
-    z.object({
-      remark: z.string().min(1, "Remark is required"),
-      address: z.string().min(1, "Address is required"),
-      port: z
-        .string()
-        .or(z.number())
-        .nullable()
-        .transform((value) => {
-          if (typeof value === "number") return value;
-          if (value !== null && !isNaN(parseInt(value)))
-            return Number(parseInt(value));
-          return null;
-        }),
-      sni: z.string().nullable(),
-      host: z.string().nullable(),
-      security: z.string(),
-    })
-  )
-);
-
 const Error = chakra(FormErrorMessage, {
   baseStyle: {
     color: "red.400",
@@ -117,42 +92,45 @@ const Error = chakra(FormErrorMessage, {
 });
 
 type AccordionInboundType = {
-  hostKey: string;
-  isOpen: boolean;
   toggleAccordion: () => void;
+  node: NodeType;
 };
 
-const AccordionInbound: FC<AccordionInboundType> = ({
-  hostKey,
-  isOpen,
-  toggleAccordion,
-}) => {
-  const form = useFormContext<z.infer<typeof hostsSchema>>();
-  const {
-    fields: hosts,
-    append: addHost,
-    remove: removeHost,
-  } = useFieldArray({
-    control: form.control,
-    name: hostKey,
+const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
+  const { updateNode, reconnectNode, setDeletingNode } = useNodes();
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  const form = useForm<NodeType>({
+    defaultValues: node,
+    resolver: zodResolver(NodeSchema),
   });
-  const { errors } = form.formState;
-  const accordionErrors = errors[hostKey];
-  const handleAddHost = () => {
-    addHost({
-      host: "",
-      sni: "",
-      port: null,
-      address: "",
-      remark: "",
-      security: "inbound_default",
-    });
-  };
-  useEffect(() => {
-    if (accordionErrors && !isOpen) {
-      toggleAccordion();
+  const handleDeleteNode = setDeletingNode.bind(null, node);
+
+  const { isLoading, mutate } = useMutation(updateNode, {
+    onSuccess: () => {
+      generateSuccessMessage("Node updated successfully", toast);
+      queryClient.invalidateQueries(FetchNodesQueryKey);
+    },
+    onError: (e) => {
+      generateErrorMessage(e, toast, form);
+    },
+  });
+
+  const { isLoading: isReconnecting, mutate: reconnect } = useMutation(
+    reconnectNode.bind(null, node),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(FetchNodesQueryKey);
+      },
     }
-  }, [accordionErrors]);
+  );
+
+  const nodeStatus: UserStatus = isReconnecting
+    ? "connecting"
+    : node.status
+    ? node.status
+    : "error";
+
   return (
     <AccordionItem
       border="1px solid"
@@ -172,233 +150,49 @@ const AccordionInbound: FC<AccordionInboundType> = ({
           color="gray.700"
           _dark={{ color: "gray.300" }}
         >
-          {hostKey}
+          {node.name}
         </Text>
         <AccordionIcon />
       </AccordionButton>
       <AccordionPanel px={2} pb={2}>
-        <VStack gap={3}>
-          {hosts.map((host, index) => (
-            <VStack
-              key={index}
-              border="1px solid"
-              _dark={{ borderColor: "gray.600", bg: "#273142" }}
-              _light={{ borderColor: "gray.200", bg: "#fcfbfb" }}
-              p={2}
-              borderRadius="4px"
+        <HStack pb={3} justifyContent="space-between">
+          {node.status && (
+            <StatusBadge
+              status={nodeStatus}
+              extraText={nodeStatus === "error" ? node.message : null}
+            />
+          )}
+          {node.status === "error" && (
+            <Button
+              size="sm"
+              aria-label="reconnect node"
+              leftIcon={<ReloadIcon />}
+              onClick={() => reconnect()}
+              disabled={isReconnecting}
             >
-              <HStack w="100%" alignItems="flex-start">
-                <FormControl
-                  position="relative"
-                  zIndex={10}
-                  isInvalid={
-                    !!(accordionErrors && accordionErrors[index]?.remark)
-                  }
-                >
-                  <InputGroup>
-                    <Input
-                      {...form.register(hostKey + "." + index + ".remark")}
-                      size="sm"
-                      borderRadius="4px"
-                      placeholder="Remark"
-                    />
-                    <InputRightElement>
-                      <Popover isLazy placement="right">
-                        <PopoverTrigger>
-                          <Box mt="-8px">
-                            <InfoIcon />
-                          </Box>
-                        </PopoverTrigger>
-                        <Portal>
-                          <PopoverContent>
-                            <PopoverArrow />
-                            <PopoverCloseButton />
-                            <PopoverBody>
-                              <Box fontSize="xs">
-                                <Text pr="20px">
-                                  Use these variables to make it dynamic
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}USERNAME{"}"}
-                                  </Badge>{" "}
-                                  the username of the user
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}DATA_USAGE{"}"}
-                                  </Badge>{" "}
-                                  The current usage of the user
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}DATA_LIMIT{"}"}
-                                  </Badge>{" "}
-                                  The usage limit of the user
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}DAYS_LEFT{"}"}
-                                  </Badge>{" "}
-                                  Remaining days of the user
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}PROTOCOL{"}"}
-                                  </Badge>{" "}
-                                  Proxy protocol (e.g. VMess)
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}TRANSPORT{"}"}
-                                  </Badge>{" "}
-                                  Proxy transport method (e.g. ws)
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}PROTOCOL{"}"}
-                                  </Badge>{" "}
-                                  Proxy protocol (e.g. VMess)
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}TRANSPORT{"}"}
-                                  </Badge>{" "}
-                                  Proxy transport method (e.g. ws)
-                                </Text>
-                              </Box>
-                            </PopoverBody>
-                          </PopoverContent>
-                        </Portal>
-                      </Popover>
-                    </InputRightElement>
-                  </InputGroup>
-                  {accordionErrors && accordionErrors[index]?.remark && (
-                    <Error>{accordionErrors[index]?.remark?.message}</Error>
-                  )}
-                </FormControl>
-                <Tooltip label="Delete" placement="top">
-                  <IconButton
-                    aria-label="Delete"
-                    size="sm"
-                    colorScheme="red"
-                    variant="ghost"
-                    onClick={removeHost.bind(null, index)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
-              </HStack>
-              <HStack alignItems="flex-start">
-                <FormControl
-                  w="70%"
-                  isInvalid={
-                    !!(accordionErrors && accordionErrors[index]?.address)
-                  }
-                >
-                  <InputGroup>
-                    <Input
-                      size="sm"
-                      borderRadius="4px"
-                      placeholder="Address (e.g. example.com)"
-                      {...form.register(hostKey + "." + index + ".address")}
-                    />
-                    <InputRightElement>
-                      <Popover isLazy placement="right">
-                        <PopoverTrigger>
-                          <Box mt="-8px">
-                            <InfoIcon />
-                          </Box>
-                        </PopoverTrigger>
-                        <Portal>
-                          <PopoverContent>
-                            <PopoverArrow />
-                            <PopoverCloseButton />
-                            <PopoverBody>
-                              <Box fontSize="xs">
-                                <Text pr="20px">
-                                  Use these variables to make it dynamic
-                                </Text>
-                                <Text>
-                                  <Badge>
-                                    {"{"}SERVER_IP{"}"}
-                                  </Badge>{" "}
-                                  Current server ip address
-                                </Text>
-                              </Box>
-                            </PopoverBody>
-                          </PopoverContent>
-                        </Portal>
-                      </Popover>
-                    </InputRightElement>
-                  </InputGroup>
-                  {accordionErrors && accordionErrors[index]?.address && (
-                    <Error>{accordionErrors[index]?.address?.message}</Error>
-                  )}
-                </FormControl>
-                <Input
-                  w="30%"
-                  size="sm"
-                  borderRadius="4px"
-                  placeholder="8080"
-                  type="number"
-                  {...form.register(hostKey + "." + index + ".port")}
-                />
-              </HStack>
-              <FormControl
-                isInvalid={!!(accordionErrors && accordionErrors[index]?.sni)}
+              {isReconnecting ? "Reconnecting..." : "Reconnect"}
+            </Button>
+          )}
+        </HStack>
+        <NodeForm
+          form={form}
+          mutate={mutate}
+          isLoading={isLoading}
+          submitBtnText="Edit Node"
+          btnLeftAdornment={
+            <Tooltip label="Delete" placement="top">
+              <IconButton
+                colorScheme="red"
+                variant="ghost"
+                size="sm"
+                aria-label="delete node"
+                onClick={handleDeleteNode}
               >
-                <Input
-                  size="sm"
-                  borderRadius="4px"
-                  placeholder="SNI (e.g. example.com)"
-                  {...form.register(hostKey + "." + index + ".sni")}
-                />
-                {accordionErrors && accordionErrors[index]?.sni && (
-                  <Error>{accordionErrors[index]?.sni?.message}</Error>
-                )}
-              </FormControl>
-              <FormControl
-                isInvalid={!!(accordionErrors && accordionErrors[index]?.host)}
-              >
-                <Input
-                  size="sm"
-                  borderRadius="4px"
-                  placeholder="Host (e.g. example.com)"
-                  {...form.register(hostKey + "." + index + ".host")}
-                />
-                {accordionErrors && accordionErrors[index]?.host && (
-                  <Error>{accordionErrors[index]?.host?.message}</Error>
-                )}
-              </FormControl>
-              <FormControl height="66px">
-                <FormLabel>Security</FormLabel>
-                <Select
-                  size="sm"
-                  {...form.register(hostKey + "." + index + ".security")}
-                >
-                  {proxyHostSecurity.map((s) => {
-                    return (
-                      <option key={s.value} value={s.value}>
-                        {s.title}
-                      </option>
-                    );
-                  })}
-                </Select>
-              </FormControl>
-            </VStack>
-          ))}
-          <Button
-            variant="outline"
-            w="full"
-            size="sm"
-            color=""
-            fontWeight={"normal"}
-            onClick={handleAddHost}
-          >
-            Add host
-          </Button>
-        </VStack>
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
+          }
+        />
       </AccordionPanel>
     </AccordionItem>
   );
@@ -406,10 +200,37 @@ const AccordionInbound: FC<AccordionInboundType> = ({
 
 type AddNodeFormType = {
   toggleAccordion: () => void;
+  resetAccordions: () => void;
 };
-const AddNodeForm: FC<AddNodeFormType> = ({ toggleAccordion }) => {
-  const form = useForm();
-  const handleAddNode = () => {};
+
+const AddNodeForm: FC<AddNodeFormType> = ({
+  toggleAccordion,
+  resetAccordions,
+}) => {
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const { addNode } = useNodes();
+  const form = useForm<NodeType>({
+    resolver: zodResolver(NodeSchema),
+    defaultValues: {
+      ...getNodeDefaultValues(),
+      add_as_new_host: false,
+    },
+  });
+  const { isLoading, mutate } = useMutation(addNode, {
+    onSuccess: () => {
+      generateSuccessMessage(
+        `Node ${form.getValues("name")} added successfully`,
+        toast
+      );
+      queryClient.invalidateQueries(FetchNodesQueryKey);
+      form.reset();
+      resetAccordions();
+    },
+    onError: (e) => {
+      generateErrorMessage(e, toast, form);
+    },
+  });
   return (
     <AccordionItem
       border="1px solid"
@@ -436,114 +257,138 @@ const AddNodeForm: FC<AddNodeFormType> = ({ toggleAccordion }) => {
         </Text>
       </AccordionButton>
       <AccordionPanel px={2} py={4}>
-        <form onSubmit={handleAddNode}>
-          <VStack>
-            <FormControl>
-              <CustomInput label="Name" size="sm" placeholder="Marzban-S2" />
-            </FormControl>
-            <HStack alignItems="flex-start">
-              <FormControl w="50%">
-                <CustomInput
-                  label="Address"
-                  size="sm"
-                  placeholder="51.20.12.13"
-                />
-              </FormControl>
-              <FormControl w="25%">
-                <CustomInput label="Port" size="sm" placeholder="62050" />
-              </FormControl>
-              <FormControl w="25%">
-                <CustomInput label="API Port" size="sm" placeholder="62051" />
-              </FormControl>
-            </HStack>
-            <FormControl>
-              <FormLabel>Certificate</FormLabel>
-              <Textarea
-                w="full"
-                fontSize="10px"
-                fontFamily="monospace"
-                overflowWrap="normal"
-                noOfLines={10}
-                rows={10}
-                placeholder="-----BEGIN CERTIFICATE-----
-							XzBWUjjMrWf/0rWV5fDl7b4RU8AjeviG1RmEc64ueZ3s6q1LI6DJX1+qGuqDEvp
-							g1gctfdLMARuV6LkLiGy5k2FGAW/tfepEyySA/N9WhcHg+rZ4/x1thP0eYJPQ2YJ
-							XFSa6Zv8LPLCz5iMbo0FjNlKyZo3699PtyBFXt3zyfTPmiy19RVGTziHqJ9NR9kW
-							kBwvFzIy+qPc/dJAk435hVaV3pRBC7Pl2Y7k/pJxxlC07PkACXuhwtUGhQrHYWkK
-							Il8rJ9cs0zwC1BOmqoS3Ez22dgtT7FucvIJ1MGP8oUAudMmrXDxx/d7CmnD5q1v4
-							iLlV21kNnWuvjS1orTwvuW3aagb6tvEEEmlMhw5a2B8sl71sQ6sxWidgRaOSGW7l
-							emFyZ2FoMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA0BvDh0eU78EJ
-							AjimHyBb+3tFs7KaOPu9G5xgbQWUWccukMDXqybqiUDSfU/T5/+XM8CKq/Fu0DB=&#10;-----END CERTIFICATE-----"
-              />
-            </FormControl>
-            <FormControl py={1}>
-              <Checkbox>
-                <FormLabel m={0}>
-                  Add this node as a new host for every inbound
-                </FormLabel>
-              </Checkbox>
-            </FormControl>
-            <Button
-              variant="solid"
-              type="submit"
-              colorScheme="primary"
-              size="sm"
-              px={5}
-              w="full"
-            >
-              Add Node
-            </Button>
-          </VStack>
-        </form>
+        <NodeForm
+          form={form}
+          mutate={mutate}
+          isLoading={isLoading}
+          submitBtnText="Add Node"
+          btnProps={{ variant: "solid" }}
+          addAsHost
+        />
       </AccordionPanel>
     </AccordionItem>
   );
 };
 
+type NodeFormType = FC<{
+  form: UseFormReturn<NodeType>;
+  mutate: UseMutateFunction<unknown, unknown, any>;
+  isLoading: boolean;
+  submitBtnText: string;
+  btnProps?: Partial<ButtonProps>;
+  btnLeftAdornment?: ReactNode;
+  addAsHost?: boolean;
+}>;
+
+const NodeForm: NodeFormType = ({
+  form,
+  mutate,
+  isLoading,
+  submitBtnText,
+  btnProps = {},
+  btnLeftAdornment,
+  addAsHost = false,
+}) => {
+  return (
+    <form onSubmit={form.handleSubmit((v) => mutate(v))}>
+      <VStack>
+        <FormControl>
+          <CustomInput
+            label="Name"
+            size="sm"
+            placeholder="Marzban-S2"
+            {...form.register("name")}
+            error={form.formState?.errors?.name?.message}
+          />
+        </FormControl>
+        <HStack alignItems="flex-start">
+          <Box w="50%">
+            <CustomInput
+              label="Address"
+              size="sm"
+              placeholder="51.20.12.13"
+              {...form.register("address")}
+              error={form.formState?.errors?.address?.message}
+            />
+          </Box>
+          <Box w="25%">
+            <CustomInput
+              label="Port"
+              size="sm"
+              placeholder="62050"
+              {...form.register("port")}
+              error={form.formState?.errors?.port?.message}
+            />
+          </Box>
+          <Box w="25%">
+            <CustomInput
+              label="API Port"
+              size="sm"
+              placeholder="62051"
+              {...form.register("api_port")}
+              error={form.formState?.errors?.api_port?.message}
+            />
+          </Box>
+        </HStack>
+        <FormControl>
+          <FormLabel>Certificate</FormLabel>
+          <Textarea
+            {...form.register("certificate")}
+            w="full"
+            fontSize="10px"
+            fontFamily="monospace"
+            overflowWrap="normal"
+            noOfLines={10}
+            rows={10}
+            error={form.formState?.errors?.certificate?.message}
+            placeholder="-----BEGIN CERTIFICATE-----
+			XzBWUjjMrWf/0rWV5fDl7b4RU8AjeviG1RmEc64ueZ3s6q1LI6DJX1+qGuqDEvp
+			g1gctfdLMARuV6LkLiGy5k2FGAW/tfepEyySA/N9WhcHg+rZ4/x1thP0eYJPQ2YJ
+			XFSa6Zv8LPLCz5iMbo0FjNlKyZo3699PtyBFXt3zyfTPmiy19RVGTziHqJ9NR9kW
+			kBwvFzIy+qPc/dJAk435hVaV3pRBC7Pl2Y7k/pJxxlC07PkACXuhwtUGhQrHYWkK
+			Il8rJ9cs0zwC1BOmqoS3Ez22dgtT7FucvIJ1MGP8oUAudMmrXDxx/d7CmnD5q1v4
+			iLlV21kNnWuvjS1orTwvuW3aagb6tvEEEmlMhw5a2B8sl71sQ6sxWidgRaOSGW7l
+			emFyZ2FoMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA0BvDh0eU78EJ
+			AjimHyBb+3tFs7KaOPu9G5xgbQWUWccukMDXqybqiUDSfU/T5/+XM8CKq/Fu0DB=&#10;-----END CERTIFICATE-----"
+          />
+        </FormControl>
+        {addAsHost && (
+          <FormControl py={1}>
+            <Checkbox {...form.register("add_as_new_host")}>
+              <FormLabel m={0}>
+                Add this node as a new host for every inbound
+              </FormLabel>
+            </Checkbox>
+          </FormControl>
+        )}
+        <HStack w="full">
+          {btnLeftAdornment}
+          <Button
+            flexGrow={1}
+            type="submit"
+            colorScheme="primary"
+            size="sm"
+            px={5}
+            w="full"
+            isLoading={isLoading}
+            {...btnProps}
+          >
+            {submitBtnText}
+          </Button>
+        </HStack>
+      </VStack>
+    </form>
+  );
+};
+
 export const NodesDialog: FC = () => {
-  const { isEditingNodes, onEditingNodes, refetchUsers } = useDashboard();
-  const { isLoading, hosts, fetchHosts, isPostLoading, setHosts } = useHosts();
-  const toast = useToast();
+  const { isEditingNodes, onEditingNodes } = useDashboard();
   const [openAccordions, setOpenAccordions] = useState<any>({});
-
-  useEffect(() => {
-    if (isEditingNodes) fetchHosts();
-  }, [isEditingNodes]);
-  const form = useForm<z.infer<typeof hostsSchema>>({
-    resolver: zodResolver(hostsSchema),
-  });
-
-  useEffect(() => {
-    if (hosts && isEditingNodes) {
-      form.reset(hosts);
-    }
-  }, [hosts]);
+  const { data: nodes, isLoading } = useNodesQuery();
 
   const onClose = () => {
     setOpenAccordions({});
     onEditingNodes(false);
-  };
-  const handleFormSubmit = (hosts: z.infer<typeof hostsSchema>) => {
-    setHosts(hosts)
-      .then(() => {
-        toast({
-          title: `Hosts saved successfully`,
-          status: "success",
-          isClosable: true,
-          position: "top",
-          duration: 3000,
-        });
-        refetchUsers();
-      })
-      .catch((e) => {
-        toast({
-          title: e.response?._data?.detail,
-          status: "error",
-          isClosable: true,
-          position: "top",
-          duration: 3000,
-        });
-      });
   };
 
   const toggleAccordion = (index: number | string) => {
@@ -555,72 +400,49 @@ export const NodesDialog: FC = () => {
   };
 
   return (
-    <Modal isOpen={isEditingNodes} onClose={onClose}>
-      <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
-      <ModalContent mx="3" w="fit-content" maxW="3xl">
-        <ModalHeader pt={6}>
-          <Icon color="primary">
-            <ModalIcon color="white" />
-          </Icon>
-        </ModalHeader>
-        <ModalCloseButton mt={3} />
-        <ModalBody w="440px" pb={3} pt={3}>
-          <FormProvider {...form}>
-            <form onSubmit={form.handleSubmit(handleFormSubmit)}>
-              <Text mb={3} opacity={0.8} fontSize="sm">
-                Using Marzban-Node, you are able to scale up your connection
-                quality by adding different nodes on different servers.
-              </Text>
-              {isLoading && "loading..."}
-              {!isLoading &&
-                hosts &&
-                (Object.keys(hosts).length > 0 ? (
-                  <Accordion
-                    w="full"
-                    allowToggle
-                    allowMultiple
-                    index={Object.keys(openAccordions).map((i) => parseInt(i))}
-                  >
-                    <VStack w="full">
-                      {Object.keys(hosts).map((hostKey, index) => {
-                        return (
-                          <AccordionInbound
-                            toggleAccordion={() => toggleAccordion(index)}
-                            isOpen={openAccordions[String(index)]}
-                            key={hostKey}
-                            hostKey={hostKey}
-                          />
-                        );
-                      })}
-                      <AddNodeForm
-                        toggleAccordion={() =>
-                          toggleAccordion(Object.keys(hosts).length)
-                        }
+    <>
+      <Modal isOpen={isEditingNodes} onClose={onClose}>
+        <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
+        <ModalContent mx="3" w="fit-content" maxW="3xl">
+          <ModalHeader pt={6}>
+            <Icon color="primary">
+              <ModalIcon color="white" />
+            </Icon>
+          </ModalHeader>
+          <ModalCloseButton mt={3} />
+          <ModalBody w="440px" pb={3} pt={3}>
+            <Text mb={3} opacity={0.8} fontSize="sm">
+              Using Marzban-Node, you are able to scale up your connection
+              quality by adding different nodes on different servers.
+            </Text>
+            {isLoading && "loading..."}
+            <Accordion
+              w="full"
+              allowToggle
+              index={Object.keys(openAccordions).map((i) => parseInt(i))}
+            >
+              <VStack w="full">
+                {!isLoading &&
+                  nodes!.map((node, index) => {
+                    return (
+                      <NodeAccordion
+                        toggleAccordion={() => toggleAccordion(index)}
+                        key={node.name}
+                        node={node}
                       />
-                    </VStack>
-                  </Accordion>
-                ) : (
-                  "No inbound found. Please check your Xray config file."
-                ))}
+                    );
+                  })}
 
-              <HStack justifyContent="flex-end" py={2}>
-                <Button
-                  variant="solid"
-                  mt="2"
-                  type="submit"
-                  colorScheme="primary"
-                  size="sm"
-                  px={5}
-                  isLoading={isPostLoading}
-                  disabled={isPostLoading}
-                >
-                  Apply
-                </Button>
-              </HStack>
-            </form>
-          </FormProvider>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+                <AddNodeForm
+                  toggleAccordion={() => toggleAccordion((nodes || []).length)}
+                  resetAccordions={() => setOpenAccordions({})}
+                />
+              </VStack>
+            </Accordion>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+      <DeleteNodeModal deleteCallback={() => setOpenAccordions({})} />
+    </>
   );
 };

@@ -28,24 +28,24 @@ import {
 } from "@chakra-ui/react";
 import {
   CheckIcon,
+  ChevronDownIcon,
   ClipboardIcon,
   LinkIcon,
-  QrCodeIcon,
-  ChevronDownIcon,
   PencilIcon,
+  QrCodeIcon,
 } from "@heroicons/react/24/outline";
-import { FC, Fragment, useEffect, useState } from "react";
 import { ReactComponent as AddFileIcon } from "assets/add_file.svg";
-import { formatBytes } from "utils/formatByte";
-import { useDashboard } from "contexts/DashboardContext";
-import CopyToClipboard from "react-copy-to-clipboard";
-import { UserBadge } from "./UserBadge";
-import { Pagination } from "./Pagination";
 import classNames from "classnames";
-import { statusColors, resetStrategy } from "constants/UserSettings";
-import { User } from "types/User";
-import { useTranslation } from "react-i18next";
+import { resetStrategy, statusColors } from "constants/UserSettings";
+import { useDashboard } from "contexts/DashboardContext";
 import { t } from "i18next";
+import { FC, Fragment, useEffect, useState } from "react";
+import CopyToClipboard from "react-copy-to-clipboard";
+import { useTranslation } from "react-i18next";
+import { User } from "types/User";
+import { formatBytes } from "utils/formatByte";
+import { Pagination } from "./Pagination";
+import { StatusBadge } from "./StatusBadge";
 
 const EmptySectionIcon = chakra(AddFileIcon);
 
@@ -157,7 +157,9 @@ const UsageSlider: FC<UsageSliderProps> = (props) => {
               : "")
           )}
         </Text>
-        <Text>{t("usersTable.total")}: {formatBytes(totalUsedTraffic)}</Text>
+        <Text>
+          {t("usersTable.total")}: {formatBytes(totalUsedTraffic)}
+        </Text>
       </HStack>
     </>
   );
@@ -239,7 +241,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 position="sticky"
                 top={{ base: "unset", md: top }}
                 minW="120px"
-                pl={4} 
+                pl={4}
                 pr={4}
                 cursor={"pointer"}
               >
@@ -296,7 +298,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                         {user.username}
                       </Td>
                       <Td borderBottom={0} minW="50px" pl={0} pr={0}>
-                        <UserBadge
+                        <StatusBadge
                           compact
                           showDetail={false}
                           expiryDate={user.expire}
@@ -358,7 +360,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                                   {t("usersTable.status")}
                                 </Text>
                                 <Box width="full" minW="230px">
-                                  <UserBadge
+                                  <StatusBadge
                                     compact
                                     expiryDate={user.expire}
                                     status={user.status}
@@ -533,7 +535,10 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 >
                   <Td minW="140px">{user.username}</Td>
                   <Td width="400px" minW="150px">
-                    <UserBadge expiryDate={user.expire} status={user.status} />
+                    <StatusBadge
+                      expiryDate={user.expire}
+                      status={user.status}
+                    />
                   </Td>
                   <Td width="350px" minW="230px">
                     <UsageSlider

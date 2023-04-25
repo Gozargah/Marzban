@@ -5,9 +5,10 @@ import {
   UsersIcon,
 } from "@heroicons/react/24/outline";
 import { FC, PropsWithChildren, ReactElement, ReactNode } from "react";
-import useSWR from "swr";
-import { formatBytes, numberWithCommas } from "utils/formatByte";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "react-query";
+import { fetch } from "service/http";
+import { formatBytes, numberWithCommas } from "utils/formatByte";
 
 const TotalUsersIcon = chakra(UsersIcon, {
   baseStyle: {
@@ -114,13 +115,12 @@ const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
     </Card>
   );
 };
-
+export const StatisticsQueryKey = "statistics-query-key";
 export const Statistics: FC<BoxProps> = (props) => {
-  const { data: systemData } = useSWR("/system", {
-    revalidateIfStale: true,
-    revalidateOnFocus: true,
-    revalidateOnReconnect: true,
-    refreshInterval: 5000,
+  const { data: systemData } = useQuery({
+    queryKey: StatisticsQueryKey,
+    queryFn: () => fetch("/system"),
+    refetchInterval: 5000,
   });
   const { t } = useTranslation();
   return (
