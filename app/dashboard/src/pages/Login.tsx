@@ -11,7 +11,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { BoltIcon } from "@heroicons/react/24/outline";
+import { ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FC, useEffect, useState } from "react";
 import { FieldValues, useForm } from "react-hook-form";
@@ -22,10 +22,12 @@ import { Input } from "components/Input";
 import { fetch } from "service/http";
 import { removeAuthToken, setAuthToken } from "utils/authStorage";
 import { ReactComponent as Logo } from "assets/logo.svg";
+import { useTranslation } from "react-i18next";
+import { Language } from "components/Language";
 
 const schema = z.object({
-  username: z.string().min(1, "This field is required"),
-  password: z.string().min(1, "This field is required"),
+  username: z.string().min(1, "login.fieldRequired"),
+  password: z.string().min(1, "login.fieldRequired"),
 });
 
 export const LogoIcon = chakra(Logo, {
@@ -36,10 +38,19 @@ export const LogoIcon = chakra(Logo, {
   },
 });
 
+const LoginIcon = chakra(ArrowRightOnRectangleIcon, {
+  baseStyle: {
+    w: 5,
+    h: 5,
+    strokeWidth: "2px",
+  },
+});
+
 export const Login: FC = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation();
   let location = useLocation();
   const {
     register,
@@ -72,57 +83,63 @@ export const Login: FC = () => {
       .finally(setLoading.bind(null, false));
   };
   return (
-    <VStack justifyContent="space-between" minH="100vh" p="6">
-      <HStack w="full" justifyContent="center" alignItems="center">
-        <Box w="full" maxW="340px" mt="6">
-          <VStack alignItems="center" w="full">
-            <LogoIcon />
-            <Text fontSize="2xl" fontWeight="semibold">
-              Login to your account
-            </Text>
-            <Text color="gray.600" _dark={{ color: "gray.400" }}>
-              Welcome back, please enter your details
-            </Text>
-          </VStack>
-          <form onSubmit={handleSubmit(login)}>
-            <VStack mt={4} rowGap={4}>
-              <FormControl>
-                <FormLabel>Username</FormLabel>
-                <Input
-                  w="full"
-                  placeholder="Username"
-                  {...register("username")}
-                  error={errors?.username?.message as string}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Password</FormLabel>
-                <Input
-                  w="full"
-                  type="password"
-                  placeholder="Password"
-                  {...register("password")}
-                  error={errors?.password?.message as string}
-                />
-              </FormControl>
-              {error && (
-                <Alert status="error" rounded="md">
-                  <AlertIcon />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              <Button
-                isLoading={loading}
-                type="submit"
-                w="full"
-                colorScheme="primary"
-              >
-                Login
-              </Button>
+    <VStack justifyContent="space-between" minH="100vh" p="6" w="full">
+      <Box w="full">
+        <HStack justifyContent="end" w="full">
+          <Language />
+        </HStack>
+        <HStack w="full" justifyContent="center" alignItems="center">
+          <Box w="full" maxW="340px" mt="6">
+            <VStack alignItems="center" w="full">
+              <LogoIcon />
+              <Text fontSize="2xl" fontWeight="semibold">
+                {t("login.loginYourAccount")}
+              </Text>
+              <Text color="gray.600" _dark={{ color: "gray.400" }}>
+                {t("login.welcomeBack")}
+              </Text>
             </VStack>
-          </form>
-        </Box>
-      </HStack>
+            <Box w="full" maxW="300px" m="auto" pt="4">
+              <form onSubmit={handleSubmit(login)}>
+                <VStack mt={4} rowGap={2}>
+                  <FormControl>
+                    <Input
+                      w="full"
+                      placeholder={t("username") || "Username"}
+                      {...register("username")}
+                      error={t(errors?.username?.message as string) || ""}
+                    />
+                  </FormControl>
+                  <FormControl>
+                    <Input
+                      w="full"
+                      type="password"
+                      placeholder={t("password") || "Password"}
+                      {...register("password")}
+                      error={t(errors?.password?.message as string) || ""}
+                    />
+                  </FormControl>
+                  {error && (
+                    <Alert status="error" rounded="md">
+                      <AlertIcon />
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                  <Button
+                    isLoading={loading}
+                    type="submit"
+                    w="full"
+                    colorScheme="primary"
+                  >
+                    {<LoginIcon marginRight={1} />}
+                    {t("login")}
+                  </Button>
+                </VStack>
+              </form>
+            </Box>
+          </Box>
+        </HStack>
+      </Box>
       <Footer />
     </VStack>
   );

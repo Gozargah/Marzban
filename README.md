@@ -43,6 +43,10 @@
 	<a href="./README-fa.md">
 	فارسی
 	</a>
+  /
+  <a href="./README-zh-cn.md">
+	简体中文
+	</a>
 </p>
 
 <p align="center">
@@ -58,12 +62,14 @@
     - [Features](#features)
 - [Installation guide](#installation-guide)
   - [Install with docker (recommended)](#install-with-docker-recommended)
+    - [Marzban.sh](#marzbansh)
   - [Manual install (advanced)](#manual-install-advanced)
 - [Configuration](#configuration)
 - [How to use API](#how-to-use-api)
 - [How to Backup Marzban](#how-to-backup-marzban)
 - [Telegram Bot](#telegram-bot)
 - [Marzban CLI](#marzban-cli)
+- [Webhook notifications](#webhook-notifications)
 - [Donation](#donation)
 - [License](#license)
 - [Contributors](#contributors)
@@ -109,6 +115,25 @@ You have the option to choose one of setups as you wish. such:
 - [fully-single-port](https://github.com/Gozargah/Marzban-examples/tree/master/fully-single-port/)
 - [single-port-proxy](https://github.com/Gozargah/Marzban-examples/tree/master/single-port-proxy/)
 - [multi-port](https://github.com/Gozargah/Marzban-examples/tree/master/multi-port/)
+
+### Marzban.sh
+Once you have chosen your favorite setup, Marzban.sh will do the installation for you!
+
+Get Marzban.sh with the following command
+```bash
+curl -L https://github.com/Gozargah/Marzban-scripts/raw/master/get-marzban.sh | sudo bash
+```
+
+Then simply run the following command
+```bash
+marzban.sh install
+```
+This will install Marzban in `/opt/marzban` on your machine
+
+Also, see the help message of Marzban.sh by running the command below
+```bash
+marzban.sh --help
+```
 
 ## Manual install (advanced)
 
@@ -166,6 +191,67 @@ Eventually, launch the application using command below
 python3 main.py
 ```
 
+Launch with linux systemctl
+```
+systemctl enable /var/lib/marzban/marzban.service
+systemctl start marzban
+```
+
+Use with nginx
+```
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name  example.com;
+
+    ssl_certificate      /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key  /etc/letsencrypt/live/example.com/privkey.pem;
+
+    location ~* /(dashboard|api|docs|redoc|openapi.json) {
+        proxy_pass http://0.0.0.0:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # xray-core ws-path: /
+    # client ws-path: /marzban/me/2087
+    #
+    # All traffic is proxed through port 443, and send to the xray port(2087, 2088 etc.).
+    # The '/marzban' in location regex path can changed any characters by yourself.
+    #
+    # /${path}/${username}/${xray-port}
+    location ~* /marzban/.+/(.+)$ {
+        proxy_redirect off;
+        proxy_pass http://127.0.0.1:$1/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+or
+```
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name  marzban.example.com;
+
+    ssl_certificate      /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key  /etc/letsencrypt/live/example.com/privkey.pem;
+
+    location / {
+        proxy_pass http://0.0.0.0:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+
 By default the app will be run on `http://localhost:8000/dashboard`. You can configure it using changing the `UVICORN_HOST` and `UVICORN_PORT` environment variables.
 
 # Configuration
@@ -174,8 +260,8 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 
 | Variable                        | Description                                                                                           |
 | ------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| SUDO_USERNAME                   | Superuser's username |
-| SUDO_PASSWORD                   | Superuser's password |
+| SUDO_USERNAME                   | Superuser's username                                                                                  |
+| SUDO_PASSWORD                   | Superuser's password                                                                                  |
 | SQLALCHEMY_DATABASE_URL         | Database URL ([SQLAlchemy's docs](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)) |
 | UVICORN_HOST                    | Bind application to this host (default: `0.0.0.0`)                                                    |
 | UVICORN_PORT                    | Bind application to this port (default: `8000`)                                                       |
@@ -196,8 +282,8 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | JWT_ACCESS_TOKEN_EXPIRE_MINUTES | Expire time for the Access Tokens in minutes, `0` considered as infinite (default: `1440`)            |
 | DOCS                            | Whether API documents should be available on `/docs` and `/redoc` or not (default: `False`)           |
 | DEBUG                           | Debug mode for development (default: `False`)                                                         |
-| WEBHOOK_ADDRESS                 | Webhook address to send notifications to. Webhook notifications will be sent if this value was set.        |
-| WEBHOOK_SECRET                  | Webhook secret will be sent with each request as `x-webhook-secret` in the header (default: `None`) |
+| WEBHOOK_ADDRESS                 | Webhook address to send notifications to. Webhook notifications will be sent if this value was set.   |
+| WEBHOOK_SECRET                  | Webhook secret will be sent with each request as `x-webhook-secret` in the header (default: `None`)   |
 
 
 # How to use API

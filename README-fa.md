@@ -43,6 +43,10 @@
 	<a href="./README-fa.md">
 	فارسی
 	</a>
+  /
+  <a href="./README-zh-cn.md">
+	简体中文
+	</a>
 </p>
 
 <p align="center">
@@ -58,12 +62,14 @@
     - [امکانات](#امکانات)
 - [راهنمای نصب](#راهنمای-نصب)
   - [نصب به کمک Docker (پیشنهادی)](#نصب-به-کمک-docker-پیشنهادی)
+    - [Marzban.sh](#marzbansh)
   - [نصب به صورت دستی (پیچیده)](#نصب-به-صورت-دستی-پیچیده)
 - [تنظیمات](#تنظیمات)
 - [استفاده از API](#استفاده-از-api)
 - [پشتیبان گیری از مرزبان](#پشتیبان-گیری-از-مرزبان)
 - [ربات تلگرام](#ربات-تلگرام)
 - [رابط خط فرمان (CLI) مرزبان](#رابط-خط-فرمان-cli-مرزبان)
+- [ارسال اعلان‌ها به آدرس وبهوک](#ارسال-اعلانها-به-آدرس-وبهوک)
 - [کمک مالی](#کمک-مالی)
 - [لایسنس](#لایسنس)
 - [مشارکت در توسعه](#مشارکت-در-توسعه)
@@ -109,6 +115,24 @@
 - [پروکسی تک پورت](https://github.com/Gozargah/Marzban-examples/tree/master/single-port-proxy#%D9%BE%D8%B1%D9%88%DA%A9%D8%B3%DB%8C-%D8%AA%DA%A9-%D9%BE%D9%88%D8%B1%D8%AA)
 - [چند پورت](https://github.com/Gozargah/Marzban-examples/tree/master/multi-port#%DA%86%D9%86%D8%AF-%D9%BE%D9%88%D8%B1%D8%AA)
 
+### Marzban.sh
+بعد از اینکه تنظیمات مورد علاقه خود را انتخاب کردید، Marzban.sh نصب را برای شما انجام می دهد!
+
+ابتدا Marzban.sh را با دستور زیر دریافت کنید
+```bash
+curl -L https://github.com/Gozargah/Marzban-scripts/raw/master/get-marzban.sh | sudo bash
+```
+
+سپس به سادگی دستور زیر را اجرا کنید
+```bash
+marzban.sh install
+```
+با این کار، مرزبان در پوشه `/opt/marzban/` روی سرور شما نصب می‌شود
+
+همچنین با اجرای دستور زیر راهنما Marzban.sh را مشاهده کنید
+```bash
+marzban.sh --help
+```
 
 ## نصب به صورت دستی (پیچیده)
 
@@ -159,38 +183,81 @@ nano .env
 python3 main.py
 ```
 
+اجرا با استفاده از systemctl در لینوکس
+```
+systemctl enable /var/lib/marzban/marzban.service
+systemctl start marzban
+```
+
+اجرا با nginx
+```
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name  example.com;
+
+    ssl_certificate      /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key  /etc/letsencrypt/live/example.com/privkey.pem;
+
+    location ~* /(dashboard|api|docs|redoc|openapi.json) {
+        proxy_pass http://0.0.0.0:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+or
+```
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name  marzban.example.com;
+
+    ssl_certificate      /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key  /etc/letsencrypt/live/example.com/privkey.pem;
+
+    location / {
+        proxy_pass http://0.0.0.0:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+
 به صورت پیشفرض مرزبان در آدرس `http://localhost:8000/dashboard` اجرا میشود. شما میتوانید با تغییر `UVICORN_HOST` و `UVICORN_PORT`، هاست و پورت را تغییر دهید.
 
 # تنظیمات
 
 > متغیر های زیر در فایل ‍`env` یا `.env` استفاده میشوند. شما می توانید با تعریف و تغییر آن ها، تنظیمات مرزبان را تغییر دهید.
 
-|                                                                                                                 توضیحات |              متغیر              |
-| ----------------------------------------------------------------------------------------------------------------------: | :-----------------------------: |
-| نام کاربری مدیر کل  |          SUDO_USERNAME          |
-| رمز عبور مدیر کل   |          SUDO_PASSWORD          |
-|          آدرس دیتابیس ([بر اساس مستندات SQLAlchemy](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)) |     SQLALCHEMY_DATABASE_URL     |
-|                                                              آدرس هاستی که مرزبان روی آن اجرا میشود (پیشفرض: `0.0.0.0`) |          UVICORN_HOST           |
-|                                                                      پورتی که مرزبان روی آن اجرا میشود (پیشفرض: `8000`) |          UVICORN_PORT           |
-|                                                                               اجرای مرزبان بر روی یک Unix domain socket |           UVICORN_UDS           |
-|                                                                              آدرس گواهی SSL به جهت ایمن کردن پنل مرزبان |      UVICORN_SSL_CERTFILE       |
-|                                                                                                     آدرس کلید گواهی SSL |       UVICORN_SSL_KEYFILE       |
-|                                                                       مسیر فایل json تنظیمات xray (پیشفرض: `xray.json`) |            XRAY_JSON            |
-|                                                                        مسیر باینری xray (پیشفرض: `/usr/local/bin/xray`) |      XRAY_EXECUTABLE_PATH       |
-|                                                                   مسیر asset های xray (پیشفرض: `/usr/local/share/xray`) |        XRAY_ASSETS_PATH         |
-| پیشوند (یا هاست) آدرس های اشتراکی (زمانی کاربرد دارد که نیاز دارید دامنه subscription link ها با دامنه پنل متفاوت باشد) |  XRAY_SUBSCRIPTION_URL_PREFIX   |
-|                                                                        تگ inboundای که به عنوان fallback استفاده میشود. |   XRAY_FALLBACKS_INBOUND_TAG    |
-|                                                تگ های inbound ای که لازم نیست در کانفیگ های ساخته شده وجود داشته باشند. |    XRAY_EXCLUDE_INBOUND_TAGS    |
-|                                                                                 آدرس محل template های شخصی سازی شده کاربر |    CUSTOM_TEMPLATES_DIRECTORY    |
-|                                         template مورد استفاده برای تولید کانفیگ های Clash (پیشفرض: `clash/default.yml`) |    CLASH_SUBSCRIPTION_TEMPLATE     |
-|                                                       توکن ربات تلگرام (دریافت از [@botfather](https://t.me/botfather)) |       TELEGRAM_API_TOKEN        |
-|                                          آیدی عددی ادمین در تلگرام (دریافت از [@userinfobot](https://t.me/userinfobot)) |        TELEGRAM_ADMIN_ID        |
-|                                                                                               اجرای ربات از طریق پروکسی |       TELEGRAM_PROXY_URL        |
-|                            مدت زمان انقضا توکن دسترسی به پنل مرزبان, `0` به معنای بدون تاریخ انقضا است (پیشفرض: `1440`) | JWT_ACCESS_TOKEN_EXPIRE_MINUTES |
-|                                                       فعال سازی داکیومنتیشن به آدرس `/docs` و `/redoc`(پیشفرض: `False`) |              DOCS               |
-|                                                                     فعالسازی حالت توسعه (development) (پیشفرض: `False`) |              DEBUG              |
-| WEBHOOK_ADDRESS                 |  آدرس webhook که تغییرات حالت یک کاربر به آن ارسال می‌شوند. اگر این متغیر مقدار داشته باشد، ارسال پیام‌ها انجام می‌شوند.        |
-| WEBHOOK_SECRET                  | متغیری که به عنوان `x-webhook-secret` در header ارسال می‌شود. (پیشفرض: `None`) |
+|                                                                                                                 توضیحات |                                                        متغیر                                                         |
+| ----------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------: |
+|                                                                                                      نام کاربری مدیر کل |                                                    SUDO_USERNAME                                                     |
+|                                                                                                        رمز عبور مدیر کل |                                                    SUDO_PASSWORD                                                     |
+|          آدرس دیتابیس ([بر اساس مستندات SQLAlchemy](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)) |                                               SQLALCHEMY_DATABASE_URL                                                |
+|                                                              آدرس هاستی که مرزبان روی آن اجرا میشود (پیشفرض: `0.0.0.0`) |                                                     UVICORN_HOST                                                     |
+|                                                                      پورتی که مرزبان روی آن اجرا میشود (پیشفرض: `8000`) |                                                     UVICORN_PORT                                                     |
+|                                                                               اجرای مرزبان بر روی یک Unix domain socket |                                                     UVICORN_UDS                                                      |
+|                                                                              آدرس گواهی SSL به جهت ایمن کردن پنل مرزبان |                                                 UVICORN_SSL_CERTFILE                                                 |
+|                                                                                                     آدرس کلید گواهی SSL |                                                 UVICORN_SSL_KEYFILE                                                  |
+|                                                                       مسیر فایل json تنظیمات xray (پیشفرض: `xray.json`) |                                                      XRAY_JSON                                                       |
+|                                                                        مسیر باینری xray (پیشفرض: `/usr/local/bin/xray`) |                                                 XRAY_EXECUTABLE_PATH                                                 |
+|                                                                   مسیر asset های xray (پیشفرض: `/usr/local/share/xray`) |                                                   XRAY_ASSETS_PATH                                                   |
+| پیشوند (یا هاست) آدرس های اشتراکی (زمانی کاربرد دارد که نیاز دارید دامنه subscription link ها با دامنه پنل متفاوت باشد) |                                             XRAY_SUBSCRIPTION_URL_PREFIX                                             |
+|                                                                        تگ inboundای که به عنوان fallback استفاده میشود. |                                              XRAY_FALLBACKS_INBOUND_TAG                                              |
+|                                                تگ های inbound ای که لازم نیست در کانفیگ های ساخته شده وجود داشته باشند. |                                              XRAY_EXCLUDE_INBOUND_TAGS                                               |
+|                                                                               آدرس محل template های شخصی سازی شده کاربر |                                              CUSTOM_TEMPLATES_DIRECTORY                                              |
+|                                         template مورد استفاده برای تولید کانفیگ های Clash (پیشفرض: `clash/default.yml`) |                                             CLASH_SUBSCRIPTION_TEMPLATE                                              |
+|                                                       توکن ربات تلگرام (دریافت از [@botfather](https://t.me/botfather)) |                                                  TELEGRAM_API_TOKEN                                                  |
+|                                          آیدی عددی ادمین در تلگرام (دریافت از [@userinfobot](https://t.me/userinfobot)) |                                                  TELEGRAM_ADMIN_ID                                                   |
+|                                                                                               اجرای ربات از طریق پروکسی |                                                  TELEGRAM_PROXY_URL                                                  |
+|                            مدت زمان انقضا توکن دسترسی به پنل مرزبان, `0` به معنای بدون تاریخ انقضا است (پیشفرض: `1440`) |                                           JWT_ACCESS_TOKEN_EXPIRE_MINUTES                                            |
+|                                                       فعال سازی داکیومنتیشن به آدرس `/docs` و `/redoc`(پیشفرض: `False`) |                                                         DOCS                                                         |
+|                                                                     فعالسازی حالت توسعه (development) (پیشفرض: `False`) |                                                        DEBUG                                                         |
+|                                                                                                         WEBHOOK_ADDRESS | آدرس webhook که تغییرات حالت یک کاربر به آن ارسال می‌شوند. اگر این متغیر مقدار داشته باشد، ارسال پیام‌ها انجام می‌شوند. |
+|                                                                                                          WEBHOOK_SECRET |                    متغیری که به عنوان `x-webhook-secret` در header ارسال می‌شود. (پیشفرض: `None`)                     |
 
 
 # استفاده از API

@@ -19,8 +19,9 @@ import {
 } from "@heroicons/react/24/outline";
 import classNames from "classnames";
 import { useDashboard } from "contexts/DashboardContext";
-import React, { FC, useState } from "react";
 import debounce from "lodash.debounce";
+import React, { FC, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const iconProps = {
   baseStyle: {
@@ -31,7 +32,7 @@ const iconProps = {
 
 const SearchIcon = chakra(MagnifyingGlassIcon, iconProps);
 const ClearIcon = chakra(XMarkIcon, iconProps);
-const ReloadIcon = chakra(ArrowPathIcon, iconProps);
+export const ReloadIcon = chakra(ArrowPathIcon, iconProps);
 
 export type FilterProps = {} & BoxProps;
 const setSearchField = debounce((username: string) => {
@@ -45,6 +46,7 @@ const setSearchField = debounce((username: string) => {
 export const Filters: FC<FilterProps> = ({ ...props }) => {
   const { loading, filters, onFilterChange, refetchUsers, onCreateUser } =
     useDashboard();
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -60,8 +62,10 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
   };
   return (
     <Grid
+      id="filters"
       templateColumns={{
         lg: "repeat(3, 1fr)",
+        md: "repeat(4, 1fr)",
         base: "repeat(1, 1fr)",
       }}
       position="sticky"
@@ -78,11 +82,11 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
       zIndex="docked"
       {...props}
     >
-      <GridItem colSpan={1} order={{ base: 2, lg: 1 }}>
+      <GridItem colSpan={{ base: 1, md: 2, lg: 1 }} order={{ base: 2, md: 1 }}>
         <InputGroup>
           <InputLeftElement pointerEvents="none" children={<SearchIcon />} />
           <Input
-            placeholder="Search"
+            placeholder={t("search") || "Search"}
             value={search}
             borderColor="light-border"
             onChange={onChange}
@@ -103,7 +107,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
           </InputRightElement>
         </InputGroup>
       </GridItem>
-      <GridItem colSpan={2} order={{ base: 1, lg: 2 }}>
+      <GridItem colSpan={2} order={{ base: 1, md: 2 }}>
         <HStack justifyContent="flex-end" alignItems="center" h="full">
           <IconButton
             aria-label="refresh users"
@@ -124,7 +128,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
             onClick={() => onCreateUser(true)}
             px={5}
           >
-            Create User
+            {t("createUser")}
           </Button>
         </HStack>
       </GridItem>

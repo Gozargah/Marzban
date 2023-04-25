@@ -1,19 +1,20 @@
+from typing import Dict, List, Union
+
 from pydantic import BaseModel, Field, validator
 
-from app.models.proxy import ProxyTypes
-
 from app import xray
+from app.models.proxy import ProxyTypes
 
 
 class UserTemplate(BaseModel):
-    name: str | None = None
-    data_limit: int | None = Field(ge=0, default=None, description="data_limit can be 0 or greater")
-    expire_duration: int | None = Field(
+    name: Union[str, None] = None
+    data_limit: Union[int, None] = Field(ge=0, default=None, description="data_limit can be 0 or greater")
+    expire_duration: Union[int, None] = Field(
         ge=0, default=None, description="expire_duration can be 0 or greater in seconds")
-    username_prefix: str | None = Field(max_length=20, min_length=1, default=None)
-    username_suffix: str | None = Field(max_length=20, min_length=1, default=None)
+    username_prefix: Union[str, None] = Field(max_length=20, min_length=1, default=None)
+    username_suffix: Union[str, None] = Field(max_length=20, min_length=1, default=None)
 
-    inbounds: dict[ProxyTypes, list[str]] = {}
+    inbounds: Dict[ProxyTypes, List[str]] = {}
 
 
 class UserTemplateCreate(UserTemplate):

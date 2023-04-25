@@ -7,14 +7,19 @@ import {
   Box,
   chakra,
   Checkbox,
+  FormControl,
+  FormLabel,
   HStack,
   IconButton,
+  Input,
   Kbd,
+  Select,
   SimpleGrid,
   Text,
   useCheckbox,
   useCheckboxGroup,
   UseRadioProps,
+  VStack,
 } from "@chakra-ui/react";
 import {
   CheckCircleIcon,
@@ -22,11 +27,13 @@ import {
   EllipsisVerticalIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
+import { shadowsocksMethods, XTLSFlows } from "constants/Proxies";
 import {
   InboundType,
   ProtocolType,
   useDashboard,
 } from "contexts/DashboardContext";
+import { t } from "i18next";
 import { FC, forwardRef, PropsWithChildren, useEffect, useState } from "react";
 import {
   ControllerRenderProps,
@@ -160,10 +167,10 @@ const RadioCard: FC<
     onChange: (selectedInbounds) => {
       form.setValue(`inbounds.${title}`, selectedInbounds);
       if (selectedInbounds.length === 0) {
-        const proxies = form.getValues("proxies");
+        const selected_proxies = form.getValues("selected_proxies");
         form.setValue(
-          `proxies`,
-          proxies.filter((p: string) => p !== title)
+          `selected_proxies`,
+          selected_proxies.filter((p: string) => p !== title)
         );
         toggleAccordion();
       }
@@ -183,7 +190,26 @@ const RadioCard: FC<
   const shouldBeDisabled = !isSelected && !protocolHasInbound;
 
   return (
-    <AccordionItem border={0} isDisabled={!protocolHasInbound}>
+    <AccordionItem
+      isDisabled={!protocolHasInbound}
+      borderRadius="md"
+      borderStyle="solid"
+      border="1px"
+      borderColor="gray.200"
+      bg={shouldBeDisabled ? "gray.100" : "transparent"}
+      _dark={{
+        borderColor: "gray.600",
+        bg: shouldBeDisabled ? "#364154" : "transparent",
+      }}
+      _checked={{
+        bg: "gray.50",
+        outline: "2px",
+        boxShadow: "outline",
+        outlineColor: "primary.500",
+        borderColor: "transparent",
+      }}
+      {...getCheckboxProps()}
+    >
       <Box as={shouldBeDisabled ? "span" : "label"} position="relative">
         {isPartialSelected && (
           <Box
@@ -203,20 +229,7 @@ const RadioCard: FC<
           position="relative"
           {...htmlProps}
           cursor={shouldBeDisabled ? "not-allowed" : "pointer"}
-          borderRadius="md"
-          border="1px solid"
-          borderColor={"gray.200"}
-          _dark={{
-            borderColor: "gray.600",
-            bg: shouldBeDisabled ? "#364154" : "transparent",
-          }}
-          bg={shouldBeDisabled ? "gray.100" : "transparent"}
           _checked={{
-            bg: "gray.50",
-            outline: "2px",
-            boxShadow: "outline",
-            outlineColor: "primary.500",
-            borderColor: "transparent",
             fontWeight: "medium",
             _dark: {
               bg: "gray.750",
@@ -295,26 +308,167 @@ const RadioCard: FC<
       <AccordionPanel
         px={2}
         pb={3}
-        borderWidth="1px"
-        borderColor="gray.600"
-        borderStyle="solid"
         roundedBottom="5px"
-        borderTop={0}
         pt={3}
+        _dark={{ bg: inputProps.checked && "gray.750" }}
       >
-        <SimpleGrid gap={2} alignItems="flex-start" columns={1} spacing={1}>
-          {((inbounds.get(title as ProtocolType) as InboundType[]) || []).map(
-            (inbound) => {
-              return (
-                <InboundCard
-                  key={inbound.tag}
-                  {...getInboundCheckboxProps({ value: inbound.tag })}
-                  inbound={inbound}
+        <VStack
+          w="full"
+          rowGap={2}
+          borderStyle="solid"
+          borderWidth="1px"
+          borderRadius="md"
+          pl={3}
+          pr={3}
+          pt={1.5}
+          _dark={{ bg: "gray.700" }}
+        >
+          <VStack alignItems="flex-start" w="full">
+            <Text fontSize="sm">{t("inbound")}</Text>
+            <SimpleGrid
+              gap={2}
+              alignItems="flex-start"
+              w="full"
+              columns={1}
+              spacing={1}
+            >
+              {(
+                (inbounds.get(title as ProtocolType) as InboundType[]) || []
+              ).map((inbound) => {
+                return (
+                  <InboundCard
+                    key={inbound.tag}
+                    {...getInboundCheckboxProps({ value: inbound.tag })}
+                    inbound={inbound}
+                  />
+                );
+              })}
+            </SimpleGrid>
+          </VStack>
+          {title === "vmess" && isSelected && (
+            <VStack alignItems="flex-start" w="full">
+              <FormControl height="66px">
+                <Text fontSize="sm" pb={1}>
+                  ID
+                </Text>
+                <Input
+                  fontSize="xs"
+                  size="sm"
+                  borderRadius="6px"
+                  pl={2}
+                  pr={2}
+                  placeholder={t("userDialog.generatedByDefault") || ""}
+                  {...form.register("proxies.vmess.id")}
                 />
-              );
-            }
+              </FormControl>
+            </VStack>
           )}
-        </SimpleGrid>
+          {title === "vless" && isSelected && (
+            <VStack alignItems="flex-start" w="full">
+              <FormControl height="66px">
+                <Text fontSize="sm" pb={1}>
+                  ID
+                </Text>
+                <Input
+                  fontSize="xs"
+                  size="sm"
+                  borderRadius="6px"
+                  pl={2}
+                  pr={2}
+                  placeholder={t("userDialog.generatedByDefault") || ""}
+                  {...form.register("proxies.vless.id")}
+                />
+              </FormControl>
+              <FormControl height="66px">
+                <Text fontSize="sm" pb={1}>
+                  Flow
+                </Text>
+                <Select
+                  fontSize="xs"
+                  size="sm"
+                  borderRadius="6px"
+                  {...form.register("proxies.vless.flow")}
+                >
+                  {XTLSFlows.map((entry) => (
+                    <option key={entry.title} value={entry.value}>
+                      {entry.title}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+            </VStack>
+          )}
+          {title === "trojan" && isSelected && (
+            <VStack alignItems="flex-start" w="full">
+              <FormControl height="66px">
+                <Text fontSize="sm" pb={1}>
+                  {t("password")}
+                </Text>
+                <Input
+                  fontSize="xs"
+                  size="sm"
+                  borderRadius="6px"
+                  pl={2}
+                  pr={2}
+                  placeholder={t("userDialog.generatedByDefault") || ""}
+                  {...form.register("proxies.trojan.password")}
+                />
+              </FormControl>
+              <FormControl height="66px">
+                <Text fontSize="sm" pb={1}>
+                  Flow
+                </Text>
+                <Select
+                  fontSize="xs"
+                  size="sm"
+                  borderRadius="6px"
+                  {...form.register("proxies.trojan.flow")}
+                >
+                  {XTLSFlows.map((entry) => (
+                    <option key={entry.title} value={entry.value}>
+                      {entry.title}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+            </VStack>
+          )}
+          {title === "shadowsocks" && isSelected && (
+            <VStack alignItems="flex-start" w="full">
+              <FormControl height="66px">
+                <Text fontSize="sm" pb={1}>
+                  {t("password")}
+                </Text>
+                <Input
+                  fontSize="xs"
+                  size="sm"
+                  borderRadius="6px"
+                  pl={2}
+                  pr={2}
+                  placeholder={t("userDialog.generatedByDefault") || ""}
+                  {...form.register("proxies.shadowsocks.password")}
+                />
+              </FormControl>
+              <FormControl height="66px">
+                <Text fontSize="sm" pb={1}>
+                  {t("userDialog.method")}
+                </Text>
+                <Select
+                  fontSize="xs"
+                  size="sm"
+                  borderRadius="6px"
+                  {...form.register("proxies.shadowsocks.method")}
+                >
+                  {shadowsocksMethods.map((method) => (
+                    <option key={method} value={method}>
+                      {method}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+            </VStack>
+          )}
+        </VStack>
       </AccordionPanel>
     </AccordionItem>
   );

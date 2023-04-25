@@ -1,4 +1,11 @@
-export type UserStatus = "active" | "disabled" | "limited" | "expired";
+export type UserStatus =
+  | "active"
+  | "disabled"
+  | "limited"
+  | "expired"
+  | "error"
+  | "connecting"
+  | "connected";
 export type ProxyKeys = ("vmess" | "vless" | "trojan" | "shadowsocks")[];
 export type ProxyType = {
   vmess?: {
@@ -6,10 +13,15 @@ export type ProxyType = {
   };
   vless?: {
     id?: string;
+    flow?: string;
   };
-  trojan?: { password?: string };
+  trojan?: {
+    password?: string;
+    flow?: string;
+  };
   shadowsocks?: {
     password?: string;
+    method?: string;
   };
 };
 
