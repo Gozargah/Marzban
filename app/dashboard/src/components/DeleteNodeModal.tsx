@@ -60,7 +60,7 @@ export const DeleteNodeModal: FC<DeleteUserModalProps> = ({
         <ModalCloseButton mt={3} />
         <ModalBody>
           <Text fontWeight="semibold" fontSize="lg">
-            {t("deleteUser.title")}
+            Delete Node
           </Text>
           {deletingNode && (
             <Text
