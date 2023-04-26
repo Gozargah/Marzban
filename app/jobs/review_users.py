@@ -3,7 +3,7 @@ from datetime import datetime
 
 from app import logger, scheduler, xray
 from app.db import GetDB, get_users, update_user_status
-from app.models.user import UserStatus
+from app.models.user import UserResponse, UserStatus
 from app.utils import report
 
 
@@ -38,7 +38,7 @@ def review():
 
             update_user_status(db, user, status)
 
-            report.status_change(user.username, status)
+            report.status_change(user.username, status, UserResponse.from_orm(user))
 
             logger.info(f"User \"{user.username}\" status changed to {status}")
 

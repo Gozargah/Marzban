@@ -43,3 +43,10 @@ SUDOERS = {config("SUDO_USERNAME", "admin"): config("SUDO_PASSWORD", "admin")}
 
 WEBHOOK_ADDRESS = config("WEBHOOK_ADDRESS", default=None)
 WEBHOOK_SECRET = config("WEBHOOK_SECRET", default=None)
+
+# recurrent notifications
+
+# timeout between each retry of sending a notification in seconds
+WEBHOOK_RECURRENT_NOTIFICATIONS_TIMEOUT = config("WEBHOOK_RECURRENT_NOTIFICATIONS_TIMEOUT", default=180, cast=int)
+# how many times to try after ok response not recevied after sending a notifications
+WEBHOOK_NUMBER_OF_RECURRENT_NOTIFICATIONS = config("WEBHOOK_NUMBER_OF_RECURRENT_NOTIFICATIONS", default=3, cast=int)
