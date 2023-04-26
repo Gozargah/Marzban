@@ -284,7 +284,8 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | DEBUG                           | Debug mode for development (default: `False`)                                                         |
 | WEBHOOK_ADDRESS                 | Webhook address to send notifications to. Webhook notifications will be sent if this value was set.   |
 | WEBHOOK_SECRET                  | Webhook secret will be sent with each request as `x-webhook-secret` in the header (default: `None`)   |
-
+| WEBHOOK_NUMBER_OF_RECURRENT_NOTIFICATIONS | How many times to retry if an error detected in sending a notification (default: `3`) |
+| WEBHOOK_RECURRENT_NOTIFICATIONS_TIMEOUT | Timeout between each retry if an error detected in sending a notification in seconds (default: `180`)|
 
 # How to use API
 Marzban provides a REST API that enables developers to interact with Marzban services programmatically. To view the API documentation in Swagger UI or ReDoc, set the configuration variable `DOCS=True` and navigate to the `/docs` and `/redoc`.
