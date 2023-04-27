@@ -1,3 +1,5 @@
+from typing import Optional
+
 from app import telegram
 from app.db.models import UserStatus
 from app.models.admin import Admin
@@ -7,7 +9,7 @@ from app.utils.notification import (ActionType, UserCreated, UserDeleted,
                                     UserLimited, UserUpdated, notify)
 
 
-def status_change(username: str, status: UserStatus, user: UserResponse, by: Admin | None = None) -> None:
+def status_change(username: str, status: UserStatus, user: UserResponse, by: Optional[Admin] = None) -> None:
     try:
         telegram.report_status_change(username, status)
     except Exception:

@@ -1,6 +1,6 @@
 from datetime import datetime as dt
 from datetime import timedelta as td
-from typing import Any
+from typing import Any, Dict, List
 
 from requests import Session
 
@@ -13,11 +13,11 @@ session = Session()
 headers = {"x-webhook-secret": config.WEBHOOK_SECRET} if config.WEBHOOK_SECRET else None
 
 
-def send(data: list[dict[Any, Any]]) -> bool:
+def send(data: List[Dict[Any, Any]]) -> bool:
     """Send the notification to the webhook address provided by config.WEBHOOK_ADDRESS
 
     Args:
-        data (list[dict[Any, Any]]): list of json encoded notifications
+        data (List[Dict[Any, Any]]): list of json encoded notifications
 
     Returns:
         bool: returns True if an ok response recieved
