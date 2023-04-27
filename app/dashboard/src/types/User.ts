@@ -1,4 +1,4 @@
-export type UserStatus =
+export type Status =
   | "active"
   | "disabled"
   | "limited"
@@ -43,7 +43,7 @@ export type User = {
   lifetime_used_traffic: number;
   username: string;
   used_traffic: number;
-  status: UserStatus;
+  status: Status;
   links: string[];
   subscription_url: string;
   inbounds: UserInbounds;
