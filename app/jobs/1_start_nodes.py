@@ -17,6 +17,7 @@ def app_startup():
 def app_shutdown():
     for node in xray.nodes.values():
         try:
+            node.stop()
             node.disconnect()
         except Exception:
             pass

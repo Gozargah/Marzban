@@ -13,6 +13,10 @@ UVICORN_UDS = config("UVICORN_UDS", default=None)
 UVICORN_SSL_CERTFILE = config("UVICORN_SSL_CERTFILE", default=None)
 UVICORN_SSL_KEYFILE = config("UVICORN_SSL_KEYFILE", default=None)
 
+SLAVE_SSL_CERTFILE = config("SLAVE_SSL_CERTFILE", default=None)
+SLAVE_SSL_KEYFILE = config("SLAVE_SSL_KEYFILE", default=None)
+SLAVE_PORT = config("SLAVE_PORT", cast=int, default=8100)
+SLAVE_API_PORT = config("SLAVE_API_PORT", cast=int, default=8101)
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 DOCS = config("DOCS", default=False, cast=bool)

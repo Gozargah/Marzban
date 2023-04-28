@@ -1,9 +1,11 @@
 import tempfile
 import threading
+import ssl
 from typing import List
 
 import rpyc
 
+from app import logger
 from app.xray.config import XRayConfig
 from xray_api import XRay as XRayAPI
 
@@ -14,7 +16,8 @@ class XRayNode:
                  address: str,
                  port: int,
                  api_port: int,
-                 ssl_cert: str):
+                 ssl_cert: str,
+                 name: str = "Master"):
 
         class Service(rpyc.Service):
             def __init__(self,
@@ -47,6 +50,7 @@ class XRayNode:
         self.port = port
         self.api_port = api_port
         self.ssl_cert = ssl_cert
+        self.name = name
 
         self.started = False
 
@@ -73,6 +77,7 @@ class XRayNode:
                                     self.port,
                                     service=self._service,
                                     ca_certs=self._certfile.name,
+                                    cert_reqs=ssl.CERT_REQUIRED,
                                     keepalive=True)
             try:
                 conn.ping()
@@ -119,16 +124,24 @@ class XRayNode:
 
     def start(self, config: XRayConfig):
         json_config = config.to_json()
-        self.remote.start(json_config)
-        self.started = True
+        status, err = self.remote.start(json_config)
+        if status is True:
+            self.started = True
+        else:
+            logger.error(f"Got error from \"{self.name}\" node:\n{err}")
 
     def stop(self):
-        self.remote.stop()
-        self.started = False
+        if self.started:
+            self.remote.stop()
+            self.started = False
 
     def restart(self, config: XRayConfig):
         json_config = config.to_json()
-        self.remote.restart(json_config)
+        status, err = self.remote.restart(json_config)
+        if status is False:
+            self.started = False
+            logger.error(f"Got error from slave \"{self.name}\" node:\n{err}")
+
 
     def on_start(self, func: callable):
         self._service.add_startup_func(func)

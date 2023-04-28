@@ -2,7 +2,7 @@ from random import randint
 from typing import Dict
 
 from app.utils.system import check_port
-from app.xray import operations
+from app.xray import operations, slave
 from app.xray.config import XRayConfig
 from app.xray.core import XRayCore
 from app.xray.node import XRayNode
@@ -35,6 +35,7 @@ __all__ = [
     "operations",
     "exceptions",
     "exc",
+    "slave",
     "types",
     "XRayConfig",
     "XRayCore",
