@@ -29,7 +29,8 @@ class SlaveService(rpyc.Service):
         if core.started:
             core.stop()
 
-        config = XRayConfig(config, api_port=SLAVE_API_PORT)
+        config = XRayConfig(config)
+        config.update_api_port(SLAVE_API_PORT)
         self.ouput_running_config(config)
 
         try:
@@ -47,7 +48,8 @@ class SlaveService(rpyc.Service):
 
     @rpyc.exposed
     def restart(self, config):
-        config = XRayConfig(config, api_port=SLAVE_API_PORT)
+        config = XRayConfig(config)
+        config.update_api_port(SLAVE_API_PORT)
         self.ouput_running_config(config)
         try:
             core.restart(config)

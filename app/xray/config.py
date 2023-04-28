@@ -229,6 +229,10 @@ class XRayConfig(dict):
             except KeyError:
                 self.inbounds_by_protocol[inbound['protocol']] = [settings]
 
+    def update_api_port(self, api_port: int):
+        inbound = self.get_inbound("API_INBOUND")
+        inbound["port"] = api_port
+
     def add_inbound_client(self, inbound_tag: str, email: str, settings: dict):
         client = {"email": email, **settings}
         try:
