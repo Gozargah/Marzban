@@ -19,6 +19,10 @@ def add_user(user: User):
             except xray.exc.EmailExistsError:
                 pass
 
+    config = xray.config.include_db_users()
+    for node in xray.nodes.values():
+        node.restart(config)
+
 
 def remove_user(user: User):
     for inbound_tag in xray.config.inbounds_by_tag:
@@ -26,6 +30,10 @@ def remove_user(user: User):
             xray.api.remove_inbound_user(tag=inbound_tag, email=user.username)
         except xray.exc.EmailNotFoundError:
             pass
+
+    config = xray.config.include_db_users()
+    for node in xray.nodes.values():
+        node.restart(config)
 
 
 def remove_node(node_id: int):
@@ -44,7 +52,8 @@ def add_node(dbnode: DBNode):
     xray.nodes[dbnode.id] = XRayNode(address=dbnode.address,
                                      port=dbnode.port,
                                      api_port=dbnode.api_port,
-                                     ssl_cert=dbnode.certificate)
+                                     ssl_cert=dbnode.certificate,
+                                     name = dbnode.name)
 
     return xray.nodes[dbnode.id]
 

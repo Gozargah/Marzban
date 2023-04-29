@@ -9,7 +9,11 @@ from typing import Union
 from app.db import GetDB, get_users
 from app.models.proxy import ProxySettings
 from app.models.user import UserStatus
-from config import XRAY_EXCLUDE_INBOUND_TAGS, XRAY_FALLBACKS_INBOUND_TAG
+from config import (
+    XRAY_EXCLUDE_INBOUND_TAGS,
+    XRAY_FALLBACKS_INBOUND_TAG,
+    SLAVE_SSL_CERTFILE,
+    SLAVE_SSL_KEYFILE)
 
 
 class XRayConfig(dict):
@@ -228,6 +232,10 @@ class XRayConfig(dict):
                 self.inbounds_by_protocol[inbound['protocol']].append(settings)
             except KeyError:
                 self.inbounds_by_protocol[inbound['protocol']] = [settings]
+
+    def update_api_port(self, api_port: int):
+        inbound = self.get_inbound("API_INBOUND")
+        inbound["port"] = api_port
 
     def add_inbound_client(self, inbound_tag: str, email: str, settings: dict):
         client = {"email": email, **settings}

@@ -12,6 +12,7 @@ class XRayBase(object):
             self.address = address
             self.port = port
             creds = grpc.ssl_channel_credentials(root_certificates=ssl_cert)
+            opts = None
             if ssl_target_name is not None:
                 opts = (('grpc.ssl_target_name_override', ssl_target_name,),)
             self._channel = grpc.secure_channel(f"{address}:{port}",
