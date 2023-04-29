@@ -1,12 +1,16 @@
+from datetime import datetime as dt
 from typing import Optional
 
 from app import telegram
+from app.db import Session, create_notification_reminder
 from app.db.models import UserStatus
 from app.models.admin import Admin
-from app.models.user import UserResponse
-from app.utils.notification import (ActionType, UserCreated, UserDeleted,
-                                    UserDisabled, UserEnabled, UserExpired,
-                                    UserLimited, UserUpdated, notify)
+from app.models.user import ReminderType, UserResponse
+from app.utils.notification import (ActionType, ReachedDaysLeft,
+                                    ReachedUsagePercent, UserCreated,
+                                    UserDeleted, UserDisabled, UserEnabled,
+                                    UserExpired, UserLimited, UserUpdated,
+                                    notify)
 
 
 def status_change(username: str, status: UserStatus, user: UserResponse, by: Optional[Admin] = None) -> None:
@@ -59,3 +63,17 @@ def user_deleted(username: str, by: Admin) -> None:
     except Exception:
         pass
     notify(UserDeleted(username=username, action=ActionType.user_deleted, by=by))
+
+
+def data_usage_percent_reached(
+        db: Session, percent: float, user: UserResponse, user_id: int, expire: Optional[int] = None) -> None:
+    notify(ReachedUsagePercent(username=user.username, user=user, used_percent=percent))
+    create_notification_reminder(db, ReminderType.data_usage,
+                                 expires_at=dt.utcfromtimestamp(expire) if expire else None, user_id=user_id)
+
+
+def expire_days_reached(db: Session, days: int, user: UserResponse, user_id: int, expire: int) -> None:
+    notify(ReachedDaysLeft(username=user.username, user=user, days_left=days))
+    create_notification_reminder(
+        db, ReminderType.expiration_date, expires_at=dt.utcfromtimestamp(expire),
+        user_id=user_id)

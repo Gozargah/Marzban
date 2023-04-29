@@ -1,7 +1,10 @@
 from datetime import datetime as dt
 from datetime import timedelta as td
 from typing import Any, Dict, List
+from app.db import GetDB
+from app.db.models import NotificationReminder
 
+from fastapi.encoders import jsonable_encoder
 from requests import Session
 
 import config
@@ -27,6 +30,7 @@ def send(data: List[Dict[Any, Any]]) -> bool:
         r = session.post(config.WEBHOOK_ADDRESS, json=data, headers=headers)
         if r.ok:
             return True
+        logger.error(r)
     except Exception as err:
         logger.error(err)
     return False
@@ -36,20 +40,21 @@ def send_notifications():
     if not queue:
         return
 
+    notifications_to_send = list()
     try:
-        notifications_to_send = list()
-        while (notification := queue.pop()):
+        while (notification := queue.popleft()):
             if (notification.tries > config.WEBHOOK_NUMBER_OF_RECURRENT_NOTIFICATIONS):
                 continue
-            if dt.utcnow().timestamp() < notification.send_at:
-                queue.append(notification)
+            if notification.send_at > dt.utcnow().timestamp():
+                queue.append(notification)  # add it to the queue again for the next check
                 continue
             notifications_to_send.append(notification)
     except IndexError:  # if the queue is empty
         pass
+
     if not notifications_to_send:
         return
-    if not send([notif.json() for notif in notifications_to_send]):
+    if not send([jsonable_encoder(notif) for notif in notifications_to_send]):
         for notification in notifications_to_send:
             if (notification.tries + 1) > config.WEBHOOK_NUMBER_OF_RECURRENT_NOTIFICATIONS:
                 continue
@@ -59,6 +64,12 @@ def send_notifications():
             queue.append(notification)
 
 
+def delete_expired_reminders() -> None:
+    with GetDB() as db:
+        db.query(NotificationReminder).filter(NotificationReminder.expires_at < dt.utcnow()).delete()
+        db.commit()
+
+
 if config.WEBHOOK_ADDRESS:
     @app.on_event("shutdown")
     def app_shutdown():
@@ -66,4 +77,5 @@ if config.WEBHOOK_ADDRESS:
         send_notifications()
 
     logger.info("Send webhook job started")
-    scheduler.add_job(send_notifications, "interval", seconds=30)
+    scheduler.add_job(send_notifications, "interval", seconds=30, replace_existing=True)
+    scheduler.add_job(delete_expired_reminders, "interval", hours=2, start_date=dt.utcnow() + td(minutes=1))

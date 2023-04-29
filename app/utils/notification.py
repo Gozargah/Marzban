@@ -21,7 +21,8 @@ class ActionType(str, Enum):
     user_enabled = "user_enabled"
     user_disabled = "user_disabled"
 
-    hosts_updated = "hosts_updated"
+    reached_usage_percent = "reached_usage_percent"
+    reached_days_left = "reached_days_left"
 
 
 class Notification(BaseModel):
@@ -30,13 +31,20 @@ class Notification(BaseModel):
     tries: int = 0
 
 
-class HostsUpdated(Notification):
-    action: ActionType = ActionType.hosts_updated
-    by: Admin
-
-
 class UserNotification(Notification):
     username: str
+
+
+class ReachedUsagePercent(UserNotification):
+    action: ActionType = ActionType.reached_usage_percent
+    user: UserResponse
+    used_percent: float
+
+
+class ReachedDaysLeft(UserNotification):
+    action: ActionType = ActionType.reached_days_left
+    user: UserResponse
+    days_left: int
 
 
 class UserCreated(UserNotification):
