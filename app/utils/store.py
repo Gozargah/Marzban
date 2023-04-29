@@ -1,51 +1,3 @@
-from typing import TYPE_CHECKING, Sequence
-from app import app, xray
-from app.models.proxy import ProxyHostSecurity
-
-if TYPE_CHECKING:
-    from app.db.models import ProxyHost
-
-
-class XrayStore:
-    HOSTS = {
-        "INBOUND_TAG": [
-            {
-                "remark": "",
-                "address": "",
-                "port": None,
-                "sni": "",
-                "host": "",
-                "tls": None,
-            }
-        ]
-    }
-
-    @classmethod
-    def update_hosts(cls):
-        from app.db import GetDB, crud
-
-        cls.HOSTS = {}
-        with GetDB() as db:
-            for inbound_tag in xray.config.inbounds_by_tag:
-                hosts: Sequence[ProxyHost] = crud.get_hosts(db, inbound_tag)
-                cls.HOSTS[inbound_tag] = []
-                for host in hosts:
-                    cls.HOSTS[inbound_tag].append(
-                        {
-                            "remark": host.remark,
-                            "address": host.address,
-                            "port": host.port,
-                            "sni": host.sni,
-                            "host": host.host,
-                            # None means the tls is not specified by host itself and
-                            #  complies with its inbound's settings.
-                            "tls": None
-                            if host.security == ProxyHostSecurity.inbound_default
-                            else host.security == ProxyHostSecurity.tls,
-                        }
-                    )
-
-
 class MemoryStorage:
     def __init__(self):
         self._data = {}
@@ -63,6 +15,73 @@ class MemoryStorage:
         self._data.clear()
 
 
-@app.on_event("startup")
-def app_startup():
-    XrayStore.update_hosts()
+class ListStorage(list):
+    def __init__(self, update_func):
+        super().__init__()
+        self.update_func = update_func
+
+    def __getitem__(self, index):
+        if not self:
+            self.update()
+
+        return super().__getitem__(index)
+
+    def __iter__(self):
+        if not self:
+            self.update()
+
+        return super().__iter__()
+
+    def __str__(self):
+        if not self:
+            self.update()
+
+        return super().__str__()
+
+    def update(self):
+        self.update_func(self)
+
+
+class DictStorage(dict):
+    def __init__(self, update_func):
+        super().__init__()
+        self.update_func = update_func
+
+    def __getitem__(self, key):
+        if not self:
+            self.update()
+
+        return super().__getitem__(key)
+
+    def __iter__(self):
+        if not self:
+            self.update()
+
+        return super().__iter__()
+
+    def __str__(self):
+        if not self:
+            self.update()
+
+        return super().__str__()
+
+    def values(self):
+        if not self:
+            self.update()
+
+        return super().values()
+
+    def keys(self):
+        if not self:
+            self.update()
+
+        return super().keys()
+
+    def get(self, key, default=None):
+        if not self:
+            self.update()
+
+        return super().get(key, default)
+
+    def update(self):
+        self.update_func(self)

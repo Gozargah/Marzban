@@ -1,6 +1,8 @@
 from random import randint
-from typing import Dict
+from typing import TYPE_CHECKING, Dict, Sequence
 
+from app.models.proxy import ProxyHostSecurity
+from app.utils.store import DictStorage
 from app.utils.system import check_port
 from app.xray import operations
 from app.xray.config import XRayConfig
@@ -27,8 +29,38 @@ api = XRayAPI(config.api_host, config.api_port)
 nodes: Dict[int, XRayNode] = {}
 
 
+if TYPE_CHECKING:
+    from app.db.models import ProxyHost
+
+
+@DictStorage
+def hosts(storage: dict):
+    from app.db import GetDB, crud
+
+    storage.clear()
+    with GetDB() as db:
+        for inbound_tag in config.inbounds_by_tag:
+            inbound_hosts: Sequence[ProxyHost] = crud.get_hosts(db, inbound_tag)
+
+            storage[inbound_tag] = [
+                {
+                    "remark": host.remark,
+                    "address": host.address,
+                    "port": host.port,
+                    "sni": host.sni,
+                    "host": host.host,
+                    # None means the tls is not specified by host itself and
+                    #  complies with its inbound's settings.
+                    "tls": None
+                    if host.security == ProxyHostSecurity.inbound_default
+                    else host.security == ProxyHostSecurity.tls,
+                } for host in inbound_hosts
+            ]
+
+
 __all__ = [
     "config",
+    "hosts",
     "core",
     "api",
     "nodes",

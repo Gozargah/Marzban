@@ -4,8 +4,6 @@ from typing import Optional
 from rich.console import Console
 
 from app.db import GetDB
-from app.utils import jwt
-from app.utils.store import XrayStore
 from app.models.user import UserResponse
 from app.utils.share import generate_subscription
 
@@ -13,11 +11,6 @@ from . import utils
 
 app = typer.Typer(no_args_is_help=True)
 console = Console()
-
-# Subscriptions need users' JWT token.
-jwt.set_jwt_secret_key()
-# Subscriptions need hosts list.
-XrayStore.update_hosts()
 
 
 class ConfigFormat(str, Enum):
