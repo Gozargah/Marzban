@@ -1,12 +1,13 @@
-from typing import Union
-from functools import cache
 from datetime import datetime, timedelta
+from functools import lru_cache
+from typing import Union
 
 from jose import JWTError, jwt
+
 from config import JWT_ACCESS_TOKEN_EXPIRE_MINUTES
 
 
-@cache
+@lru_cache(maxsize=None)
 def get_secret_key():
     from app.db import GetDB, get_jwt_secret_key
     with GetDB() as db:
