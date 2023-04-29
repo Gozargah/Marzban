@@ -4,6 +4,8 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  Alert,
+  AlertIcon,
   Box,
   Button,
   ButtonProps,
@@ -44,7 +46,7 @@ import { useForm, UseFormReturn } from "react-hook-form";
 import { UseMutateFunction, useMutation, useQueryClient } from "react-query";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
-import { UserStatus } from "types/User";
+import { Status } from "types/User";
 import {
   generateErrorMessage,
   generateSuccessMessage,
@@ -125,7 +127,7 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
     }
   );
 
-  const nodeStatus: UserStatus = isReconnecting
+  const nodeStatus: Status = isReconnecting
     ? "connecting"
     : node.status
     ? node.status
@@ -141,39 +143,46 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
       w="full"
     >
       <AccordionButton px={2} borderRadius="3px" onClick={toggleAccordion}>
-        <Text
-          as="span"
-          fontWeight="medium"
-          fontSize="sm"
-          flex="1"
-          textAlign="left"
-          color="gray.700"
-          _dark={{ color: "gray.300" }}
-        >
-          {node.name}
-        </Text>
+        <HStack w="full" justifyContent="space-between" pr={2}>
+          <Text
+            as="span"
+            fontWeight="medium"
+            fontSize="sm"
+            flex="1"
+            textAlign="left"
+            color="gray.700"
+            _dark={{ color: "gray.300" }}
+          >
+            {node.name}
+          </Text>
+          {node.status && <StatusBadge status={nodeStatus} compact />}
+        </HStack>
         <AccordionIcon />
       </AccordionButton>
       <AccordionPanel px={2} pb={2}>
-        <HStack pb={3} justifyContent="space-between">
-          {node.status && (
-            <StatusBadge
-              status={nodeStatus}
-              extraText={nodeStatus === "error" ? node.message : null}
-            />
+        <VStack pb={3} alignItems="flex-start">
+          {nodeStatus === "error" && (
+            <Alert status="error" size="xs">
+              <Box>
+                <HStack w="full">
+                  <AlertIcon w={4} />
+                  <Text marginInlineEnd={0}>{node.message}</Text>
+                </HStack>
+                <HStack justifyContent="flex-end" w="full">
+                  <Button
+                    size="sm"
+                    aria-label="reconnect node"
+                    leftIcon={<ReloadIcon />}
+                    onClick={() => reconnect()}
+                    disabled={isReconnecting}
+                  >
+                    {isReconnecting ? "Reconnecting..." : "Reconnect"}
+                  </Button>
+                </HStack>
+              </Box>
+            </Alert>
           )}
-          {node.status === "error" && (
-            <Button
-              size="sm"
-              aria-label="reconnect node"
-              leftIcon={<ReloadIcon />}
-              onClick={() => reconnect()}
-              disabled={isReconnecting}
-            >
-              {isReconnecting ? "Reconnecting..." : "Reconnect"}
-            </Button>
-          )}
-        </HStack>
+        </VStack>
         <NodeForm
           form={form}
           mutate={mutate}
@@ -410,7 +419,7 @@ export const NodesDialog: FC = () => {
             </Icon>
           </ModalHeader>
           <ModalCloseButton mt={3} />
-          <ModalBody w="440px" pb={3} pt={3}>
+          <ModalBody w="440px" pb={6} pt={3}>
             <Text mb={3} opacity={0.8} fontSize="sm">
               Using Marzban-Node, you are able to scale up your connection
               quality by adding different nodes on different servers.
