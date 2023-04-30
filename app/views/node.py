@@ -7,6 +7,7 @@ from app import app, logger, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.node import NodeCreate, NodeModify, NodeResponse
+from app.models.proxy import ProxyHost
 
 
 @app.post("/api/node", tags=['Node'], response_model=NodeResponse)
@@ -27,6 +28,16 @@ def add_node(new_node: NodeCreate,
     bg.add_task(xray.operations.connect_node,
                 node_id=dbnode.id,
                 config=xray.config.include_db_users())
+
+    if new_node.add_as_new_host is True:
+        host = ProxyHost(
+            remark=(new_node.name + " ({USERNAME}) [{PROTOCOL} - {TRANSPORT}]"),
+            address=new_node.address
+        )
+        for inbound_tag in xray.config.inbounds_by_tag:
+            crud.add_host(db, inbound_tag, host)
+
+        xray.hosts.update()
 
     logger.info(f"New node \"{dbnode.name}\" added")
     return dbnode

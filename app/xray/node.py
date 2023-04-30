@@ -117,7 +117,30 @@ class XRayNode:
             )
             return self._api
 
+    def _prepare_config(self, config: XRayConfig):
+        for inbound in config.get("inbounds", []):
+            streamSettings = inbound.get("streamSettings", {})
+            tlsSettings = streamSettings.get("tlsSettings", {})
+            certificates = tlsSettings.get("certificates", [])
+            for certificate in certificates:
+                if certificate.get("certificateFile"):
+                    with open(certificate['certificateFile']) as file:
+                        certificate['certificate'] = [
+                            line.strip() for line in file.readlines()
+                        ]
+                        del certificate['certificateFile']
+
+                if certificate.get("keyFile"):
+                    with open(certificate['keyFile']) as file:
+                        certificate['key'] = [
+                            line.strip() for line in file.readlines()
+                        ]
+                        del certificate['keyFile']
+
+        return config
+
     def start(self, config: XRayConfig):
+        config = self._prepare_config(config)
         json_config = config.to_json()
         self.remote.start(json_config)
         self.started = True
@@ -127,6 +150,7 @@ class XRayNode:
         self.started = False
 
     def restart(self, config: XRayConfig):
+        config = self._prepare_config(config)
         json_config = config.to_json()
         self.remote.restart(json_config)
 

@@ -18,7 +18,7 @@ from app.utils.helpers import calculate_expiration_days, calculate_usage_percent
 
 
 def add_default_host(db: Session, inbound: ProxyInbound):
-    host = ProxyHost(remark="🚀 Marz ({USERNAME}) [{TRANSPORT}]", address="{SERVER_IP}", inbound=inbound)
+    host = ProxyHost(remark="🚀 Marz ({USERNAME}) [{PROTOCOL} - {TRANSPORT}]", address="{SERVER_IP}", inbound=inbound)
     db.add(host)
     db.commit()
 
@@ -43,6 +43,24 @@ def get_hosts(db: Session, inbound_tag: str):
     if not inbound.hosts:
         add_default_host(db, inbound)
         db.refresh(inbound)
+    return inbound.hosts
+
+
+def add_host(db: Session, inbound_tag: str, host: ProxyHostModify):
+    inbound = get_or_create_inbound(db, inbound_tag)
+    inbound.hosts.append(
+        ProxyHost(
+            remark=host.remark,
+            address=host.address,
+            port=host.port,
+            sni=host.sni,
+            host=host.host,
+            inbound=inbound,
+            security=host.security
+        )
+    )
+    db.commit()
+    db.refresh(inbound)
     return inbound.hosts
 
 
