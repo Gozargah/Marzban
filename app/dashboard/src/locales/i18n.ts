@@ -4,14 +4,18 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import dayjs from "dayjs";
 import "dayjs/locale/zh-cn";
 
+declare module 'i18next' {
+  interface CustomTypeOptions {
+    returnNull: false;
+  }
+}
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
-  .on("languageChanged", (lng) => {
-    dayjs.locale(lng);
-  })
   .init({
     debug: true,
+    returnNull: false,
     fallbackLng: "en",
     interpolation: {
       escapeValue: false,
@@ -107,6 +111,26 @@ i18n
           "hostsDialog.loading": "loading...",
           "hostsDialog.apply": "Apply",
 
+          // Nodes
+          "nodes.title":
+            "Using Marzban-Node, you are able to scale up your connection quality by adding different nodes on different servers.",
+          "nodes.addNewMarzbanNode": "Add New Marzban Node",
+          "nodes.certificate": "Certificate",
+          "nodes.addHostForEveryInbound": "Add this node as a new host for every inbound",
+          "nodes.addNode": "Add Node",
+          "nodes.addNodeSuccess" : "Node {{name}} added successfully",
+          "nodes.apply": "editNode",
+          "nodes.nodeName": "Name",
+          "nodes.nodeAddress": "Address",
+          "nodes.nodePort": "Port",
+          "nodes.nodeAPIPort": "API Port",
+
+          // DeleteNodeModal
+          "deleteNode.title": "Delete Node",
+          "deleteNode.prompt":
+            "Are you sure you want to delete the <b>{{name}}</b> node?",
+          "deleteNode.deleteSuccess": "Node {{name}} removed successfully",
+
           // dashboard
           users: "Users",
           activeUsers: "active users",
@@ -166,8 +190,8 @@ i18n
 
           // DeleteUserModal
           "deleteUser.title": "删除用户",
-          "deleteUser.prompt": "您确定你要删除<b>{{username}}</b>？",
-          "deleteUser.deleteSuccess": "{{username}}删除成功。",
+          "deleteUser.prompt": "您确定你要删除 <b>{{username}}</b>？",
+          "deleteUser.deleteSuccess": "{{username}} 删除成功。",
 
           // UsersTable
           "usersTable.status": "状态",
@@ -187,8 +211,8 @@ i18n
           "userDialog.protocols": "协议",
           "userDialog.editUserTitle": "用户编辑",
           "userDialog.editUser": "修改",
-          "userDialog.userEdited": "已更新用户{{username}}。",
-          "userDialog.userCreated": "成功创建用户{{username}}。",
+          "userDialog.userEdited": "已更新用户 {{username}}。",
+          "userDialog.userCreated": "成功创建用户 {{username}}。",
           "userDialog.userAlreadyExists": "用户已存在",
           "userDialog.vmessDesc": "快速且安全",
           "userDialog.vlessDesc": "轻量、快速且安全",
@@ -220,6 +244,27 @@ i18n
           "hostsDialog.loading": "加载中...",
           "hostsDialog.apply": "保存",
 
+          // Nodes
+          "nodes.title":
+            "使用 Marzban-Node，您可以通过在不同的服务器上添加不同的节点来提供多节点负载。",
+          "nodes.addNewMarzbanNode": "添加新的 Marzban 节点",
+          "nodes.certificate": "证书",
+          "nodes.addHostForEveryInbound": "为每个入站请求添加此节点作为新主机",
+          "nodes.addNode": "添加节点",
+          "nodes.addNodeSuccess" : "节点 {{name}} 添加成功",
+          "nodes.editNode": "保存",
+          "nodes.nodeName": "名称",
+          "nodes.nodeAddress": "地址",
+          "nodes.nodePort": "端口",
+          "nodes.nodeAPIPort": "API 端口",
+          "nodes.reconnect": "重新连接",
+          "nodes.reconnecting": "重连中...",
+
+          // DeleteNodeModal
+          "deleteNode.title": "删除节点",
+          "deleteNode.prompt": "您确实要删除 <b>{{name}}</b> 节点吗？",
+          "deleteNode.deleteSuccess": "节点 {{name}} 删除成功",
+
           // dashboard
           users: "用户",
           activeUsers: "活跃用户",
@@ -230,16 +275,16 @@ i18n
           next: "下一页",
           createNewUser: "创建新用户",
           search: "搜索",
-          resetAllUsage: "重置所有用法",
+          resetAllUsage: "重置所有统计",
 
           // QRCodeDialog
           "qrcodeDialog.sublink": "订阅链接",
 
           // ResetUserUsageModal
           "resetUserUsage.prompt":
-            "您确定要重置<b>{{username}}</b>的流量统计吗？",
+            "您确定要重置 <b>{{username}}</b> 的流量统计吗？",
           "resetUserUsage.title": "重置用户流量统计",
-          "resetUserUsage.success": "{{username}}的流量统计重置完成。",
+          "resetUserUsage.success": "{{username}} 的流量统计重置完成。",
           "resetUserUsage.error": "重置失败，请稍候再试",
 
           // ResetAllUsageModal
@@ -248,11 +293,13 @@ i18n
             "此操作将清除所有用户统计，您确定要执行此操作吗？ 这不能被撤消！",
           "resetAllUsage.success": "所有统计重置完成。",
           "resetAllUsage.error": "重置失败，请稍候再试！",
-
-          hello: "",
         },
       },
     },
   });
+
+i18n.on("languageChanged", (lng) => {
+  dayjs.locale(lng);
+})
 
 export default i18n;

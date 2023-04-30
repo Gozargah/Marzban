@@ -105,18 +105,18 @@ export const Login: FC = () => {
                   <FormControl>
                     <Input
                       w="full"
-                      placeholder={t("username") || "Username"}
+                      placeholder={t("username")}
                       {...register("username")}
-                      error={t(errors?.username?.message as string) || ""}
+                      error={t(errors?.username?.message as string)}
                     />
                   </FormControl>
                   <FormControl>
                     <Input
                       w="full"
                       type="password"
-                      placeholder={t("password") || "Password"}
+                      placeholder={t("password")}
                       {...register("password")}
-                      error={t(errors?.password?.message as string) || ""}
+                      error={t(errors?.password?.message as string)}
                     />
                   </FormControl>
                   {error && (

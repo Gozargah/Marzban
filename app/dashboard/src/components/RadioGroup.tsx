@@ -357,7 +357,7 @@ const RadioCard: FC<
                   borderRadius="6px"
                   pl={2}
                   pr={2}
-                  placeholder={t("userDialog.generatedByDefault") || ""}
+                  placeholder={t("userDialog.generatedByDefault")}
                   {...form.register("proxies.vmess.id")}
                 />
               </FormControl>
@@ -375,7 +375,7 @@ const RadioCard: FC<
                   borderRadius="6px"
                   pl={2}
                   pr={2}
-                  placeholder={t("userDialog.generatedByDefault") || ""}
+                  placeholder={t("userDialog.generatedByDefault")}
                   {...form.register("proxies.vless.id")}
                 />
               </FormControl>
@@ -410,7 +410,7 @@ const RadioCard: FC<
                   borderRadius="6px"
                   pl={2}
                   pr={2}
-                  placeholder={t("userDialog.generatedByDefault") || ""}
+                  placeholder={t("userDialog.generatedByDefault")}
                   {...form.register("proxies.trojan.password")}
                 />
               </FormControl>
@@ -445,7 +445,7 @@ const RadioCard: FC<
                   borderRadius="6px"
                   pl={2}
                   pr={2}
-                  placeholder={t("userDialog.generatedByDefault") || ""}
+                  placeholder={t("userDialog.generatedByDefault")}
                   {...form.register("proxies.shadowsocks.password")}
                 />
               </FormControl>
