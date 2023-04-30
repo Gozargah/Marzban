@@ -65,6 +65,7 @@
     - [Marzban.sh](#marzbansh)
   - [Manual install (advanced)](#manual-install-advanced)
 - [Configuration](#configuration)
+- [How to use Marzban-Node](#how-to-use-marzban-node)
 - [How to use API](#how-to-use-api)
 - [How to Backup Marzban](#how-to-backup-marzban)
 - [Telegram Bot](#telegram-bot)
@@ -285,6 +286,28 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | WEBHOOK_ADDRESS                 | Webhook address to send notifications to. Webhook notifications will be sent if this value was set.   |
 | WEBHOOK_SECRET                  | Webhook secret will be sent with each request as `x-webhook-secret` in the header (default: `None`)   |
 
+# How to use Marzban-Node
+Marzban provide multi-node support, you can easily add node configurations in the node management panel.
+
+Clone the Marzban-Node project and install the dependencies.
+
+You need Python>=3.8
+
+```bash
+cd /var/lib
+git clone https://github.com/Gozargah/Marzban-node.git
+cd Marzban-node
+wget -qO- https://bootstrap.pypa.io/get-pip.py | python3 -
+python3 -m pip install -r requirements.txt
+
+systemctl enable /var/lib/Marzban-node/marzban.service
+systemclt start marzban
+
+# copy certificate
+cat ssl_cert.pem
+```
+
+In the node management panel, paste your ip and node's certificate.
 
 # How to use API
 Marzban provides a REST API that enables developers to interact with Marzban services programmatically. To view the API documentation in Swagger UI or ReDoc, set the configuration variable `DOCS=True` and navigate to the `/docs` and `/redoc`.

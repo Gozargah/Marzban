@@ -65,6 +65,7 @@
     - [Marzban.sh](#marzbansh)
   - [手动安装（高级）](#手动安装高级)
 - [配置](#配置)
+- [如何使用 Marzban-Node](#如何使用-marzban-node)
 - [如何使用 API](#如何使用-api)
 - [如何备份 Marzban](#如何备份-marzban)
 - [Telegram bot](#telegram-bot)
@@ -271,6 +272,29 @@ server {
 | JWT_ACCESS_TOKEN_EXPIRE_MINUTES | Access Tokens 的过期时间，以分钟为单位，`0` 表示无限期（默认为 `1440` 分钟）                         |
 | DOCS                            | API 文档是否应该在 `/docs` 和 `/redoc` 上提供（默认为 `False`                                        |
 | DEBUG                           | 开发者调试模式（默认: `False`）                                                                      |
+
+# 如何使用 Marzban-Node
+Marzban 提供多节点支持，您可以很轻松在节点管理面板中添加节点配置。
+
+克隆 Marzban-Node 项目并安装依赖项。
+
+您需要 Python>=3.8 版本。
+
+```bash
+cd /var/lib
+git clone https://github.com/Gozargah/Marzban-node.git
+cd Marzban-node
+wget -qO- https://bootstrap.pypa.io/get-pip.py | python3 -
+python3 -m pip install -r requirements.txt
+
+systemctl enable /var/lib/Marzban-node/marzban.service
+systemclt start marzban
+
+# copy certificate
+cat ssl_cert.pem
+```
+
+在节点管理面板中，填入您的 IP 和 节点证书。
 
 
 # 如何使用 API
