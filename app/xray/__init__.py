@@ -53,7 +53,7 @@ def hosts(storage: dict):
                     #  complies with its inbound's settings.
                     "tls": None
                     if host.security == ProxyHostSecurity.inbound_default
-                    else host.security == ProxyHostSecurity.tls,
+                    else host.security.value,
                 } for host in inbound_hosts
             ]
 

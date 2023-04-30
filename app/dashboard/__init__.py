@@ -27,7 +27,7 @@ def build():
 
 def run_dev():
     proc = subprocess.Popen(
-        ['npm', 'run', 'dev', '--', '--base', path, '--clearScreen', 'false'],
+        ['npm', 'run', 'dev', '--', '--host', '0.0.0.0', '--base', path, '--clearScreen', 'false'],
         env={**os.environ, 'VITE_BASE_API': f'http://127.0.0.1:{UVICORN_PORT}/api/'},
         cwd=base_dir
     )

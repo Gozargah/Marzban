@@ -120,9 +120,9 @@ const InboundCard: FC<
             <Text isTruncated {...getLabelProps()} fontSize="xs">
               {inbound.tag} <Text as="span">({inbound.network})</Text>
             </Text>
-            {inbound.tls && (
+            {inbound.tls && inbound.tls != 'none' && (
               <Badge fontSize="xs" opacity=".8" size="xs">
-                TLS
+                {inbound.tls}
               </Badge>
             )}
           </HStack>

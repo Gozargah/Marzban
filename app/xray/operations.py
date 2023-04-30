@@ -19,7 +19,7 @@ def add_user(user: User):
             except xray.exc.EmailExistsError:
                 pass
             for node in xray.nodes.values():
-                if node.connected:
+                if node.connected and node.started:
                     try:
                         node.api.add_inbound_user(tag=inbound_tag, user=account)
                     except xray.exc.EmailExistsError:
@@ -33,7 +33,7 @@ def remove_user(user: User):
         except xray.exc.EmailNotFoundError:
             pass
         for node in xray.nodes.values():
-            if node.connected:
+            if node.connected and node.started:
                 try:
                     node.api.remove_inbound_user(tag=inbound_tag, email=user.username)
                 except xray.exc.EmailNotFoundError:

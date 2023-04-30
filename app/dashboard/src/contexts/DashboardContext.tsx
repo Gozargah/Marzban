@@ -18,7 +18,7 @@ export type InboundType = {
   tag: string;
   protocol: ProtocolType;
   network: string;
-  tls: boolean;
+  tls: string;
   port?: number;
 };
 export type Inbounds = Map<ProtocolType, InboundType[]>;

@@ -117,5 +117,5 @@ class ProxyInbound(BaseModel):
     tag: str
     protocol: ProxyTypes
     network: str
-    tls: bool
+    tls: str
     port: int

@@ -133,7 +133,7 @@ class XRayConfig(dict):
                 "protocol": inbound["protocol"],
                 "port": None,
                 "network": "tcp",
-                "tls": False,
+                "tls": 'none',
                 "sni": "",
                 "path": "",
                 "host": "",
@@ -166,13 +166,37 @@ class XRayConfig(dict):
                 if settings['is_fallback'] is True:
                     # probably this is a fallback
                     security = self._fallbacks_inbound.get('streamSettings', {}).get('security')
-                    tls_settings = self._fallbacks_inbound.get('streamSettings', {}).get(f"{security}Settings")
+                    tls_settings = self._fallbacks_inbound.get('streamSettings', {}).get(f"{security}Settings", {})
 
                 settings['network'] = net
-                settings['tls'] = security in ('tls', 'xtls')
 
-                if tls_settings:
+                if security == 'tls':
+                    # settings['fp']
+                    # settings['alpn']
+                    settings['tls'] = 'tls'
                     settings['sni'] = tls_settings.get('serverName', '')
+
+                elif security == 'reality':
+                    settings['fp'] = 'chrome'
+                    settings['tls'] = 'reality'
+
+                    try:
+                        settings['sni'] = tls_settings.get('serverNames')[0]
+                    except (IndexError, TypeError):
+                        raise ValueError(
+                            f"You need to define at least one serverName in serverNames of {inbound['tag']}")
+
+                    try:
+                        settings['pbk'] = tls_settings['publicKey']
+                    except KeyError:
+                        raise ValueError(
+                            f"You need to provide publicKey in realitySettings of {inbound['tag']}")
+
+                    try:
+                        settings['sid'] = tls_settings.get('shortIds')[0]
+                    except (IndexError, TypeError):
+                        raise ValueError(
+                            f"You need to define at least one shortID in realitySettings of {inbound['tag']}")
 
                 if net == 'tcp':
                     header = net_settings.get('header', {})

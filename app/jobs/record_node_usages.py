@@ -9,7 +9,7 @@ from sqlalchemy import bindparam, update
 def record_nodes_users_usage():
     with engine.connect() as conn:
         for node in xray.nodes.values():
-            if node.connected:
+            if node.connected and node.started:
                 try:
                     params = [
                         {"name": stat.name, "value": stat.value}
@@ -40,7 +40,7 @@ scheduler.add_job(record_nodes_users_usage, 'interval', seconds=10)
 def record_nodes_outbounds_usage():
     with engine.connect() as conn:
         for node in xray.nodes.values():
-            if node.connected:
+            if node.connected and node.started:
                 try:
                     params = [
                         {"up": stat.value, "down": 0} if stat.link == "uplink" else {"up": 0, "down": stat.value}

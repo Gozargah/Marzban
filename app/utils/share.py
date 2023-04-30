@@ -31,10 +31,16 @@ class V2rayShareLink(str):
               host='',
               net='tcp',
               path='',
+              type='',
+              tls='none',
               sni='',
-              tls=False,
-              type=''):
-        return "vmess://" + base64.b64encode(json.dumps({
+              fp='',
+              alpn='',
+              pbk='',
+              sid='',
+              spx=''):
+
+        payload = {
             'add': address,
             'aid': '0',
             'host': host,
@@ -44,11 +50,23 @@ class V2rayShareLink(str):
             'port': port,
             'ps': remark,
             'scy': 'auto',
-            'sni': sni,
-            'tls': 'tls' if tls else '',
+            'tls': tls,
             'type': type,
             'v': '2'
-        }, sort_keys=True).encode('utf-8')).decode()
+        }
+
+        if tls == 'tls':
+            payload['sni'] = sni
+            payload['fp'] = fp
+            payload['alpn'] = alpn
+        elif tls == 'reality':
+            payload['sni'] = sni
+            payload['fp'] = fp
+            payload['pbk'] = pbk
+            payload['sid'] = sid
+            payload['spx'] = spx
+
+        return "vmess://" + base64.b64encode(json.dumps(payload, sort_keys=True).encode('utf-8')).decode()
 
     @classmethod
     def vless(cls,
@@ -58,28 +76,43 @@ class V2rayShareLink(str):
               id: Union[str, UUID],
               net='ws',
               path='',
-              tls=False,
               host='',
-              sni='',
               type='',
-              flow=''):
+              flow='',
+              tls='none',
+              sni='',
+              fp='',
+              alpn='',
+              pbk='',
+              sid='',
+              spx=''):
 
-        opts = {
-            "security": "tls" if tls else "none",
+        payload = {
+            "security": tls,
             "type": net,
             "host": host,
-            "sni": sni,
             "headerType": type,
             "flow": flow
         }
         if net == 'grpc':
-            opts['serviceName'] = path
+            payload['serviceName'] = path
         else:
-            opts['path'] = path
+            payload['path'] = path
+
+        if tls == 'tls':
+            payload['sni'] = sni
+            payload['fp'] = fp
+            payload['alpn'] = alpn
+        elif tls == 'reality':
+            payload['sni'] = sni
+            payload['fp'] = fp
+            payload['pbk'] = pbk
+            payload['sid'] = sid
+            payload['spx'] = spx
 
         return "vless://" + \
             f"{id}@{address}:{port}?" + \
-            urlparse.urlencode(opts) + f"#{( urlparse.quote(remark))}"
+            urlparse.urlencode(payload) + f"#{( urlparse.quote(remark))}"
 
     @classmethod
     def trojan(cls,
@@ -89,28 +122,43 @@ class V2rayShareLink(str):
                password: str,
                net='tcp',
                path='',
-               tls=False,
                host='',
-               sni='',
                type='',
-               flow=''):
+               flow='',
+               tls='none',
+               sni='',
+               fp='',
+               alpn='',
+               pbk='',
+               sid='',
+               spx=''):
 
-        opts = {
-            "security": "tls" if tls else "none",
+        payload = {
+            "security": tls,
             "type": net,
             "host": host,
-            "sni": sni,
             "headerType": type,
             "flow": flow
         }
         if net == 'grpc':
-            opts['serviceName'] = path
+            payload['serviceName'] = path
         else:
-            opts['path'] = path
+            payload['path'] = path
+
+        if tls == 'tls':
+            payload['sni'] = sni
+            payload['fp'] = fp
+            payload['alpn'] = alpn
+        elif tls == 'reality':
+            payload['sni'] = sni
+            payload['fp'] = fp
+            payload['pbk'] = pbk
+            payload['sid'] = sid
+            payload['spx'] = spx
 
         return "trojan://" + \
             f"{urlparse.quote(password, safe=':')}@{address}:{port}?" + \
-            urlparse.urlencode(opts) + f"#{urlparse.quote(remark)}"
+            urlparse.urlencode(payload) + f"#{urlparse.quote(remark)}"
 
     @classmethod
     def shadowsocks(cls,
@@ -203,7 +251,7 @@ class ClashConfiguration(object):
                   net='tcp',
                   path='',
                   sni='',
-                  tls=False):
+                  tls=''):
         remark = self._remark_validation(remark)
         node = {'name': remark,
                 'type': 'vmess',
@@ -220,9 +268,11 @@ class ClashConfiguration(object):
                 }}
         if host:
             node[f'{net}-opts']['headers'] = {'Host': host}
-        if tls:
-            node.update({'tls': tls,
-                         'servername': sni})
+        if tls == 'tls':
+            node.update({
+                'tls': tls,
+                'servername': sni
+            })
         self.data['proxies'].append(node)
 
     def add_trojan(self,
@@ -232,7 +282,7 @@ class ClashConfiguration(object):
                    password: str,
                    net='tcp',
                    path='',
-                   tls=False,
+                   tls='',
                    host='',
                    sni=''):
         remark = self._remark_validation(remark)
@@ -273,7 +323,12 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
                                     id=settings['id'],
                                     net=inbound['network'],
                                     tls=inbound['tls'],
-                                    sni=inbound['sni'],
+                                    sni=inbound.get('sni', ''),
+                                    fp=inbound.get('fp', ''),
+                                    alpn=inbound.get('alpn', ''),
+                                    pbk=inbound.get('pbk', ''),
+                                    sid=inbound.get('sid', ''),
+                                    spx=inbound.get('spx', ''),
                                     host=inbound['host'],
                                     path=inbound['path'],
                                     type=inbound['header_type'])
@@ -286,7 +341,12 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
                                     flow=settings.get('flow', ''),
                                     net=inbound['network'],
                                     tls=inbound['tls'],
-                                    sni=inbound['sni'],
+                                    sni=inbound.get('sni', ''),
+                                    fp=inbound.get('fp', ''),
+                                    alpn=inbound.get('alpn', ''),
+                                    pbk=inbound.get('pbk', ''),
+                                    sid=inbound.get('sid', ''),
+                                    spx=inbound.get('spx', ''),
                                     host=inbound['host'],
                                     path=inbound['path'],
                                     type=inbound['header_type'])
@@ -299,7 +359,12 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
                                      flow=settings.get('flow', ''),
                                      net=inbound['network'],
                                      tls=inbound['tls'],
-                                     sni=inbound['sni'],
+                                     sni=inbound.get('sni', ''),
+                                     fp=inbound.get('fp', ''),
+                                     alpn=inbound.get('alpn', ''),
+                                     pbk=inbound.get('pbk', ''),
+                                     sid=inbound.get('sid', ''),
+                                     spx=inbound.get('spx', ''),
                                      host=inbound['host'],
                                      path=inbound['path'],
                                      type=inbound['header_type'])
@@ -357,7 +422,7 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> lis
                 links.append(get_v2ray_link(remark=host['remark'].format_map(format_variables),
                                             address=host['address'].format_map(format_variables),
                                             inbound=host_inbound,
-                                            settings=settings.dict()))
+                                            settings=settings.dict(no_obj=True)))
 
     return links
 

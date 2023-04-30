@@ -32,7 +32,8 @@
                 "wsSettings": {
                     "path": "/"
                 }
-                // ,
+                // TLS settings:
+                //
                 // "security": "tls",
                 // "tlsSettings": {
                 //     "serverName": "SERVER_NAME",
@@ -44,6 +45,24 @@
                 //     ],
                 //     "minVersion": "1.2",
                 //     "cipherSuites": "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+                // }
+                //
+                //
+                // REALITY settings:
+                //
+                // "security": "reality",
+                // "realitySettings": {
+                //     "show": false,
+                //     "dest": "1.1.1.1:443",
+                //     "xver": 0,
+                //     "serverNames": [
+                //         ""
+                //     ],
+                //     "privateKey": "IBdzR2fc7Z12x6vxg7yvYhco3LPo53vg6Rysi1Ckgnw",
+                //     "publicKey": "uIgn0xc2APMVTEzLhNsDoGGKeuTv6_L8FxuqFDaaQzA",
+                //     "shortIds": [
+                //         ""
+                //     ]
                 // }
             }
         },
@@ -60,19 +79,6 @@
                 "wsSettings": {
                     "path": "/"
                 }
-                // ,
-                // "security": "tls",
-                // "tlsSettings": {
-                //     "serverName": "SERVER_NAME",
-                //     "certificates": [
-                //         {
-                //             "certificateFile": "CERT_FILE_PATH",
-                //             "keyFile": "KEY_FILE_PATH"
-                //         }
-                //     ],
-                //     "minVersion": "1.2",
-                //     "cipherSuites": "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
-                // }
             }
         },
         {
