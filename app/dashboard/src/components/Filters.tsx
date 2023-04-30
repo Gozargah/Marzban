@@ -86,7 +86,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
         <InputGroup>
           <InputLeftElement pointerEvents="none" children={<SearchIcon />} />
           <Input
-            placeholder={t("search") || "Search"}
+            placeholder={t("search")}
             value={search}
             borderColor="light-border"
             onChange={onChange}

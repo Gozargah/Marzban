@@ -59,6 +59,7 @@ import { Icon } from "./Icon";
 import { Input as CustomInput } from "./Input";
 import { StatusBadge } from "./StatusBadge";
 import { Textarea } from "./Textarea";
+import { useTranslation } from "react-i18next";
 
 const ModalIcon = chakra(SquaresPlusIcon, {
   baseStyle: {
@@ -100,6 +101,7 @@ type AccordionInboundType = {
 
 const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
   const { updateNode, reconnectNode, setDeletingNode } = useNodes();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const toast = useToast();
   const form = useForm<NodeType>({
@@ -176,7 +178,7 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
                     onClick={() => reconnect()}
                     disabled={isReconnecting}
                   >
-                    {isReconnecting ? "Reconnecting..." : "Reconnect"}
+                    {isReconnecting ? t("nodes.reconnecting") : t("nodes.reconnect")}
                   </Button>
                 </HStack>
               </Box>
@@ -187,9 +189,9 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
           form={form}
           mutate={mutate}
           isLoading={isLoading}
-          submitBtnText="Edit Node"
+          submitBtnText={t("nodes.editNode")}
           btnLeftAdornment={
-            <Tooltip label="Delete" placement="top">
+            <Tooltip label={t("delete")} placement="top">
               <IconButton
                 colorScheme="red"
                 variant="ghost"
@@ -217,6 +219,7 @@ const AddNodeForm: FC<AddNodeFormType> = ({
   resetAccordions,
 }) => {
   const toast = useToast();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { addNode } = useNodes();
   const form = useForm<NodeType>({
@@ -229,7 +232,7 @@ const AddNodeForm: FC<AddNodeFormType> = ({
   const { isLoading, mutate } = useMutation(addNode, {
     onSuccess: () => {
       generateSuccessMessage(
-        `Node ${form.getValues("name")} added successfully`,
+        t("nodes.addNodeSuccess", {name: form.getValues("name")}),
         toast
       );
       queryClient.invalidateQueries(FetchNodesQueryKey);
@@ -262,7 +265,7 @@ const AddNodeForm: FC<AddNodeFormType> = ({
           gap={1}
         >
           <PlusIcon display={"inline-block"} />{" "}
-          <span>Add New Marzban Node</span>
+          <span>{t("nodes.addNewMarzbanNode")}</span>
         </Text>
       </AccordionButton>
       <AccordionPanel px={2} py={4}>
@@ -270,7 +273,7 @@ const AddNodeForm: FC<AddNodeFormType> = ({
           form={form}
           mutate={mutate}
           isLoading={isLoading}
-          submitBtnText="Add Node"
+          submitBtnText={t("nodes.addNode")}
           btnProps={{ variant: "solid" }}
           addAsHost
         />
@@ -298,12 +301,13 @@ const NodeForm: NodeFormType = ({
   btnLeftAdornment,
   addAsHost = false,
 }) => {
+  const { t } = useTranslation();
   return (
     <form onSubmit={form.handleSubmit((v) => mutate(v))}>
       <VStack>
         <FormControl>
           <CustomInput
-            label="Name"
+            label={t("nodes.nodeName")}
             size="sm"
             placeholder="Marzban-S2"
             {...form.register("name")}
@@ -313,7 +317,7 @@ const NodeForm: NodeFormType = ({
         <HStack alignItems="flex-start">
           <Box w="50%">
             <CustomInput
-              label="Address"
+              label={t("nodes.nodeAddress")}
               size="sm"
               placeholder="51.20.12.13"
               {...form.register("address")}
@@ -322,7 +326,7 @@ const NodeForm: NodeFormType = ({
           </Box>
           <Box w="25%">
             <CustomInput
-              label="Port"
+              label={t("nodes.nodePort")}
               size="sm"
               placeholder="62050"
               {...form.register("port")}
@@ -331,7 +335,7 @@ const NodeForm: NodeFormType = ({
           </Box>
           <Box w="25%">
             <CustomInput
-              label="API Port"
+              label={t("nodes.nodeAPIPort")}
               size="sm"
               placeholder="62051"
               {...form.register("api_port")}
@@ -340,7 +344,7 @@ const NodeForm: NodeFormType = ({
           </Box>
         </HStack>
         <FormControl>
-          <FormLabel>Certificate</FormLabel>
+          <FormLabel>{t("nodes.certificate")}</FormLabel>
           <Textarea
             {...form.register("certificate")}
             w="full"
@@ -365,7 +369,7 @@ const NodeForm: NodeFormType = ({
           <FormControl py={1}>
             <Checkbox {...form.register("add_as_new_host")}>
               <FormLabel m={0}>
-                Add this node as a new host for every inbound
+                {t("nodes.addHostForEveryInbound")}
               </FormLabel>
             </Checkbox>
           </FormControl>
@@ -392,6 +396,7 @@ const NodeForm: NodeFormType = ({
 
 export const NodesDialog: FC = () => {
   const { isEditingNodes, onEditingNodes } = useDashboard();
+  const { t } = useTranslation();
   const [openAccordions, setOpenAccordions] = useState<any>({});
   const { data: nodes, isLoading } = useNodesQuery();
 
@@ -421,8 +426,7 @@ export const NodesDialog: FC = () => {
           <ModalCloseButton mt={3} />
           <ModalBody w="440px" pb={6} pt={3}>
             <Text mb={3} opacity={0.8} fontSize="sm">
-              Using Marzban-Node, you are able to scale up your connection
-              quality by adding different nodes on different servers.
+              {t("nodes.title")}
             </Text>
             {isLoading && "loading..."}
             <Accordion

@@ -407,7 +407,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           return (
                             <>
                               <ReactDatePicker
-                                dateFormat={t("dateFormat") || "MMMM d, yyy"}
+                                dateFormat={t("dateFormat")}
                                 minDate={new Date()}
                                 selected={
                                   field.value
