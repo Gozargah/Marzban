@@ -1,6 +1,6 @@
 from threading import Thread
 
-from app import app, xray
+from app import app, scheduler, xray
 from app.db import GetDB, crud
 
 
@@ -20,3 +20,15 @@ def app_shutdown():
             node.disconnect()
         except Exception:
             pass
+
+
+def reconnect_nodes():
+    for node_id, node in xray.nodes.items():
+        if not node.connected:
+            Thread(target=xray.operations.connect_node, args=(
+                node_id,
+                xray.config.include_db_users()
+            )).start()
+
+
+scheduler.add_job(reconnect_nodes, 'interval', seconds=15)
