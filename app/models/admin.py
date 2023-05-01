@@ -24,7 +24,7 @@ class Admin(BaseModel):
         orm_mode = True
 
     @classmethod
-    def get_admin(cls, token: str, db: Session = Depends(get_db)):
+    def get_admin(cls, token: str, db: Session):
         payload = get_admin_payload(token)
         if not payload:
             return
@@ -39,8 +39,10 @@ class Admin(BaseModel):
         return cls.from_orm(dbadmin)
 
     @classmethod
-    def get_current(cls, token: str = Depends(oauth2_scheme)):
-        admin = cls.get_admin(token)
+    def get_current(cls,
+                    db: Session = Depends(get_db),
+                    token: str = Depends(oauth2_scheme)):
+        admin = cls.get_admin(token, db)
         if not admin:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

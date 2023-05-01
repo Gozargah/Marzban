@@ -4,16 +4,17 @@ import json
 from fastapi import Depends, HTTPException, WebSocket
 
 from app import app, xray
-from app.xray import XRayConfig
+from app.db import Session, get_db
 from app.models.admin import Admin
 from app.models.core import CoreStats
+from app.xray import XRayConfig
 from config import XRAY_JSON
 
 
 @app.websocket("/api/core/logs")
-async def core_logs(websocket: WebSocket):
+async def core_logs(websocket: WebSocket, db: Session = Depends(get_db)):
     token = websocket.headers.get('Authorization', '').removeprefix("Bearer ")
-    admin = Admin.get_admin(token)
+    admin = Admin.get_admin(token, db)
     if not admin:
         return await websocket.close(reason="Unauthorized", code=4401)
 
