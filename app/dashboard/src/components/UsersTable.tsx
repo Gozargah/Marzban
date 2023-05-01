@@ -150,10 +150,10 @@ const UsageSlider: FC<UsageSliderProps> = (props) => {
             formatBytes(total) +
             (dataLimitResetStrategy && dataLimitResetStrategy !== "no_reset"
               ? " " +
-                t(
-                  "userDialog.resetStrategy" +
-                    getResetStrategy(dataLimitResetStrategy)
-                )
+              t(
+                "userDialog.resetStrategy" +
+                getResetStrategy(dataLimitResetStrategy)
+              )
               : "")
           )}
         </Text>
@@ -346,30 +346,6 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                               <VStack
                                 alignItems="flex-start"
                                 w="full"
-                                spacing={2}
-                              >
-                                <Text
-                                  textTransform="capitalize"
-                                  fontSize="xs"
-                                  fontWeight="bold"
-                                  color="gray.600"
-                                  _dark={{
-                                    color: "gray.400",
-                                  }}
-                                >
-                                  {t("usersTable.status")}
-                                </Text>
-                                <Box width="full" minW="230px">
-                                  <StatusBadge
-                                    compact
-                                    expiryDate={user.expire}
-                                    status={user.status}
-                                  />
-                                </Box>
-                              </VStack>
-                              <VStack
-                                alignItems="flex-start"
-                                w="full"
                                 spacing={-1}
                               >
                                 <Text
@@ -400,29 +376,36 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                                 </Box>
                               </VStack>
                               <HStack w="full" justifyContent="space-between">
-                                <Box>
-                                  <ActionButtons user={user} />
+                                <Box width="full" minW="230px">
+                                  <StatusBadge
+                                    compact
+                                    expiryDate={user.expire}
+                                    status={user.status}
+                                  />
                                 </Box>
-                                <Tooltip
-                                  label={t("userDialog.editUser")}
-                                  placement="top"
-                                >
-                                  <IconButton
-                                    aria-label="Edit user"
-                                    bg="transparent"
-                                    _dark={{
-                                      _hover: {
-                                        bg: "gray.700",
-                                      },
-                                    }}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onEditingUser(user);
-                                    }}
+                                <HStack>
+                                  <ActionButtons user={user} />
+                                  <Tooltip
+                                    label={t("userDialog.editUser")}
+                                    placement="top"
                                   >
-                                    <EditIcon />
-                                  </IconButton>
-                                </Tooltip>
+                                    <IconButton
+                                      aria-label="Edit user"
+                                      bg="transparent"
+                                      _dark={{
+                                        _hover: {
+                                          bg: "gray.700",
+                                        },
+                                      }}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onEditingUser(user);
+                                      }}
+                                    >
+                                      <EditIcon />
+                                    </IconButton>
+                                  </Tooltip>
+                                </HStack>
                               </HStack>
                             </VStack>
                           </AccordionPanel>
