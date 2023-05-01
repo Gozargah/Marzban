@@ -24,27 +24,31 @@ class Admin(BaseModel):
         orm_mode = True
 
     @classmethod
-    def get_current(cls,
-                    db: Session = Depends(get_db),
-                    token: str = Depends(oauth2_scheme)):
-        exc = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
+    def get_admin(cls, token: str, db: Session = Depends(get_db)):
         payload = get_admin_payload(token)
         if not payload:
-            raise exc
+            return
 
         if payload['username'] in SUDOERS and payload['is_sudo'] is True:
             return cls(username=payload['username'], is_sudo=True)
 
         dbadmin = crud.get_admin(db, payload['username'])
         if not dbadmin:
-            raise exc
+            return
 
         return cls.from_orm(dbadmin)
+
+    @classmethod
+    def get_current(cls, token: str = Depends(oauth2_scheme)):
+        admin = cls.get_admin(token)
+        if not admin:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        return admin
 
 
 class AdminCreate(Admin):

@@ -33,6 +33,9 @@ class XRayConfig(dict):
                 jdata = re.sub(r'\/\/(.*)', '', file.read())
                 config = json.loads(jdata)
 
+        if isinstance(config, dict):
+            config = deepcopy(config)
+
         self.api_host = api_host
         self.api_port = api_port
 
@@ -49,7 +52,11 @@ class XRayConfig(dict):
         self._apply_api()
 
     def _apply_api(self):
-        if self.get_inbound("API_INBOUND"):
+        api_inbound = self.get_inbound("API_INBOUND")
+        if api_inbound:
+            api_inbound["listen"] = self.api_host
+            api_inbound["listen"]["address"] = self.api_host
+            api_inbound["port"] = self.api_port
             return
 
         self["api"] = {

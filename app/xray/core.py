@@ -1,9 +1,12 @@
 import atexit
+import re
 import subprocess
 import threading
+from collections import deque
 
-from app.xray.config import XRayConfig
 from app import logger
+from app.xray.config import XRayConfig
+from contextlib import contextmanager
 
 
 class XRayCore:
@@ -12,8 +15,13 @@ class XRayCore:
                  assets_path: str = "/usr/share/xray"):
         self.executable_path = executable_path
         self.assets_path = assets_path
-        self.started = False
-        self._process = None
+
+        self.version = self.get_version()
+        self.process = None
+        self.restarting = False
+
+        self._logs_buffer = deque(maxlen=100)
+        self._temp_log_buffers = []
         self._on_start_funcs = []
         self._on_stop_funcs = []
         self._env = {
@@ -22,26 +30,45 @@ class XRayCore:
 
         atexit.register(lambda: self.stop() if self.started else None)
 
-    @property
-    def process(self):
-        if self._process is None:
-            raise ProcessLookupError("Xray has not been started")
-        return self._process
+    def get_version(self):
+        cmd = [self.executable_path, "version"]
+        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode('utf-8')
+        m = re.match(r'^Xray (\d+\.\d+\.\d+)', output)
+        if m:
+            return m.groups()[0]
 
-    def _read_process_stdout(self):
-        def reader():
-            while True:
-                try:
-                    output = self._process.stdout.readline().strip('\n')
-                    if output == '' and self._process.poll() is not None:
-                        break
-                except AttributeError:
+    def __capture_process_logs(self):
+        def capture():
+            while self.process:
+                output = self.process.stdout.readline()
+                if output:
+                    self._logs_buffer.append(output.strip())
+                    for buf in self._temp_log_buffers:
+                        buf.append(output.strip())
+
+                elif not self.process or self.process.poll() is not None:
                     break
 
-                # if output:
-                #     logger.info(output)
+        threading.Thread(target=capture).start()
 
-        threading.Thread(target=reader).start()
+    @contextmanager
+    def get_logs(self):
+        buf = deque(self._logs_buffer, maxlen=100)
+        try:
+            self._temp_log_buffers.append(buf)
+            yield buf
+        finally:
+            self._temp_log_buffers.remove(buf)
+
+    @property
+    def started(self):
+        if not self.process:
+            return False
+
+        if self.process.poll() is None:
+            return True
+
+        return False
 
     def start(self, config: XRayConfig):
         if self.started is True:
@@ -56,55 +83,46 @@ class XRayCore:
             '-config',
             'stdin:'
         ]
-        self._process = subprocess.Popen(
+        self.process = subprocess.Popen(
             cmd,
             env=self._env,
             stdin=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             stdout=subprocess.PIPE,
             universal_newlines=True
         )
-        self._process.stdin.write(config.to_json())
-        self._process.stdin.flush()
-        self._process.stdin.close()
+        self.process.stdin.write(config.to_json())
+        self.process.stdin.flush()
+        self.process.stdin.close()
+        logger.warning(f"Xray core {self.version} started")
 
-        # Wait for XRay to get started
-        log = ''
-        while True:
-            output = self._process.stdout.readline()
-            if output == '' and self._process.poll() is not None:
-                break
-
-            if output:
-                log = output.strip('\n')
-                logger.debug(log)
-
-                if log.endswith('started'):
-                    logger.info(log)
-                    self.started = True
-                    break
-
-        if not self.started:
-            raise RuntimeError("Failed to run XRay", log)
-
-        self._read_process_stdout()
+        self.__capture_process_logs()
 
         # execute on start functions
         for func in self._on_start_funcs:
             threading.Thread(target=func).start()
 
     def stop(self):
+        if not self.started:
+            return
+
         self.process.terminate()
-        self.started = False
-        self._process = None
-        logger.info("Xray stopped")
+        self.process = None
+        logger.warning("Xray core stopped")
 
         # execute on stop functions
         for func in self._on_stop_funcs:
             threading.Thread(target=func).start()
 
     def restart(self, config: XRayConfig):
+        if self.restarting is True:
+            return
+
+        self.restarting = True
+        logger.warning("Restarting Xray core...")
         self.stop()
         self.start(config)
+        self.restarting = False
 
     def on_start(self, func: callable):
         self._on_start_funcs.append(func)
