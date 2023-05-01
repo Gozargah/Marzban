@@ -38,7 +38,9 @@ CUSTOM_TEMPLATES_DIRECTORY = config("CUSTOM_TEMPLATES_DIRECTORY", default=None)
 CLASH_SUBSCRIPTION_TEMPLATE = config("CLASH_SUBSCRIPTION_TEMPLATE", default="clash/default.yml")
 
 # USERNAME: PASSWORD
-SUDOERS = {config("SUDO_USERNAME", "admin"): config("SUDO_PASSWORD", "admin")}
+SUDOERS = {config("SUDO_USERNAME"): config("SUDO_PASSWORD")} \
+    if config("SUDO_USERNAME", default='') and config("SUDO_PASSWORD", default='') \
+    else {}
 
 
 WEBHOOK_ADDRESS = config("WEBHOOK_ADDRESS", default=None)
