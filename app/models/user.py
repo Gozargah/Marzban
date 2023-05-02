@@ -229,3 +229,11 @@ class UserResponse(User):
 class UsersResponse(BaseModel):
     users: List[UserResponse]
     total: int
+
+class UserUsageResponse(BaseModel):
+    node_name: str
+    used_traffic: int
+
+class UserUsagesResponse(BaseModel):
+    username: str
+    usages: List[UserUsageResponse]

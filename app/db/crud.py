@@ -8,10 +8,10 @@ from app.db.models import (JWT, Admin, Node, Proxy, ProxyHost, ProxyInbound,
                            ProxyTypes, System, User, UserTemplate,
                            UserUsageResetLogs)
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
-from app.models.node import NodeCreate, NodeModify, NodeStatus
+from app.models.node import NodeCreate, NodeModify, NodeStatus, NodeUsageResponse
 from app.models.proxy import ProxyHost as ProxyHostModify
 from app.models.user import (UserCreate, UserDataLimitResetStrategy,
-                             UserModify, UserStatus)
+                             UserModify, UserStatus, UserUsageResponse)
 from app.models.user_template import UserTemplateCreate, UserTemplateModify
 
 
@@ -148,6 +148,34 @@ def get_users(db: Session,
 
     return query.all()
 
+def get_user_usages(db: Session, dbuser: User) -> List[UserUsageResponse]:
+    usages = []
+    filter = {}
+
+    used_traffic = dbuser.used_traffic
+    
+    for v in dbuser.usages:
+        usages.append(UserUsageResponse(
+            node_name=v.node.name,
+            used_traffic=v.used_traffic
+        ))
+        used_traffic -= v.used_traffic
+        filter[v.node.name] = True
+
+    for node in db.query(Node).all():
+        if not (node.name in filter):
+            filter[node.name] = True
+            usages.append(UserUsageResponse(
+                node_name=node.name,
+                used_traffic=0
+            ))
+
+    usages.insert(0, UserUsageResponse(
+        node_name="Master",
+        used_traffic=used_traffic
+    ))
+
+    return usages
 
 def get_users_count(db: Session, status: UserStatus = None, admin: Admin = None):
     query = db.query(User.id)
@@ -268,6 +296,7 @@ def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
         if dbuser.status not in (UserStatus.expired or UserStatus.disabled):
             dbuser.status = UserStatus.active
         dbuser.usage_logs.clear()
+        dbuser.usages.clear()
         db.add(dbuser)
 
     db.commit()
@@ -424,6 +453,29 @@ def get_nodes(db: Session, status: Optional[Union[NodeStatus, list]] = None):
 
     return query.all()
 
+def get_nodes_usage(db: Session) -> List[NodeUsageResponse]:
+    usages = []
+    filter = {}
+
+    dbmaster = db.query(System).first()
+    master = NodeUsageResponse(
+        node_name="Master",
+        incoming_bandwidth=dbmaster.uplink,
+        outgoing_bandwidth=dbmaster.downlink,
+    )
+    
+    for v in db.query(Node).all():
+        usages.append(NodeUsageResponse(
+            node_name=v.name,
+            incoming_bandwidth=v.uplink,
+            outgoing_bandwidth=v.downlink,
+        ))
+        master.incoming_bandwidth -= v.uplink
+        master.outgoing_bandwidth -= v.downlink
+
+    usages.insert(0, master)
+
+    return usages
 
 def create_node(db: Session, node: NodeCreate):
     dbnode = Node(name=node.name,
@@ -439,6 +491,7 @@ def create_node(db: Session, node: NodeCreate):
 
 
 def remove_node(db: Session, dbnode: Node):
+    dbnode.usages.clear()
     db.delete(dbnode)
     db.commit()
     return dbnode

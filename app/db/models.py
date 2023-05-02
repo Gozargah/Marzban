@@ -31,6 +31,7 @@ class User(Base):
     proxies = relationship("Proxy", back_populates="user", cascade="all, delete-orphan")
     status = Column(Enum(UserStatus), nullable=False, default=UserStatus.active)
     used_traffic = Column(BigInteger, default=0)
+    usages = relationship("UserUsage", back_populates="user", cascade="all, delete-orphan")
     data_limit = Column(BigInteger, nullable=True)
     data_limit_reset_strategy = Column(
         Enum(UserDataLimitResetStrategy),
@@ -42,6 +43,7 @@ class User(Base):
     admin_id = Column(Integer, ForeignKey("admins.id"))
     admin = relationship("Admin", back_populates="users")
     created_at = Column(DateTime, default=datetime.utcnow)
+
 
     @property
     def lifetime_used_traffic(self):
@@ -192,3 +194,13 @@ class Node(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     uplink = Column(BigInteger, default=0)
     downlink = Column(BigInteger, default=0)
+    usages = relationship("UserUsage", back_populates="node", cascade="all, delete-orphan")
+
+class UserUsage(Base):
+    __tablename__ = "user_usages"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    user = relationship("User", back_populates="usages")
+    node_id = Column(Integer, ForeignKey("nodes.id"))
+    node = relationship("Node", back_populates="usages")
+    used_traffic = Column(BigInteger, default=0)

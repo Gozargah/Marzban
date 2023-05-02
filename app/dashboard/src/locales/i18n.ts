@@ -47,6 +47,7 @@ i18n
           // Header
           "header.hostsSetting": "Hosts Settings",
           "header.nodesSetting": "Nodes Settings",
+          "header.nodesUsage": "Nodes Usage",
           "header.donation": "Donation",
           "header.logout": "Log out",
 
@@ -73,6 +74,7 @@ i18n
           "userDialog.warningNoProtocol": "Please select at least one protocol",
           "userDialog.expiryDate": "Expiry Date",
           "userDialog.resetUsage": "Reset Usage",
+          "userDialog.usage": "Usage",
           "userDialog.protocols": "Protocols",
           "userDialog.editUserTitle": "Edit user",
           "userDialog.editUser": "Edit user",
@@ -185,6 +187,7 @@ i18n
           // Header
           "header.hostsSetting": "设置",
           "header.nodesSetting": "节点设置",
+          "header.nodesUsage": "节点统计",
           "header.donation": "捐赠",
           "header.logout": "退出",
 
@@ -208,6 +211,7 @@ i18n
           "userDialog.periodicUsageReset": "定期重置流量",
           "userDialog.expiryDate": "过期日期",
           "userDialog.resetUsage": "重置流量",
+          "userDialog.usage": "流量详情",
           "userDialog.protocols": "协议",
           "userDialog.editUserTitle": "用户编辑",
           "userDialog.editUser": "修改",

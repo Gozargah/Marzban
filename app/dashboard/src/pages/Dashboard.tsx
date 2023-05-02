@@ -13,6 +13,7 @@ import { HostsDialog } from "components/HostsDialog";
 import { ResetUserUsageModal } from "components/ResetUserUsageModal";
 import { NodesDialog } from "components/NodesModal";
 import { ResetAllUsageModal } from "components/ResetAllUsageModal";
+import { NodesUsage } from "components/NodesUsage";
 
 export const Dashboard: FC = () => {
   useEffect(() => {
@@ -32,6 +33,7 @@ export const Dashboard: FC = () => {
         <HostsDialog />
         <ResetUserUsageModal />
         <NodesDialog />
+        <NodesUsage />
         <ResetAllUsageModal />
       </Box>
       <Footer />

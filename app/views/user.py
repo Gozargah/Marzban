@@ -5,7 +5,7 @@ from app import app, logger, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.user import (UserCreate, UserModify, UserResponse,
-                             UsersResponse, UserStatus)
+                             UsersResponse, UserStatus, UserUsagesResponse)
 from app.utils import report
 
 
@@ -209,3 +209,21 @@ def reset_users_data_usage(db: Session = Depends(get_db),
     dbadmin = crud.get_admin(db, admin.username)
     crud.reset_all_users_data_usage(db=db, admin=dbadmin)
     return {}
+
+@app.get("/api/user/{username}/usage", tags=['User'], response_model=UserUsagesResponse)
+def get_user(username: str,
+             db: Session = Depends(get_db),
+             admin: Admin = Depends(Admin.get_current)):
+    """
+    Get users usage
+    """
+    dbuser = crud.get_user(db, username)
+    if not dbuser:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
+        raise HTTPException(status_code=403, detail="You're not allowed")
+
+    usages = crud.get_user_usages(db, dbuser)
+
+    return {"usages": usages, "username": username}
