@@ -2,7 +2,6 @@ import { Box, BoxProps, Card, chakra, HStack, Text } from "@chakra-ui/react";
 import {
   ChartBarIcon,
   ChartPieIcon,
-  CogIcon,
   CpuChipIcon,
   UsersIcon,
 } from "@heroicons/react/24/outline";
