@@ -280,7 +280,9 @@ def reset_user_data_usage(db: Session, dbuser: User):
     db.add(usage_log)
 
     dbuser.used_traffic = 0
-    dbuser.status = UserStatus.active.value
+    dbuser.node_usages.clear()
+    if dbuser.status not in (UserStatus.expired or UserStatus.disabled):
+        dbuser.status = UserStatus.active.value
     db.add(dbuser)
 
     db.commit()
@@ -495,7 +497,7 @@ def create_node(db: Session, node: NodeCreate):
 
 
 def remove_node(db: Session, dbnode: Node):
-    dbnode.usages.clear()
+    dbnode.node_usages.clear()
     db.delete(dbnode)
     db.commit()
     return dbnode
