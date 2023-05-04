@@ -40,6 +40,7 @@ export type NodeStore = {
   nodes: NodeType[];
   addNode: (node: NodeType) => Promise<unknown>;
   fetchNodes: () => Promise<NodeType[]>;
+  fetchNodesUsage: () => Promise<void>;
   updateNode: (node: NodeType) => Promise<unknown>;
   reconnectNode: (node: NodeType) => Promise<unknown>;
   deletingNode?: NodeType | null;
@@ -61,6 +62,9 @@ export const useNodes = create<NodeStore>((set, get) => ({
   },
   fetchNodes() {
     return fetch("/nodes");
+  },
+  fetchNodesUsage () {
+    return fetch("/nodes/usage");
   },
   updateNode(body) {
     return fetch(`/node/${body.id}`, {

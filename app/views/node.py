@@ -6,7 +6,7 @@ from fastapi import BackgroundTasks, Depends, HTTPException
 from app import app, logger, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
-from app.models.node import NodeCreate, NodeModify, NodeResponse
+from app.models.node import NodeCreate, NodeModify, NodeResponse, NodesUsageResponse
 from app.models.proxy import ProxyHost
 
 
@@ -124,3 +124,14 @@ def remove_node(node_id: int,
 
     logger.info(f"Node \"{dbnode.name}\" deleted")
     return {}
+
+@app.get("/api/nodes/usage", tags=['Node'], response_model=NodesUsageResponse)
+def get_user(db: Session = Depends(get_db),
+             admin: Admin = Depends(Admin.get_current)):
+    """
+    Get nodes usage
+    """
+
+    usages = crud.get_nodes_usage(db)
+
+    return {"usages": usages}

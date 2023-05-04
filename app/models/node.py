@@ -2,7 +2,7 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from pydantic import BaseModel, validator
 from enum import Enum
-from typing import Union
+from typing import Union, List
 
 
 class NodeStatus(str, Enum):
@@ -75,3 +75,12 @@ class NodeResponse(Node):
 
     class Config:
         orm_mode = True
+
+class NodeUsageResponse(BaseModel):
+    node_name: str
+    incoming_bandwidth: int
+    outgoing_bandwidth: int
+
+class NodesUsageResponse(BaseModel):
+    usages: List[NodeUsageResponse]
+

@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from app import logger, scheduler, xray
-from app.db import crud, get_db, get_users
+from app.db import crud, GetDB, get_users
 from app.models.user import UserDataLimitResetStrategy, UserStatus
 
 reset_strategy_to_days = {
@@ -14,24 +14,24 @@ reset_strategy_to_days = {
 
 def reset_user_data_usage():
     now = datetime.utcnow()
-    db = next(get_db())
-    for user in get_users(db, reset_strategy=[
-        UserDataLimitResetStrategy.day.value,
-        UserDataLimitResetStrategy.week.value,
-        UserDataLimitResetStrategy.month.value,
-        UserDataLimitResetStrategy.year.value,
-    ]):
-        last_reset_time = user.last_traffic_reset_time
-        num_days_to_reset = reset_strategy_to_days[user.data_limit_reset_strategy]
+    with GetDB() as db:
+        for user in get_users(db, reset_strategy=[
+            UserDataLimitResetStrategy.day.value,
+            UserDataLimitResetStrategy.week.value,
+            UserDataLimitResetStrategy.month.value,
+            UserDataLimitResetStrategy.year.value,
+        ]):
+            last_reset_time = user.last_traffic_reset_time
+            num_days_to_reset = reset_strategy_to_days[user.data_limit_reset_strategy]
 
-        if not (now - last_reset_time).days >= num_days_to_reset:
-            continue
+            if not (now - last_reset_time).days >= num_days_to_reset:
+                continue
 
-        crud.reset_user_data_usage(db, user)
-        if user.status == UserStatus.limited:
-            xray.operations.add_user(user)
+            crud.reset_user_data_usage(db, user)
+            if user.status == UserStatus.limited:
+                xray.operations.add_user(user)
 
-        logger.info(f"User data usage reset for User \"{user.username}\"")
+            logger.info(f"User data usage reset for User \"{user.username}\"")
 
 
 scheduler.add_job(reset_user_data_usage, 'interval', hours=1)

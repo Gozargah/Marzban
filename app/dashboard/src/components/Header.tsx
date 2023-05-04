@@ -13,6 +13,7 @@ import {
 import {
   ArrowLeftOnRectangleIcon,
   Bars3Icon,
+  ChartPieIcon,
   CurrencyDollarIcon,
   DocumentMinusIcon,
   LinkIcon,
@@ -42,6 +43,7 @@ const LightIcon = chakra(SunIcon, {
   },
 });
 
+
 type HeaderProps = {
   actions?: ReactNode;
 };
@@ -57,6 +59,7 @@ const LogoutIcon = chakra(ArrowLeftOnRectangleIcon, iconProps);
 const DonationIcon = chakra(CurrencyDollarIcon, iconProps);
 const HostsIcon = chakra(LinkIcon, iconProps);
 const NodesIcon = chakra(SquaresPlusIcon, iconProps);
+const NodesUsageIcon = chakra(ChartPieIcon, iconProps);
 const ResetUsageIcon = chakra(DocumentMinusIcon, iconProps);
 const NotificationCircle = chakra(Box, {
   baseStyle: {
@@ -71,7 +74,7 @@ const NotificationCircle = chakra(Box, {
 const NOTIFICATION_KEY = "marzban-menu-notification";
 
 export const Header: FC<HeaderProps> = ({ actions }) => {
-  const { onEditingHosts, onResetAllUsage, onEditingNodes } = useDashboard();
+  const { onEditingHosts, onResetAllUsage, onEditingNodes, onShowingNodesUsage } = useDashboard();
   const { t } = useTranslation();
   const { colorMode, toggleColorMode } = useColorMode();
   const [notificationsChecked, setNotificationChecked] = useState(
@@ -152,6 +155,14 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
               onClick={onEditingNodes.bind(null, true)}
             >
               {t("header.nodesSetting")}
+            </MenuItem>
+            <MenuItem
+              maxW="170px"
+              fontSize="sm"
+              icon={<NodesUsageIcon />}
+              onClick={onShowingNodesUsage.bind(null, true)}
+            >
+              {t("header.nodesUsage")}
             </MenuItem>
             <MenuItem
               maxW="170px"

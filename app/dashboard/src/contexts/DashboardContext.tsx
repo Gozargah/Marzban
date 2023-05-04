@@ -38,6 +38,7 @@ type DashboardStateType = {
   QRcodeLinks: string[] | null;
   isEditingHosts: boolean;
   isEditingNodes: boolean;
+  isShowingNodesUsage:boolean;
   isResetingAllUsage: boolean;
   resetUsageUser: User | null;
   onCreateUser: (isOpen: boolean) => void;
@@ -50,10 +51,12 @@ type DashboardStateType = {
   deleteUser: (user: User) => Promise<void>;
   createUser: (user: UserCreate) => Promise<void>;
   editUser: (user: UserCreate) => Promise<void>;
+  fetchUserUsage: (user: User) => Promise<void>;
   setQRCode: (links: string[] | null) => void;
   setSubLink: (subscribeURL: string | null) => void;
   onEditingHosts: (isEditingHosts: boolean) => void;
   onEditingNodes: (isEditingHosts: boolean) => void;
+  onShowingNodesUsage: (isShowingNodesUsage: boolean) => void;
   resetDataUsage: (user: User) => Promise<void>;
 };
 
@@ -135,6 +138,7 @@ export const useDashboard = create(
     isResetingAllUsage: false,
     isEditingHosts: false,
     isEditingNodes: false,
+    isShowingNodesUsage: false,
     resetUsageUser: null,
     filters: { username: "", limit: 10, sort: "-created_at" },
     inbounds: new Map(),
@@ -190,11 +194,17 @@ export const useDashboard = create(
         }
       );
     },
+    fetchUserUsage: (body: User) => {
+      return fetch(`/user/${body.username}/usage`, { method: "GET" });
+    },
     onEditingHosts: (isEditingHosts: boolean) => {
       set({ isEditingHosts });
     },
     onEditingNodes: (isEditingNodes: boolean) => {
       set({ isEditingNodes });
+    },
+    onShowingNodesUsage: (isShowingNodesUsage: boolean) => {
+      set({ isShowingNodesUsage })
     },
     setSubLink: (subscribeUrl) => {
       set({ subscribeUrl });
