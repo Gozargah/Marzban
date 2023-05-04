@@ -32,6 +32,7 @@ import {
   InformationCircleIcon,
   PlusIcon as HeroIconPlusIcon,
   SquaresPlusIcon,
+  ArrowPathRoundedSquareIcon,
 } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -63,6 +64,13 @@ import { Textarea } from "./Textarea";
 import { useTranslation } from "react-i18next";
 
 const ModalIcon = chakra(SquaresPlusIcon, {
+  baseStyle: {
+    w: 5,
+    h: 5,
+  },
+});
+
+export const ResetUsageIcon = chakra(ArrowPathRoundedSquareIcon, {
   baseStyle: {
     w: 5,
     h: 5,
@@ -101,7 +109,8 @@ type AccordionInboundType = {
 };
 
 const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
-  const { updateNode, reconnectNode, setDeletingNode } = useNodes();
+  const { updateNode, reconnectNode, setDeletingNode, setEditingNode } = useNodes();
+  const { onResetNodeUsage } = useDashboard();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const toast = useToast();
@@ -129,6 +138,11 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
       },
     }
   );
+
+  const handleResetUsage = () => {
+    setEditingNode(node);
+    onResetNodeUsage(true);
+  };
 
   const nodeStatus: Status = isReconnecting
     ? "connecting"
@@ -212,17 +226,30 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
           isLoading={isLoading}
           submitBtnText={t("nodes.editNode")}
           btnLeftAdornment={
-            <Tooltip label={t("delete")} placement="top">
-              <IconButton
-                colorScheme="red"
-                variant="ghost"
-                size="sm"
-                aria-label="delete node"
-                onClick={handleDeleteNode}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Tooltip>
+            <Box minW="72px">
+              <Tooltip label={t("delete")} placement="top">
+                <IconButton
+                  colorScheme="red"
+                  variant="ghost"
+                  size="sm"
+                  aria-label="delete node"
+                  onClick={handleDeleteNode}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip label="Reset node usage" placement="top">
+                <IconButton
+                  colorScheme="red"
+                  variant="ghost"
+                  size="sm"
+                  aria-label="reset node usage"
+                  onClick={handleResetUsage}
+                >
+                  <ResetUsageIcon />
+                </IconButton>
+              </Tooltip>
+            </Box>
           }
         />
       </AccordionPanel>

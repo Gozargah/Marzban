@@ -121,11 +121,18 @@ i18n
           "nodes.addHostForEveryInbound": "Add this node as a new host for every inbound",
           "nodes.addNode": "Add Node",
           "nodes.addNodeSuccess" : "Node {{name}} added successfully",
-          "nodes.apply": "editNode",
+          "nodes.editNode": "Edit Node",
           "nodes.nodeName": "Name",
           "nodes.nodeAddress": "Address",
           "nodes.nodePort": "Port",
           "nodes.nodeAPIPort": "API Port",
+
+           // ResetNodeUsageModal
+           "resetNodeUsage.title": "Reset node usage",
+           "resetNodeUsage.prompt":
+             "Are you sure you want to reset <b>{{name}}</b> node usage? THIS CANNOT BE UNDONE!",
+           "resetNodeUsage.success": "Node {{name}} usage has reset successfully.",
+           "resetNodeUsage.error": "Node {{name}} usage reset failed, please try again.",
 
           // DeleteNodeModal
           "deleteNode.title": "Delete Node",
@@ -263,6 +270,13 @@ i18n
           "nodes.nodeAPIPort": "API 端口",
           "nodes.reconnect": "重新连接",
           "nodes.reconnecting": "重连中...",
+
+           // ResetNodeUsageModal
+           "resetNodeUsage.title": "重置节点统计",
+           "resetNodeUsage.prompt":
+             "您确定要重置节点 <b>{{name}}</b> 的统计吗? 此操作不可撤销！",
+           "resetNodeUsage.success": "节点 {{name}} 重置完成。",
+           "resetNodeUsage.error": "节点 {{name}} 重置失败，请稍候再试。",
 
           // DeleteNodeModal
           "deleteNode.title": "删除节点",

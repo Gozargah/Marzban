@@ -40,11 +40,13 @@ type DashboardStateType = {
   isEditingNodes: boolean;
   isShowingNodesUsage:boolean;
   isResetingAllUsage: boolean;
+  isResetingNodeUsage:boolean;
   resetUsageUser: User | null;
   onCreateUser: (isOpen: boolean) => void;
   onEditingUser: (user: User | null) => void;
   onDeletingUser: (user: User | null) => void;
   onResetAllUsage: (isResetingAllUsage: boolean) => void;
+  onResetNodeUsage: (isResetingNodeUsage: boolean) => void;
   refetchUsers: () => void;
   resetAllUsage: () => Promise<void>;
   onFilterChange: (filters: Partial<FilterType>) => void;
@@ -136,6 +138,7 @@ export const useDashboard = create(
     },
     loading: true,
     isResetingAllUsage: false,
+    isResetingNodeUsage: false,
     isEditingHosts: false,
     isEditingNodes: false,
     isShowingNodesUsage: false,
@@ -152,6 +155,7 @@ export const useDashboard = create(
       });
     },
     onResetAllUsage: (isResetingAllUsage) => set({ isResetingAllUsage }),
+    onResetNodeUsage: (isResetingNodeUsage) => set({ isResetingNodeUsage }),
     onCreateUser: (isCreatingNewUser) => set({ isCreatingNewUser }),
     onEditingUser: (editingUser) => {
       set({ editingUser });

@@ -523,6 +523,15 @@ def update_node(db: Session, dbnode: Node, modify: NodeModify):
     db.refresh(dbnode)
     return dbnode
 
+def reset_node_usage(db: Session, dbnode: Node):
+    dbmaster = db.query(System).first()
+    dbmaster.uplink -= dbnode.uplink
+    dbmaster.downlink -= dbnode.downlink
+    dbnode.uplink = 0
+    dbnode.downlink = 0
+    db.add(dbmaster)
+    db.add(dbnode)
+    db.commit()
 
 def update_node_status(db: Session, dbnode: Node, status: NodeStatus, message: str = None, version: str = None):
     dbnode.status = status

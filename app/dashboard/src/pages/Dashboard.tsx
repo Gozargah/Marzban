@@ -14,6 +14,7 @@ import { ResetUserUsageModal } from "components/ResetUserUsageModal";
 import { NodesDialog } from "components/NodesModal";
 import { ResetAllUsageModal } from "components/ResetAllUsageModal";
 import { NodesUsage } from "components/NodesUsage";
+import { ResetNodeUsageModal } from "components/ResetNodeUsageModal";
 
 export const Dashboard: FC = () => {
   useEffect(() => {
@@ -35,6 +36,7 @@ export const Dashboard: FC = () => {
         <NodesDialog />
         <NodesUsage />
         <ResetAllUsageModal />
+        <ResetNodeUsageModal />
       </Box>
       <Footer />
     </VStack>

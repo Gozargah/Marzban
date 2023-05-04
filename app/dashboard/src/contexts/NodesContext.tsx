@@ -43,11 +43,14 @@ export type NodeStore = {
   addNode: (node: NodeType) => Promise<unknown>;
   fetchNodes: () => Promise<NodeType[]>;
   fetchNodesUsage: () => Promise<void>;
+  resetNodeUsage: (node: NodeType) => Promise<void>;
   updateNode: (node: NodeType) => Promise<unknown>;
   reconnectNode: (node: NodeType) => Promise<unknown>;
   deletingNode?: NodeType | null;
+  editingNode?: NodeType | null;
   deleteNode: () => Promise<unknown>;
   setDeletingNode: (node: NodeType | null) => void;
+  setEditingNode: (node: NodeType | null) => void;
 };
 
 export const useNodesQuery = () =>
@@ -68,6 +71,9 @@ export const useNodes = create<NodeStore>((set, get) => ({
   fetchNodesUsage () {
     return fetch("/nodes/usage");
   },
+  resetNodeUsage (body) {
+    return fetch(`/node/${body.id}/reset`, { method: "POST" });
+  },
   updateNode(body) {
     return fetch(`/node/${body.id}`, {
       method: "PUT",
@@ -76,6 +82,9 @@ export const useNodes = create<NodeStore>((set, get) => ({
   },
   setDeletingNode(node) {
     set({ deletingNode: node });
+  },
+  setEditingNode(node) {
+    set({ editingNode: node });
   },
   reconnectNode(body) {
     return fetch(`/node/${body.id}/reconnect`, {
