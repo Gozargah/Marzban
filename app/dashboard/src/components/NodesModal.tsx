@@ -6,6 +6,7 @@ import {
   AccordionPanel,
   Alert,
   AlertIcon,
+  Badge,
   Box,
   Button,
   ButtonProps,
@@ -157,7 +158,27 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
           >
             {node.name}
           </Text>
-          {node.status && <StatusBadge status={nodeStatus} compact />}
+          <HStack>
+            {node.xray_version && (
+              <Badge
+                colorScheme="blue"
+                rounded="full"
+                display="inline-flex"
+                px={3}
+                py={1}
+              >
+                <Text
+                  textTransform="capitalize"
+                  fontSize="0.7rem"
+                  fontWeight="medium"
+                  letterSpacing="tighter"
+                >
+                  Xray {node.xray_version}
+                </Text>
+              </Badge>
+            )}
+            {node.status && <StatusBadge status={nodeStatus} compact />}
+          </HStack>
         </HStack>
         <AccordionIcon />
       </AccordionButton>

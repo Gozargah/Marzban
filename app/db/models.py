@@ -186,6 +186,7 @@ class Node(Base):
     address = Column(String(256), unique=False, nullable=False)
     port = Column(Integer, unique=False, nullable=False)
     api_port = Column(Integer, unique=False, nullable=False)
+    xray_version = Column(String(32), nullable=True)
     certificate = Column(String(2048), unique=False, nullable=False)
     status = Column(Enum(NodeStatus), nullable=False, default=NodeStatus.connecting)
     last_status_change = Column(DateTime, default=datetime.utcnow)

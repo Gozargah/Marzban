@@ -14,6 +14,7 @@ export const NodeSchema = z.object({
     .number()
     .min(1)
     .or(z.string().transform((v) => parseFloat(v))),
+  xray_version: z.string().nullable().optional(),
   certificate: z.string().min(1),
   id: z.number().nullable().optional(),
   status: z
@@ -32,6 +33,7 @@ export const getNodeDefaultValues = (): NodeType => ({
   port: 62050,
   api_port: 62051,
   certificate: "",
+  xray_version: "",
 });
 
 export const FetchNodesQueryKey = "fetch-nodes-query-key";
