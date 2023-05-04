@@ -148,13 +148,14 @@ def get_users(db: Session,
 
     return query.all()
 
+
 def get_user_usages(db: Session, dbuser: User) -> List[UserUsageResponse]:
     usages = []
     filter = {}
 
     used_traffic = dbuser.used_traffic
-    
-    for v in dbuser.usages:
+
+    for v in dbuser.node_usages:
         usages.append(UserUsageResponse(
             node_name=v.node.name,
             used_traffic=v.used_traffic
@@ -176,6 +177,7 @@ def get_user_usages(db: Session, dbuser: User) -> List[UserUsageResponse]:
     ))
 
     return usages
+
 
 def get_users_count(db: Session, status: UserStatus = None, admin: Admin = None):
     query = db.query(User.id)
@@ -296,7 +298,7 @@ def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
         if dbuser.status not in (UserStatus.expired or UserStatus.disabled):
             dbuser.status = UserStatus.active
         dbuser.usage_logs.clear()
-        dbuser.usages.clear()
+        dbuser.node_usages.clear()
         db.add(dbuser)
 
     db.commit()
@@ -453,6 +455,7 @@ def get_nodes(db: Session, status: Optional[Union[NodeStatus, list]] = None):
 
     return query.all()
 
+
 def get_nodes_usage(db: Session) -> List[NodeUsageResponse]:
     usages = []
     filter = {}
@@ -463,7 +466,7 @@ def get_nodes_usage(db: Session) -> List[NodeUsageResponse]:
         incoming_bandwidth=dbmaster.uplink,
         outgoing_bandwidth=dbmaster.downlink,
     )
-    
+
     for v in db.query(Node).all():
         usages.append(NodeUsageResponse(
             node_name=v.name,
@@ -476,6 +479,7 @@ def get_nodes_usage(db: Session) -> List[NodeUsageResponse]:
     usages.insert(0, master)
 
     return usages
+
 
 def create_node(db: Session, node: NodeCreate):
     dbnode = Node(name=node.name,

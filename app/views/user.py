@@ -210,6 +210,7 @@ def reset_users_data_usage(db: Session = Depends(get_db),
     crud.reset_all_users_data_usage(db=db, admin=dbadmin)
     return {}
 
+
 @app.get("/api/user/{username}/usage", tags=['User'], response_model=UserUsagesResponse)
 def get_user(username: str,
              db: Session = Depends(get_db),
@@ -220,9 +221,6 @@ def get_user(username: str,
     dbuser = crud.get_user(db, username)
     if not dbuser:
         raise HTTPException(status_code=404, detail="User not found")
-
-    if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
-        raise HTTPException(status_code=403, detail="You're not allowed")
 
     usages = crud.get_user_usages(db, dbuser)
 

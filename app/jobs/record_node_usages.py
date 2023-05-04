@@ -1,30 +1,26 @@
 from operator import attrgetter
 from app import scheduler, xray
-from app.db import engine, get_db, crud
-from app.db.models import System, User, Node, UserUsage
-from sqlalchemy import bindparam, update, and_
+from app.db import engine
+from app.db.models import System, User, Node, NodeUserUsage
+from sqlalchemy import bindparam, update, and_, insert, select
 
-def check_user_usage(node_id, params):
-    db = next(get_db())
-    for stat in params:
-        dbuser = crud.get_user(db, stat["name"])
 
-        if not dbuser:
-            return
-        
-        stat["uid"] = dbuser.id
+def make_usage_row_if_doesnt_exist(conn, node_id, params):
+    select_stmt = select(NodeUserUsage.user_username) \
+        .join(Node, NodeUserUsage.node_id == Node.id) \
+        .where(Node.id == node_id)
+    existings = [r[0] for r in conn.execute(select_stmt).fetchall()]
+    usernames_to_insert = set()
 
-        q = db.query(UserUsage).filter(UserUsage.user_id == dbuser.id, UserUsage.node_id == node_id)
-        if not db.query(q.exists()).scalar():
-            dbusage = UserUsage(
-                user_id=dbuser.id,
-                node_id=node_id,
-                used_traffic=0
-            )
-            db.add(dbusage)
-            db.commit()
-            db.refresh(dbusage)
-            
+    for p in params:
+        if p['name'] in existings:
+            continue
+        usernames_to_insert.add(p['name'])
+
+    if usernames_to_insert:
+        stmt = insert(NodeUserUsage).values(user_username=bindparam('name'), node_id=node_id, used_traffic=0)
+        conn.execute(stmt, [{'name': username} for username in usernames_to_insert])
+
 
 def record_nodes_users_usage():
     with engine.connect() as conn:
@@ -32,7 +28,7 @@ def record_nodes_users_usage():
             if node.connected and node.started:
                 try:
                     params = [
-                        {"nid": node_id, "uid": 0, "link": stat.link, "name": stat.name, "value": stat.value}
+                        {"link": stat.link, "name": stat.name, "value": stat.value}
                         for stat in filter(attrgetter('value'), node.api.get_users_stats(reset=True))
                     ]
 
@@ -42,7 +38,7 @@ def record_nodes_users_usage():
                     except ProcessLookupError:
                         pass
 
-                    continue
+                    continue  # let Xray restart, stop checking this node for now
 
                 if not params:
                     continue
@@ -53,11 +49,11 @@ def record_nodes_users_usage():
                     values(used_traffic=User.used_traffic + bindparam('value'))
                 conn.execute(stmt, params)
 
-                # record to user usages
-                check_user_usage(node_id, params)
-                stmt = update(UserUsage). \
-                    where(and_(UserUsage.user_id == bindparam('uid'), UserUsage.node_id == bindparam('nid'))). \
-                    values(used_traffic=UserUsage.used_traffic + bindparam('value'))
+                # record to usages
+                make_usage_row_if_doesnt_exist(conn, node_id, params)
+                stmt = update(NodeUserUsage) \
+                    .values(used_traffic=NodeUserUsage.used_traffic + bindparam('value')) \
+                    .where(and_(NodeUserUsage.user_username == bindparam('name'), NodeUserUsage.node_id == node_id))
                 conn.execute(stmt, params)
 
 
@@ -69,10 +65,10 @@ def record_nodes_outbounds_usage():
         for node_id, node in xray.nodes.items():
             if node.connected and node.started:
                 try:
-                    params = [
-                        {"node_id": node_id, "up": stat.value, "down": 0} if stat.link == "uplink" else {"node_id": node_id, "up": 0, "down": stat.value}
-                        for stat in filter(attrgetter('value'), node.api.get_outbounds_stats(reset=True))
-                    ]
+                    params = [{"node_id": node_id, "up": stat.value, "down": 0}
+                              if stat.link == "uplink" else {"node_id": node_id, "up": 0, "down": stat.value}
+                              for stat in filter(attrgetter('value'),
+                                                 node.api.get_outbounds_stats(reset=True))]
 
                 except xray.exceptions.ConnectionError:
                     try:
