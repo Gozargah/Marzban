@@ -524,9 +524,10 @@ def update_node(db: Session, dbnode: Node, modify: NodeModify):
     return dbnode
 
 
-def update_node_status(db: Session, dbnode: Node, status: NodeStatus, message: str = None):
+def update_node_status(db: Session, dbnode: Node, status: NodeStatus, message: str = None, version: str = None):
     dbnode.status = status
     dbnode.message = message
+    dbnode.xray_version = version
     dbnode.last_status_change = datetime.utcnow()
     db.commit()
     db.refresh(dbnode)

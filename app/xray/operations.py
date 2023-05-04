@@ -82,14 +82,16 @@ def connect_node(node_id, config):
             node.start(config)
             message = None
             status = NodeStatus.connected
-            logger.info(f"Connected to \"{dbnode.name}\" node")
+            version = node.remote.fetch_xray_version()
+            logger.info(f"Connected to \"{dbnode.name}\" node, xray run on v{version}")
         except Exception as e:
             message = str(e)
             status = NodeStatus.error
+            version = ""
             logger.info(f"Unable to connect to \"{dbnode.name}\" node")
         finally:
             try:
-                crud.update_node_status(db, dbnode, status, message)
+                crud.update_node_status(db, dbnode, status, message, version)
             except SQLAlchemyError:
                 pass
 

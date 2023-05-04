@@ -70,6 +70,7 @@ class NodeModify(Node):
 
 class NodeResponse(Node):
     id: int
+    xray_version: Union[str, None]
     status: NodeStatus
     message: Union[str, None]
 
