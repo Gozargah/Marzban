@@ -49,6 +49,8 @@ def hosts(storage: dict):
                     "port": host.port,
                     "sni": host.sni,
                     "host": host.host,
+                    "alpn": host.alpn.value,
+                    "fingerprint": host.fingerprint.value,
                     # None means the tls is not specified by host itself and
                     #  complies with its inbound's settings.
                     "tls": None

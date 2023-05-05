@@ -110,6 +110,8 @@ const hostsSchema = z.record(
       sni: z.string().nullable(),
       host: z.string().nullable(),
       security: z.string(),
+      alpn: z.string(),
+      fingerprint: z.string()
     })
   )
 );
@@ -159,6 +161,8 @@ const AccordionInbound: FC<AccordionInboundType> = ({
       address: "",
       remark: "",
       security: "inbound_default",
+      alpn: "",
+      fingerprint: ""
     });
   };
   useEffect(() => {

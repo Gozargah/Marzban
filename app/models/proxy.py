@@ -78,6 +78,29 @@ class ProxyHostSecurity(str, Enum):
     tls = "tls"
 
 
+ProxyHostALPN = Enum('ProxyHostALPN', {
+    "none": "",
+    "h2": "h2",
+    "http/1.1": "http/1.1",
+    "h2,http/1.1": "h2,http/1.1",
+})
+
+
+ProxyHostFingerprint = Enum('ProxyHostFingerprint', {
+    "none": "",
+    "chrome": "chrome",
+    "firefox": "firefox",
+    "safari": "safari",
+    "ios": "ios",
+    "android": "android",
+    "edge": "edge",
+    "360": "360",
+    "qq": "qq",
+    "random": "random",
+    "randomized": "randomized",
+})
+
+
 class FormatVariables(dict):
     def __missing__(self, key):
         return key.join("{}")
@@ -90,6 +113,8 @@ class ProxyHost(BaseModel):
     sni: Union[str, None] = None
     host: Union[str, None] = None
     security: ProxyHostSecurity = ProxyHostSecurity.inbound_default
+    alpn: ProxyHostALPN = ProxyHostALPN.none
+    fingerprint: ProxyHostFingerprint = ProxyHostFingerprint.none
 
     class Config:
         orm_mode = True

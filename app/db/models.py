@@ -7,9 +7,10 @@ from sqlalchemy.orm import relationship
 
 from app import xray
 from app.db.base import Base
-from app.models.proxy import ProxyHostSecurity, ProxyTypes
-from app.models.user import UserDataLimitResetStrategy, UserStatus
 from app.models.node import NodeStatus
+from app.models.proxy import (ProxyHostALPN, ProxyHostFingerprint,
+                              ProxyHostSecurity, ProxyTypes)
+from app.models.user import UserDataLimitResetStrategy, UserStatus
 
 
 class Admin(Base):
@@ -154,7 +155,21 @@ class ProxyHost(Base):
         Enum(ProxyHostSecurity),
         unique=False,
         nullable=False,
-        default=ProxyHostSecurity.inbound_default.value,
+        default=ProxyHostSecurity.inbound_default,
+    )
+    alpn = Column(
+        Enum(ProxyHostALPN),
+        unique=False,
+        nullable=False,
+        default=ProxyHostSecurity.none,
+        server_default=ProxyHostSecurity.none.name
+    )
+    fingerprint = Column(
+        Enum(ProxyHostFingerprint),
+        unique=False,
+        nullable=False,
+        default=ProxyHostSecurity.none,
+        server_default=ProxyHostSecurity.none.name
     )
 
     inbound_tag = Column(String(256), ForeignKey("inbounds.tag"), nullable=False)

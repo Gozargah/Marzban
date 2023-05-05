@@ -54,7 +54,9 @@ def add_host(db: Session, inbound_tag: str, host: ProxyHostModify):
             sni=host.sni,
             host=host.host,
             inbound=inbound,
-            security=host.security
+            security=host.security,
+            alpn=host.alpn,
+            fingerprint=host.fingerprint
         )
     )
     db.commit()
@@ -72,7 +74,9 @@ def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostMo
             sni=host.sni,
             host=host.host,
             inbound=inbound,
-            security=host.security
+            security=host.security,
+            alpn=host.alpn,
+            fingerprint=host.fingerprint
         ) for host in modified_hosts
     ]
     db.commit()

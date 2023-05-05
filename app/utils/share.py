@@ -417,7 +417,9 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> lis
                     'sni': (host['sni'] or inbound['sni']).replace('*', salt),
                     'host': (host['host'] or inbound['host']).replace('*', salt),
                     # None means host tls complies with inbound's tls settings.
-                    'tls': inbound['tls'] if host['tls'] is None else host['tls']
+                    'tls': inbound['tls'] if host['tls'] is None else host['tls'],
+                    'alpn': host['alpn'] or inbound.get('alpn', ''),
+                    'fp': host['fingerprint'] or inbound.get('fp', '')
                 })
                 links.append(get_v2ray_link(remark=host['remark'].format_map(format_variables),
                                             address=host['address'].format_map(format_variables),
@@ -472,7 +474,9 @@ def generate_clash_subscription(proxies: dict, inbounds: dict, extra_data: dict)
                     'sni': (host['sni'] or inbound['sni']).replace('*', salt),
                     'host': (host['host'] or inbound['host']).replace('*', salt),
                     # None means host tls complies with inbound's tls settings.
-                    'tls': inbound['tls'] if host['tls'] is None else host['tls']
+                    'tls': inbound['tls'] if host['tls'] is None else host['tls'],
+                    'alpn': host['alpn'] or inbound.get('alpn', ''),
+                    'fp': host['fingerprint'] or inbound.get('fp', '')
                 })
                 conf.add(
                     remark=host['remark'].format_map(format_variables),
