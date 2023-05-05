@@ -44,6 +44,7 @@ import {
 } from "contexts/NodesContext";
 import { FC, ReactNode, useState } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { UseMutateFunction, useMutation, useQueryClient } from "react-query";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
@@ -57,10 +58,19 @@ import { DeleteNodeModal } from "./DeleteNodeModal";
 import { DeleteIcon } from "./DeleteUserModal";
 import { ReloadIcon } from "./Filters";
 import { Icon } from "./Icon";
-import { Input as CustomInput } from "./Input";
 import { StatusBadge } from "./StatusBadge";
 import { Textarea } from "./Textarea";
-import { useTranslation } from "react-i18next";
+
+import { Input } from "./Input";
+
+const CustomInput = chakra(Input, {
+  baseStyle: {
+    bg: "white",
+    _dark: {
+      bg: "gray.700",
+    },
+  },
+});
 
 const ModalIcon = chakra(SquaresPlusIcon, {
   baseStyle: {
@@ -199,7 +209,9 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
                     onClick={() => reconnect()}
                     disabled={isReconnecting}
                   >
-                    {isReconnecting ? t("nodes.reconnecting") : t("nodes.reconnect")}
+                    {isReconnecting
+                      ? t("nodes.reconnecting")
+                      : t("nodes.reconnect")}
                   </Button>
                 </HStack>
               </Box>
@@ -253,7 +265,7 @@ const AddNodeForm: FC<AddNodeFormType> = ({
   const { isLoading, mutate } = useMutation(addNode, {
     onSuccess: () => {
       generateSuccessMessage(
-        t("nodes.addNodeSuccess", {name: form.getValues("name")}),
+        t("nodes.addNodeSuccess", { name: form.getValues("name") }),
         toast
       );
       queryClient.invalidateQueries(FetchNodesQueryKey);
@@ -389,9 +401,7 @@ const NodeForm: NodeFormType = ({
         {addAsHost && (
           <FormControl py={1}>
             <Checkbox {...form.register("add_as_new_host")}>
-              <FormLabel m={0}>
-                {t("nodes.addHostForEveryInbound")}
-              </FormLabel>
+              <FormLabel m={0}>{t("nodes.addHostForEveryInbound")}</FormLabel>
             </Checkbox>
           </FormControl>
         )}

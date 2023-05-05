@@ -16,10 +16,48 @@ export const proxyHostSecurity: { title: string; value: ProxyHostSecurity }[] =
     },
   ];
 
+export const proxyALPN: { title: string; value: string }[] = [
+  {
+    title: "",
+    value: "",
+  },
+  {
+    title: "h2",
+    value: "h2",
+  },
+  {
+    title: "http/1.1",
+    value: "http/1.1",
+  },
+  {
+    title: "h2, http/1.1",
+    value: "h2,http/1.1",
+  },
+];
+
+export const proxyFingerprint: { title: string; value: string }[] = [
+  {
+    title: "",
+    value: "",
+  },
+  ...[
+    "chrome",
+    "firefox",
+    "safari",
+    "ios",
+    "android",
+    "edge",
+    "360",
+    "qq",
+    "random",
+    "randomized",
+  ].map((key) => ({ title: key, value: key })),
+];
+
 export const XTLSFlows = [
   { title: "none", value: "" },
-  { title: "xtls-rprx-vision", value: "xtls-rprx-vision"},
-];  
+  { title: "xtls-rprx-vision", value: "xtls-rprx-vision" },
+];
 
 export const shadowsocksMethods = [
   "aes-128-gcm",

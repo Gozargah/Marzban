@@ -8,11 +8,9 @@ import {
   chakra,
   Checkbox,
   FormControl,
-  FormLabel,
   HStack,
   IconButton,
   Input,
-  Kbd,
   Select,
   SimpleGrid,
   Text,
@@ -21,12 +19,7 @@ import {
   UseRadioProps,
   VStack,
 } from "@chakra-ui/react";
-import {
-  CheckCircleIcon,
-  Cog6ToothIcon,
-  EllipsisVerticalIcon,
-  XCircleIcon,
-} from "@heroicons/react/24/outline";
+import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { shadowsocksMethods, XTLSFlows } from "constants/Proxies";
 import {
   InboundType,
@@ -34,7 +27,7 @@ import {
   useDashboard,
 } from "contexts/DashboardContext";
 import { t } from "i18next";
-import { FC, forwardRef, PropsWithChildren, useEffect, useState } from "react";
+import { FC, forwardRef, PropsWithChildren, useState } from "react";
 import {
   ControllerRenderProps,
   useFormContext,
@@ -71,6 +64,8 @@ const InboundCard: FC<
         }}
         display="flex"
         alignItems="center"
+        justifyContent="space-between"
+        overflow="hidden"
         _checked={{
           bg: "gray.50",
           outline: "2px",
@@ -108,6 +103,7 @@ const InboundCard: FC<
           className="inbound-item"
           isChecked={inputProps.checked}
           pointerEvents="none"
+          flexGrow={1}
         >
           <HStack
             justify="space-between"
@@ -120,13 +116,13 @@ const InboundCard: FC<
             <Text isTruncated {...getLabelProps()} fontSize="xs">
               {inbound.tag} <Text as="span">({inbound.network})</Text>
             </Text>
-            {inbound.tls && inbound.tls != 'none' && (
-              <Badge fontSize="xs" opacity=".8" size="xs">
-                {inbound.tls}
-              </Badge>
-            )}
           </HStack>
         </Checkbox>
+        {inbound.tls && inbound.tls != "none" && (
+          <Badge fontSize="xs" opacity=".8" size="xs">
+            {inbound.tls}
+          </Badge>
+        )}
       </Box>
     </Box>
   );

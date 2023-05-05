@@ -51,8 +51,14 @@ const EmptySectionIcon = chakra(AddFileIcon);
 
 const iconProps = {
   baseStyle: {
-    w: 5,
-    h: 5,
+    w: {
+      base: 4,
+      md: 5,
+    },
+    h: {
+      base: 4,
+      md: 5,
+    },
   },
 };
 const CopyIcon = chakra(ClipboardIcon, iconProps);
@@ -150,10 +156,10 @@ const UsageSlider: FC<UsageSliderProps> = (props) => {
             formatBytes(total) +
             (dataLimitResetStrategy && dataLimitResetStrategy !== "no_reset"
               ? " " +
-              t(
-                "userDialog.resetStrategy" +
-                getResetStrategy(dataLimitResetStrategy)
-              )
+                t(
+                  "userDialog.resetStrategy" +
+                    getResetStrategy(dataLimitResetStrategy)
+                )
               : "")
           )}
         </Text>
@@ -172,7 +178,7 @@ export const Sort: FC<SortType> = ({ sort, column }) => {
   if (sort.includes(column))
     return (
       <SortIcon
-        transform={sort.startsWith("-") ? "rotate(180deg)" : undefined}
+        transform={sort.startsWith("-") ? undefined : "rotate(180deg)"}
       />
     );
   return null;
@@ -244,6 +250,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 pl={4}
                 pr={4}
                 cursor={"pointer"}
+                onClick={handleSort.bind(null, "username")}
               >
                 <HStack>
                   <span>{t("users")}</span>
@@ -256,11 +263,48 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 minW="50px"
                 pl={0}
                 pr={0}
+                w="140px"
                 cursor={"pointer"}
               >
-                <HStack>
-                  <span>{t("usersTable.status")}</span>
-                  <Sort sort={filters.sort} column="username" />
+                <HStack spacing={0} position="relative">
+                  <Text
+                    position="absolute"
+                    _dark={{
+                      bg: "gray.750",
+                    }}
+                    _light={{
+                      bg: "#F9FAFB",
+                    }}
+                    userSelect="none"
+                    pointerEvents="none"
+                    zIndex={1}
+                    w="100%"
+                  >
+                    {t("usersTable.status")}
+                    {filters.status ? ": " + filters.status : ""}
+                  </Text>
+                  <Select
+                    value={filters.sort}
+                    fontSize="xs"
+                    fontWeight="extrabold"
+                    textTransform="uppercase"
+                    cursor="pointer"
+                    p={0}
+                    border={0}
+                    h="auto"
+                    w="auto"
+                    icon={<></>}
+                    _focusVisible={{
+                      border: "0 !important",
+                    }}
+                    onChange={handleStatusFilter}
+                  >
+                    <option></option>
+                    <option>active</option>
+                    <option>disabled</option>
+                    <option>limited</option>
+                    <option>expired</option>
+                  </Select>
                 </HStack>
               </Th>
               <Th
@@ -269,10 +313,11 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 minW="100px"
                 cursor={"pointer"}
                 pr={0}
+                onClick={handleSort.bind(null, "used_traffic")}
               >
                 <HStack>
                   <span>{t("usersTable.dataUsage")}</span>
-                  <Sort sort={filters.sort} column="username" />
+                  <Sort sort={filters.sort} column="used_traffic" />
                 </HStack>
               </Th>
               <Th
@@ -376,7 +421,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                                 </Box>
                               </VStack>
                               <HStack w="full" justifyContent="space-between">
-                                <Box width="full" minW="230px">
+                                <Box width="full">
                                   <StatusBadge
                                     compact
                                     expiryDate={user.expire}
@@ -390,12 +435,17 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                                     placement="top"
                                   >
                                     <IconButton
+                                      p="0 !important"
                                       aria-label="Edit user"
                                       bg="transparent"
                                       _dark={{
                                         _hover: {
                                           bg: "gray.700",
                                         },
+                                      }}
+                                      size={{
+                                        base: "sm",
+                                        md: "md",
                                       }}
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -474,6 +524,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   _focusVisible={{
                     border: "0 !important",
                   }}
+                  value={filters.sort}
                   onChange={handleStatusFilter}
                 >
                   <option></option>
@@ -597,12 +648,17 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
             placement="top"
           >
             <IconButton
+              p="0 !important"
               aria-label="copy subscription link"
               bg="transparent"
               _dark={{
                 _hover: {
                   bg: "gray.700",
                 },
+              }}
+              size={{
+                base: "sm",
+                md: "md",
               }}
             >
               {copied[0] == 0 && copied[1] ? (
@@ -630,12 +686,17 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
             placement="top"
           >
             <IconButton
+              p="0 !important"
               aria-label="copy configs"
               bg="transparent"
               _dark={{
                 _hover: {
                   bg: "gray.700",
                 },
+              }}
+              size={{
+                base: "sm",
+                md: "md",
               }}
             >
               {copied[0] == 1 && copied[1] ? <CopiedIcon /> : <CopyIcon />}
@@ -645,12 +706,17 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
       </CopyToClipboard>
       <Tooltip label="QR Code" placement="top">
         <IconButton
+          p="0 !important"
           aria-label="qr code"
           bg="transparent"
           _dark={{
             _hover: {
               bg: "gray.700",
             },
+          }}
+          size={{
+            base: "sm",
+            md: "md",
           }}
           onClick={() => {
             setQRCode(user.links);

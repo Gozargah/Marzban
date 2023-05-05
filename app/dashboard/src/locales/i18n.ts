@@ -1,10 +1,10 @@
-import i18n from "i18next";
-import { initReactI18next } from "react-i18next";
-import LanguageDetector from "i18next-browser-languagedetector";
 import dayjs from "dayjs";
 import "dayjs/locale/zh-cn";
+import i18n from "i18next";
+import LanguageDetector from "i18next-browser-languagedetector";
+import { initReactI18next } from "react-i18next";
 
-declare module 'i18next' {
+declare module "i18next" {
   interface CustomTypeOptions {
     returnNull: false;
   }
@@ -107,25 +107,42 @@ i18n
           "hostsDialog.proxyProtocol": "Proxy protocol (e.g. VMess)",
           "hostsDialog.proxyMethod": "Proxy transport method (e.g. ws)",
           "hostsDialog.currentServer": "Current server ip address",
-          "hostsDialog.security": "Security",
+          "hostsDialog.security": "Security Layer",
+          "hostsDialog.host": "Request Host",
+          "hostsDialog.port": "Port",
+          "hostsDialog.sni": "SNI",
+          "hostsDialog.advancedOptions": "Advanced options",
           "hostsDialog.addHost": "Add host",
           "hostsDialog.savedSuccess": "Hosts saved successfully",
           "hostsDialog.loading": "loading...",
           "hostsDialog.apply": "Apply",
+          "hostsDialog.port.info":
+            "By default, a host uses the default port of the inbound. You can set a custom port in case this host is a server that forwards traffic from a port that differs from your server's port. For example, the server may forward traffic from port 8443 to the default port of your inbound server.",
+          "hostsDialog.sni.info":
+            "By default, a host uses the default SNI of the inbound. You can set a custom SNI in case this host is a server that has a different SNI. For example, the server may receive traffic with a different SSL certificate, perform SSL termination, and forward it to your inbound server.",
+          "hostsDialog.host.info":
+            "By default, if a request host is set in the Xray config, this host is used. However, you can set a custom request host here if needed.",
+          "hostsDialog.security.info":
+            "If the middleware server of this host uses a different security layer than the inbound's default, you can set a custom security layer here.",
+          "hostsDialog.alpn": "ALPN",
+          "hostsDialog.fingerprint": "Fingerprint",
 
           // Nodes
           "nodes.title":
             "Using Marzban-Node, you are able to scale up your connection quality by adding different nodes on different servers.",
           "nodes.addNewMarzbanNode": "Add New Marzban Node",
           "nodes.certificate": "Certificate",
-          "nodes.addHostForEveryInbound": "Add this node as a new host for every inbound",
+          "nodes.addHostForEveryInbound":
+            "Add this node as a new host for every inbound",
           "nodes.addNode": "Add Node",
-          "nodes.addNodeSuccess" : "Node {{name}} added successfully",
+          "nodes.addNodeSuccess": "Node {{name}} added successfully",
           "nodes.apply": "editNode",
           "nodes.nodeName": "Name",
           "nodes.nodeAddress": "Address",
           "nodes.nodePort": "Port",
           "nodes.nodeAPIPort": "API Port",
+          "nodes.editNode": "Edit Node",
+          "nodes.reconnect": "Reconnect",
 
           // DeleteNodeModal
           "deleteNode.title": "Delete Node",
@@ -255,7 +272,7 @@ i18n
           "nodes.certificate": "证书",
           "nodes.addHostForEveryInbound": "为每个入站请求添加此节点作为新主机",
           "nodes.addNode": "添加节点",
-          "nodes.addNodeSuccess" : "节点 {{name}} 添加成功",
+          "nodes.addNodeSuccess": "节点 {{name}} 添加成功",
           "nodes.editNode": "保存",
           "nodes.nodeName": "名称",
           "nodes.nodeAddress": "地址",
@@ -304,6 +321,6 @@ i18n
 
 i18n.on("languageChanged", (lng) => {
   dayjs.locale(lng);
-})
+});
 
 export default i18n;
