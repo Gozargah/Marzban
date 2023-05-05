@@ -27,6 +27,7 @@ type DashboardStateType = {
   isCreatingNewUser: boolean;
   editingUser: User | null | undefined;
   deletingUser: User | null;
+  version: string | null;
   users: {
     users: User[];
     total: number;
@@ -125,6 +126,7 @@ export const useHosts = create<HostsStore>((set) => ({
 
 export const useDashboard = create(
   subscribeWithSelector<DashboardStateType>((set, get) => ({
+    version: null,
     editingUser: null,
     deletingUser: null,
     isCreatingNewUser: false,

@@ -4,6 +4,7 @@ import {
   ChartPieIcon,
   UsersIcon,
 } from "@heroicons/react/24/outline";
+import { useDashboard } from "contexts/DashboardContext";
 import { FC, PropsWithChildren, ReactElement, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
@@ -121,6 +122,9 @@ export const Statistics: FC<BoxProps> = (props) => {
     queryKey: StatisticsQueryKey,
     queryFn: () => fetch("/system"),
     refetchInterval: 5000,
+    onSuccess: ({ version }) => {
+      useDashboard.setState({ version });
+    },
   });
   const { t } = useTranslation();
   return (
