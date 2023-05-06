@@ -4,7 +4,7 @@ import subprocess
 from pathlib import Path
 
 from app import app
-from config import DEBUG, UVICORN_PORT
+from config import DEBUG, VITE_BASE_API
 from fastapi.staticfiles import StaticFiles
 
 path = '/dashboard/'
@@ -15,7 +15,7 @@ build_dir = base_dir / 'build'
 def build():
     proc = subprocess.Popen(
         ['npm', 'run', 'build', '--', '--base', path,  '--outDir', build_dir],
-        env={**os.environ, 'VITE_BASE_API': '/api/'},
+        env={**os.environ, 'VITE_BASE_API': VITE_BASE_API},
         cwd=base_dir
     )
     proc.wait()
@@ -28,7 +28,7 @@ def build():
 def run_dev():
     proc = subprocess.Popen(
         ['npm', 'run', 'dev', '--', '--host', '0.0.0.0', '--base', path, '--clearScreen', 'false'],
-        env={**os.environ, 'VITE_BASE_API': f'http://127.0.0.1:{UVICORN_PORT}/api/'},
+        env={**os.environ, 'VITE_BASE_API': VITE_BASE_API},
         cwd=base_dir
     )
 
