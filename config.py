@@ -17,6 +17,9 @@ UVICORN_SSL_KEYFILE = config("UVICORN_SSL_KEYFILE", default=None)
 DEBUG = config("DEBUG", default=False, cast=bool)
 DOCS = config("DOCS", default=False, cast=bool)
 
+VITE_BASE_API = f"http://127.0.0.1:{UVICORN_PORT}/api/" \
+    if DEBUG and config("VITE_BASE_API", default="/api/") == "/api/" \
+    else config("VITE_BASE_API", default="/api/")
 
 XRAY_JSON = config("XRAY_JSON", default="./xray.json")
 XRAY_FALLBACKS_INBOUND_TAG = config("XRAY_FALLBACKS_INBOUND_TAG", cast=str, default="") or config(
