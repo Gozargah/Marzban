@@ -259,11 +259,25 @@ i18n
           "hostsDialog.proxyProtocol": "代理协议（例如 VMess）",
           "hostsDialog.proxyMethod": "代理传输方法（例如 ws）",
           "hostsDialog.currentServer": "当前服务器的 IP 地址",
-          "hostsDialog.security": "安全协议",
+          "hostsDialog.security": "安全层",
+          "hostsDialog.host": "请求主机",
+          "hostsDialog.port": "端口",
+          "hostsDialog.sni": "SNI",
+          "hostsDialog.advancedOptions": "高级选项",
           "hostsDialog.addHost": "添加主机",
           "hostsDialog.savedSuccess": "设置保存成功",
           "hostsDialog.loading": "加载中...",
           "hostsDialog.apply": "保存",
+          "hostsDialog.port.info":
+            "默认情况下，主机使用入站端口的默认端口。如果此主机是一个服务器，用于从与您的服务器端口不同的端口转发流量，则可以设置自定义端口。例如，服务器可能会将来自端口 8443 的流量转发到您入站服务器的默认端口。",
+          "hostsDialog.sni.info":
+            "默认情况下，主机使用入站 SNI 的默认值。如果此主机是一个服务器且 SNI 不同，则可以设置自定义 SNI。例如，服务器可能会接收带有不同 SSL 证书的流量，执行 SSL 处理并将其转发到您的入站服务器。",
+          "hostsDialog.host.info":
+            "默认情况下，如果在 Xray 配置中设置了请求主机，则使用该主机。但是，如果需要，您可以在此处设置自定义请求主机。",
+          "hostsDialog.security.info":
+            "如果此主机的中间件服务器使用的安全层与入站默认值不同，则可以在此处设置自定义安全层。",
+          "hostsDialog.alpn": "ALPN",
+          "hostsDialog.fingerprint": "指纹",
 
           // Nodes
           "nodes.title":
