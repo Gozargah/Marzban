@@ -231,6 +231,7 @@ class UsersResponse(BaseModel):
     total: int
 
 class UserUsageResponse(BaseModel):
+    node_id: int
     node_name: str
     used_traffic: int
 

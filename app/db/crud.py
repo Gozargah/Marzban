@@ -3,10 +3,11 @@ from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
 from sqlalchemy.orm import Session
+from sqlalchemy import and_
 
 from app.db.models import (JWT, Admin, Node, Proxy, ProxyHost, ProxyInbound,
                            ProxyTypes, System, User, UserTemplate,
-                           UserUsageResetLogs)
+                           UserUsageResetLogs, NodeUserUsage, NodeUsage)
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
 from app.models.node import NodeCreate, NodeModify, NodeStatus, NodeUsageResponse
 from app.models.proxy import ProxyHost as ProxyHostModify
@@ -153,33 +154,48 @@ def get_users(db: Session,
     return query.all()
 
 
-def get_user_usages(db: Session, dbuser: User) -> List[UserUsageResponse]:
+def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime) -> List[UserUsageResponse]:
     usages = []
-    filter = {}
+    cache = {}
 
-    used_traffic = dbuser.used_traffic
+    cond = and_(NodeUserUsage.user_username == dbuser.username,
+                NodeUserUsage.created_at >= start,
+                NodeUserUsage.created_at <= end)
 
-    for v in dbuser.node_usages:
-        usages.append(UserUsageResponse(
-            node_name=v.node.name,
-            used_traffic=v.used_traffic
-        ))
-        used_traffic -= v.used_traffic
-        filter[v.node.name] = True
+    for v in db.query(NodeUserUsage).filter(cond):
+        node_name = "Master" if v.node_id == 0 else v.node.name
+        entry = cache.get(v.node_id)
+        if entry is None:
+            entry = UserUsageResponse(
+                node_id=v.node_id,
+                node_name=node_name,
+                used_traffic=0
+            )
+            cache[v.node_id] = entry
+            usages.append(entry)
+        
+        entry.used_traffic += v.used_traffic
 
     for node in db.query(Node).all():
-        if not (node.name in filter):
-            filter[node.name] = True
-            usages.append(UserUsageResponse(
+        if cache.get(node.id) is None:
+            entry = UserUsageResponse(
+                node_id=node.id,
                 node_name=node.name,
                 used_traffic=0
-            ))
+            )
+            cache[node.id] = entry
+            usages.append(entry)
 
-    usages.insert(0, UserUsageResponse(
-        node_name="Master",
-        used_traffic=used_traffic
-    ))
+    # no 'Master'
+    if cache.get(0) is None:
+        usages.append(UserUsageResponse(
+            node_id=0,
+            node_name="Master",
+            used_traffic=0
+        ))
 
+    usages.sort(key=lambda entry: entry.node_id)
+    
     return usages
 
 
@@ -462,27 +478,47 @@ def get_nodes(db: Session, status: Optional[Union[NodeStatus, list]] = None):
     return query.all()
 
 
-def get_nodes_usage(db: Session) -> List[NodeUsageResponse]:
+def get_nodes_usage(db: Session, start: datetime, end: datetime) -> List[NodeUsageResponse]:
     usages = []
-    filter = {}
+    cache = {}
 
-    dbmaster = db.query(System).first()
-    master = NodeUsageResponse(
-        node_name="Master",
-        incoming_bandwidth=dbmaster.uplink,
-        outgoing_bandwidth=dbmaster.downlink,
-    )
+    for v in db.query(NodeUsage).filter(and_(NodeUsage.created_at >= start, NodeUsage.created_at <= end)):
+        node_name = "Master" if v.node_id == 0 else v.node.name
+        entry = cache.get(v.node_id)
+        if entry is None:
+            entry = NodeUsageResponse(
+                node_id=v.node_id,
+                node_name=node_name,
+                incoming_bandwidth=0,
+                outgoing_bandwidth=0
+            )
+            cache[v.node_id] = entry
+            usages.append(entry)
 
-    for v in db.query(Node).all():
+        entry.incoming_bandwidth += v.uplink
+        entry.outgoing_bandwidth += v.downlink
+
+    for node in db.query(Node).all():
+        if cache.get(node.id) is None:
+            entry = NodeUsageResponse(
+                node_id=node.id,
+                node_name=node.name,
+                incoming_bandwidth=0,
+                outgoing_bandwidth=0
+            )
+            cache[node.id] = entry
+            usages.append(entry)
+
+    # no 'Master'
+    if cache.get(0) is None:
         usages.append(NodeUsageResponse(
-            node_name=v.name,
-            incoming_bandwidth=v.uplink,
-            outgoing_bandwidth=v.downlink,
+            node_id=0,
+            node_name="Master",
+            incoming_bandwidth=0,
+            outgoing_bandwidth=0
         ))
-        master.incoming_bandwidth -= v.uplink
-        master.outgoing_bandwidth -= v.downlink
 
-    usages.insert(0, master)
+    usages.sort(key=lambda entry: entry.node_id)
 
     return usages
 
@@ -501,7 +537,8 @@ def create_node(db: Session, node: NodeCreate):
 
 
 def remove_node(db: Session, dbnode: Node):
-    dbnode.node_usages.clear()
+    dbnode.usages.clear()
+    dbnode.user_usages.clear()
     db.delete(dbnode)
     db.commit()
     return dbnode

@@ -31,9 +31,12 @@ import {
   GridItem,
   useColorMode,
   ColorMode,
+  useRadio,
+  useRadioGroup,
+  UseRadioProps,
 } from "@chakra-ui/react";
 import { PencilIcon, UserPlusIcon, ChartPieIcon} from "@heroicons/react/24/outline";
-import { ProtocolType, useDashboard } from "contexts/DashboardContext";
+import { ProtocolType, FilterUsageType, useDashboard } from "contexts/DashboardContext";
 import { FC, useEffect, useState } from "react";
 import { Controller, FormProvider, useForm, useWatch } from "react-hook-form";
 import {
@@ -48,7 +51,7 @@ import { Icon } from "./Icon";
 import { RadioGroup } from "./RadioGroup";
 import { Input } from "./Input";
 import ReactDatePicker from "react-datepicker";
-import dayjs from "dayjs";
+import dayjs, { ManipulateType } from "dayjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { relativeExpiryDate } from "utils/dateFormatter";
 import { DeleteIcon } from "./DeleteUserModal";
@@ -205,6 +208,34 @@ const createUsageConfig = (colorMode: ColorMode, series: any = [], labels: any =
   }
 }
 
+export const FilterUsageItem: FC<UseRadioProps & any> = (props) => {
+  const { getInputProps, getRadioProps } = useRadio(props)
+  return (
+    <Box as="label">
+      <input {...getInputProps()} />
+      <Box
+        {...getRadioProps()}
+        cursor="pointer"
+        fontSize="xs"
+        borderWidth="1px"
+        borderRadius="md"
+        _checked={{
+          bg: "primary.500",
+          color: "white",
+          borderColor: "primary.500",
+        }}
+        _focus={{
+          boxShadow: "outline",
+        }}
+        px={3}
+        py={1}
+      >
+        {props.children}
+      </Box>
+    </Box>
+  )
+}
+
 const mergeProxies = (
   proxyKeys: ProxyKeys,
   proxyType: ProxyType | undefined
@@ -269,18 +300,24 @@ export const UserDialog: FC<UserDialogProps> = () => {
     name: ["data_limit"],
   });
 
+  const fetchUsageWithFilter = (query: FilterUsageType) => {
+    fetchUserUsage(editingUser!, query).then((data: any) => {
+      const labels = [];
+      const series = [];
+      for (const key in data.usages) {
+        series.push(data.usages[key].used_traffic);
+        labels.push(data.usages[key].node_name);
+      }
+      setUsage(createUsageConfig(colorMode, series, labels));
+    });
+  }
+
   useEffect(() => {
     if (editingUser) {
       form.reset(formatUser(editingUser));
       
-      fetchUserUsage(editingUser).then((data:any) => {
-        const labels = [];
-        const series = [];
-        for (const key in data.usages) {
-          series.push(data.usages[key].used_traffic);
-          labels.push(data.usages[key].node_name);
-        }
-        setUsage(createUsageConfig(colorMode, series, labels));
+      fetchUsageWithFilter({
+        start: dayjs().utc().subtract(30, 'day').format("YYYY-MM-DDTHH:00:00")
       });
     }
   }, [editingUser]);
@@ -345,6 +382,8 @@ export const UserDialog: FC<UserDialogProps> = () => {
     onEditingUser(null);
     setError(null);
     setUsageVisible(false);
+    setDefaultFilter("30d");
+    setDataRangeVisible(false);
   };
 
   const handleResetUsage = () => {
@@ -352,6 +391,30 @@ export const UserDialog: FC<UserDialogProps> = () => {
   };
 
   const disabled = loading;
+
+  // filter useage
+  const [filterDateRange, setFilterDateRange] = useState([null, null] as [Date | null, Date | null]);
+  const [filterStartDate, filterEndDate] = filterDateRange;
+  const [dataRangeVisible, setDataRangeVisible] = useState(false);
+  const filterOptions = ["7h", "1d", "3d", "7d", "30d", "60d", "1y", "custom"];
+  const filterOptionTypes = {h: "hour", d: "day", y: "year"};
+  const { getRootProps, getRadioProps, setValue: setDefaultFilter } = useRadioGroup({
+    name: "filter",
+    defaultValue: "30d",
+    onChange: (value: string) => {
+      setDataRangeVisible(value == "custom");
+      if (value === "custom" ) {
+        setFilterDateRange([null, null]);
+        return;
+      }
+
+      const num = Number(value.substring(0, value.length - 1));
+      const unit = filterOptionTypes[value[value.length - 1] as keyof typeof filterOptionTypes];
+      fetchUsageWithFilter({
+        start: dayjs().utc().subtract(num, unit as ManipulateType).format("YYYY-MM-DDTHH:00:00")
+      });
+    },
+  });
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl">
@@ -597,8 +660,49 @@ export const UserDialog: FC<UserDialogProps> = () => {
                   </FormControl>
                 </GridItem>
                 {isEditing && usageVisible && (
-                  <GridItem colSpan={{ base:1, md: 2}} width={{ base: "100%", md: "70%" }} justifySelf="center">
-                    <ReactApexChart options={usage.options} series={usage.series} type="donut" />
+                  <GridItem pt={6} colSpan={{ base:1, md: 2}}>
+                    <SimpleGrid gap={4} justifyItems="center">
+                      <HStack {...getRootProps()} gap={0}>
+                        {filterOptions.map((value) => {
+                          return (
+                            <FilterUsageItem key={value} {...getRadioProps({ value })}>
+                              {t("userDialog." + value)}
+                            </FilterUsageItem>
+                          )
+                        })}
+                      </HStack>
+                      {dataRangeVisible && (
+                        <HStack>
+                          <ReactDatePicker
+                            // dateFormat={t("dateFormat")}
+                            selectsRange={true}
+                            maxDate={new Date()}
+                            startDate={filterStartDate}
+                            endDate={filterEndDate}
+                            onChange={(update) => {
+                              setFilterDateRange(update);
+                              if (update[0] && update[1]) {
+                                fetchUsageWithFilter({
+                                  start: dayjs(update[0]).format("YYYY-MM-DDT00:00:00"),
+                                  end: dayjs(update[1]).format("YYYY-MM-DDT23:59:59")
+                                });
+                              }
+                            }}
+                            customInput={
+                              <Input
+                                size="sm"
+                                type="text"
+                                borderRadius="6px"
+                                clearable
+                              />
+                            }
+                          />
+                        </HStack>
+                      )}
+                      <Box width={{ base: "100%", md: "70%" }} justifySelf="center">
+                        <ReactApexChart options={usage.options} series={usage.series} type="donut" />
+                      </Box>
+                    </SimpleGrid>
                   </GridItem>
                 )}
               </Grid>
