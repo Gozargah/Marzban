@@ -2,6 +2,7 @@ import { Box, BoxProps, Card, chakra, HStack, Text } from "@chakra-ui/react";
 import {
   ChartBarIcon,
   ChartPieIcon,
+  CpuChipIcon,
   UsersIcon,
 } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
@@ -13,8 +14,8 @@ import { formatBytes, numberWithCommas } from "utils/formatByte";
 
 const TotalUsersIcon = chakra(UsersIcon, {
   baseStyle: {
-    w: 5,
-    h: 5,
+    w: 4,
+    h: 4,
     position: "relative",
     zIndex: "2",
   },
@@ -22,8 +23,8 @@ const TotalUsersIcon = chakra(UsersIcon, {
 
 const NetworkIcon = chakra(ChartBarIcon, {
   baseStyle: {
-    w: 5,
-    h: 5,
+    w: 4,
+    h: 4,
     position: "relative",
     zIndex: "2",
   },
@@ -31,8 +32,17 @@ const NetworkIcon = chakra(ChartBarIcon, {
 
 const MemoryIcon = chakra(ChartPieIcon, {
   baseStyle: {
-    w: 5,
-    h: 5,
+    w: 4,
+    h: 4,
+    position: "relative",
+    zIndex: "2",
+  },
+});
+
+const CpuUsageIcon = chakra(CpuChipIcon, {
+  baseStyle: {
+    w: 4,
+    h: 4,
     position: "relative",
     zIndex: "2",
   },
@@ -64,7 +74,7 @@ const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
       justifyContent="space-between"
       flexDirection="row"
     >
-      <HStack alignItems="center" columnGap="4">
+      <HStack alignItems="center" columnGap="2">
         <Box
           p="2"
           position="relative"
@@ -110,7 +120,7 @@ const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
           {title}
         </Text>
       </HStack>
-      <Box fontSize="3xl" fontWeight="semibold" mt="2">
+      <Box fontSize="xl" fontWeight="semibold" mt="2">
         {content}
       </Box>
     </Card>
@@ -145,7 +155,7 @@ export const Statistics: FC<BoxProps> = (props) => {
               <Text>{numberWithCommas(systemData.users_active)}</Text>
               <Text
                 fontWeight="normal"
-                fontSize="lg"
+                fontSize="sm"
                 as="span"
                 display="inline-block"
                 pb="5px"
@@ -168,14 +178,14 @@ export const Statistics: FC<BoxProps> = (props) => {
         icon={<NetworkIcon />}
       />
       <StatisticCard
-        title={t("memoryUsage")}
+        title={t("RAM")}
         content={
           systemData && (
             <HStack alignItems="flex-end">
               <Text>{formatBytes(systemData.mem_used, 1, true)[0]}</Text>
               <Text
                 fontWeight="normal"
-                fontSize="lg"
+                fontSize="sm"
                 as="span"
                 display="inline-block"
                 pb="5px"
@@ -187,6 +197,12 @@ export const Statistics: FC<BoxProps> = (props) => {
           )
         }
         icon={<MemoryIcon />}
+      />
+
+      <StatisticCard
+        title={t("CPU Usage")}
+        content={systemData && systemData.cpu_usage + "%"}
+        icon={<CpuUsageIcon />}
       />
     </HStack>
   );
