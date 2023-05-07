@@ -382,7 +382,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                               <PopoverContent p={2}>
                                 <PopoverArrow />
                                 <PopoverCloseButton />
-                                <Text fontSize="xs">
+                                <Text fontSize="xs" pr={5}>
                                   {t("hostsDialog.port.info")}
                                 </Text>
                               </PopoverContent>
@@ -420,7 +420,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                               <PopoverContent p={2}>
                                 <PopoverArrow />
                                 <PopoverCloseButton />
-                                <Text fontSize="xs">
+                                <Text fontSize="xs" pr={5}>
                                   {t("hostsDialog.sni.info")}
                                 </Text>
                               </PopoverContent>
@@ -460,7 +460,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                               <PopoverContent p={2}>
                                 <PopoverArrow />
                                 <PopoverCloseButton />
-                                <Text fontSize="xs">
+                                <Text fontSize="xs" pr={5}>
                                   {t("hostsDialog.host.info")}
                                 </Text>
                               </PopoverContent>
@@ -496,7 +496,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                               <PopoverContent p={2}>
                                 <PopoverArrow />
                                 <PopoverCloseButton />
-                                <Text fontSize="xs">
+                                <Text fontSize="xs" pr={5}>
                                   {t("hostsDialog.security.info")}
                                 </Text>
                               </PopoverContent>
