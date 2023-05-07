@@ -1,10 +1,24 @@
-import { Box, BoxProps, Card, chakra, HStack, Text } from "@chakra-ui/react";
 import {
+  Box,
+  BoxProps,
+  chakra,
+  HStack,
+  Text,
+  Stat,
+  StatLabel,
+  StatNumber,
+  useColorModeValue,
+} from "@chakra-ui/react";
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
   ChartBarIcon,
   ChartPieIcon,
   CpuChipIcon,
+  ServerIcon,
   UsersIcon,
 } from "@heroicons/react/24/outline";
+import { CircularProgress, CircularProgressLabel } from "@chakra-ui/react";
 import { FC, PropsWithChildren, ReactElement, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
@@ -13,8 +27,8 @@ import { formatBytes, numberWithCommas } from "utils/formatByte";
 
 const TotalUsersIcon = chakra(UsersIcon, {
   baseStyle: {
-    w: 4,
-    h: 4,
+    w: 10,
+    h: 10,
     position: "relative",
     zIndex: "2",
   },
@@ -22,8 +36,8 @@ const TotalUsersIcon = chakra(UsersIcon, {
 
 const NetworkIcon = chakra(ChartBarIcon, {
   baseStyle: {
-    w: 4,
-    h: 4,
+    w: 10,
+    h: 10,
     position: "relative",
     zIndex: "2",
   },
@@ -31,8 +45,8 @@ const NetworkIcon = chakra(ChartBarIcon, {
 
 const MemoryIcon = chakra(ChartPieIcon, {
   baseStyle: {
-    w: 4,
-    h: 4,
+    w: 10,
+    h: 10,
     position: "relative",
     zIndex: "2",
   },
@@ -40,121 +54,125 @@ const MemoryIcon = chakra(ChartPieIcon, {
 
 const CpuUsageIcon = chakra(CpuChipIcon, {
   baseStyle: {
-    w: 4,
-    h: 4,
+    w: 10,
+    h: 10,
     position: "relative",
     zIndex: "2",
   },
 });
 
-type StatisticCardProps = {
-  title: string;
-  content: ReactNode;
-  icon: ReactElement;
-};
+const TrafficIcon = chakra(ServerIcon, {
+  baseStyle: {
+    w: 10,
+    h: 10,
+    position: "relative",
+    zIndex: "2",
+  },
+});
 
-const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
-  title,
-  content,
-  icon,
-}) => {
+const IncomingIcon = chakra(ArrowDownIcon, {
+  baseStyle: {
+    w: 5,
+    h: 5,
+    position: "relative",
+    zIndex: "2",
+  },
+});
+
+const OutgoingIcon = chakra(ArrowUpIcon, {
+  baseStyle: {
+    w: 5,
+    h: 5,
+    position: "relative",
+    zIndex: "2",
+  },
+});
+
+interface StatsCardProps {
+  title: string;
+  stat: string;
+  icon: ReactNode;
+}
+
+function StatsCard(props: StatsCardProps) {
+  const { title, stat, icon } = props;
   return (
-    <Card
-      p={6}
+    <Stat
       borderWidth="1px"
       borderColor="light-border"
-      bg="#F9FAFB"
+      bgGradient="linear(to-br,#F9FAFB ,  #edf6ff)"
       _dark={{ borderColor: "gray.600", bg: "gray.750" }}
       borderStyle="solid"
       boxShadow="none"
       borderRadius="12px"
       width="full"
-      display="flex"
+      margin="0"
       justifyContent="space-between"
       flexDirection="row"
+      px={{ base: 2, md: 2 }}
+      py={"4"}
+      shadow="none"
+      flex-flexDirection={"row"}
     >
-      <HStack alignItems="center" columnGap="2">
+      <HStack justifyContent={"space-between"}>
+        <Box pl={{ base: 2, md: 4 }} w="full" h="full" display="block">
+          <StatLabel
+            fontWeight={"medium"}
+            isTruncated
+            textTransform="capitalize"
+            fontSize={"md"}
+            paddingBottom={"4px"}
+          >
+            {title}
+          </StatLabel>
+          <StatNumber fontSize={"lg"} fontWeight={"medium"}>
+            {stat}
+          </StatNumber>
+        </Box>
         <Box
-          p="2"
+          my={"auto"}
+          color={useColorModeValue("gray.800", "gray.200")}
+          alignContent={"center"}
+          p="1"
           position="relative"
-          color="white"
-          _before={{
-            content: `""`,
-            position: "absolute",
-            top: 0,
-            left: 0,
-            bg: "primary.400",
-            display: "block",
-            w: "full",
-            h: "full",
-            borderRadius: "5px",
-            opacity: ".5",
-            z: "1",
-          }}
-          _after={{
-            content: `""`,
-            position: "absolute",
-            top: "-5px",
-            left: "-5px",
-            bg: "primary.400",
-            display: "block",
-            w: "calc(100% + 10px)",
-            h: "calc(100% + 10px)",
-            borderRadius: "8px",
-            opacity: ".4",
-            z: "1",
-          }}
         >
           {icon}
         </Box>
-        <Text
-          color="gray.600"
-          _dark={{
-            color: "gray.300",
-          }}
-          fontWeight="medium"
-          textTransform="capitalize"
-          fontSize="sm"
-        >
-          {title}
-        </Text>
       </HStack>
-      <Box fontSize="xl" fontWeight="semibold" mt="2">
-        {content}
-      </Box>
-    </Card>
+    </Stat>
   );
-};
+}
+
 export const StatisticsQueryKey = "statistics-query-key";
 export const Statistics: FC<BoxProps> = (props) => {
   const { data: systemData } = useQuery({
     queryKey: StatisticsQueryKey,
     queryFn: () => fetch("/system"),
-    refetchInterval: 5000,
+    refetchInterval: 3000,
   });
   const { t } = useTranslation();
   return (
     <HStack
       justifyContent="space-between"
       gap={0}
-      columnGap={{ lg: 4, md: 0 }}
+      columnGap={{ lg: 2, md: 0 }}
       rowGap={{ lg: 0, base: 4 }}
       display="flex"
       flexDirection={{ lg: "row", base: "column" }}
       {...props}
     >
-      <StatisticCard
+      <StatsCard
         title={t("activeUsers")}
-        content={
+        stat={
           systemData && (
             <HStack alignItems="flex-end">
               <Text>{numberWithCommas(systemData.users_active)}</Text>
               <Text
                 fontWeight="normal"
-                fontSize="sm"
+                fontSize="md"
                 as="span"
                 display="inline-block"
-                pb="5px"
+                pb="2px"
               >
                 / {numberWithCommas(systemData.total_user)}
               </Text>
@@ -163,28 +181,55 @@ export const Statistics: FC<BoxProps> = (props) => {
         }
         icon={<TotalUsersIcon />}
       />
-      <StatisticCard
+
+      <StatsCard
         title={t("dataUsage")}
-        content={
-          systemData &&
-          formatBytes(
-            systemData.incoming_bandwidth + systemData.outgoing_bandwidth
+        stat={
+          systemData && (
+            <HStack minWidth={"100px"}>
+              <Text>
+                {formatBytes(
+                  systemData.incoming_bandwidth + systemData.outgoing_bandwidth
+                )}
+              </Text>
+            </HStack>
           )
         }
         icon={<NetworkIcon />}
       />
-      <StatisticCard
-        title={t("RAM")}
-        content={
+
+      <StatsCard
+        title={t("Network")}
+        stat={
           systemData && (
-            <HStack alignItems="flex-end">
+            <HStack minWidth={"200px"} fontSize="md">
+              <Text display="flex">
+                {<IncomingIcon />}
+                {formatBytes(systemData.incoming_bandwidth_speed / 3, 1, true)}
+                /s
+              </Text>
+              <Text display="flex">
+                {<OutgoingIcon />}
+                {formatBytes(systemData.outgoing_bandwidth_speed / 3, 1, true)}
+                /s
+              </Text>
+            </HStack>
+          )
+        }
+        icon={<TrafficIcon />}
+      />
+      <StatsCard
+        title={t("Memory Usage")}
+        stat={
+          systemData && (
+            <HStack alignItems="flex-end" minWidth={"150"}>
               <Text>{formatBytes(systemData.mem_used, 1, true)[0]}</Text>
               <Text
                 fontWeight="normal"
-                fontSize="sm"
+                fontSize="md"
                 as="span"
                 display="inline-block"
-                pb="5px"
+                pb="2px"
               >
                 {formatBytes(systemData.mem_used, 1, true)[1]} /{" "}
                 {formatBytes(systemData.mem_total, 1)}
@@ -195,9 +240,9 @@ export const Statistics: FC<BoxProps> = (props) => {
         icon={<MemoryIcon />}
       />
 
-      <StatisticCard
+      <StatsCard
         title={t("CPU Usage")}
-        content={systemData && systemData.cpu_usage + "%"}
+        stat={systemData && systemData.cpu_usage + "%"}
         icon={<CpuUsageIcon />}
       />
     </HStack>
