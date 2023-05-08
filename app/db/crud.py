@@ -501,7 +501,6 @@ def create_node(db: Session, node: NodeCreate):
 
 
 def remove_node(db: Session, dbnode: Node):
-    dbnode.node_usages.clear()
     db.delete(dbnode)
     db.commit()
     return dbnode
