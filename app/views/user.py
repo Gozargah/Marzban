@@ -214,8 +214,8 @@ def reset_users_data_usage(db: Session = Depends(get_db),
 
 @app.get("/api/user/{username}/usage", tags=['User'], response_model=UserUsagesResponse)
 def get_user(username: str,
-             start: datetime = None,
-             end: datetime = None,
+             start: str = None,
+             end: str = None,
              db: Session = Depends(get_db),
              admin: Admin = Depends(Admin.get_current)):
     """
@@ -226,11 +226,15 @@ def get_user(username: str,
         raise HTTPException(status_code=404, detail="User not found")
     
     if start is None:
-        start = datetime.fromtimestamp(datetime.utcnow().timestamp() - 30 * 24 * 3600)
+        start_date = datetime.fromtimestamp(datetime.utcnow().timestamp() - 30 * 24 * 3600)
+    else:
+        start_date = datetime.fromisoformat(start)
 
     if end is None:
-        end = datetime.utcnow()
+        end_date = datetime.utcnow()
+    else:
+        end_date = datetime.fromisoformat(end)
 
-    usages = crud.get_user_usages(db, dbuser, start, end)
+    usages = crud.get_user_usages(db, dbuser, start_date, end_date)
 
     return {"usages": usages, "username": username}

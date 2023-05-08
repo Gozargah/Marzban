@@ -135,11 +135,15 @@ def get_user(db: Session = Depends(get_db),
     """
 
     if start is None:
-        start = datetime.fromtimestamp(datetime.utcnow().timestamp() - 30 * 24 * 3600)
+        start_date = datetime.fromtimestamp(datetime.utcnow().timestamp() - 30 * 24 * 3600)
+    else:
+        start_date = datetime.fromisoformat(start)
 
     if end is None:
-        end = datetime.utcnow()
+        end_date = datetime.utcnow()
+    else:
+        end_date = datetime.fromisoformat(end)
 
-    usages = crud.get_nodes_usage(db, start, end)
+    usages = crud.get_nodes_usage(db, start_date, end_date)
 
     return {"usages": usages}

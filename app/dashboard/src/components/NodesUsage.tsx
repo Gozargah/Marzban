@@ -61,8 +61,8 @@ const createUsageConfig = (colorMode: ColorMode, series: any = [], labels: any =
         colors: undefined
       },
       dataLabels: {
-        formatter: (val, opts) => {
-          return formatBytes(series[opts.seriesIndex], 1);
+        formatter: (val, {seriesIndex, w}) => {
+          return formatBytes(w.config.series[seriesIndex], 1);
         },
       },
       tooltip: {
