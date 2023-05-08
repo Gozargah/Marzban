@@ -34,6 +34,7 @@ import {
   useRadio,
   useRadioGroup,
   UseRadioProps,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import { PencilIcon, UserPlusIcon, ChartPieIcon} from "@heroicons/react/24/outline";
 import { ProtocolType, FilterUsageType, useDashboard } from "contexts/DashboardContext";
@@ -200,17 +201,6 @@ const createUsageConfig = (colorMode: ColorMode, series: any = [], labels: any =
           `
         }
       },
-      responsive: [{
-        breakpoint: 480,
-        options: {
-          chart: {
-            width: 200
-          },
-          legend: {
-            position: 'bottom'
-          }
-        }
-      }]
     } as ApexOptions
   }
 }
@@ -224,7 +214,7 @@ export const FilterUsageItem: FC<UseRadioProps & any> = (props) => {
         {...getRadioProps()}
         cursor="pointer"
         fontSize="xs"
-        borderWidth="1px"
+        // borderWidth="1px"
         borderRadius="md"
         _checked={{
           bg: "primary.500",
@@ -403,8 +393,11 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const [filterDateRange, setFilterDateRange] = useState([null, null] as [Date | null, Date | null]);
   const [filterStartDate, filterEndDate] = filterDateRange;
   const [dataRangeVisible, setDataRangeVisible] = useState(false);
-  const filterOptions = ["7h", "1d", "3d", "7d", "30d", "60d", "1y", "custom"];
-  const filterOptionTypes = {h: "hour", d: "day", y: "year"};
+  const filterOptions = useBreakpointValue({
+    base: ["7h", "1d", "3d", "7d", "30d", "1y", "custom"],
+    md: ["7h", "1d", "3d", "7d", "30d", "3m", "6m", "1y", "custom"]
+  })!;
+  const filterOptionTypes = {h: "hour", d: "day", m: "month", y: "year"};
   const { getRootProps, getRadioProps, setValue: setDefaultFilter } = useRadioGroup({
     name: "filter",
     defaultValue: "30d",
@@ -668,16 +661,21 @@ export const UserDialog: FC<UserDialogProps> = () => {
                 </GridItem>
                 {isEditing && usageVisible && (
                   <GridItem pt={6} colSpan={{ base:1, md: 2}}>
-                    <SimpleGrid gap={4} justifyItems="center">
-                      <HStack {...getRootProps()} gap={0}>
+                    <VStack gap={4}>
+                      <Box {...getRootProps()} 
+                        gap={0} 
+                        display="flex"
+                        borderWidth="1px"
+                        borderRadius="md"
+                      >
                         {filterOptions.map((value) => {
                           return (
                             <FilterUsageItem key={value} {...getRadioProps({ value })}>
-                              {t("userDialog." + value)}
+                              {t("filterUsage." + value)}
                             </FilterUsageItem>
                           )
                         })}
-                      </HStack>
+                      </Box>
                       {dataRangeVisible && (
                         <HStack>
                           <ReactDatePicker
@@ -709,7 +707,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       <Box width={{ base: "100%", md: "70%" }} justifySelf="center">
                         <ReactApexChart options={usage.options} series={usage.series} type="donut" />
                       </Box>
-                    </SimpleGrid>
+                    </VStack>
                   </GridItem>
                 )}
               </Grid>
