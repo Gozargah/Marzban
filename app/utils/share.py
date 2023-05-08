@@ -349,7 +349,7 @@ class ClashMetaConfiguration(ClashConfiguration):
             server=address,
             port=inbound['port'],
             network=inbound['network'],
-            tls=(inbound['tls'] == 'tls'),
+            tls=(inbound['tls'] in ('tls', 'reality')),
             sni=inbound['sni'],
             host=inbound['host'],
             path=inbound['path'],
