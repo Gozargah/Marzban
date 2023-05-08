@@ -60,9 +60,16 @@ const createUsageConfig = (colorMode: ColorMode, series: any = [], labels: any =
         width: 1,
         colors: undefined
       },
+      dataLabels: {
+        formatter: (val, opts) => {
+          return formatBytes(series[opts.seriesIndex], 1);
+        },
+      },
       tooltip: {
         custom: ({series, seriesIndex, dataPointIndex, w}) => {
-          const readable = formatBytes(series[seriesIndex]);
+          const readable = formatBytes(series[seriesIndex], 1);
+          const total = Math.max((series as [number]).reduce((t, c) => t += c), 1);
+          const percent = Math.round(series[seriesIndex] / total * 1000) / 10 + "%";
           return `
             <div style="
                     background-color: ${w.globals.colors[seriesIndex]};
@@ -73,7 +80,7 @@ const createUsageConfig = (colorMode: ColorMode, series: any = [], labels: any =
                     font-size:0.725rem;
                   "
             >
-              ${w.config.labels[seriesIndex]}: <b>${readable}</b>
+              ${w.config.labels[seriesIndex]}: <b>${percent}, ${readable}</b>
             </div>
           `
         }
