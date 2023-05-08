@@ -213,106 +213,172 @@ class ClashConfiguration(object):
                 return new
             c += 1
 
+    def make_node(self,
+                  name: str,
+                  type: str,
+                  server: str,
+                  port: int,
+                  network: str,
+                  tls: bool,
+                  sni: str,
+                  host: str,
+                  path: str,
+                  udp: bool = True,
+                  alpn: str = ''):
+        remark = self._remark_validation(name)
+        node = {
+            'name': remark,
+            'type': type,
+            'server': server,
+            'port': port,
+            'network': network,
+            f'{network}-opts': {},
+            'udp': udp
+        }
+
+        if type == 'ss':  # shadowsocks
+            return node
+
+        if tls:
+            node['tls'] = True
+            if type == 'trojan':
+                node['sni'] = sni
+            else:
+                node['servername'] = sni
+            if alpn:
+                node['alpn'] = alpn.split(',')
+
+        net_opts = node[f'{network}-opts']
+
+        if network == 'ws':
+            if path:
+                net_opts['path'] = path
+            if host:
+                net_opts['headers'] = {"Host": host}
+
+        if network == 'grpc':
+            if path:
+                net_opts['grpc-service-name'] = path
+
+        if network == 'h2':
+            if path:
+                net_opts['path'] = path
+            if host:
+                net_opts['host'] = [host]
+
+        if network == 'http' or network == 'tcp':
+            if path:
+                net_opts['method'] = 'GET'
+                net_opts['path'] = [path]
+            if host:
+                net_opts['method'] = 'GET'
+                net_opts['headers'] = {"Host": host}
+
+        return node
+
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
+        node = self.make_node(
+            name=remark,
+            type=inbound['protocol'],
+            server=address,
+            port=inbound['port'],
+            network=inbound['network'],
+            tls=(inbound['tls'] == 'tls'),
+            sni=inbound['sni'],
+            host=inbound['host'],
+            path=inbound['path'],
+            udp=True,
+            alpn=inbound.get('alpn', ''),
+        )
+
         if inbound['protocol'] == 'vmess':
-            self.add_vmess(remark=remark,
-                           address=address,
-                           port=inbound['port'],
-                           id=settings['id'],
-                           net=inbound['network'],
-                           tls=inbound['tls'],
-                           sni=inbound['sni'],
-                           host=inbound['host'],
-                           path=inbound['path'])
+            node['uuid'] = settings['id']
+            node['alterId'] = 0
+            node['cipher'] = 'auto'
+            self.data['proxies'].append(node)
 
         if inbound['protocol'] == 'trojan':
-            self.add_trojan(remark=remark,
-                            address=address,
-                            port=inbound['port'],
-                            password=settings['password'],
-                            net=inbound['network'],
-                            tls=inbound['tls'],
-                            sni=inbound['sni'],
-                            host=inbound['host'],
-                            path=inbound['path'])
+            node['password'] = settings['password']
+            self.data['proxies'].append(node)
 
         if inbound['protocol'] == 'shadowsocks':
-            self.add_shadowsocks(remark=remark,
-                                 address=address,
-                                 port=inbound['port'],
-                                 password=settings['password'])
+            node['password'] = settings['password']
+            self.data['proxies'].append(node)
 
-    def add_vmess(self,
-                  remark: str,
-                  address: str,
+
+class ClashMetaConfiguration(ClashConfiguration):
+    def make_node(self,
+                  name: str,
+                  type: str,
+                  server: str,
                   port: int,
-                  id: Union[str, UUID],
-                  host='',
-                  net='tcp',
-                  path='',
-                  sni='',
-                  tls=''):
-        remark = self._remark_validation(remark)
-        node = {'name': remark,
-                'type': 'vmess',
-                'server': address,
-                'port': port,
-                'uuid': id,
-                'network': net,
-                'alterId': 0,
-                'cipher': 'auto',
-                'udp': True,
-                'network': net,
-                f'{net}-opts': {
-                    'path': path
-                }}
-        if host:
-            node[f'{net}-opts']['headers'] = {'Host': host}
-        if tls == 'tls':
-            node.update({
-                'tls': tls,
-                'servername': sni
-            })
-        self.data['proxies'].append(node)
+                  network: str,
+                  tls: bool,
+                  sni: str,
+                  host: str,
+                  path: str,
+                  udp: bool = True,
+                  alpn: str = '',
+                  fp: str = '',
+                  pbk: str = '',
+                  sid: str = ''):
+        node = super().make_node(
+            name=name,
+            type=type,
+            server=server,
+            port=port,
+            network=network,
+            tls=tls,
+            sni=sni,
+            host=host,
+            path=path,
+            udp=udp,
+            alpn=alpn
+        )
+        if fp:
+            node['client-fingerprint'] = fp
+        if pbk:
+            node['reality-opts'] = {"public-key": pbk, "short-id": sid}
 
-    def add_trojan(self,
-                   remark: str,
-                   address: str,
-                   port: int,
-                   password: str,
-                   net='tcp',
-                   path='',
-                   tls='',
-                   host='',
-                   sni=''):
-        remark = self._remark_validation(remark)
-        self.data['proxies'].append({"name": remark,
-                                     "type": "trojan",
-                                     "server": address,
-                                     "port": port,
-                                     "password": password,
-                                     "network": net,
-                                     "udp": True,
-                                     'sni': sni if tls else '',
-                                     f'{net}-opts': {
-                                         'path': path,
-                                         'host': host
-                                     }})
+        return node
 
-    def add_shadowsocks(self,
-                        remark: str,
-                        address: str,
-                        port: int,
-                        password: str,
-                        security='chacha20-ietf-poly1305'):
-        remark = self._remark_validation(remark)
-        self.data['proxies'].append({'name': remark,
-                                     'type': 'ss',
-                                     'server': address,
-                                     'port': port,
-                                     'cipher': security,
-                                     'password': password,
-                                     'udp': True})
+    def add(self, remark: str, address: str, inbound: dict, settings: dict):
+        node = self.make_node(
+            name=remark,
+            type=inbound['protocol'],
+            server=address,
+            port=inbound['port'],
+            network=inbound['network'],
+            tls=(inbound['tls'] == 'tls'),
+            sni=inbound['sni'],
+            host=inbound['host'],
+            path=inbound['path'],
+            udp=True,
+            alpn=inbound.get('alpn', ''),
+            fp=inbound.get('fp', ''),
+            pbk=inbound.get('pbk', ''),
+            sid=inbound.get('sid', ''),
+        )
+
+        if inbound['protocol'] == 'vmess':
+            node['uuid'] = settings['id']
+            node['alterId'] = 0
+            node['cipher'] = 'auto'
+            self.data['proxies'].append(node)
+
+        if inbound['protocol'] == 'vless':
+            node['uuid'] = settings['id']
+            node['flow'] = settings.get('flow', '')
+            self.data['proxies'].append(node)
+
+        if inbound['protocol'] == 'trojan':
+            node['password'] = settings['password']
+            node['flow'] = settings.get('flow', '')
+            self.data['proxies'].append(node)
+
+        if inbound['protocol'] == 'shadowsocks':
+            node['password'] = settings['password']
+            self.data['proxies'].append(node)
 
 
 def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
@@ -433,8 +499,15 @@ def generate_v2ray_subscription(links: list) -> str:
     return base64.b64encode('\n'.join(links).encode()).decode()
 
 
-def generate_clash_subscription(proxies: dict, inbounds: dict, extra_data: dict) -> str:
-    conf = ClashConfiguration()
+def generate_clash_subscription(proxies: dict,
+                                inbounds: dict,
+                                extra_data: dict,
+                                is_meta: bool = False) -> str:
+    if is_meta is True:
+        conf = ClashMetaConfiguration()
+    else:
+        conf = ClashConfiguration()
+
     salt = secrets.token_urlsafe(12).lower()
 
     if (extra_data.get('expire') or 0) > 0:
@@ -490,13 +563,15 @@ def generate_clash_subscription(proxies: dict, inbounds: dict, extra_data: dict)
 
 def generate_subscription(
     user: "UserResponse",
-    config_format: Literal["v2ray", "clash"],
+    config_format: Literal["v2ray", "clash-meta", "clash"],
     as_base64: bool
 ) -> str:
     kwargs = {"proxies": user.proxies, "inbounds": user.inbounds, "extra_data": user.__dict__}
 
     if config_format == 'v2ray':
         config = "\n".join(generate_v2ray_links(**kwargs))
+    elif config_format == 'clash-meta':
+        config = generate_clash_subscription(**kwargs, is_meta=True)
     elif config_format == 'clash':
         config = generate_clash_subscription(**kwargs)
     else:

@@ -1,4 +1,4 @@
-from typing import Union
+import re
 
 from fastapi import Depends, Header, Response
 
@@ -45,7 +45,11 @@ def user_subcription(token: str,
         )
     }
 
-    if 'Clash' in user_agent:
+    if re.match('^([Cc]lash-verge|[Cc]lash-?[Mm]eta)', user_agent):
+        conf = generate_subscription(user=user, config_format="clash-meta", as_base64=False)
+        return Response(content=conf, media_type="text/yaml", headers=response_headers)
+
+    elif re.match('^([Cc]lash|[Ss]tash)', user_agent):
         conf = generate_subscription(user=user, config_format="clash", as_base64=False)
         return Response(content=conf, media_type="text/yaml", headers=response_headers)
 
