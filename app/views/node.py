@@ -126,9 +126,9 @@ def remove_node(node_id: int,
     return {}
 
 @app.get("/api/nodes/usage", tags=['Node'], response_model=NodesUsageResponse)
-def get_user(db: Session = Depends(get_db),
-             start: datetime = None,
-             end: datetime = None,
+def get_usage(db: Session = Depends(get_db),
+             start: str = None,
+             end: str = None,
              admin: Admin = Depends(Admin.get_current)):
     """
     Get nodes usage
