@@ -205,12 +205,12 @@ export const Statistics: FC<BoxProps> = (props) => {
             <HStack minWidth={"200px"} fontSize="md">
               <Text display="flex">
                 {<IncomingIcon />}
-                {formatBytes(systemData.incoming_bandwidth_speed / 3, 1, true)}
+                {formatBytes(systemData.incoming_bandwidth_speed, 1, true)}
                 /s
               </Text>
               <Text display="flex">
                 {<OutgoingIcon />}
-                {formatBytes(systemData.outgoing_bandwidth_speed / 3, 1, true)}
+                {formatBytes(systemData.outgoing_bandwidth_speed, 1, true)}
                 /s
               </Text>
             </HStack>
