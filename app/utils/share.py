@@ -91,9 +91,11 @@ class V2rayShareLink(str):
             "security": tls,
             "type": net,
             "host": host,
-            "headerType": type,
-            "flow": flow
+            "headerType": type
         }
+        if flow:
+            payload['flow'] = flow
+
         if net == 'grpc':
             payload['serviceName'] = path
         else:
@@ -137,9 +139,10 @@ class V2rayShareLink(str):
             "security": tls,
             "type": net,
             "host": host,
-            "headerType": type,
-            "flow": flow
+            "headerType": type
         }
+        if flow:
+            payload['flow'] = flow
         if net == 'grpc':
             payload['serviceName'] = path
         else:

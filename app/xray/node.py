@@ -119,9 +119,9 @@ class XRayNode:
 
     def _prepare_config(self, config: XRayConfig):
         for inbound in config.get("inbounds", []):
-            streamSettings = inbound.get("streamSettings", {})
-            tlsSettings = streamSettings.get("tlsSettings", {})
-            certificates = tlsSettings.get("certificates", [])
+            streamSettings = inbound.get("streamSettings") or {}
+            tlsSettings = streamSettings.get("tlsSettings") or {}
+            certificates = tlsSettings.get("certificates") or []
             for certificate in certificates:
                 if certificate.get("certificateFile"):
                     with open(certificate['certificateFile']) as file:
