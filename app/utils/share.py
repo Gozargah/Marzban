@@ -206,13 +206,11 @@ class ClashConfiguration(object):
 
     def _remark_validation(self, remark):
         if not remark in self.proxy_remarks:
-            self.proxy_remarks.append(remark)
             return remark
         c = 2
         while True:
             new = f'{remark} ({c})'
             if not new in self.proxy_remarks:
-                self.proxy_remarks.append(new)
                 return new
             c += 1
 
@@ -299,14 +297,17 @@ class ClashConfiguration(object):
             node['alterId'] = 0
             node['cipher'] = 'auto'
             self.data['proxies'].append(node)
+            self.proxy_remarks.append(remark)
 
         if inbound['protocol'] == 'trojan':
             node['password'] = settings['password']
             self.data['proxies'].append(node)
+            self.proxy_remarks.append(remark)
 
         if inbound['protocol'] == 'shadowsocks':
             node['password'] = settings['password']
             self.data['proxies'].append(node)
+            self.proxy_remarks.append(remark)
 
 
 class ClashMetaConfiguration(ClashConfiguration):
@@ -368,20 +369,24 @@ class ClashMetaConfiguration(ClashConfiguration):
             node['alterId'] = 0
             node['cipher'] = 'auto'
             self.data['proxies'].append(node)
+            self.proxy_remarks.append(remark)
 
         if inbound['protocol'] == 'vless':
             node['uuid'] = settings['id']
             node['flow'] = settings.get('flow', '')
             self.data['proxies'].append(node)
+            self.proxy_remarks.append(remark)
 
         if inbound['protocol'] == 'trojan':
             node['password'] = settings['password']
             node['flow'] = settings.get('flow', '')
             self.data['proxies'].append(node)
+            self.proxy_remarks.append(remark)
 
         if inbound['protocol'] == 'shadowsocks':
             node['password'] = settings['password']
             self.data['proxies'].append(node)
+            self.proxy_remarks.append(remark)
 
 
 def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
