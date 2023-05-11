@@ -18,7 +18,7 @@ def add_user(user: User):
 
             account = user.get_account(proxy_type)
             # XTLS currently only supports transmission methods of TCP and mKCP
-            if inbound.get('network', 'tcp') not in ('tcp', 'kcp') and getattr(account, 'flow'):
+            if inbound.get('network', 'tcp') not in ('tcp', 'kcp') and getattr(account, 'flow', None):
                 account.flow = XTLSFlows.NONE
 
             try:
