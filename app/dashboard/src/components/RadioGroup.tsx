@@ -410,23 +410,6 @@ const RadioCard: FC<
                   {...form.register("proxies.trojan.password")}
                 />
               </FormControl>
-              <FormControl height="66px">
-                <Text fontSize="sm" pb={1}>
-                  Flow
-                </Text>
-                <Select
-                  fontSize="xs"
-                  size="sm"
-                  borderRadius="6px"
-                  {...form.register("proxies.trojan.flow")}
-                >
-                  {XTLSFlows.map((entry) => (
-                    <option key={entry.title} value={entry.value}>
-                      {entry.title}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
             </VStack>
           )}
           {title === "shadowsocks" && isSelected && (

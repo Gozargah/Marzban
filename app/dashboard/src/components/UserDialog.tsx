@@ -147,7 +147,7 @@ const getDefaultValues = (): FormType => {
     proxies: {
       vless: { id: "", flow: "" },
       vmess: { id: ""},
-      trojan: { password: "", flow: "" },
+      trojan: { password: "" },
       shadowsocks: { password: "", method: "chacha20-poly1305" }
     }
   };
