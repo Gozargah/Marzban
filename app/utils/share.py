@@ -93,7 +93,7 @@ class V2rayShareLink(str):
             "host": host,
             "headerType": type
         }
-        if flow:
+        if flow and net in ('tcp', 'kcp'):
             payload['flow'] = flow
 
         if net == 'grpc':
@@ -141,8 +141,9 @@ class V2rayShareLink(str):
             "host": host,
             "headerType": type
         }
-        if flow:
+        if flow and net in ('tcp', 'kcp'):
             payload['flow'] = flow
+
         if net == 'grpc':
             payload['serviceName'] = path
         else:
@@ -373,13 +374,19 @@ class ClashMetaConfiguration(ClashConfiguration):
 
         if inbound['protocol'] == 'vless':
             node['uuid'] = settings['id']
-            node['flow'] = settings.get('flow', '')
+
+            if inbound['network'] in ('tcp', 'kcp'):
+                node['flow'] = settings.get('flow', '')
+
             self.data['proxies'].append(node)
             self.proxy_remarks.append(remark)
 
         if inbound['protocol'] == 'trojan':
             node['password'] = settings['password']
-            node['flow'] = settings.get('flow', '')
+
+            if inbound['network'] in ('tcp', 'kcp'):
+                node['flow'] = settings.get('flow', '')
+
             self.data['proxies'].append(node)
             self.proxy_remarks.append(remark)
 

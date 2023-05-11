@@ -6,6 +6,7 @@ from app.db.models import Node as DBNode
 from app.models.node import NodeStatus
 from app.models.user import User, UserResponse
 from app.xray.node import XRayNode
+from xray_api.types.account import XTLSFlows
 
 
 def add_user(user: User):
@@ -14,14 +15,21 @@ def add_user(user: User):
     for proxy_type, inbound_tags in user.inbounds.items():
         account = user.get_account(proxy_type)
         for inbound_tag in inbound_tags:
+            inbound = xray.config.inbounds_by_tag.get(inbound_tag, {})
+            user = account.copy()
+
+            # XTLS currently only supports transmission methods of TCP and mKCP
+            if inbound.get('network', 'tcp') not in ('tcp', 'kcp') and getattr(user, 'flow'):
+                user.flow = XTLSFlows.NONE
+
             try:
-                xray.api.add_inbound_user(tag=inbound_tag, user=account)
+                xray.api.add_inbound_user(tag=inbound_tag, user=user)
             except (xray.exc.EmailNotFoundError, xray.exc.ConnectionError):
                 pass
             for node in xray.nodes.values():
                 if node.connected and node.started:
                     try:
-                        node.api.add_inbound_user(tag=inbound_tag, user=account)
+                        node.api.add_inbound_user(tag=inbound_tag, user=user)
                     except (xray.exc.EmailNotFoundError, xray.exc.ConnectionError):
                         pass
 
