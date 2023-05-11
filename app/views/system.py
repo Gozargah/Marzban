@@ -63,8 +63,6 @@ def modify_hosts(modified_hosts: Dict[str, List[ProxyHost]],
     for inbound_tag, hosts in modified_hosts.items():
         if not xray.config.inbounds_by_tag.get(inbound_tag):
             raise HTTPException(status_code=400, detail=f"Inbound {inbound_tag} doesn't exist")
-        if not hosts:
-            raise HTTPException(status_code=400, detail=f"Inbound {inbound_tag} hosts cannot be empty")
 
     for inbound_tag, hosts in modified_hosts.items():
         crud.update_hosts(db, inbound_tag, hosts)
