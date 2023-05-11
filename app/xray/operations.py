@@ -18,8 +18,8 @@ def add_user(user: User):
 
             account = user.get_account(proxy_type)
             # XTLS currently only supports transmission methods of TCP and mKCP
-            if inbound.get('network', 'tcp') not in ('tcp', 'kcp') and getattr(user, 'flow'):
-                user.flow = XTLSFlows.NONE
+            if inbound.get('network', 'tcp') not in ('tcp', 'kcp') and getattr(account, 'flow'):
+                account.flow = XTLSFlows.NONE
 
             try:
                 xray.api.add_inbound_user(tag=inbound_tag, user=account)
