@@ -11,6 +11,8 @@ from app.models.proxy import ProxySettings
 from app.models.user import UserStatus
 from config import XRAY_EXCLUDE_INBOUND_TAGS, XRAY_FALLBACKS_INBOUND_TAG
 
+from config import DEBUG
+
 
 class XRayConfig(dict):
     def __init__(self,
@@ -304,5 +306,9 @@ class XRayConfig(dict):
                         config.add_inbound_client(inbound_tag,
                                                   user.username,
                                                   proxies_settings[proxy_type])
+
+        if DEBUG:
+            with open('generated_config-debug.json', 'w') as f:
+                f.write(config.to_json(indent=4))
 
         return config
