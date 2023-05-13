@@ -2,11 +2,13 @@ import atexit
 import re
 import subprocess
 import threading
+import time
 from collections import deque
+from contextlib import contextmanager
 
 from app import logger
 from app.xray.config import XRayConfig
-from contextlib import contextmanager
+from config import DEBUG
 
 
 class XRayCore:
@@ -38,18 +40,35 @@ class XRayCore:
             return m.groups()[0]
 
     def __capture_process_logs(self):
-        def capture():
+        def capture_and_debug_log():
             while self.process:
                 output = self.process.stdout.readline()
                 if output:
-                    self._logs_buffer.append(output.strip())
+                    output = output.strip()
+                    self._logs_buffer.append(output)
                     for buf in self._temp_log_buffers:
-                        buf.append(output.strip())
+                        buf.append(output)
+                    logger.debug(output)
 
                 elif not self.process or self.process.poll() is not None:
                     break
 
-        threading.Thread(target=capture).start()
+        def capture_only():
+            while self.process:
+                output = self.process.stdout.readline()
+                if output:
+                    output = output.strip()
+                    self._logs_buffer.append(output)
+                    for buf in self._temp_log_buffers:
+                        buf.append(output)
+
+                elif not self.process or self.process.poll() is not None:
+                    break
+
+        if DEBUG:
+            threading.Thread(target=capture_and_debug_log).start()
+        else:
+            threading.Thread(target=capture_only).start()
 
     @contextmanager
     def get_logs(self):

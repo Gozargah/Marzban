@@ -8,7 +8,7 @@ from config import (
     UVICORN_SSL_CERTFILE,
     UVICORN_SSL_KEYFILE
 )
-
+import logging
 
 if __name__ == "__main__":
     # Do NOT change workers count for now
@@ -22,7 +22,8 @@ if __name__ == "__main__":
             ssl_certfile=UVICORN_SSL_CERTFILE,
             ssl_keyfile=UVICORN_SSL_KEYFILE,
             workers=1,
-            reload=DEBUG
+            reload=DEBUG,
+            log_level=logging.DEBUG if DEBUG else logging.INFO
         )
     except FileNotFoundError:  # to prevent error on removing unix sock
         pass
