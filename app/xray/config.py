@@ -264,12 +264,12 @@ class XRayConfig(dict):
 
     def add_inbound_client(self, inbound_tag: str, email: str, settings: dict):
         inbound = self.inbounds_by_tag.get(inbound_tag, {})
+        client = {"email": email, **settings}
 
         # XTLS currently only supports transmission methods of TCP and mKCP
-        if inbound.get('network', 'tcp') not in ('tcp', 'kcp') and settings.get('flow'):
-            del settings['flow']
+        if inbound.get('network', 'tcp') not in ('tcp', 'kcp') and client.get('flow'):
+            del client['flow']
 
-        client = {"email": email, **settings}
         try:
             self._addr_clients_by_tag[inbound_tag].append(client)
         except KeyError:
