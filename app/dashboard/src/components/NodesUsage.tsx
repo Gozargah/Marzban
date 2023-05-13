@@ -13,12 +13,9 @@ import {
   useColorMode,
   ColorMode,
   VStack,
-  SimpleGrid,
-  Grid,
-  GridItem,
 } from "@chakra-ui/react";
 import { ChartPieIcon} from "@heroicons/react/24/outline";
-import { useDashboard } from "contexts/DashboardContext";
+import { FilterUsageType, useDashboard } from "contexts/DashboardContext";
 import { FC, useEffect, useState } from "react";
 import { Icon } from "./Icon";
 import { useTranslation } from "react-i18next";
@@ -26,6 +23,8 @@ import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { formatBytes } from "utils/formatByte"; 
 import { useNodes } from "contexts/NodesContext";
+import dayjs from "dayjs";
+import { UsageFilter } from "./UsageFilter";
 
 const UsageIcon = chakra(ChartPieIcon, {
   baseStyle: {
@@ -55,9 +54,16 @@ const createUsageConfig = (colorMode: ColorMode, series: any = [], labels: any =
         width: 1,
         colors: undefined
       },
+      dataLabels: {
+        formatter: (val, {seriesIndex, w}) => {
+          return formatBytes(w.config.series[seriesIndex], 1);
+        },
+      },
       tooltip: {
         custom: ({series, seriesIndex, dataPointIndex, w}) => {
-          const readable = formatBytes(series[seriesIndex]);
+          const readable = formatBytes(series[seriesIndex], 1);
+          const total = Math.max((series as [number]).reduce((t, c) => t += c), 1);
+          const percent = Math.round(series[seriesIndex] / total * 1000) / 10 + "%";
           return `
             <div style="
                     background-color: ${w.globals.colors[seriesIndex]};
@@ -68,22 +74,11 @@ const createUsageConfig = (colorMode: ColorMode, series: any = [], labels: any =
                     font-size:0.725rem;
                   "
             >
-              ${w.config.labels[seriesIndex]}: <b>${readable}</b>
+              ${w.config.labels[seriesIndex]}: <b>${percent}, ${readable}</b>
             </div>
           `
         }
-      },
-      responsive: [{
-        breakpoint: 480,
-        options: {
-          chart: {
-            width: 200
-          },
-          legend: {
-            position: 'bottom'
-          }
-        }
-      }]
+      }
     } as ApexOptions
   }
 }
@@ -100,31 +95,32 @@ export const NodesUsage: FC<NodesUsageProps> = () => {
   const [loading, setLoading] = useState(false);
   const { colorMode } = useColorMode();
 
-  const [usageVisible, setUsageVisible] = useState(false);
-  const handleUsageToggle = () => {
-    setUsageVisible((current) => !current);
-  };
-
   const [usage, setUsage] = useState(createUsageConfig(colorMode));
-
-  useEffect(() => {
-    if (isShowingNodesUsage) {
-      fetchNodesUsage().then((data:any) => {
+  const [usageFilter, setUsageFilter] = useState("1m");
+  const fetchUsageWithFilter = (query: FilterUsageType) => {
+    fetchNodesUsage(query).then((data: any) => {
         const labels = [];
         const series = [];
         for (const key in data.usages) {
           const entry = data.usages[key];
-          series.push(entry.incoming_bandwidth + entry.outgoing_bandwidth);
+          series.push(entry.uplink + entry.downlink);
           labels.push(entry.node_name);
         }
         setUsage(createUsageConfig(colorMode, series, labels));
+    });
+  };
+
+  useEffect(() => {
+    if (isShowingNodesUsage) {
+      fetchUsageWithFilter({
+        start: dayjs().utc().subtract(30, 'day').format("YYYY-MM-DDTHH:00:00")
       });
     }
   }, [isShowingNodesUsage]);
 
   const onClose = () => {
     onShowingNodesUsage(false);
-    setUsageVisible(false);
+    setUsageFilter("1m");
   };
 
   const disabled = loading;
@@ -145,11 +141,18 @@ export const NodesUsage: FC<NodesUsageProps> = () => {
         </ModalHeader>
         <ModalCloseButton mt={3} disabled={disabled} />
         <ModalBody>
-        <Grid templateColumns='repeat(1, 1fr)' gap={3}>
-          <GridItem width={{ base: "100%", md: "70%" }} justifySelf="center">
-            <ReactApexChart options={usage.options} series={usage.series} type="donut" />
-          </GridItem>
-        </Grid>
+          <VStack gap={4}>
+            <UsageFilter
+              defaultValue={usageFilter}
+              onChange={(filter, query) => {
+                setUsageFilter(filter);
+                fetchUsageWithFilter(query);
+              }}
+            />
+            <Box width={{ base: "100%", md: "70%" }} justifySelf="center">
+              <ReactApexChart options={usage.options} series={usage.series} type="donut" />
+            </Box>
+          </VStack>
         </ModalBody>
         <ModalFooter mt="3">
         </ModalFooter>

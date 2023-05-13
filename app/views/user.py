@@ -1,4 +1,5 @@
 import sqlalchemy
+from datetime import datetime
 from fastapi import BackgroundTasks, Depends, HTTPException
 
 from app import app, logger, xray
@@ -213,6 +214,8 @@ def reset_users_data_usage(db: Session = Depends(get_db),
 
 @app.get("/api/user/{username}/usage", tags=['User'], response_model=UserUsagesResponse)
 def get_user(username: str,
+             start: str = None,
+             end: str = None,
              db: Session = Depends(get_db),
              admin: Admin = Depends(Admin.get_current)):
     """
@@ -221,7 +224,17 @@ def get_user(username: str,
     dbuser = crud.get_user(db, username)
     if not dbuser:
         raise HTTPException(status_code=404, detail="User not found")
+    
+    if start is None:
+        start_date = datetime.fromtimestamp(datetime.utcnow().timestamp() - 30 * 24 * 3600)
+    else:
+        start_date = datetime.fromisoformat(start)
 
-    usages = crud.get_user_usages(db, dbuser)
+    if end is None:
+        end_date = datetime.utcnow()
+    else:
+        end_date = datetime.fromisoformat(end)
+
+    usages = crud.get_user_usages(db, dbuser, start_date, end_date)
 
     return {"usages": usages, "username": username}
