@@ -1,6 +1,8 @@
 from operator import attrgetter
+from threading import Thread
 from datetime import datetime
 from app import scheduler, xray
+from app.xray import XRayNode
 from app.db import engine
 from app.db.models import System, User, Node, NodeUserUsage, NodeUsage
 from sqlalchemy import bindparam, update, and_, insert, select
@@ -23,7 +25,7 @@ def make_user_usage_row_if_doesnt_exist(conn, created_at, node_id, params):
         stmt = insert(NodeUserUsage).values(user_id=bindparam('uid'), created_at=created_at, node_id=node_id, used_traffic=0)
         conn.execute(stmt, [{'uid': uid} for uid in uids_to_insert])
 
-def record_node_users_usage(conn, node_id: int, api: XRayAPI, node: Node = None):
+def record_node_users_usage(conn, node_id: int, api: XRayAPI, node: XRayNode = None):
     created_at = datetime.fromisoformat(datetime.utcnow().strftime('%Y-%m-%dT%H:00:00'))
 
     try:
@@ -64,7 +66,7 @@ def record_nodes_users_usage():
         record_node_users_usage(conn, 0, xray.api)
         for node_id, node in xray.nodes.items():
             if node.connected and node.started:
-                record_node_users_usage(conn, node_id, node.api, node)
+                Thread(target=record_node_users_usage, args=(conn, node_id, node.api, node)).start()
 
 
 scheduler.add_job(record_nodes_users_usage, 'interval', seconds=10)
@@ -79,7 +81,7 @@ def make_node_usage_row_if_doesnt_exist(conn, created_at, node_id, params):
         stmt = insert(NodeUsage).values(created_at=created_at, node_id=node_id, uplink=0, downlink=0)
         conn.execute(stmt)
 
-def record_node_outbounds_usage(conn, node_id: int, api: XRayAPI, node: Node = None):
+def record_node_outbounds_usage(conn, node_id: int, api: XRayAPI, node: XRayNode = None):
     created_at = datetime.fromisoformat(datetime.utcnow().strftime('%Y-%m-%dT%H:00:00'))
 
     try:
@@ -118,7 +120,7 @@ def record_nodes_outbounds_usage():
         record_node_outbounds_usage(conn, 0, xray.api)
         for node_id, node in xray.nodes.items():
             if node.connected and node.started:
-                record_node_outbounds_usage(conn, node_id, node.api, node)
+                Thread(target=record_node_outbounds_usage, args=(conn, node_id, node.api, node)).start()
 
 
 scheduler.add_job(record_nodes_outbounds_usage, 'interval', seconds=5)
