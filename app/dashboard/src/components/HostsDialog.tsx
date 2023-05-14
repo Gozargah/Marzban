@@ -41,6 +41,7 @@ import {
   proxyFingerprint,
   proxyHostSecurity,
 } from "constants/Proxies";
+import { useHosts } from "contexts/HostsContext";
 import { FC, useEffect, useState } from "react";
 import {
   FormProvider,
@@ -52,7 +53,7 @@ import { useTranslation } from "react-i18next";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
 import { z } from "zod";
-import { useDashboard, useHosts } from "../contexts/DashboardContext";
+import { useDashboard } from "../contexts/DashboardContext";
 import { DeleteIcon } from "./DeleteUserModal";
 import { Icon } from "./Icon";
 import { Input as CustomInput } from "./Input";
@@ -111,7 +112,7 @@ const hostsSchema = z.record(
       host: z.string().nullable(),
       security: z.string(),
       alpn: z.string(),
-      fingerprint: z.string()
+      fingerprint: z.string(),
     })
   )
 );
@@ -162,7 +163,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
       remark: "",
       security: "inbound_default",
       alpn: "",
-      fingerprint: ""
+      fingerprint: "",
     });
   };
   useEffect(() => {

@@ -14,6 +14,7 @@ import {
   ArrowLeftOnRectangleIcon,
   Bars3Icon,
   ChartPieIcon,
+  Cog6ToothIcon,
   CurrencyDollarIcon,
   DocumentMinusIcon,
   LinkIcon,
@@ -21,28 +22,14 @@ import {
   SquaresPlusIcon,
   SunIcon,
 } from "@heroicons/react/24/outline";
+import { DONATION_URL, REPO_URL } from "constants/Project";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC, ReactNode, useState } from "react";
-import { Link } from "react-router-dom";
 import GitHubButton from "react-github-btn";
-import { DONATION_URL, REPO_URL } from "constants/Project";
 import { useTranslation } from "react-i18next";
-import { Language } from "./Language";
+import { Link } from "react-router-dom";
 import { updateThemeColor } from "utils/themeColor";
-
-const DarkIcon = chakra(MoonIcon, {
-  baseStyle: {
-    w: "4",
-    h: "4",
-  },
-});
-const LightIcon = chakra(SunIcon, {
-  baseStyle: {
-    w: "4",
-    h: "4",
-  },
-});
-
+import { Language } from "./Language";
 
 type HeaderProps = {
   actions?: ReactNode;
@@ -54,6 +41,9 @@ const iconProps = {
   },
 };
 
+const DarkIcon = chakra(MoonIcon, iconProps);
+const LightIcon = chakra(SunIcon, iconProps);
+const CoreSettingsIcon = chakra(Cog6ToothIcon, iconProps);
 const SettingsIcon = chakra(Bars3Icon, iconProps);
 const LogoutIcon = chakra(ArrowLeftOnRectangleIcon, iconProps);
 const DonationIcon = chakra(CurrencyDollarIcon, iconProps);
@@ -74,7 +64,12 @@ const NotificationCircle = chakra(Box, {
 const NOTIFICATION_KEY = "marzban-menu-notification";
 
 export const Header: FC<HeaderProps> = ({ actions }) => {
-  const { onEditingHosts, onResetAllUsage, onEditingNodes, onShowingNodesUsage } = useDashboard();
+  const {
+    onEditingHosts,
+    onResetAllUsage,
+    onEditingNodes,
+    onShowingNodesUsage,
+  } = useDashboard();
   const { t } = useTranslation();
   const { colorMode, toggleColorMode } = useColorMode();
   const [notificationsChecked, setNotificationChecked] = useState(
@@ -124,6 +119,16 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
           {colorMode === "light" ? <DarkIcon /> : <LightIcon />}
         </IconButton>
         <Language />
+        <IconButton
+          size="sm"
+          variant="outline"
+          aria-label="core settings"
+          onClick={() => {
+            useDashboard.setState({ isEditingCore: true });
+          }}
+        >
+          <CoreSettingsIcon />
+        </IconButton>
         <Menu onClose={handleOnClose}>
           <MenuButton
             as={IconButton}

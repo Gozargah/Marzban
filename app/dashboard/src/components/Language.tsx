@@ -1,15 +1,13 @@
 import {
+  chakra,
   IconButton,
   Menu,
   MenuButton,
   MenuItem,
   MenuList,
-  chakra,
 } from "@chakra-ui/react";
-import {
-  LanguageIcon,
-} from "@heroicons/react/24/outline";
-import { FC, ReactNode, useState } from "react";
+import { LanguageIcon } from "@heroicons/react/24/outline";
+import { FC, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 type HeaderProps = {
@@ -27,11 +25,11 @@ export const Language: FC<HeaderProps> = ({ actions }) => {
   const { i18n } = useTranslation();
 
   var changeLanguage = (lang: string) => {
-    i18n.changeLanguage(lang)
+    i18n.changeLanguage(lang);
   };
 
   return (
-    <Menu>
+    <Menu placement="bottom-end">
       <MenuButton
         as={IconButton}
         size="sm"
@@ -48,9 +46,9 @@ export const Language: FC<HeaderProps> = ({ actions }) => {
           English
         </MenuItem>
         <MenuItem
-            maxW="100px"
-            fontSize="sm"
-            onClick={() => changeLanguage("zh-cn")}
+          maxW="100px"
+          fontSize="sm"
+          onClick={() => changeLanguage("zh-cn")}
         >
           简体中文
         </MenuItem>

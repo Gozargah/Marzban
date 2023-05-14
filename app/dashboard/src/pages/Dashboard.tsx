@@ -1,19 +1,20 @@
-import { Box, Button, VStack } from "@chakra-ui/react";
-import { Statistics } from "../components/Statistics";
-import { FC, useEffect } from "react";
+import { Box, VStack } from "@chakra-ui/react";
+import { CoreSettingsModal } from "components/CoreSettingsModal";
+import { DeleteUserModal } from "components/DeleteUserModal";
+import { Filters } from "components/Filters";
 import { Footer } from "components/Footer";
 import { Header } from "components/Header";
-import { UsersTable } from "components/UsersTable";
-import { Filters } from "components/Filters";
-import { fetchInbounds, useDashboard } from "contexts/DashboardContext";
-import { UserDialog } from "components/UserDialog";
-import { DeleteUserModal } from "components/DeleteUserModal";
-import { QRCodeDialog } from "components/QRCodeDialog";
 import { HostsDialog } from "components/HostsDialog";
-import { ResetUserUsageModal } from "components/ResetUserUsageModal";
 import { NodesDialog } from "components/NodesModal";
-import { ResetAllUsageModal } from "components/ResetAllUsageModal";
 import { NodesUsage } from "components/NodesUsage";
+import { QRCodeDialog } from "components/QRCodeDialog";
+import { ResetAllUsageModal } from "components/ResetAllUsageModal";
+import { ResetUserUsageModal } from "components/ResetUserUsageModal";
+import { UserDialog } from "components/UserDialog";
+import { UsersTable } from "components/UsersTable";
+import { fetchInbounds, useDashboard } from "contexts/DashboardContext";
+import { FC, useEffect } from "react";
+import { Statistics } from "../components/Statistics";
 
 export const Dashboard: FC = () => {
   useEffect(() => {
@@ -35,6 +36,7 @@ export const Dashboard: FC = () => {
         <NodesDialog />
         <NodesUsage />
         <ResetAllUsageModal />
+        <CoreSettingsModal />
       </Box>
       <Footer />
     </VStack>
