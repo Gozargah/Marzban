@@ -150,9 +150,11 @@ class XRayNode:
         self.started = False
 
     def restart(self, config: XRayConfig):
+        self.started = False
         config = self._prepare_config(config)
         json_config = config.to_json()
         self.remote.restart(json_config)
+        self.started = True
 
     def on_start(self, func: callable):
         self._service.add_startup_func(func)
