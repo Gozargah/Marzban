@@ -29,12 +29,9 @@ import {
   Grid,
   GridItem,
   useColorMode,
-  ColorMode,
-  useRadio,
-  UseRadioProps,
 } from "@chakra-ui/react";
 import { PencilIcon, UserPlusIcon, ChartPieIcon} from "@heroicons/react/24/outline";
-import { ProtocolType, FilterUsageType, useDashboard } from "contexts/DashboardContext";
+import { FilterUsageType, useDashboard } from "contexts/DashboardContext";
 import { FC, useEffect, useState } from "react";
 import { Controller, FormProvider, useForm, useWatch } from "react-hook-form";
 import {
@@ -56,9 +53,7 @@ import { DeleteIcon } from "./DeleteUserModal";
 import { resetStrategy } from "constants/UserSettings";
 import { useTranslation } from "react-i18next";
 import ReactApexChart from "react-apexcharts";
-import { ApexOptions } from "apexcharts";
-import { formatBytes } from "utils/formatByte"; 
-import { UsageFilter } from "./UsageFilter";
+import { UsageFilter, createUsageConfig } from "./UsageFilter";
 
 const AddUserIcon = chakra(UserPlusIcon, {
   baseStyle: {
@@ -155,54 +150,6 @@ const getDefaultValues = (): FormType => {
   };
 };
 
-const createUsageConfig = (colorMode: ColorMode, series: any = [], labels: any = []) => {
-  return {
-    series: series,
-    options: {
-      labels: labels,
-      chart: {
-        type: "donut",
-      },
-      legend: {
-        position: "bottom",
-        labels: {
-          colors: colorMode === "dark" ? "#CBD5E0" : undefined,
-          useSeriesColors: false
-        },
-      },
-      stroke: {
-        width: 1,
-        colors: undefined
-      },
-      dataLabels: {
-        formatter: (val, {seriesIndex, w}) => {
-          return formatBytes(w.config.series[seriesIndex], 1);
-        },
-      },
-      tooltip: {
-        custom: ({series, seriesIndex, dataPointIndex, w}) => {
-          const readable = formatBytes(series[seriesIndex], 1);
-          const total = Math.max((series as [number]).reduce((t, c) => t += c), 1);
-          const percent = Math.round(series[seriesIndex] / total * 1000) / 10 + "%";
-          return `
-            <div style="
-                    background-color: ${w.globals.colors[seriesIndex]};
-                    padding-left:12px;
-                    padding-right:12px;
-                    padding-top:6px;
-                    padding-bottom:6px;
-                    font-size:0.725rem;
-                  "
-            >
-              ${w.config.labels[seriesIndex]}: <b>${percent}, ${readable}</b>
-            </div>
-          `
-        }
-      },
-    } as ApexOptions
-  }
-}
-
 const mergeProxies = (
   proxyKeys: ProxyKeys,
   proxyType: ProxyType | undefined
@@ -265,8 +212,8 @@ export const UserDialog: FC<UserDialogProps> = () => {
     name: ["data_limit"],
   });
 
-
-  const [usage, setUsage] = useState(createUsageConfig(colorMode));
+  const usageTitle = t("userDialog.total");
+  const [usage, setUsage] = useState(createUsageConfig(colorMode, usageTitle));
   const [usageFilter, setUsageFilter] = useState("1m");
   const fetchUsageWithFilter = (query: FilterUsageType) => {
     fetchUserUsage(editingUser!, query).then((data: any) => {
@@ -276,7 +223,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
         series.push(data.usages[key].used_traffic);
         labels.push(data.usages[key].node_name);
       }
-      setUsage(createUsageConfig(colorMode, series, labels));
+      setUsage(createUsageConfig(colorMode, usageTitle, series, labels));
     });
   }
 

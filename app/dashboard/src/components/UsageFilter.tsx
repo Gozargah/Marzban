@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  ColorMode,
   HStack,
   Icon,
   SimpleGrid,
@@ -25,6 +26,8 @@ import { useTranslation } from "react-i18next";
 import { FilterUsageType } from "contexts/DashboardContext";
 import dayjs, { ManipulateType } from "dayjs";
 import { useOnClickOutside } from "usehooks-ts"
+import { formatBytes } from "utils/formatByte";
+import { ApexOptions } from "apexcharts";
 
 type DateType =  Date | null;
 
@@ -279,3 +282,60 @@ export const UsageFilter: FC<UsageFilterProps> = ({onChange, defaultValue, ...pr
     </VStack>
   );
 };
+
+export function createUsageConfig(colorMode: ColorMode, title: string, series: any = [], labels: any = []) {
+  const total = formatBytes((series as [number]).reduce((t, c) => t += c, 0));
+  return {
+    series: series,
+    options: {
+      labels: labels,
+      chart: {
+        type: "donut",
+      },
+      title: {
+        text: `${title}${total}`,
+        align: "center",
+        style: {
+          fontWeight: "var(--chakra-fontWeights-medium)",
+          color: colorMode === "dark" ? "var(--chakra-colors-gray-300)" : undefined,
+        }
+      },
+      legend: {
+        position: "bottom",
+        labels: {
+          colors: colorMode === "dark" ? "#CBD5E0" : undefined,
+          useSeriesColors: false
+        },
+      },
+      stroke: {
+        width: 1,
+        colors: undefined
+      },
+      dataLabels: {
+        formatter: (val, {seriesIndex, w}) => {
+          return formatBytes(w.config.series[seriesIndex], 1);
+        },
+      },
+      tooltip: {
+        custom: ({series, seriesIndex, dataPointIndex, w}) => {
+          const readable = formatBytes(series[seriesIndex], 1);
+          const total = Math.max((series as [number]).reduce((t, c) => t += c), 1);
+          const percent = Math.round(series[seriesIndex] / total * 1000) / 10 + "%";
+          return `
+            <div style="
+                    background-color: ${w.globals.colors[seriesIndex]};
+                    padding-left:12px;
+                    padding-right:12px;
+                    padding-top:6px;
+                    padding-bottom:6px;
+                    font-size:0.725rem;
+                  "
+            >
+              ${w.config.labels[seriesIndex]}: <b>${percent}, ${readable}</b>
+            </div>
+          `
+        }
+      },
+    } as ApexOptions
+  }
+}

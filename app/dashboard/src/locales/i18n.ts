@@ -108,6 +108,7 @@ i18n
           "userDialog.custom": "Custom",
           "userDialog.startDate": "Start date",
           "userDialog.endDate": "End date",
+          "userDialog.total": "Total: ",
 
           // HostsDialog
           "hostsDialog.title":
@@ -271,6 +272,7 @@ i18n
           "userDialog.custom": "自定义",
           "userDialog.startDate": "开始日期",
           "userDialog.endDate": "结束日期",
+          "userDialog.total": "总共：",
 
           // HostsDialog
           "hostsDialog.title": "使用此设置，您可以为每个入站分配特定的地址。",

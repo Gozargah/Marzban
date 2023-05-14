@@ -11,7 +11,6 @@ import {
   Text,
   Box,
   useColorMode,
-  ColorMode,
   VStack,
 } from "@chakra-ui/react";
 import { ChartPieIcon} from "@heroicons/react/24/outline";
@@ -20,11 +19,9 @@ import { FC, useEffect, useState } from "react";
 import { Icon } from "./Icon";
 import { useTranslation } from "react-i18next";
 import ReactApexChart from "react-apexcharts";
-import { ApexOptions } from "apexcharts";
-import { formatBytes } from "utils/formatByte"; 
 import { useNodes } from "contexts/NodesContext";
 import dayjs from "dayjs";
-import { UsageFilter } from "./UsageFilter";
+import { UsageFilter, createUsageConfig } from "./UsageFilter";
 
 const UsageIcon = chakra(ChartPieIcon, {
   baseStyle: {
@@ -34,54 +31,6 @@ const UsageIcon = chakra(ChartPieIcon, {
 });
 
 export type NodesUsageProps = {};
-
-const createUsageConfig = (colorMode: ColorMode, series: any = [], labels: any = []) => {
-  return {
-    series: series,
-    options: {
-      labels: labels,
-      chart: {
-        type: "donut",
-      },
-      legend: {
-        position: "bottom",
-        labels: {
-          colors: colorMode === "dark" ? "#CBD5E0" : undefined,
-          useSeriesColors: false
-        },
-      },
-      stroke: {
-        width: 1,
-        colors: undefined
-      },
-      dataLabels: {
-        formatter: (val, {seriesIndex, w}) => {
-          return formatBytes(w.config.series[seriesIndex], 1);
-        },
-      },
-      tooltip: {
-        custom: ({series, seriesIndex, dataPointIndex, w}) => {
-          const readable = formatBytes(series[seriesIndex], 1);
-          const total = Math.max((series as [number]).reduce((t, c) => t += c), 1);
-          const percent = Math.round(series[seriesIndex] / total * 1000) / 10 + "%";
-          return `
-            <div style="
-                    background-color: ${w.globals.colors[seriesIndex]};
-                    padding-left:12px;
-                    padding-right:12px;
-                    padding-top:6px;
-                    padding-bottom:6px;
-                    font-size:0.725rem;
-                  "
-            >
-              ${w.config.labels[seriesIndex]}: <b>${percent}, ${readable}</b>
-            </div>
-          `
-        }
-      }
-    } as ApexOptions
-  }
-}
 
 export const NodesUsage: FC<NodesUsageProps> = () => {
   const {
@@ -95,7 +44,8 @@ export const NodesUsage: FC<NodesUsageProps> = () => {
   const [loading, setLoading] = useState(false);
   const { colorMode } = useColorMode();
 
-  const [usage, setUsage] = useState(createUsageConfig(colorMode));
+  const usageTitle = t("userDialog.total");
+  const [usage, setUsage] = useState(createUsageConfig(colorMode, usageTitle));
   const [usageFilter, setUsageFilter] = useState("1m");
   const fetchUsageWithFilter = (query: FilterUsageType) => {
     fetchNodesUsage(query).then((data: any) => {
@@ -106,7 +56,7 @@ export const NodesUsage: FC<NodesUsageProps> = () => {
           series.push(entry.uplink + entry.downlink);
           labels.push(entry.node_name);
         }
-        setUsage(createUsageConfig(colorMode, series, labels));
+        setUsage(createUsageConfig(colorMode, usageTitle, series, labels));
     });
   };
 
