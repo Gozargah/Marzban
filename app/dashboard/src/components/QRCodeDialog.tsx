@@ -1,5 +1,3 @@
-import { useDashboard } from "../contexts/DashboardContext";
-import { FC, useState } from "react";
 import {
   Box,
   chakra,
@@ -14,17 +12,19 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { Icon } from "./Icon";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   QrCodeIcon,
 } from "@heroicons/react/24/outline";
 import { QRCodeCanvas } from "qrcode.react";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
-import Slider from "react-slick";
+import { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick-theme.css";
+import "slick-carousel/slick/slick.css";
+import { useDashboard } from "../contexts/DashboardContext";
+import { Icon } from "./Icon";
 
 const QRCode = chakra(QRCodeCanvas);
 const NextIcon = chakra(ChevronRightIcon, {
@@ -101,6 +101,7 @@ export const QRCodeDialog: FC = () => {
                   level={"L"}
                   includeMargin={false}
                   value={subscribeUrl}
+                  bg="white"
                 />
                 <Text display="block" textAlign="center" pb={3} mt={1}>
                   {t("qrcodeDialog.sublink")}
@@ -123,6 +124,7 @@ export const QRCodeDialog: FC = () => {
                     display="flex !important"
                     _before={{ content: '""' }}
                     aria-label="next"
+                    mr="-4"
                   >
                     <NextIcon />
                   </IconButton>
@@ -134,6 +136,7 @@ export const QRCodeDialog: FC = () => {
                     display="flex !important"
                     _before={{ content: '""' }}
                     aria-label="prev"
+                    ml="-4"
                   >
                     <PrevIcon />
                   </IconButton>
@@ -149,6 +152,7 @@ export const QRCodeDialog: FC = () => {
                         level={"L"}
                         includeMargin={false}
                         value={link}
+                        bg="white"
                       />
                     </HStack>
                   );
