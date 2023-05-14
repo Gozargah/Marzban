@@ -63,6 +63,11 @@ export const QRCodeDialog: FC = () => {
     setQRCode(null);
     setSubLink(null);
   };
+
+  const subscribeQrLink = String(subscribeUrl).startsWith("/")
+    ? window.location.origin + subscribeUrl
+    : String(subscribeUrl);
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
@@ -100,7 +105,7 @@ export const QRCodeDialog: FC = () => {
                   p="2"
                   level={"L"}
                   includeMargin={false}
-                  value={subscribeUrl}
+                  value={subscribeQrLink}
                   bg="white"
                 />
                 <Text display="block" textAlign="center" pb={3} mt={1}>
