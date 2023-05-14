@@ -1,10 +1,17 @@
 import pydoc
-from typing import Union
 import typer
+from datetime import datetime
+from typing import Any, Iterable, Optional, TypeVar, Union
+
+from rich.table import Table
+from rich.console import Console
 
 from app.db import crud
 from app.db.models import User
 
+T = TypeVar("T")
+
+rich_console = Console()
 PASSWORD_ENVIRON_NAME = "MARZBAN_ADMIN_PASSWORD"
 
 FLAGS: dict[str, tuple] = {
@@ -14,7 +21,8 @@ FLAGS: dict[str, tuple] = {
     "yes_to_all": ("--yes", "-y"),
     "is_sudo": ("--sudo/--no-sudo",),
     "format": ("--format", "-f"),
-    "output_file": ("--output", "-o")
+    "output_file": ("--output", "-o"),
+    "status": ("--status",),
 }
 
 
@@ -40,3 +48,25 @@ def get_user(db, username: str) -> User:
         error(f'User "{username}" not found!')
 
     return user
+
+
+def print_table(
+    table: Table,
+    rows: Iterable[Iterable[Any]],
+    console: Optional[Console] = None
+):
+    for row in rows:
+        table.add_row(*row)
+
+    (console or rich_console).print(table)
+
+
+def readable_datetime(date_time: Optional[datetime]):
+    return date_time.strftime("%d %B %Y, %H:%M:%S") if date_time else "-"
+
+
+def raise_if_falsy(obj: T, message: str) -> T:
+    if not obj:
+        error(text=message, auto_exit=True)
+
+    return obj
