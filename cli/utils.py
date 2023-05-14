@@ -61,8 +61,26 @@ def print_table(
     (console or rich_console).print(table)
 
 
-def readable_datetime(date_time: Optional[datetime]):
-    return date_time.strftime("%d %B %Y, %H:%M:%S") if date_time else "-"
+def readable_datetime(
+    date_time: Union[datetime, int, None],
+    include_date: bool = True,
+    include_time: bool = True
+):
+    def get_datetime_format():
+        dt_format = ""
+        if include_date:
+            dt_format += "%d %B %Y"
+        if include_time:
+            if dt_format:
+                dt_format += ", "
+            dt_format += "%H:%M:%S"
+
+        return dt_format
+
+    if isinstance(date_time, int):
+        date_time = datetime.fromtimestamp(date_time)
+
+    return date_time.strftime(get_datetime_format()) if date_time else "-"
 
 
 def raise_if_falsy(obj: T, message: str) -> T:

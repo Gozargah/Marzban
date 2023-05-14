@@ -45,7 +45,7 @@ def list_users(
                     readable_size(user.used_traffic),
                     readable_size(user.data_limit) if user.data_limit else "Unlimited",
                     user.data_limit_reset_strategy.value,
-                    utils.readable_datetime(user.expire),
+                    utils.readable_datetime(user.expire, include_time=False),
                     user.admin.username
                 )
                 for user in users
