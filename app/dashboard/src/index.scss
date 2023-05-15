@@ -76,7 +76,7 @@ table thead {
   position: relative;
 }
 
-.react-datepicker-dark {
+.chakra-ui-dark .react-datepicker {
   background-color: var(--chakra-colors-gray-700) !important;
   border: 1px solid var(--chakra-colors-gray-600);
   border-radius: var(--chakra-radii-md) !important;
@@ -90,7 +90,7 @@ table thead {
   border-bottom: 1px solid var(--chakra-colors-gray-200);
 }
 
-.react-datepicker-dark .react-datepicker__header {
+.chakra-ui-dark .react-datepicker__header {
   border-bottom: 1px solid var(--chakra-colors-gray-600);
 }
 
@@ -104,12 +104,12 @@ table thead {
   border-bottom-color: var(--chakra-colors-gray-200);
 }
 
-.react-datepicker-popper[data-placement^=bottom] .react-datepicker-dark .react-datepicker__triangle::after {
+.chakra-ui-dark .react-datepicker-popper[data-placement^=bottom] .react-datepicker__triangle::after {
   border-top: none;
   border-bottom-color: var(--chakra-colors-gray-700);
 }
 
-.react-datepicker-popper[data-placement^=bottom] .react-datepicker-dark .react-datepicker__triangle::before {
+.chakra-ui-dark .react-datepicker-popper[data-placement^=bottom] .react-datepicker__triangle::before {
   top: -1px;
   border-bottom-color: var(--chakra-colors-gray-600);
 }
@@ -120,9 +120,9 @@ table thead {
   color: var(--chakra-colors-chakra-body-text) !important;
 }
 
-.react-datepicker-dark .react-datepicker__current-month,
-.react-datepicker-dark .react-datepicker__day-name,
-.react-datepicker-dark .react-datepicker__day {
+.chakra-ui-dark .react-datepicker__current-month,
+.chakra-ui-dark .react-datepicker__day-name,
+.chakra-ui-dark .react-datepicker__day {
   color: var(--chakra-colors-gray-300) !important;
 }
 
@@ -132,7 +132,7 @@ table thead {
   color: var(--chakra-colors-white) !important;
 }
 
-.react-datepicker-dark .react-datepicker__day:hover {
+.chakra-ui-dark .react-datepicker__day:hover {
   border-radius: 0.3rem;
   background-color: var(--chakra-colors-primary-500) !important;
   color: var(--chakra-colors-gray-800) !important;
@@ -147,11 +147,11 @@ table thead {
   color: var(--chakra-colors-gray-400) !important;
 }
 
-.react-datepicker-dark .react-datepicker__day--disabled {
+.chakra-ui-dark .react-datepicker__day--disabled {
   color: var(--chakra-colors-gray-500) !important;
 }
 
-.react-datepicker-dark .react-datepicker__day--disabled:hover {
+.chakra-ui-dark .react-datepicker__day--disabled:hover {
   background-color: transparent !important;
   color: var(--chakra-colors-gray-500) !important;
 }
@@ -165,10 +165,10 @@ table thead {
   color: var(--chakra-colors-white) !important;
 }
 
-.react-datepicker-dark .react-datepicker__day--keyboard-selected, 
-.react-datepicker-dark .react-datepicker__day--selected, 
-.react-datepicker-dark .react-datepicker__day--in-selecting-range, 
-.react-datepicker-dark .react-datepicker__day--in-range {
+.chakra-ui-dark .react-datepicker__day--keyboard-selected, 
+.chakra-ui-dark .react-datepicker__day--selected, 
+.chakra-ui-dark .react-datepicker__day--in-selecting-range, 
+.chakra-ui-dark .react-datepicker__day--in-range {
   border-radius: 0.3rem;
   background-color: var(--chakra-colors-primary-200) !important;
   color: var(--chakra-colors-gray-800) !important;
@@ -179,7 +179,7 @@ table thead {
   background-color: var(--chakra-colors-primary-400) !important;
 }
 
-.react-datepicker-dark .react-datepicker__day--in-selecting-range:not(.react-datepicker__day--in-range) {
+.chakra-ui-dark .react-datepicker__day--in-selecting-range:not(.react-datepicker__day--in-range) {
   border-radius: 0.3rem;
   background-color: var(--chakra-colors-primary-400) !important;
 }

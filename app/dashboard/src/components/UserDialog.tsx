@@ -449,7 +449,6 @@ export const UserDialog: FC<UserDialogProps> = () => {
                               <>
                                 <ReactDatePicker
                                   locale={i18n.language.toLocaleLowerCase()}
-                                  calendarClassName={colorMode == "dark" ? "react-datepicker-dark" : undefined}
                                   dateFormat={t("dateFormat")}
                                   minDate={new Date()}
                                   selected={

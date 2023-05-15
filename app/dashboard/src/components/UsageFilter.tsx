@@ -12,6 +12,7 @@ import {
   Tabs,
   Text,
   useBreakpointValue,
+  useOutsideClick,
   useColorMode,
   useDisclosure,
   useRadio,
@@ -25,7 +26,6 @@ import ReactDatePicker from "react-datepicker";
 import { useTranslation } from "react-i18next";
 import { FilterUsageType } from "contexts/DashboardContext";
 import dayjs, { ManipulateType } from "dayjs";
-import { useOnClickOutside } from "usehooks-ts"
 import { formatBytes } from "utils/formatByte";
 import { ApexOptions } from "apexcharts";
 
@@ -120,7 +120,7 @@ export const UsageFilter: FC<UsageFilterProps> = ({onChange, defaultValue, ...pr
 
   const { isOpen: isCustomOpen, onOpen: openCustom, onClose: closeCustom } = useDisclosure();
   const customRef = useRef(null);
-  useOnClickOutside(customRef, closeCustom, "mouseup");
+  useOutsideClick({ref: customRef, handler: closeCustom});
 
   const [customLabel, setCustomLabel] = useState(t("userDialog.custom"));
   const [custom, setCustom] = useState(false);
@@ -263,7 +263,6 @@ export const UsageFilter: FC<UsageFilterProps> = ({onChange, defaultValue, ...pr
               <VStack>
                 <ReactDatePicker
                   locale={i18n.language.toLocaleLowerCase()}
-                  calendarClassName={colorMode == "dark" ? "react-datepicker-dark" : undefined}
                   selected={startDate}
                   onChange={onDateChange}
                   startDate={startDate}
