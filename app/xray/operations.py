@@ -1,3 +1,5 @@
+import threading
+
 from sqlalchemy.exc import SQLAlchemyError
 
 from app import logger, xray
@@ -9,6 +11,14 @@ from app.xray.node import XRayNode
 from xray_api.types.account import XTLSFlows
 
 
+def _threaded(func):
+    def wrapper(*args, **kwargs):
+        thread = threading.Thread(target=func, args=args, daemon=True, kwargs=kwargs)
+        thread.start()
+    return wrapper
+
+
+@_threaded
 def add_user(user: User):
     if not isinstance(user, User):
         user = UserResponse.from_orm(user)
@@ -33,6 +43,7 @@ def add_user(user: User):
                         pass
 
 
+@_threaded
 def remove_user(user: User):
     for inbound_tag in xray.config.inbounds_by_tag:
         try:
@@ -68,6 +79,7 @@ def add_node(dbnode: DBNode):
     return xray.nodes[dbnode.id]
 
 
+@_threaded
 def connect_node(node_id, config):
 
     with GetDB() as db:
@@ -103,10 +115,43 @@ def connect_node(node_id, config):
                 pass
 
 
+@_threaded
+def restart_node(node_id, config):
+
+    with GetDB() as db:
+        dbnode = crud.get_node_by_id(db, node_id)
+        if not dbnode:
+            return
+
+        try:
+            node = xray.nodes[dbnode.id]
+        except KeyError:
+            node = xray.operations.add_node(dbnode)
+
+        try:
+            logger.info(f"Restarting \"{dbnode.name}\" node")
+            node.restart(config)
+            message = None
+            status = NodeStatus.connected
+            version = node.remote.fetch_xray_version()
+            logger.info(f"Node \"{dbnode.name}\" restarted, xray run on v{version}")
+        except Exception as e:
+            message = str(e)
+            status = NodeStatus.error
+            version = ""
+            logger.info(f"Unable to restart \"{dbnode.name}\" node")
+        finally:
+            try:
+                crud.update_node_status(db, dbnode, status, message, version)
+            except SQLAlchemyError:
+                pass
+
+
 __all__ = [
     "add_user",
     "remove_user",
     "add_node",
     "remove_node",
     "connect_node",
+    "restart_node",
 ]
