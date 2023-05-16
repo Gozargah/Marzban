@@ -18,7 +18,7 @@ export const JsonEditor: FC<JSONEditorProps> = ({
   const { colorMode } = useColorMode();
   const options: JSONEditorOptions = {
     mode,
-    onChangeJSON: onChange,
+    onChangeText: onChange,
     statusBar: false,
     mainMenuBar: false,
     theme: colorMode === "dark" ? "ace/theme/nord_dark" : "ace/theme/dawn",

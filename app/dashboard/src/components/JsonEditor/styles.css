@@ -1,6 +1,6 @@
 .ace_gutter-cell{
-	padding-left: 3px;
-	padding-right: 4px !important;
+	padding-left: 20px;
+	padding-right: 16px !important;
 }
 .ace_editor, .jsoneditor{
 	border-radius: 4px;
