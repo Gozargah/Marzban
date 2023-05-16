@@ -13,7 +13,11 @@ from config import XRAY_JSON
 
 @app.websocket("/api/core/logs")
 async def core_logs(websocket: WebSocket, db: Session = Depends(get_db)):
-    token = websocket.headers.get('Authorization', '').removeprefix("Bearer ")
+    token = (
+        websocket.query_params.get('token')
+        or
+        websocket.headers.get('Authorization', '').removeprefix("Bearer ")
+    )
     admin = Admin.get_admin(token, db)
     if not admin:
         return await websocket.close(reason="Unauthorized", code=4401)
