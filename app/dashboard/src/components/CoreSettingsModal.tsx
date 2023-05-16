@@ -22,7 +22,7 @@ import { ArrowPathIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
 import classNames from "classnames";
 import { useCoreSettings } from "contexts/CoreSettingsContext";
 import { useDashboard } from "contexts/DashboardContext";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "react-query";
@@ -60,6 +60,7 @@ export const CoreSettingsModal: FC<NodesUsageProps> = () => {
     version,
     restartCore,
   } = useCoreSettings();
+  const logsDiv = useRef<HTMLDivElement | null>(null);
   const onClose = useDashboard.setState.bind(null, { isEditingCore: false });
   const { t } = useTranslation();
   const form = useForm({
@@ -90,6 +91,11 @@ export const CoreSettingsModal: FC<NodesUsageProps> = () => {
       },
     }
   );
+
+  useEffect(() => {
+    if (logsDiv.current)
+      logsDiv.current.scrollTop = logsDiv.current?.scrollHeight;
+  }, [logs]);
 
   const status = {
     [ReadyState.CONNECTING]: "connecting",
@@ -186,6 +192,7 @@ export const CoreSettingsModal: FC<NodesUsageProps> = () => {
                 maxHeight={"250px"}
                 p={2}
                 overflowY="auto"
+                ref={logsDiv}
               >
                 {logs.map((message, i) => (
                   <Text fontSize="xs" opacity={0.8} key={i}>
