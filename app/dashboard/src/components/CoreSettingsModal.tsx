@@ -19,6 +19,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { ArrowPathIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
+import { joinPaths } from "@remix-run/router";
 import classNames from "classnames";
 import { useCoreSettings } from "contexts/CoreSettingsContext";
 import { useDashboard } from "contexts/DashboardContext";
@@ -75,13 +76,17 @@ export const CoreSettingsModal: FC<NodesUsageProps> = () => {
   useEffect(() => {
     if (isEditingCore) fetchCoreSettings();
   }, [isEditingCore]);
+  "".startsWith;
 
-  const baseURL = new URL(import.meta.env.VITE_BASE_API);
+  let baseURL = new URL(
+    import.meta.env.VITE_BASE_API.startsWith("/")
+      ? window.location.origin + import.meta.env.VITE_BASE_API
+      : import.meta.env.VITE_BASE_API
+  );
 
   const { readyState } = useWebSocket(
     (baseURL.protocol === "https" ? "wss://" : "ws://") +
-      baseURL.host +
-      "/api/core/logs" +
+      joinPaths([baseURL.host + baseURL.pathname, "/core/logs"]) +
       "?token=" +
       getAuthToken(),
     {
