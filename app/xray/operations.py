@@ -33,13 +33,13 @@ def add_user(user: User):
 
             try:
                 xray.api.add_inbound_user(tag=inbound_tag, user=account)
-            except (xray.exc.EmailNotFoundError, xray.exc.ConnectionError):
+            except (xray.exc.EmailExistsError, xray.exc.ConnectionError):
                 pass
             for node in xray.nodes.values():
                 if node.connected and node.started:
                     try:
                         node.api.add_inbound_user(tag=inbound_tag, user=account)
-                    except (xray.exc.EmailNotFoundError, xray.exc.ConnectionError):
+                    except (xray.exc.EmailExistsError, xray.exc.ConnectionError):
                         pass
 
 
