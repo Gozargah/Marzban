@@ -224,6 +224,7 @@ const RadioCard: FC<
           w="fll"
           position="relative"
           {...htmlProps}
+          borderRadius="md"
           cursor={shouldBeDisabled ? "not-allowed" : "pointer"}
           _checked={{
             fontWeight: "medium",
