@@ -2,6 +2,7 @@ import { useQuery } from "react-query";
 import { fetch } from "service/http";
 import { z } from "zod";
 import { create } from "zustand";
+import { useDashboard } from "./DashboardContext";
 
 export const NodeSchema = z.object({
   name: z.string().min(1),
@@ -50,12 +51,15 @@ export type NodeStore = {
   setDeletingNode: (node: NodeType | null) => void;
 };
 
-export const useNodesQuery = () =>
-  useQuery({
+export const useNodesQuery = () => {
+  const { isEditingNodes } = useDashboard();
+  return useQuery({
     queryKey: FetchNodesQueryKey,
     queryFn: useNodes.getState().fetchNodes,
-    refetchInterval: 3000,
+    refetchInterval: isEditingNodes ? 3000 : undefined,
+    refetchOnWindowFocus: false,
   });
+};
 
 export const useNodes = create<NodeStore>((set, get) => ({
   nodes: [],
@@ -65,7 +69,7 @@ export const useNodes = create<NodeStore>((set, get) => ({
   fetchNodes() {
     return fetch("/nodes");
   },
-  fetchNodesUsage () {
+  fetchNodesUsage() {
     return fetch("/nodes/usage");
   },
   updateNode(body) {
