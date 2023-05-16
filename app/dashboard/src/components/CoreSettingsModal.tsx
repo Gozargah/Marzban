@@ -19,14 +19,18 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { ArrowPathIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
+import classNames from "classnames";
 import { useCoreSettings } from "contexts/CoreSettingsContext";
 import { useDashboard } from "contexts/DashboardContext";
-import { FC, useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { useMutation } from "react-query";
+import { ReadyState } from "react-use-websocket";
+import { useWebSocket } from "react-use-websocket/dist/lib/use-websocket";
+import { getAuthToken } from "utils/authStorage";
 import { Icon } from "./Icon";
 import { JsonEditor } from "./JsonEditor";
-
 import "./JsonEditor/themes.js";
 
 const UsageIcon = chakra(Cog6ToothIcon, {
@@ -44,6 +48,7 @@ export const ReloadIcon = chakra(ArrowPathIcon, {
 
 export type NodesUsageProps = {};
 
+let logsTmp: string[] = [];
 export const CoreSettingsModal: FC<NodesUsageProps> = () => {
   const { isEditingCore } = useDashboard();
   const {
@@ -53,6 +58,7 @@ export const CoreSettingsModal: FC<NodesUsageProps> = () => {
     config,
     isPostLoading,
     version,
+    restartCore,
   } = useCoreSettings();
   const onClose = useDashboard.setState.bind(null, { isEditingCore: false });
   const { t } = useTranslation();
@@ -60,19 +66,45 @@ export const CoreSettingsModal: FC<NodesUsageProps> = () => {
     defaultValues: { config: config || {} },
   });
   const toast = useToast();
+  const [logs, setLogs] = useState<string[]>([]);
+
   useEffect(() => {
     if (config) form.setValue("config", config);
   }, [config]);
-
   useEffect(() => {
     if (isEditingCore) fetchCoreSettings();
   }, [isEditingCore]);
 
+  const baseURL = new URL(import.meta.env.VITE_BASE_API);
+
+  const { readyState } = useWebSocket(
+    (baseURL.protocol === "https" ? "wss://" : "ws://") +
+      baseURL.host +
+      "/api/core/logs" +
+      "?token=" +
+      getAuthToken(),
+    {
+      onMessage: (e) => {
+        logsTmp.push(e.data);
+        setLogs([...logsTmp]);
+      },
+    }
+  );
+
+  const status = {
+    [ReadyState.CONNECTING]: "connecting",
+    [ReadyState.OPEN]: "connected",
+    [ReadyState.CLOSING]: "closed",
+    [ReadyState.CLOSED]: "closed",
+    [ReadyState.UNINSTANTIATED]: "closed",
+  }[readyState];
+  const { mutate: handleRestartCore, isLoading: isRestarting } =
+    useMutation(restartCore);
   const handleOnSave = ({ config }: any) => {
     updateConfig(config)
       .then(() => {
         toast({
-          title: "Core settings updated successfully",
+          title: t("core.successMessage"),
           status: "success",
           isClosable: true,
           position: "top",
@@ -80,10 +112,13 @@ export const CoreSettingsModal: FC<NodesUsageProps> = () => {
         });
       })
       .catch((e) => {
-        let message = "Something went wrong, please check the configuration";
+        let message = t("core.generalErrorMessage");
         if (typeof e.response._data.detail === "object")
           message =
             e.response._data.detail[Object.keys(e.response._data.detail)[0]];
+        if (typeof e.response._data.detail === "string")
+          message = e.response._data.detail;
+
         toast({
           title: message,
           status: "error",
@@ -114,7 +149,7 @@ export const CoreSettingsModal: FC<NodesUsageProps> = () => {
             <FormControl>
               <HStack justifyContent="space-between" alignItems="flex-start">
                 <FormLabel>
-                  Configuration{" "}
+                  {t("core.configuration")}{" "}
                   {isLoading && (
                     <CircularProgress isIndeterminate size="15px" />
                   )}
@@ -135,8 +170,8 @@ export const CoreSettingsModal: FC<NodesUsageProps> = () => {
             </FormControl>
             <FormControl mt="4">
               <HStack justifyContent="space-between">
-                <FormLabel>Logs</FormLabel>
-                <Text as={FormLabel}>Connecting...</Text>
+                <FormLabel>{t("core.logs")}</FormLabel>
+                <Text as={FormLabel}>{t(`core.socket.${status}`)}</Text>
               </HStack>
               <Box
                 border="1px solid"
@@ -147,15 +182,34 @@ export const CoreSettingsModal: FC<NodesUsageProps> = () => {
                   bg: "#2e3440",
                 }}
                 borderRadius={5}
-                minHeight="100px"
-              ></Box>
+                minHeight="200px"
+                maxHeight={"250px"}
+                p={2}
+                overflowY="auto"
+              >
+                {logs.map((message, i) => (
+                  <Text fontSize="xs" opacity={0.8} key={i}>
+                    {message}
+                  </Text>
+                ))}
+              </Box>
             </FormControl>
           </ModalBody>
           <ModalFooter>
             <HStack w="full" justifyContent="space-between">
               <Box>
-                <Button size="sm" leftIcon={<ReloadIcon />}>
-                  Restart Core
+                <Button
+                  size="sm"
+                  leftIcon={
+                    <ReloadIcon
+                      className={classNames({
+                        "animate-spin": isRestarting,
+                      })}
+                    />
+                  }
+                  onClick={() => handleRestartCore()}
+                >
+                  {t(isRestarting ? "core.restarting" : "core.restartCore")}
                 </Button>
               </Box>
               <HStack>
@@ -168,7 +222,7 @@ export const CoreSettingsModal: FC<NodesUsageProps> = () => {
                   isDisabled={isLoading || isPostLoading}
                   isLoading={isPostLoading}
                 >
-                  Save
+                  {t("core.save")}
                 </Button>
               </HStack>
             </HStack>

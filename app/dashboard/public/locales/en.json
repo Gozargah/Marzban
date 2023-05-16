@@ -6,8 +6,8 @@
   "reset": "Reset",
   "createUser": "Create User",
   "username": "Username",
-  "expires": "Expires {{time}}",
-  "expired": "Expired {{time}}",
+  "expires": "Expires in {{time}}",
+  "expired": "Expired {{time}} ago",
   "dateFormat": "MMMM d, yyy",
   "inbound": "Inbound",
 
@@ -126,5 +126,16 @@
   "resetAllUsage.success": "All usage has reset successfully.",
   "resetAllUsage.error": "Usage reset failed, please try again.",
 
-  "core.title": "Core Settings"
+  "core.title": "Core Settings",
+  "core.socket.connecting": "Connecting...",
+  "core.socket.connected": "Connected",
+  "core.socket.not_connected": "Not Connected",
+  "core.socket.closed": "Closed",
+  "core.restarting": "Restarting...",
+  "core.restartCore": "Restart Core",
+  "core.save": "Save",
+  "core.logs": "Logs",
+  "core.configuration": "Configuration",
+  "core.generalErrorMessage": "Something went wrong, please check the configuration",
+  "core.successMessage": "Core settings updated successfully"
 }

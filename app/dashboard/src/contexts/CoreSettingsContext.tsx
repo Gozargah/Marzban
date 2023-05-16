@@ -6,6 +6,7 @@ type CoreSettingsStore = {
   isPostLoading: boolean;
   fetchCoreSettings: () => void;
   updateConfig: (json: string) => Promise<void>;
+  restartCore: () => Promise<void>;
   version: string | null;
   started: boolean | null;
   logs_websocket: string | null;
@@ -33,5 +34,8 @@ export const useCoreSettings = create<CoreSettingsStore>((set) => ({
     return fetch("/core/config", { method: "PUT", body }).finally(() => {
       set({ isPostLoading: false });
     });
+  },
+  restartCore: () => {
+    return fetch("/core/restart", { method: "POST" });
   },
 }));
