@@ -22,17 +22,17 @@ class XRayConfig(dict):
         if isinstance(config, str):
             try:
                 # considering string as json
-                jdata = re.sub(r'\/\/(.*)', '', config)
+                jdata = re.sub(r'//.*|/\*[\s\S]*?\*/', '', config)
                 config = json.loads(jdata)
             except json.JSONDecodeError:
                 # considering string as file path
                 with open(config, 'r') as file:
-                    jdata = re.sub(r'\/\/(.*)', '', file.read())
+                    jdata = re.sub(r'//.*|/\*[\s\S]*?\*/', '', file.read())
                     config = json.loads(jdata)
 
         if isinstance(config, PosixPath):
             with open(config, 'r') as file:
-                jdata = re.sub(r'\/\/(.*)', '', file.read())
+                jdata = re.sub(r'//.*|/\*[\s\S]*?\*/', '', file.read())
                 config = json.loads(jdata)
 
         if isinstance(config, dict):

@@ -1,5 +1,6 @@
 import asyncio
 import json
+import re
 
 from fastapi import Depends, HTTPException, WebSocket
 
@@ -64,7 +65,8 @@ def get_core_config(admin: Admin = Depends(Admin.get_current)) -> dict:
         raise HTTPException(status_code=403, detail="You're not allowed")
 
     with open(XRAY_JSON, "r") as f:
-        config = json.loads(f.read())
+        jdata = re.sub(r'//.*|/\*[\s\S]*?\*/', '', f.read())
+        config = json.loads(jdata)
 
     return config
 
