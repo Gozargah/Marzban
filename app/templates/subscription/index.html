@@ -69,7 +69,7 @@
             margin-right: -15px;
         }
     </style>
-    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 
 <body>
@@ -81,10 +81,15 @@
     <p>Data Limit: {% if not user.data_limit %}∞{% else %}{{ user.data_limit | filesizeformat }}{% endif %}</p>
     <p>Data Used: {{ user.used_traffic | filesizeformat }}{% if user.data_limit_reset_strategy != 'no_reset' %} (resets
         every {{ user.data_limit_reset_strategy.value }}){% endif %}</p>
-    {% set current_timestamp = now().timestamp() %}
-    {% set remaining_days = ((user.expire - current_timestamp) // (24 * 3600)) %}
-    <p>Expiration Date: {% if not user.expire %}∞{% else %}{{ user.expire | datetime }} ({{ remaining_days | int }} days
-        remaining){% endif %}</p>
+    <p>Expiration Date:
+        {% if not user.expire %}
+        ∞
+        {% else %}
+        {% set current_timestamp = now().timestamp() %}
+        {% set remaining_days = ((user.expire - current_timestamp) // (24 * 3600)) %}
+        {{ user.expire | datetime }} ({{ remaining_days | int }} days
+        remaining)
+        {% endif %}</p>
 
     <h2>Links:</h2>
     <ul>
