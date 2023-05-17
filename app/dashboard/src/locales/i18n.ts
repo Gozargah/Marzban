@@ -356,6 +356,8 @@ i18n
         },
       },
     },
+  }, function(err, t) {
+    dayjs.locale(i18n.language);
   });
 
 i18n.on("languageChanged", (lng) => {
