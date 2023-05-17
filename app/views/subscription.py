@@ -1,10 +1,12 @@
 import re
 
-from fastapi import Depends, Header, Response
+from fastapi import Depends, Header, Request, Response
+from fastapi.responses import HTMLResponse
 
 from app import app
 from app.db import Session, crud, get_db
 from app.models.user import UserResponse
+from app.templates import render_template
 from app.utils.jwt import get_subscription_payload
 from app.utils.share import generate_subscription
 
@@ -12,11 +14,14 @@ from app.utils.share import generate_subscription
 @app.get("/sub/{token}/", tags=['Subscription'])
 @app.get("/sub/{token}", include_in_schema=False)
 def user_subcription(token: str,
+                     request: Request,
                      db: Session = Depends(get_db),
                      user_agent: str = Header(default="")):
     """
     Subscription link, V2ray and Clash supported
     """
+    accept_header = request.headers.get("Accept", "")
+
     def get_subscription_user_info(user: UserResponse) -> dict:
         return {
             "upload": 0,
@@ -34,6 +39,14 @@ def user_subcription(token: str,
         return Response(status_code=204)
 
     user: UserResponse = UserResponse.from_orm(dbuser)
+
+    if "text/html" in accept_header:
+        return HTMLResponse(
+            render_template(
+                'subscription/index.html',
+                {"user": user}
+            )
+        )
 
     response_headers = {
         "content-disposition": f'attachment; filename="{user.username}"',

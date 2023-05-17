@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Subscription Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        .link-input {
+            margin-bottom: 10px;
+        }
+
+        .copy-button {
+            margin-left: 10px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .limited {
+            background-color: #F44336;
+            color: white;
+        }
+
+        .expired {
+            background-color: #FF9800;
+            color: white;
+        }
+
+        .disabled {
+            background-color: #9E9E9E;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>User Information</h1>
+    <p>Username: {{ user.username }}</p>
+    <p>Status: <span
+            class="status {% if user.status.value == 'active' %}active{% elif user.status.value == 'limited' %}limited{% elif user.status.value == 'expired' %}expired{% elif user.status.value == 'disabled' %}disabled{% endif %}">{{
+            user.status.value }}</span></p>
+    <p>Data Limit: {% if not user.data_limit %}∞{% else %}{{ user.data_limit | filesizeformat }}{% endif %}</p>
+    <p>Data Used: {{ user.used_traffic | filesizeformat }}{% if user.data_limit_reset_strategy != 'no_reset' %} (resets
+        every {{ user.data_limit_reset_strategy.value }}){% endif %}</p>
+    {% set current_timestamp = now().timestamp() %}
+    {% set remaining_days = ((user.expire - current_timestamp) // (24 * 3600)) %}
+    <p>Expiration Date: {% if not user.expire %}∞{% else %}{{ user.expire | datetime }} ({{ remaining_days | int }} days
+        remaining){% endif %}</p>
+
+    <h2>Links:</h2>
+    <ul>
+        {% for link in user.links %}
+        <li>
+            <input type="text" value="{{ link }}" readonly>
+            <button class="copy-button" onclick="copyLink('{{ link }}', this)">Copy</button>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <script>
+        function copyLink(link, button) {
+            const tempInput = document.createElement('input');
+            tempInput.setAttribute('value', link);
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            button.textContent = 'Copied!';
+            setTimeout(function () {
+                button.textContent = 'Copy';
+            }, 1500);
+        }
+    </script>
+
+
+
+</body>
+
+</html>

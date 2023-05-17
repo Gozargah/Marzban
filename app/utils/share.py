@@ -9,7 +9,7 @@ from uuid import UUID
 import yaml
 
 from app import xray
-from app.templates import render_to_string
+from app.templates import render_template
 from app.models.proxy import FormatVariables
 from app.utils.system import get_public_ip, readable_size
 if TYPE_CHECKING:
@@ -189,7 +189,7 @@ class ClashConfiguration(object):
     def to_yaml(self):
         return yaml.dump(
             yaml.load(
-                render_to_string(
+                render_template(
                     CLASH_SUBSCRIPTION_TEMPLATE,
                     {"conf": self.data, "proxy_remarks": self.proxy_remarks}
                 ),
