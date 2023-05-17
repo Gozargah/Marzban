@@ -85,7 +85,7 @@ export const CoreSettingsModal: FC<NodesUsageProps> = () => {
   );
 
   const { readyState } = useWebSocket(
-    (baseURL.protocol === "https" ? "wss://" : "ws://") +
+    (baseURL.protocol === "https:" ? "wss://" : "ws://") +
       joinPaths([baseURL.host + baseURL.pathname, "/core/logs"]) +
       "?token=" +
       getAuthToken(),
