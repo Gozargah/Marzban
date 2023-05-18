@@ -78,8 +78,8 @@
     <p>Status: <span
             class="status {% if user.status.value == 'active' %}active{% elif user.status.value == 'limited' %}limited{% elif user.status.value == 'expired' %}expired{% elif user.status.value == 'disabled' %}disabled{% endif %}">{{
             user.status.value }}</span></p>
-    <p>Data Limit: {% if not user.data_limit %}∞{% else %}{{ user.data_limit | filesizeformat }}{% endif %}</p>
-    <p>Data Used: {{ user.used_traffic | filesizeformat }}{% if user.data_limit_reset_strategy != 'no_reset' %} (resets
+    <p>Data Limit: {% if not user.data_limit %}∞{% else %}{{ user.data_limit | bytesformat }}{% endif %}</p>
+    <p>Data Used: {{ user.used_traffic | bytesformat }}{% if user.data_limit_reset_strategy != 'no_reset' %} (resets
         every {{ user.data_limit_reset_strategy.value }}){% endif %}</p>
     <p>Expiration Date:
         {% if not user.expire %}

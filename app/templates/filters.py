@@ -1,5 +1,8 @@
 from datetime import datetime
+
 import yaml
+
+from app.utils.system import readable_size
 
 
 def to_yaml(obj):
@@ -28,5 +31,6 @@ CUSTOM_FILTERS = {
     "yaml": to_yaml,
     "except": exclude_keys,
     "only": only_keys,
-    "datetime": datetimeformat
+    "datetime": datetimeformat,
+    "bytesformat": readable_size
 }
