@@ -58,6 +58,27 @@ const getStatus = (status: string) => {
   }[status];
 };
 
+const getWebsocketUrl = () => {
+  try {
+    let baseURL = new URL(
+      import.meta.env.VITE_BASE_API.startsWith("/")
+        ? window.location.origin + import.meta.env.VITE_BASE_API
+        : import.meta.env.VITE_BASE_API
+    );
+
+    return (
+      (baseURL.protocol === "https:" ? "wss://" : "ws://") +
+      joinPaths([baseURL.host + baseURL.pathname, "/core/logs"]) +
+      "?token=" +
+      getAuthToken()
+    );
+  } catch (e) {
+    console.error("Unable to generate websocket url");
+    console.error(e);
+    return null;
+  }
+};
+
 let logsTmp: string[] = [];
 const CoreSettingModalContent: FC = () => {
   const { isEditingCore } = useDashboard();
@@ -87,12 +108,6 @@ const CoreSettingModalContent: FC = () => {
   }, [isEditingCore]);
   "".startsWith;
 
-  let baseURL = new URL(
-    import.meta.env.VITE_BASE_API.startsWith("/")
-      ? window.location.origin + import.meta.env.VITE_BASE_API
-      : import.meta.env.VITE_BASE_API
-  );
-
   const updateLogs = useCallback(
     debounce((logs: string[]) => {
       setLogs(logs);
@@ -100,18 +115,12 @@ const CoreSettingModalContent: FC = () => {
     []
   );
 
-  const { readyState } = useWebSocket(
-    (baseURL.protocol === "https:" ? "wss://" : "ws://") +
-      joinPaths([baseURL.host + baseURL.pathname, "/core/logs"]) +
-      "?token=" +
-      getAuthToken(),
-    {
-      onMessage: (e) => {
-        logsTmp.push(e.data);
-        updateLogs([...logsTmp]);
-      },
-    }
-  );
+  const { readyState } = useWebSocket(getWebsocketUrl(), {
+    onMessage: (e) => {
+      logsTmp.push(e.data);
+      updateLogs([...logsTmp]);
+    },
+  });
 
   useEffect(() => {
     if (logsDiv.current)
