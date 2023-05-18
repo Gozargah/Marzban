@@ -18,7 +18,6 @@ def _threaded(func):
     return wrapper
 
 
-@_threaded
 def add_user(user: User):
     if not isinstance(user, User):
         user = UserResponse.from_orm(user)
@@ -43,7 +42,6 @@ def add_user(user: User):
                         pass
 
 
-@_threaded
 def remove_user(user: User):
     for inbound_tag in xray.config.inbounds_by_tag:
         try:
