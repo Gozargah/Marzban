@@ -459,7 +459,7 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
 
 def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> list:
     links = []
-    salt = secrets.token_urlsafe(12).lower()
+    salt = secrets.token_hex(8)
 
     if (extra_data.get('expire') or 0) > 0:
         days_left = (dt.fromtimestamp(extra_data['expire']) - dt.now()).days + 1
@@ -468,14 +468,19 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> lis
     else:
         days_left = '∞'
 
-    data_limit = readable_size(extra_data.get('data_limit')) \
-        if extra_data.get('data_limit') else '∞'
+    if extra_data.get('data_limit'):
+        data_limit = readable_size(extra_data['data_limit'])
+        data_left = readable_size(extra_data['data_limit'] - extra_data['used_traffic'])
+    else:
+        data_limit = '∞'
+        data_left = '∞'
 
     format_variables = FormatVariables({
         "SERVER_IP": SERVER_IP,
         "USERNAME": extra_data.get('username', '{USERNAME}'),
         "DATA_USAGE": readable_size(extra_data.get('used_traffic')),
         "DATA_LIMIT": data_limit,
+        "DATA_LEFT": data_left,
         "DAYS_LEFT": days_left
     })
 
@@ -523,7 +528,7 @@ def generate_clash_subscription(proxies: dict,
     else:
         conf = ClashConfiguration()
 
-    salt = secrets.token_urlsafe(12).lower()
+    salt = secrets.token_hex(8)
 
     if (extra_data.get('expire') or 0) > 0:
         days_left = (dt.fromtimestamp(extra_data['expire']) - dt.now()).days + 1
@@ -532,14 +537,19 @@ def generate_clash_subscription(proxies: dict,
     else:
         days_left = '∞'
 
-    data_limit = readable_size(extra_data.get('data_limit')) \
-        if extra_data.get('data_limit') else '∞'
+    if extra_data.get('data_limit'):
+        data_limit = readable_size(extra_data['data_limit'])
+        data_left = readable_size(extra_data['data_limit'] - extra_data['used_traffic'])
+    else:
+        data_limit = '∞'
+        data_left = '∞'
 
     format_variables = FormatVariables({
         "SERVER_IP": SERVER_IP,
         "USERNAME": extra_data.get('username', '{USERNAME}'),
         "DATA_USAGE": readable_size(extra_data.get('used_traffic')),
         "DATA_LIMIT": data_limit,
+        "DATA_LEFT": data_left,
         "DAYS_LEFT": days_left
     })
 
