@@ -1,7 +1,8 @@
+import asyncio
 from typing import List
 
 import sqlalchemy
-from fastapi import BackgroundTasks, Depends, HTTPException
+from fastapi import BackgroundTasks, Depends, HTTPException, WebSocket
 
 from app import app, logger, xray
 from app.db import Session, crud, get_db
@@ -10,12 +11,78 @@ from app.models.node import NodeCreate, NodeModify, NodeResponse, NodesUsageResp
 from app.models.proxy import ProxyHost
 
 
+@app.websocket("/api/node/logs")
+async def nodes_logs(websocket: WebSocket, db: Session = Depends(get_db)):
+    token = (
+            websocket.query_params.get('token')
+            or
+            websocket.headers.get('Authorization', '').removeprefix("Bearer ")
+    )
+    admin = Admin.get_admin(token, db)
+    if not admin:
+        return await websocket.close(reason="Unauthorized", code=4401)
+
+    if not admin.is_sudo:
+        return await websocket.close(reason="You're not allowed", code=1008)
+
+    await websocket.accept()
+    nodes = crud.get_nodes(db)
+    while True:
+        for node in nodes:
+            nodeapi = xray.nodes[node.id]
+            logs_tail = nodeapi.remote.fetch_logs()
+            if not logs_tail:
+                await asyncio.sleep(0.2)
+                continue
+
+            logs = logs_tail.splitlines()
+            for log in logs:
+                try:
+                    await websocket.send_text(log)
+                except:
+                    break
+
+
+@app.websocket("/api/node/{node_id}/logs")
+async def node_logs(node_id: int,
+                    websocket: WebSocket, db: Session = Depends(get_db)):
+    token = (
+            websocket.query_params.get('token')
+            or
+            websocket.headers.get('Authorization', '').removeprefix("Bearer ")
+    )
+    admin = Admin.get_admin(token, db)
+    if not admin:
+        return await websocket.close(reason="Unauthorized", code=4401)
+
+    if not admin.is_sudo:
+        return await websocket.close(reason="You're not allowed", code=1008)
+
+    dbnode = crud.get_node_by_id(db, node_id)
+    if not dbnode:
+        return await websocket.close(reason="Node not found", code=4404)
+
+    await websocket.accept()
+    while True:
+        node = xray.nodes[dbnode.id]
+        logs_tail = node.remote.fetch_logs()
+        if not logs_tail:
+            await asyncio.sleep(0.2)
+            continue
+
+        logs = logs_tail.splitlines()
+        for log in logs:
+            try:
+                await websocket.send_text(log)
+            except:
+                break
+
+
 @app.post("/api/node", tags=['Node'], response_model=NodeResponse)
 def add_node(new_node: NodeCreate,
              bg: BackgroundTasks,
              db: Session = Depends(get_db),
              admin: Admin = Depends(Admin.get_current)):
-
     if not admin.is_sudo:
         raise HTTPException(status_code=403, detail="You're not allowed")
 
@@ -48,7 +115,6 @@ def add_node(new_node: NodeCreate,
 def get_node(node_id: int,
              db: Session = Depends(get_db),
              admin: Admin = Depends(Admin.get_current)):
-
     dbnode = crud.get_node_by_id(db, node_id)
     if not dbnode:
         raise HTTPException(status_code=404, detail="Node not found")
@@ -59,7 +125,6 @@ def get_node(node_id: int,
 @app.get("/api/nodes", tags=['Node'], response_model=List[NodeResponse])
 def get_nodes(db: Session = Depends(get_db),
               admin: Admin = Depends(Admin.get_current)):
-
     return crud.get_nodes(db)
 
 
@@ -69,7 +134,6 @@ def modify_node(node_id: int,
                 bg: BackgroundTasks,
                 db: Session = Depends(get_db),
                 admin: Admin = Depends(Admin.get_current)):
-
     if not admin.is_sudo:
         raise HTTPException(status_code=403, detail="You're not allowed")
 
@@ -95,7 +159,6 @@ def reconnect_node(node_id: int,
                    bg: BackgroundTasks,
                    db: Session = Depends(get_db),
                    admin: Admin = Depends(Admin.get_current)):
-
     if not admin.is_sudo:
         raise HTTPException(status_code=403, detail="You're not allowed")
 
@@ -114,7 +177,6 @@ def reconnect_node(node_id: int,
 def remove_node(node_id: int,
                 db: Session = Depends(get_db),
                 admin: Admin = Depends(Admin.get_current)):
-
     if not admin.is_sudo:
         raise HTTPException(status_code=403, detail="You're not allowed")
 
