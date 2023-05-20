@@ -470,7 +470,11 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> lis
 
     if extra_data.get('data_limit'):
         data_limit = readable_size(extra_data['data_limit'])
-        data_left = readable_size(extra_data['data_limit'] - extra_data['used_traffic'])
+
+        data_left = extra_data['data_limit'] - extra_data['used_traffic']
+        if data_left < 0:
+            data_left = 0
+        data_left = readable_size(data_left)
     else:
         data_limit = '∞'
         data_left = '∞'
@@ -539,7 +543,10 @@ def generate_clash_subscription(proxies: dict,
 
     if extra_data.get('data_limit'):
         data_limit = readable_size(extra_data['data_limit'])
-        data_left = readable_size(extra_data['data_limit'] - extra_data['used_traffic'])
+        data_left = extra_data['data_limit'] - extra_data['used_traffic']
+        if data_left < 0:
+            data_left = 0
+        data_left = readable_size(data_left)
     else:
         data_limit = '∞'
         data_left = '∞'
