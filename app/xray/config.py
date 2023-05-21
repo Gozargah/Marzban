@@ -143,8 +143,8 @@ class XRayConfig(dict):
                 "network": "tcp",
                 "tls": 'none',
                 "sni": [],
-                "path": [],
-                "host": "",
+                "host": [],
+                "path": "",
                 "header_type": "",
                 "is_fallback": False
             }
