@@ -49,8 +49,8 @@ def hosts(storage: dict):
                     "remark": host.remark,
                     "address": host.address,
                     "port": host.port,
-                    "sni": host.sni.split(',') if host.sni else [],
-                    "host": host.host.split(',') if host.host else [],
+                    "sni": [i.strip() for i in host.sni.split(',')] if host.sni else [],
+                    "host": [i.strip() for i in host.host.split(',')] if host.host else [],
                     "alpn": host.alpn.value,
                     "fingerprint": host.fingerprint.value,
                     # None means the tls is not specified by host itself and
