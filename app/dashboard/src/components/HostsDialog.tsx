@@ -49,7 +49,7 @@ import {
   useForm,
   useFormContext,
 } from "react-hook-form";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
 import { z } from "zod";
@@ -424,6 +424,22 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                 <Text fontSize="xs" pr={5}>
                                   {t("hostsDialog.sni.info")}
                                 </Text>
+                                <Text fontSize="xs" mt="2">
+                                  <Trans
+                                    i18nKey="hostsDialog.host.wildcard"
+                                    components={{
+                                      badge: <Badge />,
+                                    }}
+                                  />
+                                </Text>
+                                <Text fontSize="xs">
+                                  <Trans
+                                    i18nKey="hostsDialog.host.multiHost"
+                                    components={{
+                                      badge: <Badge />,
+                                    }}
+                                  />
+                                </Text>
                               </PopoverContent>
                             </Portal>
                           </Popover>
@@ -463,6 +479,22 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                 <PopoverCloseButton />
                                 <Text fontSize="xs" pr={5}>
                                   {t("hostsDialog.host.info")}
+                                </Text>
+                                <Text fontSize="xs" mt="2">
+                                  <Trans
+                                    i18nKey="hostsDialog.host.wildcard"
+                                    components={{
+                                      badge: <Badge />,
+                                    }}
+                                  />
+                                </Text>
+                                <Text fontSize="xs">
+                                  <Trans
+                                    i18nKey="hostsDialog.host.multiHost"
+                                    components={{
+                                      badge: <Badge />,
+                                    }}
+                                  />
                                 </Text>
                               </PopoverContent>
                             </Portal>
