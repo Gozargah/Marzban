@@ -7,6 +7,7 @@ import {
   FormControl,
   FormLabel,
   HStack,
+  IconButton,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -18,7 +19,12 @@ import {
   Tooltip,
   useToast,
 } from "@chakra-ui/react";
-import { ArrowPathIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowPathIcon,
+  ArrowsPointingInIcon,
+  ArrowsPointingOutIcon,
+  Cog6ToothIcon,
+} from "@heroicons/react/24/outline";
 import { joinPaths } from "@remix-run/router";
 import classNames from "classnames";
 import { useCoreSettings } from "contexts/CoreSettingsContext";
@@ -45,6 +51,19 @@ export const ReloadIcon = chakra(ArrowPathIcon, {
   baseStyle: {
     w: 4,
     h: 4,
+  },
+});
+
+export const FullScreenIcon = chakra(ArrowsPointingOutIcon, {
+  baseStyle: {
+    w: 4,
+    h: 4,
+  },
+});
+export const ExitFullScreenIcon = chakra(ArrowsPointingInIcon, {
+  baseStyle: {
+    w: 3,
+    h: 3,
   },
 });
 
@@ -166,6 +185,17 @@ const CoreSettingModalContent: FC = () => {
         });
       });
   };
+  const editorRef = useRef<HTMLDivElement>(null);
+  const [isFullScreen, setFullScreen] = useState(false);
+  const handleFullScreen = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+      setFullScreen(false);
+    } else {
+      editorRef.current?.requestFullscreen();
+      setFullScreen(true);
+    }
+  };
   return (
     <form onSubmit={form.handleSubmit(handleOnSave)}>
       <ModalBody>
@@ -175,19 +205,34 @@ const CoreSettingModalContent: FC = () => {
               {t("core.configuration")}{" "}
               {isLoading && <CircularProgress isIndeterminate size="15px" />}
             </FormLabel>
-            <Tooltip label="Xray Version" placement="top">
-              <Badge as={FormLabel} textTransform="lowercase">
-                {version && `v${version}`}
-              </Badge>
-            </Tooltip>
+            <HStack gap={0}>
+              <Tooltip label="Xray Version" placement="top">
+                <Badge height="100%" textTransform="lowercase">
+                  {version && `v${version}`}
+                </Badge>
+              </Tooltip>
+            </HStack>
           </HStack>
-          <Controller
-            control={form.control}
-            name="config"
-            render={({ field }) => (
-              <JsonEditor json={config} onChange={field.onChange} />
-            )}
-          />
+          <Box position="relative" ref={editorRef} minHeight="300px">
+            <Controller
+              control={form.control}
+              name="config"
+              render={({ field }) => (
+                <JsonEditor json={config} onChange={field.onChange} />
+              )}
+            />
+            <IconButton
+              size="xs"
+              aria-label="full screen"
+              variant="ghost"
+              position="absolute"
+              top="2"
+              right="4"
+              onClick={handleFullScreen}
+            >
+              {!isFullScreen ? <FullScreenIcon /> : <ExitFullScreenIcon />}
+            </IconButton>
+          </Box>
         </FormControl>
         <FormControl mt="4">
           <HStack justifyContent="space-between">
