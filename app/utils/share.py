@@ -590,10 +590,20 @@ def generate_clash_subscription(proxies: dict,
             format_variables.update({"TRANSPORT": inbound['network']})
             host_inbound = inbound.copy()
             for host in xray.hosts.get(tag, []):
+                sni = ''
+                sni_list = host['sni'] or inbound['sni']
+                if sni_list:
+                    sni = random.choice(sni_list).replace('*', salt)
+
+                req_host = ''
+                req_host_list = host['host'] or inbound['host']
+                if req_host_list:
+                    req_host = random.choice(req_host_list).replace('*', salt)
+
                 host_inbound.update({
                     'port': host['port'] or inbound['port'],
-                    'sni': (host['sni'] or inbound['sni']).replace('*', salt),
-                    'host': (host['host'] or inbound['host']).replace('*', salt),
+                    'sni': sni,
+                    'host': req_host,
                     # None means host tls complies with inbound's tls settings.
                     'tls': inbound['tls'] if host['tls'] is None else host['tls'],
                     'alpn': host['alpn'] or inbound.get('alpn', ''),
