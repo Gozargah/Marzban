@@ -87,117 +87,125 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
       <Text as="h1" fontWeight="semibold" fontSize="2xl">
         {t("users")}
       </Text>
-      <HStack alignItems="center">
-        <Box
-          display="flex"
-          alignItems="center"
-          __css={{
-            "&  span": {
-              display: "inline-flex",
-            },
-          }}
-        >
-          <GitHubButton
-            href={REPO_URL}
-            data-color-scheme={`no-preference: ${gBtnColor}; light: ${gBtnColor}; dark: ${gBtnColor};`}
-            data-size="large"
-            data-show-count="true"
-            aria-label="Star Marzban on GitHub"
-          >
-            Star
-          </GitHubButton>
-        </Box>
-        <IconButton
-          size="sm"
-          variant="outline"
-          aria-label="switch theme"
-          onClick={() => {
-            updateThemeColor(colorMode == "dark" ? "light" : "dark");
-            toggleColorMode();
-          }}
-        >
-          {colorMode === "light" ? <DarkIcon /> : <LightIcon />}
-        </IconButton>
-        <Language />
-        <IconButton
-          size="sm"
-          variant="outline"
-          aria-label="core settings"
-          onClick={() => {
-            useDashboard.setState({ isEditingCore: true });
-          }}
-        >
-          <CoreSettingsIcon />
-        </IconButton>
-        <Menu onClose={handleOnClose}>
-          <MenuButton
-            as={IconButton}
-            size="sm"
-            variant="outline"
-            icon={
-              <>
-                <SettingsIcon />
-                {!notificationsChecked && (
-                  <NotificationCircle top="-1" right="-1" />
-                )}
-              </>
-            }
-            position="relative"
-          ></MenuButton>
-          <MenuList minW="170px" zIndex={99999}>
-            <MenuItem
-              maxW="170px"
-              fontSize="sm"
-              icon={<HostsIcon />}
-              onClick={onEditingHosts.bind(null, true)}
-            >
-              {t("header.hostsSetting")}
-            </MenuItem>
-            <MenuItem
-              maxW="170px"
-              fontSize="sm"
-              icon={<NodesIcon />}
-              onClick={onEditingNodes.bind(null, true)}
-            >
-              {t("header.nodesSetting")}
-            </MenuItem>
-            <MenuItem
-              maxW="170px"
-              fontSize="sm"
-              icon={<NodesUsageIcon />}
-              onClick={onShowingNodesUsage.bind(null, true)}
-            >
-              {t("header.nodesUsage")}
-            </MenuItem>
-            <MenuItem
-              maxW="170px"
-              fontSize="sm"
-              icon={<ResetUsageIcon />}
-              onClick={onResetAllUsage.bind(null, true)}
-            >
-              {t("resetAllUsage")}
-            </MenuItem>
-            <Link to={DONATION_URL} target="_blank">
+      <Box overflow="auto" css={{ direction: "rtl" }}>
+        <HStack alignItems="center">
+          <Menu onClose={handleOnClose}>
+            <MenuButton
+              as={IconButton}
+              size="sm"
+              variant="outline"
+              icon={
+                <>
+                  <SettingsIcon />
+                  {!notificationsChecked && (
+                    <NotificationCircle top="-1" right="-1" />
+                  )}
+                </>
+              }
+              position="relative"
+            ></MenuButton>
+            <MenuList minW="170px" zIndex={99999}>
               <MenuItem
                 maxW="170px"
                 fontSize="sm"
-                icon={<DonationIcon />}
-                position="relative"
+                icon={<HostsIcon />}
+                onClick={onEditingHosts.bind(null, true)}
               >
-                {t("header.donation")}{" "}
-                {!notificationsChecked && (
-                  <NotificationCircle top="3" right="2" />
-                )}
+                {t("header.hostsSetting")}
               </MenuItem>
-            </Link>
-            <Link to="/login">
-              <MenuItem maxW="170px" fontSize="sm" icon={<LogoutIcon />}>
-                {t("header.logout")}
+              <MenuItem
+                maxW="170px"
+                fontSize="sm"
+                icon={<NodesIcon />}
+                onClick={onEditingNodes.bind(null, true)}
+              >
+                {t("header.nodesSetting")}
               </MenuItem>
-            </Link>
-          </MenuList>
-        </Menu>
-      </HStack>
+              <MenuItem
+                maxW="170px"
+                fontSize="sm"
+                icon={<NodesUsageIcon />}
+                onClick={onShowingNodesUsage.bind(null, true)}
+              >
+                {t("header.nodesUsage")}
+              </MenuItem>
+              <MenuItem
+                maxW="170px"
+                fontSize="sm"
+                icon={<ResetUsageIcon />}
+                onClick={onResetAllUsage.bind(null, true)}
+              >
+                {t("resetAllUsage")}
+              </MenuItem>
+              <Link to={DONATION_URL} target="_blank">
+                <MenuItem
+                  maxW="170px"
+                  fontSize="sm"
+                  icon={<DonationIcon />}
+                  position="relative"
+                >
+                  {t("header.donation")}{" "}
+                  {!notificationsChecked && (
+                    <NotificationCircle top="3" right="2" />
+                  )}
+                </MenuItem>
+              </Link>
+              <Link to="/login">
+                <MenuItem maxW="170px" fontSize="sm" icon={<LogoutIcon />}>
+                  {t("header.logout")}
+                </MenuItem>
+              </Link>
+            </MenuList>
+          </Menu>
+
+          <IconButton
+            size="sm"
+            variant="outline"
+            aria-label="core settings"
+            onClick={() => {
+              useDashboard.setState({ isEditingCore: true });
+            }}
+          >
+            <CoreSettingsIcon />
+          </IconButton>
+
+          <Language />
+
+          <IconButton
+            size="sm"
+            variant="outline"
+            aria-label="switch theme"
+            onClick={() => {
+              updateThemeColor(colorMode == "dark" ? "light" : "dark");
+              toggleColorMode();
+            }}
+          >
+            {colorMode === "light" ? <DarkIcon /> : <LightIcon />}
+          </IconButton>
+
+          <Box
+            css={{ direction: "ltr" }}
+            display="flex"
+            alignItems="center"
+            pr="2"
+            __css={{
+              "&  span": {
+                display: "inline-flex",
+              },
+            }}
+          >
+            <GitHubButton
+              href={REPO_URL}
+              data-color-scheme={`no-preference: ${gBtnColor}; light: ${gBtnColor}; dark: ${gBtnColor};`}
+              data-size="large"
+              data-show-count="true"
+              aria-label="Star Marzban on GitHub"
+            >
+              Star
+            </GitHubButton>
+          </Box>
+        </HStack>
+      </Box>
     </HStack>
   );
 };
