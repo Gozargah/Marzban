@@ -150,7 +150,6 @@ cython_debug/
 .env
 v2ray-core
 xray-core
-xray-dev.json
 
 # don't track custom/dev.json/yaml/yml configs, such as xray-custom.json or clash-dev.yaml
 *-custom.json

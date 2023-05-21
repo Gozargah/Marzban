@@ -259,7 +259,7 @@ server {
 | UVICORN_UDS                     | 将应用程序绑定到一个 UNIX 域套接字                                                                   |
 | UVICORN_SSL_CERTFILE            | SSL 证书文件路径                                                                                     |
 | UVICORN_SSL_KEYFILE             | SSL 密钥文件路径                                                                                     |
-| XRAY_JSON                       | Xray 的 json 配置文件路径（默认: `xray.json`）                                                       |
+| XRAY_JSON                       | Xray 的 json 配置文件路径（默认: `xray_config.json`）                                                |
 | XRAY_EXECUTABLE_PATH            | Xray 的执行程序路径: `/usr/local/bin/xray`）                                                         |
 | XRAY_ASSETS_PATH                | Xray 的资源目录: `/usr/local/share/xray`）                                                           |
 | XRAY_SUBSCRIPTION_URL_PREFIX    | 订阅URL的前缀                                                                                        |

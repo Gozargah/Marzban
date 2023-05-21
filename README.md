@@ -268,7 +268,7 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | UVICORN_UDS                     | Bind application to a UNIX domain socket                                                              |
 | UVICORN_SSL_CERTFILE            | SSL certificate file to have application on https                                                     |
 | UVICORN_SSL_KEYFILE             | SSL key file to have application on https                                                             |
-| XRAY_JSON                       | Path of Xray's json config file (default: `xray.json`)                                                |
+| XRAY_JSON                       | Path of Xray's json config file (default: `xray_config.json`)                                         |
 | XRAY_EXECUTABLE_PATH            | Path of Xray binary (default: `/usr/local/bin/xray`)                                                  |
 | XRAY_ASSETS_PATH                | Path of Xray assets (default: `/usr/local/share/xray`)                                                |
 | XRAY_SUBSCRIPTION_URL_PREFIX    | Prefix of subscription URLs                                                                           |
