@@ -396,6 +396,7 @@ const NodeForm: NodeFormType = ({
 			iLlV21kNnWuvjS1orTwvuW3aagb6tvEEEmlMhw5a2B8sl71sQ6sxWidgRaOSGW7l
 			emFyZ2FoMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA0BvDh0eU78EJ
 			AjimHyBb+3tFs7KaOPu9G5xgbQWUWccukMDXqybqiUDSfU/T5/+XM8CKq/Fu0DB=&#10;-----END CERTIFICATE-----"
+            overflow="auto"
           />
         </FormControl>
         {addAsHost && (
