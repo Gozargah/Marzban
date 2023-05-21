@@ -84,6 +84,8 @@
   "hostsDialog.security.info": "If the middleware server of this host uses a different security layer than the inbound's default, you can set a custom security layer here.",
   "hostsDialog.alpn": "ALPN",
   "hostsDialog.fingerprint": "Fingerprint",
+  "hostsDialog.host.multiHost": "To set multiple addresses, separate them with <badge>,</badge> Each time an address is chosen randomly.",
+  "hostsDialog.host.wildcard": "Use <badge>*</badge> to generate a random string (works for wildcard domain names)",
 
   "nodes.title": "Using Marzban-Node, you are able to scale up your connection quality by adding different nodes on different servers.",
   "nodes.addNewMarzbanNode": "Add New Marzban Node",
