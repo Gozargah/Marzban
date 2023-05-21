@@ -4,7 +4,7 @@ import json
 import re
 from copy import deepcopy
 from pathlib import PosixPath
-from typing import TYPE_CHECKING, Union
+from typing import Union
 
 from app.db import GetDB, get_users
 from app.models.proxy import ProxySettings
@@ -12,16 +12,12 @@ from app.models.user import UserStatus
 from app.utils.crypto import get_cert_SANs
 from config import DEBUG, XRAY_EXCLUDE_INBOUND_TAGS, XRAY_FALLBACKS_INBOUND_TAG
 
-if TYPE_CHECKING:
-    from app.xray.core import XRayCore
-
 
 class XRayConfig(dict):
     def __init__(self,
                  config: Union[dict, str, PosixPath] = {},
                  api_host: str = "127.0.0.1",
-                 api_port: int = 8080,
-                 core: XRayCore = None):
+                 api_port: int = 8080):
         if isinstance(config, str):
             try:
                 # considering string as json
@@ -43,7 +39,6 @@ class XRayConfig(dict):
 
         self.api_host = api_host
         self.api_port = api_port
-        self.core = core
 
         super().__init__(config)
         self._validate()
@@ -210,10 +205,19 @@ class XRayConfig(dict):
                     try:
                         settings['pbk'] = tls_settings['publicKey']
                     except KeyError:
-                        if self.core and tls_settings.get('privateKey'):
-                            x25519 = self.core.get_x25519(tls_settings['privateKey'])
+                        pvk = tls_settings.get('privateKey')
+                        if not pvk:
+                            raise ValueError(
+                                f"You need to provide privateKey in realitySettings of {inbound['tag']}")
+
+                        try:
+                            from app.xray import core
+                            x25519 = core.get_x25519(pvk)
                             settings['pbk'] = x25519['public_key']
-                        else:
+                        except ImportError:
+                            pass
+
+                        if not settings.get('pbk'):
                             raise ValueError(
                                 f"You need to provide publicKey in realitySettings of {inbound['tag']}")
 

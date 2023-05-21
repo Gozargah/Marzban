@@ -23,7 +23,7 @@ try:
         if not check_port(api_port):
             break
 finally:
-    config = XRayConfig(XRAY_JSON, api_port=api_port, core=core)
+    config = XRayConfig(XRAY_JSON, api_port=api_port)
     del api_port
 
 api = XRayAPI(config.api_host, config.api_port)
