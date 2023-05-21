@@ -211,8 +211,8 @@ class XRayConfig(dict):
                         settings['pbk'] = tls_settings['publicKey']
                     except KeyError:
                         if self.core and tls_settings.get('privateKey'):
-                            pvk, pbk = self.core.get_x25519(tls_settings['privateKey'])
-                            settings['pbk'] = pbk
+                            x25519 = self.core.get_x25519(tls_settings['privateKey'])
+                            settings['pbk'] = x25519['public_key']
                         else:
                             raise ValueError(
                                 f"You need to provide publicKey in realitySettings of {inbound['tag']}")
