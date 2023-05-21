@@ -1,5 +1,6 @@
 import base64
 import json
+import random
 import secrets
 import urllib.parse as urlparse
 from datetime import datetime as dt
@@ -9,14 +10,14 @@ from uuid import UUID
 import yaml
 
 from app import xray
-from app.templates import render_template
 from app.models.proxy import FormatVariables
+from app.templates import render_template
 from app.utils.system import get_public_ip, readable_size
+
 if TYPE_CHECKING:
     from app.models.user import UserResponse
 
 from config import CLASH_SUBSCRIPTION_TEMPLATE
-
 
 SERVER_IP = get_public_ip()
 
@@ -502,19 +503,34 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> lis
             format_variables.update({"TRANSPORT": inbound['network']})
             host_inbound = inbound.copy()
             for host in xray.hosts.get(tag, []):
-                host_inbound.update({
-                    'port': host['port'] or inbound['port'],
-                    'sni': (host['sni'] or inbound['sni']).replace('*', salt),
-                    'host': (host['host'] or inbound['host']).replace('*', salt),
-                    # None means host tls complies with inbound's tls settings.
-                    'tls': inbound['tls'] if host['tls'] is None else host['tls'],
-                    'alpn': host['alpn'] or inbound.get('alpn', ''),
-                    'fp': host['fingerprint'] or inbound.get('fp', '')
-                })
-                links.append(get_v2ray_link(remark=host['remark'].format_map(format_variables),
-                                            address=host['address'].format_map(format_variables),
-                                            inbound=host_inbound,
-                                            settings=settings.dict(no_obj=True)))
+                try:
+                    sni = ''
+                    sni_list = host['sni'] or inbound['sni']
+                    if sni_list:
+                        sni = random.choice(sni_list).replace('*', salt)
+
+                    req_host = ''
+                    req_host_list = host['host'] or inbound['host']
+                    if req_host_list:
+                        req_host = random.choice(req_host_list).replace('*', salt)
+
+                    host_inbound.update({
+                        'port': host['port'] or inbound['port'],
+                        'sni': sni,
+                        'host': req_host,
+                        # None means host tls complies with inbound's tls settings.
+                        'tls': inbound['tls'] if host['tls'] is None else host['tls'],
+                        'alpn': host['alpn'] or inbound.get('alpn', ''),
+                        'fp': host['fingerprint'] or inbound.get('fp', '')
+                    })
+                    links.append(get_v2ray_link(remark=host['remark'].format_map(format_variables),
+                                                address=host['address'].format_map(format_variables),
+                                                inbound=host_inbound,
+                                                settings=settings.dict(no_obj=True)))
+                except Exception as e:
+                    import traceback
+                    traceback.print_exc()
+                    raise e
 
     return links
 

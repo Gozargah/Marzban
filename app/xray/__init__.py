@@ -14,18 +14,20 @@ from xray_api import exceptions
 from xray_api import exceptions as exc
 from xray_api import types
 
+
+core = XRayCore(XRAY_EXECUTABLE_PATH, XRAY_ASSETS_PATH)
+
 # Search for a free API port
 try:
     for api_port in range(randint(10000, 60000), 65536):
         if not check_port(api_port):
             break
 finally:
-    config = XRayConfig(XRAY_JSON, api_port=api_port)
+    config = XRayConfig(XRAY_JSON, api_port=api_port, core=core)
     del api_port
 
-
-core = XRayCore(XRAY_EXECUTABLE_PATH, XRAY_ASSETS_PATH)
 api = XRayAPI(config.api_host, config.api_port)
+
 nodes: Dict[int, XRayNode] = {}
 
 
@@ -47,8 +49,8 @@ def hosts(storage: dict):
                     "remark": host.remark,
                     "address": host.address,
                     "port": host.port,
-                    "sni": host.sni,
-                    "host": host.host,
+                    "sni": host.sni.split(',') if host.sni else [],
+                    "host": host.host.split(',') if host.host else [],
                     "alpn": host.alpn.value,
                     "fingerprint": host.fingerprint.value,
                     # None means the tls is not specified by host itself and

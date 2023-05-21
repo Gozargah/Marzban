@@ -4,21 +4,24 @@ import json
 import re
 from copy import deepcopy
 from pathlib import PosixPath
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
 from app.db import GetDB, get_users
 from app.models.proxy import ProxySettings
 from app.models.user import UserStatus
-from config import XRAY_EXCLUDE_INBOUND_TAGS, XRAY_FALLBACKS_INBOUND_TAG
+from app.utils.crypto import get_cert_SANs
+from config import DEBUG, XRAY_EXCLUDE_INBOUND_TAGS, XRAY_FALLBACKS_INBOUND_TAG
 
-from config import DEBUG
+if TYPE_CHECKING:
+    from app.xray.core import XRayCore
 
 
 class XRayConfig(dict):
     def __init__(self,
                  config: Union[dict, str, PosixPath] = {},
                  api_host: str = "127.0.0.1",
-                 api_port: int = 8080):
+                 api_port: int = 8080,
+                 core: XRayCore = None):
         if isinstance(config, str):
             try:
                 # considering string as json
@@ -40,6 +43,7 @@ class XRayConfig(dict):
 
         self.api_host = api_host
         self.api_port = api_port
+        self.core = core
 
         super().__init__(config)
         self._validate()
@@ -143,8 +147,8 @@ class XRayConfig(dict):
                 "port": None,
                 "network": "tcp",
                 "tls": 'none',
-                "sni": "",
-                "path": "",
+                "sni": [],
+                "path": [],
                 "host": "",
                 "header_type": "",
                 "is_fallback": False
@@ -183,23 +187,35 @@ class XRayConfig(dict):
                     # settings['fp']
                     # settings['alpn']
                     settings['tls'] = 'tls'
-                    settings['sni'] = tls_settings.get('serverName', '')
+                    for certificate in tls_settings.get('certificates', []):
+
+                        if certificate.get("certificateFile", None):
+                            with open(certificate['certificateFile'], 'rb') as file:
+                                cert = file.read()
+                                settings['sni'].extend(get_cert_SANs(cert))
+
+                        if certificate.get("certificate", None):
+                            cert = certificate['certificate']
+                            if isinstance(cert, list):
+                                cert = '\n'.join(cert)
+                            if isinstance(cert, str):
+                                cert = cert.encode()
+                            settings['sni'].extend(get_cert_SANs(cert))
 
                 elif security == 'reality':
                     settings['fp'] = 'chrome'
                     settings['tls'] = 'reality'
-
-                    try:
-                        settings['sni'] = tls_settings.get('serverNames')[0]
-                    except (IndexError, TypeError):
-                        raise ValueError(
-                            f"You need to define at least one serverName in serverNames of {inbound['tag']}")
+                    settings['sni'] = tls_settings.get('serverNames', [])
 
                     try:
                         settings['pbk'] = tls_settings['publicKey']
                     except KeyError:
-                        raise ValueError(
-                            f"You need to provide publicKey in realitySettings of {inbound['tag']}")
+                        if self.core and tls_settings.get('privateKey'):
+                            pvk, pbk = self.core.get_x25519(tls_settings['privateKey'])
+                            settings['pbk'] = pbk
+                        else:
+                            raise ValueError(
+                                f"You need to provide publicKey in realitySettings of {inbound['tag']}")
 
                     try:
                         settings['sid'] = tls_settings.get('shortIds')[0]
@@ -223,7 +239,7 @@ class XRayConfig(dict):
                         settings['path'] = path[0]
 
                     if host and isinstance(host, list):
-                        settings['host'] = host[0]
+                        settings['host'] = host
 
                 elif net == 'ws':
                     path = net_settings.get('path', '')
@@ -239,12 +255,12 @@ class XRayConfig(dict):
                         settings['path'] = path
 
                     if isinstance(host, str):
-                        settings['host'] = host
+                        settings['host'] = [host]
 
                 elif net == 'grpc':
                     settings['header_type'] = ''
                     settings['path'] = net_settings.get('serviceName', '')
-                    settings['host'] = ''
+                    settings['host'] = []
 
                 else:
                     settings['path'] = net_settings.get('path', '')

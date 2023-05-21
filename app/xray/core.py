@@ -38,6 +38,19 @@ class XRayCore:
         if m:
             return m.groups()[0]
 
+    def get_x25519(self, private_key: str = None):
+        cmd = [self.executable_path, "x25519"]
+        if private_key:
+            cmd.extend(['-i', private_key])
+        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode('utf-8')
+        m = re.match(r'Private key: (.+)\nPublic key: (.+)', output)
+        if m:
+            private, public = m.groups()
+            return {
+                "private_key": private,
+                "public_key": public
+            }
+
     def __capture_process_logs(self):
         def capture_and_debug_log():
             while self.process:
