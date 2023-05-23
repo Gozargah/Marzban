@@ -990,7 +990,7 @@ def confirm_user_command(call: types.CallbackQuery):
                 show_alert=True
             )
 
-        xray.operations.add_user(user)
+        xray.operations.add_user(db_user)
 
         text = "✅ User added successfully" + get_user_info_text(username=user.username,
                                                                 sub_url=user.subscription_url,
