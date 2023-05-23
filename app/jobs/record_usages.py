@@ -119,4 +119,4 @@ def do_record_job():
         Thread(target=record_usage_for_user_and_node, args=(node_id, node)).start()
 
 
-scheduler.add_job(do_record_job, 'interval', seconds=10)
+scheduler.add_job(do_record_job, 'interval', seconds=30)
