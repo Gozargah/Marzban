@@ -26,47 +26,18 @@ async def core_logs(websocket: WebSocket, db: Session = Depends(get_db)):
     if not admin.is_sudo:
         return await websocket.close(reason="You're not allowed", code=1008)
 
-    core_only = websocket.query_params.get('logs') == 'core_only'
     await websocket.accept()
-    if not core_only:
-        nodes = crud.get_nodes(db)
-        with xray.core.get_logs() as logs:
-            while True:
-                for node in nodes:
-                    nodeapi = xray.nodes[node.id]
-                    logs_tail = nodeapi.remote.fetch_logs()
-                    if not logs_tail:
-                        await asyncio.sleep(0.2)
-                        continue
+    with xray.core.get_logs() as logs:
+        while True:
+            if not logs:
+                await asyncio.sleep(0.2)
+                continue
 
-                    logs = logs_tail.splitlines()
-                    for log in logs:
-                        try:
-                            await websocket.send_text(log)
-                        except:
-                            break
-
-                if not logs:
-                    await asyncio.sleep(0.2)
-                    continue
-
-                log = logs.popleft()
-                try:
-                    await websocket.send_text(log)
-                except:
-                    break
-    else:
-        with xray.core.get_logs() as logs:
-            while True:
-                if not logs:
-                    await asyncio.sleep(0.2)
-                    continue
-
-                log = logs.popleft()
-                try:
-                    await websocket.send_text(log)
-                except:
-                    break
+            log = logs.popleft()
+            try:
+                await websocket.send_text(log)
+            except:
+                break
 
 
 @app.get("/api/core", tags=["Core"], response_model=CoreStats)

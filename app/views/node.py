@@ -11,37 +11,6 @@ from app.models.node import NodeCreate, NodeModify, NodeResponse, NodesUsageResp
 from app.models.proxy import ProxyHost
 
 
-@app.websocket("/api/node/logs")
-async def nodes_logs(websocket: WebSocket, db: Session = Depends(get_db)):
-    token = (
-            websocket.query_params.get('token')
-            or
-            websocket.headers.get('Authorization', '').removeprefix("Bearer ")
-    )
-    admin = Admin.get_admin(token, db)
-    if not admin:
-        return await websocket.close(reason="Unauthorized", code=4401)
-
-    if not admin.is_sudo:
-        return await websocket.close(reason="You're not allowed", code=1008)
-
-    await websocket.accept()
-    nodes = crud.get_nodes(db)
-    while True:
-        for node in nodes:
-            nodeapi = xray.nodes[node.id]
-            logs_tail = nodeapi.remote.fetch_logs()
-            if not logs_tail:
-                await asyncio.sleep(0.2)
-                continue
-
-            logs = logs_tail.splitlines()
-            for log in logs:
-                try:
-                    await websocket.send_text(log)
-                except:
-                    break
-
 
 @app.websocket("/api/node/{node_id}/logs")
 async def node_logs(node_id: int,
@@ -63,14 +32,13 @@ async def node_logs(node_id: int,
         return await websocket.close(reason="Node not found", code=4404)
 
     await websocket.accept()
+    node = xray.nodes[dbnode.id]
     while True:
-        node = xray.nodes[dbnode.id]
-        logs_tail = node.remote.fetch_logs()
-        if not logs_tail:
+        logs = node.remote.fetch_logs()
+        if not logs:
             await asyncio.sleep(0.2)
             continue
 
-        logs = logs_tail.splitlines()
         for log in logs:
             try:
                 await websocket.send_text(log)
