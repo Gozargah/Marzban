@@ -324,7 +324,7 @@ class XRayConfig(dict):
                 for proxy_type, inbound_tags in user.inbounds.items():
                     for inbound_tag in inbound_tags:
                         config.add_inbound_client(inbound_tag,
-                                                  user.username,
+                                                  f"{user.id}.{user.username}",
                                                   proxies_settings[proxy_type])
 
         if DEBUG:

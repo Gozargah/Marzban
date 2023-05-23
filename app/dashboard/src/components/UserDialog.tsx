@@ -16,7 +16,6 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  SimpleGrid,
   Spinner,
   Text,
   Tooltip,
@@ -30,10 +29,9 @@ import {
   Grid,
   GridItem,
   useColorMode,
-  ColorMode,
 } from "@chakra-ui/react";
 import { PencilIcon, UserPlusIcon, ChartPieIcon} from "@heroicons/react/24/outline";
-import { ProtocolType, useDashboard } from "contexts/DashboardContext";
+import { FilterUsageType, useDashboard } from "contexts/DashboardContext";
 import { FC, useEffect, useState } from "react";
 import { Controller, FormProvider, useForm, useWatch } from "react-hook-form";
 import {
@@ -55,8 +53,7 @@ import { DeleteIcon } from "./DeleteUserModal";
 import { resetStrategy } from "constants/UserSettings";
 import { useTranslation } from "react-i18next";
 import ReactApexChart from "react-apexcharts";
-import { ApexOptions } from "apexcharts";
-import { formatBytes } from "utils/formatByte"; 
+import { UsageFilter, createUsageConfig } from "./UsageFilter";
 
 const AddUserIcon = chakra(UserPlusIcon, {
   baseStyle: {
@@ -153,58 +150,6 @@ const getDefaultValues = (): FormType => {
   };
 };
 
-const createUsageConfig = (colorMode: ColorMode, series: any = [], labels: any = []) => {
-  return {
-    series: series,
-    options: {
-      labels: labels,
-      chart: {
-        type: "donut",
-      },
-      legend: {
-        position: "bottom",
-        labels: {
-          colors: colorMode === "dark" ? "#CBD5E0" : undefined,
-          useSeriesColors: false
-        },
-      },
-      stroke: {
-        width: 1,
-        colors: undefined
-      },
-      tooltip: {
-        custom: ({series, seriesIndex, dataPointIndex, w}) => {
-          const readable = formatBytes(series[seriesIndex]);
-          return `
-            <div style="
-                    background-color: ${w.globals.colors[seriesIndex]};
-                    padding-left:12px;
-                    padding-right:12px;
-                    padding-top:6px;
-                    padding-bottom:6px;
-                    font-size:0.725rem;
-                  "
-            >
-              ${w.config.labels[seriesIndex]}: <b>${readable}</b>
-            </div>
-          `
-        }
-      },
-      responsive: [{
-        breakpoint: 480,
-        options: {
-          chart: {
-            width: 200
-          },
-          legend: {
-            position: 'bottom'
-          }
-        }
-      }]
-    } as ApexOptions
-  }
-}
-
 const mergeProxies = (
   proxyKeys: ProxyKeys,
   proxyType: ProxyType | undefined
@@ -237,7 +182,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
   const toast = useToast();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const { colorMode } = useColorMode();
 
@@ -245,8 +190,6 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const handleUsageToggle = () => {
     setUsageVisible((current) => !current);
   };
-
-  const [usage, setUsage] = useState(createUsageConfig(colorMode));
 
   const form = useForm<FormType>({
     defaultValues: getDefaultValues(),
@@ -269,18 +212,27 @@ export const UserDialog: FC<UserDialogProps> = () => {
     name: ["data_limit"],
   });
 
+  const usageTitle = t("userDialog.total");
+  const [usage, setUsage] = useState(createUsageConfig(colorMode, usageTitle));
+  const [usageFilter, setUsageFilter] = useState("1m");
+  const fetchUsageWithFilter = (query: FilterUsageType) => {
+    fetchUserUsage(editingUser!, query).then((data: any) => {
+      const labels = [];
+      const series = [];
+      for (const key in data.usages) {
+        series.push(data.usages[key].used_traffic);
+        labels.push(data.usages[key].node_name);
+      }
+      setUsage(createUsageConfig(colorMode, usageTitle, series, labels));
+    });
+  }
+
   useEffect(() => {
     if (editingUser) {
       form.reset(formatUser(editingUser));
       
-      fetchUserUsage(editingUser).then((data:any) => {
-        const labels = [];
-        const series = [];
-        for (const key in data.usages) {
-          series.push(data.usages[key].used_traffic);
-          labels.push(data.usages[key].node_name);
-        }
-        setUsage(createUsageConfig(colorMode, series, labels));
+      fetchUsageWithFilter({
+        start: dayjs().utc().subtract(30, 'day').format("YYYY-MM-DDTHH:00:00")
       });
     }
   }, [editingUser]);
@@ -345,6 +297,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
     onEditingUser(null);
     setError(null);
     setUsageVisible(false);
+    setUsageFilter("1m");
   };
 
   const handleResetUsage = () => {
@@ -495,6 +448,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                             return (
                               <>
                                 <ReactDatePicker
+                                  locale={i18n.language.toLocaleLowerCase()}
                                   dateFormat={t("dateFormat")}
                                   minDate={new Date()}
                                   selected={
@@ -597,8 +551,19 @@ export const UserDialog: FC<UserDialogProps> = () => {
                   </FormControl>
                 </GridItem>
                 {isEditing && usageVisible && (
-                  <GridItem colSpan={{ base:1, md: 2}} width={{ base: "100%", md: "70%" }} justifySelf="center">
-                    <ReactApexChart options={usage.options} series={usage.series} type="donut" />
+                  <GridItem pt={6} colSpan={{ base:1, md: 2}}>
+                    <VStack gap={4}>
+                      <UsageFilter
+                        defaultValue={usageFilter}
+                        onChange={(filter, query) => {
+                          setUsageFilter(filter);
+                          fetchUsageWithFilter(query);
+                        }}
+                      />
+                      <Box width={{ base: "100%", md: "70%" }} justifySelf="center">
+                        <ReactApexChart options={usage.options} series={usage.series} type="donut" />
+                      </Box>
+                    </VStack>
                   </GridItem>
                 )}
               </Grid>

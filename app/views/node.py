@@ -1,5 +1,5 @@
 from typing import List
-
+from datetime import datetime
 import sqlalchemy
 from fastapi import BackgroundTasks, Depends, HTTPException
 
@@ -130,12 +130,24 @@ def remove_node(node_id: int,
 
 
 @app.get("/api/nodes/usage", tags=['Node'], response_model=NodesUsageResponse)
-def get_user(db: Session = Depends(get_db),
+def get_usage(db: Session = Depends(get_db),
+             start: str = None,
+             end: str = None,
              admin: Admin = Depends(Admin.get_current)):
     """
     Get nodes usage
     """
 
-    usages = crud.get_nodes_usage(db)
+    if start is None:
+        start_date = datetime.fromtimestamp(datetime.utcnow().timestamp() - 30 * 24 * 3600)
+    else:
+        start_date = datetime.fromisoformat(start)
+
+    if end is None:
+        end_date = datetime.utcnow()
+    else:
+        end_date = datetime.fromisoformat(end)
+
+    usages = crud.get_nodes_usage(db, start_date, end_date)
 
     return {"usages": usages}

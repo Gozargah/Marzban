@@ -5,7 +5,6 @@ import LocalizedFormat from "dayjs/plugin/localizedFormat";
 import RelativeTime from "dayjs/plugin/relativeTime";
 import Timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
-import "index.scss";
 import "locales/i18n";
 import React from "react";
 import ReactDOM from "react-dom/client";
@@ -14,6 +13,7 @@ import { queryClient } from "utils/react-query";
 import { updateThemeColor } from "utils/themeColor";
 import { theme } from "../chakra.config";
 import App from "./App";
+import "index.scss";
 
 dayjs.extend(Timezone);
 dayjs.extend(LocalizedFormat);
