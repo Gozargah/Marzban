@@ -84,11 +84,15 @@ def record_node_usage(conn, node_id: int, api: XRayAPI):
     conn.execute(stmt, params)
 
 def record_usage_for_user_and_node(node_id: int, node: XRayNode):
-    if node is None:
-        api = xray.api
-    elif node.connected and node.started:
-        api = node.api
-    else:
+    try:
+        if node is None:
+            api = xray.api
+        elif node.connected and node.started:
+            api = node.api
+        else:
+            return
+    except Exception:
+        # AsyncResultTimeout in node.connection.ping
         return
     
     with engine.connect() as conn:
