@@ -54,17 +54,6 @@ class User(BaseModel):
             raise ValueError('Username only can be 3 to 32 characters and contain a-z, 0-9, and underscores in between.')
         return v
 
-    def get_account(self, proxy_type: ProxyTypes) -> Account:
-        if not getattr(self, 'username'):
-            return
-
-        try:
-            attrs = self.proxies[proxy_type].dict(no_obj=True)
-        except KeyError:
-            raise LookupError(f'User do not have {proxy_type} proxy activated')
-
-        return ProxyTypes(proxy_type).account_model(email=self.username, **attrs)
-
 
 class UserCreate(User):
     username: str
@@ -230,10 +219,12 @@ class UsersResponse(BaseModel):
     users: List[UserResponse]
     total: int
 
+
 class UserUsageResponse(BaseModel):
     node_id: int
     node_name: str
     used_traffic: int
+
 
 class UserUsagesResponse(BaseModel):
     username: str

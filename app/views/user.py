@@ -36,7 +36,7 @@ def add_user(new_user: UserCreate,
     except sqlalchemy.exc.IntegrityError:
         raise HTTPException(status_code=409, detail="User already exists")
 
-    xray.operations.add_user(new_user)
+    xray.operations.add_user(dbuser)
 
     bg.add_task(
         report.user_created,
@@ -224,7 +224,7 @@ def get_user(username: str,
     dbuser = crud.get_user(db, username)
     if not dbuser:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     if start is None:
         start_date = datetime.fromtimestamp(datetime.utcnow().timestamp() - 30 * 24 * 3600)
     else:

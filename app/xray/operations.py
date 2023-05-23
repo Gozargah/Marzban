@@ -3,10 +3,12 @@ import threading
 from sqlalchemy.exc import SQLAlchemyError
 
 from app import logger, xray
-from app.db import GetDB, User, crud
+from app.db import GetDB
+from app.db import User as DBUser
+from app.db import crud
 from app.db.models import Node as DBNode
 from app.models.node import NodeStatus
-from app.models.user import User, UserResponse
+from app.models.user import UserResponse
 from app.xray.node import XRayNode
 from xray_api.types.account import XTLSFlows
 
@@ -18,14 +20,19 @@ def _threaded(func):
     return wrapper
 
 
-def add_user(user: User):
-    if not isinstance(user, User):
-        user = UserResponse.from_orm(user)
+def add_user(dbuser: DBUser):
+    user = UserResponse.from_orm(dbuser)
+
     for proxy_type, inbound_tags in user.inbounds.items():
         for inbound_tag in inbound_tags:
             inbound = xray.config.inbounds_by_tag.get(inbound_tag, {})
 
-            account = user.get_account(proxy_type)
+            try:
+                proxy_settings = user.proxies[proxy_type].dict(no_obj=True)
+            except KeyError:
+                pass
+            account = proxy_type.account_model(email=f"{dbuser.id}.{dbuser.username}", **proxy_settings)
+
             # XTLS currently only supports transmission methods of TCP and mKCP
             if inbound.get('network', 'tcp') not in ('tcp', 'kcp') and getattr(account, 'flow', None):
                 account.flow = XTLSFlows.NONE
@@ -42,16 +49,16 @@ def add_user(user: User):
                         pass
 
 
-def remove_user(user: User):
+def remove_user(dbuser: DBUser):
     for inbound_tag in xray.config.inbounds_by_tag:
         try:
-            xray.api.remove_inbound_user(tag=inbound_tag, email=user.username)
+            xray.api.remove_inbound_user(tag=inbound_tag, email=f"{dbuser.id}.{dbuser.username}")
         except (xray.exc.EmailNotFoundError, xray.exc.ConnectionError):
             pass
         for node in xray.nodes.values():
             if node.connected and node.started:
                 try:
-                    node.api.remove_inbound_user(tag=inbound_tag, email=user.username)
+                    node.api.remove_inbound_user(tag=inbound_tag, email=f"{dbuser.id}.{dbuser.username}")
                 except (xray.exc.EmailNotFoundError, xray.exc.ConnectionError):
                     pass
 
