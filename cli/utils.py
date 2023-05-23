@@ -1,10 +1,17 @@
 import pydoc
-from typing import Union
 import typer
+from datetime import datetime
+from typing import Any, Iterable, Optional, TypeVar, Union
+
+from rich.table import Table
+from rich.console import Console
 
 from app.db import crud
 from app.db.models import User
 
+T = TypeVar("T")
+
+rich_console = Console()
 PASSWORD_ENVIRON_NAME = "MARZBAN_ADMIN_PASSWORD"
 
 FLAGS: dict[str, tuple] = {
@@ -14,7 +21,8 @@ FLAGS: dict[str, tuple] = {
     "yes_to_all": ("--yes", "-y"),
     "is_sudo": ("--sudo/--no-sudo",),
     "format": ("--format", "-f"),
-    "output_file": ("--output", "-o")
+    "output_file": ("--output", "-o"),
+    "status": ("--status",),
 }
 
 
@@ -40,3 +48,43 @@ def get_user(db, username: str) -> User:
         error(f'User "{username}" not found!')
 
     return user
+
+
+def print_table(
+    table: Table,
+    rows: Iterable[Iterable[Any]],
+    console: Optional[Console] = None
+):
+    for row in rows:
+        table.add_row(*row)
+
+    (console or rich_console).print(table)
+
+
+def readable_datetime(
+    date_time: Union[datetime, int, None],
+    include_date: bool = True,
+    include_time: bool = True
+):
+    def get_datetime_format():
+        dt_format = ""
+        if include_date:
+            dt_format += "%d %B %Y"
+        if include_time:
+            if dt_format:
+                dt_format += ", "
+            dt_format += "%H:%M:%S"
+
+        return dt_format
+
+    if isinstance(date_time, int):
+        date_time = datetime.fromtimestamp(date_time)
+
+    return date_time.strftime(get_datetime_format()) if date_time else "-"
+
+
+def raise_if_falsy(obj: T, message: str) -> T:
+    if not obj:
+        error(text=message, auto_exit=True)
+
+    return obj

@@ -16,6 +16,7 @@ $ marzban-cli [OPTIONS] COMMAND [ARGS]...
 
 * `admin`
 * `subscription`
+* `user`
 
 ## `marzban-cli admin`
 
@@ -184,4 +185,61 @@ $ marzban-cli subscription get-link [OPTIONS]
 **Options**:
 
 * `-u, --username TEXT`: [required]
+* `--help`: Show this message and exit.
+
+## `marzban-cli user`
+
+**Usage**:
+
+```console
+$ marzban-cli user [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `list`: Displays a table of users
+* `set-owner`: Transfers user's ownership
+
+### `marzban-cli user list`
+
+Displays a table of users
+
+NOTE: Sorting is not currently available.
+
+**Usage**:
+
+```console
+$ marzban-cli user list [OPTIONS]
+```
+
+**Options**:
+
+* `-o, --offset INTEGER`
+* `-l, --limit INTEGER`
+* `-u, --username TEXT`: Search by username
+* `--status [active|disabled|limited|expired]`
+* `--admin, --owner TEXT`: Search by owner admin's username
+* `--help`: Show this message and exit.
+
+### `marzban-cli user set-owner`
+
+Transfers user's ownership
+
+NOTE: This command needs additional confirmation for users who already have an owner.
+
+**Usage**:
+
+```console
+$ marzban-cli user set-owner [OPTIONS]
+```
+
+**Options**:
+
+* `-u, --username TEXT`
+* `--admin, --owner TEXT`: Admin's username
+* `-y, --yes`: Skips confirmation.
 * `--help`: Show this message and exit.
