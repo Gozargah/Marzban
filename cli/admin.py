@@ -14,7 +14,6 @@ from app.models.admin import AdminCreate, AdminPartialModify
 from . import utils
 
 app = typer.Typer(no_args_is_help=True)
-console = Console()
 
 
 @app.command(name="list")
@@ -25,17 +24,16 @@ def list_admins(
 ):
     """Displays a table of admins"""
     with GetDB() as db:
-        table = Table("Username", "Is sudo", "Created at")
         admins: list[Admin] = crud.get_admins(db, offset=offset, limit=limit, username=username)
-
-        for admin in admins:
-            table.add_row(
-                str(admin.username),
-                "✔️" if admin.is_sudo else "✖️",
-                admin.created_at.strftime("%d %B %Y, %H:%M:%S")
-            )
-
-        console.print(table)
+        utils.print_table(
+            table=Table("Username", "Is sudo", "Created at"),
+            rows=[
+                (str(admin.username),
+                 "✔️" if admin.is_sudo else "✖️",
+                 utils.readable_datetime(admin.created_at))
+                for admin in admins
+            ]
+        )
 
 
 @app.command(name="delete")
@@ -89,7 +87,7 @@ def update_admin(username: str = typer.Option(..., *utils.FLAGS["username"], pro
     """
 
     def _get_modify_model(admin: Admin):
-        console.print(
+        Console().print(
             Panel(f'Editing "{username}". Just press "Enter" to leave each field unchanged.')
         )
 
