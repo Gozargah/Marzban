@@ -14,6 +14,11 @@ export type FilterType = {
 };
 export type ProtocolType = "vmess" | "vless" | "trojan" | "shadowsocks";
 
+export type FilterUsageType = {
+  start?: string;
+  end?: string;
+};
+
 export type InboundType = {
   tag: string;
   protocol: ProtocolType;
@@ -53,7 +58,7 @@ type DashboardStateType = {
   deleteUser: (user: User) => Promise<void>;
   createUser: (user: UserCreate) => Promise<void>;
   editUser: (user: UserCreate) => Promise<void>;
-  fetchUserUsage: (user: User) => Promise<void>;
+  fetchUserUsage: (user: User, query: FilterUsageType) => Promise<void>;
   setQRCode: (links: string[] | null) => void;
   setSubLink: (subscribeURL: string | null) => void;
   onEditingHosts: (isEditingHosts: boolean) => void;
@@ -162,8 +167,11 @@ export const useDashboard = create(
         }
       );
     },
-    fetchUserUsage: (body: User) => {
-      return fetch(`/user/${body.username}/usage`, { method: "GET" });
+    fetchUserUsage: (body: User, query: FilterUsageType) => {
+      for (const key in query) {
+        if (!query[key as keyof FilterUsageType]) delete query[key as keyof FilterUsageType];
+      }
+      return fetch(`/user/${body.username}/usage`, { method: "GET", query });
     },
     onEditingHosts: (isEditingHosts: boolean) => {
       set({ isEditingHosts });

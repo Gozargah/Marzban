@@ -78,9 +78,10 @@ class NodeResponse(Node):
         orm_mode = True
 
 class NodeUsageResponse(BaseModel):
+    node_id: int
     node_name: str
-    incoming_bandwidth: int
-    outgoing_bandwidth: int
+    uplink: int
+    downlink: int
 
 class NodesUsageResponse(BaseModel):
     usages: List[NodeUsageResponse]

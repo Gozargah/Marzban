@@ -2,7 +2,7 @@ import { useQuery } from "react-query";
 import { fetch } from "service/http";
 import { z } from "zod";
 import { create } from "zustand";
-import { useDashboard } from "./DashboardContext";
+import { useDashboard, FilterUsageType } from "./DashboardContext";
 
 export const NodeSchema = z.object({
   name: z.string().min(1),
@@ -43,7 +43,7 @@ export type NodeStore = {
   nodes: NodeType[];
   addNode: (node: NodeType) => Promise<unknown>;
   fetchNodes: () => Promise<NodeType[]>;
-  fetchNodesUsage: () => Promise<void>;
+  fetchNodesUsage: (query: FilterUsageType) => Promise<void>;
   updateNode: (node: NodeType) => Promise<unknown>;
   reconnectNode: (node: NodeType) => Promise<unknown>;
   deletingNode?: NodeType | null;
@@ -69,8 +69,8 @@ export const useNodes = create<NodeStore>((set, get) => ({
   fetchNodes() {
     return fetch("/nodes");
   },
-  fetchNodesUsage() {
-    return fetch("/nodes/usage");
+  fetchNodesUsage (query: FilterUsageType) {
+    return fetch("/nodes/usage", { query });
   },
   updateNode(body) {
     return fetch(`/node/${body.id}`, {

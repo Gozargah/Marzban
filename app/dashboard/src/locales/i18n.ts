@@ -5,6 +5,9 @@ import i18n from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import HttpApi from "i18next-http-backend";
 import { initReactI18next } from "react-i18next";
+import { registerLocale } from  "react-datepicker";
+import es from 'date-fns/locale/es';
+import zh from 'date-fns/locale/zh-CN'
 
 declare module "i18next" {
   interface CustomTypeOptions {
@@ -33,10 +36,16 @@ i18n
     backend: {
       loadPath: joinPaths([import.meta.env.BASE_URL, `locales/{{lng}}.json`]),
     },
+  }, function(err, t) {
+    dayjs.locale(i18n.language);
   });
 
 i18n.on("languageChanged", (lng) => {
   dayjs.locale(lng);
 });
+
+// DataPicker
+registerLocale('es', es);
+registerLocale('zh-cn', zh);
 
 export default i18n;
