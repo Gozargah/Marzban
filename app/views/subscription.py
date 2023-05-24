@@ -9,6 +9,7 @@ from app.models.user import UserResponse
 from app.templates import render_template
 from app.utils.jwt import get_subscription_payload
 from app.utils.share import generate_subscription
+from config import SUBSCRIPTION_PAGE_TEMPLATE
 
 
 @app.get("/sub/{token}/", tags=['Subscription'])
@@ -43,7 +44,7 @@ def user_subcription(token: str,
     if "text/html" in accept_header:
         return HTMLResponse(
             render_template(
-                'subscription/index.html',
+                SUBSCRIPTION_PAGE_TEMPLATE,
                 {"user": user}
             )
         )

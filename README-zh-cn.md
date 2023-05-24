@@ -265,6 +265,9 @@ server {
 | XRAY_SUBSCRIPTION_URL_PREFIX    | 订阅URL的前缀                                                                                        |
 | XRAY_FALLBACKS_INBOUND_TAG      | 包含 fallbacks 的入站标记, 在您需要使用 fallbacks 配置此项                                           |
 | XRAY_EXCLUDE_INBOUND_TAGS       | 不需要此应用程序管理或在链接中包含的入站标记                                                         |
+| CLASH_SUBSCRIPTION_TEMPLATE     | 将用于生成冲突配置的模板（默认值：`clash/default.yml`）                                              |
+| SUBSCRIPTION_PAGE_TEMPLATE      | 用于生成订阅信息页面的模板（默认：`subscription/index.html`）                                        |
+| HOME_PAGE_TEMPLATE              | 诱饵页面模板（默认：`home/index.html`）                                                              |
 | TELEGRAM_API_TOKEN              | Telegram bot API 令牌（可以从 [@botfather](https://t.me/botfather) 获取）                            |
 | TELEGRAM_ADMIN_ID               | 管理员的 Telegram ID（可以使用 [@userinfobot](https://t.me/userinfobot) 查找您的 ID）                |
 | TELEGRAM_PROXY_URL              | 在代理下运行 Telegram bot。                                                                          |
