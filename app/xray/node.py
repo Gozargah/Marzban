@@ -2,6 +2,7 @@ import tempfile
 import threading
 from typing import List
 
+import grpc
 import rpyc
 
 from app.xray.config import XRayConfig
@@ -55,6 +56,7 @@ class XRayNode:
         self._certfile.flush()
 
         self._service = Service()
+        self._api = None
 
     def disconnect(self):
         try:
@@ -88,7 +90,7 @@ class XRayNode:
         try:
             self.connection.ping()
             return (not self.connection.closed)
-        except (AttributeError, EOFError):
+        except (AttributeError, EOFError, TimeoutError):
             self.disconnect()
             return False
 
@@ -106,16 +108,7 @@ class XRayNode:
         if not self.started:
             raise ConnectionError("Node is not started")
 
-        try:
-            return self._api
-        except AttributeError:
-            self._api = XRayAPI(
-                address=self.address,
-                port=self.api_port,
-                ssl_cert=self.ssl_cert.encode(),
-                ssl_target_name="Gozargah"
-            )
-            return self._api
+        return self._api
 
     def _prepare_config(self, config: XRayConfig):
         for inbound in config.get("inbounds", []):
@@ -145,9 +138,23 @@ class XRayNode:
         self.remote.start(json_config)
         self.started = True
 
+        # connect to API
+        self._api = XRayAPI(
+            address=self.address,
+            port=self.api_port,
+            ssl_cert=self.ssl_cert.encode(),
+            ssl_target_name="Gozargah"
+        )
+        try:
+            grpc.channel_ready_future(self._api._channel).result(timeout=5)
+        except grpc.FutureTimeoutError:
+            self.stop()
+            raise ConnectionError('Failed to connect to node\'s API')
+
     def stop(self):
         self.remote.stop()
         self.started = False
+        self._api = None
 
     def restart(self, config: XRayConfig):
         self.started = False
