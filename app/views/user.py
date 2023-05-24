@@ -162,8 +162,11 @@ def reset_user_data_usage(username: str,
     if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
         raise HTTPException(status_code=403, detail="You're not allowed")
 
-    user = crud.reset_user_data_usage(db=db, dbuser=dbuser)
-    return user
+    dbuser = crud.reset_user_data_usage(db=db, dbuser=dbuser)
+    if dbuser.status == UserStatus.active:
+        xray.operations.add_user(dbuser)
+
+    return dbuser
 
 
 @app.get("/api/users", tags=['User'], response_model=UsersResponse)
@@ -209,6 +212,7 @@ def reset_users_data_usage(db: Session = Depends(get_db),
     """
     dbadmin = crud.get_admin(db, admin.username)
     crud.reset_all_users_data_usage(db=db, admin=dbadmin)
+    xray.core.restart(xray.config.include_db_users())
     return {}
 
 

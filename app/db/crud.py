@@ -173,7 +173,7 @@ def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime) -
             )
             cache[v.node_id] = entry
             usages.append(entry)
-        
+
         entry.used_traffic += v.used_traffic
 
     for node in db.query(Node).all():
@@ -195,7 +195,7 @@ def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime) -
         ))
 
     usages.sort(key=lambda entry: entry.node_id)
-    
+
     return usages
 
 
@@ -306,6 +306,7 @@ def reset_user_data_usage(db: Session, dbuser: User):
     db.add(dbuser)
 
     db.commit()
+    db.refresh(dbuser)
     return dbuser
 
 
