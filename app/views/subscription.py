@@ -5,15 +5,15 @@ from fastapi.responses import HTMLResponse
 
 from app import app
 from app.db import Session, crud, get_db
-from app.models.user import UserResponse
+from app.models.user import UserResponse, UserStatus
 from app.templates import render_template
 from app.utils.jwt import get_subscription_payload
 from app.utils.share import generate_subscription
 from config import SUBSCRIPTION_PAGE_TEMPLATE
 
 
-@app.get("/sub/{token}/", tags=['Subscription'])
-@app.get("/sub/{token}", include_in_schema=False)
+@ app.get("/sub/{token}/", tags=['Subscription'])
+@ app.get("/sub/{token}", include_in_schema=False)
 def user_subcription(token: str,
                      request: Request,
                      db: Session = Depends(get_db),
@@ -49,6 +49,9 @@ def user_subcription(token: str,
             )
         )
 
+    if not user.status == UserStatus.active:
+        return Response(status_code=443)
+
     response_headers = {
         "content-disposition": f'attachment; filename="{user.username}"',
         "profile-update-interval": "12",
@@ -72,7 +75,7 @@ def user_subcription(token: str,
         return Response(content=conf, media_type="text/plain", headers=response_headers)
 
 
-@app.get("/sub/{token}/info", tags=['Subscription'], response_model=UserResponse)
+@ app.get("/sub/{token}/info", tags=['Subscription'], response_model=UserResponse)
 def user_subcription_info(token: str,
                           db: Session = Depends(get_db)):
     sub = get_subscription_payload(token)

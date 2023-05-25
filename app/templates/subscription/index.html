@@ -91,6 +91,7 @@
         remaining)
         {% endif %}</p>
 
+    {% if user.status == 'active' %}
     <h2>Links:</h2>
     <ul>
         {% for link in user.links %}
@@ -107,6 +108,7 @@
         </div>
         <div id="qrCodeContainer"></div>
     </div>
+    {% endif %}
 
     <script>
         function copyLink(link, button) {
