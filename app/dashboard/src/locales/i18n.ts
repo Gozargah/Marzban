@@ -8,6 +8,7 @@ import { initReactI18next } from "react-i18next";
 import { registerLocale } from  "react-datepicker";
 import es from 'date-fns/locale/es';
 import zh from 'date-fns/locale/zh-CN'
+import fa from 'date-fns/locale/fa-IR'
 
 declare module "i18next" {
   interface CustomTypeOptions {
@@ -42,10 +43,12 @@ i18n
 
 i18n.on("languageChanged", (lng) => {
   dayjs.locale(lng);
+  document.body.dir = i18n.dir();
 });
 
 // DataPicker
 registerLocale('es', es);
 registerLocale('zh-cn', zh);
+registerLocale('fa-IR', fa);
 
 export default i18n;

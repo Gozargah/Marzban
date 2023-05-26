@@ -14,6 +14,8 @@ import { updateThemeColor } from "utils/themeColor";
 import { theme } from "../chakra.config";
 import App from "./App";
 import "index.scss";
+import { Fonts } from "components/Fonts";
+import i18n from "locales/i18n";
 
 dayjs.extend(Timezone);
 dayjs.extend(LocalizedFormat);
@@ -26,9 +28,11 @@ updateThemeColor(localStorageManager.get() || "light");
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <ChakraProvider theme={theme}>
+      <Fonts />
       <QueryClientProvider client={queryClient}>
         <App />
       </QueryClientProvider>
     </ChakraProvider>
   </React.StrictMode>
 );
+document.body.dir = i18n.dir();

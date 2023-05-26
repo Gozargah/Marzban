@@ -1,7 +1,9 @@
 import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 
 export const relativeExpiryDate = (expiryDate: number | null | undefined) => {
   let dateInfo = { status: "", time: "" };
+  const { t } = useTranslation();
   if (expiryDate) {
     if (
       dayjs(expiryDate * 1000)
@@ -21,37 +23,37 @@ export const relativeExpiryDate = (expiryDate: number | null | undefined) => {
     if (duration.years() != 0) {
       durationSlots.push(
         Math.abs(duration.years()) +
-          " year" +
-          (Math.abs(duration.years()) != 1 ? "s" : "")
+          t("dateInfo.year") +
+          (Math.abs(duration.years()) != 1 ? t("dateInfo.suffix") : "")
       );
     }
     if (duration.months() != 0) {
       durationSlots.push(
         Math.abs(duration.months()) +
-          " month" +
-          (Math.abs(duration.months()) != 1 ? "s" : "")
+          t("dateInfo.month") +
+          (Math.abs(duration.months()) != 1 ? t("dateInfo.suffix") : "")
       );
     }
     if (duration.days() != 0) {
       durationSlots.push(
         Math.abs(duration.days()) +
-          " day" +
-          (Math.abs(duration.days()) != 1 ? "s" : "")
+          t("dateInfo.day") +
+          (Math.abs(duration.days()) != 1 ? t("dateInfo.suffix") : "")
       );
     }
     if (durationSlots.length === 0) {
       if (duration.hours() != 0) {
         durationSlots.push(
           Math.abs(duration.hours()) +
-            " hour" +
-            (Math.abs(duration.hours()) != 1 ? "s" : "")
+            t("dateInfo.hour") +
+            (Math.abs(duration.hours()) != 1 ? t("dateInfo.suffix") : "")
         );
       }
       if (duration.minutes() != 0) {
         durationSlots.push(
           Math.abs(duration.minutes()) +
-            " min" +
-            (Math.abs(duration.minutes()) != 1 ? "s" : "")
+            t("dateInfo.min") +
+            (Math.abs(duration.minutes()) != 1 ? t("dateInfo.suffix") : "")
         );
       }
     }
