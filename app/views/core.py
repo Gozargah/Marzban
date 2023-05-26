@@ -10,6 +10,7 @@ from app.models.admin import Admin
 from app.models.core import CoreStats
 from app.xray import XRayConfig
 from config import XRAY_JSON
+import time
 
 
 @app.websocket("/api/core/logs")
@@ -26,8 +27,19 @@ async def core_logs(websocket: WebSocket, db: Session = Depends(get_db)):
     if not admin.is_sudo:
         return await websocket.close(reason="You're not allowed", code=1008)
 
+    interval = websocket.query_params.get('interval')
+    if interval:
+        try:
+            interval = float(interval)
+        except ValueError:
+            return await websocket.close(reason="Invalid interval value", code=4400)
+        if interval > 10:
+            return await websocket.close(reason="Interval must be more than 0 and at most 10 seconds", code=4400)
+
     await websocket.accept()
 
+    cache = ''
+    last_sent_ts = 0
     with xray.core.get_logs() as logs:
         while True:
             if not logs:
@@ -36,7 +48,14 @@ async def core_logs(websocket: WebSocket, db: Session = Depends(get_db)):
 
             log = logs.popleft()
             try:
-                await websocket.send_text(log)
+                if not interval:
+                    await websocket.send_text(log)
+                else:
+                    cache += f'{log}\n'
+                    if time.time() - last_sent_ts >= interval:
+                        await websocket.send_text(cache)
+                        cache = ''
+                        last_sent_ts = time.time()
             except:
                 break
 

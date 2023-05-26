@@ -88,7 +88,7 @@ const getWebsocketUrl = () => {
     return (
       (baseURL.protocol === "https:" ? "wss://" : "ws://") +
       joinPaths([baseURL.host + baseURL.pathname, "/core/logs"]) +
-      "?token=" +
+      "?interval=1&token=" +
       getAuthToken()
     );
   } catch (e) {
@@ -135,7 +135,8 @@ const CoreSettingModalContent: FC = () => {
   );
 
   const { readyState } = useWebSocket(getWebsocketUrl(), {
-    onMessage: (e) => {
+    onMessage: (e: any) => {
+      console.log(typeof e)
       logsTmp.push(e.data);
       updateLogs([...logsTmp]);
     },
