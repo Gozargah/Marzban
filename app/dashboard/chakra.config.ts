@@ -1,6 +1,6 @@
 import { extendTheme } from "@chakra-ui/react";
 
-export var theme = extendTheme({
+export const theme = extendTheme({
   shadows: { outline: "0 0 0 2px var(--chakra-colors-primary-200)" },
   fonts: {
     body: `'vazir',Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif`,
