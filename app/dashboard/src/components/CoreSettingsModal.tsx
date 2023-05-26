@@ -128,10 +128,19 @@ const CoreSettingModalContent: FC = () => {
     if (isEditingCore) fetchCoreSettings();
   }, [isEditingCore]);
   "".startsWith;
-
+  const scrollShouldStayOnEnd = useRef(true);
   const updateLogs = useCallback(
     debounce((logs: string[]) => {
-      setLogs(logs);
+      const isScrollOnEnd =
+        Math.abs(
+          (logsDiv.current?.scrollTop || 0) -
+            (logsDiv.current?.scrollHeight || 0) +
+            (logsDiv.current?.offsetHeight || 0)
+        ) < 10;
+      if (logsDiv.current && isScrollOnEnd)
+        scrollShouldStayOnEnd.current = true;
+      else scrollShouldStayOnEnd.current = false;
+      if (logs.length < 40) setLogs(logs);
     }, 300),
     []
   );
@@ -146,7 +155,8 @@ const CoreSettingModalContent: FC = () => {
   });
 
   useEffect(() => {
-    if (logsDiv.current)
+    console.log("scroll", scrollShouldStayOnEnd.current);
+    if (logsDiv.current && scrollShouldStayOnEnd.current)
       logsDiv.current.scrollTop = logsDiv.current?.scrollHeight;
   }, [logs]);
 
