@@ -41,6 +41,8 @@ import { Icon } from "./Icon";
 import { JsonEditor } from "./JsonEditor";
 import "./JsonEditor/themes.js";
 
+export const MAX_NUMBER_OF_LOGS = 500;
+
 const UsageIcon = chakra(Cog6ToothIcon, {
   baseStyle: {
     w: 5,
@@ -136,8 +138,9 @@ const CoreSettingModalContent: FC = () => {
 
   const { readyState } = useWebSocket(getWebsocketUrl(), {
     onMessage: (e: any) => {
-      console.log(typeof e)
       logsTmp.push(e.data);
+      if (logsTmp.length > MAX_NUMBER_OF_LOGS)
+        logsTmp = logsTmp.splice(0, logsTmp.length - MAX_NUMBER_OF_LOGS);
       updateLogs([...logsTmp]);
     },
   });
@@ -256,7 +259,7 @@ const CoreSettingModalContent: FC = () => {
             ref={logsDiv}
           >
             {logs.map((message, i) => (
-              <Text fontSize="xs" opacity={0.8} key={i}>
+              <Text fontSize="xs" opacity={0.8} key={i} whiteSpace="pre-line">
                 {message}
               </Text>
             ))}
