@@ -83,7 +83,15 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
   };
 
   return (
-    <HStack gap={2} justifyContent="space-between">
+    <HStack
+      gap={2}
+      justifyContent="space-between"
+      __css={{
+        "& .menuList": {
+          direction: "ltr",
+        },
+      }}
+    >
       <Text as="h1" fontWeight="semibold" fontSize="2xl">
         {t("users")}
       </Text>
@@ -104,7 +112,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
               }
               position="relative"
             ></MenuButton>
-            <MenuList minW="170px" zIndex={99999}>
+            <MenuList minW="170px" zIndex={99999} className="menuList">
               <MenuItem
                 maxW="170px"
                 fontSize="sm"
