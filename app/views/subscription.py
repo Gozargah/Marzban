@@ -12,8 +12,8 @@ from app.utils.share import generate_subscription
 from config import SUBSCRIPTION_PAGE_TEMPLATE
 
 
-@ app.get("/sub/{token}/", tags=['Subscription'])
-@ app.get("/sub/{token}", include_in_schema=False)
+@app.get("/sub/{token}/", tags=['Subscription'])
+@app.get("/sub/{token}", include_in_schema=False)
 def user_subcription(token: str,
                      request: Request,
                      db: Session = Depends(get_db),
@@ -75,7 +75,7 @@ def user_subcription(token: str,
         return Response(content=conf, media_type="text/plain", headers=response_headers)
 
 
-@ app.get("/sub/{token}/info", tags=['Subscription'], response_model=UserResponse)
+@app.get("/sub/{token}/info", tags=['Subscription'], response_model=UserResponse)
 def user_subcription_info(token: str,
                           db: Session = Depends(get_db)):
     sub = get_subscription_payload(token)

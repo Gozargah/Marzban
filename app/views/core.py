@@ -42,20 +42,27 @@ async def core_logs(websocket: WebSocket, db: Session = Depends(get_db)):
     last_sent_ts = 0
     with xray.core.get_logs() as logs:
         while True:
+
+            if time.time() - last_sent_ts >= interval and cache:
+                try:
+                    await websocket.send_text(cache)
+                except:
+                    break
+                cache = ''
+                last_sent_ts = time.time()
+
             if not logs:
                 await asyncio.sleep(0.2)
                 continue
 
             log = logs.popleft()
+
+            if interval:
+                cache += f'{log}\n'
+                continue
+
             try:
-                if not interval:
-                    await websocket.send_text(log)
-                else:
-                    cache += f'{log}\n'
-                    if time.time() - last_sent_ts >= interval:
-                        await websocket.send_text(cache)
-                        cache = ''
-                        last_sent_ts = time.time()
+                await websocket.send_text(log)
             except:
                 break
 
