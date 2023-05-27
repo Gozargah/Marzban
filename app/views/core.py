@@ -1,8 +1,10 @@
 import asyncio
 import json
 import re
+import time
 
 from fastapi import Depends, HTTPException, WebSocket
+from starlette.websockets import WebSocketDisconnect
 
 from app import app, xray
 from app.db import Session, get_db
@@ -10,7 +12,6 @@ from app.models.admin import Admin
 from app.models.core import CoreStats
 from app.xray import XRayConfig
 from config import XRAY_JSON
-import time
 
 
 @app.websocket("/api/core/logs")
@@ -25,7 +26,7 @@ async def core_logs(websocket: WebSocket, db: Session = Depends(get_db)):
         return await websocket.close(reason="Unauthorized", code=4401)
 
     if not admin.is_sudo:
-        return await websocket.close(reason="You're not allowed", code=1008)
+        return await websocket.close(reason="You're not allowed", code=4403)
 
     interval = websocket.query_params.get('interval')
     if interval:
@@ -42,18 +43,22 @@ async def core_logs(websocket: WebSocket, db: Session = Depends(get_db)):
     last_sent_ts = 0
     with xray.core.get_logs() as logs:
         while True:
-
-            if time.time() - last_sent_ts >= interval and cache:
+            if interval and time.time() - last_sent_ts >= interval and cache:
                 try:
                     await websocket.send_text(cache)
-                except:
+                except (WebSocketDisconnect, RuntimeError):
                     break
                 cache = ''
                 last_sent_ts = time.time()
 
             if not logs:
-                await asyncio.sleep(0.2)
-                continue
+                try:
+                    await asyncio.wait_for(websocket.receive(), timeout=0.2)
+                    continue
+                except asyncio.TimeoutError:
+                    continue
+                except (WebSocketDisconnect, RuntimeError):
+                    break
 
             log = logs.popleft()
 
@@ -63,7 +68,7 @@ async def core_logs(websocket: WebSocket, db: Session = Depends(get_db)):
 
             try:
                 await websocket.send_text(log)
-            except:
+            except (WebSocketDisconnect, RuntimeError):
                 break
 
 
