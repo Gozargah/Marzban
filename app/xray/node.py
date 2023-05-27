@@ -151,6 +151,7 @@ class XRayNode:
             grpc.channel_ready_future(self._api._channel).result(timeout=5)
         except grpc.FutureTimeoutError:
             self.stop()
+            self.disconnect()
             raise ConnectionError('Failed to connect to node\'s API')
 
     def stop(self):
