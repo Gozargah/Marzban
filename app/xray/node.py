@@ -1,5 +1,7 @@
 import tempfile
 import threading
+from collections import deque
+from contextlib import contextmanager
 from typing import List
 
 import grpc
@@ -162,6 +164,41 @@ class XRayNode:
         json_config = config.to_json()
         self.remote.restart(json_config)
         self.started = True
+
+    @contextmanager
+    def get_logs(self):
+        if not self.connected:
+            raise ConnectionError("Node is not connected")
+
+        try:
+            self.__curr_logs
+        except AttributeError:
+            self.__curr_logs = 0
+
+        try:
+            buf = deque(maxlen=100)
+
+            if self.__curr_logs <= 0:
+                self.__curr_logs = 1
+                self.__bgsrv = rpyc.BgServingThread(self.connection)
+            else:
+                if not self.__bgsrv._active:
+                    self.__bgsrv = rpyc.BgServingThread(self.connection)
+                self.__curr_logs += 1
+
+            logs = self.remote.fetch_logs(buf.append)
+            yield buf
+
+        finally:
+            if self.__curr_logs <= 1:
+                self.__curr_logs = 0
+                self.__bgsrv.stop()
+            else:
+                if not self.__bgsrv._active:
+                    self.__bgsrv = rpyc.BgServingThread(self.connection)
+                self.__curr_logs -= 1
+
+            logs.stop()
 
     def on_start(self, func: callable):
         self._service.add_startup_func(func)

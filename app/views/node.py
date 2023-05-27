@@ -1,12 +1,17 @@
-from typing import List
+import asyncio
+import time
 from datetime import datetime
+from typing import List
+
 import sqlalchemy
-from fastapi import BackgroundTasks, Depends, HTTPException
+from fastapi import BackgroundTasks, Depends, HTTPException, WebSocket
+from starlette.websockets import WebSocketDisconnect
 
 from app import app, logger, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
-from app.models.node import NodeCreate, NodeModify, NodeResponse, NodesUsageResponse
+from app.models.node import (NodeCreate, NodeModify, NodeResponse,
+                             NodesUsageResponse)
 from app.models.proxy import ProxyHost
 
 
@@ -54,6 +59,70 @@ def get_node(node_id: int,
         raise HTTPException(status_code=404, detail="Node not found")
 
     return dbnode
+
+
+@app.websocket("/api/node/{node_id}/logs")
+async def node_logs(node_id: int, websocket: WebSocket, db: Session = Depends(get_db)):
+    token = (
+        websocket.query_params.get('token')
+        or
+        websocket.headers.get('Authorization', '').removeprefix("Bearer ")
+    )
+    admin = Admin.get_admin(token, db)
+    if not admin:
+        return await websocket.close(reason="Unauthorized", code=4401)
+
+    if not admin.is_sudo:
+        return await websocket.close(reason="You're not allowed", code=4403)
+
+    if not xray.nodes.get(node_id):
+        return await websocket.close(reason="Node not found", code=4404)
+
+    if not xray.nodes[node_id].connected:
+        return await websocket.close(reason="Node is not connected", code=4400)
+
+    interval = websocket.query_params.get('interval')
+    if interval:
+        try:
+            interval = float(interval)
+        except ValueError:
+            return await websocket.close(reason="Invalid interval value", code=4400)
+        if interval > 10:
+            return await websocket.close(reason="Interval must be more than 0 and at most 10 seconds", code=4400)
+
+    await websocket.accept()
+
+    cache = ''
+    last_sent_ts = 0
+    with xray.nodes[node_id].get_logs() as logs:
+        while True:
+            if interval and time.time() - last_sent_ts >= interval and cache:
+                try:
+                    await websocket.send_text(cache)
+                except (WebSocketDisconnect, RuntimeError):
+                    break
+                cache = ''
+                last_sent_ts = time.time()
+
+            if not logs:
+                try:
+                    await asyncio.wait_for(websocket.receive(), timeout=0.2)
+                    continue
+                except asyncio.TimeoutError:
+                    continue
+                except (WebSocketDisconnect, RuntimeError):
+                    break
+
+            log = logs.popleft()
+
+            if interval:
+                cache += f'{log}\n'
+                continue
+
+            try:
+                await websocket.send_text(log)
+            except (WebSocketDisconnect, RuntimeError):
+                break
 
 
 @app.get("/api/nodes", tags=['Node'], response_model=List[NodeResponse])
@@ -131,9 +200,9 @@ def remove_node(node_id: int,
 
 @app.get("/api/nodes/usage", tags=['Node'], response_model=NodesUsageResponse)
 def get_usage(db: Session = Depends(get_db),
-             start: str = None,
-             end: str = None,
-             admin: Admin = Depends(Admin.get_current)):
+              start: str = None,
+              end: str = None,
+              admin: Admin = Depends(Admin.get_current)):
     """
     Get nodes usage
     """
