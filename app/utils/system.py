@@ -1,3 +1,4 @@
+import requests
 import math
 import secrets
 import socket
@@ -90,6 +91,37 @@ def check_port(port: int) -> bool:
         return False
     finally:
         s.close()
+
+
+def get_public_ip():
+    try:
+        return requests.get('https://api.ipify.org?format=json&ipv=4', timeout=5).json()['ip']
+    except (requests.exceptions.RequestException,
+            requests.exceptions.RequestException,
+            KeyError) as e:
+        print(e)
+        pass
+
+    try:
+        requests.packages.urllib3.util.connection.HAS_IPV6 = False
+        return requests.get('https://ifconfig.io/ip', timeout=5).text.strip()
+    except (requests.exceptions.RequestException,
+            requests.exceptions.RequestException,
+            KeyError) as e:
+        pass
+    finally:
+        requests.packages.urllib3.util.connection.HAS_IPV6 = True
+
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.connect(('8.8.8.8', 80))
+        return sock.getsockname()[0]
+    except (socket.error, IndexError):
+        pass
+    finally:
+        socket.close()
+
+    return '127.0.0.1'
 
 
 def get_public_ip():
