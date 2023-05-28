@@ -4,11 +4,5 @@ services:
     restart: always
     env_file: .env
     network_mode: host
-
-    environment:
-      XRAY_JSON: "/xray_config.json"
-      SQLALCHEMY_DATABASE_URL: "sqlite:////var/lib/marzban/db.sqlite3"
-
     volumes:
-      - ./xray_config.json:/xray_config.json
       - /var/lib/marzban:/var/lib/marzban
