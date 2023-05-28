@@ -105,7 +105,7 @@ Marzban is user-friendly, feature-rich and reliable. It lets you to create diffe
 
 # Installation guide
 
-> We stronly recommend use our Docker images to run on production. It's easier to maintain and upgrade.
+> We strongly recommend use our Docker images to run on production. It's easier to maintain and upgrade.
 
 ## Install with docker (recommended)
 
