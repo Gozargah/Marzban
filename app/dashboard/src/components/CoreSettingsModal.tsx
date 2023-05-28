@@ -152,10 +152,12 @@ const CoreSettingModalContent: FC = () => {
         logsTmp = logsTmp.splice(0, logsTmp.length - MAX_NUMBER_OF_LOGS);
       updateLogs([...logsTmp]);
     },
+    shouldReconnect: () => true,
+    reconnectAttempts: 10,
+    reconnectInterval: 1000,
   });
 
   useEffect(() => {
-    console.log("scroll", scrollShouldStayOnEnd.current);
     if (logsDiv.current && scrollShouldStayOnEnd.current)
       logsDiv.current.scrollTop = logsDiv.current?.scrollHeight;
   }, [logs]);
