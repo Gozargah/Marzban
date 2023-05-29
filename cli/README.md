@@ -3,7 +3,7 @@
 **Usage**:
 
 ```console
-$ marzban-cli [OPTIONS] COMMAND [ARGS]...
+marzban cli [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:
@@ -18,12 +18,12 @@ $ marzban-cli [OPTIONS] COMMAND [ARGS]...
 * `subscription`
 * `user`
 
-## `marzban-cli admin`
+## `marzban cli admin`
 
 **Usage**:
 
 ```console
-$ marzban-cli admin [OPTIONS] COMMAND [ARGS]...
+marzban cli admin [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:
@@ -38,7 +38,7 @@ $ marzban-cli admin [OPTIONS] COMMAND [ARGS]...
 * `list`: Displays a table of admins
 * `update`: Updates the specified admin
 
-### `marzban-cli admin create`
+### `marzban cli admin create`
 
 Creates an admin
 
@@ -47,7 +47,7 @@ Password can also be set using the `MARZBAN_ADMIN_PASSWORD` environment variable
 **Usage**:
 
 ```console
-$ marzban-cli admin create [OPTIONS]
+marzban-cli admin create [OPTIONS]
 ```
 
 **Options**:
@@ -65,7 +65,7 @@ Confirmations can be skipped using `--yes/-y` option.
 **Usage**:
 
 ```console
-$ marzban-cli admin delete [OPTIONS]
+marzban cli admin delete [OPTIONS]
 ```
 
 **Options**:
@@ -74,7 +74,7 @@ $ marzban-cli admin delete [OPTIONS]
 * `-y, --yes`: Skips confirmations
 * `--help`: Show this message and exit.
 
-### `marzban-cli admin import-from-env`
+### `marzban cli admin import-from-env`
 
 Imports the sudo admin from env
 
@@ -87,7 +87,7 @@ What does it do?
 **Usage**:
 
 ```console
-$ marzban-cli admin import-from-env [OPTIONS]
+marzban cli admin import-from-env [OPTIONS]
 ```
 
 **Options**:
@@ -95,14 +95,14 @@ $ marzban-cli admin import-from-env [OPTIONS]
 * `-y, --yes`: Skips confirmations
 * `--help`: Show this message and exit.
 
-### `marzban-cli admin list`
+### `marzban cli admin list`
 
 Displays a table of admins
 
 **Usage**:
 
 ```console
-$ marzban-cli admin list [OPTIONS]
+marzban cli admin list [OPTIONS]
 ```
 
 **Options**:
@@ -112,7 +112,7 @@ $ marzban-cli admin list [OPTIONS]
 * `-u, --username TEXT`: Search by username
 * `--help`: Show this message and exit.
 
-### `marzban-cli admin update`
+### `marzban cli admin update`
 
 Updates the specified admin
 
@@ -121,7 +121,7 @@ NOTE: This command CAN NOT be used non-interactively.
 **Usage**:
 
 ```console
-$ marzban-cli admin update [OPTIONS]
+marzban cli admin update [OPTIONS]
 ```
 
 **Options**:
@@ -129,12 +129,12 @@ $ marzban-cli admin update [OPTIONS]
 * `-u, --username TEXT`: [required]
 * `--help`: Show this message and exit.
 
-## `marzban-cli subscription`
+## `marzban cli subscription`
 
 **Usage**:
 
 ```console
-$ marzban-cli subscription [OPTIONS] COMMAND [ARGS]...
+marzban cli subscription [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:
@@ -146,7 +146,7 @@ $ marzban-cli subscription [OPTIONS] COMMAND [ARGS]...
 * `get-config`: Generates a subscription config.
 * `get-link`: Prints the given user's subscription link.
 
-### `marzban-cli subscription get-config`
+### `marzban cli subscription get-config`
 
 Generates a subscription config.
 
@@ -158,7 +158,7 @@ The output will be written in the output file when the `output-file` is present,
 **Usage**:
 
 ```console
-$ marzban-cli subscription get-config [OPTIONS]
+marzban cli subscription get-config [OPTIONS]
 ```
 
 **Options**:
@@ -169,7 +169,7 @@ $ marzban-cli subscription get-config [OPTIONS]
 * `--base64`: Encodes output in base64 format if present
 * `--help`: Show this message and exit.
 
-### `marzban-cli subscription get-link`
+### `marzban cli subscription get-link`
 
 Prints the given user's subscription link.
 
@@ -179,7 +179,7 @@ NOTE: This command needs `XRAY_SUBSCRIPTION_URL_PREFIX` environment variable to 
 **Usage**:
 
 ```console
-$ marzban-cli subscription get-link [OPTIONS]
+marzban cli subscription get-link [OPTIONS]
 ```
 
 **Options**:
@@ -187,12 +187,12 @@ $ marzban-cli subscription get-link [OPTIONS]
 * `-u, --username TEXT`: [required]
 * `--help`: Show this message and exit.
 
-## `marzban-cli user`
+## `marzban cli user`
 
 **Usage**:
 
 ```console
-$ marzban-cli user [OPTIONS] COMMAND [ARGS]...
+marzban cli user [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:
@@ -204,7 +204,7 @@ $ marzban-cli user [OPTIONS] COMMAND [ARGS]...
 * `list`: Displays a table of users
 * `set-owner`: Transfers user's ownership
 
-### `marzban-cli user list`
+### `marzban cli user list`
 
 Displays a table of users
 
@@ -213,7 +213,7 @@ NOTE: Sorting is not currently available.
 **Usage**:
 
 ```console
-$ marzban-cli user list [OPTIONS]
+marzban cli user list [OPTIONS]
 ```
 
 **Options**:
@@ -225,7 +225,7 @@ $ marzban-cli user list [OPTIONS]
 * `--admin, --owner TEXT`: Search by owner admin's username
 * `--help`: Show this message and exit.
 
-### `marzban-cli user set-owner`
+### `marzban cli user set-owner`
 
 Transfers user's ownership
 
@@ -234,7 +234,7 @@ NOTE: This command needs additional confirmation for users who already have an o
 **Usage**:
 
 ```console
-$ marzban-cli user set-owner [OPTIONS]
+marzban cli user set-owner [OPTIONS]
 ```
 
 **Options**:

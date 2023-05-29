@@ -115,7 +115,14 @@ Then simply run the following command to install Marzban. This command bootstrap
 ```bash
 marzban install
 ```
-After running this command, The configurations (`docker-compose.yml`, `env`, etc...) will be saved in `/lib/marzban`
+After running this command, The configurations (`docker-compose.yml`, `.env`, etc...) will be saved in `/lib/marzban`. Based on the default configuration (`.env.example`) the server will listen on `0.0.0.0:8000` so the dashboard would be accessible on `http://{SERVER_UP}:8000/dashboard`
+
+In the next step, you need to add an admin, run the following command to create one.
+```bash
+marzban cli admin create
+```
+
+Then you can login to the dashboard using the admin credentials.
 
 Also, see the help message of Marzban by running the command below
 ```bash
@@ -302,15 +309,12 @@ To enable Telegram Bot:
 # Marzban CLI
 Marzban comes with an integrated CLI named `marzban-cli` which allows administrators to have direct interaction with it.
 
-If you use docker for Marzban, you should use `docker exec` or `docker-compose exec` to access the container's interactive shell.
-
-For example, navigate to marzban's `docker-compose.yml` directory and run the following command:
+If you installed marzban using marzban-scripts tool which is the recommended installation approach, you can access the cli commands by running
 
 ```bash
-$ sudo docker-compose exec -it marzban bash
+marzban cli [OPTIONS] COMMAND [ARGS]...
 ```
 
-The Marzban CLI will be accessible through `marzban-cli` command anywhere!
 
 For more information, You can read [Marzban CLI's documentation](./cli/README.md).
 
