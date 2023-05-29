@@ -105,37 +105,27 @@ Marzban is user-friendly, feature-rich and reliable. It lets you to create diffe
 
 # Installation guide
 
-> We strongly recommend use our Docker images to run on production. It's easier to maintain and upgrade.
 
-## Install with docker (recommended)
-
-We've made some pre-built docker configurations based on different needs. To run this app using docker, [please read our instruction here](https://github.com/Gozargah/Marzban-examples).
-
-You have the option to choose one of setups as you wish. such:
-- [fully-single-port](https://github.com/Gozargah/Marzban-examples/tree/master/fully-single-port/)
-- [single-port-proxy](https://github.com/Gozargah/Marzban-examples/tree/master/single-port-proxy/)
-- [multi-port](https://github.com/Gozargah/Marzban-examples/tree/master/multi-port/)
-
-### Marzban.sh
-Once you have chosen your favorite setup, Marzban.sh will do the installation for you!
-
-Get Marzban.sh with the following command
+First of all you need to install our CLI tool, [marzban-scripts](https://github.com/gozargah/marzban-scripts) by the follwing command.
 ```bash
-curl -L https://github.com/Gozargah/Marzban-scripts/raw/master/get-marzban.sh | sudo bash
+sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install
 ```
 
-Then simply run the following command
+Then simply run the following command to install Marzban. This command bootstrap the project and installs the necessary dependencies.
 ```bash
-marzban.sh install
+marzban install
 ```
-This will install Marzban in `/opt/marzban` on your machine
+After running this command, The configurations (`docker-compose.yml`, `env`, etc...) will be saved in `/lib/marzban`
 
-Also, see the help message of Marzban.sh by running the command below
+Also, see the help message of Marzban by running the command below
 ```bash
-marzban.sh --help
+marzban --help
 ```
 
-## Manual install (advanced)
+
+If you are eager to run the project using the source code, check the section below.
+<details markdown="1">
+<summary><h3>Manual install (advanced)</h3></summary>
 
 Install xray on your machine
 
@@ -145,9 +135,7 @@ You can install it using [Xray-install](https://github.com/XTLS/Xray-install)
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
 ```
 
-Clone the project and install the dependencies.
-
-You need Python>=3.8
+Clone this project and install the dependencies (you need Python >= 3.8)
 
 ```bash
 git clone https://github.com/Gozargah/Marzban.git
@@ -253,6 +241,7 @@ server {
 ```
 
 By default the app will be run on `http://localhost:8000/dashboard`. You can configure it using changing the `UVICORN_HOST` and `UVICORN_PORT` environment variables.
+</details>
 
 # Configuration
 
@@ -296,7 +285,7 @@ Marzban provides a REST API that enables developers to interact with Marzban ser
 It's always a good idea to backup your Marzban files regularly to prevent data loss in case of system failures or accidental deletion. Here are the steps to backup Marzban:
 
 1. By default, all Marzban important files are saved in `/var/lib/marzban` (Docker versions). Copy the entire `/var/lib/marzban` directory to a backup location of your choice, such as an external hard drive or cloud storage.
-2. Additionally, make sure to backup your env file, which contains your configuration variables, and also, your Xray config file.
+2. Additionally, make sure to backup your env file, which contains your configuration variables, and also, your Xray config file. If you installed Marzban using marzban-scripts (recommended installation approach), the env and other configurations should be inside `/opt/marzban/` directory.
 
 By following these steps, you can ensure that you have a backup of all your Marzban files and data, as well as your configuration variables and Xray configuration, in case you need to restore them in the future. Remember to update your backups regularly to keep them up-to-date.
 
@@ -356,7 +345,7 @@ Different action typs are: `user_created`, `user_updated`, `user_deleted`, `user
 # Donation
 If you found Marzban useful and would like to support its development, you can make a donation in one of the following crypto networks:
 
-- TRON (TRX) network: `TX8kJoDcowQPBFTYHAJR36GyoUKP1Xwzkb`
+- TRON (TRX - TRC20) network: `TX8kJoDcowQPBFTYHAJR36GyoUKP1Xwzkb`
 - ETH, BNB, MATIC network: `0xFdc9ad32454FA4fc4733270FCc12ddBFb68b83F7`
 - Bitcoin network: `bc1qpys2nefgsjjgae3g3gqy9crsv3h3rm96tlkz0v`
 - Dogecoin network: `DJAocBAu8y6LwhDKUktLAyzV8xyoFeHH6R`
