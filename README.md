@@ -114,7 +114,7 @@ Once the installation is complete:
 - You will see the logs that you can stop watching them by closing the terminal or pressing `Ctrl+C`
 - The Marzban files will be located at `/opt/marzban`
 - The configuration file can be found at `/opt/marzban/.env` (refer to [configurations](#configuration) section to see variables)
-- The data files will be placed at `/usr/lib/marzban`
+- The data files will be placed at `/var/lib/marzban`
 - You can access the Marzban dashboard by opening a web browser and navigating to `http://YOUR_SERVER_IP:8000/dashboard/` (replace YOUR_SERVER_IP with the actual IP address of your server)
 
 Next, you need to create a sudo admin for logging into the Marzban dashboard by the following command
