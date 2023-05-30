@@ -1,10 +1,10 @@
 import pydoc
-import typer
 from datetime import datetime
-from typing import Any, Iterable, Optional, TypeVar, Union
+from typing import Any, Dict, Iterable, Optional, TypeVar, Union
 
-from rich.table import Table
+import typer
 from rich.console import Console
+from rich.table import Table
 
 from app.db import crud
 from app.db.models import User
@@ -14,7 +14,7 @@ T = TypeVar("T")
 rich_console = Console()
 PASSWORD_ENVIRON_NAME = "MARZBAN_ADMIN_PASSWORD"
 
-FLAGS: dict[str, tuple] = {
+FLAGS: Dict[str, tuple] = {
     "username": ("--username", "-u"),
     "limit": ("--limit", "-l"),
     "offset": ("--offset", "-o"),
