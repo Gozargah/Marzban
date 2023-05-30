@@ -224,6 +224,7 @@ server {
 ```
 
 به صورت پیشفرض مرزبان در آدرس `http://localhost:8000/dashboard` اجرا میشود. شما میتوانید با تغییر `UVICORN_HOST` و `UVICORN_PORT`، هاست و پورت را تغییر دهید.
+</details>
 
 # تنظیمات
 

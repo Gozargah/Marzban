@@ -240,6 +240,7 @@ server {
 ```
 
 默认情况下，应用将在 `http://localhost:8000/dashboard` 上运行。您可以通过更改 `UVICORN_HOST` 和 `UVICORN_PORT` 环境变量来进行配置。
+</details>
 
 # 配置
 
