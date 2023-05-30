@@ -36,17 +36,17 @@
 </p>
 
 <p align="center">
-	<a href="./README.md">
-	English
-	</a>
-	/
-	<a href="./README-fa.md">
-	فارسی
-	</a>
+ <a href="./README.md">
+ English
+ </a>
+ /
+ <a href="./README-fa.md">
+ فارسی
+ </a>
   /
   <a href="./README-zh-cn.md">
-	简体中文
-	</a>
+ 简体中文
+ </a>
 </p>
 
 <p align="center">
@@ -55,27 +55,26 @@
   </a>
 </p>
 
-
 ## Table of Contents
+
 - [Overview](#overview)
-  - [Why using Marzban?](#why-using-marzban)
-    - [Features](#features)
+	- [Why using Marzban?](#why-using-marzban)
+		- [Features](#features)
 - [Installation guide](#installation-guide)
 - [Configuration](#configuration)
 - [API](#api)
 - [Backup](#backup)
 - [Telegram Bot](#telegram-bot)
 - [Marzban CLI](#marzban-cli)
+- [Marzban Node](#marzban-node)
 - [Webhook notifications](#webhook-notifications)
 - [Donation](#donation)
 - [License](#license)
 - [Contributors](#contributors)
 
-
 # Overview
 
 Marzban (the Persian word for "border guard" - pronounced /mærz'ban/) is a proxy management tool that provides a simple and easy-to-use user interface for managing hundreds of proxy accounts powered by [Xray-core](https://github.com/XTLS/Xray-core) and built using Python and Reactjs.
-
 
 ## Why using Marzban?
 
@@ -105,11 +104,13 @@ Marzban is user-friendly, feature-rich and reliable. It lets you to create diffe
 # Installation guide
 
 Run the following command
+
 ```bash
 sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install
 ```
 
 Once the installation is complete:
+
 - You will see the logs that you can stop watching them by closing the terminal or pressing `Ctrl+C`
 - The Marzban files will be located at `/opt/marzban`
 - The configuration file can be found at `/opt/marzban/.env` (refer to [configurations](#configuration) section to see variables)
@@ -117,6 +118,7 @@ Once the installation is complete:
 - You can access the Marzban dashboard by opening a web browser and navigating to `http://YOUR_SERVER_IP:8000/dashboard/` (replace YOUR_SERVER_IP with the actual IP address of your server)
 
 Next, you need to create a sudo admin for logging into the Marzban dashboard by the following command
+
 ```bash
 marzban cli admin create --sudo
 ```
@@ -124,6 +126,7 @@ marzban cli admin create --sudo
 That's it! You can login to your dashboard using these credentials
 
 To see the help message of the Marzban script, run the following command
+
 ```bash
 marzban --help
 ```
@@ -185,12 +188,14 @@ python3 main.py
 ```
 
 To launch with linux systemctl (copy marzban.service file to `/var/lib/marzban/marzban.service`)
+
 ```
 systemctl enable /var/lib/marzban/marzban.service
 systemctl start marzban
 ```
 
 To use with nginx
+
 ```
 server {
     listen 443 ssl http2;
@@ -226,7 +231,9 @@ server {
     }
 }
 ```
+
 or
+
 ```
 server {
     listen 443 ssl http2;
@@ -281,12 +288,12 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | WEBHOOK_ADDRESS                 | Webhook address to send notifications to. Webhook notifications will be sent if this value was set.   |
 | WEBHOOK_SECRET                  | Webhook secret will be sent with each request as `x-webhook-secret` in the header (default: `None`)   |
 
-
 # API
+
 Marzban provides a REST API that enables developers to interact with Marzban services programmatically. To view the API documentation in Swagger UI or ReDoc, set the configuration variable `DOCS=True` and navigate to the `/docs` and `/redoc`.
 
-
 # Backup
+
 It's always a good idea to backup your Marzban files regularly to prevent data loss in case of system failures or accidental deletion. Here are the steps to backup Marzban:
 
 1. By default, all Marzban important files are saved in `/var/lib/marzban` (Docker versions). Copy the entire `/var/lib/marzban` directory to a backup location of your choice, such as an external hard drive or cloud storage.
@@ -294,8 +301,8 @@ It's always a good idea to backup your Marzban files regularly to prevent data l
 
 By following these steps, you can ensure that you have a backup of all your Marzban files and data, as well as your configuration variables and Xray configuration, in case you need to restore them in the future. Remember to update your backups regularly to keep them up-to-date.
 
-
 # Telegram Bot
+
 Marzban comes with an integrated Telegram bot that can handle server management, user creation and removal, and send notifications. This bot can be easily enabled by following a few simple steps, and it provides a convenient way to interact with Marzban without having to log in to the server every time.
 
 To enable Telegram Bot:
@@ -304,6 +311,7 @@ To enable Telegram Bot:
 2. set `TELEGRAM_ADMIN_ID` to your Telegram account's numeric ID, you can get your ID from [@userinfobot](https://t.me/userinfobot)
 
 # Marzban CLI
+
 Marzban comes with an integrated CLI named `marzban-cli` which allows administrators to have direct interaction with it.
 
 If you've installed Marzban using easy install script, you can access the cli commands by running
@@ -312,22 +320,15 @@ If you've installed Marzban using easy install script, you can access the cli co
 marzban cli [OPTIONS] COMMAND [ARGS]...
 ```
 
+For more information, You can read [Marzban CLI's documentation](./cli/README.md).
 
 # Marzban Node
 
 The Marzban project introduces the [Marzban-node](https://github.com/gozargah/marzban-node), which revolutionizes infrastructure distribution. With Marzban-node, you can distribute your infrastructure across multiple locations, unlocking benefits such as redundancy, high availability, scalability, flexibility. Marzban-node empowers users to connect to different servers, offering them the flexibility to choose and connect to multiple servers instead of being limited to only one server.
 For more detailed information and installation instructions, please refer to the [Marzban-node official documentation](https://github.com/gozargah/marzban-node)
 
-
-```bash
-marzban cli [OPTIONS] COMMAND [ARGS]...
-```
-
-
-For more information, You can read [Marzban CLI's documentation](./cli/README.md).
-
-
 # Webhook notifications
+
 You can set a webhook address and Marzban will send the notifications to that address.
 
 the requests will be sent as a post request to the adress provided by `WEBHOOK_ADDRESS` with `WEBHOOK_SECRET` as `x-webhook-secret` in the headers.
@@ -353,8 +354,8 @@ Body:
 
 Different action typs are: `user_created`, `user_updated`, `user_deleted`, `user_limited`, `user_expired`, `user_disabled`, `user_enabled`
 
-
 # Donation
+
 If you found Marzban useful and would like to support its development, you can make a donation in one of the following crypto networks:
 
 - TRON network (TRC20): `TX8kJoDcowQPBFTYHAJR36GyoUKP1Xwzkb`
@@ -362,22 +363,17 @@ If you found Marzban useful and would like to support its development, you can m
 - Bitcoin network: `bc1qpys2nefgsjjgae3g3gqy9crsv3h3rm96tlkz0v`
 - Dogecoin network: `DJAocBAu8y6LwhDKUktLAyzV8xyoFeHH6R`
 
-
 Thank you for your support!
-
 
 # License
 
 Made in [Unknown!] and Published under [AGPL-3.0](./LICENSE).
-
 
 # Contributors
 
 We ❤️‍🔥 contributors! If you'd like to contribute, please check out our [Contributing Guidelines](CONTRIBUTING.md) and feel free to submit a pull request or open an issue. We also welcome you to join our [Telegram](https://t.me/gozargah_marzban) group for either support or contributing guidance.
 
 Check [open issues](https://github.com/gozargah/marzban/issues) to help the progress of this project.
-
-
 
 <p align="center">
 Thanks to the all contributors who have helped improve Marzban:
@@ -390,4 +386,3 @@ Thanks to the all contributors who have helped improve Marzban:
 <p align="center">
   Made with <a rel="noopener noreferrer" target="_blank" href="https://contrib.rocks">contrib.rocks</a>
 </p>
-
