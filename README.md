@@ -61,12 +61,9 @@
   - [Why using Marzban?](#why-using-marzban)
     - [Features](#features)
 - [Installation guide](#installation-guide)
-  - [Install with docker (recommended)](#install-with-docker-recommended)
-    - [Marzban.sh](#marzbansh)
-  - [Manual install (advanced)](#manual-install-advanced)
 - [Configuration](#configuration)
-- [How to use API](#how-to-use-api)
-- [How to Backup Marzban](#how-to-backup-marzban)
+- [API](#api)
+- [Backup](#backup)
 - [Telegram Bot](#telegram-bot)
 - [Marzban CLI](#marzban-cli)
 - [Webhook notifications](#webhook-notifications)
@@ -88,49 +85,50 @@ Marzban is user-friendly, feature-rich and reliable. It lets you to create diffe
 
 - Built-in **Web UI**
 - Fully **REST API** backend
+- **Multiple Nodes** support (for infrastructure distribution & scalability)
 - Supports protocols **Vmess**, **VLESS**, **Trojan** and **Shadowsocks**
 - **Multi-protocol** for a single user
 - **Multi-user** on a single inbound
-- **Multi-inbound** on a **single port** (using fallbacks)
+- **Multi-inbound** on a **single port** (fallbacks support)
 - **Traffic** and **expiry date** limitations
 - **Periodic** traffic limit (e.g. daily, weekly, etc.)
-- **Subscription link** compatible with **V2ray** _(such as V2RayNG, OneClick, Nekoray, etc.)_ and **Clash**
+- **Subscription link** compatible with **V2ray** _(such as V2RayNG, OneClick, Nekoray, etc.)_, **Clash** and **ClashMeta**
 - Automated **Share link** and **QRcode** generator
 - System monitoring and **traffic statistics**
 - Customizable xray configuration
-- **TLS** support
+- **TLS** and **REALITY** support
 - Integrated **Telegram Bot**
 - Integrated **Command Line Interface (CLI)**
+- **Multi-language**
 - **Multi-admin** support (WIP)
 
 # Installation guide
 
-
-First of all you need to install our CLI tool, [marzban-scripts](https://github.com/gozargah/marzban-scripts) by the follwing command.
+Run the following command
 ```bash
 sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install
 ```
 
-Then simply run the following command to install Marzban. This command bootstrap the project and installs the necessary dependencies.
+Once the installation is complete:
+- You will see the logs that you can stop watching them by closing the terminal or pressing `Ctrl+C`
+- The Marzban files will be located at `/opt/marzban`
+- The configuration file can be found at `/opt/marzban/.env` (refer to [configurations](#configuration) section to see variables)
+- The data files will be placed at `/usr/lib/marzban`
+- You can access the Marzban dashboard by opening a web browser and navigating to `http://YOUR_SERVER_IP:8000/dashboard/` (replace YOUR_SERVER_IP with the actual IP address of your server)
+
+Next, you need to create a sudo admin for logging into the Marzban dashboard by the following command
 ```bash
-marzban install
-```
-After running this command, The configurations (`docker-compose.yml`, `.env`, etc...) will be saved in `/lib/marzban`. Based on the default configuration (`.env.example`) the server will listen on `0.0.0.0:8000` so the dashboard would be accessible on `http://{SERVER_UP}:8000/dashboard`
-
-In the next step, you need to add an admin, run the following command to create one.
-```bash
-marzban cli admin create
+marzban cli admin create --sudo
 ```
 
-Then you can login to the dashboard using the admin credentials.
+That's it! You can login to your dashboard using these credentials
 
-Also, see the help message of Marzban by running the command below
+To see the help message of the Marzban script, run the following command
 ```bash
 marzban --help
 ```
 
-
-If you are eager to run the project using the source code, check the section below.
+If you are eager to run the project using the source code, check the section below
 <details markdown="1">
 <summary><h3>Manual install (advanced)</h3></summary>
 
@@ -186,13 +184,13 @@ Eventually, launch the application using command below
 python3 main.py
 ```
 
-Launch with linux systemctl
+To launch with linux systemctl (copy marzban.service file to `/var/lib/marzban/marzban.service`)
 ```
 systemctl enable /var/lib/marzban/marzban.service
 systemctl start marzban
 ```
 
-Use with nginx
+To use with nginx
 ```
 server {
     listen 443 ssl http2;
@@ -252,7 +250,7 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 
 # Configuration
 
-> You can set settings below using environment variables or placing them in `env` or `.env` file.
+> You can set settings below using environment variables or placing them in `.env` file.
 
 | Variable                        | Description                                                                                           |
 | ------------------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -284,11 +282,11 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | WEBHOOK_SECRET                  | Webhook secret will be sent with each request as `x-webhook-secret` in the header (default: `None`)   |
 
 
-# How to use API
+# API
 Marzban provides a REST API that enables developers to interact with Marzban services programmatically. To view the API documentation in Swagger UI or ReDoc, set the configuration variable `DOCS=True` and navigate to the `/docs` and `/redoc`.
 
 
-# How to Backup Marzban
+# Backup
 It's always a good idea to backup your Marzban files regularly to prevent data loss in case of system failures or accidental deletion. Here are the steps to backup Marzban:
 
 1. By default, all Marzban important files are saved in `/var/lib/marzban` (Docker versions). Copy the entire `/var/lib/marzban` directory to a backup location of your choice, such as an external hard drive or cloud storage.
@@ -309,7 +307,7 @@ To enable Telegram Bot:
 # Marzban CLI
 Marzban comes with an integrated CLI named `marzban-cli` which allows administrators to have direct interaction with it.
 
-If you installed marzban using marzban-scripts tool which is the recommended installation approach, you can access the cli commands by running
+If you've installed Marzban using easy install script, you can access the cli commands by running
 
 ```bash
 marzban cli [OPTIONS] COMMAND [ARGS]...
@@ -349,8 +347,8 @@ Different action typs are: `user_created`, `user_updated`, `user_deleted`, `user
 # Donation
 If you found Marzban useful and would like to support its development, you can make a donation in one of the following crypto networks:
 
-- TRON (TRX - TRC20) network: `TX8kJoDcowQPBFTYHAJR36GyoUKP1Xwzkb`
-- ETH, BNB, MATIC network: `0xFdc9ad32454FA4fc4733270FCc12ddBFb68b83F7`
+- TRON network (TRC20): `TX8kJoDcowQPBFTYHAJR36GyoUKP1Xwzkb`
+- ETH, BNB, MATIC network (ERC20, BEP20): `0xFdc9ad32454FA4fc4733270FCc12ddBFb68b83F7`
 - Bitcoin network: `bc1qpys2nefgsjjgae3g3gqy9crsv3h3rm96tlkz0v`
 - Dogecoin network: `DJAocBAu8y6LwhDKUktLAyzV8xyoFeHH6R`
 
