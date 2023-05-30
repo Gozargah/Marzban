@@ -85,7 +85,7 @@ Marzban is user-friendly, feature-rich and reliable. It lets you to create diffe
 
 - Built-in **Web UI**
 - Fully **REST API** backend
-- **Multiple Nodes** support (for infrastructure distribution & scalability)
+- [**Multiple Nodes**](#marzban-node) support (for infrastructure distribution & scalability)
 - Supports protocols **Vmess**, **VLESS**, **Trojan** and **Shadowsocks**
 - **Multi-protocol** for a single user
 - **Multi-user** on a single inbound
@@ -303,11 +303,21 @@ To enable Telegram Bot:
 1. set `TELEGRAM_API_TOKEN` to your bot's API Token
 2. set `TELEGRAM_ADMIN_ID` to your Telegram account's numeric ID, you can get your ID from [@userinfobot](https://t.me/userinfobot)
 
-
 # Marzban CLI
 Marzban comes with an integrated CLI named `marzban-cli` which allows administrators to have direct interaction with it.
 
 If you've installed Marzban using easy install script, you can access the cli commands by running
+
+```bash
+marzban cli [OPTIONS] COMMAND [ARGS]...
+```
+
+
+# Marzban Node
+
+The Marzban project introduces the [Marzban-node](https://github.com/gozargah/marzban-node), which revolutionizes infrastructure distribution. With Marzban-node, you can distribute your infrastructure across multiple locations, unlocking benefits such as redundancy, high availability, scalability, flexibility. Marzban-node empowers users to connect to different servers, offering them the flexibility to choose and connect to multiple servers instead of being limited to only one server.
+For more detailed information and installation instructions, please refer to the [Marzban-node official documentation](https://github.com/gozargah/marzban-node)
+
 
 ```bash
 marzban cli [OPTIONS] COMMAND [ARGS]...
