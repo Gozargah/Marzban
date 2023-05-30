@@ -162,7 +162,7 @@ If you want to use `marzban-cli`, you should link it to a file in your `$PATH`, 
 ```bash
 sudo ln -s $(pwd)/marzban-cli.py /usr/bin/marzban-cli
 sudo chmod +x /usr/bin/marzban-cli
-marzban-cli --install-completion
+marzban-cli completion install
 ```
 
 Now it's time to configuration
