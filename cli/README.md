@@ -1,29 +1,28 @@
-# `marzban-cli`
+# CLI
 
 **Usage**:
 
 ```console
-marzban cli [OPTIONS] COMMAND [ARGS]...
+$ [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:
 
-* `--install-completion`: Install completion for the current shell.
-* `--show-completion`: Show completion for the current shell, to copy it or customize the installation.
 * `--help`: Show this message and exit.
 
 **Commands**:
 
 * `admin`
+* `completion`: Generate and install completion scripts.
 * `subscription`
 * `user`
 
-## `marzban cli admin`
+## `admin`
 
 **Usage**:
 
 ```console
-marzban cli admin [OPTIONS] COMMAND [ARGS]...
+$ admin [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:
@@ -38,7 +37,7 @@ marzban cli admin [OPTIONS] COMMAND [ARGS]...
 * `list`: Displays a table of admins
 * `update`: Updates the specified admin
 
-### `marzban cli admin create`
+### `admin create`
 
 Creates an admin
 
@@ -47,7 +46,7 @@ Password can also be set using the `MARZBAN_ADMIN_PASSWORD` environment variable
 **Usage**:
 
 ```console
-marzban-cli admin create [OPTIONS]
+$ admin create [OPTIONS]
 ```
 
 **Options**:
@@ -56,7 +55,7 @@ marzban-cli admin create [OPTIONS]
 * `--sudo / --no-sudo`
 * `--help`: Show this message and exit.
 
-### `marzban-cli admin delete`
+### `admin delete`
 
 Deletes the specified admin
 
@@ -65,7 +64,7 @@ Confirmations can be skipped using `--yes/-y` option.
 **Usage**:
 
 ```console
-marzban cli admin delete [OPTIONS]
+$ admin delete [OPTIONS]
 ```
 
 **Options**:
@@ -74,7 +73,7 @@ marzban cli admin delete [OPTIONS]
 * `-y, --yes`: Skips confirmations
 * `--help`: Show this message and exit.
 
-### `marzban cli admin import-from-env`
+### `admin import-from-env`
 
 Imports the sudo admin from env
 
@@ -87,7 +86,7 @@ What does it do?
 **Usage**:
 
 ```console
-marzban cli admin import-from-env [OPTIONS]
+$ admin import-from-env [OPTIONS]
 ```
 
 **Options**:
@@ -95,14 +94,14 @@ marzban cli admin import-from-env [OPTIONS]
 * `-y, --yes`: Skips confirmations
 * `--help`: Show this message and exit.
 
-### `marzban cli admin list`
+### `admin list`
 
 Displays a table of admins
 
 **Usage**:
 
 ```console
-marzban cli admin list [OPTIONS]
+$ admin list [OPTIONS]
 ```
 
 **Options**:
@@ -112,7 +111,7 @@ marzban cli admin list [OPTIONS]
 * `-u, --username TEXT`: Search by username
 * `--help`: Show this message and exit.
 
-### `marzban cli admin update`
+### `admin update`
 
 Updates the specified admin
 
@@ -121,7 +120,7 @@ NOTE: This command CAN NOT be used non-interactively.
 **Usage**:
 
 ```console
-marzban cli admin update [OPTIONS]
+$ admin update [OPTIONS]
 ```
 
 **Options**:
@@ -129,12 +128,67 @@ marzban cli admin update [OPTIONS]
 * `-u, --username TEXT`: [required]
 * `--help`: Show this message and exit.
 
-## `marzban cli subscription`
+## `completion`
+
+Generate and install completion scripts.
 
 **Usage**:
 
 ```console
-marzban cli subscription [OPTIONS] COMMAND [ARGS]...
+$ completion [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `install`: Install completion for the specified shell.
+* `show`: Show completion for the specified shell,...
+
+### `completion install`
+
+Install completion for the specified shell.
+
+**Usage**:
+
+```console
+$ completion install [OPTIONS] [SHELL]:[bash|zsh|fish|powershell|pwsh]
+```
+
+**Arguments**:
+
+* `[SHELL]:[bash|zsh|fish|powershell|pwsh]`: The shell to install completion for.
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `completion show`
+
+Show completion for the specified shell, to copy or customize it.
+
+**Usage**:
+
+```console
+$ completion show [OPTIONS] [SHELL]:[bash|zsh|fish|powershell|pwsh]
+```
+
+**Arguments**:
+
+* `[SHELL]:[bash|zsh|fish|powershell|pwsh]`: The shell to install completion for.
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+## `subscription`
+
+**Usage**:
+
+```console
+$ subscription [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:
@@ -146,7 +200,7 @@ marzban cli subscription [OPTIONS] COMMAND [ARGS]...
 * `get-config`: Generates a subscription config.
 * `get-link`: Prints the given user's subscription link.
 
-### `marzban cli subscription get-config`
+### `subscription get-config`
 
 Generates a subscription config.
 
@@ -158,7 +212,7 @@ The output will be written in the output file when the `output-file` is present,
 **Usage**:
 
 ```console
-marzban cli subscription get-config [OPTIONS]
+$ subscription get-config [OPTIONS]
 ```
 
 **Options**:
@@ -169,7 +223,7 @@ marzban cli subscription get-config [OPTIONS]
 * `--base64`: Encodes output in base64 format if present
 * `--help`: Show this message and exit.
 
-### `marzban cli subscription get-link`
+### `subscription get-link`
 
 Prints the given user's subscription link.
 
@@ -179,7 +233,7 @@ NOTE: This command needs `XRAY_SUBSCRIPTION_URL_PREFIX` environment variable to 
 **Usage**:
 
 ```console
-marzban cli subscription get-link [OPTIONS]
+$ subscription get-link [OPTIONS]
 ```
 
 **Options**:
@@ -187,12 +241,12 @@ marzban cli subscription get-link [OPTIONS]
 * `-u, --username TEXT`: [required]
 * `--help`: Show this message and exit.
 
-## `marzban cli user`
+## `user`
 
 **Usage**:
 
 ```console
-marzban cli user [OPTIONS] COMMAND [ARGS]...
+$ user [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:
@@ -204,7 +258,7 @@ marzban cli user [OPTIONS] COMMAND [ARGS]...
 * `list`: Displays a table of users
 * `set-owner`: Transfers user's ownership
 
-### `marzban cli user list`
+### `user list`
 
 Displays a table of users
 
@@ -213,7 +267,7 @@ NOTE: Sorting is not currently available.
 **Usage**:
 
 ```console
-marzban cli user list [OPTIONS]
+$ user list [OPTIONS]
 ```
 
 **Options**:
@@ -225,7 +279,7 @@ marzban cli user list [OPTIONS]
 * `--admin, --owner TEXT`: Search by owner admin's username
 * `--help`: Show this message and exit.
 
-### `marzban cli user set-owner`
+### `user set-owner`
 
 Transfers user's ownership
 
@@ -234,12 +288,13 @@ NOTE: This command needs additional confirmation for users who already have an o
 **Usage**:
 
 ```console
-marzban cli user set-owner [OPTIONS]
+$ user set-owner [OPTIONS]
 ```
 
 **Options**:
 
 * `-u, --username TEXT`
 * `--admin, --owner TEXT`: Admin's username
-* `-y, --yes`: Skips confirmation.
+* `-y, --yes`: Skips confirmations
 * `--help`: Show this message and exit.
+

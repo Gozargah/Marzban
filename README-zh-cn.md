@@ -61,9 +61,6 @@
   - [为什么要使用 Marzban?](#为什么要使用-marzban)
     - [特性](#特性)
 - [安装指南](#安装指南)
-  - [使用 Docker 进行安装（推荐）](#使用-docker-进行安装推荐)
-    - [Marzban.sh](#marzbansh)
-  - [手动安装（高级）](#手动安装高级)
 - [配置](#配置)
 - [如何使用 API](#如何使用-api)
 - [如何备份 Marzban](#如何备份-marzban)
@@ -103,38 +100,37 @@ Marzban 是一个用户友好、功能丰富且可靠的工具。它让您可以
 
 
 # 安装指南
+Run the following command
 
-> 我们强烈建议使用我们的 Docker 镜像运行。这样更易于维护和升级。
-
-## 使用 Docker 进行安装（推荐）
-
-我们根据不同的需求制作了一些预构建的 Docker 配置文件。要使用 Docker 运行此应用程序，请[阅读此处的说明](https://github.com/Gozargah/Marzban-examples)。
-
-您可以选择其中一个设置，例如：
-- [fully-single-port](https://github.com/Gozargah/Marzban-examples/tree/master/fully-single-port/)
-- [single-port-proxy](https://github.com/Gozargah/Marzban-examples/tree/master/single-port-proxy/)
-- [multi-port](https://github.com/Gozargah/Marzban-examples/tree/master/multi-port/)
-
-### Marzban.sh
-一旦您选择了您最喜欢的设置，Marzban.sh 将为您进行安装！
-
-使用以下命令获取 Marzban.sh
 ```bash
-curl -L https://github.com/Gozargah/Marzban-scripts/raw/master/get-marzban.sh | sudo bash
+sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install
 ```
 
-然后只需运行以下命令
-```bash
-marzban.sh install
-```
-这将在您的机器上的 `/opt/marzban` 中安装 Marzban
+Once the installation is complete:
 
-另外，通过运行以下命令查看 Marzban.sh 的帮助消息
+- You will see the logs that you can stop watching them by closing the terminal or pressing `Ctrl+C`
+- The Marzban files will be located at `/opt/marzban`
+- The configuration file can be found at `/opt/marzban/.env` (refer to [configurations](#configuration) section to see variables)
+- The data files will be placed at `/usr/lib/marzban`
+- You can access the Marzban dashboard by opening a web browser and navigating to `http://YOUR_SERVER_IP:8000/dashboard/` (replace YOUR_SERVER_IP with the actual IP address of your server)
+
+Next, you need to create a sudo admin for logging into the Marzban dashboard by the following command
+
 ```bash
-marzban.sh --help
+marzban cli admin create --sudo
 ```
 
-## 手动安装（高级）
+That's it! You can login to your dashboard using these credentials
+
+To see the help message of the Marzban script, run the following command
+
+```bash
+marzban --help
+```
+
+If you are eager to run the project using the source code, check the section below
+<details markdown="1">
+<summary><h3>手动安装（高级）</h3></summary>
 
 在您的机器上安装 xray
 
@@ -244,6 +240,7 @@ server {
 ```
 
 默认情况下，应用将在 `http://localhost:8000/dashboard` 上运行。您可以通过更改 `UVICORN_HOST` 和 `UVICORN_PORT` 环境变量来进行配置。
+</details>
 
 # 配置
 
