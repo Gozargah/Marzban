@@ -18,11 +18,12 @@ def report(message: str, parse_mode="html", keyboard=None):
             logger.error(e)
 
 
-def report_new_user(user_id: int, username: str, by: str, expire_date: int, usage: str, proxies: list):
+def report_new_user(user_id: int, username: str, description: str, by: str, expire_date: int, usage: str, proxies: list):
     text = """
 ⨁ New User Added by <b>{by}</b>
 ➖➖➖➖➖➖➖
 ┌ Username: <b>{username}</b>
+├ Description: {description}
 ├ Usage: <b>{usage}</b>
 └ Expiry Date <b>{expire_date}</b>
 ┌ Created Proxies:
@@ -83,11 +84,12 @@ def report_user_deletion(username: str, by: str):
     return report(text)
 
 
-def report_status_change(username: str, status: str):
+def report_status_change(username: str, description: str, status: str):
     text = """
 ⨀ User Status Changed
 ➖➖➖➖➖➖➖
 ┌ Username: <b>{username}</b>
+├ Description: {description}
 └ Status: <b>{status}</b>
     """.format(
         username=escape_html(username),

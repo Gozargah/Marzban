@@ -3,9 +3,9 @@ from app import telegram
 from app.db.models import UserStatus
 
 
-def status_change(username: str, status: UserStatus) -> None:
+def status_change(username: str, description: str, status: UserStatus) -> None:
     try:
-        telegram.report_status_change(username, status)
+        telegram.report_status_change(username, description, status)
     except Exception:
         pass
     if status == UserStatus.limited:
@@ -18,11 +18,12 @@ def status_change(username: str, status: UserStatus) -> None:
         notify(Notification(username=username, action="user_enabled"))
 
 
-def user_created(user_id: int, username: str, usage: int, expire_date: int, proxies: dict, by: str) -> None:
+def user_created(user_id: int, username: str, description: str, usage: int, expire_date: int, proxies: dict, by: str) -> None:
     try:
         telegram.report_new_user(
             user_id=user_id,
             username=username,
+            description=description,
             by=by,
             expire_date=expire_date,
             usage=usage,

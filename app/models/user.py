@@ -14,7 +14,6 @@ from xray_api.types.account import Account
 
 USERNAME_REGEXP = re.compile(r'^(?=\w{3,32}\b)[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*$')
 
-
 class UserStatus(str, Enum):
     active = "active"
     disabled = "disabled"
@@ -34,7 +33,6 @@ class UserDataLimitResetStrategy(str, Enum):
     month = "month"
     year = "year"
 
-
 class User(BaseModel):
     description: str = Field(default="")
     proxies: Dict[ProxyTypes, ProxySettings] = {}
@@ -42,6 +40,7 @@ class User(BaseModel):
     data_limit: Union[None, int] = Field(
         ge=0, default=None, description="data_limit can be 0 or greater")
     data_limit_reset_strategy: UserDataLimitResetStrategy = UserDataLimitResetStrategy.no_reset
+    description: str = ""
     inbounds: Dict[ProxyTypes, List[str]] = {}
 
     @validator('proxies', pre=True, always=True)

@@ -12,7 +12,6 @@ from app.models.proxy import (ProxyHostALPN, ProxyHostFingerprint,
                               ProxyHostSecurity, ProxyTypes)
 from app.models.user import UserDataLimitResetStrategy, UserStatus
 
-
 class Admin(Base):
     __tablename__ = "admins"
 
