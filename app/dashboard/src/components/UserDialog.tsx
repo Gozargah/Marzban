@@ -30,7 +30,7 @@ import {
   GridItem,
   useColorMode,
 } from "@chakra-ui/react";
-import { PencilIcon, UserPlusIcon, ChartPieIcon} from "@heroicons/react/24/outline";
+import { PencilIcon, UserPlusIcon, ChartPieIcon } from "@heroicons/react/24/outline";
 import { FilterUsageType, useDashboard } from "contexts/DashboardContext";
 import { FC, useEffect, useState } from "react";
 import { Controller, FormProvider, useForm, useWatch } from "react-hook-form";
@@ -78,6 +78,7 @@ const UserUsageIcon = chakra(ChartPieIcon, {
 
 const schema = z.object({
   username: z.string().min(1, { message: "Required" }),
+  description: z.string(),
   selected_proxies: z.array(z.string()).refine((value) => value.length > 0, {
     message: "userDialog.selectOneProtocol",
   }),
@@ -86,7 +87,7 @@ const schema = z.object({
       if (obj && obj[key] === "") {
         delete obj[key];
       }
-    }
+    };
     deleteIfEmpty(ins.vmess, "id");
     deleteIfEmpty(ins.vless, "id");
     deleteIfEmpty(ins.trojan, "password");
@@ -109,14 +110,14 @@ const schema = z.object({
   inbounds: z.record(z.string(), z.array(z.string())).transform((ins) => {
     Object.keys(ins).forEach((protocol) => {
       if (Array.isArray(ins[protocol]) && !ins[protocol]?.length) delete ins[protocol];
-    })
+    });
     return ins;
   }),
 });
 
 export type UserDialogProps = {};
 
-export type FormType = Pick<UserCreate, keyof UserCreate> & { selected_proxies: ProxyKeys };
+export type FormType = Pick<UserCreate, keyof UserCreate> & { selected_proxies: ProxyKeys; };
 
 const formatUser = (user: User): FormType => {
   return {
@@ -138,12 +139,13 @@ const getDefaultValues = (): FormType => {
     data_limit: null,
     expire: null,
     username: "",
+    description: "",
     data_limit_reset_strategy: "no_reset",
     status: "active",
     inbounds,
     proxies: {
       vless: { id: "", flow: "" },
-      vmess: { id: ""},
+      vmess: { id: "" },
       trojan: { password: "" },
       shadowsocks: { password: "", method: "chacha20-poly1305" }
     }
@@ -225,12 +227,12 @@ export const UserDialog: FC<UserDialogProps> = () => {
       }
       setUsage(createUsageConfig(colorMode, usageTitle, series, labels));
     });
-  }
+  };
 
   useEffect(() => {
     if (editingUser) {
       form.reset(formatUser(editingUser));
-      
+
       fetchUsageWithFilter({
         start: dayjs().utc().subtract(30, 'day').format("YYYY-MM-DDTHH:00:00")
       });
@@ -243,7 +245,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
     const method = isEditing ? "edited" : "created";
     setError(null);
 
-    const {selected_proxies, ...rest} = values;
+    const { selected_proxies, ...rest } = values;
 
     let body: UserCreate = {
       ...rest,
@@ -258,11 +260,11 @@ export const UserDialog: FC<UserDialogProps> = () => {
           ? values.status
           : "active",
     };
-    
+
     methods[method](body)
       .then(() => {
         toast({
-          title: t(isEditing ? "userDialog.userEdited" : "userDialog.userCreated", {username: values.username}),
+          title: t(isEditing ? "userDialog.userEdited" : "userDialog.userCreated", { username: values.username }),
           status: "success",
           isClosable: true,
           position: "top",
@@ -441,7 +443,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                               return dayjs(
                                 dayjs(num * 1000)
                                   .utc()
-                                  // .format("MMMM D, YYYY") // exception with: dayjs.locale(lng);
+                                // .format("MMMM D, YYYY") // exception with: dayjs.locale(lng);
                               ).toDate();
                             }
                             const { status, time } = relativeExpiryDate(field.value);
@@ -488,7 +490,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                 />
                                 {field.value ? (
                                   <FormHelperText>
-                                    {t(status, {time:time})}
+                                    {t(status, { time: time })}
                                   </FormHelperText>
                                 ) : (
                                   ""
@@ -497,6 +499,26 @@ export const UserDialog: FC<UserDialogProps> = () => {
                             );
                           }}
                         />
+                      </FormControl>
+                      <FormControl mb={"10px"}>
+                        <FormLabel>{t('description')}</FormLabel>
+                        <HStack>
+                          <Controller name="description"
+                            control={form.control}
+                            render={({ field }) => {
+                              return (
+                                <Input
+                                  size="sm"
+                                  type="text"
+                                  borderRadius="6px"
+                                  error={form.formState.errors.description?.message}
+                                  value={field.value ? String(field.value) : ""}
+                                  {...form.register("description")}
+                                />
+                              );
+                            }
+                            } />
+                        </HStack>
                       </FormControl>
                     </Flex>
                     {error && (
@@ -524,7 +546,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                             list={[
                               {
                                 title: "vmess",
-                                description:t("userDialog.vmessDesc"),
+                                description: t("userDialog.vmessDesc"),
                               },
                               {
                                 title: "vless",
@@ -551,7 +573,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                   </FormControl>
                 </GridItem>
                 {isEditing && usageVisible && (
-                  <GridItem pt={6} colSpan={{ base:1, md: 2}}>
+                  <GridItem pt={6} colSpan={{ base: 1, md: 2 }}>
                     <VStack gap={4}>
                       <UsageFilter
                         defaultValue={usageFilter}

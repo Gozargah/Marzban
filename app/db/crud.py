@@ -17,13 +17,15 @@ from app.models.user_template import UserTemplateCreate, UserTemplateModify
 
 
 def add_default_host(db: Session, inbound: ProxyInbound):
-    host = ProxyHost(remark="🚀 Marz ({USERNAME}) [{PROTOCOL} - {TRANSPORT}]", address="{SERVER_IP}", inbound=inbound)
+    host = ProxyHost(
+        remark="🚀 Marz ({USERNAME}) [{PROTOCOL} - {TRANSPORT}]", address="{SERVER_IP}", inbound=inbound)
     db.add(host)
     db.commit()
 
 
 def get_or_create_inbound(db: Session, inbound_tag: str):
-    inbound = db.query(ProxyInbound).filter(ProxyInbound.tag == inbound_tag).first()
+    inbound = db.query(ProxyInbound).filter(
+        ProxyInbound.tag == inbound_tag).first()
     if not inbound:
         inbound = ProxyInbound(tag=inbound_tag)
         db.add(inbound)
@@ -129,9 +131,11 @@ def get_users(db: Session,
 
     if reset_strategy:
         if isinstance(reset_strategy, list):
-            query = query.filter(User.data_limit_reset_strategy.in_(reset_strategy))
+            query = query.filter(
+                User.data_limit_reset_strategy.in_(reset_strategy))
         else:
-            query = query.filter(User.data_limit_reset_strategy == reset_strategy)
+            query = query.filter(
+                User.data_limit_reset_strategy == reset_strategy)
 
     if admin:
         query = query.filter(User.admin == admin)
@@ -223,6 +227,7 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None):
 
     dbuser = User(
         username=user.username,
+        description=user.description,
         proxies=proxies,
         data_limit=(user.data_limit or None),
         expire=(user.expire or None),
@@ -251,7 +256,8 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
             if dbproxy:
                 dbproxy.settings = settings.dict(no_obj=True)
             else:
-                new_proxy = Proxy(type=proxy_type, settings=settings.dict(no_obj=True))
+                new_proxy = Proxy(
+                    type=proxy_type, settings=settings.dict(no_obj=True))
                 dbuser.proxies.append(new_proxy)
                 added_proxies.update({proxy_type: new_proxy})
         for proxy in dbuser.proxies:
@@ -263,7 +269,8 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
                 .where(Proxy.user == dbuser, Proxy.type == proxy_type) \
                 .first() or added_proxies.get(proxy_type)
             if dbproxy:
-                dbproxy.excluded_inbounds = [get_or_create_inbound(db, tag) for tag in tags]
+                dbproxy.excluded_inbounds = [
+                    get_or_create_inbound(db, tag) for tag in tags]
 
     if modify.status is not None:
         dbuser.status = modify.status
@@ -286,6 +293,9 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
 
     if modify.data_limit_reset_strategy is not None:
         dbuser.data_limit_reset_strategy = modify.data_limit_reset_strategy.value
+
+    if modify.description is not None:
+        dbuser.description = modify.description
 
     db.commit()
     db.refresh(dbuser)
@@ -407,7 +417,8 @@ def create_user_template(db: Session, user_template: UserTemplateCreate) -> User
         expire_duration=user_template.expire_duration,
         username_prefix=user_template.username_prefix,
         username_suffix=user_template.username_suffix,
-        inbounds=db.query(ProxyInbound).filter(ProxyInbound.tag.in_(inbound_tags)).all()
+        inbounds=db.query(ProxyInbound).filter(
+            ProxyInbound.tag.in_(inbound_tags)).all()
     )
     db.add(dbuser_template)
     db.commit()
@@ -432,7 +443,8 @@ def update_user_template(
         inbound_tags: List[str] = []
         for _, i in modified_user_template.inbounds.items():
             inbound_tags.extend(i)
-        dbuser_template.inbounds = db.query(ProxyInbound).filter(ProxyInbound.tag.in_(inbound_tags)).all()
+        dbuser_template.inbounds = db.query(ProxyInbound).filter(
+            ProxyInbound.tag.in_(inbound_tags)).all()
 
     db.commit()
     db.refresh(dbuser_template)

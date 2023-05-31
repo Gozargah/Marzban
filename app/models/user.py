@@ -36,9 +36,11 @@ class UserDataLimitResetStrategy(str, Enum):
 
 
 class User(BaseModel):
+    description: str = Field(default="")
     proxies: Dict[ProxyTypes, ProxySettings] = {}
     expire: int = None
-    data_limit: Union[None, int] = Field(ge=0, default=None, description="data_limit can be 0 or greater")
+    data_limit: Union[None, int] = Field(
+        ge=0, default=None, description="data_limit can be 0 or greater")
     data_limit_reset_strategy: UserDataLimitResetStrategy = UserDataLimitResetStrategy.no_reset
     inbounds: Dict[ProxyTypes, List[str]] = {}
 
@@ -51,17 +53,20 @@ class User(BaseModel):
     @validator('username', check_fields=False)
     def validate_username(cls, v):
         if not USERNAME_REGEXP.match(v):
-            raise ValueError('Username only can be 3 to 32 characters and contain a-z, 0-9, and underscores in between.')
+            raise ValueError(
+                'Username only can be 3 to 32 characters and contain a-z, 0-9, and underscores in between.')
         return v
 
 
 class UserCreate(User):
     username: str
+    description: str
 
     class Config:
         schema_extra = {
             "example": {
                 "username": "user1234",
+                "description": "description",
                 "proxies": {
                     "vmess": {
                         "id": "35e4e39c-7d5c-4f4b-8b71-558e4f37ff53"
@@ -115,7 +120,8 @@ class UserCreate(User):
                         raise ValueError(f"Inbound {tag} doesn't exist")
 
             else:
-                inbounds[proxy_type] = [i['tag'] for i in xray.config.inbounds_by_protocol.get(proxy_type, [])]
+                inbounds[proxy_type] = [i['tag']
+                                        for i in xray.config.inbounds_by_protocol.get(proxy_type, [])]
 
         return inbounds
 
@@ -181,6 +187,7 @@ class UserModify(User):
 
 class UserResponse(User):
     username: str
+    description: str = ""
     status: UserStatus
     used_traffic: int
     lifetime_used_traffic: int = 0

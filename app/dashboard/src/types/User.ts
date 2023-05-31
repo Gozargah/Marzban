@@ -41,6 +41,7 @@ export type User = {
   data_limit_reset_strategy: DataLimitResetStrategy;
   lifetime_used_traffic: number;
   username: string;
+  description: string;
   used_traffic: number;
   status: Status;
   links: string[];
@@ -56,5 +57,6 @@ export type UserCreate = Pick<
   | "data_limit"
   | "data_limit_reset_strategy"
   | "username"
+  | "description"
   | "status"
 >;
