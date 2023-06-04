@@ -34,6 +34,7 @@ def add_user(new_user: UserCreate,
         dbuser = crud.create_user(db, new_user,
                                   admin=crud.get_admin(db, admin.username))
     except sqlalchemy.exc.IntegrityError:
+        db.rollback()
         raise HTTPException(status_code=409, detail="User already exists")
 
     xray.operations.add_user(dbuser)

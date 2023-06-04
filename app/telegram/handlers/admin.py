@@ -987,6 +987,7 @@ def confirm_user_command(call: types.CallbackQuery):
                 proxies = db_user.proxies
                 user = UserResponse.from_orm(db_user)
         except sqlalchemy.exc.IntegrityError:
+            db.rollback()
             return bot.answer_callback_query(
                 call.id,
                 '❌ Username already exists.',

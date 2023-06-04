@@ -1,5 +1,3 @@
-import threading
-
 from sqlalchemy.exc import SQLAlchemyError
 
 from app import logger, xray
@@ -9,15 +7,9 @@ from app.db import crud
 from app.db.models import Node as DBNode
 from app.models.node import NodeStatus
 from app.models.user import UserResponse
+from app.utils.concurrency import threaded_function
 from app.xray.node import XRayNode
 from xray_api.types.account import XTLSFlows
-
-
-def _threaded(func):
-    def wrapper(*args, **kwargs):
-        thread = threading.Thread(target=func, args=args, daemon=True, kwargs=kwargs)
-        thread.start()
-    return wrapper
 
 
 def add_user(dbuser: DBUser):
@@ -84,7 +76,7 @@ def add_node(dbnode: DBNode):
     return xray.nodes[dbnode.id]
 
 
-@_threaded
+@threaded_function
 def connect_node(node_id, config):
 
     with GetDB() as db:
@@ -99,7 +91,7 @@ def connect_node(node_id, config):
         try:
             crud.update_node_status(db, dbnode, NodeStatus.connecting)
         except SQLAlchemyError:
-            pass
+            db.rollback()
 
         try:
             logger.info(f"Connecting to \"{dbnode.name}\" node")
@@ -117,10 +109,10 @@ def connect_node(node_id, config):
             try:
                 crud.update_node_status(db, dbnode, status, message, version)
             except SQLAlchemyError:
-                pass
+                db.rollback()
 
 
-@_threaded
+@threaded_function
 def restart_node(node_id, config):
 
     with GetDB() as db:
@@ -149,7 +141,7 @@ def restart_node(node_id, config):
             try:
                 crud.update_node_status(db, dbnode, status, message, version)
             except SQLAlchemyError:
-                pass
+                db.rollback()
 
 
 __all__ = [

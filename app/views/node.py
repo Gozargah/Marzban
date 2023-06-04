@@ -27,6 +27,7 @@ def add_node(new_node: NodeCreate,
     try:
         dbnode = crud.create_node(db, new_node)
     except sqlalchemy.exc.IntegrityError:
+        db.rollback()
         raise HTTPException(status_code=409, detail=f"Node \"{new_node.name}\" already exists")
 
     xray.operations.add_node(dbnode)
