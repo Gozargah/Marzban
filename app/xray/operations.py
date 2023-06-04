@@ -132,10 +132,8 @@ def restart_node(node_id, config):
         try:
             logger.info(f"Restarting \"{dbnode.name}\" node")
             if node.started:
-                print("resatring")
                 node.restart(config)
             else:
-                print("starting")
                 node.start(config)
             message = None
             status = NodeStatus.connected

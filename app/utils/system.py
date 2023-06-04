@@ -99,7 +99,6 @@ def get_public_ip():
     except (requests.exceptions.RequestException,
             requests.exceptions.RequestException,
             KeyError) as e:
-        print(e)
         pass
 
     try:
