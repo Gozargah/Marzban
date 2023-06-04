@@ -87,6 +87,9 @@ def restart_core(admin: Admin = Depends(Admin.get_current)):
         raise HTTPException(status_code=403, detail="You're not allowed")
 
     xray.core.restart(xray.config.include_db_users())
+    for node_id, node in xray.nodes.items():
+        if node.connected:
+            xray.operations.restart_node(node_id, xray.config.include_db_users())
     return {}
 
 
