@@ -7,7 +7,7 @@ from app import scheduler, xray
 from app.db import GetDB
 from app.db.models import NodeUsage, NodeUserUsage, System, User
 from app.utils.concurrency import threaded_function
-from xray_api import XRay as XRayAPI
+from xray_api import XRay as XRayAPI, exc as xray_exc
 
 
 def record_user_stats(params: list, node_id: int):
@@ -50,10 +50,17 @@ def record_user_stats(params: list, node_id: int):
 
 @threaded_function
 def record_user_usage(api: XRayAPI, node_id: int = 0):
-    params = [
-        {"link": stat.link, "uid": str(stat.name).split('.', 1)[0], "value": stat.value}
-        for stat in filter(attrgetter('value'), api.get_users_stats(reset=True))
-    ]
+    try:
+        params = [
+            {"link": stat.link, "uid": str(stat.name).split('.', 1)[0], "value": stat.value}
+            for stat in filter(attrgetter('value'), api.get_users_stats(reset=True))
+        ]
+    except xray_exc.ConnectionError:
+        if node_id == 0:
+            xray.core.restart(xray.config.include_db_users())
+        else:
+            xray.operations.restart_node(node_id, xray.config.include_db_users())
+        return
 
     if not params:
         return
@@ -95,9 +102,16 @@ def record_node_stats(params: dict, node_id: int):
 
 @threaded_function
 def record_node_usage(api: XRayAPI, node_id: int = 0):
-    params = [{"nid": node_id, "up": stat.value, "down": 0}
-              if stat.link == "uplink" else {"nid": node_id, "up": 0, "down": stat.value}
-              for stat in filter(attrgetter('value'), api.get_outbounds_stats(reset=True))]
+    try:
+        params = [{"nid": node_id, "up": stat.value, "down": 0}
+                  if stat.link == "uplink" else {"nid": node_id, "up": 0, "down": stat.value}
+                  for stat in filter(attrgetter('value'), api.get_outbounds_stats(reset=True))]
+    except xray_exc.ConnectionError:
+        if node_id == 0:
+            xray.core.restart(xray.config.include_db_users())
+        else:
+            xray.operations.restart_node(node_id, xray.config.include_db_users())
+        return
 
     if not params:
         return
@@ -119,7 +133,7 @@ def record_usages():
     record_node_usage(xray.api, node_id=0)  # main core
 
     for node_id, node in xray.nodes.items():
-        if node.connected and node.started:
+        if node.connected:
             record_user_usage(node.api, node_id=node_id)
             record_node_usage(node.api, node_id=node_id)
 

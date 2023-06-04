@@ -86,8 +86,10 @@ def connect_node(node_id, config):
 
         try:
             node = xray.nodes[dbnode.id]
-        except KeyError:
+            assert node.connected
+        except (KeyError, AssertionError):
             node = xray.operations.add_node(dbnode)
+
         try:
             crud.update_node_status(db, dbnode, NodeStatus.connecting)
         except SQLAlchemyError:
@@ -105,6 +107,7 @@ def connect_node(node_id, config):
             status = NodeStatus.error
             version = ""
             logger.info(f"Unable to connect to \"{dbnode.name}\" node")
+
         finally:
             try:
                 crud.update_node_status(db, dbnode, status, message, version)
@@ -122,12 +125,18 @@ def restart_node(node_id, config):
 
         try:
             node = xray.nodes[dbnode.id]
-        except KeyError:
+            assert node.connected
+        except (KeyError, AssertionError):
             node = xray.operations.add_node(dbnode)
 
         try:
             logger.info(f"Restarting \"{dbnode.name}\" node")
-            node.restart(config)
+            if node.started:
+                print("resatring")
+                node.restart(config)
+            else:
+                print("starting")
+                node.start(config)
             message = None
             status = NodeStatus.connected
             version = node.remote.fetch_xray_version()
@@ -137,6 +146,7 @@ def restart_node(node_id, config):
             status = NodeStatus.error
             version = ""
             logger.info(f"Unable to restart \"{dbnode.name}\" node")
+
         finally:
             try:
                 crud.update_node_status(db, dbnode, status, message, version)
