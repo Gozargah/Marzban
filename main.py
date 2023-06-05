@@ -20,7 +20,7 @@ if __name__ == "__main__":
             host=('0.0.0.0' if DEBUG else UVICORN_HOST),
             port=UVICORN_PORT,
             uds=(None if DEBUG else UVICORN_UDS),
-            root_path=UVICORN_ROOT_PATH
+            root_path=UVICORN_ROOT_PATH,
             ssl_certfile=UVICORN_SSL_CERTFILE,
             ssl_keyfile=UVICORN_SSL_KEYFILE,
             workers=1,
