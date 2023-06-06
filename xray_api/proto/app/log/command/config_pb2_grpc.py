@@ -15,10 +15,10 @@ class LoggerServiceStub(object):
             channel: A grpc.Channel.
         """
         self.RestartLogger = channel.unary_unary(
-                '/xray.app.log.command.LoggerService/RestartLogger',
-                request_serializer=app_dot_log_dot_command_dot_config__pb2.RestartLoggerRequest.SerializeToString,
-                response_deserializer=app_dot_log_dot_command_dot_config__pb2.RestartLoggerResponse.FromString,
-                )
+            '/xray.app.log.command.LoggerService/RestartLogger',
+            request_serializer=app_dot_log_dot_command_dot_config__pb2.RestartLoggerRequest.SerializeToString,
+            response_deserializer=app_dot_log_dot_command_dot_config__pb2.RestartLoggerResponse.FromString,
+        )
 
 
 class LoggerServiceServicer(object):
@@ -33,34 +33,35 @@ class LoggerServiceServicer(object):
 
 def add_LoggerServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'RestartLogger': grpc.unary_unary_rpc_method_handler(
-                    servicer.RestartLogger,
-                    request_deserializer=app_dot_log_dot_command_dot_config__pb2.RestartLoggerRequest.FromString,
-                    response_serializer=app_dot_log_dot_command_dot_config__pb2.RestartLoggerResponse.SerializeToString,
-            ),
+        'RestartLogger': grpc.unary_unary_rpc_method_handler(
+            servicer.RestartLogger,
+            request_deserializer=app_dot_log_dot_command_dot_config__pb2.RestartLoggerRequest.FromString,
+            response_serializer=app_dot_log_dot_command_dot_config__pb2.RestartLoggerResponse.SerializeToString,
+        ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'xray.app.log.command.LoggerService', rpc_method_handlers)
+        'xray.app.log.command.LoggerService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
-
  # This class is part of an EXPERIMENTAL API.
+
+
 class LoggerService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
     def RestartLogger(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
+                      target,
+                      options=(),
+                      channel_credentials=None,
+                      call_credentials=None,
+                      insecure=False,
+                      compression=None,
+                      wait_for_ready=None,
+                      timeout=None,
+                      metadata=None):
         return grpc.experimental.unary_unary(request, target, '/xray.app.log.command.LoggerService/RestartLogger',
-            app_dot_log_dot_command_dot_config__pb2.RestartLoggerRequest.SerializeToString,
-            app_dot_log_dot_command_dot_config__pb2.RestartLoggerResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+                                             app_dot_log_dot_command_dot_config__pb2.RestartLoggerRequest.SerializeToString,
+                                             app_dot_log_dot_command_dot_config__pb2.RestartLoggerResponse.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

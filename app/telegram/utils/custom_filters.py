@@ -26,6 +26,5 @@ def cb_query_startswith(text: str):
     return lambda query: query.data.startswith(text)
 
 
-
 def setup() -> None:
     bot.add_custom_filter(IsAdminFilter())

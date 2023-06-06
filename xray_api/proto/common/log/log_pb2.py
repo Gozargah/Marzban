@@ -13,8 +13,6 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-
-
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14\x63ommon/log/log.proto\x12\x0fxray.common.log*D\n\x08Severity\x12\x0b\n\x07Unknown\x10\x00\x12\t\n\x05\x45rror\x10\x01\x12\x0b\n\x07Warning\x10\x02\x12\x08\n\x04Info\x10\x03\x12\t\n\x05\x44\x65\x62ug\x10\x04\x42O\n\x13\x63om.xray.common.logP\x01Z$github.com/xtls/xray-core/common/log\xaa\x02\x0fXray.Common.Logb\x06proto3')
 
 _SEVERITY = DESCRIPTOR.enum_types_by_name['Severity']
@@ -28,8 +26,8 @@ Debug = 4
 
 if _descriptor._USE_C_DESCRIPTORS == False:
 
-  DESCRIPTOR._options = None
-  DESCRIPTOR._serialized_options = b'\n\023com.xray.common.logP\001Z$github.com/xtls/xray-core/common/log\252\002\017Xray.Common.Log'
-  _SEVERITY._serialized_start=41
-  _SEVERITY._serialized_end=109
+    DESCRIPTOR._options = None
+    DESCRIPTOR._serialized_options = b'\n\023com.xray.common.logP\001Z$github.com/xtls/xray-core/common/log\252\002\017Xray.Common.Log'
+    _SEVERITY._serialized_start = 41
+    _SEVERITY._serialized_end = 109
 # @@protoc_insertion_point(module_scope)

@@ -13,6 +13,7 @@ if TELEGRAM_API_TOKEN:
 
 handler_names = ["admin", "report", "user"]
 
+
 @app.on_event("startup")
 def start_bot():
     if bot:
@@ -21,7 +22,7 @@ def start_bot():
             spec = importlib.util.spec_from_file_location(name, f"{handler_dir}{name}.py")
             spec.loader.exec_module(importlib.util.module_from_spec(spec))
 
-        from app.telegram import utils # setup custom handlers
+        from app.telegram import utils  # setup custom handlers
         utils.setup()
 
         thread = Thread(target=bot.infinity_polling, daemon=True)
