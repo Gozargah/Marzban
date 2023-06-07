@@ -31,7 +31,7 @@ import { FC, useEffect, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { Icon } from "./Icon";
 import { useTranslation } from "react-i18next";
-import { Rule, useClash } from "contexts/ClashContext";
+import { Rule, Ruleset, useClash } from "contexts/ClashContext";
 import { DeleteIcon } from "./DeleteUserModal";
 
 const AddIcon = chakra(PlusIcon, {
@@ -237,7 +237,7 @@ export const ClashRuleDialog: FC<ClashRuleDialogProps> = () => {
                           {rulesets.data.map((ruleset) => {
                             return (
                               <option key={ruleset.id} value={ruleset.name}>
-                                {ruleset.name}
+                                {ruleset.name} ({ruleset.preferred_proxy})
                               </option>
                             );
                           })}

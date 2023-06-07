@@ -52,7 +52,7 @@ import { useTranslation } from "react-i18next";
 import { Icon as TitleIcon } from "./Icon";
 import classNames from "classnames";
 import { Sort } from "./UsersTable";
-import { User, useClash } from "contexts/ClashContext";
+import { Ruleset, User, useClash } from "contexts/ClashContext";
 import { Pagination } from "./Pagination";
 import debounce from "lodash.debounce";
 import CodeMirror from '@uiw/react-codemirror';
@@ -686,6 +686,7 @@ const Rules: FC<StackProps> = () => {
   } = useClash();
 
   const [search, setSearch] = useState("");
+  const rulesetsByName: { [key: string]: Ruleset } = rulesets.data.reduce((ac, a) => ({...ac, [a.name]: a}), {});
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -900,7 +901,9 @@ const Rules: FC<StackProps> = () => {
                   <Td pt="2.5" pb="2.5" pr="0" fontSize="sm" >{rule.type}</Td>
                   <Td pt="2.5" pb="2.5" pr="0" fontSize="sm" >{rule.content}</Td>
                   <Td pt="2.5" pb="2.5" pr="0" fontSize="sm" >{rule.option}</Td>
-                  <Td pt="2.5" pb="2.5" fontSize="sm" >{rule.ruleset}</Td>
+                  <Td pt="2.5" pb="2.5" fontSize="sm" >
+                    {rule.ruleset} ({rulesetsByName[rule.ruleset].preferred_proxy})
+                  </Td>
                 </Tr>
               );
             })}
