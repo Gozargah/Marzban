@@ -12,11 +12,11 @@
   "dependencies": {
     "@chakra-ui/icons": "^2.0.19",
     "@chakra-ui/react": "^2.5.5",
+    "@codemirror/legacy-modes": "^6.3.2",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
     "@heroicons/react": "^2.0.12",
     "@hookform/resolvers": "^2.9.10",
-    "@uiw/codemirror-extensions-langs": "^4.20.2",
     "@uiw/react-codemirror": "^4.20.2",
     "apexcharts": "^3.40.0",
     "classnames": "^2.3.2",

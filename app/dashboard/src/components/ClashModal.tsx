@@ -56,7 +56,8 @@ import { Ruleset, User, useClash } from "contexts/ClashContext";
 import { Pagination } from "./Pagination";
 import debounce from "lodash.debounce";
 import CodeMirror from '@uiw/react-codemirror';
-import { langs } from '@uiw/codemirror-extensions-langs';
+import { yaml } from '@codemirror/legacy-modes/mode/yaml';
+import { StreamLanguage } from '@codemirror/language';
 import CopyToClipboard from "react-copy-to-clipboard";
 
 const iconProps = {
@@ -195,7 +196,7 @@ const Setting: FC<BoxProps> = () => {
         value={settings.clash?.content}
         height="500px"
         theme={colorMode}
-        extensions={[langs.yaml()]}
+        extensions={[StreamLanguage.define(yaml)]}
         onChange={(v) => setValue(v)}
       />
       <HStack w="full" justifyContent="flex-end">
