@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 from operator import attrgetter
 
@@ -55,7 +56,7 @@ def record_user_usage(api: XRayAPI, node_id: int = 0):
             {"link": stat.link, "uid": str(stat.name).split('.', 1)[0], "value": stat.value}
             for stat in filter(attrgetter('value'), api.get_users_stats(reset=True))
         ]
-    except xray_exc.ConnectionError:
+    except (xray_exc.ConnectionError, xray_exc.UnkownError):
         if node_id == 0:
             xray.core.restart(xray.config.include_db_users())
         else:
@@ -106,7 +107,7 @@ def record_node_usage(api: XRayAPI, node_id: int = 0):
         params = [{"nid": node_id, "up": stat.value, "down": 0}
                   if stat.link == "uplink" else {"nid": node_id, "up": 0, "down": stat.value}
                   for stat in filter(attrgetter('value'), api.get_outbounds_stats(reset=True))]
-    except xray_exc.ConnectionError:
+    except (xray_exc.ConnectionError, xray_exc.UnkownError):
         if node_id == 0:
             xray.core.restart(xray.config.include_db_users())
         else:
