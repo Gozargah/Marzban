@@ -685,7 +685,7 @@ def create_clash_ruleset(db: Session, ruleset: ClashRulesetCreate):
         name=ruleset.name,
         builtin=False,
         preferred_proxy=ruleset.preferred_proxy,
-        settings=ClashRulesetCreate.settings,
+        settings=ruleset.settings,
         created_at=datetime.utcnow()
     )
     db.add(dbruleset)
