@@ -12,7 +12,7 @@ import {
   ArrowLongRightIcon,
 } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
-import { ChangeEvent, FC } from "react";
+import { ChangeEvent, FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const PrevIcon = chakra(ArrowLongLeftIcon, {
@@ -27,13 +27,6 @@ const NextIcon = chakra(ArrowLongRightIcon, {
     h: 4,
   },
 });
-
-export type PaginationType = {
-  count: number;
-  perPage: number;
-  page: number;
-  onChange?: (page: number) => void;
-};
 
 const MINIMAL_PAGE_ITEM_COUNT = 5;
 
@@ -63,41 +56,35 @@ function generatePageItems(total: number, current: number, width: number) {
     items[i] = i + left;
   }
   // replace non-ending items with placeholders
-  if (items[0] > 0) {
+  if (items[0] as number > 0) {
     items[0] = 0;
     items[1] = "prev-more";
   }
-  if (items[items.length - 1] < total - 1) {
+  if (items[items.length - 1] as number < total - 1) {
     items[items.length - 1] = total - 1;
     items[items.length - 2] = "next-more";
   }
   return items;
 }
 
-export const Pagination: FC = () => {
-  const {
-    filters,
-    onFilterChange,
-    users: { total },
-  } = useDashboard();
-  const { limit: perPage, offset } = filters;
+export type PaginationProps = {
+  total: number;
+  limit?: number;
+  offset?: number;
+  onChange: (page: number, limit: number) => void;
+}
 
-  const page = (offset || 0) / (perPage || 1);
-  const noPages = Math.ceil(total / (perPage || 1));
+export const Pagination: FC<PaginationProps> = ({onChange, total, limit, offset}) => {
+  const page = (offset || 0) / (limit || 1);
+  const noPages = Math.ceil(total / (limit || 1));
   const pages = generatePageItems(noPages, page, 7);
 
   const changePage = (page: number) => {
-    onFilterChange({
-      ...filters,
-      offset: page * (perPage as number),
-    });
+    onChange(page, limit!);
   };
 
   const handlePageSizeChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    onFilterChange({
-      ...filters,
-      limit: parseInt(e.target.value),
-    });
+    onChange(page, parseInt(e.target.value));
   };
 
   const { t } = useTranslation();
@@ -116,7 +103,7 @@ export const Pagination: FC = () => {
         <HStack>
           <Select
             minW="60px"
-            value={perPage}
+            value={limit}
             onChange={handlePageSizeChange}
             size="sm"
             rounded="md"

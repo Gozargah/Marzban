@@ -23,7 +23,7 @@ def app_shutdown():
 
 
 def reconnect_nodes():
-    for node_id, node in xray.nodes.items():
+    for node_id, node in xray.nodes.copy().items():
         if not node.connected:
             xray.operations.connect_node(node_id, xray.config.include_db_users())
 

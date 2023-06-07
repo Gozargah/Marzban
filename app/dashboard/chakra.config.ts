@@ -76,7 +76,7 @@ export const theme = extendTheme({
           _dark: {
             borderColor: "gray.600",
             _disabled: {
-              color: "gray.400",
+              color: "gray.200",
               borderColor: "gray.500",
             },
             _placeholder: {

@@ -15,6 +15,13 @@ import { UsersTable } from "components/UsersTable";
 import { fetchInbounds, useDashboard } from "contexts/DashboardContext";
 import { FC, useEffect } from "react";
 import { Statistics } from "../components/Statistics";
+import { ClashModal } from "components/ClashModal";
+import { AlertDialog } from "components/AlertDialog";
+import { ClashRuleDialog } from "components/ClashRuleDialog";
+import { ClashRulesetDialog } from "components/ClashRulesetDialog";
+import { ClashUserDialog } from "components/ClashUserDialog";
+import { ClashProxyGroupDialog } from "components/ClashProxyGroupDialog";
+import { ClashProxyDialog } from "components/ClashProxyDialog";
 
 export const Dashboard: FC = () => {
   useEffect(() => {
@@ -37,6 +44,13 @@ export const Dashboard: FC = () => {
         <NodesUsage />
         <ResetAllUsageModal />
         <CoreSettingsModal />
+        <AlertDialog />
+        <ClashModal />
+        <ClashRuleDialog />
+        <ClashRulesetDialog />
+        <ClashUserDialog />
+        <ClashProxyGroupDialog />
+        <ClashProxyDialog />
       </Box>
       <Footer />
     </VStack>
