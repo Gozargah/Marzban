@@ -902,7 +902,7 @@ const Rules: FC<StackProps> = () => {
                   <Td pt="2.5" pb="2.5" pr="0" fontSize="sm" >{rule.content}</Td>
                   <Td pt="2.5" pb="2.5" pr="0" fontSize="sm" >{rule.option}</Td>
                   <Td pt="2.5" pb="2.5" fontSize="sm" >
-                    {rule.ruleset} ({rulesetsByName[rule.ruleset].preferred_proxy})
+                    {rule.ruleset} ({rulesetsByName[rule.ruleset]?.preferred_proxy})
                   </Td>
                 </Tr>
               );
