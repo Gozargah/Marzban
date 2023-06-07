@@ -305,7 +305,7 @@ def get_clash_proxies(offset: int = None,
         sort = []
         for opt in opts:
             try:
-                sort.append(crud.SubProxySortingOptions[opt])
+                sort.append(crud.ClashProxySortingOptions[opt])
             except KeyError:
                 raise HTTPException(status_code=400,
                                     detail=f'"{opt}" is not a valid sort option')

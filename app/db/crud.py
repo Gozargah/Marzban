@@ -621,20 +621,20 @@ def get_clash_user(db: Session, username: int):
     if not dbuser:
         return None;
 
-    dbsubuser = db.query(ClashUser).filter(ClashUser.user_id == dbuser.id).first()
-    if not dbsubuser:
-        dbsubuser = ClashUser(
+    dbclashuser = db.query(ClashUser).filter(ClashUser.user_id == dbuser.id).first()
+    if not dbclashuser:
+        dbclashuser = ClashUser(
             user_id=dbuser.id,
             tags="",
             domain="",
             code=str(uuid4()),
             issued_at=datetime.utcnow()
         )
-        db.add(dbsubuser)
+        db.add(dbclashuser)
         db.commit()
-        db.refresh(dbsubuser)
+        db.refresh(dbclashuser)
 
-    return dbsubuser
+    return dbclashuser
 
 def update_clash_user(db: Session, dbuser: ClashUser, modify: ClashUserCreate):
     dbuser.tags = modify.tags if modify.tags else ""
@@ -766,7 +766,7 @@ def get_clash_rulesets(db: Session) -> List[ClashRuleset]:
 
     return query.all()
 
-SubProxySortingOptions = Enum('SubProxySortingOptions', {
+ClashProxySortingOptions = Enum('ClashProxySortingOptions', {
     'id': ClashProxy.id.asc(),
     'created_at': ClashProxy.created_at.asc(),
     'inbound': ClashProxy.inbound.asc(),
@@ -785,7 +785,7 @@ def get_clash_proxies(db: Session,
               offset: Optional[int] = None,
               limit: Optional[int] = None,
               search: Optional[str] = None,
-              sort: Optional[List[SubProxySortingOptions]] = None
+              sort: Optional[List[ClashProxySortingOptions]] = None
             ) -> Tuple[List[ClashProxy], int]:
     query = db.query(ClashProxy)
 
