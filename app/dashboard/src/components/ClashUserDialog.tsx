@@ -209,7 +209,8 @@ export const ClashUserDialog: FC<ClashUserDialogProps> = () => {
     form.reset(getDefaultValues());
     onEditingUser(null);
     setError(null);
-    setDomain("")
+    setDomain("");
+    setSearch("");
   };
 
   const disabled = loading;

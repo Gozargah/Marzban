@@ -1037,7 +1037,7 @@ const Users: FC<StackProps> = () => {
               >
                 <HStack>
                   <span>{t("username")}</span>
-                  <Sort sort={userFilter.sort} column="domain" />
+                  <Sort sort={userFilter.sort} column="username" />
                 </HStack>
               </Th>
               <Th
