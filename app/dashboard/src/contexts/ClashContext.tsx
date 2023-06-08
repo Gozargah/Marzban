@@ -506,6 +506,10 @@ export const useClash = create<SubscriptionStore>((set, get) => ({
   editProxy: (body: Proxy) =>{
     return fetch(`/clash/proxy/${body.id}`, { method: "PUT", body }).then(
       () => {
+        const editingProxy = get().editingProxy;
+        if (editingProxy?.tag && editingProxy.tag != body.tag) {
+          get().shouldFetch.users = true;
+        }
         set({ editingProxy: null });
         get().shouldFetch.proxyGroups = true;
         get().shouldFetch.proxyTags = true;
@@ -515,6 +519,10 @@ export const useClash = create<SubscriptionStore>((set, get) => ({
   },
   deleteProxy: (body: Proxy) => {
     return fetch(`/clash/proxy/${body.id}`, { method: "DELETE" }).then(() => {
+      const editingProxy = get().editingProxy;
+      if (editingProxy?.tag) {
+        get().shouldFetch.users = true;
+      }
       set({ editingProxy: null });
       get().shouldFetch.proxyGroups = true;
       get().shouldFetch.proxyTags = true;
@@ -577,6 +585,10 @@ export const useClash = create<SubscriptionStore>((set, get) => ({
   editProxyGroup: (body: ProxyGroup) =>{
     return fetch(`/clash/proxy/group/${body.id}`, { method: "PUT", body }).then(
       () => {
+        const editingProxyGroup = get().editingProxyGroup;
+        if (editingProxyGroup?.tag && editingProxyGroup.tag != body.tag) {
+          get().shouldFetch.users = true;
+        }
         set({ editingProxyGroup: null });
         get().shouldFetch.proxyTags = true;
         get().fetchProxyGroups();
@@ -585,6 +597,10 @@ export const useClash = create<SubscriptionStore>((set, get) => ({
   },
   deleteProxyGroup: (body: ProxyGroup) => {
     return fetch(`/clash/proxy/group/${body.id}`, { method: "DELETE" }).then(() => {
+      const editingProxyGroup = get().editingProxyGroup;
+      if (editingProxyGroup?.tag) {
+        get().shouldFetch.users = true;
+      }
       set({ editingProxyGroup: null });
       get().shouldFetch.proxyTags = true;
       get().fetchProxyGroups();

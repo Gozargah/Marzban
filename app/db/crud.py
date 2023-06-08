@@ -636,6 +636,22 @@ def get_clash_user(db: Session, username: int):
 
     return dbclashuser
 
+def update_clash_user_tag(db: Session, old_tag: str, new_tag: str):
+    if not old_tag:
+        return
+    
+    query = db.query(ClashUser).filter(ClashUser.tags.ilike(f'%{old_tag}%'))
+    for dbuser in query.all():
+        tags = str(dbuser.tags).split(",")
+        idx = tags.index(old_tag)
+        if new_tag:
+            tags[idx] = new_tag
+        else:
+            tags.remove(old_tag)
+        dbuser.tags = ",".join(tags)
+
+    db.commit()
+
 def update_clash_user(db: Session, dbuser: ClashUser, modify: ClashUserCreate):
     dbuser.tags = modify.tags if modify.tags else ""
     dbuser.domain = modify.domain if modify.domain else ""
@@ -827,6 +843,9 @@ def create_clash_proxy(db: Session, proxy: ClashProxyCreate):
     return dbruleset
 
 def update_clash_proxy(db: Session, dbproxy: ClashProxy, modify: ClashProxyCreate):
+    old_tag = dbproxy.tag
+    new_tag = modify.tag
+
     dbproxy.name = modify.name
     dbproxy.tag = modify.tag
     dbproxy.inbound = modify.inbound
@@ -836,11 +855,20 @@ def update_clash_proxy(db: Session, dbproxy: ClashProxy, modify: ClashProxyCreat
 
     db.commit()
     db.refresh(dbproxy)
+
+    update_clash_user_tag(db, old_tag, new_tag)
+
     return dbproxy
 
 def remove_clash_proxy(db: Session, dbproxy: ClashProxy):
+    old_tag = dbproxy.tag
+    new_tag = ""
+
     db.delete(dbproxy)
     db.commit()
+
+    update_clash_user_tag(db, old_tag, new_tag)
+
     return dbproxy
 
 ClashProxyGroupSortingOptions = Enum('ClashProxyGroupSortingOptions', {
@@ -875,6 +903,9 @@ def create_clash_proxy_group(db: Session, proxy_group: ClashProxyGroupCreate):
     return dbruleset
 
 def update_clash_proxy_group(db: Session, dbproxy_group: ClashProxyGroup, modify: ClashProxyGroupCreate):
+    old_tag = dbproxy_group.tag
+    new_tag = modify.tag
+
     dbproxy_group.name = modify.name
     dbproxy_group.settings = modify.settings
     if not dbproxy_group.builtin:
@@ -885,11 +916,20 @@ def update_clash_proxy_group(db: Session, dbproxy_group: ClashProxyGroup, modify
 
     db.commit()
     db.refresh(dbproxy_group)
+
+    update_clash_user_tag(db, old_tag, new_tag)
+
     return dbproxy_group
 
 def remove_clash_proxy_group(db: Session, dbproxy_group: ClashProxyGroup):
+    old_tag = dbproxy_group.tag
+    new_tag = ""
+
     db.delete(dbproxy_group)
     db.commit()
+
+    update_clash_user_tag(db, old_tag, new_tag)
+
     return dbproxy_group
 
 def get_clash_proxy_groups(db: Session,
