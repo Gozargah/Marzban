@@ -282,7 +282,7 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
   const disabled = loading;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} size="md">
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
       <FormProvider {...form}>
         <ModalContent mx="3">
@@ -378,18 +378,6 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                     />
                   </FormControl>
                 </HStack>
-                {port.indexOf(":") > 0 && (
-                  <FormControl>
-                    <FormLabel>{t("clash.icon")}</FormLabel>
-                    <Input
-                      size="sm"
-                      type="text"
-                      borderRadius="6px"
-                      disabled={disabled}
-                      {...form.register("settings.icon")}
-                    />
-                  </FormControl>
-                )}
                 <HStack w="full">
                   <FormControl isInvalid={!!form.formState.errors.inbound}>
                     <FormLabel>{t("clash.inbound")}</FormLabel>
@@ -507,95 +495,131 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                     </AccordionButton>
                     <AccordionPanel w="full" p={1}>
                       <VStack w="full">
-                      {inbound && inbound.type != "shadowsocks" && (
-                        <VStack w="full">
-                          {inbound.network == "ws" && (
-                            <FormControl>
-                              <FormLabel>{t("clash.proxy.wsAdditionPath")}</FormLabel>
-                              <Controller
-                                control={form.control}
-                                name={`settings.${inbound.type}.ws_addition_path`}
-                                render={({field: {onChange, ...rest}}) => {
-                                  return (
-                                    <Input
-                                      size="sm"
-                                      type="text"
-                                      borderRadius="6px"
-                                      disabled={disabled}
-                                      {...rest}
-                                      onChange={(e) => {
-                                        setWSAdditionPath(e.target.value);
-                                        onChange(e);
-                                      }}
-                                    />
-                                  );
-                                }}
-                              />
-                              <Flex
-                                fontSize="xs"
-                                color="gray.500"
-                                pt="1"
-                              >
-                                <Text>wsSettings.path: {inbound.ws_path}</Text>
-                                <Text
-                                  color="primary.500"
-                                  fontWeight="bold"
-                                >
-                                  {wsAdditionPath}
-                                </Text>
-                                <Text>?user={"{username}"}&port={inbound.port}</Text>
-                              </Flex>
-                            </FormControl>
-                          )}
-                          {inbound.type == "trojan" && (
-                            <FormControl>
-                              <FormLabel>SNI</FormLabel>
-                              <Input
-                                size="sm"
-                                type="text"
-                                borderRadius="6px"
-                                disabled={disabled}
-                                {...form.register(`settings.${inbound.type}.sni`)}
-                              />
-                            </FormControl>
-                          )}
-                          {(inbound.type == "vmess" || inbound.type == "vless") && (
-                            <FormControl>
-                              <FormLabel>{t("clash.proxy.serverName")}</FormLabel>
-                              {inbound.security == "reality" && (
-                                 <Input
-                                  size="sm"
-                                  type="text"
-                                  borderRadius="6px"
-                                  disabled={true}
-                                  value={inbound.servername}
+                        {port.indexOf(":") > 0 && (
+                          <FormControl>
+                            <FormLabel>{t("clash.icon")}</FormLabel>
+                            <Input
+                              size="sm"
+                              type="text"
+                              borderRadius="6px"
+                              disabled={disabled}
+                              {...form.register("settings.icon")}
+                            />
+                          </FormControl>
+                        )}
+                        {inbound && inbound.type != "shadowsocks" && (
+                          <VStack w="full">
+                            {inbound.network == "ws" && (
+                              <FormControl>
+                                <FormLabel>{t("clash.proxy.wsAdditionPath")}</FormLabel>
+                                <Controller
+                                  control={form.control}
+                                  name={`settings.${inbound.type}.ws_addition_path`}
+                                  render={({field: {onChange, ...rest}}) => {
+                                    return (
+                                      <Input
+                                        size="sm"
+                                        type="text"
+                                        borderRadius="6px"
+                                        disabled={disabled}
+                                        {...rest}
+                                        onChange={(e) => {
+                                          setWSAdditionPath(e.target.value);
+                                          onChange(e);
+                                        }}
+                                      />
+                                    );
+                                  }}
                                 />
-                              )}
-                              {inbound.security != "reality" && (
-                                 <Input
+                                <Flex
+                                  fontSize="xs"
+                                  color="gray.500"
+                                  pt="1"
+                                >
+                                  <Text>wsSettings.path: {inbound.ws_path}</Text>
+                                  <Text
+                                    color="primary.500"
+                                    fontWeight="bold"
+                                  >
+                                    {wsAdditionPath}
+                                  </Text>
+                                  <Text>?user={"{username}"}&port={inbound.port}</Text>
+                                </Flex>
+                              </FormControl>
+                            )}
+                            {inbound.type == "trojan" && (
+                              <FormControl>
+                                <FormLabel>SNI</FormLabel>
+                                <Input
                                   size="sm"
                                   type="text"
                                   borderRadius="6px"
                                   disabled={disabled}
-                                  {...form.register(`settings.${inbound.type}.servername`)}
+                                  {...form.register(`settings.${inbound.type}.sni`)}
                                 />
-                              )}
-                            </FormControl>
-                          )}
-                          <HStack w="full">
-                            <FormControl>
-                              <FormLabel>ALPN</FormLabel>
+                              </FormControl>
+                            )}
+                            {(inbound.type == "vmess" || inbound.type == "vless") && (
+                              <FormControl>
+                                <FormLabel>{t("clash.proxy.serverName")}</FormLabel>
+                                {inbound.security == "reality" && (
+                                  <Input
+                                    size="sm"
+                                    type="text"
+                                    borderRadius="6px"
+                                    disabled={true}
+                                    value={inbound.servername}
+                                  />
+                                )}
+                                {inbound.security != "reality" && (
+                                  <Input
+                                    size="sm"
+                                    type="text"
+                                    borderRadius="6px"
+                                    disabled={disabled}
+                                    {...form.register(`settings.${inbound.type}.servername`)}
+                                  />
+                                )}
+                              </FormControl>
+                            )}
+                            <HStack w="full">
+                              <FormControl>
+                                <FormLabel>ALPN</FormLabel>
+                                  <Controller
+                                    control={form.control}
+                                    name={`settings.${inbound.type}.alpn`}
+                                    render={({field}) => {
+                                      return (
+                                        <Select
+                                          disabled={disabled} 
+                                          size="sm"
+                                          {...field}
+                                        >
+                                          {proxyALPN.map((v) => {
+                                            return (
+                                              <option key={v.value} value={v.value}>
+                                                {v.title}
+                                              </option>
+                                            )
+                                          })}
+                                        </Select>
+                                      )
+                                    }}
+                                  />
+                              </FormControl>
+                              <FormControl>
+                                <FormLabel>{t("clash.proxy.fingerprint")}</FormLabel>
                                 <Controller
                                   control={form.control}
-                                  name={`settings.${inbound.type}.alpn`}
+                                  name={`settings.${inbound.type}.fingerprint`}
                                   render={({field}) => {
                                     return (
-                                      <Select
+                                      <Select 
                                         disabled={disabled} 
                                         size="sm"
                                         {...field}
                                       >
-                                        {proxyALPN.map((v) => {
+                                        {proxyFingerprint.map((v) => {
                                           return (
                                             <option key={v.value} value={v.value}>
                                               {v.title}
@@ -606,44 +630,20 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                                     )
                                   }}
                                 />
-                            </FormControl>
-                            <FormControl>
-                              <FormLabel>{t("clash.proxy.fingerprint")}</FormLabel>
-                              <Controller
-                                control={form.control}
-                                name={`settings.${inbound.type}.fingerprint`}
-                                render={({field}) => {
-                                  return (
-                                    <Select 
-                                      disabled={disabled} 
-                                      size="sm"
-                                      {...field}
-                                    >
-                                      {proxyFingerprint.map((v) => {
-                                        return (
-                                          <option key={v.value} value={v.value}>
-                                            {v.title}
-                                          </option>
-                                        )
-                                      })}
-                                    </Select>
-                                  )
-                                }}
-                              />
-                            </FormControl>
-                          </HStack>
-                          <HStack pt={1} w="full" gap="4">
-                            <FormControl w="fit-content" display='flex' alignItems='center'>
-                              <FormLabel mb='0'>UDP</FormLabel>
-                              <Switch {...form.register(`settings.${inbound.type}.udp`)} />
-                            </FormControl>
-                            <FormControl w="fit-content" display='flex' alignItems='center'>
-                              <FormLabel mb='0'>{t("clash.proxy.allowInsecure")}</FormLabel>
-                              <Switch {...form.register(`settings.${inbound.type}.allow_insecure`)} />
-                            </FormControl>
-                          </HStack>
-                        </VStack>
-                      )}
+                              </FormControl>
+                            </HStack>
+                            <HStack pt={1} w="full" gap="4">
+                              <FormControl w="fit-content" display='flex' alignItems='center'>
+                                <FormLabel mb='0'>UDP</FormLabel>
+                                <Switch {...form.register(`settings.${inbound.type}.udp`)} />
+                              </FormControl>
+                              <FormControl w="fit-content" display='flex' alignItems='center'>
+                                <FormLabel mb='0'>{t("clash.proxy.allowInsecure")}</FormLabel>
+                                <Switch {...form.register(`settings.${inbound.type}.allow_insecure`)} />
+                              </FormControl>
+                            </HStack>
+                          </VStack>
+                        )}
                       </VStack>
                     </AccordionPanel>
                   </AccordionItem>

@@ -363,16 +363,6 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
                     />
                   </FormControl>
                 </HStack>
-                <FormControl>
-                  <FormLabel>{t("clash.icon")}</FormLabel>
-                  <Input
-                    size="sm"
-                    type="text"
-                    borderRadius="6px"
-                    disabled={disabled}
-                    {...form.register("settings.icon")}
-                  />
-                </FormControl>
                 <FormControl pt="2">
                   <HStack mb="1">
                     <FormLabel mr="0" mb="0">{t("clash.proxies")}</FormLabel>
@@ -508,6 +498,16 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
                     </AccordionButton>
                     <AccordionPanel w="full" p={1}>
                       <VStack w="full">
+                        <FormControl>
+                          <FormLabel>{t("clash.icon")}</FormLabel>
+                          <Input
+                            size="sm"
+                            type="text"
+                            borderRadius="6px"
+                            disabled={disabled}
+                            {...form.register("settings.icon")}
+                          />
+                        </FormControl>
                         {type == "load-balance" && (
                           <VStack w="full">
                             <FormControl>
