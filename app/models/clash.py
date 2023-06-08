@@ -8,7 +8,7 @@ from typing import Union, List, Optional
 RULE_CONTENT_REGEXP = re.compile(r'^(?=.{1,128}\b)[\w\-/.:]+$')
 RULESET_NAME_REGEXP = re.compile(r'^(?=.{1,32}\b)[\w]+$')
 PROXY_NAME_REGEXP = re.compile(r'^(?=.{1,64}\b)[^\'"]+$')
-PROXY_TAG_REGEXP = re.compile(r'^(?=.{1,64}\b)[\w\-.:]+$')
+PROXY_TAG_REGEXP = re.compile(r'^(?=.{1,64}\b)[\w\-.:@#]+$')
 PROXY_INBOUND_REGEXP = re.compile(r'^(?=.{1,64}\b)[\w ]+$')
 PROXY_PORT_REGEXP = re.compile(r'^(?=.{1,11}\b)[0-9:]+$')
 PROXY_SERVER_REGEXP = re.compile(r'^(?=.{1,64}\b)[\w\-./]+$')
@@ -71,7 +71,7 @@ class ClashProxy(BaseModel):
     @validator('tag', check_fields=False)
     def validate_tag(cls, v):
         if not PROXY_TAG_REGEXP.match(v):
-            raise ValueError('tag only accept "A-Za-z0-9_:-."')
+            raise ValueError('tag only accept "A-Za-z0-9_:-.@#"')
         return v
     
     @validator('port', check_fields=False)
@@ -127,7 +127,7 @@ class ClashProxyGroup(BaseModel):
     @validator('tag', check_fields=False)
     def validate_tag(cls, v):
         if not PROXY_TAG_REGEXP.match(v):
-            raise ValueError('tag only accept "A-Za-z0-9/:-._"')
+            raise ValueError('tag only accept "A-Za-z0-9_:-.@#"')
         return v
     
     @validator('proxies', check_fields=False)

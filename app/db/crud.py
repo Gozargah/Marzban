@@ -643,12 +643,15 @@ def update_clash_user_tag(db: Session, old_tag: str, new_tag: str):
     query = db.query(ClashUser).filter(ClashUser.tags.ilike(f'%{old_tag}%'))
     for dbuser in query.all():
         tags = str(dbuser.tags).split(",")
-        idx = tags.index(old_tag)
-        if new_tag:
-            tags[idx] = new_tag
-        else:
-            tags.remove(old_tag)
-        dbuser.tags = ",".join(tags)
+        try:
+            idx = tags.index(old_tag)
+            if new_tag:
+                tags[idx] = new_tag
+            else:
+                tags.remove(old_tag)
+            dbuser.tags = ",".join(tags)
+        except Exception:
+            pass
 
     db.commit()
 
