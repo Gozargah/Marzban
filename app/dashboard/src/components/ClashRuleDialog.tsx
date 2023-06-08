@@ -4,8 +4,6 @@ import {
   Button,
   chakra,
   FormControl,
-  FormErrorMessage,
-  FormHelperText,
   FormLabel,
   HStack,
   IconButton,
@@ -22,7 +20,6 @@ import {
   useToast,
   VStack,
   Select,
-  Flex,
   Switch,
   Input,
 } from "@chakra-ui/react";
@@ -31,8 +28,9 @@ import { FC, useEffect, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { Icon } from "./Icon";
 import { useTranslation } from "react-i18next";
-import { Rule, Ruleset, useClash } from "contexts/ClashContext";
+import { Rule, useClash } from "contexts/ClashContext";
 import { DeleteIcon } from "./DeleteUserModal";
+import { SettingsIcon } from "@chakra-ui/icons";
 
 const AddIcon = chakra(PlusIcon, {
   baseStyle: {
@@ -85,6 +83,7 @@ export const ClashRuleDialog: FC<ClashRuleDialogProps> = () => {
     isCreatingRule,
     onEditingRule,
     onCreateRule,
+    onEditingRuleset,
     deleteRule,
     editRule,
     createRule,
@@ -201,6 +200,15 @@ export const ClashRuleDialog: FC<ClashRuleDialogProps> = () => {
     });
   };
 
+  const editRuleset = () => {
+    const name = form.getValues().ruleset;
+    const ruleset = rulesets.data.filter((v) => v.name == name)[0];
+    if (ruleset) {
+      onClose();
+      onEditingRuleset(ruleset);
+    }
+  };
+
   const disabled = loading;
 
   return (
@@ -233,15 +241,25 @@ export const ClashRuleDialog: FC<ClashRuleDialogProps> = () => {
                     name="ruleset"
                     render={({ field }) => {
                       return (
-                        <Select disabled={disabled} size="sm" {...field}>
-                          {rulesets.data.map((ruleset) => {
-                            return (
-                              <option key={ruleset.id} value={ruleset.name}>
-                                {ruleset.name} ({ruleset.preferred_proxy})
-                              </option>
-                            );
-                          })}
-                        </Select>
+                        <HStack>
+                          <Select disabled={disabled} size="sm" {...field}>
+                            {rulesets.data.map((ruleset) => {
+                              return (
+                                <option key={ruleset.id} value={ruleset.name}>
+                                  {ruleset.name} ({ruleset.preferred_proxy})
+                                </option>
+                              );
+                            })}
+                          </Select>
+                          <IconButton
+                            aria-label="Edit"
+                            size="sm"
+                            onClick={editRuleset}
+                          >
+                            <SettingsIcon />
+                          </IconButton>
+                        </HStack>
+                        
                       );
                     }}
                   />

@@ -32,12 +32,17 @@ import {
   PopoverArrow,
   PopoverCloseButton,
   Input,
+  InputGroup,
+  InputLeftElement,
+  InputRightElement,
 } from "@chakra-ui/react";
 import {
   PencilIcon,
   PlusIcon,
   ArrowPathRoundedSquareIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon
 } from "@heroicons/react/24/outline";
 import { FC, useEffect, useRef, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
@@ -46,26 +51,18 @@ import { useTranslation } from "react-i18next";
 import { User, useClash } from "contexts/ClashContext";
 import { InfoIcon } from "./ClashModal";
 
-const AddIcon = chakra(PlusIcon, {
+const iconProps = {
   baseStyle: {
     w: 5,
     h: 5,
   },
-});
+};
 
-const RefreshIcon = chakra(ArrowPathRoundedSquareIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-  },
-});
-
-const EditIcon = chakra(PencilIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-  },
-});
+const AddIcon = chakra(PlusIcon, iconProps);
+const RefreshIcon = chakra(ArrowPathRoundedSquareIcon, iconProps);
+const EditIcon = chakra(PencilIcon, iconProps);
+const SearchIcon = chakra(MagnifyingGlassIcon, iconProps);
+const ClearIcon = chakra(XMarkIcon, iconProps);
 
 export type ClashUserDialogProps = {};
 
@@ -110,6 +107,15 @@ export const ClashUserDialog: FC<ClashUserDialogProps> = () => {
       .then(() => {
         form.reset(formatUser(editingUser!), {keepDirtyValues: true, keepDirty: true});
       });
+  };
+
+  const [search, setSearch] = useState("");
+  
+  const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+  };
+  const clear = () => {
+    setSearch("");
   };
 
   const handlerRefreshAuthCode = () => {
@@ -338,6 +344,35 @@ export const ClashUserDialog: FC<ClashUserDialogProps> = () => {
                             })}
                           </Wrap>
                           <HStack w="full">
+                            <InputGroup w="85%">
+                              <InputLeftElement
+                                height="8"
+                                pointerEvents="none"
+                                children={<SearchIcon />} 
+                              />
+                              <Input
+                                size="sm"
+                                borderRadius="md"
+                                placeholder={t("search")}
+                                value={search}
+                                borderColor="light-border"
+                                onChange={onSearchChange}
+                              />
+
+                              <InputRightElement height="8">
+                                {loading && <Spinner size="xs" />}
+                                {search.length > 0 && (
+                                  <IconButton
+                                    onClick={clear}
+                                    aria-label="clear"
+                                    size="xs"
+                                    variant="ghost"
+                                  >
+                                    <ClearIcon />
+                                  </IconButton>
+                                )}
+                              </InputRightElement>
+                            </InputGroup>
                             <Select
                               ref={tagRef}
                               disabled={disabled} 
@@ -345,7 +380,7 @@ export const ClashUserDialog: FC<ClashUserDialogProps> = () => {
                             >
                               {proxyTags.data.map((tag) => {
                                 const exists = value.some((v) => v === tag); 
-                                if (exists) {
+                                if (exists || (search && tag.indexOf(search) < 0)) {
                                   return null;
                                 } else {
                                   return (

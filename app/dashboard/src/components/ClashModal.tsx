@@ -1056,7 +1056,7 @@ const Users: FC<StackProps> = () => {
                 onClick={handleSort.bind(null, "tags")}
               >
                 <HStack>
-                  <span>{t("clash.tag")}</span>
+                  <span>{t("clash.tags")}</span>
                   <Sort sort={userFilter.sort} column="tags" />
                 </HStack>
               </Th>
@@ -1081,7 +1081,7 @@ const Users: FC<StackProps> = () => {
                   <Td pt="5px" pb="5px" pr="0" fontSize="sm" >
                       {user.domain}
                   </Td>
-                  <Td pt="5px" pb="5px" pr="0" fontSize="sm" >
+                  <Td pt="5px" pb="5px" pr="0" fontSize="sm" maxW="300px">
                     <Text noOfLines={1}>
                       {user.tags?.split(",").join(", ")}
                     </Text>
