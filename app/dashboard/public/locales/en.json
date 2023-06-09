@@ -238,5 +238,9 @@
   "clash.user.resetAuthCodePrompt": "Are you sure you want to reset <b>{{name}}</b>'s authorization code? Subscription url will changed after this action!",
   "clash.user.resetAuthCodeSuccess": "{{name}}'s authorization code reseted successfully.",
   "clash.username": "Username",
-  "clash.users": "Users"
+  "clash.users": "Users",
+
+  "error.InvalidProxyName": "Name not accept quotes('\").",
+  "error.InvalidProxyTag": "Tag only accept alphabet(A-Za-z), digit(0-9) and punctuation(_:-.@#).",
+  "error.InvalidProxyPort": "Port only accept digit(0-9) and punctuation(:)."
 }

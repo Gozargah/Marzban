@@ -14,6 +14,9 @@ PROXY_PORT_REGEXP = re.compile(r'^(?=.{1,11}\b)[0-9:]+$')
 PROXY_SERVER_REGEXP = re.compile(r'^(?=.{1,64}\b)[\w\-./]+$')
 PROXY_GROUP_PROXIES_REGEXP = re.compile(r'^(?=.{1,512})[\w,#\.]+$')
 
+def value_error(err: str, message: str):
+    return ValueError({"err": err, "message": message})
+
 class ClashSetting(BaseModel):
     name: str
     content: str
@@ -65,19 +68,19 @@ class ClashProxy(BaseModel):
     @validator('name', check_fields=False)
     def validate_name(cls, v):
         if not PROXY_NAME_REGEXP.match(v):
-            raise ValueError('name not accept quotes')
+            raise value_error('InvalidProxyName', 'name not accept quotes')
         return v
     
     @validator('tag', check_fields=False)
     def validate_tag(cls, v):
         if not PROXY_TAG_REGEXP.match(v):
-            raise ValueError('tag only accept "A-Za-z0-9_:-.@#"')
+            raise value_error('InvalidProxyTag', 'tag only accept "A-Za-z0-9_:-.@#"')
         return v
     
     @validator('port', check_fields=False)
     def validate_port(cls, v):
         if not PROXY_PORT_REGEXP.match(v):
-            raise ValueError('port only accept "0-9:"')
+            raise value_error('InvalidProxyPort', 'port only accept "0-9:"')
         return v
     
     @validator('server', check_fields=False)

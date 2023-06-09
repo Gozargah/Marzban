@@ -233,12 +233,19 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
           setError(err?.response?._data?.detail);
         if (err?.response?.status === 422) {
           Object.keys(err.response._data.detail).forEach((key) => {
-            setError(err?.response?._data?.detail[key]);
+            let message = err.response._data.detail[key];
+            try {
+              const errobj = JSON.parse(message.replace(/"/g, '\\"').replace(/'/g, '"'));
+              if (errobj) {
+                message = t(`error.${errobj.err}`);
+              }
+            } catch (e) {}
+            setError(message);
             form.setError(
               key as "name" | "port" | "server" | "tag" | "inbound",
               {
                 type: "custom",
-                message: err.response._data.detail[key],
+                message: message,
               }
             );
           });

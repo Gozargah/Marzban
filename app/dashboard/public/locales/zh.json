@@ -234,5 +234,9 @@
   "clash.user.resetAuthCodePrompt": "您确定要重置 <b>{{name}}</b> 的授权码吗？执行此操作后，订阅链接将改变！",
   "clash.user.resetAuthCodeSuccess": "{{name}} 的授权码重置成功。",
   "clash.username": "用户名",
-  "clash.users": "用户"
+  "clash.users": "用户",
+
+  "error.InvalidProxyName": "名称不能包含引号（'\"）。",
+  "error.InvalidProxyTag": "标签只能包含字母（A-Za-z）、数字（0-9）和标点符号（:-.@#）。",
+  "error.InvalidProxyPort": "端口只能包含数字（0-9）、标点符号（:）。"
 }
