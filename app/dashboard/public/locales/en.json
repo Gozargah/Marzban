@@ -7,6 +7,7 @@
   "delete": "Delete",
   "expired": "Expired {{time}} ago",
   "expires": "Expires in {{time}}",
+  "fieldRequired": "This field is required",
   "inbound": "Inbound",
   "login": "Login",
   "password": "Password",
@@ -16,7 +17,6 @@
 
   "login.loginYourAccount": "Login to your account",
   "login.welcomeBack": "Welcome back, please enter your details",
-  "login.fieldRequired": "This field is required",
 
   "header.hostsSetting": "Hosts Settings",
   "header.nodesSetting": "Nodes Settings",
@@ -242,5 +242,10 @@
 
   "error.InvalidProxyName": "Name not accept quotes('\").",
   "error.InvalidProxyTag": "Tag only accept alphabet(A-Za-z), digit(0-9) and punctuation(_:-.@#).",
-  "error.InvalidProxyPort": "Port only accept digit(0-9) and punctuation(:)."
+  "error.InvalidProxyPort": "Port only accept digit(0-9) and punctuation(:).",
+  "error.InvalidProxyServer": "Server only accept alphabet(A-Za-z), digit(0-9) and punctuation(A-Za-z0-9/-._).",
+  "error.InvalidRuleContent": "Rule content only accept alphabet(A-Za-z), digit(0-9) and punctuation(_-/.:).",
+  "error.InvalidRulesetName": "Ruleset name only accept alphabet(A-Za-z), digit(0-9) and punctuation(_).",
+  "error.NoProxyInbound": "No inbound selected.",
+  "error.NoProxy": "No proxy selected."
 }

@@ -766,27 +766,19 @@ const Rules: FC<StackProps> = () => {
     <VStack w="full">
       <HStack w="full" justifyContent="space-between">
         <HStack>
-          {ruleFilter.ruleset && (
-            <Tooltip label={t("clash.ruleset.edit")} placement="top">
-              <IconButton
-                aria-label="usage"
-                size="sm"
-                onClick={handleEditRuleset}
-              >
-                <GroupSetting />
-              </IconButton>
-            </Tooltip>
-          )}
-          {!ruleFilter.ruleset && (
+          <Tooltip
+            label={ruleFilter.ruleset ? t("clash.ruleset.edit") : ""}
+            placement="top"
+          >
             <IconButton
               aria-label="usage"
               size="sm"
-              isDisabled={true}
+              isDisabled={!ruleFilter.ruleset}
               onClick={handleEditRuleset}
             >
               <GroupSetting />
             </IconButton>
-          )}
+          </Tooltip>
           <Select
             size="sm"
             maxW="160px"

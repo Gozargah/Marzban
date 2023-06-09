@@ -74,7 +74,10 @@ export type Proxy = {
   settings: ProxySettings;
 };
 
-export type ProxyBrief = Pick<Proxy, | "name" | "server" | "tag"> & { id: string; };
+export type ProxyBrief = Pick<Proxy, | "name" | "server" | "tag"> & { 
+  id: string;
+  builtin: boolean;
+};
 
 export type ProxyFilter = {
   search?: string;

@@ -7,6 +7,7 @@
   "delete": "删除",
   "expired": "{{time}}失效",
   "expires": "{{time}}有效",
+  "fieldRequired": "此项必填",
   "inbound": "入站",
   "login": "登录",
   "password": "密码",
@@ -16,7 +17,6 @@
 
   "login.loginYourAccount": "登录您的帐号",
   "login.welcomeBack": "欢迎回来，请输入您的详细信息",
-  "login.fieldRequired": "此项必填",
 
   "header.hostsSetting": "入站设置",
   "header.nodesSetting": "节点设置",
@@ -238,5 +238,10 @@
 
   "error.InvalidProxyName": "名称不能包含引号（'\"）。",
   "error.InvalidProxyTag": "标签只能包含字母（A-Za-z）、数字（0-9）和标点符号（:-.@#）。",
-  "error.InvalidProxyPort": "端口只能包含数字（0-9）、标点符号（:）。"
+  "error.InvalidProxyPort": "端口只能包含数字（0-9）、标点符号（:）。",
+  "error.InvalidProxyServer": "服务器地址只能包含字母（A-Za-z）、数字（0-9）和标点符号（A-Za-z0-9/-._）。",
+  "error.InvalidRuleContent": "规则内容只能包含字母（A-Za-z）、数字（0-9）和标点符号（_-/.:）。",
+  "error.InvalidRulesetName": "规则组名称只能包含字母（A-Za-z）、数字（0-9）和标点符号（_）。",
+  "error.NoProxyInbound": "未选择任何入站。",
+  "error.NoProxy": "未选择任何代理或代理组。"
 }

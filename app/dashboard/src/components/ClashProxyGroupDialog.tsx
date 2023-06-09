@@ -30,8 +30,6 @@ import {
   Tag,
   TagLabel,
   TagCloseButton,
-  Wrap,
-  WrapItem,
   Input,
   Popover,
   PopoverTrigger,
@@ -40,6 +38,7 @@ import {
   InputGroup,
   InputLeftElement,
   InputRightElement,
+  SimpleGrid,
 } from "@chakra-ui/react";
 import { FC, useEffect, useRef, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
@@ -48,6 +47,8 @@ import { useTranslation } from "react-i18next";
 import { ProxyBrief, ProxyGroup, ProxyGroupSettings, useClash } from "contexts/ClashContext";
 import { DeleteIcon } from "./DeleteUserModal";
 import { AddIcon, ClearIcon, DuplicateIcon, EditIcon, InfoIcon, SearchIcon } from "./ClashModal";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const types = ["select", "load-balance", "relay", "url-test", "fallback"];
 const strategyTypes = ["consistent-hashing", "round-robin"];
@@ -55,6 +56,14 @@ const strategyTypes = ["consistent-hashing", "round-robin"];
 export type ClashProxyGroupDialogProps = {};
 
 export type FormType = Pick<ProxyGroup, keyof ProxyGroup> & { selected_proxies: string[] };
+
+const schema = z.object({
+  name: z.string().min(1, { message: "fieldRequired" }),
+  tag: z.string().min(1, { message: "fieldRequired" }),
+  type: z.string().min(1, { message: "fieldRequired" }),
+  selected_proxies: z.array(z.string()),
+  settings: z.record(z.string(), z.any()),
+});
 
 const getDefaultValues = (): FormType => {
   return {
@@ -120,7 +129,10 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
   const proxiesRef = useRef<HTMLSelectElement>(null);
   const toast = useToast();
   const { t } = useTranslation();
-  const form = useForm<FormType>({ defaultValues: getDefaultValues() });
+  const form = useForm<FormType>({
+    defaultValues: getDefaultValues(),
+    resolver: zodResolver(schema)
+  });
   const proxyBriefs: { [key: string]: ProxyBrief } = proxyGroups.proxies.reduce((ac, a) => ({...ac, [a.id]: a}), {});
 
   useEffect(() => {
@@ -172,6 +184,8 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
     }
     let body: ProxyGroup = {
       ...rest,
+      id: editingProxyGroup?.id,
+      builtin: editingProxyGroup?.builtin || false,
       proxies: selected_proxies.join(","),
       settings: settings,
     };
@@ -194,12 +208,17 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
           setError(err?.response?._data?.detail);
         if (err?.response?.status === 422) {
           Object.keys(err.response._data.detail).forEach((key) => {
-            setError(err?.response?._data?.detail[key]);
+            let message = err.response._data.detail[key];
+            try {
+              const errobj = JSON.parse(message.replace(/"/g, '\\"').replace(/'/g, '"'));
+              message = t(`error.${errobj.err}`);
+            } catch (e) {}
+            setError(message);
             form.setError(
-              key as "name" | "type" | "tag" | "proxies",
+              key as "name" | "tag",
               {
                 type: "custom",
-                message: err.response._data.detail[key],
+                message: message,
               }
             );
           });
@@ -376,25 +395,33 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
                     name="selected_proxies"
                     render={({field: {onChange, value, ...rest}}) => {
                       return (
-                        <VStack>
-                          <Wrap w="full">
+                        <VStack w="full">
+                          <SimpleGrid w="full" spacingY="6px">
                             {value.map((id) => {
                               const proxy = proxyBriefs[id];
                               if (!proxy) {
                                 return null;
                               }
+                              let color = "primary";
+                              if (proxy.id.startsWith("#")) {
+                                color = "green";
+                              } else if (proxy.builtin && proxy.id !== "...") {
+                                color = "purple";
+                              }
                               return (
                                 <Tooltip key={id} label={proxy.server} placement="top">
-                                  <WrapItem>
-                                    <Tag
-                                      w="fit-content"
-                                      size="md"
-                                      borderRadius="full"
-                                      variant="solid"
-                                      cursor="default"
-                                      colorScheme={proxy.id.startsWith("#") ? "green" : "primary"}
-                                    >
-                                      <TagLabel>{proxy.name}{" -> "}{proxy.tag}</TagLabel>
+                                  <Tag
+                                    pl="3"
+                                    pr="3"
+                                    w="fit-content"
+                                    size="md"
+                                    borderRadius="full"
+                                    variant="solid"
+                                    cursor="default"
+                                    colorScheme={color}
+                                  >
+                                    <TagLabel>{proxy.name}{" -> "}{proxy.tag}</TagLabel>
+                                    {!proxy.builtin && (
                                       <TagCloseButton onClick={() => {
                                         const proxies = value.filter((v) => v !== id)
                                         onChange({
@@ -404,12 +431,12 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
                                           }
                                         })
                                       }}/>
-                                    </Tag>
-                                  </WrapItem>
+                                    )}
+                                  </Tag>
                                 </Tooltip>
                               )
                             })}
-                          </Wrap>
+                          </SimpleGrid >
                           <VStack w="full">
                             <HStack w="full">
                               <InputGroup>
@@ -419,6 +446,7 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
                                   children={<SearchIcon />} 
                                 />
                                 <Input
+                                  disabled={disabled || editingProxyGroup?.builtin}
                                   size="sm"
                                   borderRadius="md"
                                   placeholder={t("search")}
@@ -446,7 +474,7 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
                             <HStack w="full">
                               <Select
                                 ref={proxiesRef}
-                                disabled={disabled || editingProxyGroup?.builtin} 
+                                disabled={disabled || editingProxyGroup?.builtin}
                                 size="sm" 
                               >
                                 {proxyGroups.proxies.map((proxy) => {
@@ -454,7 +482,7 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
                                   const id = `#${editingProxyGroup?.id}`;
                                   const name = `${proxy.name} -> ${proxy.tag}`;
                                   const notfound = search && name.toLowerCase().indexOf(search.toLowerCase()) < 0;
-                                  if (exists || proxy.id == id || notfound) {
+                                  if (exists || proxy.builtin || proxy.id == id || notfound) {
                                     return null;
                                   } else {
                                     return (

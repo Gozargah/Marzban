@@ -435,21 +435,43 @@ def get_clash_proxy_groups(offset: int = None,
                                   sort=sort)
     
     proxies = []
+    proxies.append(ClashProxyBriefResponse(
+        id="DIRECT",
+        name="DIRECT",
+        tag="built-in",
+        server="",
+        builtin=True
+    ))
+    proxies.append(ClashProxyBriefResponse(
+        id="REJECT",
+        name="REJECT",
+        tag="built-in",
+        server="",
+        builtin=True
+    ))
+    proxies.append(ClashProxyBriefResponse(
+        id="...",
+        name="...",
+        tag="<User Tags>",
+        server="",
+        builtin=True
+    ))
     for brief in crud.get_all_clash_proxy_briefs(db):
         proxies.append(ClashProxyBriefResponse(
             id=str(brief.id),
             name=brief.name,
             tag=brief.tag,
-            server=brief.server
+            server=brief.server,
+            builtin=False
         ))
     for brief in crud.get_all_clash_proxy_group_briefs(db):
-        if not brief.builtin:
-            proxies.append(ClashProxyBriefResponse(
-                id=f"#{brief.id}",
-                name=brief.name,
-                tag=brief.tag,
-                server="<Proxy Group>"
-            ))
+        proxies.append(ClashProxyBriefResponse(
+            id=f"#{brief.id}",
+            name=brief.name,
+            tag=brief.tag,
+            server="",
+            builtin=brief.builtin
+        ))
     
     proxies.sort(key=lambda v: v.name)
 

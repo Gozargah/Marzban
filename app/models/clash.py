@@ -86,13 +86,16 @@ class ClashProxy(BaseModel):
     @validator('server', check_fields=False)
     def validate_server(cls, v):
         if not PROXY_SERVER_REGEXP.match(v):
-            raise ValueError('server only accept "A-Za-z0-9/-._"')
+            raise value_error('InvalidProxyServer', 'server only accept "A-Za-z0-9/-._"')
         return v
     
     @validator('inbound', check_fields=False)
     def validate_inbound(cls, v):
         if not PROXY_INBOUND_REGEXP.match(v):
-            raise ValueError('inbound only accept "A-Za-z0-9 "')
+            if not v or v.count() == 0:
+                raise value_error('NoProxyInbound', 'no proxies selected')
+            else:
+                raise ValueError('inbound only accept "A-Za-z0-9 "')
         return v
 
 class ClashProxyCreate(ClashProxy):
@@ -103,6 +106,7 @@ class ClashProxyBriefResponse(BaseModel):
     name: str
     server: str
     tag: str
+    builtin: bool
 
 class ClashProxyResponse(ClashProxy):
     id: int
@@ -124,20 +128,20 @@ class ClashProxyGroup(BaseModel):
     @validator('name', check_fields=False)
     def validate_name(cls, v):
         if not PROXY_NAME_REGEXP.match(v):
-            raise ValueError('name not accept quotes')
+            raise value_error('InvalidProxyName', 'name not accept quotes')
         return v
     
     @validator('tag', check_fields=False)
     def validate_tag(cls, v):
         if not PROXY_TAG_REGEXP.match(v):
-            raise ValueError('tag only accept "A-Za-z0-9_:-.@#"')
+            raise value_error('InvalidProxyTag', 'tag only accept "A-Za-z0-9_:-.@#"')
         return v
     
     @validator('proxies', check_fields=False)
     def validate_proxies(cls, v: str):
         if not PROXY_GROUP_PROXIES_REGEXP.match(v):
             if not v or v.count() == 0:
-                raise ValueError('no proxies selected')
+                raise value_error('NoProxy', 'no proxies selected')
             else:
                 raise ValueError('proxies only accept "0-9,"')
         return v
@@ -181,8 +185,7 @@ class ClashRule(BaseModel):
     @validator('content', check_fields=False)
     def validate_content(cls, v):
         if not RULE_CONTENT_REGEXP.match(v):
-            print(v)
-            raise ValueError('content only accept "A-Za-z0-9_-/.:"')
+            raise value_error('InvalidRuleContent', 'content only accept "A-Za-z0-9_-/.:"')
         return v
     
 class ClashRuleCreate(ClashRule):
@@ -206,7 +209,7 @@ class ClashRuleset(BaseModel):
     @validator('name', check_fields=False)
     def validate_name(cls, v):
         if not RULESET_NAME_REGEXP.match(v):
-            raise ValueError('name only accept "a-zA-Z0-9_"')
+            raise value_error('InvalidRulesetName', 'name only accept "a-zA-Z0-9_"')
         return v
 
 class ClashRulesetCreate(ClashRuleset):

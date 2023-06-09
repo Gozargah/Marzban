@@ -49,6 +49,8 @@ import {
 import { DeleteIcon } from "./DeleteUserModal";
 import { XTLSFlows, proxyALPN, proxyFingerprint } from "constants/Proxies";
 import { DuplicateIcon, InfoIcon } from "./ClashModal";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const iconProps = {
   baseStyle: {
@@ -61,6 +63,15 @@ const AddIcon = chakra(PlusIcon, iconProps);
 const EditIcon = chakra(PencilIcon, iconProps);
 
 type FormType = Pick<Proxy, keyof Proxy> & {};
+
+const schema = z.object({
+  name: z.string().min(1, { message: "fieldRequired" }),
+  server: z.string().min(1, { message: "fieldRequired" }),
+  port: z.string().min(1, { message: "fieldRequired" }),
+  tag: z.string().min(1, { message: "fieldRequired" }),
+  inbound: z.string().min(1, { message: "fieldRequired" }),
+  settings: z.record(z.string(), z.any()),
+});
 
 const formatProxy = (proxy: Proxy): FormType => {
   return {
@@ -136,7 +147,10 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
   const [error, setError] = useState<string | null>("");
   const toast = useToast();
   const { t } = useTranslation();
-  const form = useForm<FormType>({ defaultValues: getDefaultValues() });
+  const form = useForm<FormType>({
+    defaultValues: getDefaultValues(),
+    resolver: zodResolver(schema)
+  });
 
   const findInbound = (name: string) => {
     return proxyInbounds.data.find((v) => v.name === name) || null;
@@ -191,27 +205,29 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
     setLoading(true);
     setError(null);
 
+    const defaultSettings = getDefaultValues().settings;
     let settings = {} as ProxySettings;
     if (values.settings.icon) {
       settings.icon = values.settings.icon;
     }
     if(inbound?.type == "trojan") {
       settings.trojan = values.settings.trojan;
-      remove_undefined(settings.trojan, getDefaultValues().settings.trojan);
+      remove_undefined(settings.trojan, defaultSettings.trojan);
     } else if(inbound?.type == "vless") {
       settings.vless = values.settings.vless;
-      remove_undefined(settings.vless, getDefaultValues().settings.vless);
+      remove_undefined(settings.vless, defaultSettings.vless);
     } else if(inbound?.type == "vmess") {
       settings.vmess = values.settings.vmess;
-      remove_undefined(settings.vmess, getDefaultValues().settings.vmess);
+      remove_undefined(settings.vmess, defaultSettings.vmess);
     } else if(inbound?.type == "shadowsocks") {
       settings.shadowsocks = values.settings.shadowsocks;
-      remove_undefined(settings.shadowsocks, getDefaultValues().settings.shadowsocks);
+      remove_undefined(settings.shadowsocks, defaultSettings.shadowsocks);
     }
 
     const {...rest} = values;
     let body: Proxy = {
       ...rest,
+      id: editingProxy?.id,
       settings: settings,
     };
 
@@ -236,9 +252,7 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
             let message = err.response._data.detail[key];
             try {
               const errobj = JSON.parse(message.replace(/"/g, '\\"').replace(/'/g, '"'));
-              if (errobj) {
-                message = t(`error.${errobj.err}`);
-              }
+              message = t(`error.${errobj.err}`);
             } catch (e) {}
             setError(message);
             form.setError(
@@ -350,7 +364,7 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                     </Box>
                   )}
                 </HStack>
-                <HStack w="full">
+                <HStack w="full" alignItems="baseline">
                   <FormControl isInvalid={!!form.formState.errors.server}>
                     <FormLabel>{t("clash.server")}</FormLabel>
                     <Input
@@ -386,7 +400,7 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                     />
                   </FormControl>
                 </HStack>
-                <HStack w="full">
+                <HStack w="full" alignItems="baseline">
                   <FormControl isInvalid={!!form.formState.errors.inbound}>
                     <FormLabel>{t("clash.inbound")}</FormLabel>
                     <Controller
