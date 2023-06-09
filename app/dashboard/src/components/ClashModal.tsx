@@ -45,6 +45,9 @@ import {
   ArrowPathIcon,
   DocumentDuplicateIcon,
   InformationCircleIcon,
+  PlusIcon,
+  PencilIcon,
+  ArrowPathRoundedSquareIcon,
 } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
 import React, { FC, useEffect, useState } from "react";
@@ -66,12 +69,14 @@ const iconProps = {
     h: 5,
   },
 };
-
-const SearchIcon = chakra(MagnifyingGlassIcon, iconProps);
-const ClearIcon = chakra(XMarkIcon, iconProps);
-const SubscriptionIcon = chakra(RssIcon, iconProps);
-const GroupSetting = chakra(Cog6ToothIcon, iconProps);
-const ReloadIcon = chakra(ArrowPathIcon, iconProps);
+export const EditIcon = chakra(PencilIcon, iconProps);
+export const AddIcon = chakra(PlusIcon, iconProps);
+export const SearchIcon = chakra(MagnifyingGlassIcon, iconProps);
+export const ClearIcon = chakra(XMarkIcon, iconProps);
+export const SubscriptionIcon = chakra(RssIcon, iconProps);
+export const GroupSetting = chakra(Cog6ToothIcon, iconProps);
+export const ReloadIcon = chakra(ArrowPathIcon, iconProps);
+export const RefreshIcon = chakra(ArrowPathRoundedSquareIcon, iconProps);
 export const DuplicateIcon = chakra(DocumentDuplicateIcon, {
   baseStyle: {
     w: 6, 

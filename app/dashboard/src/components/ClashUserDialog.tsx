@@ -18,7 +18,6 @@ import {
   useToast,
   VStack,
   Select,
-  Flex,
   Wrap,
   WrapItem,
   Tag,
@@ -27,42 +26,19 @@ import {
   IconButton,
   Popover,
   PopoverTrigger,
-  Portal,
   PopoverContent,
   PopoverArrow,
-  PopoverCloseButton,
   Input,
   InputGroup,
   InputLeftElement,
   InputRightElement,
 } from "@chakra-ui/react";
-import {
-  PencilIcon,
-  PlusIcon,
-  ArrowPathRoundedSquareIcon,
-  InformationCircleIcon,
-  MagnifyingGlassIcon,
-  XMarkIcon
-} from "@heroicons/react/24/outline";
 import { FC, useEffect, useRef, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { Icon } from "./Icon";
 import { useTranslation } from "react-i18next";
 import { User, useClash } from "contexts/ClashContext";
-import { InfoIcon } from "./ClashModal";
-
-const iconProps = {
-  baseStyle: {
-    w: 5,
-    h: 5,
-  },
-};
-
-const AddIcon = chakra(PlusIcon, iconProps);
-const RefreshIcon = chakra(ArrowPathRoundedSquareIcon, iconProps);
-const EditIcon = chakra(PencilIcon, iconProps);
-const SearchIcon = chakra(MagnifyingGlassIcon, iconProps);
-const ClearIcon = chakra(XMarkIcon, iconProps);
+import { AddIcon, ClearIcon, EditIcon, InfoIcon, RefreshIcon, SearchIcon } from "./ClashModal";
 
 export type ClashUserDialogProps = {};
 
@@ -258,7 +234,7 @@ export const ClashUserDialog: FC<ClashUserDialogProps> = () => {
                       size="sm"
                       aria-label='Refresh Auth Code'
                       isDisabled={disabled}
-                      icon={<RefreshIcon/>}
+                      icon={<RefreshIcon />}
                       onClick={handlerRefreshAuthCode}
                     />
                   </HStack>
@@ -381,7 +357,8 @@ export const ClashUserDialog: FC<ClashUserDialogProps> = () => {
                             >
                               {proxyTags.data.map((tag) => {
                                 const exists = value.some((v) => v === tag); 
-                                if (exists || (search && tag.indexOf(search) < 0)) {
+                                const notfound = search && tag.toLowerCase().indexOf(search.toLowerCase()) < 0;
+                                if (exists || notfound) {
                                   return null;
                                 } else {
                                   return (
@@ -394,7 +371,7 @@ export const ClashUserDialog: FC<ClashUserDialogProps> = () => {
                               size="sm"
                               aria-label='Add Tags'
                               isDisabled={disabled}
-                              icon={<AddIcon/>}
+                              icon={<AddIcon />}
                               onClick={() => {
                                 const tag = tagRef.current!.value;
                                 const exists = value.some((v) => tag === v);

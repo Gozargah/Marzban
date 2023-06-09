@@ -2,10 +2,7 @@ import {
   Alert,
   AlertIcon,
   Button,
-  chakra,
   FormControl,
-  FormErrorMessage,
-  FormHelperText,
   FormLabel,
   HStack,
   IconButton,
@@ -22,7 +19,6 @@ import {
   useToast,
   VStack,
   Select,
-  Flex,
   Switch,
   Divider,
   Box,
@@ -41,29 +37,17 @@ import {
   PopoverTrigger,
   PopoverContent,
   PopoverArrow,
+  InputGroup,
+  InputLeftElement,
+  InputRightElement,
 } from "@chakra-ui/react";
-import { PencilIcon, PlusIcon} from "@heroicons/react/24/outline";
 import { FC, useEffect, useRef, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { Icon } from "./Icon";
 import { useTranslation } from "react-i18next";
 import { ProxyBrief, ProxyGroup, ProxyGroupSettings, useClash } from "contexts/ClashContext";
 import { DeleteIcon } from "./DeleteUserModal";
-import { DuplicateIcon, InfoIcon } from "./ClashModal";
-
-const AddIcon = chakra(PlusIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-  },
-});
-
-const EditIcon = chakra(PencilIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-  },
-});
+import { AddIcon, ClearIcon, DuplicateIcon, EditIcon, InfoIcon, SearchIcon } from "./ClashModal";
 
 const types = ["select", "load-balance", "relay", "url-test", "fallback"];
 const strategyTypes = ["consistent-hashing", "round-robin"];
@@ -157,6 +141,15 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
       }
     }
   }, [isCreatingProxyGroup]);
+
+  const [search, setSearch] = useState("");
+  
+  const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+  };
+  const clear = () => {
+    setSearch("");
+  };
 
   const submit = (values: FormType) => {
     setLoading(true);
@@ -417,55 +410,91 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
                               )
                             })}
                           </Wrap>
-                          <HStack w="full">
-                            <Select
-                              ref={proxiesRef}
-                              disabled={disabled || editingProxyGroup?.builtin} 
-                              size="sm" 
-                            >
-                              {proxyGroups.proxies.map((proxy) => {
-                                const exists = value.some((v) => proxy.id === proxyBriefs[v]?.id);
-                                const id = `#${editingProxyGroup?.id}`
-                                if (exists || proxy.id == id) {
-                                  return null;
-                                } else {
-                                  return (
-                                    <option key={proxy.id} value={proxy.id}>
-                                      {proxy.name}{" -> "}{proxy.tag}
-                                    </option>
-                                  )
-                                }
-                              })}
-                            </Select>
-                            <IconButton
-                              size="sm"
-                              aria-label='Add Proxy'
-                              isDisabled={disabled || editingProxyGroup?.builtin}
-                              icon={<AddIcon/>}
-                              onClick={() => {
-                                const id = proxiesRef.current!.value;
-                                const proxy = proxyBriefs[id];
-                                const exists = value.some((v) => proxy.name === proxyBriefs[v]?.name);
-                                if (exists) {
-                                  toast({
-                                    title: t("clash.proxy.existed", {name: proxyBriefs[id].name}),
-                                    status: "error",
-                                    isClosable: true,
-                                    position: "top",
-                                    duration: 3000,
-                                  });
-                                } else {
-                                  form.clearErrors("proxies");
-                                  onChange({
-                                    target: {
-                                      name: "selected_proxies",
-                                      value: [...value, id],
-                                    }
-                                  });
-                                }
-                              }}
-                            />
-                          </HStack>
+                          <VStack w="full">
+                            <HStack w="full">
+                              <InputGroup>
+                                <InputLeftElement
+                                  height="8"
+                                  pointerEvents="none"
+                                  children={<SearchIcon />} 
+                                />
+                                <Input
+                                  size="sm"
+                                  borderRadius="md"
+                                  placeholder={t("search")}
+                                  value={search}
+                                  borderColor="light-border"
+                                  onChange={onSearchChange}
+                                />
+
+                                <InputRightElement height="8">
+                                  {loading && <Spinner size="xs" />}
+                                  {search.length > 0 && (
+                                    <IconButton
+                                      onClick={clear}
+                                      aria-label="clear"
+                                      size="xs"
+                                      variant="ghost"
+                                    >
+                                      <ClearIcon />
+                                    </IconButton>
+                                  )}
+                                </InputRightElement>
+                              </InputGroup>
+                              <Box w="36px" />
+                            </HStack>
+                            <HStack w="full">
+                              <Select
+                                ref={proxiesRef}
+                                disabled={disabled || editingProxyGroup?.builtin} 
+                                size="sm" 
+                              >
+                                {proxyGroups.proxies.map((proxy) => {
+                                  const exists = value.some((v) => proxy.id === proxyBriefs[v]?.id);
+                                  const id = `#${editingProxyGroup?.id}`;
+                                  const name = `${proxy.name} -> ${proxy.tag}`;
+                                  const notfound = search && name.toLowerCase().indexOf(search.toLowerCase()) < 0;
+                                  if (exists || proxy.id == id || notfound) {
+                                    return null;
+                                  } else {
+                                    return (
+                                      <option key={proxy.id} value={proxy.id}>
+                                        {name}
+                                      </option>
+                                    )
+                                  }
+                                })}
+                              </Select>
+                              <IconButton
+                                size="sm"
+                                aria-label='Add Proxy'
+                                isDisabled={disabled || editingProxyGroup?.builtin}
+                                icon={<AddIcon/>}
+                                onClick={() => {
+                                  const id = proxiesRef.current!.value;
+                                  const proxy = proxyBriefs[id];
+                                  const exists = value.some((v) => proxy.name === proxyBriefs[v]?.name);
+                                  if (exists) {
+                                    toast({
+                                      title: t("clash.proxy.existed", {name: proxyBriefs[id].name}),
+                                      status: "error",
+                                      isClosable: true,
+                                      position: "top",
+                                      duration: 3000,
+                                    });
+                                  } else {
+                                    form.clearErrors("proxies");
+                                    onChange({
+                                      target: {
+                                        name: "selected_proxies",
+                                        value: [...value, id],
+                                      }
+                                    });
+                                  }
+                                }}
+                              />
+                            </HStack>
+                          </VStack>
                         </VStack>
                       )
                     }}
