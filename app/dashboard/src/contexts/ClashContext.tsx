@@ -50,6 +50,7 @@ export type ProxySettings = {
     udp: boolean;
     allow_insecure: boolean;
     ws_addition_path: string;
+    flow: "" | "xtls-rprx-vision";
   };
   vmess?: {
     security: "none" | "tls"; // | "reality";

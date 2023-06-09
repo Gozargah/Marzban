@@ -47,7 +47,7 @@ import {
   useClash
 } from "contexts/ClashContext";
 import { DeleteIcon } from "./DeleteUserModal";
-import { proxyALPN, proxyFingerprint } from "constants/Proxies";
+import { XTLSFlows, proxyALPN, proxyFingerprint } from "constants/Proxies";
 import { DuplicateIcon, InfoIcon } from "./ClashModal";
 
 const iconProps = {
@@ -94,6 +94,7 @@ const getDefaultValues = (): FormType => {
         udp: false,
         allow_insecure: true,
         ws_addition_path: "",
+        flow: "",
       },
       vmess: {
         security: "tls",
@@ -282,7 +283,7 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
   const disabled = loading;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="md">
+    <Modal isOpen={isOpen} onClose={onClose} size="lg">
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
       <FormProvider {...form}>
         <ModalContent mx="3">
@@ -631,6 +632,24 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                                   }}
                                 />
                               </FormControl>
+                              {inbound.type == "vless" && inbound.security == "reality" && (
+                                <FormControl>
+                                  <Text fontSize="sm" pb={1}>
+                                    {t("clash.proxy.flow")}
+                                  </Text>
+                                  <Select
+                                    size="sm"
+                                    borderRadius="6px"
+                                    {...form.register(`settings.${inbound.type}.flow`)}
+                                  >
+                                    {XTLSFlows.map((entry) => (
+                                      <option key={entry.title} value={entry.value}>
+                                        {entry.title}
+                                      </option>
+                                    ))}
+                                  </Select>
+                                </FormControl>
+                              )}
                             </HStack>
                             <HStack pt={1} w="full" gap="4">
                               <FormControl w="fit-content" display='flex' alignItems='center'>

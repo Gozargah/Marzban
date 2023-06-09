@@ -182,6 +182,7 @@
   "clash.proxy.edited": "Proxy {{name}} edited.",
   "clash.proxy.existed": "Proxy {{name}} already existed.",
   "clash.proxy.fingerprint": "Fingerprint",
+  "clash.proxy.flow": "Flow",
   "clash.proxy.network": "Network",
   "clash.proxy.security": "Security",
   "clash.proxy.serverName": "Server Name",

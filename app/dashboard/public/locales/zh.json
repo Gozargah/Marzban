@@ -178,6 +178,7 @@
   "clash.proxy.edited": "已更新代理 {{name}}。",
   "clash.proxy.existed": "代理 {{name}} 存在。",
   "clash.proxy.fingerprint": "指纹",
+  "clash.proxy.flow": "流控模式",
   "clash.proxy.network": "传输方式",
   "clash.proxy.security": "传输层加密",
   "clash.proxy.serverName": "服务器名称",
