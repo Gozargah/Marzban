@@ -759,6 +759,8 @@ class ClashConfig:
                 "public-key": inbound["pbk"],
                 "short-id": inbound["sid"],
             }
+            if not proxy.get("client_fingerprint"):
+                proxy["client_fingerprint"] = "chrome"
 
     def add_trojan(self, obj: Proxy):
         inbound = xray.config.inbounds_by_tag.get(obj.inbound)
@@ -781,7 +783,7 @@ class ClashConfig:
         proxy["udp"] = True if udp else None
         proxy["alpn"] = alpn.split(",") if alpn else None
         proxy["skip-cert-verify"] = allow_insecure if allow_insecure else None
-        proxy["client_fingerprint"] = client_fingerprint # if self.is_clash_meta else None
+        proxy["client_fingerprint"] = client_fingerprint
         proxy["network"] = ibnetwork
         self.add_network_opts(proxy, inbound, obj.settings[ibtype])
         return proxy
@@ -809,7 +811,7 @@ class ClashConfig:
         proxy["udp"] = True if udp else None
         proxy["skip-cert-verify"] = allow_insecure if allow_insecure else None
         proxy["servername"] = servername
-        proxy["client_fingerprint"] = client_fingerprint # if self.is_clash_meta else None
+        proxy["client_fingerprint"] = client_fingerprint
         proxy["network"] = ibnetwork
         self.add_network_opts(proxy, inbound, obj.settings[ibtype])
         return proxy
@@ -837,7 +839,7 @@ class ClashConfig:
         proxy["skip-cert-verify"] = allow_insecure if allow_insecure else None
         proxy["servername"] = servername
         proxy["flow"] = flow
-        proxy["client_fingerprint"] = client_fingerprint # if self.is_clash_meta else None
+        proxy["client_fingerprint"] = client_fingerprint
         proxy["network"] = ibnetwork
         self.add_network_opts(proxy, inbound, obj.settings[ibtype])
         return proxy
