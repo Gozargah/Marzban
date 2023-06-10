@@ -725,14 +725,6 @@ const Rules: FC<StackProps> = () => {
         });
       }
   };
-  useEffect(() => {
-    if (!findRuleset(ruleFilter.ruleset) && shouldFetch.rulesets) {
-      onRuleFilterChange({
-        ruleset: "",
-        offset: 0,
-      });
-    }
-  }, [rulesets]);
 
   const handleEditRuleset = () => {
     onEditingRuleset(findRuleset(ruleFilter.ruleset));
@@ -754,6 +746,16 @@ const Rules: FC<StackProps> = () => {
       offset: 0,
     });
   };
+
+  useEffect(() => {
+    if (ruleFilter.ruleset && !findRuleset(ruleFilter.ruleset)
+        && shouldFetch.rulesets) {
+      onRuleFilterChange({
+        ruleset: "",
+        offset: 0,
+      });
+    }
+  }, [rulesets]);
 
   useEffect(() => {
     if (isEditingSubscription && shouldFetch.rules) {

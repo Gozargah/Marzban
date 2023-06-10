@@ -180,7 +180,7 @@
   "clash.proxy.deleteSuccess": "Proxy {{name}} deleted successfully.",
   "clash.proxy.edit": "Edit Proxy",
   "clash.proxy.edited": "Proxy {{name}} edited.",
-  "clash.proxy.existed": "Proxy {{name}} already existed.",
+  "clash.proxy.exists": "Proxy {{name}} already exists.",
   "clash.proxy.fingerprint": "Fingerprint",
   "clash.proxy.flow": "Flow",
   "clash.proxy.network": "Network",
@@ -241,11 +241,17 @@
   "clash.users": "Users",
 
   "error.InvalidProxyName": "Name not accept quotes('\").",
-  "error.InvalidProxyTag": "Tag only accept alphabet(A-Za-z), digit(0-9) and punctuation(_:-.@#).",
   "error.InvalidProxyPort": "Port only accept digit(0-9) and punctuation(:).",
   "error.InvalidProxyServer": "Server only accept alphabet(A-Za-z), digit(0-9) and punctuation(A-Za-z0-9/-._).",
+  "error.InvalidProxyTag": "Tag only accept alphabet(A-Za-z), digit(0-9) and punctuation(_:-.@#).",
   "error.InvalidRuleContent": "Rule content only accept alphabet(A-Za-z), digit(0-9) and punctuation(_-/.:).",
   "error.InvalidRulesetName": "Ruleset name only accept alphabet(A-Za-z), digit(0-9) and punctuation(_).",
+  "error.InvalidUsername": "Username only can be 3 to 32 characters and contain a-z, 0-9, and underscores in between.",
+  "error.NoProxy": "No proxy selected.",
   "error.NoProxyInbound": "No inbound selected.",
-  "error.NoProxy": "No proxy selected."
+  "error.ProxyExists": "Proxy already exists.",
+  "error.ProxyGroupExists": "Proxy group already exists.",
+  "error.RuleExists": "Rule already exists.",
+  "error.RulesetExists": "Ruleset already exists.",
+  "error.UserExists": "User already exists."
 }

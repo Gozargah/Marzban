@@ -176,7 +176,7 @@
   "clash.proxy.deleteSuccess": "成功删除代理 {{name}}。",
   "clash.proxy.edit": "编辑代理",
   "clash.proxy.edited": "已更新代理 {{name}}。",
-  "clash.proxy.existed": "代理 {{name}} 存在。",
+  "clash.proxy.exists": "代理 {{name}} 存在。",
   "clash.proxy.fingerprint": "指纹",
   "clash.proxy.flow": "流控模式",
   "clash.proxy.network": "传输方式",
@@ -237,11 +237,17 @@
   "clash.users": "用户",
 
   "error.InvalidProxyName": "名称不能包含引号（'\"）。",
-  "error.InvalidProxyTag": "标签只能包含字母（A-Za-z）、数字（0-9）和标点符号（:-.@#）。",
   "error.InvalidProxyPort": "端口只能包含数字（0-9）、标点符号（:）。",
   "error.InvalidProxyServer": "服务器地址只能包含字母（A-Za-z）、数字（0-9）和标点符号（A-Za-z0-9/-._）。",
+  "error.InvalidProxyTag": "标签只能包含字母（A-Za-z）、数字（0-9）和标点符号（:-.@#）。",
   "error.InvalidRuleContent": "规则内容只能包含字母（A-Za-z）、数字（0-9）和标点符号（_-/.:）。",
   "error.InvalidRulesetName": "规则组名称只能包含字母（A-Za-z）、数字（0-9）和标点符号（_）。",
+  "error.InvalidUsername": "用户名长度必须在 3~32 个字符之间，并且只能包含 a-z、 0-9 和 下划线。",
+  "error.NoProxy": "未选择任何代理或代理组。",
   "error.NoProxyInbound": "未选择任何入站。",
-  "error.NoProxy": "未选择任何代理或代理组。"
+  "error.ProxyExists": "代理已存在。",
+  "error.ProxyGroupExists": "代理组已存在。",
+  "error.RuleExists": "规则已存在。",
+  "error.RulesetExists": "规则组已存在。",
+  "error.UserExists": "用户已存在。"
 }

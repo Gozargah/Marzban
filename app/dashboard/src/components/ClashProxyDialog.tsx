@@ -34,6 +34,7 @@ import {
   AccordionPanel,
   Divider,
   AccordionIcon,
+  FormErrorMessage,
 } from "@chakra-ui/react";
 import { PencilIcon, PlusIcon} from "@heroicons/react/24/outline";
 import { FC, useEffect, useState } from "react";
@@ -244,22 +245,29 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
       })
       .catch((err) => {
         if (err?.response?.status === 409 
-          || err?.response?.status === 400
-          || err?.response?.status === 404)
-          setError(err?.response?._data?.detail);
+            || err?.response?.status === 400
+            || err?.response?.status === 404) {
+          var message = err?.response?._data?.detail;
+          try {
+            message = t(`error.${message.err}`);
+          } catch (e) {}
+          setError(message);
+        }
         if (err?.response?.status === 422) {
           Object.keys(err.response._data.detail).forEach((key) => {
             let message = err.response._data.detail[key];
+            let tfield = message;
             try {
               const errobj = JSON.parse(message.replace(/"/g, '\\"').replace(/'/g, '"'));
-              message = t(`error.${errobj.err}`);
+              tfield = `error.${errobj.err}`;
+              message = t(tfield);
             } catch (e) {}
             setError(message);
             form.setError(
               key as "name" | "port" | "server" | "tag" | "inbound",
               {
                 type: "custom",
-                message: message,
+                message: tfield,
               }
             );
           });
@@ -299,6 +307,10 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
           });
       }
     });
+  };
+
+  const terror = (error: string | undefined) => {
+    return error ? t(error) : error;
   };
 
   const disabled = loading;
@@ -350,6 +362,9 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                       disabled={disabled}
                       {...form.register("name")}
                     />
+                    <FormErrorMessage>
+                      {terror(form.formState.errors.name?.message)}
+                    </FormErrorMessage>
                   </FormControl>
                   {editingProxy && (
                     <Box h="full">
@@ -375,6 +390,9 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                       disabled={disabled}
                       {...form.register("server")}
                     />
+                    <FormErrorMessage>
+                      {terror(form.formState.errors.server?.message)}
+                    </FormErrorMessage>
                   </FormControl>
                   <FormControl w="50%" isInvalid={!!form.formState.errors.port}>
                     <FormLabel>{t("clash.port")}</FormLabel>
@@ -398,6 +416,9 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                         )
                       }}
                     />
+                    <FormErrorMessage>
+                      {terror(form.formState.errors.port?.message)}
+                    </FormErrorMessage>
                   </FormControl>
                 </HStack>
                 <HStack w="full" alignItems="baseline">
@@ -415,6 +436,9 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                             placeholder="Select inbound"
                             onChange={(e) => {
                               const newInbound = findInbound(e.target.value);
+                              if (newInbound?.type == "trojan") {
+                                form.setValue("settings.trojan.security", "tls");
+                              }
                               form.setValue("port", newInbound?.port || "");
                               form.clearErrors("port");
                               form.clearErrors("inbound");
@@ -433,6 +457,9 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                         );
                       }}
                     />
+                    <FormErrorMessage>
+                      {terror(form.formState.errors.inbound?.message)}
+                    </FormErrorMessage>
                   </FormControl>
                   <FormControl isInvalid={!!form.formState.errors.tag}>
                     <FormLabel>{t("clash.tag")}</FormLabel>
@@ -444,6 +471,9 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                       disabled={disabled}
                       {...form.register("tag")}
                     />
+                    <FormErrorMessage>
+                      {terror(form.formState.errors.tag?.message)}
+                    </FormErrorMessage>
                   </FormControl>
                 </HStack>
                 <HStack w="full">

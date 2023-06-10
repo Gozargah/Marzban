@@ -39,6 +39,7 @@ import {
   InputLeftElement,
   InputRightElement,
   SimpleGrid,
+  FormErrorMessage,
 } from "@chakra-ui/react";
 import { FC, useEffect, useRef, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
@@ -203,22 +204,29 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
       })
       .catch((err) => {
         if (err?.response?.status === 409 
-          || err?.response?.status === 400
-          || err?.response?.status === 404)
-          setError(err?.response?._data?.detail);
+            || err?.response?.status === 400
+            || err?.response?.status === 404) {
+          var message = err?.response?._data?.detail;
+          try {
+            message = t(`error.${message.err}`);
+          } catch (e) {}
+          setError(message);
+        }
         if (err?.response?.status === 422) {
           Object.keys(err.response._data.detail).forEach((key) => {
             let message = err.response._data.detail[key];
+            let tfield = message;
             try {
               const errobj = JSON.parse(message.replace(/"/g, '\\"').replace(/'/g, '"'));
-              message = t(`error.${errobj.err}`);
+              tfield = `error.${errobj.err}`;
+              message = t(tfield);
             } catch (e) {}
             setError(message);
             form.setError(
               key as "name" | "tag",
               {
                 type: "custom",
-                message: message,
+                message: tfield,
               }
             );
           });
@@ -273,6 +281,10 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
     });
   };
 
+  const terror = (error: string | undefined) => {
+    return error ? t(error) : error;
+  };
+
   const disabled = loading;
 
   return (
@@ -321,6 +333,9 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
                       disabled={disabled}
                       {...form.register("name")}
                     />
+                    <FormErrorMessage>
+                      {terror(form.formState.errors.name?.message)}
+                    </FormErrorMessage>
                   </FormControl>
                   {editingProxyGroup && !editingProxyGroup.builtin && (
                     <Box h="full">
@@ -335,7 +350,7 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
                     </Box>
                   )}
                 </HStack>
-                <HStack w="full">
+                <HStack w="full" alignItems="baseline">
                   <FormControl w="60%">
                     <FormLabel>{t("clash.type")}</FormLabel>
                     <Controller
@@ -363,6 +378,9 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
                         );
                       }}
                     />
+                    <FormErrorMessage>
+                      {terror(form.formState.errors.type?.message)}
+                    </FormErrorMessage>
                   </FormControl>
                   <FormControl isInvalid={!!form.formState.errors.tag}>
                     <FormLabel>{t("clash.tag")}</FormLabel>
@@ -373,6 +391,9 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
                       disabled={disabled || editingProxyGroup?.builtin}
                       {...form.register("tag")}
                     />
+                    <FormErrorMessage>
+                      {terror(form.formState.errors.tag?.message)}
+                    </FormErrorMessage>
                   </FormControl>
                 </HStack>
                 <FormControl pt="2">
@@ -504,7 +525,7 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
                                   const exists = value.some((v) => proxy.name === proxyBriefs[v]?.name);
                                   if (exists) {
                                     toast({
-                                      title: t("clash.proxy.existed", {name: proxyBriefs[id].name}),
+                                      title: t("clash.proxy.exists", {name: proxyBriefs[id].name}),
                                       status: "error",
                                       isClosable: true,
                                       position: "top",

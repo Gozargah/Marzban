@@ -14,6 +14,8 @@ from xray_api.types.account import Account
 
 USERNAME_REGEXP = re.compile(r'^(?=\w{3,32}\b)[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*$')
 
+def value_error(err: str, message: str):
+    return ValueError({"err": err, "message": message})
 
 class UserStatus(str, Enum):
     active = "active"
@@ -51,7 +53,7 @@ class User(BaseModel):
     @validator('username', check_fields=False)
     def validate_username(cls, v):
         if not USERNAME_REGEXP.match(v):
-            raise ValueError('Username only can be 3 to 32 characters and contain a-z, 0-9, and underscores in between.')
+            raise value_error('InvalidUsername', 'Username only can be 3 to 32 characters and contain a-z, 0-9, and underscores in between.')
         return v
 
 

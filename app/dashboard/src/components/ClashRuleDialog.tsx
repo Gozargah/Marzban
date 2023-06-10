@@ -22,8 +22,8 @@ import {
   Select,
   Switch,
   Input,
+  FormErrorMessage,
 } from "@chakra-ui/react";
-import { PencilIcon, PlusIcon} from "@heroicons/react/24/outline";
 import { FC, useEffect, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { Icon } from "./Icon";
@@ -31,20 +31,9 @@ import { useTranslation } from "react-i18next";
 import { Rule, useClash } from "contexts/ClashContext";
 import { DeleteIcon } from "./DeleteUserModal";
 import { SettingsIcon } from "@chakra-ui/icons";
-
-const AddIcon = chakra(PlusIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-  },
-});
-
-const EditIcon = chakra(PencilIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-  },
-});
+import { AddIcon, EditIcon } from "./ClashModal";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export type ClashRuleDialogProps = {};
 
@@ -61,13 +50,21 @@ const getDefaultValues = (ruleset: string | null | undefined): Rule => {
 const types = ["DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "GEOIP",
   "IP-CIDR", "IP-CIDR6", "SRC-IP-CIDR", "SRC-PORT", "DST-PORT",
   "PROCESS-NAME", "PROCESS-PATH", "SCRIPT"
-]
+];
 
 const hasNoResolveOption = (type: string) => {
-  return type === "GEOIP" || type === "IP-CIDR" || type === "IP-CIDR6" || type === "SCRIPT"
+  return type === "GEOIP" || type === "IP-CIDR"
+    || type === "IP-CIDR6" || type === "SCRIPT";
 }
 
 export type FormType = Pick<Rule, keyof Rule> & { no_resolve: boolean };
+
+const schema = z.object({
+  content: z.string().min(1, { message: "fieldRequired" }),
+  type: z.string().min(1, { message: "fieldRequired" }),
+  ruleset: z.string().min(1, { message: "fieldRequired" }),
+  no_resolve: z.any(),
+});
 
 const formatRule = (rule: Rule): FormType => {
   return {
@@ -98,7 +95,10 @@ export const ClashRuleDialog: FC<ClashRuleDialogProps> = () => {
   const [hasNoResolve, setHasNoResolve] = useState(false);
   const toast = useToast();
   const { t } = useTranslation();
-  const form = useForm<FormType>({ defaultValues: getDefaultValues(ruleFilter.ruleset) });
+  const form = useForm<FormType>({
+    defaultValues: getDefaultValues(null),
+    resolver: zodResolver(schema)
+  });
 
   useEffect(() => {
     if (editingRule) {
@@ -121,6 +121,7 @@ export const ClashRuleDialog: FC<ClashRuleDialogProps> = () => {
     const {no_resolve, ...rest} = values;
     let body: Rule = {
       ...rest,
+      id: editingRule?.id,
       option: no_resolve && hasNoResolve ? "no-resolve" : "",
     };
 
@@ -137,22 +138,29 @@ export const ClashRuleDialog: FC<ClashRuleDialogProps> = () => {
       })
       .catch((err) => {
         if (err?.response?.status === 409 
-          || err?.response?.status === 400
-          || err?.response?.status === 404)
-          setError(err?.response?._data?.detail);
+            || err?.response?.status === 400
+            || err?.response?.status === 404) {
+          var message = err?.response?._data?.detail;
+          try {
+            message = t(`error.${message.err}`);
+          } catch (e) {}
+          setError(message);
+        }
         if (err?.response?.status === 422) {
           Object.keys(err.response._data.detail).forEach((key) => {
             let message = err.response._data.detail[key];
+            let tfield = message;
             try {
               const errobj = JSON.parse(message.replace(/"/g, '\\"').replace(/'/g, '"'));
-              message = t(`error.${errobj.err}`);
+              tfield = `error.${errobj.err}`;
+              message = t(tfield);
             } catch (e) {}
             setError(message);
             form.setError(
               key as "content" | "type",
               {
                 type: "custom",
-                message: message,
+                message: tfield,
               }
             );
           });
@@ -212,6 +220,10 @@ export const ClashRuleDialog: FC<ClashRuleDialogProps> = () => {
       onClose();
       onEditingRuleset(ruleset);
     }
+  };
+
+  const terror = (error: string | undefined) => {
+    return error ? t(error) : error;
   };
 
   const disabled = loading;
@@ -305,6 +317,9 @@ export const ClashRuleDialog: FC<ClashRuleDialogProps> = () => {
                     disabled={disabled}
                     {...form.register("content")}
                   />
+                  <FormErrorMessage>
+                    {terror(form.formState.errors.content?.message)}
+                  </FormErrorMessage>
                 </FormControl>
                 {hasNoResolve && (
                   <FormControl pt="2" display='flex' alignItems='center'>

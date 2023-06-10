@@ -23,6 +23,9 @@ from app.models.clash import (ClashRulesResponse, ClashRuleResponse,
     ClashProxyResponse, ClashProxyCreate, ClashProxyInboundResponse, 
     ClashProxyInboundsResponse, ClashSettingResponse, ClashSettingCreate)
 
+def value_error(err: str, message: str):
+    return {"err": err, "message": message}
+
 @app.put("/api/clash/user/{username}", tags=['Clash'], response_model=ClashUserResponse)
 def modify_clash_user(username: str,
                 modified: ClashUserCreate,
@@ -113,7 +116,7 @@ def add_clash_rule(new_rule: ClashRuleCreate,
     try:
         dbrule = crud.create_clash_rule(db, new_rule)
     except sqlalchemy.exc.IntegrityError:
-        raise HTTPException(status_code=409, detail="Rule already exists")
+        raise HTTPException(status_code=409, detail=value_error("RuleExists", "Rule already exists"))
 
     logger.info(f"New rule \"{dbrule.content}\" added")
     return ClashRuleResponse(
@@ -173,7 +176,7 @@ def add_clash_ruleset(new_ruleset: ClashRulesetCreate,
     try:
         dbruleset = crud.create_clash_ruleset(db, new_ruleset)
     except sqlalchemy.exc.IntegrityError:
-        raise HTTPException(status_code=409, detail="Ruleset already exists")
+        raise HTTPException(status_code=409, detail=value_error("RulesetExists", "Ruleset already exists"))
 
     logger.info(f"New ruleset \"{dbruleset.name}\" added")
     return dbruleset
@@ -325,7 +328,7 @@ def add_clash_proxy(new_proxy: ClashProxyCreate,
     try:
         dbproxy = crud.create_clash_proxy(db, new_proxy)
     except sqlalchemy.exc.IntegrityError:
-        raise HTTPException(status_code=409, detail="Proxy already exists")
+        raise HTTPException(status_code=409, detail=value_error("ProxyExists", "Proxy already exists"))
 
     logger.info(f"New proxy \"{dbproxy.name}\" added")
     return dbproxy
@@ -368,7 +371,7 @@ def add_clash_proxy_group(new_proxy_group: ClashProxyGroupCreate,
     try:
         proxy_group = crud.create_clash_proxy_group(db, new_proxy_group)
     except sqlalchemy.exc.IntegrityError:
-        raise HTTPException(status_code=409, detail="Proxy group already exists")
+        raise HTTPException(status_code=409, detail=value_error("ProxyGroupExists", "Proxy group already exists"))
 
     logger.info(f"New proxy group \"{proxy_group.name}\" added")
     return proxy_group

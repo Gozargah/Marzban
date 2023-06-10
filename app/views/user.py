@@ -9,6 +9,8 @@ from app.models.user import (UserCreate, UserModify, UserResponse,
                              UsersResponse, UserStatus, UserUsagesResponse)
 from app.utils import report
 
+def value_error(err: str, message: str):
+    return {"err": err, "message": message}
 
 @app.post("/api/user", tags=['User'], response_model=UserResponse)
 def add_user(new_user: UserCreate,
@@ -35,7 +37,7 @@ def add_user(new_user: UserCreate,
                                   admin=crud.get_admin(db, admin.username))
     except sqlalchemy.exc.IntegrityError:
         db.rollback()
-        raise HTTPException(status_code=409, detail="User already exists")
+        raise HTTPException(status_code=409, detail=value_error("UserExists", "User already exists"))
 
     xray.operations.add_user(dbuser)
 

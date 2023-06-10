@@ -77,7 +77,7 @@ const UserUsageIcon = chakra(ChartPieIcon, {
 });
 
 const schema = z.object({
-  username: z.string().min(1, { message: "Required" }),
+  username: z.string().min(1, { message: "fieldRequired" }),
   selected_proxies: z.array(z.string()).refine((value) => value.length > 0, {
     message: "userDialog.selectOneProtocol",
   }),
@@ -271,16 +271,28 @@ export const UserDialog: FC<UserDialogProps> = () => {
         onClose();
       })
       .catch((err) => {
-        if (err?.response?.status === 409 || err?.response?.status === 400)
-          setError(err?.response?._data?.detail);
+        if (err?.response?.status === 409 || err?.response?.status === 400) {
+          var message = err?.response?._data?.detail;
+          try {
+            message = t(`error.${message.err}`);
+          } catch (e) {}
+          setError(message);
+        }
         if (err?.response?.status === 422) {
           Object.keys(err.response._data.detail).forEach((key) => {
-            setError(err?.response._data.detail[key] as string);
+            let message = err.response._data.detail[key];
+            let tfield = message;
+            try {
+              const errobj = JSON.parse(message.replace(/"/g, '\\"').replace(/'/g, '"'));
+              tfield = `error.${errobj.err}`;
+              message = t(tfield);
+            } catch (e) {}
+            setError(message);
             form.setError(
               key as "proxies" | "username" | "data_limit" | "expire",
               {
                 type: "custom",
-                message: err.response._data.detail[key],
+                message: tfield,
               }
             );
           });
@@ -302,6 +314,10 @@ export const UserDialog: FC<UserDialogProps> = () => {
 
   const handleResetUsage = () => {
     useDashboard.setState({ resetUsageUser: editingUser });
+  };
+
+  const terror = (error: string | undefined) => {
+    return error ? t(error) : error;
   };
 
   const disabled = loading;
@@ -343,7 +359,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                             size="sm"
                             type="text"
                             borderRadius="6px"
-                            error={form.formState.errors.username?.message}
+                            error={terror(form.formState.errors.username?.message)}
                             disabled={disabled || isEditing}
                             {...form.register("username")}
                           />

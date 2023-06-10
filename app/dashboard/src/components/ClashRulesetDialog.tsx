@@ -112,9 +112,14 @@ export const ClashRulesetDialog: FC<ClashRulesetDialogProps> = () => {
       })
       .catch((err) => {
         if (err?.response?.status === 409 
-          || err?.response?.status === 400
-          || err?.response?.status === 404)
-          setError(err?.response?._data?.detail);
+            || err?.response?.status === 400
+            || err?.response?.status === 404) {
+          var message = err?.response?._data?.detail;
+          try {
+            message = t(`error.${message.err}`);
+          } catch (e) {}
+          setError(message);
+        }
         if (err?.response?.status === 422) {
           Object.keys(err.response._data.detail).forEach((key) => {
             let message = err.response._data.detail[key];
