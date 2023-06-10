@@ -4,6 +4,10 @@
 <head>
     <title>Subscription Information</title>
     <style>
+        table, th, td {
+         border: 1px solid black;
+         border-collapse: collapse;
+        }
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
@@ -109,7 +113,70 @@
         <div id="qrCodeContainer"></div>
     </div>
     {% endif %}
-
+    <br>
+    <h2>Android</h2>
+    <table>
+        <tr>
+          <th>V2rayNG</th>
+          <th>Clash Meta</th>
+          <th>NekoBox</th>
+        </tr>
+        <tr>
+          <td><a href="https://play.google.com/store/apps/details?id=com.v2ray.ang&hl=en&gl=US">
+        <img src="v2rayng.png" alt="V2rayNG"
+        style= "width:200px; height: 200px;">
+        </a></td>
+          <td><a href="https://play.google.com/store/apps/details?id=com.github.metacubex.clash.meta&hl=en&gl=US">
+            <img src="Clash_Meta.png" alt="Clash_Meta"
+            style= "width:200px; height: 200px;">
+            </a></td>
+          <td><a href="https://github.com/MatsuriDayo/NekoBoxForAndroid/releases">
+            <img src="NekoBox.png" alt="NekoBox"
+            style= "width:200px; height: 200px;">
+            </a></td>
+        </tr>
+      </table>
+      <br>
+      <h2>iOS</h2>
+      <table>
+          <tr>
+            <th>ShadowRocket [iOS +11]</th>
+            <th>Foxray [iOS +16]</th>
+            <th>V2box [iOS +14]</th>
+          </tr>
+          <tr>
+            <td><a href="https://apps.apple.com/de/app/shadowrocket/id932747118">
+          <img src="ShadowRocket.png" alt="ShadowRocket"
+          style= "width:200px; height: 200px;">
+          </a></td>
+            <td><a href="https://apps.apple.com/us/app/foxray/id6448898396">
+              <img src="Foxray.png" alt="Foxray"
+              style= "width:200px; height: 200px;">
+              </a></td>
+            <td><a href="https://apps.apple.com/us/app/v2box-v2ray-client/id6446814690">
+              <img src="V2box.png" alt="V2box"
+              style= "width:200px; height: 200px;">
+              </a></td>
+          </tr>
+        </table>
+        <br>
+        <h2>Windows</h2>
+        <table>
+            <tr>
+              <th>v2rayN</th>
+              <th>Nekoray</th>
+            </tr>
+            <tr>
+              <td><a href="https://github.com/2dust/v2rayN/releases">
+            <img src="v2rayN.png" alt="v2rayN"
+            style= "width:200px; height: 200px;">
+            </a></td>
+              <td><a href="https://github.com/MatsuriDayo/nekoray/releases">
+                <img src="Nekoray.jpg" alt="Nekoray"
+                style= "width:200px; height: 200px;">
+                </a></td>
+            </tr>
+          </table>
     <script>
         function copyLink(link, button) {
             const tempInput = document.createElement('input');
