@@ -120,6 +120,7 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
     createProxyGroup,
     onAlert,
     proxyGroups,
+    proxyBriefs,
   } = useClash();
   const isEditing = !!editingProxyGroup;
   const isOpen = isCreatingProxyGroup || isEditing;
@@ -134,7 +135,7 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
     defaultValues: getDefaultValues(),
     resolver: zodResolver(schema)
   });
-  const proxyBriefs: { [key: string]: ProxyBrief } = proxyGroups.proxies.reduce((ac, a) => ({...ac, [a.id]: a}), {});
+  const briefMap: {[key: string]: ProxyBrief} = proxyBriefs.reduce((ac, a) => ({...ac, [a.id]: a}), {});
 
   useEffect(() => {
     if (editingProxyGroup) {
@@ -421,7 +422,7 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
                         <VStack w="full">
                           <SimpleGrid w="full" spacingY="6px">
                             {value.map((id) => {
-                              const proxy = proxyBriefs[id];
+                              const proxy = briefMap[id];
                               if (!proxy) {
                                 return null;
                               }
@@ -500,8 +501,8 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
                                 disabled={disabled || editingProxyGroup?.builtin}
                                 size="sm" 
                               >
-                                {proxyGroups.proxies.map((proxy) => {
-                                  const exists = value.some((v) => proxy.id === proxyBriefs[v]?.id);
+                                {proxyBriefs.map((proxy) => {
+                                  const exists = value.some((v) => proxy.id === briefMap[v]?.id);
                                   const id = `#${editingProxyGroup?.id}`;
                                   const name = `${proxy.name} -> ${proxy.tag}`;
                                   const notfound = search && name.toLowerCase().indexOf(search.toLowerCase()) < 0;
@@ -523,11 +524,11 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
                                 icon={<AddIcon/>}
                                 onClick={() => {
                                   const id = proxiesRef.current!.value;
-                                  const proxy = proxyBriefs[id];
-                                  const exists = value.some((v) => proxy.name === proxyBriefs[v]?.name);
+                                  const proxy = briefMap[id];
+                                  const exists = value.some((v) => proxy.name === briefMap[v]?.name);
                                   if (exists) {
                                     toast({
-                                      title: t("clash.proxy.exists", {name: proxyBriefs[id].name}),
+                                      title: t("clash.proxy.exists", {name: briefMap[id].name}),
                                       status: "error",
                                       isClosable: true,
                                       position: "top",

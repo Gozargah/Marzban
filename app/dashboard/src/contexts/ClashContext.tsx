@@ -171,19 +171,6 @@ export type SubscriptionStore = {
 
   sublink: string | null;
   setSublink: (sublink: string | null) => void;
-  
-  isEditing: () => boolean;
-  shouldFetch: {
-    settings: boolean;
-    proxies: boolean;
-    proxyInbounds: boolean;
-    proxyGroups: boolean;
-    proxyTags: boolean;
-    rulesets: boolean;
-    rules: boolean;
-    users: boolean;
-  };
-  onShouldFetch: (shouldFetch: boolean) => void;
 
   // delete modal
   alert: Alert | null | undefined;
@@ -196,13 +183,9 @@ export type SubscriptionStore = {
   editSetting: (body: Setting) => Promise<void>;
 
   // get rules or rulesets
-  rules: {
-    data: Rule[];
-    total: number;
-  };
-  rulesets: {
-    data: Ruleset[];
-  }
+  rules: Rule[];
+  totalRules: number;
+  rulesets: Ruleset[];
   ruleFilter: RuleFilter;
   fetchRules: () => Promise<void>;
   fetchRulesets: () => Promise<void>;
@@ -226,22 +209,16 @@ export type SubscriptionStore = {
   editRuleset: (body: Ruleset) => Promise<void>;
   deleteRuleset: (body: Ruleset) => Promise<void>;
 
-  proxyTags: {
-    data: ProxyTag[];
-    total: number;
-  };
-  proxyInbounds: {
-    data: ProxyInbound[];
-    total: number;
-  };
-  proxies: {
-    data: Proxy[];
-    total: number;
-  };
+  proxyTags: ProxyTag[];
+  proxyInbounds: ProxyInbound[];
+  proxyBriefs: ProxyBrief[];
+  proxies: Proxy[];
+  totalProxies: number;
   proxyFilter: ProxyFilter;
   fetchProxies: () => Promise<void>;
   fetchProxyTags: () => Promise<void>;
   fetchProxyInbounds: () => Promise<void>;
+  fetchProxyBriefs: () => Promise<void>;
   onProxyFilterChange: (filter: Partial<ProxyFilter>) => void;
   isCreatingProxy: boolean;
   editingProxy: Proxy | null | undefined;
@@ -253,11 +230,8 @@ export type SubscriptionStore = {
   editProxy: (body: Proxy) => Promise<void>;
   deleteProxy: (body: Proxy) => Promise<void>;
 
-  proxyGroups: {
-    data: ProxyGroup[];
-    proxies: ProxyBrief[];
-    total: number;
-  };
+  proxyGroups: ProxyGroup[];
+  totalProxyGroups: number;
   proxyGroupFilter: ProxyGroupFilter;
   fetchProxyGroups: () => Promise<void>;
   onProxyGroupFilterChange: (filter: Partial<ProxyGroupFilter>) => void;
@@ -271,10 +245,8 @@ export type SubscriptionStore = {
   editProxyGroup: (body: ProxyGroup) => Promise<void>;
   deleteProxyGroup: (body: ProxyGroup) => Promise<void>;
 
-  users: {
-    data: User[];
-    total: number;
-  };
+  users: User[];
+  totalUsers: number;
   userFilter: UserFilter;
   fetchUsers: () => Promise<void>;
   onUserFilterChange: (filter: Partial<UserFilter>) => void;
@@ -290,45 +262,12 @@ export const useClash = create<SubscriptionStore>((set, get) => ({
   sublink: null,
   setSublink: (sublink) => set({ sublink }),
 
-  isEditing: () => {
-    return get().isCreatingProxy || !!get().editingProxy
-      || get().isCreatingProxyGroup || !!get().editingProxyGroup
-      || get().isCreatingRuleset || !!get().editingRuleset
-      || get().isCreatingRule || !!get().editingRule
-      || !!get().editingUser;
-  },
-  shouldFetch: {
-    settings: true,
-    proxies: true,
-    proxyInbounds: true,
-    proxyGroups: true,
-    proxyTags: true,
-    rulesets: true,
-    rules: true,
-    users: true,
-  },
-  onShouldFetch: (shouldFetch) => {
-    set({
-      shouldFetch: {
-        settings: shouldFetch,
-        proxies: shouldFetch,
-        proxyInbounds: shouldFetch,
-        proxyGroups: shouldFetch,
-        proxyTags: shouldFetch,
-        rules: shouldFetch,
-        rulesets: shouldFetch,
-        users: shouldFetch,
-      }
-    })
-  },
-
   settings: {},
   fetchSetting: (body) => {
     set({ loading: true });
     return fetch(`/clash/setting/${body.name}`)
       .then((setting) => {
         set({ loading: false });
-        get().shouldFetch.settings = false;
         let settings = get().settings;
         settings[setting.name] = setting;
         set({ settings });
@@ -348,13 +287,9 @@ export const useClash = create<SubscriptionStore>((set, get) => ({
   alert: null,
   onAlert: (alert) => set({ alert }),
 
-  rules: {
-    data: [],
-    total: 0,
-  },
-  rulesets: {
-    data: [],
-  },
+  rules: [],
+  totalRules: 0,
+  rulesets: [],
   ruleFilter: { value:"", sort: "-created_at", limit: 10 },
   fetchRules: () => {
     var query = get().ruleFilter;
@@ -363,10 +298,9 @@ export const useClash = create<SubscriptionStore>((set, get) => ({
     }
     set({ loading: true });
     return fetch("/clash/rules", { query })
-      .then((rules) => {
-        get().shouldFetch.rules = false;
-        set({ rules });
-        return rules;
+      .then((response) => {
+        set({ rules: response.data, totalRules: response.total });
+        return response.data;
       })
       .finally(() => {
         set({ loading: false });
@@ -374,10 +308,9 @@ export const useClash = create<SubscriptionStore>((set, get) => ({
   },
   fetchRulesets: () => {
     return fetch("/clash/rulesets")
-      .then((rulesets) => {
-        get().shouldFetch.rulesets = false;
-        useClash.setState({ rulesets });
-        return rulesets;
+      .then((response) => {
+        useClash.setState({ rulesets: response.data });
+        return response.data;
       });
   },
   onRuleFilterChange: (filter) => {
@@ -442,18 +375,11 @@ export const useClash = create<SubscriptionStore>((set, get) => ({
     });
   },
 
-  proxyTags: {
-    data: [],
-    total: 0,
-  },
-  proxyInbounds: {
-    data: [],
-    total: 0,
-  },
-  proxies: {
-    data: [],
-    total: 0,
-  },
+  proxyTags: [],
+  proxyInbounds: [],
+  proxyBriefs: [],
+  proxies: [],
+  totalProxies: 0,
   proxyFilter: { search:"", sort: "id", limit: 10 },
   fetchProxies: () => {
     var query = get().proxyFilter;
@@ -462,10 +388,9 @@ export const useClash = create<SubscriptionStore>((set, get) => ({
     }
     set({ loading: true });
     return fetch("/clash/proxies", { query })
-      .then((proxies) => {
-        get().shouldFetch.proxies = false;
-        set({ proxies });
-        return proxies;
+      .then((response) => {
+        set({ proxies: response.data, totalProxies: response.total });
+        return response.data;
       })
       .finally(() => {
         set({ loading: false });
@@ -473,18 +398,23 @@ export const useClash = create<SubscriptionStore>((set, get) => ({
   },
   fetchProxyTags: () => {
     return fetch("/clash/proxy/tags")
-      .then((proxyTags) => {
-        get().shouldFetch.proxyTags = false;
-        set({ proxyTags });
-        return proxyTags;
+      .then((response) => {
+        set({ proxyTags: response.data });
+        return response.data;
       });
   },
   fetchProxyInbounds: () => {
     return fetch("/clash/proxy/inbounds")
-      .then((proxyInbounds) => {
-        get().shouldFetch.proxyInbounds = false;
-        set({ proxyInbounds });
-        return proxyInbounds;
+      .then((response) => {
+        set({ proxyInbounds: response.data });
+        return response.data;
+      });
+  },
+  fetchProxyBriefs: () => {
+    return fetch("/clash/proxy/briefs")
+      .then((response) => {
+        set({ proxyBriefs: response.data });
+        return response.data;
       });
   },
   onProxyFilterChange: (filter) => {
@@ -513,43 +443,34 @@ export const useClash = create<SubscriptionStore>((set, get) => ({
   createProxy: (body: Proxy) => {
     return fetch(`/clash/proxy`, { method: "POST", body }).then(() => {
       set({ editingProxy: null });
-      get().shouldFetch.proxyGroups = true;
-      get().shouldFetch.proxyTags = true;
+      get().fetchProxyBriefs();
+      get().fetchProxyTags();
       get().fetchProxies();
     });
   },
   editProxy: (body: Proxy) =>{
-    return fetch(`/clash/proxy/${body.id}`, { method: "PUT", body }).then(
-      () => {
-        const editingProxy = get().editingProxy;
-        if (editingProxy?.tag && editingProxy.tag != body.tag) {
-          get().shouldFetch.users = true;
-        }
-        set({ editingProxy: null });
-        get().shouldFetch.proxyGroups = true;
-        get().shouldFetch.proxyTags = true;
-        get().fetchProxies();
+    return fetch(`/clash/proxy/${body.id}`, { method: "PUT", body }).then(() => {
+      if (get().editingProxy?.tag != body.tag) {
+        get().fetchUsers();
       }
-    );
+      set({ editingProxy: null });
+      get().fetchProxyBriefs();
+      get().fetchProxyTags();
+      get().fetchProxies();
+    });
   },
   deleteProxy: (body: Proxy) => {
     return fetch(`/clash/proxy/${body.id}`, { method: "DELETE" }).then(() => {
-      const editingProxy = get().editingProxy;
-      if (editingProxy?.tag) {
-        get().shouldFetch.users = true;
-      }
       set({ editingProxy: null });
-      get().shouldFetch.proxyGroups = true;
-      get().shouldFetch.proxyTags = true;
+      get().fetchUsers();
+      get().fetchProxyBriefs();
+      get().fetchProxyTags();
       get().fetchProxies();
     });
   },
 
-  proxyGroups: {
-    data: [],
-    proxies: [],
-    total: 0,
-  },
+  proxyGroups:  [],
+  totalProxyGroups: 0,
   proxyGroupFilter: { search:"", sort: "id", limit: 10 },
   fetchProxyGroups: () => {
     var query = get().proxyGroupFilter;
@@ -558,10 +479,9 @@ export const useClash = create<SubscriptionStore>((set, get) => ({
     }
     set({ loading: true });
     return fetch("/clash/proxy/groups", { query })
-      .then((proxyGroups) => {
-        get().shouldFetch.proxyGroups = false;
-        set({ proxyGroups });
-        return proxyGroups;
+      .then((response) => {
+        set({ proxyGroups: response.data, totalProxyGroups: response.total });
+        return response.data;
       })
       .finally(() => {
         set({ loading: false });
@@ -593,20 +513,21 @@ export const useClash = create<SubscriptionStore>((set, get) => ({
   createProxyGroup: (body: ProxyGroup) => {
     return fetch(`/clash/proxy/group`, { method: "POST", body }).then(() => {
       set({ editingProxyGroup: null });
-      get().shouldFetch.proxyTags = true;
+      get().fetchProxyTags();
       get().fetchProxyGroups();
+      get().fetchProxyBriefs();
     });
   },
   editProxyGroup: (body: ProxyGroup) =>{
     return fetch(`/clash/proxy/group/${body.id}`, { method: "PUT", body }).then(
       () => {
-        const editingProxyGroup = get().editingProxyGroup;
-        if (editingProxyGroup?.tag && editingProxyGroup.tag != body.tag) {
-          get().shouldFetch.users = true;
+        if (get().editingProxyGroup?.tag != body.tag) {
+          get().fetchUsers();
         }
         set({ editingProxyGroup: null });
-        get().shouldFetch.proxyTags = true;
+        get().fetchProxyTags();
         get().fetchProxyGroups();
+        get().fetchProxyBriefs();
       }
     );
   },
@@ -614,18 +535,17 @@ export const useClash = create<SubscriptionStore>((set, get) => ({
     return fetch(`/clash/proxy/group/${body.id}`, { method: "DELETE" }).then(() => {
       const editingProxyGroup = get().editingProxyGroup;
       if (editingProxyGroup?.tag) {
-        get().shouldFetch.users = true;
+        get().fetchUsers();
       }
       set({ editingProxyGroup: null });
-      get().shouldFetch.proxyTags = true;
+      get().fetchProxyTags();
       get().fetchProxyGroups();
+      get().fetchProxyBriefs();
     });
   },
 
-  users: {
-    data: [],
-    total: 0,
-  },
+  users: [],
+  totalUsers: 0,
   userFilter: { search:"", sort: "-created_at", limit: 10 },
   fetchUsers: () => {
     var query = get().userFilter;
@@ -634,10 +554,9 @@ export const useClash = create<SubscriptionStore>((set, get) => ({
     }
     set({ loading: true });
     return fetch("/clash/users", { query })
-      .then((users) => {
-        get().shouldFetch.users = false;
-        set({ users });
-        return users;
+      .then((response) => {
+        set({ users: response.data, totalUsers: response.total });
+        return response.data;
       })
       .finally(() => {
         set({ loading: false });

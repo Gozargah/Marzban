@@ -22,7 +22,7 @@ from app.models.clash import (ClashRulesResponse, ClashRuleResponse,
     ClashProxyTagsResponse, ClashProxyBriefResponse, ClashUserCreate,
     ClashProxyResponse, ClashProxyCreate, ClashProxyInboundResponse, 
     ClashProxyInboundsResponse, ClashSettingResponse, ClashSettingCreate,
-    ClashProxyTagResponse)
+    ClashProxyTagResponse, ClashProxyBriefsResponse)
 
 def value_error(err: str, message: str):
     return {"err": err, "message": message}
@@ -437,23 +437,28 @@ def get_clash_proxy_groups(offset: int = None,
                                   limit=limit,
                                   search=search,
                                   sort=sort)
-    
-    proxies = []
-    proxies.append(ClashProxyBriefResponse(
+
+    return {"data": data, "total": count}
+
+@app.get("/api/clash/proxy/briefs", tags=['Clash'], response_model=ClashProxyBriefsResponse)
+def get_clash_proxy_briefs(db: Session = Depends(get_db),
+              admin: Admin = Depends(Admin.get_current)):
+    briefs = []
+    briefs.append(ClashProxyBriefResponse(
         id="DIRECT",
         name="DIRECT",
         tag="built-in",
         server="",
         builtin=True
     ))
-    proxies.append(ClashProxyBriefResponse(
+    briefs.append(ClashProxyBriefResponse(
         id="REJECT",
         name="REJECT",
         tag="built-in",
         server="",
         builtin=True
     ))
-    proxies.append(ClashProxyBriefResponse(
+    briefs.append(ClashProxyBriefResponse(
         id="...",
         name="...",
         tag="<User Tags>",
@@ -461,7 +466,7 @@ def get_clash_proxy_groups(offset: int = None,
         builtin=True
     ))
     for brief in crud.get_all_clash_proxy_briefs(db):
-        proxies.append(ClashProxyBriefResponse(
+        briefs.append(ClashProxyBriefResponse(
             id=str(brief.id),
             name=brief.name,
             tag=brief.tag,
@@ -469,7 +474,7 @@ def get_clash_proxy_groups(offset: int = None,
             builtin=False
         ))
     for brief in crud.get_all_clash_proxy_group_briefs(db):
-        proxies.append(ClashProxyBriefResponse(
+        briefs.append(ClashProxyBriefResponse(
             id=f"#{brief.id}",
             name=brief.name,
             tag=brief.tag,
@@ -477,9 +482,9 @@ def get_clash_proxy_groups(offset: int = None,
             builtin=brief.builtin
         ))
     
-    proxies.sort(key=lambda v: v.name)
+    briefs.sort(key=lambda v: v.name)
 
-    return {"data": data, "proxies": proxies, "total": count}
+    return {"data": briefs}
 
 @app.get("/api/clash/proxy/tags", tags=['Clash'], response_model=ClashProxyTagsResponse)
 def get_clash_proxy_tags(db: Session = Depends(get_db),
@@ -505,7 +510,7 @@ def get_clash_proxy_tags(db: Session = Depends(get_db),
     
     tags.sort(key=lambda v: v.tag)
 
-    return {"data": tags, "total": len(tags)}
+    return {"data": tags}
     
 @app.get("/api/clash/proxy/inbounds", tags=['Clash'], response_model=ClashProxyInboundsResponse)
 def get_clash_proxy_inbounds(db: Session = Depends(get_db),
@@ -533,7 +538,7 @@ def get_clash_proxy_inbounds(db: Session = Depends(get_db),
     
     inbounds.sort(key=lambda v: v.name)
 
-    return {"data": inbounds, "total": len(inbounds)}
+    return {"data": inbounds}
 
 @app.get("/api/clash/setting/{name}", tags=['Clash'], response_model=ClashSettingResponse)
 def get_clash_setting(name: str,

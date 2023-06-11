@@ -214,7 +214,7 @@ export const ClashRuleDialog: FC<ClashRuleDialogProps> = () => {
 
   const editRuleset = () => {
     const name = form.getValues().ruleset;
-    const ruleset = rulesets.data.filter((v) => v.name == name)[0];
+    const ruleset = rulesets.filter((v) => v.name == name)[0];
     if (ruleset) {
       onClose();
       onEditingRuleset(ruleset);
@@ -259,7 +259,7 @@ export const ClashRuleDialog: FC<ClashRuleDialogProps> = () => {
                       return (
                         <HStack>
                           <Select disabled={disabled} size="sm" {...field}>
-                            {rulesets.data.map((ruleset) => {
+                            {rulesets.map((ruleset) => {
                               return (
                                 <option key={ruleset.id} value={ruleset.name}>
                                   {ruleset.name} ({ruleset.preferred_proxy})

@@ -298,7 +298,7 @@ export const ClashUserDialog: FC<ClashUserDialogProps> = () => {
                         <VStack>
                           <Wrap w="full">
                             {value.map((tag) => {
-                              const entry = proxyTags.data.filter((v) => v.tag == tag)[0];
+                              const entry = proxyTags.filter((v) => v.tag == tag)[0];
                               if (!entry) {
                                 return null;
                               }
@@ -378,7 +378,7 @@ export const ClashUserDialog: FC<ClashUserDialogProps> = () => {
                               disabled={disabled} 
                               size="sm" 
                             >
-                              {proxyTags.data.map((entry) => {
+                              {proxyTags.map((entry) => {
                                 const exists = value.some((v) => v === entry.tag); 
                                 const notfound = search && entry.tag.toLowerCase().indexOf(search.toLowerCase()) < 0;
                                 if (exists || notfound) {

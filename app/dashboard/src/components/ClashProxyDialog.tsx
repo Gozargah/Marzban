@@ -154,7 +154,7 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
   });
 
   const findInbound = (name: string) => {
-    return proxyInbounds.data.find((v) => v.name === name) || null;
+    return proxyInbounds.find((v) => v.name === name) || null;
   }
 
   const updateForm = (proxy: Proxy | null) => {
@@ -448,7 +448,7 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                               onChange(e);
                             }}
                           >
-                            {proxyInbounds.data.map((value) => {
+                            {proxyInbounds.map((value) => {
                               return (
                                 <option key={value.name} value={value.name}>
                                   {value.name}

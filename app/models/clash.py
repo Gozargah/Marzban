@@ -108,6 +108,9 @@ class ClashProxyBriefResponse(BaseModel):
     tag: str
     builtin: bool
 
+class ClashProxyBriefsResponse(BaseModel):
+    data: List[ClashProxyBriefResponse]
+
 class ClashProxyResponse(ClashProxy):
     id: int
     class Config:
@@ -156,7 +159,6 @@ class ClashProxyGroupResponse(ClashProxyGroup):
 
 class ClashProxyGroupsResponse(BaseModel):
     data: List[ClashProxyGroupResponse]
-    proxies: List[ClashProxyBriefResponse]
     total: int
 
 class ClashProxyTagResponse(BaseModel):
@@ -165,7 +167,6 @@ class ClashProxyTagResponse(BaseModel):
 
 class ClashProxyTagsResponse(BaseModel):
     data: List[ClashProxyTagResponse]
-    total: int
 
 class ClashProxyInboundResponse(BaseModel):
     name: str
@@ -178,7 +179,6 @@ class ClashProxyInboundResponse(BaseModel):
 
 class ClashProxyInboundsResponse(BaseModel):
     data: List[ClashProxyInboundResponse]
-    total: int
 
 class ClashRule(BaseModel):
     type: str

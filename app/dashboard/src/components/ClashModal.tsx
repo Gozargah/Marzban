@@ -64,6 +64,12 @@ import CodeMirror from '@uiw/react-codemirror';
 import { yaml } from '@codemirror/legacy-modes/mode/yaml';
 import { StreamLanguage } from '@codemirror/language';
 import CopyToClipboard from "react-copy-to-clipboard";
+import { ClashRuleDialog } from "./ClashRuleDialog";
+import { ClashRulesetDialog } from "./ClashRulesetDialog";
+import { ClashUserDialog } from "./ClashUserDialog";
+import { ClashProxyGroupDialog } from "./ClashProxyGroupDialog";
+import { ClashProxyDialog } from "./ClashProxyDialog";
+import { ClashQRCodeDialog } from "./ClashQRCodeDialog";
 
 const iconProps = {
   baseStyle: {
@@ -104,21 +110,16 @@ export const ClashModal: FC<ClashModalProps> = () => {
     isEditingSubscription,
     onEditingSubscription,
   } = useDashboard();
-  const {
-    isEditing,
-    onShouldFetch,
-  } = useClash();
   const { t } = useTranslation();
 
   const onClose = () => {
     onEditingSubscription(false);
-    onShouldFetch(true);
   };
 
   return (
     <Tabs isLazy lazyBehavior="keepMounted">
       <Modal
-        isOpen={isEditingSubscription && !isEditing()}
+        isOpen={isEditingSubscription}
         onClose={onClose}
         size="5xl"
       >
@@ -157,6 +158,12 @@ export const ClashModal: FC<ClashModalProps> = () => {
                 <Setting />
               </TabPanel>
             </TabPanels>
+            <ClashRuleDialog />
+            <ClashRulesetDialog />
+            <ClashUserDialog />
+            <ClashProxyGroupDialog />
+            <ClashProxyDialog />
+            <ClashQRCodeDialog />
           </ModalBody>
           <ModalFooter mt="3">
           </ModalFooter>
@@ -172,7 +179,6 @@ const Setting: FC<BoxProps> = () => {
     settings,
     fetchSetting,
     editSetting,
-    shouldFetch
   } = useClash();
   const { isEditingSubscription } = useDashboard();
   const { colorMode } = useColorMode();
@@ -181,9 +187,7 @@ const Setting: FC<BoxProps> = () => {
   const [value, setValue] = useState(settings.clash?.content);
   useEffect(() => {
     if (isEditingSubscription) {
-      if (shouldFetch.settings) {
-        fetchSetting({name: "clash"});
-      }
+      fetchSetting({name: "clash"});
     }
   }, [isEditingSubscription]);
 
@@ -244,8 +248,8 @@ const Proxies: FC<StackProps> = () => {
     fetchProxies,
     fetchProxyInbounds,
     proxies,
+    totalProxies,
     loading,
-    shouldFetch,
   } = useClash();
 
   const [search, setSearch] = useState("");
@@ -282,12 +286,8 @@ const Proxies: FC<StackProps> = () => {
 
   useEffect(() => {
     if (isEditingSubscription) {
-      if (shouldFetch.proxies) {
-        fetchProxies();
-      }
-      if (shouldFetch.proxyInbounds) {
-        fetchProxyInbounds();
-      }
+      fetchProxies();
+      fetchProxyInbounds();
     }
   }, [isEditingSubscription]);
 
@@ -407,12 +407,12 @@ const Proxies: FC<StackProps> = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {proxies.data?.map((proxy, i) => {
+            {proxies?.map((proxy, i) => {
               return (
                 <Tr
                   key={proxy.id}
                   className={classNames("interactive", {
-                    "last-row": i === proxies.data.length - 1,
+                    "last-row": i === proxies.length - 1,
                   })}
                   onClick={() => onEditingProxy(proxy)}
                 >
@@ -444,7 +444,7 @@ const Proxies: FC<StackProps> = () => {
               offset: page * limit
             })
           }}
-          total={proxies.total}
+          total={totalProxies}
           limit={proxyFilter.limit}
           offset={proxyFilter.offset}/>
       </Box>
@@ -467,11 +467,12 @@ const ProxyGroups: FC<StackProps> = () => {
     proxyGroupFilter,
     onProxyGroupFilterChange,
     fetchProxyGroups,
+    fetchProxyBriefs,
     proxyGroups,
+    totalProxyGroups,
     loading,
     onEditingProxyGroup,
     onCreateProxyGroup,
-    shouldFetch,
   } = useClash();
 
   const [search, setSearch] = useState("");
@@ -507,8 +508,9 @@ const ProxyGroups: FC<StackProps> = () => {
   };
 
   useEffect(() => {
-    if (isEditingSubscription && shouldFetch.proxyGroups) {
+    if (isEditingSubscription) {
       fetchProxyGroups();
+      fetchProxyBriefs();
     }
   }, [isEditingSubscription]);
 
@@ -626,12 +628,12 @@ const ProxyGroups: FC<StackProps> = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {proxyGroups.data?.map((group, i) => {
+            {proxyGroups?.map((group, i) => {
               return (
                 <Tr
                   key={group.id}
                   className={classNames("interactive", {
-                    "last-row": i === proxyGroups.data.length - 1,
+                    "last-row": i === proxyGroups.length - 1,
                   })}
                   onClick={() => onEditingProxyGroup(group)}
                 >
@@ -662,7 +664,7 @@ const ProxyGroups: FC<StackProps> = () => {
               offset: page * limit
             })
           }}
-          total={proxyGroups.total}
+          total={totalProxyGroups}
           limit={proxyGroupFilter.limit}
           offset={proxyGroupFilter.offset}/>
       </Box>
@@ -691,13 +693,13 @@ const Rules: FC<StackProps> = () => {
     onEditingRuleset,
     onCreateRuleset,
     rules,
+    totalRules,
     rulesets,
     loading,
-    shouldFetch,
   } = useClash();
 
   const [search, setSearch] = useState("");
-  const rulesetsByName: { [key: string]: Ruleset } = rulesets.data.reduce((ac, a) => ({...ac, [a.name]: a}), {});
+  const rulesetsByName: { [key: string]: Ruleset } = rulesets.reduce((ac, a) => ({...ac, [a.name]: a}), {});
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -713,7 +715,7 @@ const Rules: FC<StackProps> = () => {
   };
 
   const findRuleset = (name: string | null | undefined) => {
-    const arr = rulesets.data.filter((value) => value.name === name);
+    const arr = rulesets.filter((value) => value.name === name);
     return arr.length ? arr[0] : null; 
   }
 
@@ -753,8 +755,7 @@ const Rules: FC<StackProps> = () => {
   };
 
   useEffect(() => {
-    if (ruleFilter.ruleset && !findRuleset(ruleFilter.ruleset)
-        && shouldFetch.rulesets) {
+    if (ruleFilter.ruleset && !findRuleset(ruleFilter.ruleset)) {
       onRuleFilterChange({
         ruleset: "",
         offset: 0,
@@ -763,7 +764,7 @@ const Rules: FC<StackProps> = () => {
   }, [rulesets]);
 
   useEffect(() => {
-    if (isEditingSubscription && shouldFetch.rules) {
+    if (isEditingSubscription) {
       fetchRules();
       fetchRulesets();
     }
@@ -793,7 +794,7 @@ const Rules: FC<StackProps> = () => {
             onChange={(e) => onRulesetChange(e.target.value)}
           >
             <option key="All" value="All">All</option>
-            {rulesets.data.map((entry) => {
+            {rulesets.map((entry) => {
               return (
                 <option key={entry.name} value={entry.name}>
                   {entry.name}
@@ -894,12 +895,12 @@ const Rules: FC<StackProps> = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {rules.data?.map((rule, i) => {
+            {rules?.map((rule, i) => {
               return (
                 <Tr
                   key={rule.content}
                   className={classNames("interactive", {
-                    "last-row": i === rules.data.length - 1,
+                    "last-row": i === rules.length - 1,
                   })}
                   onClick={() => onEditingRule(rule)}
                 >
@@ -922,7 +923,7 @@ const Rules: FC<StackProps> = () => {
               offset: page * limit
             })
           }}
-          total={rules.total}
+          total={totalRules}
           limit={ruleFilter.limit}
           offset={ruleFilter.offset}/>
       </Box>
@@ -948,8 +949,8 @@ const Users: FC<StackProps> = () => {
     fetchUsers,
     fetchProxyTags,
     users,
+    totalUsers,
     loading,
-    shouldFetch,
   } = useClash();
 
   const [search, setSearch] = useState("");
@@ -986,12 +987,8 @@ const Users: FC<StackProps> = () => {
 
   useEffect(() => {
     if (isEditingSubscription) {
-      if (shouldFetch.users) {
-        fetchUsers();
-      }
-      if (shouldFetch.proxyTags) {
-        fetchProxyTags();
-      }
+      fetchUsers();
+      fetchProxyTags();
     }
   }, [isEditingSubscription]);
 
@@ -1070,12 +1067,12 @@ const Users: FC<StackProps> = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {users.data?.map((user, i) => {
+            {users?.map((user, i) => {
               return (
                 <Tr
                   key={user.username}
                   className={classNames("interactive", {
-                    "last-row": i === users.data.length - 1,
+                    "last-row": i === users.length - 1,
                   })}
                   onClick={() => onEditingUser(user)}
                 >
@@ -1106,7 +1103,7 @@ const Users: FC<StackProps> = () => {
               offset: page * limit
             })
           }}
-          total={users.total}
+          total={totalUsers}
           limit={userFilter.limit}
           offset={userFilter.offset}/>
       </Box>
