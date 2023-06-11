@@ -22,6 +22,7 @@ import { ClashRulesetDialog } from "components/ClashRulesetDialog";
 import { ClashUserDialog } from "components/ClashUserDialog";
 import { ClashProxyGroupDialog } from "components/ClashProxyGroupDialog";
 import { ClashProxyDialog } from "components/ClashProxyDialog";
+import { ClashQRCodeDialog } from "components/ClashQRCodeDialog";
 
 export const Dashboard: FC = () => {
   useEffect(() => {
@@ -51,6 +52,7 @@ export const Dashboard: FC = () => {
         <ClashUserDialog />
         <ClashProxyGroupDialog />
         <ClashProxyDialog />
+        <ClashQRCodeDialog />
       </Box>
       <Footer />
     </VStack>

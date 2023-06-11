@@ -368,14 +368,16 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                   </FormControl>
                   {editingProxy && (
                     <Box h="full">
-                      <IconButton
-                        mt="4"
-                        aria-label="duplicate proxy"
-                        bg="transparent"
-                        onClick={() => onDuplicatingProxy(editingProxy!)}
-                      >
-                        <DuplicateIcon />
-                      </IconButton>
+                      <Tooltip label={t("duplicate")} placement="top">
+                        <IconButton
+                          mt="4"
+                          aria-label="duplicate proxy"
+                          bg="transparent"
+                          onClick={() => onDuplicatingProxy(editingProxy!)}
+                        >
+                          <DuplicateIcon />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   )}
                 </HStack>
@@ -589,13 +591,19 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                                   pt="1"
                                 >
                                   <Text>wsSettings.path: {inbound.ws_path}</Text>
-                                  <Text
-                                    color="primary.500"
-                                    fontWeight="bold"
-                                  >
-                                    {wsAdditionPath}
-                                  </Text>
-                                  <Text>?user={"{username}"}&port={inbound.port}</Text>
+                                  {wsAdditionPath && (
+                                    <Text
+                                      color="primary.500"
+                                      fontWeight="bold"
+                                    >
+                                      {wsAdditionPath}
+                                    </Text>
+                                  )}
+                                  {wsAdditionPath && (
+                                    <Text>
+                                      ?user={"{username}"}&port={inbound.port}
+                                    </Text>
+                                  )}
                                 </Flex>
                               </FormControl>
                             )}

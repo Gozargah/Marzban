@@ -21,7 +21,8 @@ from app.models.clash import (ClashRulesResponse, ClashRuleResponse,
     ClashRulesetCreate, ClashProxyGroupResponse, ClashProxyGroupCreate, 
     ClashProxyTagsResponse, ClashProxyBriefResponse, ClashUserCreate,
     ClashProxyResponse, ClashProxyCreate, ClashProxyInboundResponse, 
-    ClashProxyInboundsResponse, ClashSettingResponse, ClashSettingCreate)
+    ClashProxyInboundsResponse, ClashSettingResponse, ClashSettingCreate,
+    ClashProxyTagResponse)
 
 def value_error(err: str, message: str):
     return {"err": err, "message": message}
@@ -483,24 +484,26 @@ def get_clash_proxy_groups(offset: int = None,
 @app.get("/api/clash/proxy/tags", tags=['Clash'], response_model=ClashProxyTagsResponse)
 def get_clash_proxy_tags(db: Session = Depends(get_db),
               admin: Admin = Depends(Admin.get_current)):
-    proxies, _ = crud.get_clash_proxies(db)
-    proxy_groups, _ = crud.get_clash_proxy_groups(db)
-
     tags = []
-    cache = {}
-    for proxy in proxies:
-        tag = str(proxy.tag) or ""
-        if len(tag) > 0 and not cache.get(tag):
-            cache[tag] = True
-            tags.append(tag)
+    cache: Dict[str, ClashProxyTagResponse] = {}
 
-    for proxy in proxy_groups:
+    def add_tag(proxy, server):
         tag = str(proxy.tag) or ""
-        if not proxy.builtin and len(tag) > 0 and not cache.get(tag):
-            cache[tag] = True
-            tags.append(tag)
+        tag_entry = cache.get(tag)
+        if tag and not tag_entry:
+            tag_entry = ClashProxyTagResponse(tag=tag, servers=[])
+            cache[tag] = tag_entry
+            tags.append(tag_entry)
+        tag_entry.servers.append(f"{proxy.name} -> {server}")
+
+    for proxy in crud.get_clash_proxies(db)[0]:
+        add_tag(proxy, proxy.server)
+
+    for proxy in crud.get_clash_proxy_groups(db)[0]:
+        if not proxy.builtin:
+            add_tag(proxy, "<Proxy Group>")
     
-    tags.sort()
+    tags.sort(key=lambda v: v.tag)
 
     return {"data": tags, "total": len(tags)}
     
@@ -752,8 +755,10 @@ class ClashConfig:
             path = R(inbound, "path", "/")
             addition_path = R(settings, "ws_addition_path", "")
             port = inbound["port"]
+            if addition_path:
+                path = re.sub(r"//+", "/", f"{path}/{addition_path}?user={username}&port={port}")
             proxy["ws-opts"] = {
-                "path": re.sub(r"//+", "/", f"{path}/{addition_path}?user={username}&port={port}"),
+                "path": path,
                 "headers": {
                     "Host": R(inbound, "host"),
                 }

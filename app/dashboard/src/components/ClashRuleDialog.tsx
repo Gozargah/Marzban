@@ -30,8 +30,7 @@ import { Icon } from "./Icon";
 import { useTranslation } from "react-i18next";
 import { Rule, useClash } from "contexts/ClashContext";
 import { DeleteIcon } from "./DeleteUserModal";
-import { SettingsIcon } from "@chakra-ui/icons";
-import { AddIcon, EditIcon } from "./ClashModal";
+import { AddIcon, EditIcon, SettingIcon } from "./ClashModal";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -273,7 +272,7 @@ export const ClashRuleDialog: FC<ClashRuleDialogProps> = () => {
                             size="sm"
                             onClick={editRuleset}
                           >
-                            <SettingsIcon />
+                            <SettingIcon />
                           </IconButton>
                         </HStack>
                         

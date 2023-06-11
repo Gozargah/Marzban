@@ -339,14 +339,16 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
                   </FormControl>
                   {editingProxyGroup && !editingProxyGroup.builtin && (
                     <Box h="full">
-                      <IconButton
-                        mt="4"
-                        aria-label="duplicate proxy"
-                        bg="transparent"
-                        onClick={() => onDuplicatingProxyGroup(editingProxyGroup!)}
-                      >
-                        <DuplicateIcon />
-                      </IconButton>
+                      <Tooltip label={t("duplicate")} placement="top">
+                        <IconButton
+                          mt="4"
+                          aria-label="duplicate proxy group"
+                          bg="transparent"
+                          onClick={() => onDuplicatingProxyGroup(editingProxyGroup!)}
+                        >
+                          <DuplicateIcon />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   )}
                 </HStack>

@@ -32,6 +32,8 @@ import {
   InputGroup,
   InputLeftElement,
   InputRightElement,
+  Tooltip,
+  SimpleGrid,
 } from "@chakra-ui/react";
 import { FC, useEffect, useRef, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
@@ -296,26 +298,47 @@ export const ClashUserDialog: FC<ClashUserDialogProps> = () => {
                         <VStack>
                           <Wrap w="full">
                             {value.map((tag) => {
+                              const entry = proxyTags.data.filter((v) => v.tag == tag)[0];
+                              if (!entry) {
+                                return null;
+                              }
                               return (
                                 <WrapItem key={tag}>
-                                  <Tag
-                                    w="fit-content"
-                                    size="md"
-                                    borderRadius="full"
-                                    variant="solid"
-                                    colorScheme="primary"
-                                  >
-                                    <TagLabel>{tag}</TagLabel>
-                                    <TagCloseButton onClick={() => {
-                                      const tags = value.filter((v) => v !== tag)
-                                      onChange({
-                                        target: {
-                                          name: "selected_tags",
-                                          value: tags,
-                                        }
-                                      })
-                                    }}/>
-                                  </Tag>
+                                  <Popover isLazy trigger="hover" placement="top">
+                                    <PopoverTrigger>
+                                      <Tag
+                                        w="fit-content"
+                                        size="md"
+                                        borderRadius="full"
+                                        variant="solid"
+                                        cursor="context-menu"
+                                        colorScheme="primary"
+                                      >
+                                        <TagLabel>{tag}</TagLabel>
+                                        <TagCloseButton onClick={() => {
+                                          const tags = value.filter((v) => v !== tag)
+                                          onChange({
+                                            target: {
+                                              name: "selected_tags",
+                                              value: tags,
+                                            }
+                                          })
+                                        }}/>
+                                      </Tag>
+                                    </PopoverTrigger>
+                                    <PopoverContent w="full">
+                                      <PopoverArrow />
+                                      <SimpleGrid p="1" pl="3" pr="3" w="full" alignItems="flex-start">
+                                        {entry.servers.map((value, index) => {
+                                          return (
+                                            <Text key={index} fontSize="sm">
+                                              {value}
+                                            </Text>
+                                          )
+                                        })}
+                                      </SimpleGrid>
+                                    </PopoverContent>
+                                  </Popover>
                                 </WrapItem>
                               )
                             })}
@@ -355,14 +378,14 @@ export const ClashUserDialog: FC<ClashUserDialogProps> = () => {
                               disabled={disabled} 
                               size="sm" 
                             >
-                              {proxyTags.data.map((tag) => {
-                                const exists = value.some((v) => v === tag); 
-                                const notfound = search && tag.toLowerCase().indexOf(search.toLowerCase()) < 0;
+                              {proxyTags.data.map((entry) => {
+                                const exists = value.some((v) => v === entry.tag); 
+                                const notfound = search && entry.tag.toLowerCase().indexOf(search.toLowerCase()) < 0;
                                 if (exists || notfound) {
                                   return null;
                                 } else {
                                   return (
-                                    <option key={tag} value={tag}>{tag}</option>
+                                    <option key={entry.tag} value={entry.tag}>{entry.tag}</option>
                                   )
                                 }
                               })}

@@ -21,6 +21,11 @@ export type UserFilter = {
   sort: string;
 };
 
+export type ProxyTag = {
+  tag: string;
+  servers: string[];
+}
+
 export type ProxyInbound = {
   name: string;
   type: "trojan" | "vless" | "vmess" | "shadowsocks";
@@ -163,6 +168,9 @@ export type Alert = {
 
 export type SubscriptionStore = {
   loading: boolean;
+
+  sublink: string | null;
+  setSublink: (sublink: string | null) => void;
   
   isEditing: () => boolean;
   shouldFetch: {
@@ -219,7 +227,7 @@ export type SubscriptionStore = {
   deleteRuleset: (body: Ruleset) => Promise<void>;
 
   proxyTags: {
-    data: string[];
+    data: ProxyTag[];
     total: number;
   };
   proxyInbounds: {
@@ -278,6 +286,9 @@ export type SubscriptionStore = {
 
 export const useClash = create<SubscriptionStore>((set, get) => ({
   loading: false,
+
+  sublink: null,
+  setSublink: (sublink) => set({ sublink }),
 
   isEditing: () => {
     return get().isCreatingProxy || !!get().editingProxy

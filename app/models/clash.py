@@ -159,8 +159,12 @@ class ClashProxyGroupsResponse(BaseModel):
     proxies: List[ClashProxyBriefResponse]
     total: int
 
+class ClashProxyTagResponse(BaseModel):
+    tag: str
+    servers: List[str]
+
 class ClashProxyTagsResponse(BaseModel):
-    data: List[str]
+    data: List[ClashProxyTagResponse]
     total: int
 
 class ClashProxyInboundResponse(BaseModel):

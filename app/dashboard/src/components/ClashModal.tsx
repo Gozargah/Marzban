@@ -36,7 +36,6 @@ import {
   BoxProps,
   useToast,
 } from "@chakra-ui/react";
-import { CheckIcon, LinkIcon } from '@chakra-ui/icons'
 import {
   RssIcon,
   Cog6ToothIcon,
@@ -47,7 +46,10 @@ import {
   InformationCircleIcon,
   PlusIcon,
   PencilIcon,
+  CheckIcon,
   ArrowPathRoundedSquareIcon,
+  LinkIcon,
+  QrCodeIcon,
 } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
 import React, { FC, useEffect, useState } from "react";
@@ -73,8 +75,11 @@ export const EditIcon = chakra(PencilIcon, iconProps);
 export const AddIcon = chakra(PlusIcon, iconProps);
 export const SearchIcon = chakra(MagnifyingGlassIcon, iconProps);
 export const ClearIcon = chakra(XMarkIcon, iconProps);
+export const CopiedIcon = chakra(CheckIcon, iconProps);
+export const CopyIcon = chakra(LinkIcon, iconProps);
 export const SubscriptionIcon = chakra(RssIcon, iconProps);
-export const GroupSetting = chakra(Cog6ToothIcon, iconProps);
+export const SettingIcon = chakra(Cog6ToothIcon, iconProps);
+export const QRIcon = chakra(QrCodeIcon, iconProps);
 export const ReloadIcon = chakra(ArrowPathIcon, iconProps);
 export const RefreshIcon = chakra(ArrowPathRoundedSquareIcon, iconProps);
 export const DuplicateIcon = chakra(DocumentDuplicateIcon, {
@@ -778,7 +783,7 @@ const Rules: FC<StackProps> = () => {
               isDisabled={!ruleFilter.ruleset}
               onClick={handleEditRuleset}
             >
-              <GroupSetting />
+              <SettingIcon />
             </IconButton>
           </Tooltip>
           <Select
@@ -1085,7 +1090,7 @@ const Users: FC<StackProps> = () => {
                       {user.tags?.split(",").join(", ")}
                     </Text>
                   </Td>
-                  <Td pt="5px" pb="5px" fontSize="sm" >
+                  <Td pt="5px" pb="5px" pr="4" fontSize="sm" >
                     <ActionButtons user={user} />
                   </Td>
                 </Tr>
@@ -1115,6 +1120,7 @@ type ActionButtonsProps = {
 
 const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
   const { t } = useTranslation();
+  const { setSublink } = useClash();
   const [copied, setCopied] = useState([-1, false]);
   useEffect(() => {
     if (copied[1]) {
@@ -1123,6 +1129,9 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
       }, 1000);
     }
   }, [copied]);
+  if (!user.sublink) {
+    return <Box height="30px" />;
+  }
   return (
     <HStack
       justifyContent="flex-end"
@@ -1130,8 +1139,8 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
         e.preventDefault();
         e.stopPropagation();
       }}
+      spacing="1"
     >
-      {user.sublink && (
         <CopyToClipboard
           text={user.sublink}
           onCopy={() => {
@@ -1162,18 +1171,34 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
                 }}
               >
                 {copied[0] == 0 && copied[1] ? (
-                  <CheckIcon />
+                  <CopiedIcon />
                 ) : (
-                  <LinkIcon />
+                  <CopyIcon />
                 )}
               </IconButton>
             </Tooltip>
           </div>
         </CopyToClipboard>
-      )}
-      {!user.sublink && (
-        <Box height="30px" />
-      )}
+        <Tooltip label={t("qrcode")} placement="top">
+          <IconButton
+            minW="30px"
+            minH="30px"
+            height="30px"
+            p="0 !important"
+            aria-label="qr code"
+            bg="transparent"
+            _dark={{
+              _hover: {
+                bg: "gray.700",
+              },
+            }}
+            onClick={() => {
+              setSublink(user.sublink!);
+            }}
+          >
+            <QRIcon />
+        </IconButton>
+      </Tooltip>
     </HStack>
   );
 };
