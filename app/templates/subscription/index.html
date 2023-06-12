@@ -1,151 +1,276 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-    <title>Subscription Information</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
-
-        h1 {
-            margin-top: 0;
-        }
-
-        .link-input {
-            margin-bottom: 10px;
-        }
-
-        .copy-button {
-            margin-left: 10px;
-        }
-
-        .status {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-weight: bold;
-            font-size: 16px;
-            line-height: 1;
-        }
-
-        .active {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        .limited {
-            background-color: #F44336;
-            color: white;
-        }
-
-        .expired {
-            background-color: #FF9800;
-            color: white;
-        }
-
-        .disabled {
-            background-color: #9E9E9E;
-            color: white;
-        }
-
-        .qr-popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 10px 25px 25px 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            display: none;
-            z-index: 9999;
-        }
-
-        .qr-close-button {
-            text-align: right;
-            margin-bottom: 5px;
-            margin-right: -15px;
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <title>{{ user.username }} - Sub Info</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="/static/chart.js"></script>
+    <script src="/static/qrcode.js"></script>
+    <link rel="stylesheet" href="/static/style.css" />
 </head>
 
 <body>
-    <h1>User Information</h1>
-    <p>Username: {{ user.username }}</p>
-    <p>Status: <span
-            class="status {% if user.status.value == 'active' %}active{% elif user.status.value == 'limited' %}limited{% elif user.status.value == 'expired' %}expired{% elif user.status.value == 'disabled' %}disabled{% endif %}">{{
-            user.status.value }}</span></p>
-    <p>Data Limit: {% if not user.data_limit %}∞{% else %}{{ user.data_limit | bytesformat }}{% endif %}</p>
-    <p>Data Used: {{ user.used_traffic | bytesformat }}{% if user.data_limit_reset_strategy != 'no_reset' %} (resets
-        every {{ user.data_limit_reset_strategy.value }}){% endif %}</p>
-    <p>Expiration Date:
-        {% if not user.expire %}
-        ∞
-        {% else %}
-        {% set current_timestamp = now().timestamp() %}
-        {% set remaining_days = ((user.expire - current_timestamp) // (24 * 3600)) %}
-        {{ user.expire | datetime }} ({{ remaining_days | int }} days
-        remaining)
-        {% endif %}</p>
+    <div class="container" id="mainContainer">
+        <section class="info">
+            <section class="left">
+                <div class="title">
+                    <img src="/static/images/profile.svg" />
+                    <h1 class="text {% if user.status.value == 'active' %}active{% elif user.status.value == 'limited' %}limited{% elif user.status.value == 'expired' %}expired{% elif user.status.value == 'disabled' %}disabled{% endif %}">{{ user.username }}</h1>
+                </div>
 
-    {% if user.status == 'active' %}
-    <h2>Links:</h2>
-    <ul>
-        {% for link in user.links %}
-        <li>
-            <input type="text" value="{{ link }}" readonly>
-            <button class="copy-button" onclick="copyLink('{{ link }}', this)">Copy</button>
-            <button class="qr-button" data-link="{{ link }}">QR Code</button>
-        </li>
-        {% endfor %}
-    </ul>
-    <div class="qr-popup" id="qrPopup">
-        <div class="qr-close-button">
-            <button onclick="closeQrPopup()">X</button>
-        </div>
-        <div id="qrCodeContainer"></div>
+                <span class="status {% if user.status.value == 'active' %}active{% elif user.status.value == 'limited' %}limited{% elif user.status.value == 'expired' %}expired{% elif user.status.value == 'disabled' %}disabled{% endif %}" id="user_status_label" data-data="{{ user.status.value }}"></span>
+            </section>
+            <section class="right">
+                <div class="usage-chart" data-percent="0">0%</div>
+
+                <p id="data_usage" data-data="{{ user.used_traffic | bytesformat }} / {% if not user.data_limit %}∞{% else %}{{ user.data_limit | bytesformat }}{% endif %}"></p>
+                {% if user.data_limit_reset_strategy != 'no_reset' %}<p id="period_reset" data-data="(Resets every {{ user.data_limit_reset_strategy.value }})"></p>{% endif %}
+                <p id="expire_date" data-data="{% if not user.expire %}∞{% else %}{% set current_timestamp = now().timestamp() %}{{ user.expire | datetime }}{% endif %}"></p>
+                <p id="rem_days" data-data="{% if not user.expire %}∞{% else %}{% set remaining_days = ((user.expire - current_timestamp) // (24 * 3600)) %}({{ remaining_days | int }} days){% endif %}"></p>
+            </section>
+        </section>
+
+        <section class="tab-control">
+            <section class="headers">
+                <div class="header" id="tab_header_link" onclick="changeTab(0)">Links</div>
+                <div class="header" id="tab_header_apps" onclick="changeTab(1)">Apps</div>
+                <div class="header" id="tab_header_tutorials" onclick="changeTab(2)">Tutorials</div>
+            </section>
+            <section class="tabs-container">
+                <div class="tab">
+                    <ul>
+                        <li>
+                            <span class="link-remark sub-link" data-link="sub"></span>
+                            <div class="buttons">
+                                <button class="copy-button" onclick="copyLink('sub', this)">
+                                    <img src="/static/images/copy.svg" />
+                                </button>
+                                <button class="qr-button sub-button" data-link="sub">
+                                    <img src="/static/images/qrcode.svg" />
+                                </button>
+                            </div>
+                        </li>
+                        <li class="splitter"></li>
+                        {% for link in user.links %}
+                        <li>
+                            <span class="link-remark" data-link="{{ link }}"></span>
+                            <div class="buttons">
+                                <button class="copy-button" onclick="copyLink('{{ link }}', this)">
+                                    <img src="/static/images/copy.svg" />
+                                </button>
+                                <button class="qr-button" data-link="{{ link }}">
+                                    <img src="/static/images/qrcode.svg" />
+                                </button>
+                            </div>
+                        </li>
+                        {% endfor %}
+                        <li class="copy-all" id="copy_all_label" onclick="copyAllLinks()">Copy All</li>
+                    </ul>
+                </div>
+                <div class="tab">
+                    <ul>
+                        <li>
+                            <span class="icon">
+                                <img src="/static/images/ios.svg" />
+                            </span>
+                            <span>+16 - Foxray</span>
+                            <div class="buttons">
+                                <button class="copy-button" onclick='copyLink("https://apps.apple.com/us/app/foxray/id6448898396", this)'>
+                                    <img src="/static/images/copy.svg" />
+                                </button>
+                                <a href="https://apps.apple.com/us/app/foxray/id6448898396" target="_blank">
+                                    <img src="/static/images/link.svg" />
+                                </a>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="icon">
+                                <img src="/static/images/ios.svg" />
+                            </span>
+                            <span>+14 - V2Box</span>
+                            <div class="buttons">
+                                <button class="copy-button" onclick='copyLink("https://apps.apple.com/us/app/v2box-v2ray-client/id6446814690", this)'>
+                                    <img src="/static/images/copy.svg" />
+                                </button>
+                                <a href="https://apps.apple.com/us/app/v2box-v2ray-client/id6446814690" target="_blank">
+                                    <img src="/static/images/link.svg" />
+                                </a>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="icon">
+                                <img src="/static/images/ios.svg" />
+                            </span>
+                            <span>+12 - ShadowRocket</span>
+                            <div class="buttons">
+                                <button class="copy-button" onclick='copyLink("https://apps.apple.com/ca/app/shadowrocket/id932747118", this)'>
+                                    <img src="/static/images/copy.svg" />
+                                </button>
+                                <a href="https://apps.apple.com/ca/app/shadowrocket/id932747118" target="_blank">
+                                    <img src="/static/images/link.svg" />
+                                </a>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="icon">
+                                <img src="/static/images/android.svg" />
+                            </span>
+                            <span>V2RayNG - GooglePlay</span>
+                            <div class="buttons">
+                                <button class="copy-button" onclick='copyLink("https://play.google.com/store/apps/details?id=com.v2ray.ang", this)'>
+                                    <img src="/static/images/copy.svg" />
+                                </button>
+                                <a href="https://play.google.com/store/apps/details?id=com.v2ray.ang" target="_blank">
+                                    <img src="/static/images/link.svg" />
+                                </a>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="icon">
+                                <img src="/static/images/android.svg" />
+                            </span>
+                            <span>V2RayNG - Github</span>
+                            <div class="buttons">
+                                <button class="copy-button" onclick='copyLink("https://github.com/2dust/v2rayNG/releases/download/1.8.5/v2rayNG_1.8.5.apk", this)'>
+                                    <img src="/static/images/copy.svg" />
+                                </button>
+                                <a href="https://github.com/2dust/v2rayNG/releases/download/1.8.5/v2rayNG_1.8.5.apk" target="_blank">
+                                    <img src="/static/images/link.svg" />
+                                </a>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="icon">
+                                <img src="/static/images/windows.svg" />
+                            </span>
+                            <span>V2RayN</span>
+                            <div class="buttons">
+                                <button class="copy-button" onclick='copyLink("https://github.com/2dust/v2rayN/releases/download/6.26/zz_v2rayN-With-Core-SelfContained.7z", this)'>
+                                    <img src="/static/images/copy.svg" />
+                                </button>
+                                <a href="https://github.com/2dust/v2rayN/releases/download/6.26/zz_v2rayN-With-Core-SelfContained.7z" target="_blank">
+                                    <img src="/static/images/link.svg" />
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="tab">
+                    <ul>
+                        <li>
+                            <span class="icon">
+                                <img src="/static/images/ios.svg" />
+                            </span>
+                            <span>Foxray</span>
+                            <div class="buttons">
+                                <button class="copy-button" onclick='copyLink("https://apps.apple.com/us/app/foxray/id6448898396", this)'>
+                                    <img src="/static/images/play.svg" />
+                                </button>
+                                <a href="https://apps.apple.com/us/app/foxray/id6448898396" target="_blank">
+                                    <img src="/static/images/download.svg" />
+                                </a>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="icon">
+                                <img src="/static/images/ios.svg" />
+                            </span>
+                            <span>V2Box</span>
+                            <div class="buttons">
+                                <button class="copy-button" onclick='copyLink("https://apps.apple.com/us/app/v2box-v2ray-client/id6446814690", this)'>
+                                    <img src="/static/images/play.svg" />
+                                </button>
+                                <a href="https://apps.apple.com/us/app/v2box-v2ray-client/id6446814690" target="_blank">
+                                    <img src="/static/images/download.svg" />
+                                </a>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="icon">
+                                <img src="/static/images/ios.svg" />
+                            </span>
+                            <span>ShadowRocket</span>
+                            <div class="buttons">
+                                <button class="copy-button" onclick='copyLink("https://apps.apple.com/ca/app/shadowrocket/id932747118", this)'>
+                                    <img src="/static/images/play.svg" />
+                                </button>
+                                <a href="https://apps.apple.com/ca/app/shadowrocket/id932747118" target="_blank">
+                                    <img src="/static/images/download.svg" />
+                                </a>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="icon">
+                                <img src="/static/images/android.svg" />
+                            </span>
+                            <span>V2RayNG</span>
+                            <div class="buttons">
+                                <button class="copy-button" onclick='copyLink("https://play.google.com/store/apps/details?id=com.v2ray.ang", this)'>
+                                    <img src="/static/images/play.svg" />
+                                </button>
+                                <a href="https://play.google.com/store/apps/details?id=com.v2ray.ang" target="_blank">
+                                    <img src="/static/images/download.svg" />
+                                </a>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="icon">
+                                <img src="/static/images/windows.svg" />
+                            </span>
+                            <span>V2RayN</span>
+                            <div class="buttons">
+                                <button class="copy-button" onclick='copyLink("https://github.com/2dust/v2rayN/releases/download/6.26/zz_v2rayN-With-Core-SelfContained.7z", this)'>
+                                    <img src="/static/images/play.svg" />
+                                </button>
+                                <a href="https://github.com/2dust/v2rayN/releases/download/6.26/zz_v2rayN-With-Core-SelfContained.7z" target="_blank">
+                                    <img src="/static/images/download.svg" />
+                                </a>
+                            </div>
+                        </li>
+                        <li class="coming_soon">
+                            <span></span>
+                            <div class="blurred"></div>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+        </section>
     </div>
-    {% endif %}
+    <div id="popup" class="overlay">
+        <div class="popup">
+            <h2></h2>
+            <a class="close">&times;</a>
+            <div class="content"></div>
+        </div>
+    </div>
 
+    <div class="lang-switch" onclick="changeLang(false)">
+        <img src="/static/images/language.svg" />
+    </div>
+
+    <script src="/static/scripts.js"></script>
+    <script src="/static/lang.js"></script>
     <script>
-        function copyLink(link, button) {
-            const tempInput = document.createElement('input');
-            tempInput.setAttribute('value', link);
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempInput);
+        const dataLimit = "{% if not user.data_limit %}∞{% else %}{{ user.data_limit | bytesformat }}{% endif %}";
+        const dataUsed = "{{ user.used_traffic | bytesformat }}";
 
-            button.textContent = 'Copied!';
-            setTimeout(function () {
-                button.textContent = 'Copy';
-            }, 1500);
-        }
+        var language = localStorage.getItem( "lang" );
+        updateChart( dataLimit.split( " " )[ 0 ], dataUsed.split( " " )[ 0 ] );
+        setRemarks( language );
+        changeLang( true );
+        changeTab( 0 );
 
-        const qrButtons = document.querySelectorAll('.qr-button');
-        const qrPopup = document.getElementById('qrPopup');
-
-        qrButtons.forEach((qrButton) => {
-            qrButton.addEventListener('click', () => {
-                const link = qrButton.dataset.link;
-                while (qrCodeContainer.firstChild) {
-                    qrCodeContainer.removeChild(qrCodeContainer.firstChild);
-                }
-                const qrCode = new QRCode(qrCodeContainer, {
-                    text: link,
-                    width: 256,
-                    height: 256
-                });
-                qrPopup.style.display = 'block';
-            });
-        });
-        function closeQrPopup() {
-            document.getElementById('qrPopup').style.display = 'none';
+        function changeLang ( isInit )
+        {
+            var lang = isInit === true ? ( language === "en" ? "en" : language === "fa" ? "fa" : "fa" ) : ( language === "en" ? "fa" : language === "fa" ? "en" : "fa" );
+            localStorage.setItem( "lang", lang );
+            language = lang;
+            setRemarks( language );
+            $( "#mainContainer" ).removeClass( "en" ).removeClass( "fa" ).addClass( lang );
+            $( "html" ).attr( "lang", lang );
+            if ( lang == "en" ) changeToEn();
+            else if ( lang == "fa" ) changeToFa();
         }
     </script>
 </body>
-
 </html>

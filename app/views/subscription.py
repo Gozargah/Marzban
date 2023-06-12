@@ -1,7 +1,9 @@
+import os
 import re
 
 from fastapi import Depends, Header, Request, Response
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 from app import app
 from app.db import Session, crud, get_db
@@ -42,6 +44,8 @@ def user_subcription(token: str,
     user: UserResponse = UserResponse.from_orm(dbuser)
 
     if "text/html" in accept_header:
+        static_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)).replace("/view", "/template"), "subscription")
+        app.mount("/static", StaticFiles(directory=static_directory), name="static")
         return HTMLResponse(
             render_template(
                 SUBSCRIPTION_PAGE_TEMPLATE,

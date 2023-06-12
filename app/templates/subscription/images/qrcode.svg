@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="#A7A2A9">
+    <path fill="none" stroke="#A7A2A9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="3" d="M10.5,7.5h7c1.657,0,3,1.343,3,3v7c0,1.657-1.343,3-3,3h-7c-1.657,0-3-1.343-3-3v-7C7.5,8.843,8.843,7.5,10.5,7.5z"/>
+    <rect width="4" height="4" x="12" y="12" fill="#A7A2A9"/>
+    <path fill="none" stroke="#A7A2A9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="3" d="M10.5,27.5h7c1.657,0,3,1.343,3,3v7c0,1.657-1.343,3-3,3h-7c-1.657,0-3-1.343-3-3v-7C7.5,28.843,8.843,27.5,10.5,27.5z"/>
+    <rect width="4" height="4" x="12" y="32" fill="#A7A2A9"/>
+    <path fill="none" stroke="#A7A2A9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="3" d="M30.5,7.5h7c1.657,0,3,1.343,3,3v7c0,1.657-1.343,3-3,3h-7c-1.657,0-3-1.343-3-3v-7C27.5,8.843,28.843,7.5,30.5,7.5z"/>
+    <rect width="4" height="4" x="32" y="12" fill="#A7A2A9"/>
+    <rect width="5.5" height="5.5" x="26" y="26" fill="#A7A2A9"/>
+    <rect width="5.5" height="5.5" x="26" y="36.5" fill="#A7A2A9"/>
+    <rect width="5.5" height="5.5" x="36.5" y="26" fill="#A7A2A9"/>
+    <rect width="5.5" height="5.5" x="36.5" y="36.5" fill="#A7A2A9"/>
+    <rect width="5" height="5" x="31.5" y="31.5" transform="rotate(-180 34 34)" fill="#A7A2A9"/>
+</svg>
