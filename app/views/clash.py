@@ -604,11 +604,16 @@ def user_subcription(authcode: str,
         )
     }
 
-    if re.match('^([Cc]lashX|[Cc]lash|[Ss]tash)', user_agent):
-        conf = generate_subscription_with_rules(db=db, dbuser=dbuser, config_format="clash")
-    # if re.match('^([Ss]hadowrocket|[Cc]lash-verge|[Cc]lash-?[Mm]eta)', user_agent):
+    if re.match('^([Ss]hadowrocket|[Cc]lash-verge|[Cc]lash-?[Mm]eta)', user_agent):
+        config_format = "clash-meta"
+    elif re.match('^([Cc]lashX|[Cc]lash|[Ss]tash)', user_agent):
+        config_format = "clash"
     else:
-        conf = generate_subscription_with_rules(db=db, dbuser=dbuser, config_format="clash-meta")
+        config_format = "clash-meta" # TODO: v2ray or others
+
+    logger.info(f"Generate subscription: user-agent={user_agent} config-format={config_format}")
+
+    conf = generate_subscription_with_rules(db=db, dbuser=dbuser, config_format=config_format)
 
     if len(conf) == 0:
         return Response(status_code=204)
