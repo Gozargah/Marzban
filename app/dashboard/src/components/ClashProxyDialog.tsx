@@ -48,7 +48,7 @@ import {
   useClash
 } from "contexts/ClashContext";
 import { DeleteIcon } from "./DeleteUserModal";
-import { XTLSFlows, proxyALPN, proxyFingerprint } from "constants/Proxies";
+import { proxyALPN, proxyFingerprint } from "constants/Proxies";
 import { DuplicateIcon, InfoIcon } from "./ClashModal";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -106,7 +106,6 @@ const getDefaultValues = (): FormType => {
         udp: false,
         allow_insecure: true,
         ws_addition_path: "",
-        flow: "",
       },
       vmess: {
         security: "tls",
@@ -691,24 +690,6 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                                   }}
                                 />
                               </FormControl>
-                              {inbound.type == "vless" && inbound.security == "reality" && (
-                                <FormControl>
-                                  <Text fontSize="sm" pb={1}>
-                                    {t("clash.proxy.flow")}
-                                  </Text>
-                                  <Select
-                                    size="sm"
-                                    borderRadius="6px"
-                                    {...form.register(`settings.${inbound.type}.flow`)}
-                                  >
-                                    {XTLSFlows.map((entry) => (
-                                      <option key={entry.title} value={entry.value}>
-                                        {entry.title}
-                                      </option>
-                                    ))}
-                                  </Select>
-                                </FormControl>
-                              )}
                             </HStack>
                             <HStack pt={1} w="full" gap="4">
                               <FormControl w="fit-content" display='flex' alignItems='center'>

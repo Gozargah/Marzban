@@ -866,7 +866,7 @@ class ClashConfig:
         security = R(obj.settings, "vless.security", "none")
         allow_insecure = R(obj.settings, "vless.allow_insecure")
         servername = R(obj.settings, "vless.servername")
-        flow = R(ubsetting, "flow", R(obj.settings, "vless.flow"))
+        flow = R(ubsetting, "flow")
         client_fingerprint = R(obj.settings, "vless.fingerprint")
         proxy = {}
         proxy["name"] = obj.name
