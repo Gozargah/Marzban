@@ -423,9 +423,12 @@ h1 {
         display: none;
     }
 
+    .container.fa>.info>.left,
     .container>.info>.left {
         margin-right: unset;
         padding-right: unset;
+        margin-left: unset;
+        padding-left: unset;
     }
 }
 
