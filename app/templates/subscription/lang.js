@@ -24,7 +24,7 @@
 function changeToFa ()
 {
     var status = $( "#user_status_label" ).attr("data-data");
-    $( "#user_status_label" ).html( status === "active" ? "فعال 😉" : status === "limited" ? "محدود شده 😓" : status === "expired" ? "منقضی شده 😵" : "غیرفعال 😑" );
+    $( "#user_status_label" ).html( status === "active" ? "فعال 😉" : status === "limited" ? "تمام شده 😓" : status === "expired" ? "پایان یافته 😵" : "غیرفعال 😑" );
 
     var data = $( "#data_usage" ).attr( "data-data" );
     $( "#data_usage" ).html( "<strong>داده:</strong> <span style='display: inline-block; direction: ltr;'>" + data + "</span>" );
