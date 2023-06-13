@@ -36,8 +36,12 @@ function changeToFa ()
     var remaining = $( "#rem_days" ).attr( "data-data" );
     $( "#rem_days" ).html( "<strong>روزهای باقی مانده:</strong> " + remaining.replace( "days)", "روز)" ) );
     
-    var period = $( "#period_reset" ).attr( "data-data" ).split( " " )[ 2 ].replace( ")", "" );
-    $( "#period_reset" ).html( "(محاسبه " + (period === "year" ? "سالانه" : period === "month" ? "ماهانه" : period === "week" ? "هفتگی" : period === "day" ? "روزانه" : "") + ")");
+    var period = $( "#period_reset" ).attr( "data-data" );
+    if ( period )
+    {
+        period = period.split( " " )[ 2 ].replace( ")", "" );
+        $( "#period_reset" ).html( "(محاسبه " + (period === "year" ? "سالانه" : period === "month" ? "ماهانه" : period === "week" ? "هفتگی" : period === "day" ? "روزانه" : "") + ")");
+    }
 
     $( "#tab_header_link" ).html("لینک‌ها");
     $( "#tab_header_apps" ).html("نرم‌افزارها");
