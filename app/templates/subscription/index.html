@@ -267,6 +267,7 @@
     <script>
         const dataLimit = "{% if not user.data_limit %}∞{% else %}{{ user.data_limit }}{% endif %}";
         const dataUsed = "{{ user.used_traffic }}";
+        const initLang = "{{ lang }}";
         var language = localStorage.getItem( "lang" );
 
         $( document ).ready( () =>
@@ -279,7 +280,7 @@
 
         function changeLang ( isInit )
         {
-            var lang = isInit === true ? ( language === "en" ? "en" : language === "fa" ? "fa" : "fa" ) : ( language === "en" ? "fa" : language === "fa" ? "en" : "fa" );
+            var lang = isInit === true ? ( language === "en" ? "en" : language === "fa" ? "fa" : initLang ) : ( language === "en" ? "fa" : language === "fa" ? "en" : initLang );
             localStorage.setItem( "lang", lang );
             language = lang;
             setRemarks( language );

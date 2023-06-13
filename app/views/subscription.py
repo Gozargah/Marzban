@@ -12,6 +12,7 @@ from app.templates import render_template
 from app.utils.jwt import get_subscription_payload
 from app.utils.share import generate_subscription
 from config import SUBSCRIPTION_PAGE_TEMPLATE
+from config import SUBSCRIPTION_PAGE_LANG
 
 
 @app.get("/sub/{token}/", tags=['Subscription'])
@@ -49,7 +50,7 @@ def user_subcription(token: str,
         return HTMLResponse(
             render_template(
                 SUBSCRIPTION_PAGE_TEMPLATE,
-                {"user": user}
+                {"user": user, "lang": SUBSCRIPTION_PAGE_LANG}
             )
         )
 
