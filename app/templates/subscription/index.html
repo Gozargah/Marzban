@@ -251,14 +251,17 @@
     <script src="/static/scripts.js"></script>
     <script src="/static/lang.js"></script>
     <script>
-        const dataLimit = "{% if not user.data_limit %}∞{% else %}{{ user.data_limit | bytesformat }}{% endif %}";
-        const dataUsed = "{{ user.used_traffic | bytesformat }}";
-
+        const dataLimit = "{% if not user.data_limit %}∞{% else %}{{ user.data_limit }}{% endif %}";
+        const dataUsed = "{{ user.used_traffic }}";
         var language = localStorage.getItem( "lang" );
-        updateChart( dataLimit.split( " " )[ 0 ], dataUsed.split( " " )[ 0 ] );
-        setRemarks( language );
-        changeLang( true );
-        changeTab( 0 );
+
+        $( document ).ready( () =>
+        {
+            updateChart( dataLimit.split( " " )[ 0 ], dataUsed.split( " " )[ 0 ] );
+            setRemarks( language );
+            changeLang( true );
+            changeTab( 0 );
+        } );
 
         function changeLang ( isInit )
         {
