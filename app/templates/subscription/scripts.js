@@ -13,10 +13,10 @@ function updateChart ( totalLimit, usedLimit )
 {
     const chart = $( '.usage-chart' ).first();
     let totalPercentage = ( parseFloat( usedLimit ) / parseFloat( totalLimit ) ) * 100;
-    if ( totalLimit == "∞" ) totalPercentage = 0;
+    if ( totalLimit == "∞" ) totalPercentage = -1;
 
-    chart.attr( "data-percent", totalPercentage.toFixed( 2 ) );
-    chart.html( "<span>" + totalPercentage.toFixed( 2 ) + "%</span>" );
+    chart.attr( "data-percent", totalPercentage === -1 ? 100 : totalPercentage.toFixed( 2 ) );
+    chart.html( "<span>" + (totalPercentage === -1 ? "∞" : (totalPercentage.toFixed( 2 ) + "%")) + "</span>" );
     chart.easyPieChart( {} );
 }
 
