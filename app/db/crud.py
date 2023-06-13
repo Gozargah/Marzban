@@ -7,6 +7,8 @@ from uuid import uuid4
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 
+from app import xray
+
 from app.db.models import (JWT, Admin, Node, Proxy, ProxyHost, ProxyInbound,
                            ProxyTypes, System, User, UserTemplate, 
                            UserUsageResetLogs, NodeUserUsage, NodeUsage,
@@ -20,13 +22,32 @@ from app.models.proxy import ProxyHost as ProxyHostModify
 from app.models.user import (UserCreate, UserDataLimitResetStrategy,
                              UserModify, UserStatus, UserUsageResponse)
 from app.models.user_template import UserTemplateCreate, UserTemplateModify
+from app.utils.system import get_public_ip
 
+SERVER_IP = get_public_ip()
 
 def add_default_host(db: Session, inbound: ProxyInbound):
     host = ProxyHost(remark="🚀 Marz ({USERNAME}) [{PROTOCOL} - {TRANSPORT}]", address="{SERVER_IP}", inbound=inbound)
     db.add(host)
     db.commit()
 
+def add_default_proxy(db: Session, inbound_tag: str):
+    try:
+        inbound = xray.config.inbounds_by_tag.get(inbound_tag)
+        dbruleset = ClashProxy(
+            name=inbound_tag,
+            inbound=inbound_tag,
+            builtin=True,
+            server=SERVER_IP,
+            tag="built-in",
+            port=inbound["port"],
+            settings={inbound["protocol"]: {}},
+            created_at=datetime.utcnow()
+        )
+        db.add(dbruleset)
+        db.commit()
+    except Exception:
+        pass
 
 def get_or_create_inbound(db: Session, inbound_tag: str):
     inbound = db.query(ProxyInbound).filter(ProxyInbound.tag == inbound_tag).first()
@@ -35,6 +56,7 @@ def get_or_create_inbound(db: Session, inbound_tag: str):
         db.add(inbound)
         db.commit()
         add_default_host(db, inbound)
+        add_default_proxy(db, inbound_tag)
         db.refresh(inbound)
     elif not inbound.hosts:
         add_default_host(db, inbound)
@@ -616,7 +638,7 @@ def get_clash_users(db: Session,
 
     return query.all(), count
 
-def get_clash_user(db: Session, username: int):
+def get_clash_user(db: Session, username: str):
     dbuser = db.query(User.id).filter(User.username == username).first()
     if not dbuser:
         return None;
@@ -965,7 +987,7 @@ def get_clash_proxy_groups(db: Session,
     return query.all(), count
 
 def get_all_clash_proxy_briefs(db:Session):
-    return db.query(ClashProxy.id, ClashProxy.name, ClashProxy.server, ClashProxy.tag).all()
+    return db.query(ClashProxy.id, ClashProxy.name, ClashProxy.server, ClashProxy.builtin, ClashProxy.tag).all()
 
 def get_all_clash_proxy_group_briefs(db:Session):
     return db.query(ClashProxyGroup.id, ClashProxyGroup.name, 

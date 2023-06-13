@@ -27,6 +27,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=32, collation='NOCASE'), nullable=False),
     sa.Column('server', sa.String(length=64, collation='NOCASE'), nullable=False),
+    sa.Column('builtin', sa.Boolean(), nullable=True),
     sa.Column('tag', sa.String(length=64, collation='NOCASE'), nullable=False),
     sa.Column('port', sa.String(length=11), nullable=False),
     sa.Column('inbound', sa.String(length=64), nullable=False),

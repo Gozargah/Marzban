@@ -343,6 +343,10 @@ def modify_clash_proxy(id: int,
     dbproxy = crud.get_clash_proxy(db, id)
     if not dbproxy:
         raise HTTPException(status_code=404, detail="Proxy not found")
+    
+    if not dbproxy.builtin and modified.tag.lower() == "built-in":
+        raise HTTPException(status_code=422, detail={
+            "tag": value_error("BuiltinTagError", "Tag 'built-in' is not valid tag.")})
 
     crud.update_clash_proxy(db, dbproxy, modified)
 
@@ -386,6 +390,10 @@ def modify_clash_proxy_group(id: int,
     dbproxy_group = crud.get_clash_proxy_group(db, id)
     if not dbproxy_group:
         raise HTTPException(status_code=404, detail="Proxy group not found")
+    
+    if not dbproxy_group.builtin and modified.tag.lower() == "built-in":
+        raise HTTPException(status_code=422, detail={
+            "tag": value_error("BuiltinTagError", "Tag 'built-in' is not valid tag.")})
 
     crud.update_clash_proxy_group(db, dbproxy_group, modified)
 
@@ -471,7 +479,7 @@ def get_clash_proxy_briefs(db: Session = Depends(get_db),
             name=brief.name,
             tag=brief.tag,
             server=brief.server,
-            builtin=False
+            builtin=brief.builtin,
         ))
     for brief in crud.get_all_clash_proxy_group_briefs(db):
         briefs.append(ClashProxyBriefResponse(
@@ -502,7 +510,8 @@ def get_clash_proxy_tags(db: Session = Depends(get_db),
         tag_entry.servers.append(f"{proxy.name} -> {server}")
 
     for proxy in crud.get_clash_proxies(db)[0]:
-        add_tag(proxy, proxy.server)
+        if not proxy.builtin:
+            add_tag(proxy, proxy.server)
 
     for proxy in crud.get_clash_proxy_groups(db)[0]:
         if not proxy.builtin:
@@ -570,7 +579,6 @@ def modify_clash_setting(name: str,
 @app.get("/clash/sub/{authcode}/{username}", tags=['Clash'])
 def user_subcription(authcode: str,
                      username: str,
-                     request: Request,
                      db: Session = Depends(get_db),
                      user_agent: str = Header(default="")):
 
@@ -585,9 +593,6 @@ def user_subcription(authcode: str,
     dbuser = crud.get_clash_user(db, username)
     if not dbuser:
         return Response(status_code=404)
-    
-    if len(dbuser.domain) == 0 or len(dbuser.tags) == 0:
-        return Response(status_code=204)
     
     user: UserResponse = UserResponse.from_orm(dbuser.user)
 
@@ -680,13 +685,13 @@ class ClashConfig:
         self.proxies_by_id: Dict[int, ClashConfig.Proxy] = {}
         self.proxy_groups: list[ClashConfig.ProxyGroup] = []
         self.proxy_groups_by_id: Dict[int, ClashConfig.ProxyGroup] = {}
-        tags = str(dbuser.tags).split(",")
+        tags = str(dbuser.tags).split(",") if len(dbuser.tags) > 0 else []
         for obj in crud.get_clash_proxies(db=db)[0]:
             try:
                 idx = tags.index(obj.tag)
             except Exception:
                 idx = -1
-            if idx >= 0:
+            if idx >= 0 or (len(tags) == 0 and obj.builtin):
                 proxy = ClashConfig.Proxy.from_orm(obj)
                 proxy.exported = False
                 proxy.tag_index = idx
@@ -758,6 +763,7 @@ class ClashConfig:
         return yaml.dump(self.config, sort_keys=False, allow_unicode=True, Dumper=Dumper)
     
     def add_network_opts(self, proxy:dict, inbound: dict, settings: dict):
+        salt = secrets.token_hex(8)
         security = R(inbound, "tls", "none")
         network = R(inbound, "network")
         if network == "ws":
@@ -785,14 +791,20 @@ class ClashConfig:
             }
         elif network == "tcp" and R(inbound, "header_type") == "http":
             rawinbound = xray.config.get_inbound(inbound["tag"])
+            request = R(rawinbound, "streamSettings.tcpSettings.header.request")
+            host = ''
+            host_list = inbound['host']
+            if host_list:
+                host = random.choice(host_list).replace('*', salt)
             proxy["network"] = "http"
             proxy["http-opts"] = {
-                "method": R(rawinbound, "streamSettings.tcpSettings.header.request.method"),
-                "path": R(rawinbound, "streamSettings.tcpSettings.header.request.path"),
-                "headers": R(rawinbound, "streamSettings.tcpSettings.header.request.headers"),
+                "method": R(request, "method"),
+                "path": R(inbound, "path"),
+                "headers": {
+                    "Host": host
+                },
             }
         if security == "reality":
-            salt = secrets.token_hex(8)
             sni = random.choice(inbound["sni"]).replace('*', salt)
             proxy["servername"] = sni
             proxy["reality-opts"] = {
@@ -806,12 +818,19 @@ class ClashConfig:
         inbound = xray.config.inbounds_by_tag.get(obj.inbound)
         ibtype = R(inbound, "protocol")
         ibnetwork = R(inbound, "network")
+        ibsecurity = R(inbound, "tls", "none")
         setting = self.user_settings[ibtype].dict(no_obj=True)
+        security = R(obj.settings, "trojan.security", "none")
         udp = R(obj.settings, "trojan.udp")
         sni = R(obj.settings, "trojan.sni")
         alpn = R(obj.settings, "trojan.alpn")
         allow_insecure = bool(R(obj.settings, "trojan.allow_insecure"))
         client_fingerprint = R(obj.settings, "trojan.fingerprint")
+
+        # skip unsafe proxy
+        if ibsecurity == "none" and security != "tls":
+            return
+
         proxy = {}
         proxy["name"] = obj.name
         proxy["type"] = ibtype
@@ -868,6 +887,11 @@ class ClashConfig:
         servername = R(obj.settings, "vless.servername")
         flow = R(ubsetting, "flow")
         client_fingerprint = R(obj.settings, "vless.fingerprint")
+
+        # skip unsafe proxy
+        if ibsecurity == "none" and security != "tls":
+            return
+        
         proxy = {}
         proxy["name"] = obj.name
         proxy["type"] = ibtype
@@ -905,21 +929,20 @@ class ClashConfig:
         ibtype = R(inbound, "protocol")
         if not ibtype or not self.user_settings[ibtype]:
             return
-                
+        
+        proxy = None
+
         if ibtype == "trojan":
-            proxies.append(self.add_trojan(obj))
-            return True
+            proxy = self.add_trojan(obj)
+        elif ibtype == "shadowsocks":
+            proxy = self.add_shadowsocks(obj)
+        elif ibtype == "vmess":
+            proxy = self.add_vmess(obj)
+        elif ibtype == "vless" and self.is_clash_meta:
+            proxy = self.add_vless(obj)
         
-        if ibtype == "shadowsocks":
-            proxies.append(self.add_shadowsocks(obj))
-            return True
-        
-        if ibtype == "vmess":
-            proxies.append(self.add_vmess(obj))
-            return True
-        
-        if ibtype == "vless" and self.is_clash_meta:
-            proxies.append(self.add_vless(obj))
+        if proxy:
+            proxies.append(proxy)
             return True
         
     def write_proxy_group(self, proxy_groups: list, obj: ProxyGroup):

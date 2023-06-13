@@ -60,6 +60,7 @@ class ClashUsersResponse(BaseModel):
 class ClashProxy(BaseModel):
     name: str
     server: str
+    builtin: bool
     tag: str
     port: str
     inbound: str

@@ -239,6 +239,7 @@
   "clash.username": "用户名",
   "clash.users": "用户",
 
+  "error.BuiltinTagError": "标签 “built-in” 不可用。",
   "error.InvalidProxyName": "名称不能包含引号（'\"）。",
   "error.InvalidProxyPort": "端口只能包含数字（0-9）、标点符号（:）。",
   "error.InvalidProxyServer": "服务器地址只能包含字母（A-Za-z）、数字（0-9）和标点符号（/-._）。",

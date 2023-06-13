@@ -9,6 +9,7 @@ from app.models.user import UserResponse, UserStatus
 from app.templates import render_template
 from app.utils.jwt import get_subscription_payload
 from app.utils.share import generate_subscription
+from app.views import clash
 from config import SUBSCRIPTION_PAGE_TEMPLATE
 
 
@@ -62,14 +63,19 @@ def user_subcription(token: str,
         )
     }
 
+    clash_user = crud.get_clash_user(db, user.username)
+
     if re.match('^([Cc]lash-verge|[Cc]lash-?[Mm]eta)', user_agent):
-        conf = generate_subscription(user=user, config_format="clash-meta", as_base64=False)
-        return Response(content=conf, media_type="text/yaml", headers=response_headers)
+        return clash.user_subcription(authcode=clash_user.code,
+                                      username=user.username,
+                                      db=db,
+                                      user_agent=user_agent)
 
     elif re.match('^([Cc]lash|[Ss]tash)', user_agent):
-        conf = generate_subscription(user=user, config_format="clash", as_base64=False)
-        return Response(content=conf, media_type="text/yaml", headers=response_headers)
-
+        return clash.user_subcription(authcode=clash_user.code,
+                                      username=user.username,
+                                      db=db,
+                                      user_agent=user_agent)
     else:
         conf = generate_subscription(user=user, config_format="v2ray", as_base64=True)
         return Response(content=conf, media_type="text/plain", headers=response_headers)

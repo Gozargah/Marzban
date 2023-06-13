@@ -243,6 +243,7 @@
   "clash.username": "Username",
   "clash.users": "Users",
 
+  "error.BuiltinTagError": "Tag 'built-in' is not valid tag.",
   "error.InvalidProxyName": "Name not accept quotes('\").",
   "error.InvalidProxyPort": "Port only accept digit(0-9) and punctuation(:).",
   "error.InvalidProxyServer": "Server only accept alphabet(A-Za-z), digit(0-9) and punctuation(/-._).",

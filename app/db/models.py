@@ -265,6 +265,7 @@ class ClashProxy(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(32, collation='NOCASE'), nullable=False, index=True)
     server = Column(String(64, collation='NOCASE'), nullable=False, index=True)
+    builtin = Column(Boolean, nullable=True, default=False)
     tag = Column(String(64, collation='NOCASE'), nullable=False, index=True)
     port = Column(String(11), nullable=False)
     inbound = Column(String(64), nullable=False)

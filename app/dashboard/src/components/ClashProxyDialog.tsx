@@ -85,6 +85,7 @@ const getDefaultValues = (): FormType => {
     id: 0,
     name: "",
     server: "",
+    builtin: false,
     inbound: "",
     tag: "",
     port: "",
@@ -228,6 +229,7 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
     let body: Proxy = {
       ...rest,
       id: editingProxy?.id,
+      builtin: false,
       settings: settings,
     };
 
@@ -256,11 +258,16 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
           Object.keys(err.response._data.detail).forEach((key) => {
             let message = err.response._data.detail[key];
             let tfield = message;
-            try {
-              const errobj = JSON.parse(message.replace(/"/g, '\\"').replace(/'/g, '"'));
-              tfield = `error.${errobj.err}`;
+            if (message["err"]) {
+              tfield = `error.${message.err}`;
               message = t(tfield);
-            } catch (e) {}
+            } else {
+              try {
+                const errobj = JSON.parse(message.replace(/"/g, '\\"').replace(/'/g, '"'));
+                tfield = `error.${errobj.err}`;
+                message = t(tfield);
+              } catch (e) {}
+            }
             setError(message);
             form.setError(
               key as "name" | "port" | "server" | "tag" | "inbound",
@@ -365,7 +372,7 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                       {terror(form.formState.errors.name?.message)}
                     </FormErrorMessage>
                   </FormControl>
-                  {editingProxy && (
+                  {editingProxy && !editingProxy.builtin && (
                     <Box h="full">
                       <Tooltip label={t("duplicate")} placement="top">
                         <IconButton
@@ -431,7 +438,7 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                       render={({ field: {onChange, ...rest} }) => {
                         return (
                           <Select 
-                            disabled={disabled}
+                            disabled={disabled || editingProxy?.builtin}
                             size="sm" 
                             {...rest}
                             placeholder="Select inbound"
@@ -469,7 +476,7 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                       type="text"
                       borderRadius="6px"
                       placeholder="bwh-aws"
-                      disabled={disabled}
+                      disabled={disabled || editingProxy?.builtin}
                       {...form.register("tag")}
                     />
                     <FormErrorMessage>

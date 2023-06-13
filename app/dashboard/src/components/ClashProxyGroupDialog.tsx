@@ -217,11 +217,16 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
           Object.keys(err.response._data.detail).forEach((key) => {
             let message = err.response._data.detail[key];
             let tfield = message;
-            try {
-              const errobj = JSON.parse(message.replace(/"/g, '\\"').replace(/'/g, '"'));
-              tfield = `error.${errobj.err}`;
+            if (message["err"]) {
+              tfield = `error.${message.err}`;
               message = t(tfield);
-            } catch (e) {}
+            } else {
+              try {
+                const errobj = JSON.parse(message.replace(/"/g, '\\"').replace(/'/g, '"'));
+                tfield = `error.${errobj.err}`;
+                message = t(tfield);
+              } catch (e) {}
+            }
             setError(message);
             form.setError(
               key as "name" | "tag",
