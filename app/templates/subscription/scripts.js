@@ -42,7 +42,7 @@ function copyLink ( link, button )
             } );
     } else
     {
-        const tempInput = $( '<input>' ).attr( "type", "hidden" ).val( link ).appendTo( $( document.body ) );
+        const tempInput = $( '<input>' ).val( link ).appendTo( $( document.body ) );
         tempInput.select();
         document.execCommand( 'copy' );
         tempInput.remove();
@@ -71,7 +71,7 @@ function copyAllLinks ( )
             } );
     } else
     {
-        const tempInput = $( '<input>' ).attr( "type", "hidden" ).val( link.join("\n") ).appendTo( $( document.body ) );
+        const tempInput = $( '<input>' ).val( link.join("\n") ).appendTo( $( document.body ) );
         tempInput.select();
         document.execCommand( 'copy' );
         tempInput.remove();
