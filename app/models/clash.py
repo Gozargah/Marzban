@@ -1,4 +1,5 @@
 import re
+import json
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from pydantic import BaseModel, Field, validator
@@ -15,7 +16,7 @@ PROXY_SERVER_REGEXP = re.compile(r'^(?=.{1,64}\b)[\w\-./]+$')
 PROXY_GROUP_PROXIES_REGEXP = re.compile(r'^(?=.{1,512})[\w,#\.]+$')
 
 def value_error(err: str, message: str):
-    return ValueError({"err": err, "message": message})
+    return ValueError(json.dumps({"err": err, "message": message}))
 
 class ClashSetting(BaseModel):
     name: str

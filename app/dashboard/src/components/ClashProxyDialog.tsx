@@ -52,6 +52,7 @@ import { proxyALPN, proxyFingerprint } from "constants/Proxies";
 import { DuplicateIcon, InfoIcon } from "./ClashModal";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { tryParseJSON } from "utils/json";
 
 const iconProps = {
   baseStyle: {
@@ -256,17 +257,11 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
         }
         if (err?.response?.status === 422) {
           Object.keys(err.response._data.detail).forEach((key) => {
-            let message = err.response._data.detail[key];
+            let message = tryParseJSON(err.response._data.detail[key]);
             let tfield = message;
             if (message["err"]) {
               tfield = `error.${message.err}`;
               message = t(tfield);
-            } else {
-              try {
-                const errobj = JSON.parse(message.replace(/"/g, '\\"').replace(/'/g, '"'));
-                tfield = `error.${errobj.err}`;
-                message = t(tfield);
-              } catch (e) {}
             }
             setError(message);
             form.setError(

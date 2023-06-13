@@ -61,6 +61,8 @@ def hosts(storage: dict):
                 } for host in inbound_hosts
             ]
 
+            crud.add_default_proxy(db, inbound_tag)
+
 
 __all__ = [
     "config",

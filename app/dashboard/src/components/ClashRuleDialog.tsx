@@ -33,6 +33,7 @@ import { DeleteIcon } from "./DeleteUserModal";
 import { AddIcon, EditIcon, SettingIcon } from "./ClashModal";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { tryParseJSON } from "utils/json";
 
 export type ClashRuleDialogProps = {};
 
@@ -147,13 +148,12 @@ export const ClashRuleDialog: FC<ClashRuleDialogProps> = () => {
         }
         if (err?.response?.status === 422) {
           Object.keys(err.response._data.detail).forEach((key) => {
-            let message = err.response._data.detail[key];
+            let message = tryParseJSON(err.response._data.detail[key]);
             let tfield = message;
-            try {
-              const errobj = JSON.parse(message.replace(/"/g, '\\"').replace(/'/g, '"'));
-              tfield = `error.${errobj.err}`;
+            if (message["err"]) {
+              tfield = `error.${message.err}`;
               message = t(tfield);
-            } catch (e) {}
+            }
             setError(message);
             form.setError(
               key as "content" | "type",

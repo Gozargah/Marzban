@@ -54,6 +54,7 @@ import { resetStrategy } from "constants/UserSettings";
 import { useTranslation } from "react-i18next";
 import ReactApexChart from "react-apexcharts";
 import { UsageFilter, createUsageConfig } from "./UsageFilter";
+import { tryParseJSON } from "utils/json";
 
 const AddUserIcon = chakra(UserPlusIcon, {
   baseStyle: {
@@ -280,13 +281,12 @@ export const UserDialog: FC<UserDialogProps> = () => {
         }
         if (err?.response?.status === 422) {
           Object.keys(err.response._data.detail).forEach((key) => {
-            let message = err.response._data.detail[key];
+            let message = tryParseJSON(err.response._data.detail[key]);
             let tfield = message;
-            try {
-              const errobj = JSON.parse(message.replace(/"/g, '\\"').replace(/'/g, '"'));
-              tfield = `error.${errobj.err}`;
+            if (message["err"]) {
+              tfield = `error.${message.err}`;
               message = t(tfield);
-            } catch (e) {}
+            }
             setError(message);
             form.setError(
               key as "proxies" | "username" | "data_limit" | "expire",

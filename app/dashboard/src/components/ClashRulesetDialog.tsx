@@ -33,6 +33,7 @@ import { Icon } from "./Icon";
 import { useTranslation } from "react-i18next";
 import { Ruleset, useClash } from "contexts/ClashContext";
 import { DeleteIcon } from "./DeleteUserModal";
+import { tryParseJSON } from "utils/json";
 
 const AddIcon = chakra(PlusIcon, {
   baseStyle: {
@@ -122,11 +123,12 @@ export const ClashRulesetDialog: FC<ClashRulesetDialogProps> = () => {
         }
         if (err?.response?.status === 422) {
           Object.keys(err.response._data.detail).forEach((key) => {
-            let message = err.response._data.detail[key];
-            try {
-              const errobj = JSON.parse(message.replace(/"/g, '\\"').replace(/'/g, '"'));
-              message = t(`error.${errobj.err}`);
-            } catch (e) {}
+            let message = tryParseJSON(err.response._data.detail[key]);
+            let tfield = message;
+            if (message["err"]) {
+              tfield = `error.${message.err}`;
+              message = t(tfield);
+            }
             setError(message);
             form.setError(
               key as "name" | "preferred_proxy",

@@ -32,9 +32,10 @@ def add_default_host(db: Session, inbound: ProxyInbound):
     db.commit()
 
 def add_default_proxy(db: Session, inbound_tag: str):
-    try:
+    dbproxy = db.query(ClashProxy).filter(ClashProxy.inbound == inbound_tag, ClashProxy.builtin == 1).first()
+    if not dbproxy:
         inbound = xray.config.inbounds_by_tag.get(inbound_tag)
-        dbruleset = ClashProxy(
+        dbproxy = ClashProxy(
             name=inbound_tag,
             inbound=inbound_tag,
             builtin=True,
@@ -44,10 +45,8 @@ def add_default_proxy(db: Session, inbound_tag: str):
             settings={inbound["protocol"]: {}},
             created_at=datetime.utcnow()
         )
-        db.add(dbruleset)
+        db.add(dbproxy)
         db.commit()
-    except Exception:
-        pass
 
 def get_or_create_inbound(db: Session, inbound_tag: str):
     inbound = db.query(ProxyInbound).filter(ProxyInbound.tag == inbound_tag).first()
@@ -56,7 +55,6 @@ def get_or_create_inbound(db: Session, inbound_tag: str):
         db.add(inbound)
         db.commit()
         add_default_host(db, inbound)
-        add_default_proxy(db, inbound_tag)
         db.refresh(inbound)
     elif not inbound.hosts:
         add_default_host(db, inbound)
@@ -853,7 +851,7 @@ def get_clash_proxy(db: Session, id: int) -> ClashProxy:
 
 
 def create_clash_proxy(db: Session, proxy: ClashProxyCreate):
-    dbruleset = ClashProxy(
+    dbproxy = ClashProxy(
         name=proxy.name,
         inbound=proxy.inbound,
         server=proxy.server,
@@ -862,10 +860,10 @@ def create_clash_proxy(db: Session, proxy: ClashProxyCreate):
         settings=proxy.settings,
         created_at=datetime.utcnow()
     )
-    db.add(dbruleset)
+    db.add(dbproxy)
     db.commit()
-    db.refresh(dbruleset)
-    return dbruleset
+    db.refresh(dbproxy)
+    return dbproxy
 
 def update_clash_proxy(db: Session, dbproxy: ClashProxy, modify: ClashProxyCreate):
     old_tag = dbproxy.tag
@@ -913,7 +911,7 @@ def get_clash_proxy_group(db: Session, id: int) -> ClashProxyGroup:
     return db.query(ClashProxyGroup).filter(ClashProxyGroup.id == id).first()
 
 def create_clash_proxy_group(db: Session, proxy_group: ClashProxyGroupCreate):
-    dbruleset = ClashProxyGroup(
+    dbproxy_group = ClashProxyGroup(
         name=proxy_group.name,
         type=proxy_group.type,
         tag=proxy_group.tag,
@@ -922,10 +920,10 @@ def create_clash_proxy_group(db: Session, proxy_group: ClashProxyGroupCreate):
         builtin=False,
         created_at=datetime.utcnow()
     )
-    db.add(dbruleset)
+    db.add(dbproxy_group)
     db.commit()
-    db.refresh(dbruleset)
-    return dbruleset
+    db.refresh(dbproxy_group)
+    return dbproxy_group
 
 def update_clash_proxy_group(db: Session, dbproxy_group: ClashProxyGroup, modify: ClashProxyGroupCreate):
     old_tag = dbproxy_group.tag

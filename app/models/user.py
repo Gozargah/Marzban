@@ -1,4 +1,5 @@
 import re
+import json
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Union
@@ -15,7 +16,7 @@ from xray_api.types.account import Account
 USERNAME_REGEXP = re.compile(r'^(?=\w{3,32}\b)[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*$')
 
 def value_error(err: str, message: str):
-    return ValueError({"err": err, "message": message})
+    return ValueError(json.dumps({"err": err, "message": message}))
 
 class UserStatus(str, Enum):
     active = "active"
