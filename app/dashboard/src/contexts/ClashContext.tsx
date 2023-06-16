@@ -41,10 +41,10 @@ export type ProxySettings = {
   trojan?: {
     security: "none" | "tls"; // | "reality";
     fingerprint: string;
-    udp: boolean;
+    udp?: boolean;
     alpn: string;
     sni: string;
-    allow_insecure: boolean;
+    allow_insecure?: boolean;
     ws_addition_path: string;
   };
   vless?: {
@@ -65,7 +65,9 @@ export type ProxySettings = {
     udp: boolean;
     ws_addition_path: string;
   };
-  shadowsocks?: {};
+  shadowsocks?: {
+    udp: boolean;
+  };
 };
 
 export type Proxy = {

@@ -199,7 +199,7 @@ export const ClashRuleDialog: FC<ClashRuleDialogProps> = () => {
           .catch((err) => {
             toast({
               title: t("clash.rule.deleteFail"),
-              status: "error",
+              status: "warning",
               isClosable: true,
               position: "top",
               duration: 3000,

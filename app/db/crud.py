@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
@@ -22,31 +23,12 @@ from app.models.proxy import ProxyHost as ProxyHostModify
 from app.models.user import (UserCreate, UserDataLimitResetStrategy,
                              UserModify, UserStatus, UserUsageResponse)
 from app.models.user_template import UserTemplateCreate, UserTemplateModify
-from app.utils.system import get_public_ip
-
-SERVER_IP = get_public_ip()
+from app.utils.share import SERVER_IP
 
 def add_default_host(db: Session, inbound: ProxyInbound):
     host = ProxyHost(remark="🚀 Marz ({USERNAME}) [{PROTOCOL} - {TRANSPORT}]", address="{SERVER_IP}", inbound=inbound)
     db.add(host)
     db.commit()
-
-def add_default_proxy(db: Session, inbound_tag: str):
-    dbproxy = db.query(ClashProxy).filter(ClashProxy.inbound == inbound_tag, ClashProxy.builtin == 1).first()
-    if not dbproxy:
-        inbound = xray.config.inbounds_by_tag.get(inbound_tag)
-        dbproxy = ClashProxy(
-            name=inbound_tag,
-            inbound=inbound_tag,
-            builtin=True,
-            server=SERVER_IP,
-            tag="built-in",
-            port=inbound["port"],
-            settings={inbound["protocol"]: {}},
-            created_at=datetime.utcnow()
-        )
-        db.add(dbproxy)
-        db.commit()
 
 def get_or_create_inbound(db: Session, inbound_tag: str):
     inbound = db.query(ProxyInbound).filter(ProxyInbound.tag == inbound_tag).first()
@@ -676,8 +658,8 @@ def update_clash_user_tag(db: Session, old_tag: str, new_tag: str):
     db.commit()
 
 def update_clash_user(db: Session, dbuser: ClashUser, modify: ClashUserCreate):
-    dbuser.tags = modify.tags if modify.tags else ""
-    dbuser.domain = modify.domain if modify.domain else ""
+    dbuser.tags = modify.tags
+    dbuser.domain = re.sub(r"/+$", "", modify.domain)
     db.commit()
     db.refresh(dbuser)
     return dbuser
@@ -849,6 +831,22 @@ def get_clash_proxies(db: Session,
 def get_clash_proxy(db: Session, id: int) -> ClashProxy:
     return db.query(ClashProxy).filter(ClashProxy.id == id).first()
 
+def init_builtin_proxy(db: Session, inbound_tag: str):
+    dbproxy = db.query(ClashProxy).filter(ClashProxy.inbound == inbound_tag, ClashProxy.builtin == 1).first()
+    if not dbproxy:
+        inbound = xray.config.inbounds_by_tag.get(inbound_tag)
+        dbproxy = ClashProxy(
+            name=inbound_tag,
+            inbound=inbound_tag,
+            builtin=True,
+            server=SERVER_IP,
+            tag="built-in",
+            port=inbound["port"],
+            settings={inbound["protocol"]: {}},
+            created_at=datetime.utcnow()
+        )
+        db.add(dbproxy)
+        db.commit()
 
 def create_clash_proxy(db: Session, proxy: ClashProxyCreate):
     dbproxy = ClashProxy(
@@ -867,15 +865,18 @@ def create_clash_proxy(db: Session, proxy: ClashProxyCreate):
 
 def update_clash_proxy(db: Session, dbproxy: ClashProxy, modify: ClashProxyCreate):
     old_tag = dbproxy.tag
-    new_tag = modify.tag
+    new_tag = old_tag
 
     dbproxy.name = modify.name
-    dbproxy.tag = modify.tag
-    dbproxy.inbound = modify.inbound
     dbproxy.port = modify.port
     dbproxy.server = modify.server
     dbproxy.settings = modify.settings
 
+    if not dbproxy.builtin:
+        new_tag = modify.tag
+        dbproxy.tag = modify.tag
+        dbproxy.inbound = modify.inbound
+    
     db.commit()
     db.refresh(dbproxy)
 
@@ -892,6 +893,17 @@ def remove_clash_proxy(db: Session, dbproxy: ClashProxy):
 
     update_clash_user_tag(db, old_tag, new_tag)
 
+    return dbproxy
+
+def reset_clash_proxy(db: Session, dbproxy: ClashProxy):
+    inbound = xray.config.inbounds_by_tag.get(dbproxy.inbound)
+    dbproxy.name=dbproxy.inbound
+    dbproxy.server=SERVER_IP
+    dbproxy.port=inbound["port"]
+    dbproxy.settings={inbound["protocol"]: {}}
+    dbproxy.created_at=datetime.utcnow()
+    db.commit()
+    db.refresh(dbproxy)
     return dbproxy
 
 ClashProxyGroupSortingOptions = Enum('ClashProxyGroupSortingOptions', {
@@ -927,14 +939,15 @@ def create_clash_proxy_group(db: Session, proxy_group: ClashProxyGroupCreate):
 
 def update_clash_proxy_group(db: Session, dbproxy_group: ClashProxyGroup, modify: ClashProxyGroupCreate):
     old_tag = dbproxy_group.tag
-    new_tag = modify.tag
+    new_tag = old_tag
 
     dbproxy_group.name = modify.name
     dbproxy_group.settings = modify.settings
     if not dbproxy_group.builtin:
+        new_tag = modify.tag
         dbproxy_group.tag = modify.tag
         dbproxy_group.type = modify.type
-        dbproxy_group.proxies = modify.proxies if modify.proxies else ""
+        dbproxy_group.proxies = modify.proxies
         dbproxy_group.settings = modify.settings
 
     db.commit()

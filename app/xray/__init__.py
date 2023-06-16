@@ -60,8 +60,9 @@ def hosts(storage: dict):
                     else host.security.value,
                 } for host in inbound_hosts
             ]
-
-            crud.add_default_proxy(db, inbound_tag)
+        
+        for inbound_tag in config.inbounds_by_tag:
+            crud.init_builtin_proxy(db=db, inbound_tag=inbound_tag)
 
 
 __all__ = [

@@ -162,7 +162,7 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
   const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
   };
-  const clear = () => {
+  const clearSearch = () => {
     setSearch("");
   };
 
@@ -246,6 +246,7 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
     setError(null);
     setLoading(false);
     onAlert(null);
+    clearSearch();
   };
 
   const onDeletingProxyGroup = () => {
@@ -269,7 +270,7 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
           .catch((err) => {
             toast({
               title: t("clash.proxyGroup.deleteFail"),
-              status: "error",
+              status: "warning",
               isClosable: true,
               position: "top",
               duration: 3000,
@@ -483,7 +484,7 @@ export const ClashProxyGroupDialog: FC<ClashProxyGroupDialogProps> = () => {
                                   {loading && <Spinner size="xs" />}
                                   {search.length > 0 && (
                                     <IconButton
-                                      onClick={clear}
+                                      onClick={clearSearch}
                                       aria-label="clear"
                                       size="xs"
                                       variant="ghost"

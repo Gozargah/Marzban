@@ -6,8 +6,7 @@ from typing import Literal, Dict, Optional
 import sqlalchemy
 from fastapi import Depends, Header, Response, HTTPException
 
-from fastapi import Depends, Header, Request, Response
-from fastapi.responses import HTMLResponse
+from fastapi import Depends, Header, Response
 from app import app, logger, xray
 from app.db import Session, crud, get_db
 from app.db.models import ClashUser
@@ -96,9 +95,9 @@ def get_clash_users(offset: int = None,
         data.append(ClashUserResponse(
             id=v.id,
             username=v.username,
-            tags=v.tags,
-            code=v.code,
-            domain=v.domain
+            tags=v.tags if v.tags else "",
+            code=v.code if v.code else "",
+            domain=v.domain if v.domain else ""
         ))
 
     return {"data": data, "total": count}
@@ -362,12 +361,16 @@ def delete_clash_proxy(id: int,
     dbproxy = crud.get_clash_proxy(db, id)
     if not dbproxy:
         raise HTTPException(status_code=404, detail="Proxy not found")
-
-    crud.remove_clash_proxy(db, dbproxy)
-
-    logger.info(f"Proxy \"{dbproxy.id}\" deleted")
-
-    return {}
+    
+    inbound = xray.config.inbounds_by_tag.get(dbproxy.inbound)
+    if not inbound or not dbproxy.builtin:
+        crud.remove_clash_proxy(db, dbproxy)
+        logger.info(f"Proxy \"{dbproxy.id}\" deleted")
+        return {}
+    else:
+        crud.reset_clash_proxy(db, dbproxy)
+        logger.info(f"Proxy \"{dbproxy.id}\" reseted")
+        return dbproxy
 
 @app.post("/api/clash/proxy/group", tags=['Clash'], response_model=ClashProxyGroupResponse)
 def add_clash_proxy_group(new_proxy_group: ClashProxyGroupCreate,
@@ -510,8 +513,7 @@ def get_clash_proxy_tags(db: Session = Depends(get_db),
         tag_entry.servers.append(f"{proxy.name} -> {server}")
 
     for proxy in crud.get_clash_proxies(db)[0]:
-        if not proxy.builtin:
-            add_tag(proxy, proxy.server)
+        add_tag(proxy, proxy.server)
 
     for proxy in crud.get_clash_proxy_groups(db)[0]:
         if not proxy.builtin:
@@ -631,8 +633,7 @@ def R(obj, field: str, default = None):
             obj = obj.get(key, default)
     except Exception:
         return default
-    
-    return obj if obj else default
+    return obj if obj is not None else default
 
 class ClashConfig:
     class BuiltinProxy:
@@ -662,20 +663,11 @@ class ClashConfig:
             orm_mode = True
 
     def __init__(self, db: Session, dbuser: ClashUser, config_format: str) -> None:
-        self.db = db
-        self.dbuser = dbuser
-        self.config_format = config_format
-        self.is_clash_meta = self.config_format == "clash-meta"
+        self.is_clash_meta = config_format == "clash-meta"
 
         # user setting
-        user = UserResponse.from_orm(dbuser.user)
-        self.username = user.username
-        self.user_settings = {
-            "trojan": user.proxies.get(ProxyTypes.Trojan),
-            "vmess": user.proxies.get(ProxyTypes.VMess),
-            "vless": user.proxies.get(ProxyTypes.VLESS),
-            "shadowsocks": user.proxies.get(ProxyTypes.Shadowsocks)
-        }
+        self.user = UserResponse.from_orm(dbuser.user)
+        self.active_inbounds = {ib: True for _, l in self.user.inbounds.items() for ib in l}
 
         # setting
         self.setting = crud.get_clash_setting(db, "clash")
@@ -685,7 +677,7 @@ class ClashConfig:
         self.proxies_by_id: Dict[int, ClashConfig.Proxy] = {}
         self.proxy_groups: list[ClashConfig.ProxyGroup] = []
         self.proxy_groups_by_id: Dict[int, ClashConfig.ProxyGroup] = {}
-        tags = str(dbuser.tags).split(",") if len(dbuser.tags) > 0 else []
+        tags = str(dbuser.tags).split(",") if dbuser.tags else []
         for obj in crud.get_clash_proxies(db=db)[0]:
             try:
                 idx = tags.index(obj.tag)
@@ -742,245 +734,242 @@ class ClashConfig:
 
         # init
         self.config = yaml.safe_load(self.setting.content)
+        self.config["proxies"] = []
+        self.config["proxy-groups"] = []
+        self.config["rules"] = []
 
     def to_yaml(self):
         class Dumper(yaml.Dumper):
             def increase_indent(self, flow=False, *args, **kwargs):
                 return super().increase_indent(flow=flow, indentless=False)
+            
+            def represent_sequence(self, tag, sequence, flow_style=None):
+                node = super().represent_sequence(tag, sequence, flow_style)
+                nones = []
+                for v in node.value:
+                    try:
+                        if str(v.tag).endswith(":null") or len(v.value) == 0:
+                            nones.append(v)
+                    except Exception:
+                        pass
+                for v in nones:
+                    node.value.remove(v)
+                return node
 
             def represent_mapping(self, tag, mapping, flow_style=None):
                 node = super().represent_mapping(tag, mapping, flow_style)
                 nones = []
                 for v in node.value:
-                    if str(v[1].tag).endswith(":null"):
-                        nones.append(v)
-                    if len(v[1].value) == 0:
-                        nones.append(v)
+                    try:
+                        if str(v[1].tag).endswith(":null") or len(v[1].value) == 0:
+                            nones.append(v)
+                    except Exception:
+                        pass
                 for v in nones:
                     node.value.remove(v)
                 return node 
         
         return yaml.dump(self.config, sort_keys=False, allow_unicode=True, Dumper=Dumper)
     
-    def add_network_opts(self, proxy:dict, inbound: dict, settings: dict):
+    def add_network_opts(self, node:dict, inbound: dict, settings: dict):
         salt = secrets.token_hex(8)
         security = R(inbound, "tls", "none")
         network = R(inbound, "network")
         if network == "ws":
-            username = self.username
-            path = R(inbound, "path", "/")
+            username = self.user.username
+            path = R(inbound, "path") or "/"
             addition_path = R(settings, "ws_addition_path", "")
             port = inbound["port"]
             if addition_path:
                 path = re.sub(r"//+", "/", f"{path}/{addition_path}?user={username}&port={port}")
-            proxy["ws-opts"] = {
+            node["ws-opts"] = {
                 "path": path,
                 "headers": {
                     "Host": R(inbound, "host"),
                 }
             }
         elif network == "grpc":                
-            proxy["grpc-opts"] = {
+            node["grpc-opts"] = {
                 "grpc-service-name": R(inbound, "path"),
             }
         elif network == "http":
-            proxy["network"] = "h2"
-            proxy["h2-opts"] = {
+            node["network"] = "h2"
+            node["h2-opts"] = {
                 "path": R(inbound, "path"),
                 "host": R(inbound, "host"),
             }
         elif network == "tcp" and R(inbound, "header_type") == "http":
             rawinbound = xray.config.get_inbound(inbound["tag"])
             request = R(rawinbound, "streamSettings.tcpSettings.header.request")
-            host = ''
-            host_list = inbound['host']
-            if host_list:
-                host = random.choice(host_list).replace('*', salt)
-            proxy["network"] = "http"
-            proxy["http-opts"] = {
+            node["network"] = "http"
+            node["http-opts"] = {
                 "method": R(request, "method"),
-                "path": R(inbound, "path"),
-                "headers": {
-                    "Host": host
-                },
+                "path": R(request, "path"),
+                "headers": R(request, "headers")
             }
         if security == "reality":
             sni = random.choice(inbound["sni"]).replace('*', salt)
-            proxy["servername"] = sni
-            proxy["reality-opts"] = {
+            node["servername"] = sni
+            node["reality-opts"] = {
                 "public-key": inbound["pbk"],
                 "short-id": inbound["sid"],
             }
-            if not proxy.get("client_fingerprint"):
-                proxy["client_fingerprint"] = "chrome"
+            if not node.get("client_fingerprint"):
+                node["client_fingerprint"] = "chrome"
 
-    def add_trojan(self, obj: Proxy):
-        inbound = xray.config.inbounds_by_tag.get(obj.inbound)
+    def add_trojan(self, proxy: Proxy):
+        inbound = xray.config.inbounds_by_tag.get(proxy.inbound)
         ibtype = R(inbound, "protocol")
-        ibnetwork = R(inbound, "network")
         ibsecurity = R(inbound, "tls", "none")
-        setting = self.user_settings[ibtype].dict(no_obj=True)
-        security = R(obj.settings, "trojan.security", "none")
-        udp = R(obj.settings, "trojan.udp")
-        sni = R(obj.settings, "trojan.sni")
-        alpn = R(obj.settings, "trojan.alpn")
-        allow_insecure = bool(R(obj.settings, "trojan.allow_insecure"))
-        client_fingerprint = R(obj.settings, "trojan.fingerprint")
+        setting = self.user.proxies.get(ibtype).dict(no_obj=True)
+        security = R(proxy.settings, "trojan.security", "none")
 
         # skip unsafe proxy
         if ibsecurity == "none" and security != "tls":
-            return
+            return False
 
-        proxy = {}
-        proxy["name"] = obj.name
-        proxy["type"] = ibtype
-        proxy["server"] = obj.server
-        proxy["port"] = int(obj.port)
-        proxy["password"] = setting["password"]
-        proxy["sni"] = sni if sni else None
-        proxy["tls"] = True
-        proxy["udp"] = True if udp else None
-        proxy["alpn"] = alpn.split(",") if alpn else None
-        proxy["skip-cert-verify"] = allow_insecure if allow_insecure else None
-        proxy["client_fingerprint"] = client_fingerprint
-        proxy["network"] = ibnetwork
-        self.add_network_opts(proxy, inbound, obj.settings[ibtype])
-        return proxy
+        node = {
+            "name": proxy.name,
+            "type": ibtype,
+            "server": proxy.server,
+            "port": int(proxy.port),
+            "password": setting["password"],
+            "sni": R(proxy.settings, "trojan.sni"),
+            "tls": True,
+            "udp": R(proxy.settings, "trojan.udp"),
+            "alpn": R(proxy.settings, "trojan.alpn", "").split(","),
+            "skip-cert-verify": R(proxy.settings, "trojan.allow_insecure"),
+            "client_fingerprint": R(proxy.settings, "trojan.fingerprint"),
+            "network": R(inbound, "network"),
+        }
+        self.add_network_opts(node, inbound, proxy.settings.get(ibtype, {}))
+        self.config["proxies"].append(node)
+        return True
     
-    def add_vmess(self, obj: Proxy):
-        inbound = xray.config.inbounds_by_tag.get(obj.inbound)
+    def add_vmess(self, proxy: Proxy):
+        inbound = xray.config.inbounds_by_tag.get(proxy.inbound)
         ibtype = R(inbound, "protocol")
         ibsecurity = R(inbound, "tls", "none")
-        ibnetwork = R(inbound, "network")
-        setting = self.user_settings[ibtype].dict(no_obj=True)
-        udp = R(obj.settings, "vmess.udp")
-        security = R(obj.settings, "vmess.security", "none")
-        allow_insecure = R(obj.settings, "vmess.allow_insecure")
-        servername = R(obj.settings, "vmess.servername")
-        client_fingerprint = R(obj.settings, "vmess.fingerprint")
-        proxy = {}
-        proxy["name"] = obj.name
-        proxy["type"] = ibtype
-        proxy["server"] = obj.server
-        proxy["port"] = int(obj.port)
-        proxy["alterId"] = 0
-        proxy["cipher"] = "auto"
-        proxy["uuid"] = setting["id"]
-        proxy["tls"] = True if ibsecurity != "none" or security == "tls" else None
-        proxy["udp"] = True if udp else None
-        proxy["skip-cert-verify"] = allow_insecure if allow_insecure else None
-        proxy["servername"] = servername
-        proxy["client_fingerprint"] = client_fingerprint
-        proxy["network"] = ibnetwork
-        self.add_network_opts(proxy, inbound, obj.settings[ibtype])
-        return proxy
+        setting = self.user.proxies.get(ibtype).dict(no_obj=True)
+        security = R(proxy.settings, "vmess.security", "none")
+        node = {
+            "name": proxy.name,
+            "type": ibtype,
+            "server": proxy.server,
+            "port": int(proxy.port),
+            "alterId": 0,
+            "cipher": "auto",
+            "uuid": setting["id"],
+            "tls": True if ibsecurity != "none" or security == "tls" else None,
+            "udp": R(proxy.settings, "vmess.udp"),
+            "skip-cert-verify": R(proxy.settings, "vmess.allow_insecure"),
+            "servername": R(proxy.settings, "vmess.servername"),
+            "client_fingerprint": R(proxy.settings, "vmess.fingerprint"),
+            "network": R(inbound, "network"),
+        }
+        self.add_network_opts(node, inbound, proxy.settings.get(ibtype, {}))
+        self.config["proxies"].append(node)
+        return True
 
-    def add_vless(self, obj: Proxy):
-        inbound = xray.config.inbounds_by_tag.get(obj.inbound)
+    def add_vless(self, proxy: Proxy):
+        inbound = xray.config.inbounds_by_tag.get(proxy.inbound)
         ibtype = R(inbound, "protocol")
-        ibnetwork = R(inbound, "network")
         ibsecurity = R(inbound, "tls", "none")
-        ubsetting = self.user_settings[ibtype].dict(no_obj=True)
-        udp = R(obj.settings, "vless.udp")
-        security = R(obj.settings, "vless.security", "none")
-        allow_insecure = R(obj.settings, "vless.allow_insecure")
-        servername = R(obj.settings, "vless.servername")
-        flow = R(ubsetting, "flow")
-        client_fingerprint = R(obj.settings, "vless.fingerprint")
+        setting = self.user.proxies.get(ibtype).dict(no_obj=True)
+        security = R(proxy.settings, "vless.security", "none")
+
+        if not self.is_clash_meta:
+            return False
 
         # skip unsafe proxy
         if ibsecurity == "none" and security != "tls":
-            return
+            return False
         
-        proxy = {}
-        proxy["name"] = obj.name
-        proxy["type"] = ibtype
-        proxy["server"] = obj.server
-        proxy["port"] = int(obj.port)
-        proxy["uuid"] = ubsetting["id"]
-        proxy["tls"] = True if ibsecurity != "none" or security == "tls" else None
-        proxy["udp"] = True if udp else None
-        proxy["skip-cert-verify"] = allow_insecure if allow_insecure else None
-        proxy["servername"] = servername
-        proxy["flow"] = flow
-        proxy["client_fingerprint"] = client_fingerprint
-        proxy["network"] = ibnetwork
-        self.add_network_opts(proxy, inbound, obj.settings[ibtype])
-        return proxy
+        node = {
+            "name": proxy.name,
+            "type": ibtype,
+            "server": proxy.server,
+            "port": int(proxy.port),
+            "uuid": setting["id"],
+            "tls": True,
+            "udp": R(proxy.settings, "vless.udp"),
+            "skip-cert-verify": R(proxy.settings, "vless.allow_insecure"),
+            "servername":  R(proxy.settings, "vless.servername"),
+            "flow": R(setting, "flow"),
+            "client_fingerprint": R(proxy.settings, "vless.fingerprint"),
+            "network": R(inbound, "network"),
+        }
+        self.add_network_opts(node, inbound, proxy.settings.get(ibtype, {}))
+        self.config["proxies"].append(node)
+        return True
 
-    def add_shadowsocks(self, obj: Proxy):
-        inbound = xray.config.inbounds_by_tag.get(obj.inbound)
+    def add_shadowsocks(self, proxy: Proxy):
+        inbound = xray.config.inbounds_by_tag.get(proxy.inbound)
         ibtype = R(inbound, "protocol")
-        ibnetwork = R(inbound, "network")
-        ubsetting = self.user_settings[ibtype].dict(no_obj=True)
-        proxy = {}
-        proxy["name"] = obj.name
-        proxy["type"] = "ss"
-        proxy["server"] = obj.server
-        proxy["port"] = int(obj.port)
-        proxy["password"] = ubsetting["password"]
-        proxy["cipher"] = ubsetting["method"]
-        # proxy["network"] = ibnetwork
-        # self.add_network_opts(proxy, inbound, obj.settings[ibtype])
-        return proxy
+        setting = self.user.proxies.get(ibtype).dict(no_obj=True)
+        node = {
+            "name": proxy.name,
+            "type": "ss",
+            "server": proxy.server,
+            "port": int(proxy.port),
+            "password": setting["password"],
+            "cipher": setting["method"],
+        }
+        self.config["proxies"].append(node)
+        return True
     
-    def write_proxy(self, proxies: list, obj: Proxy):
-        inbound = xray.config.inbounds_by_tag.get(obj.inbound)
-        ibtype = R(inbound, "protocol")
-        if not ibtype or not self.user_settings[ibtype]:
-            return
+    def write_proxy(self, proxy: Proxy):
+        if not self.active_inbounds.get(proxy.inbound):
+            return False
         
-        proxy = None
+        inbound = xray.config.inbounds_by_tag.get(proxy.inbound)
+        ibtype = R(inbound, "protocol")
 
         if ibtype == "trojan":
-            proxy = self.add_trojan(obj)
+            return self.add_trojan(proxy)
         elif ibtype == "shadowsocks":
-            proxy = self.add_shadowsocks(obj)
+            return self.add_shadowsocks(proxy)
         elif ibtype == "vmess":
-            proxy = self.add_vmess(obj)
-        elif ibtype == "vless" and self.is_clash_meta:
-            proxy = self.add_vless(obj)
+            return self.add_vmess(proxy)
+        elif ibtype == "vless":
+            return self.add_vless(proxy)
+        else:
+            return False
         
-        if proxy:
-            proxies.append(proxy)
-            return True
-        
-    def write_proxy_group(self, proxy_groups: list, obj: ProxyGroup):
-        proxies = []
+    def write_proxy_group(self, obj: ProxyGroup):
+        node_names = []
         for id in obj.proxies.split(','):
-            subobj = self.find_proxy(id)
-            if not subobj:
+            proxy = self.find_proxy(id)
+            if not proxy:
                 continue
-            proxies.append(subobj.name)
+            node_names.append(proxy.name)
 
-        if len(proxies) == 0:
-            proxies.append('REJECT')
+        if len(node_names) == 0:
+            node_names.append('REJECT')
 
-        proxy = {
+        group = {
             "name": obj.name,
             "type": obj.type,
             "icon": R(obj.settings, "icon"),
-            "proxies": proxies,
+            "proxies": node_names,
         }
-        proxy_groups.append(proxy)
+        self.config["proxy-groups"].append(group)
         
         if obj.type == "url-test":
-            proxy["tolerance"] = R(obj.settings, "url_test.tolerance")
-            proxy["lazy"] = R(obj.settings, "url_test.lazy")
-            proxy["url"] = R(obj.settings, "url_test.url")
-            proxy["interval"] = R(obj.settings, "url_test.interval")
+            group["tolerance"] = R(obj.settings, "url_test.tolerance")
+            group["lazy"] = R(obj.settings, "url_test.lazy")
+            group["url"] = R(obj.settings, "url_test.url")
+            group["interval"] = R(obj.settings, "url_test.interval")
         elif obj.type == "fallback":
-            proxy["url"] = R(obj.settings, "fallback.url")
-            proxy["interval"] = R(obj.settings, "fallback.interval")
+            group["url"] = R(obj.settings, "fallback.url")
+            group["interval"] = R(obj.settings, "fallback.interval")
         elif obj.type == "load-balance":
-            proxy["url"] = R(obj.settings, "load_balance.url")
-            proxy["interval"] = R(obj.settings, "load_balance.interval")
-            proxy["strategy"] = R(obj.settings, "load_balance.strategy")
+            group["url"] = R(obj.settings, "load_balance.url")
+            group["interval"] = R(obj.settings, "load_balance.interval")
+            group["strategy"] = R(obj.settings, "load_balance.strategy")
         elif obj.type == "select":
-            proxy["disable-udp"] = R(obj.settings, "select.disable_udp")
-            proxy["filter"] = R(obj.settings, "select.filter")
-
-        return proxy
+            group["disable-udp"] = R(obj.settings, "select.disable_udp")
+            group["filter"] = R(obj.settings, "select.filter")
     
     def find_proxy(self, id: str):
         if id == "DIRECT" or id == "REJECT":
@@ -988,107 +977,100 @@ class ClashConfig:
         elif id == "...":
             return None
         elif id.startswith("#"):
-            obj = self.proxy_groups_by_id.get(int(id[1:]))
-            if obj:
-                return obj
+            return self.proxy_groups_by_id.get(int(id[1:]))
         else:
-            obj = self.proxies_by_id.get(int(id))
-            if obj and obj.exported:
-                inbound = xray.config.inbounds_by_tag.get(obj.inbound)
+            proxy = self.proxies_by_id.get(int(id))
+            if proxy and proxy.exported:
+                inbound = xray.config.inbounds_by_tag.get(proxy.inbound)
                 if inbound["protocol"] != "vless" or self.is_clash_meta:
-                    return obj
+                    return proxy
 
     def write_proxies(self):
-        proxy_names = []
-        proxies = []
-        proxy_groups = []
-        self.config["proxies"] = proxies
-        self.config["proxy-groups"] = proxy_groups
-
-        for obj in self.proxies:
-            if obj.port.find(':') > 0:
-                ports = obj.port.split(':')
+        node_names = []
+        
+        for proxy in self.proxies:
+            if proxy.port.find(':') > 0:
+                ports = proxy.port.split(':')
                 start = int(ports[0])
                 end = int(ports[1]) + 1
-                lb_proxies = []
+                lb_nodes = []
                 for port in range(start, end):
-                    subobj = obj.copy()
-                    subobj.name = f"{obj.name}|{port - start}"
-                    subobj.port = port
-                    if self.write_proxy(proxies, subobj):
-                        lb_proxies.append(subobj.name)
-                if len(lb_proxies) > 0:
-                    proxy_groups.append({
-                        "name": obj.name,
+                    lb_proxy = proxy.copy()
+                    lb_proxy.name = f"{proxy.name}|{port - start}"
+                    lb_proxy.port = port
+                    if self.write_proxy(lb_proxy):
+                        lb_nodes.append(lb_proxy.name)
+                if len(lb_nodes) > 0:
+                    self.config["proxy-groups"].append({
+                        "name": proxy.name,
                         "type": "load-balance",
-                        "icon": R(obj.settings, "icon"),
+                        "icon": R(proxy.settings, "icon"),
                         "url": "http://cp.cloudflare.com/generate_204",
                         "interval": 300,
                         "strategy": "round-robin",
-                        "proxies": lb_proxies,
+                        "proxies": lb_nodes,
                     })
-                    obj.exported = True
-                    proxy_names.append(obj.name)
-            elif self.write_proxy(proxies, obj):
-                obj.exported = True
-                proxy_names.append(obj.name)
+                    proxy.exported = True
+                    node_names.append(proxy.name)
+            elif self.write_proxy(proxy):
+                proxy.exported = True
+                node_names.append(proxy.name)
 
-        for obj in self.proxy_groups:
-            if obj.builtin:
+        for proxy_group in self.proxy_groups:
+            if proxy_group.builtin:
                 continue
-            if self.write_proxy_group(proxy_groups, obj):
-                proxy_names.append(obj.name)
+            self.write_proxy_group(proxy_group)
+            node_names.append(proxy_group.name)
 
-        builtin = [self.builtin_proxy_groups["PROXY"], 
+        builtins = [self.builtin_proxy_groups["PROXY"], 
                    self.builtin_proxy_groups["DIRECT"],
                    self.builtin_proxy_groups["MATCH"], 
                    self.builtin_proxy_groups["REJECT"]]
-        builtin.reverse()
-        for obj in builtin:
-            pg_proxies = []
-            for id in obj.proxies.split(','):
-                subobj = self.find_proxy(id)
-                if subobj:
-                    pg_proxies.append(subobj.name)
+        builtins.reverse()
+        for builtin_group in builtins:
+            bg_nodes = []
+            for id in builtin_group.proxies.split(','):
+                proxy = self.find_proxy(id)
+                if proxy:
+                    bg_nodes.append(proxy.name)
                 elif id == "...":
-                    pg_proxies += proxy_names
-            proxy_groups.insert(0, {
-                "name": obj.name,
+                    bg_nodes += node_names
+            self.config["proxy-groups"].insert(0, {
+                "name": builtin_group.name,
                 "type": "select",
-                "icon": R(obj.settings, "icon"),
-                "proxies": pg_proxies,
+                "icon": R(builtin_group.settings, "icon"),
+                "proxies": bg_nodes,
             })
 
-        for obj in self.rulesets:
-            if obj.builtin:
+        for ruleset in self.rulesets:
+            if ruleset.builtin:
                 continue
-            rs_names = ["DIRECT", "PROXY", "REJECT"]
-            rs_names.remove(obj.preferred_proxy)
-            rs_names.insert(0, obj.preferred_proxy)
-            rs_names[0] = self.builtin_proxy_groups[rs_names[0]].name
-            rs_names[1] = self.builtin_proxy_groups[rs_names[1]].name
-            rs_names[2] = self.builtin_proxy_groups[rs_names[2]].name
-            rs_names += proxy_names
-            proxy_groups.append({
-                "name": obj.name,
+            rs_nodes = ["DIRECT", "PROXY", "REJECT"]
+            rs_nodes.remove(ruleset.preferred_proxy)
+            rs_nodes.insert(0, ruleset.preferred_proxy)
+            rs_nodes[0] = self.builtin_proxy_groups[rs_nodes[0]].name
+            rs_nodes[1] = self.builtin_proxy_groups[rs_nodes[1]].name
+            rs_nodes[2] = self.builtin_proxy_groups[rs_nodes[2]].name
+            rs_nodes += node_names
+            self.config["proxy-groups"].append({
+                "name": ruleset.name,
                 "type": "select",
-                "icon": R(obj.settings, "icon"),
-                "proxies": rs_names,
+                "icon": R(ruleset.settings, "icon"),
+                "proxies": rs_nodes,
             })
 
     def write_rules(self):
-        rules = []
-        for obj in self.rules:
+        for rule in self.rules:
             # TYPE,ARGUMENT,POLICY(,no-resolve)
             no_resolve=""
-            policy=obj.ruleset
+            policy=rule.ruleset
             if self.builtin_proxy_groups.get(policy) is not None:
                 policy = self.builtin_proxy_groups[policy].name
-            if len(obj.option) > 0:
-                no_resolve=f",{obj.option}"
-            rules.append(f"{obj.type},{obj.content},{policy}{no_resolve}")
-        rules.append(f'MATCH,{self.builtin_proxy_groups["MATCH"].name}')
-        self.config["rules"] = rules
+            if len(rule.option) > 0:
+                no_resolve=f",{rule.option}"
+            self.config["rules"].append(f"{rule.type},{rule.content},{policy}{no_resolve}")
+        
+        self.config["rules"].append(f'MATCH,{self.builtin_proxy_groups["MATCH"].name}')
 
 def generate_subscription_with_rules(
         db: Session, 
@@ -1096,9 +1078,6 @@ def generate_subscription_with_rules(
         config_format: Literal["v2ray", "clash-meta", "clash"]):
     
     clash = ClashConfig(db=db, dbuser=dbuser, config_format=config_format)
-
-    if len(clash.proxies) == 0:
-        return ""
 
     # proxies
     clash.write_proxies()

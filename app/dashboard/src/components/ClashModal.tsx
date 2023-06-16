@@ -1068,6 +1068,7 @@ const Users: FC<StackProps> = () => {
           </Thead>
           <Tbody>
             {users?.map((user, i) => {
+              const tags = user.tags?.split(",").join(", ");
               return (
                 <Tr
                   key={user.username}
@@ -1083,8 +1084,12 @@ const Users: FC<StackProps> = () => {
                       {user.domain}
                   </Td>
                   <Td pt="5px" pb="5px" pr="0" fontSize="sm" maxW="300px">
-                    <Text noOfLines={1}>
-                      {user.tags?.split(",").join(", ")}
+                    <Text
+                      noOfLines={1}
+                      color={!tags ? "gray.400" : undefined}
+                      _dark={{color: !tags ? "gray.500" : undefined}}
+                    >
+                      {tags || "built-in"}
                     </Text>
                   </Td>
                   <Td pt="5px" pb="5px" pr="4" fontSize="sm" >

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 import psutil
 
 from app import scheduler
-
+from config import DEBUG
 
 @dataclass
 class MemoryStat():
@@ -92,46 +92,45 @@ def check_port(port: int) -> bool:
     finally:
         s.close()
 
+if not DEBUG:
+    def get_public_ip():
+        try:
+            return requests.get('https://api.ipify.org?format=json&ipv=4', timeout=5).json()['ip']
+        except (requests.exceptions.RequestException,
+                requests.exceptions.RequestException,
+                KeyError) as e:
+            pass
 
-def get_public_ip():
-    try:
-        return requests.get('https://api.ipify.org?format=json&ipv=4', timeout=5).json()['ip']
-    except (requests.exceptions.RequestException,
-            requests.exceptions.RequestException,
-            KeyError) as e:
-        pass
+        try:
+            requests.packages.urllib3.util.connection.HAS_IPV6 = False
+            return requests.get('https://ifconfig.io/ip', timeout=5).text.strip()
+        except (requests.exceptions.RequestException,
+                requests.exceptions.RequestException,
+                KeyError) as e:
+            pass
+        finally:
+            requests.packages.urllib3.util.connection.HAS_IPV6 = True
 
-    try:
-        requests.packages.urllib3.util.connection.HAS_IPV6 = False
-        return requests.get('https://ifconfig.io/ip', timeout=5).text.strip()
-    except (requests.exceptions.RequestException,
-            requests.exceptions.RequestException,
-            KeyError) as e:
-        pass
-    finally:
-        requests.packages.urllib3.util.connection.HAS_IPV6 = True
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.connect(('8.8.8.8', 80))
+            return sock.getsockname()[0]
+        except (socket.error, IndexError):
+            pass
+        finally:
+            socket.close()
 
-    try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.connect(('8.8.8.8', 80))
-        return sock.getsockname()[0]
-    except (socket.error, IndexError):
-        pass
-    finally:
-        socket.close()
-
-    return '127.0.0.1'
-
-
-def get_public_ip():
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        return s.getsockname()[0]
-    except socket.error:
         return '127.0.0.1'
-    finally:
-        s.close()
+else:
+    def get_public_ip():
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            return s.getsockname()[0]
+        except socket.error:
+            return '127.0.0.1'
+        finally:
+            s.close()
 
 
 def readable_size(size_bytes):

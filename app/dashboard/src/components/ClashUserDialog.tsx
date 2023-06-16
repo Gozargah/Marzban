@@ -294,10 +294,12 @@ export const ClashUserDialog: FC<ClashUserDialogProps> = () => {
                     control={form.control}
                     name="selected_tags"
                     render={({field: {onChange, value}}) => {
+                      const showBuiltin = value.length == 0;
+                      const showingTags = showBuiltin ? ["built-in"] : value;
                       return (
                         <VStack>
                           <Wrap w="full">
-                            {value.map((tag) => {
+                            {showingTags.map((tag) => {
                               const entry = proxyTags.filter((v) => v.tag == tag)[0];
                               if (!entry) {
                                 return null;
@@ -309,21 +311,25 @@ export const ClashUserDialog: FC<ClashUserDialogProps> = () => {
                                       <Tag
                                         w="fit-content"
                                         size="md"
+                                        pl="3"
+                                        pr="3"
                                         borderRadius="full"
                                         variant="solid"
-                                        cursor="context-menu"
-                                        colorScheme="primary"
+                                        cursor="default"
+                                        colorScheme={showBuiltin ? "gray": "primary"}
                                       >
                                         <TagLabel>{tag}</TagLabel>
-                                        <TagCloseButton onClick={() => {
-                                          const tags = value.filter((v) => v !== tag)
-                                          onChange({
-                                            target: {
-                                              name: "selected_tags",
-                                              value: tags,
-                                            }
-                                          })
-                                        }}/>
+                                        {!showBuiltin && (
+                                          <TagCloseButton onClick={() => {
+                                            const tags = value.filter((v) => v !== tag)
+                                            onChange({
+                                              target: {
+                                                name: "selected_tags",
+                                                value: tags,
+                                              }
+                                            })
+                                          }}/>
+                                        )}
                                       </Tag>
                                     </PopoverTrigger>
                                     <PopoverContent w="full">
@@ -379,9 +385,10 @@ export const ClashUserDialog: FC<ClashUserDialogProps> = () => {
                               size="sm" 
                             >
                               {proxyTags.map((entry) => {
-                                const exists = value.some((v) => v === entry.tag); 
+                                const exists = value.some((v) => v === entry.tag);
+                                const builtin = entry.tag === "built-in";
                                 const notfound = search && entry.tag.toLowerCase().indexOf(search.toLowerCase()) < 0;
-                                if (exists || notfound) {
+                                if (exists || builtin || notfound) {
                                   return null;
                                 } else {
                                   return (

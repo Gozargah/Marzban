@@ -3,8 +3,7 @@ import json
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from pydantic import BaseModel, Field, validator
-from enum import Enum
-from typing import Union, List, Optional
+from typing import List, Optional
 
 RULE_CONTENT_REGEXP = re.compile(r'^(?=.{1,128}\b)[\w\-/.:]+$')
 RULESET_NAME_REGEXP = re.compile(r'^(?=.{1,32}\b)[\w]+$')
@@ -31,9 +30,9 @@ class ClashSettingResponse(ClashSetting):
 
 class ClashUser(BaseModel):
     username: str
-    tags: Union[str, None]
-    code: Union[str, None]
-    domain: Union[str, None]
+    tags: str
+    code: str
+    domain: str
 
 class ClashUserCreate(ClashUser):
     pass
@@ -127,7 +126,7 @@ class ClashProxyGroup(BaseModel):
     tag: str
     type: str
     builtin: bool
-    proxies: Union[str, None]
+    proxies: str
     settings: dict
 
     @validator('name', check_fields=False)

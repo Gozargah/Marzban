@@ -94,7 +94,7 @@ const getDefaultValues = (): FormType => {
       trojan: {
         security: "tls",
         fingerprint: "chrome",
-        udp: false,
+        udp: true,
         alpn: "",
         sni: "",
         allow_insecure: true,
@@ -105,7 +105,7 @@ const getDefaultValues = (): FormType => {
         fingerprint: "chrome",
         servername: "",
         alpn: "",
-        udp: false,
+        udp: true,
         allow_insecure: true,
         ws_addition_path: "",
       },
@@ -114,11 +114,13 @@ const getDefaultValues = (): FormType => {
         fingerprint: "chrome",
         servername: "",
         alpn: "",
-        udp: false,
+        udp: true,
         allow_insecure: true,
         ws_addition_path: "",
       },
-      shadowsocks: {}
+      shadowsocks: {
+        udp: true,
+      }
     },
   };
 };
@@ -195,7 +197,7 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
     }
   }, [isCreatingProxy, proxyInbounds]);
 
-  const remove_undefined = (settings: any, defaultSettings: any) => {
+  const removeUndefined = (settings: any, defaultSettings: any) => {
     Object.keys(settings).map((key) => {
       if (defaultSettings[key] === undefined) {
         delete settings[key];
@@ -214,16 +216,16 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
     }
     if(inbound?.type == "trojan") {
       settings.trojan = values.settings.trojan;
-      remove_undefined(settings.trojan, defaultSettings.trojan);
+      removeUndefined(settings.trojan, defaultSettings.trojan);
     } else if(inbound?.type == "vless") {
       settings.vless = values.settings.vless;
-      remove_undefined(settings.vless, defaultSettings.vless);
+      removeUndefined(settings.vless, defaultSettings.vless);
     } else if(inbound?.type == "vmess") {
       settings.vmess = values.settings.vmess;
-      remove_undefined(settings.vmess, defaultSettings.vmess);
+      removeUndefined(settings.vmess, defaultSettings.vmess);
     } else if(inbound?.type == "shadowsocks") {
       settings.shadowsocks = values.settings.shadowsocks;
-      remove_undefined(settings.shadowsocks, defaultSettings.shadowsocks);
+      removeUndefined(settings.shadowsocks, defaultSettings.shadowsocks);
     }
 
     const {...rest} = values;
@@ -289,23 +291,45 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
   };
 
   const onDeletingProxy = () => {
+    let alert: any = {}
+    if (editingProxy?.builtin) {
+      alert.title = "clash.proxy.deleteOrReset";
+      alert.prompt = "clash.proxy.deleteBuiltinPrompt";
+      alert.yes = "confirm";
+      alert.success = "clash.proxy.resetSuccess";
+    } else {
+      alert.title = "clash.proxy.delete";
+      alert.prompt = "clash.proxy.deletePrompt";
+      alert.yes = "delete";
+      alert.success = "clash.proxy.deleteSuccess";
+    }
     onAlert({
-      title: t("clash.proxy.delete"),
-      content: t("clash.proxy.deletePrompt", { name: editingProxy?.name }),
+      title: t(alert.title),
+      content: t(alert.prompt, { name: editingProxy?.name }),
       type: "error",
-      yes: t("delete"),
+      yes: t(alert.yes),
       onConfirm: () => {
         deleteProxy(editingProxy!)
           .then(() => {
             toast({
-              title: t("clash.proxy.deleteSuccess", { name: editingProxy?.name }),
+              title: t(alert.success, { name: editingProxy?.name }),
               status: "success",
               isClosable: true,
               position: "top",
               duration: 3000,
             });
             onClose();
-          });
+          })
+          .catch((err) => {
+            toast({
+              title: t("clash.proxy.deleteFail", { name: editingProxy?.name }),
+              status: "warning",
+              isClosable: true,
+              position: "top",
+              duration: 3000,
+            });
+            onClose();
+          })
       }
     });
   };
@@ -465,7 +489,20 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                     </FormErrorMessage>
                   </FormControl>
                   <FormControl isInvalid={!!form.formState.errors.tag}>
-                    <FormLabel>{t("clash.tag")}</FormLabel>
+                    <HStack mb="1">
+                      <FormLabel mr="0" mb="0">{t("clash.tag")}</FormLabel>
+                      <Popover isLazy placement="right">
+                        <PopoverTrigger>
+                          <InfoIcon />
+                        </PopoverTrigger>
+                        <PopoverContent>
+                          <PopoverArrow />
+                          <Text fontSize="xs" p="2" >
+                            {t("clash.proxy.tag.info")}
+                          </Text>
+                        </PopoverContent>
+                      </Popover>
+                    </HStack>
                     <Input
                       size="sm"
                       type="text"
@@ -570,13 +607,14 @@ export const ClashProxyDialog: FC<ClashProxyDialogProps> = () => {
                                 <Controller
                                   control={form.control}
                                   name={`settings.${inbound.type}.ws_addition_path`}
-                                  render={({field: {onChange, ...rest}}) => {
+                                  render={({field: {onChange, value, ...rest}}) => {
                                     return (
                                       <Input
                                         size="sm"
                                         type="text"
                                         borderRadius="6px"
                                         disabled={disabled}
+                                        value={value || ""}
                                         {...rest}
                                         onChange={(e) => {
                                           setWSAdditionPath(e.target.value);

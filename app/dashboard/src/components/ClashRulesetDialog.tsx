@@ -174,7 +174,7 @@ export const ClashRulesetDialog: FC<ClashRulesetDialogProps> = () => {
           .catch((err) => {
             toast({
               title: t("clash.ruleset.deleteFail"),
-              status: "error",
+              status: "warning",
               isClosable: true,
               position: "top",
               duration: 3000,
