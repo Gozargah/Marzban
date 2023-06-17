@@ -78,38 +78,42 @@ def add_node(dbnode: DBNode):
 
 @threaded_function
 def connect_node(node_id, config):
-
     with GetDB() as db:
         dbnode = crud.get_node_by_id(db, node_id)
-        if not dbnode:
-            return
 
-        try:
-            node = xray.nodes[dbnode.id]
-            assert node.connected
-        except (KeyError, AssertionError):
-            node = xray.operations.add_node(dbnode)
+    if not dbnode:
+        return
 
+    try:
+        node = xray.nodes[dbnode.id]
+        assert node.connected
+    except (KeyError, AssertionError):
+        node = xray.operations.add_node(dbnode)
+
+    with GetDB() as db:
         try:
+            dbnode = crud.get_node_by_id(db, node_id)
             crud.update_node_status(db, dbnode, NodeStatus.connecting)
         except SQLAlchemyError:
             db.rollback()
 
-        try:
-            logger.info(f"Connecting to \"{dbnode.name}\" node")
-            node.start(config)
-            message = None
-            status = NodeStatus.connected
-            version = node.remote.fetch_xray_version()
-            logger.info(f"Connected to \"{dbnode.name}\" node, xray run on v{version}")
-        except Exception as e:
-            message = str(e)
-            status = NodeStatus.error
-            version = ""
-            logger.info(f"Unable to connect to \"{dbnode.name}\" node")
+    try:
+        logger.info(f"Connecting to \"{dbnode.name}\" node")
+        node.start(config)
+        message = None
+        status = NodeStatus.connected
+        version = node.remote.fetch_xray_version()
+        logger.info(f"Connected to \"{dbnode.name}\" node, xray run on v{version}")
+    except Exception as e:
+        message = str(e)
+        status = NodeStatus.error
+        version = ""
+        logger.info(f"Unable to connect to \"{dbnode.name}\" node")
 
-        finally:
+    finally:
+        with GetDB() as db:
             try:
+                dbnode = crud.get_node_by_id(db, node_id)
                 crud.update_node_status(db, dbnode, status, message, version)
             except SQLAlchemyError:
                 db.rollback()
@@ -117,36 +121,38 @@ def connect_node(node_id, config):
 
 @threaded_function
 def restart_node(node_id, config):
-
     with GetDB() as db:
         dbnode = crud.get_node_by_id(db, node_id)
-        if not dbnode:
-            return
 
-        try:
-            node = xray.nodes[dbnode.id]
-            assert node.connected
-        except (KeyError, AssertionError):
-            node = xray.operations.add_node(dbnode)
+    if not dbnode:
+        return
 
-        try:
-            logger.info(f"Restarting \"{dbnode.name}\" node")
-            if node.started:
-                node.restart(config)
-            else:
-                node.start(config)
-            message = None
-            status = NodeStatus.connected
-            version = node.remote.fetch_xray_version()
-            logger.info(f"Node \"{dbnode.name}\" restarted, xray run on v{version}")
-        except Exception as e:
-            message = str(e)
-            status = NodeStatus.error
-            version = ""
-            logger.info(f"Unable to restart \"{dbnode.name}\" node")
+    try:
+        node = xray.nodes[dbnode.id]
+        assert node.connected
+    except (KeyError, AssertionError):
+        node = xray.operations.add_node(dbnode)
 
-        finally:
+    try:
+        logger.info(f"Restarting \"{dbnode.name}\" node")
+        if node.started:
+            node.restart(config)
+        else:
+            node.start(config)
+        message = None
+        status = NodeStatus.connected
+        version = node.remote.fetch_xray_version()
+        logger.info(f"Node \"{dbnode.name}\" restarted, xray run on v{version}")
+    except Exception as e:
+        message = str(e)
+        status = NodeStatus.error
+        version = ""
+        logger.info(f"Unable to restart \"{dbnode.name}\" node")
+
+    finally:
+        with GetDB() as db:
             try:
+                dbnode = crud.get_node_by_id(db, node_id)
                 crud.update_node_status(db, dbnode, status, message, version)
             except SQLAlchemyError:
                 db.rollback()
