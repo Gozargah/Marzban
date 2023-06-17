@@ -99,9 +99,10 @@ def modify_user(username: str,
     dbuser = crud.update_user(db, dbuser, modified_user)
     user = UserResponse.from_orm(dbuser)
 
-    xray.operations.remove_user(dbuser)
     if user.status == UserStatus.active:
-        xray.operations.add_user(dbuser)
+        xray.operations.update_user(dbuser)
+    else:
+        xray.operations.remove_user(dbuser)
 
     bg.add_task(report.user_updated,
                 username=dbuser.username,

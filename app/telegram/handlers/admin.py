@@ -917,9 +917,10 @@ def confirm_user_command(call: types.CallbackQuery):
 
             user = UserResponse.from_orm(db_user)
 
-        xray.operations.remove_user(db_user)
         if user.status == UserStatus.active:
-            xray.operations.add_user(db_user)
+            xray.operations.update_user(db_user)
+        else:
+            xray.operations.remove_user(db_user)
 
         bot.answer_callback_query(call.id, "✅ User updated successfully.")
         text = get_user_info_text(username=user.username,
