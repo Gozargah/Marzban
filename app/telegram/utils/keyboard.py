@@ -32,6 +32,9 @@ class BotKeyboard:
         keyboard.add(
             types.InlineKeyboardButton(text='➕ Create User from Template', callback_data='template_add_user')
         )
+        keyboard.add(
+            types.InlineKeyboardButton(text='backup', callback_data='backup')
+        )
         return keyboard
 
     @staticmethod
