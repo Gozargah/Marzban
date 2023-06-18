@@ -2,7 +2,8 @@ import io
 import math
 import re
 from datetime import datetime
-
+import os
+import time 
 import qrcode
 import sqlalchemy
 from dateutil.relativedelta import relativedelta
@@ -131,7 +132,15 @@ def suspend_user_command(call: types.CallbackQuery):
         reply_markup=BotKeyboard.confirm_action(
             action="suspend", username=username),
     )
-
+@bot.callback_query_handler(cb_query_equals("backup"), is_admin=True)
+def backup(call: types.CallbackQuery):
+    bot.edit_message_text(
+        'Are you sure? this will send you the backup once every 4 hours.',
+        call.message.chat.id,
+        call.message.message_id,
+        reply_markup=BotKeyboard.confirm_action(action="back_up")
+    )
+    
 
 @bot.callback_query_handler(cb_query_startswith("activate:"), is_admin=True)
 def activate_user_command(call: types.CallbackQuery):
@@ -868,7 +877,17 @@ def confirm_user_command(call: types.CallbackQuery):
             m.chat.id, m.message_id,
             reply_markup=BotKeyboard.main_menu()
         )
-
+    elif data == 'back_up':
+        chat_id=call.message.chat.id
+        hostname = os.uname().nodename
+        db_path = "/var/lib/marzban/db.sqlite3"
+        interval = 4 * 60 * 60
+        bot.delete_message(call.message.chat.id,call.message.message_id)
+        while True:
+            message = f"Server: {hostname}\nDatabase file:"
+            with open(db_path, "rb") as file:
+                bot.send_document(chat_id, file, caption=message)
+            time.sleep(interval)
     elif data == 'edit_user':
         if (username := mem_store.get('username')) is None:
             try:
