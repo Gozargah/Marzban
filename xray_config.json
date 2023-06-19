@@ -1,4 +1,7 @@
 {
+    "log": {
+        "loglevel": "info"
+    },
     "inbounds": [
         {
             "tag": "VMess TCP",
