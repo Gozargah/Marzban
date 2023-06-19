@@ -270,9 +270,9 @@ class XRayConfig(dict):
                     settings['path'] = net_settings.get('path', '')
                     host = net_settings.get('host', {}) or net_settings.get('Host', {})
                     if host and isinstance(host, list):
-                        settings['path'] = host[0]
+                        settings['host'] = host[0]
                     elif host and isinstance(host, str):
-                        settings['path'] = host
+                        settings['host'] = host
 
             self.inbounds.append(settings)
             self.inbounds_by_tag[inbound['tag']] = settings
