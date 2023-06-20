@@ -1,6 +1,6 @@
-import time
 from datetime import datetime
 from operator import attrgetter
+from typing import Union
 
 from sqlalchemy import and_, bindparam, insert, select, update
 
@@ -8,10 +8,11 @@ from app import scheduler, xray
 from app.db import GetDB
 from app.db.models import NodeUsage, NodeUserUsage, System, User
 from app.utils.concurrency import threaded_function
-from xray_api import XRay as XRayAPI, exc as xray_exc
+from xray_api import XRay as XRayAPI
+from xray_api import exc as xray_exc
 
 
-def record_user_stats(params: list, node_id: int):
+def record_user_stats(params: list, node_id: Union[int, None]):
     created_at = datetime.fromisoformat(datetime.utcnow().strftime('%Y-%m-%dT%H:00:00'))
 
     with GetDB() as db:
@@ -50,14 +51,14 @@ def record_user_stats(params: list, node_id: int):
 
 
 @threaded_function
-def record_user_usage(api: XRayAPI, node_id: int = 0):
+def record_user_usage(api: XRayAPI, node_id: Union[int, None] = None):
     try:
         params = [
             {"link": stat.link, "uid": str(stat.name).split('.', 1)[0], "value": stat.value}
             for stat in filter(attrgetter('value'), api.get_users_stats(reset=True))
         ]
     except (xray_exc.ConnectionError, xray_exc.UnkownError):
-        if node_id == 0:
+        if not node_id:
             xray.core.restart(xray.config.include_db_users())
         else:
             xray.operations.restart_node(node_id, xray.config.include_db_users())
@@ -78,7 +79,7 @@ def record_user_usage(api: XRayAPI, node_id: int = 0):
     record_user_stats(params, node_id)
 
 
-def record_node_stats(params: dict, node_id: int):
+def record_node_stats(params: dict, node_id: Union[int, None]):
     created_at = datetime.fromisoformat(datetime.utcnow().strftime('%Y-%m-%dT%H:00:00'))
 
     with GetDB() as db:
@@ -94,7 +95,8 @@ def record_node_stats(params: dict, node_id: int):
         # record
         stmt = update(NodeUsage). \
             values(uplink=NodeUsage.uplink + bindparam('up'), downlink=NodeUsage.downlink + bindparam('down')). \
-            where(and_(NodeUsage.node_id == bindparam('nid'), NodeUsage.created_at == created_at))
+            where(and_(NodeUsage.node_id == node_id, NodeUsage.created_at == created_at))
+
         db.execute(stmt, params)
 
         # commit changes
@@ -102,13 +104,12 @@ def record_node_stats(params: dict, node_id: int):
 
 
 @threaded_function
-def record_node_usage(api: XRayAPI, node_id: int = 0):
+def record_node_usage(api: XRayAPI, node_id: Union[int, None] = None):
     try:
-        params = [{"nid": node_id, "up": stat.value, "down": 0}
-                  if stat.link == "uplink" else {"nid": node_id, "up": 0, "down": stat.value}
+        params = [{"up": stat.value, "down": 0} if stat.link == "uplink" else {"up": 0, "down": stat.value}
                   for stat in filter(attrgetter('value'), api.get_outbounds_stats(reset=True))]
     except (xray_exc.ConnectionError, xray_exc.UnkownError):
-        if node_id == 0:
+        if not node_id:
             xray.core.restart(xray.config.include_db_users())
         else:
             xray.operations.restart_node(node_id, xray.config.include_db_users())
@@ -130,8 +131,8 @@ def record_node_usage(api: XRayAPI, node_id: int = 0):
 
 
 def record_usages():
-    record_user_usage(xray.api, node_id=0)  # main core
-    record_node_usage(xray.api, node_id=0)  # main core
+    record_user_usage(xray.api, node_id=None)  # main core
+    record_node_usage(xray.api, node_id=None)  # main core
 
     for node_id, node in xray.nodes.items():
         if node.connected:

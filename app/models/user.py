@@ -221,7 +221,7 @@ class UsersResponse(BaseModel):
 
 
 class UserUsageResponse(BaseModel):
-    node_id: int
+    node_id: Union[int, None]
     node_name: str
     used_traffic: int
 
