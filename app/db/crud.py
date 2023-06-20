@@ -30,18 +30,12 @@ def get_or_create_inbound(db: Session, inbound_tag: str):
         db.commit()
         add_default_host(db, inbound)
         db.refresh(inbound)
-    elif not inbound.hosts:
-        add_default_host(db, inbound)
-        db.refresh(inbound)
 
     return inbound
 
 
 def get_hosts(db: Session, inbound_tag: str):
     inbound = get_or_create_inbound(db, inbound_tag)
-    if not inbound.hosts:
-        add_default_host(db, inbound)
-        db.refresh(inbound)
     return inbound.hosts
 
 
