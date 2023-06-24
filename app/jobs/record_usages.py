@@ -8,6 +8,7 @@ from app import scheduler, xray
 from app.db import GetDB
 from app.db.models import NodeUsage, NodeUserUsage, System, User
 from app.utils.concurrency import threaded_function
+from config import DISABLE_RECORDING_NODE_USAGE
 from xray_api import XRay as XRayAPI
 from xray_api import exc as xray_exc
 
@@ -76,6 +77,8 @@ def record_user_usage(api: XRayAPI, node_id: Union[int, None] = None):
         db.execute(stmt, params)
         db.commit()
 
+    if DISABLE_RECORDING_NODE_USAGE:
+        return
     record_user_stats(params, node_id)
 
 
@@ -127,6 +130,8 @@ def record_node_usage(api: XRayAPI, node_id: Union[int, None] = None):
         db.execute(stmt, params)
         db.commit()
 
+    if DISABLE_RECORDING_NODE_USAGE:
+        return
     record_node_stats(params, node_id)
 
 
