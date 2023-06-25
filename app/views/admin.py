@@ -52,6 +52,7 @@ def create_admin(new_admin: AdminCreate,
     try:
         dbadmin = crud.create_admin(db, new_admin)
     except sqlalchemy.exc.IntegrityError:
+        db.rollback()
         raise HTTPException(status_code=409, detail="Admin already exists")
 
     return dbadmin

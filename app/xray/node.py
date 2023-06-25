@@ -1,5 +1,7 @@
+import re
 import tempfile
 import threading
+import time
 from collections import deque
 from contextlib import contextmanager
 from typing import List
@@ -150,8 +152,21 @@ class XRayNode:
         try:
             grpc.channel_ready_future(self._api._channel).result(timeout=5)
         except grpc.FutureTimeoutError:
-            self.stop()
+
+            start_time = time.time()
+            end_time = start_time + 3  # check logs for 3 seconds
+            last_log = ''
+            with self.get_logs() as logs:
+                while time.time() < end_time:
+                    if logs:
+                        last_log = logs[-1].strip().split('\n')[-1]
+                    time.sleep(0.1)
+
             self.disconnect()
+
+            if re.search(r'[Ff]ailed', last_log):
+                raise RuntimeError(last_log)
+
             raise ConnectionError('Failed to connect to node\'s API')
 
     def stop(self):
@@ -199,7 +214,8 @@ class XRayNode:
                     self.__bgsrv = rpyc.BgServingThread(self.connection)
                 self.__curr_logs -= 1
 
-            logs.stop()
+            if logs:
+                logs.stop()
 
     def on_start(self, func: callable):
         self._service.add_startup_func(func)

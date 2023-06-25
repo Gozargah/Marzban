@@ -860,6 +860,9 @@ def confirm_user_command(call: types.CallbackQuery):
         m = bot.edit_message_text(
             '🔄 Restarting XRay core...', call.message.chat.id, call.message.message_id)
         xray.core.restart(xray.config.include_db_users())
+        for node_id, node in xray.nodes.items():
+            if node.connected:
+                xray.operations.restart_node(node_id, xray.config.include_db_users())
         bot.edit_message_text(
             '✅ XRay core restarted successfully.',
             m.chat.id, m.message_id,
@@ -984,6 +987,7 @@ def confirm_user_command(call: types.CallbackQuery):
                 proxies = db_user.proxies
                 user = UserResponse.from_orm(db_user)
         except sqlalchemy.exc.IntegrityError:
+            db.rollback()
             return bot.answer_callback_query(
                 call.id,
                 '❌ Username already exists.',

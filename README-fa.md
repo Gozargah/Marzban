@@ -61,9 +61,6 @@
   - [چرا مرزبان؟](#چرا-مرزبان)
     - [امکانات](#امکانات)
 - [راهنمای نصب](#راهنمای-نصب)
-  - [نصب به کمک Docker (پیشنهادی)](#نصب-به-کمک-docker-پیشنهادی)
-    - [Marzban.sh](#marzbansh)
-  - [نصب به صورت دستی (پیچیده)](#نصب-به-صورت-دستی-پیچیده)
 - [تنظیمات](#تنظیمات)
 - [استفاده از API](#استفاده-از-api)
 - [پشتیبان گیری از مرزبان](#پشتیبان-گیری-از-مرزبان)
@@ -104,37 +101,37 @@
 
 # راهنمای نصب
 
-> ما به شدت پیشنهاد میکنیم برای استفاده در ابعاد بزرگ (production) از Docker image مرزبان استفاده کنید. در اینصورت برای ارتقا به نسخه های بعدی راحتتر خواهید بود و مطمئن تر است.
+برای نصب کافیه دستور زیر رو اجرا کنید
 
-## نصب به کمک Docker (پیشنهادی)
-
-چندین استراتژی بر اساس نیاز های مختلف آماده شده است. برای اجرای مرزبان به کمک Docker [لطفا این مطلب را مطالعه کنید](https://github.com/Gozargah/Marzban-examples).
-
-شما می توانید یکی از تنظیمات را به دلخواه انتخاب کنید. مثلا:
-- [کاملا تک پورت](https://github.com/Gozargah/Marzban-examples/tree/master/fully-single-port#%DA%A9%D8%A7%D9%85%D9%84%D8%A7-%D8%AA%DA%A9-%D9%BE%D9%88%D8%B1%D8%AA)
-- [پروکسی تک پورت](https://github.com/Gozargah/Marzban-examples/tree/master/single-port-proxy#%D9%BE%D8%B1%D9%88%DA%A9%D8%B3%DB%8C-%D8%AA%DA%A9-%D9%BE%D9%88%D8%B1%D8%AA)
-- [چند پورت](https://github.com/Gozargah/Marzban-examples/tree/master/multi-port#%DA%86%D9%86%D8%AF-%D9%BE%D9%88%D8%B1%D8%AA)
-
-### Marzban.sh
-بعد از اینکه تنظیمات مورد علاقه خود را انتخاب کردید، Marzban.sh نصب را برای شما انجام می دهد!
-
-ابتدا Marzban.sh را با دستور زیر دریافت کنید
 ```bash
-curl -L https://github.com/Gozargah/Marzban-scripts/raw/master/get-marzban.sh | sudo bash
+sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install
 ```
 
-سپس به سادگی دستور زیر را اجرا کنید
-```bash
-marzban.sh install
-```
-با این کار، مرزبان در پوشه `/opt/marzban/` روی سرور شما نصب می‌شود
+وقتی نصب تمام شد:
 
-همچنین با اجرای دستور زیر راهنما Marzban.sh را مشاهده کنید
+- شما لاگ های مرزبان رو مشاهده میکنید که می‌توانید با بستن ترمینال یا فشار دادن `Ctrl+C` از آن خارج شوید
+- فایل های مرزبان در پوشه `/opt/marzban` قرار می‌گیرند
+- فایل تنظیمات در مسیر `/opt/marzban/.env` قرار می‌گیرد ([تنظیمات](#تنظیمات) را مشاهده کنید)
+- فایل های مهم (اطلاعات) مرزبان در مسیر `/usr/lib/marzban` قرار می‌گیرند
+- شما از طریق آدرس `http://YOUR_SERVER_IP:8000/dashboard/` می‌توانید وارد داشبورد مرزبان شوید (YOUR_SERVER_IP را با آیپی سرور خود عوض کنید) 
+
+در مرحله بعد, باید یک ادمین سودو بسازید
+
 ```bash
-marzban.sh --help
+marzban cli admin create --sudo
 ```
 
-## نصب به صورت دستی (پیچیده)
+تمام! حالا با این اطلاعات می‌توانید وارد مرزبان شوید
+
+برای مشاهده راهنمای اسکریپت مرزبان دستور زیر را اجرا کنید
+
+```bash
+marzban --help
+```
+
+اگر مشتاق هستید که مرزبان رو با پایتون و به صورت دستی اجرا کنید، مراحل زیر را مشاهده کنید
+<details markdown="1">
+<summary><h3>نصب به صورت دستی (پیچیده)</h3></summary>
 
 لطفا xray را نصب کنید.
 شما میتواند به کمک [Xray-install](https://github.com/XTLS/Xray-install) این کار را انجام دهید.
@@ -227,6 +224,7 @@ server {
 ```
 
 به صورت پیشفرض مرزبان در آدرس `http://localhost:8000/dashboard` اجرا میشود. شما میتوانید با تغییر `UVICORN_HOST` و `UVICORN_PORT`، هاست و پورت را تغییر دهید.
+</details>
 
 # تنظیمات
 

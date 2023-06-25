@@ -27,6 +27,7 @@ def add_user_template(new_user_template: UserTemplateCreate,
     try:
         return crud.create_user_template(db, new_user_template)
     except sqlalchemy.exc.IntegrityError:
+        db.rollback()
         raise HTTPException(status_code=409, detail="Template by this name already exists")
 
 
@@ -63,6 +64,7 @@ def modify_user_template(id: int, modify_user_template: UserTemplateModify,
     try:
         return crud.update_user_template(db, dbuser_template, modify_user_template)
     except sqlalchemy.exc.IntegrityError:
+        db.rollback()
         raise HTTPException(status_code=409, detail="Template by this name already exists")
 
 

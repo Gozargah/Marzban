@@ -34,6 +34,7 @@ def add_user(new_user: UserCreate,
         dbuser = crud.create_user(db, new_user,
                                   admin=crud.get_admin(db, admin.username))
     except sqlalchemy.exc.IntegrityError:
+        db.rollback()
         raise HTTPException(status_code=409, detail="User already exists")
 
     xray.operations.add_user(dbuser)
@@ -213,6 +214,9 @@ def reset_users_data_usage(db: Session = Depends(get_db),
     dbadmin = crud.get_admin(db, admin.username)
     crud.reset_all_users_data_usage(db=db, admin=dbadmin)
     xray.core.restart(xray.config.include_db_users())
+    for node_id, node in xray.nodes.items():
+        if node.connected:
+            xray.operations.restart_node(node_id, xray.config.include_db_users())
     return {}
 
 
