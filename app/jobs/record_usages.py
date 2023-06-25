@@ -139,7 +139,7 @@ def record_usages():
     record_user_usage(xray.api, node_id=None)  # main core
     record_node_usage(xray.api, node_id=None)  # main core
 
-    for node_id, node in xray.nodes.items():
+    for node_id, node in list(xray.nodes.items()):
         if node.connected:
             record_user_usage(node.api, node_id=node_id)
             record_node_usage(node.api, node_id=node_id)

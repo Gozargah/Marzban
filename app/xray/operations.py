@@ -60,7 +60,7 @@ def add_user(dbuser: DBUser):
                 account.flow = XTLSFlows.NONE
 
             _add_user_to_inbound(xray.api, inbound_tag, account)  # main core
-            for node in xray.nodes.values():
+            for node in list(xray.nodes.values()):
                 if node.connected and node.started:
                     _add_user_to_inbound(node.api, inbound_tag, account)
 
@@ -70,7 +70,7 @@ def remove_user(dbuser: DBUser):
 
     for inbound_tag in xray.config.inbounds_by_tag:
         _remove_user_from_inbound(xray.api, inbound_tag, email)
-        for node in xray.nodes.values():
+        for node in list(xray.nodes.values()):
             if node.connected and node.started:
                 _remove_user_from_inbound(node.api, inbound_tag, email)
 
@@ -96,7 +96,7 @@ def update_user(dbuser: DBUser):
                 account.flow = XTLSFlows.NONE
 
             _alter_inbound_user(xray.api, inbound_tag, account)  # main core
-            for node in xray.nodes.values():
+            for node in list(xray.nodes.values()):
                 if node.connected and node.started:
                     _alter_inbound_user(node.api, inbound_tag, account)
 
@@ -105,7 +105,7 @@ def update_user(dbuser: DBUser):
             continue
         # remove disabled inbounds
         _remove_user_from_inbound(xray.api, inbound_tag, email)
-        for node in xray.nodes.values():
+        for node in list(xray.nodes.values()):
             if node.connected and node.started:
                 _remove_user_from_inbound(node.api, inbound_tag, email)
 
@@ -131,6 +131,17 @@ def add_node(dbnode: DBNode):
     return xray.nodes[dbnode.id]
 
 
+def _change_node_status(node_id: int, status: NodeStatus, message: str = None, version: str = None):
+    with GetDB() as db:
+        try:
+            dbnode = crud.get_node_by_id(db, node_id)
+            if not dbnode:
+                return
+            crud.update_node_status(db, dbnode, status, message, version)
+        except SQLAlchemyError:
+            db.rollback()
+
+
 @threaded_function
 def connect_node(node_id, config):
     with GetDB() as db:
@@ -145,33 +156,16 @@ def connect_node(node_id, config):
     except (KeyError, AssertionError):
         node = xray.operations.add_node(dbnode)
 
-    with GetDB() as db:
-        try:
-            dbnode = crud.get_node_by_id(db, node_id)
-            crud.update_node_status(db, dbnode, NodeStatus.connecting)
-        except SQLAlchemyError:
-            db.rollback()
-
     try:
+        _change_node_status(node_id, NodeStatus.connecting)
         logger.info(f"Connecting to \"{dbnode.name}\" node")
         node.start(config)
-        message = None
-        status = NodeStatus.connected
         version = node.remote.fetch_xray_version()
+        _change_node_status(node_id, NodeStatus.connected, version=version)
         logger.info(f"Connected to \"{dbnode.name}\" node, xray run on v{version}")
     except Exception as e:
-        message = str(e)
-        status = NodeStatus.error
-        version = ""
+        _change_node_status(node_id, NodeStatus.error, message=str(e))
         logger.info(f"Unable to connect to \"{dbnode.name}\" node")
-
-    finally:
-        with GetDB() as db:
-            try:
-                dbnode = crud.get_node_by_id(db, node_id)
-                crud.update_node_status(db, dbnode, status, message, version)
-            except SQLAlchemyError:
-                db.rollback()
 
 
 @threaded_function
@@ -184,33 +178,33 @@ def restart_node(node_id, config):
 
     try:
         node = xray.nodes[dbnode.id]
-        assert node.connected
-    except (KeyError, AssertionError):
+    except KeyError:
         node = xray.operations.add_node(dbnode)
 
-    try:
-        logger.info(f"Restarting \"{dbnode.name}\" node")
-        if node.started:
-            node.restart(config)
-        else:
-            node.start(config)
-        message = None
-        status = NodeStatus.connected
-        version = node.remote.fetch_xray_version()
-        logger.info(f"Node \"{dbnode.name}\" restarted, xray run on v{version}")
-    except Exception as e:
-        message = str(e)
-        status = NodeStatus.error
-        version = ""
-        logger.info(f"Unable to restart \"{dbnode.name}\" node")
+    if not node.connected:
+        return connect_node(node_id, config)
 
-    finally:
-        with GetDB() as db:
+    if not node.started:
+        try:
+            node.start(config)
+        except Exception as e:
+            _change_node_status(node_id, NodeStatus.error, message=str(e))
+            logger.info(f"Unable to start node {node_id}")
             try:
-                dbnode = crud.get_node_by_id(db, node_id)
-                crud.update_node_status(db, dbnode, status, message, version)
-            except SQLAlchemyError:
-                db.rollback()
+                node.disconnect()
+            except Exception:
+                pass
+        return
+
+    try:
+        node.restart(config)
+    except Exception as e:
+        _change_node_status(node_id, NodeStatus.error, message=str(e))
+        logger.info(f"Unable to restart node {node_id}")
+        try:
+            node.disconnect()
+        except Exception:
+            pass
 
 
 __all__ = [
