@@ -1,5 +1,6 @@
 import {
-  chakra,
+  Box,
+  CircularProgress,
   HStack,
   Modal,
   ModalBody,
@@ -9,18 +10,18 @@ import {
   ModalHeader,
   ModalOverlay,
   Text,
-  Box,
-  useColorMode,
   VStack,
+  chakra,
+  useColorMode,
 } from "@chakra-ui/react";
-import { ChartPieIcon} from "@heroicons/react/24/outline";
+import { ChartPieIcon } from "@heroicons/react/24/outline";
 import { FilterUsageType, useDashboard } from "contexts/DashboardContext";
-import { FC, useEffect, useState } from "react";
-import { Icon } from "./Icon";
-import { useTranslation } from "react-i18next";
-import ReactApexChart from "react-apexcharts";
 import { useNodes } from "contexts/NodesContext";
 import dayjs from "dayjs";
+import { FC, Suspense, useEffect, useState } from "react";
+import ReactApexChart from "react-apexcharts";
+import { useTranslation } from "react-i18next";
+import { Icon } from "./Icon";
 import { UsageFilter, createUsageConfig } from "./UsageFilter";
 
 const UsageIcon = chakra(ChartPieIcon, {
@@ -33,13 +34,8 @@ const UsageIcon = chakra(ChartPieIcon, {
 export type NodesUsageProps = {};
 
 export const NodesUsage: FC<NodesUsageProps> = () => {
-  const {
-    isShowingNodesUsage,
-    onShowingNodesUsage,
-  } = useDashboard();
-  const {
-    fetchNodesUsage
-  } = useNodes();
+  const { isShowingNodesUsage, onShowingNodesUsage } = useDashboard();
+  const { fetchNodesUsage } = useNodes();
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const { colorMode } = useColorMode();
@@ -49,21 +45,21 @@ export const NodesUsage: FC<NodesUsageProps> = () => {
   const [usageFilter, setUsageFilter] = useState("1m");
   const fetchUsageWithFilter = (query: FilterUsageType) => {
     fetchNodesUsage(query).then((data: any) => {
-        const labels = [];
-        const series = [];
-        for (const key in data.usages) {
-          const entry = data.usages[key];
-          series.push(entry.uplink + entry.downlink);
-          labels.push(entry.node_name);
-        }
-        setUsage(createUsageConfig(colorMode, usageTitle, series, labels));
+      const labels = [];
+      const series = [];
+      for (const key in data.usages) {
+        const entry = data.usages[key];
+        series.push(entry.uplink + entry.downlink);
+        labels.push(entry.node_name);
+      }
+      setUsage(createUsageConfig(colorMode, usageTitle, series, labels));
     });
   };
 
   useEffect(() => {
     if (isShowingNodesUsage) {
       fetchUsageWithFilter({
-        start: dayjs().utc().subtract(30, 'day').format("YYYY-MM-DDTHH:00:00")
+        start: dayjs().utc().subtract(30, "day").format("YYYY-MM-DDTHH:00:00"),
       });
     }
   }, [isShowingNodesUsage]);
@@ -82,7 +78,7 @@ export const NodesUsage: FC<NodesUsageProps> = () => {
         <ModalHeader pt={6}>
           <HStack gap={2}>
             <Icon color="primary">
-                <UsageIcon color="white" />
+              <UsageIcon color="white" />
             </Icon>
             <Text fontWeight="semibold" fontSize="lg">
               {t("header.nodesUsage")}
@@ -99,13 +95,19 @@ export const NodesUsage: FC<NodesUsageProps> = () => {
                 fetchUsageWithFilter(query);
               }}
             />
-            <Box width={{ base: "100%", md: "70%" }} justifySelf="center">
-              <ReactApexChart options={usage.options} series={usage.series} type="donut" />
+            <Box justifySelf="center" w="full" maxW="540px" mt="4">
+              <Suspense fallback={<CircularProgress isIndeterminate />}>
+                <ReactApexChart
+                  options={usage.options}
+                  series={usage.series}
+                  type="donut"
+                  height="500px"
+                />
+              </Suspense>
             </Box>
           </VStack>
         </ModalBody>
-        <ModalFooter mt="3">
-        </ModalFooter>
+        <ModalFooter mt="3"></ModalFooter>
       </ModalContent>
     </Modal>
   );
