@@ -99,9 +99,10 @@ def modify_user(username: str,
     dbuser = crud.update_user(db, dbuser, modified_user)
     user = UserResponse.from_orm(dbuser)
 
-    xray.operations.remove_user(dbuser)
     if user.status == UserStatus.active:
-        xray.operations.add_user(dbuser)
+        xray.operations.update_user(dbuser)
+    else:
+        xray.operations.remove_user(dbuser)
 
     bg.add_task(report.user_updated,
                 username=dbuser.username,
@@ -214,7 +215,7 @@ def reset_users_data_usage(db: Session = Depends(get_db),
     dbadmin = crud.get_admin(db, admin.username)
     crud.reset_all_users_data_usage(db=db, admin=dbadmin)
     xray.core.restart(xray.config.include_db_users())
-    for node_id, node in xray.nodes.items():
+    for node_id, node in list(xray.nodes.items()):
         if node.connected:
             xray.operations.restart_node(node_id, xray.config.include_db_users())
     return {}

@@ -235,6 +235,12 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             <PopoverBody>
                               <Box fontSize="xs">
                                 <Text pr="20px">{t("hostsDialog.desc")}</Text>
+                                <Text>
+                                <Badge>
+                                  {"{"}SERVER_IP{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.currentServer")}
+                              </Text>
                                 <Text mt={1}>
                                   <Badge>
                                     {"{"}USERNAME{"}"}
@@ -246,6 +252,12 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                     {"{"}DATA_USAGE{"}"}
                                   </Badge>{" "}
                                   {t("hostsDialog.dataUsage")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}DATA_LEFT{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.remainingData")}
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
@@ -308,13 +320,55 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                           <PopoverCloseButton />
                           <PopoverBody>
                             <Box fontSize="xs">
-                              <Text pr="20px">{t("hostsDialog.desc")}</Text>
-                              <Text>
+                            <Text pr="20px">{t("hostsDialog.desc")}</Text>
+                                <Text>
                                 <Badge>
                                   {"{"}SERVER_IP{"}"}
                                 </Badge>{" "}
                                 {t("hostsDialog.currentServer")}
                               </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}USERNAME{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.username")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}DATA_USAGE{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.dataUsage")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}DATA_LEFT{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.remainingData")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}DATA_LIMIT{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.dataLimit")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}DAYS_LEFT{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.remaingDays")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}PROTOCOL{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.proxyProtocol")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}TRANSPORT{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.proxyMethod")}
+                                </Text>
                             </Box>
                           </PopoverBody>
                         </PopoverContent>

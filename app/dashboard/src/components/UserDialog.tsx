@@ -30,7 +30,7 @@ import {
   GridItem,
   useColorMode,
 } from "@chakra-ui/react";
-import { PencilIcon, UserPlusIcon, ChartPieIcon} from "@heroicons/react/24/outline";
+import { PencilIcon, UserPlusIcon, ChartPieIcon } from "@heroicons/react/24/outline";
 import { FilterUsageType, useDashboard } from "contexts/DashboardContext";
 import { FC, useEffect, useState } from "react";
 import { Controller, FormProvider, useForm, useWatch } from "react-hook-form";
@@ -143,7 +143,7 @@ const getDefaultValues = (): FormType => {
     inbounds,
     proxies: {
       vless: { id: "", flow: "" },
-      vmess: { id: ""},
+      vmess: { id: "" },
       trojan: { password: "" },
       shadowsocks: { password: "", method: "chacha20-poly1305" }
     }
@@ -230,7 +230,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
   useEffect(() => {
     if (editingUser) {
       form.reset(formatUser(editingUser));
-      
+
       fetchUsageWithFilter({
         start: dayjs().utc().subtract(30, 'day').format("YYYY-MM-DDTHH:00:00")
       });
@@ -243,7 +243,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
     const method = isEditing ? "edited" : "created";
     setError(null);
 
-    const {selected_proxies, ...rest} = values;
+    const { selected_proxies, ...rest } = values;
 
     let body: UserCreate = {
       ...rest,
@@ -258,11 +258,11 @@ export const UserDialog: FC<UserDialogProps> = () => {
           ? values.status
           : "active",
     };
-    
+
     methods[method](body)
       .then(() => {
         toast({
-          title: t(isEditing ? "userDialog.userEdited" : "userDialog.userCreated", {username: values.username}),
+          title: t(isEditing ? "userDialog.userEdited" : "userDialog.userCreated", { username: values.username }),
           status: "success",
           isClosable: true,
           position: "top",
@@ -441,7 +441,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                               return dayjs(
                                 dayjs(num * 1000)
                                   .utc()
-                                  // .format("MMMM D, YYYY") // exception with: dayjs.locale(lng);
+                                // .format("MMMM D, YYYY") // exception with: dayjs.locale(lng);
                               ).toDate();
                             }
                             const { status, time } = relativeExpiryDate(field.value);
@@ -488,7 +488,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                 />
                                 {field.value ? (
                                   <FormHelperText>
-                                    {t(status, {time:time})}
+                                    {t(status, { time: time })}
                                   </FormHelperText>
                                 ) : (
                                   ""
@@ -524,7 +524,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                             list={[
                               {
                                 title: "vmess",
-                                description:t("userDialog.vmessDesc"),
+                                description: t("userDialog.vmessDesc"),
                               },
                               {
                                 title: "vless",
@@ -551,7 +551,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                   </FormControl>
                 </GridItem>
                 {isEditing && usageVisible && (
-                  <GridItem pt={6} colSpan={{ base:1, md: 2}}>
+                  <GridItem pt={6} colSpan={{ base: 1, md: 2 }}>
                     <VStack gap={4}>
                       <UsageFilter
                         defaultValue={usageFilter}
@@ -601,7 +601,10 @@ export const UserDialog: FC<UserDialogProps> = () => {
                         <IconButton
                           aria-label="Delete"
                           size="sm"
-                          onClick={() => onDeletingUser(editingUser)}
+                          onClick={() => {
+                            onDeletingUser(editingUser)
+                            onClose();
+                          }}
                         >
                           <DeleteIcon />
                         </IconButton>

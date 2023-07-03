@@ -30,7 +30,6 @@ def add_node(new_node: NodeCreate,
         db.rollback()
         raise HTTPException(status_code=409, detail=f"Node \"{new_node.name}\" already exists")
 
-    xray.operations.add_node(dbnode)
     xray.operations.connect_node(
         node_id=dbnode.id,
         config=xray.config.include_db_users()
@@ -150,7 +149,6 @@ def modify_node(node_id: int,
     dbnode = crud.update_node(db, dbnode, modified_node)
 
     xray.operations.remove_node(dbnode.id)
-    xray.operations.add_node(dbnode)
     xray.operations.connect_node(
         node_id=dbnode.id,
         config=xray.config.include_db_users()

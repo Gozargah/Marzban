@@ -119,7 +119,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                 icon={<HostsIcon />}
                 onClick={onEditingHosts.bind(null, true)}
               >
-                {t("header.hostsSetting")}
+                {t("header.hostSettings")}
               </MenuItem>
               <MenuItem
                 maxW="170px"
@@ -127,7 +127,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                 icon={<NodesIcon />}
                 onClick={onEditingNodes.bind(null, true)}
               >
-                {t("header.nodesSetting")}
+                {t("header.nodeSettings")}
               </MenuItem>
               <MenuItem
                 maxW="170px"

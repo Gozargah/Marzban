@@ -15,7 +15,7 @@ def app_startup():
 
 @app.on_event("shutdown")
 def app_shutdown():
-    for node in xray.nodes.values():
+    for node in list(xray.nodes.values()):
         try:
             node.disconnect()
         except Exception:
@@ -23,9 +23,12 @@ def app_shutdown():
 
 
 def reconnect_nodes():
-    for node_id, node in xray.nodes.items():
+    config = None
+    for node_id, node in list(xray.nodes.items()):
         if not node.connected:
-            xray.operations.connect_node(node_id, xray.config.include_db_users())
+            if not config:
+                config = xray.config.include_db_users()
+            xray.operations.connect_node(node_id, config)
 
 
 scheduler.add_job(reconnect_nodes, 'interval', seconds=15)
