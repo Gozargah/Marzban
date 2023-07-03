@@ -77,12 +77,13 @@ class NodeResponse(Node):
     class Config:
         orm_mode = True
 
+
 class NodeUsageResponse(BaseModel):
-    node_id: int
+    node_id: Union[int, None]
     node_name: str
     uplink: int
     downlink: int
 
+
 class NodesUsageResponse(BaseModel):
     usages: List[NodeUsageResponse]
-
