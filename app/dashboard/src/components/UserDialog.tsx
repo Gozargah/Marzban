@@ -1,12 +1,16 @@
 import {
   Alert,
   AlertIcon,
+  Box,
   Button,
-  chakra,
+  Collapse,
+  Flex,
   FormControl,
   FormErrorMessage,
   FormHelperText,
   FormLabel,
+  Grid,
+  GridItem,
   HStack,
   IconButton,
   Modal,
@@ -16,24 +20,30 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Select,
   Spinner,
+  Switch,
   Text,
   Tooltip,
-  useToast,
   VStack,
-  Select,
-  Collapse,
-  Flex,
-  Switch,
-  Box,
-  Grid,
-  GridItem,
+  chakra,
   useColorMode,
+  useToast,
 } from "@chakra-ui/react";
-import { PencilIcon, UserPlusIcon, ChartPieIcon } from "@heroicons/react/24/outline";
+import {
+  ChartPieIcon,
+  PencilIcon,
+  UserPlusIcon,
+} from "@heroicons/react/24/outline";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { resetStrategy } from "constants/UserSettings";
 import { FilterUsageType, useDashboard } from "contexts/DashboardContext";
+import dayjs from "dayjs";
 import { FC, useEffect, useState } from "react";
+import ReactApexChart from "react-apexcharts";
+import ReactDatePicker from "react-datepicker";
 import { Controller, FormProvider, useForm, useWatch } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import {
   ProxyKeys,
   ProxyType,
@@ -41,18 +51,12 @@ import {
   UserCreate,
   UserInbounds,
 } from "types/User";
-import { z } from "zod";
-import { Icon } from "./Icon";
-import { RadioGroup } from "./RadioGroup";
-import { Input } from "./Input";
-import ReactDatePicker from "react-datepicker";
-import dayjs from "dayjs";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { relativeExpiryDate } from "utils/dateFormatter";
+import { z } from "zod";
 import { DeleteIcon } from "./DeleteUserModal";
-import { resetStrategy } from "constants/UserSettings";
-import { useTranslation } from "react-i18next";
-import ReactApexChart from "react-apexcharts";
+import { Icon } from "./Icon";
+import { Input } from "./Input";
+import { RadioGroup } from "./RadioGroup";
 import { UsageFilter, createUsageConfig } from "./UsageFilter";
 
 const AddUserIcon = chakra(UserPlusIcon, {
@@ -81,19 +85,21 @@ const schema = z.object({
   selected_proxies: z.array(z.string()).refine((value) => value.length > 0, {
     message: "userDialog.selectOneProtocol",
   }),
-  proxies: z.record(z.string(), z.record(z.string(), z.any())).transform((ins) => {
-    const deleteIfEmpty = (obj: any, key: string) => {
-      if (obj && obj[key] === "") {
-        delete obj[key];
-      }
-    }
-    deleteIfEmpty(ins.vmess, "id");
-    deleteIfEmpty(ins.vless, "id");
-    deleteIfEmpty(ins.trojan, "password");
-    deleteIfEmpty(ins.shadowsocks, "password");
-    deleteIfEmpty(ins.shadowsocks, "method");
-    return ins;
-  }),
+  proxies: z
+    .record(z.string(), z.record(z.string(), z.any()))
+    .transform((ins) => {
+      const deleteIfEmpty = (obj: any, key: string) => {
+        if (obj && obj[key] === "") {
+          delete obj[key];
+        }
+      };
+      deleteIfEmpty(ins.vmess, "id");
+      deleteIfEmpty(ins.vless, "id");
+      deleteIfEmpty(ins.trojan, "password");
+      deleteIfEmpty(ins.shadowsocks, "password");
+      deleteIfEmpty(ins.shadowsocks, "method");
+      return ins;
+    }),
   data_limit: z
     .string()
     .min(0, "The minimum number is 0")
@@ -108,15 +114,18 @@ const schema = z.object({
   status: z.string(),
   inbounds: z.record(z.string(), z.array(z.string())).transform((ins) => {
     Object.keys(ins).forEach((protocol) => {
-      if (Array.isArray(ins[protocol]) && !ins[protocol]?.length) delete ins[protocol];
-    })
+      if (Array.isArray(ins[protocol]) && !ins[protocol]?.length)
+        delete ins[protocol];
+    });
     return ins;
   }),
 });
 
 export type UserDialogProps = {};
 
-export type FormType = Pick<UserCreate, keyof UserCreate> & { selected_proxies: ProxyKeys };
+export type FormType = Pick<UserCreate, keyof UserCreate> & {
+  selected_proxies: ProxyKeys;
+};
 
 const formatUser = (user: User): FormType => {
   return {
@@ -145,8 +154,8 @@ const getDefaultValues = (): FormType => {
       vless: { id: "", flow: "" },
       vmess: { id: "" },
       trojan: { password: "" },
-      shadowsocks: { password: "", method: "chacha20-poly1305" }
-    }
+      shadowsocks: { password: "", method: "chacha20-poly1305" },
+    },
   };
 };
 
@@ -225,14 +234,14 @@ export const UserDialog: FC<UserDialogProps> = () => {
       }
       setUsage(createUsageConfig(colorMode, usageTitle, series, labels));
     });
-  }
+  };
 
   useEffect(() => {
     if (editingUser) {
       form.reset(formatUser(editingUser));
 
       fetchUsageWithFilter({
-        start: dayjs().utc().subtract(30, 'day').format("YYYY-MM-DDTHH:00:00")
+        start: dayjs().utc().subtract(30, "day").format("YYYY-MM-DDTHH:00:00"),
       });
     }
   }, [editingUser]);
@@ -262,7 +271,10 @@ export const UserDialog: FC<UserDialogProps> = () => {
     methods[method](body)
       .then(() => {
         toast({
-          title: t(isEditing ? "userDialog.userEdited" : "userDialog.userCreated", { username: values.username }),
+          title: t(
+            isEditing ? "userDialog.userEdited" : "userDialog.userCreated",
+            { username: values.username }
+          ),
           status: "success",
           isClosable: true,
           position: "top",
@@ -304,6 +316,10 @@ export const UserDialog: FC<UserDialogProps> = () => {
     useDashboard.setState({ resetUsageUser: editingUser });
   };
 
+  const handleRevokeSubscription = () => {
+    useDashboard.setState({ revokeSubscriptionUser: editingUser });
+  };
+
   const disabled = loading;
 
   return (
@@ -322,13 +338,21 @@ export const UserDialog: FC<UserDialogProps> = () => {
                   )}
                 </Icon>
                 <Text fontWeight="semibold" fontSize="lg">
-                  {isEditing ? t("userDialog.editUserTitle") : t("createNewUser")}
+                  {isEditing
+                    ? t("userDialog.editUserTitle")
+                    : t("createNewUser")}
                 </Text>
               </HStack>
             </ModalHeader>
             <ModalCloseButton mt={3} disabled={disabled} />
             <ModalBody>
-              <Grid templateColumns={{ base: 'repeat(1, 1fr)', md: 'repeat(2, 1fr)' }} gap={3}>
+              <Grid
+                templateColumns={{
+                  base: "repeat(1, 1fr)",
+                  md: "repeat(2, 1fr)",
+                }}
+                gap={3}
+              >
                 <GridItem>
                   <VStack justifyContent="space-between">
                     <Flex
@@ -337,7 +361,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       w="full"
                     >
                       <FormControl mb={"10px"}>
-                        <FormLabel>{t('username')}</FormLabel>
+                        <FormLabel>{t("username")}</FormLabel>
                         <HStack>
                           <Input
                             size="sm"
@@ -398,7 +422,9 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                 borderRadius="6px"
                                 onChange={field.onChange}
                                 disabled={disabled}
-                                error={form.formState.errors.data_limit?.message}
+                                error={
+                                  form.formState.errors.data_limit?.message
+                                }
                                 value={field.value ? String(field.value) : ""}
                               />
                             );
@@ -411,7 +437,9 @@ export const UserDialog: FC<UserDialogProps> = () => {
                         style={{ width: "100%" }}
                       >
                         <FormControl height="66px">
-                          <FormLabel>{t("userDialog.periodicUsageReset")}</FormLabel>
+                          <FormLabel>
+                            {t("userDialog.periodicUsageReset")}
+                          </FormLabel>
                           <Controller
                             control={form.control}
                             name="data_limit_reset_strategy"
@@ -421,7 +449,9 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                   {resetStrategy.map((s) => {
                                     return (
                                       <option key={s.value} value={s.value}>
-                                        {t("userDialog.resetStrategy" + s.title)}
+                                        {t(
+                                          "userDialog.resetStrategy" + s.title
+                                        )}
                                       </option>
                                     );
                                   })}
@@ -439,12 +469,13 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           render={({ field }) => {
                             function createDateAsUTC(num: number) {
                               return dayjs(
-                                dayjs(num * 1000)
-                                  .utc()
+                                dayjs(num * 1000).utc()
                                 // .format("MMMM D, YYYY") // exception with: dayjs.locale(lng);
                               ).toDate();
                             }
-                            const { status, time } = relativeExpiryDate(field.value);
+                            const { status, time } = relativeExpiryDate(
+                              field.value
+                            );
                             return (
                               <>
                                 <ReactDatePicker
@@ -461,13 +492,13 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                       target: {
                                         value: date
                                           ? dayjs(
-                                            dayjs(date)
-                                              .set("hour", 23)
-                                              .set("minute", 59)
-                                              .set("second", 59)
-                                          )
-                                            .utc()
-                                            .valueOf() / 1000
+                                              dayjs(date)
+                                                .set("hour", 23)
+                                                .set("minute", 59)
+                                                .set("second", 59)
+                                            )
+                                              .utc()
+                                              .valueOf() / 1000
                                           : 0,
                                         name: "expire",
                                       },
@@ -512,7 +543,9 @@ export const UserDialog: FC<UserDialogProps> = () => {
                 </GridItem>
                 <GridItem>
                   <FormControl
-                    isInvalid={!!form.formState.errors.selected_proxies?.message}
+                    isInvalid={
+                      !!form.formState.errors.selected_proxies?.message
+                    }
                   >
                     <FormLabel>{t("userDialog.protocols")}</FormLabel>
                     <Controller
@@ -546,7 +579,10 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       }}
                     />
                     <FormErrorMessage>
-                      {t(form.formState.errors.selected_proxies?.message as string)}
+                      {t(
+                        form.formState.errors.selected_proxies
+                          ?.message as string
+                      )}
                     </FormErrorMessage>
                   </FormControl>
                 </GridItem>
@@ -560,8 +596,15 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           fetchUsageWithFilter(query);
                         }}
                       />
-                      <Box width={{ base: "100%", md: "70%" }} justifySelf="center">
-                        <ReactApexChart options={usage.options} series={usage.series} type="donut" />
+                      <Box
+                        width={{ base: "100%", md: "70%" }}
+                        justifySelf="center"
+                      >
+                        <ReactApexChart
+                          options={usage.options}
+                          series={usage.series}
+                          type="donut"
+                        />
                       </Box>
                     </VStack>
                   </GridItem>
@@ -602,7 +645,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           aria-label="Delete"
                           size="sm"
                           onClick={() => {
-                            onDeletingUser(editingUser)
+                            onDeletingUser(editingUser);
                             onClose();
                           }}
                         >
@@ -621,28 +664,26 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       <Button onClick={handleResetUsage} size="sm">
                         {t("userDialog.resetUsage")}
                       </Button>
+                      <Button onClick={handleRevokeSubscription} size="sm">
+                        {t("userDialog.revokeSubscription")}
+                      </Button>
                     </>
                   )}
                 </HStack>
-                <HStack w="full" maxW={{ md: "50%", base: "full" }}>
-                  <Button
-                    onClick={onClose}
-                    size="sm"
-                    variant="outline"
-                    w="full"
-                    disabled={disabled}
-                  >
-                    {t("cancel")}
-                  </Button>
+                <HStack
+                  w="full"
+                  maxW={{ md: "50%", base: "full" }}
+                  justify="end"
+                >
                   <Button
                     type="submit"
                     size="sm"
+                    px="8"
                     colorScheme="primary"
                     leftIcon={loading ? <Spinner size="xs" /> : undefined}
-                    w="full"
                     disabled={disabled}
                   >
-                    {isEditing ? t('userDialog.editUser') : t("createUser")}
+                    {isEditing ? t("userDialog.editUser") : t("createUser")}
                   </Button>
                 </HStack>
               </HStack>
