@@ -64,6 +64,8 @@
   "userDialog.custom": "Custom",
   "userDialog.startDate": "Start date",
   "userDialog.endDate": "End date",
+  "userDialog.revokeSubscription": "Revoke Subscription",
+  "revoke": "Revoke",
   "userDialog.total": "Total: ",
   "hostsDialog.title": "Using this setting, you are able to assign specific address for each inbound.",
   "hostsDialog.desc": "Use these variables to make it dynamic",
@@ -124,6 +126,12 @@
   "resetUserUsage.title": "Reset User Usage",
   "resetUserUsage.success": "{{username}}'s usage has reset successfully.",
   "resetUserUsage.error": "Usage reset failed, please try again.",
+
+  "revokeUserSub.prompt": "Are you sure you want to revoke <b>{{username}}</b>'s subscription?",
+  "revokeUserSub.title": "Revoke User Subscription",
+  "revokeUserSub.success": "{{username}}'s subscription has revoked successfully.",
+  "revokeUserSub.error": "Subscription revoke failed, please try again.",
+
   "resetAllUsage.title": "Reset data usage for all users",
   "resetAllUsage.prompt": "This action clears all of the users' data usage completely. Are you sure you want to reset all usage? THIS CANNOT BE UNDONE!",
   "resetAllUsage.success": "All usage has reset successfully.",
