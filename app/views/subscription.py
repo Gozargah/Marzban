@@ -39,6 +39,9 @@ def user_subcription(token: str,
     if not dbuser or dbuser.created_at > sub['created_at']:
         return Response(status_code=204)
 
+    if dbuser.sub_revoked_at and dbuser.sub_revoked_at > sub['created_at']:
+        return Response(status_code=204)
+
     user: UserResponse = UserResponse.from_orm(dbuser)
 
     if "text/html" in accept_header:

@@ -287,6 +287,13 @@ def reset_user_data_usage(db: Session, dbuser: User):
     return dbuser
 
 
+def revoke_user_sub(db: Session, dbuser: User):
+    dbuser.sub_revoked_at = datetime.utcnow()
+    db.commit()
+    db.refresh(dbuser)
+    return dbuser
+
+
 def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
     query = db.query(User)
 

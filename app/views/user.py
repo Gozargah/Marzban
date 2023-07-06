@@ -171,6 +171,24 @@ def reset_user_data_usage(username: str,
     return dbuser
 
 
+@app.post("/api/user/{username}/revoke_sub", tags=['User'], response_model=UserResponse)
+def revoke_user_sub_link(username: str,
+                         db: Session = Depends(get_db),
+                         admin: Admin = Depends(Admin.get_current)):
+    """
+    Revoke users subscription link
+    """
+    dbuser = crud.get_user(db, username)
+    if not dbuser:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
+        raise HTTPException(status_code=403, detail="You're not allowed")
+
+    dbuser = crud.revoke_user_sub(db=db, dbuser=dbuser)
+    return dbuser
+
+
 @app.get("/api/users", tags=['User'], response_model=UsersResponse)
 def get_users(offset: int = None,
               limit: int = None,
