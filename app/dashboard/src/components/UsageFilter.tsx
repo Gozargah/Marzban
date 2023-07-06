@@ -327,16 +327,6 @@ export function createUsageConfig(
           enabled: false,
         },
       },
-      responsive: [
-        {
-          breakpoint: 786,
-          options: {
-            legend: {
-              position: "bottom",
-            },
-          },
-        },
-      ],
       title: {
         text: `${title}${total}`,
         align: "center",
@@ -347,7 +337,7 @@ export function createUsageConfig(
         },
       },
       legend: {
-        position: "right",
+        position: "bottom",
         labels: {
           colors: colorMode === "dark" ? "#CBD5E0" : undefined,
           useSeriesColors: false,
