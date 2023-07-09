@@ -16,10 +16,14 @@ import { UsersTable } from "components/UsersTable";
 import { fetchInbounds, useDashboard } from "contexts/DashboardContext";
 import { FC, useEffect } from "react";
 import { Statistics } from "../components/Statistics";
+import { ClashModal } from "components/ClashModal";
+import { AlertDialog } from "components/AlertDialog";
+import { useClash } from "contexts/ClashContext";
 
 export const Dashboard: FC = () => {
   useEffect(() => {
     useDashboard.getState().refetchUsers();
+    useClash.getState().fetchProxyTags();
     fetchInbounds();
   }, []);
   return (
@@ -39,6 +43,8 @@ export const Dashboard: FC = () => {
         <NodesUsage />
         <ResetAllUsageModal />
         <CoreSettingsModal />
+        <AlertDialog />
+        <ClashModal />
       </Box>
       <Footer />
     </VStack>

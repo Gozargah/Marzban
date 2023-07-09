@@ -9,6 +9,7 @@ from app.models.user import UserResponse, UserStatus
 from app.templates import render_template
 from app.utils.jwt import get_subscription_payload
 from app.utils.share import generate_subscription
+from app.views import clash
 from config import SUBSCRIPTION_PAGE_TEMPLATE
 
 
@@ -16,6 +17,7 @@ from config import SUBSCRIPTION_PAGE_TEMPLATE
 @app.get("/sub/{token}", include_in_schema=False)
 def user_subcription(token: str,
                      request: Request,
+                     ua: str = None,
                      db: Session = Depends(get_db),
                      user_agent: str = Header(default="")):
     """
@@ -42,38 +44,19 @@ def user_subcription(token: str,
     if dbuser.sub_revoked_at and dbuser.sub_revoked_at > sub['created_at']:
         return Response(status_code=204)
 
-    user: UserResponse = UserResponse.from_orm(dbuser)
-
     if "text/html" in accept_header:
         return HTMLResponse(
             render_template(
                 SUBSCRIPTION_PAGE_TEMPLATE,
-                {"user": user}
+                {"user": UserResponse.from_orm(dbuser)}
             )
         )
-
-    response_headers = {
-        "content-disposition": f'attachment; filename="{user.username}"',
-        "profile-update-interval": "12",
-        "subscription-userinfo": "; ".join(
-            f"{key}={val}"
-            for key, val in get_subscription_user_info(user).items()
-            if val is not None
-        )
-    }
-
-    if re.match('^([Cc]lash-verge|[Cc]lash-?[Mm]eta)', user_agent):
-        conf = generate_subscription(user=user, config_format="clash-meta", as_base64=False)
-        return Response(content=conf, media_type="text/yaml", headers=response_headers)
-
-    elif re.match('^([Cc]lash|[Ss]tash)', user_agent):
-        conf = generate_subscription(user=user, config_format="clash", as_base64=False)
-        return Response(content=conf, media_type="text/yaml", headers=response_headers)
-
     else:
-        conf = generate_subscription(user=user, config_format="v2ray", as_base64=True)
-        return Response(content=conf, media_type="text/plain", headers=response_headers)
-
+        return clash.generate_subscription(
+            db=db,
+            dbuser=dbuser,
+            user_agent=ua if ua else user_agent
+        )
 
 @app.get("/sub/{token}/info", tags=['Subscription'], response_model=UserResponse)
 def user_subcription_info(token: str,

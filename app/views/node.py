@@ -7,12 +7,14 @@ import sqlalchemy
 from fastapi import BackgroundTasks, Depends, HTTPException, WebSocket
 from starlette.websockets import WebSocketDisconnect
 
+from config import UVICORN_PORT
 from app import app, logger, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.node import (NodeCreate, NodeModify, NodeResponse,
-                             NodesUsageResponse)
+                             NodesUsageResponse, NodeStatus)
 from app.models.proxy import ProxyHost
+from app.utils.share import SERVER_IP
 
 
 @app.post("/api/node", tags=['Node'], response_model=NodeResponse)
@@ -129,7 +131,18 @@ async def node_logs(node_id: int, websocket: WebSocket, db: Session = Depends(ge
 def get_nodes(db: Session = Depends(get_db),
               admin: Admin = Depends(Admin.get_current)):
 
-    return crud.get_nodes(db)
+    nodes = [v for v in crud.get_nodes(db)]
+    nodes.insert(0, NodeResponse(
+        id=0,
+        name="Master",
+        address=SERVER_IP,
+        port=UVICORN_PORT,
+        api_port=xray.config.api_port,
+        xray_version=xray.core.get_version(),
+        status=NodeStatus.connected if xray.core.started else NodeStatus.error,
+        certificate=NodeModify.Config.schema_extra["example"]["certificate"],
+    ))
+    return nodes
 
 
 @app.put("/api/node/{node_id}", tags=['Node'], response_model=NodeResponse)

@@ -100,7 +100,7 @@ export const RevokeSubscriptionModal: FC<RevokeSubscriptionModalProps> = () => {
             onClick={onReset}
             leftIcon={loading ? <Spinner size="xs" /> : undefined}
           >
-            {t("revoke")}
+            {t("userDialog.revoke")}
           </Button>
         </ModalFooter>
       </ModalContent>

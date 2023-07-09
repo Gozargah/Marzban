@@ -1,5 +1,6 @@
 from .admin import *
 from .subscription import *
+from .clash import *
 from .system import *
 from .core import *
 from .user import *
