@@ -230,6 +230,9 @@ def reset_users_data_usage(db: Session = Depends(get_db),
     """
     Reset all users data usage
     """
+    if not admin.is_sudo:
+        raise HTTPException(status_code=403, detail="You're not allowed")
+
     dbadmin = crud.get_admin(db, admin.username)
     crud.reset_all_users_data_usage(db=db, admin=dbadmin)
     xray.core.restart(xray.config.include_db_users())
