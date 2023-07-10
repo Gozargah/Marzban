@@ -35,7 +35,8 @@ class VMessAEAD(ProxyShare):
     spx: str = None
 
     def dump_link(self) -> str:
-        query_params = self.dict(exclude={'remark', 'id', 'address', 'port'}, exclude_none=True)
+        query_params = self.dict(exclude={
+            'protocol', 'remark', 'id', 'address', 'port'}, exclude_none=True)
         if self.type == 'grpc':
             query_params['serviceName'] = self.path
             del query_params['path']
