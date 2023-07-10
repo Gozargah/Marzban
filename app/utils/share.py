@@ -10,7 +10,8 @@ from uuid import UUID
 import yaml
 
 from app import xray
-from app.models.proxy import FormatVariables
+from app.models.proxy import FormatVariables, ProxyTypes
+from app.models import proxy_share
 from app.templates import render_template
 from app.utils.system import get_public_ip, readable_size
 
@@ -19,165 +20,12 @@ if TYPE_CHECKING:
 
 from config import CLASH_SUBSCRIPTION_TEMPLATE
 
+
 SERVER_IP = get_public_ip()
 
 
-class V2rayShareLink(str):
-    @classmethod
-    def vmess(cls,
-              remark: str,
-              address: str,
-              port: int,
-              id: Union[str, UUID],
-              host='',
-              net='tcp',
-              path='',
-              type='',
-              tls='none',
-              sni='',
-              fp='',
-              alpn='',
-              pbk='',
-              sid='',
-              spx=''):
 
-        payload = {
-            'add': address,
-            'aid': '0',
-            'host': host,
-            'id': str(id),
-            'net': net,
-            'path': path,
-            'port': port,
-            'ps': remark,
-            'scy': 'auto',
-            'tls': tls,
-            'type': type,
-            'v': '2'
-        }
-
-        if tls == 'tls':
-            payload['sni'] = sni
-            payload['fp'] = fp
-            payload['alpn'] = alpn
-        elif tls == 'reality':
-            payload['sni'] = sni
-            payload['fp'] = fp
-            payload['pbk'] = pbk
-            payload['sid'] = sid
-            payload['spx'] = spx
-
-        return "vmess://" + base64.b64encode(json.dumps(payload, sort_keys=True).encode('utf-8')).decode()
-
-    @classmethod
-    def vless(cls,
-              remark: str,
-              address: str,
-              port: int,
-              id: Union[str, UUID],
-              net='ws',
-              path='',
-              host='',
-              type='',
-              flow='',
-              tls='none',
-              sni='',
-              fp='',
-              alpn='',
-              pbk='',
-              sid='',
-              spx=''):
-
-        payload = {
-            "security": tls,
-            "type": net,
-            "host": host,
-            "headerType": type
-        }
-        if flow and net in ('tcp', 'kcp'):
-            payload['flow'] = flow
-
-        if net == 'grpc':
-            payload['serviceName'] = path
-        else:
-            payload['path'] = path
-
-        if tls == 'tls':
-            payload['sni'] = sni
-            payload['fp'] = fp
-            payload['alpn'] = alpn
-        elif tls == 'reality':
-            payload['sni'] = sni
-            payload['fp'] = fp
-            payload['pbk'] = pbk
-            payload['sid'] = sid
-            payload['spx'] = spx
-
-        return "vless://" + \
-            f"{id}@{address}:{port}?" + \
-            urlparse.urlencode(payload) + f"#{( urlparse.quote(remark))}"
-
-    @classmethod
-    def trojan(cls,
-               remark: str,
-               address: str,
-               port: int,
-               password: str,
-               net='tcp',
-               path='',
-               host='',
-               type='',
-               flow='',
-               tls='none',
-               sni='',
-               fp='',
-               alpn='',
-               pbk='',
-               sid='',
-               spx=''):
-
-        payload = {
-            "security": tls,
-            "type": net,
-            "host": host,
-            "headerType": type
-        }
-        if flow and net in ('tcp', 'kcp'):
-            payload['flow'] = flow
-
-        if net == 'grpc':
-            payload['serviceName'] = path
-        else:
-            payload['path'] = path
-
-        if tls == 'tls':
-            payload['sni'] = sni
-            payload['fp'] = fp
-            payload['alpn'] = alpn
-        elif tls == 'reality':
-            payload['sni'] = sni
-            payload['fp'] = fp
-            payload['pbk'] = pbk
-            payload['sid'] = sid
-            payload['spx'] = spx
-
-        return "trojan://" + \
-            f"{urlparse.quote(password, safe=':')}@{address}:{port}?" + \
-            urlparse.urlencode(payload) + f"#{urlparse.quote(remark)}"
-
-    @classmethod
-    def shadowsocks(cls,
-                    remark: str,
-                    address: str,
-                    port: int,
-                    password: str,
-                    security='chacha20-ietf-poly1305'):
-        return "ss://" + \
-            base64.b64encode(f'{security}:{password}'.encode()).decode() + \
-            f"@{address}:{port}#{urlparse.quote(remark)}"
-
-
-class ClashConfiguration(object):
+class ClashConfiguration:
     def __init__(self):
         self.data = {
             'proxies': [],
@@ -207,12 +55,12 @@ class ClashConfiguration(object):
         return self.to_yaml()
 
     def _remark_validation(self, remark):
-        if not remark in self.proxy_remarks:
+        if remark not in self.proxy_remarks:
             return remark
         c = 2
         while True:
             new = f'{remark} ({c})'
-            if not new in self.proxy_remarks:
+            if new not in self.proxy_remarks:
                 return new
             c += 1
 
@@ -397,65 +245,32 @@ class ClashMetaConfiguration(ClashConfiguration):
             self.proxy_remarks.append(remark)
 
 
-def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
-    if inbound['protocol'] == 'vmess':
-        return V2rayShareLink.vmess(remark=remark,
-                                    address=address,
-                                    port=inbound['port'],
-                                    id=settings['id'],
-                                    net=inbound['network'],
-                                    tls=inbound['tls'],
-                                    sni=inbound.get('sni', ''),
-                                    fp=inbound.get('fp', ''),
-                                    alpn=inbound.get('alpn', ''),
-                                    pbk=inbound.get('pbk', ''),
-                                    sid=inbound.get('sid', ''),
-                                    spx=inbound.get('spx', ''),
-                                    host=inbound['host'],
-                                    path=inbound['path'],
-                                    type=inbound['header_type'])
-
-    if inbound['protocol'] == 'vless':
-        return V2rayShareLink.vless(remark=remark,
-                                    address=address,
-                                    port=inbound['port'],
-                                    id=settings['id'],
-                                    flow=settings.get('flow', ''),
-                                    net=inbound['network'],
-                                    tls=inbound['tls'],
-                                    sni=inbound.get('sni', ''),
-                                    fp=inbound.get('fp', ''),
-                                    alpn=inbound.get('alpn', ''),
-                                    pbk=inbound.get('pbk', ''),
-                                    sid=inbound.get('sid', ''),
-                                    spx=inbound.get('spx', ''),
-                                    host=inbound['host'],
-                                    path=inbound['path'],
-                                    type=inbound['header_type'])
-
-    if inbound['protocol'] == 'trojan':
-        return V2rayShareLink.trojan(remark=remark,
-                                     address=address,
-                                     port=inbound['port'],
-                                     password=settings['password'],
-                                     flow=settings.get('flow', ''),
-                                     net=inbound['network'],
-                                     tls=inbound['tls'],
-                                     sni=inbound.get('sni', ''),
-                                     fp=inbound.get('fp', ''),
-                                     alpn=inbound.get('alpn', ''),
-                                     pbk=inbound.get('pbk', ''),
-                                     sid=inbound.get('sid', ''),
-                                     spx=inbound.get('spx', ''),
-                                     host=inbound['host'],
-                                     path=inbound['path'],
-                                     type=inbound['header_type'])
-
-    if inbound['protocol'] == 'shadowsocks':
-        return V2rayShareLink.shadowsocks(remark=remark,
-                                          address=address,
-                                          port=inbound['port'],
-                                          password=settings['password'])
+def generate_proxy_share(
+        remark: str,
+        address: str,
+        inbound: dict,
+        settings: dict
+) -> proxy_share.ProxyShare:
+    protocol = inbound['protocol']
+    proxy_shared_params = {
+        'remark': remark,
+        'address': address,
+        **inbound
+    }
+    if protocol in [ProxyTypes.VLESS, ProxyTypes.Trojan]:  # VMessAEAD
+        inbound_to_vmess_aead = {
+            'type': inbound.get('network', None),
+            'security': inbound.get('tls', None)
+        }
+        return proxy_share.VMessAEAD(**{
+            'id': settings.get('password', None),
+            **proxy_shared_params,
+            **settings,
+            **inbound_to_vmess_aead})
+    elif protocol == ProxyTypes.VMess:  # VMessQRCode
+        return proxy_share.VMessQRCode(**proxy_shared_params, **settings)
+    else:
+        return proxy_share.Shadowsocks(**proxy_shared_params, **settings)
 
 
 def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> list:
@@ -523,10 +338,13 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> lis
                         'alpn': host['alpn'] or inbound.get('alpn', ''),
                         'fp': host['fingerprint'] or inbound.get('fp', '')
                     })
-                    links.append(get_v2ray_link(remark=host['remark'].format_map(format_variables),
-                                                address=host['address'].format_map(format_variables),
-                                                inbound=host_inbound,
-                                                settings=settings.dict(no_obj=True)))
+                    links.append(
+                        generate_proxy_share(
+                            remark=host['remark'].format_map(format_variables),
+                            address=host['address'].format_map(format_variables),
+                            inbound=host_inbound,
+                            settings=settings.dict(no_obj=True)).dump_link()
+                    )
                 except Exception as e:
                     import traceback
                     traceback.print_exc()
