@@ -6,6 +6,7 @@ import traceback
 def app_startup():
     try:
         xray.core.start(xray.config.include_db_users())
+        xray.hosts.update()
     except Exception:
         traceback.print_exc()
 

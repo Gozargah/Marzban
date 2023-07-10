@@ -497,12 +497,7 @@ export const RadioGroup = forwardRef<any, RadioGroupProps>(
           })
         );
 
-        onChange({
-          target: {
-            value,
-            name,
-          },
-        });
+        onChange(value);
       },
     });
 

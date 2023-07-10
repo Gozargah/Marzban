@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   chakra,
-  ExpandedIndex,
   HStack,
   IconButton,
   Select,
@@ -194,7 +193,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
   } = useDashboard();
 
   const { t } = useTranslation();
-  const [selectedRow, setSelectedRow] = useState<ExpandedIndex | undefined>(
+  const [selectedRow, setSelectedRow] = useState<number | number[] | undefined>(
     undefined
   );
   const marginTop = useBreakpointValue({ base: 120, lg: 72 }) || 72;
@@ -598,7 +597,17 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
           )}
         </Tbody>
       </Table>
-      <Pagination />
+      <Pagination
+        onChange={(page, limit) => {
+          onFilterChange({
+            ...filters,
+            limit,
+            offset: page * limit
+          })
+        }}
+        total={totalUsers.total}
+        limit={filters.limit}
+        offset={filters.offset}/>
     </Box>
   );
 };

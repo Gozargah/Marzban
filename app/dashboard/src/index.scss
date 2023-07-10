@@ -195,3 +195,15 @@ table thead {
   display: inline-block;
   position: relative;
 }
+
+.cm-theme-dark, .cm-theme-light {
+  font-size: var(--chakra-fontSizes-sm) !important;
+  overflow: auto !important;
+  border-radius: var(--chakra-radii-md) !important;
+  border-width: 1px !important;
+  width: inherit !important;
+}
+
+.cm-scroller {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace !important;
+}

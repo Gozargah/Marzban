@@ -1,4 +1,5 @@
 import re
+import json
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Union
@@ -8,12 +9,13 @@ from pydantic import BaseModel, Field, validator
 from app import xray
 from app.models.proxy import ProxySettings, ProxyTypes
 from app.utils.jwt import create_subscription_token
-from app.utils.share import generate_v2ray_links
 from config import XRAY_SUBSCRIPTION_URL_PREFIX
 from xray_api.types.account import Account
 
 USERNAME_REGEXP = re.compile(r'^(?=\w{3,32}\b)[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*$')
 
+def value_error(err: str, message: str):
+    return ValueError(json.dumps({"err": err, "message": message}))
 
 class UserStatus(str, Enum):
     active = "active"
@@ -41,6 +43,8 @@ class User(BaseModel):
     data_limit: Union[None, int] = Field(ge=0, default=None, description="data_limit can be 0 or greater")
     data_limit_reset_strategy: UserDataLimitResetStrategy = UserDataLimitResetStrategy.no_reset
     inbounds: Dict[ProxyTypes, List[str]] = {}
+    sub_url_prefix: Union[None, str] = ""
+    sub_tags: Union[None, str] = ""
 
     @validator('proxies', pre=True, always=True)
     def validate_proxies(cls, v, values, **kwargs):
@@ -51,7 +55,7 @@ class User(BaseModel):
     @validator('username', check_fields=False)
     def validate_username(cls, v):
         if not USERNAME_REGEXP.match(v):
-            raise ValueError('Username only can be 3 to 32 characters and contain a-z, 0-9, and underscores in between.')
+            raise value_error('InvalidUsername', 'Username only can be 3 to 32 characters and contain a-z, 0-9, and underscores in between.')
         return v
 
 
@@ -122,6 +126,7 @@ class UserCreate(User):
 
 class UserModify(User):
     status: UserStatusModify = None
+    sub_revoked_at: datetime = None
     data_limit_reset_strategy: UserDataLimitResetStrategy = None
 
     class Config:
@@ -189,6 +194,7 @@ class UserResponse(User):
     subscription_url: str = ''
     proxies: dict
     excluded_inbounds: Dict[ProxyTypes, List[str]] = {}
+    sub_revoked_at: datetime
 
     class Config:
         orm_mode = True
@@ -196,16 +202,18 @@ class UserResponse(User):
     @validator('links', pre=False, always=True)
     def validate_links(cls, v, values, **kwargs):
         if not v:
-            return generate_v2ray_links(values.get('proxies', {}),
-                                        values.get('inbounds', {}),
-                                        extra_data=values)
+            from app.views.clash import generate_v2ray_links
+            return generate_v2ray_links(values["username"])
         return v
 
     @validator('subscription_url', pre=False, always=True)
     def validate_subscription_url(cls, v, values, **kwargs):
         if not v:
             token = create_subscription_token(values['username'])
-            return f'{XRAY_SUBSCRIPTION_URL_PREFIX}/sub/{token}'
+            url_prefix = values["sub_url_prefix"]
+            if not url_prefix:
+                url_prefix = XRAY_SUBSCRIPTION_URL_PREFIX
+            return f'{url_prefix}/sub/{token}'
         return v
 
     @validator('proxies', pre=True, always=True)
@@ -214,6 +222,12 @@ class UserResponse(User):
             v = {p.type: p.settings for p in v}
         return super().validate_proxies(v, values, **kwargs)
 
+    @validator("sub_revoked_at", pre=True, always=True)
+    def validate_sub_revoked_at(cls, v, values, **kwargs):
+        if not v:
+            return values.get("created_at", 0)
+        else:
+            return v
 
 class UsersResponse(BaseModel):
     users: List[UserResponse]

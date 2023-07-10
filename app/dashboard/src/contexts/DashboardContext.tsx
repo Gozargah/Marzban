@@ -44,6 +44,7 @@ type DashboardStateType = {
   QRcodeLinks: string[] | null;
   isEditingHosts: boolean;
   isEditingNodes: boolean;
+  isEditingSubscription: boolean;
   isShowingNodesUsage: boolean;
   isResetingAllUsage: boolean;
   resetUsageUser: User | null;
@@ -59,11 +60,13 @@ type DashboardStateType = {
   deleteUser: (user: User) => Promise<void>;
   createUser: (user: UserCreate) => Promise<void>;
   editUser: (user: UserCreate) => Promise<void>;
+  revokeUserSubscription: (user: UserCreate) => Promise<void>;
   fetchUserUsage: (user: User, query: FilterUsageType) => Promise<void>;
   setQRCode: (links: string[] | null) => void;
   setSubLink: (subscribeURL: string | null) => void;
   onEditingHosts: (isEditingHosts: boolean) => void;
   onEditingNodes: (isEditingHosts: boolean) => void;
+  onEditingSubscription: (isEditingSubscription: boolean) => void;
   onShowingNodesUsage: (isShowingNodesUsage: boolean) => void;
   resetDataUsage: (user: User) => Promise<void>;
   revokeSubscription: (user: User) => Promise<void>;
@@ -112,6 +115,7 @@ export const useDashboard = create(
     isResetingAllUsage: false,
     isEditingHosts: false,
     isEditingNodes: false,
+    isEditingSubscription: false,
     isShowingNodesUsage: false,
     resetUsageUser: null,
     revokeSubscriptionUser: null,
@@ -170,6 +174,19 @@ export const useDashboard = create(
         }
       );
     },
+    revokeUserSubscription: (body: UserCreate) => {
+      delete body.sub_revoked_at;
+      delete body.proxies.shadowsocks?.password;
+      delete body.proxies.trojan?.password;
+      delete body.proxies.vless?.id;
+      delete body.proxies.vmess?.id;
+      return fetch(`/user/${body.username}`, { method: "PUT", body }).then(
+        (data) => {
+          get().refetchUsers();
+          set({ editingUser: data })
+        }
+      );
+    },
     fetchUserUsage: (body: User, query: FilterUsageType) => {
       for (const key in query) {
         if (!query[key as keyof FilterUsageType])
@@ -182,6 +199,9 @@ export const useDashboard = create(
     },
     onEditingNodes: (isEditingNodes: boolean) => {
       set({ isEditingNodes });
+    },
+    onEditingSubscription: (isEditingSubscription: boolean) => {
+      set({ isEditingSubscription });
     },
     onShowingNodesUsage: (isShowingNodesUsage: boolean) => {
       set({ isShowingNodesUsage });

@@ -44,6 +44,8 @@ class User(Base):
     admin_id = Column(Integer, ForeignKey("admins.id"))
     admin = relationship("Admin", back_populates="users")
     sub_revoked_at = Column(DateTime, nullable=True, default=None)
+    sub_tags = Column(String(256, collation='NOCASE'), nullable=True, index=True)
+    sub_url_prefix = Column(String(64, collation='NOCASE'), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     @property
@@ -241,3 +243,64 @@ class NodeUsage(Base):
     node = relationship("Node", back_populates="usages")
     uplink = Column(BigInteger, default=0)
     downlink = Column(BigInteger, default=0)
+
+class ClashSetting(Base):
+    __tablename__ = "clash_setting"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(32, collation='NOCASE'), unique=True, nullable=False)
+    content = Column(String, nullable=False)
+
+class ClashProxy(Base):
+    __tablename__ = "clash_proxies"
+    __table_args__ = (
+        UniqueConstraint('name', 'server'),
+    )
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(32, collation='NOCASE'), nullable=False, index=True)
+    server = Column(String(64, collation='NOCASE'), nullable=False, index=True)
+    builtin = Column(Boolean, nullable=True, default=False)
+    tag = Column(String(64, collation='NOCASE'), nullable=False, index=True)
+    port = Column(String(11), nullable=False)
+    inbound = Column(String(64), nullable=False, index=True)
+    settings = Column(JSON, nullable=False)
+    modified_at = Column(DateTime, default=datetime.utcnow)
+
+class ClashProxyGroup(Base):
+    __tablename__ = "clash_proxy_groups"
+    __table_args__ = (
+        UniqueConstraint('name', 'tag'),
+    )
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(64, collation='NOCASE'), nullable=False, index=True)
+    tag = Column(String(64, collation='NOCASE'), nullable=False, index=True)
+    type = Column(String(16), nullable=False)
+    builtin = Column(Boolean, nullable=True, default=False)
+    proxies = Column(String, nullable=True)
+    settings = Column(JSON, nullable=False)
+    modified_at = Column(DateTime, default=datetime.utcnow)
+
+class ClashRuleset(Base):
+    __tablename__ = "clash_rulesets"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(32, collation='NOCASE'), unique=True, nullable=False, index=True)
+    builtin = Column(Boolean, nullable=True, default=False)
+    policy = Column(String(16), nullable=False)
+    rules = relationship("ClashRule", back_populates="ruleset", cascade="all, delete-orphan")
+    settings = Column(JSON, nullable=False)
+    modified_at = Column(DateTime, default=datetime.utcnow)
+
+# IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+class ClashRule(Base):
+    __tablename__ = "clash_rules"
+    __table_args__ = (
+        UniqueConstraint('type', 'content'),
+    )
+    id = Column(Integer, primary_key=True, index=True)
+    type = Column(String(32), nullable=False)
+    content = Column(String(64, collation='NOCASE'), nullable=False, index=True)
+    option = Column(String(32), nullable=False)
+    policy = Column(String(16), nullable=False)
+    priority = Column(Integer, nullable=False, default=0)
+    ruleset_id = Column(Integer, ForeignKey("clash_rulesets.id"))
+    ruleset = relationship("ClashRuleset", back_populates="rules")
+    modified_at = Column(DateTime, default=datetime.utcnow)

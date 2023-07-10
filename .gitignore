@@ -58,6 +58,7 @@ cover/
 *.log
 local_settings.py
 db.sqlite3
+db.sqlite3.bak
 db.sqlite3-journal
 
 # Flask stuff:
@@ -159,3 +160,5 @@ xray-core
 *-dev.yml
 *-dev.yaml
 *-debug.*
+
+*-dev.sql

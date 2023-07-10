@@ -26,8 +26,8 @@ import { useTranslation } from "react-i18next";
 import { Language } from "components/Language";
 
 const schema = z.object({
-  username: z.string().min(1, "login.fieldRequired"),
-  password: z.string().min(1, "login.fieldRequired"),
+  username: z.string().min(1, "fieldRequired"),
+  password: z.string().min(1, "fieldRequired"),
 });
 
 export const LogoIcon = chakra(Logo, {

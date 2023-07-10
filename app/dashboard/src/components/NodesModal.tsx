@@ -222,6 +222,7 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
           form={form}
           mutate={mutate}
           isLoading={isLoading}
+          isMaster={node.id == 0}
           submitBtnText={t("nodes.editNode")}
           btnLeftAdornment={
             <Tooltip label={t("delete")} placement="top">
@@ -319,6 +320,7 @@ type NodeFormType = FC<{
   form: UseFormReturn<NodeType>;
   mutate: UseMutateFunction<unknown, unknown, any>;
   isLoading: boolean;
+  isMaster?: boolean;
   submitBtnText: string;
   btnProps?: Partial<ButtonProps>;
   btnLeftAdornment?: ReactNode;
@@ -329,6 +331,7 @@ const NodeForm: NodeFormType = ({
   form,
   mutate,
   isLoading,
+  isMaster = false,
   submitBtnText,
   btnProps = {},
   btnLeftAdornment,
@@ -345,6 +348,7 @@ const NodeForm: NodeFormType = ({
             placeholder="Marzban-S2"
             {...form.register("name")}
             error={form.formState?.errors?.name?.message}
+            disabled={isMaster}
           />
         </FormControl>
         <HStack alignItems="flex-start">
@@ -355,6 +359,7 @@ const NodeForm: NodeFormType = ({
               placeholder="51.20.12.13"
               {...form.register("address")}
               error={form.formState?.errors?.address?.message}
+              disabled={isMaster}
             />
           </Box>
           <Box w="25%">
@@ -364,6 +369,7 @@ const NodeForm: NodeFormType = ({
               placeholder="62050"
               {...form.register("port")}
               error={form.formState?.errors?.port?.message}
+              disabled={isMaster}
             />
           </Box>
           <Box w="25%">
@@ -373,32 +379,35 @@ const NodeForm: NodeFormType = ({
               placeholder="62051"
               {...form.register("api_port")}
               error={form.formState?.errors?.api_port?.message}
+              disabled={isMaster}
             />
           </Box>
         </HStack>
-        <FormControl>
-          <FormLabel>{t("nodes.certificate")}</FormLabel>
-          <Textarea
-            {...form.register("certificate")}
-            w="full"
-            fontSize="10px"
-            fontFamily="monospace"
-            overflowWrap="normal"
-            noOfLines={10}
-            rows={10}
-            error={form.formState?.errors?.certificate?.message}
-            placeholder="-----BEGIN CERTIFICATE-----
-			XzBWUjjMrWf/0rWV5fDl7b4RU8AjeviG1RmEc64ueZ3s6q1LI6DJX1+qGuqDEvp
-			g1gctfdLMARuV6LkLiGy5k2FGAW/tfepEyySA/N9WhcHg+rZ4/x1thP0eYJPQ2YJ
-			XFSa6Zv8LPLCz5iMbo0FjNlKyZo3699PtyBFXt3zyfTPmiy19RVGTziHqJ9NR9kW
-			kBwvFzIy+qPc/dJAk435hVaV3pRBC7Pl2Y7k/pJxxlC07PkACXuhwtUGhQrHYWkK
-			Il8rJ9cs0zwC1BOmqoS3Ez22dgtT7FucvIJ1MGP8oUAudMmrXDxx/d7CmnD5q1v4
-			iLlV21kNnWuvjS1orTwvuW3aagb6tvEEEmlMhw5a2B8sl71sQ6sxWidgRaOSGW7l
-			emFyZ2FoMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA0BvDh0eU78EJ
-			AjimHyBb+3tFs7KaOPu9G5xgbQWUWccukMDXqybqiUDSfU/T5/+XM8CKq/Fu0DB=&#10;-----END CERTIFICATE-----"
-            overflow="auto"
-          />
-        </FormControl>
+        {!isMaster && (
+          <FormControl>
+            <FormLabel>{t("nodes.certificate")}</FormLabel>
+            <Textarea
+              {...form.register("certificate")}
+              w="full"
+              fontSize="10px"
+              fontFamily="monospace"
+              overflowWrap="normal"
+              noOfLines={10}
+              rows={10}
+              error={form.formState?.errors?.certificate?.message}
+              placeholder="-----BEGIN CERTIFICATE-----
+        XzBWUjjMrWf/0rWV5fDl7b4RU8AjeviG1RmEc64ueZ3s6q1LI6DJX1+qGuqDEvp
+        g1gctfdLMARuV6LkLiGy5k2FGAW/tfepEyySA/N9WhcHg+rZ4/x1thP0eYJPQ2YJ
+        XFSa6Zv8LPLCz5iMbo0FjNlKyZo3699PtyBFXt3zyfTPmiy19RVGTziHqJ9NR9kW
+        kBwvFzIy+qPc/dJAk435hVaV3pRBC7Pl2Y7k/pJxxlC07PkACXuhwtUGhQrHYWkK
+        Il8rJ9cs0zwC1BOmqoS3Ez22dgtT7FucvIJ1MGP8oUAudMmrXDxx/d7CmnD5q1v4
+        iLlV21kNnWuvjS1orTwvuW3aagb6tvEEEmlMhw5a2B8sl71sQ6sxWidgRaOSGW7l
+        emFyZ2FoMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA0BvDh0eU78EJ
+        AjimHyBb+3tFs7KaOPu9G5xgbQWUWccukMDXqybqiUDSfU/T5/+XM8CKq/Fu0DB=&#10;-----END CERTIFICATE-----"
+              overflow="auto"
+            />
+          </FormControl>
+        )}
         {addAsHost && (
           <FormControl py={1}>
             <Checkbox {...form.register("add_as_new_host")}>
@@ -406,21 +415,23 @@ const NodeForm: NodeFormType = ({
             </Checkbox>
           </FormControl>
         )}
-        <HStack w="full">
-          {btnLeftAdornment}
-          <Button
-            flexGrow={1}
-            type="submit"
-            colorScheme="primary"
-            size="sm"
-            px={5}
-            w="full"
-            isLoading={isLoading}
-            {...btnProps}
-          >
-            {submitBtnText}
-          </Button>
-        </HStack>
+        {!isMaster && (
+          <HStack w="full">
+            {btnLeftAdornment}
+            <Button
+              flexGrow={1}
+              type="submit"
+              colorScheme="primary"
+              size="sm"
+              px={5}
+              w="full"
+              isLoading={isLoading}
+              {...btnProps}
+            >
+              {submitBtnText}
+            </Button>
+          </HStack>
+        )}
       </VStack>
     </form>
   );
