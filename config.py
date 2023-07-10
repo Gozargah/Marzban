@@ -51,3 +51,5 @@ SUDOERS = {config("SUDO_USERNAME"): config("SUDO_PASSWORD")} \
 
 WEBHOOK_ADDRESS = config("WEBHOOK_ADDRESS", default=None)
 WEBHOOK_SECRET = config("WEBHOOK_SECRET", default=None)
+
+DISABLE_RECORDING_NODE_USAGE = config("DISABLE_RECORDING_NODE_USAGE", cast=bool, default=False)

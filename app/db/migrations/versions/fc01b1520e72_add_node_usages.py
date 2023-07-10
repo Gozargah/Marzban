@@ -62,7 +62,7 @@ def downgrade() -> None:
     op.drop_table('node_user_usages')
     op.create_table('node_user_usages',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('user_username', sa.Integer(), nullable=True),
+    sa.Column('user_username', sa.String(34), nullable=True),
     sa.Column('node_id', sa.Integer(), nullable=True),
     sa.Column('used_traffic', sa.BigInteger(), nullable=True),
     sa.ForeignKeyConstraint(['node_id'], ['nodes.id'], ),

@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   ColorMode,
   HStack,
   Icon,
@@ -11,27 +10,31 @@ import {
   TabPanels,
   Tabs,
   Text,
-  useBreakpointValue,
-  useOutsideClick,
-  useColorMode,
-  useDisclosure,
-  useRadio,
-  useRadioGroup,
   UseRadioProps,
   VStack,
+  useBreakpointValue,
+  useColorMode,
+  useDisclosure,
+  useOutsideClick,
+  useRadio,
+  useRadioGroup,
 } from "@chakra-ui/react";
 import { CalendarIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { ApexOptions } from "apexcharts";
+import { FilterUsageType } from "contexts/DashboardContext";
+import dayjs, { ManipulateType } from "dayjs";
 import { FC, useRef, useState } from "react";
 import ReactDatePicker from "react-datepicker";
 import { useTranslation } from "react-i18next";
-import { FilterUsageType } from "contexts/DashboardContext";
-import dayjs, { ManipulateType } from "dayjs";
+import { generateDistinctColors } from "utils/color";
 import { formatBytes } from "utils/formatByte";
-import { ApexOptions } from "apexcharts";
 
-type DateType =  Date | null;
+type DateType = Date | null;
 
-const FilterItem: FC<UseRadioProps & {border?:boolean} & any> = ({border, ...props}) => {
+const FilterItem: FC<UseRadioProps & { border?: boolean } & any> = ({
+  border,
+  ...props
+}) => {
   const { getInputProps, getRadioProps } = useRadio(props);
   const fontSize = useBreakpointValue({ base: "xs", md: "sm" });
   return (
@@ -61,15 +64,19 @@ const FilterItem: FC<UseRadioProps & {border?:boolean} & any> = ({border, ...pro
         {props.children}
       </Box>
     </Box>
-  )
-}
+  );
+};
 
 export type UsageFilterProps = {
-  onChange: (filter:string, query: FilterUsageType) => void;
+  onChange: (filter: string, query: FilterUsageType) => void;
   defaultValue: string;
 };
 
-export const UsageFilter: FC<UsageFilterProps> = ({onChange, defaultValue, ...props }) => {
+export const UsageFilter: FC<UsageFilterProps> = ({
+  onChange,
+  defaultValue,
+  ...props
+}) => {
   const { t, i18n } = useTranslation();
   const { colorMode } = useColorMode();
 
@@ -77,50 +84,70 @@ export const UsageFilter: FC<UsageFilterProps> = ({onChange, defaultValue, ...pr
     base: ["7h", "1d", "3d", "1w"],
     md: ["7h", "1d", "3d", "1w", "1m", "3m"],
   })!;
-  const filterOptionTypes = {h: "hour", d: "day", w:"week", m: "month", y: "year"};
+  const filterOptionTypes = {
+    h: "hour",
+    d: "day",
+    w: "week",
+    m: "month",
+    y: "year",
+  };
   const customFilterOptions = useBreakpointValue({
     base: [
-      {title: "hours", options: ["1h", "3h", "6h", "12h"]},
-      {title: "days", options: ["1d", "2d", "3d", "4d"]},
-      {title: "weeks", options: ["1w", "2w", "3w", "4w"]},
-      {title: "months", options: ["1m", "2m", "3m", "6m"]},
+      { title: "hours", options: ["1h", "3h", "6h", "12h"] },
+      { title: "days", options: ["1d", "2d", "3d", "4d"] },
+      { title: "weeks", options: ["1w", "2w", "3w", "4w"] },
+      { title: "months", options: ["1m", "2m", "3m", "6m"] },
     ],
     md: [
-      {title: "hours", options: ["1h", "2h", "3h", "6h", "8h", "12h"]},
-      {title: "days", options: ["1d", "2d", "3d", "4d", "5d", "6d"]},
-      {title: "weeks", options: ["1w", "2w", "3w", "4w"]},
-      {title: "months", options: ["1m", "2m", "3m", "6m", "8m"]},
-    ]
+      { title: "hours", options: ["1h", "2h", "3h", "6h", "8h", "12h"] },
+      { title: "days", options: ["1d", "2d", "3d", "4d", "5d", "6d"] },
+      { title: "weeks", options: ["1w", "2w", "3w", "4w"] },
+      { title: "months", options: ["1m", "2m", "3m", "6m", "8m"] },
+    ],
   })!;
-  const { getRootProps, getRadioProps, setValue: setDefaultFilter } = useRadioGroup({
+  const {
+    getRootProps,
+    getRadioProps,
+    setValue: setDefaultFilter,
+  } = useRadioGroup({
     name: "filter",
     defaultValue: defaultValue,
     onChange: (value: string) => {
-      if (value === "custom" ) {
+      if (value === "custom") {
         return;
       }
 
       closeCustom();
 
       if (filterOptions.indexOf(value) >= 0) {
-        setCustomLabel(t("userDialog.custom"))
+        setCustomLabel(t("userDialog.custom"));
         setCustom(false);
       } else {
-        setCustomLabel(t("userDialog.custom") + ` (${value})`)
+        setCustomLabel(t("userDialog.custom") + ` (${value})`);
         setCustom(true);
       }
 
       const num = Number(value.substring(0, value.length - 1));
-      const unit = filterOptionTypes[value[value.length - 1] as keyof typeof filterOptionTypes];
+      const unit =
+        filterOptionTypes[
+          value[value.length - 1] as keyof typeof filterOptionTypes
+        ];
       onChange(value, {
-        start: dayjs().utc().subtract(num, unit as ManipulateType).format("YYYY-MM-DDTHH:00:00")
+        start: dayjs()
+          .utc()
+          .subtract(num, unit as ManipulateType)
+          .format("YYYY-MM-DDTHH:00:00"),
       });
     },
   });
 
-  const { isOpen: isCustomOpen, onOpen: openCustom, onClose: closeCustom } = useDisclosure();
+  const {
+    isOpen: isCustomOpen,
+    onOpen: openCustom,
+    onClose: closeCustom,
+  } = useDisclosure();
   const customRef = useRef(null);
-  useOutsideClick({ref: customRef, handler: closeCustom});
+  useOutsideClick({ ref: customRef, handler: closeCustom });
 
   const [customLabel, setCustomLabel] = useState(t("userDialog.custom"));
   const [custom, setCustom] = useState(false);
@@ -130,7 +157,7 @@ export const UsageFilter: FC<UsageFilterProps> = ({onChange, defaultValue, ...pr
   const fontSize = useBreakpointValue({ base: "xs", md: "sm" });
   const [startDate, setStartDate] = useState(null as DateType);
   const [endDate, setEndDate] = useState(null as DateType);
-  const onDateChange = (dates:[DateType, DateType]) => {
+  const onDateChange = (dates: [DateType, DateType]) => {
     const [start, end] = dates;
     if (endDate && !end) {
       setStartDate(null);
@@ -142,7 +169,7 @@ export const UsageFilter: FC<UsageFilterProps> = ({onChange, defaultValue, ...pr
         closeCustom();
         onChange("custom", {
           start: dayjs(start).format("YYYY-MM-DDT00:00:00"),
-          end: dayjs(end).format("YYYY-MM-DDT23:59:59")
+          end: dayjs(end).format("YYYY-MM-DDT23:59:59"),
         });
       }
     }
@@ -151,19 +178,20 @@ export const UsageFilter: FC<UsageFilterProps> = ({onChange, defaultValue, ...pr
   return (
     <VStack {...props}>
       {tabIndex == 0 && (
-        <SimpleGrid {...getRootProps()}
-          gap={0} 
+        <SimpleGrid
+          {...getRootProps()}
+          gap={0}
           display="flex"
           borderWidth="1px"
           borderRadius="md"
-          minW={{ base:"320px", md: "400px" }}
+          minW={{ base: "320px", md: "400px" }}
         >
           {filterOptions.map((value) => {
             return (
               <FilterItem key={value} {...getRadioProps({ value })}>
                 {value}
               </FilterItem>
-            )
+            );
           })}
           <Box
             onClick={() => {
@@ -196,21 +224,19 @@ export const UsageFilter: FC<UsageFilterProps> = ({onChange, defaultValue, ...pr
           borderRadius="md"
           px={3}
           py={1}
-          minW={{ base:"320px", md: "400px" }}
+          minW={{ base: "320px", md: "400px" }}
           borderWidth="1px"
         >
-          <Text
-            w="full"
-            color={startDate ? "unset" : "gray.500"}
-          >
-            {startDate ? dayjs(startDate).format("YYYY-MM-DD (00:00)") : t("userDialog.startDate")}
+          <Text w="full" color={startDate ? "unset" : "gray.500"}>
+            {startDate
+              ? dayjs(startDate).format("YYYY-MM-DD (00:00)")
+              : t("userDialog.startDate")}
           </Text>
           <Icon as={ChevronRightIcon} boxSize="18px" />
-          <Text
-            w="full"
-            color={endDate ? "unset" : "gray.500"}
-          >
-            {endDate ? dayjs(endDate).format("YYYY-MM-DD (23:59)") : t("userDialog.endDate")}
+          <Text w="full" color={endDate ? "unset" : "gray.500"}>
+            {endDate
+              ? dayjs(endDate).format("YYYY-MM-DD (23:59)")
+              : t("userDialog.endDate")}
           </Text>
           <Icon as={CalendarIcon} boxSize="18px" />
         </HStack>
@@ -224,7 +250,7 @@ export const UsageFilter: FC<UsageFilterProps> = ({onChange, defaultValue, ...pr
         zIndex="1"
         backgroundColor="white"
         _dark={{
-          backgroundColor:"gray.700"
+          backgroundColor: "gray.700",
         }}
         display={isCustomOpen ? "unset" : "none"}
       >
@@ -238,7 +264,7 @@ export const UsageFilter: FC<UsageFilterProps> = ({onChange, defaultValue, ...pr
             <TabPanel>
               {customFilterOptions.map((row) => {
                 return (
-                  <VStack key={row.title} alignItems="start" pl={2} pr={2} >
+                  <VStack key={row.title} alignItems="start" pl={2} pr={2}>
                     <HStack justifyItems="flex-start" mb={4}>
                       <Text fontSize={fontSize} minW="60px">
                         {t("userDialog." + row.title)}
@@ -252,11 +278,11 @@ export const UsageFilter: FC<UsageFilterProps> = ({onChange, defaultValue, ...pr
                           >
                             {value}
                           </FilterItem>
-                        )
+                        );
                       })}
                     </HStack>
                   </VStack>
-                )
+                );
               })}
             </TabPanel>
             <TabPanel className="datepicker-panel">
@@ -282,44 +308,69 @@ export const UsageFilter: FC<UsageFilterProps> = ({onChange, defaultValue, ...pr
   );
 };
 
-export function createUsageConfig(colorMode: ColorMode, title: string, series: any = [], labels: any = []) {
-  const total = formatBytes((series as [number]).reduce((t, c) => t += c, 0));
+export function createUsageConfig(
+  colorMode: ColorMode,
+  title: string,
+  series: any = [],
+  labels: any = []
+) {
+  const total = formatBytes((series as [number]).reduce((t, c) => (t += c), 0));
   return {
     series: series,
     options: {
       labels: labels,
       chart: {
+        width: "100%",
+        height: "100%",
         type: "donut",
+        animations: {
+          enabled: false,
+        },
       },
+      responsive: [
+        {
+          breakpoint: 786,
+          options: {
+            legend: {
+              position: "bottom",
+            },
+          },
+        },
+      ],
       title: {
         text: `${title}${total}`,
         align: "center",
         style: {
           fontWeight: "var(--chakra-fontWeights-medium)",
-          color: colorMode === "dark" ? "var(--chakra-colors-gray-300)" : undefined,
-        }
+          color:
+            colorMode === "dark" ? "var(--chakra-colors-gray-300)" : undefined,
+        },
       },
       legend: {
-        position: "bottom",
+        position: "right",
         labels: {
           colors: colorMode === "dark" ? "#CBD5E0" : undefined,
-          useSeriesColors: false
+          useSeriesColors: false,
         },
       },
       stroke: {
         width: 1,
-        colors: undefined
+        colors: undefined,
       },
       dataLabels: {
-        formatter: (val, {seriesIndex, w}) => {
+        formatter: (val, { seriesIndex, w }) => {
           return formatBytes(w.config.series[seriesIndex], 1);
         },
       },
       tooltip: {
-        custom: ({series, seriesIndex, dataPointIndex, w}) => {
+        custom: ({ series, seriesIndex, dataPointIndex, w }) => {
           const readable = formatBytes(series[seriesIndex], 1);
-          const total = Math.max((series as [number]).reduce((t, c) => t += c), 1);
-          const percent = Math.round(series[seriesIndex] / total * 1000) / 10 + "%";
+          const total = Math.max(
+            (series as [number]).reduce((t, c) => (t += c)),
+            1
+          );
+          const percent =
+            Math.round((series[seriesIndex] / total) * 1000) / 10 + "%";
           return `
             <div style="
                     background-color: ${w.globals.colors[seriesIndex]};
@@ -332,9 +383,10 @@ export function createUsageConfig(colorMode: ColorMode, title: string, series: a
             >
               ${w.config.labels[seriesIndex]}: <b>${percent}, ${readable}</b>
             </div>
-          `
-        }
+          `;
+        },
       },
-    } as ApexOptions
-  }
+      colors: generateDistinctColors(series.length),
+    } as ApexOptions,
+  };
 }

@@ -30,18 +30,12 @@ def get_or_create_inbound(db: Session, inbound_tag: str):
         db.commit()
         add_default_host(db, inbound)
         db.refresh(inbound)
-    elif not inbound.hosts:
-        add_default_host(db, inbound)
-        db.refresh(inbound)
 
     return inbound
 
 
 def get_hosts(db: Session, inbound_tag: str):
     inbound = get_or_create_inbound(db, inbound_tag)
-    if not inbound.hosts:
-        add_default_host(db, inbound)
-        db.refresh(inbound)
     return inbound.hosts
 
 
@@ -155,48 +149,31 @@ def get_users(db: Session,
 
 
 def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime) -> List[UserUsageResponse]:
-    usages = []
-    cache = {}
+    usages = {}
+
+    usages[0] = UserUsageResponse(  # Main Core
+        node_id=None,
+        node_name="Master",
+        used_traffic=0
+    )
+    for node in db.query(Node).all():
+        usages[node.id] = UserUsageResponse(
+            node_id=node.id,
+            node_name=node.name,
+            used_traffic=0
+        )
 
     cond = and_(NodeUserUsage.user_id == dbuser.id,
                 NodeUserUsage.created_at >= start,
                 NodeUserUsage.created_at <= end)
 
     for v in db.query(NodeUserUsage).filter(cond):
-        node_name = "Master" if v.node_id == 0 else v.node.name
-        entry = cache.get(v.node_id)
-        if entry is None:
-            entry = UserUsageResponse(
-                node_id=v.node_id,
-                node_name=node_name,
-                used_traffic=0
-            )
-            cache[v.node_id] = entry
-            usages.append(entry)
+        try:
+            usages[v.node_id or 0].used_traffic += v.used_traffic
+        except KeyError:
+            pass
 
-        entry.used_traffic += v.used_traffic
-
-    for node in db.query(Node).all():
-        if cache.get(node.id) is None:
-            entry = UserUsageResponse(
-                node_id=node.id,
-                node_name=node.name,
-                used_traffic=0
-            )
-            cache[node.id] = entry
-            usages.append(entry)
-
-    # no 'Master'
-    if cache.get(0) is None:
-        usages.append(UserUsageResponse(
-            node_id=0,
-            node_name="Master",
-            used_traffic=0
-        ))
-
-    usages.sort(key=lambda entry: entry.node_id)
-
-    return usages
+    return list(usages.values())
 
 
 def get_users_count(db: Session, status: UserStatus = None, admin: Admin = None):
@@ -480,48 +457,32 @@ def get_nodes(db: Session, status: Optional[Union[NodeStatus, list]] = None):
 
 
 def get_nodes_usage(db: Session, start: datetime, end: datetime) -> List[NodeUsageResponse]:
-    usages = []
-    cache = {}
+    usages = {}
 
-    for v in db.query(NodeUsage).filter(and_(NodeUsage.created_at >= start, NodeUsage.created_at <= end)):
-        node_name = "Master" if v.node_id == 0 else v.node.name
-        entry = cache.get(v.node_id)
-        if entry is None:
-            entry = NodeUsageResponse(
-                node_id=v.node_id,
-                node_name=node_name,
-                uplink=0,
-                downlink=0
-            )
-            cache[v.node_id] = entry
-            usages.append(entry)
-
-        entry.uplink += v.uplink
-        entry.downlink += v.downlink
-
+    usages[0] = NodeUsageResponse(  # Main Core
+        node_id=None,
+        node_name="Master",
+        uplink=0,
+        downlink=0
+    )
     for node in db.query(Node).all():
-        if cache.get(node.id) is None:
-            entry = NodeUsageResponse(
-                node_id=node.id,
-                node_name=node.name,
-                uplink=0,
-                downlink=0
-            )
-            cache[node.id] = entry
-            usages.append(entry)
-
-    # no 'Master'
-    if cache.get(0) is None:
-        usages.append(NodeUsageResponse(
-            node_id=0,
-            node_name="Master",
+        usages[node.id] = NodeUsageResponse(
+            node_id=node.id,
+            node_name=node.name,
             uplink=0,
             downlink=0
-        ))
+        )
 
-    usages.sort(key=lambda entry: entry.node_id)
+    cond = and_(NodeUsage.created_at >= start, NodeUsage.created_at <= end)
 
-    return usages
+    for v in db.query(NodeUsage).filter(cond):
+        try:
+            usages[v.node_id or 0].uplink += v.uplink
+            usages[v.node_id or 0].downlink += v.downlink
+        except KeyError:
+            pass
+
+    return list(usages.values())
 
 
 def create_node(db: Session, node: NodeCreate):

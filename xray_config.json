@@ -1,4 +1,7 @@
 {
+    "log": {
+        "loglevel": "info"
+    },
     "inbounds": [
         {
             "tag": "VMess TCP",
@@ -78,15 +81,11 @@
                 "security": "reality",
                 "realitySettings": {
                     "show": false,
-                    "dest": "ftp.debian.org:443",
+                    "dest": "discordapp.com:443",
                     "xver": 0,
                     "serverNames": [
-                        "ftp.debian.org",
-                        "cdn-fastly.deb.debian.org",
-                        "deb.debian.org",
-                        "cdn-fastly-v6.deb.debian.org",
-                        "ftp.ipv6.debian.org",
-                        "httpredir.debian.org"
+                        "cdn.discordapp.com",
+                        "discordapp.com"
                     ],
                     "privateKey": "MMX7m0Mj3faUstoEm5NBdegeXkHG6ZB78xzBv2n3ZUA",
                     "shortIds": [
@@ -120,15 +119,11 @@
                 "security": "reality",
                 "realitySettings": {
                     "show": false,
-                    "dest": "ftp.debian.org:443",
+                    "dest": "discordapp.com:443",
                     "xver": 0,
                     "serverNames": [
-                        "ftp.debian.org",
-                        "cdn-fastly.deb.debian.org",
-                        "deb.debian.org",
-                        "cdn-fastly-v6.deb.debian.org",
-                        "ftp.ipv6.debian.org",
-                        "httpredir.debian.org"
+                        "cdn.discordapp.com",
+                        "discordapp.com"
                     ],
                     "privateKey": "MMX7m0Mj3faUstoEm5NBdegeXkHG6ZB78xzBv2n3ZUA",
                     "shortIds": [

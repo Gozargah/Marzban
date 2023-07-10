@@ -48,6 +48,13 @@ export const Language: FC<HeaderProps> = ({ actions }) => {
         <MenuItem
           maxW="100px"
           fontSize="sm"
+          onClick={() => changeLanguage("fa")}
+        >
+          فارسی
+        </MenuItem>
+        <MenuItem
+          maxW="100px"
+          fontSize="sm"
           onClick={() => changeLanguage("zh-cn")}
         >
           简体中文

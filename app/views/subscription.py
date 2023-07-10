@@ -54,9 +54,6 @@ def user_subcription(token: str,
             )
         )
 
-    if not user.status == UserStatus.active:
-        return Response(status_code=443)
-
     response_headers = {
         "content-disposition": f'attachment; filename="{user.username}"',
         "profile-update-interval": "12",
