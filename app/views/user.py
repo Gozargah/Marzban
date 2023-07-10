@@ -37,7 +37,7 @@ def add_user(new_user: UserCreate,
         db.rollback()
         raise HTTPException(status_code=409, detail="User already exists")
 
-    xray.operations.add_user(dbuser)
+    bg.add_task(xray.operations.add_user, dbuser=dbuser)
 
     bg.add_task(
         report.user_created,
@@ -100,9 +100,9 @@ def modify_user(username: str,
     user = UserResponse.from_orm(dbuser)
 
     if user.status == UserStatus.active:
-        xray.operations.update_user(dbuser)
+        bg.add_task(xray.operations.update_user, dbuser=dbuser)
     else:
-        xray.operations.remove_user(dbuser)
+        bg.add_task(xray.operations.remove_user, dbuser=dbuser)
 
     bg.add_task(report.user_updated,
                 username=dbuser.username,
@@ -139,7 +139,7 @@ def remove_user(username: str,
 
     crud.remove_user(db, dbuser)
 
-    xray.operations.remove_user(dbuser)
+    bg.add_task(xray.operations.remove_user, dbuser=dbuser)
 
     bg.add_task(
         report.user_deleted,
@@ -152,6 +152,7 @@ def remove_user(username: str,
 
 @app.post("/api/user/{username}/reset", tags=['User'], response_model=UserResponse)
 def reset_user_data_usage(username: str,
+                          bg: BackgroundTasks,
                           db: Session = Depends(get_db),
                           admin: Admin = Depends(Admin.get_current)):
     """
@@ -166,7 +167,7 @@ def reset_user_data_usage(username: str,
 
     dbuser = crud.reset_user_data_usage(db=db, dbuser=dbuser)
     if dbuser.status == UserStatus.active:
-        xray.operations.add_user(dbuser)
+        bg.add_task(xray.operations.add_user, dbuser=dbuser)
 
     return dbuser
 
