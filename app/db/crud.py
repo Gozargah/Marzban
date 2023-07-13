@@ -287,8 +287,23 @@ def reset_user_data_usage(db: Session, dbuser: User):
     return dbuser
 
 
-def revoke_user_sub(db: Session, dbuser: User):
+def revoke_user_sub(db: Session, dbuser: User, reset_ids: bool = True):
     dbuser.sub_revoked_at = datetime.utcnow()
+
+    if reset_ids:
+        # Remove "id" (vmess/vless) and "password" (trojan/shadowsocks) from
+        #   proxy settings, So they will be re-generated.
+        new_proxies = {
+            proxy.type: {
+                key: val
+                for key, val
+                in proxy.settings.items()
+                if key not in ["id", "password"]
+            } for proxy in dbuser.proxies
+        }
+
+        dbuser = update_user(db, dbuser, UserModify(proxies=new_proxies))
+
     db.commit()
     db.refresh(dbuser)
     return dbuser
