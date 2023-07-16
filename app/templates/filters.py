@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 import yaml
@@ -25,6 +26,10 @@ def datetimeformat(dt):
         dt = datetime.fromtimestamp(dt)
     formatted_datetime = dt.strftime('%Y-%m-%d %H:%M:%S')
     return formatted_datetime
+
+
+def env_override(value, key):
+    return os.getenv(key, value)
 
 
 CUSTOM_FILTERS = {
