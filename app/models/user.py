@@ -41,6 +41,7 @@ class User(BaseModel):
     data_limit: Union[None, int] = Field(ge=0, default=None, description="data_limit can be 0 or greater")
     data_limit_reset_strategy: UserDataLimitResetStrategy = UserDataLimitResetStrategy.no_reset
     inbounds: Dict[ProxyTypes, List[str]] = {}
+    note: str = None
 
     @validator('proxies', pre=True, always=True)
     def validate_proxies(cls, v, values, **kwargs):
@@ -52,6 +53,12 @@ class User(BaseModel):
     def validate_username(cls, v):
         if not USERNAME_REGEXP.match(v):
             raise ValueError('Username only can be 3 to 32 characters and contain a-z, 0-9, and underscores in between.')
+        return v
+
+    @validator('note', check_fields=False)
+    def validate_note(cls, v):
+        if v and len(v) > 500:
+            raise ValueError('User\'s note can be a maximum of 500 character')
         return v
 
 
@@ -68,17 +75,20 @@ class UserCreate(User):
                     },
                     "vless": {}
                 },
-                "inbounds": {
+                "inbounds":  {
                     "vmess": [
-                        "VMESS_INBOUND"
+                        "VMess TCP",
+                        "VMess Websocket"
                     ],
                     "vless": [
-                        "VLESS_INBOUND"
+                        "VLESS TCP REALITY",
+                        "VLESS GRPC REALITY"
                     ]
                 },
                 "expire": 0,
                 "data_limit": 0,
-                "data_limit_reset_strategy": "no_reset"
+                "data_limit_reset_strategy": "no_reset",
+                "note": ""
             }
         }
 
@@ -133,18 +143,21 @@ class UserModify(User):
                     },
                     "vless": {}
                 },
-                "inbounds": {
+                "inbounds":  {
                     "vmess": [
-                        "VMESS_INBOUND"
+                        "VMess TCP",
+                        "VMess Websocket"
                     ],
                     "vless": [
-                        "VLESS_INBOUND"
+                        "VLESS TCP REALITY",
+                        "VLESS GRPC REALITY"
                     ]
                 },
                 "expire": 0,
                 "data_limit": 0,
                 "data_limit_reset_strategy": "no_reset",
-                "status": "active"
+                "status": "active",
+                "note": ""
             }
         }
 

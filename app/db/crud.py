@@ -206,7 +206,8 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None):
         data_limit=(user.data_limit or None),
         expire=(user.expire or None),
         admin=admin,
-        data_limit_reset_strategy=user.data_limit_reset_strategy
+        data_limit_reset_strategy=user.data_limit_reset_strategy,
+        note=user.note
     )
     db.add(dbuser)
     db.commit()
@@ -265,6 +266,9 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
 
     if modify.data_limit_reset_strategy is not None:
         dbuser.data_limit_reset_strategy = modify.data_limit_reset_strategy.value
+
+    if modify.note is not None:
+        dbuser.note = modify.note or None
 
     db.commit()
     db.refresh(dbuser)
