@@ -2,17 +2,19 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
-from sqlalchemy.orm import Session
 from sqlalchemy import and_
+from sqlalchemy.orm import Session
 
-from app.db.models import (JWT, Admin, Node, Proxy, ProxyHost, ProxyInbound,
-                           ProxyTypes, System, User, UserTemplate,
-                           UserUsageResetLogs, NodeUserUsage, NodeUsage)
+from app.db.models import (JWT, Admin, Node, NodeUsage, NodeUserUsage, Proxy,
+                           ProxyHost, ProxyInbound, ProxyTypes, System, User,
+                           UserTemplate, UserUsageResetLogs)
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
-from app.models.node import NodeCreate, NodeModify, NodeStatus, NodeUsageResponse
+from app.models.node import (NodeCreate, NodeModify, NodeStatus,
+                             NodeUsageResponse)
 from app.models.proxy import ProxyHost as ProxyHostModify
 from app.models.user import (UserCreate, UserDataLimitResetStrategy,
-                             UserModify, UserStatus, UserUsageResponse)
+                             UserModify, UserResponse, UserStatus,
+                             UserUsageResponse)
 from app.models.user_template import UserTemplateCreate, UserTemplateModify
 
 
@@ -287,22 +289,14 @@ def reset_user_data_usage(db: Session, dbuser: User):
     return dbuser
 
 
-def revoke_user_sub(db: Session, dbuser: User, reset_ids: bool = True):
+def revoke_user_sub(db: Session, dbuser: User):
     dbuser.sub_revoked_at = datetime.utcnow()
 
-    if reset_ids:
-        # Remove "id" (vmess/vless) and "password" (trojan/shadowsocks) from
-        #   proxy settings, So they will be re-generated.
-        new_proxies = {
-            proxy.type: {
-                key: val
-                for key, val
-                in proxy.settings.items()
-                if key not in ["id", "password"]
-            } for proxy in dbuser.proxies
-        }
-
-        dbuser = update_user(db, dbuser, UserModify(proxies=new_proxies))
+    user = UserResponse.from_orm(dbuser)
+    for proxy_type, settings in user.proxies.copy().items():
+        settings.revoke()
+        user.proxies[proxy_type] = settings
+    dbuser = update_user(db, dbuser, user)
 
     db.commit()
     db.refresh(dbuser)
