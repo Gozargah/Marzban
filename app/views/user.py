@@ -173,11 +173,12 @@ def reset_user_data_usage(username: str,
 
 
 @app.post("/api/user/{username}/revoke_sub", tags=['User'], response_model=UserResponse)
-def revoke_user_sub_link(username: str,
-                         db: Session = Depends(get_db),
-                         admin: Admin = Depends(Admin.get_current)):
+def revoke_user_subscription(username: str,
+                             bg: BackgroundTasks,
+                             db: Session = Depends(get_db),
+                             admin: Admin = Depends(Admin.get_current)):
     """
-    Revoke users subscription link
+    Revoke users subscription (Subscription link and proxies)
     """
     dbuser = crud.get_user(db, username)
     if not dbuser:
@@ -187,6 +188,10 @@ def revoke_user_sub_link(username: str,
         raise HTTPException(status_code=403, detail="You're not allowed")
 
     dbuser = crud.revoke_user_sub(db=db, dbuser=dbuser)
+
+    if dbuser.status == UserStatus.active:
+        bg.add_task(xray.operations.update_user, dbuser=dbuser)
+
     return dbuser
 
 
