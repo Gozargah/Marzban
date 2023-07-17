@@ -1020,3 +1020,21 @@ def confirm_user_command(call: types.CallbackQuery):
                 'status': 'active'
             }, view_user=True)
         )
+
+@bot.message_handler(func=lambda message: True, is_admin=True)
+def search(message: types.Message):
+    with GetDB() as db:
+        db_user = crud.get_user(db, message.text)
+        if not db_user:
+            return bot.reply_to(message, '❌ User not found.')
+        user = UserResponse.from_orm(db_user)
+    text = get_user_info_text(
+        status=user.status,
+        username=user.username,
+        expire=user.expire,
+        data_limit=user.data_limit,
+        usage=user.used_traffic)
+    return bot.reply_to(message, text, parse_mode="html", reply_markup=BotKeyboard.user_menu(user_info={
+        'status': user.status,
+        'username': user.username
+    }))
