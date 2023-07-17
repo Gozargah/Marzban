@@ -162,20 +162,20 @@ def activate_user_command(call: types.CallbackQuery):
 def edit_command(call: types.CallbackQuery):
     username = call.data.split(":")[1]
     with GetDB() as db:
-        dbuser = crud.get_user(db, username)
-        if not dbuser:
+        db_user = crud.get_user(db, username)
+        if not db_user:
             return bot.answer_callback_query(
                 call.id,
                 '❌ User not found.',
                 show_alert=True
             )
-        user = UserResponse.from_orm(dbuser)
+        user = UserResponse.from_orm(db_user)
     mem_store.set('username', username)
-    mem_store.set('data_limit', dbuser.data_limit)
-    mem_store.set('expire_date', datetime.fromtimestamp(dbuser.expire)
-                  if dbuser.expire else None)
+    mem_store.set('data_limit', db_user.data_limit)
+    mem_store.set('expire_date', datetime.fromtimestamp(db_user.expire)
+    if db_user.expire else None)
     mem_store.set('protocols', {
-        protocol.value: inbounds for protocol, inbounds in dbuser.inbounds.items()})
+        protocol.value: inbounds for protocol, inbounds in db_user.inbounds.items()})
     bot.edit_message_text(
         f"📝 Editing user `{username}`",
         call.message.chat.id,
@@ -185,23 +185,17 @@ def edit_command(call: types.CallbackQuery):
             user.inbounds,
             "edit",
             username=username,
-            data_limit=dbuser.data_limit,
+            data_limit=db_user.data_limit,
             expire_date=mem_store.get("expire_date"),
         )
     )
 
 
-@bot.callback_query_handler(cb_query_startswith('help_edit:'), is_admin=True)
+@bot.callback_query_handler(cb_query_equals('help_edit'), is_admin=True)
 def help_edit_command(call: types.CallbackQuery):
-    action = call.data.split(":")[1]
-    if action == "data":
-        text = "❕Press the 'Edit' button to edit the Data limit!"
-    elif action == "expire":
-        text = "❕Press the 'Edit' button to edit the Expire date!"
-
     bot.answer_callback_query(
         call.id,
-        text=text,
+        text="Press the (✏️ Edit) button to edit",
         show_alert=True
     )
 
@@ -281,7 +275,7 @@ def edit_user_data_limit_step(message: types.Message, username: str):
     cleanup_messages(message.chat.id)
 
 
-def edit_user_expire_step(message: types.Message, username: str,):
+def edit_user_expire_step(message: types.Message, username: str):
     if message.text == 'Cancel':
         return bot.send_message(
             message.chat.id,
@@ -408,14 +402,14 @@ def user_command(call: types.CallbackQuery):
     username = call.data.split(':')[1]
     page = int(call.data.split(':')[2]) if len(call.data.split(':')) > 2 else 1
     with GetDB() as db:
-        dbuser = crud.get_user(db, username)
-        if not dbuser:
+        db_user = crud.get_user(db, username)
+        if not db_user:
             return bot.answer_callback_query(
                 call.id,
                 '❌ User not found.',
                 show_alert=True
             )
-        user = UserResponse.from_orm(dbuser)
+        user = UserResponse.from_orm(db_user)
 
     text = get_user_info_text(
         status=user.status, username=username,
@@ -433,11 +427,11 @@ def links_command(call: types.CallbackQuery):
     username = call.data.split(":")[1]
 
     with GetDB() as db:
-        dbuser = crud.get_user(db, username)
-        if not dbuser:
+        db_user = crud.get_user(db, username)
+        if not db_user:
             return bot.answer_callback_query(call.id, "User not found!", show_alert=True)
 
-        user = UserResponse.from_orm(dbuser)
+        user = UserResponse.from_orm(db_user)
 
     text = f"<i>{SUBSCRIPTION_URL}{user.subscription_url}</i>\n\n\n"
     for link in user.links:
@@ -457,11 +451,11 @@ def genqr_command(call: types.CallbackQuery):
     username = call.data.split(":")[1]
 
     with GetDB() as db:
-        dbuser = crud.get_user(db, username)
-        if not dbuser:
+        db_user = crud.get_user(db, username)
+        if not db_user:
             return bot.answer_callback_query(call.id, "User not found!", show_alert=True)
 
-        user = UserResponse.from_orm(dbuser)
+        user = UserResponse.from_orm(db_user)
 
     bot.answer_callback_query(call.id, "Generating Qr code...")
 
@@ -624,24 +618,25 @@ def add_user_from_template_command(call: types.CallbackQuery):
             return bot.answer_callback_query(call.id, "You don't have any User Templates!")
 
     bot.edit_message_text(
-        "❕Select a Template to create user from:",
+        "<b>Select a Template to create user from</b>:",
         call.message.chat.id,
         call.message.message_id,
+        parse_mode='html',
         reply_markup=BotKeyboard.templates_menu({template.name: template.id for template in templates})
     )
 
 
 @bot.callback_query_handler(cb_query_startswith('template_add_user:'), is_admin=True)
 def add_user_command(call: types.CallbackQuery):
-    id = int(call.data.split(":")[1])
+    template_id = int(call.data.split(":")[1])
     with GetDB() as db:
-        template = crud.get_user_template(db, id)
+        template = crud.get_user_template(db, template_id)
         if not template:
             return bot.answer_callback_query(call.id, "Template not found!", show_alert=True)
         template = UserTemplateResponse.from_orm(template)
 
     text = get_template_info_text(
-        id, data_limit=template.data_limit, expire_duration=template.expire_duration,
+        template_id, data_limit=template.data_limit, expire_duration=template.expire_duration,
         username_prefix=template.username_prefix, username_suffix=template.username_suffix,
         inbounds=template.inbounds)
     if template.username_prefix:
@@ -654,8 +649,7 @@ def add_user_command(call: types.CallbackQuery):
         text,
         call.message.chat.id,
         call.message.message_id,
-        parse_mode="HTML",
-        reply_markup=BotKeyboard.inline_cancel_action(callback_data="template_add_user")
+        parse_mode="HTML"
     )
     text = '👤 Enter username:\n⚠️ Username only can be 3 to 32 characters and contain a-z, A-Z, 0-9, and underscores in between.'
     msg = bot.send_message(
@@ -768,6 +762,7 @@ def add_user_from_template_username_step(message: types.Message):
             expire_date=expire_date,
         )
     )
+    schedule_delete_message(message.id)
     cleanup_messages(message.chat.id)
 
 
@@ -1004,9 +999,9 @@ def confirm_user_command(call: types.CallbackQuery):
     if data == 'delete':
         username = call.data.split(':')[2]
         with GetDB() as db:
-            dbuser = crud.get_user(db, username)
-            crud.remove_user(db, dbuser)
-            xray.operations.remove_user(dbuser)
+            db_user = crud.get_user(db, username)
+            crud.remove_user(db, db_user)
+            xray.operations.remove_user(db_user)
 
         bot.edit_message_text(
             '✅ User deleted.',
@@ -1028,10 +1023,10 @@ def confirm_user_command(call: types.CallbackQuery):
     elif data == "suspend":
         username = call.data.split(":")[2]
         with GetDB() as db:
-            dbuser = crud.get_user(db, username)
-            crud.update_user(db, dbuser, UserModify(
+            db_user = crud.get_user(db, username)
+            crud.update_user(db, db_user, UserModify(
                 status=UserStatusModify.disabled))
-            xray.operations.remove_user(dbuser)
+            xray.operations.remove_user(db_user)
         bot.edit_message_text(
             get_user_info_text(
                 status='disabled',
@@ -1061,10 +1056,10 @@ def confirm_user_command(call: types.CallbackQuery):
     elif data == "activate":
         username = call.data.split(":")[2]
         with GetDB() as db:
-            dbuser = crud.get_user(db, username)
-            crud.update_user(db, dbuser, UserModify(
+            db_user = crud.get_user(db, username)
+            crud.update_user(db, db_user, UserModify(
                 status=UserStatusModify.active))
-            xray.operations.add_user(dbuser)
+            xray.operations.add_user(db_user)
 
         bot.edit_message_text(
             get_user_info_text(
@@ -1234,15 +1229,13 @@ def confirm_user_command(call: types.CallbackQuery):
                     del proxies[protocol]
 
             modify = UserModify(
-                expire=mem_store.get('expire_date').timestamp(
-                ) if mem_store.get('expire_date') else 0,
+                expire=int(mem_store.get('expire_date').timestamp()) if mem_store.get('expire_date') else 0,
                 data_limit=mem_store.get("data_limit"),
                 proxies=proxies,
                 inbounds=inbounds
             )
             last_user = UserResponse.from_orm(db_user)
             db_user = crud.update_user(db, db_user, modify)
-            proxies = db_user.proxies
 
             user = UserResponse.from_orm(db_user)
 
@@ -1328,8 +1321,7 @@ def confirm_user_command(call: types.CallbackQuery):
             k: v for k, v in mem_store.get('protocols').items() if v}
         new_user = UserCreate(
             username=mem_store.get('username'),
-            expire=mem_store.get('expire_date').timestamp(
-            ) if mem_store.get('expire_date') else None,
+            expire=int(mem_store.get('expire_date').timestamp()) if mem_store.get('expire_date') else None,
             data_limit=mem_store.get('data_limit') if mem_store.get(
                 'data_limit') else None,
             proxies={p: {} for p in inbounds},
