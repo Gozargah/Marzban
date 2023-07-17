@@ -1,4 +1,4 @@
-from decouple import config
+from decouple import config, Csv
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -32,7 +32,7 @@ XRAY_SUBSCRIPTION_URL_PREFIX = config("XRAY_SUBSCRIPTION_URL_PREFIX", default=""
 
 
 TELEGRAM_API_TOKEN = config("TELEGRAM_API_TOKEN", default=None)
-TELEGRAM_ADMIN_ID = config("TELEGRAM_ADMIN_ID", cast=int, default=0)
+TELEGRAM_ADMINS_ID = config('TELEGRAM_ADMINS_ID', cast=Csv(int), default=None)
 TELEGRAM_PROXY_URL = config("TELEGRAM_PROXY_URL", default=None)
 
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = config("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=1440)
