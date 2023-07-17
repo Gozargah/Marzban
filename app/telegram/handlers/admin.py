@@ -23,7 +23,7 @@ from app.telegram.utils.keyboard import BotKeyboard
 from app.utils.store import MemoryStorage
 from app.utils.system import cpu_usage, memory_usage, readable_size, realtime_bandwidth, get_public_ip
 
-from config import XRAY_SUBSCRIPTION_URL_PREFIX, UVICORN_PORT
+from config import XRAY_SUBSCRIPTION_URL_PREFIX, UVICORN_PORT, TELEGRAM_LOGGER_CHANNEL_ID
 
 SUBSCRIPTION_URL = f"{XRAY_SUBSCRIPTION_URL_PREFIX or f'http://{get_public_ip()}:{UVICORN_PORT}'}"
 
@@ -552,6 +552,26 @@ def template_charge_command(call: types.CallbackQuery):
                 reply_markup=BotKeyboard.user_menu(user_info={
                     'status': 'active',
                     'username': user.username}))
+            if TELEGRAM_LOGGER_CHANNEL_ID:
+                text = f'''\
+♻️ <b>#Charged #Reset #From_Bot</b>
+➖➖➖➖➖➖➖➖➖
+<b>Template :</b> <code>{template.name}</code>
+<b>Username :</b> <code>{user.username}</code>
+➖➖➖➖➖➖➖➖➖
+<u><b>Last status</b></u>
+<b>├Traffic Limit :</b> <code>{readable_size(user.data_limit)}</code>
+<b>├Expire Date :</b> <code>{datetime.fromtimestamp(user.expire).strftime('%H:%M:%S %Y-%m-%d')}</code>
+➖➖➖➖➖➖➖➖➖
+<u><b>New status</b></u>
+<b>├Traffic Limit :</b> <code>{readable_size(db_user.data_limit)}</code>
+<b>├Expire Date :</b> <code>{datetime.fromtimestamp(db_user.expire).strftime('%H:%M:%S %Y-%m-%d')}</code>
+➖➖➖➖➖➖➖➖➖
+<b>By :</b> <a href="tg://user?id={call.from_user.id}">{call.from_user.full_name}</a>'''
+                try:
+                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+                except:
+                    pass
         else:
             text = get_user_info_text(
                 status='active',
@@ -977,6 +997,8 @@ def select_protocols(call: types.CallbackQuery):
 @bot.callback_query_handler(cb_query_startswith('confirm:'), is_admin=True)
 def confirm_user_command(call: types.CallbackQuery):
     data = call.data.split(':')[1]
+    chat_id = call.from_user.id
+    full_name = call.from_user.full_name
 
     if data == 'delete':
         username = call.data.split(':')[2]
@@ -985,12 +1007,23 @@ def confirm_user_command(call: types.CallbackQuery):
             crud.remove_user(db, dbuser)
             xray.operations.remove_user(dbuser)
 
-        return bot.edit_message_text(
+        bot.edit_message_text(
             '✅ User deleted.',
             call.message.chat.id,
             call.message.message_id,
             reply_markup=BotKeyboard.main_menu()
         )
+        if TELEGRAM_LOGGER_CHANNEL_ID:
+            text = f'''\
+🗑 <b>#Deleted #From_Bot</b>
+➖➖➖➖➖➖➖➖➖
+<b>Username</b> : <code>{username}</code>
+➖➖➖➖➖➖➖➖➖
+<b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>'''
+            try:
+                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+            except:
+                pass
     elif data == "suspend":
         username = call.data.split(":")[2]
         with GetDB() as db:
@@ -1013,6 +1046,17 @@ def confirm_user_command(call: types.CallbackQuery):
                 'status': 'disabled',
                 'username': db_user.username
             }))
+        if TELEGRAM_LOGGER_CHANNEL_ID:
+            text = f'''\
+❌ <b>#Disabled  #From_Bot</b>
+➖➖➖➖➖➖➖➖➖
+<b>Username</b> : <code>{username}</code>
+➖➖➖➖➖➖➖➖➖
+<b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>'''
+            try:
+                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+            except:
+                pass
     elif data == "activate":
         username = call.data.split(":")[2]
         with GetDB() as db:
@@ -1036,6 +1080,17 @@ def confirm_user_command(call: types.CallbackQuery):
                 'status': 'active',
                 'username': db_user.username
             }))
+        if TELEGRAM_LOGGER_CHANNEL_ID:
+            text = f'''\
+✅ <b>#Activated  #From_Bot</b>
+➖➖➖➖➖➖➖➖➖
+<b>Username</b> : <code>{username}</code>
+➖➖➖➖➖➖➖➖➖
+<b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>'''
+            try:
+                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+            except:
+                pass
     elif data == 'restart':
         m = bot.edit_message_text(
             '🔄 Restarting XRay core...', call.message.chat.id, call.message.message_id)
@@ -1118,6 +1173,27 @@ def confirm_user_command(call: types.CallbackQuery):
                     'status': user.status,
                     'username': user.username
                 }))
+            if TELEGRAM_LOGGER_CHANNEL_ID:
+                text = f'''\
+♻️ <b>#Charged #{data.split('_')[1].title()} #From_Bot</b>
+➖➖➖➖➖➖➖➖➖
+<b>Template :</b> <code>{template.name}</code>
+<b>Username :</b> <code>{user.username}</code>
+➖➖➖➖➖➖➖➖➖
+<u><b>Last status</b></u>
+<b>├Traffic Limit :</b> <code>{readable_size(user.data_limit)}</code>
+<b>├Expire Date :</b> <code>{datetime.fromtimestamp(user.expire).strftime('%H:%M:%S %Y-%m-%d')}</code>
+➖➖➖➖➖➖➖➖➖
+<u><b>New status</b></u>
+<b>├Traffic Limit :</b> <code>{readable_size(db_user.data_limit)}</code>
+<b>├Expire Date :</b> <code>{datetime.fromtimestamp(db_user.expire).strftime('%H:%M:%S %Y-%m-%d')}</code>
+➖➖➖➖➖➖➖➖➖
+<b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>\
+'''
+                try:
+                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+                except:
+                    pass
 
 
     elif data == 'edit_user':
@@ -1163,6 +1239,7 @@ def confirm_user_command(call: types.CallbackQuery):
                 proxies=proxies,
                 inbounds=inbounds
             )
+            last_user = UserResponse.from_orm(db_user)
             db_user = crud.update_user(db, db_user, modify)
             proxies = db_user.proxies
 
@@ -1190,6 +1267,41 @@ def confirm_user_command(call: types.CallbackQuery):
                 'username': db_user.username,
                 'status': db_user.status})
         )
+        if TELEGRAM_LOGGER_CHANNEL_ID:
+            tag = f'\n➖➖➖➖➖➖➖➖➖ \n<b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>'
+            if last_user.data_limit != user.data_limit:
+                text = f'''\
+📶 <b>#Traffic_Change #From_Bot</b>
+➖➖➖➖➖➖➖➖➖
+<b>Username :</b> <code>{user.username}</code>
+<b>Last Traffic Limit :</b> <code>{readable_size(last_user.data_limit)}</code>
+<b>New Traffic Limit :</b> <code>{readable_size(user.data_limit)}</code>{tag}'''
+                try:
+                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+                except:
+                    pass
+            if last_user.expire != user.expire:
+                text = f'''\
+📅 <b>#Expiry_Change #From_Bot</b>
+➖➖➖➖➖➖➖➖➖
+<b>Username :</b> <code>{user.username}</code>
+<b>Last Expire Date :</b> <code>{datetime.fromtimestamp(last_user.expire).strftime('%H:%M:%S %Y-%m-%d')}</code>
+<b>New Expire Date :</b> <code>{datetime.fromtimestamp(user.expire).strftime('%H:%M:%S %Y-%m-%d')}</code>{tag}'''
+                try:
+                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+                except:
+                    pass
+            if list(last_user.inbounds.values())[0] != list(user.inbounds.values())[0]:
+                text = f'''\
+⚙️ <b>#Inbounds_Change #From_Bot</b>
+➖➖➖➖➖➖➖➖➖
+<b>Username :</b> <code>{user.username}</code>
+<b>Last Proxies :</b> <code>{", ".join(list(last_user.inbounds.values())[0])}</code>
+<b>New Proxies :</b> <code>{", ".join(list(user.inbounds.values())[0])}</code>{tag}'''
+                try:
+                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+                except:
+                    pass
 
     elif data == 'add_user':
         if mem_store.get('username') is None:
@@ -1256,6 +1368,22 @@ def confirm_user_command(call: types.CallbackQuery):
             call.message.message_id,
             parse_mode="HTML",
             reply_markup=BotKeyboard.show_links(user.username))
+
+        if TELEGRAM_LOGGER_CHANNEL_ID:
+            text = f'''\
+🆕 <b>#Created #From_Bot</b>
+➖➖➖➖➖➖➖➖➖
+<b>Username :</b> <code>{user.username}</code>
+<b>Traffic Limit :</b> <code>{readable_size(user.data_limit)}</code>
+<b>Expire Date :</b> <code>{datetime.fromtimestamp(user.expire).strftime('%H:%M:%S %Y-%m-%d')}</code>
+<b>Proxies :</b> <code>{"" if not proxies else ", ".join([proxy.type for proxy in proxies])}</code>
+➖➖➖➖➖➖➖➖➖
+<b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>'''
+            try:
+                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+            except:
+                pass
+
 
 @bot.message_handler(func=lambda message: True, is_admin=True)
 def search(message: types.Message):

@@ -6,15 +6,18 @@ from telebot.apihelper import ApiTelegramException
 from datetime import datetime
 from app.telegram.utils.keyboard import BotKeyboard
 from app.utils.system import readable_size
-from config import TELEGRAM_ADMINS_ID
+from config import TELEGRAM_ADMINS_ID, TELEGRAM_LOGGER_CHANNEL_ID
 from telebot.formatting import escape_html
 
 
 def report(message: str, parse_mode="html", keyboard=None):
     if bot and TELEGRAM_ADMINS_ID:
         try:
-            for admin in TELEGRAM_ADMINS_ID:
-                bot.send_message(admin, message, parse_mode=parse_mode, reply_markup=keyboard)
+            if TELEGRAM_LOGGER_CHANNEL_ID:
+                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, message, parse_mode=parse_mode)
+            else:
+                for admin in TELEGRAM_ADMINS_ID:
+                    bot.send_message(admin, message, parse_mode=parse_mode, reply_markup=keyboard)
         except ApiTelegramException as e:
             logger.error(e)
 
