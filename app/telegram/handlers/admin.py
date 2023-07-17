@@ -23,9 +23,7 @@ from app.telegram.utils.keyboard import BotKeyboard
 from app.utils.store import MemoryStorage
 from app.utils.system import cpu_usage, memory_usage, readable_size, realtime_bandwidth, get_public_ip
 
-from config import XRAY_SUBSCRIPTION_URL_PREFIX, UVICORN_PORT, TELEGRAM_LOGGER_CHANNEL_ID
-
-SUBSCRIPTION_URL = f"{XRAY_SUBSCRIPTION_URL_PREFIX or f'http://{get_public_ip()}:{UVICORN_PORT}'}"
+from config import TELEGRAM_LOGGER_CHANNEL_ID
 
 mem_store = MemoryStorage()
 
@@ -433,7 +431,7 @@ def links_command(call: types.CallbackQuery):
 
         user = UserResponse.from_orm(db_user)
 
-    text = f"<i>{SUBSCRIPTION_URL}{user.subscription_url}</i>\n\n\n"
+    text = f"<code>{user.subscription_url}</code>\n\n\n"
     for link in user.links:
         text += f"<code>{link}</code>\n\n"
 
@@ -473,13 +471,13 @@ def genqr_command(call: types.CallbackQuery):
         )
     with io.BytesIO() as f:
         qr = qrcode.QRCode(border=6)
-        qr.add_data(f"{SUBSCRIPTION_URL}{user.subscription_url}")
+        qr.add_data(user.subscription_url)
         qr.make_image().save(f)
         f.seek(0)
         bot.send_photo(
             call.message.chat.id,
             photo=f,
-            caption=f"<i>{SUBSCRIPTION_URL}{user.subscription_url}</i>",
+            caption=f"<code>{user.subscription_url}</code>",
             parse_mode="HTML"
         )
     try:
@@ -487,7 +485,7 @@ def genqr_command(call: types.CallbackQuery):
     except:
         pass
 
-    text = f"<i>{SUBSCRIPTION_URL}{user.subscription_url}</i>\n\n\n"
+    text = f"<code>{user.subscription_url}</code>\n\n\n"
     for link in user.links:
         text += f"<code>{link}</code>\n\n"
 
@@ -1351,7 +1349,7 @@ def confirm_user_command(call: types.CallbackQuery):
 
         xray.operations.add_user(db_user)
 
-        text = f"<i>{SUBSCRIPTION_URL}{user.subscription_url}</i>\n\n\n"
+        text = f"<code>{user.subscription_url}</code>\n\n\n"
         for link in user.links:
             text += f"<code>{link}</code>\n\n"
 
