@@ -21,7 +21,11 @@ from app.telegram.utils.custom_filters import (cb_query_equals,
                                                cb_query_startswith)
 from app.telegram.utils.keyboard import BotKeyboard
 from app.utils.store import MemoryStorage
-from app.utils.system import cpu_usage, memory_usage, readable_size, realtime_bandwidth
+from app.utils.system import cpu_usage, memory_usage, readable_size, realtime_bandwidth, get_public_ip
+
+from config import XRAY_SUBSCRIPTION_URL_PREFIX, UVICORN_PORT
+
+SUBSCRIPTION_URL = f"{XRAY_SUBSCRIPTION_URL_PREFIX or f'http://{get_public_ip()}:{UVICORN_PORT}'}"
 
 mem_store = MemoryStorage()
 
@@ -362,21 +366,21 @@ def users_command(call: types.CallbackQuery):
 
 
 def get_user_info_text(
-        username: str, sub_url: str, inbounds: dict, data_limit: int | None = None, usage: int | None = None, expire: int |
-        None = None) -> str:
-    protocols = ""
-    for p, inbounds in inbounds.items():
-        protocols += f"\n├─ <b>{p.upper()}</b>\n"
-        protocols += "├───" + ", ".join([f"<code>{i}</code>" for i in inbounds])
-    text = f"""
-📊 User Info:
-┌ Username: <b>{username}</b>
-├ Usage Limit: <b>{readable_size(data_limit) if data_limit else 'Unlimited'}</b>
-├ Used Traffic: <b>{readable_size(usage) if usage else "-"}</b>
-├ Expiry Date <b>{datetime.fromtimestamp(expire).strftime('%Y-%m-%d') if expire else 'Never'}</b>
-├ Protocols: {protocols}
-└ Subscription URL: <code>{sub_url}</code>
-        """
+        status: str, username: str, data_limit: int = None, usage: int = None, expire: int = None) -> str:
+    statuses = {
+        'active': '✅',
+        'expired': '🕰',
+        'limited': '📵',
+        'disabled': '❌'}
+    text = f'''\
+┌─{statuses[status]} <b>Status:</b> <code>{status.title()}</code>
+│          └─<b>Username:</b> <code>{username}</code>
+│
+├─🌐 <b>Data limit:</b> <code>{readable_size(data_limit) if data_limit else 'Unlimited'}</code>
+│          └─<b>Data Used:</b> <code>{readable_size(usage) if usage else "-"}</code>
+│
+└─📅 <b>Expiry Date:</b> <code>{datetime.fromtimestamp(expire).date() if expire else 'Never'}</code>
+             └─<b>Days left:</b> <code>{(datetime.fromtimestamp(expire or 0) - datetime.now()).days if expire else '-'}</code>'''
     return text
 
 
@@ -413,7 +417,7 @@ def user_command(call: types.CallbackQuery):
         user = UserResponse.from_orm(dbuser)
 
     text = get_user_info_text(
-        username=username, sub_url=user.subscription_url, inbounds=user.inbounds,
+        status=user.status, username=username,
         data_limit=user.data_limit, usage=user.used_traffic, expire=user.expire),
     bot.edit_message_text(
         text,
@@ -434,7 +438,7 @@ def links_command(call: types.CallbackQuery):
 
         user = UserResponse.from_orm(dbuser)
 
-    text = ""
+    text = f"<i>{SUBSCRIPTION_URL}{user.subscription_url}</i>\n\n\n"
     for link in user.links:
         text += f"<code>{link}</code>\n\n"
 
@@ -472,6 +476,32 @@ def genqr_command(call: types.CallbackQuery):
             caption=f"<code>{link}</code>",
             parse_mode="HTML"
         )
+    with io.BytesIO() as f:
+        qr = qrcode.QRCode(border=6)
+        qr.add_data(f"{SUBSCRIPTION_URL}{user.subscription_url}")
+        qr.make_image().save(f)
+        f.seek(0)
+        bot.send_photo(
+            call.message.chat.id,
+            photo=f,
+            caption=f"<i>{SUBSCRIPTION_URL}{user.subscription_url}</i>",
+            parse_mode="HTML"
+        )
+    try:
+        bot.delete_message(call.message.chat.id, call.message.message_id)
+    except:
+        pass
+
+    text = f"<i>{SUBSCRIPTION_URL}{user.subscription_url}</i>\n\n\n"
+    for link in user.links:
+        text += f"<code>{link}</code>\n\n"
+
+    bot.send_message(
+        call.message.chat.id,
+        text,
+        "HTML",
+        reply_markup=BotKeyboard.show_links(username)
+    )
 
 
 @bot.callback_query_handler(cb_query_startswith('template_charge:'), is_admin=True)
@@ -968,12 +998,21 @@ def confirm_user_command(call: types.CallbackQuery):
             crud.update_user(db, dbuser, UserModify(
                 status=UserStatusModify.disabled))
             xray.operations.remove_user(dbuser)
-        return bot.edit_message_text(
-            "✅ User suspended.",
+        bot.edit_message_text(
+            get_user_info_text(
+                status='disabled',
+                username=username,
+                data_limit=db_user.data_limit,
+                usage=db_user.used_traffic,
+                expire=db_user.expire
+            ),
             call.message.chat.id,
             call.message.message_id,
-            reply_markup=BotKeyboard.main_menu()
-        )
+            parse_mode='HTML',
+            reply_markup=BotKeyboard.user_menu(user_info={
+                'status': 'disabled',
+                'username': db_user.username
+            }))
     elif data == "activate":
         username = call.data.split(":")[2]
         with GetDB() as db:
@@ -982,12 +1021,21 @@ def confirm_user_command(call: types.CallbackQuery):
                 status=UserStatusModify.active))
             xray.operations.add_user(dbuser)
 
-        return bot.edit_message_text(
-            "✅ User activated.",
+        bot.edit_message_text(
+            get_user_info_text(
+                status='active',
+                username=username,
+                data_limit=db_user.data_limit,
+                usage=db_user.used_traffic,
+                expire=db_user.expire
+            ),
             call.message.chat.id,
             call.message.message_id,
-            reply_markup=BotKeyboard.main_menu()
-        )
+            parse_mode='HTML',
+            reply_markup=BotKeyboard.user_menu(user_info={
+                'status': 'active',
+                'username': db_user.username
+            }))
     elif data == 'restart':
         m = bot.edit_message_text(
             '🔄 Restarting XRay core...', call.message.chat.id, call.message.message_id)
@@ -1126,13 +1174,13 @@ def confirm_user_command(call: types.CallbackQuery):
             xray.operations.remove_user(db_user)
 
         bot.answer_callback_query(call.id, "✅ User updated successfully.")
-        text = get_user_info_text(username=user.username,
-                                  sub_url=user.subscription_url,
-                                  inbounds=user.inbounds,
-                                  data_limit=user.data_limit,
-                                  usage=user.used_traffic,
-                                  expire=user.expire
-                                  )
+        text = get_user_info_text(
+            status=user.status,
+            username=user.username,
+            data_limit=user.data_limit,
+            usage=user.used_traffic,
+            expire=user.expire
+        )
         bot.edit_message_text(
             text,
             call.message.chat.id,
@@ -1140,9 +1188,7 @@ def confirm_user_command(call: types.CallbackQuery):
             parse_mode="HTML",
             reply_markup=BotKeyboard.user_menu({
                 'username': db_user.username,
-                'id': db_user.id,
-                'status': db_user.status
-            }, view_user=True)
+                'status': db_user.status})
         )
 
     elif data == 'add_user':
@@ -1200,24 +1246,16 @@ def confirm_user_command(call: types.CallbackQuery):
 
         xray.operations.add_user(db_user)
 
-        text = "✅ User added successfully" + get_user_info_text(username=user.username,
-                                                                sub_url=user.subscription_url,
-                                                                inbounds=user.inbounds,
-                                                                data_limit=user.data_limit,
-                                                                usage=user.used_traffic,
-                                                                expire=user.expire
-                                                                )
+        text = f"<i>{SUBSCRIPTION_URL}{user.subscription_url}</i>\n\n\n"
+        for link in user.links:
+            text += f"<code>{link}</code>\n\n"
+
         bot.edit_message_text(
             text,
             call.message.chat.id,
             call.message.message_id,
             parse_mode="HTML",
-            reply_markup=BotKeyboard.user_menu({
-                'username': db_user.username,
-                'id': db_user.id,
-                'status': 'active'
-            }, view_user=True)
-        )
+            reply_markup=BotKeyboard.show_links(user.username))
 
 @bot.message_handler(func=lambda message: True, is_admin=True)
 def search(message: types.Message):
