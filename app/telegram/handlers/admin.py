@@ -1,6 +1,8 @@
 import io
 import math
 import re
+import string
+import random
 from datetime import datetime
 
 import qrcode
@@ -596,14 +598,14 @@ def add_user_command(call: types.CallbackQuery):
         parse_mode="HTML",
         reply_markup=BotKeyboard.inline_cancel_action(callback_data="template_add_user")
     )
-    text = '👤 Enter username:\n⚠️ Username only can be 3 to 32 characters and contain a-z, 0-9, and underscores in between.'
-    bot.send_message(
+    text = '👤 Enter username:\n⚠️ Username only can be 3 to 32 characters and contain a-z, A-Z, 0-9, and underscores in between.'
+    msg = bot.send_message(
         call.message.chat.id,
         text,
         parse_mode="HTML",
         reply_markup=BotKeyboard.cancel_action()
     )
-    schedule_delete_message(template_msg.message_id)
+    schedule_delete_message(template_msg.message_id, msg.id)
     bot.register_next_step_handler(template_msg, add_user_from_template_username_step)
 
 
@@ -612,12 +614,6 @@ def add_user_from_template_username_step(message: types.Message):
     if template_id is None:
         return bot.send_message(message.chat.id, "An error occured in the process! try again.")
 
-    if message.text == 'Cancel':
-        return bot.send_message(
-            message.chat.id,
-            '✅ Cancelled.',
-            reply_markup=BotKeyboard.main_menu()
-        )
     if not message.text:
         wait_msg = bot.send_message(
             message.chat.id,
@@ -627,12 +623,23 @@ def add_user_from_template_username_step(message: types.Message):
         schedule_delete_message(wait_msg.message_id, message.message_id)
         return bot.register_next_step_handler(wait_msg, add_user_from_template_username_step)
 
+    elif message.text == 'Cancel':
+        return bot.send_message(
+            message.chat.id,
+            '✅ Cancelled.',
+            reply_markup=BotKeyboard.main_menu()
+        )
     with GetDB() as db:
-        match = re.match(r'^[a-z0-9_]+$', message.text)
+        username = message.text
+        if message.text == '🔡 Random Username':
+            username = random.choice(string.ascii_lowercase) + \
+                       ''.join(random.choices(string.ascii_lowercase, k=6)) + \
+                       random.choice(string.ascii_lowercase)
+        match = re.match(r'^(?![_\d])(?!.*__)(?!.*_$)\w{2,31}[a-z\d]$', username)
         if not match:
             wait_msg = bot.send_message(
                 message.chat.id,
-                '❌ Username only can be 3 to 32 characters and contain a-z, 0-9, and underscores in between.',
+                '❌ Username only can be 3 to 32 characters and contain a-z, A-Z, 0-9, and underscores in between.',
                 reply_markup=BotKeyboard.cancel_action()
             )
             schedule_delete_message(wait_msg.message_id, message.message_id)
@@ -640,7 +647,6 @@ def add_user_from_template_username_step(message: types.Message):
 
         template = crud.get_user_template(db, template_id)
 
-        username = message.text
         if template.username_prefix:
             username = template.username_prefix + username
         if template.username_suffix:
@@ -705,7 +711,7 @@ def add_user_command(call: types.CallbackQuery):
         pass
     username_msg = bot.send_message(
         call.message.chat.id,
-        '👤 Enter username:\n⚠️Username only can be 3 to 32 characters and contain a-z, 0-9, and underscores in '
+        '👤 Enter username:\n⚠️Username only can be 3 to 32 characters and contain a-z, A-Z 0-9, and underscores in '
         'between.',
         reply_markup=BotKeyboard.cancel_action()
     )
@@ -713,28 +719,33 @@ def add_user_command(call: types.CallbackQuery):
 
 
 def add_user_username_step(message: types.Message):
-    if message.text == 'Cancel':
+    username = message.text
+    if username == 'Cancel':
         return bot.send_message(
             message.chat.id,
             '✅ Cancelled.',
             reply_markup=BotKeyboard.main_menu()
         )
-    if not message.text:
+    if not username:
         wait_msg = bot.send_message(
             message.chat.id,
             '❌ Username can not be empty.',
             reply_markup=BotKeyboard.cancel_action()
         )
         return bot.register_next_step_handler(wait_msg, add_user_username_step)
-    if not re.match(r'^[a-z0-9_]{3,32}$', message.text):
+    if username == '🔡 Random Username':
+        username = random.choice(string.ascii_lowercase) + \
+                   ''.join(random.choices(string.ascii_lowercase, k=6)) + \
+                   random.choice(string.ascii_lowercase)
+    if not re.match(r'^(?![_\d])(?!.*__)(?!.*_$)\w{2,31}[a-z\d]$', username):
         wait_msg = bot.send_message(
             message.chat.id,
-            '❌ Username only can be 3 to 32 characters and contain a-z, 0-9, and underscores in between.',
+            '❌ Username only can be 3 to 32 characters and contain a-z, A-Z 0-9, and underscores in between.',
             reply_markup=BotKeyboard.cancel_action()
         )
         return bot.register_next_step_handler(wait_msg, add_user_username_step)
     with GetDB() as db:
-        if crud.get_user(db, message.text):
+        if crud.get_user(db, username):
             wait_msg = bot.send_message(
                 message.chat.id,
                 '❌ Username already exists.',
@@ -747,7 +758,7 @@ def add_user_username_step(message: types.Message):
         reply_markup=BotKeyboard.cancel_action()
     )
     bot.register_next_step_handler(
-        message, add_user_data_limit_step, username=message.text)
+        message, add_user_data_limit_step, username=username)
 
 
 def add_user_data_limit_step(message: types.Message, username: str):

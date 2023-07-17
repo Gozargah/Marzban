@@ -153,6 +153,11 @@ class BotKeyboard:
         keyboard = types.ReplyKeyboardMarkup(True, False)
         keyboard.add(
             types.KeyboardButton(
+                text='🔡 Random Username'
+            )
+        )
+        keyboard.add(
+            types.KeyboardButton(
                 text='Cancel'
             )
         )
