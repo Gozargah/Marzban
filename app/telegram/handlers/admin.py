@@ -82,7 +82,8 @@ def schedule_delete_message(*message_ids: int) -> None:
 def cleanup_messages(chat_id: int) -> None:
     messages: list[int] = mem_store.get("messages_to_delete", [])
     for message_id in messages:
-        bot.delete_message(chat_id, message_id)
+        try: bot.delete_message(chat_id, message_id)
+        except: pass
     mem_store.set("messages_to_delete", [])
 
 
