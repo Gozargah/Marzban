@@ -19,7 +19,7 @@ from app.telegram.utils.custom_filters import (cb_query_equals,
                                                cb_query_startswith)
 from app.telegram.utils.keyboard import BotKeyboard
 from app.utils.store import MemoryStorage
-from app.utils.system import cpu_usage, memory_usage, readable_size
+from app.utils.system import cpu_usage, memory_usage, readable_size, realtime_bandwidth
 
 mem_store = MemoryStorage()
 
@@ -31,21 +31,24 @@ def get_system_info():
         bandwidth = crud.get_system_usage(db)
         total_users = crud.get_users_count(db)
         users_active = crud.get_users_count(db, UserStatus.active)
-    return """⚙️ System statistics:
-*CPU Cores*: `{cpu_cores}`
-*CPU Usage*: `{cpu_percent}%`
+    return """\
+🎛 *CPU Cores*: `{cpu_cores}`
+🖥 *CPU Usage*: `{cpu_percent}%`
 ➖➖➖➖➖➖➖
-*Total Memory*: `{total_memory}`
-*In Use Memory*: `{used_memory}`
-*Free Memory*: `{free_memory}`
+📊 *Total Memory*: `{total_memory}`
+📈 *In Use Memory*: `{used_memory}`
+📉 *Free Memory*: `{free_memory}`
 ➖➖➖➖➖➖➖
-*Total Bandwidth Usage*: `{total_bandwidth}`
-*Upload Bandwidth Usage*: `{up_bandwidth}`
-*Download Bandwidth Usage*: `{down_bandwidth}`
+⬇️ *Download Usage*: `{down_bandwidth}`
+⬆️ *Upload Usage*: `{up_bandwidth}`
+↕️ *Total Usage*: `{total_bandwidth}`
 ➖➖➖➖➖➖➖
-*Total Users*: `{total_users}`
-*Active Users*: `{active_users}`
-*Deactive Users*: `{deactive_users}`
+👥 *Total Users*: `{total_users}`
+🟢 *Active Users*: `{active_users}`
+🔴 *Deactivate Users*: `{deactivate_users}`
+➖➖➖➖➖➖➖
+⏫ *Upload Speed*: `{up_speed}`
+⏬ *Download Speed*: `{down_speed}`
 """.format(
         cpu_cores=cpu.cores,
         cpu_percent=cpu.percent,
@@ -57,7 +60,9 @@ def get_system_info():
         down_bandwidth=readable_size(bandwidth.downlink),
         total_users=total_users,
         active_users=users_active,
-        deactive_users=total_users - users_active
+        deactivate_users=total_users - users_active,
+        up_speed=readable_size(realtime_bandwidth().outgoing_bytes),
+        down_speed=readable_size(realtime_bandwidth().outgoing_bytes)
     )
 
 
