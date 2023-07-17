@@ -16,14 +16,15 @@ from app.db import GetDB, crud
 from app.models.user import (UserCreate, UserModify, UserResponse, UserStatus,
                              UserStatusModify)
 from app.models.user_template import UserTemplateResponse
+from app.models.proxy import ProxyTypes
 from app.telegram import bot
 from app.telegram.utils.custom_filters import (cb_query_equals,
                                                cb_query_startswith)
 from app.telegram.utils.keyboard import BotKeyboard
 from app.utils.store import MemoryStorage
-from app.utils.system import cpu_usage, memory_usage, readable_size, realtime_bandwidth, get_public_ip
+from app.utils.system import cpu_usage, memory_usage, readable_size, realtime_bandwidth
 
-from config import TELEGRAM_LOGGER_CHANNEL_ID
+from config import TELEGRAM_LOGGER_CHANNEL_ID, XRAY_DEFAULT_VLESS_XTLS_FLOW
 
 mem_store = MemoryStorage()
 
@@ -1317,12 +1318,14 @@ def confirm_user_command(call: types.CallbackQuery):
 
         inbounds: dict[str, list[str]] = {
             k: v for k, v in mem_store.get('protocols').items() if v}
+        proxies = {p: ({'flow': XRAY_DEFAULT_VLESS_XTLS_FLOW} if \
+                       XRAY_DEFAULT_VLESS_XTLS_FLOW and p == ProxyTypes.VLESS else {}) for p in inbounds}
         new_user = UserCreate(
             username=mem_store.get('username'),
             expire=int(mem_store.get('expire_date').timestamp()) if mem_store.get('expire_date') else None,
             data_limit=mem_store.get('data_limit') if mem_store.get(
                 'data_limit') else None,
-            proxies={p: {} for p in inbounds},
+            proxies=proxies,
             inbounds=inbounds
         )
 
