@@ -464,6 +464,97 @@ def genqr_command(call: types.CallbackQuery):
         )
 
 
+@bot.callback_query_handler(cb_query_startswith('template_charge:'), is_admin=True)
+def template_charge_command(call: types.CallbackQuery):
+    _, template_id, username = call.data.split(":")
+    now = datetime.now()
+    today = datetime(
+        year=now.year,
+        month=now.month,
+        day=now.day,
+        hour=23,
+        minute=59,
+        second=59
+    )
+    with GetDB() as db:
+        template = crud.get_user_template(db, template_id)
+        if not template:
+            return bot.answer_callback_query(call.id, "Template not found!", show_alert=True)
+        template = UserTemplateResponse.from_orm(template)
+
+        db_user = crud.get_user(db, username)
+        if not db_user:
+            return bot.answer_callback_query(call.id, "User not found!", show_alert=True)
+        user = UserResponse.from_orm(db_user)
+        if (user.used_traffic > user.data_limit) or (now > datetime.fromtimestamp(user.expire)):
+            crud.reset_user_data_usage(db, db_user)
+            expire_date = None
+            if template.expire_duration:
+                expire_date = today + relativedelta(seconds=template.expire_duration)
+            modify = UserModify(
+                status='active',
+                expire=int(expire_date.timestamp()) if expire_date else 0,
+                data_limit=template.data_limit,
+            )
+            db_user = crud.update_user(db, db_user, modify)
+
+            text = get_user_info_text(
+                status='active',
+                username=username,
+                expire=int(expire_date.timestamp()),
+                data_limit=template.data_limit,
+                usage=0)
+            bot.edit_message_text(
+                f'♻️ User Successfully Charged!\n\n{text}',
+                call.message.chat.id,
+                call.message.message_id,
+                parse_mode='html',
+                reply_markup=BotKeyboard.user_menu(user_info={
+                    'status': 'active',
+                    'username': user.username}))
+        else:
+            text = get_user_info_text(
+                status='active',
+                username=username,
+                expire=int(((datetime.fromtimestamp(user.expire) if user.expire else today) +
+                            relativedelta(seconds=template.expire_duration)).timestamp()),
+                data_limit=(
+                            user.data_limit - user.used_traffic + template.data_limit) if user.data_limit else template.data_limit,
+                usage=0)
+            bot.edit_message_text(
+                f'‼️ <b>If add template <u>Bandwidth</u> and <u>Time</u> to the user, the user will be this</b>:\n\n\
+    {text}\n\n\
+    <b>Add template <u>Bandwidth</u> and <u>Time</u> to user or Reset to <u>Template default</u></b>⁉️',
+                call.message.chat.id,
+                call.message.message_id,
+                parse_mode='html',
+                reply_markup=BotKeyboard.charge_add_or_reset(username=username, template_id=template_id))
+
+
+@bot.callback_query_handler(cb_query_startswith('charge:'), is_admin=True)
+def charge_command(call: types.CallbackQuery):
+    username = call.data.split(":")[1]
+    with GetDB() as db:
+        templates = crud.get_user_templates(db)
+        if not templates:
+            return bot.answer_callback_query(call.id, "You don't have any User Templates!")
+
+        db_user = crud.get_user(db, username)
+        if not db_user:
+            return bot.answer_callback_query(call.id, "User not found!", show_alert=True)
+
+    bot.edit_message_text(
+        f"{call.message.html_text}\n\n🔢 Select <b>User Template</b> to charge:",
+        call.message.chat.id,
+        call.message.message_id,
+        parse_mode='html',
+        reply_markup=BotKeyboard.templates_menu(
+            {template.name: template.id for template in templates},
+            username=username,
+        )
+    )
+
+
 @bot.callback_query_handler(cb_query_equals('template_add_user'), is_admin=True)
 def add_user_from_template_command(call: types.CallbackQuery):
     with GetDB() as db:
@@ -873,6 +964,77 @@ def confirm_user_command(call: types.CallbackQuery):
             m.chat.id, m.message_id,
             reply_markup=BotKeyboard.main_menu()
         )
+
+    elif data in ['charge_add', 'charge_reset']:
+        _, _, username, template_id = call.data.split(":")
+        now = datetime.now()
+        today = datetime(
+            year=now.year,
+            month=now.month,
+            day=now.day,
+            hour=23,
+            minute=59,
+            second=59
+        )
+        with GetDB() as db:
+            template = crud.get_user_template(db, template_id)
+            if not template:
+                return bot.answer_callback_query(call.id, "Template not found!", show_alert=True)
+            template = UserTemplateResponse.from_orm(template)
+
+            db_user = crud.get_user(db, username)
+            if not db_user:
+                return bot.answer_callback_query(call.id, "User not found!", show_alert=True)
+            user = UserResponse.from_orm(db_user)
+
+            inbounds = template.inbounds
+            proxies = {p.type.value: p.settings for p in db_user.proxies}
+
+            for protocol in xray.config.inbounds_by_protocol:
+                if protocol in inbounds and protocol not in db_user.inbounds:
+                    proxies.update({protocol: {}})
+                elif protocol in db_user.inbounds and protocol not in inbounds:
+                    del proxies[protocol]
+
+            crud.reset_user_data_usage(db, db_user)
+            if data == 'charge_reset':
+                expire_date = None
+                if template.expire_duration:
+                    expire_date = today + relativedelta(seconds=template.expire_duration)
+                modify = UserModify(
+                    status='active',
+                    expire=int(expire_date.timestamp()) if expire_date else 0,
+                    data_limit=template.data_limit,
+                )
+                db_user = crud.update_user(db, db_user, modify)
+            else:
+                expire_date = None
+                if template.expire_duration:
+                    expire_date = datetime.fromtimestamp(user.expire) + relativedelta(seconds=template.expire_duration)
+                modify = UserModify(
+                    status='active',
+                    expire=int(expire_date.timestamp()) if expire_date else 0,
+                    data_limit=user.data_limit - user.used_traffic + template.data_limit,
+                )
+                db_user = crud.update_user(db, db_user, modify)
+
+            text = get_user_info_text(
+                status=db_user.status,
+                username=username,
+                expire=db_user.expire,
+                data_limit=db_user.data_limit,
+                usage=db_user.used_traffic)
+
+            bot.edit_message_text(
+                f'♻️ User Successfully Charged!\n\n{text}',
+                call.message.chat.id,
+                call.message.message_id,
+                parse_mode='html',
+                reply_markup=BotKeyboard.user_menu(user_info={
+                    'status': user.status,
+                    'username': user.username
+                }))
+
 
     elif data == 'edit_user':
         if (username := mem_store.get('username')) is None:
