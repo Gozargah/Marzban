@@ -229,7 +229,7 @@ def edit_user_command(call: types.CallbackQuery):
     elif action == "expire":
         msg = bot.send_message(
             call.message.chat.id,
-            '⬆️ Enter Expire Date (YYYY-MM-DD)\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|Y) :\n⚠️ Send 0 for never expire.',
+            '⬆️ Enter Expire Date (YYYY-MM-DD)\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|D) :\n⚠️ Send 0 for never expire.',
             reply_markup=BotKeyboard.cancel_action())
         mem_store.set("edit_msg_text", call.message.text)
         bot.register_next_step_handler(
@@ -284,17 +284,25 @@ def edit_user_expire_step(message: types.Message, username: str,):
             reply_markup=types.ReplyKeyboardRemove()
         )
     try:
-        today = datetime.today()
-        if re.match(r'^[0-9]{1,3}(M|m|Y|y)$', message.text):
+        now = datetime.now()
+        today = datetime(
+            year=now.year,
+            month=now.month,
+            day=now.day,
+            hour=23,
+            minute=59,
+            second=59
+        )
+        if re.match(r'^[0-9]{1,3}(M|m|D|d)$', message.text):
             expire_date = today
             number_pattern = r'^[0-9]{1,3}'
             number = int(re.findall(number_pattern, message.text)[0])
-            symbol_pattern = r'(M|m|Y|y)$'
+            symbol_pattern = r'(M|m|D|d)$'
             symbol = re.findall(symbol_pattern, message.text)[0].upper()
             if symbol == 'M':
                 expire_date = today + relativedelta(months=number)
-            elif symbol == 'Y':
-                expire_date = today + relativedelta(years=number)
+            elif symbol == 'D':
+                expire_date = today + relativedelta(days=number)
         elif message.text != '0':
             expire_date = datetime.strptime(message.text, "%Y-%m-%d")
         else:
@@ -311,7 +319,7 @@ def edit_user_expire_step(message: types.Message, username: str,):
     except ValueError:
         wait_msg = bot.send_message(
             message.chat.id,
-            '❌ Expire date must be in YYYY-MM-DD format.\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|Y)',
+            '❌ Expire date must be in YYYY-MM-DD format.\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|D)',
             reply_markup=BotKeyboard.cancel_action()
         )
         schedule_delete_message(wait_msg.message_id)
@@ -382,7 +390,7 @@ def get_template_info_text(
 📊 Template Info:
 ┌ ID: <b>{id}</b>
 ├ Data Limit: <b>{readable_size(data_limit) if data_limit else 'Unlimited'}</b>
-├ Expire Date: <b>{(datetime.today() + relativedelta(seconds=expire_duration)).strftime('%Y-%m-%d') if expire_duration else 'Never'}</b>
+├ Expire Date: <b>{(datetime.now() + relativedelta(seconds=expire_duration)).strftime('%Y-%m-%d') if expire_duration else 'Never'}</b>
 ├ Username Prefix: <b>{username_prefix if username_prefix else '🚫'}</b>
 ├ Username Suffix: <b>{username_suffix if username_suffix else '🚫'}</b>
 ├ Protocols: {protocols}
@@ -679,9 +687,18 @@ def add_user_from_template_username_step(message: types.Message):
     mem_store.set("username", username)
     mem_store.set("data_limit", template.data_limit)
     mem_store.set("protocols", template.inbounds)
+    now = datetime.now()
+    today = datetime(
+        year=now.year,
+        month=now.month,
+        day=now.day,
+        hour=23,
+        minute=59,
+        second=59
+    )
     expire_date = None
     if template.expire_duration:
-        expire_date = datetime.today() + relativedelta(seconds=template.expire_duration)
+        expire_date = today + relativedelta(seconds=template.expire_duration)
     mem_store.set("expire_date", expire_date)
 
     text = f"📝 Creating user <code>{username}</code>\n" + get_template_info_text(
@@ -786,7 +803,7 @@ def add_user_data_limit_step(message: types.Message, username: str):
         return bot.register_next_step_handler(wait_msg, add_user_data_limit_step, username=username)
     bot.send_message(
         message.chat.id,
-        '⬆️ Enter Expire Date (YYYY-MM-DD)\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|Y) :\n⚠️ Send 0 for never expire.',
+        '⬆️ Enter Expire Date (YYYY-MM-DD)\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|D) :\n⚠️ Send 0 for never expire.',
         reply_markup=BotKeyboard.cancel_action())
     bot.register_next_step_handler(
         message, add_user_expire_step, username=username, data_limit=data_limit)
@@ -800,17 +817,25 @@ def add_user_expire_step(message: types.Message, username: str, data_limit: int)
             reply_markup=BotKeyboard.main_menu()
         )
     try:
-        today = datetime.today()
-        if re.match(r'^[0-9]{1,3}(M|m|Y|y)$', message.text):
+        now = datetime.now()
+        today = datetime(
+            year=now.year,
+            month=now.month,
+            day=now.day,
+            hour=23,
+            minute=59,
+            second=59
+        )
+        if re.match(r'^[0-9]{1,3}(M|m|D|d)$', message.text):
             expire_date = today
             number_pattern = r'^[0-9]{1,3}'
             number = int(re.findall(number_pattern, message.text)[0])
-            symbol_pattern = r'(M|m|Y|y)$'
+            symbol_pattern = r'(M|m|D|d)$'
             symbol = re.findall(symbol_pattern, message.text)[0].upper()
             if symbol == 'M':
                 expire_date = today + relativedelta(months=number)
-            elif symbol == 'Y':
-                expire_date = today + relativedelta(years=number)
+            elif symbol == 'D':
+                expire_date = today + relativedelta(days=number)
         elif message.text != '0':
             expire_date = datetime.strptime(message.text, "%Y-%m-%d")
         else:
@@ -826,7 +851,7 @@ def add_user_expire_step(message: types.Message, username: str, data_limit: int)
     except ValueError:
         wait_msg = bot.send_message(
             message.chat.id,
-            '❌ Expire date must be in YYYY-MM-DD format.\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|Y)',
+            '❌ Expire date must be in YYYY-MM-DD format.\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|D)',
             reply_markup=BotKeyboard.cancel_action()
         )
         return bot.register_next_step_handler(wait_msg, add_user_expire_step, username=username, data_limit=data_limit)
