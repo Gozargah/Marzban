@@ -200,8 +200,8 @@ export const useDashboard = create(
     revokeSubscription: (user) => {
       return fetch(`/user/${user.username}/revoke_sub`, {
         method: "POST",
-      }).then(() => {
-        set({ revokeSubscriptionUser: null });
+      }).then((user) => {
+        set({ revokeSubscriptionUser: null, editingUser: user });
         get().refetchUsers();
       });
     },

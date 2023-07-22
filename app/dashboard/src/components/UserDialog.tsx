@@ -86,7 +86,7 @@ const schema = z.object({
   selected_proxies: z.array(z.string()).refine((value) => value.length > 0, {
     message: "userDialog.selectOneProtocol",
   }),
-  note: z.string(),
+  note: z.string().nullable(),
   proxies: z
     .record(z.string(), z.record(z.string(), z.any()))
     .transform((ins) => {
