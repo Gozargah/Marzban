@@ -34,6 +34,7 @@
   "userDialog.periodicUsageReset": "Periodic Usage Reset",
   "userDialog.warningNoProtocol": "Please select at least one protocol",
   "userDialog.expiryDate": "Expiry Date",
+  "userDialog.note": "Note",
   "userDialog.resetUsage": "Reset Usage",
   "userDialog.usage": "Usage",
   "userDialog.protocols": "Protocols",

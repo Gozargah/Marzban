@@ -46,6 +46,7 @@ export type User = {
   links: string[];
   subscription_url: string;
   inbounds: UserInbounds;
+  note: string;
 };
 
 export type UserCreate = Pick<
@@ -57,4 +58,5 @@ export type UserCreate = Pick<
   | "data_limit_reset_strategy"
   | "username"
   | "status"
+  | "note"
 >;

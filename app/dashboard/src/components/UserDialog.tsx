@@ -24,6 +24,7 @@ import {
   Spinner,
   Switch,
   Text,
+  Textarea,
   Tooltip,
   VStack,
   chakra,
@@ -85,6 +86,7 @@ const schema = z.object({
   selected_proxies: z.array(z.string()).refine((value) => value.length > 0, {
     message: "userDialog.selectOneProtocol",
   }),
+  note: z.string(),
   proxies: z
     .record(z.string(), z.record(z.string(), z.any()))
     .transform((ins) => {
@@ -149,6 +151,7 @@ const getDefaultValues = (): FormType => {
     username: "",
     data_limit_reset_strategy: "no_reset",
     status: "active",
+    note: "",
     inbounds,
     proxies: {
       vless: { id: "", flow: "" },
@@ -528,6 +531,17 @@ export const UserDialog: FC<UserDialogProps> = () => {
                             );
                           }}
                         />
+                      </FormControl>
+
+                      <FormControl
+                        mb={"10px"}
+                        isInvalid={!!form.formState.errors.note}
+                      >
+                        <FormLabel>{t("userDialog.note")}</FormLabel>
+                        <Textarea {...form.register("note")} />
+                        <FormErrorMessage>
+                          {form.formState.errors?.note?.message}
+                        </FormErrorMessage>
                       </FormControl>
                     </Flex>
                     {error && (
