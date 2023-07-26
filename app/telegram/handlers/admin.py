@@ -24,7 +24,7 @@ from app.telegram.utils.keyboard import BotKeyboard
 from app.utils.store import MemoryStorage
 from app.utils.system import cpu_usage, memory_usage, readable_size, realtime_bandwidth
 
-from config import TELEGRAM_LOGGER_CHANNEL_ID, XRAY_DEFAULT_VLESS_XTLS_FLOW
+from config import TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_DEFAULT_VLESS_XTLS_FLOW
 
 mem_store = MemoryStorage()
 
@@ -360,7 +360,7 @@ def users_command(call: types.CallbackQuery):
 
 
 def get_user_info_text(
-        status: str, username: str, data_limit: int = None, usage: int = None, expire: int = None) -> str:
+        status: str, username: str,sub_url : str, data_limit: int = None, usage: int = None, expire: int = None) -> str:
     statuses = {
         'active': '✅',
         'expired': '🕰',
@@ -373,8 +373,11 @@ def get_user_info_text(
 ├─🌐 <b>Data limit:</b> <code>{readable_size(data_limit) if data_limit else 'Unlimited'}</code>
 │          └─<b>Data Used:</b> <code>{readable_size(usage) if usage else "-"}</code>
 │
-└─📅 <b>Expiry Date:</b> <code>{datetime.fromtimestamp(expire).date() if expire else 'Never'}</code>
-             └─<b>Days left:</b> <code>{(datetime.fromtimestamp(expire or 0) - datetime.now()).days if expire else '-'}</code>'''
+├─📅 <b>Expiry Date:</b> <code>{datetime.fromtimestamp(expire).date() if expire else 'Never'}</code>
+│           └─<b>Days left:</b> <code>{(datetime.fromtimestamp(expire or 0) - datetime.now()).days if expire else '-'}</code>
+│
+└─🚀 <b><a href="{sub_url}">Subscription</a>:</b> <code>{sub_url}</code>
+'''
     return text
 
 
@@ -411,7 +414,7 @@ def user_command(call: types.CallbackQuery):
         user = UserResponse.from_orm(db_user)
 
     text = get_user_info_text(
-        status=user.status, username=username,
+        status=user.status, username=username, sub_url=user.subscription_url,
         data_limit=user.data_limit, usage=user.used_traffic, expire=user.expire),
     bot.edit_message_text(
         text,
@@ -535,6 +538,7 @@ def template_charge_command(call: types.CallbackQuery):
             text = get_user_info_text(
                 status='active',
                 username=username,
+                sub_url=user.subscription_url,
                 expire=int(expire_date.timestamp()),
                 data_limit=template.data_limit,
                 usage=0)
@@ -570,15 +574,16 @@ def template_charge_command(call: types.CallbackQuery):
             text = get_user_info_text(
                 status='active',
                 username=username,
+                sub_url=user.subscription_url,
                 expire=int(((datetime.fromtimestamp(user.expire) if user.expire else today) +
                             relativedelta(seconds=template.expire_duration)).timestamp()),
                 data_limit=(
                             user.data_limit - user.used_traffic + template.data_limit) if user.data_limit else template.data_limit,
                 usage=0)
-            bot.edit_message_text(
-                f'‼️ <b>If add template <u>Bandwidth</u> and <u>Time</u> to the user, the user will be this</b>:\n\n\
-    {text}\n\n\
-    <b>Add template <u>Bandwidth</u> and <u>Time</u> to user or Reset to <u>Template default</u></b>⁉️',
+            bot.edit_message_text(f'''\
+‼️ <b>If add template <u>Bandwidth</u> and <u>Time</u> to the user, the user will be this</b>:\n\n\
+{text}\n\n\
+<b>Add template <u>Bandwidth</u> and <u>Time</u> to user or Reset to <u>Template default</u></b>⁉️''',
                 call.message.chat.id,
                 call.message.message_id,
                 parse_mode='html',
@@ -684,10 +689,12 @@ def add_user_from_template_username_step(message: types.Message):
     with GetDB() as db:
         username = message.text
         if message.text == '🔡 Random Username':
-            username = random.choice(string.ascii_lowercase) + \
-                       ''.join(random.choices(string.ascii_lowercase, k=6)) + \
-                       random.choice(string.ascii_lowercase)
-        match = re.match(r'^(?![_\d])(?!.*__)(?!.*_$)\w{2,31}[a-z\d]$', username)
+            characters = string.ascii_letters + '1234567890'
+            username = random.choice(characters)
+            username += ''.join(random.choices(characters, k=4)) 
+            username += '_' 
+            username += ''.join(random.choices(characters, k=4))
+        match = re.match(r'^(?!.*__)(?!.*_$)\w{2,31}[a-zA-Z\d]$', username)
         if not match:
             wait_msg = bot.send_message(
                 message.chat.id,
@@ -796,13 +803,15 @@ def add_user_username_step(message: types.Message):
         )
         return bot.register_next_step_handler(wait_msg, add_user_username_step)
     if username == '🔡 Random Username':
-        username = random.choice(string.ascii_lowercase) + \
-                   ''.join(random.choices(string.ascii_lowercase, k=6)) + \
-                   random.choice(string.ascii_lowercase)
-    if not re.match(r'^(?![_\d])(?!.*__)(?!.*_$)\w{2,31}[a-z\d]$', username):
+        characters = string.ascii_letters + '1234567890'
+        username = random.choice(characters)
+        username += ''.join(random.choices(characters, k=4)) 
+        username += '_' 
+        username += ''.join(random.choices(characters, k=4))
+    if not re.match(r'^(?!.*__)(?!.*_$)\w{2,31}[a-zA-Z\d]$', username):
         wait_msg = bot.send_message(
             message.chat.id,
-            '❌ Username only can be 3 to 32 characters and contain a-z, A-Z 0-9, and underscores in between.',
+            '❌ Username only can be 3 to 32 characters and contain a-z, A-Z, 0-9, and underscores in between.',
             reply_markup=BotKeyboard.cancel_action()
         )
         return bot.register_next_step_handler(wait_msg, add_user_username_step)
@@ -1026,10 +1035,12 @@ def confirm_user_command(call: types.CallbackQuery):
             crud.update_user(db, db_user, UserModify(
                 status=UserStatusModify.disabled))
             xray.operations.remove_user(db_user)
+            user = UserResponse.from_orm(db_user)
         bot.edit_message_text(
             get_user_info_text(
                 status='disabled',
                 username=username,
+                sub_url=user.subscription_url,
                 data_limit=db_user.data_limit,
                 usage=db_user.used_traffic,
                 expire=db_user.expire
@@ -1059,11 +1070,12 @@ def confirm_user_command(call: types.CallbackQuery):
             crud.update_user(db, db_user, UserModify(
                 status=UserStatusModify.active))
             xray.operations.add_user(db_user)
-
+            user = UserResponse.from_orm(db_user)
         bot.edit_message_text(
             get_user_info_text(
                 status='active',
                 username=username,
+                sub_url=user.subscription_url,
                 data_limit=db_user.data_limit,
                 usage=db_user.used_traffic,
                 expire=db_user.expire
@@ -1155,6 +1167,7 @@ def confirm_user_command(call: types.CallbackQuery):
             text = get_user_info_text(
                 status=db_user.status,
                 username=username,
+                sub_url=user.subscription_url,
                 expire=db_user.expire,
                 data_limit=db_user.data_limit,
                 usage=db_user.used_traffic)
@@ -1247,6 +1260,7 @@ def confirm_user_command(call: types.CallbackQuery):
         text = get_user_info_text(
             status=user.status,
             username=user.username,
+            sub_url=user.subscription_url,
             data_limit=user.data_limit,
             usage=user.used_traffic,
             expire=user.expire
@@ -1318,8 +1332,8 @@ def confirm_user_command(call: types.CallbackQuery):
 
         inbounds: dict[str, list[str]] = {
             k: v for k, v in mem_store.get('protocols').items() if v}
-        proxies = {p: ({'flow': XRAY_DEFAULT_VLESS_XTLS_FLOW} if \
-                       XRAY_DEFAULT_VLESS_XTLS_FLOW and p == ProxyTypes.VLESS else {}) for p in inbounds}
+        proxies = {p: ({'flow': TELEGRAM_DEFAULT_VLESS_XTLS_FLOW} if \
+                       TELEGRAM_DEFAULT_VLESS_XTLS_FLOW and p == ProxyTypes.VLESS else {}) for p in inbounds}
         new_user = UserCreate(
             username=mem_store.get('username'),
             expire=int(mem_store.get('expire_date').timestamp()) if mem_store.get('expire_date') else None,
@@ -1352,16 +1366,20 @@ def confirm_user_command(call: types.CallbackQuery):
 
         xray.operations.add_user(db_user)
 
-        text = f"<code>{user.subscription_url}</code>\n\n\n"
-        for link in user.links:
-            text += f"<code>{link}</code>\n\n"
-
+        text = get_user_info_text(
+            status=user.status,
+            username=user.username,
+            sub_url=user.subscription_url,
+            data_limit=user.data_limit,
+            usage=user.used_traffic,
+            expire=user.expire
+        )
         bot.edit_message_text(
             text,
             call.message.chat.id,
             call.message.message_id,
             parse_mode="HTML",
-            reply_markup=BotKeyboard.show_links(user.username))
+            reply_markup=BotKeyboard.user_menu(user_info={'status': user.status, 'username': user.username}))
 
         if TELEGRAM_LOGGER_CHANNEL_ID:
             text = f'''\
@@ -1389,6 +1407,7 @@ def search(message: types.Message):
     text = get_user_info_text(
         status=user.status,
         username=user.username,
+        sub_url=user.subscription_url,
         expire=user.expire,
         data_limit=user.data_limit,
         usage=user.used_traffic)
