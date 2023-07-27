@@ -1,6 +1,7 @@
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-from operator import attrgetter, itemgetter
+from operator import attrgetter
 from typing import Union
 
 from pymysql.err import OperationalError
@@ -9,17 +10,18 @@ from sqlalchemy import and_, bindparam, insert, select, update
 from app import scheduler, xray
 from app.db import GetDB
 from app.db.models import NodeUsage, NodeUserUsage, System, User
-from app.utils.concurrency import threaded_function
 from config import DISABLE_RECORDING_NODE_USAGE
 from xray_api import XRay as XRayAPI
 from xray_api import exc as xray_exc
 
 
 def record_user_stats(params: list, node_id: Union[int, None]):
+    if not params:
+        return
+
     created_at = datetime.fromisoformat(datetime.utcnow().strftime('%Y-%m-%dT%H:00:00'))
 
     with GetDB() as db:
-
         # make user usage row if doesn't exist
         select_stmt = select(NodeUserUsage.user_id) \
             .where(and_(NodeUserUsage.node_id == node_id, NodeUserUsage.created_at == created_at))
@@ -39,6 +41,8 @@ def record_user_stats(params: list, node_id: Union[int, None]):
                 node_id=node_id,
                 used_traffic=0
             )
+            if db.bind.name == 'mysql':
+                stmt = stmt.prefix_with('IGNORE')
             db.execute(stmt, [{'uid': uid} for uid in uids_to_insert])
 
         # record
@@ -63,35 +67,32 @@ def record_user_stats(params: list, node_id: Union[int, None]):
                 raise err
 
 
-@threaded_function
-def record_user_usage(api: XRayAPI, node_id: Union[int, None] = None):
-    try:
-        params = defaultdict(int)
-
-        for stat in filter(attrgetter('value'), api.get_users_stats(reset=True)):
-            params[stat.name.split('.', 1)[0]] += stat.value
-
-        params = sorted(
-            ({"uid": uid, "value": value} for uid, value in params.items()),
-            key=itemgetter('uid')
-        )
-
-    except (xray_exc.ConnectionError, xray_exc.UnkownError):
-        if not node_id:
-            xray.core.restart(xray.config.include_db_users())
-        else:
-            xray.operations.restart_node(node_id, xray.config.include_db_users())
-        return
-
+def record_node_stats(params: dict, node_id: Union[int, None]):
     if not params:
         return
 
-    with GetDB() as db:
-        # record to user
-        stmt = update(User). \
-            where(User.id == bindparam('uid')). \
-            values(used_traffic=User.used_traffic + bindparam('value'))
+    created_at = datetime.fromisoformat(datetime.utcnow().strftime('%Y-%m-%dT%H:00:00'))
 
+    with GetDB() as db:
+
+        # make node usage row if doesn't exist
+        select_stmt = select(NodeUsage.node_id). \
+            where(and_(NodeUsage.node_id == node_id, NodeUsage.created_at == created_at))
+        notfound = db.execute(select_stmt).first() is None
+        if notfound:
+            stmt = insert(NodeUsage).values(created_at=created_at, node_id=node_id, uplink=0, downlink=0)
+            if db.bind.name == 'mysql':
+                stmt = stmt.prefix_with('IGNORE')
+            db.execute(stmt)
+
+        # record
+        stmt = update(NodeUsage). \
+            values(uplink=NodeUsage.uplink + bindparam('up'), downlink=NodeUsage.downlink + bindparam('down')). \
+            where(and_(NodeUsage.node_id == node_id, NodeUsage.created_at == created_at))
+
+        db.execute(stmt, params)
+
+        # commit changes
         tries = 0
         done = False
         while not done:
@@ -106,72 +107,106 @@ def record_user_usage(api: XRayAPI, node_id: Union[int, None] = None):
                     continue
                 raise err
 
-    if DISABLE_RECORDING_NODE_USAGE:
-        return
-    record_user_stats(params, node_id)
+
+def get_users_stats(api: XRayAPI):
+    try:
+        params = defaultdict(int)
+        for stat in filter(attrgetter('value'), api.get_users_stats(reset=True)):
+            params[stat.name.split('.', 1)[0]] += stat.value
+        params = list({"uid": uid, "value": value} for uid, value in params.items())
+        return params
+    except (xray_exc.ConnectionError, xray_exc.UnkownError):
+        return []
 
 
-def record_node_stats(params: dict, node_id: Union[int, None]):
-    created_at = datetime.fromisoformat(datetime.utcnow().strftime('%Y-%m-%dT%H:00:00'))
-
-    with GetDB() as db:
-
-        # make node usage row if doesn't exist
-        select_stmt = select(NodeUsage.node_id). \
-            where(and_(NodeUsage.node_id == node_id, NodeUsage.created_at == created_at))
-        notfound = db.execute(select_stmt).first() is None
-        if notfound:
-            stmt = insert(NodeUsage).values(created_at=created_at, node_id=node_id, uplink=0, downlink=0)
-            db.execute(stmt)
-
-        # record
-        stmt = update(NodeUsage). \
-            values(uplink=NodeUsage.uplink + bindparam('up'), downlink=NodeUsage.downlink + bindparam('down')). \
-            where(and_(NodeUsage.node_id == node_id, NodeUsage.created_at == created_at))
-
-        db.execute(stmt, params)
-
-        # commit changes
-        db.commit()
-
-
-@threaded_function
-def record_node_usage(api: XRayAPI, node_id: Union[int, None] = None):
+def get_outbounds_stats(api: XRayAPI):
     try:
         params = [{"up": stat.value, "down": 0} if stat.link == "uplink" else {"up": 0, "down": stat.value}
                   for stat in filter(attrgetter('value'), api.get_outbounds_stats(reset=True))]
+        return params
     except (xray_exc.ConnectionError, xray_exc.UnkownError):
-        if not node_id:
-            xray.core.restart(xray.config.include_db_users())
-        else:
-            xray.operations.restart_node(node_id, xray.config.include_db_users())
+        return []
+
+
+def record_user_usages():
+    api_instances = {None: xray.api}
+    for node_id, node in list(xray.nodes.items()):
+        if node.connected:
+            api_instances[node_id] = node.api
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = {node_id: executor.submit(get_users_stats, api) for node_id, api in api_instances.items()}
+    api_params = {node_id: future.result() for node_id, future in futures.items()}
+
+    users_usage = defaultdict(int)
+    for node_id, params in api_params.items():
+        for param in params:
+            users_usage[param['uid']] += param['value']
+    users_usage = list({"uid": uid, "value": value} for uid, value in users_usage.items())
+    if not users_usage:
         return
 
-    if not params:
-        return
-
+    # record users usage
     with GetDB() as db:
-        # record to system
+        stmt = update(User). \
+            where(User.id == bindparam('uid')). \
+            values(used_traffic=User.used_traffic + bindparam('value'))
+
+        tries = 0
+        done = False
+        while not done:
+            try:
+                db.execute(stmt, users_usage)
+                db.commit()
+                done = True
+            except OperationalError as err:
+                if err.args[0] == 1213 and tries < 3:  # Deadlock
+                    db.rollback()
+                    tries += 1
+                    continue
+                raise err
+
+    if DISABLE_RECORDING_NODE_USAGE:
+        return
+
+    for node_id, params in api_params.items():
+        record_user_stats(params, node_id)
+
+
+def record_node_usages():
+    api_instances = {None: xray.api}
+    for node_id, node in list(xray.nodes.items()):
+        if node.connected:
+            api_instances[node_id] = node.api
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = {node_id: executor.submit(get_outbounds_stats, api) for node_id, api in api_instances.items()}
+    api_params = {node_id: future.result() for node_id, future in futures.items()}
+
+    total_up = 0
+    total_down = 0
+    for node_id, params in api_params.items():
+        for param in params:
+            total_up += param['up']
+            total_down += param['down']
+    if not (total_up or total_down):
+        return
+
+    # record nodes usage
+    with GetDB() as db:
         stmt = update(System).values(
-            uplink=System.uplink + bindparam('up'),
-            downlink=System.downlink + bindparam('down')
+            uplink=System.uplink + total_up,
+            downlink=System.downlink + total_down
         )
-        db.execute(stmt, params)
+        db.execute(stmt)
         db.commit()
 
     if DISABLE_RECORDING_NODE_USAGE:
         return
-    record_node_stats(params, node_id)
+
+    for node_id, params in api_params.items():
+        record_node_stats(params, node_id)
 
 
-def record_usages():
-    record_user_usage(xray.api, node_id=None)  # main core
-    record_node_usage(xray.api, node_id=None)  # main core
-
-    for node_id, node in list(xray.nodes.items()):
-        if node.connected:
-            record_user_usage(node.api, node_id=node_id)
-            record_node_usage(node.api, node_id=node_id)
-
-
-scheduler.add_job(record_usages, 'interval', seconds=30)
+scheduler.add_job(record_user_usages, 'interval', coalesce=True, seconds=30)
+scheduler.add_job(record_node_usages, 'interval', coalesce=True, seconds=10)
