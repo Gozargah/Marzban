@@ -86,10 +86,11 @@ def restart_core(admin: Admin = Depends(Admin.get_current)):
     if not admin.is_sudo:
         raise HTTPException(status_code=403, detail="You're not allowed")
 
-    xray.core.restart(xray.config.include_db_users())
+    startup_config = xray.config.include_db_users()
+    xray.core.restart(startup_config)
     for node_id, node in list(xray.nodes.items()):
         if node.connected:
-            xray.operations.restart_node(node_id, xray.config.include_db_users())
+            xray.operations.restart_node(node_id, startup_config)
     return {}
 
 
@@ -116,10 +117,11 @@ def get_core_config(payload: dict, admin: Admin = Depends(Admin.get_current)) ->
         raise HTTPException(status_code=400, detail=str(err))
 
     xray.config = config
-    xray.core.restart(xray.config.include_db_users())
+    startup_config = xray.config.include_db_users()
+    xray.core.restart(startup_config)
     for node_id, node in list(xray.nodes.items()):
         if node.connected:
-            xray.operations.restart_node(node_id, xray.config.include_db_users())
+            xray.operations.restart_node(node_id, startup_config)
 
     xray.hosts.update()
 

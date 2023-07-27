@@ -859,10 +859,11 @@ def confirm_user_command(call: types.CallbackQuery):
     elif data == 'restart':
         m = bot.edit_message_text(
             '🔄 Restarting XRay core...', call.message.chat.id, call.message.message_id)
-        xray.core.restart(xray.config.include_db_users())
+        startup_config = xray.config.include_db_users()
+        xray.core.restart(startup_config)
         for node_id, node in list(xray.nodes.items()):
             if node.connected:
-                xray.operations.restart_node(node_id, xray.config.include_db_users())
+                xray.operations.restart_node(node_id, startup_config)
         bot.edit_message_text(
             '✅ XRay core restarted successfully.',
             m.chat.id, m.message_id,
