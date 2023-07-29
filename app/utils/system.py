@@ -10,14 +10,14 @@ from app import scheduler
 
 
 @dataclass
-class MemoryStat():
+class MemoryStat:
     total: int
     used: int
     free: int
 
 
 @dataclass
-class CPUStat():
+class CPUStat:
     cores: int
     percent: float
 
@@ -72,7 +72,7 @@ def record_realtime_bandwidth() -> None:
     rt_bw.outgoing_packets, rt_bw.packet_sent = io.packets_sent - rt_bw.packet_sent, io.packets_sent
 
 
-def realtime_bandwith() -> RealtimeBandwidthStat:
+def realtime_bandwidth() -> RealtimeBandwidthStat:
     return RealtimeBandwidthStat(
         incoming_bytes=rt_bw.incoming_bytes, outgoing_bytes=rt_bw.outgoing_bytes,
         incoming_packets=rt_bw.incoming_packets, outgoing_packets=rt_bw.outgoing_packets)
