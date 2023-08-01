@@ -14,6 +14,7 @@ import {
 import { useDashboard } from "contexts/DashboardContext";
 import { ChangeEvent, FC } from "react";
 import { useTranslation } from "react-i18next";
+import { setUsersPerPageLimitSize } from "utils/userPreferenceStorage";
 
 const PrevIcon = chakra(ArrowLongLeftIcon, {
   baseStyle: {
@@ -98,6 +99,7 @@ export const Pagination: FC = () => {
       ...filters,
       limit: parseInt(e.target.value),
     });
+    setUsersPerPageLimitSize(e.target.value);
   };
 
   const { t } = useTranslation();
