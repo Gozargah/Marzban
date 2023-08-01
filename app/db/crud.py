@@ -274,6 +274,21 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
     db.refresh(dbuser)
     return dbuser
 
+def update_users(db: Session, users: List[User], time: int = None, data: int = None):
+    for user in users:
+        if time:
+            if user.expire is not None:
+                user.expire += time
+                db.commit()
+                db.refresh(user)
+
+        if data:
+            if user.data_limit is not None:
+                user.data_limit += data
+                db.commit() 
+                db.refresh(user) 
+    return users
+
 
 def reset_user_data_usage(db: Session, dbuser: User):
     usage_log = UserUsageResetLogs(
