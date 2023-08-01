@@ -5,6 +5,8 @@ from typing import Dict, List, Optional, Tuple, Union
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
+import time
+
 from app.db.models import (JWT, Admin, Node, NodeUsage, NodeUserUsage, Proxy,
                            ProxyHost, ProxyInbound, ProxyTypes, System, User,
                            UserTemplate, UserUsageResetLogs)
@@ -344,6 +346,13 @@ def update_user_status(db: Session, dbuser: User, status: UserStatus):
     db.commit()
     db.refresh(dbuser)
     return dbuser
+
+
+def is_user_expired(user: User, timestamp: int) -> bool:
+
+    current_time = int(time.time())  
+    expiration_threshold = current_time - timestamp 
+    return user.expire <= expiration_threshold
 
 
 def get_system_usage(db: Session):
