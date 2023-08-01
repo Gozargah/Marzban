@@ -2,6 +2,7 @@ import { StatisticsQueryKey } from "components/Statistics";
 import { fetch } from "service/http";
 import { User, UserCreate } from "types/User";
 import { queryClient } from "utils/react-query";
+import { getUsersPerPageLimitSize } from "utils/userPrefrenceStorage";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 
@@ -115,7 +116,11 @@ export const useDashboard = create(
     isShowingNodesUsage: false,
     resetUsageUser: null,
     revokeSubscriptionUser: null,
-    filters: { username: "", limit: 10, sort: "-created_at" },
+    filters: {
+      username: "",
+      limit: getUsersPerPageLimitSize(),
+      sort: "-created_at",
+    },
     inbounds: new Map(),
     isEditingCore: false,
     refetchUsers: () => {
