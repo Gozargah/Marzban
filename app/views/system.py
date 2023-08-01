@@ -8,7 +8,7 @@ from app.models.admin import Admin
 from app.models.proxy import ProxyHost, ProxyInbound, ProxyTypes
 from app.models.system import SystemStats
 from app.models.user import UserStatus
-from app.utils.system import memory_usage, cpu_usage, realtime_bandwith
+from app.utils.system import memory_usage, cpu_usage, realtime_bandwidth
 from app import __version__
 
 
@@ -21,7 +21,7 @@ def get_system_stats(db: Session = Depends(get_db), admin: Admin = Depends(Admin
 
     total_user = crud.get_users_count(db, admin=dbadmin if not admin.is_sudo else None)
     users_active = crud.get_users_count(db, status=UserStatus.active, admin=dbadmin if not admin.is_sudo else None)
-    realtime_bandwidth_stats = realtime_bandwith()
+    realtime_bandwidth_stats = realtime_bandwidth()
 
     return SystemStats(
         version=__version__,
