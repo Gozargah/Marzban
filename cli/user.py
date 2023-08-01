@@ -3,7 +3,6 @@ from rich.table import Table
 
 import typer
 
-import time
 from fastapi import BackgroundTasks
 from app import xray
 from app.db import GetDB
@@ -106,7 +105,7 @@ def delete_expired(
 
         timestamp = days_passed * 86400
 
-        expired_users = [user for user in all_users if is_user_expired(user, time)]
+        expired_users = [user for user in all_users if crud.is_user_expired(user, timestamp)]
 
         if not expired_users:
             utils.success("No expired users found.")
@@ -120,13 +119,6 @@ def delete_expired(
             bg.add_task(xray.operations.remove_user, dbuser=user)
 
         utils.success(f'All exipred users removed successfully .')
-
-
-def is_user_expired(user: User, timestamp: int) -> bool:
-
-    current_time = int(time.time())  
-    expiration_threshold = current_time - timestamp 
-    return user.expire <= expiration_threshold
 
 
 @app.command(name="data-limit")
