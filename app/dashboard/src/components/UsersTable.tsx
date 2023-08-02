@@ -202,9 +202,13 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
   const useTable = useBreakpointValue({ base: false, md: true });
 
   useEffect(() => {
-    const el = document.querySelectorAll("#filters")[0] as HTMLElement;
-    setTop(`${el.offsetHeight}px`);
-  });
+    const calcTop = () => {
+      const el = document.querySelectorAll("#filters")[0] as HTMLElement;
+      setTop(`${el.offsetHeight}px`);
+    };
+    window.addEventListener("scroll", calcTop);
+    () => window.removeEventListener("scroll", calcTop);
+  }, []);
 
   const isFiltered = users.length !== totalUsers.total;
 
@@ -234,18 +238,18 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
   };
 
   return (
-    <Box id="users-table" overflowX={{ base: "auto", md: "unset" }}>
+    <Box id="users-table" overflowX={{ base: "unset", md: "unset" }}>
       <Accordion
         allowMultiple
         display={{ base: "block", md: "none" }}
         index={selectedRow}
       >
-        <Table orientation="vertical" {...props}>
+        <Table orientation="vertical" zIndex="docked" {...props}>
           <Thead zIndex="docked" position="relative">
             <Tr>
               <Th
                 position="sticky"
-                top={{ base: "unset", md: top }}
+                top={top}
                 minW="120px"
                 pl={4}
                 pr={4}
@@ -259,7 +263,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               </Th>
               <Th
                 position="sticky"
-                top={{ base: "unset", md: top }}
+                top={top}
                 minW="50px"
                 pl={0}
                 pr={0}
@@ -309,7 +313,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               </Th>
               <Th
                 position="sticky"
-                top={{ base: "unset", md: top }}
+                top={top}
                 minW="100px"
                 cursor={"pointer"}
                 pr={0}
@@ -322,7 +326,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               </Th>
               <Th
                 position="sticky"
-                top={{ base: "unset", md: top }}
+                top={top}
                 minW="32px"
                 w="32px"
                 p={0}
