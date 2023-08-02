@@ -29,8 +29,8 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import {
-  InformationCircleIcon,
   PlusIcon as HeroIconPlusIcon,
+  InformationCircleIcon,
   SquaresPlusIcon,
 } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -468,7 +468,8 @@ export const NodesDialog: FC = () => {
             >
               <VStack w="full">
                 {!isLoading &&
-                  nodes!.map((node, index) => {
+                  nodes &&
+                  nodes.map((node, index) => {
                     return (
                       <NodeAccordion
                         toggleAccordion={() => toggleAccordion(index)}
