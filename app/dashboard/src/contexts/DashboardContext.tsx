@@ -2,7 +2,7 @@ import { StatisticsQueryKey } from "components/Statistics";
 import { fetch } from "service/http";
 import { User, UserCreate } from "types/User";
 import { queryClient } from "utils/react-query";
-import { getUsersPerPageLimitSize } from "utils/userPrefrenceStorage";
+import { getUsersPerPageLimitSize } from "utils/userPreferenceStorage";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 
