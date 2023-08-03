@@ -281,14 +281,12 @@ def update_users(db: Session, users: List[User], time: int = None, data: int = N
         if time:
             if user.expire is not None:
                 user.expire += time
-                db.commit()
-                db.refresh(user)
 
         if data:
             if user.data_limit is not None:
-                user.data_limit += data
-                db.commit() 
-                db.refresh(user) 
+                user.data_limit += data 
+ 
+        db.commit() 
     return users
 
 
@@ -348,11 +346,16 @@ def update_user_status(db: Session, dbuser: User, status: UserStatus):
     return dbuser
 
 
-def is_user_expired(user: User, timestamp: int) -> bool:
+def is_user_expired(users: List[User], timestamp: int):
+    current_time = int(time.time())
+    expired_users = []
 
-    current_time = int(time.time())  
-    expiration_threshold = current_time - timestamp 
-    return user.expire <= expiration_threshold
+    for user in users:
+        expiration_threshold = current_time - timestamp 
+        if user.expire <= expiration_threshold:
+            expired_users.append(user)
+            
+    return expired_users
 
 
 def get_system_usage(db: Session):
