@@ -331,6 +331,13 @@ def update_user_status(db: Session, dbuser: User, status: UserStatus):
     return dbuser
 
 
+def user_last_update(db: Session, dbuser: User, user_agent: str):
+    dbuser.last_update = datetime.utcnow()
+    dbuser.user_agent = user_agent
+    db.commit()
+    db.refresh(dbuser)
+    return dbuser
+
 def get_system_usage(db: Session):
     return db.query(System).first()
 
