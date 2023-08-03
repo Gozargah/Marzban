@@ -3,8 +3,6 @@ from rich.table import Table
 
 import typer
 
-from fastapi import BackgroundTasks
-from app import xray
 from app.db import GetDB
 from app.db import crud
 from app.db.models import User
@@ -88,7 +86,6 @@ def set_owner(
 
 @app.command(name="delete-expired")
 def delete_expired(
-    bg: BackgroundTasks,
     days_passed: int = typer.Option(
         None, min=0, 
         help="Number of days that should pass from expiration time to delete the user.", prompt=True
@@ -105,7 +102,7 @@ def delete_expired(
 
         timestamp = days_passed * 86400
 
-        expired_users = [user for user in all_users if crud.is_user_expired(user, timestamp)]
+        expired_users = crud.is_user_expired(all_users, timestamp)
 
         if not expired_users:
             utils.success("No expired users found.")
@@ -116,7 +113,6 @@ def delete_expired(
             
         for user in expired_users:
             crud.remove_user(db, user)
-            bg.add_task(xray.operations.remove_user, dbuser=user)
 
         utils.success(f'All exipred users removed successfully .')
 
