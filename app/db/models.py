@@ -46,6 +46,8 @@ class User(Base):
     sub_revoked_at = Column(DateTime, nullable=True, default=None)
     created_at = Column(DateTime, default=datetime.utcnow)
     note = Column(String(500), nullable=True, default=None)
+    last_update = Column(DateTime, nullable=True, default=None)
+    user_agent = Column(String(64), nullable=True, default=None)
 
     @property
     def lifetime_used_traffic(self):
