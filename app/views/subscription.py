@@ -51,7 +51,7 @@ def user_subcription(token: str,
                 {"user": user}
             )
         )
-
+    
     response_headers = {
         "content-disposition": f'attachment; filename="{user.username}"',
         "profile-update-interval": "12",
@@ -61,6 +61,8 @@ def user_subcription(token: str,
             if val is not None
         )
     }
+
+    crud.user_last_update(db, dbuser, user_agent)
 
     if re.match('^([Cc]lash-verge|[Cc]lash-?[Mm]eta)', user_agent):
         conf = generate_subscription(user=user, config_format="clash-meta", as_base64=False)
