@@ -42,6 +42,8 @@ class User(BaseModel):
     data_limit_reset_strategy: UserDataLimitResetStrategy = UserDataLimitResetStrategy.no_reset
     inbounds: Dict[ProxyTypes, List[str]] = {}
     note: str = None
+    last_update: datetime = None
+    user_agent: str = None
 
     @validator('proxies', pre=True, always=True)
     def validate_proxies(cls, v, values, **kwargs):
@@ -202,6 +204,8 @@ class UserResponse(User):
     subscription_url: str = ''
     proxies: dict
     excluded_inbounds: Dict[ProxyTypes, List[str]] = {}
+    last_update: datetime = None
+    user_agent: str = None
 
     class Config:
         orm_mode = True
