@@ -27,7 +27,7 @@ from .crud import (create_admin, create_user, get_admin, get_admins,  # noqa
                    get_jwt_secret_key, get_or_create_inbound, get_system_usage,
                    get_user, get_user_by_id, get_users, get_users_count,
                    remove_admin, remove_user, update_admin, update_user,
-                   update_user_status)
+                   update_user_status, update_user_sub, revoke_user_sub)
 from .models import JWT, System, User  # noqa
 
 __all__ = [
@@ -40,6 +40,8 @@ __all__ = [
     "remove_user",
     "update_user",
     "update_user_status",
+    "update_user_sub",
+    "revoke_user_sub",
     "get_system_usage",
     "get_jwt_secret_key",
     "get_admin",

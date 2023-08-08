@@ -270,6 +270,10 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
     if modify.note is not None:
         dbuser.note = modify.note or None
 
+    if modify.sub_last_user_agent is not None:
+        dbuser.sub_updated_at = datetime.utcnow()
+        dbuser.sub_last_user_agent = modify.sub_last_user_agent
+
     db.commit()
     db.refresh(dbuser)
     return dbuser
@@ -301,6 +305,15 @@ def revoke_user_sub(db: Session, dbuser: User):
         settings.revoke()
         user.proxies[proxy_type] = settings
     dbuser = update_user(db, dbuser, user)
+
+    db.commit()
+    db.refresh(dbuser)
+    return dbuser
+
+
+def update_user_sub(db: Session, dbuser: User, user_agent: str):
+    dbuser.sub_updated_at = datetime.utcnow()
+    dbuser.sub_last_user_agent = user_agent
 
     db.commit()
     db.refresh(dbuser)
