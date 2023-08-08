@@ -86,4 +86,7 @@ def user_subcription_info(token: str,
     if not dbuser or dbuser.created_at > sub['created_at']:
         return Response(status_code=404)
 
+    elif dbuser.sub_revoked_at and dbuser.sub_revoked_at > sub['created_at']:
+        return Response(status_code=404)
+
     return dbuser
