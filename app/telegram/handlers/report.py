@@ -92,7 +92,7 @@ def report_status_change(username: str, status: str):
         'active': '✅ <b>#Activated</b>',
         'disabled': '❌ <b>#Disabled</b>',
         'limited': '📵 <b>#Limited</b>',
-        'Expired': '🕔 <b>#Expired</b>'
+        'expired': '🕔 <b>#Expired</b>'
     }
     text = '''\
 {status}
