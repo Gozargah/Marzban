@@ -166,10 +166,20 @@ def reset_user_data_usage(username: str,
         raise HTTPException(status_code=403, detail="You're not allowed")
 
     dbuser = crud.reset_user_data_usage(db=db, dbuser=dbuser)
+                            
     if dbuser.status == UserStatus.active:
-        bg.add_task(xray.operations.add_user, dbuser=dbuser)
+        bg.add_task(xray.operations.add_user(dbuser))
+
+    bg.add_task(report.user_usage_reset,
+                username=dbuser.username,
+                usage=dbuser.data_limit,
+                expire_date=dbuser.expire,
+                proxies=dbuser.proxies,
+                by=admin.username)
+    logger.info(f"User \"{username}\" modified")
 
     return dbuser
+
 
 
 @app.post("/api/user/{username}/revoke_sub", tags=['User'], response_model=UserResponse)
