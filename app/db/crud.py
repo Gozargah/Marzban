@@ -270,10 +270,6 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
     if modify.note is not None:
         dbuser.note = modify.note or None
 
-    if modify.sub_last_user_agent is not None:
-        dbuser.sub_updated_at = datetime.utcnow()
-        dbuser.sub_last_user_agent = modify.sub_last_user_agent
-
     db.commit()
     db.refresh(dbuser)
     return dbuser
