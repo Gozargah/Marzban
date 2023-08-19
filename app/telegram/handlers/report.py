@@ -22,19 +22,19 @@ def report(message: str, parse_mode="html", keyboard=None):
             logger.error(e)
 
 
-def report_new_user(user_id: int, username: str, by: str, expire_date: int, usage: int, proxies: list):
+def report_new_user(user_id: int, username: str, by: str, expire_date: int, data_limit: int, proxies: list):
     text = '''\
 🆕 <b>#Created</b>
 ➖➖➖➖➖➖➖➖➖
 <b>Username :</b> <code>{username}</code>
-<b>Traffic Limit :</b> <code>{usage}</code>
+<b>Traffic Limit :</b> <code>{data_limit}</code>
 <b>Expire Date :</b> <code>{expire_date}</code>
 <b>Proxies :</b> <code>{proxies}</code>
 ➖➖➖➖➖➖➖➖➖
 <b>By :</b> <b>#{by}</b>'''.format(
         by=escape_html(by),
         username=escape_html(username),
-        usage=readable_size(usage) if usage else "Unlimited",
+        data_limit=readable_size(data_limit) if data_limit else "Unlimited",
         expire_date=datetime.fromtimestamp(expire_date).strftime("%H:%M:%S %Y-%m-%d") if expire_date else "Never",
         proxies="" if not proxies else ", ".join([escape_html(proxy.type) for proxy in proxies])
     )
@@ -49,12 +49,12 @@ def report_new_user(user_id: int, username: str, by: str, expire_date: int, usag
     )
 
 
-def report_user_modification(username: str, expire_date: int, usage: int, proxies: list, by: str):
+def report_user_modification(username: str, expire_date: int, data_limit: int, proxies: list, by: str):
     text = '''\
 ✏️ <b>#Modified</b>
 ➖➖➖➖➖➖➖➖➖
 <b>Username :</b> <code>{username}</code>
-<b>Traffic Limit :</b> <code>{usage}</code>
+<b>Traffic Limit :</b> <code>{data_limit}</code>
 <b>Expire Date :</b> <code>{expire_date}</code>
 <b>Protocols :</b> <code>{protocols}</code>
 ➖➖➖➖➖➖➖➖➖
@@ -62,7 +62,7 @@ def report_user_modification(username: str, expire_date: int, usage: int, proxie
     '''.format(
         by=escape_html(by),
         username=escape_html(username),
-        usage=readable_size(usage) if usage else "Unlimited",
+        data_limit=readable_size(data_limit) if data_limit else "Unlimited",
         expire_date=datetime.fromtimestamp(expire_date).strftime("%H:%M:%S %Y-%m-%d") if expire_date else "Never",
         protocols=', '.join([p.type for p in proxies])
     )

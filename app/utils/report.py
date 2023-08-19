@@ -18,14 +18,14 @@ def status_change(username: str, status: UserStatus) -> None:
         notify(Notification(username=username, action="user_enabled"))
 
 
-def user_created(user_id: int, username: str, usage: int, expire_date: int, proxies: dict, by: str) -> None:
+def user_created(user_id: int, username: str, data_limit: int, expire_date: int, proxies: dict, by: str) -> None:
     try:
         telegram.report_new_user(
             user_id=user_id,
             username=username,
             by=by,
             expire_date=expire_date,
-            usage=usage,
+            data_limit=data_limit,
             proxies=proxies,
         )
     except Exception:
@@ -33,12 +33,12 @@ def user_created(user_id: int, username: str, usage: int, expire_date: int, prox
     notify(Notification(username=username, action="user_created"))
 
 
-def user_updated(username: str, usage: int, expire_date: int, proxies: dict, by: str) -> None:
+def user_updated(username: str, data_limit: int, expire_date: int, proxies: dict, by: str) -> None:
     try:
         telegram.report_user_modification(
             username=username,
             expire_date=expire_date,
-            usage=usage,
+            data_limit=data_limit,
             proxies=proxies,
             by=by,
         )

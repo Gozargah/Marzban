@@ -43,7 +43,7 @@ def add_user(new_user: UserCreate,
         report.user_created,
         user_id=dbuser.id,
         username=dbuser.username,
-        usage=dbuser.data_limit,
+        data_limit=dbuser.data_limit,
         expire_date=dbuser.expire,
         proxies=dbuser.proxies,
         by=admin.username
@@ -106,7 +106,7 @@ def modify_user(username: str,
 
     bg.add_task(report.user_updated,
                 username=dbuser.username,
-                usage=dbuser.data_limit,
+                data_limit=dbuser.data_limit,
                 expire_date=dbuser.expire,
                 proxies=dbuser.proxies,
                 by=admin.username)
