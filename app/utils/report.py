@@ -47,6 +47,17 @@ def user_updated(username: str, usage: int, expire_date: int, proxies: dict, by:
     notify(Notification(username=username, action="user_updated"))
 
 
+def user_usage_reset(username: str, by: str) -> None:
+    try:
+        telegram.report_user_usage_reset(
+            username=username,
+            by=by,
+        )
+    except Exception:
+        pass
+    notify(Notification(username=username, action="user_usage_reset"))
+
+
 def user_deleted(username: str, by: str) -> None:
     try:
         telegram.report_user_deletion(username=username, by=by)

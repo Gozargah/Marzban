@@ -169,6 +169,11 @@ def reset_user_data_usage(username: str,
     if dbuser.status == UserStatus.active:
         bg.add_task(xray.operations.add_user, dbuser=dbuser)
 
+    bg.add_task(report.user_usage_reset,
+                username=dbuser.username,
+                by=admin.username)
+    logger.info(f"User \"{username}\" modified")
+
     return dbuser
 
 

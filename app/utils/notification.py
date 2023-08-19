@@ -12,7 +12,7 @@ queue = deque()
 class Notification(BaseModel):
     username: str
     action: Literal["user_created", "user_updated", "user_deleted",
-                    "user_limited", "user_expired", "user_disabled", "user_enabled"]
+                    "user_limited", "user_expired", "user_disabled", "user_enabled", "user_usage_reset"]
     enqueued_at: float = dt.utcnow().timestamp()
     tries: int = 0
 

@@ -103,3 +103,18 @@ def report_status_change(username: str, status: str):
         status=_status[status]
     )
     return report(text)
+
+
+def report_user_usage_reset(username: str, by: str):
+    text = """  
+🔁 <b>#Reset</b>
+➖➖➖➖➖➖➖➖➖
+<b>Username</b> : <code>{username}</code>
+➖➖➖➖➖➖➖➖➖
+<b>By</b> : <b>#{by}</b>\
+    """.format(
+        by=escape_html(by),
+        username=escape_html(username)
+    )
+
+    return report(text)
