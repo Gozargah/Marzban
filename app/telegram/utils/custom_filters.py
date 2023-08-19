@@ -14,8 +14,8 @@ class IsAdminFilter(AdvancedCustomFilter):
         :meta private:
         """
         if isinstance(message, types.CallbackQuery):
-            return message.from_user.id == TELEGRAM_ADMIN_ID
-        return message.chat.id == TELEGRAM_ADMIN_ID
+            return message.from_user.id in TELEGRAM_ADMIN_ID
+        return message.chat.id in TELEGRAM_ADMIN_ID
 
 
 def cb_query_equals(text: str):
