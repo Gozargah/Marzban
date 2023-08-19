@@ -191,7 +191,7 @@ def edit_all_command(call: types.CallbackQuery):
 ✅ *Active Users*: `{active_users}`
 ❌ *Disabled Users*: `{disabled_users}`
 🕰 *Expired Users*: `{exipred_users}`
-📵 *Limited Users*: `{limited_users}`'''
+🪫 *Limited Users*: `{limited_users}`'''
     return bot.edit_message_text(
         text,
         call.message.chat.id,
@@ -469,7 +469,7 @@ def users_command(call: types.CallbackQuery):
 ✅ Active
 ❌ Disabled
 🕰 Expired
-📵 Limited""".format(page=page, total_pages=total_pages)
+🪫 Limited""".format(page=page, total_pages=total_pages)
 
     bot.edit_message_text(
         text,
@@ -487,7 +487,7 @@ def get_user_info_text(
     statuses = {
         'active': '✅',
         'expired': '🕰',
-        'limited': '📵',
+        'limited': '🪫',
         'disabled': '❌'}
     text = f'''\
 ┌─{statuses[status]} <b>Status:</b> <code>{status.title()}</code>
@@ -775,7 +775,7 @@ def template_charge_command(call: types.CallbackQuery):
                 data_limit=template.data_limit,
                 usage=0, note=note)
             bot.edit_message_text(
-                f'♻️ User Successfully Charged!\n\n{text}',
+                f'🔋 User Successfully Charged!\n\n{text}',
                 call.message.chat.id,
                 call.message.message_id,
                 parse_mode='html',
@@ -784,7 +784,7 @@ def template_charge_command(call: types.CallbackQuery):
                     'username': user.username}, note=note))
             if TELEGRAM_LOGGER_CHANNEL_ID:
                 text = f'''\
-♻️ <b>#Charged #Reset #From_Bot</b>
+🔋 <b>#Charged #Reset #From_Bot</b>
 ➖➖➖➖➖➖➖➖➖
 <b>Template :</b> <code>{template.name}</code>
 <b>Username :</b> <code>{user.username}</code>
@@ -1459,7 +1459,7 @@ def confirm_user_command(call: types.CallbackQuery):
                 note=note)
 
             bot.edit_message_text(
-                f'♻️ User Successfully Charged!\n\n{text}',
+                f'🔋 User Successfully Charged!\n\n{text}',
                 call.message.chat.id,
                 call.message.message_id,
                 parse_mode='html',
@@ -1469,7 +1469,7 @@ def confirm_user_command(call: types.CallbackQuery):
                 }, note=note))
             if TELEGRAM_LOGGER_CHANNEL_ID:
                 text = f'''\
-♻️ <b>#Charged #{data.split('_')[1].title()} #From_Bot</b>
+🔋 <b>#Charged #{data.split('_')[1].title()} #From_Bot</b>
 ➖➖➖➖➖➖➖➖➖
 <b>Template :</b> <code>{template.name}</code>
 <b>Username :</b> <code>{user.username}</code>

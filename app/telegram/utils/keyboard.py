@@ -132,7 +132,7 @@ class BotKeyboard:
                 callback_data=f"reset_usage:{user_info['username']}"
             ),
             types.InlineKeyboardButton(
-                text='♻️ Charge',
+                text='🔋 Charge',
                 callback_data=f"charge:{user_info['username']}"
             )
         )

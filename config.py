@@ -1,4 +1,4 @@
-from decouple import config, Csv
+from decouple import config
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -32,7 +32,8 @@ XRAY_SUBSCRIPTION_URL_PREFIX = config("XRAY_SUBSCRIPTION_URL_PREFIX", default=""
 
 
 TELEGRAM_API_TOKEN = config("TELEGRAM_API_TOKEN", default="")
-TELEGRAM_ADMINS_ID = config('TELEGRAM_ADMINS_ID', cast=Csv(int), default=[])
+TELEGRAM_ADMIN_ID = config('TELEGRAM_ADMIN_ID', cast=str, default="")
+TELEGRAM_ADMIN_ID = [int(i.strip()) for i in TELEGRAM_ADMIN_ID.split(',')]
 TELEGRAM_PROXY_URL = config("TELEGRAM_PROXY_URL", default="")
 TELEGRAM_LOGGER_CHANNEL_ID = config("TELEGRAM_LOGGER_CHANNEL_ID", cast=int, default=0)
 TELEGRAM_DEFAULT_VLESS_FLOW = config("TELEGRAM_DEFAULT_VLESS_FLOW", default="")

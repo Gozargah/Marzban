@@ -3,7 +3,7 @@ from app.telegram import bot
 from telebot import types
 from telebot.custom_filters import AdvancedCustomFilter
 
-from config import TELEGRAM_ADMINS_ID
+from config import TELEGRAM_ADMIN_ID
 
 
 class IsAdminFilter(AdvancedCustomFilter):
@@ -14,8 +14,8 @@ class IsAdminFilter(AdvancedCustomFilter):
         :meta private:
         """
         if isinstance(message, types.CallbackQuery):
-            return message.from_user.id in TELEGRAM_ADMINS_ID
-        return message.chat.id in TELEGRAM_ADMINS_ID
+            return message.from_user.id in TELEGRAM_ADMIN_ID
+        return message.chat.id in TELEGRAM_ADMIN_ID
 
 
 def cb_query_equals(text: str):
