@@ -32,8 +32,11 @@ XRAY_SUBSCRIPTION_URL_PREFIX = config("XRAY_SUBSCRIPTION_URL_PREFIX", default=""
 
 
 TELEGRAM_API_TOKEN = config("TELEGRAM_API_TOKEN", default="")
-TELEGRAM_ADMIN_ID = config('TELEGRAM_ADMIN_ID', cast=str, default="")
-TELEGRAM_ADMIN_ID = [int(i.strip()) for i in TELEGRAM_ADMIN_ID.split(',')]
+TELEGRAM_ADMIN_ID = config(
+    'TELEGRAM_ADMIN_ID',
+    default="",
+    cast=lambda v: [int(i) for i in filter(str.isdigit, (s.strip() for s in v.split(',')))]
+)
 TELEGRAM_PROXY_URL = config("TELEGRAM_PROXY_URL", default="")
 TELEGRAM_LOGGER_CHANNEL_ID = config("TELEGRAM_LOGGER_CHANNEL_ID", cast=int, default=0)
 TELEGRAM_DEFAULT_VLESS_FLOW = config("TELEGRAM_DEFAULT_VLESS_FLOW", default="")
