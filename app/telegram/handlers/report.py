@@ -103,3 +103,19 @@ def report_status_change(username: str, status: str):
         status=_status[status]
     )
     return report(text)
+
+
+def report_user_usage_reset(username: str, usage: str, by: str):
+    text = """
+⨀ User Usage Reseted by <b>{by}</b>
+➖➖➖➖➖➖➖
+┌ Username: <b>{username}</b>
+└ Usage: <b>{usage}</b>
+
+    """.format(
+        by=escape_html(by),
+        username=escape_html(username),
+        usage=readable_size(usage) if usage else "Unlimited"
+    )
+
+    return report(text)
