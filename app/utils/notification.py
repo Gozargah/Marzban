@@ -26,11 +26,9 @@ class Notification(BaseModel):
         reached_usage_percent = "reached_usage_percent"
         reached_days_left = "reached_days_left"
 
-    
     enqueued_at: float = dt.utcnow().timestamp()
     send_at: float = dt.utcnow().timestamp()
     tries: int = 0
-
 
 
 class UserNotification(Notification):
@@ -88,10 +86,12 @@ class UserDisabled(UserNotification):
     user: UserResponse
     reason: str = None
 
+
 class UserDataUsageReset(UserNotification):
     action: Notification.Type = Notification.Type.data_usage_reset
     by: Admin
     user: UserResponse
+
 
 def notify(message: Type[Notification]) -> None:
     if config.WEBHOOK_ADDRESS:

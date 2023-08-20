@@ -64,6 +64,7 @@ def user_deleted(username: str, by: Admin) -> None:
         pass
     notify(UserDeleted(username=username, action=Notification.Type.user_deleted, by=by))
 
+
 def user_data_usage_reset(user: UserResponse, by: Admin) -> None:
     try:
         telegram.report_user_modification(
@@ -77,6 +78,7 @@ def user_data_usage_reset(user: UserResponse, by: Admin) -> None:
         pass
     notify(UserDataUsageReset(username=user.username, action=Notification.Type.user_updated, by=by, user=user))
 
+
 def data_usage_percent_reached(
         db: Session, percent: float, user: UserResponse, user_id: int, expire: Optional[int] = None) -> None:
     notify(ReachedUsagePercent(username=user.username, user=user, used_percent=percent))
@@ -89,4 +91,3 @@ def expire_days_reached(db: Session, days: int, user: UserResponse, user_id: int
     create_notification_reminder(
         db, ReminderType.expiration_date, expires_at=dt.utcfromtimestamp(expire),
         user_id=user_id)
-

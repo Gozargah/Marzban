@@ -169,7 +169,7 @@ def reset_user_data_usage(username: str,
     bg.add_task(report.user_updated,
                 user=user,
                 by=admin)
-    
+
     logger.info(f"User \"{username}\" modified")
 
     return dbuser
