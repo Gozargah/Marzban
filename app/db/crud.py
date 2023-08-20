@@ -20,6 +20,7 @@ from app.models.user_template import UserTemplateCreate, UserTemplateModify
 from app.utils.helpers import (calculate_expiration_days,
                                calculate_usage_percent)
 from app.utils.notification import Notification
+from config import NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT
 
 
 def add_default_host(db: Session, inbound: ProxyInbound):
@@ -258,7 +259,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
             if not dbuser.data_limit or dbuser.used_traffic < dbuser.data_limit:
                 dbuser.status = UserStatus.active
                 if calculate_usage_percent(
-                        dbuser.used_traffic, dbuser.data_limit) < 80 and (
+                        dbuser.used_traffic, dbuser.data_limit) < NOTIFY_REACHED_USAGE_PERCENT and (
                         dbreminder := get_notification_reminder(db, dbuser.id, ReminderType.data_usage)) is not None:
                     delete_notification_reminder(db, dbreminder)
             else:
@@ -270,7 +271,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
             if not dbuser.expire or dbuser.expire > datetime.utcnow().timestamp():
                 dbuser.status = UserStatus.active
                 if calculate_expiration_days(
-                        dbuser.expire) > 5 and (
+                        dbuser.expire) > NOTIFY_DAYS_LEFT and (
                         dbreminder := get_notification_reminder(db, dbuser.id, ReminderType.expiration_date)) is not None:
                     delete_notification_reminder(db, dbreminder)
             else:
