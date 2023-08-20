@@ -5,17 +5,21 @@ from typing import Dict, List, Optional, Tuple, Union
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from app.db.models import (JWT, Admin, Node, NodeUsage, NodeUserUsage, Proxy,
-                           ProxyHost, ProxyInbound, ProxyTypes, System, User,
+from app.db.models import (JWT, Admin, Node, NodeUsage, NodeUserUsage,
+                           NotificationReminder, Proxy, ProxyHost,
+                           ProxyInbound, ProxyTypes, System, User,
                            UserTemplate, UserUsageResetLogs)
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
 from app.models.node import (NodeCreate, NodeModify, NodeStatus,
                              NodeUsageResponse)
 from app.models.proxy import ProxyHost as ProxyHostModify
-from app.models.user import (UserCreate, UserDataLimitResetStrategy,
-                             UserModify, UserResponse, UserStatus,
-                             UserUsageResponse)
+from app.models.user import (ReminderType, UserCreate,
+                             UserDataLimitResetStrategy, UserModify,
+                             UserResponse, UserStatus, UserUsageResponse)
 from app.models.user_template import UserTemplateCreate, UserTemplateModify
+from app.utils.helpers import (calculate_expiration_days,
+                               calculate_usage_percent)
+from app.utils.notification import Notification
 
 
 def add_default_host(db: Session, inbound: ProxyInbound):
@@ -253,6 +257,10 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
         if dbuser.status not in (UserStatus.expired, UserStatus.disabled):
             if not dbuser.data_limit or dbuser.used_traffic < dbuser.data_limit:
                 dbuser.status = UserStatus.active
+                if calculate_usage_percent(
+                        dbuser.used_traffic, dbuser.data_limit) < 80 and (
+                        dbreminder := get_notification_reminder(db, dbuser.id, ReminderType.data_usage)) is not None:
+                    delete_notification_reminder(db, dbreminder)
             else:
                 dbuser.status = UserStatus.limited
 
@@ -261,6 +269,10 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
         if dbuser.status not in (UserStatus.limited, UserStatus.disabled):
             if not dbuser.expire or dbuser.expire > datetime.utcnow().timestamp():
                 dbuser.status = UserStatus.active
+                if calculate_expiration_days(
+                        dbuser.expire) > 5 and (
+                        dbreminder := get_notification_reminder(db, dbuser.id, ReminderType.expiration_date)) is not None:
+                    delete_notification_reminder(db, dbreminder)
             else:
                 dbuser.status = UserStatus.expired
 
@@ -562,3 +574,35 @@ def update_node_status(db: Session, dbnode: Node, status: NodeStatus, message: s
     db.commit()
     db.refresh(dbnode)
     return dbnode
+
+
+
+
+def create_notification_reminder(
+        db: Session, reminder_type: Notification.Type, expires_at: datetime, user_id: int) -> NotificationReminder:
+    reminder = NotificationReminder(type=reminder_type, expires_at=expires_at, user_id=user_id)
+    db.add(reminder)
+    db.commit()
+    db.refresh(reminder)
+    return reminder
+
+
+def get_notification_reminder(
+        db: Session, user_id: int, reminder_type: Notification.Type,
+) -> Union[NotificationReminder, None]:
+    reminder = db.query(NotificationReminder).filter(
+        NotificationReminder.user_id == user_id).filter(
+        NotificationReminder.type == reminder_type).first()
+    if reminder is None:
+        return
+    if reminder.expires_at and reminder.expires_at < datetime.utcnow():
+        db.delete(reminder)
+        db.commit()
+        return
+    return reminder
+
+
+def delete_notification_reminder(db: Session, dbreminder: NotificationReminder) -> None:
+    db.delete(dbreminder)
+    db.commit()
+    return

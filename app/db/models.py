@@ -11,6 +11,7 @@ from app.models.node import NodeStatus
 from app.models.proxy import (ProxyHostALPN, ProxyHostFingerprint,
                               ProxyHostSecurity, ProxyTypes)
 from app.models.user import UserDataLimitResetStrategy, UserStatus
+from app.utils.notification import Notification
 
 
 class Admin(Base):
@@ -33,6 +34,7 @@ class User(Base):
     status = Column(Enum(UserStatus), nullable=False, default=UserStatus.active)
     used_traffic = Column(BigInteger, default=0)
     node_usages = relationship("NodeUserUsage", back_populates="user", cascade="all, delete-orphan")
+    notification_reminders = relationship("NotificationReminder", back_populates="user", cascade="all, delete-orphan")
     data_limit = Column(BigInteger, nullable=True)
     data_limit_reset_strategy = Column(
         Enum(UserDataLimitResetStrategy),
@@ -244,3 +246,14 @@ class NodeUsage(Base):
     node = relationship("Node", back_populates="usages")
     uplink = Column(BigInteger, default=0)
     downlink = Column(BigInteger, default=0)
+
+
+class NotificationReminder(Base):
+    __tablename__ = "notification_reminders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    user = relationship("User", back_populates="notification_reminders")
+    type = Column(Enum(Notification.Type), nullable=False)
+    expires_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)

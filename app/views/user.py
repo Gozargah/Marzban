@@ -1,5 +1,6 @@
-import sqlalchemy
 from datetime import datetime
+
+import sqlalchemy
 from fastapi import BackgroundTasks, Depends, HTTPException
 
 from app import app, logger, xray
@@ -38,18 +39,14 @@ def add_user(new_user: UserCreate,
         raise HTTPException(status_code=409, detail="User already exists")
 
     bg.add_task(xray.operations.add_user, dbuser=dbuser)
-
+    user = UserResponse.from_orm(dbuser)
     bg.add_task(
         report.user_created,
-        user_id=dbuser.id,
-        username=dbuser.username,
-        data_limit=dbuser.data_limit,
-        expire_date=dbuser.expire,
-        proxies=dbuser.proxies,
-        by=admin.username
+        user=user,
+        by=admin
     )
     logger.info(f"New user \"{dbuser.username}\" added")
-    return dbuser
+    return user
 
 
 @app.get("/api/user/{username}", tags=['User'], response_model=UserResponse)
@@ -105,17 +102,16 @@ def modify_user(username: str,
         bg.add_task(xray.operations.remove_user, dbuser=dbuser)
 
     bg.add_task(report.user_updated,
-                username=dbuser.username,
-                data_limit=dbuser.data_limit,
-                expire_date=dbuser.expire,
-                proxies=dbuser.proxies,
-                by=admin.username)
+                user=user,
+                by=admin)
     logger.info(f"User \"{user.username}\" modified")
 
     if user.status != old_status:
         bg.add_task(report.status_change,
                     username=user.username,
-                    status=user.status)
+                    status=user.status,
+                    user=user,
+                    by=admin)
         logger.info(f"User \"{dbuser.username}\" status changed from {old_status} to {user.status}")
 
     return user
@@ -144,7 +140,7 @@ def remove_user(username: str,
     bg.add_task(
         report.user_deleted,
         username=dbuser.username,
-        by=admin.username
+        by=admin
     )
     logger.info(f"User \"{username}\" deleted")
     return {}
@@ -169,9 +165,11 @@ def reset_user_data_usage(username: str,
     if dbuser.status == UserStatus.active:
         bg.add_task(xray.operations.add_user, dbuser=dbuser)
 
-    bg.add_task(report.user_usage_reset,
-                username=dbuser.username,
-                by=admin.username)
+    user = UserResponse.from_orm(dbuser)
+    bg.add_task(report.user_updated,
+                user=user,
+                by=admin)
+    
     logger.info(f"User \"{username}\" modified")
 
     return dbuser
