@@ -194,8 +194,14 @@ def revoke_user_subscription(username: str,
 
     if dbuser.status == UserStatus.active:
         bg.add_task(xray.operations.update_user, dbuser=dbuser)
+    user = UserResponse.from_orm(dbuser)
+    bg.add_task(
+        report.user_subscription_revoked,
+        user=user,
+        by=admin
+    )
 
-    return dbuser
+    return user
 
 
 @app.get("/api/users", tags=['User'], response_model=UsersResponse)

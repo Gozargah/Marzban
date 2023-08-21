@@ -10,7 +10,8 @@ from app.utils.notification import (Notification, ReachedDaysLeft,
                                     ReachedUsagePercent, UserCreated,
                                     UserDataUsageReset, UserDeleted,
                                     UserDisabled, UserEnabled, UserExpired,
-                                    UserLimited, UserUpdated, notify)
+                                    UserLimited, UserSubscriptionRevoked,
+                                    UserUpdated, notify)
 
 
 def status_change(username: str, status: UserStatus, user: UserResponse, by: Optional[Admin] = None) -> None:
@@ -77,6 +78,20 @@ def user_data_usage_reset(user: UserResponse, by: Admin) -> None:
     except Exception:
         pass
     notify(UserDataUsageReset(username=user.username, action=Notification.Type.user_updated, by=by, user=user))
+
+
+def user_subscription_revoked(user: UserResponse, by: Admin) -> None:
+    try:
+        telegram.report_user_modification(
+            username=user.username,
+            expire_date=user.expire,
+            usage=user.data_limit,
+            proxies=user.proxies,
+            by=by.username,
+        )
+    except Exception:
+        pass
+    notify(UserSubscriptionRevoked(username=user.username, action=Notification.Type.subscription_revoked, by=by, user=user))
 
 
 def data_usage_percent_reached(
