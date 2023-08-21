@@ -1,5 +1,7 @@
-import itertools
 from datetime import datetime
+from typing import TYPE_CHECKING
+
+from sqlalchemy.orm import Session
 
 from app import logger, scheduler, xray
 from app.db import (GetDB, get_notification_reminder, get_users,
@@ -10,6 +12,25 @@ from app.utils.helpers import (calculate_expiration_days,
                                calculate_usage_percent)
 from config import (NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT,
                     WEBHOOK_ADDRESS)
+
+if TYPE_CHECKING:
+    from app.db.models import User
+
+
+def add_notification_reminders(db: Session, user: "User", now: datetime = datetime.utcnow()) -> None:
+    if user.data_limit:
+        usage_percent = calculate_usage_percent(user.used_traffic, user.data_limit)
+        if (usage_percent >= NOTIFY_REACHED_USAGE_PERCENT) and (not get_notification_reminder(db, user.id, ReminderType.data_usage)):
+            report.data_usage_percent_reached(
+                db, usage_percent, UserResponse.from_orm(user),
+                user.id, user.expire)
+
+    if user.expire and ((now - user.created_at).days >= NOTIFY_DAYS_LEFT):
+        expire_days = calculate_expiration_days(user.expire)
+        if (expire_days <= NOTIFY_DAYS_LEFT) and (not get_notification_reminder(db, user.id, ReminderType.expiration_date)):
+            report.expire_days_reached(
+                db, expire_days, UserResponse.from_orm(user),
+                user.id, user.expire)
 
 
 def review():
@@ -24,19 +45,8 @@ def review():
             elif expired:
                 status = UserStatus.expired
             else:
-                if not WEBHOOK_ADDRESS:
-                    continue
-                if user.data_limit and (
-                        usage_percent := calculate_usage_percent(user.used_traffic, user.data_limit)) >= NOTIFY_REACHED_USAGE_PERCENT:
-                    if not get_notification_reminder(db, user.id, ReminderType.data_usage):
-                        report.data_usage_percent_reached(
-                            db, usage_percent, UserResponse.from_orm(user),
-                            user.id, user.expire)
-                if user.expire and ((now - user.created_at).days >= NOTIFY_DAYS_LEFT) and (expire_days := calculate_expiration_days(user.expire)) <= NOTIFY_DAYS_LEFT:
-                    if not get_notification_reminder(db, user.id, ReminderType.expiration_date):
-                        report.expire_days_reached(
-                            db, expire_days, UserResponse.from_orm(user),
-                            user.id, user.expire)
+                if WEBHOOK_ADDRESS:
+                    add_notification_reminders(db, user, now)
                 continue
 
             xray.operations.remove_user(user)
