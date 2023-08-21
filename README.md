@@ -287,6 +287,10 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | DEBUG                           | Debug mode for development (default: `False`)                                                         |
 | WEBHOOK_ADDRESS                 | Webhook address to send notifications to. Webhook notifications will be sent if this value was set.   |
 | WEBHOOK_SECRET                  | Webhook secret will be sent with each request as `x-webhook-secret` in the header (default: `None`)   |
+| NUMBER_OF_RECURRENT_NOTIFICATIONS | How many times to retry if an error detected in sending a notification (default: `3`) |
+| RECURRENT_NOTIFICATIONS_TIMEOUT | Timeout between each retry if an error detected in sending a notification in seconds (default: `180`)|
+| NOTIFY_REACHED_USAGE_PERCENT | At which percentage of usage to send the warning notification (default: `80`) |
+| NOTIFY_DAYS_LEFT | When to send warning notifaction about expiration (default: `3`) |
 
 # API
 
