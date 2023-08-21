@@ -54,7 +54,7 @@ def get_node(node_id: int,
              db: Session = Depends(get_db),
              admin: Admin = Depends(Admin.get_current)):
     if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed") 
+        raise HTTPException(status_code=403, detail="You're not allowed")
 
     dbnode = crud.get_node_by_id(db, node_id)
     if not dbnode:
@@ -131,7 +131,7 @@ async def node_logs(node_id: int, websocket: WebSocket, db: Session = Depends(ge
 def get_nodes(db: Session = Depends(get_db),
               admin: Admin = Depends(Admin.get_current)):
     if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed") 
+        raise HTTPException(status_code=403, detail="You're not allowed")
     return crud.get_nodes(db)
 
 

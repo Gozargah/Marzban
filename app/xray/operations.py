@@ -1,16 +1,19 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy.exc import SQLAlchemyError
 
 from app import logger, xray
-from app.db import GetDB
-from app.db import User as DBUser
-from app.db import crud
-from app.db.models import Node as DBNode
+from app.db import GetDB, crud
 from app.models.node import NodeStatus
 from app.models.user import UserResponse
 from app.utils.concurrency import threaded_function
 from app.xray.node import XRayNode
 from xray_api import XRay as XRayAPI
 from xray_api.types.account import Account, XTLSFlows
+
+if TYPE_CHECKING:
+    from app.db import User as DBUser
+    from app.db.models import Node as DBNode
 
 
 @threaded_function
@@ -41,7 +44,7 @@ def _alter_inbound_user(api: XRayAPI, inbound_tag: str, account: Account):
         pass
 
 
-def add_user(dbuser: DBUser):
+def add_user(dbuser: "DBUser"):
     user = UserResponse.from_orm(dbuser)
     email = f"{dbuser.id}.{dbuser.username}"
 
@@ -65,7 +68,7 @@ def add_user(dbuser: DBUser):
                     _add_user_to_inbound(node.api, inbound_tag, account)
 
 
-def remove_user(dbuser: DBUser):
+def remove_user(dbuser: "DBUser"):
     email = f"{dbuser.id}.{dbuser.username}"
 
     for inbound_tag in xray.config.inbounds_by_tag:
@@ -75,7 +78,7 @@ def remove_user(dbuser: DBUser):
                 _remove_user_from_inbound(node.api, inbound_tag, email)
 
 
-def update_user(dbuser: DBUser):
+def update_user(dbuser: "DBUser"):
     user = UserResponse.from_orm(dbuser)
     email = f"{dbuser.id}.{dbuser.username}"
 
@@ -120,7 +123,7 @@ def remove_node(node_id: int):
             del xray.nodes[node_id]
 
 
-def add_node(dbnode: DBNode):
+def add_node(dbnode: "DBNode"):
     remove_node(dbnode.id)
 
     xray.nodes[dbnode.id] = XRayNode(address=dbnode.address,

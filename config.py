@@ -57,4 +57,17 @@ SUDOERS = {config("SUDO_USERNAME"): config("SUDO_PASSWORD")} \
 WEBHOOK_ADDRESS = config("WEBHOOK_ADDRESS", default=None)
 WEBHOOK_SECRET = config("WEBHOOK_SECRET", default=None)
 
+# recurrent notifications
+
+# timeout between each retry of sending a notification in seconds
+RECURRENT_NOTIFICATIONS_TIMEOUT = config("RECURRENT_NOTIFICATIONS_TIMEOUT", default=180, cast=int)
+# how many times to try after ok response not recevied after sending a notifications
+NUMBER_OF_RECURRENT_NOTIFICATIONS = config("NUMBER_OF_RECURRENT_NOTIFICATIONS", default=3, cast=int)
+
+# sends a notification when the user uses this much of thier data
+NOTIFY_REACHED_USAGE_PERCENT = config("NOTIFY_REACHED_USAGE_PERCENT", default=80, cast=int)
+
+# sends a notification when there is n days left of their service
+NOTIFY_DAYS_LEFT = config("NOTIFY_DAYS_LEFT", default=3, cast=int)
+
 DISABLE_RECORDING_NODE_USAGE = config("DISABLE_RECORDING_NODE_USAGE", cast=bool, default=False)

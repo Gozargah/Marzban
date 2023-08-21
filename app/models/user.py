@@ -15,6 +15,11 @@ from xray_api.types.account import Account
 USERNAME_REGEXP = re.compile(r'^(?=\w{3,32}\b)[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*$')
 
 
+class ReminderType(str, Enum):
+    expiration_date = "expiration_date"
+    data_usage = "data_usage"
+
+
 class UserStatus(str, Enum):
     active = "active"
     disabled = "disabled"
