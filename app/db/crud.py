@@ -580,7 +580,7 @@ def update_node_status(db: Session, dbnode: Node, status: NodeStatus, message: s
 
 
 def create_notification_reminder(
-        db: Session, reminder_type: Notification.Type, expires_at: datetime, user_id: int) -> NotificationReminder:
+        db: Session, reminder_type: ReminderType, expires_at: datetime, user_id: int) -> NotificationReminder:
     reminder = NotificationReminder(type=reminder_type, expires_at=expires_at, user_id=user_id)
     db.add(reminder)
     db.commit()
@@ -589,7 +589,7 @@ def create_notification_reminder(
 
 
 def get_notification_reminder(
-        db: Session, user_id: int, reminder_type: Notification.Type,
+        db: Session, user_id: int, reminder_type: ReminderType,
 ) -> Union[NotificationReminder, None]:
     reminder = db.query(NotificationReminder).filter(
         NotificationReminder.user_id == user_id).filter(

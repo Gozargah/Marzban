@@ -10,8 +10,8 @@ from app.db.base import Base
 from app.models.node import NodeStatus
 from app.models.proxy import (ProxyHostALPN, ProxyHostFingerprint,
                               ProxyHostSecurity, ProxyTypes)
-from app.models.user import UserDataLimitResetStrategy, UserStatus
-from app.utils.notification import Notification
+from app.models.user import (ReminderType, UserDataLimitResetStrategy,
+                             UserStatus)
 
 
 class Admin(Base):
@@ -254,6 +254,6 @@ class NotificationReminder(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", back_populates="notification_reminders")
-    type = Column(Enum(Notification.Type), nullable=False)
+    type = Column(Enum(ReminderType), nullable=False)
     expires_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
