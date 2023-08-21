@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
-from sqlalchemy import and_
+from sqlalchemy import and_, delete
 from sqlalchemy.orm import Session
 
 from app.db.models import (JWT, Admin, Node, NodeUsage, NodeUserUsage,
@@ -258,10 +258,9 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
         if dbuser.status not in (UserStatus.expired, UserStatus.disabled):
             if not dbuser.data_limit or dbuser.used_traffic < dbuser.data_limit:
                 dbuser.status = UserStatus.active
-                if calculate_usage_percent(
-                        dbuser.used_traffic, dbuser.data_limit) < NOTIFY_REACHED_USAGE_PERCENT and (
-                        dbreminder := get_notification_reminder(db, dbuser.id, ReminderType.data_usage)) is not None:
-                    delete_notification_reminder(db, dbreminder)
+                if not dbuser.data_limit or (calculate_usage_percent(
+                        dbuser.used_traffic, dbuser.data_limit) < NOTIFY_REACHED_USAGE_PERCENT):
+                    delete_notification_reminder_by_type(db, dbuser.id, ReminderType.data_usage)
             else:
                 dbuser.status = UserStatus.limited
 
@@ -270,10 +269,9 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
         if dbuser.status not in (UserStatus.limited, UserStatus.disabled):
             if not dbuser.expire or dbuser.expire > datetime.utcnow().timestamp():
                 dbuser.status = UserStatus.active
-                if calculate_expiration_days(
-                        dbuser.expire) > NOTIFY_DAYS_LEFT and (
-                        dbreminder := get_notification_reminder(db, dbuser.id, ReminderType.expiration_date)) is not None:
-                    delete_notification_reminder(db, dbreminder)
+                if not dbuser.expire or (calculate_expiration_days(
+                        dbuser.expire) > NOTIFY_DAYS_LEFT):
+                    delete_notification_reminder_by_type(db, dbuser.id, ReminderType.expiration_date)
             else:
                 dbuser.status = UserStatus.expired
 
@@ -577,8 +575,6 @@ def update_node_status(db: Session, dbnode: Node, status: NodeStatus, message: s
     return dbnode
 
 
-
-
 def create_notification_reminder(
         db: Session, reminder_type: ReminderType, expires_at: datetime, user_id: int) -> NotificationReminder:
     reminder = NotificationReminder(type=reminder_type, expires_at=expires_at, user_id=user_id)
@@ -601,6 +597,17 @@ def get_notification_reminder(
         db.commit()
         return
     return reminder
+
+
+def delete_notification_reminder_by_type(db: Session, user_id: int, reminder_type: ReminderType) -> None:
+    """Deletes notification reminder filtered by user_id and type if exists"""
+    stmt = delete(NotificationReminder).where(
+        NotificationReminder.user_id == user_id,
+        NotificationReminder.type == reminder_type,
+    )
+    db.execute(stmt)
+    db.commit()
+    return
 
 
 def delete_notification_reminder(db: Session, dbreminder: NotificationReminder) -> None:
