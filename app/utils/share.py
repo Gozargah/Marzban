@@ -479,6 +479,15 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> lis
     else:
         data_limit = '∞'
         data_left = '∞'
+    
+    statuses = {
+        'active': '✅',
+        'expired': '⌛️',
+        'limited': '🪫',
+        'disabled': '❌'
+        }
+    
+    status = statuses[extra_data['status']]
 
     format_variables = FormatVariables({
         "SERVER_IP": SERVER_IP,
@@ -486,7 +495,8 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> lis
         "DATA_USAGE": readable_size(extra_data.get('used_traffic')),
         "DATA_LIMIT": data_limit,
         "DATA_LEFT": data_left,
-        "DAYS_LEFT": days_left
+        "DAYS_LEFT": days_left,
+        "STATUS": status
     })
 
     for protocol, tags in inbounds.items():
