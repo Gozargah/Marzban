@@ -75,6 +75,7 @@
   "hostsDialog.remainingData": "Remainig data of the user",
   "hostsDialog.dataLimit": "The usage limit of the user",
   "hostsDialog.remaingDays": "Remaining days of the user",
+  "hostsDialog.statusEmoji": "User status as an emoji (✅,⌛️,🪫,❌)",
   "hostsDialog.proxyProtocol": "Proxy protocol (e.g. VMess)",
   "hostsDialog.proxyMethod": "Proxy transport method (e.g. ws)",
   "hostsDialog.currentServer": "Current server ip address",
@@ -127,12 +128,10 @@
   "resetUserUsage.title": "Reset User Usage",
   "resetUserUsage.success": "{{username}}'s usage has reset successfully.",
   "resetUserUsage.error": "Usage reset failed, please try again.",
-
   "revokeUserSub.prompt": "Are you sure you want to revoke <b>{{username}}</b>'s subscription?",
   "revokeUserSub.title": "Revoke User Subscription",
   "revokeUserSub.success": "{{username}}'s subscription has revoked successfully.",
   "revokeUserSub.error": "Subscription revoke failed, please try again.",
-
   "resetAllUsage.title": "Reset data usage for all users",
   "resetAllUsage.prompt": "This action clears all of the users' data usage completely. Are you sure you want to reset all usage? THIS CANNOT BE UNDONE!",
   "resetAllUsage.success": "All usage has reset successfully.",

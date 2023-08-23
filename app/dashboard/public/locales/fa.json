@@ -78,6 +78,7 @@
   "hostsDialog.remainingData": "حجم باقی‌مانده کاربر",
   "hostsDialog.dataLimit": "حد مصرف کاربر",
   "hostsDialog.remaingDays": "روزهای باقی مانده کاربر",
+  "hostsDialog.statusEmoji": "وضعیت کاربر در قالب اموجی (✅,⌛️,🪫,❌)",
   "hostsDialog.proxyProtocol": "پروتکل پروکسی (مانند VMess)",
   "hostsDialog.proxyMethod": "روش انتقال پروکسی (مانند ws)",
   "hostsDialog.currentServer": "IP کنونی سرور",

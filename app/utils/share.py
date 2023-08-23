@@ -21,6 +21,13 @@ from config import CLASH_SUBSCRIPTION_TEMPLATE
 
 SERVER_IP = get_public_ip()
 
+STATUS_EMOJIES = {
+    'active': '✅',
+    'expired': '⌛️',
+    'limited': '🪫',
+    'disabled': '❌'
+}
+
 
 class V2rayShareLink(str):
     @classmethod
@@ -479,15 +486,8 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> lis
     else:
         data_limit = '∞'
         data_left = '∞'
-    
-    statuses = {
-        'active': '✅',
-        'expired': '⌛️',
-        'limited': '🪫',
-        'disabled': '❌'
-        }
-    
-    status = statuses[extra_data['status']]
+
+    status_emoji = STATUS_EMOJIES.get(extra_data.get('status')) or ''
 
     format_variables = FormatVariables({
         "SERVER_IP": SERVER_IP,
@@ -496,7 +496,7 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> lis
         "DATA_LIMIT": data_limit,
         "DATA_LEFT": data_left,
         "DAYS_LEFT": days_left,
-        "STATUS": status
+        "STATUS_EMOJI": status_emoji
     })
 
     for protocol, tags in inbounds.items():
