@@ -36,7 +36,7 @@ def user_created(user: UserResponse, by: Admin) -> None:
             username=user.username,
             by=by.username,
             expire_date=user.expire,
-            usage=user.data_limit,
+            data_limit=user.data_limit,
             proxies=user.proxies,
         )
     except Exception:
@@ -49,7 +49,7 @@ def user_updated(user: UserResponse, by: Admin) -> None:
         telegram.report_user_modification(
             username=user.username,
             expire_date=user.expire,
-            usage=user.data_limit,
+            data_limit=user.data_limit,
             proxies=user.proxies,
             by=by.username,
         )
@@ -82,7 +82,7 @@ def user_subscription_revoked(user: UserResponse, by: Admin) -> None:
         telegram.report_user_modification(
             username=user.username,
             expire_date=user.expire,
-            usage=user.data_limit,
+            data_limit=user.data_limit,
             proxies=user.proxies,
             by=by.username,
         )
