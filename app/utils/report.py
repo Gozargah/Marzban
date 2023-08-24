@@ -29,10 +29,10 @@ def status_change(username: str, status: UserStatus, user: UserResponse, by: Opt
         notify(UserEnabled(username=username, action=Notification.Type.user_enabled, user=user, by=by))
 
 
-def user_created(user: UserResponse, by: Admin) -> None:
+def user_created(user: UserResponse, user_id: int, by: Admin) -> None:
     try:
         telegram.report_new_user(
-            user_id=user.id,
+            user_id=user_id,
             username=user.username,
             by=by.username,
             expire_date=user.expire,
