@@ -166,7 +166,7 @@ def reset_user_data_usage(username: str,
         bg.add_task(xray.operations.add_user, dbuser=dbuser)
 
     user = UserResponse.from_orm(dbuser)
-    bg.add_task(report.user_updated,
+    bg.add_task(report.user_data_usage_reset,
                 user=user,
                 by=admin)
 

@@ -68,11 +68,8 @@ def user_deleted(username: str, by: Admin) -> None:
 
 def user_data_usage_reset(user: UserResponse, by: Admin) -> None:
     try:
-        telegram.report_user_modification(
+        telegram.report_user_usage_reset(
             username=user.username,
-            expire_date=user.expire,
-            usage=user.data_limit,
-            proxies=user.proxies,
             by=by.username,
         )
     except Exception:
