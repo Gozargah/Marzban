@@ -207,6 +207,79 @@ def revoke_user_subscription(username: str,
     return user
 
 
+@app.delete("/api/users/expired", tags=['User'])
+def delete_expired(passed_time: int,
+                   bg: BackgroundTasks,
+                   db: Session = Depends(get_db),
+                   admin: Admin = Depends(Admin.get_current)):
+    """
+    Delete expired users   
+    - **passedtime** must be an timestamp
+    - This function will delete all expired users that meet the specified number of days passed and can't be undone.
+    """
+
+    dbadmin = crud.get_admin(db, admin.username)
+
+    dbusers = crud.get_users(db=db,
+                            status=UserStatus.expired,
+                            admin=dbadmin if not admin.is_sudo else None)
+    
+    dbusers += crud.get_users(db=db,
+                            status=UserStatus.limited,
+                            admin=dbadmin if not admin.is_sudo else None)
+
+    expired_users = crud.is_user_expired(dbusers, passed_time)
+
+    if not expired_users:
+        raise HTTPException(status_code=404, detail=f'No expired user found.')
+
+    for dbuser in expired_users:
+            crud.remove_user(db, dbuser)
+            bg.add_task(
+            report.user_deleted,
+            username=dbuser.username,
+            by=admin.username
+            )
+            logger.info(f"User \"{dbuser.username}\" deleted")
+
+    return {}
+
+
+@app.put("/api/users/modifyusers", tags=['User'], response_model=UsersResponse)
+def change_data_limit_and_expire(time: int = None,
+                             data: int = None,
+                             db: Session = Depends(get_db),
+                            admin: Admin = Depends(Admin.get_current)
+                            ):
+    """
+    Change Data Limit And Expire
+    - **time** must be an timestamp
+    - **data** must be in Bytes, e.g. 1073741824B = 1GB 
+    - This api allows you to increase or decrease the data limit and expire date for active users.
+    - You need to specify the amount to be added or subtracted.
+    - The amount can be a positive or negative integer.
+    - Be cautious, as this operation can't be undone.
+    """
+
+
+    dbadmin = crud.get_admin(db, admin.username)
+
+    if not admin.is_sudo :
+        raise HTTPException(status_code=403, detail="You're not allowed")
+
+    dbusers, count = crud.get_users(db=db,
+                            status=UserStatus.active,
+                            admin=dbadmin if not admin.is_sudo else None,
+                            return_with_count=True)
+
+    if not dbusers:
+        raise HTTPException(status_code=404, detail=f'No active user found.')
+
+    dbusers = crud.update_users(db, dbusers, data=data, time=time)
+
+    return {"users": dbusers, "total": count}
+
+
 @app.get("/api/users", tags=['User'], response_model=UsersResponse)
 def get_users(offset: int = None,
               limit: int = None,
