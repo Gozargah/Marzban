@@ -36,7 +36,7 @@ def report_new_user(user_id: int, username: str, by: str, expire_date: int, data
         username=escape_html(username),
         data_limit=readable_size(data_limit) if data_limit else "Unlimited",
         expire_date=datetime.fromtimestamp(expire_date).strftime("%H:%M:%S %Y-%m-%d") if expire_date else "Never",
-        proxies="" if not proxies else ", ".join([escape_html(proxy.type) for proxy in proxies])
+        proxies="" if not proxies else ", ".join([escape_html(proxy) for proxy in proxies])
     )
 
     return report(
@@ -64,7 +64,7 @@ def report_user_modification(username: str, expire_date: int, data_limit: int, p
         username=escape_html(username),
         data_limit=readable_size(data_limit) if data_limit else "Unlimited",
         expire_date=datetime.fromtimestamp(expire_date).strftime("%H:%M:%S %Y-%m-%d") if expire_date else "Never",
-        protocols=', '.join([p.type for p in proxies])
+        protocols=', '.join([p for p in proxies])
     )
 
     return report(text, keyboard=BotKeyboard.user_menu({
@@ -108,6 +108,21 @@ def report_status_change(username: str, status: str):
 def report_user_usage_reset(username: str, by: str):
     text = """  
 🔁 <b>#Reset</b>
+➖➖➖➖➖➖➖➖➖
+<b>Username</b> : <code>{username}</code>
+➖➖➖➖➖➖➖➖➖
+<b>By</b> : <b>#{by}</b>\
+    """.format(
+        by=escape_html(by),
+        username=escape_html(username)
+    )
+
+    return report(text)
+
+
+def report_user_subscription_revoked(username: str, by: str):
+    text = """  
+🔁 <b>#Revoked</b>
 ➖➖➖➖➖➖➖➖➖
 <b>Username</b> : <code>{username}</code>
 ➖➖➖➖➖➖➖➖➖

@@ -29,14 +29,14 @@ def status_change(username: str, status: UserStatus, user: UserResponse, by: Opt
         notify(UserEnabled(username=username, action=Notification.Type.user_enabled, user=user, by=by))
 
 
-def user_created(user: UserResponse, by: Admin) -> None:
+def user_created(user: UserResponse, user_id: int, by: Admin) -> None:
     try:
         telegram.report_new_user(
-            user_id=user.id,
+            user_id=user_id,
             username=user.username,
             by=by.username,
             expire_date=user.expire,
-            usage=user.data_limit,
+            data_limit=user.data_limit,
             proxies=user.proxies,
         )
     except Exception:
@@ -49,7 +49,7 @@ def user_updated(user: UserResponse, by: Admin) -> None:
         telegram.report_user_modification(
             username=user.username,
             expire_date=user.expire,
-            usage=user.data_limit,
+            data_limit=user.data_limit,
             proxies=user.proxies,
             by=by.username,
         )
@@ -68,25 +68,19 @@ def user_deleted(username: str, by: Admin) -> None:
 
 def user_data_usage_reset(user: UserResponse, by: Admin) -> None:
     try:
-        telegram.report_user_modification(
+        telegram.report_user_usage_reset(
             username=user.username,
-            expire_date=user.expire,
-            usage=user.data_limit,
-            proxies=user.proxies,
             by=by.username,
         )
     except Exception:
         pass
-    notify(UserDataUsageReset(username=user.username, action=Notification.Type.user_updated, by=by, user=user))
+    notify(UserDataUsageReset(username=user.username, action=Notification.Type.data_usage_reset, by=by, user=user))
 
 
 def user_subscription_revoked(user: UserResponse, by: Admin) -> None:
     try:
-        telegram.report_user_modification(
+        telegram.report_user_subscription_revoked(
             username=user.username,
-            expire_date=user.expire,
-            usage=user.data_limit,
-            proxies=user.proxies,
             by=by.username,
         )
     except Exception:
