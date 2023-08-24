@@ -32,6 +32,7 @@ def status_change(username: str, status: UserStatus, user: UserResponse, by: Opt
 def user_created(user: UserResponse, by: Admin) -> None:
     try:
         telegram.report_new_user(
+            user_id=user.id,
             username=user.username,
             by=by.username,
             expire_date=user.expire,
@@ -73,7 +74,7 @@ def user_data_usage_reset(user: UserResponse, by: Admin) -> None:
         )
     except Exception:
         pass
-    notify(UserDataUsageReset(username=user.username, action=Notification.Type.user_updated, by=by, user=user))
+    notify(UserDataUsageReset(username=user.username, action=Notification.Type.data_usage_reset, by=by, user=user))
 
 
 def user_subscription_revoked(user: UserResponse, by: Admin) -> None:
