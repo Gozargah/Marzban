@@ -150,7 +150,10 @@ def record_user_usages():
     with GetDB() as db:
         stmt = update(User). \
             where(User.id == bindparam('uid')). \
-            values(used_traffic=User.used_traffic + bindparam('value'))
+            values(
+                used_traffic=User.used_traffic + bindparam('value'),
+                online_at=datetime.utcnow()
+            )
 
         tries = 0
         done = False
