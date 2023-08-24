@@ -170,7 +170,7 @@ def reset_user_data_usage(username: str,
                 user=user,
                 by=admin)
 
-    logger.info(f"User \"{username}\" modified")
+    logger.info(f"User \"{username}\" reseted")
 
     return dbuser
 
@@ -200,6 +200,8 @@ def revoke_user_subscription(username: str,
         user=user,
         by=admin
     )
+
+    logger.info(f"User \"{username}\" subscription revoked")
 
     return user
 

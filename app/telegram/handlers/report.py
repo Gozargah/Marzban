@@ -118,3 +118,17 @@ def report_user_usage_reset(username: str, by: str):
     )
 
     return report(text)
+
+def report_user_subscription_revoked(username: str, by: str):
+    text = """  
+🔁 <b>#Revoke</b>
+➖➖➖➖➖➖➖➖➖
+<b>Username</b> : <code>{username}</code>
+➖➖➖➖➖➖➖➖➖
+<b>By</b> : <b>#{by}</b>\
+    """.format(
+        by=escape_html(by),
+        username=escape_html(username)
+    )
+
+    return report(text)
