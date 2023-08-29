@@ -10,19 +10,20 @@ import time
 from app.db.models import (JWT, Admin, Node, NodeUsage, NodeUserUsage,
                            NotificationReminder, Proxy, ProxyHost,
                            ProxyInbound, ProxyTypes, System, User,
-                           UserTemplate, UserUsageResetLogs)
+                           UserTemplate, UserUsageResetLogs, UserLogs)
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
 from app.models.node import (NodeCreate, NodeModify, NodeStatus,
                              NodeUsageResponse)
 from app.models.proxy import ProxyHost as ProxyHostModify
-from app.models.user import (ReminderType, UserCreate,
+from app.models.user import (ReminderType, UserCreate, Action,
                              UserDataLimitResetStrategy, UserModify,
                              UserResponse, UserStatus, UserUsageResponse)
 from app.models.user_template import UserTemplateCreate, UserTemplateModify
 from app.utils.helpers import (calculate_expiration_days,
                                calculate_usage_percent)
 from app.utils.notification import Notification
-from config import NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT
+from config import (NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT, 
+                    DISABLE_ADMINS_LOG, SUDOERS)
 
 
 def add_default_host(db: Session, inbound: ProxyInbound):
@@ -194,6 +195,65 @@ def get_users_count(db: Session, status: UserStatus = None, admin: Admin = None)
     return query.count()
 
 
+def record_user_log(db: Session, action: Action, dbuser: User,
+                    admin: Optional[Admin] = None,
+                    old_status: Optional[UserStatus] = None,
+                    used_traffic: Optional[int] = None,
+                    old_data_limit: Optional[int] = None,
+                    old_expire: Optional[int] = None):
+    
+    if not DISABLE_ADMINS_LOG:
+
+        log = UserLogs(
+            admin=(admin if admin else None),
+            admin_username=(admin.username if admin else None),
+            user=dbuser,
+            username=dbuser.username,
+            old_status=(old_status or None),
+            new_status=dbuser.status,
+            data_limit_reset_strategy=dbuser.data_limit_reset_strategy,
+            old_data_limit=(old_data_limit or None),
+            new_data_limit=(dbuser.data_limit or None),
+            used_traffic=(used_traffic or None),
+            old_expire=(old_expire or None),
+            new_expire=(dbuser.expire or None),
+            action=action)
+
+        db.add(log)
+        db.commit()
+
+
+def get_user_logs(
+        db: Session, admin: Admin,
+        admin_username: Optional[str] = None,
+        user: Optional[User] = None,
+        start: Optional[int] = None,
+        end: Optional[int] = None,
+        action: Optional[Action] = None) -> List[UserLogs]:
+    
+    query = db.query(UserLogs)
+
+    if admin_username:
+        query = query.filter(UserLogs.admin_username == admin_username)
+    elif not admin.is_sudo:
+        query = query.filter(UserLogs.admin_username == admin.username)
+    if user:
+        query = query.filter(UserLogs.user == user)
+    if start and end:
+        start_datetime = datetime.fromtimestamp(start)
+        end_datetime = datetime.fromtimestamp(start)
+        query = query.filter(and_(UserLogs.created_at >= start_datetime, UserLogs.created_at <= end_datetime))
+    elif start:
+        start_datetime = datetime.fromtimestamp(start)
+        query = query.filter(UserLogs.created_at >= start_datetime)
+    elif end:
+        end_datetime = datetime.fromtimestamp(start)
+        query = query.filter(UserLogs.created_at <= end_datetime)
+    if action:
+        query = query.filter(UserLogs.action == action)
+    return query.all()
+
+
 def create_user(db: Session, user: UserCreate, admin: Admin = None):
     excluded_inbounds_tags = user.excluded_inbounds
     proxies = []
@@ -350,12 +410,18 @@ def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
         query = query.filter(User.admin == admin)
 
     for dbuser in query.all():
+        used_traffic=dbuser.used_traffic
         dbuser.used_traffic = 0
         if dbuser.status not in (UserStatus.expired or UserStatus.disabled):
+            old_status=dbuser.status
             dbuser.status = UserStatus.active
         dbuser.usage_logs.clear()
         dbuser.node_usages.clear()
         db.add(dbuser)
+        record_user_log(
+            db=db, action=Action.reset, dbuser=dbuser,
+            old_status=(old_status or None), used_traffic= used_traffic,
+            admin=admin)
 
     db.commit()
 

@@ -6,7 +6,7 @@ from fastapi import BackgroundTasks, Depends, HTTPException
 from app import app, logger, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
-from app.models.user import (UserCreate, UserModify, UserResponse,
+from app.models.user import (UserCreate, UserModify, UserResponse, Action,
                              UsersResponse, UserStatus, UserUsagesResponse)
 from app.utils import report
 
@@ -46,6 +46,12 @@ def add_user(new_user: UserCreate,
         user_id=dbuser.id,
         by=admin
     )
+    bg.add_task(
+        crud.record_user_log,
+        db=db, action=Action.create, dbuser=dbuser,
+        admin=crud.get_admin(db, admin.username)
+    )
+
     logger.info(f"New user \"{dbuser.username}\" added")
     return user
 
@@ -94,6 +100,10 @@ def modify_user(username: str,
         raise HTTPException(status_code=403, detail="You're not allowed")
 
     old_status = dbuser.status
+    used_traffic = dbuser.used_traffic
+    old_data_limit = dbuser.data_limit
+    old_expire = dbuser.expire
+
     dbuser = crud.update_user(db, dbuser, modified_user)
     user = UserResponse.from_orm(dbuser)
 
@@ -105,6 +115,15 @@ def modify_user(username: str,
     bg.add_task(report.user_updated,
                 user=user,
                 by=admin)
+    bg.add_task(
+        crud.record_user_log,
+        db=db, action=Action.modify, dbuser=dbuser,
+        old_status = old_status,
+        used_traffic = used_traffic,
+        old_data_limit = (old_data_limit or None),
+        old_expire = (old_expire or None),
+        admin=crud.get_admin(db, admin.username))
+    
     logger.info(f"User \"{user.username}\" modified")
 
     if user.status != old_status:
@@ -143,6 +162,12 @@ def remove_user(username: str,
         username=dbuser.username,
         by=admin
     )
+    bg.add_task(
+        crud.record_user_log,
+        db=db, action=Action.remove, dbuser=dbuser,
+        admin=crud.get_admin(db, admin.username)
+    )
+
     logger.info(f"User \"{username}\" deleted")
     return {}
 
@@ -162,6 +187,9 @@ def reset_user_data_usage(username: str,
     if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
         raise HTTPException(status_code=403, detail="You're not allowed")
 
+    old_status = dbuser.status
+    used_traffic = dbuser.used_traffic
+
     dbuser = crud.reset_user_data_usage(db=db, dbuser=dbuser)
     if dbuser.status == UserStatus.active:
         bg.add_task(xray.operations.add_user, dbuser=dbuser)
@@ -170,6 +198,11 @@ def reset_user_data_usage(username: str,
     bg.add_task(report.user_data_usage_reset,
                 user=user,
                 by=admin)
+    bg.add_task(
+        crud.record_user_log,
+        db=db, action=Action.reset, dbuser=dbuser,
+        old_status=(old_status or None), used_traffic=used_traffic,
+        admin=crud.get_admin(db, admin.username))
 
     logger.info(f"User \"{username}\"'s usage was reset")
 
@@ -191,7 +224,7 @@ def revoke_user_subscription(username: str,
     if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
         raise HTTPException(status_code=403, detail="You're not allowed")
 
-    dbuser = crud.revoke_user_sub(db=db, dbuser=dbuser)
+    dbuser = crud.revoke_user_sub(db, dbuser)
 
     if dbuser.status == UserStatus.active:
         bg.add_task(xray.operations.update_user, dbuser=dbuser)
@@ -201,6 +234,10 @@ def revoke_user_subscription(username: str,
         user=user,
         by=admin
     )
+    bg.add_task(
+        crud.record_user_log,
+        db=db, action=Action.revoke, dbuser=dbuser,
+        admin=crud.get_admin(db, admin.username))
 
     logger.info(f"User \"{username}\" subscription revoked")
 
@@ -221,11 +258,7 @@ def delete_expired(passed_time: int,
     dbadmin = crud.get_admin(db, admin.username)
 
     dbusers = crud.get_users(db=db,
-                            status=UserStatus.expired,
-                            admin=dbadmin if not admin.is_sudo else None)
-    
-    dbusers += crud.get_users(db=db,
-                            status=UserStatus.limited,
+                            status=[UserStatus.expired,UserStatus.limited],
                             admin=dbadmin if not admin.is_sudo else None)
 
     expired_users = crud.is_user_expired(dbusers, passed_time)
@@ -236,20 +269,27 @@ def delete_expired(passed_time: int,
     for dbuser in expired_users:
             crud.remove_user(db, dbuser)
             bg.add_task(
-            report.user_deleted,
-            username=dbuser.username,
-            by=admin.username
-            )
+                report.user_deleted,
+                username=dbuser.username,
+                by=admin.username)
+            bg.add_task(
+                crud.record_user_log,
+                db=db,
+                action=Action.remove,
+                dbuser=dbuser,
+                admin=crud.get_admin(db, admin.username))
+            
             logger.info(f"User \"{dbuser.username}\" deleted")
 
     return {}
 
 
 @app.put("/api/users/modifyusers", tags=['User'], response_model=UsersResponse)
-def change_data_limit_and_expire(time: int = None,
-                             data: int = None,
-                             db: Session = Depends(get_db),
-                            admin: Admin = Depends(Admin.get_current)
+def change_data_limit_and_expire(bg: BackgroundTasks,
+                                time: int = None,
+                                data: int = None,
+                                db: Session = Depends(get_db),
+                                admin: Admin = Depends(Admin.get_current)
                             ):
     """
     Change Data Limit And Expire
@@ -274,8 +314,40 @@ def change_data_limit_and_expire(time: int = None,
 
     if not dbusers:
         raise HTTPException(status_code=404, detail=f'No active user found.')
+    
+    for dbuser in dbusers:
+        modified_user = crud.get_user(db, dbuser.username)
+        dbuser = modified_user
+        old_data_limit = None
+        old_expire = None
+        used_traffic = modified_user.used_traffic
+        modified_user = UserResponse.from_orm(modified_user)
 
-    dbusers = crud.update_users(db, dbusers, data=data, time=time)
+        if (time and modified_user.expire):
+            old_expire = modified_user.expire
+            modified_user.expire = modified_user.expire + time
+
+        if (data and modified_user.data_limit):
+            old_data_limit = modified_user.data_limit
+            modified_user.data_limit = modified_user.data_limit + data 
+
+        if (data and modified_user.data_limit) or (time and modified_user.expire):
+            dbuser = crud.update_user(db, dbuser, modified_user)
+            user = UserResponse.from_orm(dbuser)
+
+            bg.add_task(report.user_updated,
+                user=user,
+                by=admin)
+            bg.add_task(
+                crud.record_user_log,
+                db=db, action=Action.modify, dbuser=dbuser,
+                old_status = dbuser.status,
+                used_traffic = used_traffic,
+                old_data_limit = old_data_limit,
+                old_expire = old_expire,
+                admin=crud.get_admin(db, admin.username))
+            
+            logger.info(f"User \"{dbuser.username}\" modified")
 
     return {"users": dbusers, "total": count}
 

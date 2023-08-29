@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 
 from app import logger, scheduler, xray
 from app.db import (GetDB, get_notification_reminder, get_users,
-                    update_user_status)
-from app.models.user import ReminderType, UserResponse, UserStatus
+                    update_user_status, record_user_log)
+from app.models.user import ReminderType, UserResponse, UserStatus, Action
 from app.utils import report
 from app.utils.helpers import (calculate_expiration_days,
                                calculate_usage_percent)
@@ -50,8 +50,11 @@ def review():
                 continue
 
             xray.operations.remove_user(user)
-            update_user_status(db, user, status)
+            dbuser = update_user_status(db, user, status)
             report.status_change(user.username, status, UserResponse.from_orm(user))
+            
+            record_user_log(db=db, action=Action.status_change, dbuser=dbuser,
+                                old_status=UserStatus.active, used_traffic=dbuser.used_traffic)
 
             logger.info(f"User \"{user.username}\" status changed to {status}")
 

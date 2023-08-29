@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Optional
 
 from pydantic import BaseModel, Field, validator
 
@@ -250,3 +250,36 @@ class UserUsageResponse(BaseModel):
 class UserUsagesResponse(BaseModel):
     username: str
     usages: List[UserUsageResponse]
+
+
+class Action(str, Enum):
+    create = 'create'
+    modify = 'modify'
+    reset = 'reset'
+    remove = 'remove'
+    revoke = 'revoke_sub'
+    status_change = 'status_change'
+
+
+class UserLogs(BaseModel):
+    id: int
+    created_at: datetime
+    admin_id: Optional[int] = None
+    admin_username: Optional[str] = None
+    user_id: Optional[int] = None
+    username: str
+    old_status: Optional[UserStatus] = None
+    new_status: Optional[UserStatus] = None
+    old_data_limit: Optional[int] = None
+    new_data_limit: Optional[int] = None
+    data_limit_reset_strategy: UserDataLimitResetStrategy
+    used_traffic: Optional[int] = None
+    old_expire: Optional[int] = None
+    new_expire: Optional[int] = None
+    action: Action
+    
+    class Config:
+        orm_mode = True
+    
+class UserLogsResponse(BaseModel):
+    logs: List[UserLogs]
