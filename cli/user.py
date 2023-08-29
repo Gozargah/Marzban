@@ -6,7 +6,6 @@ import typer
 from app.db import GetDB
 from app.db import crud
 from app.db.models import User
-from app.models.user import UserStatus
 from app.utils.system import readable_size
 from . import utils
 
