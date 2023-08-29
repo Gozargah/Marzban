@@ -23,7 +23,7 @@ from app.utils.helpers import (calculate_expiration_days,
                                calculate_usage_percent)
 from app.utils.notification import Notification
 from config import (NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT, 
-                    DISABLE_ADMINS_LOG, SUDOERS)
+                    DISABLE_ADMINS_LOG)
 
 
 def add_default_host(db: Session, inbound: ProxyInbound):
