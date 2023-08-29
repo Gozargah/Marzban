@@ -348,20 +348,6 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
     return dbuser
 
 
-def update_users(db: Session, users: List[User], time: int = None, data: int = None):
-    for user in users:
-        if time:
-            if user.expire is not None:
-                user.expire += time
-
-        if data:
-            if user.data_limit is not None:
-                user.data_limit += data 
-
-        db.commit() 
-    return users
-
-
 def reset_user_data_usage(db: Session, dbuser: User):
     usage_log = UserUsageResetLogs(
         user=dbuser,
