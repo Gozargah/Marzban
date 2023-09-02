@@ -537,6 +537,7 @@ def setup_format_variables(extra_data: dict) -> dict:
         days_left = (dt.fromtimestamp(extra_data['expire']) - dt.now()).days + 1
         if not days_left > 0:
             days_left = 0
+            time_left = 0
         elif days_left:
             time_left = format_time_left(extra_data['expire'])
     else:
