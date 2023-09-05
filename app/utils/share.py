@@ -651,6 +651,4 @@ def generate_subscription(
     return config
 
 def encode_title(text: str) -> str:
-    encoded_bytes = base64.b64encode(text.encode())
-    encoded_text = encoded_bytes.decode()
-    return f"base64:{encoded_text}"
+    return f"base64:{base64.b64encode(text.encode()).decode()}"
