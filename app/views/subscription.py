@@ -9,7 +9,8 @@ from app.models.user import UserResponse, UserStatus
 from app.templates import render_template
 from app.utils.jwt import get_subscription_payload
 from app.utils.share import generate_subscription
-from config import SUBSCRIPTION_PAGE_TEMPLATE
+from app.utils.share import encode_title
+from config import SUBSCRIPTION_PAGE_TEMPLATE, SUB_UPDATE_INTERVAL, SUB_SUPPORT_URL, SUB_PROFILE_TITLE
 
 
 @app.get("/sub/{token}/", tags=['Subscription'])
@@ -54,7 +55,10 @@ def user_subcription(token: str,
 
     response_headers = {
         "content-disposition": f'attachment; filename="{user.username}"',
-        "profile-update-interval": "12",
+        "profile-web-page-url": str(request.url),
+        "support-url": SUB_SUPPORT_URL,
+        "profile-title": encode_title(SUB_PROFILE_TITLE),
+        "profile-update-interval": SUB_UPDATE_INTERVAL,
         "subscription-userinfo": "; ".join(
             f"{key}={val}"
             for key, val in get_subscription_user_info(user).items()
