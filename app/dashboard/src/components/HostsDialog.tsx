@@ -269,7 +269,13 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                   <Badge>
                                     {"{"}DAYS_LEFT{"}"}
                                   </Badge>{" "}
-                                  {t("hostsDialog.remaingDays")}
+                                  {t("hostsDialog.remainingDays")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}TIME_LEFT{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.remainingTime")}
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
@@ -361,7 +367,19 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                   <Badge>
                                     {"{"}DAYS_LEFT{"}"}
                                   </Badge>{" "}
-                                  {t("hostsDialog.remaingDays")}
+                                  {t("hostsDialog.remainingDays")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}TIME_LEFT{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.remainingTime")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}STATUS_EMOJI{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.statusEmoji")}
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
