@@ -4,7 +4,7 @@ import random
 import secrets
 import urllib.parse as urlparse
 from datetime import datetime as dt
-from typing import TYPE_CHECKING, Literal, Union
+from typing import TYPE_CHECKING, Literal, Union, List
 from uuid import UUID
 
 import yaml
@@ -466,19 +466,86 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
 
 
 def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> list:
-    links = []
-    salt = secrets.token_hex(8)
+    format_variables = setup_format_variables(extra_data)
+    return process_inbounds_and_tags(inbounds, proxies, format_variables, mode="v2ray")
+
+
+def generate_clash_subscription(proxies: dict, inbounds: dict, extra_data: dict, is_meta: bool = False) -> str:
+    if is_meta is True:
+        conf = ClashMetaConfiguration()
+    else:
+        conf = ClashConfiguration()
+    
+    format_variables = setup_format_variables(extra_data)
+    return process_inbounds_and_tags(inbounds, proxies, format_variables, mode="clash", conf=conf)
+
+
+def generate_v2ray_subscription(links: list) -> str:
+    return base64.b64encode('\n'.join(links).encode()).decode()
+
+
+def generate_subscription(
+    user: "UserResponse",
+    config_format: Literal["v2ray", "clash-meta", "clash"],
+    as_base64: bool
+) -> str:
+    kwargs = {"proxies": user.proxies, "inbounds": user.inbounds, "extra_data": user.__dict__}
+
+    if config_format == 'v2ray':
+        config = "\n".join(generate_v2ray_links(**kwargs))
+    elif config_format == 'clash-meta':
+        config = generate_clash_subscription(**kwargs, is_meta=True)
+    elif config_format == 'clash':
+        config = generate_clash_subscription(**kwargs)
+    else:
+        raise ValueError(f'Unsupported format "{config_format}"')
+
+    if as_base64:
+        config = base64.b64encode(config.encode()).decode()
+
+    return config
+
+
+def format_time_left(expire: int) -> str:
+    seconds_left = expire - int(dt.now().timestamp())
+
+    if seconds_left <= 0:
+        return 
+
+    minutes, seconds = divmod(seconds_left, 60)
+    hours, minutes = divmod(minutes, 60)
+    days, hours = divmod(hours, 24)
+    months, days = divmod(days, 30)
+
+    result = []
+    if months:
+        result.append(f"{months}m ")
+    if days:
+        result.append(f"{days}d ")
+    if hours and (days < 7):
+        result.append(f"{hours}h ")
+    if minutes and not (months and days):
+        result.append(f"{minutes}m ")
+    if seconds and not (months and days and hours):
+        result.append(f"{seconds}s ")
+    return ' '.join(result)
+
+
+def setup_format_variables(extra_data: dict) -> dict:
 
     if (extra_data.get('expire') or 0) > 0:
         days_left = (dt.fromtimestamp(extra_data['expire']) - dt.now()).days + 1
         if not days_left > 0:
             days_left = 0
+            time_left = 0
+        elif days_left:
+            time_left = format_time_left(extra_data['expire'])
     else:
         days_left = '∞'
+        time_left = '∞'
 
     if extra_data.get('data_limit'):
         data_limit = readable_size(extra_data['data_limit'])
-
         data_left = extra_data['data_limit'] - extra_data['used_traffic']
         if data_left < 0:
             data_left = 0
@@ -489,102 +556,22 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> lis
 
     status_emoji = STATUS_EMOJIES.get(extra_data.get('status')) or ''
 
-    format_variables = FormatVariables({
+    format_variables = {
         "SERVER_IP": SERVER_IP,
         "USERNAME": extra_data.get('username', '{USERNAME}'),
         "DATA_USAGE": readable_size(extra_data.get('used_traffic')),
         "DATA_LIMIT": data_limit,
         "DATA_LEFT": data_left,
         "DAYS_LEFT": days_left,
+        "TIME_LEFT": time_left,
         "STATUS_EMOJI": status_emoji
-    })
+    }
 
-    for protocol, tags in inbounds.items():
-        settings = proxies.get(protocol)
-        if not settings:
-            continue
+    return format_variables
 
-        format_variables.update({"PROTOCOL": protocol.name})
-        for tag in tags:
-            inbound = xray.config.inbounds_by_tag.get(tag)
-            if not inbound:
-                continue
-
-            format_variables.update({"TRANSPORT": inbound['network']})
-            host_inbound = inbound.copy()
-            for host in xray.hosts.get(tag, []):
-                try:
-                    sni = ''
-                    sni_list = host['sni'] or inbound['sni']
-                    if sni_list:
-                        sni = random.choice(sni_list).replace('*', salt)
-
-                    req_host = ''
-                    req_host_list = host['host'] or inbound['host']
-                    if req_host_list:
-                        req_host = random.choice(req_host_list).replace('*', salt)
-
-                    host_inbound.update({
-                        'port': host['port'] or inbound['port'],
-                        'sni': sni,
-                        'host': req_host,
-                        # None means host tls complies with inbound's tls settings.
-                        'tls': inbound['tls'] if host['tls'] is None else host['tls'],
-                        'alpn': host['alpn'] or inbound.get('alpn', ''),
-                        'fp': host['fingerprint'] or inbound.get('fp', '')
-                    })
-                    links.append(get_v2ray_link(remark=host['remark'].format_map(format_variables),
-                                                address=host['address'].format_map(format_variables),
-                                                inbound=host_inbound,
-                                                settings=settings.dict(no_obj=True)))
-                except Exception as e:
-                    import traceback
-                    traceback.print_exc()
-                    raise e
-
-    return links
-
-
-def generate_v2ray_subscription(links: list) -> str:
-    return base64.b64encode('\n'.join(links).encode()).decode()
-
-
-def generate_clash_subscription(proxies: dict,
-                                inbounds: dict,
-                                extra_data: dict,
-                                is_meta: bool = False) -> str:
-    if is_meta is True:
-        conf = ClashMetaConfiguration()
-    else:
-        conf = ClashConfiguration()
-
+def process_inbounds_and_tags(inbounds: dict, proxies: dict, format_variables: dict, mode: str="v2ray", conf= None) -> Union[List, str]:
     salt = secrets.token_hex(8)
-
-    if (extra_data.get('expire') or 0) > 0:
-        days_left = (dt.fromtimestamp(extra_data['expire']) - dt.now()).days + 1
-        if not days_left > 0:
-            days_left = 0
-    else:
-        days_left = '∞'
-
-    if extra_data.get('data_limit'):
-        data_limit = readable_size(extra_data['data_limit'])
-        data_left = extra_data['data_limit'] - extra_data['used_traffic']
-        if data_left < 0:
-            data_left = 0
-        data_left = readable_size(data_left)
-    else:
-        data_limit = '∞'
-        data_left = '∞'
-
-    format_variables = FormatVariables({
-        "SERVER_IP": SERVER_IP,
-        "USERNAME": extra_data.get('username', '{USERNAME}'),
-        "DATA_USAGE": readable_size(extra_data.get('used_traffic')),
-        "DATA_LIMIT": data_limit,
-        "DATA_LEFT": data_left,
-        "DAYS_LEFT": days_left
-    })
+    results = []
 
     for protocol, tags in inbounds.items():
         settings = proxies.get(protocol)
@@ -614,38 +601,25 @@ def generate_clash_subscription(proxies: dict,
                     'port': host['port'] or inbound['port'],
                     'sni': sni,
                     'host': req_host,
-                    # None means host tls complies with inbound's tls settings.
                     'tls': inbound['tls'] if host['tls'] is None else host['tls'],
                     'alpn': host['alpn'] or inbound.get('alpn', ''),
                     'fp': host['fingerprint'] or inbound.get('fp', '')
                 })
-                conf.add(
-                    remark=host['remark'].format_map(format_variables),
-                    address=host['address'].format_map(format_variables),
-                    inbound=host_inbound,
-                    settings=settings.dict(no_obj=True),
-                )
+                
+                if mode == "v2ray":
+                    results.append(get_v2ray_link(remark=host['remark'].format_map(format_variables),
+                                                  address=host['address'].format_map(format_variables),
+                                                  inbound=host_inbound,
+                                                  settings=settings.dict(no_obj=True)))
+                elif mode == "clash":
+                    conf.add(
+                        remark=host['remark'].format_map(format_variables),
+                        address=host['address'].format_map(format_variables),
+                        inbound=host_inbound,
+                        settings=settings.dict(no_obj=True),
+                    )
 
-    return conf.to_yaml()
-
-
-def generate_subscription(
-    user: "UserResponse",
-    config_format: Literal["v2ray", "clash-meta", "clash"],
-    as_base64: bool
-) -> str:
-    kwargs = {"proxies": user.proxies, "inbounds": user.inbounds, "extra_data": user.__dict__}
-
-    if config_format == 'v2ray':
-        config = "\n".join(generate_v2ray_links(**kwargs))
-    elif config_format == 'clash-meta':
-        config = generate_clash_subscription(**kwargs, is_meta=True)
-    elif config_format == 'clash':
-        config = generate_clash_subscription(**kwargs)
-    else:
-        raise ValueError(f'Unsupported format "{config_format}"')
-
-    if as_base64:
-        config = base64.b64encode(config.encode()).decode()
-
-    return config
+    if mode == "clash":
+        return conf.to_yaml()
+    
+    return results
