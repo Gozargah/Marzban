@@ -577,13 +577,15 @@ def generate_clash_subscription(proxies: dict,
         data_limit = '∞'
         data_left = '∞'
 
+    status_emoji = STATUS_EMOJIES.get(extra_data.get('status')) or ''
     format_variables = FormatVariables({
         "SERVER_IP": SERVER_IP,
         "USERNAME": extra_data.get('username', '{USERNAME}'),
         "DATA_USAGE": readable_size(extra_data.get('used_traffic')),
         "DATA_LIMIT": data_limit,
         "DATA_LEFT": data_left,
-        "DAYS_LEFT": days_left
+        "DAYS_LEFT": days_left,
+        "STATUS_EMOJI": status_emoji
     })
 
     for protocol, tags in inbounds.items():
