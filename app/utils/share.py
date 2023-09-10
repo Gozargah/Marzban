@@ -561,7 +561,7 @@ class SingBoxConfiguration(str):
             address=address,
             port=inbound['port'],
             net=inbound['network'],
-            tls=(inbound['tls']),
+            tls=(inbound['tls'] in ('tls', 'reality')),
             flow=settings.get('flow', ''),
             sni=inbound['sni'],
             host=inbound['host'],
