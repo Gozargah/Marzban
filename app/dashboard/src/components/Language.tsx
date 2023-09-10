@@ -59,6 +59,13 @@ export const Language: FC<HeaderProps> = ({ actions }) => {
         >
           简体中文
         </MenuItem>
+        <MenuItem
+          maxW="100px"
+          fontSize="sm"
+          onClick={() => changeLanguage("ru")}
+        >
+          русский
+        </MenuItem>
       </MenuList>
     </Menu>
   );
