@@ -37,7 +37,7 @@ export const Language: FC<HeaderProps> = ({ actions }) => {
         icon={<LangIcon />}
         position="relative"
       />
-      <MenuList minW="100px">
+      <MenuList minW="100px" zIndex={9999}>
         <MenuItem
           maxW="100px"
           fontSize="sm"
