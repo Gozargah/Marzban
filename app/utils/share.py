@@ -519,15 +519,15 @@ def format_time_left(expire: int) -> str:
 
     result = []
     if months:
-        result.append(f"{months}m ")
+        result.append(f"{months}m")
     if days:
-        result.append(f"{days}d ")
+        result.append(f"{days}d")
     if hours and (days < 7):
-        result.append(f"{hours}h ")
-    if minutes and not (months and days):
-        result.append(f"{minutes}m ")
-    if seconds and not (months and days and hours):
-        result.append(f"{seconds}s ")
+        result.append(f"{hours}h")
+    if minutes and not (months or days):
+        result.append(f"{minutes}m")
+    if seconds and not (months or days):
+        result.append(f"{seconds}s")
     return ' '.join(result)
 
 
