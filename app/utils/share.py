@@ -235,6 +235,10 @@ class ClashConfiguration(object):
                   path: str,
                   udp: bool = True,
                   alpn: str = ''):
+        
+        if type == 'shadowsocks':
+            type = 'ss'
+
         remark = self._remark_validation(name)
         node = {
             'name': remark,
@@ -315,6 +319,7 @@ class ClashConfiguration(object):
 
         if inbound['protocol'] == 'shadowsocks':
             node['password'] = settings['password']
+            node['cipher'] = settings['method']
             self.data['proxies'].append(node)
             self.proxy_remarks.append(remark)
 
@@ -400,6 +405,7 @@ class ClashMetaConfiguration(ClashConfiguration):
 
         if inbound['protocol'] == 'shadowsocks':
             node['password'] = settings['password']
+            node['cipher'] = settings['method']
             self.data['proxies'].append(node)
             self.proxy_remarks.append(remark)
 
