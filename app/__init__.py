@@ -21,7 +21,7 @@ app = FastAPI(
     redoc_url='/redoc' if DOCS else None
 )
 app.openapi = custom_openapi(app)
-scheduler = BackgroundScheduler({'apscheduler.job_defaults.max_instances': 5}, timezone='UTC')
+scheduler = BackgroundScheduler({'apscheduler.job_defaults.max_instances': 10}, timezone='UTC')
 logger = logging.getLogger('uvicorn.error')
 app.add_middleware(
     CORSMiddleware,
