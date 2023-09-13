@@ -37,7 +37,7 @@ export const Language: FC<HeaderProps> = ({ actions }) => {
         icon={<LangIcon />}
         position="relative"
       />
-      <MenuList minW="100px">
+      <MenuList minW="100px" zIndex={9999}>
         <MenuItem
           maxW="100px"
           fontSize="sm"
@@ -58,6 +58,13 @@ export const Language: FC<HeaderProps> = ({ actions }) => {
           onClick={() => changeLanguage("zh-cn")}
         >
           简体中文
+        </MenuItem>
+        <MenuItem
+          maxW="100px"
+          fontSize="sm"
+          onClick={() => changeLanguage("ru")}
+        >
+          Русский
         </MenuItem>
       </MenuList>
     </Menu>

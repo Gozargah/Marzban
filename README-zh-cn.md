@@ -58,8 +58,8 @@
 
 ## 目录
 - [概览](#概览)
-  - [为什么要使用 Marzban?](#为什么要使用-marzban)
-    - [特性](#特性)
+	- [为什么要使用 Marzban?](#为什么要使用-marzban)
+		- [特性](#特性)
 - [安装指南](#安装指南)
 - [配置](#配置)
 - [如何使用 API](#如何使用-api)
@@ -305,6 +305,7 @@ Marzban 配备了一个集成的 Telegram bot，可以处理服务器管理、�
 - ETH、BNB、MATIC 网络：`0xFdc9ad32454FA4fc4733270FCc12ddBFb68b83F7`
 - 比特币网络：`bc1qpys2nefgsjjgae3g3gqy9crsv3h3rm96tlkz0v`
 - Dogecoin 网络：`DJAocBAu8y6LwhDKUktLAyzV8xyoFeHH6R`
+- TON 网络：`EQAVf-7hAXHlF-jmrKE44oBwN7HGQFVBLAtrOsev5K4qR4P8`
 
 
 感谢您的支持！

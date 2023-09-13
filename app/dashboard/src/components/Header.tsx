@@ -24,6 +24,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { DONATION_URL, REPO_URL } from "constants/Project";
 import { useDashboard } from "contexts/DashboardContext";
+import differenceInDays from "date-fns/differenceInDays";
+import isValid from "date-fns/isValid";
 import { FC, ReactNode, useState } from "react";
 import GitHubButton from "react-github-btn";
 import { useTranslation } from "react-i18next";
@@ -63,6 +65,21 @@ const NotificationCircle = chakra(Box, {
 
 const NOTIFICATION_KEY = "marzban-menu-notification";
 
+export const shouldShowDonation = (): boolean => {
+  const date = localStorage.getItem(NOTIFICATION_KEY);
+  if (!date) return true;
+  try {
+    if (date && isValid(parseInt(date))) {
+      if (differenceInDays(new Date(), new Date(parseInt(date))) >= 7)
+        return true;
+      return false;
+    }
+    return true;
+  } catch (err) {
+    return true;
+  }
+};
+
 export const Header: FC<HeaderProps> = ({ actions }) => {
   const {
     onEditingHosts,
@@ -72,14 +89,14 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
   } = useDashboard();
   const { t } = useTranslation();
   const { colorMode, toggleColorMode } = useColorMode();
-  const [notificationsChecked, setNotificationChecked] = useState(
-    localStorage.getItem(NOTIFICATION_KEY)
+  const [showDonationNotif, setShowDonationNotif] = useState(
+    shouldShowDonation()
   );
   const gBtnColor = colorMode === "dark" ? "dark_dimmed" : colorMode;
 
   const handleOnClose = () => {
-    localStorage.setItem(NOTIFICATION_KEY, "true");
-    setNotificationChecked("true");
+    localStorage.setItem(NOTIFICATION_KEY, new Date().getTime().toString());
+    setShowDonationNotif(false);
   };
 
   return (
@@ -91,13 +108,17 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
           direction: "ltr",
         },
       }}
+      position="relative"
     >
       <Text as="h1" fontWeight="semibold" fontSize="2xl">
         {t("users")}
       </Text>
+      {showDonationNotif && (
+        <NotificationCircle top="0" right="0" zIndex={9999} />
+      )}
       <Box overflow="auto" css={{ direction: "rtl" }}>
         <HStack alignItems="center">
-          <Menu onClose={handleOnClose}>
+          <Menu>
             <MenuButton
               as={IconButton}
               size="sm"
@@ -105,9 +126,6 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
               icon={
                 <>
                   <SettingsIcon />
-                  {!notificationsChecked && (
-                    <NotificationCircle top="-1" right="-1" />
-                  )}
                 </>
               }
               position="relative"
@@ -151,9 +169,10 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                   fontSize="sm"
                   icon={<DonationIcon />}
                   position="relative"
+                  onClick={handleOnClose}
                 >
                   {t("header.donation")}{" "}
-                  {!notificationsChecked && (
+                  {showDonationNotif && (
                     <NotificationCircle top="3" right="2" />
                   )}
                 </MenuItem>
