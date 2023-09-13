@@ -71,7 +71,11 @@ def user_subcription(token: str,
     elif re.match('^([Cc]lash|[Ss]tash)', user_agent):
         conf = generate_subscription(user=user, config_format="clash", as_base64=False)
         return Response(content=conf, media_type="text/yaml", headers=response_headers)
-
+    
+    elif re.match('^(SFA|SFI|SFM|SFT)', user_agent):
+        conf = generate_subscription(user=user, config_format="sing-box", as_base64=False)
+        return Response(content=conf, media_type="application/json", headers=response_headers)
+    
     else:
         conf = generate_subscription(user=user, config_format="v2ray", as_base64=True)
         return Response(content=conf, media_type="text/plain", headers=response_headers)
