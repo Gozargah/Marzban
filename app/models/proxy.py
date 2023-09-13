@@ -127,6 +127,8 @@ class ProxyHost(BaseModel):
     security: ProxyHostSecurity = ProxyHostSecurity.inbound_default
     alpn: ProxyHostALPN = ProxyHostALPN.none
     fingerprint: ProxyHostFingerprint = ProxyHostFingerprint.none
+    allowinsecure: Union[bool, None] = None
+    is_disabled: Union[bool, None] = None
 
     class Config:
         orm_mode = True

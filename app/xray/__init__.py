@@ -58,7 +58,8 @@ def hosts(storage: dict):
                     "tls": None
                     if host.security == ProxyHostSecurity.inbound_default
                     else host.security.value,
-                } for host in inbound_hosts
+                    "allowinsecure":host.allowinsecure,
+                } for host in inbound_hosts if not host.is_disabled
             ]
 
 

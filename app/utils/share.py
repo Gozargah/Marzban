@@ -46,7 +46,8 @@ class V2rayShareLink(str):
               alpn='',
               pbk='',
               sid='',
-              spx=''):
+              spx='',
+              ais=''):
 
         payload = {
             'add': address,
@@ -67,6 +68,8 @@ class V2rayShareLink(str):
             payload['sni'] = sni
             payload['fp'] = fp
             payload['alpn'] = alpn
+            if ais:
+                payload['allowInsecure'] = 1
         elif tls == 'reality':
             payload['sni'] = sni
             payload['fp'] = fp
@@ -93,7 +96,8 @@ class V2rayShareLink(str):
               alpn='',
               pbk='',
               sid='',
-              spx=''):
+              spx='',
+              ais=''):
 
         payload = {
             "security": tls,
@@ -113,6 +117,8 @@ class V2rayShareLink(str):
             payload['sni'] = sni
             payload['fp'] = fp
             payload['alpn'] = alpn
+            if ais:
+                payload['allowInsecure'] = 1
         elif tls == 'reality':
             payload['sni'] = sni
             payload['fp'] = fp
@@ -141,7 +147,8 @@ class V2rayShareLink(str):
                alpn='',
                pbk='',
                sid='',
-               spx=''):
+               spx='',
+               ais=''):
 
         payload = {
             "security": tls,
@@ -161,6 +168,8 @@ class V2rayShareLink(str):
             payload['sni'] = sni
             payload['fp'] = fp
             payload['alpn'] = alpn
+            if ais:
+                payload['allowInsecure'] = 1
         elif tls == 'reality':
             payload['sni'] = sni
             payload['fp'] = fp
@@ -234,7 +243,8 @@ class ClashConfiguration(object):
                   host: str,
                   path: str,
                   udp: bool = True,
-                  alpn: str = ''):
+                  alpn: str = '',
+                  ais: bool = ''):
         
         if type == 'shadowsocks':
             type = 'ss'
@@ -261,6 +271,8 @@ class ClashConfiguration(object):
                 node['servername'] = sni
             if alpn:
                 node['alpn'] = alpn.split(',')
+            if ais:
+                node['skip-cert-verify'] = ais
 
         net_opts = node[f'{network}-opts']
 
@@ -303,6 +315,7 @@ class ClashConfiguration(object):
             path=inbound['path'],
             udp=True,
             alpn=inbound.get('alpn', ''),
+            ais=inbound.get('ais', '')
         )
 
         if inbound['protocol'] == 'vmess':
@@ -339,7 +352,8 @@ class ClashMetaConfiguration(ClashConfiguration):
                   alpn: str = '',
                   fp: str = '',
                   pbk: str = '',
-                  sid: str = ''):
+                  sid: str = '',
+                  ais: bool = ''):
         node = super().make_node(
             name=name,
             type=type,
@@ -351,7 +365,8 @@ class ClashMetaConfiguration(ClashConfiguration):
             host=host,
             path=path,
             udp=udp,
-            alpn=alpn
+            alpn=alpn,
+            ais=ais
         )
         if fp:
             node['client-fingerprint'] = fp
@@ -376,6 +391,7 @@ class ClashMetaConfiguration(ClashConfiguration):
             fp=inbound.get('fp', ''),
             pbk=inbound.get('pbk', ''),
             sid=inbound.get('sid', ''),
+            ais=inbound.get('ais', '')
         )
 
         if inbound['protocol'] == 'vmess':
@@ -426,7 +442,8 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
                                     spx=inbound.get('spx', ''),
                                     host=inbound['host'],
                                     path=inbound['path'],
-                                    type=inbound['header_type'])
+                                    type=inbound['header_type'],
+                                    ais=inbound.get('ais', ''))
 
     if inbound['protocol'] == 'vless':
         return V2rayShareLink.vless(remark=remark,
@@ -444,7 +461,8 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
                                     spx=inbound.get('spx', ''),
                                     host=inbound['host'],
                                     path=inbound['path'],
-                                    type=inbound['header_type'])
+                                    type=inbound['header_type'],
+                                    ais=inbound.get('ais', ''))
 
     if inbound['protocol'] == 'trojan':
         return V2rayShareLink.trojan(remark=remark,
@@ -462,7 +480,8 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
                                      spx=inbound.get('spx', ''),
                                      host=inbound['host'],
                                      path=inbound['path'],
-                                     type=inbound['header_type'])
+                                     type=inbound['header_type'],
+                                    ais=inbound.get('ais', ''))
 
     if inbound['protocol'] == 'shadowsocks':
         return V2rayShareLink.shadowsocks(remark=remark,
@@ -813,7 +832,8 @@ def process_inbounds_and_tags(inbounds: dict, proxies: dict, format_variables: d
                     'host': req_host,
                     'tls': inbound['tls'] if host['tls'] is None else host['tls'],
                     'alpn': host['alpn'] or inbound.get('alpn', ''),
-                    'fp': host['fingerprint'] or inbound.get('fp', '')
+                    'fp': host['fingerprint'] or inbound.get('fp', ''),
+                    'ais': host['allowinsecure'] or inbound.get('allowinsecure', '')
                 })
 
                 if mode == "v2ray":
