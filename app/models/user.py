@@ -49,6 +49,7 @@ class User(BaseModel):
     note: str = None
     sub_updated_at: datetime = None
     sub_last_user_agent: str = None
+    online_at : datetime = None
 
     @validator('proxies', pre=True, always=True)
     def validate_proxies(cls, v, values, **kwargs):
