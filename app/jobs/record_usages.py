@@ -142,7 +142,11 @@ def record_user_usages():
     with GetDB() as db:
         stmt = update(User). \
             where(User.id == bindparam('uid')). \
-            values(used_traffic=User.used_traffic + bindparam('value'))
+            values(
+                used_traffic=User.used_traffic + bindparam('value'),
+                online_at=datetime.utcnow()
+            )
+        
         safe_execute(db, stmt, users_usage)
 
     if DISABLE_RECORDING_NODE_USAGE:

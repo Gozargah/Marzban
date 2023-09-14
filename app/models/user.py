@@ -53,6 +53,7 @@ class User(BaseModel):
     note: Optional[str] = Field(None, nullable=True)
     sub_updated_at: Optional[datetime] = Field(None, nullable=True)
     sub_last_user_agent: Optional[str] = Field(None, nullable=True)
+    online_at: Optional[datetime] = Field(None, nullable=True)
 
     @validator("proxies", pre=True, always=True)
     def validate_proxies(cls, v, values, **kwargs):

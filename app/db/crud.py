@@ -78,7 +78,9 @@ def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostMo
             inbound=inbound,
             security=host.security,
             alpn=host.alpn,
-            fingerprint=host.fingerprint
+            fingerprint=host.fingerprint,
+            allowinsecure=host.allowinsecure,
+            is_disabled=host.is_disabled
         ) for host in modified_hosts
     ]
     db.commit()
