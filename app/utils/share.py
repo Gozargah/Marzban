@@ -217,10 +217,10 @@ class ClashConfiguration(object):
         )
 
     def __str__(self) -> str:
-        return self.to_yaml()
+        return self.render()
 
     def __repr__(self) -> str:
-        return self.to_yaml()
+        return self.render()
 
     def _remark_validation(self, remark):
         if not remark in self.proxy_remarks:
@@ -245,7 +245,7 @@ class ClashConfiguration(object):
                   udp: bool = True,
                   alpn: str = '',
                   ais: bool = ''):
-        
+
         if type == 'shadowsocks':
             type = 'ss'
 
@@ -481,7 +481,7 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
                                      host=inbound['host'],
                                      path=inbound['path'],
                                      type=inbound['header_type'],
-                                    ais=inbound.get('ais', ''))
+                                     ais=inbound.get('ais', ''))
 
     if inbound['protocol'] == 'shadowsocks':
         return V2rayShareLink.shadowsocks(remark=remark,
@@ -495,10 +495,10 @@ class SingBoxConfiguration(str):
     def __init__(self):
         template = render_template(SINGBOX_SUBSCRIPTION_TEMPLATE)
         self.config = json.loads(template)
-    
+
     def add_outbound(self, outbound_data):
         self.config["outbounds"].append(outbound_data)
-    
+
     def render(self):
         urltest_types = ["vmess", "vless", "trojan", "shadowsocks"]
         urltest_tags = [outbound["tag"] for outbound in self.config["outbounds"] if outbound["type"] in urltest_types]
@@ -510,19 +510,19 @@ class SingBoxConfiguration(str):
                 outbound["outbounds"] = urltest_tags
 
         for outbound in self.config["outbounds"]:
-            if outbound.get("type") == "selector" :
+            if outbound.get("type") == "selector":
                 outbound["outbounds"] = selector_tags
 
         return json.dumps(self.config, indent=4)
-    
+
     @staticmethod
-    def tls_config(sni=None, fp=None, tls=None, pbk=None, 
+    def tls_config(sni=None, fp=None, tls=None, pbk=None,
                    sid=None, alpn=None, ais=None):
-        
+
         config = {}
-        if tls in  ['tls','reality']:
+        if tls in ['tls', 'reality']:
             config["enabled"] = True
-        
+
         if sni is not None:
             config["server_name"] = sni
 
@@ -558,12 +558,12 @@ class SingBoxConfiguration(str):
                          max_early_data=None,
                          early_data_header_name=None,
                          permit_without_stream=False):
-        
+
         transport_config = {}
-        
+
         if transport_type:
             transport_config['type'] = transport_type
-            
+
             if transport_type == "http":
                 if host:
                     transport_config['host'] = host
@@ -577,7 +577,7 @@ class SingBoxConfiguration(str):
                     transport_config['idle_timeout'] = idle_timeout
                 if ping_timeout:
                     transport_config['ping_timeout'] = ping_timeout
-            
+
             elif transport_type == "ws":
                 if path:
                     transport_config['path'] = path
@@ -587,7 +587,7 @@ class SingBoxConfiguration(str):
                     transport_config['max_early_data'] = max_early_data
                 if early_data_header_name:
                     transport_config['early_data_header_name'] = early_data_header_name
-            
+
             elif transport_type == "grpc":
                 if path:
                     transport_config['service_name'] = path
@@ -599,24 +599,24 @@ class SingBoxConfiguration(str):
                     transport_config['permit_without_stream'] = permit_without_stream
 
         return transport_config
-    
+
     def make_outbound(self,
-                  type: str,
-                  remark: str,
-                  address: str,
-                  port: int,
-                  net='ws',
-                  path='',
-                  host='',
-                  flow='',
-                  tls='',
-                  sni='',
-                  fp='',
-                  alpn='',
-                  pbk='',
-                  sid='',
-                  headers='',
-                  ais=''):
+                      type: str,
+                      remark: str,
+                      address: str,
+                      port: int,
+                      net='ws',
+                      path='',
+                      host='',
+                      flow='',
+                      tls='',
+                      sni='',
+                      fp='',
+                      alpn='',
+                      pbk='',
+                      sid='',
+                      headers='',
+                      ais=''):
 
         config = {
             "type": type,
@@ -642,7 +642,7 @@ class SingBoxConfiguration(str):
             config["network"]: net
 
         if tls in ('tls', 'reality'):
-            config['tls'] = self.tls_config(sni=sni, fp=fp, tls=tls, 
+            config['tls'] = self.tls_config(sni=sni, fp=fp, tls=tls,
                                             pbk=pbk, sid=sid, alpn=alpn,
                                             ais=ais)
 
@@ -797,8 +797,8 @@ def setup_format_variables(extra_data: dict) -> dict:
     return format_variables
 
 
-def process_inbounds_and_tags(inbounds: dict, proxies: dict, format_variables: dict, 
-                              mode: str="v2ray", conf= None) -> Union[List, str]:
+def process_inbounds_and_tags(inbounds: dict, proxies: dict, format_variables: dict,
+                              mode: str = "v2ray", conf=None) -> Union[List, str]:
     salt = secrets.token_hex(8)
     results = []
 
@@ -848,8 +848,8 @@ def process_inbounds_and_tags(inbounds: dict, proxies: dict, format_variables: d
                         inbound=host_inbound,
                         settings=settings.dict(no_obj=True),
                     )
-                    
+
     if mode in ["clash", "sing-box"]:
         return conf.render()
-    
+
     return results
