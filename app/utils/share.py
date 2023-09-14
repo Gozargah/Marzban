@@ -526,7 +526,7 @@ class SingBoxConfiguration(str):
         if sni is not None:
             config["server_name"] = sni
 
-        if tls is 'tls' and ais:
+        if tls == 'tls' and ais:
             config['insecure'] = ais
 
         if tls == 'reality':
