@@ -853,3 +853,6 @@ def process_inbounds_and_tags(inbounds: dict, proxies: dict, format_variables: d
         return conf.render()
 
     return results
+
+def encode_title(text: str) -> str:
+    return f"base64:{base64.b64encode(text.encode()).decode()}"
