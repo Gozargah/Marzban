@@ -75,11 +75,11 @@ def user_subcription(token: str,
     elif re.match('^([Cc]lash|[Ss]tash)', user_agent):
         conf = generate_subscription(user=user, config_format="clash", as_base64=False)
         return Response(content=conf, media_type="text/yaml", headers=response_headers)
-    
+
     elif re.match('^(SFA|SFI|SFM|SFT)', user_agent):
         conf = generate_subscription(user=user, config_format="sing-box", as_base64=False)
         return Response(content=conf, media_type="application/json", headers=response_headers)
-    
+
     else:
         conf = generate_subscription(user=user, config_format="v2ray", as_base64=True)
         return Response(content=conf, media_type="text/plain", headers=response_headers)
@@ -103,11 +103,12 @@ def user_subcription_info(token: str,
 
 
 @app.get("/sub/{token}/{client_type}", tags=['Subscription'])
-def user_subscription(
-        token: str,
-        client_type: str = Path(..., regex="sing-box|clash-meta|clash|v2ray"),
-        db: Session = Depends(get_db),
-    ):
+def user_subscription_with_client_type(
+    token: str,
+    request: Request,
+    client_type: str = Path(..., regex="sing-box|clash-meta|clash|v2ray"),
+    db: Session = Depends(get_db),
+):
     """
     Subscription link, v2ray, clash, sing-box, and clash-meta supported
     """
@@ -135,7 +136,10 @@ def user_subscription(
 
     response_headers = {
         "content-disposition": f'attachment; filename="{user.username}"',
-        "profile-update-interval": "12",
+        "profile-web-page-url": str(request.url),
+        "support-url": SUB_SUPPORT_URL,
+        "profile-title": encode_title(SUB_PROFILE_TITLE),
+        "profile-update-interval": SUB_UPDATE_INTERVAL,
         "subscription-userinfo": "; ".join(
             f"{key}={val}"
             for key, val in get_subscription_user_info(user).items()
@@ -146,11 +150,11 @@ def user_subscription(
     if client_type == "clash-meta":
         conf = generate_subscription(user=user, config_format="clash-meta", as_base64=False)
         return Response(content=conf, media_type="text/yaml", headers=response_headers)
-    
+
     elif client_type == "sing-box":
         conf = generate_subscription(user=user, config_format="sing-box", as_base64=False)
         return Response(content=conf, media_type="application/json", headers=response_headers)
-    
+
     elif client_type == "clash":
         conf = generate_subscription(user=user, config_format="clash", as_base64=False)
         return Response(content=conf, media_type="text/yaml", headers=response_headers)
@@ -161,4 +165,3 @@ def user_subscription(
 
     else:
         raise HTTPException(status_code=400, detail="Invalid subscription type")
-    
