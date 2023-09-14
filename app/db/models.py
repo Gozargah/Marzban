@@ -50,6 +50,7 @@ class User(Base):
     sub_last_user_agent = Column(String(512), nullable=True, default=None)
     created_at = Column(DateTime, default=datetime.utcnow)
     note = Column(String(500), nullable=True, default=None)
+    online_at = Column(DateTime, nullable=True, default=None)
 
     @property
     def lifetime_used_traffic(self):
@@ -180,6 +181,8 @@ class ProxyHost(Base):
 
     inbound_tag = Column(String(256), ForeignKey("inbounds.tag"), nullable=False)
     inbound = relationship("ProxyInbound", back_populates="hosts")
+    allowinsecure = Column(Boolean, nullable=True)
+    is_disabled = Column(Boolean, nullable=False, default=False)
 
 
 class System(Base):
