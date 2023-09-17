@@ -4,6 +4,7 @@ from datetime import datetime
 from sqlalchemy import (JSON, BigInteger, Boolean, Column, DateTime, Enum,
                         ForeignKey, Integer, String, Table, UniqueConstraint)
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.expression import text
 
 from app import xray
 from app.db.base import Base
@@ -220,6 +221,7 @@ class Node(Base):
     downlink = Column(BigInteger, default=0)
     user_usages = relationship("NodeUserUsage", back_populates="node", cascade="all, delete-orphan")
     usages = relationship("NodeUsage", back_populates="node", cascade="all, delete-orphan")
+    consumption_coefficent = Column(Integer, nullable=False, server_default=text("1"))
 
 
 class NodeUserUsage(Base):

@@ -19,7 +19,8 @@ class XRayNode:
                  address: str,
                  port: int,
                  api_port: int,
-                 ssl_cert: str):
+                 ssl_cert: str,
+                 consumption_coefficent: int = 1):
 
         class Service(rpyc.Service):
             def __init__(self,
@@ -52,6 +53,7 @@ class XRayNode:
         self.port = port
         self.api_port = api_port
         self.ssl_cert = ssl_cert
+        self.consumption_coefficent = consumption_coefficent
 
         self.started = False
 
