@@ -574,6 +574,9 @@ def update_node(db: Session, dbnode: Node, modify: NodeModify):
     else:
         dbnode.status = NodeStatus.connecting
 
+    if modify.consumption_coefficent:
+        dbnode.consumption_coefficent = modify.consumption_coefficent
+
     db.commit()
     db.refresh(dbnode)
     return dbnode
