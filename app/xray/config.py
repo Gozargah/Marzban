@@ -289,8 +289,8 @@ class XRayConfig(dict):
         inbound = self.inbounds_by_tag.get(inbound_tag, {})
         client = {"email": email, **settings}
 
-        # XTLS currently only supports transmission methods of TCP and mKCP
-        if inbound.get('network', 'tcp') not in ('tcp', 'kcp') and client.get('flow'):
+        # Flow only for Reality and TCP. Xray 1.8.0+
+        if inbound.get('network') != 'tcp' or inbound.get('tls') != 'reality' and client.get('flow'):
             del client['flow']
 
         try:
