@@ -104,8 +104,8 @@ class V2rayShareLink(str):
             "type": net,
             "host": host,
             "headerType": type
-        }
-        if flow and net in ('tcp', 'kcp'):
+        }             
+        if flow and net == 'tcp' and tls == 'reality':
             payload['flow'] = flow
 
         if net == 'grpc':
