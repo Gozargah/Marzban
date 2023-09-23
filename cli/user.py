@@ -78,7 +78,6 @@ def set_owner(
         ):
             utils.error("Aborted.")
 
-        user.admin = dbadmin
-        db.commit()
+        crud.set_owner(db, user, dbadmin)
 
         utils.success(f'{username}\'s owner successfully set to "{admin}".')
