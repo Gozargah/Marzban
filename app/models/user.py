@@ -249,3 +249,32 @@ class UserUsageResponse(BaseModel):
 class UserUsagesResponse(BaseModel):
     username: str
     usages: List[UserUsageResponse]
+
+
+class Action(str, Enum):
+    create = 'create'
+    modify = 'modify'
+    reset = 'reset'
+    remove = 'remove'
+    revoke = 'revoke_sub'
+    status_change = 'status_change'
+
+class UserLogs(BaseModel):
+    created_at: datetime
+    admin_username: Optional[str] = None
+    username: str
+    old_status: Optional[UserStatus] = None
+    new_status: Optional[UserStatus] = None
+    old_data_limit: Optional[int] = None
+    new_data_limit: Optional[int] = None
+    data_limit_reset_strategy: UserDataLimitResetStrategy
+    used_traffic: Optional[int] = None
+    old_expire: Optional[int] = None
+    new_expire: Optional[int] = None
+    action: Action
+    
+    class Config:
+        orm_mode = True
+    
+class UserLogsResponse(BaseModel):
+    logs: List[UserLogs]

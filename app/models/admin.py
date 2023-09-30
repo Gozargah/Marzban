@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 from app.db import Session, crud, get_db
 from app.utils.jwt import get_admin_payload
 from config import SUDOERS
@@ -19,6 +19,7 @@ class Token(BaseModel):
 class Admin(BaseModel):
     username: str
     is_sudo: bool
+    id: Union[int, None] = None
 
     class Config:
         orm_mode = True

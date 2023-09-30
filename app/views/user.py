@@ -94,7 +94,8 @@ def modify_user(username: str,
         raise HTTPException(status_code=403, detail="You're not allowed")
 
     old_status = dbuser.status
-    dbuser = crud.update_user(db, dbuser, modified_user)
+    dbuser = crud.update_user(db, dbuser, modified_user, 
+                              admin=crud.get_admin(db, admin.username))
     user = UserResponse.from_orm(dbuser)
 
     if user.status == UserStatus.active:
@@ -134,7 +135,8 @@ def remove_user(username: str,
     if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
         raise HTTPException(status_code=403, detail="You're not allowed")
 
-    crud.remove_user(db, dbuser)
+    crud.remove_user(db, dbuser,
+                     admin=crud.get_admin(db, admin.username))
 
     bg.add_task(xray.operations.remove_user, dbuser=dbuser)
 
@@ -162,7 +164,8 @@ def reset_user_data_usage(username: str,
     if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
         raise HTTPException(status_code=403, detail="You're not allowed")
 
-    dbuser = crud.reset_user_data_usage(db=db, dbuser=dbuser)
+    dbuser = crud.reset_user_data_usage(db=db, dbuser=dbuser,
+                                        admin=crud.get_admin(db, admin.username))
     if dbuser.status == UserStatus.active:
         bg.add_task(xray.operations.add_user, dbuser=dbuser)
 
@@ -191,7 +194,8 @@ def revoke_user_subscription(username: str,
     if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
         raise HTTPException(status_code=403, detail="You're not allowed")
 
-    dbuser = crud.revoke_user_sub(db=db, dbuser=dbuser)
+    dbuser = crud.revoke_user_sub(db=db, dbuser=dbuser,
+                                  admin=crud.get_admin(db, admin.username))
 
     if dbuser.status == UserStatus.active:
         bg.add_task(xray.operations.update_user, dbuser=dbuser)

@@ -13,7 +13,7 @@ from app.models.node import NodeStatus
 from app.models.proxy import (ProxyHostALPN, ProxyHostFingerprint,
                               ProxyHostSecurity, ProxyTypes)
 from app.models.user import (ReminderType, UserDataLimitResetStrategy,
-                             UserStatus)
+                             UserStatus, Action)
 
 
 class Admin(Base):
@@ -263,3 +263,35 @@ class NotificationReminder(Base):
     type = Column(Enum(ReminderType), nullable=False)
     expires_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class UserLogs(Base):
+    __tablename__ = "user_logs"
+    __table_args__ = (
+        UniqueConstraint("created_at", "admin_id", "user_id"),
+    )
+    
+    id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    admin_username = Column(String(34), nullable=True)
+    admin_id = Column(Integer, ForeignKey("admins.id"), nullable=True)
+    admin = relationship("Admin")
+    username = Column(String(34), nullable=False)
+    user_id = Column(Integer, nullable=False)
+    user_admin_id = Column(Integer, 
+                           ForeignKey("users.admin_id", ondelete="SET NULL", 
+                                      onupdate="SET NULL"), nullable=True)
+    user = relationship("User")
+    old_status = Column(Enum(UserStatus), nullable=True)
+    new_status = Column(Enum(UserStatus), nullable=True)
+    old_data_limit = Column(BigInteger, nullable=True)
+    new_data_limit = Column(BigInteger, nullable=True)
+    data_limit_reset_strategy = Column(
+        Enum(UserDataLimitResetStrategy),
+        nullable=False,
+        default=UserDataLimitResetStrategy.no_reset,
+    )
+    used_traffic = Column(BigInteger, nullable=True)
+    old_expire = Column(Integer, nullable=True)
+    new_expire = Column(Integer, nullable=True)
+    action = Column(Enum(Action), nullable=False)

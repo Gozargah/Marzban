@@ -5,4 +5,5 @@ from .core import *
 from .user import *
 from .user_template import *
 from .node import *
+from .log import *
 from .home import *

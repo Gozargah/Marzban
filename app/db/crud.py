@@ -8,19 +8,21 @@ from sqlalchemy.orm import Session
 from app.db.models import (JWT, Admin, Node, NodeUsage, NodeUserUsage,
                            NotificationReminder, Proxy, ProxyHost,
                            ProxyInbound, ProxyTypes, System, User,
-                           UserTemplate, UserUsageResetLogs)
+                           UserTemplate, UserUsageResetLogs, UserLogs)
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
 from app.models.node import (NodeCreate, NodeModify, NodeStatus,
                              NodeUsageResponse)
 from app.models.proxy import ProxyHost as ProxyHostModify
 from app.models.user import (ReminderType, UserCreate,
                              UserDataLimitResetStrategy, UserModify,
-                             UserResponse, UserStatus, UserUsageResponse)
+                             UserResponse, UserStatus, UserUsageResponse,
+                             Action)
 from app.models.user_template import UserTemplateCreate, UserTemplateModify
 from app.utils.helpers import (calculate_expiration_days,
                                calculate_usage_percent)
 from app.utils.notification import Notification
-from config import NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT
+from config import (NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT, 
+                    DISABLE_USER_LOGS)
 
 
 def add_default_host(db: Session, inbound: ProxyInbound):
@@ -219,16 +221,26 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None):
     db.add(dbuser)
     db.commit()
     db.refresh(dbuser)
+    if not DISABLE_USER_LOGS:
+        record_user_log (db, Action.create, dbuser, admin)
     return dbuser
 
 
-def remove_user(db: Session, dbuser: User):
+def remove_user(db: Session, dbuser: User, admin: Admin = None):
     db.delete(dbuser)
     db.commit()
+    if not DISABLE_USER_LOGS:
+        record_user_log (db, Action.remove, dbuser, admin)
     return dbuser
 
 
-def update_user(db: Session, dbuser: User, modify: UserModify):
+def update_user(db: Session, dbuser: User, modify: UserModify, admin: Admin = None):
+
+    old_status = dbuser.status
+    used_traffic = dbuser.used_traffic
+    old_data_limit = dbuser.data_limit
+    old_expire = dbuser.expire
+
     added_proxies: Dict[ProxyTypes, Proxy] = {}
     if modify.proxies:
         for proxy_type, settings in modify.proxies.items():
@@ -285,10 +297,21 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
 
     db.commit()
     db.refresh(dbuser)
+    if not DISABLE_USER_LOGS:
+        record_user_log(
+            db, Action.modify, dbuser, admin,
+            old_status = old_status,
+            used_traffic = used_traffic,
+            old_data_limit = (old_data_limit or None),
+            old_expire = (old_expire or None))
     return dbuser
 
 
-def reset_user_data_usage(db: Session, dbuser: User):
+def reset_user_data_usage(db: Session, dbuser: User, admin: Admin = None):
+    
+    old_status = dbuser.status
+    used_traffic = dbuser.used_traffic
+    
     usage_log = UserUsageResetLogs(
         user=dbuser,
         used_traffic_at_reset=dbuser.used_traffic,
@@ -303,10 +326,17 @@ def reset_user_data_usage(db: Session, dbuser: User):
 
     db.commit()
     db.refresh(dbuser)
+
+    if not DISABLE_USER_LOGS:
+        record_user_log(
+            db, Action.reset, dbuser, admin,
+            old_status=(old_status or None),
+            used_traffic=used_traffic )
+
     return dbuser
 
 
-def revoke_user_sub(db: Session, dbuser: User):
+def revoke_user_sub(db: Session, dbuser: User, admin: Admin = None):
     dbuser.sub_revoked_at = datetime.utcnow()
 
     user = UserResponse.from_orm(dbuser)
@@ -317,6 +347,9 @@ def revoke_user_sub(db: Session, dbuser: User):
 
     db.commit()
     db.refresh(dbuser)
+    if not DISABLE_USER_LOGS:
+        record_user_log (db, Action.revoke, dbuser, admin)
+
     return dbuser
 
 
@@ -336,21 +369,85 @@ def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
         query = query.filter(User.admin == admin)
 
     for dbuser in query.all():
+        used_traffic=dbuser.used_traffic
+        old_status=dbuser.status
         dbuser.used_traffic = 0
         if dbuser.status not in (UserStatus.expired or UserStatus.disabled):
             dbuser.status = UserStatus.active
         dbuser.usage_logs.clear()
         dbuser.node_usages.clear()
         db.add(dbuser)
+        if not DISABLE_USER_LOGS:
+            record_user_log(
+                db, Action.reset, dbuser, admin,
+                old_status=(old_status or None), 
+                used_traffic=used_traffic)
 
     db.commit()
 
 
 def update_user_status(db: Session, dbuser: User, status: UserStatus):
+    old_status = dbuser.status
     dbuser.status = status
     db.commit()
     db.refresh(dbuser)
+    if not DISABLE_USER_LOGS:
+        record_user_log (db, Action.status_change, dbuser,
+                        old_status=old_status)
+
     return dbuser
+
+
+def record_user_log(db: Session, action: Action, dbuser: User,
+                    admin: Optional[Admin] = None,
+                    old_status: Optional[UserStatus] = None,
+                    used_traffic: Optional[int] = None,
+                    old_data_limit: Optional[int] = None,
+                    old_expire: Optional[int] = None):
+    
+    log = UserLogs(
+        admin=(admin if admin else None),
+        admin_username=(admin.username if admin else None),
+        user=dbuser,
+        username=dbuser.username,
+        user_id=dbuser.id,
+        old_status=(old_status or None),
+        new_status=dbuser.status,
+        data_limit_reset_strategy=dbuser.data_limit_reset_strategy,
+        old_data_limit=(old_data_limit or None),
+        new_data_limit=(dbuser.data_limit or None),
+        used_traffic=(used_traffic if used_traffic else dbuser.used_traffic),
+        old_expire=(old_expire or None),
+        new_expire=(dbuser.expire or None),
+        action=action)
+    db.add(log)
+    db.commit()
+
+def get_user_logs(
+        db: Session, admin: Admin,
+        admin_username: Optional[str] = None,
+        username: Optional[str] = None,
+        start: Optional[int] = None,
+        end: Optional[int] = None,
+        action: Optional[Union[Action, list]] = None) -> List[UserLogs]:
+    
+    query = db.query(UserLogs)
+
+    if not admin.is_sudo:
+        query = query.filter(UserLogs.user_admin_id == admin.id)
+    if admin_username:
+        query = query.filter(UserLogs.admin_username == admin_username)
+    if username:
+        query = query.filter(UserLogs.username == username)
+    if start and end:
+        query = query.filter(and_(UserLogs.created_at >= start, UserLogs.created_at <= end))
+    elif start:
+        query = query.filter(UserLogs.created_at >= start)
+    elif end:
+        query = query.filter(UserLogs.created_at <= end)
+    if action:
+        query = query.filter(UserLogs.action == action)
+    return query.all()
 
 
 def get_system_usage(db: Session):
