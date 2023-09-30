@@ -126,7 +126,7 @@ def record_user_usages():
     usage_coefficient = {None: 1}  # default usage coefficient for the main api instance
 
     for node_id, node in list(xray.nodes.items()):
-        if node.connected:
+        if node.connected and node.started:
             api_instances[node_id] = node.api
             usage_coefficient[node_id] = node.usage_coefficient  # fetch the usage coefficient
 
@@ -164,7 +164,7 @@ def record_user_usages():
 def record_node_usages():
     api_instances = {None: xray.api}
     for node_id, node in list(xray.nodes.items()):
-        if node.connected:
+        if node.connected and node.started:
             api_instances[node_id] = node.api
 
     with ThreadPoolExecutor(max_workers=10) as executor:
