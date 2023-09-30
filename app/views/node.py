@@ -11,7 +11,7 @@ from app import app, logger, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.node import (NodeCreate, NodeModify, NodeResponse,
-                             NodesUsageResponse)
+                             NodesUsageResponse, NodeStatus)
 from app.models.proxy import ProxyHost
 
 
@@ -152,10 +152,13 @@ def modify_node(node_id: int,
     dbnode = crud.update_node(db, dbnode, modified_node)
 
     xray.operations.remove_node(dbnode.id)
-    xray.operations.connect_node(
-        node_id=dbnode.id,
-        config=xray.config.include_db_users()
-    )
+    if dbnode.status != NodeStatus.disabled:
+        xray.operations.connect_node(
+            node_id=dbnode.id,
+            config=xray.config.include_db_users()
+        )
+    else:
+        logger.info(f"Node \"{dbnode.name}\" disabled")
 
     logger.info(f"Node \"{dbnode.name}\" modified")
     return dbnode

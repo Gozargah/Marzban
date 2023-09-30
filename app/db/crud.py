@@ -486,7 +486,9 @@ def get_node_by_id(db: Session, node_id: int):
     return db.query(Node).filter(Node.id == node_id).first()
 
 
-def get_nodes(db: Session, status: Optional[Union[NodeStatus, list]] = None):
+def get_nodes(db: Session,
+              status: Optional[Union[NodeStatus, list]] = None,
+              enabled: bool = None):
     query = db.query(Node)
 
     if status:
@@ -494,6 +496,9 @@ def get_nodes(db: Session, status: Optional[Union[NodeStatus, list]] = None):
             query = query.filter(Node.status.in_(status))
         else:
             query = query.filter(Node.status == status)
+
+    if enabled:
+        query = query.filter(Node.status != NodeStatus.disabled)
 
     return query.all()
 
@@ -561,6 +566,16 @@ def update_node(db: Session, dbnode: Node, modify: NodeModify):
 
     if modify.certificate is not None:
         dbnode.certificate = modify.certificate
+
+    if modify.status is NodeStatus.disabled:
+        dbnode.status = modify.status
+        dbnode.xray_version = None
+        dbnode.message = None
+    else:
+        dbnode.status = NodeStatus.connecting
+
+    if modify.usage_coefficient:
+        dbnode.usage_coefficient = modify.usage_coefficient
 
     db.commit()
     db.refresh(dbnode)

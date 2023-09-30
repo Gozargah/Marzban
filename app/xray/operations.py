@@ -129,7 +129,8 @@ def add_node(dbnode: "DBNode"):
     xray.nodes[dbnode.id] = XRayNode(address=dbnode.address,
                                      port=dbnode.port,
                                      api_port=dbnode.api_port,
-                                     ssl_cert=dbnode.certificate)
+                                     ssl_cert=dbnode.certificate,
+                                     usage_coefficient=dbnode.usage_coefficient)
 
     return xray.nodes[dbnode.id]
 

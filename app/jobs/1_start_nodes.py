@@ -27,7 +27,7 @@ def app_startup():
     config = xray.config.include_db_users()
 
     with GetDB() as db:
-        node_ids = [dbnode.id for dbnode in crud.get_nodes(db)]
+        node_ids = [dbnode.id for dbnode in crud.get_nodes(db=db, enabled=True)]
 
     for node_id in node_ids:
         xray.operations.connect_node(node_id, config)
