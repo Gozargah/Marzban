@@ -30,7 +30,8 @@ def add_node(new_node: NodeCreate,
         db.rollback()
         raise HTTPException(status_code=409, detail=f"Node \"{new_node.name}\" already exists")
 
-    xray.operations.connect_node(
+    bg.add_task(
+        xray.operations.connect_node,
         node_id=dbnode.id,
         config=xray.config.include_db_users()
     )
@@ -153,12 +154,11 @@ def modify_node(node_id: int,
 
     xray.operations.remove_node(dbnode.id)
     if dbnode.status != NodeStatus.disabled:
-        xray.operations.connect_node(
+        bg.add_task(
+            xray.operations.connect_node,
             node_id=dbnode.id,
             config=xray.config.include_db_users()
         )
-    else:
-        logger.info(f"Node \"{dbnode.name}\" disabled")
 
     logger.info(f"Node \"{dbnode.name}\" modified")
     return dbnode
@@ -177,7 +177,8 @@ def reconnect_node(node_id: int,
     if not dbnode:
         raise HTTPException(status_code=404, detail="Node not found")
 
-    xray.operations.connect_node(
+    bg.add_task(
+        xray.operations.connect_node,
         node_id=dbnode.id,
         config=xray.config.include_db_users()
     )
