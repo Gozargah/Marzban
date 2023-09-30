@@ -486,8 +486,8 @@ def get_node_by_id(db: Session, node_id: int):
     return db.query(Node).filter(Node.id == node_id).first()
 
 
-def get_nodes(db: Session, 
-              status: Optional[Union[NodeStatus, list]] = None, 
+def get_nodes(db: Session,
+              status: Optional[Union[NodeStatus, list]] = None,
               enabled: bool = None):
     query = db.query(Node)
 
@@ -574,8 +574,8 @@ def update_node(db: Session, dbnode: Node, modify: NodeModify):
     else:
         dbnode.status = NodeStatus.connecting
 
-    if modify.consumption_coefficent:
-        dbnode.consumption_coefficent = modify.consumption_coefficent
+    if modify.usage_coefficient:
+        dbnode.usage_coefficient = modify.usage_coefficient
 
     db.commit()
     db.refresh(dbnode)

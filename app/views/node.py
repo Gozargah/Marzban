@@ -156,7 +156,7 @@ def modify_node(node_id: int,
         xray.operations.connect_node(
             node_id=dbnode.id,
             config=xray.config.include_db_users()
-    )   
+        )
     else:
         logger.info(f"Node \"{dbnode.name}\" disabled")
 

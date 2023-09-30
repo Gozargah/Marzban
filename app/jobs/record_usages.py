@@ -39,7 +39,7 @@ def safe_execute(db, stmt, params=None):
         db.commit()
 
 
-def record_user_stats(params: list, node_id: Union[int, None], 
+def record_user_stats(params: list, node_id: Union[int, None],
                       consumption_factor: int = 1):
     if not params:
         return
@@ -123,12 +123,12 @@ def get_outbounds_stats(api: XRayAPI):
 
 def record_user_usages():
     api_instances = {None: xray.api}
-    consumption_coefficent = {None: 1}  # default consumption coefficent for the main api instance
+    usage_coefficient = {None: 1}  # default usage coefficient for the main api instance
 
     for node_id, node in list(xray.nodes.items()):
         if node.connected:
             api_instances[node_id] = node.api
-            consumption_coefficent[node_id] = node.consumption_coefficent  # fetch the consumption coefficent
+            usage_coefficient[node_id] = node.usage_coefficient  # fetch the usage coefficient
 
     with ThreadPoolExecutor(max_workers=10) as executor:
         futures = {node_id: executor.submit(get_users_stats, api) for node_id, api in api_instances.items()}
@@ -136,9 +136,9 @@ def record_user_usages():
 
     users_usage = defaultdict(int)
     for node_id, params in api_params.items():
-        coefficent = consumption_coefficent.get(node_id, 1)  # get the consumption coefficent for the node
+        coefficient = usage_coefficient.get(node_id, 1)  # get the usage coefficient for the node
         for param in params:
-            users_usage[param['uid']] += param['value'] * coefficent  # apply the consumption coefficent
+            users_usage[param['uid']] += param['value'] * coefficient  # apply the usage coefficient
     users_usage = list({"uid": uid, "value": value} for uid, value in users_usage.items())
     if not users_usage:
         return
@@ -150,15 +150,15 @@ def record_user_usages():
             values(
                 used_traffic=User.used_traffic + bindparam('value'),
                 online_at=datetime.utcnow()
-            )
-        
+        )
+
         safe_execute(db, stmt, users_usage)
 
     if DISABLE_RECORDING_NODE_USAGE:
         return
 
     for node_id, params in api_params.items():
-        record_user_stats(params, node_id, consumption_coefficent[node_id])
+        record_user_stats(params, node_id, usage_coefficient[node_id])
 
 
 def record_node_usages():
