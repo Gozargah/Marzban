@@ -1,6 +1,8 @@
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
+import csv
+from io import StringIO
 
 from sqlalchemy import and_, delete
 from sqlalchemy.orm import Session
@@ -227,10 +229,10 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None):
 
 
 def remove_user(db: Session, dbuser: User, admin: Admin = None):
-    db.delete(dbuser)
-    db.commit()
     if not DISABLE_USER_LOGS:
         record_user_log (db, Action.remove, dbuser, admin)
+    db.delete(dbuser)
+    db.commit()
     return dbuser
 
 
@@ -451,6 +453,37 @@ def get_user_logs(
     if action:
         query = query.filter(UserLogs.action == action)
     return query.all()
+
+
+def convert_to_csv(logs):
+    # Convert logs to dictionaries
+    log_dicts = convert_to_dicts(logs)
+
+    # Create a CSV in-memory buffer
+    output = StringIO()
+    csv_writer = csv.DictWriter(output, fieldnames=log_dicts[0].keys())
+
+    # Write the CSV header
+    csv_writer.writeheader()
+
+    # Write the log data
+    csv_writer.writerows(log_dicts)
+
+    output.seek(0)
+
+    return output.getvalue()
+
+
+def convert_to_dicts(logs):
+    # Create a list of dictionaries from objects
+    log_dicts = []
+    for log in logs:
+        log_dict = {}
+        for column in log.__table__.columns:
+            if column.name != "id":
+                log_dict[column.name] = getattr(log, column.name)
+        log_dicts.append(log_dict)
+    return log_dicts
 
 
 def get_system_usage(db: Session):
