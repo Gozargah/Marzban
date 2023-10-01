@@ -49,7 +49,7 @@ def get_user_logs(username: str,
     if end :
         end = datetime.fromtimestamp(end)
 
-    logs = crud.get_user_logs(db, admin, username = dbuser.username, 
+    logs = crud.get_user_logs(db, admin, user_id = dbuser.id, 
                               start = start, end = end, action = action)
 
     return {"logs": logs}

@@ -427,6 +427,7 @@ def get_user_logs(
         db: Session, admin: Admin,
         admin_username: Optional[str] = None,
         username: Optional[str] = None,
+        user_id: Optional[int] = None,
         start: Optional[int] = None,
         end: Optional[int] = None,
         action: Optional[Union[Action, list]] = None) -> List[UserLogs]:
@@ -439,6 +440,8 @@ def get_user_logs(
         query = query.filter(UserLogs.admin_username == admin_username)
     if username:
         query = query.filter(UserLogs.username == username)
+    if user_id:
+        query = query.filter(UserLogs.user_id == user_id)
     if start and end:
         query = query.filter(and_(UserLogs.created_at >= start, UserLogs.created_at <= end))
     elif start:
