@@ -324,6 +324,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
     setError(null);
     setUsageVisible(false);
     setUsageFilter("1m");
+    setIsDetailsVisible(false);
   };
 
   const handleResetUsage = () => {
