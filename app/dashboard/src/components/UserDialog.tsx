@@ -555,21 +555,21 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           </FormErrorMessage>
                         </FormControl>
                         {isEditing && isDetailsVisible && (
-                            <><><FormLabel>{t("userDialog.online_at")}</FormLabel><Input
+                            <><><FormLabel>{t("userDialog.onlineAt")}</FormLabel><Input
                                 size="sm"
                                 type="text"
                                 borderRadius="6px"
                                 error={form.formState.errors.online_at?.message}
                                 disabled={true}
                                 {...form.register("online_at")} /></>
-                              <FormLabel style={{marginTop: '10px'}}>{t("userDialog.sub_updated_at")}</FormLabel><Input
+                              <FormLabel style={{marginTop: '10px'}}>{t("userDialog.subUpdatedAt")}</FormLabel><Input
                                   size="sm"
                                   type="text"
                                   borderRadius="6px"
                                   error={form.formState.errors.sub_updated_at?.message}
                                   disabled={true}
                                   {...form.register("sub_updated_at")} /><FormLabel
-                                  style={{marginTop: '10px'}}>{t("userDialog.sub_last_user_agent")}</FormLabel><Input
+                                  style={{marginTop: '10px'}}>{t("userDialog.subLastUserAgent")}</FormLabel><Input
                                   size="sm"
                                   type="text"
                                   borderRadius="6px"
