@@ -27,11 +27,18 @@ export type InboundType = {
   tls: string;
   port?: number;
 };
+
+
+export type FlowType = {
+    flow: string;
+};
+
 export type Inbounds = Map<ProtocolType, InboundType[]>;
 
 type DashboardStateType = {
   isCreatingNewUser: boolean;
   editingUser: User | null | undefined;
+  flow: string | undefined;
   deletingUser: User | null;
   version: string | null;
   users: {
@@ -97,6 +104,16 @@ export const fetchInbounds = () => {
     });
 };
 
+export const fetchFlow = () => {
+    return fetch("/core/flow")
+        .then((flow: FlowType) => {
+            useDashboard.setState({flow: flow.flow});
+        })
+        .finally(() => {
+            useDashboard.setState({ loading: false });
+        });
+};
+
 export const useDashboard = create(
   subscribeWithSelector<DashboardStateType>((set, get) => ({
     version: null,
@@ -115,6 +132,7 @@ export const useDashboard = create(
     isEditingNodes: false,
     isShowingNodesUsage: false,
     resetUsageUser: null,
+    flow: "",
     revokeSubscriptionUser: null,
     filters: {
       username: "",

@@ -10,8 +10,9 @@ from app import app, xray
 from app.db import Session, get_db
 from app.models.admin import Admin
 from app.models.core import CoreStats
+from app.models.core import FlowResponse
 from app.xray import XRayConfig
-from config import XRAY_JSON
+from config import XRAY_JSON, DEFAULT_VLESS_FLOW
 
 
 @app.websocket("/api/core/logs")
@@ -129,3 +130,9 @@ def get_core_config(payload: dict, admin: Admin = Depends(Admin.get_current)) ->
         f.write(json.dumps(payload, indent=4))
 
     return payload
+
+@app.get("/api/core/flow", tags=['Core'], response_model=FlowResponse)
+def get_flow(admin: Admin = Depends(Admin.get_current)):
+    if not admin:
+        return FlowResponse(flow="")
+    return FlowResponse(flow=DEFAULT_VLESS_FLOW)

@@ -5,3 +5,6 @@ class CoreStats(BaseModel):
     version: str
     started: bool
     logs_websocket: str
+
+class FlowResponse(BaseModel):
+    flow: str
