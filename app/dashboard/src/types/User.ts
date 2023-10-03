@@ -47,6 +47,9 @@ export type User = {
   subscription_url: string;
   inbounds: UserInbounds;
   note: string;
+  online_at: string;
+  sub_updated_at: string;
+  sub_last_user_agent: string;
 };
 
 export type UserCreate = Pick<
@@ -59,4 +62,7 @@ export type UserCreate = Pick<
   | "username"
   | "status"
   | "note"
+  | "online_at"
+  | "sub_updated_at"
+  | "sub_last_user_agent"
 >;
