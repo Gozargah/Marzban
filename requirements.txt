@@ -28,7 +28,7 @@ MarkupSafe==2.1.1
 mdurl==0.1.2
 packaging==21.3
 passlib==1.7.4
-Pillow==9.4.0
+Pillow==10.0.1
 plumbum==1.8.1
 protobuf==3.20.3
 psutil==5.9.4
