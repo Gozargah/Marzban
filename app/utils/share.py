@@ -187,9 +187,9 @@ class V2rayShareLink(str):
                     address: str,
                     port: int,
                     password: str,
-                    security='chacha20-ietf-poly1305'):
+                    method: str):
         return "ss://" + \
-            base64.b64encode(f'{security}:{password}'.encode()).decode() + \
+            base64.b64encode(f'{method}:{password}'.encode()).decode() + \
             f"@{address}:{port}#{urlparse.quote(remark)}"
 
 
@@ -487,7 +487,9 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
         return V2rayShareLink.shadowsocks(remark=remark,
                                           address=address,
                                           port=inbound['port'],
-                                          password=settings['password'])
+                                          password=settings['password'],
+                                          method=settings['method']
+                                          )
 
 
 class SingBoxConfiguration(str):
