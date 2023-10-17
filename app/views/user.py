@@ -325,26 +325,27 @@ def delete_expired(passed_time: int,
     - This function will delete all expired users that meet the specified number of days passed and can't be undone.
     """
 
+    dbadmin = crud.get_admin(db, admin.username)
+
     dbusers = crud.get_users(db=db,
-                            status=[UserStatus.expired, UserStatus.limited],
-                            admin=admin if not admin.is_sudo else None)
+                             status=[UserStatus.expired, UserStatus.limited],
+                             admin=dbadmin if not admin.is_sudo else None)
 
     current_time = int(datetime.now(timezone.utc).timestamp())
     expiration_threshold = current_time - passed_time
-    expired_users = [user for user in dbusers if user.expire <= expiration_threshold]
-
+    expired_users = [
+        user for user in dbusers if user.expire is not None and user.expire <= expiration_threshold]
     if not expired_users:
         raise HTTPException(status_code=404, detail=f'No expired user found.')
 
     for dbuser in expired_users:
         crud.remove_user(db, dbuser)
 
-        bg.add_task(xray.operations.remove_user, dbuser=dbuser)
-        
         bg.add_task(
             report.user_deleted,
             username=dbuser.username,
-            by=admin.username)
+            by=admin
+        )
 
         logger.info(f"User \"{dbuser.username}\" deleted")
 
