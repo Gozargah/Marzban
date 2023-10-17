@@ -23,6 +23,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  Switch,
   Text,
   Tooltip,
   useToast,
@@ -43,7 +44,7 @@ import {
   useNodesQuery,
 } from "contexts/NodesContext";
 import { FC, ReactNode, useState } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
+import { Controller, useForm, UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { UseMutateFunction, useMutation, useQueryClient } from "react-query";
 import "slick-carousel/slick/slick-theme.css";
@@ -335,18 +336,55 @@ const NodeForm: NodeFormType = ({
   addAsHost = false,
 }) => {
   const { t } = useTranslation();
+
   return (
     <form onSubmit={form.handleSubmit((v) => mutate(v))}>
       <VStack>
-        <FormControl>
-          <CustomInput
-            label={t("nodes.nodeName")}
-            size="sm"
-            placeholder="Marzban-S2"
-            {...form.register("name")}
-            error={form.formState?.errors?.name?.message}
-          />
-        </FormControl>
+        <HStack w="full">
+          <FormControl>
+            <CustomInput
+              label={t("nodes.nodeName")}
+              size="sm"
+              placeholder="Marzban-S2"
+              {...form.register("name")}
+              error={form.formState?.errors?.name?.message}
+            />
+          </FormControl>
+
+          <HStack px={1}>
+            <Controller
+              name="status"
+              control={form.control}
+              render={({ field }) => {
+                return (
+                  <Tooltip
+                    key={field.value}
+                    placement="top"
+                    label={
+                      `${t("usersTable.status")}: ` +
+                      (field.value !== "disabled" ? t("active") : t("disabled"))
+                    }
+                    textTransform="capitalize"
+                  >
+                    <Box mt="6">
+                      <Switch
+                        colorScheme="primary"
+                        isChecked={field.value !== "disabled"}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            field.onChange("connecting");
+                          } else {
+                            field.onChange("disabled");
+                          }
+                        }}
+                      />
+                    </Box>
+                  </Tooltip>
+                );
+              }}
+            />
+          </HStack>
+        </HStack>
         <HStack alignItems="flex-start">
           <Box w="50%">
             <CustomInput

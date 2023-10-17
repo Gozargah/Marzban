@@ -399,6 +399,12 @@ def update_user_status(db: Session, dbuser: User, status: UserStatus):
 
     return dbuser
 
+def set_owner(db: Session, dbuser: User, admin: Admin):
+    dbuser.admin = admin
+    db.commit()
+    db.refresh(dbuser)
+    return dbuser
+
 
 def record_user_log(db: Session, action: Action, dbuser: User,
                     admin: Optional[Admin] = None,

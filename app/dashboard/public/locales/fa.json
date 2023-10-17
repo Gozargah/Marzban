@@ -117,6 +117,8 @@
   "deleteNode.title": "حذف گره",
   "deleteNode.prompt": "از حذف گره <b>{{name}}</b> مطمئن هستید؟",
   "deleteNode.deleteSuccess": "گره {{name}} با موفقیت حذف شد",
+  "active": "فعال",
+  "disabled": "غیر فعال",
   "users": "کاربران",
   "activeUsers": "کاربران فعال",
   "dataUsage": "مصرف داده",
