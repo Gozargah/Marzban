@@ -352,6 +352,12 @@ def update_user_status(db: Session, dbuser: User, status: UserStatus):
     db.refresh(dbuser)
     return dbuser
 
+def set_owner(db: Session, dbuser: User, admin: Admin):
+    dbuser.admin = admin
+    db.commit()
+    db.refresh(dbuser)
+    return dbuser
+
 
 def get_system_usage(db: Session):
     return db.query(System).first()
