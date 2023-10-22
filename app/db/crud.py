@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Tuple, Union
 from sqlalchemy import and_, delete
 from sqlalchemy.orm import Session
 
-from app.db.models import (JWT, Admin, Node, NodeUsage, NodeUserUsage,
+from app.db.models import (JWT, TLS, Admin, Node, NodeUsage, NodeUserUsage,
                            NotificationReminder, Proxy, ProxyHost,
                            ProxyInbound, ProxyTypes, System, User,
                            UserTemplate, UserUsageResetLogs)
@@ -352,6 +352,7 @@ def update_user_status(db: Session, dbuser: User, status: UserStatus):
     db.refresh(dbuser)
     return dbuser
 
+
 def set_owner(db: Session, dbuser: User, admin: Admin):
     dbuser.admin = admin
     db.commit()
@@ -365,6 +366,10 @@ def get_system_usage(db: Session):
 
 def get_jwt_secret_key(db: Session):
     return db.query(JWT).first().secret_key
+
+
+def get_tls_certificate(db: Session):
+    return db.query(TLS).first()
 
 
 def get_admin(db: Session, username: str):

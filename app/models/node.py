@@ -13,6 +13,11 @@ class NodeStatus(str, Enum):
     disabled = "disabled"
 
 
+class NodeSettings(BaseModel):
+    min_node_version: str = "v0.2.0"
+    certificate: str
+
+
 class Node(BaseModel):
     name: str
     address: str

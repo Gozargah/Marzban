@@ -11,8 +11,21 @@ from app import app, logger, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.node import (NodeCreate, NodeModify, NodeResponse,
-                             NodesUsageResponse, NodeStatus)
+                             NodeSettings, NodeStatus, NodesUsageResponse)
 from app.models.proxy import ProxyHost
+
+
+@app.get("/api/node/settings", tags=['Node'], response_model=NodeSettings)
+def get_node(db: Session = Depends(get_db),
+             admin: Admin = Depends(Admin.get_current)):
+    if not admin.is_sudo:
+        raise HTTPException(status_code=403, detail="You're not allowed")
+
+    tls = crud.get_tls_certificate(db)
+
+    return NodeSettings(
+        certificate=tls.certificate
+    )
 
 
 @app.post("/api/node", tags=['Node'], response_model=NodeResponse)
