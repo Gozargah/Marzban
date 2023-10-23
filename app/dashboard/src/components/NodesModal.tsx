@@ -362,11 +362,7 @@ const NodeForm: NodeFormType = ({
               flexDirection="column"
               overflow="hidden"
             >
-              <span>
-                To setup Marzban Node, you need to set this certificate on the
-                Node to initialize a secure connection between main server and
-                the node
-              </span>
+              <span>{t("nodes.connection-hint")}</span>
               <HStack justify="end" py={2}>
                 <Button
                   as="a"
@@ -377,23 +373,34 @@ const NodeForm: NodeFormType = ({
                     new Blob([nodeSettings.certificate], { type: "text/plain" })
                   )}
                 >
-                  Download Certificate
+                  {t("nodes.download-certificate")}
                 </Button>
-                <IconButton
-                  aria-label={
-                    (!showCertificate ? "Show" : "Hide") + " certificate"
-                  }
-                  onClick={setShowCertificate.bind(null, !showCertificate)}
-                  colorScheme="whiteAlpha"
-                  color="primary"
-                  size="xs"
-                >
-                  {!showCertificate ? (
-                    <EyeIcon width="15px" />
-                  ) : (
-                    <EyeSlashIcon width="15px" />
+                <Tooltip
+                  placement="top"
+                  label={t(
+                    !showCertificate
+                      ? "nodes.show-certificate"
+                      : "nodes.show-certificate"
                   )}
-                </IconButton>
+                >
+                  <IconButton
+                    aria-label={t(
+                      !showCertificate
+                        ? "nodes.show-certificate"
+                        : "nodes.show-certificate"
+                    )}
+                    onClick={setShowCertificate.bind(null, !showCertificate)}
+                    colorScheme="whiteAlpha"
+                    color="primary"
+                    size="xs"
+                  >
+                    {!showCertificate ? (
+                      <EyeIcon width="15px" />
+                    ) : (
+                      <EyeSlashIcon width="15px" />
+                    )}
+                  </IconButton>
+                </Tooltip>
               </HStack>
               <Collapse in={showCertificate} animateOpacity>
                 <Text
