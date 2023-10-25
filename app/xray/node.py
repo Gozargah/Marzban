@@ -1,4 +1,5 @@
 import re
+import ssl
 import tempfile
 import threading
 import time
@@ -13,6 +14,13 @@ from app.xray.config import XRayConfig
 from xray_api import XRay as XRayAPI
 
 
+def string_to_temp_file(content: str):
+    file = tempfile.NamedTemporaryFile(mode='w+t')
+    file.write(content)
+    file.flush()
+    return file
+
+
 class XRayNode:
 
     def __init__(self,
@@ -21,7 +29,6 @@ class XRayNode:
                  api_port: int,
                  ssl_key: str,
                  ssl_cert: str,
-                 node_ssl_cert: str,
                  usage_coefficient: float = 1):
 
         class Service(rpyc.Service):
@@ -56,22 +63,12 @@ class XRayNode:
         self.api_port = api_port
         self.ssl_key = ssl_key
         self.ssl_cert = ssl_cert
-        self.node_ssl_cert = node_ssl_cert
         self.usage_coefficient = usage_coefficient
 
         self.started = False
 
-        self._keyfile = tempfile.NamedTemporaryFile(mode='w+t')
-        self._keyfile.write(ssl_key)
-        self._keyfile.flush()
-
-        self._certfile = tempfile.NamedTemporaryFile(mode='w+t')
-        self._certfile.write(ssl_cert)
-        self._certfile.flush()
-
-        self._node_certfile = tempfile.NamedTemporaryFile(mode='w+t')
-        self._node_certfile.write(node_ssl_cert)
-        self._node_certfile.flush()
+        self._keyfile = string_to_temp_file(ssl_key)
+        self._certfile = string_to_temp_file(ssl_cert)
 
         self._service = Service()
         self._api = None
@@ -89,11 +86,13 @@ class XRayNode:
         tries = 0
         while True:
             tries += 1
+            self._node_cert = ssl.get_server_certificate((self.address, self.port))
+            self._node_certfile = string_to_temp_file(self._node_cert)
             conn = rpyc.ssl_connect(self.address,
                                     self.port,
                                     service=self._service,
-                                    # keyfile=self._keyfile.name,
-                                    # certfile=self._certfile.name,
+                                    keyfile=self._keyfile.name,
+                                    certfile=self._certfile.name,
                                     ca_certs=self._node_certfile.name,
                                     keepalive=True)
             try:
@@ -162,7 +161,7 @@ class XRayNode:
         self._api = XRayAPI(
             address=self.address,
             port=self.api_port,
-            ssl_cert=self.node_ssl_cert.encode(),
+            ssl_cert=self._node_cert.encode(),
             ssl_target_name="Gozargah"
         )
         try:
