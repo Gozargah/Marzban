@@ -1,11 +1,14 @@
-import { $fetch as ohMyFetch, FetchOptions } from "ohmyfetch";
+import { FetchOptions, $fetch as ohMyFetch } from "ohmyfetch";
 import { getAuthToken } from "utils/authStorage";
 
 export const $fetch = ohMyFetch.create({
   baseURL: import.meta.env.VITE_BASE_API,
 });
 
-export const fetcher = (url: string, ops: FetchOptions<"json"> = {}) => {
+export const fetcher = <T = any>(
+  url: string,
+  ops: FetchOptions<"json"> = {}
+) => {
   const token = getAuthToken();
   if (token) {
     ops["headers"] = {
@@ -13,7 +16,7 @@ export const fetcher = (url: string, ops: FetchOptions<"json"> = {}) => {
       Authorization: `Bearer ${getAuthToken()}`,
     };
   }
-  return $fetch(url, ops);
+  return $fetch<T>(url, ops);
 };
 
 export const fetch = fetcher;

@@ -2,10 +2,15 @@ from typing import Optional, Union
 from app.db import Session, crud, get_db
 from app.utils.jwt import get_admin_payload
 from config import SUDOERS
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from pydantic import BaseModel
+
+from app.db import Session, crud, get_db
+from app.utils.jwt import get_admin_payload
+from config import SUDOERS
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/admin/token")  # Admin view url
@@ -36,6 +41,12 @@ class Admin(BaseModel):
         dbadmin = crud.get_admin(db, payload['username'])
         if not dbadmin:
             return
+
+        if dbadmin.password_reset_at:
+            if not payload.get("created_at"):
+                return
+            if dbadmin.password_reset_at > payload.get("created_at"):
+                return
 
         return cls.from_orm(dbadmin)
 

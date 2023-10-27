@@ -15,7 +15,7 @@ from config import SUBSCRIPTION_PAGE_TEMPLATE, SUB_UPDATE_INTERVAL, SUB_SUPPORT_
 
 @app.get("/sub/{token}/", tags=['Subscription'])
 @app.get("/sub/{token}", include_in_schema=False)
-def user_subcription(token: str,
+def user_subscription(token: str,
                      request: Request,
                      db: Session = Depends(get_db),
                      user_agent: str = Header(default="")):
@@ -86,7 +86,7 @@ def user_subcription(token: str,
 
 
 @app.get("/sub/{token}/info", tags=['Subscription'], response_model=UserResponse)
-def user_subcription_info(token: str,
+def user_subscription_info(token: str,
                           db: Session = Depends(get_db)):
     sub = get_subscription_payload(token)
     if not sub:

@@ -42,7 +42,7 @@ class ConnectionError(XrayError):
         super().__init__(details)
 
 
-class UnkownError(XrayError):
+class UnknownError(XrayError):
     def __init__(self, details=''):
         super().__init__(details)
 
@@ -57,4 +57,4 @@ class RelatedError(XrayError):
 
             return e(details, *args)
 
-        return UnkownError(details)
+        return UnknownError(details)

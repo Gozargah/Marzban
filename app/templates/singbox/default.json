@@ -1,10 +1,8 @@
 {
   "log": {
-    "disabled": false,
     "level": "warn",
     "timestamp": true
   },
-  "experimental": {},
   "dns": {
     "servers": [
       {
@@ -13,57 +11,56 @@
         "address_resolver": "dns_direct",
         "strategy": "prefer_ipv4",
         "detour": "Internet"
-    },
-    {
+      },
+      {
         "tag": "dns_direct",
         "address": "local",
         "strategy": "prefer_ipv4",
         "detour": "direct"
-    },
-    {
+      },
+      {
         "tag": "dns_block",
         "address": "rcode://success"
-    }
+      }
     ],
     "rules": [
       {
-        "geosite": [
-            "private"
-        ],
+        "geosite": "private",
         "server": "dns_direct"
-    }
+      },
+      {
+        "outbound": "any",
+        "server": "dns_direct"
+      }
     ],
     "fakeip": {},
-    "independent_cache": true,
-    "strategy": ""
+    "independent_cache": true
   },
   "inbounds": [
     {
       "type": "tun",
+      "mtu": 1400,
       "inet4_address": "172.19.0.1/30",
       "inet6_address": "fdfe:dcba:9876::1/126",
-      "mtu": 1400,
       "auto_route": true,
       "strict_route": true,
-      "stack": "mixed",
       "endpoint_independent_nat": true,
-      "sniff": true,
-      "sniff_override_destination": false,
-      "exclude_package": []
+      "stack": "mixed",
+      "sniff": true
     }
   ],
   "outbounds": [
     {
-      "tag": "Internet",
       "type": "selector",
-      "outbounds": []
+      "tag": "Internet",
+      "outbounds": null
     },
     {
-      "tag": "Best Latency",
       "type": "urltest",
-      "outbounds": [],
+      "tag": "Best Latency",
+      "outbounds": null,
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "1m"
+      "interval": "1m0s"
     },
     {
       "type": "direct",
@@ -80,10 +77,12 @@
   ],
   "route": {
     "geoip": {
-      "download_url": "https://github.com/soffchen/sing-geoip/releases/latest/download/geoip.db"
+      "download_url": "https://github.com/soffchen/sing-geoip/releases/latest/download/geoip.db",
+      "download_detour": "direct"
     },
     "geosite": {
-      "download_url": "https://github.com/soffchen/sing-geosite/releases/latest/download/geosite.db"
+      "download_url": "https://github.com/soffchen/sing-geosite/releases/latest/download/geosite.db",
+      "download_detour": "direct"
     },
     "rules": [
       {
@@ -91,12 +90,11 @@
         "outbound": "dns-out"
       },
       {
-        "geoip": [
-            "private"
-        ],
+        "geoip": "private",
         "outbound": "direct"
-    }
+      }
     ],
     "auto_detect_interface": true
-  }
+  },
+  "experimental": {}
 }

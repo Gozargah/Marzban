@@ -26,11 +26,12 @@ def get_db():  # Dependency
 from .crud import (create_admin, create_notification_reminder,  # noqa
                    create_user, delete_notification_reminder, get_admin,
                    get_admins, get_jwt_secret_key, get_notification_reminder,
-                   get_or_create_inbound, get_system_usage, get_user,
-                   get_user_by_id, get_users, get_users_count, remove_admin,
-                   remove_user, revoke_user_sub, update_admin, update_user,
-                   update_user_status, update_user_sub, set_owner, 
-                   get_user_logs, convert_to_csv)
+                   get_or_create_inbound, get_system_usage,
+                   get_tls_certificate, get_user, get_user_by_id, get_users,
+                   get_users_count, remove_admin, remove_user, revoke_user_sub,
+                   set_owner, update_admin, update_user, update_user_status,
+                   update_user_sub, get_user_logs, convert_to_csv)
+
 from .models import JWT, System, User  # noqa
 
 __all__ = [
@@ -50,6 +51,7 @@ __all__ = [
     "set_owner",
     "get_system_usage",
     "get_jwt_secret_key",
+    "get_tls_certificate",
     "get_admin",
     "create_admin",
     "update_admin",
