@@ -29,9 +29,6 @@ export type InboundType = {
 };
 
 
-export type FlowType = {
-    flow: string;
-};
 
 export type Inbounds = Map<ProtocolType, InboundType[]>;
 
@@ -106,8 +103,8 @@ export const fetchInbounds = () => {
 
 export const fetchFlow = () => {
     return fetch("/core/flow")
-        .then((flow: FlowType) => {
-            useDashboard.setState({flow: flow.flow});
+        .then((flow) => {
+            useDashboard.setState({flow: flow});
         })
         .finally(() => {
             useDashboard.setState({ loading: false });
