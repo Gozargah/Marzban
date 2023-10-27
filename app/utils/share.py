@@ -21,7 +21,7 @@ from config import CLASH_SUBSCRIPTION_TEMPLATE, SINGBOX_SUBSCRIPTION_TEMPLATE
 
 SERVER_IP = get_public_ip()
 
-STATUS_EMOJIES = {
+STATUS_EMOJIS = {
     'active': '✅',
     'expired': '⌛️',
     'limited': '🪫',
@@ -781,7 +781,7 @@ def setup_format_variables(extra_data: dict) -> dict:
         data_limit = '∞'
         data_left = '∞'
 
-    status_emoji = STATUS_EMOJIES.get(extra_data.get('status')) or ''
+    status_emoji = STATUS_EMOJIS.get(extra_data.get('status')) or ''
 
     format_variables = {
         "SERVER_IP": SERVER_IP,

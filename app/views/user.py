@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 import sqlalchemy
 from fastapi import BackgroundTasks, Depends, HTTPException
@@ -262,7 +262,7 @@ def reset_users_data_usage(db: Session = Depends(get_db),
 
 
 @app.get("/api/user/{username}/usage", tags=['User'], response_model=UserUsagesResponse)
-def get_user(username: str,
+def get_user_usage(username: str,
              start: str = None,
              end: str = None,
              db: Session = Depends(get_db),
@@ -287,3 +287,66 @@ def get_user(username: str,
     usages = crud.get_user_usages(db, dbuser, start_date, end_date)
 
     return {"usages": usages, "username": username}
+
+
+@app.put("/api/user/{username}/set-owner", tags=['User'], response_model=UserResponse)
+def set_owner(username: str,
+                admin_username: str,
+                db: Session = Depends(get_db),
+                admin: Admin = Depends(Admin.get_current)):
+    
+    if not admin.is_sudo:
+        raise HTTPException(status_code=403, detail="You're not allowed")
+    
+    dbuser = crud.get_user(db, username)
+    if not dbuser:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    new_admin = crud.get_admin(db, username=admin_username)
+    if not new_admin:
+        raise HTTPException(status_code=404, detail="Admin not found")
+    
+    dbuser = crud.set_owner(db, dbuser, new_admin)
+    user = UserResponse.from_orm(dbuser)
+
+    logger.info(f"{user.username}\"owner successfully set to{admin.username}")
+
+    return user
+
+
+@app.delete("/api/users/expired", tags=['User'])
+def delete_expired(passed_time: int,
+                   bg: BackgroundTasks,
+                   db: Session = Depends(get_db),
+                   admin: Admin = Depends(Admin.get_current)):
+    """
+    Delete expired users
+    - **passed_time** must be a timestamp
+    - This function will delete all expired users that meet the specified number of days passed and can't be undone.
+    """
+
+    dbadmin = crud.get_admin(db, admin.username)
+
+    dbusers = crud.get_users(db=db,
+                             status=[UserStatus.expired, UserStatus.limited],
+                             admin=dbadmin if not admin.is_sudo else None)
+
+    current_time = int(datetime.now(timezone.utc).timestamp())
+    expiration_threshold = current_time - passed_time
+    expired_users = [
+        user for user in dbusers if user.expire is not None and user.expire <= expiration_threshold]
+    if not expired_users:
+        raise HTTPException(status_code=404, detail=f'No expired user found.')
+
+    for dbuser in expired_users:
+        crud.remove_user(db, dbuser)
+
+        bg.add_task(
+            report.user_deleted,
+            username=dbuser.username,
+            by=admin
+        )
+
+        logger.info(f"User \"{dbuser.username}\" deleted")
+
+    return {}

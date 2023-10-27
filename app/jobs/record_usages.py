@@ -108,7 +108,7 @@ def get_users_stats(api: XRayAPI):
             params[stat.name.split('.', 1)[0]] += stat.value
         params = list({"uid": uid, "value": value} for uid, value in params.items())
         return params
-    except (xray_exc.ConnectionError, xray_exc.UnkownError):
+    except (xray_exc.ConnectionError, xray_exc.UnknownError):
         return []
 
 
@@ -117,7 +117,7 @@ def get_outbounds_stats(api: XRayAPI):
         params = [{"up": stat.value, "down": 0} if stat.link == "uplink" else {"up": 0, "down": stat.value}
                   for stat in filter(attrgetter('value'), api.get_outbounds_stats(reset=True))]
         return params
-    except (xray_exc.ConnectionError, xray_exc.UnkownError):
+    except (xray_exc.ConnectionError, xray_exc.UnknownError):
         return []
 
 

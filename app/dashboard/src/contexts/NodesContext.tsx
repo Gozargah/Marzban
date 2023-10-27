@@ -2,7 +2,7 @@ import { useQuery } from "react-query";
 import { fetch } from "service/http";
 import { z } from "zod";
 import { create } from "zustand";
-import { useDashboard, FilterUsageType } from "./DashboardContext";
+import { FilterUsageType, useDashboard } from "./DashboardContext";
 
 export const NodeSchema = z.object({
   name: z.string().min(1),
@@ -16,7 +16,6 @@ export const NodeSchema = z.object({
     .min(1)
     .or(z.string().transform((v) => parseFloat(v))),
   xray_version: z.string().nullable().optional(),
-  certificate: z.string().min(1),
   id: z.number().nullable().optional(),
   status: z
     .enum(["connected", "connecting", "error", "disabled"])
@@ -33,7 +32,6 @@ export const getNodeDefaultValues = (): NodeType => ({
   address: "",
   port: 62050,
   api_port: 62051,
-  certificate: "",
   xray_version: "",
 });
 
@@ -69,7 +67,7 @@ export const useNodes = create<NodeStore>((set, get) => ({
   fetchNodes() {
     return fetch("/nodes");
   },
-  fetchNodesUsage (query: FilterUsageType) {
+  fetchNodesUsage(query: FilterUsageType) {
     return fetch("/nodes/usage", { query });
   },
   updateNode(body) {

@@ -5,6 +5,7 @@ import {
   AccordionItem,
   AccordionPanel,
   Alert,
+  AlertDescription,
   AlertIcon,
   Badge,
   Box,
@@ -12,8 +13,8 @@ import {
   ButtonProps,
   chakra,
   Checkbox,
+  Collapse,
   FormControl,
-  FormErrorMessage,
   FormLabel,
   HStack,
   IconButton,
@@ -30,8 +31,9 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import {
+  EyeIcon,
+  EyeSlashIcon,
   PlusIcon as HeroIconPlusIcon,
-  InformationCircleIcon,
   SquaresPlusIcon,
 } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -46,7 +48,12 @@ import {
 import { FC, ReactNode, useState } from "react";
 import { Controller, useForm, UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { UseMutateFunction, useMutation, useQueryClient } from "react-query";
+import {
+  UseMutateFunction,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "react-query";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
 import { Status } from "types/User";
@@ -60,8 +67,8 @@ import { DeleteIcon } from "./DeleteUserModal";
 import { ReloadIcon } from "./Filters";
 import { Icon } from "./Icon";
 import { StatusBadge } from "./StatusBadge";
-import { Textarea } from "./Textarea";
 
+import { fetch } from "service/http";
 import { Input } from "./Input";
 
 const CustomInput = chakra(Input, {
@@ -85,24 +92,6 @@ const PlusIcon = chakra(HeroIconPlusIcon, {
     w: 5,
     h: 5,
     strokeWidth: 2,
-  },
-});
-
-const InfoIcon = chakra(InformationCircleIcon, {
-  baseStyle: {
-    w: 4,
-    h: 4,
-    color: "gray.400",
-    cursor: "pointer",
-  },
-});
-
-const Error = chakra(FormErrorMessage, {
-  baseStyle: {
-    color: "red.400",
-    display: "block",
-    textAlign: "left",
-    w: "100%",
   },
 });
 
@@ -336,10 +325,107 @@ const NodeForm: NodeFormType = ({
   addAsHost = false,
 }) => {
   const { t } = useTranslation();
+  const [showCertificate, setShowCertificate] = useState(false);
+  const { data: nodeSettings, isLoading: nodeSettingsLoading } = useQuery({
+    queryKey: "node-settings",
+    queryFn: () =>
+      fetch<{
+        min_node_version: string;
+        certificate: string;
+      }>("/node/settings"),
+  });
+  function selectText(node: HTMLElement) {
+    // @ts-ignore
+    if (document.body.createTextRange) {
+      // @ts-ignore
+      const range = document.body.createTextRange();
+      range.moveToElementText(node);
+      range.select();
+    } else if (window.getSelection) {
+      const selection = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      selection!.removeAllRanges();
+      selection!.addRange(range);
+    } else {
+      console.warn("Could not select text in node: Unsupported browser.");
+    }
+  }
 
   return (
     <form onSubmit={form.handleSubmit((v) => mutate(v))}>
       <VStack>
+        {nodeSettings && nodeSettings.certificate && (
+          <Alert status="info" alignItems="start">
+            <AlertDescription
+              display="flex"
+              flexDirection="column"
+              overflow="hidden"
+            >
+              <span>{t("nodes.connection-hint")}</span>
+              <HStack justify="end" py={2}>
+                <Button
+                  as="a"
+                  colorScheme="primary"
+                  size="xs"
+                  download="ssl_client_cert.pem"
+                  href={URL.createObjectURL(
+                    new Blob([nodeSettings.certificate], { type: "text/plain" })
+                  )}
+                >
+                  {t("nodes.download-certificate")}
+                </Button>
+                <Tooltip
+                  placement="top"
+                  label={t(
+                    !showCertificate
+                      ? "nodes.show-certificate"
+                      : "nodes.show-certificate"
+                  )}
+                >
+                  <IconButton
+                    aria-label={t(
+                      !showCertificate
+                        ? "nodes.show-certificate"
+                        : "nodes.show-certificate"
+                    )}
+                    onClick={setShowCertificate.bind(null, !showCertificate)}
+                    colorScheme="whiteAlpha"
+                    color="primary"
+                    size="xs"
+                  >
+                    {!showCertificate ? (
+                      <EyeIcon width="15px" />
+                    ) : (
+                      <EyeSlashIcon width="15px" />
+                    )}
+                  </IconButton>
+                </Tooltip>
+              </HStack>
+              <Collapse in={showCertificate} animateOpacity>
+                <Text
+                  bg="rgba(255,255,255,.5)"
+                  _dark={{
+                    bg: "rgba(255,255,255,.2)",
+                  }}
+                  rounded="md"
+                  p="2"
+                  lineHeight="1.2"
+                  fontSize="10px"
+                  fontFamily="Courier"
+                  whiteSpace="pre"
+                  overflow="auto"
+                  onClick={(e) => {
+                    selectText(e.target as HTMLElement);
+                  }}
+                >
+                  {nodeSettings.certificate}
+                </Text>
+              </Collapse>
+            </AlertDescription>
+          </Alert>
+        )}
+
         <HStack w="full">
           <FormControl>
             <CustomInput
@@ -350,7 +436,6 @@ const NodeForm: NodeFormType = ({
               error={form.formState?.errors?.name?.message}
             />
           </FormControl>
-
           <HStack px={1}>
             <Controller
               name="status"
@@ -414,29 +499,6 @@ const NodeForm: NodeFormType = ({
             />
           </Box>
         </HStack>
-        <FormControl>
-          <FormLabel>{t("nodes.certificate")}</FormLabel>
-          <Textarea
-            {...form.register("certificate")}
-            w="full"
-            fontSize="10px"
-            fontFamily="monospace"
-            overflowWrap="normal"
-            noOfLines={10}
-            rows={10}
-            error={form.formState?.errors?.certificate?.message}
-            placeholder="-----BEGIN CERTIFICATE-----
-			XzBWUjjMrWf/0rWV5fDl7b4RU8AjeviG1RmEc64ueZ3s6q1LI6DJX1+qGuqDEvp
-			g1gctfdLMARuV6LkLiGy5k2FGAW/tfepEyySA/N9WhcHg+rZ4/x1thP0eYJPQ2YJ
-			XFSa6Zv8LPLCz5iMbo0FjNlKyZo3699PtyBFXt3zyfTPmiy19RVGTziHqJ9NR9kW
-			kBwvFzIy+qPc/dJAk435hVaV3pRBC7Pl2Y7k/pJxxlC07PkACXuhwtUGhQrHYWkK
-			Il8rJ9cs0zwC1BOmqoS3Ez22dgtT7FucvIJ1MGP8oUAudMmrXDxx/d7CmnD5q1v4
-			iLlV21kNnWuvjS1orTwvuW3aagb6tvEEEmlMhw5a2B8sl71sQ6sxWidgRaOSGW7l
-			emFyZ2FoMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA0BvDh0eU78EJ
-			AjimHyBb+3tFs7KaOPu9G5xgbQWUWccukMDXqybqiUDSfU/T5/+XM8CKq/Fu0DB=&#10;-----END CERTIFICATE-----"
-            overflow="auto"
-          />
-        </FormControl>
         {addAsHost && (
           <FormControl py={1}>
             <Checkbox {...form.register("add_as_new_host")}>
@@ -499,6 +561,7 @@ export const NodesDialog: FC = () => {
               {t("nodes.title")}
             </Text>
             {isLoading && "loading..."}
+
             <Accordion
               w="full"
               allowToggle
