@@ -262,7 +262,7 @@ def reset_users_data_usage(db: Session = Depends(get_db),
 
 
 @app.get("/api/user/{username}/usage", tags=['User'], response_model=UserUsagesResponse)
-def get_user(username: str,
+def get_user_usage(username: str,
              start: str = None,
              end: str = None,
              db: Session = Depends(get_db),

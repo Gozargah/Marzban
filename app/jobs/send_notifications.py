@@ -23,7 +23,7 @@ def send(data: List[Dict[Any, Any]]) -> bool:
         data (List[Dict[Any, Any]]): list of json encoded notifications
 
     Returns:
-        bool: returns True if an ok response recieved
+        bool: returns True if an ok response received
     """
     try:
         logger.debug(f"Sending {len(data)} webhook updates to {config.WEBHOOK_ADDRESS}")
@@ -73,7 +73,7 @@ def delete_expired_reminders() -> None:
 if config.WEBHOOK_ADDRESS:
     @app.on_event("shutdown")
     def app_shutdown():
-        logger.info("Sending pending notificatios before shutdown...")
+        logger.info("Sending pending notifications before shutdown...")
         send_notifications()
 
     logger.info("Send webhook job started")

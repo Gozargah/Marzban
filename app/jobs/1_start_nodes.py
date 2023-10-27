@@ -10,7 +10,7 @@ def nodes_health_check():
         if node.connected:
             try:
                 node.api.get_sys_stats()
-            except (ConnectionError, xray_exc.ConnectionError, xray_exc.UnkownError):
+            except (ConnectionError, xray_exc.ConnectionError, xray_exc.UnknownError):
                 if not config:
                     config = xray.config.include_db_users()
                 xray.operations.restart_node(node_id, config)
