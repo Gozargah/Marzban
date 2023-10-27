@@ -184,13 +184,13 @@ def edit_all_command(call: types.CallbackQuery):
         total_users = crud.get_users_count(db)
         active_users = crud.get_users_count(db, UserStatus.active)
         disabled_users = crud.get_users_count(db, UserStatus.disabled)
-        exipred_users = crud.get_users_count(db, UserStatus.expired)
+        expired_users = crud.get_users_count(db, UserStatus.expired)
         limited_users = crud.get_users_count(db, UserStatus.limited)
         text = f'''
 👥 *Total Users*: `{total_users}`
 ✅ *Active Users*: `{active_users}`
 ❌ *Disabled Users*: `{disabled_users}`
-🕰 *Expired Users*: `{exipred_users}`
+🕰 *Expired Users*: `{expired_users}`
 🪫 *Limited Users*: `{limited_users}`'''
     return bot.edit_message_text(
         text,

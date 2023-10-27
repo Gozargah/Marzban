@@ -107,7 +107,7 @@ def get_core_config(admin: Admin = Depends(Admin.get_current)) -> dict:
 
 
 @app.put("/api/core/config", tags=["Core"])
-def get_core_config(payload: dict, admin: Admin = Depends(Admin.get_current)) -> dict:
+def modify_core_config(payload: dict, admin: Admin = Depends(Admin.get_current)) -> dict:
     if not admin.is_sudo:
         raise HTTPException(status_code=403, detail="You're not allowed")
 
