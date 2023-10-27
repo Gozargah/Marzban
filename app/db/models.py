@@ -209,8 +209,8 @@ class TLS(Base):
     __tablename__ = "tls"
 
     id = Column(Integer, primary_key=True)
-    key = Column(String(4096), unique=True, nullable=False)
-    certificate = Column(String(2048), unique=True, nullable=False)
+    key = Column(String(4096), nullable=False)
+    certificate = Column(String(2048), nullable=False)
 
 
 class Node(Base):

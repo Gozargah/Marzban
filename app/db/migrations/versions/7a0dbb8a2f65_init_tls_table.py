@@ -23,9 +23,7 @@ def upgrade() -> None:
                             sa.Column('id', sa.Integer(), nullable=False),
                             sa.Column('key', sa.String(length=4096), nullable=False),
                             sa.Column('certificate', sa.String(length=2048), nullable=False),
-                            sa.PrimaryKeyConstraint('id'),
-                            sa.UniqueConstraint('certificate'),
-                            sa.UniqueConstraint('key')
+                            sa.PrimaryKeyConstraint('id')
                             )
 
     # INSERT DEFAULT ROW
