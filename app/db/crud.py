@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Tuple, Union
 from sqlalchemy import and_, delete
 from sqlalchemy.orm import Session
 
-from app.db.models import (JWT, Admin, Node, NodeUsage, NodeUserUsage,
+from app.db.models import (JWT, TLS, Admin, Node, NodeUsage, NodeUserUsage,
                            NotificationReminder, Proxy, ProxyHost,
                            ProxyInbound, ProxyTypes, System, User,
                            UserTemplate, UserUsageResetLogs)
@@ -368,6 +368,10 @@ def get_jwt_secret_key(db: Session):
     return db.query(JWT).first().secret_key
 
 
+def get_tls_certificate(db: Session):
+    return db.query(TLS).first()
+
+
 def get_admin(db: Session, username: str):
     return db.query(Admin).filter(Admin.username == username).first()
 
@@ -546,8 +550,7 @@ def create_node(db: Session, node: NodeCreate):
     dbnode = Node(name=node.name,
                   address=node.address,
                   port=node.port,
-                  api_port=node.api_port,
-                  certificate=node.certificate)
+                  api_port=node.api_port)
 
     db.add(dbnode)
     db.commit()
@@ -573,9 +576,6 @@ def update_node(db: Session, dbnode: Node, modify: NodeModify):
 
     if modify.api_port is not None:
         dbnode.api_port = modify.api_port
-
-    if modify.certificate is not None:
-        dbnode.certificate = modify.certificate
 
     if modify.status is NodeStatus.disabled:
         dbnode.status = modify.status

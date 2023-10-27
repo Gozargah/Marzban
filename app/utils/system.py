@@ -118,7 +118,7 @@ def get_public_ip():
     except (socket.error, IndexError):
         pass
     finally:
-        socket.close()
+        sock.close()
 
     return '127.0.0.1'
 

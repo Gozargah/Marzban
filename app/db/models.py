@@ -205,6 +205,14 @@ class JWT(Base):
     )
 
 
+class TLS(Base):
+    __tablename__ = "tls"
+
+    id = Column(Integer, primary_key=True)
+    key = Column(String(4096), unique=True, nullable=False)
+    certificate = Column(String(2048), unique=True, nullable=False)
+
+
 class Node(Base):
     __tablename__ = "nodes"
 
@@ -214,7 +222,6 @@ class Node(Base):
     port = Column(Integer, unique=False, nullable=False)
     api_port = Column(Integer, unique=False, nullable=False)
     xray_version = Column(String(32), nullable=True)
-    certificate = Column(String(2048), unique=False, nullable=False)
     status = Column(Enum(NodeStatus), nullable=False, default=NodeStatus.connecting)
     last_status_change = Column(DateTime, default=datetime.utcnow)
     message = Column(String(1024), nullable=True)
