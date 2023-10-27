@@ -352,6 +352,7 @@ def update_user_status(db: Session, dbuser: User, status: UserStatus):
     db.refresh(dbuser)
     return dbuser
 
+
 def set_owner(db: Session, dbuser: User, admin: Admin):
     dbuser.admin = admin
     db.commit()
@@ -385,7 +386,9 @@ def create_admin(db: Session, admin: AdminCreate):
 
 def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify):
     dbadmin.is_sudo = modified_admin.is_sudo
-    dbadmin.hashed_password = modified_admin.hashed_password
+    if dbadmin.hashed_password != modified_admin.hashed_password:
+        dbadmin.hashed_password = modified_admin.hashed_password
+        dbadmin.password_reset_at = datetime.utcnow()
     db.commit()
     db.refresh(dbadmin)
     return dbadmin
@@ -394,8 +397,9 @@ def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify):
 def partial_update_admin(db: Session, dbadmin: Admin, modified_admin: AdminPartialModify):
     if modified_admin.is_sudo is not None:
         dbadmin.is_sudo = modified_admin.is_sudo
-    if modified_admin.password is not None:
+    if modified_admin.password is not None and dbadmin.hashed_password != modified_admin.hashed_password:
         dbadmin.hashed_password = modified_admin.hashed_password
+        dbadmin.password_reset_at = datetime.utcnow()
 
     db.commit()
     db.refresh(dbadmin)

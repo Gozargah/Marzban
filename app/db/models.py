@@ -25,6 +25,7 @@ class Admin(Base):
     users = relationship("User", back_populates="admin")
     created_at = Column(DateTime, default=datetime.utcnow)
     is_sudo = Column(Boolean, default=False)
+    password_reset_at = Column(DateTime, nullable=True)
 
 
 class User(Base):
