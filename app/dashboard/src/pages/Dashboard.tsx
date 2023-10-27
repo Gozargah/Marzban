@@ -19,9 +19,9 @@ import { Statistics } from "../components/Statistics";
 
 export const Dashboard: FC = () => {
   useEffect(() => {
+    fetchFlow();
     useDashboard.getState().refetchUsers();
     fetchInbounds();
-    fetchFlow();
   }, []);
   return (
     <VStack justifyContent="space-between" minH="100vh" p="6" rowGap={4}>
