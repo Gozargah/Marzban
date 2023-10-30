@@ -267,6 +267,7 @@ class XRayConfig(dict):
                 elif net == 'grpc':
                     settings['header_type'] = ''
                     settings['path'] = net_settings.get('serviceName', '')
+                    settings['multiMode'] = net_settings.get('multiMode', '')
                     settings['host'] = []
 
                 else:

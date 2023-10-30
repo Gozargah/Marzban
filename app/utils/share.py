@@ -10,7 +10,6 @@ from uuid import UUID
 import yaml
 
 from app import xray
-from app.models.proxy import FormatVariables
 from app.templates import render_template
 from app.utils.system import get_public_ip, readable_size
 
@@ -737,7 +736,7 @@ def format_time_left(expire: int) -> str:
     seconds_left = expire - int(dt.now().timestamp())
 
     if seconds_left <= 0:
-        return
+        return ''
 
     minutes, seconds = divmod(seconds_left, 60)
     hours, minutes = divmod(minutes, 60)
@@ -759,6 +758,7 @@ def format_time_left(expire: int) -> str:
 
 
 def setup_format_variables(extra_data: dict) -> dict:
+    time_left = 0
 
     if (extra_data.get('expire') or 0) > 0:
         days_left = (dt.fromtimestamp(extra_data['expire']) - dt.now()).days + 1
@@ -835,6 +835,8 @@ def process_inbounds_and_tags(inbounds: dict, proxies: dict, format_variables: d
                     'fp': host['fingerprint'] or inbound.get('fp', ''),
                     'ais': host['allowinsecure'] or inbound.get('allowinsecure', '')
                 })
+                if inbound.get('network', '') == 'grpc':
+                    host_inbound.update({'mode': 'multi' if inbound.get('multiMode', False) == True else 'gun'})
 
                 if mode == "v2ray":
                     results.append(get_v2ray_link(remark=host['remark'].format_map(format_variables),
