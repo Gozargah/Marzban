@@ -54,6 +54,8 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     note = Column(String(500), nullable=True, default=None)
     online_at = Column(DateTime, nullable=True, default=None)
+    timeout = Column(Integer, nullable=True, default=None)
+    edit_at = Column(DateTime, nullable=True, default=None)
 
     @property
     def lifetime_used_traffic(self):
@@ -106,8 +108,8 @@ class UserTemplate(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(64), nullable=False, unique=True)
-    data_limit = Column(Integer, default=0)
-    expire_duration = Column(Integer, default=0)  # in seconds
+    data_limit = Column(BigInteger, default=0)
+    expire_duration = Column(BigInteger, default=0)  # in seconds
     username_prefix = Column(String(20), nullable=True)
     username_suffix = Column(String(20), nullable=True)
 

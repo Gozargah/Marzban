@@ -25,11 +25,18 @@ class UserStatus(str, Enum):
     disabled = "disabled"
     limited = "limited"
     expired = "expired"
+    connect_to_start = "connect_to_start"
 
 
 class UserStatusModify(str, Enum):
     active = "active"
     disabled = "disabled"
+    connect_to_start = "connect_to_start"
+
+
+class UserStatusCreate(str, Enum):
+    active = "active"
+    connect_to_start = "connect_to_start"
 
 
 class UserDataLimitResetStrategy(str, Enum):
@@ -54,13 +61,15 @@ class User(BaseModel):
     sub_updated_at: Optional[datetime] = Field(None, nullable=True)
     sub_last_user_agent: Optional[str] = Field(None, nullable=True)
     online_at: Optional[datetime] = Field(None, nullable=True)
+    timeout: Optional[int] = Field(None, nullable=True)
 
     @validator("proxies", pre=True, always=True)
     def validate_proxies(cls, v, values, **kwargs):
         if not v:
             raise ValueError("Each user needs at least one proxy")
         return {
-            proxy_type: ProxySettings.from_dict(proxy_type, v.get(proxy_type, {}))
+            proxy_type: ProxySettings.from_dict(
+                proxy_type, v.get(proxy_type, {}))
             for proxy_type in v
         }
 
@@ -78,9 +87,17 @@ class User(BaseModel):
             raise ValueError("User's note can be a maximum of 500 character")
         return v
 
+    @validator("expire", "timeout", pre=True, always=True)
+    def validate_timeout(cls, v, values):
+        # Check if expire is 0 or None and timeout is not 0 or None
+        if (v in (0, None)) and (values.get("timeout") not in (0, None)):
+            return None
+        return v
+
 
 class UserCreate(User):
     username: str
+    status: UserStatusCreate = None
 
     class Config:
         schema_extra = {
@@ -97,7 +114,9 @@ class UserCreate(User):
                 "expire": 0,
                 "data_limit": 0,
                 "data_limit_reset_strategy": "no_reset",
+                "status": "active",
                 "note": "",
+                "timeout": 0,
             }
         }
 
@@ -141,6 +160,12 @@ class UserCreate(User):
 
         return inbounds
 
+    @validator("status", pre=True, always=True)
+    def validate_status(cls, value):
+        if not value or value not in UserStatusCreate.__members__:
+            return UserStatusCreate.active  # Set to the default if not valid
+        return value
+
 
 class UserModify(User):
     status: UserStatusModify = None
@@ -162,6 +187,7 @@ class UserModify(User):
                 "data_limit_reset_strategy": "no_reset",
                 "status": "active",
                 "note": "",
+                "timeout": 0,
             }
         }
 
@@ -194,7 +220,8 @@ class UserModify(User):
     @validator("proxies", pre=True, always=True)
     def validate_proxies(cls, v):
         return {
-            proxy_type: ProxySettings.from_dict(proxy_type, v.get(proxy_type, {}))
+            proxy_type: ProxySettings.from_dict(
+                proxy_type, v.get(proxy_type, {}))
             for proxy_type in v
         }
 
@@ -209,6 +236,7 @@ class UserResponse(User):
     subscription_url: str = ""
     proxies: dict
     excluded_inbounds: Dict[ProxyTypes, List[str]] = {}
+    edit_at: datetime = None
 
     class Config:
         orm_mode = True

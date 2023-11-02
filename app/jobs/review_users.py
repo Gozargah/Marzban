@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app import logger, scheduler, xray
 from app.db import (GetDB, get_notification_reminder, get_users,
-                    update_user_status)
+                    update_user_status, start_user_expire)
 from app.models.user import ReminderType, UserResponse, UserStatus
 from app.utils import report
 from app.utils.helpers import (calculate_expiration_days,
@@ -19,7 +19,8 @@ if TYPE_CHECKING:
 
 def add_notification_reminders(db: Session, user: "User", now: datetime = datetime.utcnow()) -> None:
     if user.data_limit:
-        usage_percent = calculate_usage_percent(user.used_traffic, user.data_limit)
+        usage_percent = calculate_usage_percent(
+            user.used_traffic, user.data_limit)
         if (usage_percent >= NOTIFY_REACHED_USAGE_PERCENT) and (not get_notification_reminder(db, user.id, ReminderType.data_usage)):
             report.data_usage_percent_reached(
                 db, usage_percent, UserResponse.from_orm(user),
@@ -51,7 +52,33 @@ def review():
 
             xray.operations.remove_user(user)
             update_user_status(db, user, status)
-            report.status_change(user.username, status, UserResponse.from_orm(user))
+            report.status_change(user.username, status,
+                                 UserResponse.from_orm(user))
+
+            logger.info(f"User \"{user.username}\" status changed to {status}")
+
+        for user in get_users(db, status=UserStatus.connect_to_start):
+
+            if user.edit_at:
+                base_time = datetime.timestamp(user.edit_at)
+            else:
+                base_time = datetime.timestamp(user.created_at)
+
+            # Check if the user is online After or at 'base_time'
+            if user.online_at and base_time <= datetime.timestamp(user.online_at):
+                status = UserStatus.active
+
+            elif user.timeout and (base_time +
+                                   user.timeout <= (now.timestamp())):
+                # If the user didn't connect within the timeout period, change status to "Active"
+                status = UserStatus.active
+            else:
+                continue
+
+            update_user_status(db, user, status)
+            start_user_expire(db, user)
+            report.status_change(user.username, status,
+                                 UserResponse.from_orm(user))
 
             logger.info(f"User \"{user.username}\" status changed to {status}")
 

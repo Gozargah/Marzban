@@ -77,7 +77,7 @@ class UserExpired(UserNotification):
 
 class UserEnabled(UserNotification):
     action: Notification.Type = Notification.Type.user_enabled
-    by: Admin
+    by: Admin = None
     user: UserResponse
 
 

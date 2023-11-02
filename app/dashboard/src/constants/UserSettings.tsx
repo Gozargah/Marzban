@@ -1,4 +1,4 @@
-import { chakra, ChakraComponent } from "@chakra-ui/react";
+import { chakra, ChakraComponent} from "@chakra-ui/react";
 import {
   ClockIcon,
   ExclamationCircleIcon,
@@ -19,6 +19,7 @@ const ActiveStatusIcon = chakra(WifiIcon, iconProps);
 const DisabledStatusIcon = chakra(NoSymbolIcon, iconProps);
 const LimitedStatusIcon = chakra(ExclamationCircleIcon, iconProps);
 const ExpiredStatusIcon = chakra(ClockIcon, iconProps);
+const Connect_to_startStatusIcon = chakra(ClockIcon, iconProps);
 
 export const resetStrategy: { title: string; value: DataLimitResetStrategy }[] =
   [
@@ -70,6 +71,11 @@ export const statusColors: {
     statusColor: "orange",
     bandWidthColor: "orange",
     icon: ExpiredStatusIcon,
+  },
+  connect_to_start: {
+    statusColor: "purple",
+    bandWidthColor: "purple",
+    icon: Connect_to_startStatusIcon,
   },
   connecting: {
     statusColor: "orange",
