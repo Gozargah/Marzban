@@ -61,7 +61,7 @@ class TrojanAccount(Account):
 class ShadowsocksMethods(Enum):
     AES_128_GCM = 'aes-128-gcm'
     AES_256_GCM = 'aes-256-gcm'
-    CHACHA20_POLY1305 = 'chacha20-poly1305'
+    CHACHA20_POLY1305 = 'chacha20-ietf-poly1305'
 
 
 class ShadowsocksAccount(Account):

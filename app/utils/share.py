@@ -187,9 +187,9 @@ class V2rayShareLink(str):
                     address: str,
                     port: int,
                     password: str,
-                    security='chacha20-ietf-poly1305'):
+                    method: str):
         return "ss://" + \
-            base64.b64encode(f'{security}:{password}'.encode()).decode() + \
+            base64.b64encode(f'{method}:{password}'.encode()).decode() + \
             f"@{address}:{port}#{urlparse.quote(remark)}"
 
 
@@ -487,7 +487,43 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
         return V2rayShareLink.shadowsocks(remark=remark,
                                           address=address,
                                           port=inbound['port'],
-                                          password=settings['password'])
+                                          password=settings['password'],
+                                          method=settings['method'])
+
+class OutlineConfiguration:
+    def __init__(self):
+        self.config = {}
+
+    def add_directly(self, data: dict):
+        self.config.update(data)
+
+    def render(self):
+        return json.dumps(self.config, indent=0)
+
+    def make_outbound(self, remark: str, address: str, port: int, password: str, method: str):
+        config = {
+            "method": method,
+            "password": password,
+            "server": address,
+            "server_port": port,
+            "tag": remark,
+        }
+        return config
+
+    def add(self, remark: str, address: str, inbound: dict, settings: dict):
+        if inbound['protocol'] != 'shadowsocks':
+            return
+
+        outbound = self.make_outbound(
+            remark=remark,
+            address=address,
+            port=inbound['port'],
+            password=settings['password'],
+            method=settings['method']
+        )
+        self.add_directly(outbound)
+
+
 
 
 class SingBoxConfiguration(str):
@@ -709,9 +745,17 @@ def generate_v2ray_subscription(links: list) -> str:
     return base64.b64encode('\n'.join(links).encode()).decode()
 
 
+
+def generate_outline_subscription(proxies: dict, inbounds: dict, extra_data: dict) -> str:
+    conf = OutlineConfiguration()
+
+    format_variables = setup_format_variables(extra_data)
+    return process_inbounds_and_tags(inbounds, proxies, format_variables, mode="outline", conf=conf)
+
+
 def generate_subscription(
     user: "UserResponse",
-    config_format: Literal["v2ray", "clash-meta", "clash", "sing-box"],
+    config_format: Literal["v2ray", "clash-meta", "clash", "sing-box", "outline"],
     as_base64: bool
 ) -> str:
     kwargs = {"proxies": user.proxies, "inbounds": user.inbounds, "extra_data": user.__dict__}
@@ -724,6 +768,8 @@ def generate_subscription(
         config = generate_clash_subscription(**kwargs)
     elif config_format == 'sing-box':
         config = generate_singbox_subscription(**kwargs)
+    elif config_format == 'outline':
+        config = generate_outline_subscription(**kwargs)
     else:
         raise ValueError(f'Unsupported format "{config_format}"')
 
@@ -841,7 +887,7 @@ def process_inbounds_and_tags(inbounds: dict, proxies: dict, format_variables: d
                                                   address=host['address'].format_map(format_variables),
                                                   inbound=host_inbound,
                                                   settings=settings.dict(no_obj=True)))
-                elif mode in ["clash", "sing-box"]:
+                elif mode in ["clash", "sing-box", "outline"]:
                     conf.add(
                         remark=host['remark'].format_map(format_variables),
                         address=host['address'].format_map(format_variables),
@@ -849,7 +895,7 @@ def process_inbounds_and_tags(inbounds: dict, proxies: dict, format_variables: d
                         settings=settings.dict(no_obj=True),
                     )
 
-    if mode in ["clash", "sing-box"]:
+    if mode in ["clash", "sing-box", "outline"]:
         return conf.render()
 
     return results
