@@ -19,7 +19,6 @@ import { Statistics } from "../components/Statistics";
 
 export const Dashboard: FC = () => {
   useEffect(() => {
-    fetchFlow();
     useDashboard.getState().refetchUsers();
     fetchInbounds();
   }, []);

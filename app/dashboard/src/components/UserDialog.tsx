@@ -147,7 +147,7 @@ const getDefaultValues = (): FormType => {
   for (const key in defaultInbounds) {
     inbounds[key] = defaultInbounds[key].map((i) => i.tag);
   }
-  const DEFAULT_VLESS_FLOW = useDashboard.getState().flow;
+
 
   return {
     selected_proxies: Object.keys(defaultInbounds) as ProxyKeys,
@@ -162,7 +162,7 @@ const getDefaultValues = (): FormType => {
     sub_last_user_agent: "",
     inbounds,
     proxies: {
-      vless: { id: "", flow: DEFAULT_VLESS_FLOW },
+      vless: { id: "", flow: "xtls-rprx-vision" },
       vmess: { id: "" },
       trojan: { password: "" },
       shadowsocks: { password: "", method: "chacha20-poly1305" },

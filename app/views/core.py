@@ -11,7 +11,7 @@ from app.db import Session, get_db
 from app.models.admin import Admin
 from app.models.core import CoreStats
 from app.xray import XRayConfig
-from config import XRAY_JSON, DEFAULT_VLESS_FLOW
+from config import XRAY_JSON
 
 
 @app.websocket("/api/core/logs")
@@ -129,9 +129,3 @@ def modify_core_config(payload: dict, admin: Admin = Depends(Admin.get_current))
         f.write(json.dumps(payload, indent=4))
 
     return payload
-
-@app.get("/api/core/flow", tags=['Core'])
-def get_flow(admin: Admin = Depends(Admin.get_current)):
-    if not admin:
-        return ""
-    return DEFAULT_VLESS_FLOW

@@ -30,7 +30,7 @@ try:
 except ImportError:
     from app.utils.system import realtime_bandwidth
 
-from config import TELEGRAM_LOGGER_CHANNEL_ID, DEFAULT_VLESS_FLOW
+from config import TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_DEFAULT_VLESS_FLOW
 
 mem_store = MemoryStorage()
 
@@ -1524,8 +1524,8 @@ def confirm_user_command(call: types.CallbackQuery):
 
             for protocol in xray.config.inbounds_by_protocol:
                 if protocol in inbounds and protocol not in db_user.inbounds:
-                    proxies.update({protocol: {'flow': DEFAULT_VLESS_FLOW} if \
-                                    DEFAULT_VLESS_FLOW and protocol == ProxyTypes.VLESS else {}})
+                    proxies.update({protocol: {'flow': TELEGRAM_DEFAULT_VLESS_FLOW} if \
+                                    TELEGRAM_DEFAULT_VLESS_FLOW and protocol == ProxyTypes.VLESS else {}})
                 elif protocol in db_user.inbounds and protocol not in inbounds:
                     del proxies[protocol]
 
@@ -1628,8 +1628,8 @@ def confirm_user_command(call: types.CallbackQuery):
 
         inbounds: dict[str, list[str]] = {
             k: v for k, v in mem_store.get(f'{call.message.chat.id}:protocols').items() if v}
-        proxies = {p: ({'flow': DEFAULT_VLESS_FLOW} if \
-                       DEFAULT_VLESS_FLOW and p == ProxyTypes.VLESS else {}) for p in inbounds}
+        proxies = {p: ({'flow': TELEGRAM_DEFAULT_VLESS_FLOW} if \
+                       TELEGRAM_DEFAULT_VLESS_FLOW and p == ProxyTypes.VLESS else {}) for p in inbounds}
         
         new_user = UserCreate(
             username=mem_store.get(f'{call.message.chat.id}:username'),
@@ -1860,8 +1860,8 @@ f'{user.username}\
                     proxies = {p.type.value: p.settings for p in user.proxies}
                     for protocol in xray.config.inbounds_by_protocol:
                         if protocol in new_inbounds and protocol not in user.inbounds:
-                            proxies.update({protocol: {'flow': DEFAULT_VLESS_FLOW} if \
-                                            DEFAULT_VLESS_FLOW and protocol == ProxyTypes.VLESS else {}})
+                            proxies.update({protocol: {'flow': TELEGRAM_DEFAULT_VLESS_FLOW} if \
+                                            TELEGRAM_DEFAULT_VLESS_FLOW and protocol == ProxyTypes.VLESS else {}})
                         elif protocol in user.inbounds and protocol not in new_inbounds:
                             del proxies[protocol]
                     try:
