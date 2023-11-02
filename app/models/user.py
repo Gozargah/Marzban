@@ -236,7 +236,6 @@ class UserResponse(User):
     subscription_url: str = ""
     proxies: dict
     excluded_inbounds: Dict[ProxyTypes, List[str]] = {}
-    edit_at: datetime = None
 
     class Config:
         orm_mode = True
