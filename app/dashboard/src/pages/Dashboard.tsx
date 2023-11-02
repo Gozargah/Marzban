@@ -13,7 +13,7 @@ import { ResetUserUsageModal } from "components/ResetUserUsageModal";
 import { RevokeSubscriptionModal } from "components/RevokeSubscriptionModal";
 import { UserDialog } from "components/UserDialog";
 import { UsersTable } from "components/UsersTable";
-import {fetchFlow, fetchInbounds, useDashboard} from "contexts/DashboardContext";
+import { fetchInbounds, useDashboard} from "contexts/DashboardContext";
 import { FC, useEffect } from "react";
 import { Statistics } from "../components/Statistics";
 

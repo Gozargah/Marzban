@@ -101,15 +101,6 @@ export const fetchInbounds = () => {
     });
 };
 
-export const fetchFlow = () => {
-    return fetch("/core/flow")
-        .then((flow) => {
-            useDashboard.setState({flow: flow});
-        })
-        .finally(() => {
-            useDashboard.setState({ loading: false });
-        });
-};
 
 export const useDashboard = create(
   subscribeWithSelector<DashboardStateType>((set, get) => ({
