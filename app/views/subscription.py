@@ -80,6 +80,10 @@ def user_subscription(token: str,
         conf = generate_subscription(user=user, config_format="sing-box", as_base64=False)
         return Response(content=conf, media_type="application/json", headers=response_headers)
 
+    elif re.match('^(SS|SSR|SSD|SSS|Outline|Shadowsocks|SSconf)', user_agent):
+        conf = generate_subscription(user=user, config_format="outline", as_base64=False)
+        return Response(content=conf, media_type="application/json", headers=response_headers)
+
     else:
         conf = generate_subscription(user=user, config_format="v2ray", as_base64=True)
         return Response(content=conf, media_type="text/plain", headers=response_headers)
@@ -106,11 +110,11 @@ def user_subscription_info(token: str,
 def user_subscription_with_client_type(
     token: str,
     request: Request,
-    client_type: str = Path(..., regex="sing-box|clash-meta|clash|v2ray"),
+    client_type: str = Path(..., regex="sing-box|clash-meta|clash|outline|v2ray"),
     db: Session = Depends(get_db),
 ):
     """
-    Subscription link, v2ray, clash, sing-box, and clash-meta supported
+    Subscription link, v2ray, clash, sing-box, outline and clash-meta supported
     """
 
     def get_subscription_user_info(user: UserResponse) -> dict:
@@ -163,5 +167,9 @@ def user_subscription_with_client_type(
         conf = generate_subscription(user=user, config_format="v2ray", as_base64=True)
         return Response(content=conf, media_type="text/plain", headers=response_headers)
 
+    elif client_type == "outline":
+        conf = generate_subscription(user=user, config_format="outline", as_base64=False)
+        return Response(content=conf, media_type="application/json", headers=response_headers)
+    
     else:
         raise HTTPException(status_code=400, detail="Invalid subscription type")
