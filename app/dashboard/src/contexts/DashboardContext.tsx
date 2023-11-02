@@ -28,14 +28,11 @@ export type InboundType = {
   port?: number;
 };
 
-
-
 export type Inbounds = Map<ProtocolType, InboundType[]>;
 
 type DashboardStateType = {
   isCreatingNewUser: boolean;
   editingUser: User | null | undefined;
-  flow: string | undefined;
   deletingUser: User | null;
   version: string | null;
   users: {
@@ -120,7 +117,6 @@ export const useDashboard = create(
     isEditingNodes: false,
     isShowingNodesUsage: false,
     resetUsageUser: null,
-    flow: "",
     revokeSubscriptionUser: null,
     filters: {
       username: "",
