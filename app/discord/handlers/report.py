@@ -15,7 +15,7 @@ def send_webhook(json_data):
         except requests.exceptions.HTTPError as err:
             logger.error(err)
         else:
-            logger.debug("Payload delivered successfully, code {}.".format(result.status_code))
+            logger.debug("Discord payload delivered successfully, code {}.".format(result.status_code))
 
 def report_status_change(username: str, status: str):
     _status = {
@@ -43,8 +43,8 @@ def report_status_change(username: str, status: str):
 
 def report_new_user(user_id: int, username: str, by: str, expire_date: int, data_limit: int, proxies: list):
     
-    data_limit=readable_size(data_limit) if data_limit else "Unlimited",
-    expire_date=datetime.fromtimestamp(expire_date).strftime("%H:%M:%S %Y-%m-%d") if expire_date else "Never",
+    data_limit=readable_size(data_limit) if data_limit else "Unlimited"
+    expire_date=datetime.fromtimestamp(expire_date).strftime("%H:%M:%S %Y-%m-%d") if expire_date else "Never"
     proxies="" if not proxies else ", ".join([escape_html(proxy) for proxy in proxies])
 
     reportNewUser = {
@@ -64,11 +64,11 @@ def report_new_user(user_id: int, username: str, by: str, expire_date: int, data
 
 def report_user_modification(username: str, expire_date: int, data_limit: int, proxies: list, by: str):
 
-    data_limit=readable_size(data_limit) if data_limit else "Unlimited",
-    expire_date=datetime.fromtimestamp(expire_date).strftime("%H:%M:%S %Y-%m-%d") if expire_date else "Never",
+    data_limit=readable_size(data_limit) if data_limit else "Unlimited"
+    expire_date=datetime.fromtimestamp(expire_date).strftime("%H:%M:%S %Y-%m-%d") if expire_date else "Never"
     proxies="" if not proxies else ", ".join([escape_html(proxy) for proxy in proxies])
     protocols = proxies
-    
+
     reportUserModification = {
         'content': '',
         'embeds':  [
