@@ -324,7 +324,7 @@ class XRayConfig(dict):
 
         with GetDB() as db:
             for user in crud.get_users(db, status=[UserStatus.active,
-                                                   UserStatus.connect_to_start]):
+                                                   UserStatus.on_hold]):
                 proxies_settings = {
                     p.type: ProxySettings.from_dict(
                         p.type, p.settings).dict(no_obj=True)

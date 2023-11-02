@@ -25,18 +25,18 @@ class UserStatus(str, Enum):
     disabled = "disabled"
     limited = "limited"
     expired = "expired"
-    connect_to_start = "connect_to_start"
+    on_hold = "on_hold"
 
 
 class UserStatusModify(str, Enum):
     active = "active"
     disabled = "disabled"
-    connect_to_start = "connect_to_start"
+    on_hold = "on_hold"
 
 
 class UserStatusCreate(str, Enum):
     active = "active"
-    connect_to_start = "connect_to_start"
+    on_hold = "on_hold"
 
 
 class UserDataLimitResetStrategy(str, Enum):

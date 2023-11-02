@@ -99,7 +99,7 @@ def modify_user(username: str,
     dbuser = crud.update_user(db, dbuser, modified_user)
     user = UserResponse.from_orm(dbuser)
 
-    if user.status in [UserStatus.active, UserStatus.connect_to_start]:
+    if user.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.update_user, dbuser=dbuser)
     else:
         bg.add_task(xray.operations.remove_user, dbuser=dbuser)
@@ -166,7 +166,7 @@ def reset_user_data_usage(username: str,
         raise HTTPException(status_code=403, detail="You're not allowed")
 
     dbuser = crud.reset_user_data_usage(db=db, dbuser=dbuser)
-    if dbuser.status in [UserStatus.active, UserStatus.connect_to_start]:
+    if dbuser.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.add_user, dbuser=dbuser)
 
     user = UserResponse.from_orm(dbuser)
@@ -196,7 +196,7 @@ def revoke_user_subscription(username: str,
 
     dbuser = crud.revoke_user_sub(db=db, dbuser=dbuser)
 
-    if dbuser.status in [UserStatus.active, UserStatus.connect_to_start]:
+    if dbuser.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.update_user, dbuser=dbuser)
     user = UserResponse.from_orm(dbuser)
     bg.add_task(

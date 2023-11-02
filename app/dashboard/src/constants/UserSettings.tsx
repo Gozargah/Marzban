@@ -19,7 +19,7 @@ const ActiveStatusIcon = chakra(WifiIcon, iconProps);
 const DisabledStatusIcon = chakra(NoSymbolIcon, iconProps);
 const LimitedStatusIcon = chakra(ExclamationCircleIcon, iconProps);
 const ExpiredStatusIcon = chakra(ClockIcon, iconProps);
-const Connect_to_startStatusIcon = chakra(ClockIcon, iconProps);
+const On_holdStatusIcon = chakra(ClockIcon, iconProps);
 
 export const resetStrategy: { title: string; value: DataLimitResetStrategy }[] =
   [
@@ -72,10 +72,10 @@ export const statusColors: {
     bandWidthColor: "orange",
     icon: ExpiredStatusIcon,
   },
-  connect_to_start: {
+  on_hold: {
     statusColor: "purple",
     bandWidthColor: "purple",
-    icon: Connect_to_startStatusIcon,
+    icon: On_holdStatusIcon,
   },
   connecting: {
     statusColor: "orange",

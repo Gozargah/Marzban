@@ -1,7 +1,7 @@
-"""Connect To Start
+"""Add on hold
 
 Revision ID: 947ebbd8debe
-Revises: 77c86a261126
+Revises: 0f720f5c54dd
 Create Date: 2023-10-08 06:37:10.027798
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '947ebbd8debe'
-down_revision = '77c86a261126'
+down_revision = '0f720f5c54dd'
 branch_labels = None
 depends_on = None
 
@@ -19,9 +19,9 @@ depends_on = None
 enum_name = "status"
 temp_enum_name = f"temp_{enum_name}"
 old_values = ('active', 'limited', 'expired', 'disabled')
-new_values = ("connect_to_start", *old_values)
+new_values = ("on_hold", *old_values)
 # on downgrade convert [0] to [1]
-downgrade_to = ("connect_to_start", "active")
+downgrade_to = ("on_hold", "active")
 old_type = sa.Enum(*old_values, name=enum_name)
 new_type = sa.Enum(*new_values, name=enum_name)
 temp_type = sa.Enum(*new_values, name=temp_enum_name)

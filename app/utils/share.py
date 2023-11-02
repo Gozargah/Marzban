@@ -779,8 +779,7 @@ def generate_subscription(
     return config
 
 
-def format_time_left(expire: int) -> str:
-    seconds_left = expire - int(dt.now().timestamp())
+def format_time_left(seconds_left: int) -> str:
 
     if seconds_left <= 0:
         return
@@ -810,7 +809,7 @@ def setup_format_variables(extra_data: dict) -> dict:
     expire_timestamp = extra_data.get('expire')
 
     if user_status == UserStatus.active:
-        if expire_timestamp > 0:
+        if expire_timestamp is not None and expire_timestamp >= 0:
             seconds_left = expire_timestamp - int(dt.utcnow().timestamp())
             days_left = (dt.fromtimestamp(
                 expire_timestamp) - dt.utcnow()).days + 1
@@ -819,11 +818,10 @@ def setup_format_variables(extra_data: dict) -> dict:
             days_left = '∞'
             time_left = '∞'
     else:
-        if expire_timestamp > 0:
-            seconds_left = expire_timestamp
+        if expire_timestamp is not None and expire_timestamp >= 0:
             temp_time = dt.fromtimestamp(expire_timestamp)
             days_left = (temp_time - dt(1970, 1, 1)).days
-            time_left = format_time_left(seconds_left)
+            time_left = format_time_left(expire_timestamp)
         else:
             days_left = '∞'
             time_left = '∞'

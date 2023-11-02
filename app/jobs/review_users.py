@@ -57,7 +57,7 @@ def review():
 
             logger.info(f"User \"{user.username}\" status changed to {status}")
 
-        for user in get_users(db, status=UserStatus.connect_to_start):
+        for user in get_users(db, status=UserStatus.on_hold):
 
             if user.edit_at:
                 base_time = datetime.timestamp(user.edit_at)
