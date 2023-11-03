@@ -29,7 +29,8 @@ def add_user(new_user: UserCreate,
 
     for proxy_type in new_user.proxies:
         if not xray.config.inbounds_by_protocol.get(proxy_type):
-            raise HTTPException(status_code=400, detail=f"Protocol {proxy_type} is disabled on your server")
+            raise HTTPException(
+                status_code=400, detail=f"Protocol {proxy_type} is disabled on your server")
 
     try:
         dbuser = crud.create_user(db, new_user,
@@ -84,7 +85,8 @@ def modify_user(username: str,
 
     for proxy_type in modified_user.proxies:
         if not xray.config.inbounds_by_protocol.get(proxy_type):
-            raise HTTPException(status_code=400, detail=f"Protocol {proxy_type} is disabled on your server")
+            raise HTTPException(
+                status_code=400, detail=f"Protocol {proxy_type} is disabled on your server")
 
     dbuser = crud.get_user(db, username)
     if not dbuser:
@@ -97,7 +99,7 @@ def modify_user(username: str,
     dbuser = crud.update_user(db, dbuser, modified_user)
     user = UserResponse.from_orm(dbuser)
 
-    if user.status == UserStatus.active:
+    if user.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.update_user, dbuser=dbuser)
     else:
         bg.add_task(xray.operations.remove_user, dbuser=dbuser)
@@ -113,7 +115,8 @@ def modify_user(username: str,
                     status=user.status,
                     user=user,
                     by=admin)
-        logger.info(f"User \"{dbuser.username}\" status changed from {old_status} to {user.status}")
+        logger.info(
+            f"User \"{dbuser.username}\" status changed from {old_status} to {user.status}")
 
     return user
 
@@ -163,7 +166,7 @@ def reset_user_data_usage(username: str,
         raise HTTPException(status_code=403, detail="You're not allowed")
 
     dbuser = crud.reset_user_data_usage(db=db, dbuser=dbuser)
-    if dbuser.status == UserStatus.active:
+    if dbuser.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.add_user, dbuser=dbuser)
 
     user = UserResponse.from_orm(dbuser)
@@ -193,7 +196,7 @@ def revoke_user_subscription(username: str,
 
     dbuser = crud.revoke_user_sub(db=db, dbuser=dbuser)
 
-    if dbuser.status == UserStatus.active:
+    if dbuser.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.update_user, dbuser=dbuser)
     user = UserResponse.from_orm(dbuser)
     bg.add_task(
@@ -275,7 +278,8 @@ def get_user_usage(username: str,
         raise HTTPException(status_code=404, detail="User not found")
 
     if start is None:
-        start_date = datetime.fromtimestamp(datetime.utcnow().timestamp() - 30 * 24 * 3600)
+        start_date = datetime.fromtimestamp(
+            datetime.utcnow().timestamp() - 30 * 24 * 3600)
     else:
         start_date = datetime.fromisoformat(start)
 

@@ -25,9 +25,9 @@ STATUS_EMOJIS = {
     'active': '✅',
     'expired': '⌛️',
     'limited': '🪫',
-    'disabled': '❌'
+    'disabled': '❌',
+    'connect_to_start': '🔌'
 }
-
 
 class V2rayShareLink(str):
     @classmethod
@@ -779,8 +779,7 @@ def generate_subscription(
     return config
 
 
-def format_time_left(expire: int) -> str:
-    seconds_left = expire - int(dt.now().timestamp())
+def format_time_left(seconds_left: int) -> str:
 
     if seconds_left <= 0:
         return
@@ -805,18 +804,29 @@ def format_time_left(expire: int) -> str:
 
 
 def setup_format_variables(extra_data: dict) -> dict:
+    from app.models.user import UserStatus
+    user_status = extra_data.get('status')
+    expire_timestamp = extra_data.get('expire')
 
-    if (extra_data.get('expire') or 0) > 0:
-        days_left = (dt.fromtimestamp(extra_data['expire']) - dt.now()).days + 1
-        if not days_left > 0:
-            days_left = 0
-            time_left = 0
-        elif days_left:
-            time_left = format_time_left(extra_data['expire'])
+    if user_status == UserStatus.active:
+        if expire_timestamp is not None and expire_timestamp >= 0:
+            seconds_left = expire_timestamp - int(dt.utcnow().timestamp())
+            days_left = (dt.fromtimestamp(
+                expire_timestamp) - dt.utcnow()).days + 1
+            time_left = format_time_left(seconds_left)
+        else:
+            days_left = '∞'
+            time_left = '∞'
     else:
-        days_left = '∞'
-        time_left = '∞'
+        if expire_timestamp is not None and expire_timestamp >= 0:
+            temp_time = dt.fromtimestamp(expire_timestamp)
+            days_left = (temp_time - dt(1970, 1, 1)).days
+            time_left = format_time_left(expire_timestamp)
+        else:
+            days_left = '∞'
+            time_left = '∞'
 
+    
     if extra_data.get('data_limit'):
         data_limit = readable_size(extra_data['data_limit'])
         data_left = extra_data['data_limit'] - extra_data['used_traffic']
@@ -884,7 +894,8 @@ def process_inbounds_and_tags(inbounds: dict, proxies: dict, format_variables: d
 
                 if mode == "v2ray":
                     results.append(get_v2ray_link(remark=host['remark'].format_map(format_variables),
-                                                  address=host['address'].format_map(format_variables),
+                                                  address=host['address'].format_map(
+                                                      format_variables),
                                                   inbound=host_inbound,
                                                   settings=settings.dict(no_obj=True)))
                 elif mode in ["clash", "sing-box", "outline"]:

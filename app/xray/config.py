@@ -137,7 +137,8 @@ class XRayConfig(dict):
                 inbound['settings'] = {}
             if not inbound['settings'].get('clients'):
                 inbound['settings']['clients'] = []
-            self._addr_clients_by_tag[inbound['tag']] = inbound['settings']['clients']
+            self._addr_clients_by_tag[inbound['tag']
+                                      ] = inbound['settings']['clients']
 
             settings = {
                 "tag": inbound["tag"],
@@ -176,8 +177,10 @@ class XRayConfig(dict):
 
                 if settings['is_fallback'] is True:
                     # probably this is a fallback
-                    security = self._fallbacks_inbound.get('streamSettings', {}).get('security')
-                    tls_settings = self._fallbacks_inbound.get('streamSettings', {}).get(f"{security}Settings", {})
+                    security = self._fallbacks_inbound.get(
+                        'streamSettings', {}).get('security')
+                    tls_settings = self._fallbacks_inbound.get(
+                        'streamSettings', {}).get(f"{security}Settings", {})
 
                 settings['network'] = net
 
@@ -271,7 +274,8 @@ class XRayConfig(dict):
 
                 else:
                     settings['path'] = net_settings.get('path', '')
-                    host = net_settings.get('host', {}) or net_settings.get('Host', {})
+                    host = net_settings.get(
+                        'host', {}) or net_settings.get('Host', {})
                     if host and isinstance(host, list):
                         settings['host'] = host[0]
                     elif host and isinstance(host, str):
@@ -319,9 +323,11 @@ class XRayConfig(dict):
         config = self.copy()
 
         with GetDB() as db:
-            for user in crud.get_users(db, status=UserStatus.active):
+            for user in crud.get_users(db, status=[UserStatus.active,
+                                                   UserStatus.on_hold]):
                 proxies_settings = {
-                    p.type: ProxySettings.from_dict(p.type, p.settings).dict(no_obj=True)
+                    p.type: ProxySettings.from_dict(
+                        p.type, p.settings).dict(no_obj=True)
                     for p in user.proxies
                 }
                 for proxy_type, inbound_tags in user.inbounds.items():

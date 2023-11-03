@@ -210,11 +210,13 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None):
     dbuser = User(
         username=user.username,
         proxies=proxies,
+        status=user.status,
         data_limit=(user.data_limit or None),
         expire=(user.expire or None),
         admin=admin,
         data_limit_reset_strategy=user.data_limit_reset_strategy,
-        note=user.note
+        note=user.note,
+        timeout=(user.timeout or None),
     )
     db.add(dbuser)
     db.commit()
@@ -259,7 +261,9 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
         dbuser.data_limit = (modify.data_limit or None)
         if dbuser.status not in (UserStatus.expired, UserStatus.disabled):
             if not dbuser.data_limit or dbuser.used_traffic < dbuser.data_limit:
-                dbuser.status = UserStatus.active
+                if dbuser.status != UserStatus.on_hold:
+                    dbuser.status = UserStatus.active
+                    
                 if not dbuser.data_limit or (calculate_usage_percent(
                         dbuser.used_traffic, dbuser.data_limit) < NOTIFY_REACHED_USAGE_PERCENT):
                     delete_notification_reminder_by_type(db, dbuser.id, ReminderType.data_usage)
@@ -268,7 +272,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
 
     if modify.expire is not None:
         dbuser.expire = (modify.expire or None)
-        if dbuser.status not in (UserStatus.limited, UserStatus.disabled):
+        if dbuser.status in (UserStatus.active, UserStatus.expired):
             if not dbuser.expire or dbuser.expire > datetime.utcnow().timestamp():
                 dbuser.status = UserStatus.active
                 if not dbuser.expire or (calculate_expiration_days(
@@ -282,6 +286,11 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
 
     if modify.note is not None:
         dbuser.note = modify.note or None
+
+    if modify.timeout is not None :
+        dbuser.timeout = modify.timeout
+
+    dbuser.edit_at = datetime.utcnow()
 
     db.commit()
     db.refresh(dbuser)
@@ -337,7 +346,7 @@ def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
 
     for dbuser in query.all():
         dbuser.used_traffic = 0
-        if dbuser.status not in (UserStatus.expired or UserStatus.disabled):
+        if dbuser.status not in [UserStatus.on_hold , UserStatus.expired , UserStatus.disabled]:
             dbuser.status = UserStatus.active
         dbuser.usage_logs.clear()
         dbuser.node_usages.clear()
@@ -355,6 +364,17 @@ def update_user_status(db: Session, dbuser: User, status: UserStatus):
 
 def set_owner(db: Session, dbuser: User, admin: Admin):
     dbuser.admin = admin
+    db.commit()
+    db.refresh(dbuser)
+    return dbuser
+
+
+def start_user_expire(db: Session, dbuser: User):
+    
+    if dbuser.expire:
+        expire = int(datetime.utcnow().timestamp()) + dbuser.expire
+        
+    dbuser.expire = expire
     db.commit()
     db.refresh(dbuser)
     return dbuser
