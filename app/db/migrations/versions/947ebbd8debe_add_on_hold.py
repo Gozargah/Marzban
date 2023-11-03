@@ -1,7 +1,7 @@
 """Add on hold
 
 Revision ID: 947ebbd8debe
-Revises: 0f720f5c54dd
+Revises: 08b381fc1bc7
 Create Date: 2023-10-08 06:37:10.027798
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '947ebbd8debe'
-down_revision = '0f720f5c54dd'
+down_revision = '08b381fc1bc7'
 branch_labels = None
 depends_on = None
 
