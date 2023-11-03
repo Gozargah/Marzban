@@ -261,9 +261,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
         dbuser.data_limit = (modify.data_limit or None)
         if dbuser.status not in (UserStatus.expired, UserStatus.disabled):
             if not dbuser.data_limit or dbuser.used_traffic < dbuser.data_limit:
-                if dbuser.status == UserStatus.connect_to_start:
-                    pass
-                else:
+                if dbuser.status != UserStatus.on_hold:
                     dbuser.status = UserStatus.active
                     
                 if not dbuser.data_limit or (calculate_usage_percent(
