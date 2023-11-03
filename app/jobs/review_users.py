@@ -68,8 +68,7 @@ def review():
             if user.online_at and base_time <= datetime.timestamp(user.online_at):
                 status = UserStatus.active
 
-            elif user.timeout and (base_time +
-                                   user.timeout <= (now.timestamp())):
+            elif user.on_hold_timeout and (datetime.timestamp(user.on_hold_timeout) <= (now.timestamp())):
                 # If the user didn't connect within the timeout period, change status to "Active"
                 status = UserStatus.active
             else:

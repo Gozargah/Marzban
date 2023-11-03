@@ -54,7 +54,8 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     note = Column(String(500), nullable=True, default=None)
     online_at = Column(DateTime, nullable=True, default=None)
-    timeout = Column(Integer, nullable=True, default=None)
+    on_hold_expire_duration = Column(BigInteger, nullable=True, default=None)
+    on_hold_timeout = Column(DateTime, nullable=True, default=None)
     edit_at = Column(DateTime, nullable=True, default=None)
 
     @property
