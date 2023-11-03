@@ -346,7 +346,7 @@ def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
 
     for dbuser in query.all():
         dbuser.used_traffic = 0
-        if dbuser.status not in (UserStatus.on_hold or UserStatus.expired or UserStatus.disabled):
+        if dbuser.status not in [UserStatus.on_hold , UserStatus.expired , UserStatus.disabled]:
             dbuser.status = UserStatus.active
         dbuser.usage_logs.clear()
         dbuser.node_usages.clear()
