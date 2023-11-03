@@ -807,6 +807,7 @@ def setup_format_variables(extra_data: dict) -> dict:
     from app.models.user import UserStatus
     user_status = extra_data.get('status')
     expire_timestamp = extra_data.get('expire')
+    on_hold_expire_duration = extra_data.get('on_hold_expire_duration')
 
     if user_status == UserStatus.active:
         if expire_timestamp is not None and expire_timestamp >= 0:
@@ -818,10 +819,10 @@ def setup_format_variables(extra_data: dict) -> dict:
             days_left = '∞'
             time_left = '∞'
     else:
-        if expire_timestamp is not None and expire_timestamp >= 0:
-            temp_time = dt.fromtimestamp(expire_timestamp)
+        if on_hold_expire_duration is not None and on_hold_expire_duration >= 0:
+            temp_time = dt.fromtimestamp(on_hold_expire_duration)
             days_left = (temp_time - dt(1970, 1, 1)).days
-            time_left = format_time_left(expire_timestamp)
+            time_left = format_time_left(on_hold_expire_duration)
         else:
             days_left = '∞'
             time_left = '∞'

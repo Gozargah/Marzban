@@ -216,7 +216,8 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None):
         admin=admin,
         data_limit_reset_strategy=user.data_limit_reset_strategy,
         note=user.note,
-        timeout=(user.timeout or None),
+        on_hold_expire_duration=(user.on_hold_expire_duration or None),
+        on_hold_timeout=(user.on_hold_timeout or None),
     )
     db.add(dbuser)
     db.commit()
@@ -287,8 +288,11 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
     if modify.note is not None:
         dbuser.note = modify.note or None
 
-    if modify.timeout is not None :
-        dbuser.timeout = modify.timeout
+    if modify.on_hold_timeout is not None :
+        dbuser.on_hold_timeout = modify.on_hold_timeout
+
+    if modify.on_hold_expire_duration is not None :
+        dbuser.on_hold_expire_duration = modify.on_hold_expire_duration
 
     dbuser.edit_at = datetime.utcnow()
 
@@ -371,9 +375,7 @@ def set_owner(db: Session, dbuser: User, admin: Admin):
 
 def start_user_expire(db: Session, dbuser: User):
     
-    if dbuser.expire:
-        expire = int(datetime.utcnow().timestamp()) + dbuser.expire
-        
+    expire = int(datetime.utcnow().timestamp()) + dbuser.on_hold_expire_duration
     dbuser.expire = expire
     db.commit()
     db.refresh(dbuser)

@@ -61,7 +61,8 @@ class User(BaseModel):
     sub_updated_at: Optional[datetime] = Field(None, nullable=True)
     sub_last_user_agent: Optional[str] = Field(None, nullable=True)
     online_at: Optional[datetime] = Field(None, nullable=True)
-    timeout: Optional[int] = Field(None, nullable=True)
+    on_hold_expire_duration: Optional[int] = Field(None, nullable=True)
+    on_hold_timeout: Optional[Union[datetime, None]] = Field(None, nullable=True)
 
     @validator("proxies", pre=True, always=True)
     def validate_proxies(cls, v, values, **kwargs):
@@ -87,7 +88,7 @@ class User(BaseModel):
             raise ValueError("User's note can be a maximum of 500 character")
         return v
 
-    @validator("expire", "timeout", pre=True, always=True)
+    @validator("on_hold_expire_duration", "on_hold_timeout", pre=True, always=True)
     def validate_timeout(cls, v, values):
         # Check if expire is 0 or None and timeout is not 0 or None
         if (v in (0, None)) and (values.get("timeout") not in (0, None)):
@@ -116,7 +117,8 @@ class UserCreate(User):
                 "data_limit_reset_strategy": "no_reset",
                 "status": "active",
                 "note": "",
-                "timeout": 0,
+                "on_hold_timeout": "2023-11-03T20:30:00",
+                "on_hold_expire_duration": 0,
             }
         }
 
@@ -166,6 +168,14 @@ class UserCreate(User):
             return UserStatusCreate.active  # Set to the default if not valid
         return value
 
+    @validator("status", pre=True, always=True, allow_reuse=True)
+    def validate_status(cls, status, values):
+        expire = values.get("on_hold_expire_duration")
+        if status == UserStatusCreate.on_hold and (expire == 0 or expire is None):
+            return UserStatusCreate.active
+        return status
+
+
 
 class UserModify(User):
     status: UserStatusModify = None
@@ -187,7 +197,8 @@ class UserModify(User):
                 "data_limit_reset_strategy": "no_reset",
                 "status": "active",
                 "note": "",
-                "timeout": 0,
+                "on_hold_timeout": "2023-11-03T20:30:00",
+                "on_hold_expire_duration": 0,
             }
         }
 
@@ -224,6 +235,13 @@ class UserModify(User):
                 proxy_type, v.get(proxy_type, {}))
             for proxy_type in v
         }
+    
+    @validator("status", pre=True, always=True, allow_reuse=True)
+    def validate_status(cls, status, values):
+        expire = values.get("on_hold_expire_duration")
+        if status == UserStatusCreate.on_hold and (expire == 0 or expire is None):
+            return UserStatusCreate.active
+        return status
 
 
 class UserResponse(User):
