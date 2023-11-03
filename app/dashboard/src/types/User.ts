@@ -3,7 +3,7 @@ export type Status =
   | "disabled"
   | "limited"
   | "expired"
-  | "connect_to_start"
+  | "on_hold"
   | "error"
   | "connecting"
   | "connected";
