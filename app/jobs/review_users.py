@@ -81,5 +81,18 @@ def review():
 
             logger.info(f"User \"{user.username}\" status changed to {status}")
 
+        for user in get_users(db, status=UserStatus.expired):
+
+            active = user.expire and user.expire >= now.timestamp()
+            if active:
+                status = UserStatus.active
+            else:
+                continue
+
+            update_user_status(db, user, status)
+            xray.operations.add_user(user)
+            
+            logger.info(f"User \"{user.username}\" status fixed.")
+
 
 scheduler.add_job(review, 'interval', seconds=5)
