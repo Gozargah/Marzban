@@ -91,7 +91,7 @@ class User(BaseModel):
     @validator("on_hold_expire_duration", "on_hold_timeout", pre=True, always=True)
     def validate_timeout(cls, v, values):
         # Check if expire is 0 or None and timeout is not 0 or None
-        if (v in (0, None)) and (values.get("timeout") not in (0, None)):
+        if (v in (0, None)):
             return None
         return v
 
@@ -241,9 +241,13 @@ class UserModify(User):
 
     @validator("status", pre=True, always=True, allow_reuse=True)
     def validate_status(cls, status, values):
-        expire = values.get("on_hold_expire_duration")
-        if status == UserStatusCreate.on_hold and (expire == 0 or expire is None):
-            raise ValueError("User cannot be on hold without a valid on_hold_expire_duration.")
+        on_hold_expire = values.get("on_hold_expire_duration")
+        expire = values.get("expire")
+        if status == UserStatusCreate.on_hold:
+            if (on_hold_expire == 0 or on_hold_expire is None):
+                raise ValueError("User cannot be on hold without a valid on_hold_expire_duration.")
+            if expire:
+                raise ValueError("User cannot be on hold with specified expire.")
         return status
 
 
