@@ -266,10 +266,10 @@ def reset_users_data_usage(db: Session = Depends(get_db),
 
 @app.get("/api/user/{username}/usage", tags=['User'], response_model=UserUsagesResponse)
 def get_user_usage(username: str,
-             start: str = None,
-             end: str = None,
-             db: Session = Depends(get_db),
-             admin: Admin = Depends(Admin.get_current)):
+                   start: str = None,
+                   end: str = None,
+                   db: Session = Depends(get_db),
+                   admin: Admin = Depends(Admin.get_current)):
     """
     Get users usage
     """
@@ -295,21 +295,21 @@ def get_user_usage(username: str,
 
 @app.put("/api/user/{username}/set-owner", tags=['User'], response_model=UserResponse)
 def set_owner(username: str,
-                admin_username: str,
-                db: Session = Depends(get_db),
-                admin: Admin = Depends(Admin.get_current)):
-    
+              admin_username: str,
+              db: Session = Depends(get_db),
+              admin: Admin = Depends(Admin.get_current)):
+
     if not admin.is_sudo:
         raise HTTPException(status_code=403, detail="You're not allowed")
-    
+
     dbuser = crud.get_user(db, username)
     if not dbuser:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     new_admin = crud.get_admin(db, username=admin_username)
     if not new_admin:
         raise HTTPException(status_code=404, detail="Admin not found")
-    
+
     dbuser = crud.set_owner(db, dbuser, new_admin)
     user = UserResponse.from_orm(dbuser)
 

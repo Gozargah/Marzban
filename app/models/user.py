@@ -167,14 +167,18 @@ class UserCreate(User):
         if not value or value not in UserStatusCreate.__members__:
             return UserStatusCreate.active  # Set to the default if not valid
         return value
-    
+
     @validator("status", pre=True, always=True, allow_reuse=True)
     def validate_status(cls, status, values):
-        expire = values.get("on_hold_expire_duration")
-        if status == UserStatusCreate.on_hold and (expire == 0 or expire is None):
-            raise ValueError("User cannot be on hold without a valid on_hold_expire_duration.")
+        on_hold_expire = values.get("on_hold_expire_duration")
+        expire = values.get("expire")
+        if status == UserStatusCreate.on_hold:
+            if (on_hold_expire == 0 or on_hold_expire is None):
+                raise ValueError("User cannot be on hold without a valid on_hold_expire_duration.")
+            if expire:
+                raise ValueError("User cannot be on hold with specified expire.")
         return status
-    
+
 
 class UserModify(User):
     status: UserStatusModify = None
@@ -234,7 +238,7 @@ class UserModify(User):
                 proxy_type, v.get(proxy_type, {}))
             for proxy_type in v
         }
-    
+
     @validator("status", pre=True, always=True, allow_reuse=True)
     def validate_status(cls, status, values):
         expire = values.get("on_hold_expire_duration")

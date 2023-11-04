@@ -3,7 +3,7 @@ import json
 import random
 import secrets
 import urllib.parse as urlparse
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta
 from typing import TYPE_CHECKING, Literal, Union, List
 from uuid import UUID
 
@@ -28,6 +28,7 @@ STATUS_EMOJIS = {
     'disabled': '❌',
     'connect_to_start': '🔌'
 }
+
 
 class V2rayShareLink(str):
     @classmethod
@@ -490,6 +491,7 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
                                           password=settings['password'],
                                           method=settings['method'])
 
+
 class OutlineConfiguration:
     def __init__(self):
         self.config = {}
@@ -522,8 +524,6 @@ class OutlineConfiguration:
             method=settings['method']
         )
         self.add_directly(outbound)
-
-
 
 
 class SingBoxConfiguration(str):
@@ -745,7 +745,6 @@ def generate_v2ray_subscription(links: list) -> str:
     return base64.b64encode('\n'.join(links).encode()).decode()
 
 
-
 def generate_outline_subscription(proxies: dict, inbounds: dict, extra_data: dict) -> str:
     conf = OutlineConfiguration()
 
@@ -781,8 +780,8 @@ def generate_subscription(
 
 def format_time_left(seconds_left: int) -> str:
 
-    if seconds_left <= 0:
-        return
+    if not seconds_left or seconds_left <= 0:
+        return '∞'
 
     minutes, seconds = divmod(seconds_left, 60)
     hours, minutes = divmod(minutes, 60)
@@ -820,14 +819,12 @@ def setup_format_variables(extra_data: dict) -> dict:
             time_left = '∞'
     else:
         if on_hold_expire_duration is not None and on_hold_expire_duration >= 0:
-            temp_time = dt.fromtimestamp(on_hold_expire_duration)
-            days_left = (temp_time - dt(1970, 1, 1)).days
-            time_left = format_time_left(expire_timestamp)
+            days_left = timedelta(seconds=on_hold_expire_duration).days
+            time_left = format_time_left(on_hold_expire_duration)
         else:
             days_left = '∞'
             time_left = '∞'
 
-    
     if extra_data.get('data_limit'):
         data_limit = readable_size(extra_data['data_limit'])
         data_left = extra_data['data_limit'] - extra_data['used_traffic']
@@ -911,6 +908,7 @@ def process_inbounds_and_tags(inbounds: dict, proxies: dict, format_variables: d
         return conf.render()
 
     return results
+
 
 def encode_title(text: str) -> str:
     return f"base64:{base64.b64encode(text.encode()).decode()}"
