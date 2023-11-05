@@ -234,7 +234,7 @@ class Node(Base):
     user_usages = relationship("NodeUserUsage", back_populates="node", cascade="all, delete-orphan")
     usages = relationship("NodeUsage", back_populates="node", cascade="all, delete-orphan")
     usage_coefficient = Column(Float, nullable=False, server_default=text("1.0"), default=1)
-
+    public_name =  Column(String(256),nullable=True ,default=None)
 
 class NodeUserUsage(Base):
     __tablename__ = "node_user_usages"

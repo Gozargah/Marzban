@@ -157,7 +157,8 @@ def get_users(db: Session,
     return query.all()
 
 
-def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime) -> List[UserUsageResponse]:
+def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime, 
+                    sub:bool = None) -> List[UserUsageResponse]:
     usages = {}
 
     usages[0] = UserUsageResponse(  # Main Core
@@ -166,11 +167,25 @@ def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime) -
         used_traffic=0
     )
     for node in db.query(Node).all():
-        usages[node.id] = UserUsageResponse(
-            node_id=node.id,
-            node_name=node.name,
-            used_traffic=0
-        )
+        if not sub :
+            usages[node.id] = UserUsageResponse(
+                node_id=node.id,
+                node_name=node.name,
+                used_traffic=0
+            )
+        else:
+            if node.public_name :
+                usages[node.id] = UserUsageResponse(
+                node_id=node.id,
+                node_name=node.public_name,
+                used_traffic=0
+            )
+            else:
+                usages[node.id] = UserUsageResponse(
+                    node_id=node.id,
+                    node_name=node.id,
+                    used_traffic=0
+                )
 
     cond = and_(NodeUserUsage.user_id == dbuser.id,
                 NodeUserUsage.created_at >= start,
@@ -605,6 +620,9 @@ def update_node(db: Session, dbnode: Node, modify: NodeModify):
 
     if modify.usage_coefficient:
         dbnode.usage_coefficient = modify.usage_coefficient
+    
+    if modify.public_name:
+        dbnode.public_name = modify.public_name
 
     db.commit()
     db.refresh(dbnode)
