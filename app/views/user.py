@@ -18,7 +18,7 @@ def add_user(new_user: UserCreate,
     """
     Add a new user
 
-    - **username** must have 3 to 32 characters and is allowed to contain a-z, 0-9, and underscores in between
+    - **username** must have 3 to 64 characters and is allowed to contain a-z, 0-9, and underscores in between
     - **expire** must be an UTC timestamp
     - **data_limit** must be in Bytes, e.g. 1073741824B = 1GB
     - **proxies** dictionary of protocol:settings
