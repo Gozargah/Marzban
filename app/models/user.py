@@ -12,7 +12,7 @@ from app.utils.share import generate_v2ray_links
 from config import XRAY_SUBSCRIPTION_URL_PREFIX
 from xray_api.types.account import Account
 
-USERNAME_REGEXP = re.compile(r'^(?=\w{3,32}\b)[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*$')
+USERNAME_REGEXP = re.compile(r'^(?=\w{3,64}\b)[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*$')
 
 
 class UserStatus(str, Enum):
