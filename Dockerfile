@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 COPY . /code
 
-RUN ./install_xray.sh
+RUN /code/install_xray.sh
 
 RUN apt-get remove -y curl unzip gcc python3-dev
 
