@@ -8,12 +8,12 @@ RUN apt-get update \
     && apt-get install -y curl unzip gcc python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN bash -c "$(curl -L https://github.com/Gozargah/Marzban-scripts/raw/master/install_latest_xray.sh)"
-
 COPY ./requirements.txt /code/
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 COPY . /code
+
+RUN ./install_xray.sh
 
 RUN apt-get remove -y curl unzip gcc python3-dev
 
