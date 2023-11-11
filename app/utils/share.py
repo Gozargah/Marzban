@@ -106,7 +106,7 @@ class V2rayShareLink(str):
             "host": host,
             "headerType": type
         }
-        if flow and net in ('tcp', 'kcp'):
+        if flow and (net in ('tcp', 'kcp') and type != 'http'):
             payload['flow'] = flow
 
         if net == 'grpc':
@@ -157,7 +157,7 @@ class V2rayShareLink(str):
             "host": host,
             "headerType": type
         }
-        if flow and net in ('tcp', 'kcp'):
+        if flow and (net in ('tcp', 'kcp') and type != 'http'):
             payload['flow'] = flow
 
         if net == 'grpc':
@@ -405,7 +405,7 @@ class ClashMetaConfiguration(ClashConfiguration):
         if inbound['protocol'] == 'vless':
             node['uuid'] = settings['id']
 
-            if inbound['network'] in ('tcp', 'kcp'):
+            if inbound['network'] in ('tcp', 'kcp') and inbound['header_type'] != 'http':
                 node['flow'] = settings.get('flow', '')
 
             self.data['proxies'].append(node)
@@ -414,7 +414,7 @@ class ClashMetaConfiguration(ClashConfiguration):
         if inbound['protocol'] == 'trojan':
             node['password'] = settings['password']
 
-            if inbound['network'] in ('tcp', 'kcp'):
+            if inbound['network'] in ('tcp', 'kcp') and inbound['header_type'] != 'http':
                 node['flow'] = settings.get('flow', '')
 
             self.data['proxies'].append(node)
@@ -660,7 +660,7 @@ class SingBoxConfiguration(str):
             "server": address,
             "server_port": port,
         }
-        if net in ('tcp', 'kcp'):
+        if net in ('tcp', 'kcp') or headers != 'http':
             if flow:
                 config["flow"] = flow
 
