@@ -44,10 +44,10 @@ import CopyToClipboard from "react-copy-to-clipboard";
 import { useTranslation } from "react-i18next";
 import { User } from "types/User";
 import { formatBytes } from "utils/formatByte";
+import { OnlineBadge } from "./OnlineBadge";
+import { OnlineStatus } from "./OnlineStatus";
 import { Pagination } from "./Pagination";
 import { StatusBadge } from "./StatusBadge";
-import { OnlineStatus } from "./OnlineStatus";
-import { OnlineBadge } from "./OnlineBadge";
 
 const EmptySectionIcon = chakra(AddFileIcon);
 
@@ -436,10 +436,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                                     expiryDate={user.expire}
                                     status={user.status}
                                   />
-                                  <OnlineStatus
-                                    lastOnline={user.online_at}
-                                    status={user.status}
-                                  />
+                                  <OnlineStatus lastOnline={user.online_at} />
                                 </Box>
                                 <HStack>
                                   <ActionButtons user={user} />
@@ -584,10 +581,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                     <div className="flex-status">
                       <OnlineBadge lastOnline={user.online_at} />
                       {user.username}
-                      <OnlineStatus
-                        lastOnline={user.online_at}
-                        status={user.status}
-                      />
+                      <OnlineStatus lastOnline={user.online_at} />
                     </div>
                   </Td>
                   <Td width="400px" minW="150px">
