@@ -46,6 +46,8 @@ import { User } from "types/User";
 import { formatBytes } from "utils/formatByte";
 import { Pagination } from "./Pagination";
 import { StatusBadge } from "./StatusBadge";
+import { OnlineStatus } from "./OnlineStatus";
+import { OnlineBadge } from "./OnlineBadge";
 
 const EmptySectionIcon = chakra(AddFileIcon);
 
@@ -344,7 +346,10 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                       cursor="pointer"
                     >
                       <Td borderBottom={0} minW="100px" pl={4} pr={4}>
-                        {user.username}
+                        <div className="flex-status">
+                          <OnlineBadge lastOnline={user.online_at} />
+                          {user.username}
+                        </div>
                       </Td>
                       <Td borderBottom={0} minW="50px" pl={0} pr={0}>
                         <StatusBadge
@@ -429,6 +434,10 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                                   <StatusBadge
                                     compact
                                     expiryDate={user.expire}
+                                    status={user.status}
+                                  />
+                                  <OnlineStatus
+                                    lastOnline={user.online_at}
                                     status={user.status}
                                   />
                                 </Box>
@@ -571,7 +580,16 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   })}
                   onClick={() => onEditingUser(user)}
                 >
-                  <Td minW="140px">{user.username}</Td>
+                  <Td minW="140px">
+                    <div className="flex-status">
+                      <OnlineBadge lastOnline={user.online_at} />
+                      {user.username}
+                      <OnlineStatus
+                        lastOnline={user.online_at}
+                        status={user.status}
+                      />
+                    </div>
+                  </Td>
                   <Td width="400px" minW="150px">
                     <StatusBadge
                       expiryDate={user.expire}
