@@ -48,6 +48,7 @@ export type User = {
   subscription_url: string;
   inbounds: UserInbounds;
   note: string;
+  online_at: string;
 };
 
 export type UserCreate = Pick<

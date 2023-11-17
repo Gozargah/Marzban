@@ -44,6 +44,8 @@ import CopyToClipboard from "react-copy-to-clipboard";
 import { useTranslation } from "react-i18next";
 import { User } from "types/User";
 import { formatBytes } from "utils/formatByte";
+import { OnlineBadge } from "./OnlineBadge";
+import { OnlineStatus } from "./OnlineStatus";
 import { Pagination } from "./Pagination";
 import { StatusBadge } from "./StatusBadge";
 
@@ -344,7 +346,10 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                       cursor="pointer"
                     >
                       <Td borderBottom={0} minW="100px" pl={4} pr={4}>
-                        {user.username}
+                        <div className="flex-status">
+                          <OnlineBadge lastOnline={user.online_at} />
+                          {user.username}
+                        </div>
                       </Td>
                       <Td borderBottom={0} minW="50px" pl={0} pr={0}>
                         <StatusBadge
@@ -431,6 +436,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                                     expiryDate={user.expire}
                                     status={user.status}
                                   />
+                                  <OnlineStatus lastOnline={user.online_at} />
                                 </Box>
                                 <HStack>
                                   <ActionButtons user={user} />
@@ -571,7 +577,13 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   })}
                   onClick={() => onEditingUser(user)}
                 >
-                  <Td minW="140px">{user.username}</Td>
+                  <Td minW="140px">
+                    <div className="flex-status">
+                      <OnlineBadge lastOnline={user.online_at} />
+                      {user.username}
+                      <OnlineStatus lastOnline={user.online_at} />
+                    </div>
+                  </Td>
                   <Td width="400px" minW="150px">
                     <StatusBadge
                       expiryDate={user.expire}
