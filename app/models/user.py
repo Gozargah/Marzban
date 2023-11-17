@@ -277,7 +277,7 @@ class UserResponse(User):
     def validate_subscription_url(cls, v, values, **kwargs):
         if not v:
             token = create_subscription_token(values["username"])
-            return f"{XRAY_SUBSCRIPTION_URL_PREFIX}{XRAY_SUBSCRIPTION_PATH}{token}"
+            return f"{XRAY_SUBSCRIPTION_URL_PREFIX}/{XRAY_SUBSCRIPTION_PATH}/{token}"
         return v
 
     @validator("proxies", pre=True, always=True)
