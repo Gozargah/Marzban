@@ -9,6 +9,7 @@
   from {
     backdrop-filter: blur(1px);
   }
+
   to {
     backdrop-filter: blur(10px);
   }
@@ -22,6 +23,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -31,6 +33,7 @@ table thead {
   th:first-of-type {
     border-top-left-radius: 8px;
   }
+
   th:last-of-type {
     border-top-right-radius: 8px;
   }
@@ -40,6 +43,7 @@ table thead {
   td:first-of-type {
     border-bottom-left-radius: 8px;
   }
+
   td:last-of-type {
     border-bottom-right-radius: 8px;
   }
@@ -48,16 +52,20 @@ table thead {
 .slick-prev {
   left: -40px;
 }
+
 .slick-next {
   right: -40px;
 }
+
 .slick-prev,
 .slick-next {
   z-index: 100;
 }
+
 .chakra-popover__popper {
   z-index: 9999 !important;
 }
+
 .inbound-item .chakra-checkbox__label {
   max-width: 100%;
   width: 100%;
@@ -156,18 +164,18 @@ table thead {
   color: var(--chakra-colors-gray-500) !important;
 }
 
-.react-datepicker__day--keyboard-selected, 
-.react-datepicker__day--selected, 
-.react-datepicker__day--in-selecting-range, 
+.react-datepicker__day--keyboard-selected,
+.react-datepicker__day--selected,
+.react-datepicker__day--in-selecting-range,
 .react-datepicker__day--in-range {
   border-radius: 0.3rem;
   background-color: var(--chakra-colors-primary-500) !important;
   color: var(--chakra-colors-white) !important;
 }
 
-.chakra-ui-dark .react-datepicker__day--keyboard-selected, 
-.chakra-ui-dark .react-datepicker__day--selected, 
-.chakra-ui-dark .react-datepicker__day--in-selecting-range, 
+.chakra-ui-dark .react-datepicker__day--keyboard-selected,
+.chakra-ui-dark .react-datepicker__day--selected,
+.chakra-ui-dark .react-datepicker__day--in-selecting-range,
 .chakra-ui-dark .react-datepicker__day--in-range {
   border-radius: 0.3rem;
   background-color: var(--chakra-colors-primary-200) !important;
@@ -194,4 +202,81 @@ table thead {
   border-radius: unset;
   display: inline-block;
   position: relative;
+}
+
+.green {
+  background: #66ff99;
+}
+
+.red {
+  background: #e53e3e;
+}
+
+.orange {
+  background: #fbd38d;
+}
+
+.circle {
+  min-width: 10px;
+  min-height: 10px;
+  border-radius: 50%;
+
+  box-shadow: 0px 0px 1px 1px #0000001a;
+}
+
+.pulse {
+  animation: pulse-animation 3s infinite;
+}
+.pulse.green {
+  animation: green-pulse-animation 3s infinite;
+}
+.pulse.red{
+  animation: red-pulse-animation 3s infinite;
+}
+.pulse.orange{
+  animation: orange-pulse-animation 3s infinite;
+}
+
+@keyframes pulse-animation {
+  0% {
+    box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.4);
+  }
+
+  100% {
+    box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+  }
+}
+@keyframes green-pulse-animation {
+  0% {
+    box-shadow: 0 0 0 0px #66ff9975;
+  }
+
+  100% {
+    box-shadow: 0 0 0 10px #66ff9900;
+  }
+}
+@keyframes red-pulse-animation {
+  0% {
+    box-shadow: 0 0 0 0px #e53e3e8c;
+  }
+
+  100% {
+    box-shadow: 0 0 0 10px #e53e3e00;
+  }
+}
+@keyframes orange-pulse-animation {
+  0% {
+    box-shadow: 0 0 0 0px #fbd38d85;
+  }
+
+  100% {
+    box-shadow: 0 0 0 10px #fbd38d00;
+  }
+}
+
+.flex-status {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap: .7rem;
 }
