@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Literal, Union, List
 from uuid import UUID
 
 import yaml
+from persiantools.jdatetime import JalaliDate
 
 from app import xray
 from app.models.proxy import FormatVariables
@@ -811,12 +812,17 @@ def setup_format_variables(extra_data: dict) -> dict:
     if user_status != UserStatus.on_hold:
         if expire_timestamp is not None and expire_timestamp >= 0:
             seconds_left = expire_timestamp - int(dt.utcnow().timestamp())
-            days_left = (dt.fromtimestamp(
-                expire_timestamp) - dt.utcnow()).days + 1
+            expire_datetime = dt.fromtimestamp(expire_timestamp)
+            expire_date = expire_datetime.date()
+            solar_expire_date = JalaliDate.to_jalali(
+                dt(expire_date.year, expire_date.month, expire_date.day)).strftime("%Y-%m-%d")
+            days_left = (expire_datetime - dt.utcnow()).days + 1
             time_left = format_time_left(seconds_left)
         else:
             days_left = '∞'
             time_left = '∞'
+            expire_date = '∞'
+            solar_expire_date = '∞'
     else:
         if on_hold_expire_duration is not None and on_hold_expire_duration >= 0:
             days_left = timedelta(seconds=on_hold_expire_duration).days
@@ -824,6 +830,8 @@ def setup_format_variables(extra_data: dict) -> dict:
         else:
             days_left = '∞'
             time_left = '∞'
+            expire_date = '∞'
+            solar_expire_date = '∞'
 
     if extra_data.get('data_limit'):
         data_limit = readable_size(extra_data['data_limit'])
@@ -844,6 +852,8 @@ def setup_format_variables(extra_data: dict) -> dict:
         "DATA_LIMIT": data_limit,
         "DATA_LEFT": data_left,
         "DAYS_LEFT": days_left,
+        "EXPIRE_DATE": expire_date,
+        "SOLAR_EXPIRE_DATE": solar_expire_date,
         "TIME_LEFT": time_left,
         "STATUS_EMOJI": status_emoji
     }

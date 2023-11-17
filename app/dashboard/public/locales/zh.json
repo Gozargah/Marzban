@@ -71,6 +71,8 @@
   "hostsDialog.remainingData": "用户剩余流量情况",
   "hostsDialog.dataLimit": "用户的流量限制",
   "hostsDialog.remainingDays": "用户的剩余天数",
+  "hostsDialog.expireDate": "用户的有效期",
+  "hostsDialog.solarExpireDate": "用户阳历有效日期",
   "hostsDialog.remainingTime": "用户剩余时间",
   "hostsDialog.statusEmoji": "用户状态作为表情符号 (✅,⌛️,🪫,❌)",
   "hostsDialog.proxyProtocol": "代理协议（例如 VMess）",
