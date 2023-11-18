@@ -76,7 +76,7 @@
   "hostsDialog.dataLimit": "The usage limit of the user",
   "hostsDialog.remainingDays": "Remaining days of the user",
   "hostsDialog.expireDate": "Expiry date of the user",
-  "hostsDialog.solarExpireDate": "Expiry date of the user in solar calendar",
+  "hostsDialog.jalaliExpireDate": "Expiry date of the user in solar calendar",
   "hostsDialog.remainingTime": "Remaining time of the user",
   "hostsDialog.statusEmoji": "User status as an emoji (✅,⌛️,🪫,❌)",
   "hostsDialog.proxyProtocol": "Proxy protocol (e.g. VMess)",

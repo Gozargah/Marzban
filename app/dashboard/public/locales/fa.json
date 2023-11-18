@@ -79,7 +79,7 @@
   "hostsDialog.dataLimit": "حد مصرف کاربر",
   "hostsDialog.remainingDays": "روزهای باقی مانده کاربر",
   "hostsDialog.expireDate": "تاریخ انقضای کاربر به میلادی",
-  "hostsDialog.solarExpireDate": "تاریخ انقضای کاربر به شمسی",
+  "hostsDialog.jalaliExpireDate": "تاریخ انقضای کاربر به شمسی",
   "hostsDialog.remainingTime": "زمان باقی مانده کاربر",
   "hostsDialog.statusEmoji": "وضعیت کاربر در قالب اموجی (✅,⌛️,🪫,❌)",
   "hostsDialog.proxyProtocol": "پروتکل پروکسی (مانند VMess)",

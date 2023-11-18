@@ -279,9 +279,9 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
-                                    {"{"}SOLAR_EXPIRE_DATE{"}"}
+                                    {"{"}JALALI_EXPIRE_DATE{"}"}
                                   </Badge>{" "}
-                                  {t("hostsDialog.solarExpireDate")}
+                                  {t("hostsDialog.jalaliExpireDate")}
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
@@ -389,9 +389,9 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
-                                    {"{"}SOLAR_EXPIRE_DATE{"}"}
+                                    {"{"}JALALI_EXPIRE_DATE{"}"}
                                   </Badge>{" "}
-                                  {t("hostsDialog.solarExpireDate")}
+                                  {t("hostsDialog.jalaliExpireDate")}
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
