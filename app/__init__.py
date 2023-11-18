@@ -10,7 +10,7 @@ from fastapi_responses import custom_openapi
 
 from config import DOCS
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 
 app = FastAPI(
