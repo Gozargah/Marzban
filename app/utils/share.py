@@ -828,6 +828,7 @@ def setup_format_variables(extra_data: dict) -> dict:
             days_left = timedelta(seconds=on_hold_expire_duration).days
             time_left = format_time_left(on_hold_expire_duration)
             expire_date = '-'
+            jalali_expire_date = '-'
         else:
             days_left = '∞'
             time_left = '∞'
