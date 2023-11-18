@@ -7,7 +7,7 @@ import {
   Badge,
   Box,
   Button,
-  chakra,
+  Select as ChakraSelect,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -28,11 +28,11 @@ import {
   PopoverContent,
   PopoverTrigger,
   Portal,
-  Select as ChakraSelect,
   Text,
   Tooltip,
-  useToast,
   VStack,
+  chakra,
+  useToast,
 } from "@chakra-ui/react";
 import { InformationCircleIcon, LinkIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -273,6 +273,18 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
+                                    {"{"}EXPIRE_DATE{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.expireDate")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}JALALI_EXPIRE_DATE{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.jalaliExpireDate")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
                                     {"{"}TIME_LEFT{"}"}
                                   </Badge>{" "}
                                   {t("hostsDialog.remainingTime")}
@@ -368,6 +380,18 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                     {"{"}DAYS_LEFT{"}"}
                                   </Badge>{" "}
                                   {t("hostsDialog.remainingDays")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}EXPIRE_DATE{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.expireDate")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}JALALI_EXPIRE_DATE{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.jalaliExpireDate")}
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
