@@ -18,14 +18,14 @@ export const OnlineBadge: FC<UserStatusProps> = ({ lastOnline }) => {
     const unixTime = convertDateFormat(lastOnline);
 
     if (typeof lastOnline === 'undefined' || lastOnline === null) {
-        return <div className="circle pulse red"></div>; // Red, if "Not seen"
+        return <div className="circle pulse orange"></div>;
     }
 
     const timeDifferenceInSeconds = unixTime ? currentTimeInSeconds - unixTime : Infinity;
 
     if (timeDifferenceInSeconds > 0 && timeDifferenceInSeconds <= 60) {
-        return <div className="circle pulse green"></div>; // Green, if online
+        return <div className="circle pulse green"></div>;
     }
 
-    return <div className="circle pulse orange"></div>; // Orange, if user online for more than 60 seconds
+    return <div className="circle pulse red"></div>;
 };
