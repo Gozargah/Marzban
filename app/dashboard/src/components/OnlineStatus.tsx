@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Text } from "@chakra-ui/react";
 import { relativeExpiryDate } from "utils/dateFormatter";
 
