@@ -22,7 +22,6 @@ class Node(BaseModel):
     port: int = 62050
     api_port: int = 62051
     usage_coefficient: float = Field(gt=0, default=1.0)
-    public_name: Optional[str] = Field(None, nullable=True)
 
 
 class NodeCreate(Node):
@@ -36,8 +35,7 @@ class NodeCreate(Node):
                 "port": 62050,
                 "api_port": 62051,
                 "add_as_new_host": True,
-                "usage_coefficient": 1,
-                "public_name": "Server A"
+                "usage_coefficient": 1
             }
         }
 
@@ -49,7 +47,6 @@ class NodeModify(Node):
     api_port: Optional[int] = Field(None, nullable=True)
     status: Optional[NodeStatus] = Field(None, nullable=True)
     usage_coefficient: Optional[float] = Field(None, nullable=True)
-    public_name: Optional[str] = Field(None, nullable=True)
 
     class Config:
         schema_extra = {
@@ -59,8 +56,7 @@ class NodeModify(Node):
                 "port": 62050,
                 "api_port": 62051,
                 "status": "disabled",
-                "usage_coefficient": 1.0,
-                "public_name": "Server A"
+                "usage_coefficient": 1.0
             }
         }
 

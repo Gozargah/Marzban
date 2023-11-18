@@ -133,7 +133,7 @@ def user_get_usage(token: str,
     else:
         end_date = datetime.fromisoformat(end)
 
-    usages = crud.get_user_usages(db, dbuser, start_date, end_date, sub=True)
+    usages = crud.get_user_usages(db, dbuser, start_date, end_date)
 
     return {"usages": usages, "username": dbuser.username}
 
