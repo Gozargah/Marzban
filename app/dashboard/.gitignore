@@ -24,3 +24,4 @@ node_modules
 .env
 
 stats.html
+yarn.lock
