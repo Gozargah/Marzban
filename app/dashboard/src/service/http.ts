@@ -1,4 +1,4 @@
-import { FetchOptions, $fetch as ohMyFetch } from "ohmyfetch";
+import { FetchError, FetchOptions, $fetch as ohMyFetch } from "ohmyfetch";
 import { getAuthToken } from "utils/authStorage";
 
 export const $fetch = ohMyFetch.create({
@@ -20,3 +20,27 @@ export const fetcher = <T = any>(
 };
 
 export const fetch = fetcher;
+
+export type ErrorType<Error> = FetchError<Error>;
+export type BodyType<BodyData> = BodyData;
+
+type OvalFetcherParams = FetchOptions<"json"> & {
+  url: string;
+  method: "get" | "post" | "put" | "delete" | "patch";
+  params?: any;
+  data?: FetchOptions<"json">["body"];
+};
+export const orvalFetcher = async <T>({
+  url,
+  method,
+  params,
+  data: body,
+}: OvalFetcherParams): Promise<T> => {
+  return fetcher(url, {
+    method,
+    params,
+    body,
+  });
+};
+
+export default orvalFetcher;

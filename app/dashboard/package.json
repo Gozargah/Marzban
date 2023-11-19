@@ -7,7 +7,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview --port 3000",
     "gen:theme-typings": "chakra-cli tokens ./chakra.config.ts",
-    "postinstall": "npm run gen:theme-typings"
+    "postinstall": "npm run gen:theme-typings",
+    "gen:api": "orval"
   },
   "dependencies": {
     "@chakra-ui/react": "^2.5.5",
@@ -25,6 +26,7 @@
     "jsoneditor": "^9.10.1",
     "lodash.debounce": "^4.0.8",
     "ohmyfetch": "^0.4.21",
+    "orval": "^6.20.0",
     "qrcode.react": "^3.1.0",
     "react": "^18.2.0",
     "react-apexcharts": "^1.4.0",
@@ -42,6 +44,7 @@
     "react-use-websocket": "^4.3.1",
     "rollup-plugin-visualizer": "^5.9.0",
     "slick-carousel": "^1.8.1",
+    "statics": "^0.1.0",
     "vite-tsconfig-paths": "^4.0.3",
     "zod": "^3.19.1",
     "zustand-computed": "^1.3.3"
