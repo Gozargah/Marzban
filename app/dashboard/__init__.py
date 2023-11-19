@@ -10,11 +10,12 @@ from fastapi.staticfiles import StaticFiles
 path = '/dashboard/'
 base_dir = Path(__file__).parent
 build_dir = base_dir / 'build'
+statics_dir = build_dir / 'statics'
 
 
 def build():
     proc = subprocess.Popen(
-        ['npm', 'run', 'build', '--', '--base', path,  '--outDir', build_dir],
+        ['npm', 'run', 'build', '--',  '--outDir', build_dir, '--assetsDir', 'statics'],
         env={**os.environ, 'VITE_BASE_API': VITE_BASE_API},
         cwd=base_dir
     )
@@ -27,7 +28,7 @@ def build():
 
 def run_dev():
     proc = subprocess.Popen(
-        ['npm', 'run', 'dev', '--', '--host', '0.0.0.0', '--base', path, '--clearScreen', 'false'],
+        ['npm', 'run', 'dev', '--', '--host', '0.0.0.0', '--clearScreen', 'false'],
         env={**os.environ, 'VITE_BASE_API': VITE_BASE_API},
         cwd=base_dir
     )
@@ -43,6 +44,11 @@ def run_build():
         path,
         StaticFiles(directory=build_dir, html=True),
         name="dashboard"
+    )
+    app.mount(
+        '/statics/',
+        StaticFiles(directory=statics_dir, html=True),
+        name="statics"
     )
 
 

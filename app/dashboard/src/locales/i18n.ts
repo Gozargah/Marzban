@@ -36,7 +36,10 @@ i18n
         caches: ["localStorage", "sessionStorage", "cookie"],
       },
       backend: {
-        loadPath: joinPaths([import.meta.env.BASE_URL, `locales/{{lng}}.json`]),
+        loadPath: joinPaths([
+          import.meta.env.BASE_URL,
+          `statics/locales/{{lng}}.json`,
+        ]),
       },
     },
     function (err, t) {
