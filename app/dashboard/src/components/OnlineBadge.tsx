@@ -1,4 +1,4 @@
-import { FC } from "react";
+import {FC} from "react";
 
 type UserStatusProps = {
     lastOnline?: string | null;
@@ -13,7 +13,7 @@ const convertDateFormat = (lastOnline: string | null | undefined): number | null
     return Math.floor(date.getTime() / 1000);
 };
 
-export const OnlineBadge: FC<UserStatusProps> = ({ lastOnline }) => {
+export const OnlineBadge: FC<UserStatusProps> = ({lastOnline}) => {
     const currentTimeInSeconds = Math.floor(Date.now() / 1000);
     const unixTime = convertDateFormat(lastOnline);
 
