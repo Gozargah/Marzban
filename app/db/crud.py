@@ -282,6 +282,9 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
             else:
                 dbuser.status = UserStatus.expired
 
+    if modify.note is not None:
+        dbuser.note = modify.note or None
+      
     if modify.data_limit_reset_strategy is not None:
         dbuser.data_limit_reset_strategy = modify.data_limit_reset_strategy.value
 
