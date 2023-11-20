@@ -2,10 +2,10 @@ import re
 
 from fastapi import Depends, Header, Request, Response, HTTPException, Path
 from fastapi.responses import HTMLResponse
-
+from datetime import datetime 
 from app import app
 from app.db import Session, crud, get_db
-from app.models.user import UserResponse, UserStatus
+from app.models.user import UserResponse
 from app.templates import render_template
 from app.utils.jwt import get_subscription_payload
 from app.utils.share import generate_subscription
@@ -104,6 +104,38 @@ def user_subscription_info(token: str,
         return Response(status_code=404)
 
     return dbuser
+
+
+@app.get("/sub/{token}/usage", tags=['Subscription'])
+def user_get_usage(token: str,
+                    start: str = None,
+                    end: str = None,
+                    db: Session = Depends(get_db)):
+    
+    sub = get_subscription_payload(token)
+    if not sub:
+        return Response(status_code=204)
+
+    dbuser = crud.get_user(db, sub['username'])
+    if not dbuser or dbuser.created_at > sub['created_at']:
+        return Response(status_code=204)
+
+    if dbuser.sub_revoked_at and dbuser.sub_revoked_at > sub['created_at']:
+        return Response(status_code=204)
+
+    if start is None:
+        start_date = datetime.fromtimestamp(datetime.utcnow().timestamp() - 30 * 24 * 3600)
+    else:
+        start_date = datetime.fromisoformat(start)
+
+    if end is None:
+        end_date = datetime.utcnow()
+    else:
+        end_date = datetime.fromisoformat(end)
+
+    usages = crud.get_user_usages(db, dbuser, start_date, end_date)
+
+    return {"usages": usages, "username": dbuser.username}
 
 
 @app.get("/sub/{token}/{client_type}", tags=['Subscription'])
