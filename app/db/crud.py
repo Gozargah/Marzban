@@ -276,7 +276,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
             else:
                 dbuser.status = UserStatus.limited
 
-    if modify.expire is 0 or not None :
+    if modify.expire == 0 or not None :
         dbuser.expire = (modify.expire or None)
         if dbuser.status in (UserStatus.active, UserStatus.expired):
             if not dbuser.expire or datetime.timestamp(dbuser.expire) > datetime.utcnow().timestamp():
@@ -293,7 +293,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
     if modify.data_limit_reset_strategy is not None:
         dbuser.data_limit_reset_strategy = modify.data_limit_reset_strategy.value
 
-    if modify.on_hold_timeout is 0 or not None :
+    if modify.on_hold_timeout == 0 or not None :
         dbuser.on_hold_timeout = (modify.on_hold_timeout or None)
 
     if modify.on_hold_expire_duration is not None :
