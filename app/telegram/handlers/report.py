@@ -22,7 +22,7 @@ def report(message: str, parse_mode="html", keyboard=None):
             logger.error(e)
 
 
-def report_new_user(user_id: int, username: str, by: str, expire_date: int, data_limit: int, proxies: list):
+def report_new_user(user_id: int, username: str, by: str, expire_date: datetime, data_limit: int, proxies: list):
     text = '''\
 🆕 <b>#Created</b>
 ➖➖➖➖➖➖➖➖➖
@@ -35,7 +35,7 @@ def report_new_user(user_id: int, username: str, by: str, expire_date: int, data
         by=escape_html(by),
         username=escape_html(username),
         data_limit=readable_size(data_limit) if data_limit else "Unlimited",
-        expire_date=datetime.fromtimestamp(expire_date).strftime("%H:%M:%S %Y-%m-%d") if expire_date else "Never",
+        expire_date=(expire_date).strftime("%H:%M:%S %Y-%m-%d") if expire_date else "Never",
         proxies="" if not proxies else ", ".join([escape_html(proxy) for proxy in proxies])
     )
 
@@ -49,7 +49,7 @@ def report_new_user(user_id: int, username: str, by: str, expire_date: int, data
     )
 
 
-def report_user_modification(username: str, expire_date: int, data_limit: int, proxies: list, by: str):
+def report_user_modification(username: str, expire_date: datetime, data_limit: int, proxies: list, by: str):
     text = '''\
 ✏️ <b>#Modified</b>
 ➖➖➖➖➖➖➖➖➖
@@ -63,7 +63,7 @@ def report_user_modification(username: str, expire_date: int, data_limit: int, p
         by=escape_html(by),
         username=escape_html(username),
         data_limit=readable_size(data_limit) if data_limit else "Unlimited",
-        expire_date=datetime.fromtimestamp(expire_date).strftime("%H:%M:%S %Y-%m-%d") if expire_date else "Never",
+        expire_date=(expire_date).strftime("%H:%M:%S %Y-%m-%d") if expire_date else "Never",
         protocols=', '.join([p for p in proxies])
     )
 

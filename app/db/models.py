@@ -45,7 +45,7 @@ class User(Base):
         default=UserDataLimitResetStrategy.no_reset,
     )
     usage_logs = relationship("UserUsageResetLogs", back_populates="user")
-    expire = Column(Integer, nullable=True)
+    expire = Column(DateTime, nullable=True)
     admin_id = Column(Integer, ForeignKey("admins.id"))
     admin = relationship("Admin", back_populates="users")
     sub_revoked_at = Column(DateTime, nullable=True, default=None)

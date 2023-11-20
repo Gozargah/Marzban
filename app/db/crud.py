@@ -273,7 +273,10 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
             else:
                 dbuser.status = UserStatus.limited
 
-    if modify.expire is not None:
+
+    if modify.expire == 0:
+        dbuser.expire = None
+    elif modify.expire is not None:
         dbuser.expire = (modify.expire or None)
         if dbuser.status in (UserStatus.active, UserStatus.expired):
             if not dbuser.expire or dbuser.expire > datetime.utcnow().timestamp():
@@ -290,7 +293,9 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
     if modify.data_limit_reset_strategy is not None:
         dbuser.data_limit_reset_strategy = modify.data_limit_reset_strategy.value
 
-    if modify.on_hold_timeout is not None :
+    if modify.on_hold_timeout == 0:
+        dbuser.on_hold_timeout = None
+    elif modify.on_hold_timeout is not None :
         dbuser.on_hold_timeout = modify.on_hold_timeout
 
     if modify.on_hold_expire_duration is not None :
@@ -377,7 +382,8 @@ def set_owner(db: Session, dbuser: User, admin: Admin):
 
 def start_user_expire(db: Session, dbuser: User):
 
-    expire = int(datetime.utcnow().timestamp()) + dbuser.on_hold_expire_duration    
+    expire = datetime.utcfromtimestamp(datetime.utcnow().timestamp() + \
+                                        dbuser.on_hold_expire_duration)    
     dbuser.expire = expire
     db.commit()
     db.refresh(dbuser)

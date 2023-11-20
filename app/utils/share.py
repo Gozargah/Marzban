@@ -806,23 +806,23 @@ def format_time_left(seconds_left: int) -> str:
 def setup_format_variables(extra_data: dict) -> dict:
     from app.models.user import UserStatus
     user_status = extra_data.get('status')
-    expire_timestamp = extra_data.get('expire')
+    expire = extra_data.get('expire')
     on_hold_expire_duration = extra_data.get('on_hold_expire_duration')
 
     if user_status != UserStatus.on_hold:
-        if expire_timestamp is not None and expire_timestamp >= 0:
+        if expire :
+            expire_timestamp = dt.timestamp(expire)
             seconds_left = expire_timestamp - int(dt.utcnow().timestamp())
-            expire_datetime = dt.fromtimestamp(expire_timestamp)
-            expire_date = expire_datetime.date()
             jalali_expire_date = jd.fromgregorian(
-                year=expire_date.year, month=expire_date.month, day=expire_date.day).strftime("%Y-%m-%d")
-            days_left = (expire_datetime - dt.utcnow()).days + 1
+            year=expire.year, month=expire.month, day=expire.day).strftime("%Y-%m-%d")
+            days_left = (expire - dt.utcnow()).days + 1
             time_left = format_time_left(seconds_left)
         else:
             days_left = '∞'
             time_left = '∞'
             expire_date = '∞'
             jalali_expire_date = '∞'
+
     else:
         if on_hold_expire_duration is not None and on_hold_expire_duration >= 0:
             days_left = timedelta(seconds=on_hold_expire_duration).days
@@ -832,8 +832,8 @@ def setup_format_variables(extra_data: dict) -> dict:
         else:
             days_left = '∞'
             time_left = '∞'
-            expire_date = '∞'
-            jalali_expire_date = '∞'
+            expire_date = '-'
+            jalali_expire_date = '-'
 
     if extra_data.get('data_limit'):
         data_limit = readable_size(extra_data['data_limit'])

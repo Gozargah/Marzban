@@ -40,7 +40,7 @@ def review():
         for user in get_users(db, status=UserStatus.active):
 
             limited = user.data_limit and user.used_traffic >= user.data_limit
-            expired = user.expire and user.expire <= now.timestamp()
+            expired = user.expire and datetime.timestamp(user.expire) <= now.timestamp()
             if limited:
                 status = UserStatus.limited
             elif expired:
@@ -83,7 +83,7 @@ def review():
 
         for user in get_users(db, status=UserStatus.expired):
 
-            active = user.expire and user.expire >= now.timestamp()
+            active = user.expire and datetime.timestamp(user.expire) >= now.timestamp()
             if active:
                 status = UserStatus.active
             else:

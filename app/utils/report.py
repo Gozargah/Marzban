@@ -139,8 +139,8 @@ def data_usage_percent_reached(
                                  expires_at=dt.utcfromtimestamp(expire) if expire else None, user_id=user_id)
 
 
-def expire_days_reached(db: Session, days: int, user: UserResponse, user_id: int, expire: int) -> None:
+def expire_days_reached(db: Session, days: int, user: UserResponse, user_id: int, expire: dt) -> None:
     notify(ReachedDaysLeft(username=user.username, user=user, days_left=days))
     create_notification_reminder(
-        db, ReminderType.expiration_date, expires_at=dt.utcfromtimestamp(expire),
+        db, ReminderType.expiration_date, expires_at=expire,
         user_id=user_id)
