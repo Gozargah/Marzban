@@ -157,7 +157,8 @@ def get_users(db: Session,
     return query.all()
 
 
-def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime) -> List[UserUsageResponse]:
+def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime, 
+                    ) -> List[UserUsageResponse]:
     usages = {}
 
     usages[0] = UserUsageResponse(  # Main Core
@@ -166,6 +167,7 @@ def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime) -
         used_traffic=0
     )
     for node in db.query(Node).all():
+
         usages[node.id] = UserUsageResponse(
             node_id=node.id,
             node_name=node.name,
