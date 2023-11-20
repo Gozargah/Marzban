@@ -1,7 +1,7 @@
 """Change expire to DateTime
 
 Revision ID: f2b9caa23e16
-Revises: dbf0e9325f28
+Revises: e56f1c781e46
 Create Date: 2023-11-06 18:34:31.935829
 
 """
@@ -13,7 +13,7 @@ from datetime import datetime
 
 # revision identifiers, used by Alembic.
 revision = 'f2b9caa23e16'
-down_revision = 'dbf0e9325f28'
+down_revision = 'e56f1c781e46'
 branch_labels = None
 depends_on = None
 

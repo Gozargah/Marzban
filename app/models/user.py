@@ -49,7 +49,7 @@ class UserDataLimitResetStrategy(str, Enum):
 
 class User(BaseModel):
     proxies: Dict[ProxyTypes, ProxySettings] = {}
-    expire: Optional[Union[datetime, int]] = Field(None, nullable=True)
+    expire: Optional[Union[datetime, int, None]] = Field(None, nullable=True)
     data_limit: Optional[int] = Field(
         ge=0, default=None, description="data_limit can be 0 or greater"
     )
@@ -94,17 +94,6 @@ class User(BaseModel):
         if (v in (0, None)):
             return None
         return v
-    
-    @validator("expire", pre=True, always=True)
-    def convert_timestamp_to_datetime(cls, value):
-        if value == 0:
-            return value 
-        elif isinstance(value, int):
-            return datetime.utcfromtimestamp(value)
-        elif isinstance(value, datetime):
-            return value
-        else:
-            raise ValueError("expire must be datetime or timestamp")
     
     @validator("on_hold_timeout", pre=True, always=True)
     def accept_0_for_on_hold_timeout(cls, value):
@@ -199,6 +188,17 @@ class UserCreate(User):
                 raise ValueError("User cannot be on hold with specified expire.")
         return status
 
+    @validator("expire", pre=True, always=True)
+    def convert_timestamp_to_datetime(cls, value, values):
+        if values.get("status") == UserStatus.on_hold:
+            return (value or None)
+        elif value == 0 or None:
+            return (value or None) 
+        elif isinstance(value, int):
+            return datetime.utcfromtimestamp(value)
+        else :
+            return value
+
 
 class UserModify(User):
     status: UserStatusModify = None
@@ -270,6 +270,16 @@ class UserModify(User):
                 raise ValueError("User cannot be on hold with specified expire.")
         return status
 
+    @validator("expire", pre=True, always=True)
+    def convert_timestamp_to_datetime(cls, value, values):
+        if values.get("status") == UserStatus.on_hold:
+            return (value or None)
+        elif value == 0 or None:
+            return (value or None) 
+        elif isinstance(value, int):
+            return datetime.utcfromtimestamp(value)
+        else :
+            return value
 
 class UserResponse(User):
     username: str
