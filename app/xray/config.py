@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import json
-import re
 from copy import deepcopy
 from pathlib import PosixPath
 from typing import Union
+
+import commentjson
 
 from app.db import GetDB, crud
 from app.models.proxy import ProxySettings, ProxyTypes
@@ -21,18 +22,16 @@ class XRayConfig(dict):
         if isinstance(config, str):
             try:
                 # considering string as json
-                jdata = re.sub(r'//.*|/\*[\s\S]*?\*/', '', config)
-                config = json.loads(jdata)
-            except json.JSONDecodeError:
+                config = commentjson.loads(config)
+            except (json.JSONDecodeError, ValueError):
                 # considering string as file path
                 with open(config, 'r') as file:
-                    jdata = re.sub(r'//.*|/\*[\s\S]*?\*/', '', file.read())
-                    config = json.loads(jdata)
+                    config = commentjson.loads(file.read())
+                    print(dir(config))
 
         if isinstance(config, PosixPath):
             with open(config, 'r') as file:
-                jdata = re.sub(r'//.*|/\*[\s\S]*?\*/', '', file.read())
-                config = json.loads(jdata)
+                config = commentjson.loads(file.read())
 
         if isinstance(config, dict):
             config = deepcopy(config)

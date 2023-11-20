@@ -1,8 +1,8 @@
 import asyncio
 import json
-import re
 import time
 
+import commentjson
 from fastapi import Depends, HTTPException, WebSocket
 from starlette.websockets import WebSocketDisconnect
 
@@ -100,8 +100,7 @@ def get_core_config(admin: Admin = Depends(Admin.get_current)) -> dict:
         raise HTTPException(status_code=403, detail="You're not allowed")
 
     with open(XRAY_JSON, "r") as f:
-        jdata = re.sub(r'//.*|/\*[\s\S]*?\*/', '', f.read())
-        config = json.loads(jdata)
+        config = commentjson.loads(f.read())
 
     return config
 
