@@ -1,46 +1,31 @@
-import { FC } from "react";
+import {FC} from "react";
 
 type UserStatusProps = {
-  lastOnline?: string | null;
+    lastOnline?: string | null;
 };
 
-export const OnlineBadge: FC<UserStatusProps> = ({ lastOnline }) => {
-  const convertDateFormat = (
-    lastOnline: string | null | undefined
-  ): number | null => {
-    if (lastOnline === null || lastOnline === undefined) {
-      // Handle the case where lastOnline is null or undefined
-      return null;
+const convertDateFormat = (lastOnline: string | null | undefined): number | null => {
+    if (!lastOnline) {
+        return null;
     }
 
-    // Parse the input date string
-    const gmtDate = new Date(lastOnline + "Z"); // Append 'Z' to indicate it's in GMT
+    const date = new Date(lastOnline + "Z");
+    return Math.floor(date.getTime() / 1000);
+};
 
-    // Get the browser's time zone
-    const browserTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+export const OnlineBadge: FC<UserStatusProps> = ({lastOnline}) => {
+    const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+    const unixTime = convertDateFormat(lastOnline);
 
-    // Create a new date object with the browser's time zone
-    const localDate = new Date(
-      gmtDate.toLocaleString(undefined, { timeZone: browserTimeZone })
-    );
+    if (typeof lastOnline === 'undefined' || lastOnline === null) {
+        return <div className="circle pulse orange"></div>;
+    }
 
-    // Calculate the Unix timestamp (in seconds)
-    const unixTimestamp = Math.floor(localDate.getTime() / 1000);
+    const timeDifferenceInSeconds = unixTime ? currentTimeInSeconds - unixTime : Infinity;
 
-    return unixTimestamp;
-  };
-  const currentTimeInSeconds = Math.floor(Date.now() / 1000); // Current time in seconds
+    if (timeDifferenceInSeconds > 0 && timeDifferenceInSeconds <= 60) {
+        return <div className="circle pulse green"></div>;
+    }
 
-  const unixTime = convertDateFormat(lastOnline);
-
-  const timeDifferenceInSeconds = unixTime
-    ? currentTimeInSeconds - unixTime
-    : 0;
-
-  if (timeDifferenceInSeconds <= 61 && timeDifferenceInSeconds > 0)
-    return <div className="circle pulse green"></div>;
-  else if (timeDifferenceInSeconds === 0)
-    return <div className="circle pulse orange"></div>;
-
-  return <div className="circle pulse red"></div>;
+    return <div className="circle pulse red"></div>;
 };

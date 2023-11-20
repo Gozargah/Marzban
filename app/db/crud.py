@@ -157,7 +157,8 @@ def get_users(db: Session,
     return query.all()
 
 
-def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime) -> List[UserUsageResponse]:
+def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime, 
+                    ) -> List[UserUsageResponse]:
     usages = {}
 
     usages[0] = UserUsageResponse(  # Main Core
@@ -166,6 +167,7 @@ def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime) -
         used_traffic=0
     )
     for node in db.query(Node).all():
+
         usages[node.id] = UserUsageResponse(
             node_id=node.id,
             node_name=node.name,
@@ -282,6 +284,9 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
             else:
                 dbuser.status = UserStatus.expired
 
+    if modify.note is not None:
+        dbuser.note = modify.note or None
+      
     if modify.data_limit_reset_strategy is not None:
         dbuser.data_limit_reset_strategy = modify.data_limit_reset_strategy.value
 
