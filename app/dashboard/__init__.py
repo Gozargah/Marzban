@@ -20,7 +20,7 @@ def build_api_interface():
         ['npm', 'run', 'wait-port-gen-api'],
         env={**os.environ, 'UVICORN_PORT': str(UVICORN_PORT)},
         cwd=base_dir,
-				# stdout=subprocess.DEVNULL
+				stdout=subprocess.DEVNULL
     )
 
 def build():
