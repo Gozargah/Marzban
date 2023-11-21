@@ -1,4 +1,8 @@
-import { StatisticsQueryKey } from "components/Statistics";
+import {
+  UserResponse,
+  getGetSystemStatsQueryKey,
+  getGetUsersQueryKey,
+} from "service/api";
 import { fetch } from "service/http";
 import { User, UserCreate } from "types/User";
 import { queryClient } from "utils/react-query";
@@ -31,7 +35,7 @@ export type Inbounds = Map<ProtocolType, InboundType[]>;
 
 type DashboardStateType = {
   isCreatingNewUser: boolean;
-  editingUser: User | null | undefined;
+  editingUser: UserResponse | null | undefined;
   deletingUser: User | null;
   version: string | null;
   users: {
@@ -51,7 +55,7 @@ type DashboardStateType = {
   revokeSubscriptionUser: User | null;
   isEditingCore: boolean;
   onCreateUser: (isOpen: boolean) => void;
-  onEditingUser: (user: User | null) => void;
+  onEditingUser: (user: UserResponse | null) => void;
   onDeletingUser: (user: User | null) => void;
   onResetAllUsage: (isResetingAllUsage: boolean) => void;
   refetchUsers: () => void;
@@ -68,21 +72,6 @@ type DashboardStateType = {
   onShowingNodesUsage: (isShowingNodesUsage: boolean) => void;
   resetDataUsage: (user: User) => Promise<void>;
   revokeSubscription: (user: User) => Promise<void>;
-};
-
-const fetchUsers = (query: FilterType): Promise<User[]> => {
-  for (const key in query) {
-    if (!query[key as keyof FilterType]) delete query[key as keyof FilterType];
-  }
-  useDashboard.setState({ loading: true });
-  return fetch("/users", { query })
-    .then((users) => {
-      useDashboard.setState({ users });
-      return users;
-    })
-    .finally(() => {
-      useDashboard.setState({ loading: false });
-    });
 };
 
 export const fetchInbounds = () => {
@@ -124,7 +113,7 @@ export const useDashboard = create(
     inbounds: new Map(),
     isEditingCore: false,
     refetchUsers: () => {
-      fetchUsers(get().filters);
+      queryClient.invalidateQueries(getGetUsersQueryKey());
     },
     resetAllUsage: () => {
       return fetch(`/users/reset`, { method: "POST" }).then(() => {
@@ -157,14 +146,14 @@ export const useDashboard = create(
       return fetch(`/user/${user.username}`, { method: "DELETE" }).then(() => {
         set({ deletingUser: null });
         get().refetchUsers();
-        queryClient.invalidateQueries(StatisticsQueryKey);
+        queryClient.invalidateQueries(getGetSystemStatsQueryKey());
       });
     },
     createUser: (body: UserCreate) => {
       return fetch(`/user`, { method: "POST", body }).then(() => {
         set({ editingUser: null });
         get().refetchUsers();
-        queryClient.invalidateQueries(StatisticsQueryKey);
+        queryClient.invalidateQueries(getGetSystemStatsQueryKey());
       });
     },
     editUser: (body: UserCreate) => {

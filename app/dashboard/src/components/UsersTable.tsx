@@ -42,7 +42,7 @@ import { t } from "i18next";
 import { FC, Fragment, useEffect, useState } from "react";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { useTranslation } from "react-i18next";
-import { User } from "types/User";
+import { useGetUsers, UserResponse } from "service/api";
 import { formatBytes } from "utils/formatByte";
 import { OnlineBadge } from "./OnlineBadge";
 import { OnlineStatus } from "./OnlineStatus";
@@ -188,13 +188,13 @@ export const Sort: FC<SortType> = ({ sort, column }) => {
 type UsersTableProps = {} & TableProps;
 export const UsersTable: FC<UsersTableProps> = (props) => {
   const {
-    filters,
-    users: { users },
-    users: totalUsers,
-    onEditingUser,
-    onFilterChange,
-  } = useDashboard();
-
+    data: { users } = { users: [] },
+    data: totalUsers = { users: [], total: 0 },
+  } = useGetUsers<{
+    users: Required<UserResponse>[];
+    total: number;
+  }>();
+  const { filters, onEditingUser, onFilterChange } = useDashboard();
   const { t } = useTranslation();
   const [selectedRow, setSelectedRow] = useState<ExpandedIndex | undefined>(
     undefined
@@ -620,7 +620,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
 };
 
 type ActionButtonsProps = {
-  user: User;
+  user: Required<UserResponse>;
 };
 
 const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
