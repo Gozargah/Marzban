@@ -41,7 +41,6 @@ import {
   proxyFingerprint,
   proxyHostSecurity,
 } from "constants/Proxies";
-import { useHosts } from "contexts/HostsContext";
 import { FC, useEffect, useState } from "react";
 import {
   FormProvider,
@@ -50,6 +49,8 @@ import {
   useFormContext,
 } from "react-hook-form";
 import { Trans, useTranslation } from "react-i18next";
+import { useGetHosts, useGetInbounds, useModifyHosts } from "service/api";
+import { ErrorType } from "service/http";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
 import { z } from "zod";
@@ -110,9 +111,21 @@ const hostsSchema = z.record(
         }),
       sni: z.string().nullable(),
       host: z.string().nullable(),
-      security: z.string(),
-      alpn: z.string(),
-      fingerprint: z.string(),
+      security: z.enum(["inbound_default", "none", "tls"]),
+      alpn: z.enum(["", "http/1.1", "h2", "h2,http/1.1"]),
+      fingerprint: z.enum([
+        "",
+        "chrome",
+        "firefox",
+        "safari",
+        "ios",
+        "android",
+        "edge",
+        "360",
+        "qq",
+        "random",
+        "randomized",
+      ]),
     })
   )
 );
@@ -137,8 +150,8 @@ const AccordionInbound: FC<AccordionInboundType> = ({
   isOpen,
   toggleAccordion,
 }) => {
-  const { inbounds } = useDashboard();
-  const inbound = [...inbounds.values()]
+  const { data: inbounds = {} } = useGetInbounds();
+  const inbound = [...Object.values(inbounds)]
     .flat()
     .filter((inbound) => inbound.tag === hostKey)[0];
 
@@ -236,11 +249,11 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                               <Box fontSize="xs">
                                 <Text pr="20px">{t("hostsDialog.desc")}</Text>
                                 <Text>
-                                <Badge>
-                                  {"{"}SERVER_IP{"}"}
-                                </Badge>{" "}
-                                {t("hostsDialog.currentServer")}
-                              </Text>
+                                  <Badge>
+                                    {"{"}SERVER_IP{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.currentServer")}
+                                </Text>
                                 <Text mt={1}>
                                   <Badge>
                                     {"{"}USERNAME{"}"}
@@ -344,79 +357,79 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                           <PopoverCloseButton />
                           <PopoverBody>
                             <Box fontSize="xs">
-                            <Text pr="20px">{t("hostsDialog.desc")}</Text>
-                                <Text>
+                              <Text pr="20px">{t("hostsDialog.desc")}</Text>
+                              <Text>
                                 <Badge>
                                   {"{"}SERVER_IP{"}"}
                                 </Badge>{" "}
                                 {t("hostsDialog.currentServer")}
                               </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}USERNAME{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.username")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}DATA_USAGE{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.dataUsage")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}DATA_LEFT{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.remainingData")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}DATA_LIMIT{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.dataLimit")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}DAYS_LEFT{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.remainingDays")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}EXPIRE_DATE{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.expireDate")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}JALALI_EXPIRE_DATE{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.jalaliExpireDate")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}TIME_LEFT{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.remainingTime")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}STATUS_EMOJI{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.statusEmoji")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}PROTOCOL{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.proxyProtocol")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}TRANSPORT{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.proxyMethod")}
-                                </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}USERNAME{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.username")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}DATA_USAGE{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.dataUsage")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}DATA_LEFT{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.remainingData")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}DATA_LIMIT{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.dataLimit")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}DAYS_LEFT{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.remainingDays")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}EXPIRE_DATE{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.expireDate")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}JALALI_EXPIRE_DATE{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.jalaliExpireDate")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}TIME_LEFT{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.remainingTime")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}STATUS_EMOJI{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.statusEmoji")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}PROTOCOL{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.proxyProtocol")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}TRANSPORT{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.proxyMethod")}
+                              </Text>
                             </Box>
                           </PopoverBody>
                         </PopoverContent>
@@ -728,16 +741,64 @@ const AccordionInbound: FC<AccordionInboundType> = ({
 };
 
 export const HostsDialog: FC = () => {
-  const { isEditingHosts, onEditingHosts, refetchUsers, inbounds } =
-    useDashboard();
-  const { isLoading, hosts, fetchHosts, isPostLoading, setHosts } = useHosts();
+  const { isEditingHosts, onEditingHosts, refetchUsers } = useDashboard();
+
+  const { mutate: setHosts, isLoading: isPostLoading } = useModifyHosts<
+    ErrorType<string | Record<string, string>>
+  >({
+    mutation: {
+      onSuccess() {
+        toast({
+          title: t("hostsDialog.savedSuccess"),
+          status: "success",
+          isClosable: true,
+          position: "top",
+          duration: 3000,
+        });
+        refetchUsers();
+      },
+      onError(err) {
+        if (err?.response?.status === 409 || err?.response?.status === 400) {
+          toast({
+            title: err.data?.detail as string,
+            status: "error",
+            isClosable: true,
+            position: "top",
+            duration: 3000,
+          });
+        }
+        if (
+          err?.response?.status === 422 &&
+          typeof err.data?.detail === "object"
+        ) {
+          Object.keys(err.data?.detail).forEach((key) => {
+            toast({
+              title:
+                (err.data?.detail as Record<string, string>)[key] +
+                " (" +
+                key +
+                ")",
+              status: "error",
+              isClosable: true,
+              position: "top",
+              duration: 3000,
+            });
+          });
+        }
+      },
+    },
+  });
+  const { data: hosts, isLoading: hostsLoading } = useGetHosts({
+    query: {
+      enabled: isEditingHosts,
+    },
+  });
+  const { isLoading: inboundsLoading } = useGetInbounds();
+  const isLoading = hostsLoading || inboundsLoading;
   const toast = useToast();
   const { t } = useTranslation();
   const [openAccordions, setOpenAccordions] = useState<any>({});
 
-  useEffect(() => {
-    if (isEditingHosts) fetchHosts();
-  }, [isEditingHosts]);
   const form = useForm<z.infer<typeof hostsSchema>>({
     resolver: zodResolver(hostsSchema),
   });
@@ -752,40 +813,8 @@ export const HostsDialog: FC = () => {
     setOpenAccordions({});
     onEditingHosts(false);
   };
-  const handleFormSubmit = (hosts: z.infer<typeof hostsSchema>) => {
-    setHosts(hosts)
-      .then(() => {
-        toast({
-          title: t("hostsDialog.savedSuccess"),
-          status: "success",
-          isClosable: true,
-          position: "top",
-          duration: 3000,
-        });
-        refetchUsers();
-      })
-      .catch((err) => {
-        if (err?.response?.status === 409 || err?.response?.status === 400) {
-          toast({
-            title: err.response?._data?.detail,
-            status: "error",
-            isClosable: true,
-            position: "top",
-            duration: 3000,
-          });
-        }
-        if (err?.response?.status === 422) {
-          Object.keys(err.response._data.detail).forEach((key) => {
-            toast({
-              title: err.response._data.detail[key] + " (" + key + ")",
-              status: "error",
-              isClosable: true,
-              position: "top",
-              duration: 3000,
-            });
-          });
-        }
-      });
+  const handleFormSubmit = (data: z.infer<typeof hostsSchema>) => {
+    setHosts({ data });
   };
 
   const toggleAccordion = (index: number) => {
