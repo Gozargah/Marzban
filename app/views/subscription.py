@@ -106,7 +106,7 @@ def user_subscription_info(token: str,
     return dbuser
 
 
-@app.get("/sub/{token}/usage", tags=['Subscription'])
+@app.get("/%s/{token}/usage"  % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'])
 def user_get_usage(token: str,
                     start: str = None,
                     end: str = None,
@@ -138,7 +138,7 @@ def user_get_usage(token: str,
     return {"usages": usages, "username": dbuser.username}
 
 
-@app.get("/sub/{token}/{client_type}", tags=['Subscription'])
+@app.get("/%s/{token}/{client_type}"  % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'])
 def user_subscription_with_client_type(
     token: str,
     request: Request,

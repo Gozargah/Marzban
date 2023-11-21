@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 from fastapi_responses import custom_openapi
 
-from config import DOCS
+from config import DOCS, XRAY_SUBSCRIPTION_PATH
 
 __version__ = "0.4.1"
 
@@ -47,6 +47,9 @@ use_route_names_as_operation_ids(app)
 
 @app.on_event("startup")
 def on_startup():
+    paths = [f"{r.path}/" for r in app.routes]
+    if not XRAY_SUBSCRIPTION_PATH or f"/{XRAY_SUBSCRIPTION_PATH}/" == "/api/" or f"/{XRAY_SUBSCRIPTION_PATH}/" in paths:
+        raise ValueError(f"you can't use /{XRAY_SUBSCRIPTION_PATH}/ as subscription path it reserve for {app.title}")
     scheduler.start()
 
 
