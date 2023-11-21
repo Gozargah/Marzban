@@ -16,30 +16,30 @@ import type {
 } from "react-query";
 import { orvalFetcher } from "../http";
 import type { ErrorType, BodyType } from "../http";
-export type GetUsageApiNodesUsageGetParams = {
+export type GetUsageParams = {
   start?: string;
   end?: string;
 };
 
-export type GetUserTemplatesApiUserTemplateGetParams = {
+export type GetUserTemplatesParams = {
   offset?: number;
   limit?: number;
 };
 
-export type DeleteExpiredApiUsersExpiredDeleteParams = {
+export type DeleteExpiredParams = {
   passed_time: number;
 };
 
-export type SetOwnerApiUserUsernameSetOwnerPutParams = {
+export type SetOwnerParams = {
   admin_username: string;
 };
 
-export type GetUserUsageApiUserUsernameUsageGetParams = {
+export type GetUserUsageParams = {
   start?: string;
   end?: string;
 };
 
-export type GetUsersApiUsersGetParams = {
+export type GetUsersParams = {
   offset?: number;
   limit?: number;
   username?: string;
@@ -47,21 +47,26 @@ export type GetUsersApiUsersGetParams = {
   sort?: string;
 };
 
-export type ModifyCoreConfigApiCoreConfigPut200 = { [key: string]: any };
+export type ModifyCoreConfig200 = { [key: string]: any };
 
-export type ModifyCoreConfigApiCoreConfigPutBody = { [key: string]: any };
+export type ModifyCoreConfigBody = { [key: string]: any };
 
-export type GetCoreConfigApiCoreConfigGet200 = { [key: string]: any };
+export type GetCoreConfig200 = { [key: string]: any };
 
-export type ModifyHostsApiHostsPut200 = { [key: string]: ProxyHost[] };
+export type ModifyHosts200 = { [key: string]: ProxyHost[] };
 
-export type ModifyHostsApiHostsPutBody = { [key: string]: ProxyHost[] };
+export type ModifyHostsBody = { [key: string]: ProxyHost[] };
 
-export type GetHostsApiHostsGet200 = { [key: string]: ProxyHost[] };
+export type GetHosts200 = { [key: string]: ProxyHost[] };
 
-export type GetInboundsApiInboundsGet200 = { [key: string]: ProxyInbound[] };
+export type GetInbounds200 = { [key: string]: ProxyInbound[] };
 
-export type GetAdminsApiAdminsGetParams = {
+export type UserGetUsageParams = {
+  start?: string;
+  end?: string;
+};
+
+export type GetAdminsParams = {
   offset?: number;
   limit?: number;
   username?: string;
@@ -432,7 +437,7 @@ export interface CoreStats {
   version: string;
 }
 
-export interface BodyLoginForAccessTokenApiAdminTokenPost {
+export interface BodyAdminTokenApiAdminTokenPost {
   client_id?: string;
   client_secret?: string;
   grant_type?: string;
@@ -458,42 +463,33 @@ export interface Admin {
 }
 
 /**
- * @summary Login For Access Token
+ * @summary Admin Token
  */
-export const loginForAccessTokenApiAdminTokenPost = (
-  bodyLoginForAccessTokenApiAdminTokenPost: BodyType<BodyLoginForAccessTokenApiAdminTokenPost>
+export const adminToken = (
+  bodyAdminTokenApiAdminTokenPost: BodyType<BodyAdminTokenApiAdminTokenPost>
 ) => {
   const formUrlEncoded = new URLSearchParams();
-  if (bodyLoginForAccessTokenApiAdminTokenPost.grant_type !== undefined) {
+  if (bodyAdminTokenApiAdminTokenPost.grant_type !== undefined) {
     formUrlEncoded.append(
       "grant_type",
-      bodyLoginForAccessTokenApiAdminTokenPost.grant_type
+      bodyAdminTokenApiAdminTokenPost.grant_type
     );
   }
-  formUrlEncoded.append(
-    "username",
-    bodyLoginForAccessTokenApiAdminTokenPost.username
-  );
-  formUrlEncoded.append(
-    "password",
-    bodyLoginForAccessTokenApiAdminTokenPost.password
-  );
-  if (bodyLoginForAccessTokenApiAdminTokenPost.scope !== undefined) {
-    formUrlEncoded.append(
-      "scope",
-      bodyLoginForAccessTokenApiAdminTokenPost.scope
-    );
+  formUrlEncoded.append("username", bodyAdminTokenApiAdminTokenPost.username);
+  formUrlEncoded.append("password", bodyAdminTokenApiAdminTokenPost.password);
+  if (bodyAdminTokenApiAdminTokenPost.scope !== undefined) {
+    formUrlEncoded.append("scope", bodyAdminTokenApiAdminTokenPost.scope);
   }
-  if (bodyLoginForAccessTokenApiAdminTokenPost.client_id !== undefined) {
+  if (bodyAdminTokenApiAdminTokenPost.client_id !== undefined) {
     formUrlEncoded.append(
       "client_id",
-      bodyLoginForAccessTokenApiAdminTokenPost.client_id
+      bodyAdminTokenApiAdminTokenPost.client_id
     );
   }
-  if (bodyLoginForAccessTokenApiAdminTokenPost.client_secret !== undefined) {
+  if (bodyAdminTokenApiAdminTokenPost.client_secret !== undefined) {
     formUrlEncoded.append(
       "client_secret",
-      bodyLoginForAccessTokenApiAdminTokenPost.client_secret
+      bodyAdminTokenApiAdminTokenPost.client_secret
     );
   }
 
@@ -505,60 +501,57 @@ export const loginForAccessTokenApiAdminTokenPost = (
   });
 };
 
-export const getLoginForAccessTokenApiAdminTokenPostMutationOptions = <
+export const getAdminTokenMutationOptions = <
   TError = ErrorType<HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof loginForAccessTokenApiAdminTokenPost>>,
+    Awaited<ReturnType<typeof adminToken>>,
     TError,
-    { data: BodyType<BodyLoginForAccessTokenApiAdminTokenPost> },
+    { data: BodyType<BodyAdminTokenApiAdminTokenPost> },
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof loginForAccessTokenApiAdminTokenPost>>,
+  Awaited<ReturnType<typeof adminToken>>,
   TError,
-  { data: BodyType<BodyLoginForAccessTokenApiAdminTokenPost> },
+  { data: BodyType<BodyAdminTokenApiAdminTokenPost> },
   TContext
 > => {
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof loginForAccessTokenApiAdminTokenPost>>,
-    { data: BodyType<BodyLoginForAccessTokenApiAdminTokenPost> }
+    Awaited<ReturnType<typeof adminToken>>,
+    { data: BodyType<BodyAdminTokenApiAdminTokenPost> }
   > = (props) => {
     const { data } = props ?? {};
 
-    return loginForAccessTokenApiAdminTokenPost(data);
+    return adminToken(data);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type LoginForAccessTokenApiAdminTokenPostMutationResult = NonNullable<
-  Awaited<ReturnType<typeof loginForAccessTokenApiAdminTokenPost>>
+export type AdminTokenMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminToken>>
 >;
-export type LoginForAccessTokenApiAdminTokenPostMutationBody =
-  BodyType<BodyLoginForAccessTokenApiAdminTokenPost>;
-export type LoginForAccessTokenApiAdminTokenPostMutationError =
-  ErrorType<HTTPValidationError>;
+export type AdminTokenMutationBody = BodyType<BodyAdminTokenApiAdminTokenPost>;
+export type AdminTokenMutationError = ErrorType<HTTPValidationError>;
 
 /**
- * @summary Login For Access Token
+ * @summary Admin Token
  */
-export const useLoginForAccessTokenApiAdminTokenPost = <
+export const useAdminToken = <
   TError = ErrorType<HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof loginForAccessTokenApiAdminTokenPost>>,
+    Awaited<ReturnType<typeof adminToken>>,
     TError,
-    { data: BodyType<BodyLoginForAccessTokenApiAdminTokenPost> },
+    { data: BodyType<BodyAdminTokenApiAdminTokenPost> },
     TContext
   >;
 }) => {
-  const mutationOptions =
-    getLoginForAccessTokenApiAdminTokenPostMutationOptions(options);
+  const mutationOptions = getAdminTokenMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -566,59 +559,58 @@ export const useLoginForAccessTokenApiAdminTokenPost = <
 /**
  * @summary Get Current Admin
  */
-export const getCurrentAdminApiAdminGet = (signal?: AbortSignal) => {
+export const getCurrentAdmin = (signal?: AbortSignal) => {
   return orvalFetcher<Admin>({ url: `/api/admin`, method: "get", signal });
 };
 
-export const getGetCurrentAdminApiAdminGetQueryKey = () => {
+export const getGetCurrentAdminQueryKey = () => {
   return [`/api/admin`] as const;
 };
 
-export const getGetCurrentAdminApiAdminGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof getCurrentAdminApiAdminGet>>,
+export const getGetCurrentAdminQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCurrentAdmin>>,
   TError = ErrorType<unknown>
 >(options?: {
   query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getCurrentAdminApiAdminGet>>,
+    Awaited<ReturnType<typeof getCurrentAdmin>>,
     TError,
     TData
   >;
 }) => {
   const { query: queryOptions } = options ?? {};
 
-  const queryKey =
-    queryOptions?.queryKey ?? getGetCurrentAdminApiAdminGetQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetCurrentAdminQueryKey();
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getCurrentAdminApiAdminGet>>
-  > = ({ signal }) => getCurrentAdminApiAdminGet(signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentAdmin>>> = ({
+    signal,
+  }) => getCurrentAdmin(signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getCurrentAdminApiAdminGet>>,
+    Awaited<ReturnType<typeof getCurrentAdmin>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetCurrentAdminApiAdminGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getCurrentAdminApiAdminGet>>
+export type GetCurrentAdminQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCurrentAdmin>>
 >;
-export type GetCurrentAdminApiAdminGetQueryError = ErrorType<unknown>;
+export type GetCurrentAdminQueryError = ErrorType<unknown>;
 
 /**
  * @summary Get Current Admin
  */
-export const useGetCurrentAdminApiAdminGet = <
-  TData = Awaited<ReturnType<typeof getCurrentAdminApiAdminGet>>,
+export const useGetCurrentAdmin = <
+  TData = Awaited<ReturnType<typeof getCurrentAdmin>>,
   TError = ErrorType<unknown>
 >(options?: {
   query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getCurrentAdminApiAdminGet>>,
+    Awaited<ReturnType<typeof getCurrentAdmin>>,
     TError,
     TData
   >;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetCurrentAdminApiAdminGetQueryOptions(options);
+  const queryOptions = getGetCurrentAdminQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -632,7 +624,7 @@ export const useGetCurrentAdminApiAdminGet = <
 /**
  * @summary Create Admin
  */
-export const createAdminApiAdminPost = (adminCreate: BodyType<AdminCreate>) => {
+export const createAdmin = (adminCreate: BodyType<AdminCreate>) => {
   return orvalFetcher<Admin>({
     url: `/api/admin`,
     method: "post",
@@ -641,18 +633,18 @@ export const createAdminApiAdminPost = (adminCreate: BodyType<AdminCreate>) => {
   });
 };
 
-export const getCreateAdminApiAdminPostMutationOptions = <
+export const getCreateAdminMutationOptions = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createAdminApiAdminPost>>,
+    Awaited<ReturnType<typeof createAdmin>>,
     TError,
     { data: BodyType<AdminCreate> },
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof createAdminApiAdminPost>>,
+  Awaited<ReturnType<typeof createAdmin>>,
   TError,
   { data: BodyType<AdminCreate> },
   TContext
@@ -660,39 +652,38 @@ export const getCreateAdminApiAdminPostMutationOptions = <
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof createAdminApiAdminPost>>,
+    Awaited<ReturnType<typeof createAdmin>>,
     { data: BodyType<AdminCreate> }
   > = (props) => {
     const { data } = props ?? {};
 
-    return createAdminApiAdminPost(data);
+    return createAdmin(data);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type CreateAdminApiAdminPostMutationResult = NonNullable<
-  Awaited<ReturnType<typeof createAdminApiAdminPost>>
+export type CreateAdminMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createAdmin>>
 >;
-export type CreateAdminApiAdminPostMutationBody = BodyType<AdminCreate>;
-export type CreateAdminApiAdminPostMutationError =
-  ErrorType<void | HTTPValidationError>;
+export type CreateAdminMutationBody = BodyType<AdminCreate>;
+export type CreateAdminMutationError = ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Create Admin
  */
-export const useCreateAdminApiAdminPost = <
+export const useCreateAdmin = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createAdminApiAdminPost>>,
+    Awaited<ReturnType<typeof createAdmin>>,
     TError,
     { data: BodyType<AdminCreate> },
     TContext
   >;
 }) => {
-  const mutationOptions = getCreateAdminApiAdminPostMutationOptions(options);
+  const mutationOptions = getCreateAdminMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -700,7 +691,7 @@ export const useCreateAdminApiAdminPost = <
 /**
  * @summary Modify Admin
  */
-export const modifyAdminApiAdminUsernamePut = (
+export const modifyAdmin = (
   username: string,
   adminModify: BodyType<AdminModify>
 ) => {
@@ -712,18 +703,18 @@ export const modifyAdminApiAdminUsernamePut = (
   });
 };
 
-export const getModifyAdminApiAdminUsernamePutMutationOptions = <
+export const getModifyAdminMutationOptions = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof modifyAdminApiAdminUsernamePut>>,
+    Awaited<ReturnType<typeof modifyAdmin>>,
     TError,
     { username: string; data: BodyType<AdminModify> },
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof modifyAdminApiAdminUsernamePut>>,
+  Awaited<ReturnType<typeof modifyAdmin>>,
   TError,
   { username: string; data: BodyType<AdminModify> },
   TContext
@@ -731,40 +722,38 @@ export const getModifyAdminApiAdminUsernamePutMutationOptions = <
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof modifyAdminApiAdminUsernamePut>>,
+    Awaited<ReturnType<typeof modifyAdmin>>,
     { username: string; data: BodyType<AdminModify> }
   > = (props) => {
     const { username, data } = props ?? {};
 
-    return modifyAdminApiAdminUsernamePut(username, data);
+    return modifyAdmin(username, data);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type ModifyAdminApiAdminUsernamePutMutationResult = NonNullable<
-  Awaited<ReturnType<typeof modifyAdminApiAdminUsernamePut>>
+export type ModifyAdminMutationResult = NonNullable<
+  Awaited<ReturnType<typeof modifyAdmin>>
 >;
-export type ModifyAdminApiAdminUsernamePutMutationBody = BodyType<AdminModify>;
-export type ModifyAdminApiAdminUsernamePutMutationError =
-  ErrorType<void | HTTPValidationError>;
+export type ModifyAdminMutationBody = BodyType<AdminModify>;
+export type ModifyAdminMutationError = ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Modify Admin
  */
-export const useModifyAdminApiAdminUsernamePut = <
+export const useModifyAdmin = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof modifyAdminApiAdminUsernamePut>>,
+    Awaited<ReturnType<typeof modifyAdmin>>,
     TError,
     { username: string; data: BodyType<AdminModify> },
     TContext
   >;
 }) => {
-  const mutationOptions =
-    getModifyAdminApiAdminUsernamePutMutationOptions(options);
+  const mutationOptions = getModifyAdminMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -772,25 +761,25 @@ export const useModifyAdminApiAdminUsernamePut = <
 /**
  * @summary Remove Admin
  */
-export const removeAdminApiAdminUsernameDelete = (username: string) => {
+export const removeAdmin = (username: string) => {
   return orvalFetcher<unknown>({
     url: `/api/admin/${username}`,
     method: "delete",
   });
 };
 
-export const getRemoveAdminApiAdminUsernameDeleteMutationOptions = <
+export const getRemoveAdminMutationOptions = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof removeAdminApiAdminUsernameDelete>>,
+    Awaited<ReturnType<typeof removeAdmin>>,
     TError,
     { username: string },
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof removeAdminApiAdminUsernameDelete>>,
+  Awaited<ReturnType<typeof removeAdmin>>,
   TError,
   { username: string },
   TContext
@@ -798,40 +787,38 @@ export const getRemoveAdminApiAdminUsernameDeleteMutationOptions = <
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof removeAdminApiAdminUsernameDelete>>,
+    Awaited<ReturnType<typeof removeAdmin>>,
     { username: string }
   > = (props) => {
     const { username } = props ?? {};
 
-    return removeAdminApiAdminUsernameDelete(username);
+    return removeAdmin(username);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type RemoveAdminApiAdminUsernameDeleteMutationResult = NonNullable<
-  Awaited<ReturnType<typeof removeAdminApiAdminUsernameDelete>>
+export type RemoveAdminMutationResult = NonNullable<
+  Awaited<ReturnType<typeof removeAdmin>>
 >;
 
-export type RemoveAdminApiAdminUsernameDeleteMutationError =
-  ErrorType<void | HTTPValidationError>;
+export type RemoveAdminMutationError = ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Remove Admin
  */
-export const useRemoveAdminApiAdminUsernameDelete = <
+export const useRemoveAdmin = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof removeAdminApiAdminUsernameDelete>>,
+    Awaited<ReturnType<typeof removeAdmin>>,
     TError,
     { username: string },
     TContext
   >;
 }) => {
-  const mutationOptions =
-    getRemoveAdminApiAdminUsernameDeleteMutationOptions(options);
+  const mutationOptions = getRemoveAdminMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -839,10 +826,7 @@ export const useRemoveAdminApiAdminUsernameDelete = <
 /**
  * @summary Get Admins
  */
-export const getAdminsApiAdminsGet = (
-  params?: GetAdminsApiAdminsGetParams,
-  signal?: AbortSignal
-) => {
+export const getAdmins = (params?: GetAdminsParams, signal?: AbortSignal) => {
   return orvalFetcher<Admin[]>({
     url: `/api/admins`,
     method: "get",
@@ -851,20 +835,18 @@ export const getAdminsApiAdminsGet = (
   });
 };
 
-export const getGetAdminsApiAdminsGetQueryKey = (
-  params?: GetAdminsApiAdminsGetParams
-) => {
+export const getGetAdminsQueryKey = (params?: GetAdminsParams) => {
   return [`/api/admins`, ...(params ? [params] : [])] as const;
 };
 
-export const getGetAdminsApiAdminsGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof getAdminsApiAdminsGet>>,
+export const getGetAdminsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAdmins>>,
   TError = ErrorType<void | HTTPValidationError>
 >(
-  params?: GetAdminsApiAdminsGetParams,
+  params?: GetAdminsParams,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getAdminsApiAdminsGet>>,
+      Awaited<ReturnType<typeof getAdmins>>,
       TError,
       TData
     >;
@@ -872,43 +854,41 @@ export const getGetAdminsApiAdminsGetQueryOptions = <
 ) => {
   const { query: queryOptions } = options ?? {};
 
-  const queryKey =
-    queryOptions?.queryKey ?? getGetAdminsApiAdminsGetQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetAdminsQueryKey(params);
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getAdminsApiAdminsGet>>
-  > = ({ signal }) => getAdminsApiAdminsGet(params, signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdmins>>> = ({
+    signal,
+  }) => getAdmins(params, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getAdminsApiAdminsGet>>,
+    Awaited<ReturnType<typeof getAdmins>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetAdminsApiAdminsGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getAdminsApiAdminsGet>>
+export type GetAdminsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAdmins>>
 >;
-export type GetAdminsApiAdminsGetQueryError =
-  ErrorType<void | HTTPValidationError>;
+export type GetAdminsQueryError = ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Get Admins
  */
-export const useGetAdminsApiAdminsGet = <
-  TData = Awaited<ReturnType<typeof getAdminsApiAdminsGet>>,
+export const useGetAdmins = <
+  TData = Awaited<ReturnType<typeof getAdmins>>,
   TError = ErrorType<void | HTTPValidationError>
 >(
-  params?: GetAdminsApiAdminsGetParams,
+  params?: GetAdminsParams,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getAdminsApiAdminsGet>>,
+      Awaited<ReturnType<typeof getAdmins>>,
       TError,
       TData
     >;
   }
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetAdminsApiAdminsGetQueryOptions(params, options);
+  const queryOptions = getGetAdminsQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -923,10 +903,7 @@ export const useGetAdminsApiAdminsGet = <
  * Subscription link, V2ray and Clash supported
  * @summary User Subscription
  */
-export const userSubscriptionSubTokenGet = (
-  token: string,
-  signal?: AbortSignal
-) => {
+export const userSubscription = (token: string, signal?: AbortSignal) => {
   return orvalFetcher<unknown>({
     url: `/sub/${token}/`,
     method: "get",
@@ -934,18 +911,18 @@ export const userSubscriptionSubTokenGet = (
   });
 };
 
-export const getUserSubscriptionSubTokenGetQueryKey = (token: string) => {
+export const getUserSubscriptionQueryKey = (token: string) => {
   return [`/sub/${token}/`] as const;
 };
 
-export const getUserSubscriptionSubTokenGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof userSubscriptionSubTokenGet>>,
+export const getUserSubscriptionQueryOptions = <
+  TData = Awaited<ReturnType<typeof userSubscription>>,
   TError = ErrorType<HTTPValidationError>
 >(
   token: string,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof userSubscriptionSubTokenGet>>,
+      Awaited<ReturnType<typeof userSubscription>>,
       TError,
       TData
     >;
@@ -953,12 +930,11 @@ export const getUserSubscriptionSubTokenGetQueryOptions = <
 ) => {
   const { query: queryOptions } = options ?? {};
 
-  const queryKey =
-    queryOptions?.queryKey ?? getUserSubscriptionSubTokenGetQueryKey(token);
+  const queryKey = queryOptions?.queryKey ?? getUserSubscriptionQueryKey(token);
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof userSubscriptionSubTokenGet>>
-  > = ({ signal }) => userSubscriptionSubTokenGet(token, signal);
+    Awaited<ReturnType<typeof userSubscription>>
+  > = ({ signal }) => userSubscription(token, signal);
 
   return {
     queryKey,
@@ -966,38 +942,34 @@ export const getUserSubscriptionSubTokenGetQueryOptions = <
     enabled: !!token,
     ...queryOptions,
   } as UseQueryOptions<
-    Awaited<ReturnType<typeof userSubscriptionSubTokenGet>>,
+    Awaited<ReturnType<typeof userSubscription>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type UserSubscriptionSubTokenGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof userSubscriptionSubTokenGet>>
+export type UserSubscriptionQueryResult = NonNullable<
+  Awaited<ReturnType<typeof userSubscription>>
 >;
-export type UserSubscriptionSubTokenGetQueryError =
-  ErrorType<HTTPValidationError>;
+export type UserSubscriptionQueryError = ErrorType<HTTPValidationError>;
 
 /**
  * @summary User Subscription
  */
-export const useUserSubscriptionSubTokenGet = <
-  TData = Awaited<ReturnType<typeof userSubscriptionSubTokenGet>>,
+export const useUserSubscription = <
+  TData = Awaited<ReturnType<typeof userSubscription>>,
   TError = ErrorType<HTTPValidationError>
 >(
   token: string,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof userSubscriptionSubTokenGet>>,
+      Awaited<ReturnType<typeof userSubscription>>,
       TError,
       TData
     >;
   }
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getUserSubscriptionSubTokenGetQueryOptions(
-    token,
-    options
-  );
+  const queryOptions = getUserSubscriptionQueryOptions(token, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -1011,10 +983,7 @@ export const useUserSubscriptionSubTokenGet = <
 /**
  * @summary User Subscription Info
  */
-export const userSubscriptionInfoSubTokenInfoGet = (
-  token: string,
-  signal?: AbortSignal
-) => {
+export const userSubscriptionInfo = (token: string, signal?: AbortSignal) => {
   return orvalFetcher<UserResponse>({
     url: `/sub/${token}/info`,
     method: "get",
@@ -1022,20 +991,18 @@ export const userSubscriptionInfoSubTokenInfoGet = (
   });
 };
 
-export const getUserSubscriptionInfoSubTokenInfoGetQueryKey = (
-  token: string
-) => {
+export const getUserSubscriptionInfoQueryKey = (token: string) => {
   return [`/sub/${token}/info`] as const;
 };
 
-export const getUserSubscriptionInfoSubTokenInfoGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof userSubscriptionInfoSubTokenInfoGet>>,
+export const getUserSubscriptionInfoQueryOptions = <
+  TData = Awaited<ReturnType<typeof userSubscriptionInfo>>,
   TError = ErrorType<HTTPValidationError>
 >(
   token: string,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof userSubscriptionInfoSubTokenInfoGet>>,
+      Awaited<ReturnType<typeof userSubscriptionInfo>>,
       TError,
       TData
     >;
@@ -1044,12 +1011,11 @@ export const getUserSubscriptionInfoSubTokenInfoGetQueryOptions = <
   const { query: queryOptions } = options ?? {};
 
   const queryKey =
-    queryOptions?.queryKey ??
-    getUserSubscriptionInfoSubTokenInfoGetQueryKey(token);
+    queryOptions?.queryKey ?? getUserSubscriptionInfoQueryKey(token);
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof userSubscriptionInfoSubTokenInfoGet>>
-  > = ({ signal }) => userSubscriptionInfoSubTokenInfoGet(token, signal);
+    Awaited<ReturnType<typeof userSubscriptionInfo>>
+  > = ({ signal }) => userSubscriptionInfo(token, signal);
 
   return {
     queryKey,
@@ -1057,38 +1023,125 @@ export const getUserSubscriptionInfoSubTokenInfoGetQueryOptions = <
     enabled: !!token,
     ...queryOptions,
   } as UseQueryOptions<
-    Awaited<ReturnType<typeof userSubscriptionInfoSubTokenInfoGet>>,
+    Awaited<ReturnType<typeof userSubscriptionInfo>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type UserSubscriptionInfoSubTokenInfoGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof userSubscriptionInfoSubTokenInfoGet>>
+export type UserSubscriptionInfoQueryResult = NonNullable<
+  Awaited<ReturnType<typeof userSubscriptionInfo>>
 >;
-export type UserSubscriptionInfoSubTokenInfoGetQueryError =
-  ErrorType<HTTPValidationError>;
+export type UserSubscriptionInfoQueryError = ErrorType<HTTPValidationError>;
 
 /**
  * @summary User Subscription Info
  */
-export const useUserSubscriptionInfoSubTokenInfoGet = <
-  TData = Awaited<ReturnType<typeof userSubscriptionInfoSubTokenInfoGet>>,
+export const useUserSubscriptionInfo = <
+  TData = Awaited<ReturnType<typeof userSubscriptionInfo>>,
   TError = ErrorType<HTTPValidationError>
 >(
   token: string,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof userSubscriptionInfoSubTokenInfoGet>>,
+      Awaited<ReturnType<typeof userSubscriptionInfo>>,
       TError,
       TData
     >;
   }
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getUserSubscriptionInfoSubTokenInfoGetQueryOptions(
-    token,
-    options
-  );
+  const queryOptions = getUserSubscriptionInfoQueryOptions(token, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+};
+
+/**
+ * @summary User Get Usage
+ */
+export const userGetUsage = (
+  token: string,
+  params?: UserGetUsageParams,
+  signal?: AbortSignal
+) => {
+  return orvalFetcher<unknown>({
+    url: `/sub/${token}/usage`,
+    method: "get",
+    params,
+    signal,
+  });
+};
+
+export const getUserGetUsageQueryKey = (
+  token: string,
+  params?: UserGetUsageParams
+) => {
+  return [`/sub/${token}/usage`, ...(params ? [params] : [])] as const;
+};
+
+export const getUserGetUsageQueryOptions = <
+  TData = Awaited<ReturnType<typeof userGetUsage>>,
+  TError = ErrorType<HTTPValidationError>
+>(
+  token: string,
+  params?: UserGetUsageParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof userGetUsage>>,
+      TError,
+      TData
+    >;
+  }
+) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getUserGetUsageQueryKey(token, params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof userGetUsage>>> = ({
+    signal,
+  }) => userGetUsage(token, params, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!token,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof userGetUsage>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type UserGetUsageQueryResult = NonNullable<
+  Awaited<ReturnType<typeof userGetUsage>>
+>;
+export type UserGetUsageQueryError = ErrorType<HTTPValidationError>;
+
+/**
+ * @summary User Get Usage
+ */
+export const useUserGetUsage = <
+  TData = Awaited<ReturnType<typeof userGetUsage>>,
+  TError = ErrorType<HTTPValidationError>
+>(
+  token: string,
+  params?: UserGetUsageParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof userGetUsage>>,
+      TError,
+      TData
+    >;
+  }
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const queryOptions = getUserGetUsageQueryOptions(token, params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -1103,7 +1156,7 @@ export const useUserSubscriptionInfoSubTokenInfoGet = <
  * Subscription link, v2ray, clash, sing-box, outline and clash-meta supported
  * @summary User Subscription With Client Type
  */
-export const userSubscriptionWithClientTypeSubTokenClientTypeGet = (
+export const userSubscriptionWithClientType = (
   token: string,
   clientType: string,
   signal?: AbortSignal
@@ -1115,102 +1168,77 @@ export const userSubscriptionWithClientTypeSubTokenClientTypeGet = (
   });
 };
 
-export const getUserSubscriptionWithClientTypeSubTokenClientTypeGetQueryKey = (
+export const getUserSubscriptionWithClientTypeQueryKey = (
   token: string,
   clientType: string
 ) => {
   return [`/sub/${token}/${clientType}`] as const;
 };
 
-export const getUserSubscriptionWithClientTypeSubTokenClientTypeGetQueryOptions =
-  <
-    TData = Awaited<
-      ReturnType<typeof userSubscriptionWithClientTypeSubTokenClientTypeGet>
-    >,
-    TError = ErrorType<void | HTTPValidationError>
-  >(
-    token: string,
-    clientType: string,
-    options?: {
-      query?: UseQueryOptions<
-        Awaited<
-          ReturnType<typeof userSubscriptionWithClientTypeSubTokenClientTypeGet>
-        >,
-        TError,
-        TData
-      >;
-    }
-  ) => {
-    const { query: queryOptions } = options ?? {};
-
-    const queryKey =
-      queryOptions?.queryKey ??
-      getUserSubscriptionWithClientTypeSubTokenClientTypeGetQueryKey(
-        token,
-        clientType
-      );
-
-    const queryFn: QueryFunction<
-      Awaited<
-        ReturnType<typeof userSubscriptionWithClientTypeSubTokenClientTypeGet>
-      >
-    > = ({ signal }) =>
-      userSubscriptionWithClientTypeSubTokenClientTypeGet(
-        token,
-        clientType,
-        signal
-      );
-
-    return {
-      queryKey,
-      queryFn,
-      enabled: !!(token && clientType),
-      ...queryOptions,
-    } as UseQueryOptions<
-      Awaited<
-        ReturnType<typeof userSubscriptionWithClientTypeSubTokenClientTypeGet>
-      >,
-      TError,
-      TData
-    > & { queryKey: QueryKey };
-  };
-
-export type UserSubscriptionWithClientTypeSubTokenClientTypeGetQueryResult =
-  NonNullable<
-    Awaited<
-      ReturnType<typeof userSubscriptionWithClientTypeSubTokenClientTypeGet>
-    >
-  >;
-export type UserSubscriptionWithClientTypeSubTokenClientTypeGetQueryError =
-  ErrorType<void | HTTPValidationError>;
-
-/**
- * @summary User Subscription With Client Type
- */
-export const useUserSubscriptionWithClientTypeSubTokenClientTypeGet = <
-  TData = Awaited<
-    ReturnType<typeof userSubscriptionWithClientTypeSubTokenClientTypeGet>
-  >,
+export const getUserSubscriptionWithClientTypeQueryOptions = <
+  TData = Awaited<ReturnType<typeof userSubscriptionWithClientType>>,
   TError = ErrorType<void | HTTPValidationError>
 >(
   token: string,
   clientType: string,
   options?: {
     query?: UseQueryOptions<
-      Awaited<
-        ReturnType<typeof userSubscriptionWithClientTypeSubTokenClientTypeGet>
-      >,
+      Awaited<ReturnType<typeof userSubscriptionWithClientType>>,
+      TError,
+      TData
+    >;
+  }
+) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getUserSubscriptionWithClientTypeQueryKey(token, clientType);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof userSubscriptionWithClientType>>
+  > = ({ signal }) => userSubscriptionWithClientType(token, clientType, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!(token && clientType),
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof userSubscriptionWithClientType>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type UserSubscriptionWithClientTypeQueryResult = NonNullable<
+  Awaited<ReturnType<typeof userSubscriptionWithClientType>>
+>;
+export type UserSubscriptionWithClientTypeQueryError =
+  ErrorType<void | HTTPValidationError>;
+
+/**
+ * @summary User Subscription With Client Type
+ */
+export const useUserSubscriptionWithClientType = <
+  TData = Awaited<ReturnType<typeof userSubscriptionWithClientType>>,
+  TError = ErrorType<void | HTTPValidationError>
+>(
+  token: string,
+  clientType: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof userSubscriptionWithClientType>>,
       TError,
       TData
     >;
   }
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions =
-    getUserSubscriptionWithClientTypeSubTokenClientTypeGetQueryOptions(
-      token,
-      clientType,
-      options
-    );
+  const queryOptions = getUserSubscriptionWithClientTypeQueryOptions(
+    token,
+    clientType,
+    options
+  );
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -1224,7 +1252,7 @@ export const useUserSubscriptionWithClientTypeSubTokenClientTypeGet = <
 /**
  * @summary Get System Stats
  */
-export const getSystemStatsApiSystemGet = (signal?: AbortSignal) => {
+export const getSystemStats = (signal?: AbortSignal) => {
   return orvalFetcher<SystemStats>({
     url: `/api/system`,
     method: "get",
@@ -1232,55 +1260,54 @@ export const getSystemStatsApiSystemGet = (signal?: AbortSignal) => {
   });
 };
 
-export const getGetSystemStatsApiSystemGetQueryKey = () => {
+export const getGetSystemStatsQueryKey = () => {
   return [`/api/system`] as const;
 };
 
-export const getGetSystemStatsApiSystemGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof getSystemStatsApiSystemGet>>,
+export const getGetSystemStatsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSystemStats>>,
   TError = ErrorType<unknown>
 >(options?: {
   query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getSystemStatsApiSystemGet>>,
+    Awaited<ReturnType<typeof getSystemStats>>,
     TError,
     TData
   >;
 }) => {
   const { query: queryOptions } = options ?? {};
 
-  const queryKey =
-    queryOptions?.queryKey ?? getGetSystemStatsApiSystemGetQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetSystemStatsQueryKey();
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getSystemStatsApiSystemGet>>
-  > = ({ signal }) => getSystemStatsApiSystemGet(signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSystemStats>>> = ({
+    signal,
+  }) => getSystemStats(signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getSystemStatsApiSystemGet>>,
+    Awaited<ReturnType<typeof getSystemStats>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetSystemStatsApiSystemGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getSystemStatsApiSystemGet>>
+export type GetSystemStatsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSystemStats>>
 >;
-export type GetSystemStatsApiSystemGetQueryError = ErrorType<unknown>;
+export type GetSystemStatsQueryError = ErrorType<unknown>;
 
 /**
  * @summary Get System Stats
  */
-export const useGetSystemStatsApiSystemGet = <
-  TData = Awaited<ReturnType<typeof getSystemStatsApiSystemGet>>,
+export const useGetSystemStats = <
+  TData = Awaited<ReturnType<typeof getSystemStats>>,
   TError = ErrorType<unknown>
 >(options?: {
   query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getSystemStatsApiSystemGet>>,
+    Awaited<ReturnType<typeof getSystemStats>>,
     TError,
     TData
   >;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetSystemStatsApiSystemGetQueryOptions(options);
+  const queryOptions = getGetSystemStatsQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -1294,63 +1321,62 @@ export const useGetSystemStatsApiSystemGet = <
 /**
  * @summary Get Inbounds
  */
-export const getInboundsApiInboundsGet = (signal?: AbortSignal) => {
-  return orvalFetcher<GetInboundsApiInboundsGet200>({
+export const getInbounds = (signal?: AbortSignal) => {
+  return orvalFetcher<GetInbounds200>({
     url: `/api/inbounds`,
     method: "get",
     signal,
   });
 };
 
-export const getGetInboundsApiInboundsGetQueryKey = () => {
+export const getGetInboundsQueryKey = () => {
   return [`/api/inbounds`] as const;
 };
 
-export const getGetInboundsApiInboundsGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof getInboundsApiInboundsGet>>,
+export const getGetInboundsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getInbounds>>,
   TError = ErrorType<unknown>
 >(options?: {
   query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getInboundsApiInboundsGet>>,
+    Awaited<ReturnType<typeof getInbounds>>,
     TError,
     TData
   >;
 }) => {
   const { query: queryOptions } = options ?? {};
 
-  const queryKey =
-    queryOptions?.queryKey ?? getGetInboundsApiInboundsGetQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetInboundsQueryKey();
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getInboundsApiInboundsGet>>
-  > = ({ signal }) => getInboundsApiInboundsGet(signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getInbounds>>> = ({
+    signal,
+  }) => getInbounds(signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getInboundsApiInboundsGet>>,
+    Awaited<ReturnType<typeof getInbounds>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetInboundsApiInboundsGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getInboundsApiInboundsGet>>
+export type GetInboundsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getInbounds>>
 >;
-export type GetInboundsApiInboundsGetQueryError = ErrorType<unknown>;
+export type GetInboundsQueryError = ErrorType<unknown>;
 
 /**
  * @summary Get Inbounds
  */
-export const useGetInboundsApiInboundsGet = <
-  TData = Awaited<ReturnType<typeof getInboundsApiInboundsGet>>,
+export const useGetInbounds = <
+  TData = Awaited<ReturnType<typeof getInbounds>>,
   TError = ErrorType<unknown>
 >(options?: {
   query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getInboundsApiInboundsGet>>,
+    Awaited<ReturnType<typeof getInbounds>>,
     TError,
     TData
   >;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetInboundsApiInboundsGetQueryOptions(options);
+  const queryOptions = getGetInboundsQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -1364,62 +1390,54 @@ export const useGetInboundsApiInboundsGet = <
 /**
  * @summary Get Hosts
  */
-export const getHostsApiHostsGet = (signal?: AbortSignal) => {
-  return orvalFetcher<GetHostsApiHostsGet200>({
+export const getHosts = (signal?: AbortSignal) => {
+  return orvalFetcher<GetHosts200>({
     url: `/api/hosts`,
     method: "get",
     signal,
   });
 };
 
-export const getGetHostsApiHostsGetQueryKey = () => {
+export const getGetHostsQueryKey = () => {
   return [`/api/hosts`] as const;
 };
 
-export const getGetHostsApiHostsGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof getHostsApiHostsGet>>,
+export const getGetHostsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getHosts>>,
   TError = ErrorType<unknown>
 >(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getHostsApiHostsGet>>,
-    TError,
-    TData
-  >;
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getHosts>>, TError, TData>;
 }) => {
   const { query: queryOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetHostsApiHostsGetQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetHostsQueryKey();
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getHostsApiHostsGet>>
-  > = ({ signal }) => getHostsApiHostsGet(signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getHosts>>> = ({
+    signal,
+  }) => getHosts(signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getHostsApiHostsGet>>,
+    Awaited<ReturnType<typeof getHosts>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetHostsApiHostsGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getHostsApiHostsGet>>
+export type GetHostsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getHosts>>
 >;
-export type GetHostsApiHostsGetQueryError = ErrorType<unknown>;
+export type GetHostsQueryError = ErrorType<unknown>;
 
 /**
  * @summary Get Hosts
  */
-export const useGetHostsApiHostsGet = <
-  TData = Awaited<ReturnType<typeof getHostsApiHostsGet>>,
+export const useGetHosts = <
+  TData = Awaited<ReturnType<typeof getHosts>>,
   TError = ErrorType<unknown>
 >(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getHostsApiHostsGet>>,
-    TError,
-    TData
-  >;
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getHosts>>, TError, TData>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetHostsApiHostsGetQueryOptions(options);
+  const queryOptions = getGetHostsQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -1433,70 +1451,66 @@ export const useGetHostsApiHostsGet = <
 /**
  * @summary Modify Hosts
  */
-export const modifyHostsApiHostsPut = (
-  modifyHostsApiHostsPutBody: BodyType<ModifyHostsApiHostsPutBody>
-) => {
-  return orvalFetcher<ModifyHostsApiHostsPut200>({
+export const modifyHosts = (modifyHostsBody: BodyType<ModifyHostsBody>) => {
+  return orvalFetcher<ModifyHosts200>({
     url: `/api/hosts`,
     method: "put",
     headers: { "Content-Type": "application/json" },
-    data: modifyHostsApiHostsPutBody,
+    data: modifyHostsBody,
   });
 };
 
-export const getModifyHostsApiHostsPutMutationOptions = <
+export const getModifyHostsMutationOptions = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof modifyHostsApiHostsPut>>,
+    Awaited<ReturnType<typeof modifyHosts>>,
     TError,
-    { data: BodyType<ModifyHostsApiHostsPutBody> },
+    { data: BodyType<ModifyHostsBody> },
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof modifyHostsApiHostsPut>>,
+  Awaited<ReturnType<typeof modifyHosts>>,
   TError,
-  { data: BodyType<ModifyHostsApiHostsPutBody> },
+  { data: BodyType<ModifyHostsBody> },
   TContext
 > => {
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof modifyHostsApiHostsPut>>,
-    { data: BodyType<ModifyHostsApiHostsPutBody> }
+    Awaited<ReturnType<typeof modifyHosts>>,
+    { data: BodyType<ModifyHostsBody> }
   > = (props) => {
     const { data } = props ?? {};
 
-    return modifyHostsApiHostsPut(data);
+    return modifyHosts(data);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type ModifyHostsApiHostsPutMutationResult = NonNullable<
-  Awaited<ReturnType<typeof modifyHostsApiHostsPut>>
+export type ModifyHostsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof modifyHosts>>
 >;
-export type ModifyHostsApiHostsPutMutationBody =
-  BodyType<ModifyHostsApiHostsPutBody>;
-export type ModifyHostsApiHostsPutMutationError =
-  ErrorType<void | HTTPValidationError>;
+export type ModifyHostsMutationBody = BodyType<ModifyHostsBody>;
+export type ModifyHostsMutationError = ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Modify Hosts
  */
-export const useModifyHostsApiHostsPut = <
+export const useModifyHosts = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof modifyHostsApiHostsPut>>,
+    Awaited<ReturnType<typeof modifyHosts>>,
     TError,
-    { data: BodyType<ModifyHostsApiHostsPutBody> },
+    { data: BodyType<ModifyHostsBody> },
     TContext
   >;
 }) => {
-  const mutationOptions = getModifyHostsApiHostsPutMutationOptions(options);
+  const mutationOptions = getModifyHostsMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -1504,59 +1518,58 @@ export const useModifyHostsApiHostsPut = <
 /**
  * @summary Get Core Stats
  */
-export const getCoreStatsApiCoreGet = (signal?: AbortSignal) => {
+export const getCoreStats = (signal?: AbortSignal) => {
   return orvalFetcher<CoreStats>({ url: `/api/core`, method: "get", signal });
 };
 
-export const getGetCoreStatsApiCoreGetQueryKey = () => {
+export const getGetCoreStatsQueryKey = () => {
   return [`/api/core`] as const;
 };
 
-export const getGetCoreStatsApiCoreGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof getCoreStatsApiCoreGet>>,
+export const getGetCoreStatsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCoreStats>>,
   TError = ErrorType<unknown>
 >(options?: {
   query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getCoreStatsApiCoreGet>>,
+    Awaited<ReturnType<typeof getCoreStats>>,
     TError,
     TData
   >;
 }) => {
   const { query: queryOptions } = options ?? {};
 
-  const queryKey =
-    queryOptions?.queryKey ?? getGetCoreStatsApiCoreGetQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetCoreStatsQueryKey();
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getCoreStatsApiCoreGet>>
-  > = ({ signal }) => getCoreStatsApiCoreGet(signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCoreStats>>> = ({
+    signal,
+  }) => getCoreStats(signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getCoreStatsApiCoreGet>>,
+    Awaited<ReturnType<typeof getCoreStats>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetCoreStatsApiCoreGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getCoreStatsApiCoreGet>>
+export type GetCoreStatsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCoreStats>>
 >;
-export type GetCoreStatsApiCoreGetQueryError = ErrorType<unknown>;
+export type GetCoreStatsQueryError = ErrorType<unknown>;
 
 /**
  * @summary Get Core Stats
  */
-export const useGetCoreStatsApiCoreGet = <
-  TData = Awaited<ReturnType<typeof getCoreStatsApiCoreGet>>,
+export const useGetCoreStats = <
+  TData = Awaited<ReturnType<typeof getCoreStats>>,
   TError = ErrorType<unknown>
 >(options?: {
   query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getCoreStatsApiCoreGet>>,
+    Awaited<ReturnType<typeof getCoreStats>>,
     TError,
     TData
   >;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetCoreStatsApiCoreGetQueryOptions(options);
+  const queryOptions = getGetCoreStatsQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -1570,23 +1583,23 @@ export const useGetCoreStatsApiCoreGet = <
 /**
  * @summary Restart Core
  */
-export const restartCoreApiCoreRestartPost = () => {
+export const restartCore = () => {
   return orvalFetcher<unknown>({ url: `/api/core/restart`, method: "post" });
 };
 
-export const getRestartCoreApiCoreRestartPostMutationOptions = <
+export const getRestartCoreMutationOptions = <
   TError = ErrorType<void>,
   TVariables = void,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof restartCoreApiCoreRestartPost>>,
+    Awaited<ReturnType<typeof restartCore>>,
     TError,
     TVariables,
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof restartCoreApiCoreRestartPost>>,
+  Awaited<ReturnType<typeof restartCore>>,
   TError,
   TVariables,
   TContext
@@ -1594,38 +1607,37 @@ export const getRestartCoreApiCoreRestartPostMutationOptions = <
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof restartCoreApiCoreRestartPost>>,
+    Awaited<ReturnType<typeof restartCore>>,
     TVariables
   > = () => {
-    return restartCoreApiCoreRestartPost();
+    return restartCore();
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type RestartCoreApiCoreRestartPostMutationResult = NonNullable<
-  Awaited<ReturnType<typeof restartCoreApiCoreRestartPost>>
+export type RestartCoreMutationResult = NonNullable<
+  Awaited<ReturnType<typeof restartCore>>
 >;
 
-export type RestartCoreApiCoreRestartPostMutationError = ErrorType<void>;
+export type RestartCoreMutationError = ErrorType<void>;
 
 /**
  * @summary Restart Core
  */
-export const useRestartCoreApiCoreRestartPost = <
+export const useRestartCore = <
   TError = ErrorType<void>,
   TVariables = void,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof restartCoreApiCoreRestartPost>>,
+    Awaited<ReturnType<typeof restartCore>>,
     TError,
     TVariables,
     TContext
   >;
 }) => {
-  const mutationOptions =
-    getRestartCoreApiCoreRestartPostMutationOptions(options);
+  const mutationOptions = getRestartCoreMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -1633,63 +1645,62 @@ export const useRestartCoreApiCoreRestartPost = <
 /**
  * @summary Get Core Config
  */
-export const getCoreConfigApiCoreConfigGet = (signal?: AbortSignal) => {
-  return orvalFetcher<GetCoreConfigApiCoreConfigGet200>({
+export const getCoreConfig = (signal?: AbortSignal) => {
+  return orvalFetcher<GetCoreConfig200>({
     url: `/api/core/config`,
     method: "get",
     signal,
   });
 };
 
-export const getGetCoreConfigApiCoreConfigGetQueryKey = () => {
+export const getGetCoreConfigQueryKey = () => {
   return [`/api/core/config`] as const;
 };
 
-export const getGetCoreConfigApiCoreConfigGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof getCoreConfigApiCoreConfigGet>>,
+export const getGetCoreConfigQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCoreConfig>>,
   TError = ErrorType<void>
 >(options?: {
   query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getCoreConfigApiCoreConfigGet>>,
+    Awaited<ReturnType<typeof getCoreConfig>>,
     TError,
     TData
   >;
 }) => {
   const { query: queryOptions } = options ?? {};
 
-  const queryKey =
-    queryOptions?.queryKey ?? getGetCoreConfigApiCoreConfigGetQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetCoreConfigQueryKey();
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getCoreConfigApiCoreConfigGet>>
-  > = ({ signal }) => getCoreConfigApiCoreConfigGet(signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCoreConfig>>> = ({
+    signal,
+  }) => getCoreConfig(signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getCoreConfigApiCoreConfigGet>>,
+    Awaited<ReturnType<typeof getCoreConfig>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetCoreConfigApiCoreConfigGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getCoreConfigApiCoreConfigGet>>
+export type GetCoreConfigQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCoreConfig>>
 >;
-export type GetCoreConfigApiCoreConfigGetQueryError = ErrorType<void>;
+export type GetCoreConfigQueryError = ErrorType<void>;
 
 /**
  * @summary Get Core Config
  */
-export const useGetCoreConfigApiCoreConfigGet = <
-  TData = Awaited<ReturnType<typeof getCoreConfigApiCoreConfigGet>>,
+export const useGetCoreConfig = <
+  TData = Awaited<ReturnType<typeof getCoreConfig>>,
   TError = ErrorType<void>
 >(options?: {
   query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getCoreConfigApiCoreConfigGet>>,
+    Awaited<ReturnType<typeof getCoreConfig>>,
     TError,
     TData
   >;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetCoreConfigApiCoreConfigGetQueryOptions(options);
+  const queryOptions = getGetCoreConfigQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -1703,71 +1714,69 @@ export const useGetCoreConfigApiCoreConfigGet = <
 /**
  * @summary Modify Core Config
  */
-export const modifyCoreConfigApiCoreConfigPut = (
-  modifyCoreConfigApiCoreConfigPutBody: BodyType<ModifyCoreConfigApiCoreConfigPutBody>
+export const modifyCoreConfig = (
+  modifyCoreConfigBody: BodyType<ModifyCoreConfigBody>
 ) => {
-  return orvalFetcher<ModifyCoreConfigApiCoreConfigPut200>({
+  return orvalFetcher<ModifyCoreConfig200>({
     url: `/api/core/config`,
     method: "put",
     headers: { "Content-Type": "application/json" },
-    data: modifyCoreConfigApiCoreConfigPutBody,
+    data: modifyCoreConfigBody,
   });
 };
 
-export const getModifyCoreConfigApiCoreConfigPutMutationOptions = <
+export const getModifyCoreConfigMutationOptions = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof modifyCoreConfigApiCoreConfigPut>>,
+    Awaited<ReturnType<typeof modifyCoreConfig>>,
     TError,
-    { data: BodyType<ModifyCoreConfigApiCoreConfigPutBody> },
+    { data: BodyType<ModifyCoreConfigBody> },
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof modifyCoreConfigApiCoreConfigPut>>,
+  Awaited<ReturnType<typeof modifyCoreConfig>>,
   TError,
-  { data: BodyType<ModifyCoreConfigApiCoreConfigPutBody> },
+  { data: BodyType<ModifyCoreConfigBody> },
   TContext
 > => {
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof modifyCoreConfigApiCoreConfigPut>>,
-    { data: BodyType<ModifyCoreConfigApiCoreConfigPutBody> }
+    Awaited<ReturnType<typeof modifyCoreConfig>>,
+    { data: BodyType<ModifyCoreConfigBody> }
   > = (props) => {
     const { data } = props ?? {};
 
-    return modifyCoreConfigApiCoreConfigPut(data);
+    return modifyCoreConfig(data);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type ModifyCoreConfigApiCoreConfigPutMutationResult = NonNullable<
-  Awaited<ReturnType<typeof modifyCoreConfigApiCoreConfigPut>>
+export type ModifyCoreConfigMutationResult = NonNullable<
+  Awaited<ReturnType<typeof modifyCoreConfig>>
 >;
-export type ModifyCoreConfigApiCoreConfigPutMutationBody =
-  BodyType<ModifyCoreConfigApiCoreConfigPutBody>;
-export type ModifyCoreConfigApiCoreConfigPutMutationError =
+export type ModifyCoreConfigMutationBody = BodyType<ModifyCoreConfigBody>;
+export type ModifyCoreConfigMutationError =
   ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Modify Core Config
  */
-export const useModifyCoreConfigApiCoreConfigPut = <
+export const useModifyCoreConfig = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof modifyCoreConfigApiCoreConfigPut>>,
+    Awaited<ReturnType<typeof modifyCoreConfig>>,
     TError,
-    { data: BodyType<ModifyCoreConfigApiCoreConfigPutBody> },
+    { data: BodyType<ModifyCoreConfigBody> },
     TContext
   >;
 }) => {
-  const mutationOptions =
-    getModifyCoreConfigApiCoreConfigPutMutationOptions(options);
+  const mutationOptions = getModifyCoreConfigMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -1782,7 +1791,7 @@ export const useModifyCoreConfigApiCoreConfigPut = <
 - **inbounds** dictionary of protocol:inbound_tags, empty means all inbounds
  * @summary Add User
  */
-export const addUserApiUserPost = (userCreate: BodyType<UserCreate>) => {
+export const addUser = (userCreate: BodyType<UserCreate>) => {
   return orvalFetcher<UserResponse>({
     url: `/api/user`,
     method: "post",
@@ -1791,18 +1800,18 @@ export const addUserApiUserPost = (userCreate: BodyType<UserCreate>) => {
   });
 };
 
-export const getAddUserApiUserPostMutationOptions = <
+export const getAddUserMutationOptions = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof addUserApiUserPost>>,
+    Awaited<ReturnType<typeof addUser>>,
     TError,
     { data: BodyType<UserCreate> },
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof addUserApiUserPost>>,
+  Awaited<ReturnType<typeof addUser>>,
   TError,
   { data: BodyType<UserCreate> },
   TContext
@@ -1810,39 +1819,38 @@ export const getAddUserApiUserPostMutationOptions = <
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof addUserApiUserPost>>,
+    Awaited<ReturnType<typeof addUser>>,
     { data: BodyType<UserCreate> }
   > = (props) => {
     const { data } = props ?? {};
 
-    return addUserApiUserPost(data);
+    return addUser(data);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type AddUserApiUserPostMutationResult = NonNullable<
-  Awaited<ReturnType<typeof addUserApiUserPost>>
+export type AddUserMutationResult = NonNullable<
+  Awaited<ReturnType<typeof addUser>>
 >;
-export type AddUserApiUserPostMutationBody = BodyType<UserCreate>;
-export type AddUserApiUserPostMutationError =
-  ErrorType<void | HTTPValidationError>;
+export type AddUserMutationBody = BodyType<UserCreate>;
+export type AddUserMutationError = ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Add User
  */
-export const useAddUserApiUserPost = <
+export const useAddUser = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof addUserApiUserPost>>,
+    Awaited<ReturnType<typeof addUser>>,
     TError,
     { data: BodyType<UserCreate> },
     TContext
   >;
 }) => {
-  const mutationOptions = getAddUserApiUserPostMutationOptions(options);
+  const mutationOptions = getAddUserMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -1851,10 +1859,7 @@ export const useAddUserApiUserPost = <
  * Get users information
  * @summary Get User
  */
-export const getUserApiUserUsernameGet = (
-  username: string,
-  signal?: AbortSignal
-) => {
+export const getUser = (username: string, signal?: AbortSignal) => {
   return orvalFetcher<UserResponse>({
     url: `/api/user/${username}`,
     method: "get",
@@ -1862,70 +1867,55 @@ export const getUserApiUserUsernameGet = (
   });
 };
 
-export const getGetUserApiUserUsernameGetQueryKey = (username: string) => {
+export const getGetUserQueryKey = (username: string) => {
   return [`/api/user/${username}`] as const;
 };
 
-export const getGetUserApiUserUsernameGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof getUserApiUserUsernameGet>>,
+export const getGetUserQueryOptions = <
+  TData = Awaited<ReturnType<typeof getUser>>,
   TError = ErrorType<void | HTTPValidationError>
 >(
   username: string,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getUserApiUserUsernameGet>>,
-      TError,
-      TData
-    >;
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData>;
   }
 ) => {
   const { query: queryOptions } = options ?? {};
 
-  const queryKey =
-    queryOptions?.queryKey ?? getGetUserApiUserUsernameGetQueryKey(username);
+  const queryKey = queryOptions?.queryKey ?? getGetUserQueryKey(username);
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getUserApiUserUsernameGet>>
-  > = ({ signal }) => getUserApiUserUsernameGet(username, signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUser>>> = ({
+    signal,
+  }) => getUser(username, signal);
 
   return {
     queryKey,
     queryFn,
     enabled: !!username,
     ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof getUserApiUserUsernameGet>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey };
+  } as UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData> & {
+    queryKey: QueryKey;
+  };
 };
 
-export type GetUserApiUserUsernameGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getUserApiUserUsernameGet>>
+export type GetUserQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getUser>>
 >;
-export type GetUserApiUserUsernameGetQueryError =
-  ErrorType<void | HTTPValidationError>;
+export type GetUserQueryError = ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Get User
  */
-export const useGetUserApiUserUsernameGet = <
-  TData = Awaited<ReturnType<typeof getUserApiUserUsernameGet>>,
+export const useGetUser = <
+  TData = Awaited<ReturnType<typeof getUser>>,
   TError = ErrorType<void | HTTPValidationError>
 >(
   username: string,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getUserApiUserUsernameGet>>,
-      TError,
-      TData
-    >;
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData>;
   }
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetUserApiUserUsernameGetQueryOptions(
-    username,
-    options
-  );
+  const queryOptions = getGetUserQueryOptions(username, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -1945,7 +1935,7 @@ export const useGetUserApiUserUsernameGet = <
 - **inbounds** dictionary of protocol:inbound_tags, empty means no change
  * @summary Modify User
  */
-export const modifyUserApiUserUsernamePut = (
+export const modifyUser = (
   username: string,
   userModify: BodyType<UserModify>
 ) => {
@@ -1957,18 +1947,18 @@ export const modifyUserApiUserUsernamePut = (
   });
 };
 
-export const getModifyUserApiUserUsernamePutMutationOptions = <
+export const getModifyUserMutationOptions = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof modifyUserApiUserUsernamePut>>,
+    Awaited<ReturnType<typeof modifyUser>>,
     TError,
     { username: string; data: BodyType<UserModify> },
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof modifyUserApiUserUsernamePut>>,
+  Awaited<ReturnType<typeof modifyUser>>,
   TError,
   { username: string; data: BodyType<UserModify> },
   TContext
@@ -1976,40 +1966,38 @@ export const getModifyUserApiUserUsernamePutMutationOptions = <
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof modifyUserApiUserUsernamePut>>,
+    Awaited<ReturnType<typeof modifyUser>>,
     { username: string; data: BodyType<UserModify> }
   > = (props) => {
     const { username, data } = props ?? {};
 
-    return modifyUserApiUserUsernamePut(username, data);
+    return modifyUser(username, data);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type ModifyUserApiUserUsernamePutMutationResult = NonNullable<
-  Awaited<ReturnType<typeof modifyUserApiUserUsernamePut>>
+export type ModifyUserMutationResult = NonNullable<
+  Awaited<ReturnType<typeof modifyUser>>
 >;
-export type ModifyUserApiUserUsernamePutMutationBody = BodyType<UserModify>;
-export type ModifyUserApiUserUsernamePutMutationError =
-  ErrorType<void | HTTPValidationError>;
+export type ModifyUserMutationBody = BodyType<UserModify>;
+export type ModifyUserMutationError = ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Modify User
  */
-export const useModifyUserApiUserUsernamePut = <
+export const useModifyUser = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof modifyUserApiUserUsernamePut>>,
+    Awaited<ReturnType<typeof modifyUser>>,
     TError,
     { username: string; data: BodyType<UserModify> },
     TContext
   >;
 }) => {
-  const mutationOptions =
-    getModifyUserApiUserUsernamePutMutationOptions(options);
+  const mutationOptions = getModifyUserMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -2018,25 +2006,25 @@ export const useModifyUserApiUserUsernamePut = <
  * Remove a user
  * @summary Remove User
  */
-export const removeUserApiUserUsernameDelete = (username: string) => {
+export const removeUser = (username: string) => {
   return orvalFetcher<unknown>({
     url: `/api/user/${username}`,
     method: "delete",
   });
 };
 
-export const getRemoveUserApiUserUsernameDeleteMutationOptions = <
+export const getRemoveUserMutationOptions = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof removeUserApiUserUsernameDelete>>,
+    Awaited<ReturnType<typeof removeUser>>,
     TError,
     { username: string },
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof removeUserApiUserUsernameDelete>>,
+  Awaited<ReturnType<typeof removeUser>>,
   TError,
   { username: string },
   TContext
@@ -2044,40 +2032,38 @@ export const getRemoveUserApiUserUsernameDeleteMutationOptions = <
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof removeUserApiUserUsernameDelete>>,
+    Awaited<ReturnType<typeof removeUser>>,
     { username: string }
   > = (props) => {
     const { username } = props ?? {};
 
-    return removeUserApiUserUsernameDelete(username);
+    return removeUser(username);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type RemoveUserApiUserUsernameDeleteMutationResult = NonNullable<
-  Awaited<ReturnType<typeof removeUserApiUserUsernameDelete>>
+export type RemoveUserMutationResult = NonNullable<
+  Awaited<ReturnType<typeof removeUser>>
 >;
 
-export type RemoveUserApiUserUsernameDeleteMutationError =
-  ErrorType<void | HTTPValidationError>;
+export type RemoveUserMutationError = ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Remove User
  */
-export const useRemoveUserApiUserUsernameDelete = <
+export const useRemoveUser = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof removeUserApiUserUsernameDelete>>,
+    Awaited<ReturnType<typeof removeUser>>,
     TError,
     { username: string },
     TContext
   >;
 }) => {
-  const mutationOptions =
-    getRemoveUserApiUserUsernameDeleteMutationOptions(options);
+  const mutationOptions = getRemoveUserMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -2086,27 +2072,25 @@ export const useRemoveUserApiUserUsernameDelete = <
  * Reset user data usage
  * @summary Reset User Data Usage
  */
-export const resetUserDataUsageApiUserUsernameResetPost = (
-  username: string
-) => {
+export const resetUserDataUsage = (username: string) => {
   return orvalFetcher<UserResponse>({
     url: `/api/user/${username}/reset`,
     method: "post",
   });
 };
 
-export const getResetUserDataUsageApiUserUsernameResetPostMutationOptions = <
+export const getResetUserDataUsageMutationOptions = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof resetUserDataUsageApiUserUsernameResetPost>>,
+    Awaited<ReturnType<typeof resetUserDataUsage>>,
     TError,
     { username: string },
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof resetUserDataUsageApiUserUsernameResetPost>>,
+  Awaited<ReturnType<typeof resetUserDataUsage>>,
   TError,
   { username: string },
   TContext
@@ -2114,41 +2098,39 @@ export const getResetUserDataUsageApiUserUsernameResetPostMutationOptions = <
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof resetUserDataUsageApiUserUsernameResetPost>>,
+    Awaited<ReturnType<typeof resetUserDataUsage>>,
     { username: string }
   > = (props) => {
     const { username } = props ?? {};
 
-    return resetUserDataUsageApiUserUsernameResetPost(username);
+    return resetUserDataUsage(username);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type ResetUserDataUsageApiUserUsernameResetPostMutationResult =
-  NonNullable<
-    Awaited<ReturnType<typeof resetUserDataUsageApiUserUsernameResetPost>>
-  >;
+export type ResetUserDataUsageMutationResult = NonNullable<
+  Awaited<ReturnType<typeof resetUserDataUsage>>
+>;
 
-export type ResetUserDataUsageApiUserUsernameResetPostMutationError =
+export type ResetUserDataUsageMutationError =
   ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Reset User Data Usage
  */
-export const useResetUserDataUsageApiUserUsernameResetPost = <
+export const useResetUserDataUsage = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof resetUserDataUsageApiUserUsernameResetPost>>,
+    Awaited<ReturnType<typeof resetUserDataUsage>>,
     TError,
     { username: string },
     TContext
   >;
 }) => {
-  const mutationOptions =
-    getResetUserDataUsageApiUserUsernameResetPostMutationOptions(options);
+  const mutationOptions = getResetUserDataUsageMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -2157,82 +2139,65 @@ export const useResetUserDataUsageApiUserUsernameResetPost = <
  * Revoke users subscription (Subscription link and proxies)
  * @summary Revoke User Subscription
  */
-export const revokeUserSubscriptionApiUserUsernameRevokeSubPost = (
-  username: string
-) => {
+export const revokeUserSubscription = (username: string) => {
   return orvalFetcher<UserResponse>({
     url: `/api/user/${username}/revoke_sub`,
     method: "post",
   });
 };
 
-export const getRevokeUserSubscriptionApiUserUsernameRevokeSubPostMutationOptions =
-  <
-    TError = ErrorType<void | HTTPValidationError>,
-    TContext = unknown
-  >(options?: {
-    mutation?: UseMutationOptions<
-      Awaited<
-        ReturnType<typeof revokeUserSubscriptionApiUserUsernameRevokeSubPost>
-      >,
-      TError,
-      { username: string },
-      TContext
-    >;
-  }): UseMutationOptions<
-    Awaited<
-      ReturnType<typeof revokeUserSubscriptionApiUserUsernameRevokeSubPost>
-    >,
+export const getRevokeUserSubscriptionMutationOptions = <
+  TError = ErrorType<void | HTTPValidationError>,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof revokeUserSubscription>>,
     TError,
     { username: string },
     TContext
-  > => {
-    const { mutation: mutationOptions } = options ?? {};
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof revokeUserSubscription>>,
+  TError,
+  { username: string },
+  TContext
+> => {
+  const { mutation: mutationOptions } = options ?? {};
 
-    const mutationFn: MutationFunction<
-      Awaited<
-        ReturnType<typeof revokeUserSubscriptionApiUserUsernameRevokeSubPost>
-      >,
-      { username: string }
-    > = (props) => {
-      const { username } = props ?? {};
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof revokeUserSubscription>>,
+    { username: string }
+  > = (props) => {
+    const { username } = props ?? {};
 
-      return revokeUserSubscriptionApiUserUsernameRevokeSubPost(username);
-    };
-
-    return { mutationFn, ...mutationOptions };
+    return revokeUserSubscription(username);
   };
 
-export type RevokeUserSubscriptionApiUserUsernameRevokeSubPostMutationResult =
-  NonNullable<
-    Awaited<
-      ReturnType<typeof revokeUserSubscriptionApiUserUsernameRevokeSubPost>
-    >
-  >;
+  return { mutationFn, ...mutationOptions };
+};
 
-export type RevokeUserSubscriptionApiUserUsernameRevokeSubPostMutationError =
+export type RevokeUserSubscriptionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof revokeUserSubscription>>
+>;
+
+export type RevokeUserSubscriptionMutationError =
   ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Revoke User Subscription
  */
-export const useRevokeUserSubscriptionApiUserUsernameRevokeSubPost = <
+export const useRevokeUserSubscription = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<
-      ReturnType<typeof revokeUserSubscriptionApiUserUsernameRevokeSubPost>
-    >,
+    Awaited<ReturnType<typeof revokeUserSubscription>>,
     TError,
     { username: string },
     TContext
   >;
 }) => {
-  const mutationOptions =
-    getRevokeUserSubscriptionApiUserUsernameRevokeSubPostMutationOptions(
-      options
-    );
+  const mutationOptions = getRevokeUserSubscriptionMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -2241,10 +2206,7 @@ export const useRevokeUserSubscriptionApiUserUsernameRevokeSubPost = <
  * Get all users
  * @summary Get Users
  */
-export const getUsersApiUsersGet = (
-  params?: GetUsersApiUsersGetParams,
-  signal?: AbortSignal
-) => {
+export const getUsers = (params?: GetUsersParams, signal?: AbortSignal) => {
   return orvalFetcher<UsersResponse>({
     url: `/api/users`,
     method: "get",
@@ -2253,20 +2215,18 @@ export const getUsersApiUsersGet = (
   });
 };
 
-export const getGetUsersApiUsersGetQueryKey = (
-  params?: GetUsersApiUsersGetParams
-) => {
+export const getGetUsersQueryKey = (params?: GetUsersParams) => {
   return [`/api/users`, ...(params ? [params] : [])] as const;
 };
 
-export const getGetUsersApiUsersGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof getUsersApiUsersGet>>,
+export const getGetUsersQueryOptions = <
+  TData = Awaited<ReturnType<typeof getUsers>>,
   TError = ErrorType<HTTPValidationError>
 >(
-  params?: GetUsersApiUsersGetParams,
+  params?: GetUsersParams,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getUsersApiUsersGet>>,
+      Awaited<ReturnType<typeof getUsers>>,
       TError,
       TData
     >;
@@ -2274,42 +2234,41 @@ export const getGetUsersApiUsersGetQueryOptions = <
 ) => {
   const { query: queryOptions } = options ?? {};
 
-  const queryKey =
-    queryOptions?.queryKey ?? getGetUsersApiUsersGetQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetUsersQueryKey(params);
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getUsersApiUsersGet>>
-  > = ({ signal }) => getUsersApiUsersGet(params, signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsers>>> = ({
+    signal,
+  }) => getUsers(params, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getUsersApiUsersGet>>,
+    Awaited<ReturnType<typeof getUsers>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetUsersApiUsersGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getUsersApiUsersGet>>
+export type GetUsersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getUsers>>
 >;
-export type GetUsersApiUsersGetQueryError = ErrorType<HTTPValidationError>;
+export type GetUsersQueryError = ErrorType<HTTPValidationError>;
 
 /**
  * @summary Get Users
  */
-export const useGetUsersApiUsersGet = <
-  TData = Awaited<ReturnType<typeof getUsersApiUsersGet>>,
+export const useGetUsers = <
+  TData = Awaited<ReturnType<typeof getUsers>>,
   TError = ErrorType<HTTPValidationError>
 >(
-  params?: GetUsersApiUsersGetParams,
+  params?: GetUsersParams,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getUsersApiUsersGet>>,
+      Awaited<ReturnType<typeof getUsers>>,
       TError,
       TData
     >;
   }
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetUsersApiUsersGetQueryOptions(params, options);
+  const queryOptions = getGetUsersQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -2324,23 +2283,23 @@ export const useGetUsersApiUsersGet = <
  * Reset all users data usage
  * @summary Reset Users Data Usage
  */
-export const resetUsersDataUsageApiUsersResetPost = () => {
+export const resetUsersDataUsage = () => {
   return orvalFetcher<unknown>({ url: `/api/users/reset`, method: "post" });
 };
 
-export const getResetUsersDataUsageApiUsersResetPostMutationOptions = <
+export const getResetUsersDataUsageMutationOptions = <
   TError = ErrorType<void>,
   TVariables = void,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof resetUsersDataUsageApiUsersResetPost>>,
+    Awaited<ReturnType<typeof resetUsersDataUsage>>,
     TError,
     TVariables,
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof resetUsersDataUsageApiUsersResetPost>>,
+  Awaited<ReturnType<typeof resetUsersDataUsage>>,
   TError,
   TVariables,
   TContext
@@ -2348,38 +2307,37 @@ export const getResetUsersDataUsageApiUsersResetPostMutationOptions = <
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof resetUsersDataUsageApiUsersResetPost>>,
+    Awaited<ReturnType<typeof resetUsersDataUsage>>,
     TVariables
   > = () => {
-    return resetUsersDataUsageApiUsersResetPost();
+    return resetUsersDataUsage();
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type ResetUsersDataUsageApiUsersResetPostMutationResult = NonNullable<
-  Awaited<ReturnType<typeof resetUsersDataUsageApiUsersResetPost>>
+export type ResetUsersDataUsageMutationResult = NonNullable<
+  Awaited<ReturnType<typeof resetUsersDataUsage>>
 >;
 
-export type ResetUsersDataUsageApiUsersResetPostMutationError = ErrorType<void>;
+export type ResetUsersDataUsageMutationError = ErrorType<void>;
 
 /**
  * @summary Reset Users Data Usage
  */
-export const useResetUsersDataUsageApiUsersResetPost = <
+export const useResetUsersDataUsage = <
   TError = ErrorType<void>,
   TVariables = void,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof resetUsersDataUsageApiUsersResetPost>>,
+    Awaited<ReturnType<typeof resetUsersDataUsage>>,
     TError,
     TVariables,
     TContext
   >;
 }) => {
-  const mutationOptions =
-    getResetUsersDataUsageApiUsersResetPostMutationOptions(options);
+  const mutationOptions = getResetUsersDataUsageMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -2388,9 +2346,9 @@ export const useResetUsersDataUsageApiUsersResetPost = <
  * Get users usage
  * @summary Get User Usage
  */
-export const getUserUsageApiUserUsernameUsageGet = (
+export const getUserUsage = (
   username: string,
-  params?: GetUserUsageApiUserUsernameUsageGetParams,
+  params?: GetUserUsageParams,
   signal?: AbortSignal
 ) => {
   return orvalFetcher<UserUsagesResponse>({
@@ -2401,22 +2359,22 @@ export const getUserUsageApiUserUsernameUsageGet = (
   });
 };
 
-export const getGetUserUsageApiUserUsernameUsageGetQueryKey = (
+export const getGetUserUsageQueryKey = (
   username: string,
-  params?: GetUserUsageApiUserUsernameUsageGetParams
+  params?: GetUserUsageParams
 ) => {
   return [`/api/user/${username}/usage`, ...(params ? [params] : [])] as const;
 };
 
-export const getGetUserUsageApiUserUsernameUsageGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof getUserUsageApiUserUsernameUsageGet>>,
+export const getGetUserUsageQueryOptions = <
+  TData = Awaited<ReturnType<typeof getUserUsage>>,
   TError = ErrorType<void | HTTPValidationError>
 >(
   username: string,
-  params?: GetUserUsageApiUserUsernameUsageGetParams,
+  params?: GetUserUsageParams,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getUserUsageApiUserUsernameUsageGet>>,
+      Awaited<ReturnType<typeof getUserUsage>>,
       TError,
       TData
     >;
@@ -2425,13 +2383,11 @@ export const getGetUserUsageApiUserUsernameUsageGetQueryOptions = <
   const { query: queryOptions } = options ?? {};
 
   const queryKey =
-    queryOptions?.queryKey ??
-    getGetUserUsageApiUserUsernameUsageGetQueryKey(username, params);
+    queryOptions?.queryKey ?? getGetUserUsageQueryKey(username, params);
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getUserUsageApiUserUsernameUsageGet>>
-  > = ({ signal }) =>
-    getUserUsageApiUserUsernameUsageGet(username, params, signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUserUsage>>> = ({
+    signal,
+  }) => getUserUsage(username, params, signal);
 
   return {
     queryKey,
@@ -2439,40 +2395,35 @@ export const getGetUserUsageApiUserUsernameUsageGetQueryOptions = <
     enabled: !!username,
     ...queryOptions,
   } as UseQueryOptions<
-    Awaited<ReturnType<typeof getUserUsageApiUserUsernameUsageGet>>,
+    Awaited<ReturnType<typeof getUserUsage>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetUserUsageApiUserUsernameUsageGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getUserUsageApiUserUsernameUsageGet>>
+export type GetUserUsageQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getUserUsage>>
 >;
-export type GetUserUsageApiUserUsernameUsageGetQueryError =
-  ErrorType<void | HTTPValidationError>;
+export type GetUserUsageQueryError = ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Get User Usage
  */
-export const useGetUserUsageApiUserUsernameUsageGet = <
-  TData = Awaited<ReturnType<typeof getUserUsageApiUserUsernameUsageGet>>,
+export const useGetUserUsage = <
+  TData = Awaited<ReturnType<typeof getUserUsage>>,
   TError = ErrorType<void | HTTPValidationError>
 >(
   username: string,
-  params?: GetUserUsageApiUserUsernameUsageGetParams,
+  params?: GetUserUsageParams,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getUserUsageApiUserUsernameUsageGet>>,
+      Awaited<ReturnType<typeof getUserUsage>>,
       TError,
       TData
     >;
   }
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetUserUsageApiUserUsernameUsageGetQueryOptions(
-    username,
-    params,
-    options
-  );
+  const queryOptions = getGetUserUsageQueryOptions(username, params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -2486,10 +2437,7 @@ export const useGetUserUsageApiUserUsernameUsageGet = <
 /**
  * @summary Set Owner
  */
-export const setOwnerApiUserUsernameSetOwnerPut = (
-  username: string,
-  params: SetOwnerApiUserUsernameSetOwnerPutParams
-) => {
+export const setOwner = (username: string, params: SetOwnerParams) => {
   return orvalFetcher<UserResponse>({
     url: `/api/user/${username}/set-owner`,
     method: "put",
@@ -2497,59 +2445,57 @@ export const setOwnerApiUserUsernameSetOwnerPut = (
   });
 };
 
-export const getSetOwnerApiUserUsernameSetOwnerPutMutationOptions = <
+export const getSetOwnerMutationOptions = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof setOwnerApiUserUsernameSetOwnerPut>>,
+    Awaited<ReturnType<typeof setOwner>>,
     TError,
-    { username: string; params: SetOwnerApiUserUsernameSetOwnerPutParams },
+    { username: string; params: SetOwnerParams },
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof setOwnerApiUserUsernameSetOwnerPut>>,
+  Awaited<ReturnType<typeof setOwner>>,
   TError,
-  { username: string; params: SetOwnerApiUserUsernameSetOwnerPutParams },
+  { username: string; params: SetOwnerParams },
   TContext
 > => {
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof setOwnerApiUserUsernameSetOwnerPut>>,
-    { username: string; params: SetOwnerApiUserUsernameSetOwnerPutParams }
+    Awaited<ReturnType<typeof setOwner>>,
+    { username: string; params: SetOwnerParams }
   > = (props) => {
     const { username, params } = props ?? {};
 
-    return setOwnerApiUserUsernameSetOwnerPut(username, params);
+    return setOwner(username, params);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type SetOwnerApiUserUsernameSetOwnerPutMutationResult = NonNullable<
-  Awaited<ReturnType<typeof setOwnerApiUserUsernameSetOwnerPut>>
+export type SetOwnerMutationResult = NonNullable<
+  Awaited<ReturnType<typeof setOwner>>
 >;
 
-export type SetOwnerApiUserUsernameSetOwnerPutMutationError =
-  ErrorType<void | HTTPValidationError>;
+export type SetOwnerMutationError = ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Set Owner
  */
-export const useSetOwnerApiUserUsernameSetOwnerPut = <
+export const useSetOwner = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof setOwnerApiUserUsernameSetOwnerPut>>,
+    Awaited<ReturnType<typeof setOwner>>,
     TError,
-    { username: string; params: SetOwnerApiUserUsernameSetOwnerPutParams },
+    { username: string; params: SetOwnerParams },
     TContext
   >;
 }) => {
-  const mutationOptions =
-    getSetOwnerApiUserUsernameSetOwnerPutMutationOptions(options);
+  const mutationOptions = getSetOwnerMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -2560,9 +2506,7 @@ export const useSetOwnerApiUserUsernameSetOwnerPut = <
 - This function will delete all expired users that meet the specified number of days passed and can't be undone.
  * @summary Delete Expired
  */
-export const deleteExpiredApiUsersExpiredDelete = (
-  params: DeleteExpiredApiUsersExpiredDeleteParams
-) => {
+export const deleteExpired = (params: DeleteExpiredParams) => {
   return orvalFetcher<unknown>({
     url: `/api/users/expired`,
     method: "delete",
@@ -2570,59 +2514,57 @@ export const deleteExpiredApiUsersExpiredDelete = (
   });
 };
 
-export const getDeleteExpiredApiUsersExpiredDeleteMutationOptions = <
+export const getDeleteExpiredMutationOptions = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteExpiredApiUsersExpiredDelete>>,
+    Awaited<ReturnType<typeof deleteExpired>>,
     TError,
-    { params: DeleteExpiredApiUsersExpiredDeleteParams },
+    { params: DeleteExpiredParams },
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof deleteExpiredApiUsersExpiredDelete>>,
+  Awaited<ReturnType<typeof deleteExpired>>,
   TError,
-  { params: DeleteExpiredApiUsersExpiredDeleteParams },
+  { params: DeleteExpiredParams },
   TContext
 > => {
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof deleteExpiredApiUsersExpiredDelete>>,
-    { params: DeleteExpiredApiUsersExpiredDeleteParams }
+    Awaited<ReturnType<typeof deleteExpired>>,
+    { params: DeleteExpiredParams }
   > = (props) => {
     const { params } = props ?? {};
 
-    return deleteExpiredApiUsersExpiredDelete(params);
+    return deleteExpired(params);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type DeleteExpiredApiUsersExpiredDeleteMutationResult = NonNullable<
-  Awaited<ReturnType<typeof deleteExpiredApiUsersExpiredDelete>>
+export type DeleteExpiredMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteExpired>>
 >;
 
-export type DeleteExpiredApiUsersExpiredDeleteMutationError =
-  ErrorType<void | HTTPValidationError>;
+export type DeleteExpiredMutationError = ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Delete Expired
  */
-export const useDeleteExpiredApiUsersExpiredDelete = <
+export const useDeleteExpired = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteExpiredApiUsersExpiredDelete>>,
+    Awaited<ReturnType<typeof deleteExpired>>,
     TError,
-    { params: DeleteExpiredApiUsersExpiredDeleteParams },
+    { params: DeleteExpiredParams },
     TContext
   >;
 }) => {
-  const mutationOptions =
-    getDeleteExpiredApiUsersExpiredDeleteMutationOptions(options);
+  const mutationOptions = getDeleteExpiredMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -2630,8 +2572,8 @@ export const useDeleteExpiredApiUsersExpiredDelete = <
 /**
  * @summary Get User Templates
  */
-export const getUserTemplatesApiUserTemplateGet = (
-  params?: GetUserTemplatesApiUserTemplateGetParams,
+export const getUserTemplates = (
+  params?: GetUserTemplatesParams,
   signal?: AbortSignal
 ) => {
   return orvalFetcher<UserTemplateResponse[]>({
@@ -2642,20 +2584,20 @@ export const getUserTemplatesApiUserTemplateGet = (
   });
 };
 
-export const getGetUserTemplatesApiUserTemplateGetQueryKey = (
-  params?: GetUserTemplatesApiUserTemplateGetParams
+export const getGetUserTemplatesQueryKey = (
+  params?: GetUserTemplatesParams
 ) => {
   return [`/api/user_template`, ...(params ? [params] : [])] as const;
 };
 
-export const getGetUserTemplatesApiUserTemplateGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof getUserTemplatesApiUserTemplateGet>>,
+export const getGetUserTemplatesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getUserTemplates>>,
   TError = ErrorType<HTTPValidationError>
 >(
-  params?: GetUserTemplatesApiUserTemplateGetParams,
+  params?: GetUserTemplatesParams,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getUserTemplatesApiUserTemplateGet>>,
+      Awaited<ReturnType<typeof getUserTemplates>>,
       TError,
       TData
     >;
@@ -2664,46 +2606,41 @@ export const getGetUserTemplatesApiUserTemplateGetQueryOptions = <
   const { query: queryOptions } = options ?? {};
 
   const queryKey =
-    queryOptions?.queryKey ??
-    getGetUserTemplatesApiUserTemplateGetQueryKey(params);
+    queryOptions?.queryKey ?? getGetUserTemplatesQueryKey(params);
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getUserTemplatesApiUserTemplateGet>>
-  > = ({ signal }) => getUserTemplatesApiUserTemplateGet(params, signal);
+    Awaited<ReturnType<typeof getUserTemplates>>
+  > = ({ signal }) => getUserTemplates(params, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getUserTemplatesApiUserTemplateGet>>,
+    Awaited<ReturnType<typeof getUserTemplates>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetUserTemplatesApiUserTemplateGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getUserTemplatesApiUserTemplateGet>>
+export type GetUserTemplatesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getUserTemplates>>
 >;
-export type GetUserTemplatesApiUserTemplateGetQueryError =
-  ErrorType<HTTPValidationError>;
+export type GetUserTemplatesQueryError = ErrorType<HTTPValidationError>;
 
 /**
  * @summary Get User Templates
  */
-export const useGetUserTemplatesApiUserTemplateGet = <
-  TData = Awaited<ReturnType<typeof getUserTemplatesApiUserTemplateGet>>,
+export const useGetUserTemplates = <
+  TData = Awaited<ReturnType<typeof getUserTemplates>>,
   TError = ErrorType<HTTPValidationError>
 >(
-  params?: GetUserTemplatesApiUserTemplateGetParams,
+  params?: GetUserTemplatesParams,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getUserTemplatesApiUserTemplateGet>>,
+      Awaited<ReturnType<typeof getUserTemplates>>,
       TError,
       TData
     >;
   }
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetUserTemplatesApiUserTemplateGetQueryOptions(
-    params,
-    options
-  );
+  const queryOptions = getGetUserTemplatesQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -2723,7 +2660,7 @@ export const useGetUserTemplatesApiUserTemplateGet = <
 - **inbounds** dictionary of protocol:inbound_tags, empty means all inbounds
  * @summary Add User Template
  */
-export const addUserTemplateApiUserTemplatePost = (
+export const addUserTemplate = (
   userTemplateCreate: BodyType<UserTemplateCreate>
 ) => {
   return orvalFetcher<UserTemplateResponse>({
@@ -2734,18 +2671,18 @@ export const addUserTemplateApiUserTemplatePost = (
   });
 };
 
-export const getAddUserTemplateApiUserTemplatePostMutationOptions = <
+export const getAddUserTemplateMutationOptions = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof addUserTemplateApiUserTemplatePost>>,
+    Awaited<ReturnType<typeof addUserTemplate>>,
     TError,
     { data: BodyType<UserTemplateCreate> },
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof addUserTemplateApiUserTemplatePost>>,
+  Awaited<ReturnType<typeof addUserTemplate>>,
   TError,
   { data: BodyType<UserTemplateCreate> },
   TContext
@@ -2753,41 +2690,39 @@ export const getAddUserTemplateApiUserTemplatePostMutationOptions = <
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof addUserTemplateApiUserTemplatePost>>,
+    Awaited<ReturnType<typeof addUserTemplate>>,
     { data: BodyType<UserTemplateCreate> }
   > = (props) => {
     const { data } = props ?? {};
 
-    return addUserTemplateApiUserTemplatePost(data);
+    return addUserTemplate(data);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type AddUserTemplateApiUserTemplatePostMutationResult = NonNullable<
-  Awaited<ReturnType<typeof addUserTemplateApiUserTemplatePost>>
+export type AddUserTemplateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof addUserTemplate>>
 >;
-export type AddUserTemplateApiUserTemplatePostMutationBody =
-  BodyType<UserTemplateCreate>;
-export type AddUserTemplateApiUserTemplatePostMutationError =
+export type AddUserTemplateMutationBody = BodyType<UserTemplateCreate>;
+export type AddUserTemplateMutationError =
   ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Add User Template
  */
-export const useAddUserTemplateApiUserTemplatePost = <
+export const useAddUserTemplate = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof addUserTemplateApiUserTemplatePost>>,
+    Awaited<ReturnType<typeof addUserTemplate>>,
     TError,
     { data: BodyType<UserTemplateCreate> },
     TContext
   >;
 }) => {
-  const mutationOptions =
-    getAddUserTemplateApiUserTemplatePostMutationOptions(options);
+  const mutationOptions = getAddUserTemplateMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -2796,10 +2731,7 @@ export const useAddUserTemplateApiUserTemplatePost = <
  * Get User Template information with id
  * @summary Get User Template
  */
-export const getUserTemplateApiUserTemplateIdGet = (
-  id: number,
-  signal?: AbortSignal
-) => {
+export const getUserTemplate = (id: number, signal?: AbortSignal) => {
   return orvalFetcher<UserTemplateResponse>({
     url: `/api/user_template/${id}`,
     method: "get",
@@ -2807,18 +2739,18 @@ export const getUserTemplateApiUserTemplateIdGet = (
   });
 };
 
-export const getGetUserTemplateApiUserTemplateIdGetQueryKey = (id: number) => {
+export const getGetUserTemplateQueryKey = (id: number) => {
   return [`/api/user_template/${id}`] as const;
 };
 
-export const getGetUserTemplateApiUserTemplateIdGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof getUserTemplateApiUserTemplateIdGet>>,
+export const getGetUserTemplateQueryOptions = <
+  TData = Awaited<ReturnType<typeof getUserTemplate>>,
   TError = ErrorType<void | HTTPValidationError>
 >(
   id: number,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getUserTemplateApiUserTemplateIdGet>>,
+      Awaited<ReturnType<typeof getUserTemplate>>,
       TError,
       TData
     >;
@@ -2826,13 +2758,11 @@ export const getGetUserTemplateApiUserTemplateIdGetQueryOptions = <
 ) => {
   const { query: queryOptions } = options ?? {};
 
-  const queryKey =
-    queryOptions?.queryKey ??
-    getGetUserTemplateApiUserTemplateIdGetQueryKey(id);
+  const queryKey = queryOptions?.queryKey ?? getGetUserTemplateQueryKey(id);
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getUserTemplateApiUserTemplateIdGet>>
-  > = ({ signal }) => getUserTemplateApiUserTemplateIdGet(id, signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUserTemplate>>> = ({
+    signal,
+  }) => getUserTemplate(id, signal);
 
   return {
     queryKey,
@@ -2840,38 +2770,34 @@ export const getGetUserTemplateApiUserTemplateIdGetQueryOptions = <
     enabled: !!id,
     ...queryOptions,
   } as UseQueryOptions<
-    Awaited<ReturnType<typeof getUserTemplateApiUserTemplateIdGet>>,
+    Awaited<ReturnType<typeof getUserTemplate>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetUserTemplateApiUserTemplateIdGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getUserTemplateApiUserTemplateIdGet>>
+export type GetUserTemplateQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getUserTemplate>>
 >;
-export type GetUserTemplateApiUserTemplateIdGetQueryError =
-  ErrorType<void | HTTPValidationError>;
+export type GetUserTemplateQueryError = ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Get User Template
  */
-export const useGetUserTemplateApiUserTemplateIdGet = <
-  TData = Awaited<ReturnType<typeof getUserTemplateApiUserTemplateIdGet>>,
+export const useGetUserTemplate = <
+  TData = Awaited<ReturnType<typeof getUserTemplate>>,
   TError = ErrorType<void | HTTPValidationError>
 >(
   id: number,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getUserTemplateApiUserTemplateIdGet>>,
+      Awaited<ReturnType<typeof getUserTemplate>>,
       TError,
       TData
     >;
   }
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetUserTemplateApiUserTemplateIdGetQueryOptions(
-    id,
-    options
-  );
+  const queryOptions = getGetUserTemplateQueryOptions(id, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -2891,7 +2817,7 @@ export const useGetUserTemplateApiUserTemplateIdGet = <
 - **inbounds** dictionary of protocol:inbound_tags, empty means all inbounds
  * @summary Modify User Template
  */
-export const modifyUserTemplateApiUserTemplateIdPut = (
+export const modifyUserTemplate = (
   id: number,
   userTemplateModify: BodyType<UserTemplateModify>
 ) => {
@@ -2903,18 +2829,18 @@ export const modifyUserTemplateApiUserTemplateIdPut = (
   });
 };
 
-export const getModifyUserTemplateApiUserTemplateIdPutMutationOptions = <
+export const getModifyUserTemplateMutationOptions = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof modifyUserTemplateApiUserTemplateIdPut>>,
+    Awaited<ReturnType<typeof modifyUserTemplate>>,
     TError,
     { id: number; data: BodyType<UserTemplateModify> },
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof modifyUserTemplateApiUserTemplateIdPut>>,
+  Awaited<ReturnType<typeof modifyUserTemplate>>,
   TError,
   { id: number; data: BodyType<UserTemplateModify> },
   TContext
@@ -2922,41 +2848,39 @@ export const getModifyUserTemplateApiUserTemplateIdPutMutationOptions = <
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof modifyUserTemplateApiUserTemplateIdPut>>,
+    Awaited<ReturnType<typeof modifyUserTemplate>>,
     { id: number; data: BodyType<UserTemplateModify> }
   > = (props) => {
     const { id, data } = props ?? {};
 
-    return modifyUserTemplateApiUserTemplateIdPut(id, data);
+    return modifyUserTemplate(id, data);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type ModifyUserTemplateApiUserTemplateIdPutMutationResult = NonNullable<
-  Awaited<ReturnType<typeof modifyUserTemplateApiUserTemplateIdPut>>
+export type ModifyUserTemplateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof modifyUserTemplate>>
 >;
-export type ModifyUserTemplateApiUserTemplateIdPutMutationBody =
-  BodyType<UserTemplateModify>;
-export type ModifyUserTemplateApiUserTemplateIdPutMutationError =
+export type ModifyUserTemplateMutationBody = BodyType<UserTemplateModify>;
+export type ModifyUserTemplateMutationError =
   ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Modify User Template
  */
-export const useModifyUserTemplateApiUserTemplateIdPut = <
+export const useModifyUserTemplate = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof modifyUserTemplateApiUserTemplateIdPut>>,
+    Awaited<ReturnType<typeof modifyUserTemplate>>,
     TError,
     { id: number; data: BodyType<UserTemplateModify> },
     TContext
   >;
 }) => {
-  const mutationOptions =
-    getModifyUserTemplateApiUserTemplateIdPutMutationOptions(options);
+  const mutationOptions = getModifyUserTemplateMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -2964,25 +2888,25 @@ export const useModifyUserTemplateApiUserTemplateIdPut = <
 /**
  * @summary Remove User Template
  */
-export const removeUserTemplateApiUserTemplateIdDelete = (id: number) => {
+export const removeUserTemplate = (id: number) => {
   return orvalFetcher<unknown>({
     url: `/api/user_template/${id}`,
     method: "delete",
   });
 };
 
-export const getRemoveUserTemplateApiUserTemplateIdDeleteMutationOptions = <
+export const getRemoveUserTemplateMutationOptions = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof removeUserTemplateApiUserTemplateIdDelete>>,
+    Awaited<ReturnType<typeof removeUserTemplate>>,
     TError,
     { id: number },
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof removeUserTemplateApiUserTemplateIdDelete>>,
+  Awaited<ReturnType<typeof removeUserTemplate>>,
   TError,
   { id: number },
   TContext
@@ -2990,41 +2914,39 @@ export const getRemoveUserTemplateApiUserTemplateIdDeleteMutationOptions = <
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof removeUserTemplateApiUserTemplateIdDelete>>,
+    Awaited<ReturnType<typeof removeUserTemplate>>,
     { id: number }
   > = (props) => {
     const { id } = props ?? {};
 
-    return removeUserTemplateApiUserTemplateIdDelete(id);
+    return removeUserTemplate(id);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type RemoveUserTemplateApiUserTemplateIdDeleteMutationResult =
-  NonNullable<
-    Awaited<ReturnType<typeof removeUserTemplateApiUserTemplateIdDelete>>
-  >;
+export type RemoveUserTemplateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof removeUserTemplate>>
+>;
 
-export type RemoveUserTemplateApiUserTemplateIdDeleteMutationError =
+export type RemoveUserTemplateMutationError =
   ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Remove User Template
  */
-export const useRemoveUserTemplateApiUserTemplateIdDelete = <
+export const useRemoveUserTemplate = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof removeUserTemplateApiUserTemplateIdDelete>>,
+    Awaited<ReturnType<typeof removeUserTemplate>>,
     TError,
     { id: number },
     TContext
   >;
 }) => {
-  const mutationOptions =
-    getRemoveUserTemplateApiUserTemplateIdDeleteMutationOptions(options);
+  const mutationOptions = getRemoveUserTemplateMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -3032,63 +2954,63 @@ export const useRemoveUserTemplateApiUserTemplateIdDelete = <
 /**
  * @summary Get Node
  */
-export const getNodeApiNodeSettingsGet = (signal?: AbortSignal) => {
-  return orvalFetcher<NodeSettings>({
-    url: `/api/node/settings`,
+export const getNode = (nodeId: number, signal?: AbortSignal) => {
+  return orvalFetcher<NodeResponse>({
+    url: `/api/node/${nodeId}`,
     method: "get",
     signal,
   });
 };
 
-export const getGetNodeApiNodeSettingsGetQueryKey = () => {
-  return [`/api/node/settings`] as const;
+export const getGetNodeQueryKey = (nodeId: number) => {
+  return [`/api/node/${nodeId}`] as const;
 };
 
-export const getGetNodeApiNodeSettingsGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof getNodeApiNodeSettingsGet>>,
-  TError = ErrorType<void>
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getNodeApiNodeSettingsGet>>,
-    TError,
-    TData
-  >;
-}) => {
+export const getGetNodeQueryOptions = <
+  TData = Awaited<ReturnType<typeof getNode>>,
+  TError = ErrorType<void | HTTPValidationError>
+>(
+  nodeId: number,
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>;
+  }
+) => {
   const { query: queryOptions } = options ?? {};
 
-  const queryKey =
-    queryOptions?.queryKey ?? getGetNodeApiNodeSettingsGetQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetNodeQueryKey(nodeId);
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getNodeApiNodeSettingsGet>>
-  > = ({ signal }) => getNodeApiNodeSettingsGet(signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getNode>>> = ({
+    signal,
+  }) => getNode(nodeId, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getNodeApiNodeSettingsGet>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey };
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!nodeId,
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData> & {
+    queryKey: QueryKey;
+  };
 };
 
-export type GetNodeApiNodeSettingsGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getNodeApiNodeSettingsGet>>
+export type GetNodeQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getNode>>
 >;
-export type GetNodeApiNodeSettingsGetQueryError = ErrorType<void>;
+export type GetNodeQueryError = ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Get Node
  */
-export const useGetNodeApiNodeSettingsGet = <
-  TData = Awaited<ReturnType<typeof getNodeApiNodeSettingsGet>>,
-  TError = ErrorType<void>
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getNodeApiNodeSettingsGet>>,
-    TError,
-    TData
-  >;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetNodeApiNodeSettingsGetQueryOptions(options);
+export const useGetNode = <
+  TData = Awaited<ReturnType<typeof getNode>>,
+  TError = ErrorType<void | HTTPValidationError>
+>(
+  nodeId: number,
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>;
+  }
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const queryOptions = getGetNodeQueryOptions(nodeId, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -3102,7 +3024,7 @@ export const useGetNodeApiNodeSettingsGet = <
 /**
  * @summary Add Node
  */
-export const addNodeApiNodePost = (nodeCreate: BodyType<NodeCreate>) => {
+export const addNode = (nodeCreate: BodyType<NodeCreate>) => {
   return orvalFetcher<NodeResponse>({
     url: `/api/node`,
     method: "post",
@@ -3111,18 +3033,18 @@ export const addNodeApiNodePost = (nodeCreate: BodyType<NodeCreate>) => {
   });
 };
 
-export const getAddNodeApiNodePostMutationOptions = <
+export const getAddNodeMutationOptions = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof addNodeApiNodePost>>,
+    Awaited<ReturnType<typeof addNode>>,
     TError,
     { data: BodyType<NodeCreate> },
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof addNodeApiNodePost>>,
+  Awaited<ReturnType<typeof addNode>>,
   TError,
   { data: BodyType<NodeCreate> },
   TContext
@@ -3130,132 +3052,46 @@ export const getAddNodeApiNodePostMutationOptions = <
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof addNodeApiNodePost>>,
+    Awaited<ReturnType<typeof addNode>>,
     { data: BodyType<NodeCreate> }
   > = (props) => {
     const { data } = props ?? {};
 
-    return addNodeApiNodePost(data);
+    return addNode(data);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type AddNodeApiNodePostMutationResult = NonNullable<
-  Awaited<ReturnType<typeof addNodeApiNodePost>>
+export type AddNodeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof addNode>>
 >;
-export type AddNodeApiNodePostMutationBody = BodyType<NodeCreate>;
-export type AddNodeApiNodePostMutationError =
-  ErrorType<void | HTTPValidationError>;
+export type AddNodeMutationBody = BodyType<NodeCreate>;
+export type AddNodeMutationError = ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Add Node
  */
-export const useAddNodeApiNodePost = <
+export const useAddNode = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof addNodeApiNodePost>>,
+    Awaited<ReturnType<typeof addNode>>,
     TError,
     { data: BodyType<NodeCreate> },
     TContext
   >;
 }) => {
-  const mutationOptions = getAddNodeApiNodePostMutationOptions(options);
+  const mutationOptions = getAddNodeMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
 
 /**
- * @summary Get Node
- */
-export const getNodeApiNodeNodeIdGet = (
-  nodeId: number,
-  signal?: AbortSignal
-) => {
-  return orvalFetcher<NodeResponse>({
-    url: `/api/node/${nodeId}`,
-    method: "get",
-    signal,
-  });
-};
-
-export const getGetNodeApiNodeNodeIdGetQueryKey = (nodeId: number) => {
-  return [`/api/node/${nodeId}`] as const;
-};
-
-export const getGetNodeApiNodeNodeIdGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof getNodeApiNodeNodeIdGet>>,
-  TError = ErrorType<void | HTTPValidationError>
->(
-  nodeId: number,
-  options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getNodeApiNodeNodeIdGet>>,
-      TError,
-      TData
-    >;
-  }
-) => {
-  const { query: queryOptions } = options ?? {};
-
-  const queryKey =
-    queryOptions?.queryKey ?? getGetNodeApiNodeNodeIdGetQueryKey(nodeId);
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getNodeApiNodeNodeIdGet>>
-  > = ({ signal }) => getNodeApiNodeNodeIdGet(nodeId, signal);
-
-  return {
-    queryKey,
-    queryFn,
-    enabled: !!nodeId,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof getNodeApiNodeNodeIdGet>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey };
-};
-
-export type GetNodeApiNodeNodeIdGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getNodeApiNodeNodeIdGet>>
->;
-export type GetNodeApiNodeNodeIdGetQueryError =
-  ErrorType<void | HTTPValidationError>;
-
-/**
- * @summary Get Node
- */
-export const useGetNodeApiNodeNodeIdGet = <
-  TData = Awaited<ReturnType<typeof getNodeApiNodeNodeIdGet>>,
-  TError = ErrorType<void | HTTPValidationError>
->(
-  nodeId: number,
-  options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getNodeApiNodeNodeIdGet>>,
-      TError,
-      TData
-    >;
-  }
-): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetNodeApiNodeNodeIdGetQueryOptions(nodeId, options);
-
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
-
-  query.queryKey = queryOptions.queryKey;
-
-  return query;
-};
-
-/**
  * @summary Modify Node
  */
-export const modifyNodeApiNodeNodeIdPut = (
+export const modifyNode = (
   nodeId: number,
   nodeModify: BodyType<NodeModify>
 ) => {
@@ -3267,18 +3103,18 @@ export const modifyNodeApiNodeNodeIdPut = (
   });
 };
 
-export const getModifyNodeApiNodeNodeIdPutMutationOptions = <
+export const getModifyNodeMutationOptions = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof modifyNodeApiNodeNodeIdPut>>,
+    Awaited<ReturnType<typeof modifyNode>>,
     TError,
     { nodeId: number; data: BodyType<NodeModify> },
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof modifyNodeApiNodeNodeIdPut>>,
+  Awaited<ReturnType<typeof modifyNode>>,
   TError,
   { nodeId: number; data: BodyType<NodeModify> },
   TContext
@@ -3286,39 +3122,38 @@ export const getModifyNodeApiNodeNodeIdPutMutationOptions = <
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof modifyNodeApiNodeNodeIdPut>>,
+    Awaited<ReturnType<typeof modifyNode>>,
     { nodeId: number; data: BodyType<NodeModify> }
   > = (props) => {
     const { nodeId, data } = props ?? {};
 
-    return modifyNodeApiNodeNodeIdPut(nodeId, data);
+    return modifyNode(nodeId, data);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type ModifyNodeApiNodeNodeIdPutMutationResult = NonNullable<
-  Awaited<ReturnType<typeof modifyNodeApiNodeNodeIdPut>>
+export type ModifyNodeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof modifyNode>>
 >;
-export type ModifyNodeApiNodeNodeIdPutMutationBody = BodyType<NodeModify>;
-export type ModifyNodeApiNodeNodeIdPutMutationError =
-  ErrorType<void | HTTPValidationError>;
+export type ModifyNodeMutationBody = BodyType<NodeModify>;
+export type ModifyNodeMutationError = ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Modify Node
  */
-export const useModifyNodeApiNodeNodeIdPut = <
+export const useModifyNode = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof modifyNodeApiNodeNodeIdPut>>,
+    Awaited<ReturnType<typeof modifyNode>>,
     TError,
     { nodeId: number; data: BodyType<NodeModify> },
     TContext
   >;
 }) => {
-  const mutationOptions = getModifyNodeApiNodeNodeIdPutMutationOptions(options);
+  const mutationOptions = getModifyNodeMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -3326,25 +3161,25 @@ export const useModifyNodeApiNodeNodeIdPut = <
 /**
  * @summary Remove Node
  */
-export const removeNodeApiNodeNodeIdDelete = (nodeId: number) => {
+export const removeNode = (nodeId: number) => {
   return orvalFetcher<unknown>({
     url: `/api/node/${nodeId}`,
     method: "delete",
   });
 };
 
-export const getRemoveNodeApiNodeNodeIdDeleteMutationOptions = <
+export const getRemoveNodeMutationOptions = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof removeNodeApiNodeNodeIdDelete>>,
+    Awaited<ReturnType<typeof removeNode>>,
     TError,
     { nodeId: number },
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof removeNodeApiNodeNodeIdDelete>>,
+  Awaited<ReturnType<typeof removeNode>>,
   TError,
   { nodeId: number },
   TContext
@@ -3352,40 +3187,38 @@ export const getRemoveNodeApiNodeNodeIdDeleteMutationOptions = <
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof removeNodeApiNodeNodeIdDelete>>,
+    Awaited<ReturnType<typeof removeNode>>,
     { nodeId: number }
   > = (props) => {
     const { nodeId } = props ?? {};
 
-    return removeNodeApiNodeNodeIdDelete(nodeId);
+    return removeNode(nodeId);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type RemoveNodeApiNodeNodeIdDeleteMutationResult = NonNullable<
-  Awaited<ReturnType<typeof removeNodeApiNodeNodeIdDelete>>
+export type RemoveNodeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof removeNode>>
 >;
 
-export type RemoveNodeApiNodeNodeIdDeleteMutationError =
-  ErrorType<void | HTTPValidationError>;
+export type RemoveNodeMutationError = ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Remove Node
  */
-export const useRemoveNodeApiNodeNodeIdDelete = <
+export const useRemoveNode = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof removeNodeApiNodeNodeIdDelete>>,
+    Awaited<ReturnType<typeof removeNode>>,
     TError,
     { nodeId: number },
     TContext
   >;
 }) => {
-  const mutationOptions =
-    getRemoveNodeApiNodeNodeIdDeleteMutationOptions(options);
+  const mutationOptions = getRemoveNodeMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -3393,7 +3226,7 @@ export const useRemoveNodeApiNodeNodeIdDelete = <
 /**
  * @summary Get Nodes
  */
-export const getNodesApiNodesGet = (signal?: AbortSignal) => {
+export const getNodes = (signal?: AbortSignal) => {
   return orvalFetcher<NodeResponse[]>({
     url: `/api/nodes`,
     method: "get",
@@ -3401,54 +3234,46 @@ export const getNodesApiNodesGet = (signal?: AbortSignal) => {
   });
 };
 
-export const getGetNodesApiNodesGetQueryKey = () => {
+export const getGetNodesQueryKey = () => {
   return [`/api/nodes`] as const;
 };
 
-export const getGetNodesApiNodesGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof getNodesApiNodesGet>>,
+export const getGetNodesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getNodes>>,
   TError = ErrorType<void>
 >(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getNodesApiNodesGet>>,
-    TError,
-    TData
-  >;
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getNodes>>, TError, TData>;
 }) => {
   const { query: queryOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetNodesApiNodesGetQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetNodesQueryKey();
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getNodesApiNodesGet>>
-  > = ({ signal }) => getNodesApiNodesGet(signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getNodes>>> = ({
+    signal,
+  }) => getNodes(signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getNodesApiNodesGet>>,
+    Awaited<ReturnType<typeof getNodes>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetNodesApiNodesGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getNodesApiNodesGet>>
+export type GetNodesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getNodes>>
 >;
-export type GetNodesApiNodesGetQueryError = ErrorType<void>;
+export type GetNodesQueryError = ErrorType<void>;
 
 /**
  * @summary Get Nodes
  */
-export const useGetNodesApiNodesGet = <
-  TData = Awaited<ReturnType<typeof getNodesApiNodesGet>>,
+export const useGetNodes = <
+  TData = Awaited<ReturnType<typeof getNodes>>,
   TError = ErrorType<void>
 >(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getNodesApiNodesGet>>,
-    TError,
-    TData
-  >;
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getNodes>>, TError, TData>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetNodesApiNodesGetQueryOptions(options);
+  const queryOptions = getGetNodesQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -3462,25 +3287,25 @@ export const useGetNodesApiNodesGet = <
 /**
  * @summary Reconnect Node
  */
-export const reconnectNodeApiNodeNodeIdReconnectPost = (nodeId: number) => {
+export const reconnectNode = (nodeId: number) => {
   return orvalFetcher<unknown>({
     url: `/api/node/${nodeId}/reconnect`,
     method: "post",
   });
 };
 
-export const getReconnectNodeApiNodeNodeIdReconnectPostMutationOptions = <
+export const getReconnectNodeMutationOptions = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof reconnectNodeApiNodeNodeIdReconnectPost>>,
+    Awaited<ReturnType<typeof reconnectNode>>,
     TError,
     { nodeId: number },
     TContext
   >;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof reconnectNodeApiNodeNodeIdReconnectPost>>,
+  Awaited<ReturnType<typeof reconnectNode>>,
   TError,
   { nodeId: number },
   TContext
@@ -3488,40 +3313,38 @@ export const getReconnectNodeApiNodeNodeIdReconnectPostMutationOptions = <
   const { mutation: mutationOptions } = options ?? {};
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof reconnectNodeApiNodeNodeIdReconnectPost>>,
+    Awaited<ReturnType<typeof reconnectNode>>,
     { nodeId: number }
   > = (props) => {
     const { nodeId } = props ?? {};
 
-    return reconnectNodeApiNodeNodeIdReconnectPost(nodeId);
+    return reconnectNode(nodeId);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type ReconnectNodeApiNodeNodeIdReconnectPostMutationResult = NonNullable<
-  Awaited<ReturnType<typeof reconnectNodeApiNodeNodeIdReconnectPost>>
+export type ReconnectNodeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof reconnectNode>>
 >;
 
-export type ReconnectNodeApiNodeNodeIdReconnectPostMutationError =
-  ErrorType<void | HTTPValidationError>;
+export type ReconnectNodeMutationError = ErrorType<void | HTTPValidationError>;
 
 /**
  * @summary Reconnect Node
  */
-export const useReconnectNodeApiNodeNodeIdReconnectPost = <
+export const useReconnectNode = <
   TError = ErrorType<void | HTTPValidationError>,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof reconnectNodeApiNodeNodeIdReconnectPost>>,
+    Awaited<ReturnType<typeof reconnectNode>>,
     TError,
     { nodeId: number },
     TContext
   >;
 }) => {
-  const mutationOptions =
-    getReconnectNodeApiNodeNodeIdReconnectPostMutationOptions(options);
+  const mutationOptions = getReconnectNodeMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
@@ -3530,10 +3353,7 @@ export const useReconnectNodeApiNodeNodeIdReconnectPost = <
  * Get nodes usage
  * @summary Get Usage
  */
-export const getUsageApiNodesUsageGet = (
-  params?: GetUsageApiNodesUsageGetParams,
-  signal?: AbortSignal
-) => {
+export const getUsage = (params?: GetUsageParams, signal?: AbortSignal) => {
   return orvalFetcher<NodesUsageResponse>({
     url: `/api/nodes/usage`,
     method: "get",
@@ -3542,20 +3362,18 @@ export const getUsageApiNodesUsageGet = (
   });
 };
 
-export const getGetUsageApiNodesUsageGetQueryKey = (
-  params?: GetUsageApiNodesUsageGetParams
-) => {
+export const getGetUsageQueryKey = (params?: GetUsageParams) => {
   return [`/api/nodes/usage`, ...(params ? [params] : [])] as const;
 };
 
-export const getGetUsageApiNodesUsageGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof getUsageApiNodesUsageGet>>,
+export const getGetUsageQueryOptions = <
+  TData = Awaited<ReturnType<typeof getUsage>>,
   TError = ErrorType<HTTPValidationError>
 >(
-  params?: GetUsageApiNodesUsageGetParams,
+  params?: GetUsageParams,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getUsageApiNodesUsageGet>>,
+      Awaited<ReturnType<typeof getUsage>>,
       TError,
       TData
     >;
@@ -3563,42 +3381,41 @@ export const getGetUsageApiNodesUsageGetQueryOptions = <
 ) => {
   const { query: queryOptions } = options ?? {};
 
-  const queryKey =
-    queryOptions?.queryKey ?? getGetUsageApiNodesUsageGetQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetUsageQueryKey(params);
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getUsageApiNodesUsageGet>>
-  > = ({ signal }) => getUsageApiNodesUsageGet(params, signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsage>>> = ({
+    signal,
+  }) => getUsage(params, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getUsageApiNodesUsageGet>>,
+    Awaited<ReturnType<typeof getUsage>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetUsageApiNodesUsageGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getUsageApiNodesUsageGet>>
+export type GetUsageQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getUsage>>
 >;
-export type GetUsageApiNodesUsageGetQueryError = ErrorType<HTTPValidationError>;
+export type GetUsageQueryError = ErrorType<HTTPValidationError>;
 
 /**
  * @summary Get Usage
  */
-export const useGetUsageApiNodesUsageGet = <
-  TData = Awaited<ReturnType<typeof getUsageApiNodesUsageGet>>,
+export const useGetUsage = <
+  TData = Awaited<ReturnType<typeof getUsage>>,
   TError = ErrorType<HTTPValidationError>
 >(
-  params?: GetUsageApiNodesUsageGetParams,
+  params?: GetUsageParams,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getUsageApiNodesUsageGet>>,
+      Awaited<ReturnType<typeof getUsage>>,
       TError,
       TData
     >;
   }
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetUsageApiNodesUsageGetQueryOptions(params, options);
+  const queryOptions = getGetUsageQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -3612,50 +3429,48 @@ export const useGetUsageApiNodesUsageGet = <
 /**
  * @summary Base
  */
-export const baseGet = (signal?: AbortSignal) => {
+export const base = (signal?: AbortSignal) => {
   return orvalFetcher<string>({ url: `/`, method: "get", signal });
 };
 
-export const getBaseGetQueryKey = () => {
+export const getBaseQueryKey = () => {
   return [`/`] as const;
 };
 
-export const getBaseGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof baseGet>>,
+export const getBaseQueryOptions = <
+  TData = Awaited<ReturnType<typeof base>>,
   TError = ErrorType<unknown>
 >(options?: {
-  query?: UseQueryOptions<Awaited<ReturnType<typeof baseGet>>, TError, TData>;
+  query?: UseQueryOptions<Awaited<ReturnType<typeof base>>, TError, TData>;
 }) => {
   const { query: queryOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getBaseGetQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getBaseQueryKey();
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof baseGet>>> = ({
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof base>>> = ({
     signal,
-  }) => baseGet(signal);
+  }) => base(signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof baseGet>>,
+    Awaited<ReturnType<typeof base>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type BaseGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof baseGet>>
->;
-export type BaseGetQueryError = ErrorType<unknown>;
+export type BaseQueryResult = NonNullable<Awaited<ReturnType<typeof base>>>;
+export type BaseQueryError = ErrorType<unknown>;
 
 /**
  * @summary Base
  */
-export const useBaseGet = <
-  TData = Awaited<ReturnType<typeof baseGet>>,
+export const useBase = <
+  TData = Awaited<ReturnType<typeof base>>,
   TError = ErrorType<unknown>
 >(options?: {
-  query?: UseQueryOptions<Awaited<ReturnType<typeof baseGet>>, TError, TData>;
+  query?: UseQueryOptions<Awaited<ReturnType<typeof base>>, TError, TData>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getBaseGetQueryOptions(options);
+  const queryOptions = getBaseQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

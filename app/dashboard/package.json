@@ -8,7 +8,9 @@
     "preview": "vite preview --port 3000",
     "gen:theme-typings": "chakra-cli tokens ./chakra.config.ts",
     "postinstall": "npm run gen:theme-typings",
-    "gen:api": "orval"
+    "gen:api": "orval",
+    "wait-port": "wait-port http://localhost:$UVICORN_PORT/openapi.json",
+    "wait-port-gen-api": "npm run wait-port && npm run gen:api"
   },
   "dependencies": {
     "@chakra-ui/react": "^2.5.5",
@@ -26,7 +28,6 @@
     "jsoneditor": "^9.10.1",
     "lodash.debounce": "^4.0.8",
     "ohmyfetch": "^0.4.21",
-    "orval": "^6.20.0",
     "qrcode.react": "^3.1.0",
     "react": "^18.2.0",
     "react-apexcharts": "^1.4.0",
@@ -54,6 +55,7 @@
     "@chakra-ui/cli": "^2.3.0",
     "@types/jsoneditor": "^9.9.0",
     "@types/lodash.debounce": "^4.0.7",
+    "@types/node": "^20.9.3",
     "@types/react": "^18.0.17",
     "@types/react-copy-to-clipboard": "^5.0.4",
     "@types/react-datepicker": "^4.8.0",
@@ -62,9 +64,11 @@
     "@types/react-slick": "^0.23.10",
     "@vitejs/plugin-react": "^2.1.0",
     "autoprefixer": "^10.4.12",
+    "orval": "^6.20.0",
     "sass": "^1.57.1",
     "typescript": "^4.9.5",
     "vite": "^3.1.0",
-    "vite-plugin-svgr": "^2.2.2"
+    "vite-plugin-svgr": "^2.2.2",
+    "wait-port": "^1.1.0"
   }
 }

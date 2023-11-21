@@ -18,7 +18,7 @@ export default defineConfig({
       },
     },
     input: {
-      target: "http://localhost:8000/openapi.json",
+      target: `http://127.0.0.1:${process.env.UVICORN_PORT}/openapi.json`,
     },
   },
 });
