@@ -49,7 +49,7 @@ use_route_names_as_operation_ids(app)
 def on_startup():
     paths = [f"{r.path}/" for r in app.routes]
     if not XRAY_SUBSCRIPTION_PATH or f"/{XRAY_SUBSCRIPTION_PATH}/" == "/api/" or f"/{XRAY_SUBSCRIPTION_PATH}/" in paths:
-        raise ValueError(f"you can't use /{XRAY_SUBSCRIPTION_PATH}/ as subscription path it reserve for {app.title}")
+        raise ValueError(f"you can't use /{XRAY_SUBSCRIPTION_PATH}/ as subscription path it reserved for {app.title}")
     scheduler.start()
 
 
