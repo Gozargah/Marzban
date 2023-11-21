@@ -45,13 +45,8 @@ import ReactApexChart from "react-apexcharts";
 import ReactDatePicker from "react-datepicker";
 import { Controller, FormProvider, useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import {
-  ProxyKeys,
-  ProxyType,
-  User,
-  UserCreate,
-  UserInbounds,
-} from "types/User";
+import { UserResponse } from "service/api";
+import { ProxyKeys, ProxyType, UserCreate, UserInbounds } from "types/User";
 import { relativeExpiryDate } from "utils/dateFormatter";
 import { z } from "zod";
 import { DeleteIcon } from "./DeleteUserModal";
@@ -129,7 +124,7 @@ export type FormType = Pick<UserCreate, keyof UserCreate> & {
   selected_proxies: ProxyKeys;
 };
 
-const formatUser = (user: User): FormType => {
+const formatUser = (user: Required<UserResponse>): FormType => {
   return {
     ...user,
     data_limit: user.data_limit

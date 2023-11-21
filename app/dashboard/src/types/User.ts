@@ -1,3 +1,5 @@
+import { UserResponse } from "service/api";
+
 export type Status =
   | "active"
   | "disabled"
@@ -52,13 +54,14 @@ export type User = {
 };
 
 export type UserCreate = Pick<
-  User,
+  UserResponse,
   | "inbounds"
   | "proxies"
   | "expire"
-  | "data_limit"
   | "data_limit_reset_strategy"
   | "username"
   | "status"
   | "note"
->;
+> & {
+	data_limit: null | number | undefined
+}

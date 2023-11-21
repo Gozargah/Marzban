@@ -35,8 +35,8 @@ export type Inbounds = Map<ProtocolType, InboundType[]>;
 
 type DashboardStateType = {
   isCreatingNewUser: boolean;
-  editingUser: UserResponse | null | undefined;
-  deletingUser: User | null;
+  editingUser: Required<UserResponse> | null | undefined;
+  deletingUser: Required<UserResponse> | null;
   version: string | null;
   users: {
     users: User[];
@@ -51,39 +51,30 @@ type DashboardStateType = {
   isEditingNodes: boolean;
   isShowingNodesUsage: boolean;
   isResetingAllUsage: boolean;
-  resetUsageUser: User | null;
-  revokeSubscriptionUser: User | null;
+  resetUsageUser: Required<UserResponse> | null;
+  revokeSubscriptionUser: Required<UserResponse> | null;
   isEditingCore: boolean;
   onCreateUser: (isOpen: boolean) => void;
-  onEditingUser: (user: UserResponse | null) => void;
-  onDeletingUser: (user: User | null) => void;
+  onEditingUser: (user: Required<UserResponse> | null) => void;
+  onDeletingUser: (user: Required<UserResponse> | null) => void;
   onResetAllUsage: (isResetingAllUsage: boolean) => void;
   refetchUsers: () => void;
   resetAllUsage: () => Promise<void>;
   onFilterChange: (filters: Partial<FilterType>) => void;
-  deleteUser: (user: User) => Promise<void>;
+  deleteUser: (user: Required<UserResponse>) => Promise<void>;
   createUser: (user: UserCreate) => Promise<void>;
   editUser: (user: UserCreate) => Promise<void>;
-  fetchUserUsage: (user: User, query: FilterUsageType) => Promise<void>;
+  fetchUserUsage: (
+    user: Required<UserResponse>,
+    query: FilterUsageType
+  ) => Promise<void>;
   setQRCode: (links: string[] | null) => void;
   setSubLink: (subscribeURL: string | null) => void;
   onEditingHosts: (isEditingHosts: boolean) => void;
   onEditingNodes: (isEditingHosts: boolean) => void;
   onShowingNodesUsage: (isShowingNodesUsage: boolean) => void;
-  resetDataUsage: (user: User) => Promise<void>;
-  revokeSubscription: (user: User) => Promise<void>;
-};
-
-export const fetchInbounds = () => {
-  return fetch("/inbounds")
-    .then((inbounds: Inbounds) => {
-      useDashboard.setState({
-        inbounds: new Map(Object.entries(inbounds)) as Inbounds,
-      });
-    })
-    .finally(() => {
-      useDashboard.setState({ loading: false });
-    });
+  resetDataUsage: (user: Required<UserResponse>) => Promise<void>;
+  revokeSubscription: (user: Required<UserResponse>) => Promise<void>;
 };
 
 export const useDashboard = create(
@@ -141,7 +132,7 @@ export const useDashboard = create(
     setQRCode: (QRcodeLinks) => {
       set({ QRcodeLinks });
     },
-    deleteUser: (user: User) => {
+    deleteUser: (user: Required<UserResponse>) => {
       set({ editingUser: null });
       return fetch(`/user/${user.username}`, { method: "DELETE" }).then(() => {
         set({ deletingUser: null });
@@ -164,7 +155,7 @@ export const useDashboard = create(
         }
       );
     },
-    fetchUserUsage: (body: User, query: FilterUsageType) => {
+    fetchUserUsage: (body: Required<UserResponse>, query: FilterUsageType) => {
       for (const key in query) {
         if (!query[key as keyof FilterUsageType])
           delete query[key as keyof FilterUsageType];

@@ -22,6 +22,7 @@ import { useDashboard } from "contexts/DashboardContext";
 import debounce from "lodash.debounce";
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useGetUsers } from "service/api";
 
 const iconProps = {
   baseStyle: {
@@ -44,8 +45,9 @@ const setSearchField = debounce((username: string) => {
 }, 300);
 
 export const Filters: FC<FilterProps> = ({ ...props }) => {
-  const { loading, filters, onFilterChange, refetchUsers, onCreateUser } =
+  const { filters, onFilterChange, refetchUsers, onCreateUser } =
     useDashboard();
+  const { isFetching: loading } = useGetUsers();
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
