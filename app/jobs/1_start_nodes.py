@@ -1,5 +1,8 @@
+import json
+
 from app import app, logger, scheduler, xray
 from app.db import GetDB, crud
+from app.models.node import NodeStatus
 from app.utils.concurrency import threaded_function
 from xray_api import exc as xray_exc
 
@@ -24,15 +27,18 @@ def nodes_health_check():
 @app.on_event("startup")
 @threaded_function
 def app_startup():
-    config = xray.config.include_db_users()
-
     with GetDB() as db:
-        node_ids = [dbnode.id for dbnode in crud.get_nodes(db=db, enabled=True)]
+        dbnodes = crud.get_nodes(db=db, enabled=True)
+        node_ids = [dbnode.id for dbnode in dbnodes]
+        for dbnode in dbnodes:
+            crud.update_node_status(db, dbnode, NodeStatus.connecting)
+
+    config = xray.config.include_db_users()
 
     for node_id in node_ids:
         xray.operations.connect_node(node_id, config)
 
-    scheduler.add_job(nodes_health_check, 'interval', seconds=20)
+    scheduler.add_job(nodes_health_check, 'interval', seconds=20, coalesce=True, max_instances=1)
 
 
 @app.on_event("shutdown")
