@@ -45,6 +45,9 @@ def get_inbounds(admin: Admin = Depends(Admin.get_current)):
 
 @app.get('/api/hosts', tags=["System"], response_model=Dict[str, List[ProxyHost]])
 def get_hosts(db: Session = Depends(get_db), admin: Admin = Depends(Admin.get_current)):
+    if not admin.is_sudo:
+        raise HTTPException(status_code=403, detail="You're not allowed")
+
     hosts = {}
     for inbound_tag in xray.config.inbounds_by_tag:
         hosts[inbound_tag] = crud.get_hosts(db, inbound_tag)

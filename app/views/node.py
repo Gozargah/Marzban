@@ -226,6 +226,9 @@ def get_usage(db: Session = Depends(get_db),
     Get nodes usage
     """
 
+    if not admin.is_sudo:
+        raise HTTPException(status_code=403, detail="You're not allowed")
+
     if start is None:
         start_date = datetime.fromtimestamp(datetime.utcnow().timestamp() - 30 * 24 * 3600)
     else:
