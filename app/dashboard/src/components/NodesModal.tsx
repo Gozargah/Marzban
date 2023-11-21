@@ -48,12 +48,7 @@ import {
 import { FC, ReactNode, useState } from "react";
 import { Controller, useForm, UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import {
-  UseMutateFunction,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "react-query";
+import { UseMutateFunction, useMutation, useQueryClient } from "react-query";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
 import { Status } from "types/User";
@@ -68,7 +63,7 @@ import { ReloadIcon } from "./Filters";
 import { Icon } from "./Icon";
 import { StatusBadge } from "./StatusBadge";
 
-import { fetch } from "service/http";
+import { useAddNode, useGetNodeSettings } from "service/api";
 import { Input } from "./Input";
 
 const CustomInput = chakra(Input, {
@@ -244,7 +239,6 @@ const AddNodeForm: FC<AddNodeFormType> = ({
   const toast = useToast();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { addNode } = useNodes();
   const form = useForm<NodeType>({
     resolver: zodResolver(NodeSchema),
     defaultValues: {
@@ -252,18 +246,20 @@ const AddNodeForm: FC<AddNodeFormType> = ({
       add_as_new_host: true,
     },
   });
-  const { isLoading, mutate } = useMutation(addNode, {
-    onSuccess: () => {
-      generateSuccessMessage(
-        t("nodes.addNodeSuccess", { name: form.getValues("name") }),
-        toast
-      );
-      queryClient.invalidateQueries(FetchNodesQueryKey);
-      form.reset();
-      resetAccordions();
-    },
-    onError: (e) => {
-      generateErrorMessage(e, toast, form);
+  const { isLoading, mutate } = useAddNode({
+    mutation: {
+      onSuccess: () => {
+        generateSuccessMessage(
+          t("nodes.addNodeSuccess", { name: form.getValues("name") }),
+          toast
+        );
+        queryClient.invalidateQueries(FetchNodesQueryKey);
+        form.reset();
+        resetAccordions();
+      },
+      onError: (e) => {
+        generateErrorMessage(e, toast, form);
+      },
     },
   });
   return (
@@ -326,14 +322,7 @@ const NodeForm: NodeFormType = ({
 }) => {
   const { t } = useTranslation();
   const [showCertificate, setShowCertificate] = useState(false);
-  const { data: nodeSettings, isLoading: nodeSettingsLoading } = useQuery({
-    queryKey: "node-settings",
-    queryFn: () =>
-      fetch<{
-        min_node_version: string;
-        certificate: string;
-      }>("/node/settings"),
-  });
+  const { data: nodeSettings } = useGetNodeSettings();
   function selectText(node: HTMLElement) {
     // @ts-ignore
     if (document.body.createTextRange) {
@@ -353,7 +342,7 @@ const NodeForm: NodeFormType = ({
   }
 
   return (
-    <form onSubmit={form.handleSubmit((v) => mutate(v))}>
+    <form onSubmit={form.handleSubmit((data) => mutate({ data }))}>
       <VStack>
         {nodeSettings && nodeSettings.certificate && (
           <Alert status="info" alignItems="start">
@@ -531,17 +520,14 @@ export const NodesDialog: FC = () => {
   const { t } = useTranslation();
   const [openAccordions, setOpenAccordions] = useState<any>({});
   const { data: nodes, isLoading } = useNodesQuery();
-
   const onClose = () => {
     setOpenAccordions({});
     onEditingNodes(false);
   };
-
   const toggleAccordion = (index: number | string) => {
     if (openAccordions[String(index)]) {
       delete openAccordions[String(index)];
     } else openAccordions[String(index)] = {};
-
     setOpenAccordions({ ...openAccordions });
   };
 

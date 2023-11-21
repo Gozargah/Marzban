@@ -16,7 +16,7 @@ from app.models.proxy import ProxyHost
 
 
 @app.get("/api/node/settings", tags=['Node'], response_model=NodeSettings)
-def get_node(db: Session = Depends(get_db),
+def get_node_settings(db: Session = Depends(get_db),
              admin: Admin = Depends(Admin.get_current)):
     if not admin.is_sudo:
         raise HTTPException(status_code=403, detail="You're not allowed")

@@ -2952,9 +2952,9 @@ export const useRemoveUserTemplate = <
 };
 
 /**
- * @summary Get Node
+ * @summary Get Node Settings
  */
-export const getNode = (signal?: AbortSignal) => {
+export const getNodeSettings = (signal?: AbortSignal) => {
   return orvalFetcher<NodeSettings>({
     url: `/api/node/settings`,
     method: "get",
@@ -2962,46 +2962,54 @@ export const getNode = (signal?: AbortSignal) => {
   });
 };
 
-export const getGetNodeQueryKey = () => {
+export const getGetNodeSettingsQueryKey = () => {
   return [`/api/node/settings`] as const;
 };
 
-export const getGetNodeQueryOptions = <
-  TData = Awaited<ReturnType<typeof getNode>>,
+export const getGetNodeSettingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getNodeSettings>>,
   TError = ErrorType<void>
 >(options?: {
-  query?: UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>;
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getNodeSettings>>,
+    TError,
+    TData
+  >;
 }) => {
   const { query: queryOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetNodeQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetNodeSettingsQueryKey();
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getNode>>> = ({
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getNodeSettings>>> = ({
     signal,
-  }) => getNode(signal);
+  }) => getNodeSettings(signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getNode>>,
+    Awaited<ReturnType<typeof getNodeSettings>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetNodeQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getNode>>
+export type GetNodeSettingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getNodeSettings>>
 >;
-export type GetNodeQueryError = ErrorType<void>;
+export type GetNodeSettingsQueryError = ErrorType<void>;
 
 /**
- * @summary Get Node
+ * @summary Get Node Settings
  */
-export const useGetNode = <
-  TData = Awaited<ReturnType<typeof getNode>>,
+export const useGetNodeSettings = <
+  TData = Awaited<ReturnType<typeof getNodeSettings>>,
   TError = ErrorType<void>
 >(options?: {
-  query?: UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>;
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getNodeSettings>>,
+    TError,
+    TData
+  >;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetNodeQueryOptions(options);
+  const queryOptions = getGetNodeSettingsQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

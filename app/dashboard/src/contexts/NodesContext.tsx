@@ -1,4 +1,4 @@
-import { useQuery } from "react-query";
+import { useGetNodes } from "service/api";
 import { fetch } from "service/http";
 import { z } from "zod";
 import { create } from "zustand";
@@ -10,11 +10,13 @@ export const NodeSchema = z.object({
   port: z
     .number()
     .min(1)
-    .or(z.string().transform((v) => parseFloat(v))),
+    .or(z.string().transform((v) => parseFloat(v)))
+    .optional(),
   api_port: z
     .number()
     .min(1)
-    .or(z.string().transform((v) => parseFloat(v))),
+    .or(z.string().transform((v) => parseFloat(v)))
+    .optional(),
   xray_version: z.string().nullable().optional(),
   id: z.number().nullable().optional(),
   status: z
@@ -40,7 +42,6 @@ export const FetchNodesQueryKey = "fetch-nodes-query-key";
 export type NodeStore = {
   nodes: NodeType[];
   addNode: (node: NodeType) => Promise<unknown>;
-  fetchNodes: () => Promise<NodeType[]>;
   fetchNodesUsage: (query: FilterUsageType) => Promise<void>;
   updateNode: (node: NodeType) => Promise<unknown>;
   reconnectNode: (node: NodeType) => Promise<unknown>;
@@ -51,11 +52,11 @@ export type NodeStore = {
 
 export const useNodesQuery = () => {
   const { isEditingNodes } = useDashboard();
-  return useQuery({
-    queryKey: FetchNodesQueryKey,
-    queryFn: useNodes.getState().fetchNodes,
-    refetchInterval: isEditingNodes ? 3000 : undefined,
-    refetchOnWindowFocus: false,
+  return useGetNodes({
+    query: {
+      refetchInterval: isEditingNodes ? 3000 : undefined,
+      refetchOnWindowFocus: false,
+    },
   });
 };
 
@@ -63,9 +64,6 @@ export const useNodes = create<NodeStore>((set, get) => ({
   nodes: [],
   addNode(body) {
     return fetch("/node", { method: "POST", body });
-  },
-  fetchNodes() {
-    return fetch("/nodes");
   },
   fetchNodesUsage(query: FilterUsageType) {
     return fetch("/nodes/usage", { query });
