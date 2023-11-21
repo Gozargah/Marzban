@@ -9,7 +9,7 @@ from app import xray
 from app.models.proxy import ProxySettings, ProxyTypes
 from app.utils.jwt import create_subscription_token
 from app.utils.share import generate_v2ray_links
-from config import XRAY_SUBSCRIPTION_URL_PREFIX
+from config import XRAY_SUBSCRIPTION_URL_PREFIX, XRAY_SUBSCRIPTION_PATH
 from xray_api.types.account import Account
 
 USERNAME_REGEXP = re.compile(r"^(?=\w{3,32}\b)[a-zA-Z0-9-_@.]+(?:_[a-zA-Z0-9-_@.]+)*$")
@@ -277,7 +277,7 @@ class UserResponse(User):
     def validate_subscription_url(cls, v, values, **kwargs):
         if not v:
             token = create_subscription_token(values["username"])
-            return f"{XRAY_SUBSCRIPTION_URL_PREFIX}/sub/{token}"
+            return f"{XRAY_SUBSCRIPTION_URL_PREFIX}/{XRAY_SUBSCRIPTION_PATH}/{token}"
         return v
 
     @validator("proxies", pre=True, always=True)

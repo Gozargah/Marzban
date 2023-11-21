@@ -10,15 +10,15 @@ from app.templates import render_template
 from app.utils.jwt import get_subscription_payload
 from app.utils.share import generate_subscription
 from app.utils.share import encode_title
-from config import SUBSCRIPTION_PAGE_TEMPLATE, SUB_UPDATE_INTERVAL, SUB_SUPPORT_URL, SUB_PROFILE_TITLE
+from config import SUBSCRIPTION_PAGE_TEMPLATE, SUB_UPDATE_INTERVAL, SUB_SUPPORT_URL, SUB_PROFILE_TITLE, XRAY_SUBSCRIPTION_PATH
 
 
-@app.get("/sub/{token}/", tags=['Subscription'])
-@app.get("/sub/{token}", include_in_schema=False)
+@app.get("/%s/{token}/" % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'])
+@app.get("/%s/{token}" % XRAY_SUBSCRIPTION_PATH, include_in_schema=False)
 def user_subscription(token: str,
-                     request: Request,
-                     db: Session = Depends(get_db),
-                     user_agent: str = Header(default="")):
+                      request: Request,
+                      db: Session = Depends(get_db),
+                      user_agent: str = Header(default="")):
     """
     Subscription link, V2ray and Clash supported
     """
@@ -89,9 +89,9 @@ def user_subscription(token: str,
         return Response(content=conf, media_type="text/plain", headers=response_headers)
 
 
-@app.get("/sub/{token}/info", tags=['Subscription'], response_model=UserResponse)
+@app.get("/%s/{token}/info" % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'], response_model=UserResponse)
 def user_subscription_info(token: str,
-                          db: Session = Depends(get_db)):
+                           db: Session = Depends(get_db)):
     sub = get_subscription_payload(token)
     if not sub:
         return Response(status_code=404)
@@ -202,6 +202,6 @@ def user_subscription_with_client_type(
     elif client_type == "outline":
         conf = generate_subscription(user=user, config_format="outline", as_base64=False)
         return Response(content=conf, media_type="application/json", headers=response_headers)
-    
+
     else:
         raise HTTPException(status_code=400, detail="Invalid subscription type")
