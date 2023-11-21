@@ -74,7 +74,7 @@
   "hostsDialog.expireDate": "用户的有效期",
   "hostsDialog.jalaliExpireDate": "用户阳历有效日期",
   "hostsDialog.remainingTime": "用户剩余时间",
-  "hostsDialog.statusEmoji": "用户状态作为表情符号 (✅,⌛️,🪫,❌)",
+  "hostsDialog.statusEmoji": "用户状态作为表情符号 (✅,⌛️,🪫,❌,🔌)",
   "hostsDialog.proxyProtocol": "代理协议（例如 VMess）",
   "hostsDialog.proxyMethod": "代理传输方法（例如 ws）",
   "hostsDialog.currentServer": "当前服务器的 IP 地址",
