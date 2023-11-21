@@ -1,18 +1,13 @@
 import { lazy } from "react";
 import { createHashRouter } from "react-router-dom";
-import { fetch } from "../service/http";
-import { getAuthToken } from "../utils/authStorage";
+import { getCurrentAdmin } from "service/api";
 
 const ConsoleLayout = lazy(() => import("./ConsoleLayout"));
 const Dashboard = lazy(() => import("./Dashboard"));
 const Login = lazy(() => import("./Login"));
 
 const fetchAdminLoader = () => {
-  return fetch("/admin", {
-    headers: {
-      Authorization: `Bearer ${getAuthToken()}`,
-    },
-  });
+  return getCurrentAdmin();
 };
 
 export const router = createHashRouter([

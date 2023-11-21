@@ -6,24 +6,24 @@ import {
   Button,
   chakra,
   FormControl,
-  FormLabel,
   HStack,
   Text,
   VStack,
 } from "@chakra-ui/react";
 import { ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FC, useEffect, useState } from "react";
-import { FieldValues, useForm } from "react-hook-form";
-import { useLocation, useNavigate } from "react-router-dom";
-import { z } from "zod";
+import { ReactComponent as Logo } from "assets/logo.svg";
 import { Footer } from "components/Footer";
 import { Input } from "components/Input";
-import { fetch } from "service/http";
-import { removeAuthToken, setAuthToken } from "utils/authStorage";
-import { ReactComponent as Logo } from "assets/logo.svg";
-import { useTranslation } from "react-i18next";
 import { Language } from "components/Language";
+import { FC, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAdminToken } from "service/api";
+import { ErrorType } from "service/http";
+import { removeAuthToken, setAuthToken } from "utils/authStorage";
+import { z } from "zod";
 
 const schema = z.object({
   username: z.string().min(1, "login.fieldRequired"),
@@ -47,8 +47,6 @@ const LoginIcon = chakra(ArrowRightOnRectangleIcon, {
 });
 
 export const Login: FC = () => {
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
   let location = useLocation();
@@ -56,7 +54,7 @@ export const Login: FC = () => {
     register,
     formState: { errors },
     handleSubmit,
-  } = useForm({
+  } = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
   });
   useEffect(() => {
@@ -65,23 +63,20 @@ export const Login: FC = () => {
       navigate("/login", { replace: true });
     }
   }, []);
-  const login = (values: FieldValues) => {
-    setError("");
-    const formData = new FormData();
-    formData.append("username", values.username);
-    formData.append("password", values.password);
-    formData.append("grant_type", "password");
-    setLoading(true);
-    fetch("/admin/token", { method: "post", body: formData })
-      .then(({ access_token: token }) => {
+
+  const {
+    mutate: login,
+    isLoading,
+    error,
+  } = useAdminToken<ErrorType<string>>({
+    mutation: {
+      onSuccess({ access_token: token }) {
         setAuthToken(token);
         navigate("/");
-      })
-      .catch((err) => {
-        setError(err.response._data.detail);
-      })
-      .finally(setLoading.bind(null, false));
-  };
+      },
+    },
+  });
+
   return (
     <VStack justifyContent="space-between" minH="100vh" p="6" w="full">
       <Box w="full">
@@ -100,7 +95,16 @@ export const Login: FC = () => {
               </Text>
             </VStack>
             <Box w="full" maxW="300px" m="auto" pt="4">
-              <form onSubmit={handleSubmit(login)}>
+              <form
+                onSubmit={handleSubmit((values) => {
+                  login({
+                    data: {
+                      ...values,
+                      grant_type: "password",
+                    },
+                  });
+                })}
+              >
                 <VStack mt={4} rowGap={2}>
                   <FormControl>
                     <Input
@@ -122,11 +126,11 @@ export const Login: FC = () => {
                   {error && (
                     <Alert status="error" rounded="md">
                       <AlertIcon />
-                      <AlertDescription>{error}</AlertDescription>
+                      <AlertDescription>{error.data?.detail}</AlertDescription>
                     </Alert>
                   )}
                   <Button
-                    isLoading={loading}
+                    isLoading={isLoading}
                     type="submit"
                     w="full"
                     colorScheme="primary"

@@ -21,7 +21,7 @@ export const fetcher = <T = any>(
 
 export const fetch = fetcher;
 
-export type ErrorType<Error> = FetchError<Error>;
+export type ErrorType<Error> = FetchError<{ detail: Error }>;
 export type BodyType<BodyData> = BodyData;
 
 type OvalFetcherParams = FetchOptions<"json"> & {

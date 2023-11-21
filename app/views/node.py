@@ -64,7 +64,7 @@ def add_node(new_node: NodeCreate,
 
 
 @app.get("/api/node/{node_id}", tags=['Node'], response_model=NodeResponse)
-def get_node(node_id: int,
+def get_node_by_id(node_id: int,
              db: Session = Depends(get_db),
              admin: Admin = Depends(Admin.get_current)):
     if not admin.is_sudo:

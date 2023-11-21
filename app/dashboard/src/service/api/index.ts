@@ -2954,63 +2954,54 @@ export const useRemoveUserTemplate = <
 /**
  * @summary Get Node
  */
-export const getNode = (nodeId: number, signal?: AbortSignal) => {
-  return orvalFetcher<NodeResponse>({
-    url: `/api/node/${nodeId}`,
+export const getNode = (signal?: AbortSignal) => {
+  return orvalFetcher<NodeSettings>({
+    url: `/api/node/settings`,
     method: "get",
     signal,
   });
 };
 
-export const getGetNodeQueryKey = (nodeId: number) => {
-  return [`/api/node/${nodeId}`] as const;
+export const getGetNodeQueryKey = () => {
+  return [`/api/node/settings`] as const;
 };
 
 export const getGetNodeQueryOptions = <
   TData = Awaited<ReturnType<typeof getNode>>,
-  TError = ErrorType<void | HTTPValidationError>
->(
-  nodeId: number,
-  options?: {
-    query?: UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>;
-  }
-) => {
+  TError = ErrorType<void>
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>;
+}) => {
   const { query: queryOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetNodeQueryKey(nodeId);
+  const queryKey = queryOptions?.queryKey ?? getGetNodeQueryKey();
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getNode>>> = ({
     signal,
-  }) => getNode(nodeId, signal);
+  }) => getNode(signal);
 
-  return {
-    queryKey,
-    queryFn,
-    enabled: !!nodeId,
-    ...queryOptions,
-  } as UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData> & {
-    queryKey: QueryKey;
-  };
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getNode>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
 };
 
 export type GetNodeQueryResult = NonNullable<
   Awaited<ReturnType<typeof getNode>>
 >;
-export type GetNodeQueryError = ErrorType<void | HTTPValidationError>;
+export type GetNodeQueryError = ErrorType<void>;
 
 /**
  * @summary Get Node
  */
 export const useGetNode = <
   TData = Awaited<ReturnType<typeof getNode>>,
-  TError = ErrorType<void | HTTPValidationError>
->(
-  nodeId: number,
-  options?: {
-    query?: UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>;
-  }
-): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetNodeQueryOptions(nodeId, options);
+  TError = ErrorType<void>
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const queryOptions = getGetNodeQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -3086,6 +3077,86 @@ export const useAddNode = <
   const mutationOptions = getAddNodeMutationOptions(options);
 
   return useMutation(mutationOptions);
+};
+
+/**
+ * @summary Get Node By Id
+ */
+export const getNodeById = (nodeId: number, signal?: AbortSignal) => {
+  return orvalFetcher<NodeResponse>({
+    url: `/api/node/${nodeId}`,
+    method: "get",
+    signal,
+  });
+};
+
+export const getGetNodeByIdQueryKey = (nodeId: number) => {
+  return [`/api/node/${nodeId}`] as const;
+};
+
+export const getGetNodeByIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getNodeById>>,
+  TError = ErrorType<void | HTTPValidationError>
+>(
+  nodeId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getNodeById>>,
+      TError,
+      TData
+    >;
+  }
+) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetNodeByIdQueryKey(nodeId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getNodeById>>> = ({
+    signal,
+  }) => getNodeById(nodeId, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!nodeId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getNodeById>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetNodeByIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getNodeById>>
+>;
+export type GetNodeByIdQueryError = ErrorType<void | HTTPValidationError>;
+
+/**
+ * @summary Get Node By Id
+ */
+export const useGetNodeById = <
+  TData = Awaited<ReturnType<typeof getNodeById>>,
+  TError = ErrorType<void | HTTPValidationError>
+>(
+  nodeId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getNodeById>>,
+      TError,
+      TData
+    >;
+  }
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const queryOptions = getGetNodeByIdQueryOptions(nodeId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
 };
 
 /**
