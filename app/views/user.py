@@ -341,10 +341,10 @@ def delete_expired(passed_time: int,
         user for user in dbusers if user.expire is not None and user.expire <= expiration_threshold]
     if not expired_users:
         raise HTTPException(status_code=404, detail=f'No expired user found.')
-
+    Usernameremoved = []
     for dbuser in expired_users:
         crud.remove_user(db, dbuser)
-
+        Usernameremoved.append(dbuser.username)
         bg.add_task(
             report.user_deleted,
             username=dbuser.username,
@@ -353,4 +353,4 @@ def delete_expired(passed_time: int,
 
         logger.info(f"User \"{dbuser.username}\" deleted")
 
-    return {}
+    return {"User Remoed" : Usernameremoved}
