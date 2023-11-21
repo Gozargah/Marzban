@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy.orm import Session
+from fastapi import BackgroundTasks
 
 from app import logger, scheduler, xray
 from app.db import (GetDB, get_notification_reminder, get_users,
@@ -34,7 +35,7 @@ def add_notification_reminders(db: Session, user: "User", now: datetime = dateti
                 user.id, user.expire)
 
 
-def review():
+def review(bg: BackgroundTasks):
     now = datetime.utcnow()
     with GetDB() as db:
         for user in get_users(db, status=UserStatus.active):
@@ -52,7 +53,7 @@ def review():
 
             xray.operations.remove_user(user)
             update_user_status(db, user, status)
-            report.status_change(user.username, status,
+            bg.add_task(report.status_change, user.username, status,
                                  UserResponse.from_orm(user))
 
             logger.info(f"User \"{user.username}\" status changed to {status}")
@@ -77,10 +78,23 @@ def review():
 
             update_user_status(db, user, status)
             start_user_expire(db, user)
-            report.status_change(user.username, status,
+            bg.add_task(report.status_change, user.username, status,
                                  UserResponse.from_orm(user))
 
             logger.info(f"User \"{user.username}\" status changed to {status}")
 
+        for user in get_users(db, status=UserStatus.expired):
 
-scheduler.add_job(review, 'interval', seconds=10, coalesce=True)
+            active = user.expire and datetime.timestamp(user.expire) >= now.timestamp()
+            if active:
+                status = UserStatus.active
+            else:
+                continue
+
+            update_user_status(db, user, status)
+            xray.operations.add_user(user)
+            
+            logger.info(f"User \"{user.username}\" status fixed.")
+
+
+scheduler.add_job(review, 'interval', seconds=5, coalesce=True, max_instances=1, args=[BackgroundTasks()])
