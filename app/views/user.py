@@ -338,7 +338,8 @@ def delete_expired(passed_time: int,
     current_time = int(datetime.now(timezone.utc).timestamp())
     expiration_threshold = current_time - passed_time
     expired_users = [
-        user for user in dbusers if user.expire is not None and user.expire <= expiration_threshold]
+        user for user in dbusers if user.expire is not None and \
+        datetime.timestamp(user.expire) <= expiration_threshold]
     if not expired_users:
         raise HTTPException(status_code=404, detail=f'No expired user found.')
 
