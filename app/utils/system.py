@@ -63,7 +63,7 @@ rt_bw = RealtimeBandwidth(
     incoming_bytes=0, outgoing_bytes=0, incoming_packets=0, outgoing_packets=0)
 
 
-@scheduler.scheduled_job('interval', seconds=1)
+@scheduler.scheduled_job('interval', seconds=1, coalesce=True, max_instances=1)
 def record_realtime_bandwidth() -> None:
     io = psutil.net_io_counters()
     rt_bw.incoming_bytes, rt_bw.bytes_recv = io.bytes_recv - rt_bw.bytes_recv, io.bytes_recv

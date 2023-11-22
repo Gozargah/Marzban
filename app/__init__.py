@@ -6,6 +6,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.routing import APIRoute
 from fastapi_responses import custom_openapi
 
 from config import DOCS
@@ -33,6 +34,15 @@ app.add_middleware(
 
 
 from app import dashboard, jobs, telegram, views  # noqa
+
+
+def use_route_names_as_operation_ids(app: FastAPI) -> None:
+    for route in app.routes:
+        if isinstance(route, APIRoute):
+            route.operation_id = route.name
+
+
+use_route_names_as_operation_ids(app)
 
 
 @app.on_event("startup")

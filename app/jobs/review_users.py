@@ -92,8 +92,8 @@ def review(bg: BackgroundTasks):
 
             update_user_status(db, user, status)
             xray.operations.add_user(user)
-            
+
             logger.info(f"User \"{user.username}\" status fixed.")
 
 
-scheduler.add_job(review, 'interval', seconds=2, coalesce=True, max_instances=1, args=[BackgroundTasks()])
+scheduler.add_job(review, 'interval', seconds=10, coalesce=True, max_instances=1)

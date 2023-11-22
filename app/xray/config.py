@@ -27,7 +27,6 @@ class XRayConfig(dict):
                 # considering string as file path
                 with open(config, 'r') as file:
                     config = commentjson.loads(file.read())
-                    print(dir(config))
 
         if isinstance(config, PosixPath):
             with open(config, 'r') as file:
