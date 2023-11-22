@@ -96,4 +96,4 @@ def review(bg: BackgroundTasks):
             logger.info(f"User \"{user.username}\" status fixed.")
 
 
-scheduler.add_job(review, 'interval', seconds=10, coalesce=True, max_instances=1)
+scheduler.add_job(review, 'interval', seconds=10, coalesce=True, max_instances=1, args=[BackgroundTasks()])
