@@ -47,12 +47,19 @@ import { Controller, FormProvider, useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import {
   GetInbounds200,
+  UserCreate as UserCreateInterface,
   UserResponse,
+  UserStatusModify,
+  getGetUsersQueryKey,
+  useAddUser,
   useGetInbounds,
   useGetUserUsage,
+  useModifyUser,
 } from "service/api";
+import { ErrorType } from "service/http";
 import { ProxyKeys, ProxyType, UserCreate, UserInbounds } from "types/User";
 import { relativeExpiryDate } from "utils/dateFormatter";
+import { queryClient } from "utils/react-query";
 import { z } from "zod";
 import { DeleteIcon } from "./DeleteUserModal";
 import { Icon } from "./Icon";
@@ -182,14 +189,12 @@ export const UserDialog: FC<UserDialogProps> = () => {
     editingUser,
     isCreatingNewUser,
     onCreateUser,
-    editUser,
     onEditingUser,
-    createUser,
     onDeletingUser,
   } = useDashboard();
+
   const isEditing = !!editingUser;
   const isOpen = isCreatingNewUser || isEditing;
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
   const toast = useToast();
   const { t, i18n } = useTranslation();
@@ -244,17 +249,67 @@ export const UserDialog: FC<UserDialogProps> = () => {
     }
   }, [editingUser]);
 
+  const onSuccess = (data: UserResponse) => {
+    toast({
+      title: t(isEditing ? "userDialog.userEdited" : "userDialog.userCreated", {
+        username: data.username,
+      }),
+      status: "success",
+      isClosable: true,
+      position: "top",
+      duration: 3000,
+    });
+    onClose();
+    queryClient.invalidateQueries(getGetUsersQueryKey());
+  };
+  const onError = (err: ErrorType<string | Record<string, string>>) => {
+    if (
+      (err?.response?.status === 409 || err?.response?.status === 400) &&
+      typeof err?.data?.detail === "string"
+    )
+      setError(err?.data?.detail);
+    if (
+      err?.response?.status === 422 &&
+      typeof err?.data?.detail === "object"
+    ) {
+      Object.keys(err?.data.detail).forEach((key) => {
+        setError((err?.data?.detail as Record<string, string>)[key] as string);
+        form.setError(key as "proxies" | "username" | "data_limit" | "expire", {
+          type: "custom",
+          message: (err?.data?.detail as Record<string, string>)[key],
+        });
+      });
+    }
+  };
+
+  const { mutate: createUser, isLoading: createLoading } = useAddUser<
+    ErrorType<string | Record<string, string>>
+  >({
+    mutation: {
+      onSuccess,
+      onError,
+    },
+  });
+
+  const { mutate: editUser, isLoading: editingLoading } = useModifyUser<
+    ErrorType<string | Record<string, string>>
+  >({
+    mutation: {
+      onSuccess,
+      onError,
+    },
+  });
+
+  const loading = createLoading || editingLoading;
   const submit = (values: FormType) => {
-    setLoading(true);
-    const methods = { edited: editUser, created: createUser };
-    const method = isEditing ? "edited" : "created";
     setError(null);
-
     const { selected_proxies, ...rest } = values;
-
-    let body: UserCreate = {
+    let data: Omit<UserCreate, "data_limit" | "status"> & {
+      data_limit: number | undefined;
+      status: UserStatusModify;
+    } = {
       ...rest,
-      data_limit: values.data_limit,
+      data_limit: values.data_limit || undefined,
       proxies: mergeProxies(selected_proxies, values.proxies),
       data_limit_reset_strategy:
         values.data_limit && values.data_limit > 0
@@ -266,39 +321,16 @@ export const UserDialog: FC<UserDialogProps> = () => {
           : "active",
     };
 
-    methods[method](body)
-      .then(() => {
-        toast({
-          title: t(
-            isEditing ? "userDialog.userEdited" : "userDialog.userCreated",
-            { username: values.username }
-          ),
-          status: "success",
-          isClosable: true,
-          position: "top",
-          duration: 3000,
-        });
-        onClose();
-      })
-      .catch((err) => {
-        if (err?.response?.status === 409 || err?.response?.status === 400)
-          setError(err?.response?._data?.detail);
-        if (err?.response?.status === 422) {
-          Object.keys(err.response._data.detail).forEach((key) => {
-            setError(err?.response._data.detail[key] as string);
-            form.setError(
-              key as "proxies" | "username" | "data_limit" | "expire",
-              {
-                type: "custom",
-                message: err.response._data.detail[key],
-              }
-            );
-          });
-        }
-      })
-      .finally(() => {
-        setLoading(false);
+    if (isEditing) {
+      editUser({
+        username: editingUser.username,
+        data,
       });
+    } else {
+      createUser({
+        data: data as UserCreateInterface,
+      });
+    }
   };
 
   const onClose = () => {
