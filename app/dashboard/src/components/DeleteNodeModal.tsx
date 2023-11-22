@@ -1,23 +1,24 @@
 import {
-  Button,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Spinner,
-  Text,
-  useToast,
+	Button,
+	Modal,
+	ModalBody,
+	ModalCloseButton,
+	ModalContent,
+	ModalFooter,
+	ModalHeader,
+	ModalOverlay,
+	Spinner,
+	Text,
+	useToast,
 } from "@chakra-ui/react";
-import { FetchNodesQueryKey, useNodes } from "contexts/NodesContext";
+import { useDashboard } from "contexts/DashboardContext";
 import { FC } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { useMutation, useQueryClient } from "react-query";
+import { useQueryClient } from "react-query";
+import { getGetNodesQueryKey, useRemoveNode } from "service/api";
 import {
-  generateErrorMessage,
-  generateSuccessMessage,
+	generateErrorMessage,
+	generateSuccessMessage,
 } from "utils/toastHandler";
 import { DeleteIcon, DeleteUserModalProps } from "./DeleteUserModal";
 import { Icon } from "./Icon";
@@ -25,26 +26,29 @@ import { Icon } from "./Icon";
 export const DeleteNodeModal: FC<DeleteUserModalProps> = ({
   deleteCallback,
 }) => {
-  const { deleteNode, deletingNode, setDeletingNode } = useNodes();
+  const { deletingNode, setDeletingNode } = useDashboard();
   const { t } = useTranslation();
   const toast = useToast();
   const queryClient = useQueryClient();
   const onClose = () => {
     setDeletingNode(null);
   };
-
-  const { isLoading, mutate: onDelete } = useMutation(deleteNode, {
-    onSuccess: () => {
-      generateSuccessMessage(
-        t("deleteNode.deleteSuccess", {name: deletingNode && deletingNode.name}),
-        toast
-      );
-      setDeletingNode(null);
-      queryClient.invalidateQueries(FetchNodesQueryKey);
-      deleteCallback && deleteCallback();
-    },
-    onError: (e) => {
-      generateErrorMessage(e, toast);
+  const { isLoading, mutate: onDelete } = useRemoveNode({
+    mutation: {
+      onSuccess() {
+        generateSuccessMessage(
+          t("deleteNode.deleteSuccess", {
+            name: deletingNode && deletingNode.name,
+          }),
+          toast
+        );
+        setDeletingNode(null);
+        queryClient.invalidateQueries(getGetNodesQueryKey());
+        deleteCallback && deleteCallback();
+      },
+      onError: (e) => {
+        generateErrorMessage(e, toast);
+      },
     },
   });
 
@@ -70,7 +74,7 @@ export const DeleteNodeModal: FC<DeleteUserModalProps> = ({
               color="gray.600"
             >
               <Trans components={{ b: <b /> }}>
-                {t("deleteNode.prompt", {name: deletingNode.name})}
+                {t("deleteNode.prompt", { name: deletingNode.name })}
               </Trans>
             </Text>
           )}
@@ -83,7 +87,11 @@ export const DeleteNodeModal: FC<DeleteUserModalProps> = ({
             size="sm"
             w="full"
             colorScheme="red"
-            onClick={() => onDelete()}
+            onClick={() =>
+              onDelete({
+                nodeId: deletingNode!.id!,
+              })
+            }
             leftIcon={isLoading ? <Spinner size="xs" /> : undefined}
           >
             {t("delete")}

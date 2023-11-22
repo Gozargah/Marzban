@@ -1,8 +1,6 @@
 import { useGetNodes } from "service/api";
-import { fetch } from "service/http";
 import { z } from "zod";
-import { create } from "zustand";
-import { FilterUsageType, useDashboard } from "./DashboardContext";
+import { useDashboard } from "./DashboardContext";
 
 export const NodeSchema = z.object({
   name: z.string().min(1),
@@ -37,19 +35,6 @@ export const getNodeDefaultValues = (): NodeType => ({
   xray_version: "",
 });
 
-export const FetchNodesQueryKey = "fetch-nodes-query-key";
-
-export type NodeStore = {
-  nodes: NodeType[];
-  addNode: (node: NodeType) => Promise<unknown>;
-  fetchNodesUsage: (query: FilterUsageType) => Promise<void>;
-  updateNode: (node: NodeType) => Promise<unknown>;
-  reconnectNode: (node: NodeType) => Promise<unknown>;
-  deletingNode?: NodeType | null;
-  deleteNode: () => Promise<unknown>;
-  setDeletingNode: (node: NodeType | null) => void;
-};
-
 export const useNodesQuery = () => {
   const { isEditingNodes } = useDashboard();
   return useGetNodes({
@@ -59,32 +44,3 @@ export const useNodesQuery = () => {
     },
   });
 };
-
-export const useNodes = create<NodeStore>((set, get) => ({
-  nodes: [],
-  addNode(body) {
-    return fetch("/node", { method: "POST", body });
-  },
-  fetchNodesUsage(query: FilterUsageType) {
-    return fetch("/nodes/usage", { query });
-  },
-  updateNode(body) {
-    return fetch(`/node/${body.id}`, {
-      method: "PUT",
-      body,
-    });
-  },
-  setDeletingNode(node) {
-    set({ deletingNode: node });
-  },
-  reconnectNode(body) {
-    return fetch(`/node/${body.id}/reconnect`, {
-      method: "POST",
-    });
-  },
-  deleteNode: () => {
-    return fetch(`/node/${get().deletingNode?.id}`, {
-      method: "DELETE",
-    });
-  },
-}));

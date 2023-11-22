@@ -12,11 +12,12 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react";
-import { FC, useState } from "react";
 import { DocumentMinusIcon } from "@heroicons/react/24/outline";
-import { Icon } from "./Icon";
 import { useDashboard } from "contexts/DashboardContext";
+import { FC } from "react";
 import { useTranslation } from "react-i18next";
+import { useResetUsersDataUsage } from "service/api";
+import { Icon } from "./Icon";
 
 export const ResetIcon = chakra(DocumentMinusIcon, {
   baseStyle: {
@@ -28,17 +29,12 @@ export const ResetIcon = chakra(DocumentMinusIcon, {
 export type DeleteUserModalProps = {};
 
 export const ResetAllUsageModal: FC<DeleteUserModalProps> = () => {
-  const [loading, setLoading] = useState(false);
-  const { isResetingAllUsage, onResetAllUsage, resetAllUsage } = useDashboard();
+  const { isResetingAllUsage, onResetAllUsage } = useDashboard();
   const { t } = useTranslation();
   const toast = useToast();
-  const onClose = () => {
-    onResetAllUsage(false);
-  };
-  const onReset = () => {
-    setLoading(true);
-    resetAllUsage()
-      .then(() => {
+  const { mutate: resetUsersUsage, isLoading } = useResetUsersDataUsage({
+    mutation: {
+      onSuccess() {
         toast({
           title: t("resetAllUsage.success"),
           status: "success",
@@ -46,8 +42,9 @@ export const ResetAllUsageModal: FC<DeleteUserModalProps> = () => {
           position: "top",
           duration: 3000,
         });
-      })
-      .catch(() => {
+        onClose();
+      },
+      onError() {
         toast({
           title: t("resetAllUsage.error"),
           status: "error",
@@ -55,11 +52,13 @@ export const ResetAllUsageModal: FC<DeleteUserModalProps> = () => {
           position: "top",
           duration: 3000,
         });
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      },
+    },
+  });
+  const onClose = () => {
+    onResetAllUsage(false);
   };
+
   return (
     <Modal isCentered isOpen={isResetingAllUsage} onClose={onClose} size="sm">
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
@@ -93,8 +92,8 @@ export const ResetAllUsageModal: FC<DeleteUserModalProps> = () => {
             size="sm"
             w="full"
             colorScheme="red"
-            onClick={onReset}
-            leftIcon={loading ? <Spinner size="xs" /> : undefined}
+            onClick={() => resetUsersUsage()}
+            leftIcon={isLoading ? <Spinner size="xs" /> : undefined}
           >
             {t("reset")}
           </Button>

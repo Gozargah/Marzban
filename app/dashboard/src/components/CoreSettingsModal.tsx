@@ -27,15 +27,20 @@ import {
 } from "@heroicons/react/24/outline";
 import { joinPaths } from "@remix-run/router";
 import classNames from "classnames";
-import { useCoreSettings } from "contexts/CoreSettingsContext";
 import { useDashboard } from "contexts/DashboardContext";
 import debounce from "lodash.debounce";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { useMutation } from "react-query";
 import { ReadyState } from "react-use-websocket";
 import { useWebSocket } from "react-use-websocket/dist/lib/use-websocket";
+import {
+  useGetCoreConfig,
+  useGetCoreStats,
+  useModifyCoreConfig,
+  useRestartCore,
+} from "service/api";
+import { ErrorType } from "service/http";
 import { getAuthToken } from "utils/authStorage";
 import { Icon } from "./Icon";
 import { JsonEditor } from "./JsonEditor";
@@ -89,7 +94,7 @@ const getWebsocketUrl = () => {
 
     return (
       (baseURL.protocol === "https:" ? "wss://" : "ws://") +
-      joinPaths([baseURL.host + baseURL.pathname, "/core/logs"]) +
+      joinPaths([baseURL.host + baseURL.pathname, "/api/core/logs"]) +
       "?interval=1&token=" +
       getAuthToken()
     );
@@ -102,16 +107,10 @@ const getWebsocketUrl = () => {
 
 let logsTmp: string[] = [];
 const CoreSettingModalContent: FC = () => {
-  const { isEditingCore } = useDashboard();
-  const {
-    fetchCoreSettings,
-    updateConfig,
-    isLoading,
-    config,
-    isPostLoading,
-    version,
-    restartCore,
-  } = useCoreSettings();
+  const { data: config, isLoading: getCoreConfigLoading } = useGetCoreConfig();
+  const { data: { version } = {}, isLoading: getCoreStatsLoading } =
+    useGetCoreStats();
+  const isLoading = getCoreConfigLoading || getCoreStatsLoading;
   const logsDiv = useRef<HTMLDivElement | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
   const { t } = useTranslation();
@@ -124,10 +123,6 @@ const CoreSettingModalContent: FC = () => {
     if (config) form.setValue("config", config);
   }, [config]);
 
-  useEffect(() => {
-    if (isEditingCore) fetchCoreSettings();
-  }, [isEditingCore]);
-  "".startsWith;
   const scrollShouldStayOnEnd = useRef(true);
   const updateLogs = useCallback(
     debounce((logs: string[]) => {
@@ -171,35 +166,39 @@ const CoreSettingModalContent: FC = () => {
   const status = getStatus(readyState.toString());
 
   const { mutate: handleRestartCore, isLoading: isRestarting } =
-    useMutation(restartCore);
+    useRestartCore();
+
+  const { mutate: updateConfig, isLoading: isPostLoading } =
+    useModifyCoreConfig<ErrorType<string | Record<string, string>>>({
+      mutation: {
+        onSuccess() {
+          toast({
+            title: t("core.successMessage"),
+            status: "success",
+            isClosable: true,
+            position: "top",
+            duration: 3000,
+          });
+        },
+        onError(e) {
+          let message = t("core.generalErrorMessage");
+          if (typeof e?.data?.detail === "object")
+            message = e?.data.detail[Object.keys(e.data.detail)[0]];
+          if (typeof e?.data?.detail === "string") message = e.data.detail;
+
+          toast({
+            title: message,
+            status: "error",
+            isClosable: true,
+            position: "top",
+            duration: 3000,
+          });
+        },
+      },
+    });
 
   const handleOnSave = ({ config }: any) => {
-    updateConfig(config)
-      .then(() => {
-        toast({
-          title: t("core.successMessage"),
-          status: "success",
-          isClosable: true,
-          position: "top",
-          duration: 3000,
-        });
-      })
-      .catch((e) => {
-        let message = t("core.generalErrorMessage");
-        if (typeof e.response._data.detail === "object")
-          message =
-            e.response._data.detail[Object.keys(e.response._data.detail)[0]];
-        if (typeof e.response._data.detail === "string")
-          message = e.response._data.detail;
-
-        toast({
-          title: message,
-          status: "error",
-          isClosable: true,
-          position: "top",
-          duration: 3000,
-        });
-      });
+    updateConfig({ data: config });
   };
   const editorRef = useRef<HTMLDivElement>(null);
   const [isFullScreen, setFullScreen] = useState(false);

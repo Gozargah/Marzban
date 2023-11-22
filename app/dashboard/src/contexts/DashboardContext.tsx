@@ -1,3 +1,4 @@
+import { NodeType } from "contexts/NodesContext";
 import {
   UserResponse,
   getGetSystemStatsQueryKey,
@@ -42,7 +43,6 @@ type DashboardStateType = {
     users: User[];
     total: number;
   };
-  inbounds: Inbounds;
   loading: boolean;
   filters: FilterType;
   subscribeUrl: string | null;
@@ -54,12 +54,13 @@ type DashboardStateType = {
   resetUsageUser: Required<UserResponse> | null;
   revokeSubscriptionUser: Required<UserResponse> | null;
   isEditingCore: boolean;
+  deletingNode?: NodeType | null;
+  onResetAllUsage: (isResetingAllUsage: boolean) => void;
+  setDeletingNode: (node: NodeType | null) => void;
   onCreateUser: (isOpen: boolean) => void;
   onEditingUser: (user: Required<UserResponse> | null) => void;
   onDeletingUser: (user: Required<UserResponse> | null) => void;
-  onResetAllUsage: (isResetingAllUsage: boolean) => void;
   refetchUsers: () => void;
-  resetAllUsage: () => Promise<void>;
   onFilterChange: (filters: Partial<FilterType>) => void;
   deleteUser: (user: Required<UserResponse>) => Promise<void>;
   createUser: (user: UserCreate) => Promise<void>;
@@ -73,7 +74,6 @@ type DashboardStateType = {
   onEditingHosts: (isEditingHosts: boolean) => void;
   onEditingNodes: (isEditingHosts: boolean) => void;
   onShowingNodesUsage: (isShowingNodesUsage: boolean) => void;
-  resetDataUsage: (user: Required<UserResponse>) => Promise<void>;
   revokeSubscription: (user: Required<UserResponse>) => Promise<void>;
 };
 
@@ -101,22 +101,19 @@ export const useDashboard = create(
       limit: getUsersPerPageLimitSize(),
       sort: "-created_at",
     },
-    inbounds: new Map(),
     isEditingCore: false,
     refetchUsers: () => {
       queryClient.invalidateQueries(getGetUsersQueryKey());
     },
-    resetAllUsage: () => {
-      return fetch(`/users/reset`, { method: "POST" }).then(() => {
-        get().onResetAllUsage(false);
-        get().refetchUsers();
-      });
+
+    setDeletingNode(node) {
+      set({ deletingNode: node });
     },
-    onResetAllUsage: (isResetingAllUsage) => set({ isResetingAllUsage }),
     onCreateUser: (isCreatingNewUser) => set({ isCreatingNewUser }),
     onEditingUser: (editingUser) => {
       set({ editingUser });
     },
+    onResetAllUsage: (isResetingAllUsage) => set({ isResetingAllUsage }),
     onDeletingUser: (deletingUser) => {
       set({ deletingUser });
     },
@@ -173,14 +170,6 @@ export const useDashboard = create(
     },
     setSubLink: (subscribeUrl) => {
       set({ subscribeUrl });
-    },
-    resetDataUsage: (user) => {
-      return fetch(`/user/${user.username}/reset`, { method: "POST" }).then(
-        () => {
-          set({ resetUsageUser: null });
-          get().refetchUsers();
-        }
-      );
     },
     revokeSubscription: (user) => {
       return fetch(`/user/${user.username}/revoke_sub`, {

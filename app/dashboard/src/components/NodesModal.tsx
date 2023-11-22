@@ -38,17 +38,15 @@ import {
 } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  FetchNodesQueryKey,
   getNodeDefaultValues,
   NodeSchema,
   NodeType,
-  useNodes,
   useNodesQuery,
 } from "contexts/NodesContext";
 import { FC, ReactNode, useState } from "react";
 import { Controller, useForm, UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { UseMutateFunction, useMutation, useQueryClient } from "react-query";
+import { UseMutateFunction, useQueryClient } from "react-query";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
 import { Status } from "types/User";
@@ -63,7 +61,13 @@ import { ReloadIcon } from "./Filters";
 import { Icon } from "./Icon";
 import { StatusBadge } from "./StatusBadge";
 
-import { useAddNode, useGetNodeSettings } from "service/api";
+import {
+  getGetNodesQueryKey,
+  useAddNode,
+  useGetNodeSettings,
+  useModifyNode,
+  useReconnectNode,
+} from "service/api";
 import { Input } from "./Input";
 
 const CustomInput = chakra(Input, {
@@ -96,7 +100,7 @@ type AccordionInboundType = {
 };
 
 const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
-  const { updateNode, reconnectNode, setDeletingNode } = useNodes();
+  const { setDeletingNode } = useDashboard();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const toast = useToast();
@@ -106,24 +110,25 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
   });
   const handleDeleteNode = setDeletingNode.bind(null, node);
 
-  const { isLoading, mutate } = useMutation(updateNode, {
-    onSuccess: () => {
-      generateSuccessMessage("Node updated successfully", toast);
-      queryClient.invalidateQueries(FetchNodesQueryKey);
-    },
-    onError: (e) => {
-      generateErrorMessage(e, toast, form);
+  const { isLoading, mutate } = useModifyNode({
+    mutation: {
+      onSuccess: () => {
+        generateSuccessMessage("Node updated successfully", toast);
+        queryClient.invalidateQueries(getGetNodesQueryKey());
+      },
+      onError: (e) => {
+        generateErrorMessage(e, toast, form);
+      },
     },
   });
 
-  const { isLoading: isReconnecting, mutate: reconnect } = useMutation(
-    reconnectNode.bind(null, node),
-    {
+  const { isLoading: isReconnecting, mutate: reconnect } = useReconnectNode({
+    mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries(FetchNodesQueryKey);
+        queryClient.invalidateQueries(getGetNodesQueryKey());
       },
-    }
-  );
+    },
+  });
 
   const nodeStatus: Status = isReconnecting
     ? "connecting"
@@ -191,7 +196,11 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
                     size="sm"
                     aria-label="reconnect node"
                     leftIcon={<ReloadIcon />}
-                    onClick={() => reconnect()}
+                    onClick={() =>
+                      reconnect({
+                        nodeId: node.id!,
+                      })
+                    }
                     disabled={isReconnecting}
                   >
                     {isReconnecting
@@ -253,7 +262,7 @@ const AddNodeForm: FC<AddNodeFormType> = ({
           t("nodes.addNodeSuccess", { name: form.getValues("name") }),
           toast
         );
-        queryClient.invalidateQueries(FetchNodesQueryKey);
+        queryClient.invalidateQueries(getGetNodesQueryKey());
         form.reset();
         resetAccordions();
       },

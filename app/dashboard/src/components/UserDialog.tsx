@@ -45,7 +45,12 @@ import ReactApexChart from "react-apexcharts";
 import ReactDatePicker from "react-datepicker";
 import { Controller, FormProvider, useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { UserResponse } from "service/api";
+import {
+  GetInbounds200,
+  UserResponse,
+  useGetInbounds,
+  useGetUserUsage,
+} from "service/api";
 import { ProxyKeys, ProxyType, UserCreate, UserInbounds } from "types/User";
 import { relativeExpiryDate } from "utils/dateFormatter";
 import { z } from "zod";
@@ -133,8 +138,7 @@ const formatUser = (user: Required<UserResponse>): FormType => {
     selected_proxies: Object.keys(user.proxies) as ProxyKeys,
   };
 };
-const getDefaultValues = (): FormType => {
-  const defaultInbounds = Object.fromEntries(useDashboard.getState().inbounds);
+const getDefaultValues = (defaultInbounds: GetInbounds200): FormType => {
   const inbounds: UserInbounds = {};
   for (const key in defaultInbounds) {
     inbounds[key] = defaultInbounds[key].map((i) => i.tag);
@@ -179,7 +183,6 @@ export const UserDialog: FC<UserDialogProps> = () => {
     isCreatingNewUser,
     onCreateUser,
     editUser,
-    fetchUserUsage,
     onEditingUser,
     createUser,
     onDeletingUser,
@@ -190,6 +193,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const [error, setError] = useState<string | null>("");
   const toast = useToast();
   const { t, i18n } = useTranslation();
+  const { data: defaultInbounds = {} } = useGetInbounds();
 
   const { colorMode } = useColorMode();
 
@@ -199,20 +203,13 @@ export const UserDialog: FC<UserDialogProps> = () => {
   };
 
   const form = useForm<FormType>({
-    defaultValues: getDefaultValues(),
+    defaultValues: getDefaultValues(defaultInbounds),
     resolver: zodResolver(schema),
   });
 
-  useEffect(
-    () =>
-      useDashboard.subscribe(
-        (state) => state.inbounds,
-        () => {
-          form.reset(getDefaultValues());
-        }
-      ),
-    []
-  );
+  useEffect(() => {
+    form.reset(getDefaultValues(defaultInbounds));
+  }, [defaultInbounds]);
 
   const [dataLimit] = useWatch({
     control: form.control,
@@ -222,23 +219,26 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const usageTitle = t("userDialog.total");
   const [usage, setUsage] = useState(createUsageConfig(colorMode, usageTitle));
   const [usageFilter, setUsageFilter] = useState("1m");
-  const fetchUsageWithFilter = (query: FilterUsageType) => {
-    fetchUserUsage(editingUser!, query).then((data: any) => {
-      const labels = [];
-      const series = [];
-      for (const key in data.usages) {
-        series.push(data.usages[key].used_traffic);
-        labels.push(data.usages[key].node_name);
-      }
-      setUsage(createUsageConfig(colorMode, usageTitle, series, labels));
-    });
-  };
+  const [filters, setFilters] = useState<FilterUsageType>();
+  useGetUserUsage(editingUser?.username || "", filters, {
+    query: {
+      onSuccess(data) {
+        const labels = [];
+        const series = [];
+        for (const key in data.usages) {
+          series.push(data.usages[key].used_traffic);
+          labels.push(data.usages[key].node_name);
+        }
+        setUsage(createUsageConfig(colorMode, usageTitle, series, labels));
+      },
+      enabled: !!editingUser?.username,
+    },
+  });
 
   useEffect(() => {
     if (editingUser) {
       form.reset(formatUser(editingUser));
-
-      fetchUsageWithFilter({
+      setFilters({
         start: dayjs().utc().subtract(30, "day").format("YYYY-MM-DDTHH:00:00"),
       });
     }
@@ -302,7 +302,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
   };
 
   const onClose = () => {
-    form.reset(getDefaultValues());
+    form.reset(getDefaultValues(defaultInbounds));
     onCreateUser(false);
     onEditingUser(null);
     setError(null);
@@ -602,7 +602,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                         defaultValue={usageFilter}
                         onChange={(filter, query) => {
                           setUsageFilter(filter);
-                          fetchUsageWithFilter(query);
+                          setFilters(query);
                         }}
                       />
                       <Box

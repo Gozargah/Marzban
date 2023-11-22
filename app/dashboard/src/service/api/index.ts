@@ -16,7 +16,7 @@ import type {
 } from "react-query";
 import { orvalFetcher } from "../http";
 import type { ErrorType, BodyType } from "../http";
-export type GetUsageParams = {
+export type GetNodesUsageParams = {
   start?: string;
   end?: string;
 };
@@ -3430,9 +3430,12 @@ export const useReconnectNode = <
 
 /**
  * Get nodes usage
- * @summary Get Usage
+ * @summary Get Nodes Usage
  */
-export const getUsage = (params?: GetUsageParams, signal?: AbortSignal) => {
+export const getNodesUsage = (
+  params?: GetNodesUsageParams,
+  signal?: AbortSignal
+) => {
   return orvalFetcher<NodesUsageResponse>({
     url: `/api/nodes/usage`,
     method: "get",
@@ -3441,18 +3444,18 @@ export const getUsage = (params?: GetUsageParams, signal?: AbortSignal) => {
   });
 };
 
-export const getGetUsageQueryKey = (params?: GetUsageParams) => {
+export const getGetNodesUsageQueryKey = (params?: GetNodesUsageParams) => {
   return [`/api/nodes/usage`, ...(params ? [params] : [])] as const;
 };
 
-export const getGetUsageQueryOptions = <
-  TData = Awaited<ReturnType<typeof getUsage>>,
+export const getGetNodesUsageQueryOptions = <
+  TData = Awaited<ReturnType<typeof getNodesUsage>>,
   TError = ErrorType<HTTPValidationError>
 >(
-  params?: GetUsageParams,
+  params?: GetNodesUsageParams,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getUsage>>,
+      Awaited<ReturnType<typeof getNodesUsage>>,
       TError,
       TData
     >;
@@ -3460,41 +3463,41 @@ export const getGetUsageQueryOptions = <
 ) => {
   const { query: queryOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetUsageQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetNodesUsageQueryKey(params);
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsage>>> = ({
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getNodesUsage>>> = ({
     signal,
-  }) => getUsage(params, signal);
+  }) => getNodesUsage(params, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getUsage>>,
+    Awaited<ReturnType<typeof getNodesUsage>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetUsageQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getUsage>>
+export type GetNodesUsageQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getNodesUsage>>
 >;
-export type GetUsageQueryError = ErrorType<HTTPValidationError>;
+export type GetNodesUsageQueryError = ErrorType<HTTPValidationError>;
 
 /**
- * @summary Get Usage
+ * @summary Get Nodes Usage
  */
-export const useGetUsage = <
-  TData = Awaited<ReturnType<typeof getUsage>>,
+export const useGetNodesUsage = <
+  TData = Awaited<ReturnType<typeof getNodesUsage>>,
   TError = ErrorType<HTTPValidationError>
 >(
-  params?: GetUsageParams,
+  params?: GetNodesUsageParams,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getUsage>>,
+      Awaited<ReturnType<typeof getNodesUsage>>,
       TError,
       TData
     >;
   }
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetUsageQueryOptions(params, options);
+  const queryOptions = getGetNodesUsageQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

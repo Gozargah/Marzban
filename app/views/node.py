@@ -218,7 +218,7 @@ def remove_node(node_id: int,
 
 
 @app.get("/api/nodes/usage", tags=['Node'], response_model=NodesUsageResponse)
-def get_usage(db: Session = Depends(get_db),
+def get_nodes_usage(db: Session = Depends(get_db),
               start: str = None,
               end: str = None,
               admin: Admin = Depends(Admin.get_current)):

@@ -121,6 +121,7 @@ export const Login: FC = () => {
                       placeholder={t("password")}
                       {...register("password")}
                       error={t(errors?.password?.message as string)}
+                      autoComplete=""
                     />
                   </FormControl>
                   {error && (

@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   chakra,
   Modal,
@@ -11,14 +10,14 @@ import {
   ModalOverlay,
   Spinner,
   Text,
-  Toast,
   useToast,
 } from "@chakra-ui/react";
-import { FC, useEffect, useRef, useState } from "react";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
-import { Icon } from "./Icon";
 import { useDashboard } from "contexts/DashboardContext";
-import { useTranslation, Trans } from "react-i18next";
+import { FC } from "react";
+import { Trans, useTranslation } from "react-i18next";
+import { useResetUserDataUsage } from "service/api";
+import { Icon } from "./Icon";
 
 export const ResetIcon = chakra(ArrowPathIcon, {
   baseStyle: {
@@ -30,38 +29,40 @@ export const ResetIcon = chakra(ArrowPathIcon, {
 export type DeleteUserModalProps = {};
 
 export const ResetUserUsageModal: FC<DeleteUserModalProps> = () => {
-  const [loading, setLoading] = useState(false);
-  const { resetUsageUser: user, resetDataUsage } = useDashboard();
+  const { resetUsageUser: user } = useDashboard();
   const { t } = useTranslation();
   const toast = useToast();
   const onClose = () => {
     useDashboard.setState({ resetUsageUser: null });
   };
+  const { mutate, isLoading } = useResetUserDataUsage({
+    mutation: {
+      onSuccess() {
+        toast({
+          title: t("resetUserUsage.success", { username: user!.username }),
+          status: "success",
+          isClosable: true,
+          position: "top",
+          duration: 3000,
+        });
+        onClose();
+      },
+      onError() {
+        toast({
+          title: t("resetUserUsage.error"),
+          status: "error",
+          isClosable: true,
+          position: "top",
+          duration: 3000,
+        });
+      },
+    },
+  });
   const onReset = () => {
     if (user) {
-      setLoading(true);
-      resetDataUsage(user)
-        .then(() => {
-          toast({
-            title: t("resetUserUsage.success", {username: user.username}),
-            status: "success",
-            isClosable: true,
-            position: "top",
-            duration: 3000,
-          });
-        })
-        .catch(() => {
-          toast({
-            title: t("resetUserUsage.error"),
-            status: "error",
-            isClosable: true,
-            position: "top",
-            duration: 3000,
-          });
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      mutate({
+        username: user.username,
+      });
     }
   };
   return (
@@ -85,9 +86,8 @@ export const ResetUserUsageModal: FC<DeleteUserModalProps> = () => {
               _dark={{ color: "gray.400" }}
               color="gray.600"
             >
-              <Trans
-                components={{b: <b /> }}>
-                {t("resetUserUsage.prompt", {username: user.username})}
+              <Trans components={{ b: <b /> }}>
+                {t("resetUserUsage.prompt", { username: user.username })}
               </Trans>
             </Text>
           )}
@@ -101,7 +101,7 @@ export const ResetUserUsageModal: FC<DeleteUserModalProps> = () => {
             w="full"
             colorScheme="blue"
             onClick={onReset}
-            leftIcon={loading ? <Spinner size="xs" /> : undefined}
+            leftIcon={isLoading ? <Spinner size="xs" /> : undefined}
           >
             {t("reset")}
           </Button>

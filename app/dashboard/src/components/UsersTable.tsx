@@ -187,14 +187,14 @@ export const Sort: FC<SortType> = ({ sort, column }) => {
 };
 type UsersTableProps = {} & TableProps;
 export const UsersTable: FC<UsersTableProps> = (props) => {
+  const { filters, onEditingUser, onFilterChange } = useDashboard();
   const {
     data: { users } = { users: [] },
     data: totalUsers = { users: [], total: 0 },
   } = useGetUsers<{
     users: Required<UserResponse>[];
     total: number;
-  }>();
-  const { filters, onEditingUser, onFilterChange } = useDashboard();
+  }>(filters);
   const { t } = useTranslation();
   const [selectedRow, setSelectedRow] = useState<ExpandedIndex | undefined>(
     undefined

@@ -21,11 +21,7 @@ import {
 } from "@chakra-ui/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { shadowsocksMethods, XTLSFlows } from "constants/Proxies";
-import {
-  InboundType,
-  ProtocolType,
-  useDashboard,
-} from "contexts/DashboardContext";
+import { InboundType, ProtocolType } from "contexts/DashboardContext";
 import { t } from "i18next";
 import { FC, forwardRef, PropsWithChildren, useState } from "react";
 import {
@@ -33,6 +29,7 @@ import {
   useFormContext,
   useWatch,
 } from "react-hook-form";
+import { useGetInbounds } from "service/api";
 
 const SettingsIcon = chakra(EllipsisVerticalIcon, {
   baseStyle: {
@@ -147,7 +144,7 @@ const RadioCard: FC<
   ...props
 }) => {
   const form = useFormContext();
-  const { inbounds } = useDashboard();
+  const { data: inbounds = {} } = useGetInbounds();
   const { getCheckboxProps, getInputProps, getLabelProps, htmlProps } =
     useCheckbox(props);
 
@@ -172,16 +169,14 @@ const RadioCard: FC<
       }
     },
   });
-
+	
   const isPartialSelected =
     inBoundDefaultValue &&
     isSelected &&
-    (useDashboard.getState().inbounds.get(title as ProtocolType) || [])
-      .length !== inBoundDefaultValue.length;
+    (inbounds[title as ProtocolType] || []).length !==
+      inBoundDefaultValue.length;
 
-  const protocolHasInbound =
-    (useDashboard.getState().inbounds.get(title as ProtocolType) || []).length >
-    0;
+  const protocolHasInbound = (inbounds[title as ProtocolType] || []).length > 0;
 
   const shouldBeDisabled = !isSelected && !protocolHasInbound;
 
@@ -329,17 +324,17 @@ const RadioCard: FC<
               columns={1}
               spacing={1}
             >
-              {(
-                (inbounds.get(title as ProtocolType) as InboundType[]) || []
-              ).map((inbound) => {
-                return (
-                  <InboundCard
-                    key={inbound.tag}
-                    {...getInboundCheckboxProps({ value: inbound.tag })}
-                    inbound={inbound}
-                  />
-                );
-              })}
+              {((inbounds[title as ProtocolType] as InboundType[]) || []).map(
+                (inbound) => {
+                  return (
+                    <InboundCard
+                      key={inbound.tag}
+                      {...getInboundCheckboxProps({ value: inbound.tag })}
+                      inbound={inbound}
+                    />
+                  );
+                }
+              )}
             </SimpleGrid>
           </VStack>
           {title === "vmess" && isSelected && (
@@ -467,6 +462,7 @@ export type RadioGroupProps = ControllerRenderProps & {
 export const RadioGroup = forwardRef<any, RadioGroupProps>(
   ({ name, list, onChange, disabled, ...props }, ref) => {
     const form = useFormContext();
+    const { data: inbounds = {} } = useGetInbounds();
     const [expandedAccordions, setExpandedAccordions] = useState<number[]>([]);
 
     const toggleAccordion = (i: number) => {
@@ -484,10 +480,7 @@ export const RadioGroup = forwardRef<any, RadioGroupProps>(
         if (selectedItem[0]) {
           form.setValue(
             `inbounds.${selectedItem[0]}`,
-            useDashboard
-              .getState()
-              .inbounds.get(selectedItem[0] as ProtocolType)
-              ?.map((i) => i.tag)
+            inbounds[selectedItem[0] as ProtocolType]?.map((i) => i.tag)
           );
         }
 
