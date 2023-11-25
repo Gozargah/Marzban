@@ -14,8 +14,10 @@ import {
 } from "@chakra-ui/react";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
-import { FC, useState } from "react";
+import { FC } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { getGetUsersQueryKey, useRevokeUserSubscription } from "service/api";
+import { queryClient } from "utils/react-query";
 import { Icon } from "./Icon";
 
 export const ResetIcon = chakra(ArrowPathIcon, {
@@ -28,38 +30,41 @@ export const ResetIcon = chakra(ArrowPathIcon, {
 export type RevokeSubscriptionModalProps = {};
 
 export const RevokeSubscriptionModal: FC<RevokeSubscriptionModalProps> = () => {
-  const [loading, setLoading] = useState(false);
-  const { revokeSubscriptionUser: user, revokeSubscription } = useDashboard();
+  const { revokeSubscriptionUser: user } = useDashboard();
   const { t } = useTranslation();
   const toast = useToast();
   const onClose = () => {
     useDashboard.setState({ revokeSubscriptionUser: null });
   };
+  const { mutate, isLoading } = useRevokeUserSubscription({
+    mutation: {
+      onSuccess(user) {
+        toast({
+          title: t("revokeUserSub.success", { username: user.username }),
+          status: "success",
+          isClosable: true,
+          position: "top",
+          duration: 3000,
+        });
+        queryClient.invalidateQueries(getGetUsersQueryKey());
+        onClose();
+      },
+      onError() {
+        toast({
+          title: t("revokeUserSub.error"),
+          status: "error",
+          isClosable: true,
+          position: "top",
+          duration: 3000,
+        });
+      },
+    },
+  });
   const onReset = () => {
     if (user) {
-      setLoading(true);
-      revokeSubscription(user)
-        .then(() => {
-          toast({
-            title: t("revokeUserSub.success", { username: user.username }),
-            status: "success",
-            isClosable: true,
-            position: "top",
-            duration: 3000,
-          });
-        })
-        .catch(() => {
-          toast({
-            title: t("revokeUserSub.error"),
-            status: "error",
-            isClosable: true,
-            position: "top",
-            duration: 3000,
-          });
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      mutate({
+        username: user.username,
+      });
     }
   };
   return (
@@ -98,7 +103,7 @@ export const RevokeSubscriptionModal: FC<RevokeSubscriptionModalProps> = () => {
             w="full"
             colorScheme="blue"
             onClick={onReset}
-            leftIcon={loading ? <Spinner size="xs" /> : undefined}
+            leftIcon={isLoading ? <Spinner size="xs" /> : undefined}
           >
             {t("revoke")}
           </Button>
