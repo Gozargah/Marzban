@@ -16,7 +16,8 @@ import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { useResetUserDataUsage } from "service/api";
+import { getGetUsersQueryKey, useResetUserDataUsage } from "service/api";
+import { queryClient } from "utils/react-query";
 import { Icon } from "./Icon";
 
 export const ResetIcon = chakra(ArrowPathIcon, {
@@ -46,6 +47,7 @@ export const ResetUserUsageModal: FC<DeleteUserModalProps> = () => {
           duration: 3000,
         });
         onClose();
+        queryClient.invalidateQueries(getGetUsersQueryKey());
       },
       onError() {
         toast({
