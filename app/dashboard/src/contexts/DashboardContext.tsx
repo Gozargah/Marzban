@@ -1,12 +1,6 @@
 import { NodeType } from "contexts/NodesContext";
-import {
-  UserResponse,
-  getGetSystemStatsQueryKey,
-  getGetUsersQueryKey,
-  useGetUsers,
-} from "service/api";
-import { fetch } from "service/http";
-import { User, UserCreate } from "types/User";
+import { UserResponse, getGetUsersQueryKey, useGetUsers } from "service/api";
+import { User } from "types/User";
 import { queryClient } from "utils/react-query";
 import { getUsersPerPageLimitSize } from "utils/userPreferenceStorage";
 import { create } from "zustand";
@@ -63,19 +57,11 @@ type DashboardStateType = {
   onDeletingUser: (user: Required<UserResponse> | null) => void;
   refetchUsers: () => void;
   onFilterChange: (filters: Partial<FilterType>) => void;
-  deleteUser: (user: Required<UserResponse>) => Promise<void>;
-  createUser: (user: UserCreate) => Promise<void>;
-  editUser: (user: UserCreate) => Promise<void>;
-  fetchUserUsage: (
-    user: Required<UserResponse>,
-    query: FilterUsageType
-  ) => Promise<void>;
   setQRCode: (links: string[] | null) => void;
   setSubLink: (subscribeURL: string | null) => void;
   onEditingHosts: (isEditingHosts: boolean) => void;
   onEditingNodes: (isEditingHosts: boolean) => void;
   onShowingNodesUsage: (isShowingNodesUsage: boolean) => void;
-  revokeSubscription: (user: Required<UserResponse>) => Promise<void>;
 };
 
 export const useUsers = () => {
@@ -133,40 +119,9 @@ export const useDashboard = create(
           ...filters,
         },
       });
-      get().refetchUsers();
     },
     setQRCode: (QRcodeLinks) => {
       set({ QRcodeLinks });
-    },
-    deleteUser: (user: Required<UserResponse>) => {
-      set({ editingUser: null });
-      return fetch(`/user/${user.username}`, { method: "DELETE" }).then(() => {
-        set({ deletingUser: null });
-        get().refetchUsers();
-        queryClient.invalidateQueries(getGetSystemStatsQueryKey());
-      });
-    },
-    createUser: (body: UserCreate) => {
-      return fetch(`/user`, { method: "POST", body }).then(() => {
-        set({ editingUser: null });
-        get().refetchUsers();
-        queryClient.invalidateQueries(getGetSystemStatsQueryKey());
-      });
-    },
-    editUser: (body: UserCreate) => {
-      return fetch(`/user/${body.username}`, { method: "PUT", body }).then(
-        () => {
-          get().onEditingUser(null);
-          get().refetchUsers();
-        }
-      );
-    },
-    fetchUserUsage: (body: Required<UserResponse>, query: FilterUsageType) => {
-      for (const key in query) {
-        if (!query[key as keyof FilterUsageType])
-          delete query[key as keyof FilterUsageType];
-      }
-      return fetch(`/user/${body.username}/usage`, { method: "GET", query });
     },
     onEditingHosts: (isEditingHosts: boolean) => {
       set({ isEditingHosts });
@@ -179,14 +134,6 @@ export const useDashboard = create(
     },
     setSubLink: (subscribeUrl) => {
       set({ subscribeUrl });
-    },
-    revokeSubscription: (user) => {
-      return fetch(`/user/${user.username}/revoke_sub`, {
-        method: "POST",
-      }).then((user) => {
-        set({ revokeSubscriptionUser: null, editingUser: user });
-        get().refetchUsers();
-      });
     },
   }))
 );

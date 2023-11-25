@@ -14,8 +14,10 @@ import {
 } from "@chakra-ui/react";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
-import { FC, useState } from "react";
+import { FC } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import { getGetUsersQueryKey, useRemoveUser } from "service/api";
+import { queryClient } from "utils/react-query";
 import { Icon } from "./Icon";
 
 export const DeleteIcon = chakra(TrashIcon, {
@@ -30,28 +32,32 @@ export type DeleteUserModalProps = {
 };
 
 export const DeleteUserModal: FC<DeleteUserModalProps> = () => {
-  const [loading, setLoading] = useState(false);
-  const { deletingUser: user, onDeletingUser, deleteUser } = useDashboard();
+  const { deletingUser: user, onDeletingUser } = useDashboard();
   const { t } = useTranslation();
   const toast = useToast();
   const onClose = () => {
     onDeletingUser(null);
   };
+
+  const { mutate: deleteUser, isLoading } = useRemoveUser({
+    mutation: {
+      onSuccess() {
+        toast({
+          title: t("deleteUser.deleteSuccess", { username: user!.username }),
+          status: "success",
+          isClosable: true,
+          position: "top",
+          duration: 3000,
+        });
+        queryClient.invalidateQueries(getGetUsersQueryKey());
+        onClose();
+      },
+    },
+  });
+
   const onDelete = () => {
     if (user) {
-      setLoading(true);
-      deleteUser(user)
-        .then(() => {
-          toast({
-            title: t("deleteUser.deleteSuccess", { username: user.username }),
-            status: "success",
-            isClosable: true,
-            position: "top",
-            duration: 3000,
-          });
-        })
-        .then(onClose)
-        .finally(setLoading.bind(null, false));
+      deleteUser({ username: user.username });
     }
   };
   return (
@@ -90,7 +96,7 @@ export const DeleteUserModal: FC<DeleteUserModalProps> = () => {
             w="full"
             colorScheme="red"
             onClick={onDelete}
-            leftIcon={loading ? <Spinner size="xs" /> : undefined}
+            leftIcon={isLoading ? <Spinner size="xs" /> : undefined}
           >
             {t("delete")}
           </Button>
