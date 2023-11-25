@@ -18,11 +18,10 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import classNames from "classnames";
-import { useDashboard } from "contexts/DashboardContext";
+import { useDashboard, useUsers } from "contexts/DashboardContext";
 import debounce from "lodash.debounce";
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useGetUsers } from "service/api";
 
 const iconProps = {
   baseStyle: {
@@ -47,7 +46,7 @@ const setSearchField = debounce((username: string) => {
 export const Filters: FC<FilterProps> = ({ ...props }) => {
   const { filters, onFilterChange, refetchUsers, onCreateUser } =
     useDashboard();
-  const { isFetching: loading } = useGetUsers();
+  const { isFetching: loading } = useUsers();
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {

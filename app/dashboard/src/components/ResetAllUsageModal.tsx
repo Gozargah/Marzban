@@ -16,7 +16,8 @@ import { DocumentMinusIcon } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { useResetUsersDataUsage } from "service/api";
+import { getGetUsersQueryKey, useResetUsersDataUsage } from "service/api";
+import { queryClient } from "utils/react-query";
 import { Icon } from "./Icon";
 
 export const ResetIcon = chakra(DocumentMinusIcon, {
@@ -42,6 +43,7 @@ export const ResetAllUsageModal: FC<DeleteUserModalProps> = () => {
           position: "top",
           duration: 3000,
         });
+        queryClient.invalidateQueries(getGetUsersQueryKey());
         onClose();
       },
       onError() {

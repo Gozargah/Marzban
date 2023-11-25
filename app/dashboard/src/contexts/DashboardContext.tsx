@@ -3,6 +3,7 @@ import {
   UserResponse,
   getGetSystemStatsQueryKey,
   getGetUsersQueryKey,
+  useGetUsers,
 } from "service/api";
 import { fetch } from "service/http";
 import { User, UserCreate } from "types/User";
@@ -75,6 +76,14 @@ type DashboardStateType = {
   onEditingNodes: (isEditingHosts: boolean) => void;
   onShowingNodesUsage: (isShowingNodesUsage: boolean) => void;
   revokeSubscription: (user: Required<UserResponse>) => Promise<void>;
+};
+
+export const useUsers = () => {
+  const { filters } = useDashboard();
+  return useGetUsers<{
+    users: Required<UserResponse>[];
+    total: number;
+  }>(filters);
 };
 
 export const useDashboard = create(

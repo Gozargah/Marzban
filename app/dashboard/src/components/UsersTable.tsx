@@ -37,15 +37,14 @@ import {
 import { ReactComponent as AddFileIcon } from "assets/add_file.svg";
 import classNames from "classnames";
 import { resetStrategy, statusColors } from "constants/UserSettings";
-import { useDashboard } from "contexts/DashboardContext";
+import { useDashboard, useUsers } from "contexts/DashboardContext";
 import { t } from "i18next";
 import { FC, Fragment, useEffect, useState } from "react";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { useTranslation } from "react-i18next";
-import { useGetUsers, UserResponse } from "service/api";
+import { UserResponse } from "service/api";
 import { formatBytes } from "utils/formatByte";
-import { OnlineBadge } from "./OnlineBadge";
-import { OnlineStatus } from "./OnlineStatus";
+import { getRelativeLastOnlineAt, OnlineBadge } from "./OnlineBadge";
 import { Pagination } from "./Pagination";
 import { StatusBadge } from "./StatusBadge";
 
@@ -191,10 +190,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
   const {
     data: { users } = { users: [] },
     data: totalUsers = { users: [], total: 0 },
-  } = useGetUsers<{
-    users: Required<UserResponse>[];
-    total: number;
-  }>(filters);
+  } = useUsers();
   const { t } = useTranslation();
   const [selectedRow, setSelectedRow] = useState<ExpandedIndex | undefined>(
     undefined
@@ -346,10 +342,15 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                       cursor="pointer"
                     >
                       <Td borderBottom={0} minW="100px" pl={4} pr={4}>
-                        <div className="flex-status">
+                        <Box
+                          display="flex"
+                          justifyContent="start"
+                          alignItems="center"
+                          gap={2}
+                        >
                           <OnlineBadge lastOnline={user.online_at} />
                           {user.username}
-                        </div>
+                        </Box>
                       </Td>
                       <Td borderBottom={0} minW="50px" pl={0} pr={0}>
                         <StatusBadge
@@ -436,7 +437,20 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                                     expiryDate={user.expire}
                                     status={user.status}
                                   />
-                                  <OnlineStatus lastOnline={user.online_at} />
+                                  <Text
+                                    display="inline-block"
+                                    fontSize="xs"
+                                    fontWeight="medium"
+                                    ml="2"
+                                    color="gray.600"
+                                    _dark={{
+                                      color: "gray.400",
+                                    }}
+                                  >
+                                    {getRelativeLastOnlineAt({
+                                      lastOnline: user.online_at,
+                                    })}
+                                  </Text>
                                 </Box>
                                 <HStack>
                                   <ActionButtons user={user} />
@@ -578,11 +592,15 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   onClick={() => onEditingUser(user)}
                 >
                   <Td minW="140px">
-                    <div className="flex-status">
+                    <Box
+                      display="flex"
+                      justifyContent="start"
+                      alignItems="center"
+                      gap={2}
+                    >
                       <OnlineBadge lastOnline={user.online_at} />
                       {user.username}
-                      <OnlineStatus lastOnline={user.online_at} />
-                    </div>
+                    </Box>
                   </Td>
                   <Td width="400px" minW="150px">
                     <StatusBadge
