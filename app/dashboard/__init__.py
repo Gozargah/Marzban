@@ -8,8 +8,9 @@ from config import (
 from app import app
 from config import DEBUG, VITE_BASE_API
 from fastapi.staticfiles import StaticFiles
+from app import settings
 
-path = '/dashboard/'
+
 base_dir = Path(__file__).parent
 build_dir = base_dir / 'build'
 statics_dir = build_dir / 'statics'
@@ -20,8 +21,9 @@ def build_api_interface():
         ['npm', 'run', 'wait-port-gen-api'],
         env={**os.environ, 'UVICORN_PORT': str(UVICORN_PORT)},
         cwd=base_dir,
-				stdout=subprocess.DEVNULL
+        stdout=subprocess.DEVNULL
     )
+
 
 def build():
     proc = subprocess.Popen(
@@ -52,7 +54,7 @@ def run_build():
         build()
 
     app.mount(
-        path,
+        settings.get("dashboard_path", '/dashboard'),
         StaticFiles(directory=build_dir, html=True),
         name="dashboard"
     )
@@ -69,6 +71,3 @@ def startup():
         run_dev()
     else:
         run_build()
-
-
-

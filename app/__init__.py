@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 from fastapi_responses import custom_openapi
 
+from app.utils.store import DictStorage
 from config import DOCS
 
 __version__ = "0.4.1"
@@ -31,6 +32,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@DictStorage
+def settings(storage: dict):
+    from app.db import GetDB, crud
+
+    storage.clear()
+    with GetDB() as db:
+        dbsettings = crud.get_settings(db)
+        for key, value in dbsettings.__dict__.items():
+            if key not in ('_sa_instance_state', 'id'):
+                storage[key] = value
+        storage['telegram_admins'] = list(map(int, storage.get('telegram_admin_ids', '').strip(',').split(',')))
 
 
 from app import dashboard, jobs, telegram, views  # noqa

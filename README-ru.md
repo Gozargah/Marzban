@@ -62,13 +62,13 @@
 ## Оглавление
 
 - [Введение](#введение)
-	- [Почему Marzban](#почему-marzban)
-		- [Функции](#функции)
+  - [Почему Marzban?](#почему-marzban)
+    - [Функции](#функции)
 - [Руководство по установке](#руководство-по-установке)
 - [Конфигурация](#конфигурация)
 - [API](#api)
 - [Backup](#backup)
-- [Telegram бот](#telegram-bot)
+- [Telegram Bot](#telegram-bot)
 - [Marzban CLI](#marzban-cli)
 - [Marzban Node](#marzban-node)
 - [Webhook уведомления](#webhook-уведомления)
@@ -275,21 +275,15 @@ server {
 | XRAY_JSON                         | Адрес файла JSON конфигурации Xray. (по умолчанию: `xray_config.json`)                                         |
 | XRAY_EXECUTABLE_PATH              | Путь к бинарникам Xray  (по умолчанию: `/usr/local/bin/xray`)                                                  |
 | XRAY_ASSETS_PATH                  | Путь к папке с рессурсными файлами для Xray (файлы geoip.dat и geosite.dat) (по умолчанию: `/usr/local/share/xray`)                                                |
-| XRAY_SUBSCRIPTION_URL_PREFIX      | Префикс адреса подписки                                                                          |
 | XRAY_FALLBACKS_INBOUND_TAG        | Если вы используете входящее соединение с несколькими резервными вариантами, укажите здесь его тег
 | XRAY_EXCLUDE_INBOUND_TAGS         | Теги входящих соединений, которые не требуют управления и не должны быть включены в список прокси
 | CUSTOM_TEMPLATES_DIRECTORY        | Путь к папке с пользовательскими шаблонами (по умолчанию: `app/templates`)                                             |
 | CLASH_SUBSCRIPTION_TEMPLATE       | Шаблон для создания конфигурации Clash (по умолчанию: `clash/default.yml`)            |
 | SUBSCRIPTION_PAGE_TEMPLATE        | Шаблон для страницы подписки (по умолчанию: `subscription/index.html`)          |
 | HOME_PAGE_TEMPLATE                | Шаблон главной страницы (по умолчанию: `home/index.html`)                                                      |
-| TELEGRAM_API_TOKEN                | Токен Telegram-бота  (полученный от [@botfather](https://t.me/botfather))                         |
-| TELEGRAM_ADMIN_ID                 | Числовой идентификатор администратора в Telegram (полученный от [@userinfobot](https://t.me/userinfobot))          |
 | TELEGRAM_PROXY_URL                | URL прокси для запуска Telegram-бота (если серверы Telegram заблокированы на вашем сервере).                                                                           |
-| JWT_ACCESS_TOKEN_EXPIRE_MINUTES   | Время истечения срока действия доступного токена в минутах, `0` означает "без истечения срока действия" (по умолчанию: `1440`)            |
 | DOCS                              | Активация документации API по адресам `/docs` и `/redoc`. (по умолчанию: `False`)           |
 | DEBUG                             | Активация режима разработки (development) (по умолчанию: `False`)                                                         |
-| WEBHOOK_ADDRESS                   | Адрес Webhook для отправки уведомлений. Уведомления Webhook будут отправляться, если это значение было установлено    |
-| WEBHOOK_SECRET                    | Webhook secret будет передаваться с каждым запросом в виде `x-webhook-secret` в заголовке (по умолчанию: `None`)   |
 | NUMBER_OF_RECURRENT_NOTIFICATIONS | Сколько раз повторять попытку отправки уведомления при обнаружении ошибки  (по умолчанию: `3`)                 |
 | RECURRENT_NOTIFICATIONS_TIMEOUT   | Тайм-аут между каждым повторным запросом при обнаружении ошибки в секундах (по умолчанию: `180`) |
 | NOTIFY_REACHED_USAGE_PERCENT      | При каком проценте использования отправлять предупреждение (по умолчанию: `80`)                         |
@@ -314,8 +308,8 @@ Marzban поставляется с встроенным ботом Telegram, к
 
 Чтобы включить Telegram-бота, выполните следующие действия:
 
-1. установите `TELEGRAM_API_TOKEN` в качестве API-токена вашего бота.
-2. установите `TELEGRAM_ADMIN_ID` в качестве цифрового ID вашего Telegram-аккаунта, который вы можете получить от [@userinfobot](https://t.me/userinfobot)
+1. установите `telegram_api_token` в качестве API-токена вашего бота.
+2. установите `telegram_admin_ids` в качестве цифрового ID вашего Telegram-аккаунта, который вы можете получить от [@userinfobot](https://t.me/userinfobot)
 
 # Marzban CLI
 
@@ -339,7 +333,7 @@ marzban cli [OPTIONS] COMMAND [ARGS]...
 
 Вы можете задать адрес webhook, и Marzban будет отправлять уведомления на этот адрес.
 
-Запросы будут отправляться в виде POST-запроса на адрес, указанный в `WEBHOOK_ADDRESS`, с `WEBHOOK_SECRET` в качестве `x-webhook-secret` в заголовках.
+Запросы будут отправляться в виде POST-запроса на адрес, указанный в `webhook_url`, с `webhook_secret` в качестве `x-webhook-secret` в заголовках.
 
 Пример запроса, отправленного Marzban:
 

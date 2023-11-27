@@ -62,8 +62,8 @@
 ## Table of Contents
 
 - [Overview](#overview)
-	- [Why using Marzban?](#why-using-marzban)
-		- [Features](#features)
+  - [Why using Marzban?](#why-using-marzban)
+    - [Features](#features)
 - [Installation guide](#installation-guide)
 - [Configuration](#configuration)
 - [API](#api)
@@ -276,21 +276,15 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | XRAY_JSON                         | Path of Xray's json config file (default: `xray_config.json`)                                         |
 | XRAY_EXECUTABLE_PATH              | Path of Xray binary (default: `/usr/local/bin/xray`)                                                  |
 | XRAY_ASSETS_PATH                  | Path of Xray assets (default: `/usr/local/share/xray`)                                                |
-| XRAY_SUBSCRIPTION_URL_PREFIX      | Prefix of subscription URLs                                                                           |
 | XRAY_FALLBACKS_INBOUND_TAG        | Tag of the inbound that includes fallbacks, needed in the case you're using fallbacks                 |
 | XRAY_EXCLUDE_INBOUND_TAGS         | Tags of the inbounds that shouldn't be managed and included in links by application                   |
 | CUSTOM_TEMPLATES_DIRECTORY        | Customized templates directory (default: `app/templates`)                                             |
 | CLASH_SUBSCRIPTION_TEMPLATE       | The template that will be used for generating clash configs (default: `clash/default.yml`)            |
 | SUBSCRIPTION_PAGE_TEMPLATE        | The template used for generating subscription info page (default: `subscription/index.html`)          |
 | HOME_PAGE_TEMPLATE                | Decoy page template (default: `home/index.html`)                                                      |
-| TELEGRAM_API_TOKEN                | Telegram bot API token  (get token from [@botfather](https://t.me/botfather))                         |
-| TELEGRAM_ADMIN_ID                 | Numeric Telegram ID of admin (use [@userinfobot](https://t.me/userinfobot) to found your ID)          |
 | TELEGRAM_PROXY_URL                | Run Telegram Bot over proxy                                                                           |
-| JWT_ACCESS_TOKEN_EXPIRE_MINUTES   | Expire time for the Access Tokens in minutes, `0` considered as infinite (default: `1440`)            |
 | DOCS                              | Whether API documents should be available on `/docs` and `/redoc` or not (default: `False`)           |
 | DEBUG                             | Debug mode for development (default: `False`)                                                         |
-| WEBHOOK_ADDRESS                   | Webhook address to send notifications to. Webhook notifications will be sent if this value was set.   |
-| WEBHOOK_SECRET                    | Webhook secret will be sent with each request as `x-webhook-secret` in the header (default: `None`)   |
 | NUMBER_OF_RECURRENT_NOTIFICATIONS | How many times to retry if an error detected in sending a notification (default: `3`)                 |
 | RECURRENT_NOTIFICATIONS_TIMEOUT   | Timeout between each retry if an error detected in sending a notification in seconds (default: `180`) |
 | NOTIFY_REACHED_USAGE_PERCENT      | At which percentage of usage to send the warning notification (default: `80`)                         |
@@ -315,8 +309,8 @@ Marzban comes with an integrated Telegram bot that can handle server management,
 
 To enable Telegram Bot:
 
-1. set `TELEGRAM_API_TOKEN` to your bot's API Token
-2. set `TELEGRAM_ADMIN_ID` to your Telegram account's numeric ID, you can get your ID from [@userinfobot](https://t.me/userinfobot)
+1. set `telegram_api_token` to your bot's API Token
+2. set `telegram_admin_ids` to your Telegram account's numeric ID, you can get your ID from [@userinfobot](https://t.me/userinfobot)
 
 # Marzban CLI
 
@@ -339,7 +333,7 @@ For more detailed information and installation instructions, please refer to the
 
 You can set a webhook address and Marzban will send the notifications to that address.
 
-the requests will be sent as a post request to the adress provided by `WEBHOOK_ADDRESS` with `WEBHOOK_SECRET` as `x-webhook-secret` in the headers.
+the requests will be sent as a post request to the adress provided by `webhook_url` with `webhook_secret` as `x-webhook-secret` in the headers.
 
 Example request sent from Marzban:
 

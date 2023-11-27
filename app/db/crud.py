@@ -7,12 +7,13 @@ from sqlalchemy.orm import Session
 
 from app.db.models import (JWT, TLS, Admin, Node, NodeUsage, NodeUserUsage,
                            NotificationReminder, Proxy, ProxyHost,
-                           ProxyInbound, ProxyTypes, System, User,
+                           ProxyInbound, ProxyTypes, Settings, System, User,
                            UserTemplate, UserUsageResetLogs)
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
 from app.models.node import (NodeCreate, NodeModify, NodeStatus,
                              NodeUsageResponse)
 from app.models.proxy import ProxyHost as ProxyHostModify
+from app.models.system import SettingsModify
 from app.models.user import (ReminderType, UserCreate,
                              UserDataLimitResetStrategy, UserModify,
                              UserResponse, UserStatus, UserUsageResponse)
@@ -157,7 +158,7 @@ def get_users(db: Session,
     return query.all()
 
 
-def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime, 
+def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime,
                     ) -> List[UserUsageResponse]:
     usages = {}
 
@@ -266,7 +267,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
             if not dbuser.data_limit or dbuser.used_traffic < dbuser.data_limit:
                 if dbuser.status != UserStatus.on_hold:
                     dbuser.status = UserStatus.active
-                    
+
                 if not dbuser.data_limit or (calculate_usage_percent(
                         dbuser.used_traffic, dbuser.data_limit) < NOTIFY_REACHED_USAGE_PERCENT):
                     delete_notification_reminder_by_type(db, dbuser.id, ReminderType.data_usage)
@@ -286,14 +287,14 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
 
     if modify.note is not None:
         dbuser.note = modify.note or None
-      
+
     if modify.data_limit_reset_strategy is not None:
         dbuser.data_limit_reset_strategy = modify.data_limit_reset_strategy.value
 
-    if modify.on_hold_timeout is not None :
+    if modify.on_hold_timeout is not None:
         dbuser.on_hold_timeout = modify.on_hold_timeout
 
-    if modify.on_hold_expire_duration is not None :
+    if modify.on_hold_expire_duration is not None:
         dbuser.on_hold_expire_duration = modify.on_hold_expire_duration
 
     dbuser.edit_at = datetime.utcnow()
@@ -352,7 +353,7 @@ def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
 
     for dbuser in query.all():
         dbuser.used_traffic = 0
-        if dbuser.status not in [UserStatus.on_hold , UserStatus.expired , UserStatus.disabled]:
+        if dbuser.status not in [UserStatus.on_hold, UserStatus.expired, UserStatus.disabled]:
             dbuser.status = UserStatus.active
         dbuser.usage_logs.clear()
         dbuser.node_usages.clear()
@@ -377,7 +378,7 @@ def set_owner(db: Session, dbuser: User, admin: Admin):
 
 def start_user_expire(db: Session, dbuser: User):
 
-    expire = int(datetime.utcnow().timestamp()) + dbuser.on_hold_expire_duration    
+    expire = int(datetime.utcnow().timestamp()) + dbuser.on_hold_expire_duration
     dbuser.expire = expire
     db.commit()
     db.refresh(dbuser)
@@ -665,3 +666,51 @@ def delete_notification_reminder(db: Session, dbreminder: NotificationReminder) 
     db.delete(dbreminder)
     db.commit()
     return
+
+
+def get_settings(db: Session):
+    return db.query(Settings).first()
+
+
+def update_settings(db: Session, modified_settings: SettingsModify):
+    settings = get_settings(db)
+
+    if modified_settings.dashboard_path is not None:
+        settings.dashboard_path = modified_settings.dashboard_path
+
+    if modified_settings.subscription_url_prefix is not None:
+        settings.subscription_url_prefix = modified_settings.subscription_url_prefix
+
+    if modified_settings.subscription_page_title is not None:
+        settings.subscription_page_title = modified_settings.subscription_page_title
+
+    if modified_settings.subscription_support_url_header is not None:
+        settings.subscription_support_url_header = modified_settings.subscription_support_url_header
+
+    if modified_settings.subscription_update_interval_header is not None:
+        settings.subscription_update_interval_header = modified_settings.subscription_update_interval_header
+
+    if modified_settings.webhook_url is not None:
+        settings.webhook_url = modified_settings.webhook_url
+
+    if modified_settings.webhook_secret is not None:
+        settings.webhook_secret = modified_settings.webhook_secret
+
+    if modified_settings.telegram_api_token is not None:
+        settings.telegram_api_token = modified_settings.telegram_api_token
+
+    if modified_settings.telegram_admin_ids is not None:
+        settings.telegram_admin_ids = modified_settings.telegram_admin_ids
+
+    if modified_settings.telegram_logs_channel_id is not None:
+        settings.telegram_logs_channel_id = modified_settings.telegram_logs_channel_id
+
+    if modified_settings.discord_webhook_url is not None:
+        settings.discord_webhook_url = modified_settings.discord_webhook_url
+
+    if modified_settings.jwt_token_expire_minutes is not None:
+        settings.jwt_token_expire_minutes = modified_settings.jwt_token_expire_minutes
+
+    db.commit()
+    db.refresh(settings)
+    return settings

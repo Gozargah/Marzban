@@ -1,15 +1,15 @@
+from fastapi import BackgroundTasks
 from typing import Dict, List, Union
 
 from fastapi import Depends, HTTPException
 
-from app import app, xray
+from app import __version__, app, settings, telegram, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.proxy import ProxyHost, ProxyInbound, ProxyTypes
-from app.models.system import SystemStats
+from app.models.system import Settings, SettingsModify, SystemStats
 from app.models.user import UserStatus
-from app.utils.system import memory_usage, cpu_usage, realtime_bandwidth
-from app import __version__
+from app.utils.system import cpu_usage, memory_usage, realtime_bandwidth
 
 
 @app.get("/api/system", tags=["System"], response_model=SystemStats)
@@ -74,3 +74,36 @@ def modify_hosts(modified_hosts: Dict[str, List[ProxyHost]],
         hosts[inbound_tag] = crud.get_hosts(db, inbound_tag)
 
     return hosts
+
+
+@app.get('/api/settings', tags=["System"], response_model=Settings)
+def get_settings(db: Session = Depends(get_db),
+                 admin: Admin = Depends(Admin.get_current)):
+    if not admin.is_sudo:
+        raise HTTPException(status_code=403, detail="You're not allowed")
+
+    return crud.get_settings(db)
+
+
+@app.put('/api/settings', tags=["System"], response_model=Settings)
+def put_settings(modified_settings: SettingsModify,
+                 bg: BackgroundTasks,
+                 db: Session = Depends(get_db),
+                 admin: Admin = Depends(Admin.get_current)):
+    if not admin.is_sudo:
+        raise HTTPException(status_code=403, detail="You're not allowed")
+
+    new_settings = crud.update_settings(db, modified_settings)
+
+    if modified_settings.dashboard_path != settings['dashboard_path']:
+        for route in app.routes:
+            if route.name == 'dashboard':
+                app.mount(modified_settings.dashboard_path, route.app, name=route.name)
+                app.routes.remove(route)
+                break
+
+    if modified_settings.telegram_api_token != settings['telegram_api_token']:
+        bg.add_task(telegram.bot.restart)
+
+    settings.update()
+    return new_settings

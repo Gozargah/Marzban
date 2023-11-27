@@ -1,25 +1,28 @@
 import datetime
-
-from app import logger
-from app.telegram import bot
-from telebot.apihelper import ApiTelegramException
 from datetime import datetime
+
+from telebot.apihelper import ApiTelegramException
+from telebot.formatting import escape_html
+
+from app import logger, settings
+from app.telegram import bot
 from app.telegram.utils.keyboard import BotKeyboard
 from app.utils.system import readable_size
-from config import TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID
-from telebot.formatting import escape_html
 
 
 def report(message: str, parse_mode="html", keyboard=None):
-    if bot and (TELEGRAM_ADMIN_ID or TELEGRAM_LOGGER_CHANNEL_ID):
-        try:
-            if TELEGRAM_LOGGER_CHANNEL_ID:
-                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, message, parse_mode=parse_mode)
-            else:
-                for admin in TELEGRAM_ADMIN_ID:
+    if bot.is_running:
+        if settings.get("telegram_logs_channel_id"):
+            try:
+                bot.send_message(settings["telegram_logs_channel_id"], message, parse_mode=parse_mode)
+            except ApiTelegramException as e:
+                logger.error(e)
+        elif settings.get("telegram_admins"):
+            for admin in settings['telegram_admins']:
+                try:
                     bot.send_message(admin, message, parse_mode=parse_mode, reply_markup=keyboard)
-        except ApiTelegramException as e:
-            logger.error(e)
+                except ApiTelegramException as e:
+                    logger.error(e)
 
 
 def report_new_user(user_id: int, username: str, by: str, expire_date: int, data_limit: int, proxies: list):

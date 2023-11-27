@@ -28,20 +28,11 @@ XRAY_FALLBACKS_INBOUND_TAG = config("XRAY_FALLBACKS_INBOUND_TAG", cast=str, defa
 XRAY_EXECUTABLE_PATH = config("XRAY_EXECUTABLE_PATH", default="/usr/local/bin/xray")
 XRAY_ASSETS_PATH = config("XRAY_ASSETS_PATH", default="/usr/local/share/xray")
 XRAY_EXCLUDE_INBOUND_TAGS = config("XRAY_EXCLUDE_INBOUND_TAGS", default='').split()
-XRAY_SUBSCRIPTION_URL_PREFIX = config("XRAY_SUBSCRIPTION_URL_PREFIX", default="").strip("/")
 
 
-TELEGRAM_API_TOKEN = config("TELEGRAM_API_TOKEN", default="")
-TELEGRAM_ADMIN_ID = config(
-    'TELEGRAM_ADMIN_ID',
-    default="",
-    cast=lambda v: [int(i) for i in filter(str.isdigit, (s.strip() for s in v.split(',')))]
-)
 TELEGRAM_PROXY_URL = config("TELEGRAM_PROXY_URL", default="")
-TELEGRAM_LOGGER_CHANNEL_ID = config("TELEGRAM_LOGGER_CHANNEL_ID", cast=int, default=0)
 TELEGRAM_DEFAULT_VLESS_FLOW = config("TELEGRAM_DEFAULT_VLESS_FLOW", default="")
 
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES = config("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=1440)
 
 CUSTOM_TEMPLATES_DIRECTORY = config("CUSTOM_TEMPLATES_DIRECTORY", default=None)
 CLASH_SUBSCRIPTION_TEMPLATE = config("CLASH_SUBSCRIPTION_TEMPLATE", default="clash/default.yml")
@@ -55,9 +46,6 @@ SUDOERS = {config("SUDO_USERNAME"): config("SUDO_PASSWORD")} \
     if config("SUDO_USERNAME", default='') and config("SUDO_PASSWORD", default='') \
     else {}
 
-
-WEBHOOK_ADDRESS = config("WEBHOOK_ADDRESS", default=None)
-WEBHOOK_SECRET = config("WEBHOOK_SECRET", default=None)
 
 # recurrent notifications
 
@@ -74,10 +62,23 @@ NOTIFY_DAYS_LEFT = config("NOTIFY_DAYS_LEFT", default=3, cast=int)
 
 DISABLE_RECORDING_NODE_USAGE = config("DISABLE_RECORDING_NODE_USAGE", cast=bool, default=False)
 
-# headers: profile-update-interval, support-url, profile-title
-SUB_UPDATE_INTERVAL = config("SUB_UPDATE_INTERVAL", default="12")
-SUB_SUPPORT_URL = config("SUB_SUPPORT_URL", default="https://t.me/")
-SUB_PROFILE_TITLE = config("SUB_PROFILE_TITLE", default="Subscription")
 
-# discord webhook log
+# ! DEPRECATED VARIABLES !
+# These variables have been moved to the database and can be changed through the /api/settings endpoint.
+# ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓
+XRAY_SUBSCRIPTION_URL_PREFIX = config("XRAY_SUBSCRIPTION_URL_PREFIX", default="").strip("/")
+SUB_PROFILE_TITLE = config("SUB_PROFILE_TITLE", default="Subscription")
+SUB_SUPPORT_URL = config("SUB_SUPPORT_URL", default="")
+SUB_UPDATE_INTERVAL = config("SUB_UPDATE_INTERVAL", default="12")
+WEBHOOK_ADDRESS = config("WEBHOOK_ADDRESS", default=None)
+WEBHOOK_SECRET = config("WEBHOOK_SECRET", default=None)
+TELEGRAM_API_TOKEN = config("TELEGRAM_API_TOKEN", default="")
+TELEGRAM_ADMIN_ID = config(
+    'TELEGRAM_ADMIN_ID',
+    default="",
+    cast=lambda v: [int(i) for i in filter(str.isdigit, (s.strip() for s in v.split(',')))]
+)
+TELEGRAM_LOGGER_CHANNEL_ID = config("TELEGRAM_LOGGER_CHANNEL_ID", cast=int, default=0)
 DISCORD_WEBHOOK_URL = config("DISCORD_WEBHOOK_URL", default="")
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES = config("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=1440)
+# ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑

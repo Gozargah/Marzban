@@ -3,15 +3,14 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy.orm import Session
 
-from app import logger, scheduler, xray
+from app import logger, scheduler, xray, settings
 from app.db import (GetDB, get_notification_reminder, get_users,
                     update_user_status, start_user_expire)
 from app.models.user import ReminderType, UserResponse, UserStatus
 from app.utils import report
 from app.utils.helpers import (calculate_expiration_days,
                                calculate_usage_percent)
-from config import (NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT,
-                    WEBHOOK_ADDRESS)
+from config import (NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT)
 
 if TYPE_CHECKING:
     from app.db.models import User
@@ -46,7 +45,7 @@ def review():
             elif expired:
                 status = UserStatus.expired
             else:
-                if WEBHOOK_ADDRESS:
+                if settings.get('webhook_url'):
                     add_notification_reminders(db, user, now)
                 continue
 
@@ -91,7 +90,7 @@ def review():
 
             update_user_status(db, user, status)
             xray.operations.add_user(user)
-            
+
             logger.info(f"User \"{user.username}\" status fixed.")
 
 

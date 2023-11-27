@@ -227,9 +227,6 @@ $ subscription get-config [OPTIONS]
 
 Prints the given user's subscription link.
 
-NOTE: This command needs `XRAY_SUBSCRIPTION_URL_PREFIX` environment variable to be set
-  in order to work correctly.
-
 **Usage**:
 
 ```console

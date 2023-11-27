@@ -62,8 +62,8 @@
 
 ## فهرست مطالب
 - [بررسی اجمالی](#بررسی-اجمالی)
-	- [چرا مرزبان؟](#چرا-مرزبان)
-		- [امکانات](#امکانات)
+  - [چرا مرزبان؟](#چرا-مرزبان)
+    - [امکانات](#امکانات)
 - [راهنمای نصب](#راهنمای-نصب)
 - [تنظیمات](#تنظیمات)
 - [استفاده از API](#استفاده-از-api)
@@ -247,21 +247,15 @@ server {
 |                                                                مسیر فایل json تنظیمات xray (پیشفرض: `xray_config.json`) |                                                      XRAY_JSON                                                       |
 |                                                                        مسیر باینری xray (پیشفرض: `/usr/local/bin/xray`) |                                                 XRAY_EXECUTABLE_PATH                                                 |
 |                                                                   مسیر asset های xray (پیشفرض: `/usr/local/share/xray`) |                                                   XRAY_ASSETS_PATH                                                   |
-| پیشوند (یا هاست) آدرس های اشتراکی (زمانی کاربرد دارد که نیاز دارید دامنه subscription link ها با دامنه پنل متفاوت باشد) |                                             XRAY_SUBSCRIPTION_URL_PREFIX                                             |
 |                                                                        تگ inboundای که به عنوان fallback استفاده میشود. |                                              XRAY_FALLBACKS_INBOUND_TAG                                              |
 |                                                تگ های inbound ای که لازم نیست در کانفیگ های ساخته شده وجود داشته باشند. |                                              XRAY_EXCLUDE_INBOUND_TAGS                                               |
 |                                                                               آدرس محل template های شخصی سازی شده کاربر |                                              CUSTOM_TEMPLATES_DIRECTORY                                              |
 |                                           تمپلیت مورد استفاده برای تولید کانفیگ های Clash (پیشفرض: `clash/default.yml`) |                                             CLASH_SUBSCRIPTION_TEMPLATE                                              |
 |                                                     تمپلیت صفحه اطلاعات اشتراک کاربر (پیشفرض `subscription/index.html`) |                                              SUBSCRIPTION_PAGE_TEMPLATE                                              |
 |                                                                             تمپلیت صفحه اول (پیشفرض: `home/index.html`) |                                                  HOME_PAGE_TEMPLATE                                                  |
-|                                                       توکن ربات تلگرام (دریافت از [@botfather](https://t.me/botfather)) |                                                  TELEGRAM_API_TOKEN                                                  |
-|                                          آیدی عددی ادمین در تلگرام (دریافت از [@userinfobot](https://t.me/userinfobot)) |                                                  TELEGRAM_ADMIN_ID                                                   |
 |                                                                                               اجرای ربات از طریق پروکسی |                                                  TELEGRAM_PROXY_URL                                                  |
-|                            مدت زمان انقضا توکن دسترسی به پنل مرزبان, `0` به معنای بدون تاریخ انقضا است (پیشفرض: `1440`) |                                           JWT_ACCESS_TOKEN_EXPIRE_MINUTES                                            |
 |                                                       فعال سازی داکیومنتیشن به آدرس `/docs` و `/redoc`(پیشفرض: `False`) |                                                         DOCS                                                         |
 |                                                                     فعالسازی حالت توسعه (development) (پیشفرض: `False`) |                                                        DEBUG                                                         |
-|                                                                                                         WEBHOOK_ADDRESS | آدرس webhook که تغییرات حالت یک کاربر به آن ارسال می‌شوند. اگر این متغیر مقدار داشته باشد، ارسال پیام‌ها انجام می‌شوند. |
-|                                                                                                          WEBHOOK_SECRET |                    متغیری که به عنوان `x-webhook-secret` در header ارسال می‌شود. (پیشفرض: `None`)                     |
 |                             تعداد دفعاتی که برای ارسال یک پیام، در صورت تشخیص خطا در ارسال تلاش دوباره شود (پیشفرض `3`) |                                          NUMBER_OF_RECURRENT_NOTIFICATIONS                                           |
 |                                   مدت زمان بین هر ارسال دوباره پیام در صورت تشخیص خطا در ارسال به ثانیه (پیشفرض: `180`) |                                           RECURRENT_NOTIFICATIONS_TIMEOUT                                            |
 |                                    هنگام رسیدن مصرف کاربر به چه درصدی پیام اخطار به آدرس وبهوک ارسال شود (پیشفرض: `80`) |                                             NOTIFY_REACHED_USAGE_PERCENT                                             |
@@ -286,8 +280,8 @@ server {
 
 برای فعال کردن ربات تلگرام:
 
-1. در تنظیمات، متغیر`TELEGRAM_API_TOKEN` را به API TOKEN ربات تلگرام خود تنظیم کنید.
-2. همینطور، متغیر`TELEGRAM_ADMIN_ID` را به شناسه عددی حساب تلگرام خود تنظیم کنید. شما می‌توانید شناسه خود را از [@userinfobot](https://t.me/userinfobot) دریافت کنید.
+1. در تنظیمات، متغیر`telegram_api_token` را به API TOKEN ربات تلگرام خود تنظیم کنید.
+2. همینطور، متغیر`telegram_admin_ids` را به شناسه عددی حساب تلگرام خود تنظیم کنید. شما می‌توانید شناسه خود را از [@userinfobot](https://t.me/userinfobot) دریافت کنید.
 
 
 # رابط خط فرمان (CLI) مرزبان
@@ -309,7 +303,7 @@ $ sudo docker-compose exec -it marzban bash
 # ارسال اعلان‌ها به آدرس وبهوک
 شما می‌توانید آدرسی را برای مرزبان فراهم کنید تا تغییرات کاربران را به صورت اعلان برای شما ارسال کند.
 
-اعلان‌ها به صورت یک درخواست POST به آدرسی که در `WEBHOOK_ADDRESS` فراهم شده به همراه مقدار تعیین شده در `WEBHOOK_SECRET` به عنوان `x-webhook-secret` در header درخواست ارسال می‌شوند.
+اعلان‌ها به صورت یک درخواست POST به آدرسی که در `webhook_url` فراهم شده به همراه مقدار تعیین شده در `webhook_secret` به عنوان `x-webhook-secret` در header درخواست ارسال می‌شوند.
 
 نمونه‌ای از درخواست ارسال شده توسط مرزبان:
 

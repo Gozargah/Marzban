@@ -4,7 +4,7 @@ from typing import Union
 
 from jose import JWTError, jwt
 
-from config import JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+from app import settings
 
 
 @lru_cache(maxsize=None)
@@ -16,8 +16,8 @@ def get_secret_key():
 
 def create_admin_token(username: str, is_sudo=False) -> str:
     data = {"sub": username, "access": "sudo" if is_sudo else "admin", "iat": datetime.utcnow()}
-    if JWT_ACCESS_TOKEN_EXPIRE_MINUTES > 0:
-        expire = datetime.utcnow() + timedelta(minutes=JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+    if settings.get('jwt_token_expire_minutes', 0) > 0:
+        expire = datetime.utcnow() + timedelta(minutes=settings['jwt_token_expire_minutes'])
         data["exp"] = expire
     encoded_jwt = jwt.encode(data, get_secret_key(), algorithm="HS256")
     return encoded_jwt

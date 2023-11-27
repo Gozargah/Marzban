@@ -62,8 +62,8 @@
 
 ## 目录
 - [概览](#概览)
-	- [为什么要使用 Marzban?](#为什么要使用-marzban)
-		- [特性](#特性)
+  - [为什么要使用 Marzban?](#为什么要使用-marzban)
+    - [特性](#特性)
 - [安装指南](#安装指南)
 - [配置](#配置)
 - [如何使用 API](#如何使用-api)
@@ -263,16 +263,12 @@ server {
 | XRAY_JSON                       | Xray 的 json 配置文件路径（默认: `xray_config.json`）                                                |
 | XRAY_EXECUTABLE_PATH            | Xray 的执行程序路径: `/usr/local/bin/xray`）                                                         |
 | XRAY_ASSETS_PATH                | Xray 的资源目录: `/usr/local/share/xray`）                                                           |
-| XRAY_SUBSCRIPTION_URL_PREFIX    | 订阅URL的前缀                                                                                        |
 | XRAY_FALLBACKS_INBOUND_TAG      | 包含 fallbacks 的入站标记, 在您需要使用 fallbacks 配置此项                                           |
 | XRAY_EXCLUDE_INBOUND_TAGS       | 不需要此应用程序管理或在链接中包含的入站标记                                                         |
 | CLASH_SUBSCRIPTION_TEMPLATE     | 将用于生成冲突配置的模板（默认值：`clash/default.yml`）                                              |
 | SUBSCRIPTION_PAGE_TEMPLATE      | 用于生成订阅信息页面的模板（默认：`subscription/index.html`）                                        |
 | HOME_PAGE_TEMPLATE              | 诱饵页面模板（默认：`home/index.html`）                                                              |
-| TELEGRAM_API_TOKEN              | Telegram bot API 令牌（可以从 [@botfather](https://t.me/botfather) 获取）                            |
-| TELEGRAM_ADMIN_ID               | 管理员的 Telegram ID（可以使用 [@userinfobot](https://t.me/userinfobot) 查找您的 ID）                |
 | TELEGRAM_PROXY_URL              | 在代理下运行 Telegram bot。                                                                          |
-| JWT_ACCESS_TOKEN_EXPIRE_MINUTES | Access Tokens 的过期时间，以分钟为单位，`0` 表示无限期（默认为 `1440` 分钟）                         |
 | DOCS                            | API 文档是否应该在 `/docs` 和 `/redoc` 上提供（默认为 `False`                                        |
 | DEBUG                           | 开发者调试模式（默认: `False`）                                                                      |
 
@@ -297,8 +293,8 @@ Marzban 配备了一个集成的 Telegram bot，可以处理服务器管理、�
 
 启用 Telegram bot：
 
-1. 将 `TELEGRAM_API_TOKEN` 设置为您的 bot API Token。
-2. 将 `TELEGRAM_ADMIN_ID` 设置为您的 Telegram ID，您可以从 [@userinfobot](https://t.me/userinfobot) 中获取自己的 ID。
+1. 将 `telegram_api_token` 设置为您的 bot API Token。
+2. 将 `telegram_admin_ids` 设置为您的 Telegram ID，您可以从 [@userinfobot](https://t.me/userinfobot) 中获取自己的 ID。
 
 
 # 捐赠

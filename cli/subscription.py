@@ -24,9 +24,6 @@ def get_link(
 ):
     """
     Prints the given user's subscription link.
-
-    NOTE: This command needs `XRAY_SUBSCRIPTION_URL_PREFIX` environment variable to be set
-      in order to work correctly.
     """
     with GetDB() as db:
         user: UserResponse = UserResponse.from_orm(utils.get_user(db, username))

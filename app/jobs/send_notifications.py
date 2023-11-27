@@ -6,18 +6,16 @@ from fastapi.encoders import jsonable_encoder
 from requests import Session
 
 import config
-from app import app, logger, scheduler
+from app import app, logger, scheduler, settings
 from app.db import GetDB
 from app.db.models import NotificationReminder
 from app.utils.notification import queue
 
 session = Session()
 
-headers = {"x-webhook-secret": config.WEBHOOK_SECRET} if config.WEBHOOK_SECRET else None
-
 
 def send(data: List[Dict[Any, Any]]) -> bool:
-    """Send the notification to the webhook address provided by config.WEBHOOK_ADDRESS
+    """Send the notification to the webhook address
 
     Args:
         data (List[Dict[Any, Any]]): list of json encoded notifications
@@ -25,9 +23,16 @@ def send(data: List[Dict[Any, Any]]) -> bool:
     Returns:
         bool: returns True if an ok response received
     """
+    webhook_url = settings.get('webhook_url')
+    if not webhook_url:
+        return True
+
     try:
-        logger.debug(f"Sending {len(data)} webhook updates to {config.WEBHOOK_ADDRESS}")
-        r = session.post(config.WEBHOOK_ADDRESS, json=data, headers=headers)
+        logger.debug(f"Sending {len(data)} webhook updates to {webhook_url}")
+        headers = {}
+        if settings.get('webhook_secret'):
+            headers["x-webhook-secret"] = settings['webhook_secret']
+        r = session.post(webhook_url, json=data, headers=headers)
         if r.ok:
             return True
         logger.error(r)
@@ -70,7 +75,7 @@ def delete_expired_reminders() -> None:
         db.commit()
 
 
-if config.WEBHOOK_ADDRESS:
+if settings.get('webhook_url'):
     @app.on_event("shutdown")
     def app_shutdown():
         logger.info("Sending pending notifications before shutdown...")

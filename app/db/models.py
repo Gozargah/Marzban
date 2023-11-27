@@ -199,6 +199,24 @@ class System(Base):
     downlink = Column(BigInteger, default=0)
 
 
+class Settings(Base):
+    __tablename__ = "settings"
+
+    id = Column(Integer, primary_key=True)
+    dashboard_path = Column(String(256), nullable=False, default="/dashboard")
+    subscription_url_prefix = Column(String(256), nullable=True)
+    subscription_page_title = Column(String(128), nullable=False, default="Subscription")
+    subscription_support_url_header = Column(String(256), nullable=True)
+    subscription_update_interval_header = Column(Integer, nullable=True)
+    webhook_url = Column(String(256), nullable=True)
+    webhook_secret = Column(String(256), nullable=True)
+    telegram_api_token = Column(String(64), nullable=True)
+    telegram_admin_ids = Column(String(256), nullable=True)
+    telegram_logs_channel_id = Column(String(64), nullable=True)
+    discord_webhook_url = Column(String(256), nullable=True)
+    jwt_token_expire_minutes = Column(Integer, nullable=True, default=1440)
+
+
 class JWT(Base):
     __tablename__ = "jwt"
 

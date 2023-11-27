@@ -18,7 +18,7 @@ class MemoryStorage:
 class ListStorage(list):
     def __init__(self, update_func):
         super().__init__()
-        self.update_func = update_func
+        self._update_func = update_func
 
     def __getitem__(self, index):
         if not self:
@@ -39,13 +39,13 @@ class ListStorage(list):
         return super().__str__()
 
     def update(self):
-        self.update_func(self)
+        self._update_func(self)
 
 
 class DictStorage(dict):
     def __init__(self, update_func):
         super().__init__()
-        self.update_func = update_func
+        self._update_func = update_func
 
     def __getitem__(self, key):
         if not self:
@@ -84,4 +84,4 @@ class DictStorage(dict):
         return super().get(key, default)
 
     def update(self):
-        self.update_func(self)
+        self._update_func(self)

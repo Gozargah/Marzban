@@ -1,14 +1,15 @@
-import requests
 from datetime import datetime
-from app.utils.system import readable_size
+
+import requests
 from telebot.formatting import escape_html
-from app import logger
-from config import DISCORD_WEBHOOK_URL
+
+from app import logger, settings
+from app.utils.system import readable_size
 
 
 def send_webhook(json_data):
-    if DISCORD_WEBHOOK_URL:
-        result = requests.post(DISCORD_WEBHOOK_URL, json=json_data)
+    if settings.get('discord_webhook_url'):
+        result = requests.post(settings['discord_webhook_url'], json=json_data)
 
         try:
             result.raise_for_status()
