@@ -37,6 +37,7 @@ import {
   UserPlusIcon,
 } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { convertDateFormat } from "components/OnlineBadge";
 import { resetStrategy } from "constants/UserSettings";
 import { FilterUsageType, useDashboard } from "contexts/DashboardContext";
 import dayjs from "dayjs";
@@ -352,6 +353,13 @@ export const UserDialog: FC<UserDialogProps> = () => {
 
   const disabled = loading;
 
+  const lastSubUpdate = editingUser
+    ? !editingUser.sub_updated_at
+      ? "Never"
+      : (relativeExpiryDate(convertDateFormat(editingUser.sub_updated_at))
+          .time || "0 min") + " ago"
+    : null;
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl">
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
@@ -570,6 +578,19 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           {form.formState.errors?.note?.message}
                         </FormErrorMessage>
                       </FormControl>
+                      {editingUser && (
+                        <Text
+                          as="span"
+                          fontSize="sm"
+                          _dark={{ color: "gray.300" }}
+                          color="black"
+                        >
+                          <Text as="span" fontWeight="medium">
+                            Last Subscription Update:
+                          </Text>{" "}
+                          {lastSubUpdate}
+                        </Text>
+                      )}
                     </Flex>
                     {error && (
                       <Alert
