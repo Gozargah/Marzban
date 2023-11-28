@@ -17,6 +17,12 @@ export const convertDateFormat = (
   return Math.floor(date.getTime() / 1000);
 };
 
+export const humanizeRelativeLastOnline = (lastOnline: string) => {
+  if (lastOnline.includes("ago")) return `Was online ${lastOnline}`;
+  if (lastOnline.toLowerCase() === "online") return `Online`;
+  return `Not connected yet`;
+};
+
 export const getRelativeLastOnlineAt = ({ lastOnline }: UserStatusProps) => {
   const currentTimeInSeconds = Math.floor(Date.now() / 1000);
   const unixTime = convertDateFormat(lastOnline);
@@ -37,7 +43,10 @@ export const getRelativeLastOnlineAt = ({ lastOnline }: UserStatusProps) => {
 
 const statusStyles: Record<"online" | "offline" | "not_connected", BoxProps> = {
   online: {
-    bg: "green.500",
+    bg: "green.400",
+    _dark: {
+      bg: "green.500",
+    },
   },
   offline: {
     bg: "gray.400",
@@ -74,7 +83,13 @@ export const OnlineBadge: FC<UserStatusProps> = ({ lastOnline }) => {
       label={getRelativeLastOnlineAt({ lastOnline: lastOnline ?? null })}
       placement="top"
     >
-      <Box h={3} w={3} rounded="full" {...statusStyles[status]} />
+      <Box
+        display={{ base: "none", md: "block" }}
+        h={3}
+        w={3}
+        rounded="full"
+        {...statusStyles[status]}
+      />
     </Tooltip>
   );
 };

@@ -688,6 +688,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                   fontSize="sm"
                   _dark={{ color: "gray.300" }}
                   color="black"
+                  pb="2"
                 >
                   <Text as="span" display="inline">
                     {!!editingUser.sub_updated_at
