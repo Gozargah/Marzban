@@ -113,7 +113,7 @@ UsersSortingOptions = Enum('UsersSortingOptions', {
 def get_users(db: Session,
               offset: Optional[int] = None,
               limit: Optional[int] = None,
-              username: Optional[str] = None,
+              usernames: Optional[List[str]] = None,
               status: Optional[Union[UserStatus, list]] = None,
               sort: Optional[List[UsersSortingOptions]] = None,
               admin: Optional[Admin] = None,
@@ -121,8 +121,11 @@ def get_users(db: Session,
               return_with_count: bool = False) -> Union[List[User], Tuple[List[User], int]]:
     query = db.query(User)
 
-    if username:
-        query = query.filter(User.username.ilike(f'%{username}%'))
+    if usernames:
+        if len(usernames) == 1:
+            query = query.filter(User.username.ilike(f"%{usernames[0]}%"))
+        else:
+            query = query.filter(User.username.in_(usernames))
 
     if status:
         if isinstance(status, list):
@@ -157,7 +160,7 @@ def get_users(db: Session,
     return query.all()
 
 
-def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime, 
+def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime,
                     ) -> List[UserUsageResponse]:
     usages = {}
 
@@ -266,7 +269,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
             if not dbuser.data_limit or dbuser.used_traffic < dbuser.data_limit:
                 if dbuser.status != UserStatus.on_hold:
                     dbuser.status = UserStatus.active
-                    
+
                 if not dbuser.data_limit or (calculate_usage_percent(
                         dbuser.used_traffic, dbuser.data_limit) < NOTIFY_REACHED_USAGE_PERCENT):
                     delete_notification_reminder_by_type(db, dbuser.id, ReminderType.data_usage)
@@ -286,14 +289,14 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
 
     if modify.note is not None:
         dbuser.note = modify.note or None
-      
+
     if modify.data_limit_reset_strategy is not None:
         dbuser.data_limit_reset_strategy = modify.data_limit_reset_strategy.value
 
-    if modify.on_hold_timeout is not None :
+    if modify.on_hold_timeout is not None:
         dbuser.on_hold_timeout = modify.on_hold_timeout
 
-    if modify.on_hold_expire_duration is not None :
+    if modify.on_hold_expire_duration is not None:
         dbuser.on_hold_expire_duration = modify.on_hold_expire_duration
 
     dbuser.edit_at = datetime.utcnow()
@@ -352,7 +355,7 @@ def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
 
     for dbuser in query.all():
         dbuser.used_traffic = 0
-        if dbuser.status not in [UserStatus.on_hold , UserStatus.expired , UserStatus.disabled]:
+        if dbuser.status not in [UserStatus.on_hold, UserStatus.expired, UserStatus.disabled]:
             dbuser.status = UserStatus.active
         dbuser.usage_logs.clear()
         dbuser.node_usages.clear()
@@ -377,7 +380,7 @@ def set_owner(db: Session, dbuser: User, admin: Admin):
 
 def start_user_expire(db: Session, dbuser: User):
 
-    expire = int(datetime.utcnow().timestamp()) + dbuser.on_hold_expire_duration    
+    expire = int(datetime.utcnow().timestamp()) + dbuser.on_hold_expire_duration
     dbuser.expire = expire
     db.commit()
     db.refresh(dbuser)

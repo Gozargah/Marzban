@@ -1,12 +1,12 @@
-from typing import Optional
-from rich.table import Table
+from typing import List, Optional
 
 import typer
+from rich.table import Table
 
-from app.db import GetDB
-from app.db import crud
+from app.db import GetDB, crud
 from app.db.models import User
 from app.utils.system import readable_size
+
 from . import utils
 
 app = typer.Typer(no_args_is_help=True)
@@ -16,7 +16,7 @@ app = typer.Typer(no_args_is_help=True)
 def list_users(
     offset: Optional[int] = typer.Option(None, *utils.FLAGS["offset"]),
     limit: Optional[int] = typer.Option(None, *utils.FLAGS["limit"]),
-    username: Optional[str] = typer.Option(None, *utils.FLAGS["username"], help="Search by username"),
+    username: Optional[List[str]] = typer.Option(None, *utils.FLAGS["username"], help="Search by username(s)"),
     status: Optional[crud.UserStatus] = typer.Option(None, *utils.FLAGS["status"]),
     admin: Optional[str] = typer.Option(None, "--admin", "--owner", help="Search by owner admin's username")
 ):
@@ -28,7 +28,7 @@ def list_users(
     with GetDB() as db:
         users: list[User] = crud.get_users(
             db=db, offset=offset, limit=limit,
-            username=username, status=status,
+            usernames=username, status=status,
             admin=crud.get_admin(db, admin) if admin else None
         )
 
@@ -68,7 +68,7 @@ def set_owner(
         user: User = utils.raise_if_falsy(
             crud.get_user(db, username=username), f'User "{username}" not found.')
 
-        dbadmin: Admin = utils.raise_if_falsy(
+        dbadmin = utils.raise_if_falsy(
             crud.get_admin(db, username=admin), f'Admin "{admin}" not found.')
 
         # Ask for confirmation if user already has an owner
