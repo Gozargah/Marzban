@@ -2,6 +2,8 @@ import re
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Union
+import random
+import secrets
 
 from pydantic import BaseModel, Field, validator
 
@@ -276,8 +278,10 @@ class UserResponse(User):
     @validator("subscription_url", pre=False, always=True)
     def validate_subscription_url(cls, v, values, **kwargs):
         if not v:
+            salt = secrets.token_hex(8)
+            url_prefix = (XRAY_SUBSCRIPTION_URL_PREFIX).replace('*', salt)
             token = create_subscription_token(values["username"])
-            return f"{XRAY_SUBSCRIPTION_URL_PREFIX}/{XRAY_SUBSCRIPTION_PATH}/{token}"
+            return f"{url_prefix}/{XRAY_SUBSCRIPTION_PATH}/{token}"
         return v
 
     @validator("proxies", pre=True, always=True)
