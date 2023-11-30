@@ -17,7 +17,7 @@ from app.models.proxy import ProxyHost
 
 @app.get("/api/node/settings", tags=['Node'], response_model=NodeSettings)
 def get_node_settings(db: Session = Depends(get_db),
-             admin: Admin = Depends(Admin.get_current)):
+                      admin: Admin = Depends(Admin.get_current)):
     if not admin.is_sudo:
         raise HTTPException(status_code=403, detail="You're not allowed")
 
@@ -65,8 +65,8 @@ def add_node(new_node: NodeCreate,
 
 @app.get("/api/node/{node_id}", tags=['Node'], response_model=NodeResponse)
 def get_node_by_id(node_id: int,
-             db: Session = Depends(get_db),
-             admin: Admin = Depends(Admin.get_current)):
+                   db: Session = Depends(get_db),
+                   admin: Admin = Depends(Admin.get_current)):
     if not admin.is_sudo:
         raise HTTPException(status_code=403, detail="You're not allowed")
 
@@ -219,9 +219,9 @@ def remove_node(node_id: int,
 
 @app.get("/api/nodes/usage", tags=['Node'], response_model=NodesUsageResponse)
 def get_nodes_usage(db: Session = Depends(get_db),
-              start: str = None,
-              end: str = None,
-              admin: Admin = Depends(Admin.get_current)):
+                    start: str = None,
+                    end: str = None,
+                    admin: Admin = Depends(Admin.get_current)):
     """
     Get nodes usage
     """
