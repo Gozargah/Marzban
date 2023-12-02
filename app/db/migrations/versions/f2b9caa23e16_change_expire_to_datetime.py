@@ -36,7 +36,7 @@ def upgrade():
         connection.execute(
             text("""
                 UPDATE users 
-                SET expire_temp = :expire,
+                SET expire_temp = :expire
                 WHERE id = :id
                 """
             ).params(

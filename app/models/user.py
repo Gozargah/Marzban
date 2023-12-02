@@ -186,7 +186,7 @@ class UserCreate(User):
         if status == UserStatusCreate.on_hold:
             if (on_hold_expire == 0 or on_hold_expire is None):
                 raise ValueError("User cannot be on hold without a valid on_hold_expire_duration.")
-            if expire:
+            if not expire == 0 or None:
                 raise ValueError("User cannot be on hold with specified expire.")
         return status
 
@@ -268,7 +268,7 @@ class UserModify(User):
         if status == UserStatusCreate.on_hold:
             if (on_hold_expire == 0 or on_hold_expire is None):
                 raise ValueError("User cannot be on hold without a valid on_hold_expire_duration.")
-            if expire:
+            if not expire == 0 or None:
                 raise ValueError("User cannot be on hold with specified expire.")
         return status
 
