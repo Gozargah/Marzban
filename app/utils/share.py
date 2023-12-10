@@ -27,7 +27,7 @@ STATUS_EMOJIS = {
     'expired': '⌛️',
     'limited': '🪫',
     'disabled': '❌',
-    'connect_to_start': '🔌'
+    'on_hold': '🔌'
 }
 
 
