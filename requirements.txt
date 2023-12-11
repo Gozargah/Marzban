@@ -44,6 +44,7 @@ PyMySQL==1.0.3
 pyOpenSSL==23.2.0
 pyparsing==3.0.9
 pypng==0.20220715.0
+PySocks==1.7.1
 pyTelegramBotAPI==4.9.0
 python-dateutil==2.8.2
 python-decouple==3.6
