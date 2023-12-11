@@ -36,10 +36,10 @@ def add_user(new_user: UserCreate | CreateUserFromTemplate,
     if isinstance(new_user, CreateUserFromTemplate):
         template = crud.get_user_template(db, new_user.template_id)
         if not template:
-            raise HTTPException(status_code=404, detail=f"Template not found!")
+            raise HTTPException(status_code=404, detail="Template not found!")
 
         if not template.inbounds:
-            raise HTTPException(status_code=422, detail="no inbounds found.")
+            raise HTTPException(status_code=422, detail="No inbounds found.")
 
         new_user = share.make_user_model_from_template(new_user, template, new_user.username)
 
@@ -102,7 +102,7 @@ def modify_user(username: str,
         template = crud.get_user_template(db, modified_user.template_id)
 
         if not template:
-            raise HTTPException(status_code=404, detail=f"Template not found!")
+            raise HTTPException(status_code=404, detail="Template not found!")
 
         modified_user = share.make_user_model_from_template(modified_user, template, username)
 
