@@ -96,6 +96,19 @@ class User(BaseModel):
         return v
 
 
+class CreateUserFromTemplate(BaseModel):
+    username: str
+    template_id: int
+
+    @validator("username", check_fields=False)
+    def validate_username(cls, v):
+        if not USERNAME_REGEXP.match(v):
+            raise ValueError(
+                "Username only can be 3 to 32 characters and contain a-z, 0-9, and underscores in between."
+            )
+        return v
+
+
 class UserCreate(User):
     username: str
     status: UserStatusCreate = None
@@ -183,6 +196,7 @@ class UserCreate(User):
 class UserModify(User):
     status: UserStatusModify = None
     data_limit_reset_strategy: UserDataLimitResetStrategy = None
+    template_id: int = None
 
     class Config:
         schema_extra = {
@@ -202,6 +216,7 @@ class UserModify(User):
                 "note": "",
                 "on_hold_timeout": "2023-11-03T20:30:00",
                 "on_hold_expire_duration": 0,
+                "template_id": 0,
             }
         }
 

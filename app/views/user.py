@@ -6,13 +6,20 @@ from fastapi import BackgroundTasks, Depends, HTTPException
 from app import app, logger, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
-from app.models.user import (UserCreate, UserModify, UserResponse,
-                             UsersResponse, UserStatus, UserUsagesResponse)
-from app.utils import report
+from app.models.user import (
+    CreateUserFromTemplate,
+    UserCreate,
+    UserModify,
+    UserResponse,
+    UsersResponse,
+    UserStatus,
+    UserUsagesResponse
+)
+from app.utils import report, share
 
 
 @app.post("/api/user", tags=['User'], response_model=UserResponse)
-def add_user(new_user: UserCreate,
+def add_user(new_user: UserCreate | CreateUserFromTemplate,
              bg: BackgroundTasks,
              db: Session = Depends(get_db),
              admin: Admin = Depends(Admin.get_current)):
@@ -26,11 +33,19 @@ def add_user(new_user: UserCreate,
     - **inbounds** dictionary of protocol:inbound_tags, empty means all inbounds
     """
     # TODO expire should be datetime instead of timestamp
+    if isinstance(new_user, CreateUserFromTemplate):
+        template = crud.get_user_template(db, new_user.template_id)
+        if not template:
+            raise HTTPException(status_code=404, detail=f"Template not found!")
+
+        if not template.inbounds:
+            raise HTTPException(status_code=422, detail="no inbounds found.")
+
+        new_user = share.make_user_model_from_template(new_user, template, new_user.username)
 
     for proxy_type in new_user.proxies:
         if not xray.config.inbounds_by_protocol.get(proxy_type):
-            raise HTTPException(
-                status_code=400, detail=f"Protocol {proxy_type} is disabled on your server")
+            raise HTTPException(status_code=400, detail=f"Protocol {proxy_type} is disabled on your server")
 
     try:
         dbuser = crud.create_user(db, new_user,
@@ -82,6 +97,14 @@ def modify_user(username: str,
     - **proxies** dictionary of protocol:settings, empty means no change
     - **inbounds** dictionary of protocol:inbound_tags, empty means no change
     """
+
+    if modified_user.template_id:
+        template = crud.get_user_template(db, modified_user.template_id)
+
+        if not template:
+            raise HTTPException(status_code=404, detail=f"Template not found!")
+
+        modified_user = share.make_user_model_from_template(modified_user, template, username)
 
     for proxy_type in modified_user.proxies:
         if not xray.config.inbounds_by_protocol.get(proxy_type):
