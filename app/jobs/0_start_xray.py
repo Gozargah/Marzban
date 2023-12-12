@@ -17,7 +17,7 @@ def app_startup():
         xray.core.start(xray.config.include_db_users())
     except Exception:
         traceback.print_exc()
-    scheduler.add_job(core_health_check, 'interval', seconds=15)
+    scheduler.add_job(core_health_check, 'interval', seconds=15, max_instances=1)
 
 
 @app.on_event("shutdown")

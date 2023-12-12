@@ -27,7 +27,7 @@ STATUS_EMOJIS = {
     'expired': '⌛️',
     'limited': '🪫',
     'disabled': '❌',
-    'connect_to_start': '🔌'
+    'on_hold': '🔌'
 }
 
 
@@ -661,7 +661,7 @@ class SingBoxConfiguration(str):
             "server": address,
             "server_port": port,
         }
-        if net in ('tcp', 'kcp') or headers != 'http':
+        if net in ('tcp', 'kcp') and headers != 'http':
             if flow:
                 config["flow"] = flow
 
