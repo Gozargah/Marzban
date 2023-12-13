@@ -244,12 +244,15 @@ class ClashConfiguration(object):
                   sni: str,
                   host: str,
                   path: str,
+                  headers: str ='',
                   udp: bool = True,
                   alpn: str = '',
                   ais: bool = ''):
 
         if type == 'shadowsocks':
             type = 'ss'
+        if network == 'tcp' and headers == 'http':
+            network = 'http'
 
         remark = self._remark_validation(name)
         node = {
@@ -278,6 +281,14 @@ class ClashConfiguration(object):
 
         net_opts = node[f'{network}-opts']
 
+        if network == 'http':
+            if path:
+                net_opts['method'] = 'GET'
+                net_opts['path'] = [path]
+            if host:
+                net_opts['method'] = 'GET'
+                net_opts['Host'] = host
+
         if network == 'ws':
             if path:
                 net_opts['path'] = path
@@ -294,7 +305,7 @@ class ClashConfiguration(object):
             if host:
                 net_opts['host'] = [host]
 
-        if network == 'http' or network == 'tcp':
+        if network == 'tcp':
             if path:
                 net_opts['method'] = 'GET'
                 net_opts['path'] = [path]
@@ -315,6 +326,7 @@ class ClashConfiguration(object):
             sni=inbound['sni'],
             host=inbound['host'],
             path=inbound['path'],
+            headers=inbound['header_type'],
             udp=True,
             alpn=inbound.get('alpn', ''),
             ais=inbound.get('ais', '')
@@ -350,6 +362,7 @@ class ClashMetaConfiguration(ClashConfiguration):
                   sni: str,
                   host: str,
                   path: str,
+                  headers: str ='',
                   udp: bool = True,
                   alpn: str = '',
                   fp: str = '',
@@ -366,6 +379,7 @@ class ClashMetaConfiguration(ClashConfiguration):
             sni=sni,
             host=host,
             path=path,
+            headers=headers,
             udp=udp,
             alpn=alpn,
             ais=ais
@@ -388,6 +402,7 @@ class ClashMetaConfiguration(ClashConfiguration):
             sni=inbound['sni'],
             host=inbound['host'],
             path=inbound['path'],
+            headers=inbound['header_type'],
             udp=True,
             alpn=inbound.get('alpn', ''),
             fp=inbound.get('fp', ''),
@@ -589,7 +604,6 @@ class SingBoxConfiguration(str):
                          host='',
                          path='',
                          method='',
-                         headers='',
                          idle_timeout="15s",
                          ping_timeout="15s",
                          max_early_data=None,
@@ -600,16 +614,15 @@ class SingBoxConfiguration(str):
 
         if transport_type:
             transport_config['type'] = transport_type
-
+            
             if transport_type == "http":
-                if host:
-                    transport_config['host'] = host
+                transport_config['host'] = []
                 if path:
                     transport_config['path'] = path
                 if method:
                     transport_config['method'] = method
-                if headers:
-                    transport_config['headers'] = headers
+                if host:
+                    transport_config['headers'] = {'Host': host}
                 if idle_timeout:
                     transport_config['idle_timeout'] = idle_timeout
                 if ping_timeout:
@@ -618,14 +631,14 @@ class SingBoxConfiguration(str):
             elif transport_type == "ws":
                 if path:
                     transport_config['path'] = path
-                if headers:
-                    transport_config['headers'] = headers
+                if host:
+                    transport_config['headers'] = {'Host': host}
                 if max_early_data is not None:
                     transport_config['max_early_data'] = max_early_data
                 if early_data_header_name:
                     transport_config['early_data_header_name'] = early_data_header_name
 
-            elif transport_type == "grpc":
+            elif transport_type == "ws":
                 if path:
                     transport_config['service_name'] = path
                 if idle_timeout:
@@ -642,7 +655,7 @@ class SingBoxConfiguration(str):
                       remark: str,
                       address: str,
                       port: int,
-                      net='ws',
+                      net='',
                       path='',
                       host='',
                       flow='',
@@ -665,15 +678,17 @@ class SingBoxConfiguration(str):
             if flow:
                 config["flow"] = flow
 
-        if net in ['http', 'ws', 'quic', 'grpc', 'h2']:
-            if net == 'h2':
-                net = 'http'
-                alpn = 'h2'
+        if net == 'h2':
+            net = 'http'
+            alpn = 'h2'
+        elif net in ['tcp'] and headers == 'http':
+            net = 'http'
+
+        if net in ['http', 'ws', 'quic', 'grpc']:
             config['transport'] = self.transport_config(
                 transport_type=net,
                 host=host,
-                path=path,
-                headers=headers
+                path=path
             )
         else:
             config["network"]: net
