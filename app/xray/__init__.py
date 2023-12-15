@@ -49,6 +49,7 @@ def hosts(storage: dict):
                     "remark": host.remark,
                     "address": host.address,
                     "port": host.port,
+                    "path": host.path if host.path else None,
                     "sni": [i.strip() for i in host.sni.split(',')] if host.sni else [],
                     "host": [i.strip() for i in host.host.split(',')] if host.host else [],
                     "alpn": host.alpn.value,

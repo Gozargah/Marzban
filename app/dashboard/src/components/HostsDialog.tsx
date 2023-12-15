@@ -108,13 +108,14 @@ const hostsSchema = z.record(
             return Number(parseInt(value));
           return null;
         }),
+      path: z.string().nullable(),
       sni: z.string().nullable(),
       host: z.string().nullable(),
       security: z.string(),
       alpn: z.string(),
       fingerprint: z.string(),
-    })
-  )
+    }),
+  ),
 );
 
 const Error = chakra(FormErrorMessage, {
@@ -159,6 +160,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
       host: "",
       sni: "",
       port: null,
+      path: null,
       address: "",
       remark: "",
       security: "inbound_default",
@@ -236,11 +238,11 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                               <Box fontSize="xs">
                                 <Text pr="20px">{t("hostsDialog.desc")}</Text>
                                 <Text>
-                                <Badge>
-                                  {"{"}SERVER_IP{"}"}
-                                </Badge>{" "}
-                                {t("hostsDialog.currentServer")}
-                              </Text>
+                                  <Badge>
+                                    {"{"}SERVER_IP{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.currentServer")}
+                                </Text>
                                 <Text mt={1}>
                                   <Badge>
                                     {"{"}USERNAME{"}"}
@@ -344,79 +346,79 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                           <PopoverCloseButton />
                           <PopoverBody>
                             <Box fontSize="xs">
-                            <Text pr="20px">{t("hostsDialog.desc")}</Text>
-                                <Text>
+                              <Text pr="20px">{t("hostsDialog.desc")}</Text>
+                              <Text>
                                 <Badge>
                                   {"{"}SERVER_IP{"}"}
                                 </Badge>{" "}
                                 {t("hostsDialog.currentServer")}
                               </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}USERNAME{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.username")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}DATA_USAGE{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.dataUsage")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}DATA_LEFT{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.remainingData")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}DATA_LIMIT{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.dataLimit")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}DAYS_LEFT{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.remainingDays")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}EXPIRE_DATE{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.expireDate")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}JALALI_EXPIRE_DATE{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.jalaliExpireDate")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}TIME_LEFT{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.remainingTime")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}STATUS_EMOJI{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.statusEmoji")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}PROTOCOL{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.proxyProtocol")}
-                                </Text>
-                                <Text mt={1}>
-                                  <Badge>
-                                    {"{"}TRANSPORT{"}"}
-                                  </Badge>{" "}
-                                  {t("hostsDialog.proxyMethod")}
-                                </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}USERNAME{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.username")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}DATA_USAGE{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.dataUsage")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}DATA_LEFT{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.remainingData")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}DATA_LIMIT{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.dataLimit")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}DAYS_LEFT{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.remainingDays")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}EXPIRE_DATE{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.expireDate")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}JALALI_EXPIRE_DATE{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.jalaliExpireDate")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}TIME_LEFT{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.remainingTime")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}STATUS_EMOJI{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.statusEmoji")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}PROTOCOL{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.proxyProtocol")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}TRANSPORT{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.proxyMethod")}
+                              </Text>
                             </Box>
                           </PopoverBody>
                         </PopoverContent>
@@ -612,6 +614,48 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                           <Error>{accordionErrors[index]?.host?.message}</Error>
                         )}
                       </FormControl>
+
+                      <FormControl
+                        isInvalid={
+                          !!(accordionErrors && accordionErrors[index]?.path)
+                        }
+                      >
+                        <FormLabel
+                          display="flex"
+                          pb={1}
+                          alignItems="center"
+                          gap={1}
+                          justifyContent="space-between"
+                          m="0"
+                        >
+                          <span>{t("hostsDialog.path")}</span>
+
+                          <Popover isLazy placement="right">
+                            <PopoverTrigger>
+                              <InfoIcon />
+                            </PopoverTrigger>
+                            <Portal>
+                              <PopoverContent p={2}>
+                                <PopoverArrow />
+                                <PopoverCloseButton />
+                                <Text fontSize="xs" pr={5}>
+                                  {t("hostsDialog.path.info")}
+                                </Text>
+                              </PopoverContent>
+                            </Portal>
+                          </Popover>
+                        </FormLabel>
+                        <Input
+                          size="sm"
+                          borderRadius="4px"
+                          placeholder="path (e.g. /vless)"
+                          {...form.register(hostKey + "." + index + ".path")}
+                        />
+                        {accordionErrors && accordionErrors[index]?.path && (
+                          <Error>{accordionErrors[index]?.path?.message}</Error>
+                        )}
+                      </FormControl>
+
                       <FormControl height="66px">
                         <FormLabel
                           display="flex"
@@ -641,7 +685,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                         <Select
                           size="sm"
                           {...form.register(
-                            hostKey + "." + index + ".security"
+                            hostKey + "." + index + ".security",
                           )}
                         >
                           {proxyHostSecurity.map((s) => {
@@ -693,7 +737,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                         <Select
                           size="sm"
                           {...form.register(
-                            hostKey + "." + index + ".fingerprint"
+                            hostKey + "." + index + ".fingerprint",
                           )}
                         >
                           {proxyFingerprint.map((s) => {
