@@ -10,7 +10,6 @@ from uuid import UUID
 import yaml
 from jdatetime import date as jd
 
-from app import app, logger
 from app import xray
 from app.models.proxy import FormatVariables
 from app.templates import render_template
@@ -952,18 +951,13 @@ def process_inbounds_and_tags(
                         "alpn": host["alpn"] or inbound.get("alpn", ""),
                         "path": inbound.get("path", "")
                         if host["path"] is None
-                        else host["path"],
+                        else host["path"].format_map(format_variables),
                         "fp": host["fingerprint"] or inbound.get("fp", ""),
                         "ais": host["allowinsecure"]
                         or inbound.get("allowinsecure", ""),
                     }
                 )
-                if host_inbound["path"]:
-                    host_inbound["path"] = host_inbound["path"].format_map(
-                        format_variables
-                    )
-                logger.info(host_inbound["path"])
-                # logger.info(host['path'])
+
                 if mode == "v2ray":
                     results.append(
                         get_v2ray_link(
