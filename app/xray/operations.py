@@ -71,7 +71,13 @@ def add_user(dbuser: "DBUser"):
             account = proxy_type.account_model(email=email, **proxy_settings)
 
             # XTLS currently only supports transmission methods of TCP and mKCP
-            if (inbound.get('network', 'tcp') not in ('tcp', 'kcp') or inbound.get('header_type') == 'http') and getattr(account, 'flow', None):
+            if (
+                inbound.get('network', 'tcp') not in ('tcp', 'kcp')
+                or
+                (inbound.get('network', 'tcp') in ('tcp', 'kcp') and not inbound.get('tls'))
+                or
+                inbound.get('header_type') == 'http'
+            ) and getattr(account, 'flow', None):
                 account.flow = XTLSFlows.NONE
 
             _add_user_to_inbound(xray.api, inbound_tag, account)  # main core
@@ -107,7 +113,13 @@ def update_user(dbuser: "DBUser"):
             account = proxy_type.account_model(email=email, **proxy_settings)
 
             # XTLS currently only supports transmission methods of TCP and mKCP
-            if (inbound.get('network', 'tcp') not in ('tcp', 'kcp') or inbound.get('header_type') == 'http') and getattr(account, 'flow', None):
+            if (
+                inbound.get('network', 'tcp') not in ('tcp', 'kcp')
+                or
+                (inbound.get('network', 'tcp') in ('tcp', 'kcp') and not inbound.get('tls'))
+                or
+                inbound.get('header_type') == 'http'
+            ) and getattr(account, 'flow', None):
                 account.flow = XTLSFlows.NONE
 
             _alter_inbound_user(xray.api, inbound_tag, account)  # main core
@@ -160,7 +172,7 @@ def _change_node_status(node_id: int, status: NodeStatus, message: str = None, v
             db.rollback()
 
 
-@threaded_function
+@ threaded_function
 def connect_node(node_id, config):
     with GetDB() as db:
         dbnode = crud.get_node_by_id(db, node_id)
@@ -186,7 +198,7 @@ def connect_node(node_id, config):
         logger.info(f"Unable to connect to \"{dbnode.name}\" node")
 
 
-@threaded_function
+@ threaded_function
 def restart_node(node_id, config):
     with GetDB() as db:
         dbnode = crud.get_node_by_id(db, node_id)

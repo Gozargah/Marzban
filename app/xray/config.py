@@ -292,7 +292,13 @@ class XRayConfig(dict):
         client = {"email": email, **settings}
 
         # XTLS currently only supports transmission methods of TCP and mKCP
-        if (inbound.get('network', 'tcp') not in ('tcp', 'kcp') or inbound.get('header_type') == 'http') and client.get('flow'):
+        if (
+            inbound.get('network', 'tcp') not in ('tcp', 'kcp')
+            or
+            (inbound.get('network', 'tcp') in ('tcp', 'kcp') and not inbound.get('tls'))
+            or
+            inbound.get('header_type') == 'http'
+        ) and client.get('flow'):
             del client['flow']
 
         try:
