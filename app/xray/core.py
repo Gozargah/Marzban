@@ -1,9 +1,11 @@
+import asyncio
 import atexit
 import re
 import subprocess
 import threading
 from collections import deque
 from contextlib import contextmanager
+from anyio import create_task_group, create_memory_object_stream, run, WouldBlock
 
 from app import logger
 from app.xray.config import XRayConfig
@@ -21,8 +23,8 @@ class XRayCore:
         self.process = None
         self.restarting = False
 
+        self.snd_stm, self.rcv_stm = create_memory_object_stream()
         self._logs_buffer = deque(maxlen=100)
-        self._temp_log_buffers = []
         self._on_start_funcs = []
         self._on_stop_funcs = []
         self._env = {
@@ -31,77 +33,64 @@ class XRayCore:
 
         atexit.register(lambda: self.stop() if self.started else None)
 
-    def get_version(self):
+    async def aget_version(self):
         cmd = [self.executable_path, "version"]
-        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode('utf-8')
-        m = re.match(r'^Xray (\d+\.\d+\.\d+)', output)
-        if m:
-            return m.groups()[0]
+        p = await asyncio.create_subprocess_shell(" ".join(cmd), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT)
+        stdout = (await p.communicate())[0]
+        return m.groups()[0] if (m := re.match(r'^Xray (\d+\.\d+\.\d+)', stdout.decode("utf-8"))) else None
 
-    def get_x25519(self, private_key: str = None):
+    def get_version(self):
+        return asyncio.get_event_loop().run_until_complete(self.aget_version())
+
+    async def aget_x25519(self, private_key: str = None):
         cmd = [self.executable_path, "x25519"]
         if private_key:
             cmd.extend(['-i', private_key])
-        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode('utf-8')
-        m = re.match(r'Private key: (.+)\nPublic key: (.+)', output)
-        if m:
+        p = await asyncio.create_subprocess_shell(" ".join(cmd), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT)
+        stdout = (await p.communicate())[0]
+        if m := re.match(r'Private key: (.+)\nPublic key: (.+)', stdout.decode()):
             private, public = m.groups()
             return {
                 "private_key": private,
                 "public_key": public
             }
 
-    def __capture_process_logs(self):
-        def capture_and_debug_log():
-            while self.process:
-                output = self.process.stdout.readline()
-                if output:
-                    output = output.strip()
-                    self._logs_buffer.append(output)
-                    for buf in self._temp_log_buffers:
-                        buf.append(output)
-                    logger.debug(output)
+    def get_x25519(self, private_key: str = None):
+        # just calls the same function in a blocking way
+        return asyncio.get_event_loop().run_until_complete(self.aget_x25519(private_key))
 
-                elif not self.process or self.process.poll() is not None:
-                    break
-
-        def capture_only():
-            while self.process:
-                output = self.process.stdout.readline()
-                if output:
-                    output = output.strip()
-                    self._logs_buffer.append(output)
-                    for buf in self._temp_log_buffers:
-                        buf.append(output)
-
-                elif not self.process or self.process.poll() is not None:
-                    break
-
-        if DEBUG:
-            threading.Thread(target=capture_and_debug_log).start()
-        else:
-            threading.Thread(target=capture_only).start()
-
-    @contextmanager
-    def get_logs(self):
-        buf = deque(self._logs_buffer, maxlen=100)
+    async def __capture_process_logs(self):
+        # capture the logs, push it into the stream, and store it in the deck
+        # note that the stream blocks sending if it's full, so a deck is necessary
         try:
-            self._temp_log_buffers.append(buf)
-            yield buf
-        finally:
-            self._temp_log_buffers.remove(buf)
+            while output := (await self.process.stdout.readline()):
+                self._logs_buffer.append(output)
+                try:
+                    self.snd_stm.send_nowait(output)
+                except WouldBlock:
+                    continue
+        except Exception as e:
+            print(e, type(e), flush=True)
+
+    async def get_logs_stm(self):
+        return self.rcv_stm
+
+    def get_buffer(self):
+        # makes a copy of the buffer, so it could be read multiple times
+        # the buffer is never cleared in case logs from xray's exit are useful
+        return self._logs_buffer.copy()
 
     @property
     def started(self):
         if not self.process:
             return False
 
-        if self.process.poll() is None:
+        if self.process.returncode is None:
             return True
 
         return False
 
-    def start(self, config: XRayConfig):
+    async def start(self, config: XRayConfig):
         if self.started is True:
             raise RuntimeError("Xray is started already")
 
@@ -114,26 +103,22 @@ class XRayCore:
             '-config',
             'stdin:'
         ]
-        self.process = subprocess.Popen(
-            cmd,
+        self.process = await asyncio.create_subprocess_shell(
+            " ".join(cmd),
             env=self._env,
-            stdin=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            universal_newlines=True
+            stdin=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE
         )
-        self.process.stdin.write(config.to_json())
-        self.process.stdin.flush()
+        self.process.stdin.write(str.encode(config.to_json()))
+        await self.process.stdin.drain()
         self.process.stdin.close()
+        await self.process.stdin.wait_closed()
         logger.warning(f"Xray core {self.version} started")
 
-        self.__capture_process_logs()
+        asyncio.get_event_loop().create_task(self.__capture_process_logs())
 
-        # execute on start functions
-        for func in self._on_start_funcs:
-            threading.Thread(target=func).start()
-
-    def stop(self):
+    async def stop(self):
         if not self.started:
             return
 
@@ -141,19 +126,15 @@ class XRayCore:
         self.process = None
         logger.warning("Xray core stopped")
 
-        # execute on stop functions
-        for func in self._on_stop_funcs:
-            threading.Thread(target=func).start()
-
-    def restart(self, config: XRayConfig):
+    async def restart(self, config: XRayConfig):
         if self.restarting is True:
             return
 
         try:
             self.restarting = True
             logger.warning("Restarting Xray core...")
-            self.stop()
-            self.start(config)
+            await self.stop()
+            await self.start(config)
         finally:
             self.restarting = False
 

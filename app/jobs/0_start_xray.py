@@ -1,25 +1,26 @@
 import traceback
+import asyncio
 
 from app import app, logger, scheduler, xray
-from app.utils.concurrency import threaded_function
 
 
-def core_health_check():
-    if not xray.core.started:
-        xray.core.restart(xray.config.include_db_users())
+async def core_health_check():
+    while True:
+        if not xray.core.started:
+            await xray.core.restart(xray.config.include_db_users())
+        await asyncio.sleep(15)
 
 
 @app.on_event("startup")
-@threaded_function
-def app_startup():
+async def app_startup():
     logger.info('Starting Xray core')
     try:
-        xray.core.start(xray.config.include_db_users())
+        await xray.core.start(xray.config.include_db_users())
     except Exception:
         traceback.print_exc()
-    scheduler.add_job(core_health_check, 'interval', seconds=15)
+    asyncio.get_event_loop().create_task(core_health_check())
 
 
 @app.on_event("shutdown")
-def app_shutdown():
-    xray.core.stop()
+async def app_shutdown():
+    await xray.core.stop()
