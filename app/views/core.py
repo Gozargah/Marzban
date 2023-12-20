@@ -5,6 +5,7 @@ import time
 import commentjson
 from fastapi import Depends, HTTPException, WebSocket
 from starlette.websockets import WebSocketDisconnect
+from websockets.exceptions import ConnectionClosedError
 
 from app import app, xray
 from app.db import Session, get_db
@@ -44,15 +45,16 @@ async def core_logs(websocket: WebSocket, db: Session = Depends(get_db)):
         buffer = xray.core.get_buffer()
         while buffer:
             await websocket.send_text(buffer.popleft().decode("utf-8"))
-        while l := await (await xray.core.get_logs_stm()).receive():
+        rcv_stm = await xray.core.get_logs_stm()
+        while l := await rcv_stm.receive():
             l = l.decode("utf-8")
             await websocket.send_text(l)
-    except (WebSocketDisconnect, RuntimeError):
+    except (WebSocketDisconnect, RuntimeError, ConnectionClosedError):
         pass
     except asyncio.CancelledError:
         await websocket.close()
-    except:
-        pass
+    finally:
+       awaitrcv_stm.aclose()
 
 
 @app.get("/api/core", tags=["Core"], response_model=CoreStats)

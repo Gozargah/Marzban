@@ -5,7 +5,7 @@ import subprocess
 import threading
 from collections import deque
 from contextlib import contextmanager
-from anyio import create_task_group, create_memory_object_stream, run, WouldBlock
+from anyio import create_task_group, create_memory_object_stream, run, WouldBlock, ClosedResourceError, BrokenResourceError
 
 from app import logger
 from app.xray.config import XRayConfig
@@ -23,7 +23,7 @@ class XRayCore:
         self.process = None
         self.restarting = False
 
-        self.snd_stm, self.rcv_stm = create_memory_object_stream()
+        self._snd_stms, self._rcv_stms = [], []
         self._logs_buffer = deque(maxlen=100)
         self._on_start_funcs = []
         self._on_stop_funcs = []
@@ -64,16 +64,20 @@ class XRayCore:
         # note that the stream blocks sending if it's full, so a deck is necessary
         try:
             while output := (await self.process.stdout.readline()):
-                self._logs_buffer.append(output)
-                try:
-                    self.snd_stm.send_nowait(output)
-                except WouldBlock:
-                    continue
+                # self._logs_buffer.append(output)
+                for stm in self._snd_stms:
+                    try:
+                        await stm.send(output)
+                    except (ClosedResourceError, BrokenResourceError):
+                        self._snd_stms.remove(stm)
+                        continue
         except Exception as e:
             print(e, type(e), flush=True)
 
     async def get_logs_stm(self):
-        return self.rcv_stm
+        new_snd_stm, new_rcv_stm = create_memory_object_stream()
+        self._snd_stms.append(new_snd_stm)
+        return new_rcv_stm
 
     def get_buffer(self):
         # makes a copy of the buffer, so it could be read multiple times
