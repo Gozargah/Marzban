@@ -5,6 +5,7 @@ import time
 import commentjson
 from fastapi import Depends, HTTPException, WebSocket
 from starlette.websockets import WebSocketDisconnect
+from websockets.exceptions import ConnectionClosedError
 
 from app import app, xray
 from app.db import Session, get_db
@@ -12,6 +13,7 @@ from app.models.admin import Admin
 from app.models.core import CoreStats
 from app.xray import XRayConfig
 from config import XRAY_JSON
+from anyio import create_memory_object_stream, run
 
 
 @app.websocket("/api/core/logs")
@@ -39,37 +41,20 @@ async def core_logs(websocket: WebSocket, db: Session = Depends(get_db)):
 
     await websocket.accept()
 
-    cache = ''
-    last_sent_ts = 0
-    with xray.core.get_logs() as logs:
-        while True:
-            if interval and time.time() - last_sent_ts >= interval and cache:
-                try:
-                    await websocket.send_text(cache)
-                except (WebSocketDisconnect, RuntimeError):
-                    break
-                cache = ''
-                last_sent_ts = time.time()
-
-            if not logs:
-                try:
-                    await asyncio.wait_for(websocket.receive(), timeout=0.2)
-                    continue
-                except asyncio.TimeoutError:
-                    continue
-                except (WebSocketDisconnect, RuntimeError):
-                    break
-
-            log = logs.popleft()
-
-            if interval:
-                cache += f'{log}\n'
-                continue
-
-            try:
-                await websocket.send_text(log)
-            except (WebSocketDisconnect, RuntimeError):
-                break
+    try:
+        buffer = xray.core.get_buffer()
+        while buffer:
+            await websocket.send_text(buffer.popleft().decode("utf-8"))
+        rcv_stm = await xray.core.get_logs_stm()
+        while l := await rcv_stm.receive():
+            l = l.decode("utf-8")
+            await websocket.send_text(l)
+    except (WebSocketDisconnect, RuntimeError, ConnectionClosedError):
+        pass
+    except asyncio.CancelledError:
+        await websocket.close()
+    finally:
+       awaitrcv_stm.aclose()
 
 
 @app.get("/api/core", tags=["Core"], response_model=CoreStats)
@@ -82,12 +67,12 @@ def get_core_stats(admin: Admin = Depends(Admin.get_current)):
 
 
 @app.post("/api/core/restart", tags=["Core"])
-def restart_core(admin: Admin = Depends(Admin.get_current)):
+async def restart_core(admin: Admin = Depends(Admin.get_current)):
     if not admin.is_sudo:
         raise HTTPException(status_code=403, detail="You're not allowed")
 
     startup_config = xray.config.include_db_users()
-    xray.core.restart(startup_config)
+    await xray.core.restart(startup_config)
     for node_id, node in list(xray.nodes.items()):
         if node.connected:
             xray.operations.restart_node(node_id, startup_config)
@@ -106,7 +91,7 @@ def get_core_config(admin: Admin = Depends(Admin.get_current)) -> dict:
 
 
 @app.put("/api/core/config", tags=["Core"])
-def modify_core_config(payload: dict, admin: Admin = Depends(Admin.get_current)) -> dict:
+async def modify_core_config(payload: dict, admin: Admin = Depends(Admin.get_current)) -> dict:
     if not admin.is_sudo:
         raise HTTPException(status_code=403, detail="You're not allowed")
 
@@ -117,7 +102,7 @@ def modify_core_config(payload: dict, admin: Admin = Depends(Admin.get_current))
 
     xray.config = config
     startup_config = xray.config.include_db_users()
-    xray.core.restart(startup_config)
+    await xray.core.restart(startup_config)
     for node_id, node in list(xray.nodes.items()):
         if node.connected:
             xray.operations.restart_node(node_id, startup_config)
