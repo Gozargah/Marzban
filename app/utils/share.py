@@ -88,33 +88,37 @@ class V2rayShareLink(str):
         )
 
     @classmethod
-    def vless(
-        cls,
-        remark: str,
-        address: str,
-        port: int,
-        id: Union[str, UUID],
-        net="ws",
-        path="",
-        host="",
-        type="",
-        flow="",
-        tls="none",
-        sni="",
-        fp="",
-        alpn="",
-        pbk="",
-        sid="",
-        spx="",
-        ais="",
-    ):
-        payload = {"security": tls, "type": net,
-                   "host": host, "headerType": type}
-        if flow and (net in ("tcp", "kcp") and type != "http"):
-            payload["flow"] = flow
 
-        if net == "grpc":
-            payload["serviceName"] = path
+    def vless(cls,
+              remark: str,
+              address: str,
+              port: int,
+              id: Union[str, UUID],
+              net='ws',
+              path='',
+              host='',
+              type='',
+              flow='',
+              tls='none',
+              sni='',
+              fp='',
+              alpn='',
+              pbk='',
+              sid='',
+              spx='',
+              ais=''):
+
+        payload = {
+            "security": tls,
+            "type": net,
+            "host": host,
+            "headerType": type
+        }
+        if flow and (tls and net in ('tcp', 'kcp') and type != 'http'):
+            payload['flow'] = flow
+
+        if net == 'grpc':
+            payload['serviceName'] = path
         else:
             payload["path"] = path
 
@@ -139,33 +143,37 @@ class V2rayShareLink(str):
         )
 
     @classmethod
-    def trojan(
-        cls,
-        remark: str,
-        address: str,
-        port: int,
-        password: str,
-        net="tcp",
-        path="",
-        host="",
-        type="",
-        flow="",
-        tls="none",
-        sni="",
-        fp="",
-        alpn="",
-        pbk="",
-        sid="",
-        spx="",
-        ais="",
-    ):
-        payload = {"security": tls, "type": net,
-                   "host": host, "headerType": type}
-        if flow and (net in ("tcp", "kcp") and type != "http"):
-            payload["flow"] = flow
 
-        if net == "grpc":
-            payload["serviceName"] = path
+    def trojan(cls,
+               remark: str,
+               address: str,
+               port: int,
+               password: str,
+               net='tcp',
+               path='',
+               host='',
+               type='',
+               flow='',
+               tls='none',
+               sni='',
+               fp='',
+               alpn='',
+               pbk='',
+               sid='',
+               spx='',
+               ais=''):
+
+        payload = {
+            "security": tls,
+            "type": net,
+            "host": host,
+            "headerType": type
+        }
+        if flow and (tls and net in ('tcp', 'kcp') and type != 'http'):
+            payload['flow'] = flow
+
+        if net == 'grpc':
+            payload['serviceName'] = path
         else:
             payload["path"] = path
 
@@ -414,11 +422,8 @@ class ClashMetaConfiguration(ClashConfiguration):
         if inbound["protocol"] == "vless":
             node["uuid"] = settings["id"]
 
-            if (
-                inbound["network"] in ("tcp", "kcp")
-                and inbound["header_type"] != "http"
-            ):
-                node["flow"] = settings.get("flow", "")
+            if inbound.get('tls') and inbound['network'] in ('tcp', 'kcp') and inbound['header_type'] != 'http':
+                node['flow'] = settings.get('flow', '')
 
             self.data["proxies"].append(node)
             self.proxy_remarks.append(remark)
@@ -426,11 +431,8 @@ class ClashMetaConfiguration(ClashConfiguration):
         if inbound["protocol"] == "trojan":
             node["password"] = settings["password"]
 
-            if (
-                inbound["network"] in ("tcp", "kcp")
-                and inbound["header_type"] != "http"
-            ):
-                node["flow"] = settings.get("flow", "")
+            if inbound.get('tls') and inbound['network'] in ('tcp', 'kcp') and inbound['header_type'] != 'http':
+                node['flow'] = settings.get('flow', '')
 
             self.data["proxies"].append(node)
             self.proxy_remarks.append(remark)
@@ -691,9 +693,9 @@ class SingBoxConfiguration(str):
             "server": address,
             "server_port": port,
         }
-        if net in ("tcp", "kcp") or headers != "http":
-            if flow:
-                config["flow"] = flow
+
+        if flow and tls and net in ('tcp', 'kcp') or headers != 'http':
+            config['flow'] = flow
 
         if net in ["http", "ws", "quic", "grpc", "h2"]:
             if net == "h2":
