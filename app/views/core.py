@@ -116,6 +116,9 @@ def modify_core_config(payload: dict, admin: Admin = Depends(Admin.get_current))
         raise HTTPException(status_code=400, detail=str(err))
 
     xray.config = config
+    with open(XRAY_JSON, 'w') as f:
+        f.write(json.dumps(payload, indent=4))
+
     startup_config = xray.config.include_db_users()
     xray.core.restart(startup_config)
     for node_id, node in list(xray.nodes.items()):
@@ -123,8 +126,5 @@ def modify_core_config(payload: dict, admin: Admin = Depends(Admin.get_current))
             xray.operations.restart_node(node_id, startup_config)
 
     xray.hosts.update()
-
-    with open(XRAY_JSON, 'w') as f:
-        f.write(json.dumps(payload, indent=4))
 
     return payload
