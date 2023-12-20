@@ -146,13 +146,13 @@ class UserCreate(User):
         for proxy_type in proxies:
             tags = inbounds.get(proxy_type)
 
-            if isinstance(tags, list) and not tags:
-                raise ValueError(f"{proxy_type} inbounds cannot be empty")
-
-            elif tags:
+            if tags:
                 for tag in tags:
                     if tag not in xray.config.inbounds_by_tag:
                         raise ValueError(f"Inbound {tag} doesn't exist")
+
+            # elif isinstance(tags, list) and not tags:
+            #     raise ValueError(f"{proxy_type} inbounds cannot be empty")
 
             else:
                 inbounds[proxy_type] = [
@@ -222,8 +222,9 @@ class UserModify(User):
         # so inbounds particularly can be modified
         if inbounds:
             for proxy_type, tags in inbounds.items():
-                if not tags:
-                    raise ValueError(f"{proxy_type} inbounds cannot be empty")
+
+                # if not tags:
+                #     raise ValueError(f"{proxy_type} inbounds cannot be empty")
 
                 for tag in tags:
                     if tag not in xray.config.inbounds_by_tag:
