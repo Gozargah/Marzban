@@ -35,4 +35,4 @@ def reset_user_data_usage():
             logger.info(f"User data usage reset for User \"{user.username}\"")
 
 
-scheduler.add_job(reset_user_data_usage, 'interval', hours=1)
+scheduler.add_job(reset_user_data_usage, 'interval', coalesce=True, hours=1)

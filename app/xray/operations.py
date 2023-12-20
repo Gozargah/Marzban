@@ -172,7 +172,7 @@ def _change_node_status(node_id: int, status: NodeStatus, message: str = None, v
             db.rollback()
 
 
-@ threaded_function
+@threaded_function
 def connect_node(node_id, config):
     with GetDB() as db:
         dbnode = crud.get_node_by_id(db, node_id)
@@ -198,7 +198,7 @@ def connect_node(node_id, config):
         logger.info(f"Unable to connect to \"{dbnode.name}\" node")
 
 
-@ threaded_function
+@threaded_function
 def restart_node(node_id, config):
     with GetDB() as db:
         dbnode = crud.get_node_by_id(db, node_id)

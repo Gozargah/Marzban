@@ -71,6 +71,7 @@ def review():
             elif user.on_hold_timeout and (datetime.timestamp(user.on_hold_timeout) <= (now.timestamp())):
                 # If the user didn't connect within the timeout period, change status to "Active"
                 status = UserStatus.active
+
             else:
                 continue
 
@@ -81,18 +82,5 @@ def review():
 
             logger.info(f"User \"{user.username}\" status changed to {status}")
 
-        for user in get_users(db, status=UserStatus.expired):
 
-            active = user.expire and user.expire >= now.timestamp()
-            if active:
-                status = UserStatus.active
-            else:
-                continue
-
-            update_user_status(db, user, status)
-            xray.operations.add_user(user)
-
-            logger.info(f"User \"{user.username}\" status fixed.")
-
-
-scheduler.add_job(review, 'interval', seconds=10, coalesce=True, max_instances=1)
+scheduler.add_job(review, 'interval', seconds=10, coalesce=True)
