@@ -1,24 +1,30 @@
 import re
+from datetime import datetime
 
-from fastapi import Depends, Header, Request, Response, HTTPException, Path
+from fastapi import Depends, Header, HTTPException, Path, Request, Response
 from fastapi.responses import HTMLResponse
-from datetime import datetime 
+
 from app import app
 from app.db import Session, crud, get_db
 from app.models.user import UserResponse
 from app.templates import render_template
 from app.utils.jwt import get_subscription_payload
-from app.utils.share import generate_subscription
-from app.utils.share import encode_title
-from config import SUBSCRIPTION_PAGE_TEMPLATE, SUB_UPDATE_INTERVAL, SUB_SUPPORT_URL, SUB_PROFILE_TITLE
+from app.utils.share import encode_title, generate_subscription
+from config import (
+    SUB_PROFILE_TITLE,
+    SUB_SUPPORT_URL,
+    SUB_UPDATE_INTERVAL,
+    SUBSCRIPTION_PAGE_TEMPLATE,
+    XRAY_SUBSCRIPTION_PATH
+)
 
 
-@app.get("/sub/{token}/", tags=['Subscription'])
-@app.get("/sub/{token}", include_in_schema=False)
+@app.get("/%s/{token}/" % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'])
+@app.get("/%s/{token}" % XRAY_SUBSCRIPTION_PATH, include_in_schema=False)
 def user_subscription(token: str,
-                     request: Request,
-                     db: Session = Depends(get_db),
-                     user_agent: str = Header(default="")):
+                      request: Request,
+                      db: Session = Depends(get_db),
+                      user_agent: str = Header(default="")):
     """
     Subscription link, V2ray and Clash supported
     """
@@ -89,9 +95,9 @@ def user_subscription(token: str,
         return Response(content=conf, media_type="text/plain", headers=response_headers)
 
 
-@app.get("/sub/{token}/info", tags=['Subscription'], response_model=UserResponse)
+@app.get("/%s/{token}/info" % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'], response_model=UserResponse)
 def user_subscription_info(token: str,
-                          db: Session = Depends(get_db)):
+                           db: Session = Depends(get_db)):
     sub = get_subscription_payload(token)
     if not sub:
         return Response(status_code=404)
@@ -106,12 +112,12 @@ def user_subscription_info(token: str,
     return dbuser
 
 
-@app.get("/sub/{token}/usage", tags=['Subscription'])
+@app.get("/%s/{token}/usage" % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'])
 def user_get_usage(token: str,
-                    start: str = None,
-                    end: str = None,
-                    db: Session = Depends(get_db)):
-    
+                   start: str = None,
+                   end: str = None,
+                   db: Session = Depends(get_db)):
+
     sub = get_subscription_payload(token)
     if not sub:
         return Response(status_code=204)
@@ -138,7 +144,7 @@ def user_get_usage(token: str,
     return {"usages": usages, "username": dbuser.username}
 
 
-@app.get("/sub/{token}/{client_type}", tags=['Subscription'])
+@app.get("/%s/{token}/{client_type}" % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'])
 def user_subscription_with_client_type(
     token: str,
     request: Request,
@@ -202,6 +208,6 @@ def user_subscription_with_client_type(
     elif client_type == "outline":
         conf = generate_subscription(user=user, config_format="outline", as_base64=False)
         return Response(content=conf, media_type="application/json", headers=response_headers)
-    
+
     else:
         raise HTTPException(status_code=400, detail="Invalid subscription type")
