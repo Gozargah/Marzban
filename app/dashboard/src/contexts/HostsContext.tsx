@@ -7,6 +7,7 @@ type HostsSchema = Record<
     remark: string;
     address: string;
     port: number | null;
+    path: string | null;
     sni: string | null;
     host: string | null;
   }[]

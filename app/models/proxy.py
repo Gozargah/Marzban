@@ -135,6 +135,7 @@ class ProxyHost(BaseModel):
     port: Optional[int] = Field(None, nullable=True)
     sni: Optional[str] = Field(None, nullable=True)
     host: Optional[str] = Field(None, nullable=True)
+    path: Optional[str] = Field(None, nullable=True)
     security: ProxyHostSecurity = ProxyHostSecurity.inbound_default
     alpn: ProxyHostALPN = ProxyHostALPN.none
     fingerprint: ProxyHostFingerprint = ProxyHostFingerprint.none
