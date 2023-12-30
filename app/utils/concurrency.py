@@ -23,7 +23,7 @@ class GetBG:
         return self.bg
 
     def __exit__(self, exc_type, exc_value, traceback):
-        anyio.run(self.bg)
+        Thread(target=anyio.run, args=(self.bg,), daemon=True).start()
 
     async def __aenter__(self):
         return self.bg
