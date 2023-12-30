@@ -53,6 +53,7 @@ def add_host(db: Session, inbound_tag: str, host: ProxyHostModify):
             remark=host.remark,
             address=host.address,
             port=host.port,
+            path=host.path,
             sni=host.sni,
             host=host.host,
             inbound=inbound,
@@ -73,6 +74,7 @@ def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostMo
             remark=host.remark,
             address=host.address,
             port=host.port,
+            path=host.path,
             sni=host.sni,
             host=host.host,
             inbound=inbound,
@@ -266,7 +268,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
             if not dbuser.data_limit or dbuser.used_traffic < dbuser.data_limit:
                 if dbuser.status != UserStatus.on_hold:
                     dbuser.status = UserStatus.active
-                    
+
                 if not dbuser.data_limit or (calculate_usage_percent(
                         dbuser.used_traffic, dbuser.data_limit) < NOTIFY_REACHED_USAGE_PERCENT):
                     delete_notification_reminder_by_type(db, dbuser.id, ReminderType.data_usage)
@@ -377,7 +379,7 @@ def set_owner(db: Session, dbuser: User, admin: Admin):
 
 def start_user_expire(db: Session, dbuser: User):
 
-    expire = int(datetime.utcnow().timestamp()) + dbuser.on_hold_expire_duration    
+    expire = int(datetime.utcnow().timestamp()) + dbuser.on_hold_expire_duration
     dbuser.expire = expire
     db.commit()
     db.refresh(dbuser)
