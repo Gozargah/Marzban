@@ -209,10 +209,10 @@ class V2rayShareLink(str):
 class ClashConfiguration(object):
     def __init__(self):
         self.data = {
-            "proxies": [],
-            "proxy-groups": [],
+            'proxies': [],
+            'proxy-groups': [],
             # Some clients rely on "rules" option and will fail without it.
-            "rules": [],
+            'rules': []
         }
         self.proxy_remarks = []
 
@@ -221,12 +221,12 @@ class ClashConfiguration(object):
             yaml.load(
                 render_template(
                     CLASH_SUBSCRIPTION_TEMPLATE,
-                    {"conf": self.data, "proxy_remarks": self.proxy_remarks},
+                    {"conf": self.data, "proxy_remarks": self.proxy_remarks}
                 ),
-                Loader=yaml.SafeLoader,
+                Loader=yaml.SafeLoader
             ),
             sort_keys=False,
-            allow_unicode=True,
+            allow_unicode=True
         )
 
     def __str__(self) -> str:
@@ -240,136 +240,146 @@ class ClashConfiguration(object):
             return remark
         c = 2
         while True:
-            new = f"{remark} ({c})"
+            new = f'{remark} ({c})'
             if not new in self.proxy_remarks:
                 return new
             c += 1
 
-    def make_node(
-        self,
-        name: str,
-        type: str,
-        server: str,
-        port: int,
-        network: str,
-        tls: bool,
-        sni: str,
-        host: str,
-        path: str,
-        udp: bool = True,
-        alpn: str = "",
-        ais: bool = "",
-    ):
-        if type == "shadowsocks":
-            type = "ss"
+    def make_node(self,
+                  name: str,
+                  type: str,
+                  server: str,
+                  port: int,
+                  network: str,
+                  tls: bool,
+                  sni: str,
+                  host: str,
+                  path: str,
+                  headers: str ='',
+                  udp: bool = True,
+                  alpn: str = '',
+                  ais: bool = ''):
+
+        if type == 'shadowsocks':
+            type = 'ss'
+        if network == 'tcp' and headers == 'http':
+            network = 'http'
 
         remark = self._remark_validation(name)
         node = {
-            "name": remark,
-            "type": type,
-            "server": server,
-            "port": port,
-            "network": network,
-            f"{network}-opts": {},
-            "udp": udp,
+            'name': remark,
+            'type': type,
+            'server': server,
+            'port': port,
+            'network': network,
+            f'{network}-opts': {},
+            'udp': udp
         }
 
-        if type == "ss":  # shadowsocks
+        if type == 'ss':  # shadowsocks
             return node
 
         if tls:
-            node["tls"] = True
-            if type == "trojan":
-                node["sni"] = sni
+            node['tls'] = True
+            if type == 'trojan':
+                node['sni'] = sni
             else:
-                node["servername"] = sni
+                node['servername'] = sni
             if alpn:
-                node["alpn"] = alpn.split(",")
+                node['alpn'] = alpn.split(',')
             if ais:
-                node["skip-cert-verify"] = ais
+                node['skip-cert-verify'] = ais
 
-        net_opts = node[f"{network}-opts"]
+        net_opts = node[f'{network}-opts']
 
-        if network == "ws":
+        if network == 'http':
             if path:
-                net_opts["path"] = path
+                net_opts['method'] = 'GET'
+                net_opts['path'] = [path]
             if host:
-                net_opts["headers"] = {"Host": host}
+                net_opts['method'] = 'GET'
+                net_opts['Host'] = host
 
-        if network == "grpc":
+        if network == 'ws':
             if path:
-                net_opts["grpc-service-name"] = path
-
-        if network == "h2":
-            if path:
-                net_opts["path"] = path
+                net_opts['path'] = path
             if host:
-                net_opts["host"] = [host]
+                net_opts['headers'] = {"Host": host}
 
-        if network == "http" or network == "tcp":
+        if network == 'grpc':
             if path:
-                net_opts["method"] = "GET"
-                net_opts["path"] = [path]
+                net_opts['grpc-service-name'] = path
+
+        if network == 'h2':
+            if path:
+                net_opts['path'] = path
             if host:
-                net_opts["method"] = "GET"
-                net_opts["headers"] = {"Host": host}
+                net_opts['host'] = [host]
+
+        if network == 'tcp':
+            if path:
+                net_opts['method'] = 'GET'
+                net_opts['path'] = [path]
+            if host:
+                net_opts['method'] = 'GET'
+                net_opts['headers'] = {"Host": host}
 
         return node
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
         node = self.make_node(
             name=remark,
-            type=inbound["protocol"],
+            type=inbound['protocol'],
             server=address,
-            port=inbound["port"],
-            network=inbound["network"],
-            tls=(inbound["tls"] == "tls"),
-            sni=inbound["sni"],
-            host=inbound["host"],
-            path=inbound["path"],
+            port=inbound['port'],
+            network=inbound['network'],
+            tls=(inbound['tls'] == 'tls'),
+            sni=inbound['sni'],
+            host=inbound['host'],
+            path=inbound['path'],
+            headers=inbound['header_type'],
             udp=True,
-            alpn=inbound.get("alpn", ""),
-            ais=inbound.get("ais", ""),
+            alpn=inbound.get('alpn', ''),
+            ais=inbound.get('ais', '')
         )
 
-        if inbound["protocol"] == "vmess":
-            node["uuid"] = settings["id"]
-            node["alterId"] = 0
-            node["cipher"] = "auto"
-            self.data["proxies"].append(node)
+        if inbound['protocol'] == 'vmess':
+            node['uuid'] = settings['id']
+            node['alterId'] = 0
+            node['cipher'] = 'auto'
+            self.data['proxies'].append(node)
             self.proxy_remarks.append(remark)
 
-        if inbound["protocol"] == "trojan":
-            node["password"] = settings["password"]
-            self.data["proxies"].append(node)
+        if inbound['protocol'] == 'trojan':
+            node['password'] = settings['password']
+            self.data['proxies'].append(node)
             self.proxy_remarks.append(remark)
 
-        if inbound["protocol"] == "shadowsocks":
-            node["password"] = settings["password"]
-            node["cipher"] = settings["method"]
-            self.data["proxies"].append(node)
+        if inbound['protocol'] == 'shadowsocks':
+            node['password'] = settings['password']
+            node['cipher'] = settings['method']
+            self.data['proxies'].append(node)
             self.proxy_remarks.append(remark)
 
 
 class ClashMetaConfiguration(ClashConfiguration):
-    def make_node(
-        self,
-        name: str,
-        type: str,
-        server: str,
-        port: int,
-        network: str,
-        tls: bool,
-        sni: str,
-        host: str,
-        path: str,
-        udp: bool = True,
-        alpn: str = "",
-        fp: str = "",
-        pbk: str = "",
-        sid: str = "",
-        ais: bool = "",
-    ):
+    def make_node(self,
+                  name: str,
+                  type: str,
+                  server: str,
+                  port: int,
+                  network: str,
+                  tls: bool,
+                  sni: str,
+                  host: str,
+                  path: str,
+                  headers: str ='',
+                  udp: bool = True,
+                  alpn: str = '',
+                  fp: str = '',
+                  pbk: str = '',
+                  sid: str = '',
+                  ais: bool = ''):
         node = super().make_node(
             name=name,
             type=type,
@@ -380,73 +390,67 @@ class ClashMetaConfiguration(ClashConfiguration):
             sni=sni,
             host=host,
             path=path,
+            headers=headers,
             udp=udp,
             alpn=alpn,
-            ais=ais,
+            ais=ais
         )
         if fp:
-            node["client-fingerprint"] = fp
+            node['client-fingerprint'] = fp
         if pbk:
-            node["reality-opts"] = {"public-key": pbk, "short-id": sid}
+            node['reality-opts'] = {"public-key": pbk, "short-id": sid}
 
         return node
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
         node = self.make_node(
             name=remark,
-            type=inbound["protocol"],
+            type=inbound['protocol'],
             server=address,
-            port=inbound["port"],
-            network=inbound["network"],
-            tls=(inbound["tls"] in ("tls", "reality")),
-            sni=inbound["sni"],
-            host=inbound["host"],
-            path=inbound["path"],
+            port=inbound['port'],
+            network=inbound['network'],
+            tls=(inbound['tls'] in ('tls', 'reality')),
+            sni=inbound['sni'],
+            host=inbound['host'],
+            path=inbound['path'],
+            headers=inbound['header_type'],
             udp=True,
-            alpn=inbound.get("alpn", ""),
-            fp=inbound.get("fp", ""),
-            pbk=inbound.get("pbk", ""),
-            sid=inbound.get("sid", ""),
-            ais=inbound.get("ais", ""),
+            alpn=inbound.get('alpn', ''),
+            fp=inbound.get('fp', ''),
+            pbk=inbound.get('pbk', ''),
+            sid=inbound.get('sid', ''),
+            ais=inbound.get('ais', '')
         )
 
-        if inbound["protocol"] == "vmess":
-            node["uuid"] = settings["id"]
-            node["alterId"] = 0
-            node["cipher"] = "auto"
-            self.data["proxies"].append(node)
+        if inbound['protocol'] == 'vmess':
+            node['uuid'] = settings['id']
+            node['alterId'] = 0
+            node['cipher'] = 'auto'
+            self.data['proxies'].append(node)
             self.proxy_remarks.append(remark)
 
-        if inbound["protocol"] == "vless":
-            node["uuid"] = settings["id"]
+        if inbound['protocol'] == 'vless':
+            node['uuid'] = settings['id']
 
-            if (
-                inbound.get('tls') in ('tls', 'reality')
-                and inbound['network'] in ('tcp', 'kcp')
-                and inbound['header_type'] != 'http'
-            ):
+            if inbound['network'] in ('tcp', 'kcp') and inbound['header_type'] != 'http':
                 node['flow'] = settings.get('flow', '')
 
-            self.data["proxies"].append(node)
+            self.data['proxies'].append(node)
             self.proxy_remarks.append(remark)
 
-        if inbound["protocol"] == "trojan":
-            node["password"] = settings["password"]
+        if inbound['protocol'] == 'trojan':
+            node['password'] = settings['password']
 
-            if (
-                inbound.get('tls') in ('tls', 'reality')
-                and inbound['network'] in ('tcp', 'kcp')
-                and inbound['header_type'] != 'http'
-            ):
+            if inbound['network'] in ('tcp', 'kcp') and inbound['header_type'] != 'http' and inbound['tls']:
                 node['flow'] = settings.get('flow', '')
 
-            self.data["proxies"].append(node)
+            self.data['proxies'].append(node)
             self.proxy_remarks.append(remark)
 
-        if inbound["protocol"] == "shadowsocks":
-            node["password"] = settings["password"]
-            node["cipher"] = settings["method"]
-            self.data["proxies"].append(node)
+        if inbound['protocol'] == 'shadowsocks':
+            node['password'] = settings['password']
+            node['cipher'] = settings['method']
+            self.data['proxies'].append(node)
             self.proxy_remarks.append(remark)
 
 
@@ -560,6 +564,7 @@ class OutlineConfiguration:
 
 
 class SingBoxConfiguration(str):
+
     def __init__(self):
         template = render_template(SINGBOX_SUBSCRIPTION_TEMPLATE)
         self.config = json.loads(template)
@@ -569,17 +574,9 @@ class SingBoxConfiguration(str):
 
     def render(self):
         urltest_types = ["vmess", "vless", "trojan", "shadowsocks"]
-        urltest_tags = [
-            outbound["tag"]
-            for outbound in self.config["outbounds"]
-            if outbound["type"] in urltest_types
-        ]
+        urltest_tags = [outbound["tag"] for outbound in self.config["outbounds"] if outbound["type"] in urltest_types]
         selector_types = ["vmess", "vless", "trojan", "shadowsocks", "urltest"]
-        selector_tags = [
-            outbound["tag"]
-            for outbound in self.config["outbounds"]
-            if outbound["type"] in selector_types
-        ]
+        selector_tags = [outbound["tag"] for outbound in self.config["outbounds"] if outbound["type"] in selector_types]
 
         for outbound in self.config["outbounds"]:
             if outbound.get("type") == "urltest":
@@ -592,20 +589,20 @@ class SingBoxConfiguration(str):
         return json.dumps(self.config, indent=4)
 
     @staticmethod
-    def tls_config(
-        sni=None, fp=None, tls=None, pbk=None, sid=None, alpn=None, ais=None
-    ):
+    def tls_config(sni=None, fp=None, tls=None, pbk=None,
+                   sid=None, alpn=None, ais=None):
+
         config = {}
-        if tls in ["tls", "reality"]:
+        if tls in ['tls', 'reality']:
             config["enabled"] = True
 
         if sni is not None:
             config["server_name"] = sni
 
-        if tls == "tls" and ais:
-            config["insecure"] = ais
+        if tls == 'tls' and ais:
+            config['insecure'] = ais
 
-        if tls == "reality":
+        if tls == 'reality':
             config["reality"] = {"enabled": True}
             if pbk:
                 config["reality"]["public_key"] = pbk
@@ -613,7 +610,10 @@ class SingBoxConfiguration(str):
                 config["reality"]["short_id"] = sid
 
         if fp:
-            config["utls"] = {"enabled": bool(fp), "fingerprint": fp}
+            config["utls"] = {
+                "enabled": bool(fp),
+                "fingerprint": fp
+            }
 
         if alpn:
             config["alpn"] = [alpn] if not isinstance(alpn, list) else alpn
@@ -621,136 +621,137 @@ class SingBoxConfiguration(str):
         return config
 
     @staticmethod
-    def transport_config(
-        transport_type="",
-        host="",
-        path="",
-        method="",
-        headers="",
-        idle_timeout="15s",
-        ping_timeout="15s",
-        max_early_data=None,
-        early_data_header_name=None,
-        permit_without_stream=False,
-    ):
+    def transport_config(transport_type='',
+                         host='',
+                         path='',
+                         method='',
+                         idle_timeout="15s",
+                         ping_timeout="15s",
+                         max_early_data=None,
+                         early_data_header_name=None,
+                         permit_without_stream=False):
+
         transport_config = {}
 
         if transport_type:
-            transport_config["type"] = transport_type
-
+            transport_config['type'] = transport_type
+            
             if transport_type == "http":
-                if host:
-                    transport_config["host"] = host
+                transport_config['host'] = []
                 if path:
-                    transport_config["path"] = path
+                    transport_config['path'] = path
                 if method:
-                    transport_config["method"] = method
-                if headers:
-                    transport_config["headers"] = headers
+                    transport_config['method'] = method
+                if host:
+                    transport_config['headers'] = {'Host': host}
                 if idle_timeout:
-                    transport_config["idle_timeout"] = idle_timeout
+                    transport_config['idle_timeout'] = idle_timeout
                 if ping_timeout:
-                    transport_config["ping_timeout"] = ping_timeout
+                    transport_config['ping_timeout'] = ping_timeout
 
             elif transport_type == "ws":
                 if path:
-                    transport_config["path"] = path
-                if headers:
-                    transport_config["headers"] = headers
+                    transport_config['path'] = path
+                if host:
+                    transport_config['headers'] = {'Host': host}
                 if max_early_data is not None:
-                    transport_config["max_early_data"] = max_early_data
+                    transport_config['max_early_data'] = max_early_data
                 if early_data_header_name:
-                    transport_config["early_data_header_name"] = early_data_header_name
+                    transport_config['early_data_header_name'] = early_data_header_name
 
-            elif transport_type == "grpc":
+            elif transport_type == "ws":
                 if path:
-                    transport_config["service_name"] = path
+                    transport_config['service_name'] = path
                 if idle_timeout:
-                    transport_config["idle_timeout"] = idle_timeout
+                    transport_config['idle_timeout'] = idle_timeout
                 if ping_timeout:
-                    transport_config["ping_timeout"] = ping_timeout
+                    transport_config['ping_timeout'] = ping_timeout
                 if permit_without_stream:
-                    transport_config["permit_without_stream"] = permit_without_stream
+                    transport_config['permit_without_stream'] = permit_without_stream
 
         return transport_config
 
-    def make_outbound(
-        self,
-        type: str,
-        remark: str,
-        address: str,
-        port: int,
-        net="ws",
-        path="",
-        host="",
-        flow="",
-        tls="",
-        sni="",
-        fp="",
-        alpn="",
-        pbk="",
-        sid="",
-        headers="",
-        ais="",
-    ):
+    def make_outbound(self,
+                      type: str,
+                      remark: str,
+                      address: str,
+                      port: int,
+                      net='',
+                      path='',
+                      host='',
+                      flow='',
+                      tls='',
+                      sni='',
+                      fp='',
+                      alpn='',
+                      pbk='',
+                      sid='',
+                      headers='',
+                      ais=''):
+
         config = {
             "type": type,
             "tag": remark,
             "server": address,
             "server_port": port,
         }
-        if flow and tls in ('tls', 'reality') and net in ('tcp', 'kcp') or headers != 'http':
-            config['flow'] = flow
+        if net in ('tcp', 'kcp') and headers != 'http' and tls:
+            if flow:
+                config["flow"] = flow
 
-        if net in ["http", "ws", "quic", "grpc", "h2"]:
-            if net == "h2":
-                net = "http"
-                alpn = "h2"
-            config["transport"] = self.transport_config(
-                transport_type=net, host=host, path=path, headers=headers
+        if net == 'h2':
+            net = 'http'
+            alpn = 'h2'
+        elif net in ['tcp'] and headers == 'http':
+            net = 'http'
+
+        if net in ['http', 'ws', 'quic', 'grpc']:
+            config['transport'] = self.transport_config(
+                transport_type=net,
+                host=host,
+                path=path
             )
         else:
             config["network"]: net
 
-        if tls in ("tls", "reality"):
-            config["tls"] = self.tls_config(
-                sni=sni, fp=fp, tls=tls, pbk=pbk, sid=sid, alpn=alpn, ais=ais
-            )
+        if tls in ('tls', 'reality'):
+            config['tls'] = self.tls_config(sni=sni, fp=fp, tls=tls,
+                                            pbk=pbk, sid=sid, alpn=alpn,
+                                            ais=ais)
 
         return config
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
         outbound = self.make_outbound(
             remark=remark,
-            type=inbound["protocol"],
+            type=inbound['protocol'],
             address=address,
-            port=inbound["port"],
-            net=inbound["network"],
-            tls=(inbound["tls"]),
-            flow=settings.get("flow", ""),
-            sni=inbound["sni"],
-            host=inbound["host"],
-            path=inbound["path"],
-            alpn=inbound.get("alpn", ""),
-            fp=inbound.get("fp", ""),
-            pbk=inbound.get("pbk", ""),
-            sid=inbound.get("sid", ""),
-            headers=inbound["header_type"],
-            ais=inbound.get("ais", ""),
-        )
+            port=inbound['port'],
+            net=inbound['network'],
+            tls=(inbound['tls']),
+            flow=settings.get('flow', ''),
+            sni=inbound['sni'],
+            host=inbound['host'],
+            path=inbound['path'],
+            alpn=inbound.get('alpn', ''),
+            fp=inbound.get('fp', ''),
+            pbk=inbound.get('pbk', ''),
+            sid=inbound.get('sid', ''),
+            headers=inbound['header_type'],
+            ais=inbound.get('ais', ''))
 
-        if inbound["protocol"] == "vmess":
-            outbound["uuid"] = settings["id"]
+        if inbound['protocol'] == 'vmess':
+            outbound['uuid'] = settings['id']
 
-        elif inbound["protocol"] == "vless":
-            outbound["uuid"] = settings["id"]
+        elif inbound['protocol'] == 'vless':
+            outbound['uuid'] = settings['id']
 
-        elif inbound["protocol"] == "trojan":
-            outbound["password"] = settings["password"]
+        elif inbound['protocol'] == 'trojan':
+            outbound['password'] = settings['password']
 
-        elif inbound["protocol"] == "shadowsocks":
-            outbound["password"] = settings["password"]
-            outbound["method"] = settings["method"]
+        elif inbound['protocol'] == 'shadowsocks':
+            outbound['password'] = settings['password']
+            outbound['method'] = settings['method']
 
         self.add_outbound(outbound)
 
@@ -922,7 +923,6 @@ def process_inbounds_and_tags(
     mode: str = "v2ray",
     conf=None,
 ) -> Union[List, str]:
-    salt = secrets.token_hex(8)
     results = []
 
     for protocol, tags in inbounds.items():
@@ -942,12 +942,21 @@ def process_inbounds_and_tags(
                 sni = ""
                 sni_list = host["sni"] or inbound["sni"]
                 if sni_list:
+                    salt = secrets.token_hex(8)
                     sni = random.choice(sni_list).replace("*", salt)
 
                 req_host = ""
                 req_host_list = host["host"] or inbound["host"]
                 if req_host_list:
+                    salt = secrets.token_hex(8)
                     req_host = random.choice(req_host_list).replace("*", salt)
+                if host['address']:
+                    salt = secrets.token_hex(8)
+                    address = host['address'].replace('*', salt)
+                if host["path"] is not None:
+                    path=host["path"].format_map(format_variables)
+                else:
+                    path=inbound.get("path", "").format_map(format_variables)
 
                 host_inbound.update(
                     {
@@ -956,9 +965,7 @@ def process_inbounds_and_tags(
                         "host": req_host,
                         "tls": inbound["tls"] if host["tls"] is None else host["tls"],
                         "alpn": host["alpn"] or inbound.get("alpn", ""),
-                        "path": inbound.get("path", "")
-                        if host["path"] is None
-                        else host["path"].format_map(format_variables),
+                        "path": path,
                         "fp": host["fingerprint"] or inbound.get("fp", ""),
                         "ais": host["allowinsecure"]
                         or inbound.get("allowinsecure", ""),
@@ -969,7 +976,7 @@ def process_inbounds_and_tags(
                     results.append(
                         get_v2ray_link(
                             remark=host["remark"].format_map(format_variables),
-                            address=host["address"].format_map(
+                            address=address.format_map(
                                 format_variables),
                             inbound=host_inbound,
                             settings=settings.dict(no_obj=True),
@@ -978,7 +985,7 @@ def process_inbounds_and_tags(
                 elif mode in ["clash", "sing-box", "outline"]:
                     conf.add(
                         remark=host["remark"].format_map(format_variables),
-                        address=host["address"].format_map(format_variables),
+                        address=address.format_map(format_variables),
                         inbound=host_inbound,
                         settings=settings.dict(no_obj=True),
                     )
