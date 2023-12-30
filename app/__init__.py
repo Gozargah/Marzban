@@ -1,4 +1,5 @@
 import logging
+import sys
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI, Request, status
@@ -37,6 +38,9 @@ app.add_middleware(
 @DictStorage
 def settings(storage: dict):
     from app.db import GetDB, crud
+
+    if any(('alembic' in i) for i in sys.argv):
+        return
 
     storage.clear()
     with GetDB() as db:

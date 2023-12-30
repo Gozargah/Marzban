@@ -56,7 +56,7 @@ def upgrade() -> None:
             "webhook_url": config.WEBHOOK_ADDRESS or None,
             "webhook_secret": config.WEBHOOK_SECRET or None,
             "telegram_api_token": config.TELEGRAM_API_TOKEN or None,
-            "telegram_admin_ids": config.TELEGRAM_ADMIN_ID or None,
+            "telegram_admin_ids": ','.join(map(str, config.TELEGRAM_ADMIN_ID)) if config.TELEGRAM_ADMIN_ID else None,
             "telegram_logs_channel_id": config.TELEGRAM_LOGGER_CHANNEL_ID or None,
             "discord_webhook_url": config.DISCORD_WEBHOOK_URL or None,
             "jwt_token_expire_minutes": JWT_ACCESS_TOKEN_EXPIRE_MINUTES,
