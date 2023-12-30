@@ -81,7 +81,7 @@
   "hostsDialog.expireDate": "تاریخ انقضای کاربر به میلادی",
   "hostsDialog.jalaliExpireDate": "تاریخ انقضای کاربر به شمسی",
   "hostsDialog.remainingTime": "زمان باقی مانده کاربر",
-  "hostsDialog.statusEmoji": "وضعیت کاربر در قالب اموجی (✅,⌛️,🪫,❌)",
+  "hostsDialog.statusEmoji": "وضعیت کاربر در قالب اموجی (✅,⌛️,🪫,❌,🔌)",
   "hostsDialog.proxyProtocol": "پروتکل پروکسی (مانند VMess)",
   "hostsDialog.proxyMethod": "روش انتقال پروکسی (مانند ws)",
   "hostsDialog.currentServer": "IP کنونی سرور",

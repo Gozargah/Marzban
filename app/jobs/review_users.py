@@ -5,9 +5,10 @@ from sqlalchemy.orm import Session
 
 from app import logger, scheduler, xray, settings
 from app.db import (GetDB, get_notification_reminder, get_users,
-                    update_user_status, start_user_expire)
+                    start_user_expire, update_user_status)
 from app.models.user import ReminderType, UserResponse, UserStatus
 from app.utils import report
+from app.utils.concurrency import GetBG
 from app.utils.helpers import (calculate_expiration_days,
                                calculate_usage_percent)
 from config import (NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT)
@@ -35,7 +36,7 @@ def add_notification_reminders(db: Session, user: "User", now: datetime = dateti
 
 def review():
     now = datetime.utcnow()
-    with GetDB() as db:
+    with GetDB() as db, GetBG() as bg:
         for user in get_users(db, status=UserStatus.active):
 
             limited = user.data_limit and user.used_traffic >= user.data_limit
@@ -51,8 +52,10 @@ def review():
 
             xray.operations.remove_user(user)
             update_user_status(db, user, status)
-            report.status_change(user.username, status,
-                                 UserResponse.from_orm(user))
+
+            bg.add_task(
+                report.status_change, user.username, status, UserResponse.from_orm(user)
+            )
 
             logger.info(f"User \"{user.username}\" status changed to {status}")
 
@@ -70,28 +73,16 @@ def review():
             elif user.on_hold_timeout and (datetime.timestamp(user.on_hold_timeout) <= (now.timestamp())):
                 # If the user didn't connect within the timeout period, change status to "Active"
                 status = UserStatus.active
+
             else:
                 continue
 
             update_user_status(db, user, status)
             start_user_expire(db, user)
-            report.status_change(user.username, status,
-                                 UserResponse.from_orm(user))
+            bg.add_task(report.status_change, user.username, status,
+                        UserResponse.from_orm(user))
 
             logger.info(f"User \"{user.username}\" status changed to {status}")
 
-        for user in get_users(db, status=UserStatus.expired):
 
-            active = user.expire and user.expire >= now.timestamp()
-            if active:
-                status = UserStatus.active
-            else:
-                continue
-
-            update_user_status(db, user, status)
-            xray.operations.add_user(user)
-
-            logger.info(f"User \"{user.username}\" status fixed.")
-
-
-scheduler.add_job(review, 'interval', seconds=5)
+scheduler.add_job(review, 'interval', seconds=5, coalesce=True, max_instances=1)

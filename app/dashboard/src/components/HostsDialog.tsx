@@ -109,6 +109,7 @@ const hostsSchema = z.record(
             return Number(parseInt(value));
           return null;
         }),
+      path: z.string().nullable(),
       sni: z.string().nullable(),
       host: z.string().nullable(),
       security: z.enum(["inbound_default", "none", "tls"]),
@@ -172,6 +173,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
       host: "",
       sni: "",
       port: null,
+      path: null,
       address: "",
       remark: "",
       security: "inbound_default",
@@ -625,6 +627,48 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                           <Error>{accordionErrors[index]?.host?.message}</Error>
                         )}
                       </FormControl>
+
+                      <FormControl
+                        isInvalid={
+                          !!(accordionErrors && accordionErrors[index]?.path)
+                        }
+                      >
+                        <FormLabel
+                          display="flex"
+                          pb={1}
+                          alignItems="center"
+                          gap={1}
+                          justifyContent="space-between"
+                          m="0"
+                        >
+                          <span>{t("hostsDialog.path")}</span>
+
+                          <Popover isLazy placement="right">
+                            <PopoverTrigger>
+                              <InfoIcon />
+                            </PopoverTrigger>
+                            <Portal>
+                              <PopoverContent p={2}>
+                                <PopoverArrow />
+                                <PopoverCloseButton />
+                                <Text fontSize="xs" pr={5}>
+                                  {t("hostsDialog.path.info")}
+                                </Text>
+                              </PopoverContent>
+                            </Portal>
+                          </Popover>
+                        </FormLabel>
+                        <Input
+                          size="sm"
+                          borderRadius="4px"
+                          placeholder="path (e.g. /vless)"
+                          {...form.register(hostKey + "." + index + ".path")}
+                        />
+                        {accordionErrors && accordionErrors[index]?.path && (
+                          <Error>{accordionErrors[index]?.path?.message}</Error>
+                        )}
+                      </FormControl>
+
                       <FormControl height="66px">
                         <FormLabel
                           display="flex"
@@ -654,7 +698,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                         <Select
                           size="sm"
                           {...form.register(
-                            hostKey + "." + index + ".security"
+                            hostKey + "." + index + ".security",
                           )}
                         >
                           {proxyHostSecurity.map((s) => {
@@ -706,7 +750,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                         <Select
                           size="sm"
                           {...form.register(
-                            hostKey + "." + index + ".fingerprint"
+                            hostKey + "." + index + ".fingerprint",
                           )}
                         >
                           {proxyFingerprint.map((s) => {

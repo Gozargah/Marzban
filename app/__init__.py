@@ -10,7 +10,7 @@ from fastapi.routing import APIRoute
 from fastapi_responses import custom_openapi
 
 from app.utils.store import DictStorage
-from config import DOCS
+from config import DOCS, XRAY_SUBSCRIPTION_PATH
 
 __version__ = "0.4.1"
 
@@ -23,7 +23,7 @@ app = FastAPI(
     redoc_url='/redoc' if DOCS else None
 )
 app.openapi = custom_openapi(app)
-scheduler = BackgroundScheduler({'apscheduler.job_defaults.max_instances': 10}, timezone='UTC')
+scheduler = BackgroundScheduler({'apscheduler.job_defaults.max_instances': 20}, timezone='UTC')
 logger = logging.getLogger('uvicorn.error')
 app.add_middleware(
     CORSMiddleware,
@@ -61,6 +61,10 @@ use_route_names_as_operation_ids(app)
 
 @app.on_event("startup")
 def on_startup():
+    paths = [f"{r.path}/" for r in app.routes]
+    paths.append("/api/")
+    if f"/{XRAY_SUBSCRIPTION_PATH}/" in paths:
+        raise ValueError(f"you can't use /{XRAY_SUBSCRIPTION_PATH}/ as subscription path it reserved for {app.title}")
     scheduler.start()
 
 

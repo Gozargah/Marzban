@@ -2,6 +2,8 @@ import re
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Union
+import random
+import secrets
 
 from pydantic import BaseModel, Field, validator
 
@@ -9,7 +11,7 @@ from app import xray, settings
 from app.models.proxy import ProxySettings, ProxyTypes
 from app.utils.jwt import create_subscription_token
 from app.utils.share import generate_v2ray_links
-from xray_api.types.account import Account
+from config import XRAY_SUBSCRIPTION_PATH, XRAY_SUBSCRIPTION_URL_PREFIX
 
 USERNAME_REGEXP = re.compile(r"^(?=\w{3,32}\b)[a-zA-Z0-9-_@.]+(?:_[a-zA-Z0-9-_@.]+)*$")
 
@@ -145,13 +147,13 @@ class UserCreate(User):
         for proxy_type in proxies:
             tags = inbounds.get(proxy_type)
 
-            if isinstance(tags, list) and not tags:
-                raise ValueError(f"{proxy_type} inbounds cannot be empty")
-
-            elif tags:
+            if tags:
                 for tag in tags:
                     if tag not in xray.config.inbounds_by_tag:
                         raise ValueError(f"Inbound {tag} doesn't exist")
+
+            # elif isinstance(tags, list) and not tags:
+            #     raise ValueError(f"{proxy_type} inbounds cannot be empty")
 
             else:
                 inbounds[proxy_type] = [
@@ -221,8 +223,9 @@ class UserModify(User):
         # so inbounds particularly can be modified
         if inbounds:
             for proxy_type, tags in inbounds.items():
-                if not tags:
-                    raise ValueError(f"{proxy_type} inbounds cannot be empty")
+
+                # if not tags:
+                #     raise ValueError(f"{proxy_type} inbounds cannot be empty")
 
                 for tag in tags:
                     if tag not in xray.config.inbounds_by_tag:
@@ -275,8 +278,10 @@ class UserResponse(User):
     @validator("subscription_url", pre=False, always=True)
     def validate_subscription_url(cls, v, values, **kwargs):
         if not v:
+            salt = secrets.token_hex(8)
+            url_prefix = (XRAY_SUBSCRIPTION_URL_PREFIX).replace('*', salt)
             token = create_subscription_token(values["username"])
-            return f"{settings.get('subscription_url_prefix', '')}/sub/{token}"
+            return f"{url_prefix}/{XRAY_SUBSCRIPTION_PATH}/{token}"
         return v
 
     @validator("proxies", pre=True, always=True)

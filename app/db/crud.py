@@ -54,6 +54,7 @@ def add_host(db: Session, inbound_tag: str, host: ProxyHostModify):
             remark=host.remark,
             address=host.address,
             port=host.port,
+            path=host.path,
             sni=host.sni,
             host=host.host,
             inbound=inbound,
@@ -74,6 +75,7 @@ def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostMo
             remark=host.remark,
             address=host.address,
             port=host.port,
+            path=host.path,
             sni=host.sni,
             host=host.host,
             inbound=inbound,
@@ -114,7 +116,7 @@ UsersSortingOptions = Enum('UsersSortingOptions', {
 def get_users(db: Session,
               offset: Optional[int] = None,
               limit: Optional[int] = None,
-              username: Optional[str] = None,
+              usernames: Optional[List[str]] = None,
               status: Optional[Union[UserStatus, list]] = None,
               sort: Optional[List[UsersSortingOptions]] = None,
               admin: Optional[Admin] = None,
@@ -122,8 +124,11 @@ def get_users(db: Session,
               return_with_count: bool = False) -> Union[List[User], Tuple[List[User], int]]:
     query = db.query(User)
 
-    if username:
-        query = query.filter(User.username.ilike(f'%{username}%'))
+    if usernames:
+        if len(usernames) == 1:
+            query = query.filter(User.username.ilike(f"%{usernames[0]}%"))
+        else:
+            query = query.filter(User.username.in_(usernames))
 
     if status:
         if isinstance(status, list):

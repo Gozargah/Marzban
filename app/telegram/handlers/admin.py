@@ -992,7 +992,7 @@ def add_user_from_template_username_step(message: types.Message):
         if template.username_suffix:
             username += template.username_suffix
 
-        match = re.match(r'^(?!.*__)(?!.*_$)\w{2,31}[a-zA-Z\d]$', username)
+        match = re.match(r"^(?=\w{3,32}\b)[a-zA-Z0-9-_@.]+(?:_[a-zA-Z0-9-_@.]+)*$", username)
         if not match:
             wait_msg = bot.send_message(
                 message.chat.id,
@@ -1079,7 +1079,7 @@ def add_user_username_step(message: types.Message):
         schedule_delete_message(message.chat.id, wait_msg.id)
         schedule_delete_message(message.chat.id, message.id)
         return bot.register_next_step_handler(wait_msg, add_user_username_step)
-    if not re.match(r'^(?!.*__)(?!.*_$)\w{2,31}[a-zA-Z\d]$', username):
+    if not re.match(r"^(?=\w{3,32}\b)[a-zA-Z0-9-_@.]+(?:_[a-zA-Z0-9-_@.]+)*$", username):
         wait_msg = bot.send_message(
             message.chat.id,
             '❌ Username only can be 3 to 32 characters and contain a-z, A-Z, 0-9, and underscores in between.')
@@ -1414,10 +1414,11 @@ def confirm_user_command(call: types.CallbackQuery):
     elif data == 'restart':
         m = bot.edit_message_text(
             '🔄 Restarting XRay core...', call.message.chat.id, call.message.message_id)
-        xray.core.restart(xray.config.include_db_users())
+        config = xray.config.include_db_users()
+        xray.core.restart(config)
         for node_id, node in list(xray.nodes.items()):
             if node.connected:
-                xray.operations.restart_node(node_id, xray.config.include_db_users())
+                xray.operations.restart_node(node_id, config)
         bot.edit_message_text(
             '✅ XRay core restarted successfully.',
             m.chat.id, m.message_id,
