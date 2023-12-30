@@ -1,6 +1,9 @@
 import dayjs from "dayjs";
 
-export const relativeExpiryDate = (expiryDate: number | null | undefined) => {
+export const relativeExpiryDate = (
+  expiryDate: number | null | undefined,
+  joinWith: string = ", "
+) => {
   let dateInfo = { status: "", time: "" };
   if (expiryDate) {
     if (
@@ -55,7 +58,7 @@ export const relativeExpiryDate = (expiryDate: number | null | undefined) => {
         );
       }
     }
-    dateInfo.time = durationSlots.join(", ");
+    dateInfo.time = durationSlots.join(joinWith);
   }
   return dateInfo;
 };

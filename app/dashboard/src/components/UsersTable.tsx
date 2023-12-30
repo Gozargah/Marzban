@@ -44,7 +44,11 @@ import CopyToClipboard from "react-copy-to-clipboard";
 import { useTranslation } from "react-i18next";
 import { UserResponse } from "service/api";
 import { formatBytes } from "utils/formatByte";
-import { getRelativeLastOnlineAt, OnlineBadge } from "./OnlineBadge";
+import {
+  getRelativeLastOnlineAt,
+  humanizeRelativeLastOnline,
+  OnlineBadge,
+} from "./OnlineBadge";
 import { Pagination } from "./Pagination";
 import { StatusBadge } from "./StatusBadge";
 
@@ -397,7 +401,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                             px={6}
                             py={3}
                           >
-                            <VStack justifyContent="space-between" spacing="4">
+                            <VStack justifyContent="space-between">
                               <VStack
                                 alignItems="flex-start"
                                 w="full"
@@ -430,6 +434,23 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                                   />
                                 </Box>
                               </VStack>
+                              <HStack justifyContent="start" w="full">
+                                <Text
+                                  display="inline-block"
+                                  fontSize="xs"
+                                  fontWeight="medium"
+                                  color="gray.600"
+                                  _dark={{
+                                    color: "gray.400",
+                                  }}
+                                >
+                                  {humanizeRelativeLastOnline(
+                                    getRelativeLastOnlineAt({
+                                      lastOnline: user.online_at,
+                                    })
+                                  )}
+                                </Text>
+                              </HStack>
                               <HStack w="full" justifyContent="space-between">
                                 <Box width="full">
                                   <StatusBadge
@@ -437,20 +458,6 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                                     expiryDate={user.expire}
                                     status={user.status}
                                   />
-                                  <Text
-                                    display="inline-block"
-                                    fontSize="xs"
-                                    fontWeight="medium"
-                                    ml="2"
-                                    color="gray.600"
-                                    _dark={{
-                                      color: "gray.400",
-                                    }}
-                                  >
-                                    {getRelativeLastOnlineAt({
-                                      lastOnline: user.online_at,
-                                    })}
-                                  </Text>
                                 </Box>
                                 <HStack>
                                   <ActionButtons user={user} />

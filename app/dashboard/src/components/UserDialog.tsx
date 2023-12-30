@@ -36,6 +36,7 @@ import {
   PencilIcon,
   UserPlusIcon,
 } from "@heroicons/react/24/outline";
+import { InformationCircleIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { convertDateFormat } from "components/OnlineBadge";
 import { resetStrategy } from "constants/UserSettings";
@@ -74,6 +75,8 @@ const AddUserIcon = chakra(UserPlusIcon, {
     h: 5,
   },
 });
+
+const InfoIcon = chakra(InformationCircleIcon);
 
 const EditUserIcon = chakra(PencilIcon, {
   baseStyle: {
@@ -356,8 +359,10 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const lastSubUpdate = editingUser
     ? !editingUser.sub_updated_at
       ? "Never"
-      : (relativeExpiryDate(convertDateFormat(editingUser.sub_updated_at))
-          .time || "0 min") + " ago"
+      : (relativeExpiryDate(
+          convertDateFormat(editingUser.sub_updated_at),
+          " and "
+        ).time || "0 min") + " ago"
     : null;
 
   return (
@@ -578,19 +583,6 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           {form.formState.errors?.note?.message}
                         </FormErrorMessage>
                       </FormControl>
-                      {editingUser && (
-                        <Text
-                          as="span"
-                          fontSize="sm"
-                          _dark={{ color: "gray.300" }}
-                          color="black"
-                        >
-                          <Text as="span" fontWeight="medium">
-                            Last Subscription Update:
-                          </Text>{" "}
-                          {lastSubUpdate}
-                        </Text>
-                      )}
                     </Flex>
                     {error && (
                       <Alert
@@ -683,7 +675,47 @@ export const UserDialog: FC<UserDialogProps> = () => {
                 </Alert>
               )}
             </ModalBody>
-            <ModalFooter mt="3">
+            <ModalFooter
+              mt="3"
+              display="flex"
+              flexDirection="column"
+              alignItems="start"
+              gap={2}
+            >
+              {editingUser && (
+                <Box
+                  as="span"
+                  fontSize="sm"
+                  _dark={{ color: "gray.300" }}
+                  color="black"
+                  pb="2"
+                >
+                  <Text as="span" display="inline">
+                    {!!editingUser.sub_updated_at
+                      ? t("userDialog.subUpdated", {
+                          time: lastSubUpdate,
+                        })
+                      : t("userDialog.subNeverUpdated")}
+                  </Text>
+                  {!!editingUser.sub_updated_at && (
+                    <Tooltip
+                      placement="top"
+                      label={t("userDialog.subApp", {
+                        app: (editingUser.sub_last_user_agent || "")
+                          .split("/")
+                          .join(", "),
+                      })}
+                    >
+                      <InfoIcon
+                        transform="translate(3px, 5px)"
+                        display="inline"
+                        color="gray.400"
+                        width="18px"
+                      />
+                    </Tooltip>
+                  )}
+                </Box>
+              )}
               <HStack
                 justifyContent="space-between"
                 w="full"
