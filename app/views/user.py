@@ -393,17 +393,15 @@ def delete_expired_users(bg: BackgroundTasks,
     else:
         expired_users = dbusers
 
-    removed_users = []
-    for dbuser in expired_users:
-        remove_user.append(dbuser.username)
-        crud.remove_users(db, expired_users)
+    removed_users = [u.username for u in expired_users]
+    crud.remove_users(db, expired_users)
 
+    for removed_user in removed_users:
         bg.add_task(
             report.user_deleted,
-            username=dbuser.username,
+            username=removed_user,
             by=admin
         )
-
-        logger.info(f"User \"{dbuser.username}\" deleted")
+        logger.info(f"User \"{removed_user}\" deleted")
 
     return removed_users
