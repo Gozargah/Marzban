@@ -333,6 +333,7 @@ def get_expired_users(expired_before: datetime = None,
 
     expired_before_ts = expired_before.timestamp() if expired_before else 0
     expired_after_ts = expired_after.timestamp() if expired_after else 0
+    now_ts = datetime.utcnow().timestamp()
 
     dbadmin = crud.get_admin(db, admin.username)
 
@@ -341,14 +342,14 @@ def get_expired_users(expired_before: datetime = None,
                              admin=dbadmin if not admin.is_sudo else None)
 
     if expired_before and expired_after:
-        expired_users = filter(lambda u: u.expire and u.expire <=
-                               expired_before_ts and u.expire >= expired_after_ts, dbusers)
+        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and
+                               u.expire <= expired_before_ts and u.expire >= expired_after_ts, dbusers)
 
     elif expired_before:
-        expired_users = filter(lambda u: u.expire and u.expire <= expired_before_ts, dbusers)
+        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and u.expire <= expired_before_ts, dbusers)
 
     elif expired_after:
-        expired_users = filter(lambda u: u.expire and u.expire >= expired_after_ts, dbusers)
+        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and u.expire >= expired_after_ts, dbusers)
 
     else:
         expired_users = dbusers
@@ -371,6 +372,7 @@ def delete_expired_users(bg: BackgroundTasks,
 
     expired_before_ts = expired_before.timestamp() if expired_before else 0
     expired_after_ts = expired_after.timestamp() if expired_after else 0
+    now_ts = datetime.utcnow().timestamp()
 
     dbadmin = crud.get_admin(db, admin.username)
 
@@ -379,17 +381,14 @@ def delete_expired_users(bg: BackgroundTasks,
                              admin=dbadmin if not admin.is_sudo else None)
 
     if expired_before and expired_after:
-        expired_users = filter(lambda u: u.expire and u.expire <=
-                               expired_before_ts and u.expire >= expired_after_ts, dbusers)
+        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and
+                               u.expire <= expired_before_ts and u.expire >= expired_after_ts, dbusers)
 
     elif expired_before:
-        expired_users = filter(lambda u: u.expire and u.expire <= expired_before_ts, dbusers)
+        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and u.expire <= expired_before_ts, dbusers)
 
     elif expired_after:
-        expired_users = filter(lambda u: u.expire and u.expire >= expired_after_ts, dbusers)
-
-    else:
-        expired_users = dbusers
+        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and u.expire >= expired_after_ts, dbusers)
 
     for dbuser in expired_users:
         crud.remove_users(db, expired_users)

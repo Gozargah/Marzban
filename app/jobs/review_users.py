@@ -37,11 +37,12 @@ def add_notification_reminders(db: Session, user: "User", now: datetime = dateti
 
 def review():
     now = datetime.utcnow()
+    now_ts = now.timestamp()
     with GetDB() as db, GetBG() as bg:
         for user in get_users(db, status=UserStatus.active):
 
             limited = user.data_limit and user.used_traffic >= user.data_limit
-            expired = user.expire and user.expire <= now.timestamp()
+            expired = user.expire and user.expire <= now_ts
             if limited:
                 status = UserStatus.limited
             elif expired:
@@ -71,7 +72,7 @@ def review():
             if user.online_at and base_time <= datetime.timestamp(user.online_at):
                 status = UserStatus.active
 
-            elif user.on_hold_timeout and (datetime.timestamp(user.on_hold_timeout) <= (now.timestamp())):
+            elif user.on_hold_timeout and (datetime.timestamp(user.on_hold_timeout) <= (now_ts)):
                 # If the user didn't connect within the timeout period, change status to "Active"
                 status = UserStatus.active
 
