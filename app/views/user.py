@@ -390,7 +390,12 @@ def delete_expired_users(bg: BackgroundTasks,
     elif expired_after:
         expired_users = filter(lambda u: u.expire and u.expire <= now_ts and u.expire >= expired_after_ts, dbusers)
 
+    else:
+        expired_users = dbusers
+
+    removed_users = []
     for dbuser in expired_users:
+        remove_user.append(dbuser.username)
         crud.remove_users(db, expired_users)
 
         bg.add_task(
@@ -401,4 +406,4 @@ def delete_expired_users(bg: BackgroundTasks,
 
         logger.info(f"User \"{dbuser.username}\" deleted")
 
-    return [u.username for u in expired_users]
+    return removed_users
