@@ -238,6 +238,13 @@ def remove_user(db: Session, dbuser: User):
     return dbuser
 
 
+def remove_users(db: Session, dbusers: List[User]):
+    for dbuser in dbusers:
+        db.delete(dbuser)
+    db.commit()
+    return
+
+
 def update_user(db: Session, dbuser: User, modify: UserModify):
     added_proxies: Dict[ProxyTypes, Proxy] = {}
     if modify.proxies:
