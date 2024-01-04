@@ -110,7 +110,6 @@ class V2rayShareLink(str):
         payload = {
             "security": tls,
             "type": net,
-            "host": host,
             "headerType": type
         }
         if flow and (tls in ('tls', 'reality') and net in ('tcp', 'kcp') and type != 'http'):
@@ -118,8 +117,13 @@ class V2rayShareLink(str):
 
         if net == 'grpc':
             payload['serviceName'] = path
+            payload["host"] = host
+        elif net == 'quic':
+            payload['key'] = path
+            payload["quicSecurity"] = host
         else:
             payload["path"] = path
+            payload["host"] = host
 
         if tls == "tls":
             payload["sni"] = sni
@@ -164,7 +168,6 @@ class V2rayShareLink(str):
         payload = {
             "security": tls,
             "type": net,
-            "host": host,
             "headerType": type
         }
         if flow and (tls in ('tls', 'reality') and net in ('tcp', 'kcp') and type != 'http'):
@@ -172,8 +175,13 @@ class V2rayShareLink(str):
 
         if net == 'grpc':
             payload['serviceName'] = path
+            payload["host"] = host
+        elif net == 'quic':
+            payload['key'] = path
+            payload["quicSecurity"] = host
         else:
             payload["path"] = path
+            payload["host"] = host
 
         if tls == "tls":
             payload["sni"] = sni
@@ -255,7 +263,7 @@ class ClashConfiguration(object):
                   sni: str,
                   host: str,
                   path: str,
-                  headers: str ='',
+                  headers: str = '',
                   udp: bool = True,
                   alpn: str = '',
                   ais: bool = ''):
@@ -373,7 +381,7 @@ class ClashMetaConfiguration(ClashConfiguration):
                   sni: str,
                   host: str,
                   path: str,
-                  headers: str ='',
+                  headers: str = '',
                   udp: bool = True,
                   alpn: str = '',
                   fp: str = '',
@@ -635,7 +643,7 @@ class SingBoxConfiguration(str):
 
         if transport_type:
             transport_config['type'] = transport_type
-            
+
             if transport_type == "http":
                 transport_config['host'] = []
                 if path:
@@ -954,9 +962,9 @@ def process_inbounds_and_tags(
                     salt = secrets.token_hex(8)
                     address = host['address'].replace('*', salt)
                 if host["path"] is not None:
-                    path=host["path"].format_map(format_variables)
+                    path = host["path"].format_map(format_variables)
                 else:
-                    path=inbound.get("path", "").format_map(format_variables)
+                    path = inbound.get("path", "").format_map(format_variables)
 
                 host_inbound.update(
                     {

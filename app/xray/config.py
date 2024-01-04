@@ -270,6 +270,11 @@ class XRayConfig(dict):
                     settings['path'] = net_settings.get('serviceName', '')
                     settings['host'] = []
 
+                elif net == 'quic':
+                    settings['header_type'] = net_settings.get('header', {}).get('type', '')
+                    settings['path'] = net_settings.get('key', '')
+                    settings['host'] = [net_settings.get('security', '')]
+
                 else:
                     settings['path'] = net_settings.get('path', '')
                     host = net_settings.get(
