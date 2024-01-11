@@ -1,11 +1,7 @@
 import { CreateToastFnReturn } from "@chakra-ui/react";
 import { UseFormReturn } from "react-hook-form";
 
-export const generateErrorMessage = (
-  e: any,
-  toast: CreateToastFnReturn,
-  form?: UseFormReturn<any>
-) => {
+export const generateErrorMessage = (e: any, toast: CreateToastFnReturn, form?: UseFormReturn<any>) => {
   if (e.response && e.response._data) {
     if (typeof e.response._data.detail === "string")
       return toast({
@@ -34,10 +30,7 @@ export const generateErrorMessage = (
   });
 };
 
-export const generateSuccessMessage = (
-  message: string,
-  toast: CreateToastFnReturn
-) => {
+export const generateSuccessMessage = (message: string, toast: CreateToastFnReturn) => {
   return toast({
     title: message,
     status: "success",
