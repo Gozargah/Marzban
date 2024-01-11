@@ -31,11 +31,7 @@ import {
   useColorMode,
   useToast,
 } from "@chakra-ui/react";
-import {
-  ChartPieIcon,
-  PencilIcon,
-  UserPlusIcon,
-} from "@heroicons/react/24/outline";
+import { ChartPieIcon, PencilIcon, UserPlusIcon } from "@heroicons/react/24/outline";
 import { InformationCircleIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { convertDateFormat } from "components/OnlineBadge";
@@ -98,21 +94,19 @@ const schema = z.object({
     message: "userDialog.selectOneProtocol",
   }),
   note: z.string().nullable(),
-  proxies: z
-    .record(z.string(), z.record(z.string(), z.any()))
-    .transform((ins) => {
-      const deleteIfEmpty = (obj: any, key: string) => {
-        if (obj && obj[key] === "") {
-          delete obj[key];
-        }
-      };
-      deleteIfEmpty(ins.vmess, "id");
-      deleteIfEmpty(ins.vless, "id");
-      deleteIfEmpty(ins.trojan, "password");
-      deleteIfEmpty(ins.shadowsocks, "password");
-      deleteIfEmpty(ins.shadowsocks, "method");
-      return ins;
-    }),
+  proxies: z.record(z.string(), z.record(z.string(), z.any())).transform((ins) => {
+    const deleteIfEmpty = (obj: any, key: string) => {
+      if (obj && obj[key] === "") {
+        delete obj[key];
+      }
+    };
+    deleteIfEmpty(ins.vmess, "id");
+    deleteIfEmpty(ins.vless, "id");
+    deleteIfEmpty(ins.trojan, "password");
+    deleteIfEmpty(ins.shadowsocks, "password");
+    deleteIfEmpty(ins.shadowsocks, "method");
+    return ins;
+  }),
   data_limit: z
     .string()
     .min(0, "The minimum number is 0")
@@ -127,8 +121,7 @@ const schema = z.object({
   status: z.string(),
   inbounds: z.record(z.string(), z.array(z.string())).transform((ins) => {
     Object.keys(ins).forEach((protocol) => {
-      if (Array.isArray(ins[protocol]) && !ins[protocol]?.length)
-        delete ins[protocol];
+      if (Array.isArray(ins[protocol]) && !ins[protocol]?.length) delete ins[protocol];
     });
     return ins;
   }),
@@ -143,9 +136,7 @@ export type FormType = Pick<UserCreate, keyof UserCreate> & {
 const formatUser = (user: Required<UserResponse>): FormType => {
   return {
     ...user,
-    data_limit: user.data_limit
-      ? Number((user.data_limit / 1073741824).toFixed(5))
-      : user.data_limit,
+    data_limit: user.data_limit ? Number((user.data_limit / 1073741824).toFixed(5)) : user.data_limit,
     selected_proxies: Object.keys(user.proxies) as ProxyKeys,
   };
 };
@@ -172,14 +163,8 @@ const getDefaultValues = (defaultInbounds: GetInbounds200): FormType => {
   };
 };
 
-const mergeProxies = (
-  proxyKeys: ProxyKeys,
-  proxyType: ProxyType | undefined
-): ProxyType => {
-  const proxies: ProxyType = proxyKeys.reduce(
-    (ac, a) => ({ ...ac, [a]: {} }),
-    {}
-  );
+const mergeProxies = (proxyKeys: ProxyKeys, proxyType: ProxyType | undefined): ProxyType => {
+  const proxies: ProxyType = proxyKeys.reduce((ac, a) => ({ ...ac, [a]: {} }), {});
   if (!proxyType) return proxies;
   proxyKeys.forEach((proxy) => {
     if (proxyType[proxy]) {
@@ -189,13 +174,7 @@ const mergeProxies = (
   return proxies;
 };
 export const UserDialog: FC<UserDialogProps> = () => {
-  const {
-    editingUser,
-    isCreatingNewUser,
-    onCreateUser,
-    onEditingUser,
-    onDeletingUser,
-  } = useDashboard();
+  const { editingUser, isCreatingNewUser, onCreateUser, onEditingUser, onDeletingUser } = useDashboard();
 
   const isEditing = !!editingUser;
   const isOpen = isCreatingNewUser || isEditing;
@@ -272,10 +251,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
       typeof err?.data?.detail === "string"
     )
       setError(err?.data?.detail);
-    if (
-      err?.response?.status === 422 &&
-      typeof err?.data?.detail === "object"
-    ) {
+    if (err?.response?.status === 422 && typeof err?.data?.detail === "object") {
       Object.keys(err?.data.detail).forEach((key) => {
         setError((err?.data?.detail as Record<string, string>)[key] as string);
         form.setError(key as "proxies" | "username" | "data_limit" | "expire", {
@@ -316,13 +292,8 @@ export const UserDialog: FC<UserDialogProps> = () => {
       data_limit: values.data_limit || undefined,
       proxies: mergeProxies(selected_proxies, values.proxies),
       data_limit_reset_strategy:
-        values.data_limit && values.data_limit > 0
-          ? values.data_limit_reset_strategy
-          : "no_reset",
-      status:
-        values.status === "active" || values.status === "disabled"
-          ? values.status
-          : "active",
+        values.data_limit && values.data_limit > 0 ? values.data_limit_reset_strategy : "no_reset",
+      status: values.status === "active" || values.status === "disabled" ? values.status : "active",
     };
 
     if (isEditing) {
@@ -359,10 +330,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const lastSubUpdate = editingUser
     ? !editingUser.sub_updated_at
       ? "Never"
-      : (relativeExpiryDate(
-          convertDateFormat(editingUser.sub_updated_at),
-          " and "
-        ).time || "0 min") + " ago"
+      : (relativeExpiryDate(convertDateFormat(editingUser.sub_updated_at), " and ").time || "0 min") + " ago"
     : null;
 
   return (
@@ -374,16 +342,10 @@ export const UserDialog: FC<UserDialogProps> = () => {
             <ModalHeader pt={6}>
               <HStack gap={2}>
                 <Icon color="primary">
-                  {isEditing ? (
-                    <EditUserIcon color="white" />
-                  ) : (
-                    <AddUserIcon color="white" />
-                  )}
+                  {isEditing ? <EditUserIcon color="white" /> : <AddUserIcon color="white" />}
                 </Icon>
                 <Text fontWeight="semibold" fontSize="lg">
-                  {isEditing
-                    ? t("userDialog.editUserTitle")
-                    : t("createNewUser")}
+                  {isEditing ? t("userDialog.editUserTitle") : t("createNewUser")}
                 </Text>
               </HStack>
             </ModalHeader>
@@ -398,11 +360,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
               >
                 <GridItem>
                   <VStack justifyContent="space-between">
-                    <Flex
-                      flexDirection="column"
-                      gridAutoRows="min-content"
-                      w="full"
-                    >
+                    <Flex flexDirection="column" gridAutoRows="min-content" w="full">
                       <FormControl mb={"10px"}>
                         <FormLabel>{t("username")}</FormLabel>
                         <HStack>
@@ -429,10 +387,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                       <Box>
                                         <Switch
                                           colorScheme="primary"
-                                          disabled={
-                                            field.value !== "active" &&
-                                            field.value !== "disabled"
-                                          }
+                                          disabled={field.value !== "active" && field.value !== "disabled"}
                                           isChecked={field.value === "active"}
                                           onChange={(e) => {
                                             if (e.target.checked) {
@@ -465,24 +420,16 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                 borderRadius="6px"
                                 onChange={field.onChange}
                                 disabled={disabled}
-                                error={
-                                  form.formState.errors.data_limit?.message
-                                }
+                                error={form.formState.errors.data_limit?.message}
                                 value={field.value ? String(field.value) : ""}
                               />
                             );
                           }}
                         />
                       </FormControl>
-                      <Collapse
-                        in={!!(dataLimit && dataLimit > 0)}
-                        animateOpacity
-                        style={{ width: "100%" }}
-                      >
+                      <Collapse in={!!(dataLimit && dataLimit > 0)} animateOpacity style={{ width: "100%" }}>
                         <FormControl height="66px">
-                          <FormLabel>
-                            {t("userDialog.periodicUsageReset")}
-                          </FormLabel>
+                          <FormLabel>{t("userDialog.periodicUsageReset")}</FormLabel>
                           <Controller
                             control={form.control}
                             name="data_limit_reset_strategy"
@@ -492,9 +439,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                   {resetStrategy.map((s) => {
                                     return (
                                       <option key={s.value} value={s.value}>
-                                        {t(
-                                          "userDialog.resetStrategy" + s.title
-                                        )}
+                                        {t("userDialog.resetStrategy" + s.title)}
                                       </option>
                                     );
                                   })}
@@ -516,29 +461,20 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                 // .format("MMMM D, YYYY") // exception with: dayjs.locale(lng);
                               ).toDate();
                             }
-                            const { status, time } = relativeExpiryDate(
-                              field.value
-                            );
+                            const { status, time } = relativeExpiryDate(field.value);
                             return (
                               <>
                                 <ReactDatePicker
                                   locale={i18n.language.toLocaleLowerCase()}
                                   dateFormat={t("dateFormat")}
                                   minDate={new Date()}
-                                  selected={
-                                    field.value
-                                      ? createDateAsUTC(field.value)
-                                      : undefined
-                                  }
+                                  selected={field.value ? createDateAsUTC(field.value) : undefined}
                                   onChange={(date: Date) => {
                                     field.onChange({
                                       target: {
                                         value: date
                                           ? dayjs(
-                                              dayjs(date)
-                                                .set("hour", 23)
-                                                .set("minute", 59)
-                                                .set("second", 59)
+                                              dayjs(date).set("hour", 23).set("minute", 59).set("second", 59)
                                             )
                                               .utc()
                                               .valueOf() / 1000
@@ -554,16 +490,12 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                       borderRadius="6px"
                                       clearable
                                       disabled={disabled}
-                                      error={
-                                        form.formState.errors.expire?.message
-                                      }
+                                      error={form.formState.errors.expire?.message}
                                     />
                                   }
                                 />
                                 {field.value ? (
-                                  <FormHelperText>
-                                    {t(status, { time: time })}
-                                  </FormHelperText>
+                                  <FormHelperText>{t(status, { time: time })}</FormHelperText>
                                 ) : (
                                   ""
                                 )}
@@ -573,22 +505,14 @@ export const UserDialog: FC<UserDialogProps> = () => {
                         />
                       </FormControl>
 
-                      <FormControl
-                        mb={"10px"}
-                        isInvalid={!!form.formState.errors.note}
-                      >
+                      <FormControl mb={"10px"} isInvalid={!!form.formState.errors.note}>
                         <FormLabel>{t("userDialog.note")}</FormLabel>
                         <Textarea {...form.register("note")} />
-                        <FormErrorMessage>
-                          {form.formState.errors?.note?.message}
-                        </FormErrorMessage>
+                        <FormErrorMessage>{form.formState.errors?.note?.message}</FormErrorMessage>
                       </FormControl>
                     </Flex>
                     {error && (
-                      <Alert
-                        status="error"
-                        display={{ base: "none", md: "flex" }}
-                      >
+                      <Alert status="error" display={{ base: "none", md: "flex" }}>
                         <AlertIcon />
                         {error}
                       </Alert>
@@ -596,11 +520,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                   </VStack>
                 </GridItem>
                 <GridItem>
-                  <FormControl
-                    isInvalid={
-                      !!form.formState.errors.selected_proxies?.message
-                    }
-                  >
+                  <FormControl isInvalid={!!form.formState.errors.selected_proxies?.message}>
                     <FormLabel>{t("userDialog.protocols")}</FormLabel>
                     <Controller
                       control={form.control}
@@ -633,10 +553,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       }}
                     />
                     <FormErrorMessage>
-                      {t(
-                        form.formState.errors.selected_proxies
-                          ?.message as string
-                      )}
+                      {t(form.formState.errors.selected_proxies?.message as string)}
                     </FormErrorMessage>
                   </FormControl>
                 </GridItem>
@@ -650,46 +567,23 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           setFilters(query);
                         }}
                       />
-                      <Box
-                        width={{ base: "100%", md: "70%" }}
-                        justifySelf="center"
-                      >
-                        <ReactApexChart
-                          options={usage.options}
-                          series={usage.series}
-                          type="donut"
-                        />
+                      <Box width={{ base: "100%", md: "70%" }} justifySelf="center">
+                        <ReactApexChart options={usage.options} series={usage.series} type="donut" />
                       </Box>
                     </VStack>
                   </GridItem>
                 )}
               </Grid>
               {error && (
-                <Alert
-                  mt="3"
-                  status="error"
-                  display={{ base: "flex", md: "none" }}
-                >
+                <Alert mt="3" status="error" display={{ base: "flex", md: "none" }}>
                   <AlertIcon />
                   {error}
                 </Alert>
               )}
             </ModalBody>
-            <ModalFooter
-              mt="3"
-              display="flex"
-              flexDirection="column"
-              alignItems="start"
-              gap={2}
-            >
+            <ModalFooter mt="3" display="flex" flexDirection="column" alignItems="start" gap={2}>
               {editingUser && (
-                <Box
-                  as="span"
-                  fontSize="sm"
-                  _dark={{ color: "gray.300" }}
-                  color="black"
-                  pb="2"
-                >
+                <Box as="span" fontSize="sm" _dark={{ color: "gray.300" }} color="black" pb="2">
                   <Text as="span" display="inline">
                     {!!editingUser.sub_updated_at
                       ? t("userDialog.subUpdated", {
@@ -701,9 +595,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                     <Tooltip
                       placement="top"
                       label={t("userDialog.subApp", {
-                        app: (editingUser.sub_last_user_agent || "")
-                          .split("/")
-                          .join(", "),
+                        app: (editingUser.sub_last_user_agent || "").split("/").join(", "),
                       })}
                     >
                       <InfoIcon
@@ -747,11 +639,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                         </IconButton>
                       </Tooltip>
                       <Tooltip label={t("userDialog.usage")} placement="top">
-                        <IconButton
-                          aria-label="usage"
-                          size="sm"
-                          onClick={handleUsageToggle}
-                        >
+                        <IconButton aria-label="usage" size="sm" onClick={handleUsageToggle}>
                           <UserUsageIcon />
                         </IconButton>
                       </Tooltip>
@@ -764,11 +652,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                     </>
                   )}
                 </HStack>
-                <HStack
-                  w="full"
-                  maxW={{ md: "50%", base: "full" }}
-                  justify="end"
-                >
+                <HStack w="full" maxW={{ md: "50%", base: "full" }} justify="end">
                   <Button
                     type="submit"
                     size="sm"

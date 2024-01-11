@@ -1,11 +1,10 @@
 import { Box, VStack } from "@chakra-ui/react";
 import { CoreSettingsModal } from "components/CoreSettingsModal";
-import { DeleteUserModal } from "components/DeleteUserModal";
 import { Filters } from "components/Filters";
 import { Footer } from "components/Footer";
 import { Header } from "components/Header";
 import { HostsDialog } from "components/HostsDialog";
-import { NodesDialog } from "components/NodesModal";
+import { NodesDialog } from "components/nodes";
 import { NodesUsage } from "components/NodesUsage";
 import { QRCodeDialog } from "components/QRCodeDialog";
 import { ResetAllUsageModal } from "components/ResetAllUsageModal";
@@ -15,6 +14,7 @@ import { UserDialog } from "components/UserDialog";
 import { UsersTable } from "components/UsersTable";
 import { FC } from "react";
 import { Statistics } from "../components/Statistics";
+import { DeleteUserModal } from "components/DeleteUserModal";
 
 export const Dashboard: FC = () => {
   return (
