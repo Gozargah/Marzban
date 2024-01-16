@@ -1965,7 +1965,7 @@ def confirm_user_command(call: types.CallbackQuery):
                 pass
 
 
-@bot.message_handler(func=lambda message: True, is_admin=True)
+@bot.message_handler(func=lambda message: "/usage" not in message.text, is_admin=True)
 def search(message: types.Message):
     with GetDB() as db:
         db_user = crud.get_user(db, message.text)
