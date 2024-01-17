@@ -319,16 +319,21 @@ def set_owner(username: str,
     return user
 
 
-@app.delete("/api/users/expired", tags=['User'])
-def delete_expired(passed_time: int,
-                   bg: BackgroundTasks,
-                   db: Session = Depends(get_db),
-                   admin: Admin = Depends(Admin.get_current)):
+@app.get("/api/users/expired", tags=['User'], response_model=List[str])
+def get_expired_users(expired_before: datetime = None,
+                      expired_after: datetime = None,
+                      db: Session = Depends(get_db),
+                      admin: Admin = Depends(Admin.get_current)):
     """
-    Delete expired users
-    - **passed_time** must be a timestamp
-    - This function will delete all expired users that meet the specified number of days passed and can't be undone.
+    Get users who has expired
+
+    - **expired_before** must be an UTC datetime
+    - **expired_after** must be an UTC datetime
     """
+
+    expired_before_ts = expired_before.timestamp() if expired_before else 0
+    expired_after_ts = expired_after.timestamp() if expired_after else 0
+    now_ts = datetime.utcnow().timestamp()
 
     dbadmin = crud.get_admin(db, admin.username)
 
@@ -336,22 +341,67 @@ def delete_expired(passed_time: int,
                              status=[UserStatus.expired, UserStatus.limited],
                              admin=dbadmin if not admin.is_sudo else None)
 
-    current_time = int(datetime.now(timezone.utc).timestamp())
-    expiration_threshold = current_time - passed_time
-    expired_users = [
-        user for user in dbusers if user.expire is not None and user.expire <= expiration_threshold]
-    if not expired_users:
-        raise HTTPException(status_code=404, detail=f'No expired user found.')
+    if expired_before and expired_after:
+        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and
+                               u.expire <= expired_before_ts and u.expire >= expired_after_ts, dbusers)
 
-    for dbuser in expired_users:
-        crud.remove_user(db, dbuser)
+    elif expired_before:
+        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and u.expire <= expired_before_ts, dbusers)
 
+    elif expired_after:
+        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and u.expire >= expired_after_ts, dbusers)
+
+    else:
+        expired_users = dbusers
+
+    return [u.username for u in expired_users]
+
+
+@app.delete("/api/users/expired", tags=['User'], response_model=List[str])
+def delete_expired_users(bg: BackgroundTasks,
+                         expired_before: datetime = None,
+                         expired_after: datetime = None,
+                         db: Session = Depends(get_db),
+                         admin: Admin = Depends(Admin.get_current)):
+    """
+    Delete users who has expired
+
+    - **expired_before** must be an UTC datetime
+    - **expired_after** must be an UTC datetime
+    """
+
+    expired_before_ts = expired_before.timestamp() if expired_before else 0
+    expired_after_ts = expired_after.timestamp() if expired_after else 0
+    now_ts = datetime.utcnow().timestamp()
+
+    dbadmin = crud.get_admin(db, admin.username)
+
+    dbusers = crud.get_users(db=db,
+                             status=[UserStatus.expired, UserStatus.limited],
+                             admin=dbadmin if not admin.is_sudo else None)
+
+    if expired_before and expired_after:
+        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and
+                               u.expire <= expired_before_ts and u.expire >= expired_after_ts, dbusers)
+
+    elif expired_before:
+        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and u.expire <= expired_before_ts, dbusers)
+
+    elif expired_after:
+        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and u.expire >= expired_after_ts, dbusers)
+
+    else:
+        expired_users = dbusers
+
+    removed_users = [u.username for u in expired_users]
+    crud.remove_users(db, expired_users)
+
+    for removed_user in removed_users:
         bg.add_task(
             report.user_deleted,
-            username=dbuser.username,
+            username=removed_user,
             by=admin
         )
+        logger.info(f"User \"{removed_user}\" deleted")
 
-        logger.info(f"User \"{dbuser.username}\" deleted")
-
-    return {}
+    return removed_users

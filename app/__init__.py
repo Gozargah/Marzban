@@ -13,7 +13,7 @@ from fastapi_responses import custom_openapi
 from app.utils.store import DictStorage
 from config import DOCS, XRAY_SUBSCRIPTION_PATH
 
-__version__ = "0.4.1"
+__version__ = "0.4.3"
 
 
 app = FastAPI(

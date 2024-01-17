@@ -72,8 +72,8 @@ def get_system_info():
         total_users=total_users,
         active_users=users_active,
         deactivate_users=total_users - users_active,
-        up_speed=readable_size(realtime_bandwidth().outgoing_bytes),
-        down_speed=readable_size(realtime_bandwidth().outgoing_bytes)
+        up_speed = readable_size(realtime_bandwidth().outgoing_bytes),
+        down_speed = readable_size(realtime_bandwidth().incoming_bytes)
     )
 
 
