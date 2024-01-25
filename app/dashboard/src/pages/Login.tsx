@@ -12,7 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ReactComponent as Logo } from "assets/logo.svg";
+import Logo from "assets/logo.svg?react";
 import { Footer } from "components/Footer";
 import { Input } from "components/Input";
 import { Language } from "components/Language";
@@ -130,12 +130,7 @@ export const Login: FC = () => {
                       <AlertDescription>{error.data?.detail}</AlertDescription>
                     </Alert>
                   )}
-                  <Button
-                    isLoading={isLoading}
-                    type="submit"
-                    w="full"
-                    colorScheme="primary"
-                  >
+                  <Button isLoading={isLoading} type="submit" w="full" colorScheme="primary">
                     {<LoginIcon marginRight={1} />}
                     {t("login")}
                   </Button>

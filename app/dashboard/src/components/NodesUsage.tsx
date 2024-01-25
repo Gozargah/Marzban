@@ -97,12 +97,7 @@ export const NodesUsage: FC<NodesUsageProps> = () => {
             />
             <Box justifySelf="center" w="full" maxW="300px" mt="4">
               <Suspense fallback={<CircularProgress isIndeterminate />}>
-                <ReactApexChart
-                  options={usage.options}
-                  series={usage.series}
-                  type="donut"
-                  height="500px"
-                />
+                <ReactApexChart options={usage.options} series={usage.series} type="donut" height="500px" />
               </Suspense>
             </Box>
           </VStack>

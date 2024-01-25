@@ -2,9 +2,9 @@ import { Alert, AlertIcon, Box, Button, HStack, Text } from "@chakra-ui/react";
 import { Status } from "types/User";
 import { ReloadIcon } from "../Filters";
 
-import { getGetNodesQueryKey, useReconnectNode } from "service/api";
 import { NodeType } from "contexts/NodesContext";
 import { useTranslation } from "react-i18next";
+import { getGetNodesQueryKey, useReconnectNode } from "service/api";
 import { queryClient } from "utils/react-query";
 
 interface Props {
@@ -25,7 +25,7 @@ export function NodeErrorStatus({ node }: Props) {
 
   return (
     <Alert status="error" size="xs">
-      <Box>
+      <Box w="full">
         <HStack w="full">
           <AlertIcon w={4} />
           <Text marginInlineEnd={0}>{node.message}</Text>

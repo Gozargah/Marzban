@@ -181,7 +181,14 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const [error, setError] = useState<string | null>("");
   const toast = useToast();
   const { t, i18n } = useTranslation();
-  const { data: defaultInbounds = {} } = useGetInbounds();
+  const { data: defaultInbounds = {} } = useGetInbounds({
+    query: {
+      initialData: {},
+      onSuccess(data) {
+        form.reset(getDefaultValues(data));
+      },
+    },
+  });
 
   const { colorMode } = useColorMode();
 
@@ -194,10 +201,6 @@ export const UserDialog: FC<UserDialogProps> = () => {
     defaultValues: getDefaultValues(defaultInbounds),
     resolver: zodResolver(schema),
   });
-
-  useEffect(() => {
-    form.reset(getDefaultValues(defaultInbounds));
-  }, [defaultInbounds]);
 
   const [dataLimit] = useWatch({
     control: form.control,
@@ -246,10 +249,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
     queryClient.invalidateQueries(getGetUsersQueryKey());
   };
   const onError = (err: ErrorType<string | Record<string, string>>) => {
-    if (
-      (err?.response?.status === 409 || err?.response?.status === 400) &&
-      typeof err?.data?.detail === "string"
-    )
+    if ((err?.response?.status === 409 || err?.response?.status === 400) && typeof err?.data?.detail === "string")
       setError(err?.data?.detail);
     if (err?.response?.status === 422 && typeof err?.data?.detail === "object") {
       Object.keys(err?.data.detail).forEach((key) => {
@@ -262,18 +262,14 @@ export const UserDialog: FC<UserDialogProps> = () => {
     }
   };
 
-  const { mutate: createUser, isLoading: createLoading } = useAddUser<
-    ErrorType<string | Record<string, string>>
-  >({
+  const { mutate: createUser, isLoading: createLoading } = useAddUser<ErrorType<string | Record<string, string>>>({
     mutation: {
       onSuccess,
       onError,
     },
   });
 
-  const { mutate: editUser, isLoading: editingLoading } = useModifyUser<
-    ErrorType<string | Record<string, string>>
-  >({
+  const { mutate: editUser, isLoading: editingLoading } = useModifyUser<ErrorType<string | Record<string, string>>>({
     mutation: {
       onSuccess,
       onError,
@@ -473,9 +469,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                     field.onChange({
                                       target: {
                                         value: date
-                                          ? dayjs(
-                                              dayjs(date).set("hour", 23).set("minute", 59).set("second", 59)
-                                            )
+                                          ? dayjs(dayjs(date).set("hour", 23).set("minute", 59).set("second", 59))
                                               .utc()
                                               .valueOf() / 1000
                                           : 0,
@@ -494,11 +488,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                     />
                                   }
                                 />
-                                {field.value ? (
-                                  <FormHelperText>{t(status, { time: time })}</FormHelperText>
-                                ) : (
-                                  ""
-                                )}
+                                {field.value ? <FormHelperText>{t(status, { time: time })}</FormHelperText> : ""}
                               </>
                             );
                           }}
@@ -552,9 +542,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                         );
                       }}
                     />
-                    <FormErrorMessage>
-                      {t(form.formState.errors.selected_proxies?.message as string)}
-                    </FormErrorMessage>
+                    <FormErrorMessage>{t(form.formState.errors.selected_proxies?.message as string)}</FormErrorMessage>
                   </FormControl>
                 </GridItem>
                 {isEditing && usageVisible && (
@@ -598,12 +586,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                         app: (editingUser.sub_last_user_agent || "").split("/").join(", "),
                       })}
                     >
-                      <InfoIcon
-                        transform="translate(3px, 5px)"
-                        display="inline"
-                        color="gray.400"
-                        width="18px"
-                      />
+                      <InfoIcon transform="translate(3px, 5px)" display="inline" color="gray.400" width="18px" />
                     </Tooltip>
                   )}
                 </Box>
