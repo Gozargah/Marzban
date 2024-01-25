@@ -1,4 +1,3 @@
-import { NodeType } from "contexts/NodesContext";
 import { UserResponse, getGetUsersQueryKey, useGetUsers } from "service/api";
 import { User } from "types/User";
 import { queryClient } from "utils/react-query";
@@ -49,9 +48,7 @@ type DashboardStateType = {
   resetUsageUser: Required<UserResponse> | null;
   revokeSubscriptionUser: Required<UserResponse> | null;
   isEditingCore: boolean;
-  deletingNode?: NodeType | null;
   onResetAllUsage: (isResetingAllUsage: boolean) => void;
-  setDeletingNode: (node: NodeType | null) => void;
   onCreateUser: (isOpen: boolean) => void;
   onEditingUser: (user: Required<UserResponse> | null) => void;
   onDeletingUser: (user: Required<UserResponse> | null) => void;
@@ -101,9 +98,6 @@ export const useDashboard = create(
       queryClient.invalidateQueries(getGetUsersQueryKey());
     },
 
-    setDeletingNode(node) {
-      set({ deletingNode: node });
-    },
     onCreateUser: (isCreatingNewUser) => set({ isCreatingNewUser }),
     onEditingUser: (editingUser) => {
       set({ editingUser });
