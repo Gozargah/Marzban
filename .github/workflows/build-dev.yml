@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'dev'
+      - 'next'
 
 jobs:
   build-dev:
@@ -13,17 +14,17 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup nodejs
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.17.0
+          node-version: 20.11.0
 
       - name: Install dependencies
         working-directory: ./app/dashboard
-        run: npm ci
+        run: yarn ci
 
       - name: Build project
         working-directory: ./app/dashboard
-        run: VITE_BASE_API=/api/ npm run build --if-present -- --outDir build --base '/dashboard/'
+        run: VITE_BASE_API=/api/ yarn build --outDir build --assetsDir statics
 
       - name: Create 404.html
         working-directory: ./app/dashboard

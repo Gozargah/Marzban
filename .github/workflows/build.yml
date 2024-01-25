@@ -12,6 +12,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Setup nodejs
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.11.0
+
+      - name: Install dependencies
+        working-directory: ./app/dashboard
+        run: yarn ci
+
+      - name: Build project
+        working-directory: ./app/dashboard
+        run: VITE_BASE_API=/api/ yarn build --outDir build --assetsDir statics
+
+      - name: Create 404.html
+        working-directory: ./app/dashboard
+        run: cp ./build/index.html ./build/404.html
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
