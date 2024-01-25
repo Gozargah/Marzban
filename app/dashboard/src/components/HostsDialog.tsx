@@ -217,6 +217,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({ hostKey, isOpen, toggleAcc
                       size="sm"
                       borderRadius="4px"
                       placeholder="Remark"
+                      pr="35px"
                     />
                     <InputRightElement>
                       <Popover isLazy placement="right">
@@ -439,6 +440,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({ hostKey, isOpen, toggleAcc
 
                     <Tooltip label="Delete" placement="top">
                       <IconButton
+                        as="span"
                         aria-label="Delete"
                         size="sm"
                         colorScheme="red"
@@ -724,9 +726,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({ hostKey, isOpen, toggleAcc
 export const HostsDialog: FC = () => {
   const { isEditingHosts, onEditingHosts, refetchUsers } = useDashboard();
 
-  const { mutate: setHosts, isLoading: isPostLoading } = useModifyHosts<
-    ErrorType<string | Record<string, string>>
-  >({
+  const { mutate: setHosts, isLoading: isPostLoading } = useModifyHosts<ErrorType<string | Record<string, string>>>({
     mutation: {
       onSuccess() {
         toast({
@@ -819,12 +819,7 @@ export const HostsDialog: FC = () => {
               {!isLoading &&
                 hosts &&
                 (Object.keys(hosts).length > 0 ? (
-                  <Accordion
-                    w="full"
-                    allowToggle
-                    allowMultiple
-                    index={Object.keys(openAccordions).map((i) => parseInt(i))}
-                  >
+                  <Accordion w="full" allowMultiple index={Object.keys(openAccordions).map((i) => parseInt(i))}>
                     <VStack w="full">
                       {Object.keys(hosts).map((hostKey, index) => {
                         return (

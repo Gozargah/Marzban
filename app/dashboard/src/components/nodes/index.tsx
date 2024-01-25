@@ -44,7 +44,7 @@ export function NodesDialog() {
     <>
       <Modal isOpen={isEditingNodes} onClose={onClose}>
         <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
-        <ModalContent mx="3" maxW="550px">
+        <ModalContent mx="3" maxW="450px">
           <ModalHeader pt={6} display="flex" gap="4" alignItems="center">
             <Icon color="primary">
               <ModalIcon color="white" />

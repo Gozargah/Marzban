@@ -19,12 +19,7 @@ import {
   Tooltip,
   useToast,
 } from "@chakra-ui/react";
-import {
-  ArrowPathIcon,
-  ArrowsPointingInIcon,
-  ArrowsPointingOutIcon,
-  Cog6ToothIcon,
-} from "@heroicons/react/24/outline";
+import { ArrowPathIcon, ArrowsPointingInIcon, ArrowsPointingOutIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
 import { joinPaths } from "@remix-run/router";
 import classNames from "classnames";
 import { useDashboard } from "contexts/DashboardContext";
@@ -34,17 +29,11 @@ import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { ReadyState } from "react-use-websocket";
 import { useWebSocket } from "react-use-websocket/dist/lib/use-websocket";
-import {
-  useGetCoreConfig,
-  useGetCoreStats,
-  useModifyCoreConfig,
-  useRestartCore,
-} from "service/api";
+import { useGetCoreConfig, useGetCoreStats, useModifyCoreConfig, useRestartCore } from "service/api";
 import { ErrorType } from "service/http";
 import { getAuthToken } from "utils/authStorage";
 import { Icon } from "./Icon";
 import { JsonEditor } from "./JsonEditor";
-import "./JsonEditor/themes.js";
 
 export const MAX_NUMBER_OF_LOGS = 500;
 
@@ -108,8 +97,7 @@ const getWebsocketUrl = () => {
 let logsTmp: string[] = [];
 const CoreSettingModalContent: FC = () => {
   const { data: config, isLoading: getCoreConfigLoading } = useGetCoreConfig();
-  const { data: { version } = {}, isLoading: getCoreStatsLoading } =
-    useGetCoreStats();
+  const { data: { version } = {}, isLoading: getCoreStatsLoading } = useGetCoreStats();
   const isLoading = getCoreConfigLoading || getCoreStatsLoading;
   const logsDiv = useRef<HTMLDivElement | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
@@ -132,8 +120,7 @@ const CoreSettingModalContent: FC = () => {
             (logsDiv.current?.scrollHeight || 0) +
             (logsDiv.current?.offsetHeight || 0)
         ) < 10;
-      if (logsDiv.current && isScrollOnEnd)
-        scrollShouldStayOnEnd.current = true;
+      if (logsDiv.current && isScrollOnEnd) scrollShouldStayOnEnd.current = true;
       else scrollShouldStayOnEnd.current = false;
       if (logs.length < 40) setLogs(logs);
     }, 300),
@@ -143,8 +130,7 @@ const CoreSettingModalContent: FC = () => {
   const { readyState } = useWebSocket(getWebsocketUrl(), {
     onMessage: (e: any) => {
       logsTmp.push(e.data);
-      if (logsTmp.length > MAX_NUMBER_OF_LOGS)
-        logsTmp = logsTmp.splice(0, logsTmp.length - MAX_NUMBER_OF_LOGS);
+      if (logsTmp.length > MAX_NUMBER_OF_LOGS) logsTmp = logsTmp.splice(0, logsTmp.length - MAX_NUMBER_OF_LOGS);
       updateLogs([...logsTmp]);
     },
     shouldReconnect: () => true,
@@ -153,8 +139,7 @@ const CoreSettingModalContent: FC = () => {
   });
 
   useEffect(() => {
-    if (logsDiv.current && scrollShouldStayOnEnd.current)
-      logsDiv.current.scrollTop = logsDiv.current?.scrollHeight;
+    if (logsDiv.current && scrollShouldStayOnEnd.current) logsDiv.current.scrollTop = logsDiv.current?.scrollHeight;
   }, [logs]);
 
   useEffect(() => {
@@ -165,37 +150,36 @@ const CoreSettingModalContent: FC = () => {
 
   const status = getStatus(readyState.toString());
 
-  const { mutate: handleRestartCore, isLoading: isRestarting } =
-    useRestartCore();
+  const { mutate: handleRestartCore, isLoading: isRestarting } = useRestartCore();
 
-  const { mutate: updateConfig, isLoading: isPostLoading } =
-    useModifyCoreConfig<ErrorType<string | Record<string, string>>>({
-      mutation: {
-        onSuccess() {
-          toast({
-            title: t("core.successMessage"),
-            status: "success",
-            isClosable: true,
-            position: "top",
-            duration: 3000,
-          });
-        },
-        onError(e) {
-          let message = t("core.generalErrorMessage");
-          if (typeof e?.data?.detail === "object")
-            message = e?.data.detail[Object.keys(e.data.detail)[0]];
-          if (typeof e?.data?.detail === "string") message = e.data.detail;
-
-          toast({
-            title: message,
-            status: "error",
-            isClosable: true,
-            position: "top",
-            duration: 3000,
-          });
-        },
+  const { mutate: updateConfig, isLoading: isPostLoading } = useModifyCoreConfig<
+    ErrorType<string | Record<string, string>>
+  >({
+    mutation: {
+      onSuccess() {
+        toast({
+          title: t("core.successMessage"),
+          status: "success",
+          isClosable: true,
+          position: "top",
+          duration: 3000,
+        });
       },
-    });
+      onError(e) {
+        let message = t("core.generalErrorMessage");
+        if (typeof e?.data?.detail === "object") message = e?.data.detail[Object.keys(e.data.detail)[0]];
+        if (typeof e?.data?.detail === "string") message = e.data.detail;
+
+        toast({
+          title: message,
+          status: "error",
+          isClosable: true,
+          position: "top",
+          duration: 3000,
+        });
+      },
+    },
+  });
 
   const handleOnSave = ({ config }: any) => {
     updateConfig({ data: config });
@@ -217,8 +201,7 @@ const CoreSettingModalContent: FC = () => {
         <FormControl>
           <HStack justifyContent="space-between" alignItems="flex-start">
             <FormLabel>
-              {t("core.configuration")}{" "}
-              {isLoading && <CircularProgress isIndeterminate size="15px" />}
+              {t("core.configuration")} {isLoading && <CircularProgress isIndeterminate size="15px" />}
             </FormLabel>
             <HStack gap={0}>
               <Tooltip label="Xray Version" placement="top">
@@ -232,9 +215,7 @@ const CoreSettingModalContent: FC = () => {
             <Controller
               control={form.control}
               name="config"
-              render={({ field }) => (
-                <JsonEditor json={config} onChange={field.onChange} />
-              )}
+              render={({ field }) => <JsonEditor json={config} onChange={field.onChange} />}
             />
             <IconButton
               size="xs"

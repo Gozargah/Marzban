@@ -1,4 +1,4 @@
-import { UserResponse, getGetUsersQueryKey, useGetUsers } from "service/api";
+import { GetUsersParams, UserResponse, getGetUsersQueryKey, useGetUsers } from "service/api";
 import { User } from "types/User";
 import { queryClient } from "utils/react-query";
 import { getUsersPerPageLimitSize } from "utils/userPreferenceStorage";
@@ -38,7 +38,7 @@ type DashboardStateType = {
     total: number;
   };
   loading: boolean;
-  filters: FilterType;
+  filters: GetUsersParams;
   subscribeUrl: string | null;
   QRcodeLinks: string[] | null;
   isEditingHosts: boolean;
@@ -53,7 +53,7 @@ type DashboardStateType = {
   onEditingUser: (user: Required<UserResponse> | null) => void;
   onDeletingUser: (user: Required<UserResponse> | null) => void;
   refetchUsers: () => void;
-  onFilterChange: (filters: Partial<FilterType>) => void;
+  onFilterChange: (filters: Partial<GetUsersParams>) => void;
   setQRCode: (links: string[] | null) => void;
   setSubLink: (subscribeURL: string | null) => void;
   onEditingHosts: (isEditingHosts: boolean) => void;
@@ -89,7 +89,7 @@ export const useDashboard = create(
     resetUsageUser: null,
     revokeSubscriptionUser: null,
     filters: {
-      username: "",
+      username: [""],
       limit: getUsersPerPageLimitSize(),
       sort: "-created_at",
     },

@@ -12,11 +12,7 @@ import {
   InputRightElement,
   Spinner,
 } from "@chakra-ui/react";
-import {
-  ArrowPathIcon,
-  MagnifyingGlassIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { ArrowPathIcon, MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import classNames from "classnames";
 import { useDashboard, useUsers } from "contexts/DashboardContext";
 import debounce from "lodash.debounce";
@@ -39,13 +35,12 @@ const setSearchField = debounce((username: string) => {
   useDashboard.getState().onFilterChange({
     ...useDashboard.getState().filters,
     offset: 0,
-    username,
+    username: [username],
   });
 }, 300);
 
 export const Filters: FC<FilterProps> = ({ ...props }) => {
-  const { filters, onFilterChange, refetchUsers, onCreateUser } =
-    useDashboard();
+  const { filters, onFilterChange, refetchUsers, onCreateUser } = useDashboard();
   const { isFetching: loading } = useUsers();
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
@@ -58,7 +53,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
     onFilterChange({
       ...filters,
       offset: 0,
-      username: "",
+      username: [""],
     });
   };
   return (
@@ -86,22 +81,12 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
       <GridItem colSpan={{ base: 1, md: 2, lg: 1 }} order={{ base: 2, md: 1 }}>
         <InputGroup>
           <InputLeftElement pointerEvents="none" children={<SearchIcon />} />
-          <Input
-            placeholder={t("search")}
-            value={search}
-            borderColor="light-border"
-            onChange={onChange}
-          />
+          <Input placeholder={t("search")} value={search} borderColor="light-border" onChange={onChange} />
 
           <InputRightElement>
             {loading && <Spinner size="xs" />}
             {filters.username && filters.username.length > 0 && (
-              <IconButton
-                onClick={clear}
-                aria-label="clear"
-                size="xs"
-                variant="ghost"
-              >
+              <IconButton onClick={clear} aria-label="clear" size="xs" variant="ghost">
                 <ClearIcon />
               </IconButton>
             )}
@@ -110,25 +95,14 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
       </GridItem>
       <GridItem colSpan={2} order={{ base: 1, md: 2 }}>
         <HStack justifyContent="flex-end" alignItems="center" h="full">
-          <IconButton
-            aria-label="refresh users"
-            disabled={loading}
-            onClick={refetchUsers}
-            size="sm"
-            variant="outline"
-          >
+          <IconButton aria-label="refresh users" disabled={loading} onClick={refetchUsers} size="sm" variant="outline">
             <ReloadIcon
               className={classNames({
                 "animate-spin": loading,
               })}
             />
           </IconButton>
-          <Button
-            colorScheme="primary"
-            size="sm"
-            onClick={() => onCreateUser(true)}
-            px={5}
-          >
+          <Button colorScheme="primary" size="sm" onClick={() => onCreateUser(true)} px={5}>
             {t("createUser")}
           </Button>
         </HStack>

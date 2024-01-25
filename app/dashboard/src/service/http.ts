@@ -5,10 +5,7 @@ export const $fetch = ohMyFetch.create({
   baseURL: import.meta.env.VITE_BASE_API,
 });
 
-export const fetcher = <T = any>(
-  url: string,
-  ops: FetchOptions<"json"> = {}
-) => {
+export const fetcher = <T = any>(url: string, ops: FetchOptions<"json"> = {}) => {
   const token = getAuthToken();
   if (token) {
     ops["headers"] = {
@@ -26,16 +23,11 @@ export type BodyType<BodyData> = BodyData;
 
 type OvalFetcherParams = FetchOptions<"json"> & {
   url: string;
-  method: "get" | "post" | "put" | "delete" | "patch";
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   params?: any;
   data?: FetchOptions<"json">["body"];
 };
-export const orvalFetcher = async <T>({
-  url,
-  method,
-  params,
-  data: body,
-}: OvalFetcherParams): Promise<T> => {
+export const orvalFetcher = async <T>({ url, method, params, data: body }: OvalFetcherParams): Promise<T> => {
   return fetcher(url, {
     method,
     params,
