@@ -393,6 +393,7 @@ def delete_expired_users(bg: BackgroundTasks,
     else:
         expired_users = dbusers
 
+    expired_users = list(expired_users)
     removed_users = [u.username for u in expired_users]
     crud.remove_users(db, expired_users)
 
