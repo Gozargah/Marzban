@@ -161,3 +161,5 @@ xray-core
 *-debug.*
 
 build
+
+.yarn
