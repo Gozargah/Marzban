@@ -23,6 +23,8 @@ app = FastAPI(
     docs_url='/docs' if DOCS else None,
     redoc_url='/redoc' if DOCS else None
 )
+app.state.is_running = False
+
 app.openapi = custom_openapi(app)
 scheduler = BackgroundScheduler({'apscheduler.job_defaults.max_instances': 20}, timezone='UTC')
 logger = logging.getLogger('uvicorn.error')
@@ -39,16 +41,26 @@ app.add_middleware(
 def settings(storage: dict):
     from app.db import GetDB, crud
 
-    if any(('alembic' in i) for i in sys.argv):
-        return
+    # load settings only when the app is running
+    # to prevent problem in cli or alembic
+    if not app.state.is_running:
+        return {}
 
     storage.clear()
     with GetDB() as db:
         dbsettings = crud.get_settings(db)
+
+        # load settings fields as a dict
         for key, value in dbsettings.__dict__.items():
             if key not in ('_sa_instance_state', 'id'):
                 storage[key] = value
-        storage['telegram_admins'] = list(map(int, storage.get('telegram_admin_ids', '').strip(',').split(',')))
+
+        # keys to be parsed
+        storage['telegram_admins'] = list(
+            map(int, filter(
+                bool, (storage.get('telegram_admin_ids') or '').strip(',').split(',')
+            ))
+        )
 
 
 from app import dashboard, jobs, telegram, views  # noqa
@@ -65,6 +77,7 @@ use_route_names_as_operation_ids(app)
 
 @app.on_event("startup")
 def on_startup():
+    app.state.is_running = True
     paths = [f"{r.path}/" for r in app.routes]
     paths.append("/api/")
     if f"/{XRAY_SUBSCRIPTION_PATH}/" in paths:
@@ -74,6 +87,7 @@ def on_startup():
 
 @app.on_event("shutdown")
 def on_shutdown():
+    app.state.is_running = False
     scheduler.shutdown()
 
 
