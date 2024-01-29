@@ -2,9 +2,10 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
-from sqlalchemy import and_, delete
+from sqlalchemy import and_, delete, inspect
 from sqlalchemy.orm import Session
 
+from app.db.base import engine
 from app.db.models import (JWT, TLS, Admin, Node, NodeUsage, NodeUserUsage,
                            NotificationReminder, Proxy, ProxyHost,
                            ProxyInbound, ProxyTypes, Settings, System, User,
@@ -674,6 +675,8 @@ def delete_notification_reminder(db: Session, dbreminder: NotificationReminder) 
 
 
 def get_settings(db: Session):
+    if not inspect(engine).has_table(Settings.__tablename__):
+        return
     return db.query(Settings).first()
 
 

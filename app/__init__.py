@@ -41,14 +41,12 @@ app.add_middleware(
 def settings(storage: dict):
     from app.db import GetDB, crud
 
-    # load settings only when the app is running
-    # to prevent problem in cli or alembic
-    if not app.state.is_running:
-        return {}
-
     storage.clear()
     with GetDB() as db:
         dbsettings = crud.get_settings(db)
+
+        if not dbsettings:
+            return
 
         # load settings fields as a dict
         for key, value in dbsettings.__dict__.items():
