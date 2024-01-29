@@ -20,7 +20,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./app/dashboard
-        run: yarn ci
+        run: yarn
 
       - name: Build project
         working-directory: ./app/dashboard
