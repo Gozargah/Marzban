@@ -35,7 +35,7 @@ class Settings(BaseModel):
 
     @property
     def telegram_admins(self):
-        return list(map(int, self.telegram_admin_ids.strip(',').split(',')))
+        return list(map(int, filter(bool, ((self.telegram_admin_ids or '').strip(',').split(',')))))
 
 
 class SettingsModify(Settings):
@@ -61,7 +61,7 @@ class SettingsModify(Settings):
     @validator('telegram_admin_ids')
     def validate_telegram_admin_ids(cls, value):
         try:
-            list(map(int, value.strip(',').split(',')))
+            list(map(int, filter(bool, ((value or '').strip(',').split(',')))))
         except ValueError as exc:
             v = str(exc).replace("invalid literal for int() with base 10: '", '')[:-1].strip()
             raise ValueError(f'\'{v}\' is not a valid Telegram ID')
