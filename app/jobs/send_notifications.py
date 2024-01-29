@@ -42,7 +42,7 @@ def send(data: List[Dict[Any, Any]]) -> bool:
 
 
 def send_notifications():
-    if not queue:
+    if not queue or not settings.get('webhook_url'):
         return
 
     notifications_to_send = list()
@@ -75,12 +75,12 @@ def delete_expired_reminders() -> None:
         db.commit()
 
 
-if settings.get('webhook_url'):
-    @app.on_event("shutdown")
-    def app_shutdown():
+@app.on_event("shutdown")
+def app_shutdown():
+    if settings.get('webhook_url'):
         logger.info("Sending pending notifications before shutdown...")
         send_notifications()
 
-    logger.info("Send webhook job started")
-    scheduler.add_job(send_notifications, "interval", seconds=30, replace_existing=True)
-    scheduler.add_job(delete_expired_reminders, "interval", hours=2, start_date=dt.utcnow() + td(minutes=1))
+
+scheduler.add_job(send_notifications, "interval", seconds=30, replace_existing=True)
+scheduler.add_job(delete_expired_reminders, "interval", hours=2, start_date=dt.utcnow() + td(minutes=1))
