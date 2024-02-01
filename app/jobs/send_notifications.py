@@ -28,25 +28,22 @@ def send(data: List[Dict[Any, Any]]) -> bool:
     """
     if WEBHOOKS:
         for webhook in WEBHOOKS:
-            try:
-                logger.debug("Sending {} webhook updates to {}".format(len(data), webhook['address']))
-                r = session.post(webhook['address'], json=data, headers=webhook['headers'])
-                if r.ok:
-                    continue
-                logger.error(r)
-            except Exception as err:
-                logger.error(err)
-        return False
+            send_req(w_address=webhook['address'], w_headers=webhook['headers'], data=data)
+
     else:
-        try:
-            logger.debug(f"Sending {len(data)} webhook updates to {WEBHOOK_ADDRESS}")
-            r = session.post(WEBHOOK_ADDRESS, json=data, headers=headers)
-            if r.ok:
-                return True
-            logger.error(r)
-        except Exception as err:
-            logger.error(err)
-        return False
+        send_req(w_address=WEBHOOK_ADDRESS, w_headers=headers, data=data)
+
+
+def send_req(w_address:str, w_headers, data):
+    try:
+        logger.debug(f"Sending {len(data)} webhook updates to {w_address}")
+        r = session.post(w_address, json=data, headers=w_headers)
+        if r.ok:
+            return True
+        logger.error(r)
+    except Exception as err:
+        logger.error(err)
+    return False
 
 
 def send_notifications():
