@@ -27,9 +27,14 @@ def send(data: List[Dict[Any, Any]]) -> bool:
         bool: returns True if an ok response received
     """
     if WEBHOOKS:
+        result_list = []
         for webhook in WEBHOOKS:
-            send_req(w_address=webhook['address'], w_headers=webhook['headers'], data=data)
-
+            result = send_req(w_address=webhook['address'], w_headers=webhook['headers'], data=data)
+            result_list.append(result)
+        if True in result_list:
+            return True
+        else:
+            return False
     else:
         send_req(w_address=WEBHOOK_ADDRESS, w_headers=headers, data=data)
 
