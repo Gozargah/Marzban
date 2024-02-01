@@ -1,5 +1,6 @@
 from decouple import config
 from dotenv import load_dotenv
+import json
 
 load_dotenv()
 
@@ -59,6 +60,14 @@ SUDOERS = {config("SUDO_USERNAME"): config("SUDO_PASSWORD")} \
 WEBHOOK_ADDRESS = config("WEBHOOK_ADDRESS", default=None)
 WEBHOOK_SECRET = config("WEBHOOK_SECRET", default=None)
 
+# Sending Webhook To Multiple Server
+TEMP_WEBHOOKS = json.loads(config("WEBHOOKS", default="[]"))
+WEBHOOKS = [
+    {"address": webhook["address"], "secret": webhook["secret"], 
+     "headers": {"x-webhook-secret": webhook["secret"]} if webhook["secret"] else None}
+    for webhook in TEMP_WEBHOOKS
+    if webhook.get("address") and webhook.get("secret")
+]
 # recurrent notifications
 
 # timeout between each retry of sending a notification in seconds

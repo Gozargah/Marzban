@@ -5,7 +5,8 @@ from typing import Any, Dict, List
 from fastapi.encoders import jsonable_encoder
 from requests import Session
 
-import config
+from config import (WEBHOOK_SECRET, WEBHOOK_ADDRESS, WEBHOOKS, 
+                    NUMBER_OF_RECURRENT_NOTIFICATIONS, RECURRENT_NOTIFICATIONS_TIMEOUT)
 from app import app, logger, scheduler
 from app.db import GetDB
 from app.db.models import NotificationReminder
@@ -13,11 +14,11 @@ from app.utils.notification import queue
 
 session = Session()
 
-headers = {"x-webhook-secret": config.WEBHOOK_SECRET} if config.WEBHOOK_SECRET else None
+headers = {"x-webhook-secret": WEBHOOK_SECRET} if WEBHOOK_SECRET else None
 
 
 def send(data: List[Dict[Any, Any]]) -> bool:
-    """Send the notification to the webhook address provided by config.WEBHOOK_ADDRESS
+    """Send the notification to the webhook address provided by WEBHOOK_ADDRESS
 
     Args:
         data (List[Dict[Any, Any]]): list of json encoded notifications
@@ -25,15 +26,27 @@ def send(data: List[Dict[Any, Any]]) -> bool:
     Returns:
         bool: returns True if an ok response received
     """
-    try:
-        logger.debug(f"Sending {len(data)} webhook updates to {config.WEBHOOK_ADDRESS}")
-        r = session.post(config.WEBHOOK_ADDRESS, json=data, headers=headers)
-        if r.ok:
-            return True
-        logger.error(r)
-    except Exception as err:
-        logger.error(err)
-    return False
+    if WEBHOOKS:
+        for webhook in WEBHOOKS:
+            try:
+                logger.debug("Sending {} webhook updates to {}".format(len(data), webhook['address']))
+                r = session.post(webhook['address'], json=data, headers=webhook['headers'])
+                if r.ok:
+                    continue
+                logger.error(r)
+            except Exception as err:
+                logger.error(err)
+        return False
+    else:
+        try:
+            logger.debug(f"Sending {len(data)} webhook updates to {WEBHOOK_ADDRESS}")
+            r = session.post(WEBHOOK_ADDRESS, json=data, headers=headers)
+            if r.ok:
+                return True
+            logger.error(r)
+        except Exception as err:
+            logger.error(err)
+        return False
 
 
 def send_notifications():
@@ -43,7 +56,7 @@ def send_notifications():
     notifications_to_send = list()
     try:
         while (notification := queue.popleft()):
-            if (notification.tries > config.NUMBER_OF_RECURRENT_NOTIFICATIONS):
+            if (notification.tries > NUMBER_OF_RECURRENT_NOTIFICATIONS):
                 continue
             if notification.send_at > dt.utcnow().timestamp():
                 queue.append(notification)  # add it to the queue again for the next check
@@ -56,11 +69,11 @@ def send_notifications():
         return
     if not send([jsonable_encoder(notif) for notif in notifications_to_send]):
         for notification in notifications_to_send:
-            if (notification.tries + 1) > config.NUMBER_OF_RECURRENT_NOTIFICATIONS:
+            if (notification.tries + 1) > NUMBER_OF_RECURRENT_NOTIFICATIONS:
                 continue
             notification.tries += 1
             notification.send_at = (  # schedule notification for n seconds later
-                dt.utcnow() + td(seconds=config.RECURRENT_NOTIFICATIONS_TIMEOUT)).timestamp()
+                dt.utcnow() + td(seconds=RECURRENT_NOTIFICATIONS_TIMEOUT)).timestamp()
             queue.append(notification)
 
 
@@ -70,7 +83,7 @@ def delete_expired_reminders() -> None:
         db.commit()
 
 
-if config.WEBHOOK_ADDRESS:
+if WEBHOOK_ADDRESS or WEBHOOKS:
     @app.on_event("shutdown")
     def app_shutdown():
         logger.info("Sending pending notifications before shutdown...")
