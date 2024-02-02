@@ -714,10 +714,21 @@ class SingBoxConfiguration(str):
             net = 'http'
 
         if net in ['http', 'ws', 'quic', 'grpc']:
+            max_early_data = None
+            early_data_header_name = None
+
+            if "?ed=" in path:
+                path, max_early_data = path.split("?ed=")
+                max_early_data, = max_early_data.split("/")
+                max_early_data = int(max_early_data)
+                early_data_header_name = "Sec-WebSocket-Protocol"
+
             config['transport'] = self.transport_config(
                 transport_type=net,
                 host=host,
-                path=path
+                path=path,
+                max_early_data=max_early_data,
+                early_data_header_name=early_data_header_name
             )
         else:
             config["network"]: net
