@@ -651,7 +651,7 @@ class SingBoxConfiguration(str):
                 if method:
                     transport_config['method'] = method
                 if host:
-                    transport_config['headers'] = {'Host': host}
+                    transport_config["host"] = [host]
                 if idle_timeout:
                     transport_config['idle_timeout'] = idle_timeout
                 if ping_timeout:
