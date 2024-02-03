@@ -1,0 +1,5 @@
+{
+    "enabled": false,
+    "protocol": "smux",
+    "max_streams": 8
+}
