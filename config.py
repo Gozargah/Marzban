@@ -56,7 +56,11 @@ SUDOERS = {config("SUDO_USERNAME"): config("SUDO_PASSWORD")} \
     else {}
 
 
-WEBHOOK_ADDRESS = config("WEBHOOK_ADDRESS", default=None)
+WEBHOOK_ADDRESS = config(
+    'WEBHOOK_ADDRESS',
+    default="",
+    cast=lambda v: [address.strip() for address in v.split(',')]
+)
 WEBHOOK_SECRET = config("WEBHOOK_SECRET", default=None)
 
 # recurrent notifications
