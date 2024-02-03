@@ -669,7 +669,7 @@ class SingBoxConfiguration(str):
                 if early_data_header_name:
                     transport_config['early_data_header_name'] = early_data_header_name
 
-            elif transport_type == "ws":
+            elif transport_type == "grpc":
                 if path:
                     transport_config['service_name'] = path
                 if idle_timeout:
@@ -739,7 +739,7 @@ class SingBoxConfiguration(str):
             config['tls'] = self.tls_config(sni=sni, fp=fp, tls=tls,
                                             pbk=pbk, sid=sid, alpn=alpn,
                                             ais=ais)
-            
+
         config['multiplex'] = self.mux_config
 
         return config
