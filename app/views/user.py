@@ -42,9 +42,9 @@ def add_user(new_user: UserCreate,
 
     bg.add_task(xray.operations.add_user, dbuser=dbuser)
     user = UserResponse.from_orm(dbuser)
-    bg.add_task(
-        report.user_created,
+    report.user_created(
         user=user,
+        dbuser=dbuser,
         user_id=dbuser.id,
         by=admin
     )
@@ -107,6 +107,7 @@ def modify_user(username: str,
 
     bg.add_task(report.user_updated,
                 user=user,
+                dbuser=dbuser,
                 by=admin)
     logger.info(f"User \"{user.username}\" modified")
 
@@ -115,6 +116,7 @@ def modify_user(username: str,
                     username=user.username,
                     status=user.status,
                     user=user,
+                    dbuser=dbuser,
                     by=admin)
         logger.info(
             f"User \"{dbuser.username}\" status changed from {old_status} to {user.status}")
@@ -145,6 +147,7 @@ def remove_user(username: str,
     bg.add_task(
         report.user_deleted,
         username=dbuser.username,
+        user=dbuser,
         by=admin
     )
     logger.info(f"User \"{username}\" deleted")
@@ -173,6 +176,7 @@ def reset_user_data_usage(username: str,
     user = UserResponse.from_orm(dbuser)
     bg.add_task(report.user_data_usage_reset,
                 user=user,
+                dbuser=dbuser,
                 by=admin)
 
     logger.info(f"User \"{username}\"'s usage was reset")
@@ -203,6 +207,7 @@ def revoke_user_subscription(username: str,
     bg.add_task(
         report.user_subscription_revoked,
         user=user,
+        dbuser=dbuser,
         by=admin
     )
 
