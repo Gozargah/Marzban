@@ -12,7 +12,7 @@ from app.utils.concurrency import GetBG
 from app.utils.helpers import (calculate_expiration_days,
                                calculate_usage_percent)
 from config import (NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT,
-                    WEBHOOK_ADDRESS, WEBHOOKS)
+                    WEBHOOK_ADDRESS)
 
 if TYPE_CHECKING:
     from app.db.models import User
@@ -48,7 +48,7 @@ def review():
             elif expired:
                 status = UserStatus.expired
             else:
-                if WEBHOOK_ADDRESS or WEBHOOKS:
+                if WEBHOOK_ADDRESS:
                     add_notification_reminders(db, user, now)
                 continue
 

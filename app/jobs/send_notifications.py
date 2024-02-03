@@ -5,8 +5,8 @@ from typing import Any, Dict, List
 from fastapi.encoders import jsonable_encoder
 from requests import Session
 
-from config import (WEBHOOK_SECRET, WEBHOOK_ADDRESS, WEBHOOKS, 
-                    NUMBER_OF_RECURRENT_NOTIFICATIONS, RECURRENT_NOTIFICATIONS_TIMEOUT)
+from config import (WEBHOOK_SECRET, WEBHOOK_ADDRESS, NUMBER_OF_RECURRENT_NOTIFICATIONS, 
+                    RECURRENT_NOTIFICATIONS_TIMEOUT)
 from app import app, logger, scheduler
 from app.db import GetDB
 from app.db.models import NotificationReminder
@@ -26,23 +26,21 @@ def send(data: List[Dict[Any, Any]]) -> bool:
     Returns:
         bool: returns True if an ok response received
     """
-    if WEBHOOKS:
-        result_list = []
-        for webhook in WEBHOOKS:
-            result = send_req(w_address=webhook['address'], w_headers=webhook['headers'], data=data)
-            result_list.append(result)
-        if True in result_list:
-            return True
-        else:
-            return False
+
+    result_list = []
+    for webhook in WEBHOOK_ADDRESS:
+        result = send_req(w_address=webhook, data=data)
+        result_list.append(result)
+    if True in result_list:
+        return True
     else:
-        send_req(w_address=WEBHOOK_ADDRESS, w_headers=headers, data=data)
+        return False
 
 
-def send_req(w_address:str, w_headers, data):
+def send_req(w_address:str, data):
     try:
         logger.debug(f"Sending {len(data)} webhook updates to {w_address}")
-        r = session.post(w_address, json=data, headers=w_headers)
+        r = session.post(w_address, json=data, headers=headers)
         if r.ok:
             return True
         logger.error(r)
@@ -85,7 +83,7 @@ def delete_expired_reminders() -> None:
         db.commit()
 
 
-if WEBHOOK_ADDRESS or WEBHOOKS:
+if WEBHOOK_ADDRESS:
     @app.on_event("shutdown")
     def app_shutdown():
         logger.info("Sending pending notifications before shutdown...")
