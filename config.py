@@ -86,3 +86,10 @@ SUB_PROFILE_TITLE = config("SUB_PROFILE_TITLE", default="Subscription")
 
 # discord webhook log
 DISCORD_WEBHOOK_URL = config("DISCORD_WEBHOOK_URL", default="")
+
+# subscription formats contain for support
+SUB_FORMATS_CONTAIN = config(
+    'SUB_FORMATS_CONTAIN',
+    default=["v2ray", "sing-box", "clash", "clash-meta", "outline"],
+    cast=lambda v: [j for j in filter(lambda i: i in ["v2ray", "sing-box", "clash", "clash-meta", "outline"], (i.strip() for i in v.split(',')))]
+)

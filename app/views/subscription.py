@@ -15,7 +15,8 @@ from config import (
     SUB_SUPPORT_URL,
     SUB_UPDATE_INTERVAL,
     SUBSCRIPTION_PAGE_TEMPLATE,
-    XRAY_SUBSCRIPTION_PATH
+    XRAY_SUBSCRIPTION_PATH,
+    SUB_FORMATS_CONTAIN
 )
 
 
@@ -74,25 +75,28 @@ def user_subscription(token: str,
 
     crud.update_user_sub(db, dbuser, user_agent)
 
-    if re.match('^([Cc]lash-verge|[Cc]lash-?[Mm]eta)', user_agent):
+    if re.match('^([Cc]lash-verge|[Cc]lash-?[Mm]eta)', user_agent) and ("clash-meta" in SUB_FORMATS_CONTAIN):
         conf = generate_subscription(user=user, config_format="clash-meta", as_base64=False)
         return Response(content=conf, media_type="text/yaml", headers=response_headers)
 
-    elif re.match('^([Cc]lash|[Ss]tash)', user_agent):
+    elif re.match('^([Cc]lash|[Ss]tash)', user_agent) and ("clash" in SUB_FORMATS_CONTAIN):
         conf = generate_subscription(user=user, config_format="clash", as_base64=False)
         return Response(content=conf, media_type="text/yaml", headers=response_headers)
 
-    elif re.match('^(SFA|SFI|SFM|SFT)', user_agent):
+    elif re.match('^(SFA|SFI|SFM|SFT)', user_agent) and ("sing-box" in SUB_FORMATS_CONTAIN):
         conf = generate_subscription(user=user, config_format="sing-box", as_base64=False)
         return Response(content=conf, media_type="application/json", headers=response_headers)
 
-    elif re.match('^(SS|SSR|SSD|SSS|Outline|Shadowsocks|SSconf)', user_agent):
+    elif re.match('^(SS|SSR|SSD|SSS|Outline|Shadowsocks|SSconf)', user_agent) and ("outline" in SUB_FORMATS_CONTAIN):
         conf = generate_subscription(user=user, config_format="outline", as_base64=False)
         return Response(content=conf, media_type="application/json", headers=response_headers)
 
-    else:
+    elif ("v2ray" in SUB_FORMATS_CONTAIN):
         conf = generate_subscription(user=user, config_format="v2ray", as_base64=True)
         return Response(content=conf, media_type="text/plain", headers=response_headers)
+
+    else:
+        return Response(content="This subscription format is not allowed!", media_type="text/plain", headers=response_headers)
 
 
 @app.get("/%s/{token}/info" % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'], response_model=UserResponse)
