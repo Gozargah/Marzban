@@ -1,26 +1,26 @@
 import {
-  Box,
-  chakra,
-  HStack,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Text,
-  useColorMode,
+	Box,
+	chakra,
+	HStack,
+	IconButton,
+	Menu,
+	MenuButton,
+	MenuItem,
+	MenuList,
+	Text,
+	useColorMode,
 } from "@chakra-ui/react";
 import {
-  ArrowLeftOnRectangleIcon,
-  Bars3Icon,
-  ChartPieIcon,
-  Cog6ToothIcon,
-  CurrencyDollarIcon,
-  DocumentMinusIcon,
-  LinkIcon,
-  MoonIcon,
-  SquaresPlusIcon,
-  SunIcon,
+	ArrowLeftOnRectangleIcon,
+	Bars3Icon,
+	ChartPieIcon,
+	Cog6ToothIcon,
+	CurrencyDollarIcon,
+	DocumentMinusIcon,
+	LinkIcon,
+	MoonIcon,
+	SquaresPlusIcon,
+	SunIcon,
 } from "@heroicons/react/24/outline";
 import { DONATION_URL, REPO_URL } from "constants/Project";
 import { useDashboard } from "contexts/DashboardContext";
@@ -79,17 +79,34 @@ export const shouldShowDonation = (): boolean => {
   }
 };
 
+export const ThemeChangerButton = () => {
+  const { colorMode, toggleColorMode } = useColorMode();
+  return (
+    <IconButton
+      size="sm"
+      variant="outline"
+      aria-label="switch theme"
+      onClick={() => {
+        updateThemeColor(colorMode == "dark" ? "light" : "dark");
+        toggleColorMode();
+      }}
+    >
+      {colorMode === "light" ? <DarkIcon /> : <LightIcon />}
+    </IconButton>
+  );
+};
+
 export const Header: FC<HeaderProps> = ({ actions }) => {
   const { onEditingHosts, onResetAllUsage, onEditingNodes, onShowingNodesUsage } = useDashboard();
   const { t } = useTranslation();
-  const { colorMode, toggleColorMode } = useColorMode();
   const [showDonationNotif, setShowDonationNotif] = useState(shouldShowDonation());
-  const gBtnColor = colorMode === "dark" ? "dark_dimmed" : colorMode;
 
   const handleOnClose = () => {
     localStorage.setItem(NOTIFICATION_KEY, new Date().getTime().toString());
     setShowDonationNotif(false);
   };
+  const { colorMode } = useColorMode();
+  const gBtnColor = colorMode === "dark" ? "dark_dimmed" : colorMode;
 
   return (
     <HStack
@@ -169,18 +186,6 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
           </IconButton>
 
           <Language />
-
-          <IconButton
-            size="sm"
-            variant="outline"
-            aria-label="switch theme"
-            onClick={() => {
-              updateThemeColor(colorMode == "dark" ? "light" : "dark");
-              toggleColorMode();
-            }}
-          >
-            {colorMode === "light" ? <DarkIcon /> : <LightIcon />}
-          </IconButton>
 
           <Box
             css={{ direction: "ltr" }}

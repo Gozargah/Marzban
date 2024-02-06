@@ -14,6 +14,7 @@ import { ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Logo from "assets/logo.svg?react";
 import { Footer } from "components/Footer";
+import { ThemeChangerButton } from "components/Header";
 import { Input } from "components/Input";
 import { Language } from "components/Language";
 import { FC, useEffect } from "react";
@@ -33,8 +34,8 @@ const schema = z.object({
 export const LogoIcon = chakra(Logo, {
   baseStyle: {
     strokeWidth: "10px",
-    w: 12,
-    h: 12,
+    w: 16,
+    h: 16,
   },
 });
 
@@ -78,19 +79,44 @@ export const Login: FC = () => {
   });
 
   return (
-    <VStack justifyContent="space-between" minH="100vh" p="6" w="full">
+    <VStack
+      justifyContent="space-between"
+      minH="100vh"
+      p={{
+        base: "4",
+        md: "6",
+      }}
+      w="full"
+    >
       <Box w="full">
         <HStack justifyContent="end" w="full">
+          <ThemeChangerButton />
           <Language />
         </HStack>
         <HStack w="full" justifyContent="center" alignItems="center">
-          <Box w="full" maxW="340px" mt="6">
+          <Box w="full" maxW="340px" mt="10">
             <VStack alignItems="center" w="full">
               <LogoIcon />
-              <Text fontSize="2xl" fontWeight="semibold">
+              <Text
+                fontSize={{
+                  base: "lg",
+                  md: "2xl",
+                }}
+                fontWeight="semibold"
+                mt="2"
+                textAlign="center"
+              >
                 {t("login.loginYourAccount")}
               </Text>
-              <Text color="gray.600" _dark={{ color: "gray.400" }}>
+              <Text
+                color="gray.600"
+                _dark={{ color: "gray.400" }}
+                textAlign="center"
+                fontSize={{
+                  base: "sm",
+                  md: "md",
+                }}
+              >
                 {t("login.welcomeBack")}
               </Text>
             </VStack>
