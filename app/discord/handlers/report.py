@@ -46,7 +46,7 @@ def report_status_change(username: str, status: str, admin: Admin = None):
                 "description": f"{_status[status]}\n----------------------\n**Username:** {username}",
                 "color": _status_color[status],
                 "footer": {
-                    "text": f"Belong To: {admin.username if admin else None}"
+                    "text": f"Belongs To: {admin.username if admin else None}"
                 },
             }
         ],
@@ -76,7 +76,7 @@ def report_new_user(username: str, by: str, expire_date: int, data_limit: int, p
                 **Data Limit Reset Strategy:**{data_limit_reset_strategy}""",
 
                 "footer": {
-                    "text": f"Belong To: {admin.username if admin else None}\nBy: {by}"
+                    "text": f"Belongs To: {admin.username if admin else None}\nBy: {by}"
                 },
                 "color": int("00ff00", 16)
             }
@@ -108,7 +108,7 @@ def report_user_modification(username: str, expire_date: int, data_limit: int, p
                 **Data Limit Reset Strategy:**{data_limit_reset_strategy}""",
 
                 "footer": {
-                    "text": f"Belong To: {admin.username if admin else None}\nBy: {by}"
+                    "text": f"Belongs To: {admin.username if admin else None}\nBy: {by}"
                 },
                 'color': int("00ffff", 16)
             }
@@ -127,7 +127,7 @@ def report_user_deletion(username: str, by: str, admin: Admin = None):
                 'title': ':wastebasket: Deleted',
                 'description': f'**Username: **{username}',
                 "footer": {
-                    "text": f"Belong To: {admin.username if admin else None}\nBy: {by}"
+                    "text": f"Belongs To: {admin.username if admin else None}\nBy: {by}"
                 },
                 'color': int("ff0000", 16)
             }
@@ -146,7 +146,7 @@ def report_user_usage_reset(username: str, by: str, admin: Admin = None):
                 'title': ':repeat: Reset',
                 'description': f'**Username:** {username}',
                 "footer": {
-                    "text": f"Belong To: {admin.username if admin else None}\nBy: {by}"
+                    "text": f"Belongs To: {admin.username if admin else None}\nBy: {by}"
                 },
                 'color': int('00ffff', 16)
             }
@@ -165,7 +165,7 @@ def report_user_subscription_revoked(username: str, by: str, admin: Admin = None
                 'title': ':repeat: Revoked',
                 'description': f'**Username:** {username}',
                 "footer": {
-                    "text": f"Belong To: {admin.username if admin else None} \nBy: {by}"
+                    "text": f"Belongs To: {admin.username if admin else None} \nBy: {by}"
                 },
                 'color': int('ff0000', 16)
             }
