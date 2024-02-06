@@ -22,7 +22,7 @@ import {
 	SquaresPlusIcon,
 	SunIcon,
 } from "@heroicons/react/24/outline";
-import { DONATION_URL, REPO_URL } from "constants/Project";
+import { DONATION_URL, REPO_URL } from "constants/project";
 import { useDashboard } from "contexts/DashboardContext";
 import differenceInDays from "date-fns/differenceInDays";
 import isValid from "date-fns/isValid";

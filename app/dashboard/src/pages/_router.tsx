@@ -2,7 +2,7 @@ import { lazy } from "react";
 import { createHashRouter } from "react-router-dom";
 import { getCurrentAdmin } from "service/api";
 
-const ConsoleLayout = lazy(() => import("./ConsoleLayout"));
+const ConsoleLayout = lazy(() => import("../layouts/ConsoleLayout"));
 const Dashboard = lazy(() => import("./Dashboard"));
 const Login = lazy(() => import("./Login"));
 

@@ -1,6 +1,6 @@
 import { Badge, Text } from "@chakra-ui/react";
 
-import { statusColors } from "constants/UserSettings";
+import { statusColors } from "constants/user-settings";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Status as UserStatusType } from "types/User";

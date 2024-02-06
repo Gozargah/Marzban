@@ -20,15 +20,11 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
-import { shadowsocksMethods, XTLSFlows } from "constants/Proxies";
+import { shadowsocksMethods, XTLSFlows } from "constants/proxies";
 import { InboundType, ProtocolType } from "contexts/DashboardContext";
 import { t } from "i18next";
 import { FC, forwardRef, PropsWithChildren, useState } from "react";
-import {
-  ControllerRenderProps,
-  useFormContext,
-  useWatch,
-} from "react-hook-form";
+import { ControllerRenderProps, useFormContext, useWatch } from "react-hook-form";
 import { useGetInbounds } from "service/api";
 
 const SettingsIcon = chakra(EllipsisVerticalIcon, {
@@ -39,11 +35,8 @@ const SettingsIcon = chakra(EllipsisVerticalIcon, {
   },
 });
 
-const InboundCard: FC<
-  PropsWithChildren<UseRadioProps & { inbound: InboundType }>
-> = ({ inbound, ...props }) => {
-  const { getCheckboxProps, getInputProps, getLabelProps, htmlProps } =
-    useCheckbox(props);
+const InboundCard: FC<PropsWithChildren<UseRadioProps & { inbound: InboundType }>> = ({ inbound, ...props }) => {
+  const { getCheckboxProps, getInputProps, getLabelProps, htmlProps } = useCheckbox(props);
   const inputProps = getInputProps();
   return (
     <Box as="label">
@@ -102,14 +95,7 @@ const InboundCard: FC<
           pointerEvents="none"
           flexGrow={1}
         >
-          <HStack
-            justify="space-between"
-            w="full"
-            maxW="calc(100% - 20px)"
-            spacing={0}
-            gap={2}
-            overflow="hidden"
-          >
+          <HStack justify="space-between" w="full" maxW="calc(100% - 20px)" spacing={0} gap={2} overflow="hidden">
             <Text isTruncated {...getLabelProps()} fontSize="xs">
               {inbound.tag} <Text as="span">({inbound.network})</Text>
             </Text>
@@ -135,18 +121,10 @@ const RadioCard: FC<
       isSelected: boolean;
     }
   >
-> = ({
-  disabled,
-  title,
-  description,
-  toggleAccordion,
-  isSelected,
-  ...props
-}) => {
+> = ({ disabled, title, description, toggleAccordion, isSelected, ...props }) => {
   const form = useFormContext();
   const { data: inbounds = {} } = useGetInbounds();
-  const { getCheckboxProps, getInputProps, getLabelProps, htmlProps } =
-    useCheckbox(props);
+  const { getCheckboxProps, getInputProps, getLabelProps, htmlProps } = useCheckbox(props);
 
   const inputProps = getInputProps();
 
@@ -169,12 +147,9 @@ const RadioCard: FC<
       }
     },
   });
-	
+
   const isPartialSelected =
-    inBoundDefaultValue &&
-    isSelected &&
-    (inbounds[title as ProtocolType] || []).length !==
-      inBoundDefaultValue.length;
+    inBoundDefaultValue && isSelected && (inbounds[title as ProtocolType] || []).length !== inBoundDefaultValue.length;
 
   const protocolHasInbound = (inbounds[title as ProtocolType] || []).length > 0;
 
@@ -203,16 +178,7 @@ const RadioCard: FC<
     >
       <Box as={shouldBeDisabled ? "span" : "label"} position="relative">
         {isPartialSelected && (
-          <Box
-            position="absolute"
-            w="2"
-            h="2"
-            bg="yellow.500"
-            top="-1"
-            right="-1"
-            rounded="full"
-            zIndex={999}
-          />
+          <Box position="absolute" w="2" h="2" bg="yellow.500" top="-1" right="-1" rounded="full" zIndex={999} />
         )}
         <input {...inputProps} />
         <Box
@@ -261,9 +227,7 @@ const RadioCard: FC<
           {...getCheckboxProps()}
         >
           <AccordionButton
-            display={
-              inputProps.checked && protocolHasInbound ? "block" : "none"
-            }
+            display={inputProps.checked && protocolHasInbound ? "block" : "none"}
             as="span"
             className="checked"
             color="primary.200"
@@ -297,13 +261,7 @@ const RadioCard: FC<
           </Text>
         </Box>
       </Box>
-      <AccordionPanel
-        px={2}
-        pb={3}
-        roundedBottom="5px"
-        pt={3}
-        _dark={{ bg: inputProps.checked && "gray.750" }}
-      >
+      <AccordionPanel px={2} pb={3} roundedBottom="5px" pt={3} _dark={{ bg: inputProps.checked && "gray.750" }}>
         <VStack
           w="full"
           rowGap={2}
@@ -317,24 +275,16 @@ const RadioCard: FC<
         >
           <VStack alignItems="flex-start" w="full">
             <Text fontSize="sm">{t("inbound")}</Text>
-            <SimpleGrid
-              gap={2}
-              alignItems="flex-start"
-              w="full"
-              columns={1}
-              spacing={1}
-            >
-              {((inbounds[title as ProtocolType] as InboundType[]) || []).map(
-                (inbound) => {
-                  return (
-                    <InboundCard
-                      key={inbound.tag}
-                      {...getInboundCheckboxProps({ value: inbound.tag })}
-                      inbound={inbound}
-                    />
-                  );
-                }
-              )}
+            <SimpleGrid gap={2} alignItems="flex-start" w="full" columns={1} spacing={1}>
+              {((inbounds[title as ProtocolType] as InboundType[]) || []).map((inbound) => {
+                return (
+                  <InboundCard
+                    key={inbound.tag}
+                    {...getInboundCheckboxProps({ value: inbound.tag })}
+                    inbound={inbound}
+                  />
+                );
+              })}
             </SimpleGrid>
           </VStack>
           {title === "vmess" && isSelected && (
@@ -375,12 +325,7 @@ const RadioCard: FC<
                 <Text fontSize="sm" pb={1}>
                   Flow
                 </Text>
-                <Select
-                  fontSize="xs"
-                  size="sm"
-                  borderRadius="6px"
-                  {...form.register("proxies.vless.flow")}
-                >
+                <Select fontSize="xs" size="sm" borderRadius="6px" {...form.register("proxies.vless.flow")}>
                   {XTLSFlows.map((entry) => (
                     <option key={entry.title} value={entry.value}>
                       {entry.title}
@@ -428,12 +373,7 @@ const RadioCard: FC<
                 <Text fontSize="sm" pb={1}>
                   {t("userDialog.method")}
                 </Text>
-                <Select
-                  fontSize="xs"
-                  size="sm"
-                  borderRadius="6px"
-                  {...form.register("proxies.shadowsocks.method")}
-                >
+                <Select fontSize="xs" size="sm" borderRadius="6px" {...form.register("proxies.shadowsocks.method")}>
                   {shadowsocksMethods.map((method) => (
                     <option key={method} value={method}>
                       {method}
@@ -459,72 +399,61 @@ export type RadioGroupProps = ControllerRenderProps & {
   disabled?: boolean;
 };
 
-export const RadioGroup = forwardRef<any, RadioGroupProps>(
-  ({ name, list, onChange, disabled, ...props }, ref) => {
-    const form = useFormContext();
-    const { data: inbounds = {} } = useGetInbounds();
-    const [expandedAccordions, setExpandedAccordions] = useState<number[]>([]);
+export const RadioGroup = forwardRef<any, RadioGroupProps>(({ name, list, onChange, disabled, ...props }, ref) => {
+  const form = useFormContext();
+  const { data: inbounds = {} } = useGetInbounds();
+  const [expandedAccordions, setExpandedAccordions] = useState<number[]>([]);
 
-    const toggleAccordion = (i: number) => {
-      if (expandedAccordions.includes(i))
-        expandedAccordions.splice(expandedAccordions.indexOf(i), 1);
-      else expandedAccordions.push(i);
-      setExpandedAccordions([...expandedAccordions]);
-    };
+  const toggleAccordion = (i: number) => {
+    if (expandedAccordions.includes(i)) expandedAccordions.splice(expandedAccordions.indexOf(i), 1);
+    else expandedAccordions.push(i);
+    setExpandedAccordions([...expandedAccordions]);
+  };
 
-    const { getCheckboxProps } = useCheckboxGroup({
-      value: props.value,
-      onChange: (value) => {
-        // active all inbounds when a proxy selected
-        const selectedItem = value.filter((el) => !props.value.includes(el));
-        if (selectedItem[0]) {
-          form.setValue(
-            `inbounds.${selectedItem[0]}`,
-            inbounds[selectedItem[0] as ProtocolType]?.map((i) => i.tag)
-          );
-        }
-
-        setExpandedAccordions(
-          expandedAccordions.filter((i) => {
-            return value.find((title) => title === list[i].title);
-          })
+  const { getCheckboxProps } = useCheckboxGroup({
+    value: props.value,
+    onChange: (value) => {
+      // active all inbounds when a proxy selected
+      const selectedItem = value.filter((el) => !props.value.includes(el));
+      if (selectedItem[0]) {
+        form.setValue(
+          `inbounds.${selectedItem[0]}`,
+          inbounds[selectedItem[0] as ProtocolType]?.map((i) => i.tag)
         );
+      }
 
-        onChange({
-          target: {
-            value,
-            name,
-          },
-        });
-      },
-    });
+      setExpandedAccordions(
+        expandedAccordions.filter((i) => {
+          return value.find((title) => title === list[i].title);
+        })
+      );
 
-    return (
-      <Accordion allowToggle index={expandedAccordions}>
-        <SimpleGrid
-          ref={ref}
-          gap={2}
-          alignItems="flex-start"
-          columns={1}
-          spacing={1}
-        >
-          {list.map((value, index) => {
-            return (
-              <RadioCard
-                toggleAccordion={toggleAccordion.bind(null, index)}
-                disabled={disabled}
-                key={value.title}
-                title={value.title}
-                description={value.description}
-                isSelected={
-                  !!(props.value as string[]).find((v) => v === value.title)
-                }
-                {...getCheckboxProps({ value: value.title })}
-              />
-            );
-          })}
-        </SimpleGrid>
-      </Accordion>
-    );
-  }
-);
+      onChange({
+        target: {
+          value,
+          name,
+        },
+      });
+    },
+  });
+
+  return (
+    <Accordion allowToggle index={expandedAccordions}>
+      <SimpleGrid ref={ref} gap={2} alignItems="flex-start" columns={1} spacing={1}>
+        {list.map((value, index) => {
+          return (
+            <RadioCard
+              toggleAccordion={toggleAccordion.bind(null, index)}
+              disabled={disabled}
+              key={value.title}
+              title={value.title}
+              description={value.description}
+              isSelected={!!(props.value as string[]).find((v) => v === value.title)}
+              {...getCheckboxProps({ value: value.title })}
+            />
+          );
+        })}
+      </SimpleGrid>
+    </Accordion>
+  );
+});

@@ -35,7 +35,7 @@ import { ChartPieIcon, PencilIcon, UserPlusIcon } from "@heroicons/react/24/outl
 import { InformationCircleIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { convertDateFormat } from "components/OnlineBadge";
-import { resetStrategy } from "constants/UserSettings";
+import { resetStrategy } from "constants/user-settings";
 import { FilterUsageType, useDashboard } from "contexts/DashboardContext";
 import dayjs from "dayjs";
 import { FC, useEffect, useState } from "react";

@@ -36,7 +36,7 @@ import {
 } from "@heroicons/react/24/outline";
 import AddFileIcon from "assets/add_file.svg?react";
 import classNames from "classnames";
-import { resetStrategy, statusColors } from "constants/UserSettings";
+import { resetStrategy, statusColors } from "constants/user-settings";
 import { useDashboard, useUsers } from "contexts/DashboardContext";
 import { t } from "i18next";
 import { FC, Fragment, useEffect, useState } from "react";

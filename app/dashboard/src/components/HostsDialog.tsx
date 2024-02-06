@@ -36,7 +36,7 @@ import {
 } from "@chakra-ui/react";
 import { InformationCircleIcon, LinkIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { proxyALPN, proxyFingerprint, proxyHostSecurity } from "constants/Proxies";
+import { proxyALPN, proxyFingerprint, proxyHostSecurity } from "constants/proxies";
 import { FC, useEffect, useState } from "react";
 import { FormProvider, useFieldArray, useForm, useFormContext } from "react-hook-form";
 import { Trans, useTranslation } from "react-i18next";
