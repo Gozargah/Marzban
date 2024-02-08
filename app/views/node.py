@@ -110,8 +110,12 @@ async def node_logs(node_id: int, websocket: WebSocket, db: Session = Depends(ge
 
     cache = ''
     last_sent_ts = 0
-    with xray.nodes[node_id].get_logs() as logs:
+    node = xray.nodes[node_id]
+    with node.get_logs() as logs:
         while True:
+            if not node == xray.nodes[node_id]:
+                break
+
             if interval and time.time() - last_sent_ts >= interval and cache:
                 try:
                     await websocket.send_text(cache)

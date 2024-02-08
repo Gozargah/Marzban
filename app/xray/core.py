@@ -22,7 +22,7 @@ class XRayCore:
         self.restarting = False
 
         self._logs_buffer = deque(maxlen=100)
-        self._temp_log_buffers = []
+        self._temp_log_buffers = {}
         self._on_start_funcs = []
         self._on_stop_funcs = []
         self._env = {
@@ -58,7 +58,7 @@ class XRayCore:
                 if output:
                     output = output.strip()
                     self._logs_buffer.append(output)
-                    for buf in self._temp_log_buffers:
+                    for buf in list(self._temp_log_buffers.values()):
                         buf.append(output)
                     logger.debug(output)
 
@@ -71,7 +71,7 @@ class XRayCore:
                 if output:
                     output = output.strip()
                     self._logs_buffer.append(output)
-                    for buf in self._temp_log_buffers:
+                    for buf in list(self._temp_log_buffers.values()):
                         buf.append(output)
 
                 elif not self.process or self.process.poll() is not None:
@@ -85,11 +85,13 @@ class XRayCore:
     @contextmanager
     def get_logs(self):
         buf = deque(self._logs_buffer, maxlen=100)
+        buf_id = id(buf)
         try:
-            self._temp_log_buffers.append(buf)
+            self._temp_log_buffers[buf_id] = buf
             yield buf
         finally:
-            self._temp_log_buffers.remove(buf)
+            del self._temp_log_buffers[buf_id]
+            del buf
 
     @property
     def started(self):

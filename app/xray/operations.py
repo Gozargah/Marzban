@@ -198,7 +198,7 @@ def connect_node(node_id, config):
         _change_node_status(node_id, NodeStatus.connecting)
         logger.info(f"Connecting to \"{dbnode.name}\" node")
         node.start(config)
-        version = node.remote.fetch_xray_version()
+        version = node.get_version()
         _change_node_status(node_id, NodeStatus.connected, version=version)
         logger.info(f"Connected to \"{dbnode.name}\" node, xray run on v{version}")
     except Exception as e:
