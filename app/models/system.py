@@ -13,3 +13,13 @@ class SystemStats(BaseModel):
     outgoing_bandwidth: int
     incoming_bandwidth_speed: int
     outgoing_bandwidth_speed: int
+
+
+class NodeStats(BaseModel):
+    node_id: int
+    mem_total: int
+    mem_used: int
+    cpu_cores: int
+    cpu_usage: float
+    incoming_bandwidth_speed: int
+    outgoing_bandwidth_speed: int

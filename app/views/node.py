@@ -8,10 +8,12 @@ from fastapi import BackgroundTasks, Depends, HTTPException, WebSocket
 from starlette.websockets import WebSocketDisconnect
 
 from app import app, logger, xray
+from app.xray.node import RPyCXRayNode
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.node import (NodeCreate, NodeModify, NodeResponse,
                              NodeSettings, NodeStatus, NodesUsageResponse)
+from app.models.system import NodeStats
 from app.models.proxy import ProxyHost
 
 
@@ -75,6 +77,67 @@ def get_node(node_id: int,
         raise HTTPException(status_code=404, detail="Node not found")
 
     return dbnode
+
+
+@app.get("/api/node/{node_id}/stats", tags=['Node'], response_model=NodeStats)
+def get_node_stats(node_id: int,
+             db: Session = Depends(get_db),
+             admin: Admin = Depends(Admin.get_current)):
+    
+    if not admin.is_sudo:
+        raise HTTPException(status_code=403, detail="You're not allowed")
+
+    dbnode = crud.get_node_by_id(db, node_id)
+    if not dbnode:
+        raise HTTPException(status_code=404, detail="Node not found")
+
+    if not xray.nodes.get(node_id):
+        raise HTTPException(status_code=403, detail="Node is not enable")
+    
+    node = xray.nodes[node_id]
+
+    if not node.connected:
+        raise HTTPException(status_code=403, detail="Node is not connected")
+
+    if isinstance(node, RPyCXRayNode):
+        raise HTTPException(status_code=404, detail="Node must be rest mode")
+
+    stats = node.get_stats()
+    stats["node_id"] = node_id
+
+    return stats
+
+
+@app.get("/api/nodes/stats", tags=['Node'], response_model=List[NodeStats])
+def get_nodes_stats(db: Session = Depends(get_db),
+                   admin: Admin = Depends(Admin.get_current)):
+    
+    if not admin.is_sudo:
+        raise HTTPException(status_code=403, detail="You're not allowed")
+    
+    nodes_stats = []
+
+    dbnodes = crud.get_nodes(db=db)
+    for dbnode in dbnodes:
+        node = xray.nodes.get(dbnode.id)
+        if not node:
+            continue
+
+        if not node.connected:
+            continue
+
+        if isinstance(node, RPyCXRayNode):
+            continue
+
+        stats = node.get_stats()
+        stats["node_id"] = dbnode.id
+
+        nodes_stats.append(stats)
+    
+    if not nodes_stats:
+        raise HTTPException(status_code=404, detail="You have no node with rest service protocol")
+
+    return nodes_stats
 
 
 @app.websocket("/api/node/{node_id}/logs")
