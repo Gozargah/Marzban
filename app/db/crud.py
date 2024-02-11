@@ -416,7 +416,9 @@ def create_admin(db: Session, admin: AdminCreate):
     dbadmin = Admin(
         username=admin.username,
         hashed_password=admin.hashed_password,
-        is_sudo=admin.is_sudo
+        is_sudo=admin.is_sudo,
+        telegram_id=admin.telegram_id if admin.telegram_id else None,
+        discord_webhook=admin.discord_webhook if admin.discord_webhook else None
     )
     db.add(dbadmin)
     db.commit()
@@ -425,10 +427,18 @@ def create_admin(db: Session, admin: AdminCreate):
 
 
 def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify):
-    dbadmin.is_sudo = modified_admin.is_sudo
-    if dbadmin.hashed_password != modified_admin.hashed_password:
+    if modified_admin.is_sudo:
+        dbadmin.is_sudo = modified_admin.is_sudo
+    if dbadmin.hashed_password and dbadmin.hashed_password != modified_admin.hashed_password:
         dbadmin.hashed_password = modified_admin.hashed_password
         dbadmin.password_reset_at = datetime.utcnow()
+
+    if modified_admin.telegram_id:
+        dbadmin.telegram_id = modified_admin.telegram_id
+
+    if modified_admin.discord_webhook:
+        dbadmin.discord_webhook = modified_admin.discord_webhook
+
     db.commit()
     db.refresh(dbadmin)
     return dbadmin
@@ -440,6 +450,11 @@ def partial_update_admin(db: Session, dbadmin: Admin, modified_admin: AdminParti
     if modified_admin.password is not None and dbadmin.hashed_password != modified_admin.hashed_password:
         dbadmin.hashed_password = modified_admin.hashed_password
         dbadmin.password_reset_at = datetime.utcnow()
+    if modified_admin.telegram_id:
+        dbadmin.telegram_id = modified_admin.telegram_id
+
+    if modified_admin.discord_webhook:
+        dbadmin.discord_webhook = modified_admin.discord_webhook
 
     db.commit()
     db.refresh(dbadmin)
@@ -450,6 +465,14 @@ def remove_admin(db: Session, dbadmin: Admin):
     db.delete(dbadmin)
     db.commit()
     return dbadmin
+
+
+def get_admin_by_id(db: Session, id: int):
+    return db.query(Admin).filter(Admin.id == id).first()
+
+
+def get_admin_by_telegram_id(db: Session, telegram_id: int):
+    return db.query(Admin).filter(Admin.telegram_id == telegram_id).first()
 
 
 def get_admins(db: Session,
