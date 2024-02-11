@@ -60,7 +60,7 @@ SUDOERS = {config("SUDO_USERNAME"): config("SUDO_PASSWORD")} \
 WEBHOOK_ADDRESS = config(
     'WEBHOOK_ADDRESS',
     default="",
-    cast=lambda v: [address.strip() for address in v.split(',')]
+    cast=lambda v: [address.strip() for address in v.split(',')] if v else []
 )
 WEBHOOK_SECRET = config("WEBHOOK_SECRET", default=None)
 
