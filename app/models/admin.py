@@ -74,7 +74,7 @@ class AdminCreate(Admin):
 
     @validator("discord_webhook")
     def validate_discord_webhook(cls, value):
-        if not value.startswith("https://discord.com"):
+        if value and not value.startswith("https://discord.com"):
             raise ValueError("Discord webhook must start with 'https://discord.com'")
         return value
 
@@ -92,7 +92,7 @@ class AdminModify(BaseModel):
 
     @validator("discord_webhook")
     def validate_discord_webhook(cls, value):
-        if not value.startswith("https://discord.com"):
+        if value and not value.startswith("https://discord.com"):
             raise ValueError("Discord webhook must start with 'https://discord.com'")
         return value
 
