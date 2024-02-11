@@ -23,6 +23,8 @@ FLAGS: Dict[str, tuple] = {
     "format": ("--format", "-f"),
     "output_file": ("--output", "-o"),
     "status": ("--status",),
+    "telegram_id": ("--telegram-id", "-tg"),
+    "discord_webhook": ("--discord-webhook", "-dc"),
 }
 
 

@@ -432,10 +432,8 @@ def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify):
     if dbadmin.hashed_password and dbadmin.hashed_password != modified_admin.hashed_password:
         dbadmin.hashed_password = modified_admin.hashed_password
         dbadmin.password_reset_at = datetime.utcnow()
-
     if modified_admin.telegram_id:
         dbadmin.telegram_id = modified_admin.telegram_id
-
     if modified_admin.discord_webhook:
         dbadmin.discord_webhook = modified_admin.discord_webhook
 
@@ -450,10 +448,9 @@ def partial_update_admin(db: Session, dbadmin: Admin, modified_admin: AdminParti
     if modified_admin.password is not None and dbadmin.hashed_password != modified_admin.hashed_password:
         dbadmin.hashed_password = modified_admin.hashed_password
         dbadmin.password_reset_at = datetime.utcnow()
-    if modified_admin.telegram_id:
+    if modified_admin.telegram_id is not None:
         dbadmin.telegram_id = modified_admin.telegram_id
-
-    if modified_admin.discord_webhook:
+    if modified_admin.discord_webhook is not None:
         dbadmin.discord_webhook = modified_admin.discord_webhook
 
     db.commit()
