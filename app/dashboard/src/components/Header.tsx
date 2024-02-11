@@ -1,36 +1,34 @@
 import {
-	Box,
-	chakra,
-	HStack,
-	IconButton,
-	Menu,
-	MenuButton,
-	MenuItem,
-	MenuList,
-	Text,
-	useColorMode,
+  Box,
+  chakra,
+  HStack,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Text,
+  useColorMode,
 } from "@chakra-ui/react";
 import {
-	ArrowLeftOnRectangleIcon,
-	Bars3Icon,
-	ChartPieIcon,
-	Cog6ToothIcon,
-	CurrencyDollarIcon,
-	DocumentMinusIcon,
-	LinkIcon,
-	MoonIcon,
-	SquaresPlusIcon,
-	SunIcon,
+  ArrowLeftOnRectangleIcon,
+  Bars3Icon,
+  ChartPieIcon,
+  Cog6ToothIcon,
+  CurrencyDollarIcon,
+  DocumentMinusIcon,
+  LinkIcon,
+  SquaresPlusIcon,
 } from "@heroicons/react/24/outline";
-import { DONATION_URL, REPO_URL } from "constants/project";
+import { GithubStar } from "components/GithubStar";
+import { ThemeChangerButton } from "components/ThemeChangerButton";
+import { DONATION_URL } from "constants/project";
 import { useDashboard } from "contexts/DashboardContext";
 import differenceInDays from "date-fns/differenceInDays";
 import isValid from "date-fns/isValid";
 import { FC, ReactNode, useState } from "react";
-import GitHubButton from "react-github-btn";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { updateThemeColor } from "utils/themeColor";
 import { Language } from "./Language";
 
 type HeaderProps = {
@@ -43,8 +41,6 @@ const iconProps = {
   },
 };
 
-const DarkIcon = chakra(MoonIcon, iconProps);
-const LightIcon = chakra(SunIcon, iconProps);
 const CoreSettingsIcon = chakra(Cog6ToothIcon, iconProps);
 const SettingsIcon = chakra(Bars3Icon, iconProps);
 const LogoutIcon = chakra(ArrowLeftOnRectangleIcon, iconProps);
@@ -77,23 +73,6 @@ export const shouldShowDonation = (): boolean => {
   } catch (err) {
     return true;
   }
-};
-
-export const ThemeChangerButton = () => {
-  const { colorMode, toggleColorMode } = useColorMode();
-  return (
-    <IconButton
-      size="sm"
-      variant="outline"
-      aria-label="switch theme"
-      onClick={() => {
-        updateThemeColor(colorMode == "dark" ? "light" : "dark");
-        toggleColorMode();
-      }}
-    >
-      {colorMode === "light" ? <DarkIcon /> : <LightIcon />}
-    </IconButton>
-  );
 };
 
 export const Header: FC<HeaderProps> = ({ actions }) => {
@@ -184,7 +163,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
           >
             <CoreSettingsIcon />
           </IconButton>
-
+          <ThemeChangerButton />
           <Language />
 
           <Box
@@ -198,15 +177,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
               },
             }}
           >
-            <GitHubButton
-              href={REPO_URL}
-              data-color-scheme={`no-preference: ${gBtnColor}; light: ${gBtnColor}; dark: ${gBtnColor};`}
-              data-size="large"
-              data-show-count="true"
-              aria-label="Star Marzban on GitHub"
-            >
-              Star
-            </GitHubButton>
+            <GithubStar />
           </Box>
         </HStack>
       </Box>

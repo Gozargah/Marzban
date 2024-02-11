@@ -1,36 +1,94 @@
-import { Box, Button, Collapse, HStack, Image, Text, VStack, chakra } from "@chakra-ui/react";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { Box, Button, Collapse, Divider, HStack, IconButton, Image, Text, VStack, chakra } from "@chakra-ui/react";
+import { ArrowRightStartOnRectangleIcon, ChevronDownIcon, LifebuoyIcon } from "@heroicons/react/24/outline";
+import { DonationCard } from "components/DonationCard";
+import { GithubStar } from "components/GithubStar";
+import { Language } from "components/Language";
+import { ThemeChangerButton } from "components/ThemeChangerButton";
 import { MenuItem, menu } from "constants/menu";
+import { DONATION_URL } from "constants/project";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC, useState } from "react";
 import { Link } from "react-router-dom";
+import { useGetCurrentAdmin } from "service/api";
 
 export const Sidebar = () => {
   const { version } = useDashboard();
+  const { data } = useGetCurrentAdmin();
   return (
-    <VStack maxW="300px" w="full" h="full" bg="gray.950" px="4" py="5" justifyContent="space-between">
-      <VStack w="full" gap="40px">
+    <VStack
+      maxW="300px"
+      w="full"
+      h="full"
+      bg="white"
+      borderRight="1px solid"
+      borderColor="#E5EAF0"
+      _dark={{
+        bg: "#1E1F22",
+        borderColor: "#282C2F",
+      }}
+      px="4"
+      py="5"
+      pt="9"
+      justifyContent="space-between"
+    >
+      <VStack w="full" gap="30px">
         <HStack w="full" justify="space-between" px="2">
           <HStack>
             <Image src="/statics/logo.png" />
-            <Text fontWeight="semibold" color="white">
+            <Text fontWeight="semibold" color="gray.800" _dark={{ color: "whiteAlpha.800" }}>
               Marzban
             </Text>
           </HStack>
-          <Box
-            border="1.5px solid"
-            rounded="full"
-            borderColor="gray.500"
-            color="gray.500"
-            fontWeight="medium"
-            px="2"
-            py="0.5"
-            fontSize="xs"
-          >
-            v{version}
-          </Box>
+          {version && (
+            <Box
+              border="1.5px solid"
+              rounded="full"
+              borderColor="gray.500"
+              color="gray.500"
+              _light={{
+                borderColor: "gray.800",
+                color: "gray.800",
+              }}
+              fontWeight="medium"
+              px="2"
+              py="0.5"
+              fontSize="xs"
+            >
+              v{version}
+            </Box>
+          )}
         </HStack>
         <NavMenu menu={menu} />
+      </VStack>
+      <VStack w="full">
+        <DonationCard />
+        <NavMenu
+          menu={[
+            {
+              title: "Donation",
+              href: DONATION_URL,
+              icon: <LifebuoyIcon width="24" />,
+              target: "_blank",
+            },
+          ]}
+        />
+        <Divider _light={{ borderColor: "#DCE0E4" }} />
+        <HStack justify="space-between" w="full" alignItems="center">
+          <GithubStar />
+          <HStack>
+            <Language />
+            <ThemeChangerButton />
+          </HStack>
+        </HStack>
+        <Divider _light={{ borderColor: "#DCE0E4" }} />
+        <HStack pt="2" pl="1" w="full" justifyContent="space-between">
+          <Text fontSize="sm" fontWeight="semibold">
+            {data && data.username}
+          </Text>
+          <IconButton aria-label="sign out" color="gray.400" size="sm" variant="ghost">
+            <ArrowRightStartOnRectangleIcon width="18px" />
+          </IconButton>
+        </HStack>
       </VStack>
     </VStack>
   );
@@ -50,28 +108,33 @@ const NavMenu: FC<{ menu: MenuItem[] }> = ({ menu }) => {
     <VStack gap="1" w="full">
       {menu.map((menuItem) => {
         return (
-          <Box w="full" key={menuItem.href}>
+          <Box w="full" key={menuItem.href || menuItem.title}>
             <Button
               w="full"
               justifyContent="start"
-              fontSize="16px"
-              fontWeight="semibold"
+              fontSize="md"
+              fontWeight="medium"
               color="gray.300"
               bg="transparent"
               _hover={{
-                bg: "gray.800",
+                bg: "blackAlpha.100",
+                _dark: {
+                  bg: "whiteAlpha.100",
+                },
               }}
               px="3"
               as={menuItem.href ? Link : undefined}
               key={menuItem.href}
               to={menuItem.href || ""}
+              target={menuItem.target}
               leftIcon={menuItem.icon}
               onClick={() => {
                 menuItem.children && setOpen(!isOpen);
               }}
+              _light={{ color: "gray.600" }}
               rightIcon={menuItem.children ? <DropdownIcon transform={isOpen ? "rotate(180deg)" : ""} /> : undefined}
             >
-              <Text as="span" color="white" flexGrow={1} textAlign="left">
+              <Text as="span" color="whiteAlpha.800" _light={{ color: "gray.700" }} flexGrow={1} textAlign="left">
                 {menuItem.title}
               </Text>
             </Button>

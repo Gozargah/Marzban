@@ -5,8 +5,8 @@ import { Outlet } from "react-router-dom";
 
 export const ConsoleLayout = () => {
   return (
-    <Grid templateColumns="repeat(24, 1fr)" gap={4}>
-      <GridItem colSpan={5}>
+    <Grid templateColumns="repeat(24, 1fr)" gap={4} minH="100vh">
+      <GridItem colSpan={5} minW="300px">
         <Sidebar />
       </GridItem>
       <GridItem colSpan={19} flexGrow={1}>

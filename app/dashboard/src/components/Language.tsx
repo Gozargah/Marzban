@@ -23,7 +23,14 @@ export const Language: FC<HeaderProps> = ({ actions }) => {
 
   return (
     <Menu placement="bottom-end">
-      <MenuButton as={IconButton} size="sm" variant="outline" icon={<LangIcon />} position="relative" />
+      <MenuButton
+        as={IconButton}
+        size="sm"
+        variant="solid"
+        colorScheme="gray"
+        icon={<LangIcon />}
+        position="relative"
+      />
       <MenuList minW="100px" zIndex={1399}>
         <MenuItem maxW="100px" fontSize="sm" onClick={() => changeLanguage("en")}>
           English

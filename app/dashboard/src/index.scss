@@ -203,3 +203,27 @@ table thead {
   display: inline-block;
   position: relative;
 }
+
+.chakra-ui-light :host:not([data-theme]),
+.chakra-ui-light :root:not([data-theme]),
+.chakra-ui-light [data-theme]:not([data-theme]),
+[data-theme="light"] :host:not([data-theme]),
+[data-theme="light"] :root:not([data-theme]),
+[data-theme="light"] [data-theme]:not([data-theme]),
+:host[data-theme="light"],
+:root[data-theme="light"],
+[data-theme][data-theme="light"] {
+  --chakra-colors-chakra-body-bg: #f8f9fa !important;
+}
+
+.chakra-ui-dark :host:not([data-theme]),
+.chakra-ui-dark :root:not([data-theme]),
+.chakra-ui-dark [data-theme]:not([data-theme]),
+[data-theme="dark"] :host:not([data-theme]),
+[data-theme="dark"] :root:not([data-theme]),
+[data-theme="dark"] [data-theme]:not([data-theme]),
+:host[data-theme="dark"],
+:root[data-theme="dark"],
+[data-theme][data-theme="dark"] {
+  --chakra-colors-chakra-body-bg: #222326 !important;
+}

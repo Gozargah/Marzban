@@ -1,13 +1,15 @@
 import { lazy } from "react";
 import { createHashRouter } from "react-router-dom";
-import { getCurrentAdmin } from "service/api";
+import { getGetCurrentAdminQueryOptions } from "service/api";
+import { queryClient } from "utils/react-query";
 
 const ConsoleLayout = lazy(() => import("../layouts/ConsoleLayout"));
 const Dashboard = lazy(() => import("./Dashboard"));
 const Login = lazy(() => import("./Login"));
 
 const fetchAdminLoader = () => {
-  return getCurrentAdmin();
+  return queryClient.getQueryCache().build(queryClient, getGetCurrentAdminQueryOptions()).fetch();
+  // return getCurrentAdmin();
 };
 
 export const router = createHashRouter([

@@ -9,7 +9,7 @@
 		]
 	},
 	"include": [
-		"vite.config.ts",
+		"vite.config.mts",
 		"orval.config.ts"
 	]
 }

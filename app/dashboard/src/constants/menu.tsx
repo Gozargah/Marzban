@@ -7,6 +7,7 @@ export type MenuItem = {
   href?: string;
   icon?: ReactElement;
   children?: MenuItem[];
+  target?: string;
 };
 
 export const menu: MenuItem[] = [
