@@ -63,7 +63,9 @@ def create_admin(
     username: str = typer.Option(..., *utils.FLAGS["username"], prompt=True),
     is_sudo: bool = typer.Option(None, *utils.FLAGS["is_sudo"], prompt=True),
     password: str = typer.Option(..., prompt=True, confirmation_prompt=True,
-                                 hide_input=True, hidden=True, envvar=utils.PASSWORD_ENVIRON_NAME)
+                                 hide_input=True, hidden=True, envvar=utils.PASSWORD_ENVIRON_NAME),
+    telegram_id: Union[int, None] = typer.prompt(None, prompt=True),
+    discord_webhook_url: Union[str, None] = typer.prompt(None, prompt=True),
 ):
     """
     Creates an admin
@@ -72,7 +74,8 @@ def create_admin(
     """
     with GetDB() as db:
         try:
-            crud.create_admin(db, AdminCreate(username=username, password=password, is_sudo=is_sudo))
+            crud.create_admin(db, AdminCreate(username=username, password=password, is_sudo=is_sudo, 
+                                              telegram_id=telegram_id, discord_webhook=discord_webhook_url))
             utils.success(f'Admin "{username}" created successfully.')
         except IntegrityError:
             utils.error(f'Admin "{username}" already exists!')
@@ -92,6 +95,8 @@ def update_admin(username: str = typer.Option(..., *utils.FLAGS["username"], pro
         )
 
         is_sudo: bool = typer.confirm("Is sudo", default=admin.is_sudo)
+        telegram_id: int = typer.prompt("New Telegram ID", default=admin.telegram_id)
+        discord_webhook: str = typer.prompt("New Discord Webhook URL", default=admin.discord_webhook)
         new_password: Union[str, None] = typer.prompt(
             "New password",
             default="",
@@ -103,6 +108,8 @@ def update_admin(username: str = typer.Option(..., *utils.FLAGS["username"], pro
         return AdminPartialModify(
             is_sudo=is_sudo,
             password=new_password,
+            telegram_id=telegram_id,
+            discord_webhook=discord_webhook
         )
 
     with GetDB() as db:

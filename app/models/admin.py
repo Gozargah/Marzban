@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from app.db import Session, crud, get_db
 from app.utils.jwt import get_admin_payload
@@ -21,6 +21,8 @@ class Token(BaseModel):
 class Admin(BaseModel):
     username: str
     is_sudo: bool
+    telegram_id: Optional[int]
+    discord_webhook: Optional[str]
 
     class Config:
         orm_mode = True
@@ -63,19 +65,36 @@ class Admin(BaseModel):
 
 class AdminCreate(Admin):
     password: str
+    telegram_id: Optional[int]
+    discord_webhook: Optional[str]
 
     @property
     def hashed_password(self):
         return pwd_context.hash(self.password)
+
+    @validator("discord_webhook")
+    def validate_discord_webhook(cls, value):
+        if not value.startswith("https://discord.com"):
+            raise ValueError("Discord webhook must start with 'https://discord.com'")
+        return value
 
 
 class AdminModify(BaseModel):
-    password: str
+    password: Optional[str]
     is_sudo: bool
+    telegram_id: Optional[int]
+    discord_webhook: Optional[str]
 
     @property
     def hashed_password(self):
-        return pwd_context.hash(self.password)
+        if self.password:
+            return pwd_context.hash(self.password)
+
+    @validator("discord_webhook")
+    def validate_discord_webhook(cls, value):
+        if not value.startswith("https://discord.com"):
+            raise ValueError("Discord webhook must start with 'https://discord.com'")
+        return value
 
 
 class AdminPartialModify(AdminModify):
