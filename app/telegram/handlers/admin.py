@@ -10,7 +10,7 @@ import qrcode
 import sqlalchemy
 from dateutil.relativedelta import relativedelta
 from telebot import types
-from telebot.util import user_link
+from telebot.util import user_link, extract_arguments
 
 from app import xray
 from app.db import GetDB, crud
@@ -72,8 +72,8 @@ def get_system_info():
         total_users=total_users,
         active_users=users_active,
         deactivate_users=total_users - users_active,
-        up_speed = readable_size(realtime_bandwidth().outgoing_bytes),
-        down_speed = readable_size(realtime_bandwidth().incoming_bytes)
+        up_speed=readable_size(realtime_bandwidth().outgoing_bytes),
+        down_speed=readable_size(realtime_bandwidth().incoming_bytes)
     )
 
 
@@ -102,6 +102,7 @@ def help_command(message: types.Message):
 {user_link} Welcome to Marzban Telegram-Bot Admin Panel.
 Here you can manage your users and proxies.
 To get started, use the buttons below.
+Also, You can get and modify users by /user command.
 """.format(
         user_link=user_link(message.from_user)
     ), parse_mode="html", reply_markup=BotKeyboard.main_menu())
@@ -1965,26 +1966,38 @@ def confirm_user_command(call: types.CallbackQuery):
                 pass
 
 
-@bot.message_handler(func=lambda message: True, is_admin=True)
-def search(message: types.Message):
+@bot.message_handler(commands=['user'], is_admin=True)
+def search_user(message: types.Message):
+    args = extract_arguments(message.text)
+    if not args:
+        return bot.reply_to(message,
+                            "❌ You must pass some usernames\n\n"
+                            "<b>Usage:</b> <code>/user username1 username2</code>",
+                            parse_mode='HTML')
+
+    usernames = args.split()
+
     with GetDB() as db:
-        db_user = crud.get_user(db, message.text)
-        if not db_user:
-            return bot.reply_to(message, '❌ User not found.')
-        user = UserResponse.from_orm(db_user)
-        try:
-            note = user.note or ' '
-        except:
-            note = None
-    text = get_user_info_text(
-        status=user.status,
-        username=user.username,
-        sub_url=user.subscription_url,
-        expire=user.expire,
-        data_limit=user.data_limit,
-        usage=user.used_traffic,
-        note=note)
-    return bot.reply_to(message, text, parse_mode="html", reply_markup=BotKeyboard.user_menu(user_info={
-        'status': user.status,
-        'username': user.username
-    }, note=note))
+        for username in usernames:
+            db_user = crud.get_user(db, username)
+            if not db_user:
+                bot.reply_to(message, f'❌ User «{username}» not found.')
+                continue
+            user = UserResponse.from_orm(db_user)
+            try:
+                note = user.note or ' '
+            except:
+                note = None
+
+            text = get_user_info_text(
+                status=user.status,
+                username=user.username,
+                sub_url=user.subscription_url,
+                expire=user.expire,
+                data_limit=user.data_limit,
+                usage=user.used_traffic,
+                note=note)
+            bot.reply_to(message, text, parse_mode="html", reply_markup=BotKeyboard.user_menu(user_info={
+                'status': user.status,
+                'username': user.username
+            }, note=note))
