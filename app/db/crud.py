@@ -429,7 +429,7 @@ def create_admin(db: Session, admin: AdminCreate):
 def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify):
     if modified_admin.is_sudo:
         dbadmin.is_sudo = modified_admin.is_sudo
-    if dbadmin.hashed_password and dbadmin.hashed_password != modified_admin.hashed_password:
+    if modified_admin.password is not None and dbadmin.hashed_password != modified_admin.hashed_password:
         dbadmin.hashed_password = modified_admin.hashed_password
         dbadmin.password_reset_at = datetime.utcnow()
     if modified_admin.telegram_id:

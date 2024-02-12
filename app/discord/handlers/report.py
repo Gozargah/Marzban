@@ -70,10 +70,10 @@ def report_new_user(username: str, by: str, expire_date: int, data_limit: int, p
                 "title": ":new: Created",
                 "description": f"""
                 **Username:** {username}
-                **Traffic Limit:** {data_limit}
-                **Expire Date:** {expire_date}
-                **Proxies:** {proxies}
-                **Data Limit Reset Strategy:**{data_limit_reset_strategy}""",
+**Traffic Limit:** {data_limit}
+**Expire Date:** {expire_date}
+**Proxies:** {proxies}
+**Data Limit Reset Strategy:**{data_limit_reset_strategy}""",
 
                 "footer": {
                     "text": f"Belongs To: {admin.username if admin else None}\nBy: {by}"
@@ -102,10 +102,10 @@ def report_user_modification(username: str, expire_date: int, data_limit: int, p
                 'title': ':pencil2: Modified',
                 'description': f"""
                 **Username:** {username}
-                **Traffic Limit:** {data_limit}
-                **Expire Date:** {expire_date}
-                **Proxies:** {proxies}
-                **Data Limit Reset Strategy:**{data_limit_reset_strategy}""",
+**Traffic Limit:** {data_limit}
+**Expire Date:** {expire_date}
+**Proxies:** {proxies}
+**Data Limit Reset Strategy:**{data_limit_reset_strategy}""",
 
                 "footer": {
                     "text": f"Belongs To: {admin.username if admin else None}\nBy: {by}"
