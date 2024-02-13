@@ -56,7 +56,7 @@ def review():
             update_user_status(db, user, status)
 
             bg.add_task(
-                report.status_change, useename=user.username, status=status, 
+                report.status_change, username=user.username, status=status, 
                 user=UserResponse.from_orm(user), dbuser = user
             )
 
@@ -83,7 +83,7 @@ def review():
             update_user_status(db, user, status)
             start_user_expire(db, user)
             bg.add_task(
-                report.status_change, useename=user.username, status=status, 
+                report.status_change, username=user.username, status=status, 
                 user=UserResponse.from_orm(user), dbuser = user
             )
 
