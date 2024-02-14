@@ -44,9 +44,9 @@ def add_user(new_user: UserCreate,
     user = UserResponse.from_orm(dbuser)
     report.user_created(
         user=user,
-        dbuser=dbuser,
         user_id=dbuser.id,
-        by=admin
+        by=admin,
+        user_admin=dbuser.admin
     )
     logger.info(f"New user \"{dbuser.username}\" added")
     return user
@@ -107,7 +107,7 @@ def modify_user(username: str,
 
     bg.add_task(report.user_updated,
                 user=user,
-                dbuser=dbuser,
+                user_admin=dbuser.admin,
                 by=admin)
     logger.info(f"User \"{user.username}\" modified")
 
@@ -116,7 +116,7 @@ def modify_user(username: str,
                     username=user.username,
                     status=user.status,
                     user=user,
-                    dbuser=dbuser,
+                    user_admin=dbuser.admin,
                     by=admin)
         logger.info(
             f"User \"{dbuser.username}\" status changed from {old_status} to {user.status}")
@@ -140,6 +140,7 @@ def remove_user(username: str,
     if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
         raise HTTPException(status_code=403, detail="You're not allowed")
 
+    user_admin = dbuser.admin
     crud.remove_user(db, dbuser)
 
     bg.add_task(xray.operations.remove_user, dbuser=dbuser)
@@ -147,7 +148,7 @@ def remove_user(username: str,
     bg.add_task(
         report.user_deleted,
         username=dbuser.username,
-        user=dbuser,
+        user_admin=user_admin,
         by=admin
     )
     logger.info(f"User \"{username}\" deleted")
@@ -176,7 +177,7 @@ def reset_user_data_usage(username: str,
     user = UserResponse.from_orm(dbuser)
     bg.add_task(report.user_data_usage_reset,
                 user=user,
-                dbuser=dbuser,
+                user_admin=dbuser.admin,
                 by=admin)
 
     logger.info(f"User \"{username}\"'s usage was reset")
@@ -207,7 +208,7 @@ def revoke_user_subscription(username: str,
     bg.add_task(
         report.user_subscription_revoked,
         user=user,
-        dbuser=dbuser,
+        user_admin=dbuser.admin,
         by=admin
     )
 
@@ -403,11 +404,6 @@ def delete_expired_users(bg: BackgroundTasks,
     crud.remove_users(db, expired_users)
 
     for removed_user in removed_users:
-        bg.add_task(
-            report.user_deleted,
-            username=removed_user,
-            by=admin
-        )
         logger.info(f"User \"{removed_user}\" deleted")
 
     return removed_users
