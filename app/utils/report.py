@@ -30,7 +30,7 @@ def status_change(
     elif status == UserStatus.active:
         notify(UserEnabled(username=username, action=Notification.Type.user_enabled, user=user, by=by))
     try:
-        discord.report_status_change(username, status)
+        discord.report_status_change(username, status, user_admin)
     except Exception:
         pass
 
