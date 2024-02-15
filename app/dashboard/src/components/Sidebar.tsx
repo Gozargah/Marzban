@@ -1,5 +1,26 @@
-import { Box, Button, Collapse, Divider, HStack, IconButton, Image, Text, VStack, chakra } from "@chakra-ui/react";
-import { ArrowRightStartOnRectangleIcon, ChevronDownIcon, LifebuoyIcon } from "@heroicons/react/24/outline";
+import {
+  Box,
+  Button,
+  Collapse,
+  Divider,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerOverlay,
+  HStack,
+  IconButton,
+  Image,
+  Text,
+  VStack,
+  chakra,
+  useBreakpointValue,
+} from "@chakra-ui/react";
+import {
+  ArrowRightStartOnRectangleIcon,
+  Bars3CenterLeftIcon,
+  ChevronDownIcon,
+  LifebuoyIcon,
+} from "@heroicons/react/24/outline";
 import { DonationCard } from "components/DonationCard";
 import { GithubStar } from "components/GithubStar";
 import { Language } from "components/Language";
@@ -7,11 +28,67 @@ import { ThemeChangerButton } from "components/ThemeChangerButton";
 import { MenuItem, menu } from "constants/menu";
 import { DONATION_URL } from "constants/project";
 import { useDashboard } from "contexts/DashboardContext";
-import { FC, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useGetCurrentAdmin } from "service/api";
 
+const Logo = () => {
+  return (
+    <HStack>
+      <Image src="/statics/logo.png" />
+      <Text fontWeight="semibold" color="gray.800" _dark={{ color: "whiteAlpha.800" }}>
+        Marzban
+      </Text>
+    </HStack>
+  );
+};
+
 export const Sidebar = () => {
+  const [isDrawerOpen, setDrawerOpen] = useState(false);
+  const toggleDrawer = setDrawerOpen.bind(null, !isDrawerOpen);
+  const sidebar = useMemo(() => <SidebarContent />, []);
+  return useBreakpointValue(
+    {
+      base: (
+        <>
+          <HStack
+            display={{
+              base: "flex",
+              md: "none",
+            }}
+            justify="space-between"
+            w="full"
+            bg="transparent"
+            borderBottom="1px solid"
+            borderColor="#E5EAF0"
+            _dark={{
+              borderColor: "#282C2F",
+            }}
+            px="4"
+            py="3"
+          >
+            <Logo />
+            <IconButton size="sm" color="gray.500" p="1" aria-label="open menu" variant="ghost" onClick={toggleDrawer}>
+              <Bars3CenterLeftIcon />
+            </IconButton>
+          </HStack>
+          <Drawer placement="left" onClose={toggleDrawer} isOpen={isDrawerOpen}>
+            <DrawerOverlay />
+            <DrawerContent p={0} maxW="280px">
+              <DrawerBody p={0}>{sidebar}</DrawerBody>
+            </DrawerContent>
+          </Drawer>
+        </>
+      ),
+      md: sidebar,
+    },
+    {
+      fallback: "md",
+    }
+  );
+};
+
+const SidebarContent = () => {
   const { version } = useDashboard();
   const { data } = useGetCurrentAdmin();
   return (
@@ -26,19 +103,17 @@ export const Sidebar = () => {
         bg: "#1E1F22",
         borderColor: "#282C2F",
       }}
-      px="4"
+      px={{ md: 4, base: 2 }}
       py="5"
-      pt="9"
+      pt={{
+        base: 5,
+        md: 9,
+      }}
       justifyContent="space-between"
     >
       <VStack w="full" gap="30px">
         <HStack w="full" justify="space-between" px="2">
-          <HStack>
-            <Image src="/statics/logo.png" />
-            <Text fontWeight="semibold" color="gray.800" _dark={{ color: "whiteAlpha.800" }}>
-              Marzban
-            </Text>
-          </HStack>
+          <Logo />
           {version && (
             <Box
               border="1.5px solid"
@@ -112,7 +187,10 @@ const NavMenu: FC<{ menu: MenuItem[] }> = ({ menu }) => {
             <Button
               w="full"
               justifyContent="start"
-              fontSize="md"
+              fontSize={{
+                md: "md",
+                base: "sm",
+              }}
               fontWeight="medium"
               color="gray.300"
               bg="transparent"
@@ -122,7 +200,14 @@ const NavMenu: FC<{ menu: MenuItem[] }> = ({ menu }) => {
                   bg: "whiteAlpha.100",
                 },
               }}
-              px="3"
+              px={{
+                base: 2,
+                md: 3,
+              }}
+              h={{
+                base: 9,
+                md: 10,
+              }}
               as={menuItem.href ? Link : undefined}
               key={menuItem.href}
               to={menuItem.href || ""}

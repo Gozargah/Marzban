@@ -5,11 +5,24 @@ import { Outlet } from "react-router-dom";
 
 export const ConsoleLayout = () => {
   return (
-    <Grid templateColumns="repeat(24, 1fr)" gap={4} minH="100vh">
-      <GridItem colSpan={5} minW="300px">
+    <Grid
+      templateColumns="repeat(24, 1fr)"
+      display={{
+        base: "flex",
+        md: "grid",
+      }}
+      flexDirection="column"
+      templateRows="repeat(24, 1fr)"
+      gap={{
+        base: 0,
+        md: 4,
+      }}
+      minH="100vh"
+    >
+      <GridItem colSpan={{ md: 5 }}>
         <Sidebar />
       </GridItem>
-      <GridItem colSpan={19} flexGrow={1}>
+      <GridItem colSpan={{ md: 19 }} flexGrow={1}>
         <Suspense>
           <Outlet />
         </Suspense>
