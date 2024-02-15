@@ -12,7 +12,7 @@ from xray_api.types.account import (
     TrojanAccount,
     VLESSAccount,
     VMessAccount,
-    XTLSFlows,
+    XTLSFlows
 )
 
 
@@ -99,8 +99,11 @@ ProxyHostALPN = Enum(
     "ProxyHostALPN",
     {
         "none": "",
+        "h3": "h3",
         "h2": "h2",
         "http/1.1": "http/1.1",
+        "h3,h2,http/1.1": "h3,h2,http/1.1",
+        "h3,h2": "h3,h2",
         "h2,http/1.1": "h2,http/1.1",
     },
 )
