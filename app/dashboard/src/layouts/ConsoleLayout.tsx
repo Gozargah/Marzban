@@ -19,7 +19,7 @@ export const ConsoleLayout = () => {
       }}
       minH="100vh"
     >
-      <GridItem colSpan={{ md: 5 }}>
+      <GridItem colSpan={{ md: 5 }} minW={{ md: "300px" }}>
         <Sidebar />
       </GridItem>
       <GridItem colSpan={{ md: 19 }} flexGrow={1}>
