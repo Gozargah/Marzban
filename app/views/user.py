@@ -19,7 +19,7 @@ from app.utils import report, share
 
 
 @app.post("/api/user", tags=['User'], response_model=UserResponse)
-def add_user(new_user: UserCreate | CreateUserFromTemplate,
+def add_user(new_user: UserCreate,
              bg: BackgroundTasks,
              db: Session = Depends(get_db),
              admin: Admin = Depends(Admin.get_current)):
@@ -33,15 +33,50 @@ def add_user(new_user: UserCreate | CreateUserFromTemplate,
     - **inbounds** dictionary of protocol:inbound_tags, empty means all inbounds
     """
     # TODO expire should be datetime instead of timestamp
-    if isinstance(new_user, CreateUserFromTemplate):
-        template = crud.get_user_template(db, new_user.template_id)
-        if not template:
-            raise HTTPException(status_code=404, detail="Template not found!")
+    for proxy_type in new_user.proxies:
+        if not xray.config.inbounds_by_protocol.get(proxy_type):
+            raise HTTPException(status_code=400, detail=f"Protocol {proxy_type} is disabled on your server")
 
-        if not template.inbounds:
-            raise HTTPException(status_code=422, detail="No inbounds found.")
+    try:
+        dbuser = crud.create_user(db, new_user,
+                                  admin=crud.get_admin(db, admin.username))
+    except sqlalchemy.exc.IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="User already exists")
 
-        new_user = share.make_user_model_from_template(new_user, template, new_user.username)
+    bg.add_task(xray.operations.add_user, dbuser=dbuser)
+    user = UserResponse.from_orm(dbuser)
+    bg.add_task(
+        report.user_created,
+        user=user,
+        user_id=dbuser.id,
+        by=admin
+    )
+    logger.info(f"New user \"{dbuser.username}\" added")
+    return user
+
+
+@app.post("/api/user/from_template", tags=['User'], response_model=UserResponse)
+def add_user_from_template(new_user: CreateUserFromTemplate,
+                           bg: BackgroundTasks,
+                           db: Session = Depends(get_db),
+                           admin: Admin = Depends(Admin.get_current)):
+    """
+    Add a new user from template
+
+    - **username** must have 3 to 32 characters and is allowed to contain a-z, 0-9, and underscores in between
+    - **template_id** user template id
+    - **flow** XTLS flow default: none
+    """
+    template = crud.get_user_template(db, new_user.template_id)
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found!")
+
+    if not template.inbounds:
+        raise HTTPException(status_code=404, detail="No inbounds found.")
+
+    new_user = CreateUserFromTemplate.make_user_model_from_template(
+        new_user, template, new_user.username, new_user.flow)
 
     for proxy_type in new_user.proxies:
         if not xray.config.inbounds_by_protocol.get(proxy_type):
@@ -104,7 +139,7 @@ def modify_user(username: str,
         if not template:
             raise HTTPException(status_code=404, detail="Template not found!")
 
-        modified_user = share.make_user_model_from_template(modified_user, template, username)
+        modified_user = CreateUserFromTemplate.make_user_model_from_template(modified_user, template, username)
 
     for proxy_type in modified_user.proxies:
         if not xray.config.inbounds_by_protocol.get(proxy_type):

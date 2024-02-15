@@ -3,14 +3,16 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Union
 
+from dateutil.relativedelta import relativedelta
 from pydantic import BaseModel, Field, validator
 
 from app import xray
 from app.models.proxy import ProxySettings, ProxyTypes
+from app.models.user_template import UserTemplateResponse
 from app.utils.jwt import create_subscription_token
 from app.utils.share import generate_v2ray_links
 from config import XRAY_SUBSCRIPTION_URL_PREFIX
-from xray_api.types.account import Account
+from xray_api.types.account import XTLSFlows
 
 USERNAME_REGEXP = re.compile(r"^(?=\w{3,32}\b)[a-zA-Z0-9-_@.]+(?:_[a-zA-Z0-9-_@.]+)*$")
 
@@ -99,6 +101,7 @@ class User(BaseModel):
 class CreateUserFromTemplate(BaseModel):
     username: str
     template_id: int
+    flow: XTLSFlows = XTLSFlows.NONE
 
     @validator("username", check_fields=False)
     def validate_username(cls, v):
@@ -107,6 +110,40 @@ class CreateUserFromTemplate(BaseModel):
                 "Username only can be 3 to 32 characters and contain a-z, 0-9, and underscores in between."
             )
         return v
+
+    @staticmethod
+    def make_user_model_from_template(model, template, username, flow: XTLSFlows = XTLSFlows.NONE):
+        template = UserTemplateResponse.from_orm(template)
+        if template.username_prefix:
+            username = template.username_prefix + username
+        if template.username_suffix:
+            username += template.username_suffix
+        now = datetime.now()
+        today = datetime(
+            year=now.year,
+            month=now.month,
+            day=now.day,
+            hour=23,
+            minute=59,
+            second=59)
+        expire_date = None
+        if template.expire_duration:
+            expire_date = today + relativedelta(seconds=template.expire_duration)
+        if isinstance(model, UserModify):
+            return UserModify(
+                status=UserStatusModify.active,
+                expire=expire_date.timestamp() if expire_date else 0,
+                data_limit=template.data_limit if template.data_limit else 0,
+            )
+        inbounds: dict[str, list[str]] = {
+            k: v for k, v in template.inbounds.items() if v}
+        proxies = {p: ({'flow': flow.value} if p == ProxyTypes.VLESS else {}) for p in inbounds}
+        return UserCreate(
+            username=username,
+            expire=expire_date.timestamp() if expire_date else None,
+            data_limit=template.data_limit if template.data_limit else None,
+            proxies=proxies,
+            inbounds=inbounds)
 
 
 class UserCreate(User):

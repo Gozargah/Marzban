@@ -9,12 +9,9 @@ from typing import TYPE_CHECKING, List, Literal, Union
 from uuid import UUID
 
 import yaml
-from dateutil.relativedelta import relativedelta
 from jdatetime import date as jd
 
 from app import xray
-from app.models.proxy import ProxyTypes
-from app.models.user_template import UserTemplateResponse
 from app.templates import render_template
 from app.utils.system import get_public_ip, readable_size
 
@@ -24,7 +21,6 @@ if TYPE_CHECKING:
 from config import (
     CLASH_SUBSCRIPTION_TEMPLATE,
     SINGBOX_SUBSCRIPTION_TEMPLATE,
-    TELEGRAM_DEFAULT_VLESS_FLOW
 )
 
 SERVER_IP = get_public_ip()
@@ -931,39 +927,3 @@ def process_inbounds_and_tags(inbounds: dict, proxies: dict, format_variables: d
 
 def encode_title(text: str) -> str:
     return f"base64:{base64.b64encode(text.encode()).decode()}"
-
-
-def make_user_model_from_template(model, template, username):
-    from app.models.user import UserCreate, UserModify, UserStatusModify
-    template = UserTemplateResponse.from_orm(template)
-    if template.username_prefix:
-        username = template.username_prefix + username
-    if template.username_suffix:
-        username += template.username_suffix
-    now = dt.now()
-    today = dt(
-        year=now.year,
-        month=now.month,
-        day=now.day,
-        hour=23,
-        minute=59,
-        second=59)
-    expire_date = None
-    if template.expire_duration:
-        expire_date = today + relativedelta(seconds=template.expire_duration)
-    if isinstance(model, UserModify):
-        return UserModify(
-            status=UserStatusModify.active,
-            expire=expire_date.timestamp() if expire_date else 0,
-            data_limit=template.data_limit if template.data_limit else 0,
-        )
-    inbounds: dict[str, list[str]] = {
-        k: v for k, v in template.inbounds.items() if v}
-    proxies = {p: ({'flow': TELEGRAM_DEFAULT_VLESS_FLOW} if
-               TELEGRAM_DEFAULT_VLESS_FLOW and p == ProxyTypes.VLESS else {}) for p in inbounds}
-    return UserCreate(
-        username=username,
-        expire=expire_date.timestamp() if expire_date else None,
-        data_limit=template.data_limit if template.data_limit else None,
-        proxies=proxies,
-        inbounds=inbounds)
