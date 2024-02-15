@@ -15,13 +15,10 @@ from app.utils.notification import (Notification, ReachedDaysLeft,
 from app import discord
 
 
-def status_change(username: str, status: UserStatus, user: UserResponse, dbuser:User, by: Optional[Admin] = None) -> None:
-    if dbuser.admin_id:
-        admin = get_admin(admin_id=dbuser.admin_id)
-    else:
-        admin = None
+def status_change(
+        username: str, status: UserStatus, user: UserResponse, user_admin: Admin = None, by: Admin = None) -> None:
     try:
-        telegram.report_status_change(username, status, admin)
+        telegram.report_status_change(username, status, user_admin)
     except Exception:
         pass
     if status == UserStatus.limited:
@@ -33,16 +30,12 @@ def status_change(username: str, status: UserStatus, user: UserResponse, dbuser:
     elif status == UserStatus.active:
         notify(UserEnabled(username=username, action=Notification.Type.user_enabled, user=user, by=by))
     try:
-        discord.report_status_change(username, status, admin)
+        discord.report_status_change(username, status, user_admin)
     except Exception:
         pass
 
 
-def user_created(user: UserResponse, dbuser:User, user_id: int, by: Admin) -> None:
-    if dbuser.admin_id:
-        admin = get_admin(admin_id=dbuser.admin_id)
-    else:
-        admin = None
+def user_created(user: UserResponse, user_id: int, by: Admin, user_admin: Admin = None) -> None:
     try:
         telegram.report_new_user(
             user_id=user_id,
@@ -52,7 +45,7 @@ def user_created(user: UserResponse, dbuser:User, user_id: int, by: Admin) -> No
             data_limit=user.data_limit,
             proxies=user.proxies,
             data_limit_reset_strategy=user.data_limit_reset_strategy,
-            admin=admin
+            admin=user_admin
         )
     except Exception:
         pass
@@ -65,17 +58,13 @@ def user_created(user: UserResponse, dbuser:User, user_id: int, by: Admin) -> No
             data_limit=user.data_limit,
             proxies=user.proxies,
             data_limit_reset_strategy=user.data_limit_reset_strategy,
-            admin=admin
+            admin=user_admin
         )
     except Exception:
         pass
 
 
-def user_updated(user: UserResponse, dbuser:User, by: Admin) -> None:
-    if dbuser.admin_id:
-        admin = get_admin(admin_id=dbuser.admin_id)
-    else:
-        admin = None
+def user_updated(user: UserResponse, by: Admin, user_admin: Admin = None) -> None:
     try:
         telegram.report_user_modification(
             username=user.username,
@@ -84,12 +73,12 @@ def user_updated(user: UserResponse, dbuser:User, by: Admin) -> None:
             proxies=user.proxies,
             by=by.username,
             data_limit_reset_strategy=user.data_limit_reset_strategy,
-            admin=admin
+            admin=user_admin
         )
     except Exception:
         pass
     notify(UserUpdated(username=user.username, action=Notification.Type.user_updated, by=by, user=user))
-    try: 
+    try:
         discord.report_user_modification(
             username=user.username,
             expire_date=user.expire,
@@ -97,36 +86,28 @@ def user_updated(user: UserResponse, dbuser:User, by: Admin) -> None:
             proxies=user.proxies,
             by=by.username,
             data_limit_reset_strategy=user.data_limit_reset_strategy,
-            admin=admin
+            admin=user_admin
         )
     except Exception:
         pass
 
 
-def user_deleted(username: str, user:User, by: Admin) -> None:
-    if user.admin_id:
-        admin = get_admin(admin_id=user.admin_id)
-    else:
-        admin = None
-    telegram.report_user_deletion(username=username, by=by.username, admin=admin)
+def user_deleted(username: str, by: Admin, user_admin: Admin = None) -> None:
+    telegram.report_user_deletion(username=username, by=by.username, admin=user_admin)
 
     notify(UserDeleted(username=username, action=Notification.Type.user_deleted, by=by))
     try:
-        discord.report_user_deletion(username=username, by=by.username, admin=admin)
+        discord.report_user_deletion(username=username, by=by.username, admin=user_admin)
     except Exception:
         pass
 
 
-def user_data_usage_reset(user: UserResponse, dbuser:User, by: Admin) -> None:
-    if dbuser.admin_id:
-        admin = get_admin(admin_id=dbuser.admin_id)
-    else:
-        admin = None
+def user_data_usage_reset(user: UserResponse, by: Admin, user_admin: Admin = None) -> None:
     try:
         telegram.report_user_usage_reset(
             username=user.username,
             by=by.username,
-            admin=admin
+            admin=user_admin
         )
     except Exception:
         pass
@@ -135,22 +116,18 @@ def user_data_usage_reset(user: UserResponse, dbuser:User, by: Admin) -> None:
         discord.report_user_usage_reset(
             username=user.username,
             by=by.username,
-            admin=admin
+            admin=user_admin
         )
     except Exception:
         pass
 
 
-def user_subscription_revoked(user: UserResponse, dbuser:User, by: Admin) -> None:
-    if dbuser.admin_id:
-        admin = get_admin(admin_id=dbuser.admin_id)
-    else:
-        admin = None
+def user_subscription_revoked(user: UserResponse, by: Admin, user_admin: Admin = None) -> None:
     try:
         telegram.report_user_subscription_revoked(
             username=user.username,
             by=by.username,
-            admin=admin
+            admin=user_admin
         )
     except Exception:
         pass
@@ -159,7 +136,7 @@ def user_subscription_revoked(user: UserResponse, dbuser:User, by: Admin) -> Non
         discord.report_user_subscription_revoked(
             username=user.username,
             by=by.username,
-            admin=admin
+            admin=user_admin
         )
     except Exception:
         pass
@@ -177,9 +154,3 @@ def expire_days_reached(db: Session, days: int, user: UserResponse, user_id: int
     create_notification_reminder(
         db, ReminderType.expiration_date, expires_at=dt.utcfromtimestamp(expire),
         user_id=user_id)
-
-
-def get_admin(admin_id: int) -> Admin:
-    with GetDB() as db:
-        admin = get_admin_by_id(db=db, id=admin_id)
-        return admin
