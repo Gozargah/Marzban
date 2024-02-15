@@ -5,6 +5,7 @@ from rich.table import Table
 from rich.console import Console
 from rich.panel import Panel
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.sql import text
 from decouple import config, UndefinedValueError
 
 from app.db import GetDB
@@ -34,6 +35,16 @@ def validate_discord_webhook(value: str) -> Union[str, None]:
     return value
 
 
+def calculate_admin_usage(admin_id: int) -> int:
+    with GetDB() as db:
+        return db.execute(text(f'select sum(used_traffic) / 1024 / 1024 / 1024 from (select * from node_user_usages join (select * from users where admin_id = {admin_id}) as users on users.id = node_user_usages.user_id);')).one()[0]
+
+
+def calculate_admin_reseted_usage(admin_id: int) -> int:
+    with GetDB() as db:
+        return db.execute(text(f'select sum(used_traffic_at_reset) / 1024 / 1024 / 1024 from (select * from user_usage_logs join (select * from users where admin_id = {admin_id}) as users on users.id = user_usage_logs.user_id);')).one()[0]
+
+
 @app.command(name="list")
 def list_admins(
     offset: Optional[int] = typer.Option(None, *utils.FLAGS["offset"]),
@@ -44,9 +55,11 @@ def list_admins(
     with GetDB() as db:
         admins: list[Admin] = crud.get_admins(db, offset=offset, limit=limit, username=username)
         utils.print_table(
-            table=Table("Username", "Is sudo", "Created at", "Telegram ID", "Discord Webhook"),
+            table=Table("Username", 'Usage', 'Reseted usage', "Is sudo", "Created at", "Telegram ID", "Discord Webhook"),
             rows=[
                 (str(admin.username),
+                f'{calculate_admin_usage(admin.id)}GB',
+                f'{calculate_admin_reseted_usage(admin.id)}GB',
                  "✔️" if admin.is_sudo else "✖️",
                  utils.readable_datetime(admin.created_at),
                  str(admin.telegram_id or "✖️"),
