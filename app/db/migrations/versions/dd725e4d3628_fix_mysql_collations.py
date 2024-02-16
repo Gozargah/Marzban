@@ -18,26 +18,31 @@ depends_on = None
 
 def upgrade() -> None:
     bind = op.get_bind()
+    metadata = sa.MetaData(bind=bind.engine)
+    metadata.reflect()
 
     if bind.engine.name == 'mysql':
+
+        constraints = []
+        for table_name, table in metadata.tables.items():
+            for constraint in table.foreign_key_constraints:
+                if (
+                    isinstance(constraint, sa.sql.schema.ForeignKeyConstraint)
+                    and constraint.referred_table.name == 'inbounds'
+                ):
+                    for element in constraint.elements:
+                        if element.column.name == 'tag':
+                            constraints.append(constraint)
 
         op.alter_column('nodes', 'name', type_=sa.String(length=256, collation='utf8mb4_bin'), nullable=True)
         op.alter_column('users', 'username', type_=sa.String(length=34, collation='utf8mb4_bin'), nullable=True)
 
-        op.drop_constraint(
-            'template_inbounds_association_ibfk_1',
-            'template_inbounds_association',
-            type_='foreignkey'
-        )
-        op.drop_constraint(
-            'hosts_ibfk_1',
-            'hosts',
-            type_='foreignkey'
-        )
-        op.drop_constraint(
-            'exclude_inbounds_association_ibfk_1',
-            'exclude_inbounds_association',
-            type_='foreignkey')
+        for cons in constraints:
+            op.drop_constraint(
+                cons.name,
+                cons.table.name,
+                type_='foreignkey'
+            )
 
         op.alter_column(
             'inbounds', 'tag',
@@ -60,44 +65,41 @@ def upgrade() -> None:
             nullable=False
         )
 
-        op.create_foreign_key(
-            'template_inbounds_association_ibfk_1',
-            'template_inbounds_association', 'inbounds',
-            ['inbound_tag'], ['tag'],
-        )
-        op.create_foreign_key(
-            'hosts_ibfk_1',
-            'hosts', 'inbounds',
-            ['inbound_tag'], ['tag'],
-        )
-        op.create_foreign_key(
-            'exclude_inbounds_association_ibfk_1',
-            'exclude_inbounds_association', 'inbounds',
-            ['inbound_tag'], ['tag'],
-        )
+        for cons in constraints:
+            op.create_foreign_key(
+                cons.name,
+                cons.table.name, cons.referred_table.name,
+                [c.name for c in cons.columns], ['tag'],
+            )
 
 
 def downgrade() -> None:
     bind = op.get_bind()
+    metadata = sa.MetaData(bind=bind.engine)
+    metadata.reflect()
 
     if bind.engine.name == 'mysql':
+
+        constraints = []
+        for table_name, table in metadata.tables.items():
+            for constraint in table.foreign_key_constraints:
+                if (
+                    isinstance(constraint, sa.sql.schema.ForeignKeyConstraint)
+                    and constraint.referred_table.name == 'inbounds'
+                ):
+                    for element in constraint.elements:
+                        if element.column.name == 'tag':
+                            constraints.append(constraint)
+
         op.alter_column('nodes', 'name', type_=sa.String(length=256, collation='utf8mb4_general_ci'), nullable=True)
         op.alter_column('users', 'username', type_=sa.String(length=34, collation='utf8mb4_general_ci'), nullable=True)
 
-        op.drop_constraint(
-            'template_inbounds_association_ibfk_1',
-            'template_inbounds_association',
-            type_='foreignkey'
-        )
-        op.drop_constraint(
-            'hosts_ibfk_1',
-            'hosts',
-            type_='foreignkey'
-        )
-        op.drop_constraint(
-            'exclude_inbounds_association_ibfk_1',
-            'exclude_inbounds_association',
-            type_='foreignkey')
+        for cons in constraints:
+            op.drop_constraint(
+                cons.name,
+                cons.table.name,
+                type_='foreignkey'
+            )
 
         op.alter_column(
             'inbounds', 'tag',
@@ -120,18 +122,9 @@ def downgrade() -> None:
             nullable=False
         )
 
-        op.create_foreign_key(
-            'template_inbounds_association_ibfk_1',
-            'template_inbounds_association', 'inbounds',
-            ['inbound_tag'], ['tag'],
-        )
-        op.create_foreign_key(
-            'hosts_ibfk_1',
-            'hosts', 'inbounds',
-            ['inbound_tag'], ['tag'],
-        )
-        op.create_foreign_key(
-            'exclude_inbounds_association_ibfk_1',
-            'exclude_inbounds_association', 'inbounds',
-            ['inbound_tag'], ['tag'],
-        )
+        for cons in constraints:
+            op.create_foreign_key(
+                cons.name,
+                cons.table.name, cons.referred_table.name,
+                [c.name for c in cons.columns], ['tag'],
+            )
