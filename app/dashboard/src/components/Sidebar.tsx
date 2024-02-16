@@ -44,7 +44,7 @@ const Logo = () => {
   );
 };
 
-export const Sidebar = () => {
+export const Sidebar: FC = () => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const toggleDrawer = setDrawerOpen.bind(null, !isDrawerOpen);
   const sidebar = useMemo(() => <SidebarContent />, []);
@@ -113,7 +113,7 @@ export const Sidebar = () => {
     {
       fallback: "md",
     }
-  );
+  )!;
 };
 
 const SidebarContent = () => {
