@@ -20,6 +20,7 @@ import {
   Bars3CenterLeftIcon,
   ChevronDownIcon,
   LifebuoyIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { DonationCard } from "components/DonationCard";
 import { GithubStar } from "components/GithubStar";
@@ -69,13 +70,40 @@ export const Sidebar = () => {
           >
             <Logo />
             <IconButton size="sm" color="gray.500" p="1" aria-label="open menu" variant="ghost" onClick={toggleDrawer}>
-              <Bars3CenterLeftIcon />
+              <Bars3CenterLeftIcon width="24px" />
             </IconButton>
           </HStack>
           <Drawer placement="left" onClose={toggleDrawer} isOpen={isDrawerOpen}>
             <DrawerOverlay />
-            <DrawerContent p={0} maxW="280px">
-              <DrawerBody p={0}>{sidebar}</DrawerBody>
+            <IconButton
+              position="absolute"
+              zIndex={1400}
+              top="3"
+              right="3"
+              size="sm"
+              color="gray.500"
+              p="1"
+              aria-label="close menu"
+              variant="solid"
+              _dark={{
+                bg: "#1E1F22",
+              }}
+              onClick={toggleDrawer}
+            >
+              <XMarkIcon width="24px" />
+            </IconButton>
+            <DrawerContent
+              p={0}
+              maxW={{
+                base: "calc(100% - 60px)",
+                sm: "280px",
+              }}
+              zIndex={1500}
+              position="relative"
+            >
+              <DrawerBody p={0} zIndex={1500} position="relative">
+                {sidebar}
+              </DrawerBody>
             </DrawerContent>
           </Drawer>
         </>
@@ -93,7 +121,12 @@ const SidebarContent = () => {
   const { data } = useGetCurrentAdmin();
   return (
     <VStack
-      maxW="300px"
+      zIndex={1500}
+      position="relative"
+      maxW={{
+        base: "100%",
+        md: "300px",
+      }}
       w="full"
       h="full"
       bg="white"

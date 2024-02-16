@@ -12,7 +12,6 @@ export const ConsoleLayout = () => {
         md: "grid",
       }}
       flexDirection="column"
-      templateRows="repeat(24, 1fr)"
       gap={{
         base: 0,
         md: 4,
