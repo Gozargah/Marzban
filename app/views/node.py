@@ -45,8 +45,7 @@ def add_node(new_node: NodeCreate,
 
     bg.add_task(
         xray.operations.connect_node,
-        node_id=dbnode.id,
-        config=xray.config.include_db_users()
+        node_id=dbnode.id
     )
 
     if new_node.add_as_new_host is True:
@@ -173,8 +172,7 @@ def modify_node(node_id: int,
     if dbnode.status != NodeStatus.disabled:
         bg.add_task(
             xray.operations.connect_node,
-            node_id=dbnode.id,
-            config=xray.config.include_db_users()
+            node_id=dbnode.id
         )
 
     logger.info(f"Node \"{dbnode.name}\" modified")
@@ -193,11 +191,9 @@ def reconnect_node(node_id: int,
     dbnode = crud.get_node_by_id(db, node_id)
     if not dbnode:
         raise HTTPException(status_code=404, detail="Node not found")
-
     bg.add_task(
         xray.operations.connect_node,
-        node_id=dbnode.id,
-        config=xray.config.include_db_users()
+        node_id=dbnode.id
     )
     return {}
 

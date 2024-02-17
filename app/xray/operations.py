@@ -180,8 +180,17 @@ def _change_node_status(node_id: int, status: NodeStatus, message: str = None, v
             db.rollback()
 
 
+global _connecting_nodes
+_connecting_nodes = []
+
+
 @threaded_function
-def connect_node(node_id, config):
+def connect_node(node_id, config=None):
+    global _connecting_nodes
+
+    if _connecting_nodes.get(node_id):
+        return
+
     with GetDB() as db:
         dbnode = crud.get_node_by_id(db, node_id)
 
@@ -195,19 +204,32 @@ def connect_node(node_id, config):
         node = xray.operations.add_node(dbnode)
 
     try:
+        _connecting_nodes[node_id] = True
+
         _change_node_status(node_id, NodeStatus.connecting)
         logger.info(f"Connecting to \"{dbnode.name}\" node")
+
+        if config is None:
+            config = xray.config.include_db_users()
+
         node.start(config)
         version = node.get_version()
         _change_node_status(node_id, NodeStatus.connected, version=version)
         logger.info(f"Connected to \"{dbnode.name}\" node, xray run on v{version}")
+
     except Exception as e:
         _change_node_status(node_id, NodeStatus.error, message=str(e))
         logger.info(f"Unable to connect to \"{dbnode.name}\" node")
 
+    finally:
+        try:
+            del _connecting_nodes[node_id]
+        except KeyError:
+            pass
+
 
 @threaded_function
-def restart_node(node_id, config):
+def restart_node(node_id, config=None):
     with GetDB() as db:
         dbnode = crud.get_node_by_id(db, node_id)
 
@@ -225,6 +247,10 @@ def restart_node(node_id, config):
     if not node.started:
         try:
             logger.info(f"Starting Xray core of \"{dbnode.name}\" node")
+
+            if config is None:
+                config = xray.config.include_db_users()
+
             node.start(config)
             logger.info(f"Xray core of \"{dbnode.name}\" node started")
         except Exception as e:
@@ -238,6 +264,10 @@ def restart_node(node_id, config):
 
     try:
         logger.info(f"Restarting Xray core of \"{dbnode.name}\" node")
+
+        if config is None:
+            config = xray.config.include_db_users()
+
         node.restart(config)
         logger.info(f"Xray core of \"{dbnode.name}\" node restarted")
     except Exception as e:
