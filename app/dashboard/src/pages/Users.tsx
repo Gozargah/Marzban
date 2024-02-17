@@ -18,7 +18,7 @@ import { FC } from "react";
 
 export const Dashboard: FC = () => {
   return (
-    <VStack justifyContent="space-between" minH="100vh" p="6" rowGap={4}>
+    <VStack justifyContent="space-between" minH="full" rowGap={4}>
       <Box w="full">
         <Header />
         <Statistics mt="4" />
