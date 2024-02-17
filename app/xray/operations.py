@@ -181,7 +181,7 @@ def _change_node_status(node_id: int, status: NodeStatus, message: str = None, v
 
 
 global _connecting_nodes
-_connecting_nodes = []
+_connecting_nodes = {}
 
 
 @threaded_function
