@@ -13,7 +13,16 @@ export const fetcher = <T = any>(url: string, ops: FetchOptions<"json"> = {}) =>
       Authorization: `Bearer ${getAuthToken()}`,
     };
   }
-  return $fetch<T>(url, ops);
+  return $fetch<T>(url, ops).catch((e) => {
+    if (e.status) {
+      const url = new URL(window.location.href);
+      if (url.hash !== "#/login") {
+        url.hash = "#/login";
+        window.location.href = url.href;
+      }
+    }
+    throw e;
+  });
 };
 
 export const fetch = fetcher;

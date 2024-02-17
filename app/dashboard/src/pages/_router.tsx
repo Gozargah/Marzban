@@ -13,7 +13,17 @@ const NodesSettings = lazy(() => import("./settings/Nodes"));
 const Login = lazy(() => import("./Login"));
 
 const fetchAdminLoader = () => {
-  return queryClient.getQueryCache().build(queryClient, getGetCurrentAdminQueryOptions()).fetch();
+  return queryClient
+    .getQueryCache()
+    .build(
+      queryClient,
+      getGetCurrentAdminQueryOptions({
+        query: {
+          retry: 0,
+        },
+      })
+    )
+    .fetch();
 };
 
 export const router = createHashRouter([
