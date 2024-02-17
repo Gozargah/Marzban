@@ -227,3 +227,10 @@ table thead {
 [data-theme][data-theme="dark"] {
   --chakra-colors-chakra-body-bg: #222326 !important;
 }
+
+html,
+body,
+#root,
+#root main {
+  height: 100%;
+}

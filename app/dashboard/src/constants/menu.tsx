@@ -12,34 +12,34 @@ export type MenuItem = {
 
 export const menu: MenuItem[] = [
   {
-    title: "Users",
+    title: "menu.users",
     icon: <UserGroupIcon width="24" />,
-    href: "users",
+    href: "/",
   },
   {
-    title: "Statistics",
+    title: "menu.statistics",
     icon: <ChartPieIcon width="24" />,
     href: "statistics",
   },
   {
-    title: "Settings",
+    title: "menu.settings",
     icon: <Cog6ToothIcon width="24" />,
     children: [
       {
-        title: "General",
+        title: "menu.general",
         href: "settings",
       },
       {
-        title: "Core",
-        href: "settings/core",
-      },
-      {
-        title: "Hosts",
+        title: "menu.hosts",
         href: "settings/hosts",
       },
       {
-        title: "Nodes",
+        title: "menu.nodes",
         href: "settings/nodes",
+      },
+      {
+        title: "menu.core",
+        href: "settings/core",
       },
     ],
   },

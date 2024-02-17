@@ -1,11 +1,31 @@
 import { Alert, AlertDescription, AlertIcon, AlertTitle, Button, CloseButton, HStack, VStack } from "@chakra-ui/react";
 import { FlagIcon } from "@heroicons/react/24/outline";
-import { shouldShowDonation } from "components/Header";
 import { DONATION_URL } from "constants/project";
+import differenceInDays from "date-fns/differenceInDays";
+import isValid from "date-fns/isValid";
 import { useState } from "react";
 
+export const NOTIFICATION_KEY = "marzban-menu-notification";
+
+export const shouldShowDonation = (): boolean => {
+  const date = localStorage.getItem(NOTIFICATION_KEY);
+  if (!date) return true;
+  try {
+    if (date && isValid(parseInt(date))) {
+      if (differenceInDays(new Date(), new Date(parseInt(date))) >= 7) return true;
+      return false;
+    }
+    return true;
+  } catch (err) {
+    return true;
+  }
+};
 export const DonationCard = () => {
   const [showDonationNotif, setShowDonationNotif] = useState(shouldShowDonation());
+  const handleOnClose = () => {
+    localStorage.setItem(NOTIFICATION_KEY, new Date().getTime().toString());
+    setShowDonationNotif(false);
+  };
   if (showDonationNotif)
     return (
       <Alert
@@ -47,7 +67,7 @@ export const DonationCard = () => {
           </HStack>
         </VStack>
         <CloseButton
-          onClick={setShowDonationNotif.bind(null, false)}
+          onClick={handleOnClose}
           color="white"
           alignSelf="flex-start"
           position="absolute"

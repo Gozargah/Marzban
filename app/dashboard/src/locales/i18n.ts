@@ -9,6 +9,7 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import HttpApi from "i18next-http-backend";
 import { registerLocale } from "react-datepicker";
 import { initReactI18next } from "react-i18next";
+import { flattenObject } from "utils/flattenKeys";
 
 declare module "i18next" {
   interface CustomTypeOptions {
@@ -36,10 +37,10 @@ i18n
         caches: ["localStorage", "sessionStorage", "cookie"],
       },
       backend: {
-        loadPath: joinPaths([
-          import.meta.env.BASE_URL,
-          `statics/locales/{{lng}}.json`,
-        ]),
+        loadPath: joinPaths([import.meta.env.BASE_URL, `statics/locales/{{lng}}.json`]),
+        parse: function (data: string) {
+          return flattenObject(JSON.parse(data));
+        },
       },
     },
     function (err, t) {

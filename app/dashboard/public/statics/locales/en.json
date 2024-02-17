@@ -161,5 +161,28 @@
   "core.logs": "Logs",
   "core.configuration": "Configuration",
   "core.generalErrorMessage": "Something went wrong, please check the configuration",
-  "core.successMessage": "Core settings updated successfully"
+  "core.successMessage": "Core settings updated successfully",
+  "menu": {
+    "users": "Users",
+    "statistics": "Statistics",
+    "settings": "Settings",
+    "general": "General",
+    "core": "Core",
+    "hosts": "Hosts",
+    "nodes": "Nodes"
+  },
+  "donation": {
+    "menuTitle": "Donation",
+    "card": {
+      "title": "Support Marzban",
+      "description": "Donate to Marzban for seamless functionality and continued improvement. Thank you!",
+      "button": "Donate now"
+    }
+  },
+  "theme": {
+    "toggleButton": "Toggle theme"
+  },
+  "localization": {
+    "toggleButton": "Change language"
+  }
 }
