@@ -177,7 +177,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
   const [selectedRow, setSelectedRow] = useState<ExpandedIndex | undefined>(undefined);
   const marginTop = useBreakpointValue({ base: 120, lg: 72 }) || 72;
   const [top, setTop] = useState(`${marginTop}px`);
-  const useTable = useBreakpointValue({ base: false, md: true });
+  const useTable = useBreakpointValue({ base: false, lg: true });
 
   useEffect(() => {
     const calcTop = () => {
@@ -216,8 +216,8 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
   };
 
   return (
-    <Box id="users-table" overflowX={{ base: "unset", md: "unset" }}>
-      <Accordion allowMultiple display={{ base: "block", md: "none" }} index={selectedRow}>
+    <Box id="users-table">
+      <Accordion allowMultiple display={{ base: "block", lg: "none" }} index={selectedRow}>
         <Table orientation="vertical" zIndex="docked" {...props}>
           <Thead zIndex="docked" position="relative">
             <Tr>
@@ -414,12 +414,12 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
           </Tbody>
         </Table>
       </Accordion>
-      <Table orientation="vertical" display={{ base: "none", md: "table" }} {...props}>
+      <Table orientation="vertical" display={{ base: "none", lg: "table" }} {...props}>
         <Thead zIndex="docked" position="relative">
           <Tr>
             <Th
               position="sticky"
-              top={{ base: "unset", md: top }}
+              top={{ base: "unset", lg: top }}
               minW="140px"
               cursor={"pointer"}
               onClick={handleSort.bind(null, "username")}
@@ -429,7 +429,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 <Sort sort={filters.sort} column="username" />
               </HStack>
             </Th>
-            <Th position="sticky" top={{ base: "unset", md: top }} width="400px" minW="150px" cursor={"pointer"}>
+            <Th position="sticky" top={{ base: "unset", lg: top }} width="400px" minW="120px" cursor={"pointer"}>
               <HStack spacing={0} position="relative">
                 <Text
                   position="absolute"
@@ -473,9 +473,9 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
             </Th>
             <Th
               position="sticky"
-              top={{ base: "unset", md: top }}
+              top={{ base: "unset", lg: top }}
               width="350px"
-              minW="230px"
+              minW="200px"
               cursor={"pointer"}
               onClick={handleSort.bind(null, "used_traffic")}
             >
@@ -484,7 +484,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 <Sort sort={filters.sort} column="used_traffic" />
               </HStack>
             </Th>
-            <Th position="sticky" top={{ base: "unset", md: top }} width="200px" minW="180px" />
+            <Th position="sticky" top={{ base: "unset", lg: top }} width="200px" minW="180px" />
           </Tr>
         </Thead>
         <Tbody>
@@ -504,10 +504,10 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                       {user.username}
                     </Box>
                   </Td>
-                  <Td width="400px" minW="150px">
+                  <Td width="400px" minW="120px" pr="1">
                     <StatusBadge expiryDate={user.expire} status={user.status} />
                   </Td>
-                  <Td width="350px" minW="230px">
+                  <Td width="350px" minW="200px">
                     <UsageSlider
                       totalUsedTraffic={user.lifetime_used_traffic}
                       dataLimitResetStrategy={user.data_limit_reset_strategy}

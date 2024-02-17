@@ -20,12 +20,11 @@ import {
   LinkIcon,
   SquaresPlusIcon,
 } from "@heroicons/react/24/outline";
+import { NOTIFICATION_KEY, shouldShowDonation } from "components/DonationCard";
 import { GithubStar } from "components/GithubStar";
 import { ThemeChangerButton } from "components/ThemeChangerButton";
 import { DONATION_URL } from "constants/project";
 import { useDashboard } from "contexts/DashboardContext";
-import differenceInDays from "date-fns/differenceInDays";
-import isValid from "date-fns/isValid";
 import { FC, ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -58,22 +57,6 @@ const NotificationCircle = chakra(Box, {
     position: "absolute",
   },
 });
-
-const NOTIFICATION_KEY = "marzban-menu-notification";
-
-export const shouldShowDonation = (): boolean => {
-  const date = localStorage.getItem(NOTIFICATION_KEY);
-  if (!date) return true;
-  try {
-    if (date && isValid(parseInt(date))) {
-      if (differenceInDays(new Date(), new Date(parseInt(date))) >= 7) return true;
-      return false;
-    }
-    return true;
-  } catch (err) {
-    return true;
-  }
-};
 
 export const Header: FC<HeaderProps> = ({ actions }) => {
   const { onEditingHosts, onResetAllUsage, onEditingNodes, onShowingNodesUsage } = useDashboard();

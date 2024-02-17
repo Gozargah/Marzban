@@ -9,8 +9,8 @@ import {
   DrawerOverlay,
   HStack,
   IconButton,
-  Image,
   Text,
+  Tooltip,
   VStack,
   chakra,
   useBreakpointValue,
@@ -22,6 +22,7 @@ import {
   LifebuoyIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import LogoSVG from "assets/logo.svg?react";
 import { DonationCard } from "components/DonationCard";
 import { GithubStar } from "components/GithubStar";
 import { Language } from "components/Language";
@@ -30,24 +31,33 @@ import { MenuItem, menu } from "constants/menu";
 import { DONATION_URL } from "constants/project";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { useGetCurrentAdmin } from "service/api";
 
+const LogoIcon = chakra(LogoSVG, {
+  baseStyle: {
+    w: 6,
+    h: 6,
+    strokeWidth: "2px",
+  },
+});
+
 const Logo = () => {
   return (
-    <HStack>
-      <Image src="/statics/logo.png" />
-      <Text fontWeight="semibold" color="gray.800" _dark={{ color: "whiteAlpha.800" }}>
-        Marzban
-      </Text>
+    <HStack color="gray.800" _dark={{ color: "whiteAlpha.800" }}>
+      <LogoIcon />
+      <Text fontWeight="semibold">Marzban</Text>
     </HStack>
   );
 };
 
 export const Sidebar: FC = () => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
+  const { t } = useTranslation();
   const toggleDrawer = setDrawerOpen.bind(null, !isDrawerOpen);
   const sidebar = useMemo(() => <SidebarContent />, []);
+
   return useBreakpointValue(
     {
       base: (
@@ -81,12 +91,13 @@ export const Sidebar: FC = () => {
               top="3"
               right="3"
               size="sm"
-              color="gray.500"
               p="1"
               aria-label="close menu"
               variant="solid"
+              color="blackAlpha.600"
               _dark={{
                 bg: "#1E1F22",
+                color: "whiteAlpha.400",
               }}
               onClick={toggleDrawer}
             >
@@ -118,14 +129,14 @@ export const Sidebar: FC = () => {
 
 const SidebarContent = () => {
   const { version } = useDashboard();
+  const { t } = useTranslation();
   const { data } = useGetCurrentAdmin();
   return (
     <VStack
       zIndex={1500}
-      position="relative"
       maxW={{
         base: "100%",
-        md: "300px",
+        md: "280px",
       }}
       w="full"
       h="full"
@@ -140,9 +151,14 @@ const SidebarContent = () => {
       py="5"
       pt={{
         base: 5,
-        md: 9,
+        md: 7,
       }}
       justifyContent="space-between"
+      position="fixed"
+      top={0}
+      maxHeight="100vh"
+      left={0}
+      overflowY="auto"
     >
       <VStack w="full" gap="30px">
         <HStack w="full" justify="space-between" px="2">
@@ -151,11 +167,11 @@ const SidebarContent = () => {
             <Box
               border="1.5px solid"
               rounded="full"
-              borderColor="gray.500"
-              color="gray.500"
+              borderColor="whiteAlpha.400"
+              color="whiteAlpha.500"
               _light={{
-                borderColor: "gray.800",
-                color: "gray.800",
+                borderColor: "blackAlpha.700",
+                color: "blackAlpha.700",
               }}
               fontWeight="medium"
               px="2"
@@ -173,7 +189,7 @@ const SidebarContent = () => {
         <NavMenu
           menu={[
             {
-              title: "Donation",
+              title: "donation.menuTitle",
               href: DONATION_URL,
               icon: <LifebuoyIcon width="24" />,
               target: "_blank",
@@ -193,9 +209,11 @@ const SidebarContent = () => {
           <Text fontSize="sm" fontWeight="semibold">
             {data && data.username}
           </Text>
-          <IconButton aria-label="sign out" color="gray.400" size="sm" variant="ghost">
-            <ArrowRightStartOnRectangleIcon width="18px" />
-          </IconButton>
+          <Tooltip label={t("header.logout")}>
+            <IconButton aria-label="sign out" color="gray.400" size="sm" variant="ghost">
+              <ArrowRightStartOnRectangleIcon width="18px" />
+            </IconButton>
+          </Tooltip>
         </HStack>
       </VStack>
     </VStack>
@@ -212,6 +230,7 @@ const DropdownIcon = chakra(ChevronDownIcon, {
 
 const NavMenu: FC<{ menu: MenuItem[] }> = ({ menu }) => {
   const [isOpen, setOpen] = useState(false);
+  const { t } = useTranslation();
   return (
     <VStack gap="1" w="full">
       {menu.map((menuItem) => {
@@ -253,7 +272,7 @@ const NavMenu: FC<{ menu: MenuItem[] }> = ({ menu }) => {
               rightIcon={menuItem.children ? <DropdownIcon transform={isOpen ? "rotate(180deg)" : ""} /> : undefined}
             >
               <Text as="span" color="whiteAlpha.800" _light={{ color: "gray.700" }} flexGrow={1} textAlign="left">
-                {menuItem.title}
+                {t(menuItem.title)}
               </Text>
             </Button>
             {menuItem.children && (

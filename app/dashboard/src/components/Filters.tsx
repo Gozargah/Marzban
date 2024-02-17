@@ -15,7 +15,7 @@ import {
 import { ArrowPathIcon, MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import classNames from "classnames";
 import { useDashboard, useUsers } from "contexts/DashboardContext";
-import debounce from "lodash.debounce";
+import { debounce } from "lodash-es";
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -66,8 +66,8 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
       }}
       position="sticky"
       top={0}
-      mx="-6"
-      px="6"
+      // mx="-6"
+      // px="6"
       rowGap={4}
       gap={{
         lg: 4,

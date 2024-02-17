@@ -23,7 +23,7 @@ import { ArrowPathIcon, ArrowsPointingInIcon, ArrowsPointingOutIcon, Cog6ToothIc
 import { joinPaths } from "@remix-run/router";
 import classNames from "classnames";
 import { useDashboard } from "contexts/DashboardContext";
-import debounce from "lodash.debounce";
+import { debounce } from "lodash-es";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";

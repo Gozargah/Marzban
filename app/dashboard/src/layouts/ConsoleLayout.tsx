@@ -16,12 +16,12 @@ export const ConsoleLayout = () => {
         base: 0,
         md: 4,
       }}
-      minH="100vh"
+      h="full"
     >
-      <GridItem colSpan={{ md: 5 }} minW={{ md: "300px" }}>
+      <GridItem colSpan={{ md: 5 }} minW={{ md: "280px" }}>
         <Sidebar />
       </GridItem>
-      <GridItem colSpan={{ md: 19 }} flexGrow={1}>
+      <GridItem colSpan={{ md: 19 }} flexGrow={1} p="4" pt={{ md: 5 }}>
         <Suspense>
           <Outlet />
         </Suspense>

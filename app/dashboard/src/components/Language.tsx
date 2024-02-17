@@ -1,4 +1,4 @@
-import { chakra, IconButton, Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
+import { chakra, IconButton, Menu, MenuButton, MenuItem, MenuList, Tooltip } from "@chakra-ui/react";
 import { LanguageIcon } from "@heroicons/react/24/outline";
 import { FC, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,7 +15,7 @@ const LangIcon = chakra(LanguageIcon, {
 });
 
 export const Language: FC<HeaderProps> = ({ actions }) => {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   var changeLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
@@ -23,14 +23,16 @@ export const Language: FC<HeaderProps> = ({ actions }) => {
 
   return (
     <Menu placement="bottom-end">
-      <MenuButton
-        as={IconButton}
-        size="sm"
-        variant="solid"
-        colorScheme="gray"
-        icon={<LangIcon />}
-        position="relative"
-      />
+      <Tooltip label={t("localization.toggleButton")} placement="top">
+        <MenuButton
+          as={IconButton}
+          size="sm"
+          variant="solid"
+          colorScheme="gray"
+          icon={<LangIcon />}
+          position="relative"
+        />
+      </Tooltip>
       <MenuList minW="100px" zIndex={1399}>
         <MenuItem maxW="100px" fontSize="sm" onClick={() => changeLanguage("en")}>
           English
