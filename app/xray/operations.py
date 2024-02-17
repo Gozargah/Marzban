@@ -175,6 +175,11 @@ def _change_node_status(node_id: int, status: NodeStatus, message: str = None, v
             dbnode = crud.get_node_by_id(db, node_id)
             if not dbnode:
                 return
+
+            if dbnode.status == NodeStatus.disabled:
+                remove_node(dbnode.id)
+                return
+
             crud.update_node_status(db, dbnode, status, message, version)
         except SQLAlchemyError:
             db.rollback()
