@@ -249,24 +249,6 @@ def restart_node(node_id, config=None):
     if not node.connected:
         return connect_node(node_id, config)
 
-    if not node.started:
-        try:
-            logger.info(f"Starting Xray core of \"{dbnode.name}\" node")
-
-            if config is None:
-                config = xray.config.include_db_users()
-
-            node.start(config)
-            logger.info(f"Xray core of \"{dbnode.name}\" node started")
-        except Exception as e:
-            _change_node_status(node_id, NodeStatus.error, message=str(e))
-            logger.info(f"Unable to start node {node_id}")
-            try:
-                node.disconnect()
-            except Exception:
-                pass
-        return
-
     try:
         logger.info(f"Restarting Xray core of \"{dbnode.name}\" node")
 

@@ -169,7 +169,13 @@ class ReSTXRayNode:
         config = self._prepare_config(config)
         json_config = config.to_json()
 
-        res = self.make_request("/start", config=json_config)
+        try:
+            res = self.make_request("/start", config=json_config)
+        except NodeAPIError as exc:
+            if exc.detail == 'Xray is started already':
+                self.restart(config)
+            else:
+                raise exc
 
         self._started = True
 
@@ -196,8 +202,29 @@ class ReSTXRayNode:
         self._started = False
 
     def restart(self, config: XRayConfig):
-        self.stop()
-        return self.start(config)
+        if not self.connected:
+            self.connect()
+
+        config = self._prepare_config(config)
+        json_config = config.to_json()
+
+        res = self.make_request("/restart", config=json_config)
+
+        self._started = True
+
+        self._api = XRayAPI(
+            address=self.address,
+            port=self.api_port,
+            ssl_cert=self._node_cert.encode(),
+            ssl_target_name="Gozargah"
+        )
+
+        try:
+            grpc.channel_ready_future(self._api._channel).result(timeout=5)
+        except grpc.FutureTimeoutError:
+            raise ConnectionError('Failed to connect to node\'s API')
+
+        return res
 
     def _bg_fetch_logs(self):
         while self._logs_queues:
