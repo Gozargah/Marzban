@@ -6,32 +6,29 @@ export const theme = extendTheme({
   },
   colors: {
     "light-border": "#d2d2d4",
-    primary: {
-      50: "#9cb7f2",
-      100: "#88a9ef",
-      200: "#749aec",
-      300: "#618ce9",
-      400: "#4d7de7",
-      500: "#396fe4",
-      600: "#3364cd",
-      700: "#2e59b6",
-      800: "#284ea0",
-      900: "#224389",
-    },
     gray: {
-      25: "#FCFCFD",
-      50: "#F9FAFB",
-      100: "#F2F4F7",
-      200: "#EAECF0",
-      300: "#D0D5DD",
-      400: "#98A2B3",
-      500: "#98A2B3",
-      600: "#475467",
-      700: "#344054",
-      750: "#222C3B",
-      800: "#1D2939",
-      900: "#101828",
-      950: "#0C111D",
+      50: "#f9fafa",
+      100: "#f1f1f1",
+      200: "#e7e7e8",
+      300: "#d4d4d4",
+      400: "#acadae",
+      500: "#7e7f81",
+      600: "#545457",
+      700: "#363739",
+      800: "#1f2023",
+      900: "#19191c",
+    },
+    primary: {
+      50: "#f9f6fd",
+      100: "#e5daf8",
+      200: "#d3bef4",
+      300: "#b795ec",
+      400: "#a379e7",
+      500: "#8952e0",
+      600: "#7434db",
+      700: "#6023c0",
+      800: "#4f1d9e",
+      900: "#3b1676",
     },
   },
   components: {
@@ -108,7 +105,6 @@ export const theme = extendTheme({
           borderBottomColor: "light-border",
         },
         th: {
-          background: "#F9FAFB",
           borderColor: "light-border !important",
           borderBottomColor: "light-border !important",
           borderTop: "1px solid ",
@@ -129,6 +125,7 @@ export const theme = extendTheme({
         td: {
           transition: "all .1s ease-out",
           borderColor: "light-border",
+          color: "gray.800",
           borderBottomColor: "light-border !important",
           _first: {
             borderLeft: "1px solid",
@@ -145,6 +142,7 @@ export const theme = extendTheme({
             },
           },
           _dark: {
+            color: "gray.100",
             borderColor: "gray.600",
             borderBottomColor: "gray.600 !important",
           },
@@ -154,11 +152,11 @@ export const theme = extendTheme({
             cursor: "pointer",
             _hover: {
               "& > td": {
-                bg: "gray.200",
+                bg: "gray.100",
               },
               _dark: {
                 "& > td": {
-                  bg: "gray.750",
+                  bg: "gray.800",
                 },
               },
             },

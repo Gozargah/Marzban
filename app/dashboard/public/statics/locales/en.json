@@ -125,7 +125,6 @@
   "deleteNode.title": "Delete Node",
   "deleteNode.prompt": "Are you sure you want to delete the <b>{{name}}</b> node?",
   "deleteNode.deleteSuccess": "Node {{name}} removed successfully",
-  "users": "Users",
   "active": "active",
   "disabled": "disabled",
   "activeUsers": "active users",
@@ -184,5 +183,12 @@
   },
   "localization": {
     "toggleButton": "Change language"
+  },
+  "users": {
+    "title": "Users",
+    "description": "Track, manage and forecast your connections",
+    "total": "Total Users",
+    "online": "Online Users",
+    "active": "Active Users"
   }
 }

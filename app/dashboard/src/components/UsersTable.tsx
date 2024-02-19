@@ -47,6 +47,7 @@ import { formatBytes } from "utils/formatByte";
 import { getRelativeLastOnlineAt, humanizeRelativeLastOnline, OnlineBadge } from "./OnlineBadge";
 import { Pagination } from "./Pagination";
 import { StatusBadge } from "./StatusBadge";
+import { bigint } from "zod";
 
 const EmptySectionIcon = chakra(AddFileIcon);
 
@@ -235,16 +236,11 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   <Sort sort={filters.sort} column="username" />
                 </HStack>
               </Th>
-              <Th position="sticky" top={top} minW="50px" pl={0} pr={0} w="140px" cursor={"pointer"}>
+              <Th position="sticky" top={top} minW="50px" pl={0} pr={0} w="140px" cursor={"pointer"} color="gray.100">
                 <HStack spacing={0} position="relative">
                   <Text
+                    _light={{ bg: "none" }}
                     position="absolute"
-                    _dark={{
-                      bg: "gray.750",
-                    }}
-                    _light={{
-                      bg: "#F9FAFB",
-                    }}
                     userSelect="none"
                     pointerEvents="none"
                     zIndex={1}
