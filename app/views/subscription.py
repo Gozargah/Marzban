@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from distutils.version import LooseVersion
 
 from fastapi import Depends, Header, HTTPException, Path, Request, Response
 from fastapi.responses import HTMLResponse
@@ -9,7 +10,7 @@ from app.db import Session, crud, get_db
 from app.models.user import UserResponse
 from app.templates import render_template
 from app.utils.jwt import get_subscription_payload
-from app.utils.share import encode_title, generate_subscription
+from app.subscription.share import encode_title, generate_subscription
 from config import (
     SUB_PROFILE_TITLE,
     SUB_SUPPORT_URL,
@@ -90,6 +91,12 @@ def user_subscription(token: str,
         conf = generate_subscription(user=user, config_format="outline", as_base64=False)
         return Response(content=conf, media_type="application/json", headers=response_headers)
 
+    elif re.match('^v2rayNG/(\d+\.\d+\.\d+)', user_agent):
+        version_str = re.match('^v2rayNG/(\d+\.\d+\.\d+)', user_agent).group(1)
+        if LooseVersion(version_str) >= LooseVersion("1.8.16"):
+            conf = generate_subscription(user=user, config_format="v2ray-custom", as_base64=True)
+            return Response(content=conf, media_type="text/plain", headers=response_headers)
+
     else:
         conf = generate_subscription(user=user, config_format="v2ray", as_base64=True)
         return Response(content=conf, media_type="text/plain", headers=response_headers)
@@ -148,7 +155,7 @@ def user_get_usage(token: str,
 def user_subscription_with_client_type(
     token: str,
     request: Request,
-    client_type: str = Path(..., regex="sing-box|clash-meta|clash|outline|v2ray"),
+    client_type: str = Path(..., regex="sing-box|clash-meta|clash|outline|v2ray|v2ray-custom"),
     db: Session = Depends(get_db),
 ):
     """
@@ -207,6 +214,10 @@ def user_subscription_with_client_type(
 
     elif client_type == "outline":
         conf = generate_subscription(user=user, config_format="outline", as_base64=False)
+        return Response(content=conf, media_type="application/json", headers=response_headers)
+    
+    elif client_type == "v2ray-custom":
+        conf = generate_subscription(user=user, config_format="v2ray-custom", as_base64=False)
         return Response(content=conf, media_type="application/json", headers=response_headers)
 
     else:
