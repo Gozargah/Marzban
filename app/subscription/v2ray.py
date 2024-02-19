@@ -521,8 +521,7 @@ class V2rayCostumConfig(str):
         port = inbound['port']
         tls = (inbound['tls'])
         headers = inbound['header_type']
-        sockopt = inbound.get('sockopt', '') if inbound.get(
-            'sockopt_enable', '') is True else {}
+        sockopt = inbound.get('sockopt', {})
 
         outbound = {
             "tag": remark,

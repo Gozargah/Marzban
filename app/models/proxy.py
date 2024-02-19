@@ -144,7 +144,6 @@ class ProxyHost(BaseModel):
     allowinsecure: Union[bool, None] = None
     is_disabled: Union[bool, None] = None
     sockopt: Union[dict, None] = None
-    sockopt_enable: Union[bool, None] = None
     proxy_outbound: Union[dict, None] = None
     mux_enable: Union[bool, None] = None
     fragment_setting: Optional[str] = Field(None, nullable=True)
