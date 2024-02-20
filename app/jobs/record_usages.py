@@ -195,5 +195,5 @@ def record_node_usages():
         record_node_stats(params, node_id)
 
 
-scheduler.add_job(record_user_usages, 'interval', coalesce=True, seconds=30)
-scheduler.add_job(record_node_usages, 'interval', coalesce=True, seconds=10)
+scheduler.add_job(record_user_usages, 'interval', coalesce=True, seconds=30, max_instances=1)
+scheduler.add_job(record_node_usages, 'interval', coalesce=True, seconds=10, max_instances=1)

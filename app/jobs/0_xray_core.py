@@ -59,7 +59,7 @@ def start_core():
     for node_id in node_ids:
         xray.operations.connect_node(node_id, config)
 
-    scheduler.add_job(core_health_check, 'interval', seconds=10, coalesce=True)
+    scheduler.add_job(core_health_check, 'interval', seconds=10, coalesce=True, max_instances=1)
 
 
 @app.on_event("shutdown")
