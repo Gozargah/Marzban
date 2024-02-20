@@ -16,7 +16,6 @@ from config import (NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT,
 
 if TYPE_CHECKING:
     from app.db.models import User
-import time
 
 
 def add_notification_reminders(db: Session, user: "User", now: datetime = datetime.utcnow()) -> None:
@@ -37,8 +36,6 @@ def add_notification_reminders(db: Session, user: "User", now: datetime = dateti
 
 
 def review():
-    while True:
-        time.sleep(1)
     now = datetime.utcnow()
     now_ts = now.timestamp()
     with GetDB() as db, GetBG() as bg:
