@@ -173,7 +173,7 @@ class ReSTXRayNode:
             res = self.make_request("/start", config=json_config)
         except NodeAPIError as exc:
             if exc.detail == 'Xray is started already':
-                self.restart(config)
+                return self.restart(config)
             else:
                 raise exc
 
