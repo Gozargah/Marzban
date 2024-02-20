@@ -119,6 +119,7 @@ const hostsSchema = z.record(
       allowinsecure: z.boolean().default(false),
       is_disabled: z.boolean().default(false),
       fragment_setting: z.string().nullable(),
+      proxy_outbound: z.string().nullable(),
       security: z.string(),
       alpn: z.string(),
       fingerprint: z.string(),
@@ -176,6 +177,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
       allowinsecure: false,
       is_disabled: false,
       fragment_setting: "",
+      proxy_outbound: "",
       security: "inbound_default",
       alpn: "",
       fingerprint: "",
@@ -853,6 +855,55 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                 accordionErrors[index]?.fragment_setting
                                   ?.message
                               }
+                            </Error>
+                          )}
+                      </FormControl>
+
+                      <FormControl
+                        isInvalid={
+                          !!(
+                            accordionErrors &&
+                            accordionErrors[index]?.proxy_outbound
+                          )
+                        }
+                      >
+                        <FormLabel
+                          display="flex"
+                          pb={1}
+                          alignItems="center"
+                          gap={1}
+                          justifyContent="space-between"
+                          m="0"
+                        >
+                          <span>{t("hostsDialog.proxyOutbound")}</span>
+
+                          <Popover isLazy placement="right">
+                            <PopoverTrigger>
+                              <InfoIcon />
+                            </PopoverTrigger>
+                            <Portal>
+                              <PopoverContent p={2}>
+                                <PopoverArrow />
+                                <PopoverCloseButton />
+                                <Text fontSize="xs" pr={5}>
+                                  {t("hostsDialog.proxyOutbound.info")}
+                                </Text>
+                              </PopoverContent>
+                            </Portal>
+                          </Popover>
+                        </FormLabel>
+                        <Input
+                          size="sm"
+                          borderRadius="4px"
+                          placeholder="Fragment settings by pattern"
+                          {...form.register(
+                            hostKey + "." + index + ".proxy_outbound"
+                          )}
+                        />
+                        {accordionErrors &&
+                          accordionErrors[index]?.proxy_outbound && (
+                            <Error>
+                              {accordionErrors[index]?.proxy_outbound?.message}
                             </Error>
                           )}
                       </FormControl>

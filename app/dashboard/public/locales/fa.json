@@ -107,6 +107,8 @@
   "hostsDialog.allowinsecure": "Allow Insecure",
   "hostsDialog.fragment": "الگو فرگمنت",
   "hostsDialog.fragment.info": "length,interval,packet (e.g. 10-100,100-200,tlshello)",
+  "hostsDialog.proxyOutbound": "جیسون پراکسی outbound",
+  "hostsDialog.proxyOutbound.info": "outbound اضافه (تنها در کانفیگ دستی v2ray)",
   "nodes.title": "با استفاده از Marzban-Node, شما می‌توانید با افزودن گره‌های متفاوت در سرورهای متفاوت، کیفیت اتصال خود را بالاتر ببرید.",
   "nodes.addNewMarzbanNode": "افزودن گره مرزبان",
   "nodes.certificate": "گواهی",

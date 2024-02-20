@@ -106,6 +106,8 @@
   "hostsDialog.allowinsecure": "Allow Insecure",
   "hostsDialog.fragment": "Fragment pattern",
   "hostsDialog.fragment.info": "length,interval,packet (e.g. 10-100,100-200,tlshello)",
+  "hostsDialog.proxyOutbound": "Proxy outbound json",
+  "hostsDialog.proxyOutbound.info": "Extra outbound ( only in v2ray custom config )",
   "nodes.title": "Using Marzban-Node, you are able to scale up your connection quality by adding different nodes on different servers.",
   "nodes.addNewMarzbanNode": "Add New Marzban Node",
   "nodes.certificate": "Certificate",
