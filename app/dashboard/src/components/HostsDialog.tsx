@@ -8,6 +8,8 @@ import {
   Box,
   Button,
   Select as ChakraSelect,
+  Checkbox,
+  Container,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -28,6 +30,7 @@ import {
   PopoverContent,
   PopoverTrigger,
   Portal,
+  Switch,
   Text,
   Tooltip,
   VStack,
@@ -111,11 +114,16 @@ const hostsSchema = z.record(
       path: z.string().nullable(),
       sni: z.string().nullable(),
       host: z.string().nullable(),
+      sockopt: z.string().nullable(),
+      mux_enable: z.boolean().default(false),
+      allowinsecure: z.boolean().default(false),
+      is_disabled: z.boolean().default(false),
+      fragment_setting: z.string().nullable(),
       security: z.string(),
       alpn: z.string(),
       fingerprint: z.string(),
-    }),
-  ),
+    })
+  )
 );
 
 const Error = chakra(FormErrorMessage, {
@@ -163,6 +171,11 @@ const AccordionInbound: FC<AccordionInboundType> = ({
       path: null,
       address: "",
       remark: "",
+      sockopt: "",
+      mux_enable: false,
+      allowinsecure: false,
+      is_disabled: false,
+      fragment_setting: "",
       security: "inbound_default",
       alpn: "",
       fingerprint: "",
@@ -435,13 +448,14 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                 <AccordionItem border="0">
                   <AccordionButton
                     display="flex"
-                    justifyContent="space-between"
                     px={0}
                     py={1}
                     borderRadius={3}
                     _hover={{ bg: "transparent" }}
                   >
                     <Text
+                      flex="3"
+                      align="start"
                       fontSize="xs"
                       color="gray.600"
                       _dark={{ color: "gray.500" }}
@@ -451,17 +465,29 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                       <AccordionIcon fontSize="sm" ml={1} />
                     </Text>
 
-                    <Tooltip label="Delete" placement="top">
-                      <IconButton
-                        aria-label="Delete"
-                        size="sm"
-                        colorScheme="red"
-                        variant="ghost"
-                        onClick={removeHost.bind(null, index)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
+                    <Container flex="1" px="0">
+                      <Switch
+                        mx="1.5"
+                        colorScheme="primary"
+                        {...form.register(
+                          hostKey + "." + index + ".is_disabled",
+                          {
+                            setValueAs: (s) => !!s,
+                          }
+                        )}
+                      />
+                      <Tooltip label="Delete" placement="top">
+                        <IconButton
+                          aria-label="Delete"
+                          size="sm"
+                          colorScheme="red"
+                          variant="ghost"
+                          onClick={removeHost.bind(null, index)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </Container>
                   </AccordionButton>
                   <AccordionPanel w="full" p={1}>
                     <VStack key={index} w="full" borderRadius="4px">
@@ -685,7 +711,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                         <Select
                           size="sm"
                           {...form.register(
-                            hostKey + "." + index + ".security",
+                            hostKey + "." + index + ".security"
                           )}
                         >
                           {proxyHostSecurity.map((s) => {
@@ -737,7 +763,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                         <Select
                           size="sm"
                           {...form.register(
-                            hostKey + "." + index + ".fingerprint",
+                            hostKey + "." + index + ".fingerprint"
                           )}
                         >
                           {proxyFingerprint.map((s) => {
@@ -748,6 +774,136 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             );
                           })}
                         </Select>
+                      </FormControl>
+
+                      <FormControl
+                        height="66px"
+                        isInvalid={
+                          !!(accordionErrors && accordionErrors[index]?.sockopt)
+                        }
+                      >
+                        <FormLabel
+                          display="flex"
+                          pb={1}
+                          alignItems="center"
+                          gap={1}
+                          justifyContent="space-between"
+                          m="0"
+                        >
+                          <span>{t("hostsDialog.sockopt")}</span>
+                        </FormLabel>
+                        <Input
+                          size="sm"
+                          borderRadius="4px"
+                          placeholder="Sockopt"
+                          {...form.register(hostKey + "." + index + ".sockopt")}
+                        />
+                        {accordionErrors && accordionErrors[index]?.sockopt && (
+                          <Error>
+                            {accordionErrors[index]?.sockopt?.message}
+                          </Error>
+                        )}
+                      </FormControl>
+
+                      <FormControl
+                        isInvalid={
+                          !!(
+                            accordionErrors &&
+                            accordionErrors[index]?.fragment_setting
+                          )
+                        }
+                      >
+                        <FormLabel
+                          display="flex"
+                          pb={1}
+                          alignItems="center"
+                          gap={1}
+                          justifyContent="space-between"
+                          m="0"
+                        >
+                          <span>{t("hostsDialog.fragment")}</span>
+
+                          <Popover isLazy placement="right">
+                            <PopoverTrigger>
+                              <InfoIcon />
+                            </PopoverTrigger>
+                            <Portal>
+                              <PopoverContent p={2}>
+                                <PopoverArrow />
+                                <PopoverCloseButton />
+                                <Text fontSize="xs" pr={5}>
+                                  {t("hostsDialog.fragment.info")}
+                                </Text>
+                              </PopoverContent>
+                            </Portal>
+                          </Popover>
+                        </FormLabel>
+                        <Input
+                          size="sm"
+                          borderRadius="4px"
+                          placeholder="Fragment settings by pattern"
+                          {...form.register(
+                            hostKey + "." + index + ".fragment_setting"
+                          )}
+                        />
+                        {accordionErrors &&
+                          accordionErrors[index]?.fragment_setting && (
+                            <Error>
+                              {
+                                accordionErrors[index]?.fragment_setting
+                                  ?.message
+                              }
+                            </Error>
+                          )}
+                      </FormControl>
+
+                      <FormControl
+                        isInvalid={
+                          !!(
+                            accordionErrors &&
+                            accordionErrors[index]?.mux_enable
+                          )
+                        }
+                      >
+                        <Checkbox
+                          {...form.register(
+                            hostKey + "." + index + ".mux_enable"
+                          )}
+                        >
+                          <FormLabel>{t("hostsDialog.muxEnable")}</FormLabel>
+                        </Checkbox>
+                        {accordionErrors &&
+                          accordionErrors[index]?.mux_enable && (
+                            <Error>
+                              {accordionErrors[index]?.mux_enable?.message}
+                            </Error>
+                          )}
+                      </FormControl>
+
+                      <FormControl
+                        isInvalid={
+                          !!(
+                            accordionErrors &&
+                            accordionErrors[index]?.allowinsecure
+                          )
+                        }
+                      >
+                        <Checkbox
+                          {...form.register(
+                            hostKey + "." + index + ".allowinsecure"
+                          )}
+                          name={hostKey + "." + index + ".allowinsecure"}
+                        >
+                          <FormLabel>
+                            {t("hostsDialog.allowinsecure")}
+                          </FormLabel>
+                          {accordionErrors &&
+                            accordionErrors[index]?.allowinsecure && (
+                              <Error>
+                                {accordionErrors[index]?.allowinsecure?.message}
+                              </Error>
+                            )}
+                        </Checkbox>
                       </FormControl>
                     </VStack>
                   </AccordionPanel>
