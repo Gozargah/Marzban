@@ -20,8 +20,9 @@ def core_health_check():
     for node_id, node in list(xray.nodes.items()):
         if node.connected:
             try:
+                assert node.started
                 node.api.get_sys_stats()
-            except (ConnectionError, xray_exc.ConnectionError, xray_exc.UnknownError):
+            except (ConnectionError, xray_exc.ConnectionError, xray_exc.UnknownError, AssertionError):
                 if not config:
                     config = xray.config.include_db_users()
                 xray.operations.restart_node(node_id, config)
