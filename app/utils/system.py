@@ -1,10 +1,11 @@
-import requests
 import math
 import secrets
 import socket
+import time
 from dataclasses import dataclass
 
 import psutil
+import requests
 
 from app import scheduler
 
@@ -38,8 +39,10 @@ class RealtimeBandwidth:
         self.bytes_recv = io.bytes_recv
         self.bytes_sent = io.bytes_sent
         self.packets_recv = io.packets_recv
-        self.packet_sent = io.packets_sent
+        self.packets_sent = io.packets_sent
+        self.last_perf_counter = time.perf_counter()
 
+    # data in the form of value per seconds
     incoming_bytes: int
     outgoing_bytes: int
     incoming_packets: int
@@ -48,11 +51,14 @@ class RealtimeBandwidth:
     bytes_recv: int = None
     bytes_sent: int = None
     packets_recv: int = None
-    packet_sent: int = None
+    packets_sent: int = None
+    last_perf_counter: float = None
 
 
 @dataclass
 class RealtimeBandwidthStat:
+    """Real-Time bandwith in value/s unit"""
+
     incoming_bytes: int
     outgoing_bytes: int
     incoming_packets: int
@@ -63,19 +69,27 @@ rt_bw = RealtimeBandwidth(
     incoming_bytes=0, outgoing_bytes=0, incoming_packets=0, outgoing_packets=0)
 
 
-@scheduler.scheduled_job('interval', seconds=1, coalesce=True, max_instances=1)
+# sample time is 2 seconds, values lower than this may not produce good results
+@scheduler.scheduled_job("interval", seconds=2, coalesce=True, max_instances=1)
 def record_realtime_bandwidth() -> None:
+    global rt_bw
+    last_perf_counter = rt_bw.last_perf_counter
     io = psutil.net_io_counters()
-    rt_bw.incoming_bytes, rt_bw.bytes_recv = io.bytes_recv - rt_bw.bytes_recv, io.bytes_recv
-    rt_bw.outgoing_bytes, rt_bw.bytes_sent = io.bytes_sent - rt_bw.bytes_sent, io.bytes_sent
-    rt_bw.incoming_packets, rt_bw.packets_recv = io.packets_recv - rt_bw.packets_recv, io.packets_recv
-    rt_bw.outgoing_packets, rt_bw.packet_sent = io.packets_sent - rt_bw.packet_sent, io.packets_sent
+    rt_bw.last_perf_counter = time.perf_counter()
+    sample_time = rt_bw.last_perf_counter - last_perf_counter
+    rt_bw.incoming_bytes, rt_bw.bytes_recv = round((io.bytes_recv - rt_bw.bytes_recv) / sample_time), io.bytes_recv
+    rt_bw.outgoing_bytes, rt_bw.bytes_sent = round((io.bytes_sent - rt_bw.bytes_sent) / sample_time), io.bytes_sent
+    rt_bw.incoming_packets, rt_bw.packets_recv = round((io.packets_recv - rt_bw.packets_recv) / sample_time), io.packets_recv
+    rt_bw.outgoing_packets, rt_bw.packets_sent = round((io.packets_sent - rt_bw.packets_sent) / sample_time), io.packets_sent
 
 
 def realtime_bandwidth() -> RealtimeBandwidthStat:
     return RealtimeBandwidthStat(
-        incoming_bytes=rt_bw.incoming_bytes, outgoing_bytes=rt_bw.outgoing_bytes,
-        incoming_packets=rt_bw.incoming_packets, outgoing_packets=rt_bw.outgoing_packets)
+        incoming_bytes=rt_bw.incoming_bytes,
+        outgoing_bytes=rt_bw.outgoing_bytes,
+        incoming_packets=rt_bw.incoming_packets,
+        outgoing_packets=rt_bw.outgoing_packets,
+    )
 
 
 def random_password() -> str:

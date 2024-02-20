@@ -1,23 +1,23 @@
 import io
 import math
-import re
-import random
-import string
 import os
+import random
+import re
+import string
 from datetime import datetime
 
 import qrcode
 import sqlalchemy
 from dateutil.relativedelta import relativedelta
 from telebot import types
-from telebot.util import user_link, extract_arguments
+from telebot.util import extract_arguments, user_link
 
 from app import xray
 from app.db import GetDB, crud
+from app.models.proxy import ProxyTypes
 from app.models.user import (UserCreate, UserModify, UserResponse, UserStatus,
                              UserStatusModify)
 from app.models.user_template import UserTemplateResponse
-from app.models.proxy import ProxyTypes
 from app.telegram import bot
 from app.telegram.utils.custom_filters import (cb_query_equals,
                                                cb_query_startswith)
@@ -30,7 +30,7 @@ try:
 except ImportError:
     from app.utils.system import realtime_bandwidth
 
-from config import TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_DEFAULT_VLESS_FLOW
+from config import TELEGRAM_DEFAULT_VLESS_FLOW, TELEGRAM_LOGGER_CHANNEL_ID
 
 mem_store = MemoryStorage()
 
@@ -58,8 +58,8 @@ def get_system_info():
 🟢 *Active Users*: `{active_users}`
 🔴 *Deactivate Users*: `{deactivate_users}`
 ➖➖➖➖➖➖➖
-⏫ *Upload Speed*: `{up_speed}`
-⏬ *Download Speed*: `{down_speed}`
+⏫ *Upload Speed*: `{up_speed}/s`
+⏬ *Download Speed*: `{down_speed}/s`
 """.format(
         cpu_cores=cpu.cores,
         cpu_percent=cpu.percent,
