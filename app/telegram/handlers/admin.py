@@ -495,7 +495,9 @@ def get_user_info_text(
         'active': '✅',
         'expired': '🕰',
         'limited': '🪫',
-        'disabled': '❌'}
+        'disabled': '❌',
+        'on_hold': '🔌',
+    }
     text = f'''\
 ┌─{statuses[status]} <b>Status:</b> <code>{status.title()}</code>
 │          └─<b>Username:</b> <code>{username}</code>
