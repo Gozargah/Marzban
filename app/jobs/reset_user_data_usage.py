@@ -15,12 +15,17 @@ reset_strategy_to_days = {
 def reset_user_data_usage():
     now = datetime.utcnow()
     with GetDB() as db:
-        for user in get_users(db, reset_strategy=[
-            UserDataLimitResetStrategy.day.value,
-            UserDataLimitResetStrategy.week.value,
-            UserDataLimitResetStrategy.month.value,
-            UserDataLimitResetStrategy.year.value,
-        ]):
+        for user in get_users(db,
+                              status=[
+                                  UserStatus.active,
+                                  UserStatus.limited
+                              ],
+                              reset_strategy=[
+                                  UserDataLimitResetStrategy.day.value,
+                                  UserDataLimitResetStrategy.week.value,
+                                  UserDataLimitResetStrategy.month.value,
+                                  UserDataLimitResetStrategy.year.value,
+                              ]):
             last_reset_time = user.last_traffic_reset_time
             num_days_to_reset = reset_strategy_to_days[user.data_limit_reset_strategy]
 
