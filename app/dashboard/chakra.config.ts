@@ -80,7 +80,7 @@ export const theme = extendTheme({
           _focusVisible: {
             boxShadow: "none",
             borderColor: "primary.200",
-            outlineColor: "primary.200",
+            outlineColor: "primary.600",
           },
           _dark: {
             borderColor: "gray.600",
@@ -119,7 +119,7 @@ export const theme = extendTheme({
           },
           _dark: {
             borderColor: "gray.600 !important",
-            background: "gray.750",
+            background: "gray.800",
           },
         },
         td: {

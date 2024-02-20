@@ -1,22 +1,22 @@
 import { Box, VStack } from "@chakra-ui/react";
-import { CoreSettingsModal } from "components/CoreSettingsModal";
-import { DeleteUserModal } from "components/DeleteUserModal";
-import { Filters } from "components/Filters";
-import { Footer } from "components/Footer";
-import { Header } from "components/Header";
-import { HostsDialog } from "components/HostsDialog";
-import { NodesUsage } from "components/NodesUsage";
-import { QRCodeDialog } from "components/QRCodeDialog";
-import { ResetAllUsageModal } from "components/ResetAllUsageModal";
-import { ResetUserUsageModal } from "components/ResetUserUsageModal";
-import { RevokeSubscriptionModal } from "components/RevokeSubscriptionModal";
-import { UserDialog } from "components/UserDialog";
-import { UsersTable } from "components/UsersTable";
-import { NodesDialog } from "components/nodes";
-import { UserStatistics } from "components/statistics/UserStatistics";
+import { CoreSettingsModal } from "@/components/common/settings/CoreSettingsModal";
+import { DeleteUserModal } from "@/components/common/user/DeleteUserModal";
+import { Filters } from "@/components/common/user/Filters";
+import { Footer } from "@/components/layouts/Footer";
+import { Header } from "@/components/layouts/Header";
+import { HostsDialog } from "@/components/common/settings/HostsDialog";
+import { NodesUsage } from "@/components/common/nodes/NodesUsage";
+import { QRCodeDialog } from "@/components/common/user/QRCodeDialog";
+import { ResetAllUsageModal } from "@/components/common/settings/ResetAllUsageModal";
+import { ResetUserUsageModal } from "@/components/common/user/ResetUserUsageModal";
+import { RevokeSubscriptionModal } from "@/components/common/user/RevokeSubscriptionModal";
+import { UserDialog } from "@/components/common/user/UserDialog";
+import { UsersTable } from "@/components/common/user/UsersTable";
+import { NodesDialog } from "@/components/common/nodes";
+import { UserStatistics } from "@/components/common/statistics/UserStatistics";
 import { FC } from "react";
 
-export const Dashboard: FC = () => {
+export const Users: FC = () => {
   return (
     <VStack justifyContent="space-between" minH="full" rowGap={4}>
       <Box w="full">
@@ -40,4 +40,4 @@ export const Dashboard: FC = () => {
   );
 };
 
-export default Dashboard;
+export default Users;

@@ -1,4 +1,4 @@
-import { useGetNodes } from "service/api";
+import { useGetNodes } from "core/services/api";
 import { z } from "zod";
 import { useDashboard } from "./DashboardContext";
 

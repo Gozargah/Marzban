@@ -13,17 +13,17 @@ import {
 import { ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Logo from "assets/logo.svg?react";
-import { Footer } from "components/Footer";
-import { Input } from "components/Input";
-import { Language } from "components/Language";
-import { ThemeChangerButton } from "components/ThemeChangerButton";
+import { Footer } from "@/components/layouts/Footer";
+import { Input } from "@/components/tools/Input";
+import { Language } from "@/components/common/sidebar/Language";
+import { ThemeChangerButton } from "@/components/common/sidebar/ThemeChangerButton";
 import { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAdminToken } from "service/api";
-import { ErrorType } from "service/http";
-import { removeAuthToken, setAuthToken } from "utils/authStorage";
+import { useAdminToken } from "core/services/api";
+import { ErrorType } from "core/services/http";
+import { removeAuthToken, setAuthToken } from "core/utils/authStorage";
 import { z } from "zod";
 
 const schema = z.object({
@@ -73,7 +73,7 @@ export const Login: FC = () => {
     mutation: {
       onSuccess({ access_token: token }) {
         setAuthToken(token);
-        navigate("/");
+        navigate("/dashboard", { replace: true });
       },
     },
   });

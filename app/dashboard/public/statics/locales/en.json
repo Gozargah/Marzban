@@ -149,18 +149,20 @@
   "resetAllUsage.prompt": "This action clears all of the users' data usage completely. Are you sure you want to reset all usage? THIS CANNOT BE UNDONE!",
   "resetAllUsage.success": "All usage has reset successfully.",
   "resetAllUsage.error": "Usage reset failed, please try again.",
-  "core.title": "Core Settings",
-  "core.socket.connecting": "Connecting...",
-  "core.socket.connected": "Connected",
-  "core.socket.not_connected": "Not Connected",
-  "core.socket.closed": "Closed",
-  "core.restarting": "Restarting...",
-  "core.restartCore": "Restart Core",
-  "core.save": "Save",
-  "core.logs": "Logs",
-  "core.configuration": "Configuration",
-  "core.generalErrorMessage": "Something went wrong, please check the configuration",
-  "core.successMessage": "Core settings updated successfully",
+  "core": {
+    "title": "Core Settings",
+    "socket.connecting": "Connecting...",
+    "socket.connected": "Connected",
+    "socket.not_connected": "Not Connected",
+    "socket.closed": "Closed",
+    "restarting": "Restarting...",
+    "restartCore": "Restart Core",
+    "save": "Save",
+    "logs": "Logs",
+    "configuration": "Configuration",
+    "generalErrorMessage": "Something went wrong, please check the configuration",
+    "successMessage": "Core settings updated successfully"
+  },
   "menu": {
     "users": "Users",
     "statistics": "Statistics",
@@ -189,6 +191,38 @@
     "description": "Track, manage and forecast your connections",
     "total": "Total Users",
     "online": "Online Users",
-    "active": "Active Users"
+    "active": "Active Users",
+    "limited": "Limited Users",
+    "expired": "Expired Users",
+    "disabled": "Disabled Users"
+  },
+  "statistics": {
+    "title": "System Statistics",
+    "description": "Track, manage and forecast your connections",
+    "cpu": "CPU Usage",
+    "ram": "RAM Usage",
+    "realtime": "Realtime Bandwidth",
+    "uptime": "Uptime",
+    "activeNodes": "Active Nodes",
+    "totalUsage": "Total Usage",
+    "usage": "Usage"
+  },
+  "settings": {
+    "general": {
+      "title": "General Settings",
+      "description": "Manage your dashboard with these settings"
+    },
+    "core": {
+      "title": "Core Settings",
+      "description": "Manage and monitor your core"
+    },
+    "host": {
+      "title": "Hosts Settings",
+      "description": "Using this setting, you are able to assign specific address for each inbound"
+    },
+    "node": {
+      "title": "Nodes Settings",
+      "description": "Using Marzban-Node, you are able to scale up your connection quality"
+    }
   }
 }
