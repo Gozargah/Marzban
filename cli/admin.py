@@ -5,7 +5,7 @@ from rich.table import Table
 from rich.console import Console
 from rich.panel import Panel
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.sql import text
+from sqlalchemy import func
 from decouple import config, UndefinedValueError
 
 from app.db import GetDB
@@ -37,12 +37,14 @@ def validate_discord_webhook(value: str) -> Union[str, None]:
 
 def calculate_admin_usage(admin_id: int) -> int:
     with GetDB() as db:
-        return db.execute(text(f'SELECT SUM(node_user_usages.used_traffic) / 1024 / 1024 / 1024 FROM node_user_usages JOIN users ON users.id = node_user_usages.user_id AND users.admin_id = {admin_id};')).one()[0]
+        usage = db.query(func.sum(User.used_traffic)).filter_by(admin_id=admin_id).first()[0]
+        return 0 if not usage else int(usage / 1024 / 1024 / 1024)  # to GB
 
 
 def calculate_admin_reseted_usage(admin_id: int) -> int:
     with GetDB() as db:
-        return db.execute(text(f'SELECT SUM(used_traffic_at_reset) / 1024 / 1024 / 1024 FROM user_usage_logs JOIN users ON users.id = user_usage_logs.user_id AND users.admin_id = {admin_id};')).one()[0]
+        usage = db.query(func.sum(User.reseted_usage)).filter_by(admin_id=admin_id).first()[0]
+        return 0 if not usage else int(usage / 1024 / 1024 / 1024)  # to GB
 
 
 @app.command(name="list")
