@@ -209,9 +209,9 @@ class V2rayCostumConfig(str):
         mux_json = json.loads(mux_template)
         self.mux_config = mux_json["v2ray"]
 
-    def add_outbound(self, remark, outbound_data, proxy_outbound):
+    def add_outbound(self, remarks, outbound_data, proxy_outbound):
         json_template = json.loads(self.template)
-        json_template["remark"] = remark
+        json_template["remarks"] = remarks
         json_template["outbounds"].append(outbound_data)
         if proxy_outbound:
             json_template["outbounds"].append(proxy_outbound)
