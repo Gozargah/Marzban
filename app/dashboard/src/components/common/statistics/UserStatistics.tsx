@@ -1,5 +1,4 @@
-import { BoxProps, chakra, HStack, Text } from "@chakra-ui/react";
-import { ChartBarIcon, ChartPieIcon, UsersIcon } from "@heroicons/react/24/outline";
+import { BoxProps, HStack, Text } from "@chakra-ui/react";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
@@ -7,34 +6,7 @@ import { useGetSystemStats } from "core/services/api";
 import { formatBytes, numberWithCommas } from "core/utils/formatByte";
 import { StatisticCard } from "./StatisticCard";
 
-const TotalUsersIcon = chakra(UsersIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-    position: "relative",
-    zIndex: "2",
-  },
-});
-
-const NetworkIcon = chakra(ChartBarIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-    position: "relative",
-    zIndex: "2",
-  },
-});
-
-const MemoryIcon = chakra(ChartPieIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-    position: "relative",
-    zIndex: "2",
-  },
-});
-
-export const Statistics: FC<BoxProps> = (props) => {
+export const UserStatistics: FC<BoxProps> = (props) => {
   const { version } = useDashboard();
   const { data: systemData } = useGetSystemStats({
     query: {
@@ -57,7 +29,7 @@ export const Statistics: FC<BoxProps> = (props) => {
       {...props}
     >
       <StatisticCard
-        title={t("activeUsers")}
+        title={t("users.total")}
         content={
           systemData && (
             <HStack alignItems="flex-end">
@@ -68,15 +40,15 @@ export const Statistics: FC<BoxProps> = (props) => {
             </HStack>
           )
         }
-        icon={<TotalUsersIcon />}
+        badge={100}
       />
       <StatisticCard
-        title={t("dataUsage")}
+        title={t("users.active")}
         content={systemData && formatBytes(systemData.incoming_bandwidth + systemData.outgoing_bandwidth)}
-        icon={<NetworkIcon />}
+        badge={0}
       />
       <StatisticCard
-        title={t("memoryUsage")}
+        title={t("users.online")}
         content={
           systemData && (
             <HStack alignItems="flex-end">
@@ -87,7 +59,7 @@ export const Statistics: FC<BoxProps> = (props) => {
             </HStack>
           )
         }
-        icon={<MemoryIcon />}
+        badge={-50}
       />
     </HStack>
   );
