@@ -1,9 +1,9 @@
 import { lazy } from "react";
 import { createHashRouter } from "react-router-dom";
-import { getGetCurrentAdminQueryOptions } from "service/api";
-import { queryClient } from "utils/react-query";
+import { getGetCurrentAdminQueryOptions } from "core/services/api";
+import { queryClient } from "core/utils/react-query";
 
-const ConsoleLayout = lazy(() => import("../layouts/ConsoleLayout"));
+const ConsoleLayout = lazy(() => import("components/layouts/ConsoleLayout"));
 const Users = lazy(() => import("./Users"));
 const Statistics = lazy(() => import("./Statistics"));
 const GeneralSettings = lazy(() => import("./settings/General"));

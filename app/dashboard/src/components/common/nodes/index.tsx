@@ -16,8 +16,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
-import { useDashboard } from "contexts/DashboardContext";
-import { Icon } from "components/tools/Icon";
+import { useDashboard } from "../../../contexts/DashboardContext";
+import { Icon } from "../../tools/Icon";
 
 import { AddNodeForm } from "./AddNodeForm";
 import { NodeAccordion } from "./NodeAccordion";

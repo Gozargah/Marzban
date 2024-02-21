@@ -4,7 +4,7 @@ export default defineConfig({
   app: {
     output: {
       client: "react-query",
-      target: "./src/service/api/index.ts",
+      target: "./src/core/services/api/index.ts",
       mode: "single",
       clean: true,
       prettier: true,
@@ -12,7 +12,7 @@ export default defineConfig({
       headers: false,
       override: {
         mutator: {
-          path: "./src/service/http.ts",
+          path: "./src/core/services/http.ts",
           name: "orvalFetcher",
         },
       },
