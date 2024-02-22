@@ -113,7 +113,6 @@
   "deleteNode.title": "删除节点",
   "deleteNode.prompt": "您确实要删除 <b>{{name}}</b> 节点吗？",
   "deleteNode.deleteSuccess": "节点 {{name}} 删除成功",
-  "users": "用户",
   "activeUsers": "活跃用户",
   "dataUsage": "总流量",
   "memoryUsage": "内存状态",
@@ -131,5 +130,81 @@
   "resetAllUsage.title": "重置所有用户的数据使用情况",
   "resetAllUsage.prompt": "此操作将清除所有用户统计，您确定要执行此操作吗？ 这不能被撤消！",
   "resetAllUsage.success": "所有统计重置完成。",
-  "resetAllUsage.error": "重置失败，请稍候再试！"
+  "resetAllUsage.error": "重置失败，请稍候再试！",
+  "core": {
+    "title": "核心设置",
+    "socket.connecting": "连接中...",
+    "socket.connected": "连接的",
+    "socket.not_connected": "未连接",
+    "socket.closed": "关闭",
+    "restarting": "正在重启...",
+    "restartCore": "重启核心",
+    "save": "节省",
+    "logs": "日志",
+    "configuration": "配置",
+    "generalErrorMessage": "出现问题，请检查配置",
+    "successMessage": "核心设置更新成功"
+  },
+  "menu": {
+    "users": "用户",
+    "statistics": "统计数据",
+    "settings": "设置",
+    "general": "一般的",
+    "core": "核",
+    "hosts": "主办方",
+    "nodes": "节点"
+  },
+  "donation": {
+    "menuTitle": "捐款",
+    "card": {
+      "title": "捐 Marzban",
+      "description": "向 Marzban 捐赠以获得无缝功能和持续改进。 谢谢你！",
+      "button": "立即捐赠"
+    }
+  },
+  "theme": {
+    "toggleButton": "切换主题"
+  },
+  "localization": {
+    "toggleButton": "改变语言"
+  },
+  "users": {
+    "title": "用户",
+    "description": "跟踪、管理和预测您的联系",
+    "total": "用户总数",
+    "online": "在线用户",
+    "active": "活跃用户",
+    "limited": "有限用户",
+    "expired": "过期用户",
+    "disabled": "残疾用户"
+  },
+  "statistics": {
+    "title": "系统统计",
+    "description": "跟踪、管理和预测您的联系",
+    "cpu": "CPU 用法",
+    "ram": "RAM 用法",
+    "realtime": "实时带宽",
+    "uptime": "正常运行时间",
+    "activeNodes": "活跃节点",
+    "totalUsage": "总使用量",
+    "usage": "用法"
+  },
+  "settings": {
+    "general": {
+      "title": "常规设置",
+      "description": "使用这些设置管理您的仪表板"
+    },
+    "core": {
+      "title": "核心设置",
+      "description": "管理和监控您的核心"
+    },
+    "host": {
+      "title": "主机设置",
+      "description": "使用此设置，您可以为每个入站分配特定地址"
+    },
+    "node": {
+      "title": "节点设置",
+      "description": "使用 Marzban-Node，您可以提高连接质量"
+    }
+  }
 }

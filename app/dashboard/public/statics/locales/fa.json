@@ -125,7 +125,6 @@
   "deleteNode.deleteSuccess": "گره {{name}} با موفقیت حذف شد",
   "active": "فعال",
   "disabled": "غیر فعال",
-  "users": "کاربران",
   "activeUsers": "کاربران فعال",
   "dataUsage": "مصرف داده",
   "memoryUsage": "مصرف حافظه",
@@ -144,16 +143,80 @@
   "resetAllUsage.prompt": "این عمل مصرف تمام کاربران را بازنشانی می‌کند. از این بازنشانی مطمئن هستید؟ این عمل قابل بازگشت نیست!",
   "resetAllUsage.success": "مصرف کل با موفقیت بازنشانی شد.",
   "resetAllUsage.error": "بازنشانی مصرف انجام نشد، دوباره تلاش کنید.",
-  "core.title": "تنظیمات هسته",
-  "core.socket.connecting": "در حال اتصال...",
-  "core.socket.connected": "متصل",
-  "core.socket.not_connected": "عدم اتصال",
-  "core.socket.closed": "بسته شده",
-  "core.restarting": "درحال اجرا مجدد...",
-  "core.restartCore": "اجرا مجدد هسته",
-  "core.save": "ذخیره",
-  "core.logs": "گزارش",
-  "core.configuration": "پیکربندی",
-  "core.generalErrorMessage": "مشکلی پیش آمده، لطفا پیکربندی را بررسی کنید",
-  "core.successMessage": "تنظیمات هسته با موفقیت ثبت شد"
+  "core": {
+    "title": "تنظیمات هسته",
+    "socket.connecting": "در حال اتصال...",
+    "socket.connected": "متصل",
+    "socket.not_connected": "عدم اتصال",
+    "socket.closed": "بسته شده",
+    "restarting": "درحال اجرا مجدد...",
+    "restartCore": "اجرا مجدد هسته",
+    "save": "ذخیره",
+    "logs": "گزارش",
+    "configuration": "پیکربندی",
+    "generalErrorMessage": "مشکلی پیش آمده، لطفا پیکربندی را بررسی کنید",
+    "successMessage": "تنظیمات هسته با موفقیت ثبت شد"
+  },
+  "menu": {
+    "users": "کاربران",
+    "statistics": "آمار",
+    "settings": "تنظیمات",
+    "general": "پنل",
+    "core": "هسته",
+    "hosts": "هاست",
+    "nodes": "نود"
+  },
+  "donation": {
+    "menuTitle": "حمایت",
+    "card": {
+      "title": "حمایت از مرزبان",
+      "description": "Donate to Marzban for seamless functionality and continued improvement. Thank you!",
+      "button": "حمایت"
+    }
+  },
+  "theme": {
+    "toggleButton": "تغییر پوسته"
+  },
+  "localization": {
+    "toggleButton": "تغییر زبان"
+  },
+  "users": {
+    "title": "کاربران",
+    "description": "رصد، مدیریت و کنترل اتصالات",
+    "total": "کل کاربران",
+    "online": "کاربران آنلاین",
+    "active": "کاربران فعال",
+    "limited": "کربران محدود شده",
+    "expired": "کاربران منقضی شده",
+    "disabled": "کاربران غیر فعال"
+  },
+  "statistics": {
+    "title": "آمار سیستمی",
+    "description": "رصد، مدیریت و کنترل اتصالات",
+    "cpu": "مصرف CPU",
+    "ram": "مصرف RAM",
+    "realtime": "پهناباند لحظه‌ای",
+    "uptime": "زمان کار",
+    "activeNodes": "نود فعال",
+    "totalUsage": "مصرف کل",
+    "usage": "مصرف"
+  },
+  "settings": {
+    "general": {
+      "title": "تنظیمات پنل",
+      "description": "پنل خود را با این تنظیمات کنترل کنید"
+    },
+    "core": {
+      "title": "تنظیمات هسته",
+      "description": "تنظیم و کنترل هسته"
+    },
+    "host": {
+      "title": "تنظیمات هاست",
+      "description": "با این تنظیمات برای هر inbound خود آدرس‌های متفاوت بسازید"
+    },
+    "node": {
+      "title": "تنظیمات نود",
+      "description": "با مرزبان نود کیفیت اتصال و بهره سرویس خود را افزایش دهید"
+    }
+  }
 }
