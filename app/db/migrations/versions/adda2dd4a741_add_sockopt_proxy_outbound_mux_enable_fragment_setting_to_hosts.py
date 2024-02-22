@@ -21,7 +21,7 @@ def upgrade() -> None:
     op.add_column('hosts', sa.Column('sockopt', sa.JSON(), nullable=True))
     op.add_column('hosts', sa.Column('proxy_outbound', sa.JSON(), nullable=True))
     op.add_column('hosts', sa.Column('mux_enable', sa.Boolean(), server_default=sa.text('(false)'), nullable=False))
-    op.add_column('hosts', sa.Column('fragment_setting', sa.String(), nullable=True))
+    op.add_column('hosts', sa.Column('fragment_setting', sa.String(length=100), nullable=True))
     # ### end Alembic commands ###
 
 
