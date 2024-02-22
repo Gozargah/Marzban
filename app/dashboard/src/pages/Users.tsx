@@ -9,7 +9,7 @@ import { RevokeSubscriptionModal } from "components/common/user/RevokeSubscripti
 import { UserDialog } from "components/common/user/UserDialog";
 import { UsersTable } from "components/common/user/UsersTable";
 import { FC } from "react";
-import { UserStatistics } from "@/components/common/statistics/UserStatistics";
+import { UserStatistics } from "components/common/statistics/UserStatistics";
 
 export const Users: FC = () => {
   return (
