@@ -94,7 +94,7 @@ def user_subscription(token: str,
     elif re.match('^v2rayNG/(\d+\.\d+\.\d+)', user_agent):
         version_str = re.match('^v2rayNG/(\d+\.\d+\.\d+)', user_agent).group(1)
         if LooseVersion(version_str) >= LooseVersion("1.8.16"):
-            conf = generate_subscription(user=user, config_format="v2ray-custom", as_base64=True)
+            conf = generate_subscription(user=user, config_format="v2ray-custom", as_base64=False)
             return Response(content=conf, media_type="application/json", headers=response_headers)
 
     else:

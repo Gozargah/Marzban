@@ -133,7 +133,7 @@ class SingBoxConfiguration(str):
                       sid='',
                       headers='',
                       ais='',
-                      mux_enable=False,
+                      mux_enable: bool = False,
                       ):
 
         config = {
@@ -178,7 +178,7 @@ class SingBoxConfiguration(str):
                                             ais=ais)
 
         config['multiplex'] = self.mux_config
-        config['multiplex']["enabled"] = mux_enable,
+        config['multiplex']["enabled"] = mux_enable
 
         return config
 

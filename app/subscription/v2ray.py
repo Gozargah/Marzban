@@ -227,7 +227,7 @@ class V2rayCostumConfig(str):
         if sni is not None:
             tlsSettings["serverName"] = sni
 
-        tlsSettings['allowInsecure'] = ais
+        tlsSettings['allowInsecure'] = ais if ais else False
 
         if fp:
             tlsSettings["fingerprint"] = fp
@@ -576,7 +576,7 @@ class V2rayCostumConfig(str):
         )
 
         outbound["mux"] = self.mux_config
-        outbound["mux"]["enabled"] = inbound.get('mux_enable', False),
+        outbound["mux"]["enabled"] = bool(inbound.get('mux_enable', False))
 
         self.add_outbound(remarks=remark, outbound_data=outbound,
                           proxy_outbound=inbound.get('proxy_outbound', ''))
