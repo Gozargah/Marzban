@@ -578,5 +578,5 @@ class V2rayCostumConfig(str):
         outbound["mux"] = self.mux_config
         outbound["mux"]["enabled"] = inbound.get('mux_enable', False),
 
-        self.add_outbound(remark=remark, outbound_data=outbound,
+        self.add_outbound(remarks=remark, outbound_data=outbound,
                           proxy_outbound=inbound.get('proxy_outbound', ''))
