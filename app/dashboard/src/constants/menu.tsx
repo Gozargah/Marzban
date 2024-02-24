@@ -19,7 +19,7 @@ export const menu: MenuItem[] = [
   {
     title: "menu.statistics",
     icon: <ChartPieIcon width="24" />,
-    href: "statistics",
+    href: "/statistics",
   },
   {
     title: "menu.settings",
@@ -27,19 +27,19 @@ export const menu: MenuItem[] = [
     children: [
       {
         title: "menu.general",
-        href: "settings",
+        href: "/settings",
       },
       {
         title: "menu.hosts",
-        href: "settings/hosts",
+        href: "/settings/hosts",
       },
       {
         title: "menu.nodes",
-        href: "settings/nodes",
+        href: "/settings/nodes",
       },
       {
         title: "menu.core",
-        href: "settings/core",
+        href: "/settings/core",
       },
     ],
   },

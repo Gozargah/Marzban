@@ -32,7 +32,7 @@ import { DONATION_URL } from "constants/project";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useGetCurrentAdmin } from "service/api";
 
 const LogoIcon = chakra(LogoSVG, {
@@ -228,62 +228,81 @@ const DropdownIcon = chakra(ChevronDownIcon, {
   },
 });
 
-const NavMenu: FC<{ menu: MenuItem[] }> = ({ menu }) => {
-  const [isOpen, setOpen] = useState(false);
+const isURLChildOfmenu = (menuList: typeof menu, pathname: string) => {
+  return menuList.some((item): boolean => {
+    return item.href === pathname;
+  });
+};
+
+const NavButton: FC<{ menuItem: MenuItem }> = ({ menuItem }) => {
+  const { pathname } = useLocation();
+  const [isOpen, setOpen] = useState((menuItem.children || false) && isURLChildOfmenu(menuItem.children, pathname));
   const { t } = useTranslation();
+  const isActive = pathname === menuItem.href;
+  return (
+    <Box w="full" key={menuItem.href || menuItem.title}>
+      <Button
+        isActive={isActive}
+        w="full"
+        justifyContent="start"
+        fontSize={{
+          md: "md",
+          base: "sm",
+        }}
+        fontWeight="medium"
+        color="gray.300"
+        bg="transparent"
+        _hover={{
+          bg: "blackAlpha.200 !important",
+          _dark: {
+            bg: "whiteAlpha.200 !important",
+          },
+        }}
+        _active={{
+          bg: "blackAlpha.100",
+          _dark: {
+            bg: "whiteAlpha.100",
+          },
+        }}
+        px={{
+          base: 2,
+          md: 3,
+        }}
+        h={{
+          base: 9,
+          md: 10,
+        }}
+        as={menuItem.href ? Link : undefined}
+        key={menuItem.href}
+        to={menuItem.href || ""}
+        target={menuItem.target}
+        leftIcon={menuItem.icon}
+        onClick={() => {
+          menuItem.children && setOpen(!isOpen);
+        }}
+        _light={{ color: "gray.600" }}
+        rightIcon={menuItem.children ? <DropdownIcon transform={isOpen ? "rotate(180deg)" : ""} /> : undefined}
+      >
+        <Text as="span" color="whiteAlpha.800" _light={{ color: "gray.700" }} flexGrow={1} textAlign="left">
+          {t(menuItem.title)}
+        </Text>
+      </Button>
+      {menuItem.children && (
+        <Collapse in={isOpen} animateOpacity style={{ width: "full" }}>
+          <Box pl="8" mt="2">
+            <NavMenu menu={menuItem.children} />
+          </Box>
+        </Collapse>
+      )}
+    </Box>
+  );
+};
+
+const NavMenu: FC<{ menu: MenuItem[] }> = ({ menu }) => {
   return (
     <VStack gap="1" w="full">
-      {menu.map((menuItem) => {
-        return (
-          <Box w="full" key={menuItem.href || menuItem.title}>
-            <Button
-              w="full"
-              justifyContent="start"
-              fontSize={{
-                md: "md",
-                base: "sm",
-              }}
-              fontWeight="medium"
-              color="gray.300"
-              bg="transparent"
-              _hover={{
-                bg: "blackAlpha.100",
-                _dark: {
-                  bg: "whiteAlpha.100",
-                },
-              }}
-              px={{
-                base: 2,
-                md: 3,
-              }}
-              h={{
-                base: 9,
-                md: 10,
-              }}
-              as={menuItem.href ? Link : undefined}
-              key={menuItem.href}
-              to={menuItem.href || ""}
-              target={menuItem.target}
-              leftIcon={menuItem.icon}
-              onClick={() => {
-                menuItem.children && setOpen(!isOpen);
-              }}
-              _light={{ color: "gray.600" }}
-              rightIcon={menuItem.children ? <DropdownIcon transform={isOpen ? "rotate(180deg)" : ""} /> : undefined}
-            >
-              <Text as="span" color="whiteAlpha.800" _light={{ color: "gray.700" }} flexGrow={1} textAlign="left">
-                {t(menuItem.title)}
-              </Text>
-            </Button>
-            {menuItem.children && (
-              <Collapse in={isOpen} animateOpacity>
-                <Box pl="8" mt="2">
-                  <NavMenu menu={menuItem.children} />
-                </Box>
-              </Collapse>
-            )}
-          </Box>
-        );
+      {menu.map((menuItem, index) => {
+        return <NavButton key={index} menuItem={menuItem} />;
       })}
     </VStack>
   );

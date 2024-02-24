@@ -38,11 +38,11 @@ export const router = createHashRouter([
         element: <Users />,
       },
       {
-        path: "statistics",
+        path: "/statistics",
         element: <Statistics />,
       },
       {
-        path: "settings",
+        path: "/settings",
         children: [
           {
             path: "/settings",
