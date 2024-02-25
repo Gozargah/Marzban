@@ -1,8 +1,16 @@
+version: '3.9'
 services:
   marzban:
     image: gozargah/marzban:latest
-    restart: always
+    restart: unless-stopped
     env_file: .env
     network_mode: host
     volumes:
       - /var/lib/marzban:/var/lib/marzban
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
