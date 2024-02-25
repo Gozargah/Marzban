@@ -13,7 +13,7 @@ reset_strategy_to_days = {
 
 
 def reset_user_data_usage():
-    now = datetime.utcnow()
+    now = datetime.now()
     with GetDB() as db:
         for user in get_users(db,
                               status=[

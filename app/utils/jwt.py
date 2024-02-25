@@ -15,9 +15,9 @@ def get_secret_key():
 
 
 def create_admin_token(username: str, is_sudo=False) -> str:
-    data = {"sub": username, "access": "sudo" if is_sudo else "admin", "iat": datetime.utcnow()}
+    data = {"sub": username, "access": "sudo" if is_sudo else "admin", "iat": datetime.now()}
     if JWT_ACCESS_TOKEN_EXPIRE_MINUTES > 0:
-        expire = datetime.utcnow() + timedelta(minutes=JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now() + timedelta(minutes=JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
         data["exp"] = expire
     encoded_jwt = jwt.encode(data, get_secret_key(), algorithm="HS256")
     return encoded_jwt
@@ -41,7 +41,7 @@ def get_admin_payload(token: str) -> Union[dict, None]:
 
 
 def create_subscription_token(username: str) -> str:
-    data = {"sub": username, "access": "subscription", "iat": datetime.utcnow()+timedelta(seconds=1)}
+    data = {"sub": username, "access": "subscription", "iat": datetime.now()+timedelta(seconds=1)}
     encoded_jwt = jwt.encode(data, get_secret_key(), algorithm="HS256")
     return encoded_jwt
 

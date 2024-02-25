@@ -288,7 +288,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
     if modify.expire is not None:
         dbuser.expire = (modify.expire or None)
         if dbuser.status in (UserStatus.active, UserStatus.expired):
-            if not dbuser.expire or dbuser.expire > datetime.utcnow().timestamp():
+            if not dbuser.expire or dbuser.expire > datetime.now().timestamp():
                 dbuser.status = UserStatus.active
                 if not dbuser.expire or (calculate_expiration_days(
                         dbuser.expire) > NOTIFY_DAYS_LEFT):
@@ -308,7 +308,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify):
     if modify.on_hold_expire_duration is not None:
         dbuser.on_hold_expire_duration = modify.on_hold_expire_duration
 
-    dbuser.edit_at = datetime.utcnow()
+    dbuser.edit_at = datetime.now()
 
     db.commit()
     db.refresh(dbuser)
@@ -334,7 +334,7 @@ def reset_user_data_usage(db: Session, dbuser: User):
 
 
 def revoke_user_sub(db: Session, dbuser: User):
-    dbuser.sub_revoked_at = datetime.utcnow()
+    dbuser.sub_revoked_at = datetime.now()
 
     user = UserResponse.from_orm(dbuser)
     for proxy_type, settings in user.proxies.copy().items():
@@ -348,7 +348,7 @@ def revoke_user_sub(db: Session, dbuser: User):
 
 
 def update_user_sub(db: Session, dbuser: User, user_agent: str):
-    dbuser.sub_updated_at = datetime.utcnow()
+    dbuser.sub_updated_at = datetime.now()
     dbuser.sub_last_user_agent = user_agent
 
     db.commit()
@@ -389,7 +389,7 @@ def set_owner(db: Session, dbuser: User, admin: Admin):
 
 def start_user_expire(db: Session, dbuser: User):
 
-    expire = int(datetime.utcnow().timestamp()) + dbuser.on_hold_expire_duration
+    expire = int(datetime.now().timestamp()) + dbuser.on_hold_expire_duration
     dbuser.expire = expire
     db.commit()
     db.refresh(dbuser)
@@ -431,7 +431,7 @@ def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify):
         dbadmin.is_sudo = modified_admin.is_sudo
     if modified_admin.password is not None and dbadmin.hashed_password != modified_admin.hashed_password:
         dbadmin.hashed_password = modified_admin.hashed_password
-        dbadmin.password_reset_at = datetime.utcnow()
+        dbadmin.password_reset_at = datetime.now()
     if modified_admin.telegram_id:
         dbadmin.telegram_id = modified_admin.telegram_id
     if modified_admin.discord_webhook:
@@ -447,7 +447,7 @@ def partial_update_admin(db: Session, dbadmin: Admin, modified_admin: AdminParti
         dbadmin.is_sudo = modified_admin.is_sudo
     if modified_admin.password is not None and dbadmin.hashed_password != modified_admin.hashed_password:
         dbadmin.hashed_password = modified_admin.hashed_password
-        dbadmin.password_reset_at = datetime.utcnow()
+        dbadmin.password_reset_at = datetime.now()
     if modified_admin.telegram_id is not None:
         dbadmin.telegram_id = modified_admin.telegram_id
     if modified_admin.discord_webhook is not None:
@@ -652,7 +652,7 @@ def update_node_status(db: Session, dbnode: Node, status: NodeStatus, message: s
     dbnode.status = status
     dbnode.message = message
     dbnode.xray_version = version
-    dbnode.last_status_change = datetime.utcnow()
+    dbnode.last_status_change = datetime.now()
     db.commit()
     db.refresh(dbnode)
     return dbnode
@@ -675,7 +675,7 @@ def get_notification_reminder(
         NotificationReminder.type == reminder_type).first()
     if reminder is None:
         return
-    if reminder.expires_at and reminder.expires_at < datetime.utcnow():
+    if reminder.expires_at and reminder.expires_at < datetime.now():
         db.delete(reminder)
         db.commit()
         return

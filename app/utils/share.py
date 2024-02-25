@@ -886,13 +886,13 @@ def setup_format_variables(extra_data: dict) -> dict:
 
     if user_status != UserStatus.on_hold:
         if expire_timestamp is not None and expire_timestamp >= 0:
-            seconds_left = expire_timestamp - int(dt.utcnow().timestamp())
+            seconds_left = expire_timestamp - int(dt.now().timestamp())
             expire_datetime = dt.fromtimestamp(expire_timestamp)
             expire_date = expire_datetime.date()
             jalali_expire_date = jd.fromgregorian(
                 year=expire_date.year, month=expire_date.month, day=expire_date.day
             ).strftime("%Y-%m-%d")
-            days_left = (expire_datetime - dt.utcnow()).days + 1
+            days_left = (expire_datetime - dt.now()).days + 1
             time_left = format_time_left(seconds_left)
         else:
             days_left = "∞"

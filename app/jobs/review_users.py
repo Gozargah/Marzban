@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from app.db.models import User
 
 
-def add_notification_reminders(db: Session, user: "User", now: datetime = datetime.utcnow()) -> None:
+def add_notification_reminders(db: Session, user: "User", now: datetime = datetime.now()) -> None:
     if user.data_limit:
         usage_percent = calculate_usage_percent(
             user.used_traffic, user.data_limit)
@@ -36,7 +36,7 @@ def add_notification_reminders(db: Session, user: "User", now: datetime = dateti
 
 
 def review():
-    now = datetime.utcnow()
+    now = datetime.now()
     now_ts = now.timestamp()
     with GetDB() as db, GetBG() as bg:
         for user in get_users(db, status=UserStatus.active):

@@ -130,12 +130,12 @@ def user_get_usage(token: str,
         return Response(status_code=204)
 
     if start is None:
-        start_date = datetime.fromtimestamp(datetime.utcnow().timestamp() - 30 * 24 * 3600)
+        start_date = datetime.fromtimestamp(datetime.now().timestamp() - 30 * 24 * 3600)
     else:
         start_date = datetime.fromisoformat(start)
 
     if end is None:
-        end_date = datetime.utcnow()
+        end_date = datetime.now()
     else:
         end_date = datetime.fromisoformat(end)
 

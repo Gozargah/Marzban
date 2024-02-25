@@ -286,12 +286,12 @@ def get_user_usage(username: str,
 
     if start is None:
         start_date = datetime.fromtimestamp(
-            datetime.utcnow().timestamp() - 30 * 24 * 3600)
+            datetime.now().timestamp() - 30 * 24 * 3600)
     else:
         start_date = datetime.fromisoformat(start)
 
     if end is None:
-        end_date = datetime.utcnow()
+        end_date = datetime.now()
     else:
         end_date = datetime.fromisoformat(end)
 
@@ -339,7 +339,7 @@ def get_expired_users(expired_before: datetime = None,
 
     expired_before_ts = expired_before.timestamp() if expired_before else 0
     expired_after_ts = expired_after.timestamp() if expired_after else 0
-    now_ts = datetime.utcnow().timestamp()
+    now_ts = datetime.now().timestamp()
 
     dbadmin = crud.get_admin(db, admin.username)
 
@@ -378,7 +378,7 @@ def delete_expired_users(bg: BackgroundTasks,
 
     expired_before_ts = expired_before.timestamp() if expired_before else 0
     expired_after_ts = expired_after.timestamp() if expired_after else 0
-    now_ts = datetime.utcnow().timestamp()
+    now_ts = datetime.now().timestamp()
 
     dbadmin = crud.get_admin(db, admin.username)
 

@@ -27,8 +27,8 @@ class Notification(BaseModel):
         reached_usage_percent = "reached_usage_percent"
         reached_days_left = "reached_days_left"
 
-    enqueued_at: float = dt.utcnow().timestamp()
-    send_at: float = dt.utcnow().timestamp()
+    enqueued_at: float = dt.now().timestamp()
+    send_at: float = dt.now().timestamp()
     tries: int = 0
 
 
