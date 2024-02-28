@@ -83,6 +83,7 @@ def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostMo
             fingerprint=host.fingerprint,
             allowinsecure=host.allowinsecure,
             is_disabled=host.is_disabled,
+            mux_enable=host.mux_enable,
             fragment_setting=host.fragment_setting,
         ) for host in modified_hosts
     ]
