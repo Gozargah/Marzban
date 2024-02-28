@@ -23,6 +23,7 @@ STATUS_EMOJIS = {
     "on_hold": "🔌",
 }
 
+
 def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
     if inbound["protocol"] == "vmess":
         return V2rayShareLink.vmess(
@@ -151,13 +152,13 @@ def generate_v2ray_custom_subscription(
 
     format_variables = setup_format_variables(extra_data)
     return process_inbounds_and_tags(
-        inbounds, proxies, format_variables, mode="v2ray-custom", conf=conf
+        inbounds, proxies, format_variables, mode="v2ray-json", conf=conf
     )
 
 
 def generate_subscription(
     user: "UserResponse",
-    config_format: Literal["v2ray", "clash-meta", "clash", "sing-box", "outline", "v2ray-custom"],
+    config_format: Literal["v2ray", "clash-meta", "clash", "sing-box", "outline", "v2ray-json"],
     as_base64: bool,
 ) -> str:
     kwargs = {
@@ -176,7 +177,7 @@ def generate_subscription(
         config = generate_singbox_subscription(**kwargs)
     elif config_format == "outline":
         config = generate_outline_subscription(**kwargs)
-    elif config_format == "v2ray-custom":
+    elif config_format == "v2ray-json":
         config = generate_v2ray_custom_subscription(**kwargs)
     else:
         raise ValueError(f'Unsupported format "{config_format}"')
@@ -328,7 +329,7 @@ def process_inbounds_and_tags(
                         "sockopt": host["sockopt"],
                         "proxy_outbound": host["proxy_outbound"],
                         "mux_enable": host["mux_enable"],
-                        "fragment_setting":host["fragment_setting"]
+                        "fragment_setting": host["fragment_setting"]
                     }
                 )
 
@@ -342,7 +343,7 @@ def process_inbounds_and_tags(
                             settings=settings.dict(no_obj=True),
                         )
                     )
-                elif mode in ["clash", "sing-box", "outline", "v2ray-custom"]:
+                elif mode in ["clash", "sing-box", "outline", "v2ray-json"]:
                     conf.add(
                         remark=host["remark"].format_map(format_variables),
                         address=address.format_map(format_variables),
@@ -350,7 +351,7 @@ def process_inbounds_and_tags(
                         settings=settings.dict(no_obj=True),
                     )
 
-    if mode in ["clash", "sing-box", "outline", "v2ray-custom"]:
+    if mode in ["clash", "sing-box", "outline", "v2ray-json"]:
         return conf.render()
 
     return results

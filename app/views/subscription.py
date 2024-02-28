@@ -94,7 +94,7 @@ def user_subscription(token: str,
     elif re.match('^v2rayNG/(\d+\.\d+\.\d+)', user_agent):
         version_str = re.match('^v2rayNG/(\d+\.\d+\.\d+)', user_agent).group(1)
         if LooseVersion(version_str) >= LooseVersion("1.8.16"):
-            conf = generate_subscription(user=user, config_format="v2ray-custom", as_base64=False)
+            conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False)
             return Response(content=conf, media_type="application/json", headers=response_headers)
 
     else:
@@ -155,7 +155,7 @@ def user_get_usage(token: str,
 def user_subscription_with_client_type(
     token: str,
     request: Request,
-    client_type: str = Path(..., regex="sing-box|clash-meta|clash|outline|v2ray|v2ray-custom"),
+    client_type: str = Path(..., regex="sing-box|clash-meta|clash|outline|v2ray|v2ray-json"),
     db: Session = Depends(get_db),
 ):
     """
@@ -215,9 +215,9 @@ def user_subscription_with_client_type(
     elif client_type == "outline":
         conf = generate_subscription(user=user, config_format="outline", as_base64=False)
         return Response(content=conf, media_type="application/json", headers=response_headers)
-    
-    elif client_type == "v2ray-custom":
-        conf = generate_subscription(user=user, config_format="v2ray-custom", as_base64=False)
+
+    elif client_type == "v2ray-json":
+        conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False)
         return Response(content=conf, media_type="application/json", headers=response_headers)
 
     else:
