@@ -194,8 +194,9 @@ class ProxyHost(Base):
     is_disabled = Column(Boolean, nullable=True, default=False)
     sockopt = Column(JSON, nullable=True)
     proxy_outbound = Column(JSON, nullable=True)
-    mux_enable = Column(Boolean, nullable=False, default=False, server_default=text("false"))
+    mux_enable = Column(Boolean, nullable=False, default=False, server_default='0')
     fragment_setting = Column(String(100), nullable=True)
+
 
 class System(Base):
     __tablename__ = "system"
