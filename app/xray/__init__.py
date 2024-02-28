@@ -60,6 +60,10 @@ def hosts(storage: dict):
                     if host.security == ProxyHostSecurity.inbound_default
                     else host.security.value,
                     "allowinsecure":host.allowinsecure,
+                    "sockopt": host.sockopt,
+                    "proxy_outbound": host.proxy_outbound,
+                    "mux_enable": host.mux_enable,
+                    "fragment_setting": host.fragment_setting
                 } for host in inbound_hosts if not host.is_disabled
             ]
 

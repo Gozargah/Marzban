@@ -5,7 +5,7 @@ from rich.console import Console
 
 from app.db import GetDB
 from app.models.user import UserResponse
-from app.utils.share import generate_subscription
+from app.subscription.share import generate_subscription
 
 from . import utils
 
