@@ -367,8 +367,7 @@ class V2rayJsonConfig(str):
 
     @staticmethod
     def stream_setting_config(network=None, security=None,
-                              network_setting=None, tls_settings=None,
-                              sockopt={}):
+                              network_setting=None, tls_settings=None):
 
         streamSettings = {}
 
@@ -393,9 +392,6 @@ class V2rayJsonConfig(str):
             streamSettings["tcpSettings"] = network_setting
         elif network == "quic":
             streamSettings["quicSettings"] = network_setting
-
-        if sockopt:
-            streamSettings["sockopt"] = sockopt
 
         return streamSettings
 
@@ -481,8 +477,7 @@ class V2rayJsonConfig(str):
                             pbk='',
                             sid='',
                             headers='',
-                            ais='',
-                            sockopt={}
+                            ais=''
                             ):
 
         if net == "ws":
@@ -510,8 +505,7 @@ class V2rayJsonConfig(str):
 
         streamSettings = self.stream_setting_config(network=net, security=tls,
                                                     network_setting=network_setting,
-                                                    tls_settings=tls_settings,
-                                                    sockopt=sockopt)
+                                                    tls_settings=tls_settings)
 
         return streamSettings
 
@@ -522,7 +516,6 @@ class V2rayJsonConfig(str):
         port = inbound['port']
         tls = (inbound['tls'])
         headers = inbound['header_type']
-        sockopt = inbound.get('sockopt', {})
 
         outbound = {
             "tag": remark,
@@ -572,8 +565,7 @@ class V2rayJsonConfig(str):
             pbk=inbound.get('pbk', ''),
             sid=inbound.get('sid', ''),
             headers=headers,
-            ais=inbound.get('ais', ''),
-            sockopt=sockopt
+            ais=inbound.get('ais', '')
         )
 
         outbound["mux"] = self.mux_config
