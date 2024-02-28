@@ -214,8 +214,8 @@ class V2rayJsonConfig(str):
         json_template["remarks"] = remarks
         json_template["outbounds"].insert(0, (outbound_data))
         if proxy_outbound:
-            json_template["outbounds"].insert(0, (proxy_outbound))
-        self.config.append(json_template)
+            json_template["outbounds"].append(proxy_outbound)
+        self.config.insert(0, (json_template))
 
     def render(self):
         return json.dumps(self.config, indent=4)
