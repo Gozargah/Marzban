@@ -214,8 +214,8 @@ class V2rayJsonConfig(str):
         json_template["remarks"] = remarks
         json_template["outbounds"].insert(0, (outbound_data))
         if proxy_outbound:
-            json_template["outbounds"].insert(0, (proxy_outbound))
-        self.config.append(json_template)
+            json_template["outbounds"].append(proxy_outbound)
+        self.config.insert(0, (json_template))
 
     def render(self):
         return json.dumps(self.config, indent=4)
@@ -493,7 +493,7 @@ class V2rayJsonConfig(str):
         elif net == "kpc":
             network_setting = self.kpc_config(
                 path=path, host=host, header=headers)
-        elif net == "tcp":
+        elif net == "tcp" and headers == "http":
             network_setting = self.tcp_http_config(path=path, host=host)
         elif net == "quic":
             network_setting = self.quic_config(
