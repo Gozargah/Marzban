@@ -209,12 +209,10 @@ class V2rayJsonConfig(str):
         mux_json = json.loads(mux_template)
         self.mux_config = mux_json["v2ray"]
 
-    def add_outbound(self, remarks, outbound_data, proxy_outbound):
+    def add_outbound(self, remarks, outbound_data):
         json_template = json.loads(self.template)
         json_template["remarks"] = remarks
         json_template["outbounds"].insert(0, (outbound_data))
-        if proxy_outbound:
-            json_template["outbounds"].append(proxy_outbound)
         self.config.insert(0, (json_template))
 
     def render(self):
@@ -581,5 +579,4 @@ class V2rayJsonConfig(str):
         outbound["mux"] = self.mux_config
         outbound["mux"]["enabled"] = bool(inbound.get('mux_enable', False))
 
-        self.add_outbound(remarks=remark, outbound_data=outbound,
-                          proxy_outbound=inbound.get('proxy_outbound', ''))
+        self.add_outbound(remarks=remark, outbound_data=outbound)

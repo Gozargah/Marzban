@@ -326,8 +326,6 @@ def process_inbounds_and_tags(
                         "fp": host["fingerprint"] or inbound.get("fp", ""),
                         "ais": host["allowinsecure"]
                         or inbound.get("allowinsecure", ""),
-                        "sockopt": host["sockopt"],
-                        "proxy_outbound": host["proxy_outbound"],
                         "mux_enable": host["mux_enable"],
                         "fragment_setting": host["fragment_setting"]
                     }

@@ -192,8 +192,6 @@ class ProxyHost(Base):
     inbound = relationship("ProxyInbound", back_populates="hosts")
     allowinsecure = Column(Boolean, nullable=True)
     is_disabled = Column(Boolean, nullable=True, default=False)
-    sockopt = Column(JSON, nullable=True)
-    proxy_outbound = Column(JSON, nullable=True)
     mux_enable = Column(Boolean, nullable=False, default=False, server_default='0')
     fragment_setting = Column(String(100), nullable=True)
 
