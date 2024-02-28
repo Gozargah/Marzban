@@ -287,24 +287,27 @@ class V2rayJsonConfig(str):
 
     @staticmethod
     def tcp_http_config(path=None, host=None):
-
         tcpSettings = {}
-        tcpSettings["header"] = {}
-        tcpSettings["request"] = {}
-        tcpSettings["request"]["headers"] = {}
 
-        tcpSettings["header"]["type"] = "http"
-        tcpSettings["request"]["version"] = "1.1"
-        tcpSettings["request"]["method"] = "GET"
-        if path:
-            tcpSettings["request"]["path"] = [path]
-        if host:
-            tcpSettings["request"]["headers"]["Host"] = [host]
+        if any((path, host)):
+            tcpSettings["header"] = {}
+            tcpSettings["header"]["type"] = "http"
 
-        tcpSettings["request"]["headers"]["User-Agent"] = ""
-        tcpSettings["request"]["headers"]["Accept-Encoding"] = ["gzip, deflate"],
-        tcpSettings["request"]["headers"]["Connection"] = "keep-alive"
-        tcpSettings["request"]["headers"]["Pragma"] = "no-cache"
+            tcpSettings["request"] = {}
+            tcpSettings["request"]["version"] = "1.1"
+
+            tcpSettings["request"]["headers"] = {}
+            tcpSettings["request"]["method"] = "GET"
+            tcpSettings["request"]["headers"]["User-Agent"] = ""
+            tcpSettings["request"]["headers"]["Accept-Encoding"] = ["gzip, deflate"],
+            tcpSettings["request"]["headers"]["Connection"] = "keep-alive"
+            tcpSettings["request"]["headers"]["Pragma"] = "no-cache"
+
+            if path:
+                tcpSettings["request"]["path"] = [path]
+
+            if host:
+                tcpSettings["request"]["headers"]["Host"] = [host]
 
         return tcpSettings
 
@@ -493,7 +496,7 @@ class V2rayJsonConfig(str):
         elif net == "kpc":
             network_setting = self.kpc_config(
                 path=path, host=host, header=headers)
-        elif net == "tcp" and headers == "http":
+        elif net == "tcp":
             network_setting = self.tcp_http_config(path=path, host=host)
         elif net == "quic":
             network_setting = self.quic_config(
