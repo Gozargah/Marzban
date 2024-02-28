@@ -3,6 +3,7 @@ from app.templates import render_template
 
 from config import SINGBOX_SUBSCRIPTION_TEMPLATE, MUX_TEMPLATE
 
+
 class SingBoxConfiguration(str):
 
     def __init__(self):

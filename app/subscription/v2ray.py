@@ -209,10 +209,10 @@ class V2rayJsonConfig(str):
         mux_json = json.loads(mux_template)
         self.mux_config = mux_json["v2ray"]
 
-    def add_outbound(self, remarks, outbound_data):
+    def add_config(self, remarks, outbounds):
         json_template = json.loads(self.template)
         json_template["remarks"] = remarks
-        json_template["outbounds"].insert(0, (outbound_data))
+        json_template["outbounds"] = outbounds + json_template["outbounds"]
         self.config.insert(0, (json_template))
 
     def render(self):
@@ -367,7 +367,8 @@ class V2rayJsonConfig(str):
 
     @staticmethod
     def stream_setting_config(network=None, security=None,
-                              network_setting=None, tls_settings=None):
+                              network_setting=None, tls_settings=None,
+                              sockopt=None):
 
         streamSettings = {}
 
@@ -392,6 +393,9 @@ class V2rayJsonConfig(str):
             streamSettings["tcpSettings"] = network_setting
         elif network == "quic":
             streamSettings["quicSettings"] = network_setting
+
+        if sockopt:
+            streamSettings['sockopt'] = sockopt
 
         return streamSettings
 
@@ -466,6 +470,22 @@ class V2rayJsonConfig(str):
 
         return settings
 
+    def make_fragment_outbound(self, packets="tlshello", length="100-200", interval="10-20"):
+
+        outbound = {
+            "tag": "fragment_out",
+            "protocol": "freedom",
+            "settings": {
+                "fragment": {
+                    "packets": packets,
+                    "length": length,
+                    "interval": interval
+                }
+            }
+        }
+
+        return outbound
+
     def make_stream_setting(self,
                             net='',
                             path='',
@@ -477,7 +497,8 @@ class V2rayJsonConfig(str):
                             pbk='',
                             sid='',
                             headers='',
-                            ais=''
+                            ais='',
+                            dialer_proxy=''
                             ):
 
         if net == "ws":
@@ -503,9 +524,17 @@ class V2rayJsonConfig(str):
         else:
             tls_settings = None
 
+        if dialer_proxy:
+            sockopt = {
+                "dialerProxy": dialer_proxy
+            }
+        else:
+            sockopt = None
+
         streamSettings = self.stream_setting_config(network=net, security=tls,
                                                     network_setting=network_setting,
-                                                    tls_settings=tls_settings)
+                                                    tls_settings=tls_settings,
+                                                    sockopt=sockopt)
 
         return streamSettings
 
@@ -516,6 +545,7 @@ class V2rayJsonConfig(str):
         port = inbound['port']
         tls = (inbound['tls'])
         headers = inbound['header_type']
+        fragment = inbound['fragment_setting']
 
         outbound = {
             "tag": remark,
@@ -554,6 +584,18 @@ class V2rayJsonConfig(str):
                                                method=settings['method'])
             outbound["settings"] = settings
 
+        outbounds = [outbound]
+        dialer_proxy = ''
+
+        if fragment:
+            try:
+                length, interval, packets = fragment.split(',')
+                fragment_outbound = self.make_fragment_outbound(packets, length, interval)
+                outbounds.append(fragment_outbound)
+                dialer_proxy = fragment_outbound['tag']
+            except ValueError:
+                pass
+
         outbound["streamSettings"] = self.make_stream_setting(
             net=net,
             tls=tls,
@@ -565,10 +607,11 @@ class V2rayJsonConfig(str):
             pbk=inbound.get('pbk', ''),
             sid=inbound.get('sid', ''),
             headers=headers,
-            ais=inbound.get('ais', '')
+            ais=inbound.get('ais', ''),
+            dialer_proxy=dialer_proxy
         )
 
         outbound["mux"] = self.mux_config
         outbound["mux"]["enabled"] = bool(inbound.get('mux_enable', False))
 
-        self.add_outbound(remarks=remark, outbound_data=outbound)
+        self.add_config(remarks=remark, outbounds=outbounds)

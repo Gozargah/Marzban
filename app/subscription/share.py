@@ -145,7 +145,7 @@ def generate_outline_subscription(
     )
 
 
-def generate_v2ray_custom_subscription(
+def generate_v2ray_json_subscription(
     proxies: dict, inbounds: dict, extra_data: dict
 ) -> str:
     conf = V2rayJsonConfig()
@@ -178,7 +178,7 @@ def generate_subscription(
     elif config_format == "outline":
         config = generate_outline_subscription(**kwargs)
     elif config_format == "v2ray-json":
-        config = generate_v2ray_custom_subscription(**kwargs)
+        config = generate_v2ray_json_subscription(**kwargs)
     else:
         raise ValueError(f'Unsupported format "{config_format}"')
 
