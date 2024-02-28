@@ -493,7 +493,7 @@ class V2rayJsonConfig(str):
         elif net == "kpc":
             network_setting = self.kpc_config(
                 path=path, host=host, header=headers)
-        elif net == "tcp":
+        elif net == "tcp" and headers == "http":
             network_setting = self.tcp_http_config(path=path, host=host)
         elif net == "quic":
             network_setting = self.quic_config(
