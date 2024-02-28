@@ -96,6 +96,9 @@ def user_subscription(token: str,
         if LooseVersion(version_str) >= LooseVersion("1.8.16"):
             conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False)
             return Response(content=conf, media_type="application/json", headers=response_headers)
+        else:
+            conf = generate_subscription(user=user, config_format="v2ray", as_base64=True)
+            return Response(content=conf, media_type="application/json", headers=response_headers)
 
     else:
         conf = generate_subscription(user=user, config_format="v2ray", as_base64=True)
