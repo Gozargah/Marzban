@@ -148,7 +148,7 @@ class V2rayShareLink(str):
                spx='',
                ais='',
                fs="",
-              ):
+               ):
 
         payload = {
             "security": tls,
@@ -200,7 +200,7 @@ class V2rayShareLink(str):
         )
 
 
-class V2rayCostumConfig(str):
+class V2rayJsonConfig(str):
 
     def __init__(self):
         self.config = []

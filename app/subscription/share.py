@@ -148,7 +148,7 @@ def generate_outline_subscription(
 def generate_v2ray_custom_subscription(
     proxies: dict, inbounds: dict, extra_data: dict
 ) -> str:
-    conf = V2rayCostumConfig()
+    conf = V2rayJsonConfig()
 
     format_variables = setup_format_variables(extra_data)
     return process_inbounds_and_tags(
