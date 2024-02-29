@@ -31,7 +31,7 @@ def get_tls():
 @threaded_function
 def _add_user_to_inbound(api: XRayAPI, inbound_tag: str, account: Account):
     try:
-        api.add_inbound_user(tag=inbound_tag, user=account)
+        api.add_inbound_user(tag=inbound_tag, user=account, timeout=30)
     except (xray.exc.EmailExistsError, xray.exc.ConnectionError):
         pass
 
@@ -39,7 +39,7 @@ def _add_user_to_inbound(api: XRayAPI, inbound_tag: str, account: Account):
 @threaded_function
 def _remove_user_from_inbound(api: XRayAPI, inbound_tag: str, email: str):
     try:
-        api.remove_inbound_user(tag=inbound_tag, email=email)
+        api.remove_inbound_user(tag=inbound_tag, email=email, timeout=30)
     except (xray.exc.EmailNotFoundError, xray.exc.ConnectionError):
         pass
 
@@ -47,11 +47,11 @@ def _remove_user_from_inbound(api: XRayAPI, inbound_tag: str, email: str):
 @threaded_function
 def _alter_inbound_user(api: XRayAPI, inbound_tag: str, account: Account):
     try:
-        api.remove_inbound_user(tag=inbound_tag, email=account.email)
+        api.remove_inbound_user(tag=inbound_tag, email=account.email, timeout=30)
     except (xray.exc.EmailNotFoundError, xray.exc.ConnectionError):
         pass
     try:
-        api.add_inbound_user(tag=inbound_tag, user=account)
+        api.add_inbound_user(tag=inbound_tag, user=account, timeout=30)
     except (xray.exc.EmailExistsError, xray.exc.ConnectionError):
         pass
 
@@ -152,7 +152,10 @@ def remove_node(node_id: int):
         except Exception:
             pass
         finally:
-            del xray.nodes[node_id]
+            try:
+                del xray.nodes[node_id]
+            except KeyError:
+                pass
 
 
 def add_node(dbnode: "DBNode"):
