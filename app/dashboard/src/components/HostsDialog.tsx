@@ -823,6 +823,9 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                 <Text fontSize="xs" pr={5}>
                                   100-200,10-20,1-3
                                 </Text>
+                                <Text fontSize="xs" pr={5} pt="3">
+                                  {t("hostsDialog.fragment.info.attention")}
+                                </Text>
                               </PopoverContent>
                             </Portal>
                           </Popover>
