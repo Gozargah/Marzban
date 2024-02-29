@@ -99,9 +99,10 @@ class ReSTXRayNode:
 
         return config
 
-    def make_request(self, path, **params):
+    def make_request(self, path: str, timeout: int, **params):
         try:
-            res = self.session.post(self._rest_api_url + path, json={"session_id": self._session_id, **params})
+            res = self.session.post(self._rest_api_url + path, timeout=timeout,
+                                    json={"session_id": self._session_id, **params})
             data = res.json()
         except Exception as e:
             exc = NodeAPIError(0, str(e))
@@ -118,14 +119,14 @@ class ReSTXRayNode:
         if not self._session_id:
             return False
         try:
-            self.make_request("/ping")
+            self.make_request("/ping", timeout=3)
             return True
         except NodeAPIError:
             return False
 
     @property
     def started(self):
-        res = self.make_request("/")
+        res = self.make_request("/", timeout=3)
         return res.get('started', False)
 
     @property
@@ -151,15 +152,15 @@ class ReSTXRayNode:
         self._node_certfile = string_to_temp_file(self._node_cert)
         self.session.verify = self._node_certfile.name
 
-        res = self.make_request("/connect")
+        res = self.make_request("/connect", timeout=3)
         self._session_id = res['session_id']
 
     def disconnect(self):
-        self.make_request("/disconnect")
+        self.make_request("/disconnect", timeout=3)
         self._session_id = None
 
     def get_version(self):
-        res = self.make_request("/")
+        res = self.make_request("/", timeout=3)
         return res.get('core_version')
 
     def start(self, config: XRayConfig):
@@ -170,7 +171,7 @@ class ReSTXRayNode:
         json_config = config.to_json()
 
         try:
-            res = self.make_request("/start", config=json_config)
+            res = self.make_request("/start", timeout=10, config=json_config)
         except NodeAPIError as exc:
             if exc.detail == 'Xray is started already':
                 return self.restart(config)
@@ -197,7 +198,7 @@ class ReSTXRayNode:
         if not self.connected:
             self.connect()
 
-        self.make_request('/stop')
+        self.make_request('/stop', timeout=5)
         self._api = None
         self._started = False
 
@@ -208,7 +209,7 @@ class ReSTXRayNode:
         config = self._prepare_config(config)
         json_config = config.to_json()
 
-        res = self.make_request("/restart", config=json_config)
+        res = self.make_request("/restart", timeout=10, config=json_config)
 
         self._started = True
 
