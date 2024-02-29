@@ -47,6 +47,7 @@ import {
 import { useHosts } from "contexts/HostsContext";
 import { FC, useEffect, useState } from "react";
 import {
+  Controller,
   FormProvider,
   useFieldArray,
   useForm,
@@ -114,12 +115,10 @@ const hostsSchema = z.record(
       path: z.string().nullable(),
       sni: z.string().nullable(),
       host: z.string().nullable(),
-      sockopt: z.string().nullable(),
       mux_enable: z.boolean().default(false),
-      allowinsecure: z.boolean().default(false),
-      is_disabled: z.boolean().default(false),
+      allowinsecure: z.boolean().nullable().default(false),
+      is_disabled: z.boolean().default(true),
       fragment_setting: z.string().nullable(),
-      proxy_outbound: z.string().nullable(),
       security: z.string(),
       alpn: z.string(),
       fingerprint: z.string(),
@@ -172,12 +171,10 @@ const AccordionInbound: FC<AccordionInboundType> = ({
       path: null,
       address: "",
       remark: "",
-      sockopt: "",
       mux_enable: false,
       allowinsecure: false,
       is_disabled: false,
       fragment_setting: "",
-      proxy_outbound: "",
       security: "inbound_default",
       alpn: "",
       fingerprint: "",
@@ -188,6 +185,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
       toggleAccordion();
     }
   }, [accordionErrors]);
+
   return (
     <AccordionItem
       border="1px solid"
@@ -468,15 +466,24 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                     </Text>
 
                     <Container flex="1" px="0">
-                      <Switch
-                        mx="1.5"
-                        colorScheme="primary"
-                        {...form.register(
-                          hostKey + "." + index + ".is_disabled",
-                          {
-                            setValueAs: (s) => !!s,
-                          }
-                        )}
+                      <Controller
+                        control={form.control}
+                        name={`${hostKey}.${index}.is_disabled`}
+                        render={({ field }) => {
+                          return (
+                            <Switch
+                              mx="1.5"
+                              colorScheme="primary"
+                              {...field}
+                              value={undefined}
+                              isChecked={!field.value}
+                              onChange={(e) => {
+                                console.log(e.target.checked);
+                                field.onChange(!e.target.checked);
+                              }}
+                            />
+                          );
+                        }}
                       />
                       <Tooltip label="Delete" placement="top">
                         <IconButton
@@ -779,35 +786,6 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                       </FormControl>
 
                       <FormControl
-                        height="66px"
-                        isInvalid={
-                          !!(accordionErrors && accordionErrors[index]?.sockopt)
-                        }
-                      >
-                        <FormLabel
-                          display="flex"
-                          pb={1}
-                          alignItems="center"
-                          gap={1}
-                          justifyContent="space-between"
-                          m="0"
-                        >
-                          <span>{t("hostsDialog.sockopt")}</span>
-                        </FormLabel>
-                        <Input
-                          size="sm"
-                          borderRadius="4px"
-                          placeholder="Sockopt"
-                          {...form.register(hostKey + "." + index + ".sockopt")}
-                        />
-                        {accordionErrors && accordionErrors[index]?.sockopt && (
-                          <Error>
-                            {accordionErrors[index]?.sockopt?.message}
-                          </Error>
-                        )}
-                      </FormControl>
-
-                      <FormControl
                         isInvalid={
                           !!(
                             accordionErrors &&
@@ -858,56 +836,6 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             </Error>
                           )}
                       </FormControl>
-
-                      <FormControl
-                        isInvalid={
-                          !!(
-                            accordionErrors &&
-                            accordionErrors[index]?.proxy_outbound
-                          )
-                        }
-                      >
-                        <FormLabel
-                          display="flex"
-                          pb={1}
-                          alignItems="center"
-                          gap={1}
-                          justifyContent="space-between"
-                          m="0"
-                        >
-                          <span>{t("hostsDialog.proxyOutbound")}</span>
-
-                          <Popover isLazy placement="right">
-                            <PopoverTrigger>
-                              <InfoIcon />
-                            </PopoverTrigger>
-                            <Portal>
-                              <PopoverContent p={2}>
-                                <PopoverArrow />
-                                <PopoverCloseButton />
-                                <Text fontSize="xs" pr={5}>
-                                  {t("hostsDialog.proxyOutbound.info")}
-                                </Text>
-                              </PopoverContent>
-                            </Portal>
-                          </Popover>
-                        </FormLabel>
-                        <Input
-                          size="sm"
-                          borderRadius="4px"
-                          placeholder="Fragment settings by pattern"
-                          {...form.register(
-                            hostKey + "." + index + ".proxy_outbound"
-                          )}
-                        />
-                        {accordionErrors &&
-                          accordionErrors[index]?.proxy_outbound && (
-                            <Error>
-                              {accordionErrors[index]?.proxy_outbound?.message}
-                            </Error>
-                          )}
-                      </FormControl>
-
                       <FormControl
                         isInvalid={
                           !!(
