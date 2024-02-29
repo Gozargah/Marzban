@@ -17,8 +17,9 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.drop_column('hosts', 'proxy_outbound')
-    op.drop_column('hosts', 'sockopt')
+		with op.batch_alter_table('hosts') as batch_op:
+			batch_op.drop_column('proxy_outbound')
+			batch_op.drop_column('sockopt')
 
 
 def downgrade() -> None:
