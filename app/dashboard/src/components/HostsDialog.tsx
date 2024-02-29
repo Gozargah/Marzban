@@ -814,6 +814,15 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                 <Text fontSize="xs" pr={5}>
                                   {t("hostsDialog.fragment.info")}
                                 </Text>
+                                <Text fontSize="xs" pr={5} pt={2} pb={1}>
+                                  {t("hostsDialog.fragment.info.examples")}
+                                </Text>
+                                <Text fontSize="xs" pr={5}>
+                                  100-200,10-20,tlshello
+                                </Text>
+                                <Text fontSize="xs" pr={5}>
+                                  100-200,10-20,1-3
+                                </Text>
                               </PopoverContent>
                             </Portal>
                           </Popover>
@@ -833,28 +842,6 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                 accordionErrors[index]?.fragment_setting
                                   ?.message
                               }
-                            </Error>
-                          )}
-                      </FormControl>
-                      <FormControl
-                        isInvalid={
-                          !!(
-                            accordionErrors &&
-                            accordionErrors[index]?.mux_enable
-                          )
-                        }
-                      >
-                        <Checkbox
-                          {...form.register(
-                            hostKey + "." + index + ".mux_enable"
-                          )}
-                        >
-                          <FormLabel>{t("hostsDialog.muxEnable")}</FormLabel>
-                        </Checkbox>
-                        {accordionErrors &&
-                          accordionErrors[index]?.mux_enable && (
-                            <Error>
-                              {accordionErrors[index]?.mux_enable?.message}
                             </Error>
                           )}
                       </FormControl>
@@ -883,6 +870,28 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                               </Error>
                             )}
                         </Checkbox>
+                      </FormControl>
+                      <FormControl
+                        isInvalid={
+                          !!(
+                            accordionErrors &&
+                            accordionErrors[index]?.mux_enable
+                          )
+                        }
+                      >
+                        <Checkbox
+                          {...form.register(
+                            hostKey + "." + index + ".mux_enable"
+                          )}
+                        >
+                          <FormLabel>{t("hostsDialog.muxEnable")}</FormLabel>
+                        </Checkbox>
+                        {accordionErrors &&
+                          accordionErrors[index]?.mux_enable && (
+                            <Error>
+                              {accordionErrors[index]?.mux_enable?.message}
+                            </Error>
+                          )}
                       </FormControl>
                     </VStack>
                   </AccordionPanel>

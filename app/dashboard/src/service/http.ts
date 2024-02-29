@@ -1,4 +1,4 @@
-import { FetchOptions, $fetch as ohMyFetch } from "ohmyfetch";
+import { FetchOptions, $fetch as ohMyFetch } from "ofetch";
 import { getAuthToken } from "utils/authStorage";
 
 export const $fetch = ohMyFetch.create({
