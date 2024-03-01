@@ -307,6 +307,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   >
                     <option></option>
                     <option>active</option>
+                    <option>on_hold</option>
                     <option>disabled</option>
                     <option>limited</option>
                     <option>expired</option>
@@ -545,6 +546,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 >
                   <option></option>
                   <option>active</option>
+                  <option>on_hold</option>
                   <option>disabled</option>
                   <option>limited</option>
                   <option>expired</option>
