@@ -14,14 +14,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { DeleteIcon } from "components/common/user/DeleteUserModal";
 import { StatusBadge } from "components/shared/StatusBadge";
 import { NodeSchema, NodeType } from "contexts/NodesContext";
-import { Status } from "core/types/User";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { Status } from "types/User";
 import { generateErrorMessage, generateSuccessMessage } from "utils/toastHandler";
 
+import { queryClient } from "config/react-query";
 import { useState } from "react";
 import { getGetNodesQueryKey, useModifyNode } from "services/api";
-import { queryClient } from "utils/react-query";
 import { DeleteNodeModal } from "./DeleteNodeModal";
 import { NodeErrorStatus } from "./NodeErrorStatus";
 import { NodeForm } from "./NodeForm";

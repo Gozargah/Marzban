@@ -1,11 +1,11 @@
 import { Alert, AlertIcon, Box, Button, HStack, Text } from "@chakra-ui/react";
 import { ReloadIcon } from "components/common/user/Filters";
-import { Status } from "core/types/User";
+import { Status } from "types/User";
 
+import { queryClient } from "config/react-query";
 import { NodeType } from "contexts/NodesContext";
 import { useTranslation } from "react-i18next";
 import { getGetNodesQueryKey, useReconnectNode } from "services/api";
-import { queryClient } from "utils/react-query";
 
 interface Props {
   node: NodeType;

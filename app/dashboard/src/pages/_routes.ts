@@ -1,20 +1,42 @@
-﻿import { redirect } from "react-router-dom";
-import { sharedRoutes } from "router/shared";
+﻿import { queryClient } from "config/react-query";
+import { RouteObject, redirect } from "react-router-dom";
+import { getGetCurrentAdminQueryOptions } from "services/api";
 import { isValidToken } from "utils/authStorage";
 
-export const authRoutes = [
-  ...sharedRoutes,
+const fetchAdminLoader = () => {
+  if (!isValidToken()) return false;
+  console.log("fetching admin loader");
+  return queryClient
+    .getQueryCache()
+    .build(queryClient, getGetCurrentAdminQueryOptions())
+    .fetch()
+    .catch(() => {
+      return redirect("/login");
+    });
+};
+
+export const routes: RouteObject[] = [
+  {
+    path: "/login",
+    lazy: async () => {
+      let { Login } = await import("pages/Login");
+      return { Component: Login };
+    },
+  },
   {
     path: "/",
-    loader: async () => {
-      const isAuthenticated = isValidToken();
-      return isAuthenticated ? redirect("/login") : null;
-    },
+    loader: fetchAdminLoader,
     lazy: async () => {
       let { ConsoleLayout } = await import("components/layouts/ConsoleLayout");
       return { Component: ConsoleLayout };
     },
     children: [
+      {
+        path: "/",
+        loader: () => {
+          return redirect("/users");
+        },
+      },
       {
         path: "/users",
         lazy: async () => {

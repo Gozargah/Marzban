@@ -1,7 +1,7 @@
 import { chakra, ChakraComponent } from "@chakra-ui/react";
 import { ClockIcon, ExclamationCircleIcon, NoSymbolIcon, WifiIcon } from "@heroicons/react/24/outline";
 import { ForwardRefExoticComponent, SVGProps } from "react";
-import { DataLimitResetStrategy } from "core/types/User";
+import { DataLimitResetStrategy } from "types/User";
 
 const iconProps = {
   baseStyle: {

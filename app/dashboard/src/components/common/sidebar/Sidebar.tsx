@@ -210,7 +210,7 @@ const SidebarContent = () => {
             {data && data.username}
           </Text>
           <Tooltip label={t("header.logout")}>
-            <IconButton aria-label="sign out" color="gray.400" size="sm" variant="ghost">
+            <IconButton as={Link} to="/login" aria-label="sign out" color="gray.400" size="sm" variant="ghost">
               <ArrowRightStartOnRectangleIcon width="18px" />
             </IconButton>
           </Tooltip>

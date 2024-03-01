@@ -14,11 +14,11 @@ import {
 } from "@chakra-ui/react";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { Icon } from "components/elements/Icon";
+import { queryClient } from "config/react-query";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { getGetUsersQueryKey, useResetUserDataUsage } from "services/api";
-import { queryClient } from "utils/react-query";
 
 export const ResetIcon = chakra(ArrowPathIcon, {
   baseStyle: {

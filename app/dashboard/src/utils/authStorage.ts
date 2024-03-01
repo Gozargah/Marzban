@@ -6,7 +6,6 @@ export const getAuthToken = () => {
 
 export const isValidToken = () => {
   let token = getAuthToken();
-  console.log("checking", token);
   let decode_token = token && jwtDecode(token);
   return !!decode_token;
 };

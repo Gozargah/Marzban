@@ -13,10 +13,10 @@ import {
 } from "@chakra-ui/react";
 import { DeleteIcon } from "components/common/user/DeleteUserModal";
 import { Icon } from "components/elements/Icon";
+import { queryClient } from "config/react-query";
 import { NodeType } from "contexts/NodesContext";
 import { Trans, useTranslation } from "react-i18next";
 import { getGetNodesQueryKey, useRemoveNode } from "services/api";
-import { queryClient } from "utils/react-query";
 import { generateErrorMessage, generateSuccessMessage } from "utils/toastHandler";
 
 interface Props {

@@ -6,8 +6,8 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { generateErrorMessage, generateSuccessMessage } from "utils/toastHandler";
 
+import { queryClient } from "config/react-query";
 import { getGetNodesQueryKey, useAddNode } from "services/api";
-import { queryClient } from "utils/react-query";
 import { NodeCertificate } from "./NodeCertificate";
 import { NodeForm } from "./NodeForm";
 

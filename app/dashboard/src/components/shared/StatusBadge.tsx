@@ -1,9 +1,9 @@
 import { Badge, Text } from "@chakra-ui/react";
 
 import { statusColors } from "config/user-settings";
-import { Status as UserStatusType } from "core/types/User";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
+import { Status as UserStatusType } from "types/User";
 import { relativeExpiryDate } from "utils/dateFormatter";
 
 type UserStatusProps = {

@@ -14,11 +14,11 @@ import {
 } from "@chakra-ui/react";
 import { DocumentMinusIcon } from "@heroicons/react/24/outline";
 import { Icon } from "components/elements/Icon";
+import { queryClient } from "config/react-query";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { getGetUsersQueryKey, useResetUsersDataUsage } from "services/api";
-import { queryClient } from "utils/react-query";
 
 export const ResetIcon = chakra(DocumentMinusIcon, {
   baseStyle: {

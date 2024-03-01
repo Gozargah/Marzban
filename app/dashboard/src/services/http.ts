@@ -14,7 +14,7 @@ export const fetcher = <T = any>(url: string, ops: FetchOptions<"json"> = {}) =>
     };
   }
   return $fetch<T>(url, ops).catch((e) => {
-    if (e.status) {
+    if (e.status === 401) {
       const url = new URL(window.location.href);
       if (url.hash !== "#/login") {
         url.hash = "#/login";

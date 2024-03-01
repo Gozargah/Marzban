@@ -39,9 +39,9 @@ import { convertDateFormat } from "components/common/user/OnlineBadge";
 import { Icon } from "components/elements/Icon";
 import { Input } from "components/elements/Input";
 import { RadioGroup } from "components/elements/RadioGroup";
+import { queryClient } from "config/react-query";
 import { resetStrategy } from "config/user-settings";
 import { FilterUsageType, useDashboard } from "contexts/DashboardContext";
-import { ProxyKeys, ProxyType, UserCreate, UserInbounds } from "core/types/User";
 import dayjs from "dayjs";
 import { FC, useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
@@ -60,8 +60,8 @@ import {
   useModifyUser,
 } from "services/api";
 import { ErrorType } from "services/http";
+import { ProxyKeys, ProxyType, UserCreate, UserInbounds } from "types/User";
 import { relativeExpiryDate } from "utils/dateFormatter";
-import { queryClient } from "utils/react-query";
 import { z } from "zod";
 import { DeleteIcon } from "./DeleteUserModal";
 
