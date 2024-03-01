@@ -15,13 +15,13 @@ import {
   useColorMode,
 } from "@chakra-ui/react";
 import { ChartPieIcon } from "@heroicons/react/24/outline";
+import { Icon } from "components/elements/Icon";
 import { FilterUsageType, useDashboard } from "contexts/DashboardContext";
 import dayjs from "dayjs";
 import { FC, Suspense, useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import { useTranslation } from "react-i18next";
-import { useGetNodesUsage } from "core/services/api";
-import { Icon } from "components/tools/Icon";
+import { useGetNodesUsage } from "services/api";
 import { UsageFilter, createUsageConfig } from "./UsageFilter";
 
 const UsageIcon = chakra(ChartPieIcon, {

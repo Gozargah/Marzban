@@ -1,10 +1,10 @@
-import { BoxProps, chakra, HStack, Text } from "@chakra-ui/react";
+import { BoxProps, HStack, Text, chakra } from "@chakra-ui/react";
 import { ChartBarIcon, ChartPieIcon, UsersIcon } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { useGetSystemStats } from "core/services/api";
-import { formatBytes, numberWithCommas } from "core/utils/formatByte";
+import { useGetSystemStats } from "services/api";
+import { formatBytes, numberWithCommas } from "utils/formatByte";
 import { StatisticCard } from "./StatisticCard";
 
 const TotalUsersIcon = chakra(UsersIcon, {

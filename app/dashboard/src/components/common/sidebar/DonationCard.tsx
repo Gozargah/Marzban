@@ -1,6 +1,6 @@
 import { Alert, AlertDescription, AlertIcon, AlertTitle, Button, CloseButton, HStack, VStack } from "@chakra-ui/react";
 import { FlagIcon } from "@heroicons/react/24/outline";
-import { DONATION_URL } from "core/data/project";
+import { DONATION_URL } from "config/project";
 import differenceInDays from "date-fns/differenceInDays";
 import isValid from "date-fns/isValid";
 import { useState } from "react";

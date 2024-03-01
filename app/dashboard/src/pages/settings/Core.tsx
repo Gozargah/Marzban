@@ -1,6 +1,6 @@
 import { Box, VStack } from "@chakra-ui/react";
-import { Footer } from "@/components/layouts/Footer";
-import { Header } from "@/components/layouts/Header";
+import { Footer } from "components/layouts/Footer";
+import { Header } from "components/layouts/Header";
 import { FC } from "react";
 
 export const CoreSettings: FC = () => {

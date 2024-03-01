@@ -11,11 +11,11 @@ import {
   Tooltip,
   VStack,
 } from "@chakra-ui/react";
+import { Input } from "components/elements/Input";
 import { NodeType } from "contexts/NodesContext";
 import { ReactNode } from "react";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Input } from "components/tools/Input";
 
 interface Props {
   isLoading: boolean;

@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
 import { useDashboard } from "../../../contexts/DashboardContext";
-import { Icon } from "../../tools/Icon";
+import { Icon } from "../../elements/Icon";
 
 import { AddNodeForm } from "./AddNodeForm";
 import { NodeAccordion } from "./NodeAccordion";

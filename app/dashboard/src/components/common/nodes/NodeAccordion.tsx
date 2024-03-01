@@ -11,20 +11,20 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { NodeSchema, NodeType } from "contexts/NodesContext";
-import { useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
-import { Status } from "core/types/User";
-import { generateErrorMessage, generateSuccessMessage } from "core/utils/toastHandler";
 import { DeleteIcon } from "components/common/user/DeleteUserModal";
 import { StatusBadge } from "components/shared/StatusBadge";
+import { NodeSchema, NodeType } from "contexts/NodesContext";
+import { Status } from "core/types/User";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { generateErrorMessage, generateSuccessMessage } from "utils/toastHandler";
 
-import { getGetNodesQueryKey, useModifyNode } from "core/services/api";
+import { useState } from "react";
+import { getGetNodesQueryKey, useModifyNode } from "services/api";
+import { queryClient } from "utils/react-query";
+import { DeleteNodeModal } from "./DeleteNodeModal";
 import { NodeErrorStatus } from "./NodeErrorStatus";
 import { NodeForm } from "./NodeForm";
-import { queryClient } from "core/utils/react-query";
-import { DeleteNodeModal } from "./DeleteNodeModal";
-import { useState } from "react";
 
 interface Props {
   node: NodeType;

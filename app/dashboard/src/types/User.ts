@@ -1,4 +1,4 @@
-import { UserResponse } from "core/services/api";
+import { UserResponse } from "services/api";
 
 export type Status = "active" | "disabled" | "limited" | "expired" | "on_hold" | "error" | "connecting" | "connected";
 export type ProxyKeys = ("vmess" | "vless" | "trojan" | "shadowsocks")[];

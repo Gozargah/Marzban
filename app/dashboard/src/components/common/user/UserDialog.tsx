@@ -34,9 +34,14 @@ import {
 import { ChartPieIcon, PencilIcon, UserPlusIcon } from "@heroicons/react/24/outline";
 import { InformationCircleIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { convertDateFormat } from "@/components/common/user/OnlineBadge";
-import { resetStrategy } from "core/data/user-settings";
+import { UsageFilter, createUsageConfig } from "components/common/nodes/UsageFilter";
+import { convertDateFormat } from "components/common/user/OnlineBadge";
+import { Icon } from "components/elements/Icon";
+import { Input } from "components/elements/Input";
+import { RadioGroup } from "components/elements/RadioGroup";
+import { resetStrategy } from "config/user-settings";
 import { FilterUsageType, useDashboard } from "contexts/DashboardContext";
+import { ProxyKeys, ProxyType, UserCreate, UserInbounds } from "core/types/User";
 import dayjs from "dayjs";
 import { FC, useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
@@ -53,17 +58,12 @@ import {
   useGetInbounds,
   useGetUserUsage,
   useModifyUser,
-} from "core/services/api";
-import { ErrorType } from "core/services/http";
-import { ProxyKeys, ProxyType, UserCreate, UserInbounds } from "core/types/User";
-import { relativeExpiryDate } from "core/utils/dateFormatter";
-import { queryClient } from "core/utils/react-query";
+} from "services/api";
+import { ErrorType } from "services/http";
+import { relativeExpiryDate } from "utils/dateFormatter";
+import { queryClient } from "utils/react-query";
 import { z } from "zod";
 import { DeleteIcon } from "./DeleteUserModal";
-import { Icon } from "components/tools/Icon";
-import { Input } from "components/tools/Input";
-import { RadioGroup } from "components/tools/RadioGroup";
-import { UsageFilter, createUsageConfig } from "components/common/nodes/UsageFilter";
 
 const AddUserIcon = chakra(UserPlusIcon, {
   baseStyle: {

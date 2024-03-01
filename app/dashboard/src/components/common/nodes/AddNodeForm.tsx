@@ -1,15 +1,15 @@
-import { AccordionButton, AccordionItem, AccordionPanel, chakra, Text, useToast } from "@chakra-ui/react";
+import { AccordionButton, AccordionItem, AccordionPanel, Text, chakra, useToast } from "@chakra-ui/react";
 import { PlusIcon as HeroIconPlusIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { NodeSchema, NodeType } from "contexts/NodesContext";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { generateErrorMessage, generateSuccessMessage } from "core/utils/toastHandler";
+import { generateErrorMessage, generateSuccessMessage } from "utils/toastHandler";
 
-import { getGetNodesQueryKey, useAddNode } from "core/services/api";
-import { NodeForm } from "./NodeForm";
+import { getGetNodesQueryKey, useAddNode } from "services/api";
+import { queryClient } from "utils/react-query";
 import { NodeCertificate } from "./NodeCertificate";
-import { queryClient } from "core/utils/react-query";
+import { NodeForm } from "./NodeForm";
 
 interface Props {
   toggleAccordion: VoidFunction;

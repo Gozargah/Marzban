@@ -1,4 +1,4 @@
-import { ProxyHostSecurity } from "core/types/ProxyHosts";
+import { ProxyHostSecurity } from "types/ProxyHosts";
 
 export const proxyHostSecurity: { title: string; value: ProxyHostSecurity }[] = [
   {

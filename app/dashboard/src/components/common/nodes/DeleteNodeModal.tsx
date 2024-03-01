@@ -11,13 +11,13 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react";
-import { Trans, useTranslation } from "react-i18next";
-import { getGetNodesQueryKey, useRemoveNode } from "core/services/api";
-import { generateErrorMessage, generateSuccessMessage } from "core/utils/toastHandler";
 import { DeleteIcon } from "components/common/user/DeleteUserModal";
-import { Icon } from "components/tools/Icon";
-import { queryClient } from "core/utils/react-query";
+import { Icon } from "components/elements/Icon";
 import { NodeType } from "contexts/NodesContext";
+import { Trans, useTranslation } from "react-i18next";
+import { getGetNodesQueryKey, useRemoveNode } from "services/api";
+import { queryClient } from "utils/react-query";
+import { generateErrorMessage, generateSuccessMessage } from "utils/toastHandler";
 
 interface Props {
   node: NodeType;

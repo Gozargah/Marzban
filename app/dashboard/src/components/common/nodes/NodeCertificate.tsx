@@ -2,7 +2,7 @@ import { Alert, AlertDescription, Button, HStack, IconButton, Tooltip } from "@c
 import ClipboardIcon from "@heroicons/react/24/outline/ClipboardIcon";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useGetNodeSettings } from "core/services/api";
+import { useGetNodeSettings } from "services/api";
 export function NodeCertificate() {
   const { t } = useTranslation();
   const { data } = useGetNodeSettings();

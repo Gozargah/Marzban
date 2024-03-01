@@ -1,6 +1,5 @@
 import {
   Button,
-  chakra,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -10,15 +9,16 @@ import {
   ModalOverlay,
   Spinner,
   Text,
+  chakra,
   useToast,
 } from "@chakra-ui/react";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import { Icon } from "components/elements/Icon";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { getGetUsersQueryKey, useResetUserDataUsage } from "core/services/api";
-import { queryClient } from "core/utils/react-query";
-import { Icon } from "components/tools/Icon";
+import { getGetUsersQueryKey, useResetUserDataUsage } from "services/api";
+import { queryClient } from "utils/react-query";
 
 export const ResetIcon = chakra(ArrowPathIcon, {
   baseStyle: {

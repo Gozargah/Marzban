@@ -1,6 +1,6 @@
 import { Box, BoxProps, Tooltip } from "@chakra-ui/react";
 import { FC } from "react";
-import { relativeExpiryDate } from "core/utils/dateFormatter";
+import { relativeExpiryDate } from "utils/dateFormatter";
 
 type UserStatusProps = {
   lastOnline?: string | null;

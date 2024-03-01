@@ -1,4 +1,5 @@
 import { joinPaths } from "@remix-run/router";
+import { flattenObject } from "utils/flattenKeys";
 
 import fa from "date-fns/locale/fa-IR";
 import ru from "date-fns/locale/ru";
@@ -9,7 +10,6 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import HttpApi from "i18next-http-backend";
 import { registerLocale } from "react-datepicker";
 import { initReactI18next } from "react-i18next";
-import { flattenObject } from "core/utils/flattenKeys";
 
 declare module "i18next" {
   interface CustomTypeOptions {

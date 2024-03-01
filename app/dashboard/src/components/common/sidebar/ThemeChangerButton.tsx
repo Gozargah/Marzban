@@ -1,7 +1,7 @@
 import { IconButton, Tooltip, chakra, useColorMode } from "@chakra-ui/react";
 import { MoonIcon, SunIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
-import { updateThemeColor } from "core/utils/themeColor";
+import { updateThemeColor } from "utils/themeColor";
 
 const iconProps = {
   baseStyle: {

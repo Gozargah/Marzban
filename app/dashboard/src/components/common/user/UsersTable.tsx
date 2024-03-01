@@ -5,7 +5,6 @@ import {
   AccordionPanel,
   Box,
   Button,
-  chakra,
   ExpandedIndex,
   HStack,
   IconButton,
@@ -23,8 +22,9 @@ import {
   Thead,
   Tooltip,
   Tr,
-  useBreakpointValue,
   VStack,
+  chakra,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import {
   CheckIcon,
@@ -36,17 +36,17 @@ import {
 } from "@heroicons/react/24/outline";
 import AddFileIcon from "assets/add_file.svg?react";
 import classNames from "classnames";
-import { resetStrategy, statusColors } from "core/data/user-settings";
+import { Pagination } from "components/elements/Pagination";
+import { StatusBadge } from "components/shared/StatusBadge";
+import { resetStrategy, statusColors } from "config/user-settings";
 import { useDashboard, useUsers } from "contexts/DashboardContext";
 import { t } from "i18next";
 import { FC, Fragment, useEffect, useState } from "react";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { useTranslation } from "react-i18next";
-import { UserResponse } from "core/services/api";
-import { formatBytes } from "core/utils/formatByte";
-import { getRelativeLastOnlineAt, humanizeRelativeLastOnline, OnlineBadge } from "./OnlineBadge";
-import { Pagination } from "components/tools/Pagination";
-import { StatusBadge } from "components/shared/StatusBadge";
+import { UserResponse } from "services/api";
+import { formatBytes } from "utils/formatByte";
+import { OnlineBadge, getRelativeLastOnlineAt, humanizeRelativeLastOnline } from "./OnlineBadge";
 
 const EmptySectionIcon = chakra(AddFileIcon);
 

@@ -1,5 +1,14 @@
+import { jwtDecode } from "jwt-decode";
+
 export const getAuthToken = () => {
   return localStorage.getItem("token");
+};
+
+export const isValidToken = () => {
+  let token = getAuthToken();
+  console.log("checking", token);
+  let decode_token = token && jwtDecode(token);
+  return !!decode_token;
 };
 
 export const setAuthToken = (token: string) => {

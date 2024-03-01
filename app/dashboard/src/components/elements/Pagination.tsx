@@ -3,7 +3,7 @@ import { ArrowLongLeftIcon, ArrowLongRightIcon } from "@heroicons/react/24/outli
 import { useDashboard } from "contexts/DashboardContext";
 import { ChangeEvent, FC } from "react";
 import { useTranslation } from "react-i18next";
-import { setUsersPerPageLimitSize } from "core/utils/userPreferenceStorage";
+import { setUsersPerPageLimitSize } from "utils/userPreferenceStorage";
 
 const PrevIcon = chakra(ArrowLongLeftIcon, {
   baseStyle: {

@@ -36,19 +36,19 @@ import {
 } from "@chakra-ui/react";
 import { InformationCircleIcon, LinkIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { proxyALPN, proxyFingerprint, proxyHostSecurity } from "core/data/proxies";
+import { proxyALPN, proxyFingerprint, proxyHostSecurity } from "config/proxies";
 import { FC, useEffect, useState } from "react";
 import { FormProvider, useFieldArray, useForm, useFormContext } from "react-hook-form";
 import { Trans, useTranslation } from "react-i18next";
-import { useGetHosts, useGetInbounds, useModifyHosts } from "core/services/api";
-import { ErrorType } from "core/services/http";
+import { useGetHosts, useGetInbounds, useModifyHosts } from "services/api";
+import { ErrorType } from "services/http";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
 import { z } from "zod";
 import { useDashboard } from "../../../contexts/DashboardContext";
+import { Icon } from "../../elements/Icon";
+import { Input as CustomInput } from "../../elements/Input";
 import { DeleteIcon } from "../user/DeleteUserModal";
-import { Icon } from "../../tools/Icon";
-import { Input as CustomInput } from "../../tools/Input";
 
 const Select = chakra(ChakraSelect, {
   baseStyle: {

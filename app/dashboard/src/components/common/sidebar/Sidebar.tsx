@@ -23,17 +23,17 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import LogoSVG from "assets/logo.svg?react";
-import { DonationCard } from "@/components/common/sidebar/DonationCard";
-import { GithubStar } from "@/components/common/sidebar/GithubStar";
-import { Language } from "@/components/common/sidebar/Language";
-import { ThemeChangerButton } from "@/components/common/sidebar/ThemeChangerButton";
-import { MenuItem, menu } from "core/data/menu";
-import { DONATION_URL } from "core/data/project";
+import { DonationCard } from "components/common/sidebar/DonationCard";
+import { GithubStar } from "components/common/sidebar/GithubStar";
+import { Language } from "components/common/sidebar/Language";
+import { ThemeChangerButton } from "components/common/sidebar/ThemeChangerButton";
+import { MenuItem, menu } from "config/menu";
+import { DONATION_URL } from "config/project";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { useGetCurrentAdmin } from "core/services/api";
+import { useGetCurrentAdmin } from "services/api";
 
 const LogoIcon = chakra(LogoSVG, {
   baseStyle: {

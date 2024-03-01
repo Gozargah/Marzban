@@ -1,5 +1,5 @@
 import { BoxProps, HStack, Link, Text } from "@chakra-ui/react";
-import { ORGANIZATION_URL, REPO_URL } from "core/data/project";
+import { ORGANIZATION_URL, REPO_URL } from "config/project";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC } from "react";
 

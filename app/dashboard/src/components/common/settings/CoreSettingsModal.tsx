@@ -2,7 +2,6 @@ import {
   Badge,
   Box,
   Button,
-  chakra,
   CircularProgress,
   FormControl,
   FormLabel,
@@ -17,6 +16,7 @@ import {
   ModalOverlay,
   Text,
   Tooltip,
+  chakra,
   useToast,
 } from "@chakra-ui/react";
 import { ArrowPathIcon, ArrowsPointingInIcon, ArrowsPointingOutIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
@@ -29,10 +29,10 @@ import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { ReadyState } from "react-use-websocket";
 import { useWebSocket } from "react-use-websocket/dist/lib/use-websocket";
-import { useGetCoreConfig, useGetCoreStats, useModifyCoreConfig, useRestartCore } from "core/services/api";
-import { ErrorType } from "core/services/http";
-import { getAuthToken } from "core/utils/authStorage";
-import { Icon } from "../../tools/Icon";
+import { useGetCoreConfig, useGetCoreStats, useModifyCoreConfig, useRestartCore } from "services/api";
+import { ErrorType } from "services/http";
+import { getAuthToken } from "utils/authStorage";
+import { Icon } from "../../elements/Icon";
 import { JsonEditor } from "../../shared/JsonEditor";
 
 export const MAX_NUMBER_OF_LOGS = 500;

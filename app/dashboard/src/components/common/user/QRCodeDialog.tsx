@@ -20,7 +20,7 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
 import { useDashboard } from "../../../contexts/DashboardContext";
-import { Icon } from "../../tools/Icon";
+import { Icon } from "../../elements/Icon";
 
 const QRCode = chakra(QRCodeCanvas);
 const NextIcon = chakra(ChevronRightIcon, {

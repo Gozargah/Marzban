@@ -1,19 +1,14 @@
-﻿import { jwtDecode } from "jwt-decode";
-import { createHashRouter, redirect } from "react-router-dom";
-import { getAuthToken } from "core/utils/authStorage";
-import { sharedRoutes } from "components/providers/routes/shared/shared.routes";
+﻿import { redirect } from "react-router-dom";
+import { sharedRoutes } from "router/shared";
+import { isValidToken } from "utils/authStorage";
 
-export const authRouter = createHashRouter([
+export const authRoutes = [
   ...sharedRoutes,
   {
     path: "/",
     loader: async () => {
-      let token = getAuthToken();
-      let decode_token = token && jwtDecode(token);
-
-      if (!decode_token) {
-        return redirect("/login");
-      } else return null;
+      const isAuthenticated = isValidToken();
+      return isAuthenticated ? redirect("/login") : null;
     },
     lazy: async () => {
       let { ConsoleLayout } = await import("components/layouts/ConsoleLayout");
@@ -69,4 +64,4 @@ export const authRouter = createHashRouter([
       },
     ],
   },
-]);
+];

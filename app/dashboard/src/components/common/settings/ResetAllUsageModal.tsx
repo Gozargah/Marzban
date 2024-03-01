@@ -1,6 +1,5 @@
 import {
   Button,
-  chakra,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -10,15 +9,16 @@ import {
   ModalOverlay,
   Spinner,
   Text,
+  chakra,
   useToast,
 } from "@chakra-ui/react";
 import { DocumentMinusIcon } from "@heroicons/react/24/outline";
+import { Icon } from "components/elements/Icon";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { getGetUsersQueryKey, useResetUsersDataUsage } from "core/services/api";
-import { queryClient } from "core/utils/react-query";
-import { Icon } from "components/tools/Icon";
+import { getGetUsersQueryKey, useResetUsersDataUsage } from "services/api";
+import { queryClient } from "utils/react-query";
 
 export const ResetIcon = chakra(DocumentMinusIcon, {
   baseStyle: {

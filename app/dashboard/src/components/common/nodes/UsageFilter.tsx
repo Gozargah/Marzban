@@ -26,8 +26,8 @@ import dayjs, { ManipulateType } from "dayjs";
 import { FC, useRef, useState } from "react";
 import ReactDatePicker from "react-datepicker";
 import { useTranslation } from "react-i18next";
-import { generateDistinctColors } from "core/utils/color";
-import { formatBytes } from "core/utils/formatByte";
+import { generateDistinctColors } from "utils/color";
+import { formatBytes } from "utils/formatByte";
 
 type DateType = Date | null;
 

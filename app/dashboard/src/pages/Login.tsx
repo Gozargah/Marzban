@@ -4,26 +4,26 @@ import {
   AlertIcon,
   Box,
   Button,
-  chakra,
   FormControl,
   HStack,
   Text,
   VStack,
+  chakra,
 } from "@chakra-ui/react";
 import { ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Logo from "assets/logo.svg?react";
-import { Footer } from "components/layouts/Footer";
-import { Input } from "components/tools/Input";
 import { Language } from "components/common/sidebar/Language";
 import { ThemeChangerButton } from "components/common/sidebar/ThemeChangerButton";
+import { Input } from "components/elements/Input";
+import { Footer } from "components/layouts/Footer";
 import { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAdminToken } from "core/services/api";
-import { ErrorType } from "core/services/http";
-import { removeAuthToken, setAuthToken } from "core/utils/authStorage";
+import { useAdminToken } from "services/api";
+import { ErrorType } from "services/http";
+import { removeAuthToken, setAuthToken } from "utils/authStorage";
 import { z } from "zod";
 
 const schema = z.object({

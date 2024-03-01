@@ -1,5 +1,5 @@
 import { useColorMode } from "@chakra-ui/react";
-import { REPO_URL } from "core/data/project";
+import { REPO_URL } from "config/project";
 import GitHubButton from "react-github-btn";
 
 export const GithubStar = () => {

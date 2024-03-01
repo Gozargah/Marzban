@@ -1,18 +1,18 @@
 import { ChakraProvider, localStorageManager } from "@chakra-ui/react";
+import "config/i18n";
+import { queryClient } from "config/react-query";
 import dayjs from "dayjs";
 import Duration from "dayjs/plugin/duration";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
 import RelativeTime from "dayjs/plugin/relativeTime";
 import Timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
-import "core/locales/i18n";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { QueryClientProvider } from "react-query";
-import { queryClient } from "core/utils/react-query";
-import { updateThemeColor } from "core/utils/themeColor";
+import { updateThemeColor } from "utils/themeColor";
 import { theme } from "../chakra.config";
-import App from "app/App";
+import App from "./App";
 import "./index.scss";
 
 dayjs.extend(Timezone);

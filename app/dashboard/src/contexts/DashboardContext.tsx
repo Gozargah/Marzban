@@ -1,7 +1,7 @@
-import { GetUsersParams, UserResponse, getGetUsersQueryKey, useGetUsers } from "core/services/api";
-import { User } from "core/types/User";
-import { queryClient } from "core/utils/react-query";
-import { getUsersPerPageLimitSize } from "core/utils/userPreferenceStorage";
+import { queryClient } from "config/react-query";
+import { GetUsersParams, UserResponse, getGetUsersQueryKey, useGetUsers } from "services/api";
+import { User } from "types/User";
+import { getUsersPerPageLimitSize } from "utils/userPreferenceStorage";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 

@@ -20,12 +20,12 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
-import { shadowsocksMethods, XTLSFlows } from "core/data/proxies";
+import { shadowsocksMethods, XTLSFlows } from "config/proxies";
 import { InboundType, ProtocolType } from "contexts/DashboardContext";
 import { t } from "i18next";
 import { FC, forwardRef, PropsWithChildren, useState } from "react";
 import { ControllerRenderProps, useFormContext, useWatch } from "react-hook-form";
-import { useGetInbounds } from "core/services/api";
+import { useGetInbounds } from "services/api";
 
 const SettingsIcon = chakra(EllipsisVerticalIcon, {
   baseStyle: {
