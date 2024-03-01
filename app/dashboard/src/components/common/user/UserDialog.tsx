@@ -133,6 +133,22 @@ export type FormType = Pick<UserCreate, keyof UserCreate> & {
   selected_proxies: ProxyKeys;
 };
 
+const defaultUser: FormType = {
+  data_limit: null,
+  expire: null,
+  username: "",
+  data_limit_reset_strategy: "no_reset",
+  status: "active",
+  note: "",
+  proxies: {
+    vless: { id: "", flow: "" },
+    vmess: { id: "" },
+    trojan: { password: "" },
+    shadowsocks: { password: "", method: "chacha20-ietf-poly1305" },
+  },
+  inbounds: {},
+  selected_proxies: [],
+};
 const formatUser = (user: Required<UserResponse>): FormType => {
   return {
     ...user,
@@ -140,27 +156,18 @@ const formatUser = (user: Required<UserResponse>): FormType => {
     selected_proxies: Object.keys(user.proxies) as ProxyKeys,
   };
 };
-const getDefaultValues = (defaultInbounds: GetInbounds200): FormType => {
+const getDefaultValues = (defaultInbounds: GetInbounds200, user?: FormType): FormType => {
   const inbounds: UserInbounds = {};
   for (const key in defaultInbounds) {
     inbounds[key] = defaultInbounds[key].map((i) => i.tag);
   }
-  return {
-    selected_proxies: Object.keys(defaultInbounds) as ProxyKeys,
-    data_limit: null,
-    expire: null,
-    username: "",
-    data_limit_reset_strategy: "no_reset",
-    status: "active",
-    note: "",
-    inbounds,
-    proxies: {
-      vless: { id: "", flow: "" },
-      vmess: { id: "" },
-      trojan: { password: "" },
-      shadowsocks: { password: "", method: "chacha20-ietf-poly1305" },
-    },
-  };
+  if (!user)
+    return {
+      ...defaultUser,
+      inbounds,
+      selected_proxies: Object.keys(defaultInbounds) as ProxyKeys,
+    };
+  return user;
 };
 
 const mergeProxies = (proxyKeys: ProxyKeys, proxyType: ProxyType | undefined): ProxyType => {
@@ -183,9 +190,8 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const { t, i18n } = useTranslation();
   const { data: defaultInbounds = {} } = useGetInbounds({
     query: {
-      initialData: {},
       onSuccess(data) {
-        form.reset(getDefaultValues(data));
+        form.reset(getDefaultValues(data, editingUser ? formatUser(editingUser) : undefined));
       },
     },
   });
@@ -305,7 +311,9 @@ export const UserDialog: FC<UserDialogProps> = () => {
   };
 
   const onClose = () => {
-    form.reset(getDefaultValues(defaultInbounds));
+    setTimeout(() => {
+      form.reset(getDefaultValues(defaultInbounds));
+    }, 500);
     onCreateUser(false);
     onEditingUser(null);
     setError(null);
@@ -485,6 +493,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                       clearable
                                       disabled={disabled}
                                       error={form.formState.errors.expire?.message}
+                                      w="full"
                                     />
                                   }
                                 />
