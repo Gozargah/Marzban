@@ -27,7 +27,7 @@ export const menu: MenuItem[] = [
     children: [
       {
         title: "menu.general",
-        href: "/settings/general",
+        href: "/settings",
       },
       {
         title: "menu.hosts",

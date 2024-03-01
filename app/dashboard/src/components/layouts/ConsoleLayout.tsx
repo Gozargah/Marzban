@@ -6,7 +6,7 @@ import { Outlet } from "react-router-dom";
 export const ConsoleLayout = () => {
   return (
     <Grid
-      templateColumns="repeat(24, 1fr)"
+      templateColumns="280px 1fr"
       display={{
         base: "flex",
         md: "grid",
@@ -18,10 +18,10 @@ export const ConsoleLayout = () => {
       }}
       h="full"
     >
-      <GridItem colSpan={{ md: 5 }} minW={{ md: "280px" }}>
+      <GridItem minW={{ md: "280px" }}>
         <Sidebar />
       </GridItem>
-      <GridItem colSpan={{ md: 19 }} flexGrow={1} p="4" pt={{ md: 5 }}>
+      <GridItem p="4" pt={{ md: 5 }}>
         <Suspense>
           <Outlet />
         </Suspense>
