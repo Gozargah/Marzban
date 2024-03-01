@@ -1,4 +1,4 @@
-import { VStack, Text } from "@chakra-ui/react";
+import { Text, VStack } from "@chakra-ui/react";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -18,6 +18,8 @@ export const Header: FC<HeaderProps> = ({ pageName }) => {
         },
       }}
       position="relative"
+      pb="4"
+      gap="1"
     >
       <Text as="h1" fontWeight="semibold" fontSize="2xl">
         {t(pageName + ".title")}

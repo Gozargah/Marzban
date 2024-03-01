@@ -7,13 +7,6 @@ import {
   FormLabel,
   HStack,
   IconButton,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Text,
   Tooltip,
   chakra,
@@ -22,7 +15,6 @@ import {
 import { ArrowPathIcon, ArrowsPointingInIcon, ArrowsPointingOutIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
 import { joinPaths } from "@remix-run/router";
 import classNames from "classnames";
-import { useDashboard } from "contexts/DashboardContext";
 import { debounce } from "lodash-es";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -32,7 +24,6 @@ import { useWebSocket } from "react-use-websocket/dist/lib/use-websocket";
 import { useGetCoreConfig, useGetCoreStats, useModifyCoreConfig, useRestartCore } from "services/api";
 import { ErrorType } from "services/http";
 import { getAuthToken } from "utils/authStorage";
-import { Icon } from "../../elements/Icon";
 import { JsonEditor } from "../../shared/JsonEditor";
 
 export const MAX_NUMBER_OF_LOGS = 500;
@@ -95,7 +86,7 @@ const getWebsocketUrl = () => {
 };
 
 let logsTmp: string[] = [];
-const CoreSettingModalContent: FC = () => {
+export const CoreSettingsContent: FC = () => {
   const { data: config, isLoading: getCoreConfigLoading } = useGetCoreConfig();
   const { data: { version } = {}, isLoading: getCoreStatsLoading } = useGetCoreStats();
   const isLoading = getCoreConfigLoading || getCoreStatsLoading;
@@ -197,124 +188,95 @@ const CoreSettingModalContent: FC = () => {
   };
   return (
     <form onSubmit={form.handleSubmit(handleOnSave)}>
-      <ModalBody>
-        <FormControl>
-          <HStack justifyContent="space-between" alignItems="flex-start">
-            <FormLabel>
-              {t("core.configuration")} {isLoading && <CircularProgress isIndeterminate size="15px" />}
-            </FormLabel>
-            <HStack gap={0}>
-              <Tooltip label="Xray Version" placement="top">
-                <Badge height="100%" textTransform="lowercase">
-                  {version && `v${version}`}
-                </Badge>
-              </Tooltip>
-            </HStack>
-          </HStack>
-          <Box position="relative" ref={editorRef} minHeight="300px">
-            <Controller
-              control={form.control}
-              name="config"
-              render={({ field }) => <JsonEditor json={config} onChange={field.onChange} />}
-            />
-            <IconButton
-              size="xs"
-              aria-label="full screen"
-              variant="ghost"
-              position="absolute"
-              top="2"
-              right="4"
-              onClick={handleFullScreen}
-            >
-              {!isFullScreen ? <FullScreenIcon /> : <ExitFullScreenIcon />}
-            </IconButton>
-          </Box>
-        </FormControl>
-        <FormControl mt="4">
-          <HStack justifyContent="space-between">
-            <FormLabel>{t("core.logs")}</FormLabel>
-            <Text as={FormLabel}>{t(`core.socket.${status}`)}</Text>
-          </HStack>
-          <Box
-            border="1px solid"
-            borderColor="gray.300"
-            bg="#F9F9F9"
-            _dark={{
-              borderColor: "gray.500",
-              bg: "#2e3440",
-            }}
-            borderRadius={5}
-            minHeight="200px"
-            maxHeight={"250px"}
-            p={2}
-            overflowY="auto"
-            ref={logsDiv}
-          >
-            {logs.map((message, i) => (
-              <Text fontSize="xs" opacity={0.8} key={i} whiteSpace="pre-line">
-                {message}
-              </Text>
-            ))}
-          </Box>
-        </FormControl>
-      </ModalBody>
-      <ModalFooter>
-        <HStack w="full" justifyContent="space-between">
-          <Box>
-            <Button
-              size="sm"
-              leftIcon={
-                <ReloadIcon
-                  className={classNames({
-                    "animate-spin": isRestarting,
-                  })}
-                />
-              }
-              onClick={() => handleRestartCore()}
-            >
-              {t(isRestarting ? "core.restarting" : "core.restartCore")}
-            </Button>
-          </Box>
-          <HStack>
-            <Button
-              size="sm"
-              variant="solid"
-              colorScheme="primary"
-              px="5"
-              type="submit"
-              isDisabled={isLoading || isPostLoading}
-              isLoading={isPostLoading}
-            >
-              {t("core.save")}
-            </Button>
+      <FormControl>
+        <HStack justifyContent="space-between" alignItems="flex-start">
+          <FormLabel>
+            {t("core.configuration")} {isLoading && <CircularProgress isIndeterminate size="15px" />}
+          </FormLabel>
+          <HStack gap={0}>
+            <Tooltip label="Xray Version" placement="top">
+              <Badge height="100%" textTransform="lowercase">
+                {version && `v${version}`}
+              </Badge>
+            </Tooltip>
           </HStack>
         </HStack>
-      </ModalFooter>
-    </form>
-  );
-};
-export const CoreSettingsModal: FC = () => {
-  const { isEditingCore } = useDashboard();
-  const onClose = useDashboard.setState.bind(null, { isEditingCore: false });
-  const { t } = useTranslation();
-
-  return (
-    <Modal isOpen={isEditingCore} onClose={onClose} size="3xl">
-      <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
-      <ModalContent mx="3" w="full">
-        <ModalHeader pt={6}>
-          <HStack gap={2}>
-            <Icon color="primary">
-              <UsageIcon color="white" />
-            </Icon>
-            <Text fontWeight="semibold" fontSize="lg">
-              {t("core.title")}
+        <Box position="relative" ref={editorRef} minHeight="300px">
+          <Controller
+            control={form.control}
+            name="config"
+            render={({ field }) => <JsonEditor json={config} onChange={field.onChange} />}
+          />
+          <IconButton
+            size="xs"
+            aria-label="full screen"
+            variant="ghost"
+            position="absolute"
+            top="2"
+            right="4"
+            onClick={handleFullScreen}
+          >
+            {!isFullScreen ? <FullScreenIcon /> : <ExitFullScreenIcon />}
+          </IconButton>
+        </Box>
+      </FormControl>
+      <FormControl mt="4">
+        <HStack justifyContent="space-between">
+          <FormLabel>{t("core.logs")}</FormLabel>
+          <Text as={FormLabel}>{t(`core.socket.${status}`)}</Text>
+        </HStack>
+        <Box
+          border="1px solid"
+          borderColor="gray.300"
+          bg="#F9F9F9"
+          _dark={{
+            borderColor: "gray.500",
+            bg: "#2e3440",
+          }}
+          borderRadius={5}
+          minHeight="200px"
+          maxHeight={"250px"}
+          p={2}
+          overflowY="auto"
+          ref={logsDiv}
+        >
+          {logs.map((message, i) => (
+            <Text fontSize="xs" opacity={0.8} key={i} whiteSpace="pre-line">
+              {message}
             </Text>
-          </HStack>
-        </ModalHeader>
-        <ModalCloseButton mt={3} />
-        <CoreSettingModalContent />
-      </ModalContent>
-    </Modal>
+          ))}
+        </Box>
+      </FormControl>
+      <HStack w="full" justifyContent="space-between" mt="4">
+        <Box>
+          <Button
+            size="sm"
+            leftIcon={
+              <ReloadIcon
+                className={classNames({
+                  "animate-spin": isRestarting,
+                })}
+              />
+            }
+            onClick={() => handleRestartCore()}
+          >
+            {t(isRestarting ? "core.restarting" : "core.restartCore")}
+          </Button>
+        </Box>
+        <HStack>
+          <Button
+            size="sm"
+            variant="solid"
+            colorScheme="primary"
+            px="5"
+            type="submit"
+            isDisabled={isLoading || isPostLoading}
+            isLoading={isPostLoading}
+          >
+            {t("core.save")}
+          </Button>
+        </HStack>
+      </HStack>
+    </form>
   );
 };
