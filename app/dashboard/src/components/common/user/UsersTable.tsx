@@ -299,7 +299,16 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 return (
                   <Fragment key={user.username}>
                     <Tr onClick={toggleAccordion.bind(null, i)} cursor="pointer">
-                      <Td borderBottom={0} minW="100px" maxW="calc(100vw - 110px - 55px - 32px - 48px)" pl={4} pr={4}>
+                      <Td
+                        borderBottom={0}
+                        minW="100px"
+                        maxW={{
+                          base: "calc(100vw - 110px - 55px - 32px - 48px)",
+                          md: "calc(100vw - 110px - 55px - 32px - 48px - 295px)",
+                        }}
+                        pl={4}
+                        pr={4}
+                      >
                         <Box display="flex" justifyContent="start" alignItems="center" gap={2}>
                           <OnlineBadge lastOnline={user.online_at} />
                           <Text isTruncated>{user.username}</Text>
