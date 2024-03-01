@@ -54,9 +54,8 @@ const Logo = () => {
 
 export const Sidebar: FC = () => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const { t } = useTranslation();
   const toggleDrawer = setDrawerOpen.bind(null, !isDrawerOpen);
-  const sidebar = useMemo(() => <SidebarContent />, []);
+  const sidebar = useMemo(() => <SidebarContent toggleDrawer={toggleDrawer} isDrawerOpen={isDrawerOpen} />, []);
 
   return useBreakpointValue(
     {
@@ -127,10 +126,13 @@ export const Sidebar: FC = () => {
   )!;
 };
 
-const SidebarContent = () => {
+const SidebarContent: FC<{ isDrawerOpen: boolean; toggleDrawer: () => void }> = ({ isDrawerOpen, toggleDrawer }) => {
   const { version } = useDashboard();
   const { t } = useTranslation();
   const { data } = useGetCurrentAdmin();
+  const handleOnClick = () => {
+    if (isDrawerOpen) toggleDrawer();
+  };
   return (
     <VStack
       zIndex={1500}
@@ -182,7 +184,7 @@ const SidebarContent = () => {
             </Box>
           )}
         </HStack>
-        <NavMenu menu={menu} />
+        <NavMenu menu={menu} handleOnClick={handleOnClick} />
       </VStack>
       <VStack w="full">
         <DonationCard />
@@ -195,6 +197,7 @@ const SidebarContent = () => {
               target: "_blank",
             },
           ]}
+          handleOnClick={handleOnClick}
         />
         <Divider _light={{ borderColor: "#DCE0E4" }} />
         <HStack justify="space-between" w="full" alignItems="center">
@@ -234,11 +237,12 @@ const isURLChildOfmenu = (menuList: typeof menu, pathname: string) => {
   });
 };
 
-const NavButton: FC<{ menuItem: MenuItem }> = ({ menuItem }) => {
+const NavButton: FC<{ menuItem: MenuItem; handleOnClick?: () => void }> = ({ menuItem, handleOnClick }) => {
   const { pathname } = useLocation();
   const [isOpen, setOpen] = useState((menuItem.children || false) && isURLChildOfmenu(menuItem.children, pathname));
   const { t } = useTranslation();
   const isActive = pathname === menuItem.href;
+
   return (
     <Box w="full" key={menuItem.href || menuItem.title}>
       <Button
@@ -279,6 +283,7 @@ const NavButton: FC<{ menuItem: MenuItem }> = ({ menuItem }) => {
         leftIcon={menuItem.icon}
         onClick={() => {
           menuItem.children && setOpen(!isOpen);
+          if (!menuItem.children) handleOnClick && handleOnClick();
         }}
         _light={{ color: "gray.600" }}
         rightIcon={menuItem.children ? <DropdownIcon transform={isOpen ? "rotate(180deg)" : ""} /> : undefined}
@@ -290,7 +295,7 @@ const NavButton: FC<{ menuItem: MenuItem }> = ({ menuItem }) => {
       {menuItem.children && (
         <Collapse in={isOpen} animateOpacity style={{ width: "full" }}>
           <Box pl="8" mt="2">
-            <NavMenu menu={menuItem.children} />
+            <NavMenu menu={menuItem.children} handleOnClick={handleOnClick} />
           </Box>
         </Collapse>
       )}
@@ -298,11 +303,11 @@ const NavButton: FC<{ menuItem: MenuItem }> = ({ menuItem }) => {
   );
 };
 
-const NavMenu: FC<{ menu: MenuItem[] }> = ({ menu }) => {
+const NavMenu: FC<{ menu: MenuItem[]; handleOnClick?: () => void }> = ({ menu, handleOnClick }) => {
   return (
     <VStack gap="1" w="full">
       {menu.map((menuItem, index) => {
-        return <NavButton key={index} menuItem={menuItem} />;
+        return <NavButton key={index} menuItem={menuItem} handleOnClick={handleOnClick} />;
       })}
     </VStack>
   );
