@@ -1,6 +1,5 @@
 import { Grid, GridItem } from "@chakra-ui/react";
 import { Sidebar } from "components/common/sidebar/Sidebar";
-import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 
 export const ConsoleLayout = () => {
@@ -22,9 +21,7 @@ export const ConsoleLayout = () => {
         <Sidebar />
       </GridItem>
       <GridItem p="4" pt={{ md: 5 }}>
-        <Suspense>
-          <Outlet />
-        </Suspense>
+        <Outlet />
       </GridItem>
     </Grid>
   );

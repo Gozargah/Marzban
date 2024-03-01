@@ -4,8 +4,7 @@ import { getGetCurrentAdminQueryOptions } from "services/api";
 import { isValidToken } from "utils/authStorage";
 
 const fetchAdminLoader = () => {
-  if (!isValidToken()) return false;
-  console.log("fetching admin loader");
+  if (!isValidToken()) return redirect("/login");
   return queryClient
     .getQueryCache()
     .build(queryClient, getGetCurrentAdminQueryOptions())
