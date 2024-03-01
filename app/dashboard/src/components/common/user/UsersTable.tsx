@@ -235,7 +235,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   <Sort sort={filters.sort} column="username" />
                 </HStack>
               </Th>
-              <Th position="sticky" top={top} minW="50px" pl={0} pr={0} w="140px" cursor={"pointer"}>
+              <Th position="sticky" top={top} minW="55px" pl={0} pr={0} w="140px" cursor={"pointer"}>
                 <HStack spacing={0} position="relative">
                   <Text
                     position="absolute"
@@ -280,7 +280,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               <Th
                 position="sticky"
                 top={top}
-                minW="100px"
+                minW="110px"
                 cursor={"pointer"}
                 pr={0}
                 onClick={handleSort.bind(null, "used_traffic")}
@@ -299,16 +299,16 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 return (
                   <Fragment key={user.username}>
                     <Tr onClick={toggleAccordion.bind(null, i)} cursor="pointer">
-                      <Td borderBottom={0} minW="100px" pl={4} pr={4}>
+                      <Td borderBottom={0} minW="100px" maxW="calc(100vw - 110px - 55px - 32px - 48px)" pl={4} pr={4}>
                         <Box display="flex" justifyContent="start" alignItems="center" gap={2}>
                           <OnlineBadge lastOnline={user.online_at} />
-                          {user.username}
+                          <Text isTruncated>{user.username}</Text>
                         </Box>
                       </Td>
                       <Td borderBottom={0} minW="50px" pl={0} pr={0}>
                         <StatusBadge compact showDetail={false} expiryDate={user.expire} status={user.status} />
                       </Td>
-                      <Td borderBottom={0} minW="100px" pr={0}>
+                      <Td borderBottom={0} minW="110px" pr={0}>
                         <UsageSliderCompact
                           totalUsedTraffic={user.lifetime_used_traffic}
                           dataLimitResetStrategy={user.data_limit_reset_strategy}
@@ -429,7 +429,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 <Sort sort={filters.sort} column="username" />
               </HStack>
             </Th>
-            <Th position="sticky" top={{ base: "unset", lg: top }} width="400px" minW="120px" cursor={"pointer"}>
+            <Th position="sticky" top={{ base: "unset", lg: top }} width="400px" minW="120px" cursor={"pointer"} pl={1}>
               <HStack spacing={0} position="relative">
                 <Text
                   position="absolute"
@@ -498,13 +498,13 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   })}
                   onClick={() => onEditingUser(user)}
                 >
-                  <Td minW="140px">
-                    <Box display="flex" justifyContent="start" alignItems="center" gap={2}>
+                  <Td minW="140px" maxW="calc(100vw - 280px - 120px - 200px - 185px - 48px)">
+                    <Box display="flex" isTruncated justifyContent="start" alignItems="center" gap={2}>
                       <OnlineBadge lastOnline={user.online_at} />
-                      {user.username}
+                      <Text isTruncated>{user.username}</Text>
                     </Box>
                   </Td>
-                  <Td width="400px" minW="120px" pr="1">
+                  <Td width="400px" minW="120px" pr="1" pl="1">
                     <StatusBadge expiryDate={user.expire} status={user.status} />
                   </Td>
                   <Td width="350px" minW="200px">

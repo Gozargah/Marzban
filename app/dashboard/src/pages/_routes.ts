@@ -55,7 +55,7 @@ export const routes: RouteObject[] = [
         path: "/settings",
         children: [
           {
-            path: "/settings/General",
+            path: "/settings",
             lazy: async () => {
               let { GeneralSettings } = await import("pages/settings/General");
               return { Component: GeneralSettings };
