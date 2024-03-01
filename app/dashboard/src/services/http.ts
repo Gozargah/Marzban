@@ -1,7 +1,7 @@
-import { FetchError, FetchOptions, $fetch as ohMyFetch } from "ohmyfetch";
+import { FetchError, FetchOptions, $fetch as ofetch } from "ofetch";
 import { getAuthToken } from "utils/authStorage";
 
-export const $fetch = ohMyFetch.create({
+export const $fetch = ofetch.create({
   baseURL: import.meta.env.VITE_BASE_API,
 });
 
