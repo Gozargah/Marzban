@@ -1,19 +1,33 @@
 import os
 from datetime import datetime
 
-from sqlalchemy import (JSON, BigInteger, Boolean, Column, DateTime, Enum,
-                        Float, ForeignKey, Integer, String, Table,
-                        UniqueConstraint)
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+    UniqueConstraint
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import text
 
 from app import xray
 from app.db.base import Base
 from app.models.node import NodeStatus
-from app.models.proxy import (ProxyHostALPN, ProxyHostFingerprint,
-                              ProxyHostSecurity, ProxyTypes)
-from app.models.user import (ReminderType, UserDataLimitResetStrategy,
-                             UserStatus)
+from app.models.proxy import (
+    ProxyHostALPN,
+    ProxyHostFingerprint,
+    ProxyHostSecurity,
+    ProxyTypes
+)
+from app.models.user import ReminderType, UserDataLimitResetStrategy, UserStatus
 
 
 class Admin(Base):
@@ -193,7 +207,7 @@ class ProxyHost(Base):
     allowinsecure = Column(Boolean, nullable=True)
     is_disabled = Column(Boolean, nullable=True, default=False)
     mux_enable = Column(Boolean, nullable=False, default=False, server_default='0')
-    fragment_setting = Column(String(100), nullable=True)
+    fragment_setting = Column(String(100), nullable=True, default="")
 
 
 class System(Base):
