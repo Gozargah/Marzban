@@ -291,21 +291,22 @@ class V2rayJsonConfig(str):
             tcpSettings["header"] = {}
             tcpSettings["header"]["type"] = "http"
 
-            tcpSettings["request"] = {}
-            tcpSettings["request"]["version"] = "1.1"
+            tcpSettings["header"]["request"] = {}
+            tcpSettings["header"]["request"]["version"] = "1.1"
 
-            tcpSettings["request"]["headers"] = {}
-            tcpSettings["request"]["method"] = "GET"
-            tcpSettings["request"]["headers"]["User-Agent"] = ""
-            tcpSettings["request"]["headers"]["Accept-Encoding"] = ["gzip, deflate"],
-            tcpSettings["request"]["headers"]["Connection"] = "keep-alive"
-            tcpSettings["request"]["headers"]["Pragma"] = "no-cache"
+            tcpSettings["header"]["request"]["headers"] = {}
+            tcpSettings["header"]["request"]["method"] = "GET"
+            tcpSettings["header"]["request"]["headers"]["User-Agent"] = []
+            tcpSettings["header"]["request"]["headers"]["Accept-Encoding"] = ["gzip, deflate"]
+            tcpSettings["header"]["request"]["headers"]["Connection"] = ["keep-alive"]
+            tcpSettings["header"]["request"]["headers"]["Pragma"] = "no-cache"
 
             if path:
-                tcpSettings["request"]["path"] = [path]
+                tcpSettings["header"]["request"]["path"] = [path]
 
             if host:
-                tcpSettings["request"]["headers"]["Host"] = [host]
+                tcpSettings["header"]["request"]["headers"]["Host"] = [host]
+
 
         return tcpSettings
 
