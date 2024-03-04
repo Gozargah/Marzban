@@ -169,7 +169,6 @@ def generate_subscription(
         "extra_data": user.__dict__,
     }
 
-    print(kwargs)
     if config_format == "v2ray":
         config = "\n".join(generate_v2ray_links(**kwargs))
     elif config_format == "clash-meta":
