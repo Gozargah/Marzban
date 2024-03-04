@@ -208,6 +208,7 @@ class ProxyHost(Base):
     is_disabled = Column(Boolean, nullable=True, default=False)
     mux_enable = Column(Boolean, nullable=False, default=False, server_default='0')
     fragment_setting = Column(String(100), nullable=True, default="")
+    multi_mode = Column(Boolean, default=False, nullable=False)
 
 
 class System(Base):

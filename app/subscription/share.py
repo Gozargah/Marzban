@@ -1,13 +1,15 @@
 import base64
 import random
 import secrets
-from datetime import datetime as dt, timedelta
-from typing import TYPE_CHECKING, Literal, Union, List
+from datetime import datetime as dt
+from datetime import timedelta
+from typing import TYPE_CHECKING, List, Literal, Union
 
 from jdatetime import date as jd
 
 from app import xray
 from app.utils.system import get_public_ip, readable_size
+
 from . import *
 
 if TYPE_CHECKING:
@@ -41,7 +43,7 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
             spx=inbound.get("spx", ""),
             host=inbound["host"],
             path=inbound["path"],
-            type=inbound["header_type"],
+            type=inbound["header_type"] if inbound["network"] != "grpc" else inbound["multi_mode"],
             ais=inbound.get("ais", ""),
             fs=inbound.get("fragment_setting", ""),
         )
@@ -63,7 +65,7 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
             spx=inbound.get("spx", ""),
             host=inbound["host"],
             path=inbound["path"],
-            type=inbound["header_type"],
+            type=inbound["header_type"] if inbound["network"] != "grpc" else inbound["multi_mode"],
             ais=inbound.get("ais", ""),
             fs=inbound.get("fragment_setting", ""),
         )
@@ -85,7 +87,7 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
             spx=inbound.get("spx", ""),
             host=inbound["host"],
             path=inbound["path"],
-            type=inbound["header_type"],
+            type=inbound["header_type"] if inbound["network"] != "grpc" else inbound["multi_mode"],
             ais=inbound.get("ais", ""),
             fs=inbound.get("fragment_setting", ""),
         )
@@ -167,6 +169,7 @@ def generate_subscription(
         "extra_data": user.__dict__,
     }
 
+    print(kwargs)
     if config_format == "v2ray":
         config = "\n".join(generate_v2ray_links(**kwargs))
     elif config_format == "clash-meta":
@@ -327,7 +330,8 @@ def process_inbounds_and_tags(
                         "ais": host["allowinsecure"]
                         or inbound.get("allowinsecure", ""),
                         "mux_enable": host["mux_enable"],
-                        "fragment_setting": host["fragment_setting"]
+                        "fragment_setting": host["fragment_setting"],
+                        "multi_mode": host["multi_mode"]
                     }
                 )
 
