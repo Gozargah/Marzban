@@ -561,7 +561,7 @@ class V2rayJsonConfig(str):
             outbound["settings"]["vnext"] = vnext
 
         elif inbound['protocol'] == 'vless':
-            if net in ('tcp', 'kcp') and headers != 'http' and tls:
+            if net in ('tcp', 'kcp') and headers != 'http' and tls in ('tls', 'reality'):
                 flow = settings.get('flow', '')
             else:
                 flow = None
