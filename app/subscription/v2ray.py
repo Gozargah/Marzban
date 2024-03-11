@@ -205,9 +205,7 @@ class V2rayJsonConfig(str):
     def __init__(self):
         self.config = []
         self.template = render_template(V2RAY_SUBSCRIPTION_TEMPLATE)
-        mux_template = render_template(MUX_TEMPLATE)
-        mux_json = json.loads(mux_template)
-        self.mux_config = mux_json["v2ray"]
+        self.mux_template = render_template(MUX_TEMPLATE)
 
     def add_config(self, remarks, outbounds):
         json_template = json.loads(self.template)
@@ -612,7 +610,10 @@ class V2rayJsonConfig(str):
             dialer_proxy=dialer_proxy
         )
 
-        outbound["mux"] = self.mux_config
+        mux_json = json.loads(self.mux_template)
+        mux_config = mux_json["v2ray"]
+
+        outbound["mux"] = mux_config
         outbound["mux"]["enabled"] = bool(inbound.get('mux_enable', False))
 
         self.add_config(remarks=remark, outbounds=outbounds)

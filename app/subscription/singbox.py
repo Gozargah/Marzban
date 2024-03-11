@@ -9,9 +9,7 @@ class SingBoxConfiguration(str):
     def __init__(self):
         template = render_template(SINGBOX_SUBSCRIPTION_TEMPLATE)
         self.config = json.loads(template)
-        mux_template = render_template(MUX_TEMPLATE)
-        mux_json = json.loads(mux_template)
-        self.mux_config = mux_json["sing-box"]
+        self.mux_template = render_template(MUX_TEMPLATE)
 
     def add_outbound(self, outbound_data):
         self.config["outbounds"].append(outbound_data)
@@ -178,7 +176,10 @@ class SingBoxConfiguration(str):
                                             pbk=pbk, sid=sid, alpn=alpn,
                                             ais=ais)
 
-        config['multiplex'] = self.mux_config
+        mux_json = json.loads(self.mux_template)
+        mux_config = mux_json["sing-box"]
+
+        config['multiplex'] = mux_config
         config['multiplex']["enabled"] = mux_enable
 
         return config
