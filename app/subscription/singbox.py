@@ -179,7 +179,8 @@ class SingBoxConfiguration(str):
                                             ais=ais)
 
         config['multiplex'] = self.mux_config
-        config['multiplex']["enabled"] = mux_enable
+        if config['multiplex']["enabled"]:
+            config['multiplex']["enabled"] = mux_enable
 
         return config
 
