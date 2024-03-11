@@ -282,7 +282,14 @@ def process_inbounds_and_tags(
 ) -> Union[List, str]:
     results = []
 
+    _inbounds = []
     for protocol, tags in inbounds.items():
+        for tag in tags:
+            _inbounds.append((protocol, [tag]))
+    index_dict = {proxy: index for index, proxy in enumerate(xray.config.inbounds_by_tag.keys())}
+    inbounds = sorted(_inbounds, key=lambda x: index_dict.get(x[1][0], float('inf')))
+    
+    for protocol, tags in inbounds:
         settings = proxies.get(protocol)
         if not settings:
             continue
