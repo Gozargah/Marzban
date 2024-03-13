@@ -205,9 +205,7 @@ class V2rayJsonConfig(str):
     def __init__(self):
         self.config = []
         self.template = render_template(V2RAY_SUBSCRIPTION_TEMPLATE)
-        mux_template = render_template(MUX_TEMPLATE)
-        mux_json = json.loads(mux_template)
-        self.mux_config = mux_json["v2ray"]
+        self.mux_template = render_template(MUX_TEMPLATE)
 
     def add_config(self, remarks, outbounds):
         json_template = json.loads(self.template)
@@ -291,21 +289,22 @@ class V2rayJsonConfig(str):
             tcpSettings["header"] = {}
             tcpSettings["header"]["type"] = "http"
 
-            tcpSettings["request"] = {}
-            tcpSettings["request"]["version"] = "1.1"
+            tcpSettings["header"]["request"] = {}
+            tcpSettings["header"]["request"]["version"] = "1.1"
 
-            tcpSettings["request"]["headers"] = {}
-            tcpSettings["request"]["method"] = "GET"
-            tcpSettings["request"]["headers"]["User-Agent"] = ""
-            tcpSettings["request"]["headers"]["Accept-Encoding"] = ["gzip, deflate"],
-            tcpSettings["request"]["headers"]["Connection"] = "keep-alive"
-            tcpSettings["request"]["headers"]["Pragma"] = "no-cache"
+            tcpSettings["header"]["request"]["headers"] = {}
+            tcpSettings["header"]["request"]["method"] = "GET"
+            tcpSettings["header"]["request"]["headers"]["User-Agent"] = []
+            tcpSettings["header"]["request"]["headers"]["Accept-Encoding"] = ["gzip, deflate"]
+            tcpSettings["header"]["request"]["headers"]["Connection"] = ["keep-alive"]
+            tcpSettings["header"]["request"]["headers"]["Pragma"] = "no-cache"
 
             if path:
-                tcpSettings["request"]["path"] = [path]
+                tcpSettings["header"]["request"]["path"] = [path]
 
             if host:
-                tcpSettings["request"]["headers"]["Host"] = [host]
+                tcpSettings["header"]["request"]["headers"]["Host"] = [host]
+
 
         return tcpSettings
 
@@ -560,7 +559,7 @@ class V2rayJsonConfig(str):
             outbound["settings"]["vnext"] = vnext
 
         elif inbound['protocol'] == 'vless':
-            if net in ('tcp', 'kcp') and headers != 'http' and tls:
+            if net in ('tcp', 'kcp') and headers != 'http' and tls in ('tls', 'reality'):
                 flow = settings.get('flow', '')
             else:
                 flow = None
@@ -611,7 +610,10 @@ class V2rayJsonConfig(str):
             dialer_proxy=dialer_proxy
         )
 
-        outbound["mux"] = self.mux_config
+        mux_json = json.loads(self.mux_template)
+        mux_config = mux_json["v2ray"]
+
+        outbound["mux"] = mux_config
         outbound["mux"]["enabled"] = bool(inbound.get('mux_enable', False))
 
         self.add_config(remarks=remark, outbounds=outbounds)
