@@ -338,6 +338,9 @@ def process_inbounds_and_tags(
                     }
                 )
 
+                if inbound.get('network', '') == 'grpc':
+                    host_inbound.update({'mode': 'multi' if inbound.get('multiMode', False) == True else 'gun'})
+
                 if mode == "v2ray":
                     results.append(
                         get_v2ray_link(
