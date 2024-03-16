@@ -337,13 +337,10 @@ def process_inbounds_and_tags(
                         "ais": host["allowinsecure"]
                         or inbound.get("allowinsecure", ""),
                         "mux_enable": host["mux_enable"],
-                        "fragment_setting": host["fragment_setting"]
+                        "fragment_setting": host["fragment_setting"],
+                        "mode" : "multi" if inbound.get('multiMode', '') == True else "gun"
                     }
                 )
-
-                if inbound.get('network', '') == 'grpc':
-                    host_inbound.update({'mode': 'multi' if inbound.get('multiMode', '') == True else 'gun'})
-
 
                 if mode == "v2ray":
                     results.append(
