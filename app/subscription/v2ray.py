@@ -30,6 +30,7 @@ class V2rayShareLink(str):
         spx="",
         ais="",
         fs="",
+        mode=""
     ):
         payload = {
             "add": address,
@@ -60,6 +61,9 @@ class V2rayShareLink(str):
             payload["sid"] = sid
             payload["spx"] = spx
 
+        if net == "grpc":
+            payload["mode"] = mode
+
         return (
             "vmess://"
             + base64.b64encode(
@@ -87,6 +91,7 @@ class V2rayShareLink(str):
               spx='',
               ais='',
               fs="",
+              mode=""
               ):
 
         payload = {
@@ -100,6 +105,7 @@ class V2rayShareLink(str):
         if net == 'grpc':
             payload['serviceName'] = path
             payload["host"] = host
+            payload["mode"] = mode
         elif net == 'quic':
             payload['key'] = path
             payload["quicSecurity"] = host
@@ -148,6 +154,7 @@ class V2rayShareLink(str):
                spx='',
                ais='',
                fs="",
+               mode=""
                ):
 
         payload = {
@@ -161,6 +168,7 @@ class V2rayShareLink(str):
         if net == 'grpc':
             payload['serviceName'] = path
             payload["host"] = host
+            payload["mode"] = mode
         elif net == 'quic':
             payload['key'] = path
             payload["quicSecurity"] = host
