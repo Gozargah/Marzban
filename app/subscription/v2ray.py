@@ -357,7 +357,7 @@ class V2rayJsonConfig(str):
         return quicSettings
 
     @staticmethod
-    def kpc_config(path=None, host=None, header=None):
+    def kcp_config(path=None, host=None, header=None):
 
         kcpSettings = {}
         kcpSettings["header"] = {}
@@ -401,7 +401,7 @@ class V2rayJsonConfig(str):
             streamSettings["grpcSettings"] = network_setting
         elif network == "h2":
             streamSettings["httpSettings"] = network_setting
-        elif network == "kpc":
+        elif network == "kcp":
             streamSettings["kcpSettings"] = network_setting
         elif network == "tcp" and network_setting:
             streamSettings["tcpSettings"] = network_setting
@@ -522,8 +522,8 @@ class V2rayJsonConfig(str):
             network_setting = self.grpc_config(path=path, multiMode=multi_mode)
         elif net == "h2":
             network_setting = self.h2_config(path=path, host=host)
-        elif net == "kpc":
-            network_setting = self.kpc_config(
+        elif net == "kcp":
+            network_setting = self.kcp_config(
                 path=path, host=host, header=headers)
         elif net == "tcp":
             network_setting = self.tcp_http_config(path=path, host=host)
