@@ -83,7 +83,7 @@ def user_subscription(token: str,
         conf = generate_subscription(user=user, config_format="clash", as_base64=False)
         return Response(content=conf, media_type="text/yaml", headers=response_headers)
 
-    elif re.match('^(SFA|SFI|SFM|SFT)', user_agent):
+    elif re.match('^(SFA|SFI|SFM|SFT|[Kk]aring|[Hh]iddify[Nn]ext)', user_agent):
         conf = generate_subscription(user=user, config_format="sing-box", as_base64=False)
         return Response(content=conf, media_type="application/json", headers=response_headers)
 
