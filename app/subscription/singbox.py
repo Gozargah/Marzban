@@ -113,6 +113,13 @@ class SingBoxConfiguration(str):
                 if permit_without_stream:
                     transport_config['permit_without_stream'] = permit_without_stream
 
+            elif transport_type == "httpupgrade":
+                transport_config['host'] = ""
+                if path:
+                    transport_config['path'] = path
+                if host:
+                    transport_config['headers'] = {'Host': host}
+
         return transport_config
 
     def make_outbound(self,
@@ -151,7 +158,7 @@ class SingBoxConfiguration(str):
         elif net in ['tcp'] and headers == 'http':
             net = 'http'
 
-        if net in ['http', 'ws', 'quic', 'grpc']:
+        if net in ['http', 'ws', 'quic', 'grpc', 'httpupgrade']:
             max_early_data = None
             early_data_header_name = None
 
@@ -180,7 +187,8 @@ class SingBoxConfiguration(str):
         mux_config = mux_json["sing-box"]
 
         config['multiplex'] = mux_config
-        config['multiplex']["enabled"] = mux_enable
+        if config['multiplex']["enabled"]:
+            config['multiplex']["enabled"] = mux_enable
 
         return config
 
