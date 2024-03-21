@@ -266,6 +266,17 @@ class V2rayJsonConfig(str):
             wsSettings["headers"]["Host"] = host
 
         return wsSettings
+    
+    @staticmethod
+    def httpupgrade_config(path=None, host=None):
+
+        httpupgradeSettings = {}
+        if path:
+            httpupgradeSettings["path"] = path
+        if host:
+            httpupgradeSettings["host"] = host
+
+        return httpupgradeSettings
 
     @staticmethod
     def grpc_config(path=None, multiMode=False):
@@ -392,6 +403,8 @@ class V2rayJsonConfig(str):
             streamSettings["tcpSettings"] = network_setting
         elif network == "quic":
             streamSettings["quicSettings"] = network_setting
+        elif network == "httpupgrade":
+            streamSettings["httpupgradeSettings"] = network_setting
 
         if sockopt:
             streamSettings['sockopt'] = sockopt
@@ -514,6 +527,8 @@ class V2rayJsonConfig(str):
         elif net == "quic":
             network_setting = self.quic_config(
                 path=path, host=host, header=headers)
+        elif net == "httpupgrade":
+            network_setting = self.httpupgrade_config(path=path, host=host)
 
         if tls == "tls":
             tls_settings = self.tls_config(sni=sni, fp=fp, alpn=alpn, ais=ais)
@@ -614,6 +629,7 @@ class V2rayJsonConfig(str):
         mux_config = mux_json["v2ray"]
 
         outbound["mux"] = mux_config
-        outbound["mux"]["enabled"] = bool(inbound.get('mux_enable', False))
+        if outbound["mux"]["enabled"]:
+            outbound["mux"]["enabled"] = bool(inbound.get('mux_enable', False))
 
         self.add_config(remarks=remark, outbounds=outbounds)

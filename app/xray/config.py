@@ -275,6 +275,11 @@ class XRayConfig(dict):
                     settings['path'] = net_settings.get('key', '')
                     settings['host'] = [net_settings.get('security', '')]
 
+                elif net == 'httpupgrade':
+                    settings['path'] = net_settings.get('path', '')
+                    host = net_settings.get('host', '')
+                    settings['host'] = [host]
+
                 else:
                     settings['path'] = net_settings.get('path', '')
                     host = net_settings.get(
