@@ -14,7 +14,6 @@ from xray_api import exceptions
 from xray_api import exceptions as exc
 from xray_api import types
 
-
 core = XRayCore(XRAY_EXECUTABLE_PATH, XRAY_ASSETS_PATH)
 
 # Search for a free API port
@@ -61,7 +60,8 @@ def hosts(storage: dict):
                     else host.security.value,
                     "allowinsecure": host.allowinsecure,
                     "mux_enable": host.mux_enable,
-                    "fragment_setting": host.fragment_setting
+                    "fragment_setting": host.fragment_setting,
+                    "multi_mode": host.multi_mode,
                 } for host in inbound_hosts if not host.is_disabled
             ]
 

@@ -1,8 +1,8 @@
 import json
+import re
 from enum import Enum
 from typing import Optional, Union
 from uuid import UUID, uuid4
-import re
 
 from pydantic import BaseModel, Field, validator
 
@@ -13,7 +13,7 @@ from xray_api.types.account import (
     TrojanAccount,
     VLESSAccount,
     VMessAccount,
-    XTLSFlows,
+    XTLSFlows
 )
 
 FRAGMENT_PATTERN = re.compile(r'^(\d{1,3}-\d{1,3}),(\d{1,3}-\d{1,3}),(tlshello|\d|\d\-\d)$')
@@ -146,6 +146,7 @@ class ProxyHost(BaseModel):
     is_disabled: Union[bool, None] = None
     mux_enable: Union[bool, None] = None
     fragment_setting: Optional[str] = Field(None, nullable=True)
+    multi_mode: Optional[bool] = Field(False, nullable=True)
 
     class Config:
         orm_mode = True

@@ -95,6 +95,7 @@
   "hostsDialog.fingerprint": "指纹",
   "hostsDialog.sockopt": "Sockopt",
   "hostsDialog.muxEnable": "使能够 MUX",
+  "hostsDialog.multiMode": "使能够 GRPC multi Mode",
   "hostsDialog.allowinsecure": "Allow Insecure",
   "hostsDialog.fragment": "碎片图案",
   "hostsDialog.fragment.info": "length,interval,packet (e.g. 10-100,100-200,tlshello)",

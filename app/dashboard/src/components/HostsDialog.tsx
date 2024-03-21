@@ -117,6 +117,7 @@ const hostsSchema = z.record(
       host: z.string().nullable(),
       mux_enable: z.boolean().default(false),
       allowinsecure: z.boolean().nullable().default(false),
+      multi_mode: z.boolean().nullable().default(false),
       is_disabled: z.boolean().default(true),
       fragment_setting: z.string().nullable(),
       security: z.string(),
@@ -173,6 +174,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
       remark: "",
       mux_enable: false,
       allowinsecure: false,
+      multi_mode: false,
       is_disabled: false,
       fragment_setting: "",
       security: "inbound_default",
@@ -893,6 +895,28 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                           accordionErrors[index]?.mux_enable && (
                             <Error>
                               {accordionErrors[index]?.mux_enable?.message}
+                            </Error>
+                          )}
+                      </FormControl>
+                      <FormControl
+                        isInvalid={
+                          !!(
+                            accordionErrors &&
+                            accordionErrors[index]?.multi_mode
+                          )
+                        }
+                      >
+                        <Checkbox
+                          {...form.register(
+                            hostKey + "." + index + ".multi_mode"
+                          )}
+                        >
+                          <FormLabel>{t("hostsDialog.multiMode")}</FormLabel>
+                        </Checkbox>
+                        {accordionErrors &&
+                          accordionErrors[index]?.multi_mode && (
+                            <Error>
+                              {accordionErrors[index]?.multi_mode?.message}
                             </Error>
                           )}
                       </FormControl>

@@ -5,8 +5,7 @@ from typing import Union
 from uuid import UUID
 
 from app.templates import render_template
-
-from config import (MUX_TEMPLATE, V2RAY_SUBSCRIPTION_TEMPLATE)
+from config import MUX_TEMPLATE, V2RAY_SUBSCRIPTION_TEMPLATE
 
 
 class V2rayShareLink(str):
@@ -46,6 +45,11 @@ class V2rayShareLink(str):
             "type": type,
             "v": "2",
         }
+        if net == "grpc":
+            if type:
+                payload["type"] = "multi"
+            else:
+                payload["type"] = "gun"
 
         if tls == "tls":
             payload["sni"] = sni
@@ -100,6 +104,11 @@ class V2rayShareLink(str):
         if net == 'grpc':
             payload['serviceName'] = path
             payload["host"] = host
+            if type:
+                payload["mode"] = "multi"
+            else:
+                payload["mode"] = "gun"
+            del payload["headerType"]
         elif net == 'quic':
             payload['key'] = path
             payload["quicSecurity"] = host
@@ -161,6 +170,11 @@ class V2rayShareLink(str):
         if net == 'grpc':
             payload['serviceName'] = path
             payload["host"] = host
+            if type:
+                payload["mode"] = "multi"
+            else:
+                payload["mode"] = "gun"
+            del payload["headerType"]
         elif net == 'quic':
             payload['key'] = path
             payload["quicSecurity"] = host
@@ -353,7 +367,7 @@ class V2rayJsonConfig(str):
         return quicSettings
 
     @staticmethod
-    def kpc_config(path=None, host=None, header=None):
+    def kcp_config(path=None, host=None, header=None):
 
         kcpSettings = {}
         kcpSettings["header"] = {}
@@ -397,7 +411,7 @@ class V2rayJsonConfig(str):
             streamSettings["grpcSettings"] = network_setting
         elif network == "h2":
             streamSettings["httpSettings"] = network_setting
-        elif network == "kpc":
+        elif network == "kcp":
             streamSettings["kcpSettings"] = network_setting
         elif network == "tcp" and network_setting:
             streamSettings["tcpSettings"] = network_setting
@@ -510,17 +524,18 @@ class V2rayJsonConfig(str):
                             sid='',
                             headers='',
                             ais='',
+                            multi_mode=False,
                             dialer_proxy=''
                             ):
 
         if net == "ws":
             network_setting = self.ws_config(path=path, host=host)
         elif net == "grpc":
-            network_setting = self.grpc_config(path=path)
+            network_setting = self.grpc_config(path=path, multiMode=multi_mode)
         elif net == "h2":
             network_setting = self.h2_config(path=path, host=host)
-        elif net == "kpc":
-            network_setting = self.kpc_config(
+        elif net == "kcp":
+            network_setting = self.kcp_config(
                 path=path, host=host, header=headers)
         elif net == "tcp":
             network_setting = self.tcp_http_config(path=path, host=host)
@@ -621,6 +636,7 @@ class V2rayJsonConfig(str):
             pbk=inbound.get('pbk', ''),
             sid=inbound.get('sid', ''),
             headers=headers,
+            multi_mode=inbound["multi_mode"],
             ais=inbound.get('ais', ''),
             dialer_proxy=dialer_proxy
         )
