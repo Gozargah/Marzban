@@ -1236,7 +1236,7 @@ def select_protocols(call: types.CallbackQuery):
             {protocol: [inbound['tag'] for inbound in xray.config.inbounds_by_protocol[protocol]]})
     mem_store.set(f'{call.message.chat.id}:protocols', protocols)
 
-    if action == ["edit", "create_from_template"]:
+    if action in ["edit", "create_from_template"]:
         return bot.edit_message_text(
             call.message.text,
             call.message.chat.id,
