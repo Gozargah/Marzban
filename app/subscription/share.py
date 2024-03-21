@@ -44,6 +44,7 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
             type=inbound["header_type"],
             ais=inbound.get("ais", ""),
             fs=inbound.get("fragment_setting", ""),
+            mode=inbound.get("mode","")
         )
 
     if inbound["protocol"] == "vless":
@@ -66,6 +67,7 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
             type=inbound["header_type"],
             ais=inbound.get("ais", ""),
             fs=inbound.get("fragment_setting", ""),
+            mode=inbound.get("mode", "")
         )
 
     if inbound["protocol"] == "trojan":
@@ -88,6 +90,7 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
             type=inbound["header_type"],
             ais=inbound.get("ais", ""),
             fs=inbound.get("fragment_setting", ""),
+            mode=inbound.get("mode", "")
         )
 
     if inbound["protocol"] == "shadowsocks":
@@ -334,7 +337,8 @@ def process_inbounds_and_tags(
                         "ais": host["allowinsecure"]
                         or inbound.get("allowinsecure", ""),
                         "mux_enable": host["mux_enable"],
-                        "fragment_setting": host["fragment_setting"]
+                        "fragment_setting": host["fragment_setting"],
+                        "mode" : "multi" if inbound.get('multiMode', '') == True else "gun"
                     }
                 )
 
