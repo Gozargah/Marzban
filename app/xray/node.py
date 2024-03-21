@@ -163,6 +163,10 @@ class ReSTXRayNode:
         res = self.make_request("/", timeout=3)
         return res.get('core_version')
 
+    def get_stats(self):
+        res = self.make_request("/stats")
+        return res
+
     def start(self, config: XRayConfig):
         if not self.connected:
             self.connect()
