@@ -41,17 +41,22 @@ def get_admin_payload(token: str) -> Union[dict, None]:
 
 
 def create_subscription_token(username: str) -> str:
-    data = {"sub": username, "access": "subscription", "iat": datetime.utcnow()+timedelta(seconds=1)}
-    encoded_jwt = jwt.encode(data, get_secret_key(), algorithm="HS256")
+    data = {"sub": username, "access": "sub", "iat": datetime.utcnow()+timedelta(seconds=1)}
+    encoded_jwt = jwt.encode(data, get_secret_key(), algorithm="HS256").replace("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.", "")
     return encoded_jwt
 
 
 def get_subscription_payload(token: str) -> Union[dict, None]:
     try:
-        payload = jwt.decode(token, get_secret_key(), algorithms=["HS256"])
-        if payload.get("access") != "subscription":
-            return
+        payload = ""
+        if "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." in token:
+            payload = jwt.decode(token, get_secret_key(), algorithms=["HS256"])
+        else:
+            payload = jwt.decode("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." + token, get_secret_key(), algorithms=["HS256"])
 
-        return {"username": payload['sub'], "created_at": datetime.utcfromtimestamp(payload['iat'])}
+        if payload.get("access") in ["subscription", "sub"]:
+            return {"username": payload['sub'], "created_at": datetime.utcfromtimestamp(payload['iat'])}
+        else:
+            return
     except JWTError:
         return
