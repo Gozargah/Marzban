@@ -79,6 +79,7 @@
   "hostsDialog.jalaliExpireDate": "Expiry date of the user in solar calendar",
   "hostsDialog.remainingTime": "Remaining time of the user",
   "hostsDialog.statusEmoji": "User status as an emoji (✅,⌛️,🪫,❌,🔌)",
+  "hostsDialog.statusText": "User status",
   "hostsDialog.proxyProtocol": "Proxy protocol (e.g. VMess)",
   "hostsDialog.proxyMethod": "Proxy transport method (e.g. ws)",
   "hostsDialog.currentServer": "Current server ip address",

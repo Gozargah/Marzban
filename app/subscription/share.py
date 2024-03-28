@@ -13,6 +13,8 @@ from . import *
 if TYPE_CHECKING:
     from app.models.user import UserResponse
 
+from config import (ACTIVE_STATUS_TEXT, EXPIRED_STATUS_TEXT, LIMITED_STATUS_TEXT, DISABLED_STATUS_TEXT, ONHOLD_STATUS_TEXT)
+
 SERVER_IP = get_public_ip()
 
 STATUS_EMOJIS = {
@@ -23,6 +25,13 @@ STATUS_EMOJIS = {
     "on_hold": "🔌",
 }
 
+STATUS_TEXTS = {
+    "active": ACTIVE_STATUS_TEXT,
+    "expired": EXPIRED_STATUS_TEXT,
+    "limited": LIMITED_STATUS_TEXT,
+    "disabled": DISABLED_STATUS_TEXT,
+    "on_hold": ONHOLD_STATUS_TEXT,
+}
 
 def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
     if inbound["protocol"] == "vmess":
@@ -256,6 +265,7 @@ def setup_format_variables(extra_data: dict) -> dict:
         data_left = "∞"
 
     status_emoji = STATUS_EMOJIS.get(extra_data.get("status")) or ""
+    status_text = STATUS_TEXTS.get(extra_data.get("status")) or ""
 
     format_variables = {
         "SERVER_IP": SERVER_IP,
@@ -268,6 +278,7 @@ def setup_format_variables(extra_data: dict) -> dict:
         "JALALI_EXPIRE_DATE": jalali_expire_date,
         "TIME_LEFT": time_left,
         "STATUS_EMOJI": status_emoji,
+        "STATUS_TEXT": status_text,
     }
 
     return format_variables
