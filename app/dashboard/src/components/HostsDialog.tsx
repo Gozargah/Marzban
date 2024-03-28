@@ -312,6 +312,12 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
+                                    {"{"}STATUS_TEXT{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.statusText")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
                                     {"{"}PROTOCOL{"}"}
                                   </Badge>{" "}
                                   {t("hostsDialog.proxyProtocol")}
@@ -419,6 +425,12 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                   {"{"}STATUS_EMOJI{"}"}
                                 </Badge>{" "}
                                 {t("hostsDialog.statusEmoji")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}STATUS_TEXT{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.statusText")}
                               </Text>
                               <Text mt={1}>
                                 <Badge>
