@@ -44,9 +44,8 @@ def get_admin_payload(token: str) -> Union[dict, None]:
 
 def create_subscription_token(username: str) -> str:
     data = username + ',' + str(int(datetime.now().timestamp()))
-    data_b64 = b64encode(data.encode('utf-8'), altchars=b'-_')
-    data_b64_str = data_b64.decode('utf-8').rstrip('=')
-    data_b64_sign = b64encode(sha256(data_b64_str.encode('utf-8')+get_secret_key().encode('utf-8')).digest(), altchars=b'-_').decode('utf-8')[:10]
+    data_b64_str = b64encode(data.encode('utf-8'), altchars=b'-_').decode('utf-8').rstrip('=')
+    data_b64_sign = b64encode(sha256((data_b64_str+get_secret_key()).encode('utf-8')).digest(), altchars=b'-_').decode('utf-8')[:10]
     data_final = data_b64_str + data_b64_sign
     return data_final
 
@@ -70,7 +69,7 @@ def get_subscription_payload(token: str) -> Union[dict, None]:
                 u_token_dec_str = u_token_dec.decode('utf-8')
             except:
                 return
-            u_token_resign = b64encode(sha256(u_token.encode('utf-8')+get_secret_key().encode('utf-8')).digest(), altchars=b'-_').decode('utf-8')[:10]
+            u_token_resign = b64encode(sha256((u_token+get_secret_key()).encode('utf-8')).digest(), altchars=b'-_').decode('utf-8')[:10]
             if u_signature == u_token_resign:
                 u_username = u_token_dec_str.split(',')[0]
                 u_created_at = int(u_token_dec_str.split(',')[1])
