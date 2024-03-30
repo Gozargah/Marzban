@@ -8,9 +8,9 @@ from fastapi.responses import HTMLResponse
 from app import app
 from app.db import Session, crud, get_db
 from app.models.user import UserResponse
+from app.subscription.share import encode_title, generate_subscription
 from app.templates import render_template
 from app.utils.jwt import get_subscription_payload
-from app.subscription.share import encode_title, generate_subscription
 from config import (
     SUB_PROFILE_TITLE,
     SUB_SUPPORT_URL,
@@ -91,9 +91,9 @@ def user_subscription(token: str,
         conf = generate_subscription(user=user, config_format="outline", as_base64=False)
         return Response(content=conf, media_type="application/json", headers=response_headers)
 
-    elif re.match('^v2rayNG/(\d+\.\d+\.\d+)', user_agent):
-        version_str = re.match('^v2rayNG/(\d+\.\d+\.\d+)', user_agent).group(1)
-        if LooseVersion(version_str) >= LooseVersion("1.8.16"):
+    elif re.match(r'^v2rayN(?:G)?/(.*)', user_agent):
+        version_str = re.match(r'^v2rayN(?:G)?/(.*)', user_agent).group(1)
+        if LooseVersion(version_str) >= LooseVersion("1.8.16") or LooseVersion(version_str) >= LooseVersion("6.40"):
             conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False)
             return Response(content=conf, media_type="application/json", headers=response_headers)
         else:
