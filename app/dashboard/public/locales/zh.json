@@ -79,6 +79,8 @@
   "hostsDialog.proxyProtocol": "代理协议（例如 VMess）",
   "hostsDialog.proxyMethod": "代理传输方法（例如 ws）",
   "hostsDialog.currentServer": "当前服务器的 IP 地址",
+  "hostsDialog.currentServerv4": "当前服务器的 IPv4 地址",
+  "hostsDialog.currentServerv6": "当前服务器的 IPv6 地址",
   "hostsDialog.security": "安全层",
   "hostsDialog.host": "请求主机",
   "hostsDialog.port": "端口",
