@@ -258,6 +258,18 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
+                                    {"{"}SERVER_IPV4{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.currentServerv4")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}SERVER_IPV6{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.currentServerv6")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
                                     {"{"}USERNAME{"}"}
                                   </Badge>{" "}
                                   {t("hostsDialog.username")}
@@ -371,6 +383,18 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                   {"{"}SERVER_IP{"}"}
                                 </Badge>{" "}
                                 {t("hostsDialog.currentServer")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}SERVER_IPV4{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.currentServerv4")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}SERVER_IPV6{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.currentServerv6")}
                               </Text>
                               <Text mt={1}>
                                 <Badge>
