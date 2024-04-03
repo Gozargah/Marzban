@@ -43,7 +43,7 @@ def get_admin_payload(token: str) -> Union[dict, None]:
 
 
 def create_subscription_token(username: str) -> str:
-    data = username + ',' + str(int(datetime.now().timestamp()))
+    data = username + ',' + str(int(datetime.utcnow().timestamp()))
     data_b64_str = b64encode(data.encode('utf-8'), altchars=b'-_').decode('utf-8').rstrip('=')
     data_b64_sign = b64encode(sha256((data_b64_str+get_secret_key()).encode('utf-8')).digest(), altchars=b'-_').decode('utf-8')[:10]
     data_final = data_b64_str + data_b64_sign
@@ -58,7 +58,7 @@ def get_subscription_payload(token: str) -> Union[dict, None]:
         if "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." in token:
             payload = jwt.decode(token, get_secret_key(), algorithms=["HS256"])
             if payload.get("access") == "subscription":
-                return {"username": payload['sub'], "created_at": datetime.fromtimestamp(payload['iat'])}
+                return {"username": payload['sub'], "created_at": datetime.utcfromtimestamp(payload['iat'])}
             else:
                 return
         else:
@@ -73,7 +73,7 @@ def get_subscription_payload(token: str) -> Union[dict, None]:
             if u_signature == u_token_resign:
                 u_username = u_token_dec_str.split(',')[0]
                 u_created_at = int(u_token_dec_str.split(',')[1])
-                return {"username": u_username, "created_at": datetime.fromtimestamp(u_created_at)}
+                return {"username": u_username, "created_at": datetime.utcfromtimestamp(u_created_at)}
             else:
                 return
     except JWTError:
