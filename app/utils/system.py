@@ -5,7 +5,7 @@ import time
 from dataclasses import dataclass
 
 import psutil
-import requests
+import requests, ipaddress
 
 from app import scheduler
 
@@ -108,33 +108,45 @@ def check_port(port: int) -> bool:
 
 
 def get_public_ip():
+    resp = get_public_ipv4()
+    if resp == '127.0.0.1':
+        return get_public_ipv6()
+    else:
+        return resp
+
+def get_public_ipv4():
     try:
-        return requests.get('https://api.ipify.org?format=json&ipv=4', timeout=5).json()['ip']
-    except (requests.exceptions.RequestException,
-            requests.exceptions.RequestException,
-            KeyError) as e:
+        resp = requests.get('http://api4.ipify.org/', timeout=5).text.strip()
+        if ipaddress.IPv4Address(resp).is_global:
+            return resp
+    except:
         pass
 
     try:
-        requests.packages.urllib3.util.connection.HAS_IPV6 = False
-        return requests.get('https://ifconfig.io/ip', timeout=5).text.strip()
-    except (requests.exceptions.RequestException,
-            requests.exceptions.RequestException,
-            KeyError) as e:
+        resp = requests.get('http://ipv4.icanhazip.com/', timeout=5).text.strip()
+        if ipaddress.IPv4Address(resp).is_global:
+            return resp
+    except:
         pass
-    finally:
-        requests.packages.urllib3.util.connection.HAS_IPV6 = True
-
-    try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.connect(('8.8.8.8', 80))
-        return sock.getsockname()[0]
-    except (socket.error, IndexError):
-        pass
-    finally:
-        sock.close()
 
     return '127.0.0.1'
+
+def get_public_ipv6():
+    try:
+        resp = requests.get('http://api6.ipify.org/', timeout=5).text.strip()
+        if ipaddress.IPv6Address(resp).is_global:
+            return '[' + resp + ']'
+    except:
+        pass
+
+    try:
+        resp = requests.get('http://ipv6.icanhazip.com/', timeout=5).text.strip()
+        if ipaddress.IPv6Address(resp).is_global:
+            return '[' + resp + ']'
+    except:
+        pass
+
+    return '[::1]'
 
 
 def readable_size(size_bytes):
