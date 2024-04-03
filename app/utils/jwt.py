@@ -55,7 +55,7 @@ def get_subscription_payload(token: str) -> Union[dict, None]:
         if len(token) < 15:
             return
 
-        if "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." in token:
+        if token.startswith("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."):
             payload = jwt.decode(token, get_secret_key(), algorithms=["HS256"])
             if payload.get("access") == "subscription":
                 return {"username": payload['sub'], "created_at": datetime.utcfromtimestamp(payload['iat'])}
