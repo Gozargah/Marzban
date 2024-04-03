@@ -16,6 +16,8 @@ if TYPE_CHECKING:
 from config import (ACTIVE_STATUS_TEXT, EXPIRED_STATUS_TEXT, LIMITED_STATUS_TEXT, DISABLED_STATUS_TEXT, ONHOLD_STATUS_TEXT)
 
 SERVER_IP = get_public_ip()
+SERVER_IPV4 = get_public_ipv4()
+SERVER_IPV6 = get_public_ipv6()
 
 STATUS_EMOJIS = {
     "active": "✅",
@@ -269,6 +271,8 @@ def setup_format_variables(extra_data: dict) -> dict:
 
     format_variables = {
         "SERVER_IP": SERVER_IP,
+        "SERVER_IPV4": SERVER_IPV4,
+        "SERVER_IPV6": SERVER_IPV6,
         "USERNAME": extra_data.get("username", "{USERNAME}"),
         "DATA_USAGE": readable_size(extra_data.get("used_traffic")),
         "DATA_LIMIT": data_limit,
