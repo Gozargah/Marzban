@@ -17,7 +17,7 @@ from config import (
     SUB_UPDATE_INTERVAL,
     SUBSCRIPTION_PAGE_TEMPLATE,
     XRAY_SUBSCRIPTION_PATH,
-    V2RAY_USE_JSON
+    USE_CUSTOM_JSON_DEFAULT
 )
 
 
@@ -94,7 +94,7 @@ def user_subscription(token: str,
 
     elif re.match('^v2rayNG/(\d+\.\d+\.\d+)', user_agent):
         version_str = re.match('^v2rayNG/(\d+\.\d+\.\d+)', user_agent).group(1)
-        if LooseVersion(version_str) >= LooseVersion("1.8.16") and V2RAY_USE_JSON.lower() != "false":
+        if LooseVersion(version_str) >= LooseVersion("1.8.16") and USE_CUSTOM_JSON_DEFAULT:
             conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False)
             return Response(content=conf, media_type="application/json", headers=response_headers)
         else:
