@@ -108,11 +108,24 @@ def check_port(port: int) -> bool:
 
 
 def get_public_ip():
-    resp = get_public_ipv4()
-    if resp == '127.0.0.1':
-        return get_public_ipv6()
-    else:
-        return resp
+    try:
+        resp = requests.get('http://api4.ipify.org/', timeout=5).text.strip()
+        if ipaddress.IPv4Address(resp).is_global:
+            return resp
+    except:
+        pass
+
+    try:
+        resp = requests.get('http://icanhazip.com/', timeout=5).text.strip()
+        if ipaddress.IPv4Address(resp).is_global:
+            return resp
+        elif ipaddress.IPv6Address(resp).is_global:
+            return '[%s]' % resp
+    except:
+        pass
+
+    return '127.0.0.1'
+
 
 def get_public_ipv4():
     try:
@@ -135,14 +148,14 @@ def get_public_ipv6():
     try:
         resp = requests.get('http://api6.ipify.org/', timeout=5).text.strip()
         if ipaddress.IPv6Address(resp).is_global:
-            return '[' + resp + ']'
+            return '[%s]' % resp
     except:
         pass
 
     try:
         resp = requests.get('http://ipv6.icanhazip.com/', timeout=5).text.strip()
         if ipaddress.IPv6Address(resp).is_global:
-            return '[' + resp + ']'
+            return '[%s]' % resp
     except:
         pass
 
