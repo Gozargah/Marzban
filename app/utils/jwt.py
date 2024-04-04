@@ -43,7 +43,7 @@ def get_admin_payload(token: str) -> Union[dict, None]:
 
 
 def create_subscription_token(username: str) -> str:
-    data = username + ',' + str(int(datetime.utcnow().timestamp()))
+    data = username + ',' + str(round(datetime.utcnow().timestamp()))
     data_b64_str = b64encode(data.encode('utf-8'), altchars=b'-_').decode('utf-8').rstrip('=')
     data_b64_sign = b64encode(sha256((data_b64_str+get_secret_key()).encode('utf-8')).digest(), altchars=b'-_').decode('utf-8')[:10]
     data_final = data_b64_str + data_b64_sign
