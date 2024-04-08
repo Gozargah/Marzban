@@ -83,7 +83,6 @@
   "hostsDialog.proxyProtocol": "Proxy protocol (e.g. VMess)",
   "hostsDialog.proxyMethod": "Proxy transport method (e.g. ws)",
   "hostsDialog.currentServer": "IP Address of current server",
-  "hostsDialog.currentServerv4": "IPv4 of current server",
   "hostsDialog.currentServerv6": "IPv6 of current server",
   "hostsDialog.security": "Security Layer",
   "hostsDialog.host": "Request Host",
