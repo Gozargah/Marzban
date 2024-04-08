@@ -124,6 +124,7 @@ def get_public_ip():
 
     return '127.0.0.1'
 
+
 def get_public_ipv6():
     try:
         resp = requests.get('http://api6.ipify.org/', timeout=5).text.strip()
