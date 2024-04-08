@@ -86,7 +86,6 @@
   "hostsDialog.proxyProtocol": "پروتکل پروکسی (مانند VMess)",
   "hostsDialog.proxyMethod": "روش انتقال پروکسی (مانند ws)",
   "hostsDialog.currentServer": "IP کنونی سرور",
-  "hostsDialog.currentServerv4": "IPv4 کنونی سرور",
   "hostsDialog.currentServerv6": "IPv6 کنونی سرور",
   "hostsDialog.security": "لایه امنیت",
   "hostsDialog.host": "هاست درخواست",
