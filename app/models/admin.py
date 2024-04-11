@@ -23,7 +23,8 @@ class Admin(BaseModel):
     is_sudo: bool
     telegram_id: Optional[int]
     discord_webhook: Optional[str]
-
+    used_traffic: int
+    
     class Config:
         orm_mode = True
 

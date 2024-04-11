@@ -9,7 +9,7 @@ from sqlalchemy import and_, bindparam, insert, select, sql, update
 
 from app import scheduler, xray
 from app.db import GetDB
-from app.db.models import NodeUsage, NodeUserUsage, System, User
+from app.db.models import NodeUsage, NodeUserUsage, System, User, Admin
 from config import DISABLE_RECORDING_NODE_USAGE
 from xray_api import XRay as XRayAPI
 from xray_api import exc as xray_exc
@@ -154,12 +154,44 @@ def record_user_usages():
 
         safe_execute(db, stmt, users_usage)
 
+    record_admins_usage(users_usage)
+
     if DISABLE_RECORDING_NODE_USAGE:
         return
 
     for node_id, params in api_params.items():
         record_user_stats(params, node_id, usage_coefficient[node_id])
 
+def record_admins_usage(users_usages):
+    users_usage_id = [item["uid"] for item in users_usages]
+
+    with GetDB() as db:
+        users = db.query(User).filter(User.id.in_(users_usage_id)).all()
+
+        # find user's admin
+        users_usages_with_admin_id = list()
+        admins_ids = list()
+        for user in users:
+            for user_usage in users_usages:
+                if int(user_usage['uid']) == user.id:
+                    user_usage['admin_id'] = user.admin_id
+                    users_usages_with_admin_id.append(user_usage)
+                    if user.admin_id not in admins_ids:
+                        admins_ids.append(user.admin_id)
+
+        # calculate admins usages
+        admins_usages = list()
+        for admin_id in admins_ids:
+            total_val = sum(item["value"] for item in users_usages_with_admin_id if item["admin_id"] == admin_id)
+            admins_usages.append(dict({ "admin_id": admin_id, "value": total_val}))
+
+        stmt = update(Admin). \
+            where(Admin.id == bindparam('admin_id')). \
+            values(
+                used_traffic=Admin.used_traffic + bindparam('value'),
+            )
+
+        safe_execute(db, stmt, admins_usages)
 
 def record_node_usages():
     api_instances = {None: xray.api}
