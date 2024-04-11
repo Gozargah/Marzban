@@ -16,26 +16,42 @@ from app import __version__
 def get_system_stats(db: Session = Depends(get_db), admin: Admin = Depends(Admin.get_current)):
     mem = memory_usage()
     cpu = cpu_usage()
-    system = crud.get_system_usage(db)
     dbadmin: Union[Admin, None] = crud.get_admin(db, admin.username)
 
     total_user = crud.get_users_count(db, admin=dbadmin if not admin.is_sudo else None)
     users_active = crud.get_users_count(db, status=UserStatus.active, admin=dbadmin if not admin.is_sudo else None)
     realtime_bandwidth_stats = realtime_bandwidth()
 
-    return SystemStats(
-        version=__version__,
-        mem_total=mem.total,
-        mem_used=mem.used,
-        cpu_cores=cpu.cores,
-        cpu_usage=cpu.percent,
-        total_user=total_user,
-        users_active=users_active,
-        incoming_bandwidth=system.uplink,
-        outgoing_bandwidth=system.downlink,
-        incoming_bandwidth_speed=realtime_bandwidth_stats.incoming_bytes,
-        outgoing_bandwidth_speed=realtime_bandwidth_stats.outgoing_bytes,
-    )
+    if admin.is_sudo:
+        system = crud.get_system_usage(db)
+
+        return SystemStats(
+            version=__version__,
+            mem_total=mem.total,
+            mem_used=mem.used,
+            cpu_cores=cpu.cores,
+            cpu_usage=cpu.percent,
+            total_user=total_user,
+            users_active=users_active,
+            incoming_bandwidth=system.uplink,
+            outgoing_bandwidth=system.downlink,
+            incoming_bandwidth_speed=realtime_bandwidth_stats.incoming_bytes,
+            outgoing_bandwidth_speed=realtime_bandwidth_stats.outgoing_bytes,
+        )
+    else:
+        return SystemStats(
+            version=__version__,
+            mem_total=mem.total,
+            mem_used=mem.used,
+            cpu_cores=cpu.cores,
+            cpu_usage=cpu.percent,
+            total_user=total_user,
+            users_active=users_active,
+            incoming_bandwidth=0,
+            outgoing_bandwidth=admin.used_traffic,
+            incoming_bandwidth_speed=realtime_bandwidth_stats.incoming_bytes,
+            outgoing_bandwidth_speed=realtime_bandwidth_stats.outgoing_bytes,
+        )
 
 
 @app.get('/api/inbounds', tags=["System"], response_model=Dict[ProxyTypes, List[ProxyInbound]])

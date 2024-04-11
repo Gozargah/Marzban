@@ -28,7 +28,7 @@ class Admin(Base):
     password_reset_at = Column(DateTime, nullable=True)
     telegram_id = Column(BigInteger, nullable=True, default=None)
     discord_webhook = Column(String(1024), nullable=True, default=None)
-
+    used_traffic = Column(BigInteger, default=0)
 
 class User(Base):
     __tablename__ = "users"
