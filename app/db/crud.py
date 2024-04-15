@@ -130,10 +130,7 @@ def get_users(db: Session,
         query = query.filter(or_(User.username.ilike(f"%{search}%"), User.note.ilike(f"%{search}%")))
 
     if usernames:
-        if len(usernames) == 1:
-            query = query.filter(User.username.ilike(f"%{usernames[0]}%"))
-        else:
-            query = query.filter(User.username.in_(usernames))
+        query = query.filter(User.username.in_(usernames))
 
     if status:
         if isinstance(status, list):
