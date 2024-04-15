@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 import typer
 from rich.table import Table
@@ -16,10 +16,10 @@ app = typer.Typer(no_args_is_help=True)
 def list_users(
     offset: Optional[int] = typer.Option(None, *utils.FLAGS["offset"]),
     limit: Optional[int] = typer.Option(None, *utils.FLAGS["limit"]),
-    username: Optional[List[str]] = typer.Option(None, *utils.FLAGS["username"], help="Search by username(s)"),
+    username: Optional[list[str]] = typer.Option(None, *utils.FLAGS["username"], help="Search by username(s)"),
     search: Optional[str] = typer.Option(None, *utils.FLAGS["search"], help="Search by username/note"),
     status: Optional[crud.UserStatus] = typer.Option(None, *utils.FLAGS["status"]),
-    admin: Optional[str] = typer.Option(None, "--admin", "--owner", help="Search by owner admin's username")
+    admins: Optional[list[str]] = typer.Option(None, *utils.FLAGS["admin"], help="Search by owner admin's username(s)")
 ):
     """
     Displays a table of users
@@ -30,7 +30,7 @@ def list_users(
         users: list[User] = crud.get_users(
             db=db, offset=offset, limit=limit,
             usernames=username, search=search, status=status,
-            admin=crud.get_admin(db, admin) if admin else None
+            admins=admins
         )
 
         utils.print_table(
