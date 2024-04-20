@@ -21,10 +21,10 @@ export const Header: FC<HeaderProps> = ({ pageName }) => {
       pb="4"
       gap="1"
     >
-      <Text as="h1" fontWeight="semibold" fontSize="2xl">
+      <Text color="text" as="h1" fontWeight="semibold" fontSize="2xl">
         {t(pageName + ".title")}
       </Text>
-      <Text color="GrayText">{t(pageName + ".description")}</Text>
+      <Text color="text-inactive">{t(pageName + ".description")}</Text>
     </VStack>
   );
 };

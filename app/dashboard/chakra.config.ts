@@ -39,8 +39,8 @@ export const theme = extendTheme({
         _dark: "#EAECF0",
       },
       "text-inactive": {
-        default: "#EAEAEA",
-        _dark: "#475467",
+        default: "#475467",
+        _dark: "#EAEAEA",
       },
       "text-nav-inactive": {
         default: "#737378",
@@ -89,7 +89,6 @@ export const theme = extendTheme({
     },
   },
   colors: {
-    border: "#d2d2d4",
     primary: {
       50: "#9cb7f2",
       100: "#88a9ef",
