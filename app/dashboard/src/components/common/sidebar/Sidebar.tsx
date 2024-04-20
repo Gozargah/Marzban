@@ -102,8 +102,7 @@ export const Sidebar: FC = () => {
             <DrawerContent
               p={0}
               maxW={{
-                base: "calc(100% - 280px)",
-                sm: "280px",
+                base: "280px",
               }}
               zIndex={1500}
               position="relative"
