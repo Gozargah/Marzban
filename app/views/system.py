@@ -48,7 +48,7 @@ def get_system_stats(db: Session = Depends(get_db), admin: Admin = Depends(Admin
             total_user=total_user,
             users_active=users_active,
             incoming_bandwidth=0,
-            outgoing_bandwidth=admin.used_traffic,
+            outgoing_bandwidth=dbadmin.used_traffic,
             incoming_bandwidth_speed=realtime_bandwidth_stats.incoming_bytes,
             outgoing_bandwidth_speed=realtime_bandwidth_stats.outgoing_bytes,
         )

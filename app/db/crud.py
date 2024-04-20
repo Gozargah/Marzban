@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app.db.models import (JWT, TLS, Admin, Node, NodeUsage, NodeUserUsage,
                            NotificationReminder, Proxy, ProxyHost,
                            ProxyInbound, ProxyTypes, System, User,
-                           UserTemplate, UserUsageResetLogs)
+                           UserTemplate, UserUsageResetLogs, NodeAdminUsage)
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
 from app.models.node import (NodeCreate, NodeModify, NodeStatus,
                              NodeUsageResponse)
@@ -191,6 +191,36 @@ def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime,
 
     return list(usages.values())
 
+def get_admin_node_usages(db: Session, admin_id: int, start: datetime, end: datetime,
+                    ) -> List[NodeUsageResponse]:
+    usages = {}
+
+    usages[0] = NodeUsageResponse(  # Main Core
+        node_id=None,
+        node_name="Master",
+        uplink=0,
+        downlink=0
+    )
+
+    for node in db.query(Node).all():
+        usages[node.id] = NodeUsageResponse(
+            node_id=node.id,
+            node_name=node.name,
+            uplink=0,
+            downlink=0
+        )
+
+    cond = and_(NodeAdminUsage.admin_id == admin_id,
+                NodeAdminUsage.created_at >= start,
+                NodeAdminUsage.created_at <= end)
+
+    for v in db.query(NodeAdminUsage).filter(cond):
+        try:
+            usages[v.node_id or 0].downlink += v.used_traffic
+        except KeyError:
+            pass
+
+    return list(usages.values())
 
 def get_users_count(db: Session, status: UserStatus = None, admin: Admin = None):
     query = db.query(User.id)

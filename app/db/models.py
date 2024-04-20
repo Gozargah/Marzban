@@ -29,6 +29,7 @@ class Admin(Base):
     telegram_id = Column(BigInteger, nullable=True, default=None)
     discord_webhook = Column(String(1024), nullable=True, default=None)
     used_traffic = Column(BigInteger, default=0)
+    node_usages = relationship("NodeAdminUsage", back_populates="admin", cascade="all, delete-orphan")
 
 class User(Base):
     __tablename__ = "users"
@@ -235,6 +236,7 @@ class Node(Base):
     uplink = Column(BigInteger, default=0)
     downlink = Column(BigInteger, default=0)
     user_usages = relationship("NodeUserUsage", back_populates="node", cascade="all, delete-orphan")
+    admin_usages = relationship("NodeAdminUsage", back_populates="node", cascade="all, delete-orphan")
     usages = relationship("NodeUsage", back_populates="node", cascade="all, delete-orphan")
     usage_coefficient = Column(Float, nullable=False, server_default=text("1.0"), default=1)
 
@@ -253,6 +255,19 @@ class NodeUserUsage(Base):
     node = relationship("Node", back_populates="user_usages")
     used_traffic = Column(BigInteger, default=0)
 
+class NodeAdminUsage(Base):
+    __tablename__ = "node_admin_usages"
+    __table_args__ = (
+        UniqueConstraint('created_at', 'admin_id', 'node_id'),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, unique=False, nullable=False)  # one hour per record
+    admin_id = Column(Integer, ForeignKey("admins.id"))
+    admin = relationship("Admin", back_populates="node_usages")
+    node_id = Column(Integer, ForeignKey("nodes.id"))
+    node = relationship("Node", back_populates="admin_usages")
+    used_traffic = Column(BigInteger, default=0)
 
 class NodeUsage(Base):
     __tablename__ = "node_usages"

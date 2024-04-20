@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional, Union
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -23,7 +23,6 @@ class Admin(BaseModel):
     is_sudo: bool
     telegram_id: Optional[int]
     discord_webhook: Optional[str]
-    used_traffic: int
     
     class Config:
         orm_mode = True

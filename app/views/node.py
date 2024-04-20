@@ -226,9 +226,6 @@ def get_usage(db: Session = Depends(get_db),
     Get nodes usage
     """
 
-    if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
     if start is None:
         start_date = datetime.fromtimestamp(datetime.utcnow().timestamp() - 30 * 24 * 3600)
     else:
@@ -239,6 +236,12 @@ def get_usage(db: Session = Depends(get_db),
     else:
         end_date = datetime.fromisoformat(end)
 
-    usages = crud.get_nodes_usage(db, start_date, end_date)
+    if not admin.is_sudo:
+        # get non sudo admin usage
+        dbadmin: Union[Admin, None] = crud.get_admin(db, admin.username)
+        usages = crud.get_admin_node_usages(db, dbadmin.id, start_date, end_date)
+    else:
+        usages = crud.get_nodes_usage(db, start_date, end_date)
 
-    return {"usages": usages}
+
+    return { "usages": usages }
