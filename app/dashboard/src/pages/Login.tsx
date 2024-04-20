@@ -1,14 +1,14 @@
 import {
-	Alert,
-	AlertDescription,
-	AlertIcon,
-	Box,
-	Button,
-	FormControl,
-	HStack,
-	Text,
-	VStack,
-	chakra,
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  Box,
+  Button,
+  FormControl,
+  HStack,
+  Text,
+  VStack,
+  chakra,
 } from "@chakra-ui/react";
 import { ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -73,7 +73,6 @@ export const Login: FC = () => {
     mutation: {
       onSuccess({ access_token: token }) {
         setAuthToken(token);
-				console.log('navigating...')
         navigate("/");
       },
     },

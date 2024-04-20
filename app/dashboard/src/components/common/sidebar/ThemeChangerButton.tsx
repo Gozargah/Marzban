@@ -20,7 +20,7 @@ export const ThemeChangerButton = () => {
     <Tooltip label={t("theme.toggleButton")} placement="top">
       <IconButton
         size="sm"
-        variant="solid"
+        variant="outline"
         colorScheme="gray"
         aria-label="switch theme"
         onClick={() => {

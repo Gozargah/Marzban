@@ -24,14 +24,7 @@ export const Language: FC<HeaderProps> = ({ actions }) => {
   return (
     <Menu placement="bottom-end">
       <Tooltip label={t("localization.toggleButton")} placement="top">
-        <MenuButton
-          as={IconButton}
-          size="sm"
-          variant="solid"
-          colorScheme="gray"
-          icon={<LangIcon />}
-          position="relative"
-        />
+        <MenuButton as={IconButton} size="sm" variant="outline" icon={<LangIcon />} position="relative" />
       </Tooltip>
       <MenuList minW="100px" zIndex={1399}>
         <MenuItem maxW="100px" fontSize="sm" onClick={() => changeLanguage("en")}>

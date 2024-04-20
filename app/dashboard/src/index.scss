@@ -213,7 +213,7 @@ table thead {
 :host[data-theme="light"],
 :root[data-theme="light"],
 [data-theme][data-theme="light"] {
-  --chakra-colors-chakra-body-bg: #f8f9fa !important;
+  --chakra-colors-chakra-body-bg: var(--chakra-colors-main-bg) !important;
 }
 
 .chakra-ui-dark :host:not([data-theme]),
@@ -225,7 +225,7 @@ table thead {
 :host[data-theme="dark"],
 :root[data-theme="dark"],
 [data-theme][data-theme="dark"] {
-  --chakra-colors-chakra-body-bg: #222326 !important;
+  --chakra-colors-chakra-body-bg: var(--chakra-colors-main-bg) !important;
 }
 
 html,

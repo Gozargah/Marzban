@@ -70,10 +70,7 @@ export const Sidebar: FC = () => {
             w="full"
             bg="transparent"
             borderBottom="1px solid"
-            borderColor="#E5EAF0"
-            _dark={{
-              borderColor: "#282C2F",
-            }}
+            borderColor="divider"
             px="4"
             py="3"
           >
@@ -142,13 +139,9 @@ const SidebarContent: FC<{ isDrawerOpen: boolean; toggleDrawer: () => void }> = 
       }}
       w="full"
       h="full"
-      bg="white"
+      bg="body"
       borderRight="1px solid"
-      borderColor="#E5EAF0"
-      _dark={{
-        bg: "#1E1F22",
-        borderColor: "#282C2F",
-      }}
+      borderColor="divider"
       px={{ md: 4, base: 2 }}
       py="5"
       pt={{
@@ -199,7 +192,7 @@ const SidebarContent: FC<{ isDrawerOpen: boolean; toggleDrawer: () => void }> = 
           ]}
           handleOnClick={handleOnClick}
         />
-        <Divider _light={{ borderColor: "#DCE0E4" }} />
+        <Divider borderColor="divider" />
         <HStack justify="space-between" w="full" alignItems="center">
           <GithubStar />
           <HStack>
@@ -207,13 +200,13 @@ const SidebarContent: FC<{ isDrawerOpen: boolean; toggleDrawer: () => void }> = 
             <ThemeChangerButton />
           </HStack>
         </HStack>
-        <Divider _light={{ borderColor: "#DCE0E4" }} />
+        <Divider borderColor="divider" />
         <HStack pt="2" pl="1" w="full" justifyContent="space-between">
-          <Text fontSize="sm" fontWeight="semibold">
+          <Text fontSize="sm" fontWeight="semibold" color="text-nav-inactive">
             {data && data.username}
           </Text>
           <Tooltip label={t("header.logout")}>
-            <IconButton as={Link} to="/login" aria-label="sign out" color="gray.400" size="sm" variant="ghost">
+            <IconButton as={Link} to="/login" aria-label="sign out" color="text-nav-inactive" size="sm" variant="ghost">
               <ArrowRightStartOnRectangleIcon width="18px" />
             </IconButton>
           </Tooltip>
@@ -254,18 +247,20 @@ const NavButton: FC<{ menuItem: MenuItem; handleOnClick?: () => void }> = ({ men
           base: "sm",
         }}
         fontWeight="medium"
-        color="gray.300"
+        color="text-nav-inactive"
         bg="transparent"
         _hover={{
-          bg: "blackAlpha.200 !important",
-          _dark: {
-            bg: "whiteAlpha.200 !important",
-          },
+          bg: "active-menu-bg",
+          color: "text-nav-inactive",
         }}
+        border="1px solid"
+        borderColor="transparent"
         _active={{
-          bg: "blackAlpha.100",
-          _dark: {
-            bg: "whiteAlpha.100",
+          bg: "active-menu-bg",
+          borderColor: "border",
+          color: "text-nav-active",
+          _light: {
+            boxShadow: "0px 2px 4px -2px rgba(16, 24, 40, 0.06)",
           },
         }}
         px={{
@@ -285,10 +280,9 @@ const NavButton: FC<{ menuItem: MenuItem; handleOnClick?: () => void }> = ({ men
           menuItem.children && setOpen(!isOpen);
           if (!menuItem.children) handleOnClick && handleOnClick();
         }}
-        _light={{ color: "gray.600" }}
         rightIcon={menuItem.children ? <DropdownIcon transform={isOpen ? "rotate(180deg)" : ""} /> : undefined}
       >
-        <Text as="span" color="whiteAlpha.800" _light={{ color: "gray.700" }} flexGrow={1} textAlign="left">
+        <Text as="span" color="inherit" flexGrow={1} textAlign="left">
           {t(menuItem.title)}
         </Text>
       </Button>

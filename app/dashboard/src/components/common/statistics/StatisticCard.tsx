@@ -13,9 +13,8 @@ export const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({ title
     <Card
       p={6}
       borderWidth="1px"
-      borderColor="gray.300"
-      bg="white"
-      _dark={{ borderColor: "gray.700", bg: "gray.800" }}
+      borderColor="border"
+      bg="card-bg"
       borderStyle="solid"
       boxShadow="none"
       borderRadius="12px"

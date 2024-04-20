@@ -1,11 +1,95 @@
-import { extendTheme } from "@chakra-ui/react";
+import { defineStyle, defineStyleConfig, extendTheme } from "@chakra-ui/react";
 export const theme = extendTheme({
   shadows: { outline: "0 0 0 2px var(--chakra-colors-primary-200)" },
   fonts: {
     body: `Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif`,
   },
+  semanticTokens: {
+    colors: {
+      divider: {
+        default: "#F0F0F0",
+        _dark: "#313235",
+      },
+      "main-bg": {
+        default: "#fff",
+        _dark: "#222326",
+      },
+      body: {
+        default: "#FAFAFA",
+        _dark: "#1E1F22",
+      },
+      border: {
+        default: "#EAECF0",
+        _dark: "#3A3839",
+      },
+      "active-menu-bg": {
+        default: "#fff",
+        _dark: "#26272A",
+      },
+      "card-bg": {
+        default: "#FCFCFC",
+        _dark: "#26272A",
+      },
+      text: {
+        default: "#344054",
+        _dark: "#EEEEEE",
+      },
+      "text-active": {
+        default: "#101828",
+        _dark: "#EAECF0",
+      },
+      "text-inactive": {
+        default: "#EAEAEA",
+        _dark: "#475467",
+      },
+      "text-nav-inactive": {
+        default: "#737378",
+        _dark: "#D6D6D6",
+      },
+      "text-nav-active": {
+        default: "#101828",
+        _dark: "#EDEDED",
+      },
+      "success-text": {
+        default: "#067647",
+        _dark: "#079455",
+      },
+      "success-border": {
+        default: "#ABEFC6",
+        _dark: "#85C7AB",
+      },
+      "success-bg": {
+        default: "#ECFDF3",
+        _dark: "#C5D3CC",
+      },
+      "error-text": {
+        default: "#B42318",
+        _dark: "#B42318",
+      },
+      "error-border": {
+        default: "#FECDCA",
+        _dark: "#D68983",
+      },
+      "error-bg": {
+        default: "#FEF3F2",
+        _dark: "#D4CBCB",
+      },
+      "th-bg": {
+        default: "#FCFCFC",
+        _dark: "#26272A",
+      },
+      "td-bg": {
+        default: "#fff",
+        _dark: "#222326",
+      },
+      "td-hover": {
+        default: "#F9FAFB",
+        _dark: "#27282B",
+      },
+    },
+  },
   colors: {
-    "light-border": "#d2d2d4",
+    border: "#d2d2d4",
     primary: {
       50: "#9cb7f2",
       100: "#88a9ef",
@@ -35,6 +119,42 @@ export const theme = extendTheme({
     },
   },
   components: {
+    Button: defineStyleConfig({
+      variants: {
+        outline: defineStyle({
+          bg: "td-bg",
+          borderColor: "border",
+        }),
+        ghost: defineStyle({
+          bg: "transparent",
+          border: "1px solid",
+          borderColor: "transparent",
+          _light: {
+            color: "gray.800",
+          },
+          _hover: {
+            bg: "td-bg",
+            borderColor: "border",
+          },
+        }),
+      },
+    }),
+    Menu: {
+      baseStyle: {
+        list: {
+          bg: "card-bg",
+        },
+        item: {
+          bg: "card-bg",
+          _hover: {
+            bg: "blackAlpha.100",
+            _dark: {
+              bg: "whiteAlpha.100",
+            },
+          },
+        },
+      },
+    },
     Alert: {
       baseStyle: {
         container: {
@@ -59,6 +179,11 @@ export const theme = extendTheme({
     FormHelperText: {
       baseStyle: {
         fontSize: "xs",
+      },
+    },
+    Divider: {
+      baseStyle: {
+        opacity: 1,
       },
     },
     FormLabel: {
@@ -98,6 +223,7 @@ export const theme = extendTheme({
         },
       },
     },
+
     Table: {
       baseStyle: {
         table: {
@@ -105,48 +231,35 @@ export const theme = extendTheme({
           borderSpacing: 0,
         },
         thead: {
-          borderBottomColor: "light-border",
+          borderBottomColor: "border",
         },
         th: {
-          background: "#F9FAFB",
-          borderColor: "light-border !important",
-          borderBottomColor: "light-border !important",
+          background: "th-bg",
+          borderColor: "border !important",
+          borderBottomColor: "border !important",
           borderTop: "1px solid ",
-          borderTopColor: "light-border !important",
+          borderTopColor: "border !important",
           _first: {
             borderLeft: "1px solid",
-            borderColor: "light-border !important",
+            borderColor: "border !important",
           },
           _last: {
             borderRight: "1px solid",
-            borderColor: "light-border !important",
-          },
-          _dark: {
-            borderColor: "gray.600 !important",
-            background: "gray.750",
+            borderColor: "border !important",
           },
         },
         td: {
           transition: "all .1s ease-out",
-          borderColor: "light-border",
-          borderBottomColor: "light-border !important",
+          borderColor: "border",
+          borderBottomColor: "border !important",
+          background: "td-bg",
           _first: {
             borderLeft: "1px solid",
-            borderColor: "light-border",
-            _dark: {
-              borderColor: "gray.600",
-            },
+            borderColor: "border",
           },
           _last: {
             borderRight: "1px solid",
-            borderColor: "light-border",
-            _dark: {
-              borderColor: "gray.600",
-            },
-          },
-          _dark: {
-            borderColor: "gray.600",
-            borderBottomColor: "gray.600 !important",
+            borderColor: "border",
           },
         },
         tr: {
@@ -154,12 +267,7 @@ export const theme = extendTheme({
             cursor: "pointer",
             _hover: {
               "& > td": {
-                bg: "gray.200",
-              },
-              _dark: {
-                "& > td": {
-                  bg: "gray.750",
-                },
+                bg: "td-hover",
               },
             },
           },

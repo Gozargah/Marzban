@@ -254,7 +254,6 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                     {filters.status ? ": " + filters.status : ""}
                   </Text>
                   <Select
-                    value={filters.sort}
                     fontSize="xs"
                     fontWeight="extrabold"
                     textTransform="uppercase"
@@ -438,21 +437,17 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 <Sort sort={filters.sort} column="username" />
               </HStack>
             </Th>
-            <Th position="sticky" top={{ base: "unset", lg: top }} width="400px" minW="120px" cursor={"pointer"} pl={1}>
+            <Th
+              position="sticky"
+              top={{ base: "unset", lg: top }}
+              width="340px"
+              maxW="340px"
+              minW="120px"
+              cursor={"pointer"}
+              pl={1}
+            >
               <HStack spacing={0} position="relative">
-                <Text
-                  position="absolute"
-                  _dark={{
-                    bg: "gray.750",
-                  }}
-                  _light={{
-                    bg: "#F9FAFB",
-                  }}
-                  userSelect="none"
-                  pointerEvents="none"
-                  zIndex={1}
-                  w="100%"
-                >
+                <Text position="absolute" bg="th-bg" userSelect="none" pointerEvents="none" zIndex={1} w="100%">
                   {t("usersTable.status")}
                   {filters.status ? ": " + filters.status : ""}
                 </Text>
@@ -464,12 +459,11 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   p={0}
                   border={0}
                   h="auto"
-                  w="auto"
+                  w="full"
                   icon={<></>}
                   _focusVisible={{
                     border: "0 !important",
                   }}
-                  value={filters.sort}
                   onChange={handleStatusFilter}
                 >
                   <option></option>
@@ -513,7 +507,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                       <Text isTruncated>{user.username}</Text>
                     </Box>
                   </Td>
-                  <Td width="400px" minW="120px" pr="1" pl="1">
+                  <Td width="340px" maxW="340px" minW="120px" pr="1" pl="1">
                     <StatusBadge expiryDate={user.expire} status={user.status} />
                   </Td>
                   <Td width="350px" minW="200px">
