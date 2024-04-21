@@ -90,16 +90,17 @@ export const theme = extendTheme({
   },
   colors: {
     primary: {
-      50: "#9cb7f2",
-      100: "#88a9ef",
-      200: "#749aec",
-      300: "#618ce9",
-      400: "#4d7de7",
-      500: "#396fe4",
-      600: "#3364cd",
-      700: "#2e59b6",
-      800: "#284ea0",
-      900: "#224389",
+      50: "#EBF2FE",
+      100: "#D7E6FD",
+      200: "#B0CDFB",
+      300: "#89B4FA",
+      400: "#629BF8",
+      500: "#3B82F6",
+      600: "#0B61EE",
+      700: "#084BB8",
+      800: "#063583",
+      900: "#041F4D",
+      950: "#021532",
     },
     gray: {
       25: "#FCFCFD",
@@ -118,6 +119,18 @@ export const theme = extendTheme({
     },
   },
   components: {
+    Badge: defineStyleConfig({
+      baseStyle: {
+        borderRadius: "6px",
+      },
+      variants: {
+        subtle: (props) => {
+          return {
+            border: `1px solid var(--chakra-colors-${props.colorScheme}-300)`,
+          };
+        },
+      },
+    }),
     Button: defineStyleConfig({
       variants: {
         outline: defineStyle({
