@@ -189,12 +189,13 @@
   "users": {
     "title": "Users",
     "description": "Track, manage and forecast your connections",
-    "total": "Total Users",
-    "online": "Online Users",
-    "active": "Active Users",
+    "total": "Total",
+    "online": "Online",
+    "active": "Active",
     "limited": "Limited Users",
     "expired": "Expired Users",
-    "disabled": "Disabled Users"
+    "disabled": "Disabled Users",
+    "usersOfMonth": "Users of this month"
   },
   "statistics": {
     "title": "System Statistics",

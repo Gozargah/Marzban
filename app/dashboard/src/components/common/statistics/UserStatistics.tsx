@@ -1,9 +1,10 @@
-import { BoxProps, HStack, Text } from "@chakra-ui/react";
+import { Box, BoxProps, HStack, Text } from "@chakra-ui/react";
+import { statusColors } from "config/user-settings";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useGetSystemStats } from "services/api";
-import { formatBytes, numberWithCommas } from "utils/formatByte";
+import { numberWithCommas } from "utils/formatByte";
 import { StatisticCard } from "./StatisticCard";
 
 export const UserStatistics: FC<BoxProps> = (props) => {
@@ -18,6 +19,7 @@ export const UserStatistics: FC<BoxProps> = (props) => {
   });
 
   const { t } = useTranslation();
+  const ActiveIcon = statusColors.active.icon;
   return (
     <HStack
       justifyContent="space-between"
@@ -29,7 +31,7 @@ export const UserStatistics: FC<BoxProps> = (props) => {
       {...props}
     >
       <StatisticCard
-        title={t("users.total")}
+        title={t("users.active")}
         content={
           systemData && (
             <HStack alignItems="flex-end">
@@ -40,27 +42,21 @@ export const UserStatistics: FC<BoxProps> = (props) => {
             </HStack>
           )
         }
-        badge={100}
+        badge={systemData && parseInt(((systemData.users_active / systemData.total_user) * 100).toFixed(0))}
+        badgeIcon={<ActiveIcon w="3" />}
       />
       <StatisticCard
-        title={t("users.active")}
-        content={systemData && formatBytes(systemData.incoming_bandwidth + systemData.outgoing_bandwidth)}
-        badge={0}
-      />
-      <StatisticCard
-        title={t("users.online")}
-        content={
-          systemData && (
-            <HStack alignItems="flex-end">
-              <Text>{formatBytes(systemData.mem_used, 1, true)[0]}</Text>
-              <Text fontWeight="normal" fontSize="lg" as="span" display="inline-block" pb="5px">
-                {formatBytes(systemData.mem_used, 1, true)[1]} / {formatBytes(systemData.mem_total, 1)}
-              </Text>
-            </HStack>
-          )
+        title={
+          <>
+            <Box w="10px" h="10px" bg="green.400" rounded="full" mt="5px" />
+            {t("users.online")}
+          </>
         }
-        badge={-50}
+        content={systemData && 5}
+        badge={40}
+        badgeIcon={<Box w="2" h="2" bg="green.400" rounded="full" mt="5px" />}
       />
+      <StatisticCard title={t("users.usersOfMonth")} content={6} badge={-3} />
     </HStack>
   );
 };

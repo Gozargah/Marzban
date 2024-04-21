@@ -2,13 +2,20 @@
 import { FC, PropsWithChildren, ReactElement, ReactNode } from "react";
 
 type StatisticCardProps = {
-  title: string;
+  title: ReactNode;
   content: ReactNode;
   icon?: ReactElement;
   badge?: number;
+  badgeIcon?: ReactNode;
 };
 
-export const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({ title, content, icon, badge }) => {
+export const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
+  title,
+  content,
+  icon,
+  badge,
+  badgeIcon,
+}) => {
   return (
     <Card
       p={6}
@@ -69,6 +76,8 @@ export const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({ title
             fontWeight="medium"
             textTransform="capitalize"
             fontSize="sm"
+            display="flex"
+            gap="1"
           >
             {title}
           </Text>
@@ -79,8 +88,8 @@ export const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({ title
       </VStack>
       {badge == undefined ? undefined : (
         <Box alignSelf="end">
-          <Badge px="2" colorScheme={badge > 0 ? "green" : badge < 0 ? "red" : "gray"}>
-            {badge > 0 ? "↑" : badge < 0 ? "↓" : "-"}
+          <Badge px="2" colorScheme={badge > 0 ? "green" : badge < 0 ? "red" : "gray"} display="flex" gap="1">
+            {badgeIcon ? badgeIcon : badge > 0 ? "↑" : badge < 0 ? "↓" : "-"}
             {Math.abs(badge)}%
           </Badge>
         </Box>
