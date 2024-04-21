@@ -294,6 +294,26 @@ class UserResponse(User):
         return super().validate_proxies(v, values, **kwargs)
 
 
+class LimitedUserResponse(UserResponse):
+    class Config:
+        orm_mode = True
+        fields = {
+            field: {"include": True} for field in [
+                "username",
+                "status",
+                "expire",
+                "data_limit",
+                "data_limit_reset_strategy",
+                "used_traffic",
+                "lifetime_used_traffic",
+                "proxies",
+                "created_at",
+                "links",
+                "subscription_url",
+            ]
+        }
+
+
 class UsersResponse(BaseModel):
     users: List[UserResponse]
     total: int
