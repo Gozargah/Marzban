@@ -308,6 +308,8 @@ class LimitedUserResponse(UserResponse):
                 "lifetime_used_traffic",
                 "proxies",
                 "created_at",
+                "sub_updated_at",
+                "online_at",
                 "links",
                 "subscription_url",
             ]
