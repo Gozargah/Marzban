@@ -234,21 +234,17 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   <Sort sort={filters.sort} column="username" />
                 </HStack>
               </Th>
-              <Th position="sticky" top={top} minW="55px" pl={0} pr={0} w="140px" cursor={"pointer"}>
+              <Th
+                position="sticky"
+                top={top}
+                minW={!!filters.status ? "140px" : "55px"}
+                pl={0}
+                pr={0}
+                w="140px"
+                cursor={"pointer"}
+              >
                 <HStack spacing={0} position="relative">
-                  <Text
-                    position="absolute"
-                    _dark={{
-                      bg: "gray.750",
-                    }}
-                    _light={{
-                      bg: "#F9FAFB",
-                    }}
-                    userSelect="none"
-                    pointerEvents="none"
-                    zIndex={1}
-                    w="100%"
-                  >
+                  <Text position="absolute" bg="th-bg" userSelect="none" pointerEvents="none" zIndex={1} w="100%">
                     {t("usersTable.status")}
                     {filters.status ? ": " + filters.status : ""}
                   </Text>

@@ -20,10 +20,17 @@ export const Header: FC<HeaderProps> = ({ pageName, actions }) => {
           },
         }}
         position="relative"
-        pb="4"
         gap="1"
       >
-        <Text color="text" as="h1" fontWeight="semibold" fontSize="2xl">
+        <Text
+          color="text"
+          as="h1"
+          fontWeight="semibold"
+          fontSize={{
+            base: "xl",
+            md: "2xl",
+          }}
+        >
           {t(pageName + ".title")}
         </Text>
         <Text color="text-inactive">{t(pageName + ".description")}</Text>

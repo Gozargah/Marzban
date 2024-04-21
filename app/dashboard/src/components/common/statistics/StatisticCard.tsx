@@ -18,7 +18,7 @@ export const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
 }) => {
   return (
     <Card
-      p={6}
+      p={5}
       borderWidth="1px"
       borderColor="border"
       bg="card-bg"
@@ -82,7 +82,7 @@ export const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
             {title}
           </Text>
         </HStack>
-        <Box fontSize="3xl" fontWeight="semibold" mt="2">
+        <Box fontSize="3xl" fontWeight="semibold" lineHeight={1.2}>
           {content}
         </Box>
       </VStack>

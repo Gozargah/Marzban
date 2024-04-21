@@ -133,7 +133,8 @@ const SidebarContent: FC<{ isDrawerOpen: boolean; toggleDrawer: () => void }> = 
   const { t } = useTranslation();
   const { data } = useGetCurrentAdmin();
   const handleOnClick = () => {
-    if (isDrawerOpen) toggleDrawer();
+    console.log("here");
+    isDrawerOpen && toggleDrawer();
   };
   return (
     <VStack
@@ -161,7 +162,7 @@ const SidebarContent: FC<{ isDrawerOpen: boolean; toggleDrawer: () => void }> = 
       overflowY="auto"
     >
       <VStack w="full" gap="30px">
-        <HStack w="full" justify="space-between" px="2">
+        <HStack as={Link} to="/" w="full" justify="space-between" px="2" onClick={handleOnClick}>
           <Logo />
           {version && (
             <Badge colorScheme="gray" opacity="0.7" _hover={{ opacity: 1 }} bg="transparent">
@@ -270,7 +271,7 @@ const NavButton: FC<{ menuItem: MenuItem; handleOnClick?: () => void }> = ({ men
         leftIcon={menuItem.icon}
         onClick={() => {
           menuItem.children && setOpen(!isOpen);
-          if (!menuItem.children) handleOnClick && handleOnClick();
+          !menuItem.children && handleOnClick && handleOnClick();
         }}
         rightIcon={menuItem.children ? <DropdownIcon transform={isOpen ? "rotate(180deg)" : ""} /> : undefined}
       >
