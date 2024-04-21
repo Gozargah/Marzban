@@ -79,7 +79,7 @@ export const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({ title
       </VStack>
       {badge == undefined ? undefined : (
         <Box alignSelf="end">
-          <Badge px="2" borderRadius="full" colorScheme={badge > 0 ? "green" : badge < 0 ? "red" : "gray"}>
+          <Badge px="2" colorScheme={badge > 0 ? "green" : badge < 0 ? "red" : "gray"}>
             {badge > 0 ? "↑" : badge < 0 ? "↓" : "-"}
             {Math.abs(badge)}%
           </Badge>

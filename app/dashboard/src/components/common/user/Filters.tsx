@@ -102,7 +102,16 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
               })}
             />
           </IconButton>
-          <Button colorScheme="primary" size="sm" onClick={() => onCreateUser(true)} px={5}>
+          <Button
+            display={{
+              base: "flex",
+              md: "none",
+            }}
+            colorScheme="primary"
+            size="sm"
+            onClick={() => onCreateUser(true)}
+            px={5}
+          >
             {t("createUser")}
           </Button>
         </HStack>

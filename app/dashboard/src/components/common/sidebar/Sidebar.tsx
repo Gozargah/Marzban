@@ -1,4 +1,5 @@
 import {
+  Badge,
   Box,
   Button,
   Collapse,
@@ -102,12 +103,17 @@ export const Sidebar: FC = () => {
             <DrawerContent
               p={0}
               maxW={{
-                base: "280px",
+                base: "calc(100% - 58px)",
+                sm: "280px",
               }}
-              zIndex={1500}
+              // zIndex={1500}
               position="relative"
             >
-              <DrawerBody p={0} zIndex={1500} position="relative">
+              <DrawerBody
+                p={0}
+                // zIndex={1500}
+                position="relative"
+              >
                 {sidebar}
               </DrawerBody>
             </DrawerContent>
@@ -131,7 +137,7 @@ const SidebarContent: FC<{ isDrawerOpen: boolean; toggleDrawer: () => void }> = 
   };
   return (
     <VStack
-      zIndex={1500}
+      // zIndex={1500}
       maxW={{
         base: "100%",
         md: "280px",
@@ -158,22 +164,9 @@ const SidebarContent: FC<{ isDrawerOpen: boolean; toggleDrawer: () => void }> = 
         <HStack w="full" justify="space-between" px="2">
           <Logo />
           {version && (
-            <Box
-              border="1.5px solid"
-              rounded="full"
-              borderColor="whiteAlpha.400"
-              color="whiteAlpha.500"
-              _light={{
-                borderColor: "blackAlpha.700",
-                color: "blackAlpha.700",
-              }}
-              fontWeight="medium"
-              px="2"
-              py="0.5"
-              fontSize="xs"
-            >
+            <Badge colorScheme="gray" opacity="0.7" _hover={{ opacity: 1 }} bg="transparent">
               v{version}
-            </Box>
+            </Badge>
           )}
         </HStack>
         <NavMenu menu={menu} handleOnClick={handleOnClick} />

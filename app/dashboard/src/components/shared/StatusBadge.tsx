@@ -27,19 +27,18 @@ export const StatusBadge: FC<UserStatusProps> = ({
     <>
       <Badge
         colorScheme={statusColors[userStatus].statusColor}
-        rounded="full"
         display="inline-flex"
-        px={3}
-        py={1}
-        columnGap={compact ? 1 : 2}
+        px={2}
+        columnGap={1}
+        size="xs"
         alignItems="center"
       >
-        <Icon w={compact ? 3 : 4} />
+        <Icon w={3} />
         {showDetail && (
           <Text
             textTransform="capitalize"
-            fontSize={compact ? ".7rem" : ".875rem"}
-            lineHeight={compact ? "1rem" : "1.25rem"}
+            fontSize={compact ? ".7rem" : "12px"}
+            lineHeight={compact ? "1rem" : "18px"}
             fontWeight="medium"
             letterSpacing="tighter"
           >

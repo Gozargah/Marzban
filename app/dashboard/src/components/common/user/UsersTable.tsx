@@ -40,9 +40,7 @@ import { Pagination } from "components/elements/Pagination";
 import { StatusBadge } from "components/shared/StatusBadge";
 import { resetStrategy, statusColors } from "config/user-settings";
 import { useDashboard, useUsers } from "contexts/DashboardContext";
-import { t } from "i18next";
 import { FC, Fragment, useEffect, useState } from "react";
-import CopyToClipboard from "react-copy-to-clipboard";
 import { useTranslation } from "react-i18next";
 import { UserResponse } from "services/api";
 import { formatBytes } from "utils/formatByte";
@@ -120,6 +118,7 @@ const UsageSlider: FC<UsageSliderProps> = (props) => {
   const { used, total, dataLimitResetStrategy, totalUsedTraffic, ...restOfProps } = props;
   const isUnlimited = total === 0 || total === null;
   const isReached = !isUnlimited && (used / total) * 100 >= 100;
+  const { t } = useTranslation();
   return (
     <>
       <Slider
@@ -383,7 +382,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                               </HStack>
                               <HStack w="full" justifyContent="space-between">
                                 <Box width="full">
-                                  <StatusBadge compact expiryDate={user.expire} status={user.status} />
+                                  <StatusBadge expiryDate={user.expire} status={user.status} />
                                 </Box>
                                 <HStack>
                                   <ActionButtons user={user} />
@@ -487,7 +486,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 <Sort sort={filters.sort} column="used_traffic" />
               </HStack>
             </Th>
-            <Th position="sticky" top={{ base: "unset", lg: top }} width="200px" minW="180px" />
+            <Th position="sticky" top={{ base: "unset", lg: top }} width="52px" minW="52px" />
           </Tr>
         </Thead>
         <Tbody>
@@ -519,7 +518,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                       colorScheme={statusColors[user.status].bandWidthColor}
                     />
                   </Td>
-                  <Td width="200px" minW="180px">
+                  <Td width="52px" minW="52px">
                     <ActionButtons user={user} />
                   </Td>
                 </Tr>
@@ -564,7 +563,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
         e.stopPropagation();
       }}
     >
-      <CopyToClipboard
+      {/* <CopyToClipboard
         text={
           user.subscription_url.startsWith("/") ? window.location.origin + user.subscription_url : user.subscription_url
         }
@@ -595,8 +594,8 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
             </IconButton>
           </Tooltip>
         </div>
-      </CopyToClipboard>
-      <CopyToClipboard
+      </CopyToClipboard> */}
+      {/* <CopyToClipboard
         text={proxyLinks}
         onCopy={() => {
           setCopied([1, true]);
@@ -625,7 +624,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
             </IconButton>
           </Tooltip>
         </div>
-      </CopyToClipboard>
+      </CopyToClipboard> */}
       <Tooltip label="QR Code" placement="top">
         <IconButton
           p="0 !important"
@@ -658,6 +657,7 @@ type EmptySectionProps = {
 
 const EmptySection: FC<EmptySectionProps> = ({ isFiltered }) => {
   const { onCreateUser } = useDashboard();
+  const { t } = useTranslation();
   return (
     <Box padding="5" py="8" display="flex" alignItems="center" flexDirection="column" gap={4} w="full">
       <EmptySectionIcon
