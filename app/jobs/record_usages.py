@@ -10,7 +10,7 @@ from sqlalchemy import and_, bindparam, insert, select, sql, update
 from app import scheduler, xray
 from app.db import GetDB
 from app.db.models import NodeUsage, NodeUserUsage, System, User, Admin, NodeAdminUsage
-from config import DISABLE_RECORDING_NODE_USAGE
+from config import DISABLE_RECORDING_NODE_USAGE, DISABLE_RECORDING_ADMIN_NODE_USAGE, DISABLE_RECORDING_USER_NODE_USAGE
 from xray_api import XRay as XRayAPI
 from xray_api import exc as xray_exc
 
@@ -77,7 +77,7 @@ def record_user_stats(params: list, node_id: Union[int, None],
         safe_execute(db, stmt, params)
 
 def record_admin_stats(params: list, node_id: Union[int, None],
-                      consumption_factor: int = 1):
+                      usage_coefficient: int = 1):
     if not params:
         return
 
@@ -128,7 +128,7 @@ def record_admin_stats(params: list, node_id: Union[int, None],
 
         # record
         stmt = update(NodeAdminUsage) \
-            .values(used_traffic=NodeAdminUsage.used_traffic + bindparam('value') * consumption_factor) \
+            .values(used_traffic=NodeAdminUsage.used_traffic + bindparam('value') * usage_coefficient) \
             .where(and_(NodeAdminUsage.admin_id == bindparam('aid'),
                         NodeAdminUsage.node_id == node_id,
                         NodeAdminUsage.created_at == created_at))
@@ -214,12 +214,13 @@ def record_user_usages():
 
     record_admins_usage(users_usage)
 
-    if DISABLE_RECORDING_NODE_USAGE:
-        return
+    if not DISABLE_RECORDING_USER_NODE_USAGE:
+        for node_id, params in api_params.items():
+            record_user_stats(params, node_id, usage_coefficient[node_id])
 
-    for node_id, params in api_params.items():
-        record_user_stats(params, node_id, usage_coefficient[node_id])
-        record_admin_stats(params, node_id, usage_coefficient[node_id])
+    if not DISABLE_RECORDING_ADMIN_NODE_USAGE:
+        for node_id, params in api_params.items():
+            record_admin_stats(params, node_id, usage_coefficient[node_id])
 
 def record_admins_usage(users_usages):
     users_usage_id = [item["uid"] for item in users_usages]

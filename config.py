@@ -78,6 +78,8 @@ NOTIFY_REACHED_USAGE_PERCENT = config("NOTIFY_REACHED_USAGE_PERCENT", default=80
 NOTIFY_DAYS_LEFT = config("NOTIFY_DAYS_LEFT", default=3, cast=int)
 
 DISABLE_RECORDING_NODE_USAGE = config("DISABLE_RECORDING_NODE_USAGE", cast=bool, default=False)
+DISABLE_RECORDING_USER_NODE_USAGE = config("DISABLE_RECORDING_USER_NODE_USAGE", cast=bool, default=False)
+DISABLE_RECORDING_ADMIN_NODE_USAGE = config("DISABLE_RECORDING_ADMIN_NODE_USAGE", cast=bool, default=False)
 
 # headers: profile-update-interval, support-url, profile-title
 SUB_UPDATE_INTERVAL = config("SUB_UPDATE_INTERVAL", default="12")
