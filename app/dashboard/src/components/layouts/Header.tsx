@@ -33,7 +33,7 @@ export const Header: FC<HeaderProps> = ({ pageName, actions }) => {
         >
           {t(pageName + ".title")}
         </Text>
-        <Text color="text-inactive">{t(pageName + ".description")}</Text>
+        <Text color="text">{t(pageName + ".description")}</Text>
       </VStack>
       {actions}
     </HStack>

@@ -81,11 +81,17 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
       <GridItem colSpan={{ base: 1, md: 2, lg: 1 }} order={{ base: 2, md: 1 }}>
         <InputGroup>
           <InputLeftElement pointerEvents="none" children={<SearchIcon />} />
-          <Input placeholder={t("search")} value={search} borderColor="light-border" onChange={onChange} />
+          <Input placeholder={t("search")} value={search} onChange={onChange} />
 
-          <InputRightElement>
+          <InputRightElement
+            display="flex"
+            gap={1}
+            px={loading || filters.username[0].length > 0 ? 2 : 0}
+            maxW="60px"
+            w="fit-content"
+          >
             {loading && <Spinner size="xs" />}
-            {filters.username && filters.username.length > 0 && (
+            {filters.username && filters.username[0].length > 0 && (
               <IconButton onClick={clear} aria-label="clear" size="xs" variant="ghost">
                 <ClearIcon />
               </IconButton>

@@ -40,6 +40,7 @@ import { Pagination } from "components/elements/Pagination";
 import { StatusBadge } from "components/shared/StatusBadge";
 import { resetStrategy, statusColors } from "config/user-settings";
 import { useDashboard, useUsers } from "contexts/DashboardContext";
+import dayjs from "dayjs";
 import { FC, Fragment, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { UserResponse } from "services/api";
@@ -497,10 +498,15 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   onClick={() => onEditingUser(user)}
                 >
                   <Td minW="140px" maxW="calc(100vw - 280px - 120px - 200px - 185px - 48px)">
-                    <Box display="flex" isTruncated justifyContent="start" alignItems="center" gap={2}>
-                      <OnlineBadge lastOnline={user.online_at} />
-                      <Text isTruncated>{user.username}</Text>
-                    </Box>
+                    <VStack gap="0" align="start">
+                      <Box display="flex" isTruncated justifyContent="start" alignItems="center" gap={2}>
+                        <OnlineBadge lastOnline={user.online_at} />
+                        <Text isTruncated>{user.username}</Text>
+                      </Box>
+                      <Text color="text-inactive" fontSize="xs">
+                        Created {dayjs().to(dayjs(user.created_at).utc().local())}
+                      </Text>
+                    </VStack>
                   </Td>
                   <Td width="340px" maxW="340px" minW="120px" pr="1" pl="1">
                     <StatusBadge expiryDate={user.expire} status={user.status} />

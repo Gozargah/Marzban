@@ -1,4 +1,4 @@
-import { Badge, Text } from "@chakra-ui/react";
+import { Badge, Text, VStack } from "@chakra-ui/react";
 import { statusColors } from "config/user-settings";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
@@ -23,7 +23,7 @@ export const StatusBadge: FC<UserStatusProps> = ({
   const dateInfo = relativeExpiryDate(expiryDate);
   const Icon = statusColors[userStatus].icon;
   return (
-    <>
+    <VStack gap="1" align="start">
       <Badge
         colorScheme={statusColors[userStatus].statusColor}
         display="inline-flex"
@@ -47,19 +47,10 @@ export const StatusBadge: FC<UserStatusProps> = ({
         )}
       </Badge>
       {showDetail && expiryDate && (
-        <Text
-          display="inline-block"
-          fontSize="xs"
-          fontWeight="medium"
-          ml="2"
-          color="gray.600"
-          _dark={{
-            color: "gray.400",
-          }}
-        >
+        <Text display="inline-block" fontSize="xs" color="text-inactive">
           {t(dateInfo.status, { time: dateInfo.time })}
         </Text>
       )}
-    </>
+    </VStack>
   );
 };

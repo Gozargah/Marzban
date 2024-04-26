@@ -5,17 +5,17 @@
  * Unified GUI Censorship Resistant Solution Powered by Xray
  * OpenAPI spec version: 0.4.1
  */
-import { useMutation, useQuery } from "react-query";
 import type {
-  MutationFunction,
-  QueryFunction,
-  QueryKey,
-  UseMutationOptions,
-  UseQueryOptions,
-  UseQueryResult,
+	MutationFunction,
+	QueryFunction,
+	QueryKey,
+	UseMutationOptions,
+	UseQueryOptions,
+	UseQueryResult,
 } from "react-query";
+import { useMutation, useQuery } from "react-query";
+import type { BodyType, ErrorType } from "../http";
 import { orvalFetcher } from "../http";
-import type { ErrorType, BodyType } from "../http";
 export type GetNodesUsageParams = {
   start?: string;
   end?: string;
@@ -42,7 +42,7 @@ export type GetUserUsageParams = {
 export type GetUsersParams = {
   offset?: number;
   limit?: number;
-  username?: string[];
+  username: string[];
   status?: UserStatus;
   sort?: string;
 };

@@ -40,7 +40,7 @@ export const theme = extendTheme({
       },
       "text-inactive": {
         default: "#475467",
-        _dark: "#EAEAEA",
+        _dark: "#98A2B3",
       },
       "text-nav-inactive": {
         default: "#737378",
@@ -127,6 +127,7 @@ export const theme = extendTheme({
         subtle: (props) => {
           return {
             border: `1px solid var(--chakra-colors-${props.colorScheme}-300)`,
+            paddingY: 0.5,
           };
         },
       },
@@ -209,29 +210,30 @@ export const theme = extendTheme({
     Input: {
       baseStyle: {
         addon: {
-          _dark: {
-            borderColor: "gray.600",
-            _placeholder: {
-              color: "gray.500",
-            },
+          borderColor: "border !important",
+          _placeholder: {
+            color: "text-inactive",
           },
         },
         field: {
+          _placeholder: {
+            color: "text-inactive",
+          },
           _focusVisible: {
             boxShadow: "none",
-            borderColor: "primary.200",
-            outlineColor: "primary.200",
+            // borderColor: "primary.200",
+            // outlineColor: "primary.200",
           },
-          _dark: {
-            borderColor: "gray.600",
-            _disabled: {
+          _disabled: {
+            _dark: {
               color: "gray.400",
-              borderColor: "gray.500",
-            },
-            _placeholder: {
-              color: "gray.500",
             },
           },
+        },
+      },
+      variants: {
+        outline: {
+          borderColor: "border",
         },
       },
     },
