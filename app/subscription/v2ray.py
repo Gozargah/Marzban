@@ -60,7 +60,8 @@ class V2rayShareLink(str):
             payload["fp"] = fp
             payload["pbk"] = pbk
             payload["sid"] = sid
-            payload["spx"] = spx
+            if spx:
+                payload["spx"] = spx
 
         if net == "grpc":
             if multiMode:
@@ -134,7 +135,8 @@ class V2rayShareLink(str):
             payload["fp"] = fp
             payload["pbk"] = pbk
             payload["sid"] = sid
-            payload["spx"] = spx
+            if spx:
+                payload["spx"] = spx
 
         return (
             "vless://"
@@ -202,7 +204,8 @@ class V2rayShareLink(str):
             payload["fp"] = fp
             payload["pbk"] = pbk
             payload["sid"] = sid
-            payload["spx"] = spx
+            if spx:
+                payload["spx"] = spx
 
         return (
             "trojan://"
@@ -357,7 +360,7 @@ class V2rayJsonConfig(str):
         return httpSettings
 
     @staticmethod
-    def quic_config(path=None, host=None, header=None):
+    def quic_config(path=None, host=None, header=None,):
 
         quicSettings = {}
         quicSettings["header"] = {"none"}
@@ -366,11 +369,13 @@ class V2rayJsonConfig(str):
         else:
             quicSettings["key"] = ""
         if host:
-            quicSettings["security"] = [host]
+            quicSettings["security"] = host
         else:
-            quicSettings["security"] = ""
+            quicSettings["security"] = "none"
         if header:
             quicSettings["header"]["type"] = header
+        else:
+            quicSettings["header"]["type"] = "none"
 
         return quicSettings
 

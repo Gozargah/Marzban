@@ -229,7 +229,7 @@ class XRayConfig(dict):
                     try:
                         settings['spx'] = tls_settings.get('SpiderX')
                     except:
-                        pass
+                        settings['spx'] = ""
 
                 if net == 'tcp':
                     header = net_settings.get('header', {})
