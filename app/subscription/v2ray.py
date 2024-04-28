@@ -39,7 +39,6 @@ class V2rayShareLink(str):
             "net": net,
             "path": path,
             "port": port,
-            "fragment": fs,
             "ps": remark,
             "scy": "auto",
             "tls": tls,
@@ -51,6 +50,8 @@ class V2rayShareLink(str):
             payload["sni"] = sni
             payload["fp"] = fp
             payload["alpn"] = alpn
+            if fs :
+                payload["fragment"] = fs
             if ais:
                 payload["allowInsecure"] = 1
         elif tls == "reality":
@@ -111,7 +112,8 @@ class V2rayShareLink(str):
             payload["sni"] = sni
             payload["fp"] = fp
             payload["alpn"] = alpn
-            payload["fragment"] = fs
+            if fs:
+                payload["fragment"] = fs
             if ais:
                 payload["allowInsecure"] = 1
         elif tls == "reality":
@@ -172,7 +174,8 @@ class V2rayShareLink(str):
             payload["sni"] = sni
             payload["fp"] = fp
             payload["alpn"] = alpn
-            payload["fragment"] = fs
+            if fs:
+                payload["fragment"] = fs
             if ais:
                 payload["allowInsecure"] = 1
         elif tls == "reality":
@@ -236,7 +239,7 @@ class V2rayJsonConfig(str):
         return tlsSettings
 
     @staticmethod
-    def reality_config(sni=None, fp=None, pbk=None, sid=None):
+    def reality_config(sni=None, fp=None, pbk=None, sid=None, spx=None):
 
         realitySettings = {}
         if sni is not None:
@@ -250,8 +253,8 @@ class V2rayJsonConfig(str):
             realitySettings["publicKey"] = pbk
         if sid:
             realitySettings["shortId"] = sid
-
-        realitySettings["spiderX"] = ""
+        if spx:
+            realitySettings["spiderX"] = spx
 
         return realitySettings
 
@@ -508,6 +511,7 @@ class V2rayJsonConfig(str):
                             alpn='',
                             pbk='',
                             sid='',
+                            spx='',
                             headers='',
                             ais='',
                             dialer_proxy=''
@@ -534,7 +538,7 @@ class V2rayJsonConfig(str):
             tls_settings = self.tls_config(sni=sni, fp=fp, alpn=alpn, ais=ais)
         elif tls == "reality":
             tls_settings = self.reality_config(
-                sni=sni, fp=fp, pbk=pbk, sid=sid)
+                sni=sni, fp=fp, pbk=pbk, sid=sid, spx=spx)
         else:
             tls_settings = None
 
@@ -620,6 +624,7 @@ class V2rayJsonConfig(str):
             fp=inbound.get('fp', ''),
             pbk=inbound.get('pbk', ''),
             sid=inbound.get('sid', ''),
+            spx=inbound.get('spx', ''),
             headers=headers,
             ais=inbound.get('ais', ''),
             dialer_proxy=dialer_proxy
