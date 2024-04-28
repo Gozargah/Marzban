@@ -155,16 +155,12 @@ class XRayConfig(dict):
             try:
                 settings['port'] = inbound['port']
             except KeyError:
-                if not self._fallbacks_inbound:
-                    raise ValueError(
-                        f"port missing on {inbound['tag']}"
-                        "\nset XRAY_FALLBACKS_INBOUND_TAG if you're using an inbound containing fallbacks"
-                    )
-                try:
-                    settings['port'] = self._fallbacks_inbound['port']
-                    settings['is_fallback'] = True
-                except KeyError:
-                    raise ValueError("fallbacks inbound doesn't have port")
+                if self._fallbacks_inbound:
+                    try:
+                        settings['port'] = self._fallbacks_inbound['port']
+                        settings['is_fallback'] = True
+                    except KeyError:
+                        raise ValueError("fallbacks inbound doesn't have port")
 
             # stream settings
             if stream := inbound.get('streamSettings'):
