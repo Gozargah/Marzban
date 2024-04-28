@@ -82,10 +82,9 @@ def review():
 
             update_user_status(db, user, status)
             start_user_expire(db, user)
-            bg.add_task(
-                report.status_change, username=user.username, status=status,
-                user=UserResponse.from_orm(user), user_admin=user.admin
-            )
+            
+            report.status_change(username=user.username, status=status,
+                user=UserResponse.from_orm(user), user_admin=user.admin)
 
             logger.info(f"User \"{user.username}\" status changed to {status}")
 
