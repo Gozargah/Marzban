@@ -33,88 +33,11 @@ STATUS_TEXTS = {
     "on_hold": ONHOLD_STATUS_TEXT,
 }
 
-def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
-    if inbound["protocol"] == "vmess":
-        return V2rayShareLink.vmess(
-            remark=remark,
-            address=address,
-            port=inbound["port"],
-            id=settings["id"],
-            net=inbound["network"],
-            tls=inbound["tls"],
-            sni=inbound.get("sni", ""),
-            fp=inbound.get("fp", ""),
-            alpn=inbound.get("alpn", ""),
-            pbk=inbound.get("pbk", ""),
-            sid=inbound.get("sid", ""),
-            spx=inbound.get("spx", ""),
-            host=inbound["host"],
-            path=inbound["path"],
-            type=inbound["header_type"],
-            ais=inbound.get("ais", ""),
-            fs=inbound.get("fragment_setting", ""),
-            multiMode=inbound.get("multiMode", False),
-        )
-
-    if inbound["protocol"] == "vless":
-        return V2rayShareLink.vless(
-            remark=remark,
-            address=address,
-            port=inbound["port"],
-            id=settings["id"],
-            flow=settings.get("flow", ""),
-            net=inbound["network"],
-            tls=inbound["tls"],
-            sni=inbound.get("sni", ""),
-            fp=inbound.get("fp", ""),
-            alpn=inbound.get("alpn", ""),
-            pbk=inbound.get("pbk", ""),
-            sid=inbound.get("sid", ""),
-            spx=inbound.get("spx", ""),
-            host=inbound["host"],
-            path=inbound["path"],
-            type=inbound["header_type"],
-            ais=inbound.get("ais", ""),
-            fs=inbound.get("fragment_setting", ""),
-            multiMode=inbound.get("multiMode", False),
-        )
-
-    if inbound["protocol"] == "trojan":
-        return V2rayShareLink.trojan(
-            remark=remark,
-            address=address,
-            port=inbound["port"],
-            password=settings["password"],
-            flow=settings.get("flow", ""),
-            net=inbound["network"],
-            tls=inbound["tls"],
-            sni=inbound.get("sni", ""),
-            fp=inbound.get("fp", ""),
-            alpn=inbound.get("alpn", ""),
-            pbk=inbound.get("pbk", ""),
-            sid=inbound.get("sid", ""),
-            spx=inbound.get("spx", ""),
-            host=inbound["host"],
-            path=inbound["path"],
-            type=inbound["header_type"],
-            ais=inbound.get("ais", ""),
-            fs=inbound.get("fragment_setting", ""),
-            multiMode=inbound.get("multiMode", False),
-        )
-
-    if inbound["protocol"] == "shadowsocks":
-        return V2rayShareLink.shadowsocks(
-            remark=remark,
-            address=address,
-            port=inbound["port"],
-            password=settings["password"],
-            method=settings["method"],
-        )
-
 
 def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> list:
     format_variables = setup_format_variables(extra_data)
-    return process_inbounds_and_tags(inbounds, proxies, format_variables, mode="v2ray")
+    conf = V2rayShareLink()
+    return process_inbounds_and_tags(inbounds, proxies, format_variables, conf=conf)
 
 
 def generate_clash_subscription(
@@ -127,7 +50,7 @@ def generate_clash_subscription(
 
     format_variables = setup_format_variables(extra_data)
     return process_inbounds_and_tags(
-        inbounds, proxies, format_variables, mode="clash", conf=conf
+        inbounds, proxies, format_variables, conf=conf
     )
 
 
@@ -138,7 +61,7 @@ def generate_singbox_subscription(
 
     format_variables = setup_format_variables(extra_data)
     return process_inbounds_and_tags(
-        inbounds, proxies, format_variables, mode="sing-box", conf=conf
+        inbounds, proxies, format_variables, conf=conf
     )
 
 
@@ -153,7 +76,7 @@ def generate_outline_subscription(
 
     format_variables = setup_format_variables(extra_data)
     return process_inbounds_and_tags(
-        inbounds, proxies, format_variables, mode="outline", conf=conf
+        inbounds, proxies, format_variables, conf=conf
     )
 
 
@@ -164,7 +87,7 @@ def generate_v2ray_json_subscription(
 
     format_variables = setup_format_variables(extra_data)
     return process_inbounds_and_tags(
-        inbounds, proxies, format_variables, mode="v2ray-json", conf=conf
+        inbounds, proxies, format_variables, conf=conf
     )
 
 
@@ -298,10 +221,8 @@ def process_inbounds_and_tags(
     inbounds: dict,
     proxies: dict,
     format_variables: dict,
-    mode: str = "v2ray",
     conf=None,
 ) -> Union[List, str]:
-    results = []
 
     _inbounds = []
     for protocol, tags in inbounds.items():
@@ -359,28 +280,14 @@ def process_inbounds_and_tags(
                     }
                 )
 
-                if mode == "v2ray":
-                    results.append(
-                        get_v2ray_link(
-                            remark=host["remark"].format_map(format_variables),
-                            address=address.format_map(
-                                format_variables),
-                            inbound=host_inbound,
-                            settings=settings.dict(no_obj=True),
-                        )
-                    )
-                elif mode in ["clash", "sing-box", "outline", "v2ray-json"]:
-                    conf.add(
-                        remark=host["remark"].format_map(format_variables),
-                        address=address.format_map(format_variables),
-                        inbound=host_inbound,
-                        settings=settings.dict(no_obj=True),
-                    )
+                conf.add(
+                    remark=host["remark"].format_map(format_variables),
+                    address=address.format_map(format_variables),
+                    inbound=host_inbound,
+                    settings=settings.dict(no_obj=True),
+                )
 
-    if mode in ["clash", "sing-box", "outline", "v2ray-json"]:
-        return conf.render()
-
-    return results
+    return conf.render()
 
 
 def encode_title(text: str) -> str:

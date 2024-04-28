@@ -10,6 +10,97 @@ from config import (MUX_TEMPLATE, V2RAY_SUBSCRIPTION_TEMPLATE)
 
 
 class V2rayShareLink(str):
+    def __init__(self):
+        self.links = []
+
+    def add_link(self, link):
+        self.links.append(link)
+
+    def render(self):
+        return self.links
+
+    def add(self, remark: str, address: str, inbound: dict, settings: dict):
+
+        if inbound["protocol"] == "vmess":
+            link = self.vmess(
+                remark=remark,
+                address=address,
+                port=inbound["port"],
+                id=settings["id"],
+                net=inbound["network"],
+                tls=inbound["tls"],
+                sni=inbound.get("sni", ""),
+                fp=inbound.get("fp", ""),
+                alpn=inbound.get("alpn", ""),
+                pbk=inbound.get("pbk", ""),
+                sid=inbound.get("sid", ""),
+                spx=inbound.get("spx", ""),
+                host=inbound["host"],
+                path=inbound["path"],
+                type=inbound["header_type"],
+                ais=inbound.get("ais", ""),
+                fs=inbound.get("fragment_setting", ""),
+                multiMode=inbound.get("multiMode", False),
+            )
+
+        elif inbound["protocol"] == "vless":
+            link = self.vless(
+                remark=remark,
+                address=address,
+                port=inbound["port"],
+                id=settings["id"],
+                flow=settings.get("flow", ""),
+                net=inbound["network"],
+                tls=inbound["tls"],
+                sni=inbound.get("sni", ""),
+                fp=inbound.get("fp", ""),
+                alpn=inbound.get("alpn", ""),
+                pbk=inbound.get("pbk", ""),
+                sid=inbound.get("sid", ""),
+                spx=inbound.get("spx", ""),
+                host=inbound["host"],
+                path=inbound["path"],
+                type=inbound["header_type"],
+                ais=inbound.get("ais", ""),
+                fs=inbound.get("fragment_setting", ""),
+                multiMode=inbound.get("multiMode", False),
+            )
+
+        elif inbound["protocol"] == "trojan":
+            link = self.trojan(
+                remark=remark,
+                address=address,
+                port=inbound["port"],
+                password=settings["password"],
+                flow=settings.get("flow", ""),
+                net=inbound["network"],
+                tls=inbound["tls"],
+                sni=inbound.get("sni", ""),
+                fp=inbound.get("fp", ""),
+                alpn=inbound.get("alpn", ""),
+                pbk=inbound.get("pbk", ""),
+                sid=inbound.get("sid", ""),
+                spx=inbound.get("spx", ""),
+                host=inbound["host"],
+                path=inbound["path"],
+                type=inbound["header_type"],
+                ais=inbound.get("ais", ""),
+                fs=inbound.get("fragment_setting", ""),
+                multiMode=inbound.get("multiMode", False),
+            )
+
+        elif inbound["protocol"] == "shadowsocks":
+            link = self.shadowsocks(
+                remark=remark,
+                address=address,
+                port=inbound["port"],
+                password=settings["password"],
+                method=settings["method"],
+            )
+        
+        self.add_link(link=link)
+        
+
     @classmethod
     def vmess(
         cls,
