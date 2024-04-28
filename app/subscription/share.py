@@ -53,6 +53,7 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
             type=inbound["header_type"],
             ais=inbound.get("ais", ""),
             fs=inbound.get("fragment_setting", ""),
+            mode=inbound.get("multiMode", False),
         )
 
     if inbound["protocol"] == "vless":
@@ -75,6 +76,7 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
             type=inbound["header_type"],
             ais=inbound.get("ais", ""),
             fs=inbound.get("fragment_setting", ""),
+            mode=inbound.get("multiMode", False),
         )
 
     if inbound["protocol"] == "trojan":
@@ -97,6 +99,7 @@ def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
             type=inbound["header_type"],
             ais=inbound.get("ais", ""),
             fs=inbound.get("fragment_setting", ""),
+            mode=inbound.get("multiMode", False),
         )
 
     if inbound["protocol"] == "shadowsocks":

@@ -30,6 +30,7 @@ class V2rayShareLink(str):
         spx="",
         ais="",
         fs="",
+        multiMode: bool = False,
     ):
         payload = {
             "add": address,
@@ -61,6 +62,12 @@ class V2rayShareLink(str):
             payload["sid"] = sid
             payload["spx"] = spx
 
+        if net == "grpc":
+            if multiMode:
+                payload["mode"] = "multi"
+            else:
+                payload["mode"] = "gun"
+
         return (
             "vmess://"
             + base64.b64encode(
@@ -88,6 +95,7 @@ class V2rayShareLink(str):
               spx='',
               ais='',
               fs="",
+              multiMode: bool = False,
               ):
 
         payload = {
@@ -101,6 +109,11 @@ class V2rayShareLink(str):
         if net == 'grpc':
             payload['serviceName'] = path
             payload["host"] = host
+            if multiMode:
+                payload["mode"] = "multi"
+            else:
+                payload["mode"] = "gun"
+
         elif net == 'quic':
             payload['key'] = path
             payload["quicSecurity"] = host
@@ -150,6 +163,7 @@ class V2rayShareLink(str):
                spx='',
                ais='',
                fs="",
+               multiMode: bool = False,
                ):
 
         payload = {
@@ -163,6 +177,11 @@ class V2rayShareLink(str):
         if net == 'grpc':
             payload['serviceName'] = path
             payload["host"] = host
+            if multiMode:
+                payload["mode"] = "multi"
+            else:
+                payload["mode"] = "gun"
+
         elif net == 'quic':
             payload['key'] = path
             payload["quicSecurity"] = host
@@ -514,13 +533,14 @@ class V2rayJsonConfig(str):
                             spx='',
                             headers='',
                             ais='',
-                            dialer_proxy=''
+                            dialer_proxy='',
+                            multiMode: bool = False,
                             ):
 
         if net == "ws":
             network_setting = self.ws_config(path=path, host=host)
         elif net == "grpc":
-            network_setting = self.grpc_config(path=path)
+            network_setting = self.grpc_config(path=path, multiMode=multiMode)
         elif net == "h2":
             network_setting = self.h2_config(path=path, host=host)
         elif net == "kpc":
@@ -627,7 +647,8 @@ class V2rayJsonConfig(str):
             spx=inbound.get('spx', ''),
             headers=headers,
             ais=inbound.get('ais', ''),
-            dialer_proxy=dialer_proxy
+            dialer_proxy=dialer_proxy,
+            multiMode=inbound.get('multiMode',False),
         )
 
         mux_json = json.loads(self.mux_template)
