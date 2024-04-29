@@ -423,6 +423,7 @@ class V2rayJsonConfig(str):
         users["alterId"] = 0
         users["email"] = "https://gozargah.github.io/marzban/"
         users["security"] = "auto"
+        users["level"] = 8
         vnext["users"] = [users]
 
         return [vnext]
@@ -442,6 +443,7 @@ class V2rayJsonConfig(str):
         users["encryption"] = "none"
         if flow:
             users["flow"] = flow
+        users["level"] = 8
         vnext["users"] = [users]
 
         return [vnext]
@@ -458,7 +460,7 @@ class V2rayJsonConfig(str):
         servers["email"] = "https://gozargah.github.io/marzban/"
         servers["method"] = method
         servers["ota"] = False
-        servers["level"] = 1
+        servers["level"] = 8
 
         settings["servers"] = [servers]
 
@@ -476,7 +478,7 @@ class V2rayJsonConfig(str):
         servers["email"] = "https://gozargah.github.io/marzban/"
         servers["method"] = method
         servers["uot"] = False
-        servers["level"] = 1
+        servers["level"] = 8
 
         settings["servers"] = [servers]
 
