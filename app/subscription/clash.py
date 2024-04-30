@@ -1,6 +1,7 @@
 import yaml
 import json
 from app.templates import render_template
+from app.subscription.funcs import grpc_correct_path
 
 from config import CLASH_SUBSCRIPTION_TEMPLATE, MUX_TEMPLATE
 
@@ -60,6 +61,8 @@ class ClashConfiguration(object):
                   alpn: str = '',
                   ais: bool = '',
                   mux_enable : bool = False):
+
+        path = grpc_correct_path(path=path, word="customTunMulti")
 
         if type == 'shadowsocks':
             type = 'ss'

@@ -1,5 +1,6 @@
 import json
 from app.templates import render_template
+from app.subscription.funcs import grpc_correct_path
 
 from config import SINGBOX_SUBSCRIPTION_TEMPLATE, MUX_TEMPLATE
 
@@ -193,6 +194,9 @@ class SingBoxConfiguration(str):
         return config
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
+
+        path = grpc_correct_path(path=inbound["path"], word="customTunMulti")
+
         outbound = self.make_outbound(
             remark=remark,
             type=inbound['protocol'],
@@ -203,7 +207,7 @@ class SingBoxConfiguration(str):
             flow=settings.get('flow', ''),
             sni=inbound['sni'],
             host=inbound['host'],
-            path=inbound['path'],
+            path=path,
             alpn=inbound.get('alpn', ''),
             fp=inbound.get('fp', ''),
             pbk=inbound.get('pbk', ''),

@@ -4,6 +4,7 @@ import urllib.parse as urlparse
 from typing import Union
 from uuid import UUID
 
+from app.subscription.funcs import grpc_correct_path
 from app.templates import render_template
 
 from config import (MUX_TEMPLATE, V2RAY_SUBSCRIPTION_TEMPLATE)
@@ -21,6 +22,8 @@ class V2rayShareLink(str):
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
 
+        path = grpc_correct_path(path=inbound["path"], word="customTun")
+
         if inbound["protocol"] == "vmess":
             link = self.vmess(
                 remark=remark,
@@ -36,7 +39,7 @@ class V2rayShareLink(str):
                 sid=inbound.get("sid", ""),
                 spx=inbound.get("spx", ""),
                 host=inbound["host"],
-                path=inbound["path"],
+                path=path,
                 type=inbound["header_type"],
                 ais=inbound.get("ais", ""),
                 fs=inbound.get("fragment_setting", ""),
@@ -59,7 +62,7 @@ class V2rayShareLink(str):
                 sid=inbound.get("sid", ""),
                 spx=inbound.get("spx", ""),
                 host=inbound["host"],
-                path=inbound["path"],
+                path=path,
                 type=inbound["header_type"],
                 ais=inbound.get("ais", ""),
                 fs=inbound.get("fragment_setting", ""),
@@ -82,7 +85,7 @@ class V2rayShareLink(str):
                 sid=inbound.get("sid", ""),
                 spx=inbound.get("spx", ""),
                 host=inbound["host"],
-                path=inbound["path"],
+                path=path,
                 type=inbound["header_type"],
                 ais=inbound.get("ais", ""),
                 fs=inbound.get("fragment_setting", ""),
@@ -680,6 +683,7 @@ class V2rayJsonConfig(str):
         tls = (inbound['tls'])
         headers = inbound['header_type']
         fragment = inbound['fragment_setting']
+        path = grpc_correct_path(path=inbound["path"], word="customTun")
 
         outbound = {
             "tag": remark,
@@ -735,7 +739,7 @@ class V2rayJsonConfig(str):
             tls=tls,
             sni=inbound['sni'],
             host=inbound['host'],
-            path=inbound['path'],
+            path=path,
             alpn=inbound.get('alpn', ''),
             fp=inbound.get('fp', ''),
             pbk=inbound.get('pbk', ''),
