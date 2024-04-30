@@ -579,7 +579,6 @@ class V2rayJsonConfig(str):
         servers["email"] = "https://gozargah.github.io/marzban/"
         servers["method"] = method
         servers["ota"] = False
-        servers["level"] = 1
 
         settings["servers"] = [servers]
 
@@ -597,7 +596,6 @@ class V2rayJsonConfig(str):
         servers["email"] = "https://gozargah.github.io/marzban/"
         servers["method"] = method
         servers["uot"] = False
-        servers["level"] = 1
 
         settings["servers"] = [servers]
 
