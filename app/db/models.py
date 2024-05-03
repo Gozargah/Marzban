@@ -58,7 +58,14 @@ class User(Base):
     online_at = Column(DateTime, nullable=True, default=None)
     on_hold_expire_duration = Column(BigInteger, nullable=True, default=None)
     on_hold_timeout = Column(DateTime, nullable=True, default=None)
+
+    # * Positive values: User will be deleted after the value of this field in days automatically.
+    # * Negative values: User won't be deleted automatically at all.
+    # * NULL: Uses global settings.
+    auto_delete_in_days = Column(Integer, nullable=True, default=None)
+
     edit_at = Column(DateTime, nullable=True, default=None)
+    last_status_change = Column(DateTime, default=datetime.utcnow, nullable=True)
 
     @property
     def lifetime_used_traffic(self):

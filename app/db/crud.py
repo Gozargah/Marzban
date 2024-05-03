@@ -1,9 +1,10 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
 from sqlalchemy import and_, delete
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.functions import coalesce
 
 from app.db.models import (JWT, TLS, Admin, Node, NodeUsage, NodeUserUsage,
                            NotificationReminder, Proxy, ProxyHost,
@@ -20,7 +21,8 @@ from app.models.user_template import UserTemplateCreate, UserTemplateModify
 from app.utils.helpers import (calculate_expiration_days,
                                calculate_usage_percent)
 from app.utils.notification import Notification
-from config import NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT
+from config import NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT, USERS_AUTODELETE_DAYS
+from datetime import timedelta
 
 
 def add_default_host(db: Session, inbound: ProxyInbound):
@@ -375,8 +377,49 @@ def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
     db.commit()
 
 
+def delete_all_expired_users(db: Session,
+                             include_limited_users: bool = False) -> list[User]:
+    """
+    Deletes expired (optionally also limited) users whose auto-delete time has passed.
+
+    Args:
+        db (Session): Database session
+        include_limited_users (bool, optional): Whether to delete limited users as well.
+            Defaults to False.
+
+    Returns:
+        list[User]: List of deleted users.
+    """
+    target_status = (
+        [UserStatus.expired] if not include_limited_users
+        else [UserStatus.expired, UserStatus.limited]
+    )
+
+    auto_delete = coalesce(User.auto_delete_in_days, USERS_AUTODELETE_DAYS)
+
+    query = db.query(
+        User, auto_delete,  # Use global auto-delete days as fallback
+    ).filter(
+        auto_delete >= 0,  # Negative values prevent auto-deletion
+        User.status.in_(target_status),
+    )
+
+    # TODO: Handle time filter in query itself (NOTE: Be careful with sqlite's strange datetime handling)
+    expired_users = [
+        user
+        for (user, auto_delete) in query
+        if user.last_status_change + timedelta(days=auto_delete) <= datetime.utcnow()
+    ]
+
+    if expired_users:
+        remove_users(db, expired_users)
+
+    return expired_users
+
+
 def update_user_status(db: Session, dbuser: User, status: UserStatus):
     dbuser.status = status
+    dbuser.last_status_change = datetime.utcnow()
     db.commit()
     db.refresh(dbuser)
     return dbuser
