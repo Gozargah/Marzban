@@ -57,14 +57,14 @@ const InboundCard: FC<PropsWithChildren<UseRadioProps & { inbound: InboundType }
         justifyContent="space-between"
         overflow="hidden"
         _checked={{
-          bg: "gray.50",
-          outline: "2px",
+          bg: "blackAlpha.50",
+          outline: "1px",
           boxShadow: "outline",
           outlineColor: "primary.500",
           borderColor: "transparent",
           fontWeight: "medium",
           _dark: {
-            bg: "gray.750",
+            bg: "whiteAlpha.50",
             borderColor: "transparent",
           },
           "& p": {
@@ -169,10 +169,8 @@ const RadioCard: FC<
       }}
       _checked={{
         bg: "gray.50",
-        outline: "2px",
         boxShadow: "outline",
-        outlineColor: "primary.500",
-        borderColor: "transparent",
+        borderColor: "primary.400",
       }}
       {...getCheckboxProps()}
     >
@@ -182,7 +180,6 @@ const RadioCard: FC<
         )}
         <input {...inputProps} />
         <Box
-          w="fll"
           position="relative"
           {...htmlProps}
           borderRadius="md"
@@ -190,7 +187,7 @@ const RadioCard: FC<
           _checked={{
             fontWeight: "medium",
             _dark: {
-              bg: "gray.750",
+              bg: "whiteAlpha.100",
               borderColor: "transparent",
             },
             "& > svg": {
@@ -439,7 +436,7 @@ export const RadioGroup = forwardRef<any, RadioGroupProps>(({ name, list, onChan
 
   return (
     <Accordion allowToggle index={expandedAccordions}>
-      <SimpleGrid ref={ref} gap={2} alignItems="flex-start" columns={1} spacing={1}>
+      <SimpleGrid ref={ref} gap={2.5} alignItems="flex-start" columns={1} spacing={1.5}>
         {list.map((value, index) => {
           return (
             <RadioCard

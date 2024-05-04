@@ -221,12 +221,10 @@ export const theme = extendTheme({
           },
           _focusVisible: {
             boxShadow: "none",
-            // borderColor: "primary.200",
-            // outlineColor: "primary.200",
           },
           _disabled: {
             _dark: {
-              color: "gray.400",
+              color: "whiteAlpha.100",
             },
           },
         },
@@ -234,6 +232,12 @@ export const theme = extendTheme({
       variants: {
         outline: {
           borderColor: "border",
+          addon: {
+            borderColor: "border !important",
+            _placeholder: {
+              color: "text-inactive",
+            },
+          },
         },
       },
     },

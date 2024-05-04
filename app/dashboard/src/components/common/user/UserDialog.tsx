@@ -4,6 +4,13 @@ import {
   Box,
   Button,
   Collapse,
+  Drawer,
+  DrawerBody,
+  DrawerCloseButton,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerOverlay,
   Flex,
   FormControl,
   FormErrorMessage,
@@ -13,13 +20,6 @@ import {
   GridItem,
   HStack,
   IconButton,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Select,
   Spinner,
   Switch,
@@ -28,6 +28,7 @@ import {
   Tooltip,
   VStack,
   chakra,
+  useBreakpointValue,
   useColorMode,
   useToast,
 } from "@chakra-ui/react";
@@ -36,7 +37,6 @@ import { InformationCircleIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UsageFilter, createUsageConfig } from "components/common/nodes/UsageFilter";
 import { convertDateFormat } from "components/common/user/OnlineBadge";
-import { Icon } from "components/elements/Icon";
 import { Input } from "components/elements/Input";
 import { RadioGroup } from "components/elements/RadioGroup";
 import { queryClient } from "config/react-query";
@@ -336,32 +336,29 @@ export const UserDialog: FC<UserDialogProps> = () => {
       ? "Never"
       : (relativeExpiryDate(convertDateFormat(editingUser.sub_updated_at), " and ").time || "0 min") + " ago"
     : null;
-
+  const drawerPlacement = useBreakpointValue({
+    base: "bottom",
+    md: "right",
+  }) as "bottom" | "right";
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
-      <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
+    <Drawer isOpen={isOpen} onClose={onClose} size="sm" placement={drawerPlacement}>
+      <DrawerOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
       <FormProvider {...form}>
-        <ModalContent mx="3">
-          <form onSubmit={form.handleSubmit(submit)}>
-            <ModalHeader pt={6}>
+        <form onSubmit={form.handleSubmit(submit)}>
+          <DrawerContent bg="main-bg">
+            <DrawerHeader pt={6}>
               <HStack gap={2}>
-                <Icon color="primary">
+                {/* <Icon color="primary">
                   {isEditing ? <EditUserIcon color="white" /> : <AddUserIcon color="white" />}
-                </Icon>
+                </Icon> */}
                 <Text fontWeight="semibold" fontSize="lg">
                   {isEditing ? t("userDialog.editUserTitle") : t("createNewUser")}
                 </Text>
               </HStack>
-            </ModalHeader>
-            <ModalCloseButton mt={3} disabled={disabled} />
-            <ModalBody>
-              <Grid
-                templateColumns={{
-                  base: "repeat(1, 1fr)",
-                  md: "repeat(2, 1fr)",
-                }}
-                gap={3}
-              >
+            </DrawerHeader>
+            <DrawerCloseButton mt={3} disabled={disabled} />
+            <DrawerBody>
+              <Grid templateColumns="repeat(1, 1fr)" gap={3}>
                 <GridItem>
                   <VStack justifyContent="space-between">
                     <Flex flexDirection="column" gridAutoRows="min-content" w="full">
@@ -555,7 +552,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                   </FormControl>
                 </GridItem>
                 {isEditing && usageVisible && (
-                  <GridItem pt={6} colSpan={{ base: 1, md: 2 }}>
+                  <GridItem pt={6} colSpan={{ base: 1 }}>
                     <VStack gap={4}>
                       <UsageFilter
                         defaultValue={usageFilter}
@@ -577,8 +574,8 @@ export const UserDialog: FC<UserDialogProps> = () => {
                   {error}
                 </Alert>
               )}
-            </ModalBody>
-            <ModalFooter mt="3" display="flex" flexDirection="column" alignItems="start" gap={2}>
+            </DrawerBody>
+            <DrawerFooter mt="3" display="flex" flexDirection="column" alignItems="start" gap={2}>
               {editingUser && (
                 <Box as="span" fontSize="sm" _dark={{ color: "gray.300" }} color="black" pb="2">
                   <Text as="span" display="inline">
@@ -600,51 +597,45 @@ export const UserDialog: FC<UserDialogProps> = () => {
                   )}
                 </Box>
               )}
-              <HStack
-                justifyContent="space-between"
-                w="full"
-                gap={3}
-                flexDirection={{
-                  base: "column",
-                  sm: "row",
-                }}
-              >
-                <HStack
-                  justifyContent="flex-start"
-                  w={{
-                    base: "full",
-                    sm: "unset",
-                  }}
-                >
+              <VStack w="full">
+                <HStack w="full" justify="space-between" flexWrap="wrap">
                   {isEditing && (
                     <>
-                      <Tooltip label={t("delete")} placement="top">
-                        <IconButton
-                          aria-label="Delete"
-                          size="sm"
-                          onClick={() => {
-                            onDeletingUser(editingUser);
-                            onClose();
-                          }}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
                       <Tooltip label={t("userDialog.usage")} placement="top">
                         <IconButton aria-label="usage" size="sm" onClick={handleUsageToggle}>
                           <UserUsageIcon />
                         </IconButton>
                       </Tooltip>
-                      <Button onClick={handleResetUsage} size="sm">
-                        {t("userDialog.resetUsage")}
-                      </Button>
-                      <Button onClick={handleRevokeSubscription} size="sm">
-                        {t("userDialog.revokeSubscription")}
-                      </Button>
+                      <HStack flexWrap="wrap">
+                        <Button onClick={handleResetUsage} size="sm">
+                          {t("userDialog.resetUsage")}
+                        </Button>
+                        <Button onClick={handleRevokeSubscription} size="sm">
+                          {t("userDialog.revokeSubscription")}
+                        </Button>
+                      </HStack>
                     </>
                   )}
                 </HStack>
-                <HStack w="full" maxW={{ md: "50%", base: "full" }} justify="end">
+                <HStack justify="space-between" w="full">
+                  {isEditing ? (
+                    <Tooltip label={t("delete")} placement="top">
+                      <IconButton
+                        aria-label="Delete"
+                        size="sm"
+                        onClick={() => {
+                          onDeletingUser(editingUser);
+                          onClose();
+                        }}
+                        colorScheme="red"
+                        variant="outline"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
+                  ) : (
+                    <span></span>
+                  )}
                   <Button
                     type="submit"
                     size="sm"
@@ -656,11 +647,11 @@ export const UserDialog: FC<UserDialogProps> = () => {
                     {isEditing ? t("userDialog.editUser") : t("createUser")}
                   </Button>
                 </HStack>
-              </HStack>
-            </ModalFooter>
-          </form>
-        </ModalContent>
+              </VStack>
+            </DrawerFooter>
+          </DrawerContent>
+        </form>
       </FormProvider>
-    </Modal>
+    </Drawer>
   );
 };

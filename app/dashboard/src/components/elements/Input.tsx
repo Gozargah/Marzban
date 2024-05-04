@@ -1,19 +1,19 @@
 import {
-	chakra,
-	FormControl,
-	FormErrorMessage,
-	FormLabel,
-	Input as ChakraInput,
-	InputGroup,
-	InputLeftAddon,
-	InputProps as ChakraInputProps,
-	InputRightAddon,
-	InputRightElement,
-	NumberDecrementStepper,
-	NumberIncrementStepper,
-	NumberInput,
-	NumberInputField,
-	NumberInputStepper
+  Input as ChakraInput,
+  InputProps as ChakraInputProps,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  InputGroup,
+  InputLeftAddon,
+  InputRightAddon,
+  InputRightElement,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  chakra,
 } from "@chakra-ui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import classNames from "classnames";
@@ -119,8 +119,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             outline: "2px solid",
             outlineColor: "primary.200",
           }}
-          bg={disabled ? "gray.100" : "transparent"}
-          _dark={{ bg: disabled ? "gray.600" : "transparent" }}
+          bg={disabled ? "blackAlpha.50" : "transparent"}
+          _dark={{ bg: disabled ? "whiteAlpha.100" : "transparent" }}
         >
           {startAdornment && <InputLeftAddon>{startAdornment}</InputLeftAddon>}
           <Wrapper {...wrapperProps}>
@@ -161,11 +161,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             )}
           </Wrapper>
           {endAdornment && (
-            <InputRightAddon
-              borderLeftRadius={0}
-              borderRightRadius="6px"
-              bg="transparent"
-            >
+            <InputRightAddon borderLeftRadius={0} borderRightRadius="6px" bg="transparent">
               {endAdornment}
             </InputRightAddon>
           )}
