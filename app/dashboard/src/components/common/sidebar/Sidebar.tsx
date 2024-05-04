@@ -104,7 +104,7 @@ export const Sidebar: FC = () => {
               p={0}
               maxW={{
                 base: "calc(100% - 58px)",
-                sm: "280px",
+                sm: "270px",
               }}
               // zIndex={1500}
               position="relative"
@@ -141,7 +141,7 @@ const SidebarContent: FC<{ isDrawerOpen: boolean; toggleDrawer: () => void }> = 
       // zIndex={1500}
       maxW={{
         base: "100%",
-        md: "280px",
+        md: "270px",
       }}
       w="full"
       h="full"
@@ -162,10 +162,19 @@ const SidebarContent: FC<{ isDrawerOpen: boolean; toggleDrawer: () => void }> = 
       overflowY="auto"
     >
       <VStack w="full" gap="30px">
-        <HStack as={Link} to="/" w="full" justify="space-between" px="2" onClick={handleOnClick}>
-          <Logo />
+        <HStack w="full" justify="space-between" px="2" pr="1" onClick={handleOnClick}>
+          <Link to="/">
+            <Logo />
+          </Link>
           {version && (
-            <Badge colorScheme="gray" opacity="0.7" _hover={{ opacity: 1 }} bg="transparent">
+            <Badge
+              fontSize="10px"
+              px="1"
+              borderColor="muted-border"
+              color="muted-border"
+              _hover={{ opacity: 1 }}
+              bg="transparent"
+            >
               v{version}
             </Badge>
           )}
@@ -179,7 +188,7 @@ const SidebarContent: FC<{ isDrawerOpen: boolean; toggleDrawer: () => void }> = 
             {
               title: "donation.menuTitle",
               href: DONATION_URL,
-              icon: <LifebuoyIcon width="24" />,
+              icon: <LifebuoyIcon width="20" />,
               target: "_blank",
             },
           ]}
@@ -223,7 +232,13 @@ const isURLChildOfmenu = (menuList: typeof menu, pathname: string) => {
   });
 };
 
-const NavButton: FC<{ menuItem: MenuItem; handleOnClick?: () => void }> = ({ menuItem, handleOnClick }) => {
+const NavButton: FC<{
+  menuItem: MenuItem;
+  handleOnClick?: () => void;
+  isChildItem?: boolean;
+  isFirst?: boolean;
+  isLast?: boolean;
+}> = ({ menuItem, handleOnClick, isChildItem, isFirst, isLast }) => {
   const { pathname } = useLocation();
   const [isOpen, setOpen] = useState((menuItem.children || false) && isURLChildOfmenu(menuItem.children, pathname));
   const { t } = useTranslation();
@@ -236,7 +251,6 @@ const NavButton: FC<{ menuItem: MenuItem; handleOnClick?: () => void }> = ({ men
         w="full"
         justifyContent="start"
         fontSize={{
-          md: "md",
           base: "sm",
         }}
         fontWeight="medium"
@@ -260,20 +274,64 @@ const NavButton: FC<{ menuItem: MenuItem; handleOnClick?: () => void }> = ({ men
           base: 2,
           md: 3,
         }}
-        h={{
-          base: 9,
-          md: 10,
-        }}
+        h={9}
         as={menuItem.href ? Link : undefined}
         key={menuItem.href}
         to={menuItem.href || ""}
         target={menuItem.target}
-        leftIcon={menuItem.icon}
+        leftIcon={
+          isChildItem ? (
+            <Box w="5" h="5" display="flex" justifyContent="center" alignItems="center" position="relative">
+              <Box
+                as="span"
+                w="1"
+                h="1"
+                bg={isActive ? "text-nav-active" : "text-nav-inactive"}
+                rounded="full"
+                display="block"
+                opacity={0.6}
+                position="relative"
+                _before={{
+                  ml: "1.5px",
+                  content: "''",
+                  h: isFirst ? 2 : "18px",
+                  w: "1px",
+                  bg: "text-nav-inactive",
+                  opacity: 0.4,
+                  rounded: "10px",
+                  display: "block",
+                  position: "absolute",
+                  top: 0,
+                  transform: "translateY(calc(-100%))",
+                }}
+                _after={{
+                  ml: "1.5px",
+                  content: "''",
+                  h: isLast ? 2 : "18px",
+                  w: "1px",
+                  bg: "text-nav-inactive",
+                  opacity: 0.4,
+                  rounded: "10px",
+                  display: "block",
+                  position: "absolute",
+                  transform: "translateY(4px)",
+                }}
+              ></Box>
+            </Box>
+          ) : (
+            menuItem.icon
+          )
+        }
         onClick={() => {
           menuItem.children && setOpen(!isOpen);
           !menuItem.children && handleOnClick && handleOnClick();
         }}
-        rightIcon={menuItem.children ? <DropdownIcon transform={isOpen ? "rotate(180deg)" : ""} /> : undefined}
+        rightIcon={menuItem.children ? <DropdownIcon transform={isOpen ? "" : "rotate(-90deg)"} /> : undefined}
+        css={{
+          "& .chakra-button__icon:first-of-type": {
+            marginRight: "6px",
+          },
+        }}
       >
         <Text as="span" color="inherit" flexGrow={1} textAlign="left">
           {t(menuItem.title)}
@@ -281,8 +339,8 @@ const NavButton: FC<{ menuItem: MenuItem; handleOnClick?: () => void }> = ({ men
       </Button>
       {menuItem.children && (
         <Collapse in={isOpen} animateOpacity style={{ width: "full" }}>
-          <Box pl="8" mt="2">
-            <NavMenu menu={menuItem.children} handleOnClick={handleOnClick} />
+          <Box mt="1">
+            <NavMenu menu={menuItem.children} handleOnClick={handleOnClick} isChildMenu />
           </Box>
         </Collapse>
       )}
@@ -290,11 +348,24 @@ const NavButton: FC<{ menuItem: MenuItem; handleOnClick?: () => void }> = ({ men
   );
 };
 
-const NavMenu: FC<{ menu: MenuItem[]; handleOnClick?: () => void }> = ({ menu, handleOnClick }) => {
+const NavMenu: FC<{ menu: MenuItem[]; handleOnClick?: () => void; isChildMenu?: boolean }> = ({
+  menu,
+  handleOnClick,
+  isChildMenu,
+}) => {
   return (
     <VStack gap="1" w="full">
       {menu.map((menuItem, index) => {
-        return <NavButton key={index} menuItem={menuItem} handleOnClick={handleOnClick} />;
+        return (
+          <NavButton
+            key={index}
+            menuItem={menuItem}
+            handleOnClick={handleOnClick}
+            isChildItem={isChildMenu}
+            isFirst={index === 0}
+            isLast={index === menu.length - 1}
+          />
+        );
       })}
     </VStack>
   );

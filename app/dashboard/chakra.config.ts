@@ -22,6 +22,10 @@ export const theme = extendTheme({
         default: "#EAECF0",
         _dark: "#3A3839",
       },
+      "muted-border": {
+        default: "#848484",
+        _dark: "#848484",
+      },
       "active-menu-bg": {
         default: "#fff",
         _dark: "#26272A",
@@ -292,10 +296,10 @@ export const theme = extendTheme({
           _last: {
             "& > td": {
               _first: {
-                borderBottomLeftRadius: "8px",
+                borderBottomLeftRadius: "md",
               },
               _last: {
-                borderBottomRightRadius: "8px",
+                borderBottomRightRadius: "md",
               },
             },
           },

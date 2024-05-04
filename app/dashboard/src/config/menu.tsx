@@ -13,17 +13,17 @@ export type MenuItem = {
 export const menu: MenuItem[] = [
   {
     title: "menu.users",
-    icon: <UserGroupIcon width="24" />,
+    icon: <UserGroupIcon width="20" />,
     href: "/users",
   },
   {
     title: "menu.statistics",
-    icon: <ChartPieIcon width="24" />,
+    icon: <ChartPieIcon width="20" />,
     href: "/statistics",
   },
   {
     title: "menu.settings",
-    icon: <Cog6ToothIcon width="24" />,
+    icon: <Cog6ToothIcon width="20" />,
     children: [
       {
         title: "menu.general",
