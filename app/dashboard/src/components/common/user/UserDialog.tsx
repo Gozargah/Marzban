@@ -29,10 +29,11 @@ import {
   VStack,
   chakra,
   useBreakpointValue,
+  useClipboard,
   useColorMode,
   useToast,
 } from "@chakra-ui/react";
-import { ChartPieIcon, PencilIcon, UserPlusIcon } from "@heroicons/react/24/outline";
+import { ChartPieIcon, ClipboardIcon, LinkIcon, PencilIcon, UserPlusIcon } from "@heroicons/react/24/outline";
 import { InformationCircleIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UsageFilter, createUsageConfig } from "components/common/nodes/UsageFilter";
@@ -340,6 +341,17 @@ export const UserDialog: FC<UserDialogProps> = () => {
     base: "bottom",
     md: "right",
   }) as "bottom" | "right";
+
+  const subscriptionURL = !!editingUser
+    ? editingUser.subscription_url.startsWith("http")
+      ? editingUser.subscription_url
+      : window.location.origin + editingUser.subscription_url
+    : "";
+  const { onCopy: copySubscriptionLink, hasCopied: subCopied } = useClipboard(subscriptionURL);
+  const { onCopy: copyConfigs, hasCopied: configsCopied } = useClipboard(
+    !!editingUser ? editingUser.links.join("\n") : ""
+  );
+
   return (
     <Drawer isOpen={isOpen} onClose={onClose} size="sm" placement={drawerPlacement}>
       <DrawerOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
@@ -601,11 +613,13 @@ export const UserDialog: FC<UserDialogProps> = () => {
                 <HStack w="full" justify="space-between" flexWrap="wrap">
                   {isEditing && (
                     <>
-                      <Tooltip label={t("userDialog.usage")} placement="top">
-                        <IconButton aria-label="usage" size="sm" onClick={handleUsageToggle}>
-                          <UserUsageIcon />
-                        </IconButton>
-                      </Tooltip>
+                      <HStack>
+                        <Tooltip label={t("userDialog.usage")} placement="top">
+                          <IconButton aria-label="usage" size="sm" onClick={handleUsageToggle}>
+                            <UserUsageIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </HStack>
                       <HStack flexWrap="wrap">
                         <Button onClick={handleResetUsage} size="sm">
                           {t("userDialog.resetUsage")}
@@ -619,33 +633,57 @@ export const UserDialog: FC<UserDialogProps> = () => {
                 </HStack>
                 <HStack justify="space-between" w="full">
                   {isEditing ? (
-                    <Tooltip label={t("delete")} placement="top">
-                      <IconButton
-                        aria-label="Delete"
-                        size="sm"
-                        onClick={() => {
-                          onDeletingUser(editingUser);
-                          onClose();
-                        }}
-                        colorScheme="red"
-                        variant="outline"
+                    <HStack>
+                      <Tooltip
+                        label={subCopied ? t("usersTable.copied") : t("usersTable.copyLink")}
+                        placement="top"
+                        closeOnClick={false}
                       >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
+                        <IconButton aria-label={t("usersTable.copyLink")} size="sm" onClick={copySubscriptionLink}>
+                          <LinkIcon width="20px" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip
+                        label={configsCopied ? t("usersTable.copied") : t("usersTable.copyConfigs")}
+                        placement="top"
+                        closeOnClick={false}
+                      >
+                        <IconButton aria-label={t("usersTable.copyConfigs")} size="sm" onClick={copyConfigs}>
+                          <ClipboardIcon width="20px" />
+                        </IconButton>
+                      </Tooltip>
+                    </HStack>
                   ) : (
                     <span></span>
                   )}
-                  <Button
-                    type="submit"
-                    size="sm"
-                    px="8"
-                    colorScheme="primary"
-                    leftIcon={loading ? <Spinner size="xs" /> : undefined}
-                    disabled={disabled}
-                  >
-                    {isEditing ? t("userDialog.editUser") : t("createUser")}
-                  </Button>
+                  <HStack>
+                    {isEditing && (
+                      <Tooltip label={t("delete")} placement="top">
+                        <IconButton
+                          aria-label="Delete"
+                          size="sm"
+                          onClick={() => {
+                            onDeletingUser(editingUser);
+                            onClose();
+                          }}
+                          colorScheme="red"
+                          variant="outline"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    <Button
+                      type="submit"
+                      size="sm"
+                      px="8"
+                      colorScheme="primary"
+                      leftIcon={loading ? <Spinner size="xs" /> : undefined}
+                      disabled={disabled}
+                    >
+                      {isEditing ? t("userDialog.editUser") : t("createUser")}
+                    </Button>
+                  </HStack>
                 </HStack>
               </VStack>
             </DrawerFooter>
