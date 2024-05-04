@@ -29,9 +29,11 @@ export const DonationCard = () => {
   if (showDonationNotif)
     return (
       <Alert
-        bg="#2E3035"
+        bg="active-menu-bg"
+        border="1px solid"
+        borderColor="border"
         _light={{
-          bg: "gray.200",
+          boxShadow: "0px 2px 4px -2px rgba(16, 24, 40, 0.06)",
         }}
         alignItems="start"
         p="4"
