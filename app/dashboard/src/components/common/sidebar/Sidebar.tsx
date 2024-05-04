@@ -174,6 +174,7 @@ const SidebarContent: FC<{ isDrawerOpen: boolean; toggleDrawer: () => void }> = 
               color="muted-border"
               _hover={{ opacity: 1 }}
               bg="transparent"
+              fontWeight="semibold"
             >
               v{version}
             </Badge>

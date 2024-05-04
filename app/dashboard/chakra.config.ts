@@ -125,7 +125,7 @@ export const theme = extendTheme({
   components: {
     Badge: defineStyleConfig({
       baseStyle: {
-        borderRadius: "6px",
+        borderRadius: "5px",
       },
       variants: {
         subtle: (props) => {
