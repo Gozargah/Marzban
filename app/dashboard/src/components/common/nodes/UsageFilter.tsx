@@ -3,6 +3,7 @@ import {
   ColorMode,
   HStack,
   Icon,
+  Portal,
   SimpleGrid,
   Tab,
   TabList,
@@ -160,9 +161,10 @@ export const UsageFilter: FC<UsageFilterProps> = ({ onChange, defaultValue, ...p
       }
     }
   };
+  const containerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <VStack {...props}>
+    <VStack {...props} ref={containerRef}>
       {tabIndex == 0 && (
         <SimpleGrid
           {...getRootProps()}
@@ -223,65 +225,76 @@ export const UsageFilter: FC<UsageFilterProps> = ({ onChange, defaultValue, ...p
           <Icon as={CalendarIcon} boxSize="18px" />
         </HStack>
       )}
-      <VStack
-        ref={customRef}
-        marginTop="40px !important"
-        borderRadius="md"
-        borderWidth="1px"
-        position="absolute"
-        zIndex="1"
-        backgroundColor="white"
-        _dark={{
-          backgroundColor: "gray.700",
-        }}
-        display={isCustomOpen ? "unset" : "none"}
-      >
-        <Tabs onChange={(index) => setTabIndex(index)}>
-          <TabList>
-            <Tab fontSize={fontSize}>{t("userDialog.relative")}</Tab>
-            <Tab fontSize={fontSize}>{t("userDialog.absolute")}</Tab>
-          </TabList>
+      <Portal>
+        <VStack
+          ref={customRef}
+          marginTop="40px !important"
+          borderRadius="md"
+          borderWidth="1px"
+          position="absolute"
+          zIndex={9999}
+          bg="card-bg"
+          border="1px solid"
+          borderColor="border"
+          display={isCustomOpen ? "unset" : "none"}
+          top={containerRef.current?.getBoundingClientRect().y}
+          right="24px"
+          left={{
+            base: "24px",
+            md: "unset",
+          }}
+          bottom="24px"
+          overflow="auto"
+        >
+          <Tabs onChange={(index) => setTabIndex(index)}>
+            <TabList>
+              <Tab fontSize={fontSize}>{t("userDialog.relative")}</Tab>
+              <Tab fontSize={fontSize}>{t("userDialog.absolute")}</Tab>
+            </TabList>
 
-          <TabPanels>
-            <TabPanel>
-              {customFilterOptions.map((row) => {
-                return (
-                  <VStack key={row.title} alignItems="start" pl={2} pr={2}>
-                    <HStack justifyItems="flex-start" mb={4}>
-                      <Text fontSize={fontSize} minW="60px">
-                        {t("userDialog." + row.title)}
-                      </Text>
-                      {row.options.map((value: string) => {
-                        return (
-                          <FilterItem key={value + ".custom"} border={true} {...getRadioProps({ value })}>
-                            {value}
-                          </FilterItem>
-                        );
-                      })}
-                    </HStack>
-                  </VStack>
-                );
-              })}
-            </TabPanel>
-            <TabPanel className="datepicker-panel">
-              <VStack>
-                <ReactDatePicker
-                  locale={i18n.language.toLocaleLowerCase()}
-                  selected={startDate}
-                  onChange={onDateChange}
-                  startDate={startDate}
-                  endDate={endDate}
-                  selectsRange={true}
-                  maxDate={new Date()}
-                  monthsShown={monthsShown}
-                  peekNextMonth={false}
-                  inline
-                />
-              </VStack>
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
-      </VStack>
+            <TabPanels>
+              <TabPanel>
+                {customFilterOptions.map((row) => {
+                  return (
+                    <VStack key={row.title} alignItems="start" pl={2} pr={2}>
+                      <HStack justifyItems="flex-start" mb={4}>
+                        <Text fontSize={fontSize} minW="60px">
+                          {t("userDialog." + row.title)}
+                        </Text>
+                        {row.options.map((value: string) => {
+                          return (
+                            <FilterItem key={value + ".custom"} border={true} {...getRadioProps({ value })}>
+                              {value}
+                            </FilterItem>
+                          );
+                        })}
+                      </HStack>
+                    </VStack>
+                  );
+                })}
+              </TabPanel>
+              <TabPanel className="datepicker-panel">
+                <VStack>
+                  <ReactDatePicker
+                    locale={i18n.language.toLocaleLowerCase()}
+                    selected={startDate}
+                    onChange={onDateChange}
+                    startDate={startDate}
+                    endDate={endDate}
+                    selectsRange
+                    maxDate={new Date()}
+                    monthsShown={monthsShown}
+                    peekNextMonth
+                    inline
+                    withPortal
+                    portalId="root"
+                  />
+                </VStack>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+        </VStack>
+      </Portal>
     </VStack>
   );
 };

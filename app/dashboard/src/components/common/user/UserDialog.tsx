@@ -394,7 +394,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                   return (
                                     <Tooltip
                                       placement="top"
-                                      label={"status: " + field.value}
+                                      label={t("usersTable.status") + ": " + t(field.value)}
                                       textTransform="capitalize"
                                     >
                                       <Box>

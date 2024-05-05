@@ -499,7 +499,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 >
                   <Td minW="140px" maxW="calc(100vw - 270px - 120px - 200px - 185px - 48px)">
                     <VStack gap="0" align="start">
-                      <Box display="flex" isTruncated justifyContent="start" alignItems="center" gap={2}>
+                      <Box display="flex" maxW="full" isTruncated justifyContent="start" alignItems="center" gap={2}>
                         <OnlineBadge lastOnline={user.online_at} />
                         <Text isTruncated>{user.username}</Text>
                       </Box>

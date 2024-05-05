@@ -41,14 +41,14 @@ export const StatusBadge: FC<UserStatusProps> = ({
             fontWeight="medium"
             letterSpacing="tighter"
           >
-            {userStatus}
+            {t(userStatus)}
             {extraText && `: ${extraText}`}
           </Text>
         )}
       </Badge>
       {showDetail && expiryDate && (
         <Text display="inline-block" fontSize="xs" color="text-inactive">
-          {t(dateInfo.status, { time: dateInfo.time })}
+          {t(`time.${dateInfo.status}`, { time: dateInfo.time })}
         </Text>
       )}
     </VStack>
