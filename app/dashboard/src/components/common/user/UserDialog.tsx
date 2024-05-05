@@ -343,9 +343,9 @@ export const UserDialog: FC<UserDialogProps> = () => {
   }) as "bottom" | "right";
 
   const subscriptionURL = !!editingUser
-    ? editingUser.subscription_url.startsWith("http")
-      ? editingUser.subscription_url
-      : window.location.origin + editingUser.subscription_url
+    ? editingUser.subscription_url.startsWith("/")
+      ? window.location.origin + editingUser.subscription_url
+      : editingUser.subscription_url
     : "";
   const { onCopy: copySubscriptionLink, hasCopied: subCopied } = useClipboard(subscriptionURL);
   const { onCopy: copyConfigs, hasCopied: configsCopied } = useClipboard(

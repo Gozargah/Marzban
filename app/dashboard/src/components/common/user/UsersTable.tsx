@@ -25,6 +25,7 @@ import {
   VStack,
   chakra,
   useBreakpointValue,
+  useClipboard,
 } from "@chakra-ui/react";
 import {
   CheckIcon,
@@ -477,13 +478,14 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               minW="200px"
               cursor={"pointer"}
               onClick={handleSort.bind(null, "used_traffic")}
+              pl="0"
             >
               <HStack>
                 <span>{t("usersTable.dataUsage")}</span>
                 <Sort sort={filters.sort} column="used_traffic" />
               </HStack>
             </Th>
-            <Th position="sticky" top={{ base: "unset", lg: top }} width="52px" minW="52px" />
+            <Th position="sticky" top={{ base: "unset", lg: top }} width="120px" minW="120px" pl="0" />
           </Tr>
         </Thead>
         <Tbody>
@@ -520,7 +522,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                       colorScheme={statusColors[user.status].bandWidthColor}
                     />
                   </Td>
-                  <Td width="52px" minW="52px">
+                  <Td width="120px" minW="120px" pl="0">
                     <ActionButtons user={user} />
                   </Td>
                 </Tr>
@@ -546,17 +548,10 @@ type ActionButtonsProps = {
 
 const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
   const { setQRCode, setSubLink } = useDashboard();
-
-  const proxyLinks = user.links.join("\r\n");
-
-  const [copied, setCopied] = useState([-1, false]);
-  useEffect(() => {
-    if (copied[1]) {
-      setTimeout(() => {
-        setCopied([-1, false]);
-      }, 1000);
-    }
-  }, [copied]);
+  const { onCopy: CopySub, hasCopied: subscriptionLinkCopied } = useClipboard(
+    user.subscription_url.startsWith("/") ? window.location.origin + user.subscription_url : user.subscription_url
+  );
+  const { t } = useTranslation();
   return (
     <HStack
       justifyContent="flex-end"
@@ -565,68 +560,26 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
         e.stopPropagation();
       }}
     >
-      {/* <CopyToClipboard
-        text={
-          user.subscription_url.startsWith("/") ? window.location.origin + user.subscription_url : user.subscription_url
-        }
-        onCopy={() => {
-          setCopied([0, true]);
-        }}
-      >
-        <div>
-          <Tooltip
-            label={copied[0] == 0 && copied[1] ? t("usersTable.copied") : t("usersTable.copyLink")}
-            placement="top"
-          >
-            <IconButton
-              p="0 !important"
-              aria-label="copy subscription link"
-              bg="transparent"
-              _dark={{
-                _hover: {
-                  bg: "gray.700",
-                },
-              }}
-              size={{
-                base: "sm",
-                md: "md",
-              }}
-            >
-              {copied[0] == 0 && copied[1] ? <CopiedIcon /> : <SubscriptionLinkIcon />}
-            </IconButton>
-          </Tooltip>
-        </div>
-      </CopyToClipboard> */}
-      {/* <CopyToClipboard
-        text={proxyLinks}
-        onCopy={() => {
-          setCopied([1, true]);
-        }}
-      >
-        <div>
-          <Tooltip
-            label={copied[0] == 1 && copied[1] ? t("usersTable.copied") : t("usersTable.copyConfigs")}
-            placement="top"
-          >
-            <IconButton
-              p="0 !important"
-              aria-label="copy configs"
-              bg="transparent"
-              _dark={{
-                _hover: {
-                  bg: "gray.700",
-                },
-              }}
-              size={{
-                base: "sm",
-                md: "md",
-              }}
-            >
-              {copied[0] == 1 && copied[1] ? <CopiedIcon /> : <CopyIcon />}
-            </IconButton>
-          </Tooltip>
-        </div>
-      </CopyToClipboard> */}
+      <Tooltip label={subscriptionLinkCopied ? t("usersTable.copied") : t("usersTable.copyLink")} placement="top">
+        <IconButton
+          p="0 !important"
+          aria-label="copy subscription link"
+          bg="transparent"
+          _dark={{
+            _hover: {
+              bg: "gray.700",
+            },
+          }}
+          size={{
+            base: "sm",
+            md: "md",
+          }}
+          onClick={CopySub}
+        >
+          {subscriptionLinkCopied ? <CopiedIcon /> : <SubscriptionLinkIcon />}
+        </IconButton>
+      </Tooltip>
+
       <Tooltip label="QR Code" placement="top">
         <IconButton
           p="0 !important"
