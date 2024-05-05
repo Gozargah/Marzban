@@ -564,12 +564,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
         <IconButton
           p="0 !important"
           aria-label="copy subscription link"
-          bg="transparent"
-          _dark={{
-            _hover: {
-              bg: "gray.700",
-            },
-          }}
+          variant="ghost"
           size={{
             base: "sm",
             md: "md",
@@ -584,12 +579,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
         <IconButton
           p="0 !important"
           aria-label="qr code"
-          bg="transparent"
-          _dark={{
-            _hover: {
-              bg: "gray.700",
-            },
-          }}
+          variant="ghost"
           size={{
             base: "sm",
             md: "md",

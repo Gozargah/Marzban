@@ -123,6 +123,13 @@ export const theme = extendTheme({
     },
   },
   components: {
+    Modal: {
+      baseStyle: {
+        dialog: {
+          bg: "card-bg",
+        },
+      },
+    },
     Badge: defineStyleConfig({
       baseStyle: {
         borderRadius: "5px",

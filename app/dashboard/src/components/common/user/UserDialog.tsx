@@ -360,9 +360,6 @@ export const UserDialog: FC<UserDialogProps> = () => {
           <DrawerContent bg="main-bg">
             <DrawerHeader pt={6}>
               <HStack gap={2}>
-                {/* <Icon color="primary">
-                  {isEditing ? <EditUserIcon color="white" /> : <AddUserIcon color="white" />}
-                </Icon> */}
                 <Text fontWeight="semibold" fontSize="lg">
                   {isEditing ? t("userDialog.editUserTitle") : t("createNewUser")}
                 </Text>

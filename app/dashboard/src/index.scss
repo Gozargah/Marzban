@@ -242,3 +242,11 @@ body,
 .slick-next:before {
   content: "" !important;
 }
+
+:root {
+  --modal-bg: var(--chakra-colors-chakra-card-bg) !important;
+}
+
+:root {
+  --main-bg-color: var(--chakra-colors-chakra-card-bg);
+}
