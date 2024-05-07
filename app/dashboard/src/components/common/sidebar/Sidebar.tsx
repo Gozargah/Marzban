@@ -138,7 +138,6 @@ const SidebarContent: FC<{ isDrawerOpen: boolean; toggleDrawer: () => void }> = 
   };
   return (
     <VStack
-      // zIndex={1500}
       maxW={{
         base: "100%",
         md: "270px",

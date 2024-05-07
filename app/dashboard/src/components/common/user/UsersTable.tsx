@@ -610,10 +610,10 @@ const EmptySection: FC<EmptySectionProps> = ({ isFiltered }) => {
         maxWidth="200px"
         _dark={{
           'path[fill="#fff"]': {
-            fill: "gray.800",
+            fill: "card-bg",
           },
           'path[fill="#f2f2f2"], path[fill="#e6e6e6"], path[fill="#ccc"]': {
-            fill: "gray.700",
+            fill: "muted-border",
           },
           'circle[fill="#3182CE"]': {
             fill: "primary.300",
@@ -628,7 +628,7 @@ const EmptySection: FC<EmptySectionProps> = ({ isFiltered }) => {
           },
         }}
       />
-      <Text fontWeight="medium" color="gray.600" _dark={{ color: "gray.400" }}>
+      <Text fontWeight="medium" color="muted-border">
         {isFiltered ? t("usersTable.noUserMatched") : t("usersTable.noUser")}
       </Text>
       {!isFiltered && (

@@ -1,4 +1,5 @@
 import { queryClient } from "config/react-query";
+import { UseQueryOptions } from "react-query";
 import { GetUsersParams, UserResponse, getGetUsersQueryKey, useGetUsers } from "services/api";
 import { User } from "types/User";
 import { getUsersPerPageLimitSize } from "utils/userPreferenceStorage";
@@ -61,12 +62,14 @@ type DashboardStateType = {
   onShowingNodesUsage: (isShowingNodesUsage: boolean) => void;
 };
 
-export const useUsers = () => {
+export const useUsers = (query?: Pick<UseQueryOptions, "staleTime" | "enabled">) => {
   const { filters } = useDashboard();
   return useGetUsers<{
     users: Required<UserResponse>[];
     total: number;
-  }>(filters);
+  }>(filters, {
+    query,
+  });
 };
 
 export const useDashboard = create(

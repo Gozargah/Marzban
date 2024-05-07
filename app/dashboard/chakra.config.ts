@@ -44,7 +44,7 @@ export const theme = extendTheme({
       },
       "text-inactive": {
         default: "#475467",
-        _dark: "#98A2B3",
+        _dark: "#999ea7",
       },
       "text-nav-inactive": {
         default: "#737378",

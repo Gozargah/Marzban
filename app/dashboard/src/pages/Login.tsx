@@ -109,8 +109,7 @@ export const Login: FC = () => {
                 {t("login.loginYourAccount")}
               </Text>
               <Text
-                color="gray.600"
-                _dark={{ color: "gray.400" }}
+                color="text-inactive"
                 textAlign="center"
                 fontSize={{
                   base: "sm",
