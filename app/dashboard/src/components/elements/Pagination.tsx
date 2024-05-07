@@ -1,6 +1,6 @@
 import { Box, Button, ButtonGroup, chakra, HStack, Select, Text } from "@chakra-ui/react";
 import { ArrowLongLeftIcon, ArrowLongRightIcon } from "@heroicons/react/24/outline";
-import { useDashboard } from "contexts/DashboardContext";
+import { useDashboard, useUsers } from "contexts/DashboardContext";
 import { ChangeEvent, FC } from "react";
 import { useTranslation } from "react-i18next";
 import { setUsersPerPageLimitSize } from "utils/userPreferenceStorage";
@@ -60,15 +60,14 @@ function generatePageItems(total: number, current: number, width: number) {
 }
 
 export const Pagination: FC = () => {
-  const {
-    filters,
-    onFilterChange,
-    users: { total },
-  } = useDashboard();
+  const { filters, onFilterChange } = useDashboard();
   const { limit: perPage, offset } = filters;
+  const { data = { users: [], total: 0 } } = useUsers({
+    enabled: false,
+  });
 
   const page = (offset || 0) / (perPage || 1);
-  const noPages = Math.ceil(total / (perPage || 1));
+  const noPages = Math.ceil(data.total / (perPage || 1));
   const pages = generatePageItems(noPages, page, 7);
 
   const changePage = (page: number) => {
