@@ -13,7 +13,7 @@ from xray_api.types.account import (
     TrojanAccount,
     VLESSAccount,
     VMessAccount,
-    XTLSFlows,
+    XTLSFlows
 )
 
 FRAGMENT_PATTERN = re.compile(r'^(\d{1,3}-\d{1,3}),(\d{1,3}-\d{1,3}),(tlshello|\d|\d\-\d)$')
@@ -102,8 +102,11 @@ ProxyHostALPN = Enum(
     "ProxyHostALPN",
     {
         "none": "",
+        "h3": "h3",
         "h2": "h2",
         "http/1.1": "http/1.1",
+        "h3,h2,http/1.1": "h3,h2,http/1.1",
+        "h3,h2": "h3,h2",
         "h2,http/1.1": "h2,http/1.1",
     },
 )
