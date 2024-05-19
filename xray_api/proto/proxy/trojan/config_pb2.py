@@ -16,7 +16,7 @@ from xray_api.proto.common.protocol import user_pb2 as common_dot_protocol_dot_u
 from xray_api.proto.common.protocol import server_spec_pb2 as common_dot_protocol_dot_server__spec__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x19proxy/trojan/config.proto\x12\x11xray.proxy.trojan\x1a\x1a\x63ommon/protocol/user.proto\x1a!common/protocol/server_spec.proto\")\n\x07\x41\x63\x63ount\x12\x10\n\x08password\x18\x01 \x01(\t\x12\x0c\n\x04\x66low\x18\x02 \x01(\t\"^\n\x08\x46\x61llback\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04\x61lpn\x18\x02 \x01(\t\x12\x0c\n\x04path\x18\x03 \x01(\t\x12\x0c\n\x04type\x18\x04 \x01(\t\x12\x0c\n\x04\x64\x65st\x18\x05 \x01(\t\x12\x0c\n\x04xver\x18\x06 \x01(\x04\"D\n\x0c\x43lientConfig\x12\x34\n\x06server\x18\x01 \x03(\x0b\x32$.xray.common.protocol.ServerEndpoint\"i\n\x0cServerConfig\x12)\n\x05users\x18\x01 \x03(\x0b\x32\x1a.xray.common.protocol.User\x12.\n\tfallbacks\x18\x03 \x03(\x0b\x32\x1b.xray.proxy.trojan.FallbackBU\n\x15\x63om.xray.proxy.trojanP\x01Z&github.com/xtls/xray-core/proxy/trojan\xaa\x02\x11Xray.Proxy.Trojanb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x19proxy/trojan/config.proto\x12\x11xray.proxy.trojan\x1a\x1a\x63ommon/protocol/user.proto\x1a!common/protocol/server_spec.proto\"\x1b\n\x07\x41\x63\x63ount\x12\x10\n\x08password\x18\x01 \x01(\t\"^\n\x08\x46\x61llback\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04\x61lpn\x18\x02 \x01(\t\x12\x0c\n\x04path\x18\x03 \x01(\t\x12\x0c\n\x04type\x18\x04 \x01(\t\x12\x0c\n\x04\x64\x65st\x18\x05 \x01(\t\x12\x0c\n\x04xver\x18\x06 \x01(\x04\"D\n\x0c\x43lientConfig\x12\x34\n\x06server\x18\x01 \x03(\x0b\x32$.xray.common.protocol.ServerEndpoint\"i\n\x0cServerConfig\x12)\n\x05users\x18\x01 \x03(\x0b\x32\x1a.xray.common.protocol.User\x12.\n\tfallbacks\x18\x02 \x03(\x0b\x32\x1b.xray.proxy.trojan.FallbackBU\n\x15\x63om.xray.proxy.trojanP\x01Z&github.com/xtls/xray-core/proxy/trojan\xaa\x02\x11Xray.Proxy.Trojanb\x06proto3')
 
 
 
@@ -57,11 +57,11 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
   DESCRIPTOR._serialized_options = b'\n\025com.xray.proxy.trojanP\001Z&github.com/xtls/xray-core/proxy/trojan\252\002\021Xray.Proxy.Trojan'
   _ACCOUNT._serialized_start=111
-  _ACCOUNT._serialized_end=152
-  _FALLBACK._serialized_start=154
-  _FALLBACK._serialized_end=248
-  _CLIENTCONFIG._serialized_start=250
-  _CLIENTCONFIG._serialized_end=318
-  _SERVERCONFIG._serialized_start=320
-  _SERVERCONFIG._serialized_end=425
+  _ACCOUNT._serialized_end=138
+  _FALLBACK._serialized_start=140
+  _FALLBACK._serialized_end=234
+  _CLIENTCONFIG._serialized_start=236
+  _CLIENTCONFIG._serialized_end=304
+  _SERVERCONFIG._serialized_start=306
+  _SERVERCONFIG._serialized_end=411
 # @@protoc_insertion_point(module_scope)
