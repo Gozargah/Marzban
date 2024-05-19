@@ -39,13 +39,15 @@ class V2rayShareLink(str):
             "net": net,
             "path": path,
             "port": port,
-            "fragment": fs,
             "ps": remark,
             "scy": "auto",
             "tls": tls,
             "type": type,
             "v": "2",
         }
+
+        if fs:
+            payload["fragment"] = fs
 
         if tls == "tls":
             payload["sni"] = sni
@@ -111,7 +113,8 @@ class V2rayShareLink(str):
             payload["sni"] = sni
             payload["fp"] = fp
             payload["alpn"] = alpn
-            payload["fragment"] = fs
+            if fs:
+                payload["fragment"] = fs
             if ais:
                 payload["allowInsecure"] = 1
         elif tls == "reality":
@@ -172,7 +175,8 @@ class V2rayShareLink(str):
             payload["sni"] = sni
             payload["fp"] = fp
             payload["alpn"] = alpn
-            payload["fragment"] = fs
+            if fs:
+                payload["fragment"] = fs
             if ais:
                 payload["allowInsecure"] = 1
         elif tls == "reality":
@@ -266,7 +270,7 @@ class V2rayJsonConfig(str):
             wsSettings["headers"]["Host"] = host
 
         return wsSettings
-    
+
     @staticmethod
     def httpupgrade_config(path=None, host=None):
 
@@ -315,7 +319,6 @@ class V2rayJsonConfig(str):
 
             if host:
                 tcpSettings["header"]["request"]["headers"]["Host"] = [host]
-
 
         return tcpSettings
 
