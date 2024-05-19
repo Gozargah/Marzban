@@ -16,6 +16,7 @@ PASSWORD_ENVIRON_NAME = "MARZBAN_ADMIN_PASSWORD"
 
 FLAGS: Dict[str, tuple] = {
     "username": ("--username", "-u"),
+    "search": ("--search", "-s"),
     "limit": ("--limit", "-l"),
     "offset": ("--offset", "-o"),
     "yes_to_all": ("--yes", "-y"),
