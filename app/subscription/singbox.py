@@ -148,7 +148,8 @@ class SingBoxConfiguration(str):
             "server": address,
             "server_port": port,
         }
-        if net in ('tcp', 'kcp') and headers != 'http' and tls:
+
+        if net in ('tcp', 'kcp') and headers != 'http' and tls != 'none':
             if flow:
                 config["flow"] = flow
 
@@ -157,6 +158,7 @@ class SingBoxConfiguration(str):
             alpn = 'h2'
         elif net in ['tcp'] and headers == 'http':
             net = 'http'
+
 
         if net in ['http', 'ws', 'quic', 'grpc', 'httpupgrade']:
             max_early_data = None
@@ -176,19 +178,20 @@ class SingBoxConfiguration(str):
                 early_data_header_name=early_data_header_name
             )
         else:
-            config["network"]: net
+            config["network"] = net
 
         if tls in ('tls', 'reality'):
             config['tls'] = self.tls_config(sni=sni, fp=fp, tls=tls,
                                             pbk=pbk, sid=sid, alpn=alpn,
                                             ais=ais)
-
-        mux_json = json.loads(self.mux_template)
-        mux_config = mux_json["sing-box"]
-
-        config['multiplex'] = mux_config
-        if config['multiplex']["enabled"]:
-            config['multiplex']["enabled"] = mux_enable
+        
+        # Singbox mux is not compatible with xray mux
+        # Since marzban doesnt support singbox core at server side at the moment - sinbox-mux should not be enabled at all
+        # if mux_enable:
+        #     mux_json = json.loads(self.mux_template)
+        #     mux_config = mux_json["sing-box"]
+        #     config['multiplex'] = mux_config
+        #     config['multiplex']["enabled"] = mux_enable
 
         return config
 
