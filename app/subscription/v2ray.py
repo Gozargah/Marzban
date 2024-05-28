@@ -631,8 +631,8 @@ class V2rayJsonConfig(str):
         mux_json = json.loads(self.mux_template)
         mux_config = mux_json["v2ray"]
 
-        outbound["mux"] = mux_config
-        if outbound["mux"]["enabled"]:
-            outbound["mux"]["enabled"] = bool(inbound.get('mux_enable', False))
+        if inbound.get('mux_enable', False):
+            outbound["mux"] = mux_config
+            outbound["mux"]["enabled"] = True
 
         self.add_config(remarks=remark, outbounds=outbounds)
