@@ -440,7 +440,7 @@ class ClashMetaConfiguration(ClashConfiguration):
         if inbound['protocol'] == 'vless':
             node['uuid'] = settings['id']
 
-            if inbound['network'] in ('tcp', 'kcp') and inbound['header_type'] != 'http':
+            if inbound['network'] in ('tcp', 'kcp') and inbound['header_type'] != 'http' and inbound['tls']:
                 node['flow'] = settings.get('flow', '')
 
             self.data['proxies'].append(node)
