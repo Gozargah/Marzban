@@ -1,9 +1,20 @@
-import re
-from typing import List
+def get_grpc_gun(path: str) -> str:
+    if not path.startswith("/"):
+        return path
 
-def grpc_correct_path(path: str, word: str):
+    servicename = path.rsplit("/", 1)[0]
+    streamname = path.rsplit("/", 1)[1].split("|")[0]
+    
+    if streamname == "Tun":
+        return servicename[1:]
+    
+    return "%s%s%s" % (servicename, "/", streamname)
 
-    pattern = r'\b(?:' + re.escape(word) + r'|[|])\b'
-    path = re.sub(pattern, '', path)
+def get_grpc_multi(path: str) -> str:
+    if not path.startswith("/"):
+        return path
+    
+    servicename = path.rsplit("/", 1)[0]
+    streamname = path.rsplit("/", 1)[1].split("|")[1]
 
-    return path
+    return "%s%s%s" % (servicename, "/", streamname)

@@ -270,8 +270,6 @@ class XRayConfig(dict):
                     settings['path'] = net_settings.get('serviceName', '')
                     settings['host'] = []
                     settings['multiMode'] = net_settings.get('multiMode', False)
-                    if 'customTunMulti' in settings['path']:
-                        settings['multiMode'] = True
 
                 elif net == 'quic':
                     settings['header_type'] = net_settings.get('header', {}).get('type', '')

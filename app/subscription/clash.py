@@ -1,7 +1,7 @@
 import yaml
 import json
 from app.templates import render_template
-from app.subscription.funcs import grpc_correct_path
+from app.subscription.funcs import get_grpc_gun
 
 from config import CLASH_SUBSCRIPTION_TEMPLATE, MUX_TEMPLATE
 
@@ -62,7 +62,9 @@ class ClashConfiguration(object):
                   ais: bool = '',
                   mux_enable : bool = False):
 
-        path = grpc_correct_path(path=path, word="customTunMulti")
+
+        if network in ["grpc", "gun"]:
+            path = get_grpc_gun(path)
 
         if type == 'shadowsocks':
             type = 'ss'

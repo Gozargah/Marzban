@@ -3,8 +3,9 @@ import json
 import urllib.parse as urlparse
 from typing import Union
 from uuid import UUID
+from urllib.parse import quote
 
-from app.subscription.funcs import grpc_correct_path
+from app.subscription.funcs import get_grpc_gun, get_grpc_multi
 from app.templates import render_template
 
 from config import (MUX_TEMPLATE, V2RAY_SUBSCRIPTION_TEMPLATE)
@@ -21,8 +22,20 @@ class V2rayShareLink(str):
         return self.links
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
+        net = inbound["network"]
+        multi_mode = inbound.get("multiMode", False)
+        old_path: str = inbound["path"]
 
-        path = grpc_correct_path(path=inbound["path"], word="customTun")
+        if net in ["grpc", "gun"]:
+            if multi_mode:
+                path = get_grpc_multi(old_path)
+            else:
+                path = get_grpc_gun(old_path)
+            if old_path.startswith("/"):
+                path = quote(path, safe="-_.!~*'()")
+
+        else:
+            path = old_path
 
         if inbound["protocol"] == "vmess":
             link = self.vmess(
@@ -30,7 +43,7 @@ class V2rayShareLink(str):
                 address=address,
                 port=inbound["port"],
                 id=settings["id"],
-                net=inbound["network"],
+                net=net,
                 tls=inbound["tls"],
                 sni=inbound.get("sni", ""),
                 fp=inbound.get("fp", ""),
@@ -43,7 +56,7 @@ class V2rayShareLink(str):
                 type=inbound["header_type"],
                 ais=inbound.get("ais", ""),
                 fs=inbound.get("fragment_setting", ""),
-                multiMode=inbound.get("multiMode", False),
+                multiMode=multi_mode,
             )
 
         elif inbound["protocol"] == "vless":
@@ -53,7 +66,7 @@ class V2rayShareLink(str):
                 port=inbound["port"],
                 id=settings["id"],
                 flow=settings.get("flow", ""),
-                net=inbound["network"],
+                net=net,
                 tls=inbound["tls"],
                 sni=inbound.get("sni", ""),
                 fp=inbound.get("fp", ""),
@@ -66,7 +79,7 @@ class V2rayShareLink(str):
                 type=inbound["header_type"],
                 ais=inbound.get("ais", ""),
                 fs=inbound.get("fragment_setting", ""),
-                multiMode=inbound.get("multiMode", False),
+                multiMode=multi_mode,
             )
 
         elif inbound["protocol"] == "trojan":
@@ -76,7 +89,7 @@ class V2rayShareLink(str):
                 port=inbound["port"],
                 password=settings["password"],
                 flow=settings.get("flow", ""),
-                net=inbound["network"],
+                net=net,
                 tls=inbound["tls"],
                 sni=inbound.get("sni", ""),
                 fp=inbound.get("fp", ""),
@@ -89,7 +102,7 @@ class V2rayShareLink(str):
                 type=inbound["header_type"],
                 ais=inbound.get("ais", ""),
                 fs=inbound.get("fragment_setting", ""),
-                multiMode=inbound.get("multiMode", False),
+                multiMode=multi_mode,
             )
 
         elif inbound["protocol"] == "shadowsocks":
@@ -681,7 +694,14 @@ class V2rayJsonConfig(str):
         tls = (inbound['tls'])
         headers = inbound['header_type']
         fragment = inbound['fragment_setting']
-        path = grpc_correct_path(path=inbound["path"], word="customTun")
+        path = inbound["path"]
+        multi_mode = inbound.get("multiMode", False)
+
+        if net in ["grpc", "gun"]:
+            if multi_mode:
+                path = get_grpc_multi(path)
+            else:
+                path = get_grpc_gun(path)
 
         outbound = {
             "tag": remark,
@@ -746,7 +766,7 @@ class V2rayJsonConfig(str):
             headers=headers,
             ais=inbound.get('ais', ''),
             dialer_proxy=dialer_proxy,
-            multiMode=inbound.get('multiMode',False),
+            multiMode=multi_mode,
         )
 
         mux_json = json.loads(self.mux_template)
