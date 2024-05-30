@@ -1,21 +1,26 @@
 import base64
 import random
 import secrets
-from datetime import datetime as dt, timedelta
-from typing import TYPE_CHECKING, Literal, Union, List
+from datetime import datetime as dt
+from datetime import timedelta
+from typing import TYPE_CHECKING, List, Literal, Union
 
 from jdatetime import date as jd
 
 from app import xray
-from app.utils.system import get_public_ip, readable_size
+from app.utils.system import get_public_ip, get_public_ipv6, readable_size
+
 from . import *
 
 if TYPE_CHECKING:
     from app.models.user import UserResponse
 
-from config import (ACTIVE_STATUS_TEXT, EXPIRED_STATUS_TEXT, LIMITED_STATUS_TEXT, DISABLED_STATUS_TEXT, ONHOLD_STATUS_TEXT)
+from config import (ACTIVE_STATUS_TEXT, DISABLED_STATUS_TEXT,
+                    EXPIRED_STATUS_TEXT, LIMITED_STATUS_TEXT,
+                    ONHOLD_STATUS_TEXT)
 
 SERVER_IP = get_public_ip()
+SERVER_IPV6 = get_public_ipv6()
 
 STATUS_EMOJIS = {
     "active": "✅",
@@ -202,6 +207,7 @@ def setup_format_variables(extra_data: dict) -> dict:
 
     format_variables = {
         "SERVER_IP": SERVER_IP,
+        "SERVER_IPV6": SERVER_IPV6,
         "USERNAME": extra_data.get("username", "{USERNAME}"),
         "DATA_USAGE": readable_size(extra_data.get("used_traffic")),
         "DATA_LIMIT": data_limit,
@@ -230,7 +236,7 @@ def process_inbounds_and_tags(
             _inbounds.append((protocol, [tag]))
     index_dict = {proxy: index for index, proxy in enumerate(xray.config.inbounds_by_tag.keys())}
     inbounds = sorted(_inbounds, key=lambda x: index_dict.get(x[1][0], float('inf')))
-    
+
     for protocol, tags in inbounds:
         settings = proxies.get(protocol)
         if not settings:

@@ -60,7 +60,7 @@ class ClashConfiguration(object):
                   udp: bool = True,
                   alpn: str = '',
                   ais: bool = '',
-                  mux_enable : bool = False):
+                  mux_enable: bool = False):
 
 
         if network in ["grpc", "gun"]:
@@ -148,9 +148,9 @@ class ClashConfiguration(object):
         mux_json = json.loads(self.mux_template)
         mux_config = mux_json["clash"]
 
-        net_opts['smux'] = mux_config
-        if net_opts['smux']["enabled"]:
-            net_opts['smux']["enabled"] = mux_enable
+        if mux_enable:
+            net_opts['smux'] = mux_config
+            net_opts['smux']["enabled"] = True
 
         return node
 
@@ -209,7 +209,7 @@ class ClashMetaConfiguration(ClashConfiguration):
                   pbk: str = '',
                   sid: str = '',
                   ais: bool = '',
-                  mux_enable : bool = False):
+                  mux_enable: bool = False):
         node = super().make_node(
             name=name,
             type=type,

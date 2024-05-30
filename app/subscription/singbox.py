@@ -149,7 +149,8 @@ class SingBoxConfiguration(str):
             "server": address,
             "server_port": port,
         }
-        if net in ('tcp', 'kcp') and headers != 'http' and tls:
+
+        if net in ('tcp', 'kcp') and headers != 'http' and (tls or tls != 'none'):
             if flow:
                 config["flow"] = flow
 
@@ -177,18 +178,16 @@ class SingBoxConfiguration(str):
                 early_data_header_name=early_data_header_name
             )
         else:
-            config["network"]: net
+            config["network"] = net
 
         if tls in ('tls', 'reality'):
             config['tls'] = self.tls_config(sni=sni, fp=fp, tls=tls,
                                             pbk=pbk, sid=sid, alpn=alpn,
                                             ais=ais)
-
-        mux_json = json.loads(self.mux_template)
-        mux_config = mux_json["sing-box"]
-
-        config['multiplex'] = mux_config
-        if config['multiplex']["enabled"]:
+        if mux_enable:
+            mux_json = json.loads(self.mux_template)
+            mux_config = mux_json["sing-box"]
+            config['multiplex'] = mux_config
             config['multiplex']["enabled"] = mux_enable
 
         return config

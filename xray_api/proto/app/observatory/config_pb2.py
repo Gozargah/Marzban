@@ -14,11 +14,12 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1c\x61pp/observatory/config.proto\x12\x19xray.core.app.observatory\"N\n\x11ObservationResult\x12\x39\n\x06status\x18\x01 \x03(\x0b\x32).xray.core.app.observatory.OutboundStatus\"\x8e\x01\n\x0eOutboundStatus\x12\r\n\x05\x61live\x18\x01 \x01(\x08\x12\r\n\x05\x64\x65lay\x18\x02 \x01(\x03\x12\x19\n\x11last_error_reason\x18\x03 \x01(\t\x12\x14\n\x0coutbound_tag\x18\x04 \x01(\t\x12\x16\n\x0elast_seen_time\x18\x05 \x01(\x03\x12\x15\n\rlast_try_time\x18\x06 \x01(\x03\"F\n\x0bProbeResult\x12\r\n\x05\x61live\x18\x01 \x01(\x08\x12\r\n\x05\x64\x65lay\x18\x02 \x01(\x03\x12\x19\n\x11last_error_reason\x18\x03 \x01(\t\"#\n\tIntensity\x12\x16\n\x0eprobe_interval\x18\x01 \x01(\r\"i\n\x06\x43onfig\x12\x18\n\x10subject_selector\x18\x02 \x03(\t\x12\x11\n\tprobe_url\x18\x03 \x01(\t\x12\x16\n\x0eprobe_interval\x18\x04 \x01(\x03\x12\x1a\n\x12\x65nable_concurrency\x18\x05 \x01(\x08\x42^\n\x18\x63om.xray.app.observatoryP\x01Z)github.com/xtls/xray-core/app/observatory\xaa\x02\x14Xray.App.Observatoryb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1c\x61pp/observatory/config.proto\x12\x19xray.core.app.observatory\"N\n\x11ObservationResult\x12\x39\n\x06status\x18\x01 \x03(\x0b\x32).xray.core.app.observatory.OutboundStatus\"v\n\x1bHealthPingMeasurementResult\x12\x0b\n\x03\x61ll\x18\x01 \x01(\x03\x12\x0c\n\x04\x66\x61il\x18\x02 \x01(\x03\x12\x11\n\tdeviation\x18\x03 \x01(\x03\x12\x0f\n\x07\x61verage\x18\x04 \x01(\x03\x12\x0b\n\x03max\x18\x05 \x01(\x03\x12\x0b\n\x03min\x18\x06 \x01(\x03\"\xdb\x01\n\x0eOutboundStatus\x12\r\n\x05\x61live\x18\x01 \x01(\x08\x12\r\n\x05\x64\x65lay\x18\x02 \x01(\x03\x12\x19\n\x11last_error_reason\x18\x03 \x01(\t\x12\x14\n\x0coutbound_tag\x18\x04 \x01(\t\x12\x16\n\x0elast_seen_time\x18\x05 \x01(\x03\x12\x15\n\rlast_try_time\x18\x06 \x01(\x03\x12K\n\x0bhealth_ping\x18\x07 \x01(\x0b\x32\x36.xray.core.app.observatory.HealthPingMeasurementResult\"F\n\x0bProbeResult\x12\r\n\x05\x61live\x18\x01 \x01(\x08\x12\r\n\x05\x64\x65lay\x18\x02 \x01(\x03\x12\x19\n\x11last_error_reason\x18\x03 \x01(\t\"#\n\tIntensity\x12\x16\n\x0eprobe_interval\x18\x01 \x01(\r\"i\n\x06\x43onfig\x12\x18\n\x10subject_selector\x18\x02 \x03(\t\x12\x11\n\tprobe_url\x18\x03 \x01(\t\x12\x16\n\x0eprobe_interval\x18\x04 \x01(\x03\x12\x1a\n\x12\x65nable_concurrency\x18\x05 \x01(\x08\x42^\n\x18\x63om.xray.app.observatoryP\x01Z)github.com/xtls/xray-core/app/observatory\xaa\x02\x14Xray.App.Observatoryb\x06proto3')
 
 
 
 _OBSERVATIONRESULT = DESCRIPTOR.message_types_by_name['ObservationResult']
+_HEALTHPINGMEASUREMENTRESULT = DESCRIPTOR.message_types_by_name['HealthPingMeasurementResult']
 _OUTBOUNDSTATUS = DESCRIPTOR.message_types_by_name['OutboundStatus']
 _PROBERESULT = DESCRIPTOR.message_types_by_name['ProbeResult']
 _INTENSITY = DESCRIPTOR.message_types_by_name['Intensity']
@@ -29,6 +30,13 @@ ObservationResult = _reflection.GeneratedProtocolMessageType('ObservationResult'
   # @@protoc_insertion_point(class_scope:xray.core.app.observatory.ObservationResult)
   })
 _sym_db.RegisterMessage(ObservationResult)
+
+HealthPingMeasurementResult = _reflection.GeneratedProtocolMessageType('HealthPingMeasurementResult', (_message.Message,), {
+  'DESCRIPTOR' : _HEALTHPINGMEASUREMENTRESULT,
+  '__module__' : 'app.observatory.config_pb2'
+  # @@protoc_insertion_point(class_scope:xray.core.app.observatory.HealthPingMeasurementResult)
+  })
+_sym_db.RegisterMessage(HealthPingMeasurementResult)
 
 OutboundStatus = _reflection.GeneratedProtocolMessageType('OutboundStatus', (_message.Message,), {
   'DESCRIPTOR' : _OUTBOUNDSTATUS,
@@ -64,12 +72,14 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._serialized_options = b'\n\030com.xray.app.observatoryP\001Z)github.com/xtls/xray-core/app/observatory\252\002\024Xray.App.Observatory'
   _OBSERVATIONRESULT._serialized_start=59
   _OBSERVATIONRESULT._serialized_end=137
-  _OUTBOUNDSTATUS._serialized_start=140
-  _OUTBOUNDSTATUS._serialized_end=282
-  _PROBERESULT._serialized_start=284
-  _PROBERESULT._serialized_end=354
-  _INTENSITY._serialized_start=356
-  _INTENSITY._serialized_end=391
-  _CONFIG._serialized_start=393
-  _CONFIG._serialized_end=498
+  _HEALTHPINGMEASUREMENTRESULT._serialized_start=139
+  _HEALTHPINGMEASUREMENTRESULT._serialized_end=257
+  _OUTBOUNDSTATUS._serialized_start=260
+  _OUTBOUNDSTATUS._serialized_end=479
+  _PROBERESULT._serialized_start=481
+  _PROBERESULT._serialized_end=551
+  _INTENSITY._serialized_start=553
+  _INTENSITY._serialized_end=588
+  _CONFIG._serialized_start=590
+  _CONFIG._serialized_end=695
 # @@protoc_insertion_point(module_scope)
