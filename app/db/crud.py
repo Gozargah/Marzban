@@ -229,6 +229,7 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None):
         note=user.note,
         on_hold_expire_duration=(user.on_hold_expire_duration or None),
         on_hold_timeout=(user.on_hold_timeout or None),
+        auto_delete_in_days=user.auto_delete_in_days
     )
     db.add(dbuser)
     db.commit()
