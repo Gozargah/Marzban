@@ -373,13 +373,16 @@ def manage_notice_inbound(inbounds, proxies, userStatus) -> dict:
     from app.models.user import UserStatus
     ni = dict()
     p = dict()
-    protocol = None
+    protocol = ""
     for k, v in inbounds.items():
         for i in v:
             if i == NOTICE_INBOUND:
                 ni[k] = [i]
                 p[k] = proxies[k]
                 protocol = k
+                break
+        if protocol:
+            break
 
     if NOTICE_INBOUND and userStatus in (UserStatus.expired, UserStatus.limited, UserStatus.disabled):
         link_data = {
@@ -388,7 +391,8 @@ def manage_notice_inbound(inbounds, proxies, userStatus) -> dict:
         }
     elif NOTICE_INBOUND and userStatus in (UserStatus.active, UserStatus.on_hold):
         inbounds_copy = deepcopy(inbounds)
-        inbounds_copy[protocol].remove(NOTICE_INBOUND)
+        if NOTICE_INBOUND in inbounds_copy.get(protocol, []):
+            inbounds_copy[protocol].remove(NOTICE_INBOUND)
         link_data = {
             "proxies": proxies,
             "inbounds": inbounds_copy,
