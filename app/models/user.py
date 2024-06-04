@@ -1,16 +1,15 @@
 import re
+import secrets
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Union
-import random
-import secrets
 
 from pydantic import BaseModel, Field, validator
 
 from app import xray
 from app.models.proxy import ProxySettings, ProxyTypes
+from app.subscription.share import generate_v2ray_links, manage_notice_inbound
 from app.utils.jwt import create_subscription_token
-from app.subscription.share import generate_v2ray_links
 from config import XRAY_SUBSCRIPTION_PATH, XRAY_SUBSCRIPTION_URL_PREFIX
 
 USERNAME_REGEXP = re.compile(r"^(?=\w{3,32}\b)[a-zA-Z0-9-_@.]+(?:_[a-zA-Z0-9-_@.]+)*$")
@@ -270,8 +269,10 @@ class UserResponse(User):
     @validator("links", pre=False, always=True)
     def validate_links(cls, v, values, **kwargs):
         if not v:
+            links_data = manage_notice_inbound(proxies=values.get(
+                "proxies", {}), inbounds=values.get("inbounds", {}), userStatus=values.get("status"))
             return generate_v2ray_links(
-                values.get("proxies", {}), values.get("inbounds", {}), extra_data=values
+                links_data.get("proxies", {}), links_data.get("inbounds", {}), extra_data=values
             )
         return v
 

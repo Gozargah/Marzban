@@ -1,13 +1,17 @@
 import base64
 import random
 import secrets
-from datetime import datetime as dt, timedelta
-from typing import TYPE_CHECKING, Literal, Union, List
+from copy import deepcopy
+from datetime import datetime as dt
+from datetime import timedelta
+from typing import TYPE_CHECKING, List, Literal, Union
 
 from jdatetime import date as jd
 
 from app import xray
 from app.utils.system import get_public_ip, readable_size
+from config import NOTICE_INBOUND
+
 from . import *
 
 if TYPE_CHECKING:
@@ -162,8 +166,7 @@ def generate_subscription(
     as_base64: bool,
 ) -> str:
     kwargs = {
-        "proxies": user.proxies,
-        "inbounds": user.inbounds,
+        **(manage_notice_inbound(user.inbounds, user.proxies, user.status)),
         "extra_data": user.__dict__,
     }
 
@@ -288,7 +291,7 @@ def process_inbounds_and_tags(
             _inbounds.append((protocol, [tag]))
     index_dict = {proxy: index for index, proxy in enumerate(xray.config.inbounds_by_tag.keys())}
     inbounds = sorted(_inbounds, key=lambda x: index_dict.get(x[1][0], float('inf')))
-    
+
     for protocol, tags in inbounds:
         settings = proxies.get(protocol)
         if not settings:
@@ -364,3 +367,36 @@ def process_inbounds_and_tags(
 
 def encode_title(text: str) -> str:
     return f"base64:{base64.b64encode(text.encode()).decode()}"
+
+
+def manage_notice_inbound(inbounds, proxies, userStatus) -> dict:
+    from app.models.user import UserStatus
+    ni = dict()
+    p = dict()
+    protocol = None
+    for k, v in inbounds.items():
+        for i in v:
+            if i == NOTICE_INBOUND:
+                ni[k] = [i]
+                p[k] = proxies[k]
+                protocol = k
+
+    if NOTICE_INBOUND and userStatus in (UserStatus.expired, UserStatus.limited, UserStatus.disabled):
+        link_data = {
+            "proxies": p,
+            "inbounds": ni,
+        }
+    elif NOTICE_INBOUND and userStatus in (UserStatus.active, UserStatus.on_hold):
+        inbounds_copy = deepcopy(inbounds)
+        inbounds_copy[protocol].remove(NOTICE_INBOUND)
+        link_data = {
+            "proxies": proxies,
+            "inbounds": inbounds_copy,
+        }
+    else:
+        link_data = {
+            "proxies": proxies,
+            "inbounds": inbounds,
+        }
+
+    return link_data
