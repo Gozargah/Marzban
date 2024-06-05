@@ -370,6 +370,11 @@ def encode_title(text: str) -> str:
 
 
 def manage_notice_inbound(inbounds, proxies, userStatus) -> dict:
+    if not NOTICE_INBOUND:
+        return {
+            "proxies": proxies,
+            "inbounds": inbounds,
+        }
     from app.models.user import UserStatus
     ni = dict()
     p = dict()
@@ -384,12 +389,12 @@ def manage_notice_inbound(inbounds, proxies, userStatus) -> dict:
         if protocol:
             break
 
-    if NOTICE_INBOUND and userStatus in (UserStatus.expired, UserStatus.limited, UserStatus.disabled):
+    if ni and userStatus in (UserStatus.expired, UserStatus.limited, UserStatus.disabled):
         link_data = {
             "proxies": p,
             "inbounds": ni,
         }
-    elif NOTICE_INBOUND and userStatus in (UserStatus.active, UserStatus.on_hold):
+    elif ni and userStatus in (UserStatus.active, UserStatus.on_hold):
         inbounds_copy = deepcopy(inbounds)
         if NOTICE_INBOUND in inbounds_copy.get(protocol, []):
             inbounds_copy[protocol].remove(NOTICE_INBOUND)
