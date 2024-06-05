@@ -39,13 +39,15 @@ class V2rayShareLink(str):
             "net": net,
             "path": path,
             "port": port,
-            "fragment": fs,
             "ps": remark,
             "scy": "auto",
             "tls": tls,
             "type": type,
             "v": "2",
         }
+
+        if fs:
+            payload["fragment"] = fs
 
         if tls == "tls":
             payload["sni"] = sni
@@ -111,7 +113,8 @@ class V2rayShareLink(str):
             payload["sni"] = sni
             payload["fp"] = fp
             payload["alpn"] = alpn
-            payload["fragment"] = fs
+            if fs:
+                payload["fragment"] = fs
             if ais:
                 payload["allowInsecure"] = 1
         elif tls == "reality":
@@ -172,7 +175,8 @@ class V2rayShareLink(str):
             payload["sni"] = sni
             payload["fp"] = fp
             payload["alpn"] = alpn
-            payload["fragment"] = fs
+            if fs:
+                payload["fragment"] = fs
             if ais:
                 payload["allowInsecure"] = 1
         elif tls == "reality":
@@ -268,6 +272,17 @@ class V2rayJsonConfig(str):
         return wsSettings
 
     @staticmethod
+    def httpupgrade_config(path=None, host=None):
+
+        httpupgradeSettings = {}
+        if path:
+            httpupgradeSettings["path"] = path
+        if host:
+            httpupgradeSettings["host"] = host
+
+        return httpupgradeSettings
+
+    @staticmethod
     def grpc_config(path=None, multiMode=False):
 
         grpcSettings = {}
@@ -304,7 +319,6 @@ class V2rayJsonConfig(str):
 
             if host:
                 tcpSettings["header"]["request"]["headers"]["Host"] = [host]
-
 
         return tcpSettings
 
@@ -392,6 +406,8 @@ class V2rayJsonConfig(str):
             streamSettings["tcpSettings"] = network_setting
         elif network == "quic":
             streamSettings["quicSettings"] = network_setting
+        elif network == "httpupgrade":
+            streamSettings["httpupgradeSettings"] = network_setting
 
         if sockopt:
             streamSettings['sockopt'] = sockopt
@@ -514,6 +530,8 @@ class V2rayJsonConfig(str):
         elif net == "quic":
             network_setting = self.quic_config(
                 path=path, host=host, header=headers)
+        elif net == "httpupgrade":
+            network_setting = self.httpupgrade_config(path=path, host=host)
 
         if tls == "tls":
             tls_settings = self.tls_config(sni=sni, fp=fp, alpn=alpn, ais=ais)
@@ -613,7 +631,8 @@ class V2rayJsonConfig(str):
         mux_json = json.loads(self.mux_template)
         mux_config = mux_json["v2ray"]
 
-        outbound["mux"] = mux_config
-        outbound["mux"]["enabled"] = bool(inbound.get('mux_enable', False))
+        if inbound.get('mux_enable', False):
+            outbound["mux"] = mux_config
+            outbound["mux"]["enabled"] = True
 
         self.add_config(remarks=remark, outbounds=outbounds)

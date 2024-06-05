@@ -9,15 +9,20 @@ from typing import TYPE_CHECKING, List, Literal, Union
 from jdatetime import date as jd
 
 from app import xray
-from app.utils.system import get_public_ip, readable_size
 from config import NOTICE_INBOUND
+from app.utils.system import get_public_ip, get_public_ipv6, readable_size
 
 from . import *
 
 if TYPE_CHECKING:
     from app.models.user import UserResponse
 
+from config import (ACTIVE_STATUS_TEXT, DISABLED_STATUS_TEXT,
+                    EXPIRED_STATUS_TEXT, LIMITED_STATUS_TEXT,
+                    ONHOLD_STATUS_TEXT)
+
 SERVER_IP = get_public_ip()
+SERVER_IPV6 = get_public_ipv6()
 
 STATUS_EMOJIS = {
     "active": "✅",
@@ -25,6 +30,14 @@ STATUS_EMOJIS = {
     "limited": "🪫",
     "disabled": "❌",
     "on_hold": "🔌",
+}
+
+STATUS_TEXTS = {
+    "active": ACTIVE_STATUS_TEXT,
+    "expired": EXPIRED_STATUS_TEXT,
+    "limited": LIMITED_STATUS_TEXT,
+    "disabled": DISABLED_STATUS_TEXT,
+    "on_hold": ONHOLD_STATUS_TEXT,
 }
 
 
@@ -259,9 +272,11 @@ def setup_format_variables(extra_data: dict) -> dict:
         data_left = "∞"
 
     status_emoji = STATUS_EMOJIS.get(extra_data.get("status")) or ""
+    status_text = STATUS_TEXTS.get(extra_data.get("status")) or ""
 
     format_variables = {
         "SERVER_IP": SERVER_IP,
+        "SERVER_IPV6": SERVER_IPV6,
         "USERNAME": extra_data.get("username", "{USERNAME}"),
         "DATA_USAGE": readable_size(extra_data.get("used_traffic")),
         "DATA_LIMIT": data_limit,
@@ -271,6 +286,7 @@ def setup_format_variables(extra_data: dict) -> dict:
         "JALALI_EXPIRE_DATE": jalali_expire_date,
         "TIME_LEFT": time_left,
         "STATUS_EMOJI": status_emoji,
+        "STATUS_TEXT": status_text,
     }
 
     return format_variables

@@ -35,11 +35,11 @@ const ClearIcon = chakra(XMarkIcon, iconProps);
 export const ReloadIcon = chakra(ArrowPathIcon, iconProps);
 
 export type FilterProps = {} & BoxProps;
-const setSearchField = debounce((username: string) => {
+const setSearchField = debounce((search: string) => {
   useDashboard.getState().onFilterChange({
     ...useDashboard.getState().filters,
     offset: 0,
-    username,
+    search,
   });
 }, 300);
 
@@ -57,7 +57,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
     onFilterChange({
       ...filters,
       offset: 0,
-      username: "",
+      search: "",
     });
   };
   return (
@@ -94,7 +94,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
 
           <InputRightElement>
             {loading && <Spinner size="xs" />}
-            {filters.username && filters.username.length > 0 && (
+            {filters.search && filters.search.length > 0 && (
               <IconButton
                 onClick={clear}
                 aria-label="clear"

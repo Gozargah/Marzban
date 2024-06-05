@@ -1,7 +1,8 @@
 import yaml
+import json
 from app.templates import render_template
 
-from config import CLASH_SUBSCRIPTION_TEMPLATE
+from config import CLASH_SUBSCRIPTION_TEMPLATE, MUX_TEMPLATE
 
 
 class ClashConfiguration(object):
@@ -13,6 +14,7 @@ class ClashConfiguration(object):
             'rules': []
         }
         self.proxy_remarks = []
+        self.mux_template = render_template(MUX_TEMPLATE)
 
     def render(self):
         return yaml.dump(
@@ -56,7 +58,8 @@ class ClashConfiguration(object):
                   headers: str = '',
                   udp: bool = True,
                   alpn: str = '',
-                  ais: bool = ''):
+                  ais: bool = '',
+                  mux_enable: bool = False):
 
         if type == 'shadowsocks':
             type = 'ss'
@@ -122,6 +125,13 @@ class ClashConfiguration(object):
                 net_opts['method'] = 'GET'
                 net_opts['headers'] = {"Host": host}
 
+        mux_json = json.loads(self.mux_template)
+        mux_config = mux_json["clash"]
+
+        if mux_enable:
+            net_opts['smux'] = mux_config
+            net_opts['smux']["enabled"] = True
+
         return node
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
@@ -138,7 +148,8 @@ class ClashConfiguration(object):
             headers=inbound['header_type'],
             udp=True,
             alpn=inbound.get('alpn', ''),
-            ais=inbound.get('ais', '')
+            ais=inbound.get('ais', ''),
+            mux_enable=inbound.get('mux_enable', '')
         )
 
         if inbound['protocol'] == 'vmess':
@@ -177,7 +188,8 @@ class ClashMetaConfiguration(ClashConfiguration):
                   fp: str = '',
                   pbk: str = '',
                   sid: str = '',
-                  ais: bool = ''):
+                  ais: bool = '',
+                  mux_enable: bool = False):
         node = super().make_node(
             name=name,
             type=type,
@@ -191,7 +203,8 @@ class ClashMetaConfiguration(ClashConfiguration):
             headers=headers,
             udp=udp,
             alpn=alpn,
-            ais=ais
+            ais=ais,
+            mux_enable=mux_enable
         )
         if fp:
             node['client-fingerprint'] = fp
@@ -217,7 +230,8 @@ class ClashMetaConfiguration(ClashConfiguration):
             fp=inbound.get('fp', ''),
             pbk=inbound.get('pbk', ''),
             sid=inbound.get('sid', ''),
-            ais=inbound.get('ais', '')
+            ais=inbound.get('ais', ''),
+            mux_enable=inbound.get('mux_enable', '')
         )
 
         if inbound['protocol'] == 'vmess':
