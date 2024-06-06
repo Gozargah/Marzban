@@ -187,7 +187,6 @@ class SingBoxConfiguration(str):
             mux_json = json.loads(self.mux_template)
             mux_config = mux_json["sing-box"]
             config['multiplex'] = mux_config
-            config['multiplex']["enabled"] = mux_enable
 
         return config
 
