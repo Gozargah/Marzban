@@ -115,11 +115,9 @@ class SingBoxConfiguration(str):
                     transport_config['permit_without_stream'] = permit_without_stream
 
             elif transport_type == "httpupgrade":
-                transport_config['host'] = ""
+                transport_config['host'] = host
                 if path:
                     transport_config['path'] = path
-                if host:
-                    transport_config['headers'] = {'Host': host}
 
         return transport_config
 
