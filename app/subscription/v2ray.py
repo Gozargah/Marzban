@@ -424,8 +424,9 @@ class V2rayJsonConfig(str):
         vnext["port"] = port
         users["id"] = id
         users["alterId"] = 0
-        users["email"] = "https://gozargah.github.io/marzban/"
+        users["email"] = "MultiProxy"
         users["security"] = "auto"
+        users['level'] = 8
         vnext["users"] = [users]
 
         return [vnext]
@@ -440,9 +441,10 @@ class V2rayJsonConfig(str):
         vnext["port"] = port
         users["id"] = id
         users["alterId"] = 0
-        users["email"] = "https://gozargah.github.io/marzban/"
+        users["email"] = "MultiProxy"
         users["security"] = "auto"
         users["encryption"] = "none"
+        users['level'] = 8
         if flow:
             users["flow"] = flow
         vnext["users"] = [users]
