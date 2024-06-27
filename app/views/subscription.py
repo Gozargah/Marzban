@@ -19,7 +19,8 @@ from config import (
     XRAY_SUBSCRIPTION_PATH,
     USE_CUSTOM_JSON_DEFAULT,
     USE_CUSTOM_JSON_FOR_V2RAYN,
-    USE_CUSTOM_JSON_FOR_V2RAYNG
+    USE_CUSTOM_JSON_FOR_V2RAYNG,
+    USE_CUSTOM_JSON_FOR_STREISAND
 )
 
 
@@ -108,6 +109,14 @@ def user_subscription(token: str,
         version_str = re.match('^v2rayNG/(\d+\.\d+\.\d+)', user_agent).group(1)
         if LooseVersion(version_str) >= LooseVersion("1.8.16") and \
                 (USE_CUSTOM_JSON_DEFAULT or USE_CUSTOM_JSON_FOR_V2RAYNG):
+            conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False)
+            return Response(content=conf, media_type="application/json", headers=response_headers)
+        else:
+            conf = generate_subscription(user=user, config_format="v2ray", as_base64=True)
+            return Response(content=conf, media_type="text/plain", headers=response_headers)
+
+    elif re.match('^[Ss]treisand', user_agent):
+        if USE_CUSTOM_JSON_DEFAULT or USE_CUSTOM_JSON_FOR_STREISAND:
             conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False)
             return Response(content=conf, media_type="application/json", headers=response_headers)
         else:
