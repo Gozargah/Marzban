@@ -15,7 +15,7 @@ __version__ = "0.4.9"
 
 
 app = FastAPI(
-    title="MarzbanAPI",
+    title="MarzGoshaAPI",
     description="Unified GUI Censorship Resistant Solution Powered by Xray",
     version=__version__,
     docs_url='/docs' if DOCS else None,
@@ -52,6 +52,7 @@ def on_startup():
     if f"/{XRAY_SUBSCRIPTION_PATH}/" in paths:
         raise ValueError(f"you can't use /{XRAY_SUBSCRIPTION_PATH}/ as subscription path it reserved for {app.title}")
     scheduler.start()
+    logger.info(f"MarzGosha: v{__version__}")
 
 
 @app.on_event("shutdown")

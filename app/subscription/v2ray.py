@@ -557,7 +557,7 @@ class V2rayJsonConfig(str):
         vnext["port"] = port
         users["id"] = id
         users["alterId"] = 0
-        users["email"] = "https://gozargah.github.io/marzban/"
+        users["email"] = "https://gfwfuckers.github.io/marzgosha/"
         users["security"] = "auto"
         vnext["users"] = [users]
 
@@ -573,7 +573,7 @@ class V2rayJsonConfig(str):
         vnext["port"] = port
         users["id"] = id
         users["alterId"] = 0
-        users["email"] = "https://gozargah.github.io/marzban/"
+        users["email"] = "https://gfwfuckers.github.io/marzgosha/"
         users["security"] = "auto"
         users["encryption"] = "none"
         if flow:
@@ -591,7 +591,7 @@ class V2rayJsonConfig(str):
         servers["address"] = address
         servers["port"] = port
         servers["password"] = password
-        servers["email"] = "https://gozargah.github.io/marzban/"
+        servers["email"] = "https://gfwfuckers.github.io/marzgosha/"
         servers["method"] = method
         servers["ota"] = False
 
@@ -608,7 +608,7 @@ class V2rayJsonConfig(str):
         servers["address"] = address
         servers["port"] = port
         servers["password"] = password
-        servers["email"] = "https://gozargah.github.io/marzban/"
+        servers["email"] = "https://gfwfuckers.github.io/marzgosha/"
         servers["method"] = method
         servers["uot"] = False
 

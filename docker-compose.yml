@@ -1,8 +1,8 @@
 services:
-  marzban:
-    image: gozargah/marzban:latest
+  marzgosha:
+    image: gfwfuckers/marzgosha:latest
     restart: always
     env_file: .env
     network_mode: host
     volumes:
-      - /var/lib/marzban:/var/lib/marzban
+      - /var/lib/marzgosha:/var/lib/marzgosha

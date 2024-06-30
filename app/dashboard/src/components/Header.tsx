@@ -63,7 +63,7 @@ const NotificationCircle = chakra(Box, {
   },
 });
 
-const NOTIFICATION_KEY = "marzban-menu-notification";
+const NOTIFICATION_KEY = "marzgosha-menu-notification";
 
 export const shouldShowDonation = (): boolean => {
   const date = localStorage.getItem(NOTIFICATION_KEY);
@@ -226,7 +226,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
               data-color-scheme={`no-preference: ${gBtnColor}; light: ${gBtnColor}; dark: ${gBtnColor};`}
               data-size="large"
               data-show-count="true"
-              aria-label="Star Marzban on GitHub"
+              aria-label="Star MarzGosha on GitHub"
             >
               Star
             </GitHubButton>

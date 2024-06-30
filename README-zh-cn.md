@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/gozargah/marzban" target="_blank" rel="noopener noreferrer">
+  <a href="https://github.com/gfwfuckers/marzgosha" target="_blank" rel="noopener noreferrer">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Gozargah/Marzban-docs/raw/master/screenshots/logo-dark.png">
       <img width="160" height="160" src="https://github.com/Gozargah/Marzban-docs/raw/master/screenshots/logo-light.png">
@@ -7,7 +7,7 @@
   </a>
 </p>
 
-<h1 align="center"/>Marzban</h1>
+<h1 align="center"/>MarzGosha</h1>
 
 <p align="center">
     Unified GUI Censorship Resistant Solution Powered by <a href="https://github.com/XTLS/Xray-core">Xray</a>
@@ -16,22 +16,19 @@
 <br/>
 <p align="center">
     <a href="#">
-        <img src="https://img.shields.io/github/actions/workflow/status/gozargah/marzban/build.yml?style=flat-square" />
+        <img src="https://img.shields.io/github/actions/workflow/status/gfwfuckers/marzgosha/build.yml?style=flat-square" />
     </a>
-    <a href="https://hub.docker.com/r/gozargah/marzban" target="_blank">
-        <img src="https://img.shields.io/docker/pulls/gozargah/marzban?style=flat-square&logo=docker" />
+    <a href="https://hub.docker.com/r/gfwfuckers/marzgosha" target="_blank">
+        <img src="https://img.shields.io/docker/pulls/gfwfuckers/marzgosha?style=flat-square&logo=docker" />
     </a>
     <a href="#">
-        <img src="https://img.shields.io/github/license/gozargah/marzban?style=flat-square" />
-    </a>
-    <a href="https://t.me/gozargah_marzban" target="_blank">
-        <img src="https://img.shields.io/badge/telegram-group-blue?style=flat-square&logo=telegram" />
+        <img src="https://img.shields.io/github/license/gfwfuckers/marzgosha?style=flat-square" />
     </a>
     <a href="#">
         <img src="https://img.shields.io/badge/twitter-commiunity-blue?style=flat-square&logo=twitter" />
     </a>
     <a href="#">
-        <img src="https://img.shields.io/github/stars/gozargah/marzban?style=social" />
+        <img src="https://img.shields.io/github/stars/gfwfuckers/marzgosha?style=social" />
     </a>
 </p>
 
@@ -54,35 +51,32 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/gozargah/marzban" target="_blank" rel="noopener noreferrer" >
-    <img src="https://github.com/Gozargah/Marzban-docs/raw/master/screenshots/preview.png" alt="Marzban screenshots" width="600" height="auto">
+  <a href="https://github.com/gfwfuckers/marzgosha" target="_blank" rel="noopener noreferrer" >
+    <img src="https://github.com/Gozargah/Marzban-docs/raw/master/screenshots/preview.png" alt="MarzGosha screenshots" width="600" height="auto">
   </a>
 </p>
 
-
 ## 目录
+
 - [概览](#概览)
-	- [为什么要使用 Marzban?](#为什么要使用-marzban)
-		- [特性](#特性)
+  - [为什么要使用 MarzGosha?](#为什么要使用-marzgosha)
+    - [特性](#特性)
 - [安装指南](#安装指南)
 - [配置](#配置)
 - [如何使用 API](#如何使用-api)
-- [如何备份 Marzban](#如何备份-marzban)
+- [如何备份 MarzGosha](#如何备份-marzgosha)
 - [Telegram bot](#telegram-bot)
 - [捐赠](#捐赠)
 - [许可](#许可)
 - [贡献者](#贡献者)
 
-
 # 概览
 
-Marzban（Marzban一词源自波斯语，意为“边境警卫”，发音为 /mærz'ban/）是一个代理管理工具，提供简单易用的用户界面，可管理数百个代理账户，由 [Xray-core](https://github.com/XTLS/Xray-core) 提供支持，使用 Python 和 Reactjs 构建。
+MarzGosha（MarzGosha 一词源自波斯语，意为“边境警卫”，发音为 /mærz'ban/）是一个代理管理工具，提供简单易用的用户界面，可管理数百个代理账户，由 [Xray-core](https://github.com/XTLS/Xray-core) 提供支持，使用 Python 和 Reactjs 构建。
 
+## 为什么要使用 MarzGosha?
 
-
-## 为什么要使用 Marzban?
-
-Marzban 是一个用户友好、功能丰富且可靠的工具。它让您可以为用户创建不同的代理，无需进行任何复杂的配置。通过其内置的 Web 界面，您可以监视、修改和限制用户。
+MarzGosha 是一个用户友好、功能丰富且可靠的工具。它让您可以为用户创建不同的代理，无需进行任何复杂的配置。通过其内置的 Web 界面，您可以监视、修改和限制用户。
 
 ### 特性
 
@@ -102,37 +96,38 @@ Marzban 是一个用户友好、功能丰富且可靠的工具。它让您可以
 - 集成的 **Telegram Bot**
 - **多管理员**支持（WIP）
 
-
 # 安装指南
+
 Run the following command
 
 ```bash
-sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install
+sudo bash -c "$(curl -sL https://github.com/GFWFuckers/MarzGosha-scripts/raw/master/marzgosha.sh)" @ install
 ```
 
 Once the installation is complete:
 
 - You will see the logs that you can stop watching them by closing the terminal or pressing `Ctrl+C`
-- The Marzban files will be located at `/opt/marzban`
-- The configuration file can be found at `/opt/marzban/.env` (refer to [configurations](#configuration) section to see variables)
-- The data files will be placed at `/usr/lib/marzban`
-- You can access the Marzban dashboard by opening a web browser and navigating to `http://YOUR_SERVER_IP:8000/dashboard/` (replace YOUR_SERVER_IP with the actual IP address of your server)
+- The MarzGosha files will be located at `/opt/marzgosha`
+- The configuration file can be found at `/opt/marzgosha/.env` (refer to [configurations](#configuration) section to see variables)
+- The data files will be placed at `/usr/lib/marzgosha`
+- You can access the MarzGosha dashboard by opening a web browser and navigating to `http://YOUR_SERVER_IP:8000/dashboard/` (replace YOUR_SERVER_IP with the actual IP address of your server)
 
-Next, you need to create a sudo admin for logging into the Marzban dashboard by the following command
+Next, you need to create a sudo admin for logging into the MarzGosha dashboard by the following command
 
 ```bash
-marzban cli admin create --sudo
+marzgosha cli admin create --sudo
 ```
 
 That's it! You can login to your dashboard using these credentials
 
-To see the help message of the Marzban script, run the following command
+To see the help message of the MarzGosha script, run the following command
 
 ```bash
-marzban --help
+marzgosha --help
 ```
 
 If you are eager to run the project using the source code, check the section below
+
 <details markdown="1">
 <summary><h3>手动安装（高级）</h3></summary>
 
@@ -149,8 +144,8 @@ bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release
 您需要 Python>=3.8 版本。
 
 ```bash
-git clone https://github.com/Gozargah/Marzban.git
-cd Marzban
+git clone https://github.com/GFWFuckers/MarzGosha.git
+cd MarzGosha
 wget -qO- https://bootstrap.pypa.io/get-pip.py | python3 -
 python3 -m pip install -r requirements.txt
 ```
@@ -183,12 +178,14 @@ python3 main.py
 ```
 
 也可使用 linux systemctl 启动：
+
 ```
-systemctl enable /var/lib/marzban/marzban.service
-systemctl start marzban
+systemctl enable /var/lib/marzgosha/marzgosha.service
+systemctl start marzgosha
 ```
 
 配合 nginx 使用：
+
 ```
 server {
     listen 443 ssl http2;
@@ -206,13 +203,13 @@ server {
     }
 
     # xray-core ws-path: /
-    # client ws-path: /marzban/me/2087
+    # client ws-path: /marzgosha/me/2087
     #
     # 所有流量通过 443 端口进行代理，然后分发至真正的 xray 端口（2087、2088 等等）。
-    # 路径中的 “/marzban” 可以改为任意合法 URL 字符.
+    # 路径中的 “/marzgosha” 可以改为任意合法 URL 字符.
     #
     # /${path}/${username}/${xray-port}
-    location ~* /marzban/.+/(.+)$ {
+    location ~* /marzgosha/.+/(.+)$ {
         proxy_redirect off;
         proxy_pass http://127.0.0.1:$1/;
         proxy_http_version 1.1;
@@ -224,12 +221,14 @@ server {
     }
 }
 ```
+
 或
+
 ```
 server {
     listen 443 ssl http2;
     listen [::]:443 ssl http2;
-    server_name  marzban.example.com;
+    server_name  marzgosha.example.com;
 
     ssl_certificate      /etc/letsencrypt/live/example.com/fullchain.pem;
     ssl_certificate_key  /etc/letsencrypt/live/example.com/privkey.pem;
@@ -244,6 +243,7 @@ server {
 ```
 
 默认情况下，应用将在 `http://localhost:8000/dashboard` 上运行。您可以通过更改 `UVICORN_HOST` 和 `UVICORN_PORT` 环境变量来进行配置。
+
 </details>
 
 # 配置
@@ -263,7 +263,7 @@ server {
 | XRAY_JSON                       | Xray 的 json 配置文件路径（默认: `xray_config.json`）                                                |
 | XRAY_EXECUTABLE_PATH            | Xray 的执行程序路径: `/usr/local/bin/xray`）                                                         |
 | XRAY_ASSETS_PATH                | Xray 的资源目录: `/usr/local/share/xray`）                                                           |
-| XRAY_SUBSCRIPTION_URL_PREFIX    | 订阅URL的前缀                                                                                        |
+| XRAY_SUBSCRIPTION_URL_PREFIX    | 订阅 URL 的前缀                                                                                      |
 | XRAY_FALLBACKS_INBOUND_TAG      | 包含 fallbacks 的入站标记, 在您需要使用 fallbacks 配置此项                                           |
 | XRAY_EXCLUDE_INBOUND_TAGS       | 不需要此应用程序管理或在链接中包含的入站标记                                                         |
 | CLASH_SUBSCRIPTION_TEMPLATE     | 将用于生成冲突配置的模板（默认值：`clash/default.yml`）                                              |
@@ -276,41 +276,37 @@ server {
 | DOCS                            | API 文档是否应该在 `/docs` 和 `/redoc` 上提供（默认为 `False`                                        |
 | DEBUG                           | 开发者调试模式（默认: `False`）                                                                      |
 
-
 # 如何使用 API
-Marzban 提供了 REST API，使开发人员能够以编程方式与 Marzban 服务进行交互。要在 Swagger UI 或 ReDoc 中查看 API 文档，设置配置变量 `DOCS=True`，然后导航到 `/docs` 和 `/redoc`。
 
+MarzGosha 提供了 REST API，使开发人员能够以编程方式与 MarzGosha 服务进行交互。要在 Swagger UI 或 ReDoc 中查看 API 文档，设置配置变量 `DOCS=True`，然后导航到 `/docs` 和 `/redoc`。
 
-# 如何备份 Marzban
+# 如何备份 MarzGosha
 
-定期备份 Marzban 文件是预防系统故障或意外删除导致数据丢失的好习惯。以下是备份 Marzban 的步骤：
+定期备份 MarzGosha 文件是预防系统故障或意外删除导致数据丢失的好习惯。以下是备份 MarzGosha 的步骤：
 
-1. 默认情况下，所有重要的 Marzban 文件都保存在 `/var/lib/marzban` ( Docker 版本)中。将整个 `/var/lib/marzban` 目录复制到您选择的备份位置，比如外部硬盘或云存储。
+1. 默认情况下，所有重要的 MarzGosha 文件都保存在 `/var/lib/marzgosha` ( Docker 版本)中。将整个 `/var/lib/marzgosha` 目录复制到您选择的备份位置，比如外部硬盘或云存储。
 2. 此外，请确保备份您的 `env` 文件，其中包含您的配置变量，以及您的 `Xray` 配置文件。
 
-按照这些步骤，您可以确保有备份所有 Marzban 文件和数据，以及您的配置变量和 Xray 配置，以备将来恢复使用。请记得定期更新备份，以保持它们的最新性。
-
+按照这些步骤，您可以确保有备份所有 MarzGosha 文件和数据，以及您的配置变量和 Xray 配置，以备将来恢复使用。请记得定期更新备份，以保持它们的最新性。
 
 # Telegram bot
 
-Marzban 配备了一个集成的 Telegram bot，可以处理服务器管理、用户创建和删除，以及发送通知。通过几个简单的步骤，您可以轻松地启用这个机器人，并提供了一种方便的方式与 Marzban 交互，而不需要每次都登录到服务器上。
+MarzGosha 配备了一个集成的 Telegram bot，可以处理服务器管理、用户创建和删除，以及发送通知。通过几个简单的步骤，您可以轻松地启用这个机器人，并提供了一种方便的方式与 MarzGosha 交互，而不需要每次都登录到服务器上。
 
 启用 Telegram bot：
 
 1. 将 `TELEGRAM_API_TOKEN` 设置为您的 bot API Token。
 2. 将 `TELEGRAM_ADMIN_ID` 设置为您的 Telegram ID，您可以从 [@userinfobot](https://t.me/userinfobot) 中获取自己的 ID。
 
-
 # 捐赠
 
-如果您认为 Marzban 有用，并想支持其发展，可以在以下加密网络之一进行捐赠：
+如果您认为 MarzGosha 有用，并想支持其发展，可以在以下加密网络之一进行捐赠：
 
-- TRON(TRX) 网络：`TX8kJoDcowQPBFTYHAJR36GyoUKP1Xwzkb`
-- ETH、BNB、MATIC 网络：`0xFdc9ad32454FA4fc4733270FCc12ddBFb68b83F7`
-- 比特币网络：`bc1qpys2nefgsjjgae3g3gqy9crsv3h3rm96tlkz0v`
-- Dogecoin 网络：`DJAocBAu8y6LwhDKUktLAyzV8xyoFeHH6R`
-- TON 网络：`EQAVf-7hAXHlF-jmrKE44oBwN7HGQFVBLAtrOsev5K4qR4P8`
-
+- TRON network (TRC20): `TCYj3X9r9s7Fd45LCdFYUdjdg812ogNidf`
+- ETH, BNB, MATIC network (ERC20, BEP20): `0x03ebDa025D639Cf46f9926cdd7402253C9De7f38`
+- Bitcoin network: `bc1qvm4tstzsyrkvg9yv83ma92d9sydet6sa807ytt`
+- Dogecoin network: `DSFfmESjw4whX77kbaGeNx1YTX4ZuhZcsw`
+- TON network: `EQCUfz9BqiDHkpJtSJ7XMFec0tSdNmbcgutTC2zuAh_wQtmG`
 
 感谢您的支持！
 
@@ -320,21 +316,6 @@ Marzban 配备了一个集成的 Telegram bot，可以处理服务器管理、�
 
 # 贡献者
 
-我们热爱贡献者！如果您想做出贡献，请查看我们的[贡献指南](CONTRIBUTING.md)并随时提交拉取请求或打开问题。我们也欢迎您加入我们的 [Telegram](https://t.me/gozargah_marzban) 群组，以获得支持或贡献指导。
+我们热爱贡献者！如果您想做出贡献，请查看我们的[贡献指南](CONTRIBUTING.md)并随时提交拉取请求或打开问题。我们也欢迎您加入我们的 [Telegram](https://t.me/gfwfuckers_marzgosha) 群组，以获得支持或贡献指导。
 
-查看 [issues](https://github.com/gozargah/marzban/issues) 以帮助改进这个项目。
-
-
-
-<p align="center">
-感谢所有为改善 Marzban 做出贡献的贡献者们：
-</p>
-<p align="center">
-<a href="https://github.com/Gozargah/Marzban/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Gozargah/Marzban" />
-</a>
-</p>
-<p align="center">
-  Made with <a rel="noopener noreferrer" target="_blank" href="https://contrib.rocks">contrib.rocks</a>
-</p>
-
+查看 [issues](https://github.com/gfwfuckers/marzgosha/issues) 以帮助改进这个项目。
