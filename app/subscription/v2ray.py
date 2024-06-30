@@ -2,13 +2,12 @@ import base64
 import json
 import urllib.parse as urlparse
 from typing import Union
-from uuid import UUID
 from urllib.parse import quote
+from uuid import UUID
 
 from app.subscription.funcs import get_grpc_gun, get_grpc_multi
 from app.templates import render_template
-
-from config import (MUX_TEMPLATE, V2RAY_SUBSCRIPTION_TEMPLATE)
+from config import MUX_TEMPLATE, V2RAY_SUBSCRIPTION_TEMPLATE
 
 
 class V2rayShareLink(str):
@@ -113,9 +112,8 @@ class V2rayShareLink(str):
                 password=settings["password"],
                 method=settings["method"],
             )
-        
+
         self.add_link(link=link)
-        
 
     @classmethod
     def vmess(
@@ -161,7 +159,7 @@ class V2rayShareLink(str):
             payload["sni"] = sni
             payload["fp"] = fp
             payload["alpn"] = alpn
-            if fs :
+            if fs:
                 payload["fragment"] = fs
             if ais:
                 payload["allowInsecure"] = 1
@@ -414,6 +412,17 @@ class V2rayJsonConfig(str):
         return httpupgradeSettings
 
     @staticmethod
+    def splithttp_config(path=None, host=None):
+
+        splithttpSettings = {}
+        if path:
+            splithttpSettings["path"] = path
+        if host:
+            splithttpSettings["host"] = host
+
+        return splithttpSettings
+
+    @staticmethod
     def grpc_config(path=None, multiMode=False):
 
         grpcSettings = {}
@@ -442,7 +451,8 @@ class V2rayJsonConfig(str):
             tcpSettings["header"]["request"]["method"] = "GET"
             tcpSettings["header"]["request"]["headers"]["User-Agent"] = []
             tcpSettings["header"]["request"]["headers"]["Accept-Encoding"] = ["gzip, deflate"]
-            tcpSettings["header"]["request"]["headers"]["Connection"] = ["keep-alive"]
+            tcpSettings["header"]["request"]["headers"]["Connection"] = [
+                "keep-alive"]
             tcpSettings["header"]["request"]["headers"]["Pragma"] = "no-cache"
 
             if path:
@@ -541,6 +551,8 @@ class V2rayJsonConfig(str):
             streamSettings["quicSettings"] = network_setting
         elif network == "httpupgrade":
             streamSettings["httpupgradeSettings"] = network_setting
+        elif network == "splithttp":
+            streamSettings["splithttpSettings"] = network_setting
 
         if sockopt:
             streamSettings['sockopt'] = sockopt
@@ -665,6 +677,8 @@ class V2rayJsonConfig(str):
                 path=path, host=host, header=headers)
         elif net == "httpupgrade":
             network_setting = self.httpupgrade_config(path=path, host=host)
+        elif net == "splithttp":
+            network_setting = self.splithttp_config(path=path, host=host)
 
         if tls == "tls":
             tls_settings = self.tls_config(sni=sni, fp=fp, alpn=alpn, ais=ais)
@@ -748,7 +762,8 @@ class V2rayJsonConfig(str):
         if fragment:
             try:
                 length, interval, packets = fragment.split(',')
-                fragment_outbound = self.make_fragment_outbound(packets, length, interval)
+                fragment_outbound = self.make_fragment_outbound(
+                    packets, length, interval)
                 outbounds.append(fragment_outbound)
                 dialer_proxy = fragment_outbound['tag']
             except ValueError:

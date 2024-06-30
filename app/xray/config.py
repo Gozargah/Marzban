@@ -269,14 +269,21 @@ class XRayConfig(dict):
                     settings['header_type'] = ''
                     settings['path'] = net_settings.get('serviceName', '')
                     settings['host'] = []
-                    settings['multiMode'] = net_settings.get('multiMode', False)
+                    settings['multiMode'] = net_settings.get(
+                        'multiMode', False)
 
                 elif net == 'quic':
-                    settings['header_type'] = net_settings.get('header', {}).get('type', '')
+                    settings['header_type'] = net_settings.get(
+                        'header', {}).get('type', '')
                     settings['path'] = net_settings.get('key', '')
                     settings['host'] = [net_settings.get('security', '')]
 
                 elif net == 'httpupgrade':
+                    settings['path'] = net_settings.get('path', '')
+                    host = net_settings.get('host', '')
+                    settings['host'] = [host]
+
+                elif net == 'splithttp':
                     settings['path'] = net_settings.get('path', '')
                     host = net_settings.get('host', '')
                     settings['host'] = [host]
