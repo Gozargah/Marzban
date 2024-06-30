@@ -1,5 +1,5 @@
-import socket
 import re
+import socket
 import ssl
 import tempfile
 import threading
@@ -13,7 +13,11 @@ import requests
 import rpyc
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
-from websocket import WebSocketConnectionClosedException, WebSocketTimeoutException, create_connection
+from websocket import (
+    WebSocketConnectionClosedException,
+    WebSocketTimeoutException,
+    create_connection
+)
 
 from app.xray.config import XRayConfig
 from xray_api import XRay as XRayAPI
@@ -69,10 +73,12 @@ class ReSTXRayNode:
         self._ssl_context = ssl.create_default_context()
         self._ssl_context.check_hostname = False
         self._ssl_context.verify_mode = ssl.CERT_NONE
-        self._ssl_context.load_cert_chain(certfile=self.session.cert[0], keyfile=self.session.cert[1])
+        self._ssl_context.load_cert_chain(
+            certfile=self.session.cert[0], keyfile=self.session.cert[1])
         self._logs_ws_url = f"wss://{self.address.strip('/')}:{self.port}/logs"
         self._logs_queues = []
-        self._logs_bg_thread = threading.Thread(target=self._bg_fetch_logs, daemon=True)
+        self._logs_bg_thread = threading.Thread(
+            target=self._bg_fetch_logs, daemon=True)
 
         self._api = None
         self._started = False
@@ -140,7 +146,7 @@ class ReSTXRayNode:
                     address=self.address,
                     port=self.api_port,
                     ssl_cert=self._node_cert.encode(),
-                    ssl_target_name="GFWFuckers"
+                    ssl_target_name="Gozargah"
                 )
             else:
                 raise ConnectionError("Node is not started")
@@ -184,7 +190,7 @@ class ReSTXRayNode:
             address=self.address,
             port=self.api_port,
             ssl_cert=self._node_cert.encode(),
-            ssl_target_name="GFWFuckers"
+            ssl_target_name="Gozargah"
         )
 
         try:
@@ -217,7 +223,7 @@ class ReSTXRayNode:
             address=self.address,
             port=self.api_port,
             ssl_cert=self._node_cert.encode(),
-            ssl_target_name="GFWFuckers"
+            ssl_target_name="Gozargah"
         )
 
         try:
@@ -232,7 +238,8 @@ class ReSTXRayNode:
             try:
                 websocket_url = f"{self._logs_ws_url}?session_id={self._session_id}&interval=0.7"
                 self._ssl_context.load_verify_locations(self.session.verify)
-                ws = create_connection(websocket_url, sslopt={"context": self._ssl_context}, timeout=2)
+                ws = create_connection(websocket_url, sslopt={
+                                       "context": self._ssl_context}, timeout=2)
                 while self._logs_queues:
                     try:
                         logs = ws.recv()
@@ -258,7 +265,8 @@ class ReSTXRayNode:
                 try:
                     self._logs_bg_thread.start()
                 except RuntimeError:
-                    self._logs_bg_thread = threading.Thread(target=self._bg_fetch_logs, daemon=True)
+                    self._logs_bg_thread = threading.Thread(
+                        target=self._bg_fetch_logs, daemon=True)
                     self._logs_bg_thread.start()
 
             yield buf
@@ -335,7 +343,8 @@ class RPyCXRayNode:
         tries = 0
         while True:
             tries += 1
-            self._node_cert = ssl.get_server_certificate((self.address, self.port))
+            self._node_cert = ssl.get_server_certificate(
+                (self.address, self.port))
             self._node_certfile = string_to_temp_file(self._node_cert)
             conn = rpyc.ssl_connect(self.address,
                                     self.port,
@@ -414,7 +423,7 @@ class RPyCXRayNode:
             address=self.address,
             port=self.api_port,
             ssl_cert=self._node_cert.encode(),
-            ssl_target_name="GFWFuckers"
+            ssl_target_name="Gozargah"
         )
         try:
             grpc.channel_ready_future(self._api._channel).result(timeout=5)
