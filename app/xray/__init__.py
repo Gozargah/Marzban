@@ -61,7 +61,8 @@ def hosts(storage: dict):
                     else host.security.value,
                     "allowinsecure": host.allowinsecure,
                     "mux_enable": host.mux_enable,
-                    "fragment_setting": host.fragment_setting
+                    "fragment_setting": host.fragment_setting,
+                    "random_user_agent": host.random_user_agent,
                 } for host in inbound_hosts if not host.is_disabled
             ]
 

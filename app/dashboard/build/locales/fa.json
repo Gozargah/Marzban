@@ -106,6 +106,7 @@
   "hostsDialog.host.wildcard": "از <badge>*</badge> برای ساخت عبارت تصادفی استفاده کنید (برای نام‌های wildcard کار می‌کند)",
   "hostsDialog.sockopt": "Sockopt",
   "hostsDialog.muxEnable": "فعالسازی MUX",
+  "hostsDialog.randomUserAgent":"استفاده از User Agent تصادفی",
   "hostsDialog.allowinsecure": "Allow Insecure",
   "hostsDialog.fragment": "الگو فرگمنت",
   "hostsDialog.fragment.info": "length,interval,packet (e.g. 10-100,100-200,tlshello)",
