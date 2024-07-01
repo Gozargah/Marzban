@@ -282,7 +282,8 @@ def process_inbounds_and_tags(
                         "ais": host["allowinsecure"]
                         or inbound.get("allowinsecure", ""),
                         "mux_enable": host["mux_enable"],
-                        "fragment_setting": host["fragment_setting"]
+                        "fragment_setting": host["fragment_setting"],
+                        "random_user_agent": host["random_user_agent"],
                     }
                 )
 

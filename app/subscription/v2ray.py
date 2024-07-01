@@ -1,5 +1,6 @@
 import base64
 import json
+from random import choice
 import urllib.parse as urlparse
 from typing import Union
 from uuid import UUID
@@ -8,7 +9,7 @@ from urllib.parse import quote
 from app.subscription.funcs import get_grpc_gun, get_grpc_multi
 from app.templates import render_template
 
-from config import (MUX_TEMPLATE, V2RAY_SUBSCRIPTION_TEMPLATE)
+from config import (MUX_TEMPLATE, V2RAY_SUBSCRIPTION_TEMPLATE, USER_AGENT_TEMPLATE)
 
 
 class V2rayShareLink(str):
@@ -341,6 +342,13 @@ class V2rayJsonConfig(str):
         self.config = []
         self.template = render_template(V2RAY_SUBSCRIPTION_TEMPLATE)
         self.mux_template = render_template(MUX_TEMPLATE)
+        temp_user_agent_data = render_template(USER_AGENT_TEMPLATE)
+        user_agent_data = json.loads(temp_user_agent_data)
+
+        if 'list' in user_agent_data and isinstance(user_agent_data['list'], list):
+            self.user_agent_list = user_agent_data['list']
+        else:
+            self.user_agent_list = []
 
     def add_config(self, remarks, outbounds):
         json_template = json.loads(self.template)
@@ -390,8 +398,8 @@ class V2rayJsonConfig(str):
 
         return realitySettings
 
-    @staticmethod
-    def ws_config(path=None, host=None):
+
+    def ws_config(self, path=None, host=None, random_user_agent=None):
 
         wsSettings = {}
         wsSettings["headers"] = {}
@@ -399,17 +407,21 @@ class V2rayJsonConfig(str):
             wsSettings["path"] = path
         if host:
             wsSettings["headers"]["Host"] = host
+        if random_user_agent:
+            wsSettings["headers"]["User-Agent"] = choice(self.user_agent_list)
 
         return wsSettings
 
-    @staticmethod
-    def httpupgrade_config(path=None, host=None):
+    def httpupgrade_config(self, path=None, host=None, random_user_agent=None):
 
         httpupgradeSettings = {}
+        httpupgradeSettings["headers"] = {}
         if path:
             httpupgradeSettings["path"] = path
         if host:
             httpupgradeSettings["host"] = host
+        if random_user_agent:
+            httpupgradeSettings["headers"]["User-Agent"] = choice(self.user_agent_list)
 
         return httpupgradeSettings
 
@@ -427,8 +439,7 @@ class V2rayJsonConfig(str):
 
         return grpcSettings
 
-    @staticmethod
-    def tcp_http_config(path=None, host=None):
+    def tcp_http_config(self, path=None, host=None, random_user_agent=None):
         tcpSettings = {}
 
         if any((path, host)):
@@ -440,7 +451,6 @@ class V2rayJsonConfig(str):
 
             tcpSettings["header"]["request"]["headers"] = {}
             tcpSettings["header"]["request"]["method"] = "GET"
-            tcpSettings["header"]["request"]["headers"]["User-Agent"] = []
             tcpSettings["header"]["request"]["headers"]["Accept-Encoding"] = ["gzip, deflate"]
             tcpSettings["header"]["request"]["headers"]["Connection"] = ["keep-alive"]
             tcpSettings["header"]["request"]["headers"]["Pragma"] = "no-cache"
@@ -451,12 +461,17 @@ class V2rayJsonConfig(str):
             if host:
                 tcpSettings["header"]["request"]["headers"]["Host"] = [host]
 
+            if random_user_agent:
+                tcpSettings["header"]["request"]["headers"]["User-Agent"] = [choice(self.user_agent_list)]
+            else:
+                tcpSettings["header"]["request"]["headers"]["User-Agent"] = []
+
         return tcpSettings
 
-    @staticmethod
-    def h2_config(path=None, host=None):
+    def h2_config(self, path=None, host=None, random_user_agent=None):
 
         httpSettings = {}
+        httpSettings["headers"] = {}
         if path:
             httpSettings["path"] = path
         else:
@@ -464,7 +479,9 @@ class V2rayJsonConfig(str):
         if host:
             httpSettings["host"] = [host]
         else:
-            httpSettings["host"] = {}
+            httpSettings["host"] = []
+        if random_user_agent:
+            httpSettings["headers"]["User-Agent"] = [choice(self.user_agent_list)]
 
         return httpSettings
 
@@ -647,24 +664,25 @@ class V2rayJsonConfig(str):
                             ais='',
                             dialer_proxy='',
                             multiMode: bool = False,
+                            random_user_agent: bool = False,
                             ):
 
         if net == "ws":
-            network_setting = self.ws_config(path=path, host=host)
+            network_setting = self.ws_config(path=path, host=host, random_user_agent=random_user_agent)
         elif net == "grpc":
             network_setting = self.grpc_config(path=path, multiMode=multiMode)
         elif net == "h2":
-            network_setting = self.h2_config(path=path, host=host)
+            network_setting = self.h2_config(path=path, host=host, random_user_agent=random_user_agent)
         elif net == "kcp":
             network_setting = self.kcp_config(
                 path=path, host=host, header=headers)
         elif net == "tcp":
-            network_setting = self.tcp_http_config(path=path, host=host)
+            network_setting = self.tcp_http_config(path=path, host=host, random_user_agent=random_user_agent)
         elif net == "quic":
             network_setting = self.quic_config(
                 path=path, host=host, header=headers)
         elif net == "httpupgrade":
-            network_setting = self.httpupgrade_config(path=path, host=host)
+            network_setting = self.httpupgrade_config(path=path, host=host, random_user_agent=random_user_agent)
 
         if tls == "tls":
             tls_settings = self.tls_config(sni=sni, fp=fp, alpn=alpn, ais=ais)
@@ -769,6 +787,7 @@ class V2rayJsonConfig(str):
             ais=inbound.get('ais', ''),
             dialer_proxy=dialer_proxy,
             multiMode=multi_mode,
+            random_user_agent=inbound.get('random_user_agent', False),
         )
 
         mux_json = json.loads(self.mux_template)

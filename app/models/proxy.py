@@ -149,6 +149,7 @@ class ProxyHost(BaseModel):
     is_disabled: Union[bool, None] = None
     mux_enable: Union[bool, None] = None
     fragment_setting: Optional[str] = Field(None, nullable=True)
+    random_user_agent: Union[bool, None] = None
 
     class Config:
         orm_mode = True
