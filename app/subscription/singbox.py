@@ -1,5 +1,6 @@
 import json
 from app.templates import render_template
+from app.subscription.funcs import get_grpc_gun
 
 from config import SINGBOX_SUBSCRIPTION_TEMPLATE, MUX_TEMPLATE
 
@@ -190,17 +191,24 @@ class SingBoxConfiguration(str):
         return config
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
+
+        net = inbound["network"]
+        path = inbound["path"]
+
+        if net in ["grpc", "gun"]:
+            path = get_grpc_gun(path)
+
         outbound = self.make_outbound(
             remark=remark,
             type=inbound['protocol'],
             address=address,
             port=inbound['port'],
-            net=inbound['network'],
+            net=net,
             tls=(inbound['tls']),
             flow=settings.get('flow', ''),
             sni=inbound['sni'],
             host=inbound['host'],
-            path=inbound['path'],
+            path=path,
             alpn=inbound.get('alpn', ''),
             fp=inbound.get('fp', ''),
             pbk=inbound.get('pbk', ''),

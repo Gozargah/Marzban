@@ -1,6 +1,7 @@
 import yaml
 import json
 from app.templates import render_template
+from app.subscription.funcs import get_grpc_gun
 
 from config import CLASH_SUBSCRIPTION_TEMPLATE, MUX_TEMPLATE
 
@@ -61,6 +62,10 @@ class ClashConfiguration(object):
                   ais: bool = '',
                   mux_enable: bool = False):
 
+
+        if network in ["grpc", "gun"]:
+            path = get_grpc_gun(path)
+
         if type == 'shadowsocks':
             type = 'ss'
         if network == 'tcp' and headers == 'http':
@@ -76,6 +81,14 @@ class ClashConfiguration(object):
             f'{network}-opts': {},
             'udp': udp
         }
+
+        if "?ed=" in path:
+            path, max_early_data = path.split("?ed=")
+            max_early_data, = max_early_data.split("/")
+            max_early_data = int(max_early_data)
+            early_data_header_name = "Sec-WebSocket-Protocol"
+        else:
+            max_early_data = None
 
         if type == 'ss':  # shadowsocks
             return node
@@ -101,11 +114,18 @@ class ClashConfiguration(object):
                 net_opts['method'] = 'GET'
                 net_opts['Host'] = host
 
-        if network == 'ws':
+        if network == 'ws' or network == 'httpupgrade':
             if path:
                 net_opts['path'] = path
             if host:
                 net_opts['headers'] = {"Host": host}
+            if max_early_data:
+                net_opts['max-early-data'] = max_early_data
+                net_opts['early-data-header-name'] = early_data_header_name
+            if network == 'httpupgrade':
+                net_opts['v2ray-http-upgrade'] = True
+                if max_early_data:
+                    net_opts['v2ray-http-upgrade-fast-open'] = True
 
         if network == 'grpc':
             if path:

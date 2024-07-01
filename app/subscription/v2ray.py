@@ -3,13 +3,120 @@ import json
 import urllib.parse as urlparse
 from typing import Union
 from uuid import UUID
+from urllib.parse import quote
 
+from app.subscription.funcs import get_grpc_gun, get_grpc_multi
 from app.templates import render_template
 
 from config import (MUX_TEMPLATE, V2RAY_SUBSCRIPTION_TEMPLATE)
 
 
 class V2rayShareLink(str):
+    def __init__(self):
+        self.links = []
+
+    def add_link(self, link):
+        self.links.append(link)
+
+    def render(self):
+        return self.links
+
+    def add(self, remark: str, address: str, inbound: dict, settings: dict):
+        net = inbound["network"]
+        multi_mode = inbound.get("multiMode", False)
+        old_path: str = inbound["path"]
+
+        if net in ["grpc", "gun"]:
+            if multi_mode:
+                path = get_grpc_multi(old_path)
+            else:
+                path = get_grpc_gun(old_path)
+            if old_path.startswith("/"):
+                path = quote(path, safe="-_.!~*'()")
+
+        else:
+            path = old_path
+
+        if inbound["protocol"] == "vmess":
+            link = self.vmess(
+                remark=remark,
+                address=address,
+                port=inbound["port"],
+                id=settings["id"],
+                net=net,
+                tls=inbound["tls"],
+                sni=inbound.get("sni", ""),
+                fp=inbound.get("fp", ""),
+                alpn=inbound.get("alpn", ""),
+                pbk=inbound.get("pbk", ""),
+                sid=inbound.get("sid", ""),
+                spx=inbound.get("spx", ""),
+                host=inbound["host"],
+                path=path,
+                type=inbound["header_type"],
+                ais=inbound.get("ais", ""),
+                fs=inbound.get("fragment_setting", ""),
+                multiMode=multi_mode,
+            )
+
+        elif inbound["protocol"] == "vless":
+            link = self.vless(
+                remark=remark,
+                address=address,
+                port=inbound["port"],
+                id=settings["id"],
+                flow=settings.get("flow", ""),
+                net=net,
+                tls=inbound["tls"],
+                sni=inbound.get("sni", ""),
+                fp=inbound.get("fp", ""),
+                alpn=inbound.get("alpn", ""),
+                pbk=inbound.get("pbk", ""),
+                sid=inbound.get("sid", ""),
+                spx=inbound.get("spx", ""),
+                host=inbound["host"],
+                path=path,
+                type=inbound["header_type"],
+                ais=inbound.get("ais", ""),
+                fs=inbound.get("fragment_setting", ""),
+                multiMode=multi_mode,
+            )
+
+        elif inbound["protocol"] == "trojan":
+            link = self.trojan(
+                remark=remark,
+                address=address,
+                port=inbound["port"],
+                password=settings["password"],
+                flow=settings.get("flow", ""),
+                net=net,
+                tls=inbound["tls"],
+                sni=inbound.get("sni", ""),
+                fp=inbound.get("fp", ""),
+                alpn=inbound.get("alpn", ""),
+                pbk=inbound.get("pbk", ""),
+                sid=inbound.get("sid", ""),
+                spx=inbound.get("spx", ""),
+                host=inbound["host"],
+                path=path,
+                type=inbound["header_type"],
+                ais=inbound.get("ais", ""),
+                fs=inbound.get("fragment_setting", ""),
+                multiMode=multi_mode,
+            )
+
+        elif inbound["protocol"] == "shadowsocks":
+            link = self.shadowsocks(
+                remark=remark,
+                address=address,
+                port=inbound["port"],
+                password=settings["password"],
+                method=settings["method"],
+            )
+        
+        self.add_link(link=link)
+        
+
     @classmethod
     def vmess(
         cls,
@@ -30,6 +137,7 @@ class V2rayShareLink(str):
         spx="",
         ais="",
         fs="",
+        multiMode: bool = False,
     ):
         payload = {
             "add": address,
@@ -53,6 +161,8 @@ class V2rayShareLink(str):
             payload["sni"] = sni
             payload["fp"] = fp
             payload["alpn"] = alpn
+            if fs :
+                payload["fragment"] = fs
             if ais:
                 payload["allowInsecure"] = 1
         elif tls == "reality":
@@ -60,7 +170,14 @@ class V2rayShareLink(str):
             payload["fp"] = fp
             payload["pbk"] = pbk
             payload["sid"] = sid
-            payload["spx"] = spx
+            if spx:
+                payload["spx"] = spx
+
+        if net == "grpc":
+            if multiMode:
+                payload["mode"] = "multi"
+            else:
+                payload["mode"] = "gun"
 
         return (
             "vmess://"
@@ -89,6 +206,7 @@ class V2rayShareLink(str):
               spx='',
               ais='',
               fs="",
+              multiMode: bool = False,
               ):
 
         payload = {
@@ -102,6 +220,11 @@ class V2rayShareLink(str):
         if net == 'grpc':
             payload['serviceName'] = path
             payload["host"] = host
+            if multiMode:
+                payload["mode"] = "multi"
+            else:
+                payload["mode"] = "gun"
+
         elif net == 'quic':
             payload['key'] = path
             payload["quicSecurity"] = host
@@ -122,7 +245,8 @@ class V2rayShareLink(str):
             payload["fp"] = fp
             payload["pbk"] = pbk
             payload["sid"] = sid
-            payload["spx"] = spx
+            if spx:
+                payload["spx"] = spx
 
         return (
             "vless://"
@@ -151,6 +275,7 @@ class V2rayShareLink(str):
                spx='',
                ais='',
                fs="",
+               multiMode: bool = False,
                ):
 
         payload = {
@@ -164,6 +289,11 @@ class V2rayShareLink(str):
         if net == 'grpc':
             payload['serviceName'] = path
             payload["host"] = host
+            if multiMode:
+                payload["mode"] = "multi"
+            else:
+                payload["mode"] = "gun"
+
         elif net == 'quic':
             payload['key'] = path
             payload["quicSecurity"] = host
@@ -184,7 +314,8 @@ class V2rayShareLink(str):
             payload["fp"] = fp
             payload["pbk"] = pbk
             payload["sid"] = sid
-            payload["spx"] = spx
+            if spx:
+                payload["spx"] = spx
 
         return (
             "trojan://"
@@ -240,7 +371,7 @@ class V2rayJsonConfig(str):
         return tlsSettings
 
     @staticmethod
-    def reality_config(sni=None, fp=None, pbk=None, sid=None):
+    def reality_config(sni=None, fp=None, pbk=None, sid=None, spx=None):
 
         realitySettings = {}
         if sni is not None:
@@ -254,8 +385,8 @@ class V2rayJsonConfig(str):
             realitySettings["publicKey"] = pbk
         if sid:
             realitySettings["shortId"] = sid
-
-        realitySettings["spiderX"] = ""
+        if spx:
+            realitySettings["spiderX"] = spx
 
         return realitySettings
 
@@ -338,7 +469,7 @@ class V2rayJsonConfig(str):
         return httpSettings
 
     @staticmethod
-    def quic_config(path=None, host=None, header=None):
+    def quic_config(path=None, host=None, header=None,):
 
         quicSettings = {}
         quicSettings["header"] = {"none"}
@@ -347,16 +478,18 @@ class V2rayJsonConfig(str):
         else:
             quicSettings["key"] = ""
         if host:
-            quicSettings["security"] = [host]
+            quicSettings["security"] = host
         else:
-            quicSettings["security"] = ""
+            quicSettings["security"] = "none"
         if header:
             quicSettings["header"]["type"] = header
+        else:
+            quicSettings["header"]["type"] = "none"
 
         return quicSettings
 
     @staticmethod
-    def kpc_config(path=None, host=None, header=None):
+    def kcp_config(path=None, host=None, header=None):
 
         kcpSettings = {}
         kcpSettings["header"] = {}
@@ -400,7 +533,7 @@ class V2rayJsonConfig(str):
             streamSettings["grpcSettings"] = network_setting
         elif network == "h2":
             streamSettings["httpSettings"] = network_setting
-        elif network == "kpc":
+        elif network == "kcp":
             streamSettings["kcpSettings"] = network_setting
         elif network == "tcp" and network_setting:
             streamSettings["tcpSettings"] = network_setting
@@ -461,7 +594,6 @@ class V2rayJsonConfig(str):
         servers["email"] = "https://gozargah.github.io/marzban/"
         servers["method"] = method
         servers["ota"] = False
-        servers["level"] = 1
 
         settings["servers"] = [servers]
 
@@ -479,7 +611,6 @@ class V2rayJsonConfig(str):
         servers["email"] = "https://gozargah.github.io/marzban/"
         servers["method"] = method
         servers["uot"] = False
-        servers["level"] = 1
 
         settings["servers"] = [servers]
 
@@ -511,19 +642,21 @@ class V2rayJsonConfig(str):
                             alpn='',
                             pbk='',
                             sid='',
+                            spx='',
                             headers='',
                             ais='',
-                            dialer_proxy=''
+                            dialer_proxy='',
+                            multiMode: bool = False,
                             ):
 
         if net == "ws":
             network_setting = self.ws_config(path=path, host=host)
         elif net == "grpc":
-            network_setting = self.grpc_config(path=path)
+            network_setting = self.grpc_config(path=path, multiMode=multiMode)
         elif net == "h2":
             network_setting = self.h2_config(path=path, host=host)
-        elif net == "kpc":
-            network_setting = self.kpc_config(
+        elif net == "kcp":
+            network_setting = self.kcp_config(
                 path=path, host=host, header=headers)
         elif net == "tcp":
             network_setting = self.tcp_http_config(path=path, host=host)
@@ -537,7 +670,7 @@ class V2rayJsonConfig(str):
             tls_settings = self.tls_config(sni=sni, fp=fp, alpn=alpn, ais=ais)
         elif tls == "reality":
             tls_settings = self.reality_config(
-                sni=sni, fp=fp, pbk=pbk, sid=sid)
+                sni=sni, fp=fp, pbk=pbk, sid=sid, spx=spx)
         else:
             tls_settings = None
 
@@ -563,6 +696,14 @@ class V2rayJsonConfig(str):
         tls = (inbound['tls'])
         headers = inbound['header_type']
         fragment = inbound['fragment_setting']
+        path = inbound["path"]
+        multi_mode = inbound.get("multiMode", False)
+
+        if net in ["grpc", "gun"]:
+            if multi_mode:
+                path = get_grpc_multi(path)
+            else:
+                path = get_grpc_gun(path)
 
         outbound = {
             "tag": remark,
@@ -618,14 +759,16 @@ class V2rayJsonConfig(str):
             tls=tls,
             sni=inbound['sni'],
             host=inbound['host'],
-            path=inbound['path'],
+            path=path,
             alpn=inbound.get('alpn', ''),
             fp=inbound.get('fp', ''),
             pbk=inbound.get('pbk', ''),
             sid=inbound.get('sid', ''),
+            spx=inbound.get('spx', ''),
             headers=headers,
             ais=inbound.get('ais', ''),
-            dialer_proxy=dialer_proxy
+            dialer_proxy=dialer_proxy,
+            multiMode=multi_mode,
         )
 
         mux_json = json.loads(self.mux_template)
