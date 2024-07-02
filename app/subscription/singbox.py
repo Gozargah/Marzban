@@ -204,10 +204,12 @@ class SingBoxConfiguration(str):
             config['tls'] = self.tls_config(sni=sni, fp=fp, tls=tls,
                                             pbk=pbk, sid=sid, alpn=alpn,
                                             ais=ais)
-        if mux_enable:
-            mux_json = json.loads(self.mux_template)
-            mux_config = mux_json["sing-box"]
-            config['multiplex'] = mux_config
+
+        mux_json = json.loads(self.mux_template)
+        mux_config = mux_json["sing-box"]
+
+        config['multiplex'] = mux_config
+        if config['multiplex']["enabled"]:
             config['multiplex']["enabled"] = mux_enable
 
         return config
