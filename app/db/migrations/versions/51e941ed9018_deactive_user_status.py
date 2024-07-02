@@ -41,6 +41,9 @@ temp_table = sa.sql.table(
 
 
 def upgrade():
+    status_enum = sa.Enum('active', 'limited', 'expired', name='status')
+    status_enum.create(op.get_bind())
+
     # temp type to use instead of old one
     temp_type.create(op.get_bind(), checkfirst=False)
 
