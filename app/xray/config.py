@@ -283,6 +283,11 @@ class XRayConfig(dict):
                     host = net_settings.get('host', '')
                     settings['host'] = [host]
 
+                elif net == 'splithttp':
+                    settings['path'] = net_settings.get('path', '')
+                    host = net_settings.get('host', '')
+                    settings['host'] = [host]
+
                 else:
                     settings['path'] = net_settings.get('path', '')
                     host = net_settings.get(
