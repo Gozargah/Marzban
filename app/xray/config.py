@@ -270,7 +270,8 @@ class XRayConfig(dict):
                 elif net == 'grpc' or net == 'gun':
                     settings['header_type'] = ''
                     settings['path'] = net_settings.get('serviceName', '')
-                    settings['host'] = []
+                    host = net_settings.get('authority', '')
+                    settings['host'] = [host]
                     settings['multiMode'] = net_settings.get('multiMode', False)
 
                 elif net == 'quic':
@@ -279,6 +280,11 @@ class XRayConfig(dict):
                     settings['host'] = [net_settings.get('security', '')]
 
                 elif net == 'httpupgrade':
+                    settings['path'] = net_settings.get('path', '')
+                    host = net_settings.get('host', '')
+                    settings['host'] = [host]
+
+                elif net == 'splithttp':
                     settings['path'] = net_settings.get('path', '')
                     host = net_settings.get('host', '')
                     settings['host'] = [host]

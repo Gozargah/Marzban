@@ -1,15 +1,14 @@
 import base64
 import json
-from random import choice
 import urllib.parse as urlparse
+from random import choice
 from typing import Union
-from uuid import UUID
 from urllib.parse import quote
+from uuid import UUID
 
 from app.subscription.funcs import get_grpc_gun, get_grpc_multi
 from app.templates import render_template
-
-from config import (MUX_TEMPLATE, V2RAY_SUBSCRIPTION_TEMPLATE, USER_AGENT_TEMPLATE)
+from config import MUX_TEMPLATE, USER_AGENT_TEMPLATE, V2RAY_SUBSCRIPTION_TEMPLATE
 
 
 class V2rayShareLink(str):
@@ -114,9 +113,8 @@ class V2rayShareLink(str):
                 password=settings["password"],
                 method=settings["method"],
             )
-        
+
         self.add_link(link=link)
-        
 
     @classmethod
     def vmess(
@@ -162,7 +160,7 @@ class V2rayShareLink(str):
             payload["sni"] = sni
             payload["fp"] = fp
             payload["alpn"] = alpn
-            if fs :
+            if fs:
                 payload["fragment"] = fs
             if ais:
                 payload["allowInsecure"] = 1
@@ -220,7 +218,7 @@ class V2rayShareLink(str):
 
         if net == 'grpc':
             payload['serviceName'] = path
-            payload["host"] = host
+            payload["authority"] = host
             if multiMode:
                 payload["mode"] = "multi"
             else:
@@ -289,7 +287,7 @@ class V2rayShareLink(str):
 
         if net == 'grpc':
             payload['serviceName'] = path
-            payload["host"] = host
+            payload["authority"] = host
             if multiMode:
                 payload["mode"] = "multi"
             else:
@@ -398,7 +396,6 @@ class V2rayJsonConfig(str):
 
         return realitySettings
 
-
     def ws_config(self, path=None, host=None, random_user_agent=None):
 
         wsSettings = {}
@@ -425,18 +422,33 @@ class V2rayJsonConfig(str):
 
         return httpupgradeSettings
 
-    @staticmethod
-    def grpc_config(path=None, multiMode=False):
+    def splithttp_config(self, path=None, host=None, random_user_agent=None):
+
+        splithttpSettings = {}
+        splithttpSettings["headers"] = {}
+        if path:
+            splithttpSettings["path"] = path
+        if host:
+            splithttpSettings["host"] = host
+        if random_user_agent:
+            splithttpSettings["headers"]["User-Agent"] = choice(
+                self.user_agent_list)
+        return splithttpSettings
+
+    def grpc_config(self, path=None, host=None, multiMode=False, random_user_agent=None):
 
         grpcSettings = {}
         if path:
             grpcSettings["serviceName"] = path
+        if host:
+            grpcSettings["authority"] = host
         grpcSettings["multiMode"] = multiMode
         grpcSettings["idle_timeout"] = 60
         grpcSettings["health_check_timeout"] = 20
         grpcSettings["permit_without_stream"] = False
         grpcSettings["initial_windows_size"] = 0
-
+        if random_user_agent:
+            grpcSettings["user_agent"] = choice(self.user_agent_list)
         return grpcSettings
 
     def tcp_http_config(self, path=None, host=None, random_user_agent=None):
@@ -558,6 +570,8 @@ class V2rayJsonConfig(str):
             streamSettings["quicSettings"] = network_setting
         elif network == "httpupgrade":
             streamSettings["httpupgradeSettings"] = network_setting
+        elif network == "splithttp":
+            streamSettings["splithttpSettings"] = network_setting
 
         if sockopt:
             streamSettings['sockopt'] = sockopt
@@ -670,7 +684,8 @@ class V2rayJsonConfig(str):
         if net == "ws":
             network_setting = self.ws_config(path=path, host=host, random_user_agent=random_user_agent)
         elif net == "grpc":
-            network_setting = self.grpc_config(path=path, multiMode=multiMode)
+            network_setting = self.grpc_config(path=path, host=host, multiMode=multiMode,
+                                               random_user_agent=random_user_agent)
         elif net == "h2":
             network_setting = self.h2_config(path=path, host=host, random_user_agent=random_user_agent)
         elif net == "kcp":
@@ -683,6 +698,8 @@ class V2rayJsonConfig(str):
                 path=path, host=host, header=headers)
         elif net == "httpupgrade":
             network_setting = self.httpupgrade_config(path=path, host=host, random_user_agent=random_user_agent)
+        elif net == "splithttp":
+            network_setting = self.splithttp_config(path=path, host=host, random_user_agent=random_user_agent)
 
         if tls == "tls":
             tls_settings = self.tls_config(sni=sni, fp=fp, alpn=alpn, ais=ais)
