@@ -57,7 +57,7 @@ class V2rayShareLink(str):
                 ais=inbound.get("ais", ""),
                 fs=inbound.get("fragment_setting", ""),
                 multiMode=multi_mode,
-                max_upload_size=inbound.get('max_upload_size', 1),
+                max_upload_size=inbound.get('max_upload_size', 1000000),
                 max_concurrent_uploads=inbound.get('max_concurrent_uploads', 10),
             )
 
@@ -82,7 +82,7 @@ class V2rayShareLink(str):
                 ais=inbound.get("ais", ""),
                 fs=inbound.get("fragment_setting", ""),
                 multiMode=multi_mode,
-                max_upload_size=inbound.get('max_upload_size', 1),
+                max_upload_size=inbound.get('max_upload_size', 1000000),
                 max_concurrent_uploads=inbound.get('max_concurrent_uploads', 10),
             )
 
@@ -107,7 +107,7 @@ class V2rayShareLink(str):
                 ais=inbound.get("ais", ""),
                 fs=inbound.get("fragment_setting", ""),
                 multiMode=multi_mode,
-                max_upload_size=inbound.get('max_upload_size', 1),
+                max_upload_size=inbound.get('max_upload_size', 1000000),
                 max_concurrent_uploads=inbound.get('max_concurrent_uploads', 10),
             )
 
@@ -143,7 +143,7 @@ class V2rayShareLink(str):
         ais="",
         fs="",
         multiMode: bool = False,
-        max_upload_size: int = 1,
+        max_upload_size: int = 1000000,
         max_concurrent_uploads: int = 10,
     ):
         payload = {
@@ -218,7 +218,7 @@ class V2rayShareLink(str):
               ais='',
               fs="",
               multiMode: bool = False,
-              max_upload_size: int = 1,
+              max_upload_size: int = 1000000,
               max_concurrent_uploads: int = 10,
         ):
 
@@ -294,7 +294,7 @@ class V2rayShareLink(str):
                ais='',
                fs="",
                multiMode: bool = False,
-               max_upload_size: int = 1,
+               max_upload_size: int = 1000000,
                max_concurrent_uploads: int = 10,
                ):
 
@@ -448,7 +448,7 @@ class V2rayJsonConfig(str):
         return httpupgradeSettings
 
     def splithttp_config(self, path=None, host=None, random_user_agent=None,
-                         max_upload_size: int = 1,
+                         max_upload_size: int = 1000000,
                          max_concurrent_uploads: int = 10,
                          ):
 
@@ -837,7 +837,7 @@ class V2rayJsonConfig(str):
             dialer_proxy=dialer_proxy,
             multiMode=multi_mode,
             random_user_agent=inbound.get('random_user_agent', False),
-            max_upload_size=inbound.get('max_upload_size', 1),
+            max_upload_size=inbound.get('max_upload_size', 1000000),
             max_concurrent_uploads=inbound.get('max_concurrent_uploads', 10),
         )
 

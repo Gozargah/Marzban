@@ -288,7 +288,7 @@ class XRayConfig(dict):
                     settings['path'] = net_settings.get('path', '')
                     host = net_settings.get('host', '')
                     settings['host'] = [host]
-                    settings['maxUploadSize'] = net_settings.get('maxUploadSize', 1)
+                    settings['maxUploadSize'] = net_settings.get('maxUploadSize', 1000000)
                     settings['maxConcurrentUploads'] = net_settings.get('maxConcurrentUploads', 10)
 
                 else:
