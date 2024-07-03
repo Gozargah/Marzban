@@ -183,6 +183,7 @@ def user_subscription_with_client_type(
     request: Request,
     client_type: str = Path(..., regex="sing-box|clash-meta|clash|outline|v2ray|v2ray-json"),
     db: Session = Depends(get_db),
+    user_agent: str = Header(default="")
 ):
     """
     Subscription link, v2ray, clash, sing-box, outline and clash-meta supported
@@ -220,6 +221,8 @@ def user_subscription_with_client_type(
             for key, val in get_subscription_user_info(user).items()
         )
     }
+
+    crud.update_user_sub(db, dbuser, user_agent)
 
     if client_type == "clash-meta":
         conf = generate_subscription(user=user, config_format="clash-meta", as_base64=False)
