@@ -350,7 +350,9 @@ class XRayConfig(dict):
 
             for proxy_type, rows in grouped_data.items():
 
-                inbounds = self.inbounds_by_protocol[proxy_type]
+                inbounds = self.inbounds_by_protocol.get('proxy_type')
+                if not inbounds:
+                    continue
 
                 for inbound in inbounds:
                     clients = config.get_inbound(inbound['tag'])['settings']['clients']
