@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 from config import (ACTIVE_STATUS_TEXT, DISABLED_STATUS_TEXT,
                     EXPIRED_STATUS_TEXT, LIMITED_STATUS_TEXT,
-                    ONHOLD_STATUS_TEXT, RANDOM_SUB_CONFIGS_STATUS)
+                    ONHOLD_STATUS_TEXT, RANDOMIZE_SUBSCRIPTION_CONFIGS)
 
 SERVER_IP = get_public_ip()
 SERVER_IPV6 = get_public_ipv6()
@@ -157,7 +157,7 @@ def generate_subscription(
     else:
         raise ValueError(f'Unsupported format "{config_format}"')
 
-    if RANDOM_SUB_CONFIGS_STATUS is not False:
+    if RANDOMIZE_SUBSCRIPTION_CONFIGS is not False:
         config = randomize_sub_config(config, config_format)
         
     if as_base64:
