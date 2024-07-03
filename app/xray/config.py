@@ -334,7 +334,9 @@ class XRayConfig(dict):
                 db_models.User.status.in_([UserStatus.active, UserStatus.on_hold])
             ).group_by(
                 func.lower(db_models.Proxy.type),
-                db_models.User.id
+                db_models.User.id,
+                db_models.User.username,
+                db_models.Proxy.settings,
             )
             result = query.all()
 
