@@ -79,7 +79,7 @@ def user_subscription(token: str,
 
     crud.update_user_sub(db, dbuser, user_agent)
 
-    if re.match('^([Cc]lash-verge|[Cc]lash[-\.]?[Mm]eta)', user_agent):
+    if re.match('^([Cc]lash-verge|[Cc]lash[-\.]?[Mm]eta|[Ff][Ll][Cc]lash|[Mm]ihomo)', user_agent):
         conf = generate_subscription(user=user, config_format="clash-meta", as_base64=False)
         return Response(content=conf, media_type="text/yaml", headers=response_headers)
 
