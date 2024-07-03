@@ -219,7 +219,6 @@ class V2rayShareLink(str):
         if net == 'grpc':
             payload['serviceName'] = path
             payload["authority"] = host
-            payload["host"] = host
             if multiMode:
                 payload["mode"] = "multi"
             else:
