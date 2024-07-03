@@ -8,19 +8,19 @@ from fastapi.responses import HTMLResponse
 from app import app
 from app.db import Session, crud, get_db
 from app.models.user import UserResponse
+from app.subscription.share import encode_title, generate_subscription
 from app.templates import render_template
 from app.utils.jwt import get_subscription_payload
-from app.subscription.share import encode_title, generate_subscription
 from config import (
     SUB_PROFILE_TITLE,
     SUB_SUPPORT_URL,
     SUB_UPDATE_INTERVAL,
     SUBSCRIPTION_PAGE_TEMPLATE,
-    XRAY_SUBSCRIPTION_PATH,
     USE_CUSTOM_JSON_DEFAULT,
+    USE_CUSTOM_JSON_FOR_STREISAND,
     USE_CUSTOM_JSON_FOR_V2RAYN,
     USE_CUSTOM_JSON_FOR_V2RAYNG,
-    USE_CUSTOM_JSON_FOR_STREISAND
+    XRAY_SUBSCRIPTION_PATH
 )
 
 
@@ -192,8 +192,8 @@ def user_subscription_with_client_type(
         return {
             "upload": 0,
             "download": user.used_traffic,
-            "total": user.data_limit,
-            "expire": user.expire,
+            "total": user.data_limit if user.data_limit is not None else 0,
+            "expire": user.expire if user.expire is not None else 0,
         }
 
     sub = get_subscription_payload(token)
@@ -218,7 +218,6 @@ def user_subscription_with_client_type(
         "subscription-userinfo": "; ".join(
             f"{key}={val}"
             for key, val in get_subscription_user_info(user).items()
-            if val is not None
         )
     }
 
