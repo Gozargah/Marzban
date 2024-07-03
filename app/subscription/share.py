@@ -19,7 +19,8 @@ if TYPE_CHECKING:
 
 from config import (ACTIVE_STATUS_TEXT, DISABLED_STATUS_TEXT,
                     EXPIRED_STATUS_TEXT, LIMITED_STATUS_TEXT,
-                    ONHOLD_STATUS_TEXT, RANDOMIZE_SUBSCRIPTION_CONFIGS)
+                    ONHOLD_STATUS_TEXT, RANDOMIZE_SUBSCRIPTION_CONFIGS,
+                    NOTICE_INACTIVE_USERS)
 
 SERVER_IP = get_public_ip()
 SERVER_IPV6 = get_public_ipv6()
@@ -131,14 +132,40 @@ def randomize_sub_config(
 
     return config
     
+def manage_notice(user: "UserResponse"):
+
+    if not any(NOTICE_INACTIVE_USERS in inbounds for inbounds in user.inbounds.values()):
+        return user.inbounds, user.proxies
+    
+    if user.status in ['active', 'on_hold']:
+        filtered_inbounds = {p: i for p, i in user.inbounds.items() if NOTICE_INACTIVE_USERS not in i}
+        filtered_proxies = {p: user.proxies.get(p, {}) for p in filtered_inbounds}
+    else:
+        protocol = next((p for p, i in user.inbounds.items() if NOTICE_INACTIVE_USERS in i), None)
+        if not protocol:
+            return {}, {}
+        filtered_inbounds = {protocol: [NOTICE_INACTIVE_USERS]}
+        filtered_proxies = {protocol: user.proxies.get(protocol, {})}
+    
+    return filtered_inbounds, filtered_proxies
+
+
+
 def generate_subscription(
     user: "UserResponse",
     config_format: Literal["v2ray", "clash-meta", "clash", "sing-box", "outline", "v2ray-json"],
     as_base64: bool,
 ) -> str:
+    
+    if NOTICE_INACTIVE_USERS is not False:
+        inbounds, proxies = manage_notice(user)
+    else:
+        inbounds = user.inbounds
+        proxies = user.proxies
+
     kwargs = {
-        "proxies": user.proxies,
-        "inbounds": user.inbounds,
+        "proxies": proxies,
+        "inbounds": inbounds,
         "extra_data": user.__dict__,
     }
 
