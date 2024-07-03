@@ -1,6 +1,7 @@
 import base64
 import random
 import secrets
+from copy import deepcopy
 from datetime import datetime as dt
 from datetime import timedelta
 from typing import TYPE_CHECKING, List, Literal, Union
@@ -8,6 +9,7 @@ from typing import TYPE_CHECKING, List, Literal, Union
 from jdatetime import date as jd
 
 from app import xray
+from config import NOTICE_INBOUND
 from app.utils.system import get_public_ip, get_public_ipv6, readable_size
 
 from . import *
@@ -102,8 +104,7 @@ def generate_subscription(
     as_base64: bool,
 ) -> str:
     kwargs = {
-        "proxies": user.proxies,
-        "inbounds": user.inbounds,
+        **(manage_notice_inbound(user.inbounds, user.proxies, user.status)),
         "extra_data": user.__dict__,
     }
 
@@ -299,3 +300,45 @@ def process_inbounds_and_tags(
 
 def encode_title(text: str) -> str:
     return f"base64:{base64.b64encode(text.encode()).decode()}"
+
+
+def manage_notice_inbound(inbounds, proxies, userStatus) -> dict:
+    if not NOTICE_INBOUND:
+        return {
+            "proxies": proxies,
+            "inbounds": inbounds,
+        }
+    from app.models.user import UserStatus
+    ni = dict()
+    p = dict()
+    protocol = ""
+    for k, v in inbounds.items():
+        for i in v:
+            if i == NOTICE_INBOUND:
+                ni[k] = [i]
+                p[k] = proxies[k]
+                protocol = k
+                break
+        if protocol:
+            break
+
+    if ni and userStatus in (UserStatus.expired, UserStatus.limited, UserStatus.disabled):
+        link_data = {
+            "proxies": p,
+            "inbounds": ni,
+        }
+    elif ni and userStatus in (UserStatus.active, UserStatus.on_hold):
+        inbounds_copy = deepcopy(inbounds)
+        if NOTICE_INBOUND in inbounds_copy.get(protocol, []):
+            inbounds_copy[protocol].remove(NOTICE_INBOUND)
+        link_data = {
+            "proxies": proxies,
+            "inbounds": inbounds_copy,
+        }
+    else:
+        link_data = {
+            "proxies": proxies,
+            "inbounds": inbounds,
+        }
+
+    return link_data
