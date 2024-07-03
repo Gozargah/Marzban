@@ -270,7 +270,8 @@ class XRayConfig(dict):
                 elif net == 'grpc' or net == 'gun':
                     settings['header_type'] = ''
                     settings['path'] = net_settings.get('serviceName', '')
-                    settings['host'] = []
+                    host = net_settings.get('authority', '')
+                    settings['host'] = [host]
                     settings['multiMode'] = net_settings.get('multiMode', False)
 
                 elif net == 'quic':

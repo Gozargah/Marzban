@@ -218,6 +218,7 @@ class V2rayShareLink(str):
 
         if net == 'grpc':
             payload['serviceName'] = path
+            payload["authority"] = host
             payload["host"] = host
             if multiMode:
                 payload["mode"] = "multi"
@@ -287,7 +288,7 @@ class V2rayShareLink(str):
 
         if net == 'grpc':
             payload['serviceName'] = path
-            payload["host"] = host
+            payload["authority"] = host
             if multiMode:
                 payload["mode"] = "multi"
             else:
@@ -435,18 +436,20 @@ class V2rayJsonConfig(str):
                 self.user_agent_list)
         return splithttpSettings
 
-    @staticmethod
-    def grpc_config(path=None, multiMode=False):
+    def grpc_config(self, path=None, host=None, multiMode=False, random_user_agent=None):
 
         grpcSettings = {}
         if path:
             grpcSettings["serviceName"] = path
+        if host:
+            grpcSettings["authority"] = host
         grpcSettings["multiMode"] = multiMode
         grpcSettings["idle_timeout"] = 60
         grpcSettings["health_check_timeout"] = 20
         grpcSettings["permit_without_stream"] = False
         grpcSettings["initial_windows_size"] = 0
-
+        if random_user_agent:
+            grpcSettings["user_agent"] = choice(self.user_agent_list)
         return grpcSettings
 
     def tcp_http_config(self, path=None, host=None, random_user_agent=None):
@@ -682,7 +685,8 @@ class V2rayJsonConfig(str):
         if net == "ws":
             network_setting = self.ws_config(path=path, host=host, random_user_agent=random_user_agent)
         elif net == "grpc":
-            network_setting = self.grpc_config(path=path, multiMode=multiMode)
+            network_setting = self.grpc_config(path=path, host=host, multiMode=multiMode,
+                                               random_user_agent=random_user_agent)
         elif net == "h2":
             network_setting = self.h2_config(path=path, host=host, random_user_agent=random_user_agent)
         elif net == "kcp":
