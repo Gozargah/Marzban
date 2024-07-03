@@ -98,6 +98,7 @@ SUB_UPDATE_INTERVAL = config("SUB_UPDATE_INTERVAL", default="12")
 SUB_SUPPORT_URL = config("SUB_SUPPORT_URL", default="https://t.me/")
 SUB_PROFILE_TITLE = config("SUB_PROFILE_TITLE", default="Subscription")
 RANDOMIZE_SUBSCRIPTION_CONFIGS = config("RANDOMIZE_SUBSCRIPTION_CONFIGS", default=False, cast=bool)
+NOTICE_INACTIVE_USERS = config("NOTICE_INACTIVE_USERS", default=False, cast=str)
 
 # discord webhook log
 DISCORD_WEBHOOK_URL = config("DISCORD_WEBHOOK_URL", default="")
