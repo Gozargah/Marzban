@@ -5,8 +5,12 @@ import yaml
 
 from app.subscription.funcs import get_grpc_gun
 from app.templates import render_template
-from config import (CLASH_SUBSCRIPTION_TEMPLATE, MUX_TEMPLATE,
-                    USER_AGENT_TEMPLATE)
+from config import (
+    CLASH_SUBSCRIPTION_TEMPLATE, 
+    MUX_TEMPLATE,
+    USER_AGENT_TEMPLATE,
+    GRPC_USER_AGENT_TEMPLATE,
+)
 
 
 class ClashConfiguration(object):
@@ -26,6 +30,14 @@ class ClashConfiguration(object):
             self.user_agent_list = user_agent_data['list']
         else:
             self.user_agent_list = []
+
+        temp_grpc_user_agent_data = render_template(GRPC_USER_AGENT_TEMPLATE)
+        grpc_user_agent_data = json.loads(temp_grpc_user_agent_data)
+
+        if 'list' in grpc_user_agent_data and isinstance(grpc_user_agent_data['list'], list):
+            self.grpc_user_agent_data = grpc_user_agent_data['list']
+        else:
+            self.grpc_user_agent_data = []
 
     def render(self):
         return yaml.dump(
@@ -143,9 +155,11 @@ class ClashConfiguration(object):
                 if max_early_data:
                     net_opts['v2ray-http-upgrade-fast-open'] = True
 
-        if network == 'grpc':
+        if network == 'grpc' or network == 'gun':
             if path:
                 net_opts['grpc-service-name'] = path
+            if random_user_agent:
+                net_opts['header'] = {"User-Agent": choice(self.user_agent_list)}
 
         if network == 'h2':
             if path:

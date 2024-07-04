@@ -8,7 +8,12 @@ from uuid import UUID
 
 from app.subscription.funcs import get_grpc_gun, get_grpc_multi
 from app.templates import render_template
-from config import MUX_TEMPLATE, USER_AGENT_TEMPLATE, V2RAY_SUBSCRIPTION_TEMPLATE
+from config import (
+    MUX_TEMPLATE, 
+    USER_AGENT_TEMPLATE, 
+    V2RAY_SUBSCRIPTION_TEMPLATE,
+    GRPC_USER_AGENT_TEMPLATE,
+)
 
 
 class V2rayShareLink(str):
@@ -367,11 +372,19 @@ class V2rayJsonConfig(str):
         self.mux_template = render_template(MUX_TEMPLATE)
         temp_user_agent_data = render_template(USER_AGENT_TEMPLATE)
         user_agent_data = json.loads(temp_user_agent_data)
-
+        
         if 'list' in user_agent_data and isinstance(user_agent_data['list'], list):
             self.user_agent_list = user_agent_data['list']
         else:
             self.user_agent_list = []
+
+        temp_grpc_user_agent_data = render_template(GRPC_USER_AGENT_TEMPLATE)
+        grpc_user_agent_data = json.loads(temp_grpc_user_agent_data)
+
+        if 'list' in grpc_user_agent_data and isinstance(grpc_user_agent_data['list'], list):
+            self.grpc_user_agent_data = grpc_user_agent_data['list']
+        else:
+            self.grpc_user_agent_data = []
 
     def add_config(self, remarks, outbounds):
         json_template = json.loads(self.template)
@@ -466,7 +479,7 @@ class V2rayJsonConfig(str):
         
         return splithttpSettings
 
-    def grpc_config(self, path=None, host=None, multiMode=False):
+    def grpc_config(self, path=None, host=None, multiMode=False, random_user_agent=None):
 
         grpcSettings = {}
         if path:
@@ -477,7 +490,10 @@ class V2rayJsonConfig(str):
         grpcSettings["idle_timeout"] = 60
         grpcSettings["health_check_timeout"] = 20
         grpcSettings["permit_without_stream"] = False
-        grpcSettings["initial_windows_size"] = 0
+        grpcSettings["initial_windows_size"] = 35536
+
+        if random_user_agent:
+            grpcSettings["user_agent"] = choice(self.grpc_user_agent_data)
 
         return grpcSettings
 
@@ -716,7 +732,7 @@ class V2rayJsonConfig(str):
         if net == "ws":
             network_setting = self.ws_config(path=path, host=host, random_user_agent=random_user_agent)
         elif net == "grpc":
-            network_setting = self.grpc_config(path=path, host=host, multiMode=multiMode)
+            network_setting = self.grpc_config(path=path, host=host, multiMode=multiMode, random_user_agent=random_user_agent)
         elif net == "h2":
             network_setting = self.h2_config(path=path, host=host, random_user_agent=random_user_agent)
         elif net == "kcp":
