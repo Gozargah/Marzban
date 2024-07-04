@@ -843,7 +843,7 @@ class V2rayJsonConfig(str):
             sni=inbound['sni'],
             host=inbound['host'],
             path=path,
-            alpn=inbound.get('alpn', ''),
+            alpn=inbound.get('alpn', '').rsplit(sep=","),
             fp=inbound.get('fp', ''),
             pbk=inbound.get('pbk', ''),
             sid=inbound.get('sid', ''),
