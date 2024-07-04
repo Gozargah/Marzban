@@ -248,6 +248,8 @@ class V2rayShareLink(str):
             payload["quicSecurity"] = host
 
         elif net == "splithttp":
+            payload["path"] = path
+            payload["host"] = host
             payload["maxUploadSize"] = max_upload_size
             payload["maxConcurrentUploads"] = max_concurrent_uploads
 
@@ -320,6 +322,8 @@ class V2rayShareLink(str):
                 payload["mode"] = "gun"
 
         elif net == "splithttp":
+            payload["path"] = path
+            payload["host"] = host
             payload["maxUploadSize"] = max_upload_size
             payload["maxConcurrentUploads"] = max_concurrent_uploads
 
