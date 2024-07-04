@@ -314,7 +314,7 @@ def process_inbounds_and_tags(
                         "sni": sni,
                         "host": req_host,
                         "tls": inbound["tls"] if host["tls"] is None else host["tls"],
-                        "alpn": host["alpn"].rsplit(sep=",") or inbound.get("alpn", ""),
+                        "alpn": host["alpn"] or inbound.get("alpn", ""),
                         "path": path,
                         "fp": host["fingerprint"] or inbound.get("fp", ""),
                         "ais": host["allowinsecure"]
