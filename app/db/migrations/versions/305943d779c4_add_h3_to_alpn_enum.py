@@ -19,11 +19,11 @@ depends_on = None
 # Describing of enum
 enum_name = "alpn"
 temp_enum_name = f"temp_{enum_name}"
-old_values = ("", "h2", "http/1.1", "h2,http/1.1")
+old_values = ("none", "h2", "http/1.1", "h2,http/1.1")
 new_values = ("h3", "h3,h2", "h3,h2,http/1.1", *old_values)
-# on downgrade convert [0] to [1]
-downgrade_from = ("h3", "h3,h2", "h3,h2,http/1.1")
-downgrade_to = ("")
+# on downgrade
+downgrade_from = ("h3", "h3,h2", "h3,h2,http/1.1", "")
+downgrade_to = "none"
 old_type = sa.Enum(*old_values, name=enum_name)
 new_type = sa.Enum(*new_values, name=enum_name)
 temp_type = sa.Enum(*new_values, name=temp_enum_name)
@@ -81,16 +81,13 @@ def downgrade():
     # before downgrading from new enum to old one,
     # we should replace new value from new enum with
     # somewhat of old values from old enum
-    op.execute(
+    update_query = (
         temp_table
         .update()
-        .where(
-            temp_table.c.status in downgrade_from
-        )
-        .values(
-            status=downgrade_to
-        )
+        .where(temp_table.c.alpn.in_(downgrade_from))
+        .values(alpn=downgrade_to)
     )
+    op.execute(update_query)
 
     temp_type.create(op.get_bind(), checkfirst=False)
 
