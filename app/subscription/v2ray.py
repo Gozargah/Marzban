@@ -3,10 +3,15 @@ import json
 import urllib.parse as urlparse
 from random import choice
 from typing import Union
-from urllib.parse import quote
+#from urllib.parse import quote
 from uuid import UUID
 
-from app.subscription.funcs import get_grpc_gun_ng, get_grpc_multi_ng
+from app.subscription.funcs import (
+    get_grpc_gun,
+    get_grpc_multi,
+    get_grpc_gun_ng,
+    get_grpc_multi_ng
+)
 from app.templates import render_template
 from config import (
     MUX_TEMPLATE, 
@@ -33,11 +38,11 @@ class V2rayShareLink(str):
 
         if net in ["grpc", "gun"]:
             if multi_mode:
-                path = get_grpc_multi_ng(old_path)
+                path = get_grpc_multi(old_path)
             else:
-                path = get_grpc_gun_ng(old_path)
-            if old_path.startswith("/"):
-                path = quote(path, safe="-_.!~*'()")
+                path = get_grpc_gun(old_path)
+#            if not old_path.startswith("/"):
+#                path = (path, safe="-_.!~*'()")
 
         else:
             path = old_path
