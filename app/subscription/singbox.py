@@ -4,8 +4,8 @@ from app.templates import render_template
 from app.subscription.funcs import get_grpc_gun
 
 from config import (
-    SINGBOX_SUBSCRIPTION_TEMPLATE, 
-    MUX_TEMPLATE, 
+    SINGBOX_SUBSCRIPTION_TEMPLATE,
+    MUX_TEMPLATE,
     USER_AGENT_TEMPLATE,
     GRPC_USER_AGENT_TEMPLATE,
 )
@@ -177,6 +177,10 @@ class SingBoxConfiguration(str):
                       mux_enable: bool = False,
                       random_user_agent: bool = False,
                       ):
+
+        if isinstance(port, str):
+            ports = port.split(',')
+            port = int(choice(ports))
 
         config = {
             "type": type,
