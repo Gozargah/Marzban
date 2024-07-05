@@ -6,7 +6,7 @@ from typing import Union
 from urllib.parse import quote
 from uuid import UUID
 
-from app.subscription.funcs import get_grpc_gun, get_grpc_multi
+from app.subscription.funcs import get_grpc_gun_ng, get_grpc_multi_ng
 from app.templates import render_template
 from config import (
     MUX_TEMPLATE, 
@@ -33,9 +33,9 @@ class V2rayShareLink(str):
 
         if net in ["grpc", "gun"]:
             if multi_mode:
-                path = get_grpc_multi(old_path)
+                path = get_grpc_multi_ng(old_path)
             else:
-                path = get_grpc_gun(old_path)
+                path = get_grpc_gun_ng(old_path)
             if old_path.startswith("/"):
                 path = quote(path, safe="-_.!~*'()")
 
@@ -788,9 +788,9 @@ class V2rayJsonConfig(str):
 
         if net in ["grpc", "gun"]:
             if multi_mode:
-                path = get_grpc_multi(path)
+                path = get_grpc_multi_ng(path)
             else:
-                path = get_grpc_gun(path)
+                path = get_grpc_gun_ng(path)
 
         outbound = {
             "tag": remark,
