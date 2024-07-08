@@ -157,7 +157,7 @@ def generate_subscription(
     as_base64: bool,
 ) -> str:
     
-    if NOTICE_INACTIVE_USERS is not False:
+    if NOTICE_INACTIVE_USERS:
         inbounds, proxies = manage_notice(user)
     else:
         inbounds = user.inbounds
