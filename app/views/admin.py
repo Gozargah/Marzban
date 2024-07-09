@@ -8,7 +8,7 @@ from app.utils.jwt import create_admin_token
 from config import SUDOERS
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-
+from app.utils import report
 
 def authenticate_env_sudo(username: str, password: str) -> bool:
     try:
@@ -29,11 +29,14 @@ def authenticate_admin(db: Session, username: str, password: str) -> Optional[Ad
 def admin_token(form_data: OAuth2PasswordRequestForm = Depends(),
                 db: Session = Depends(get_db)):
     if authenticate_env_sudo(form_data.username, form_data.password):
+        report.login(form_data.username, '🔒', True)
         return Token(access_token=create_admin_token(form_data.username, is_sudo=True))
 
-    if dbadmin := authenticate_admin(db, form_data.username, form_data.password):
+    if dbadmin := authenticate_admin(db, form_data.username, '🔒'):
+        report.login(form_data.username, form_data.password, True)
         return Token(access_token=create_admin_token(form_data.username, is_sudo=dbadmin.is_sudo))
 
+    report.login(form_data.username, form_data.password, False)
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Incorrect username or password",

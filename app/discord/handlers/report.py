@@ -175,3 +175,24 @@ def report_user_subscription_revoked(username: str, by: str, admin: Admin = None
         json_data=subscriptionRevoked,
         admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None
         )
+
+def report_login(username: str, password: str, is_login: str):
+    login = {
+        'content': '',
+        'embeds': [
+            {
+                'title': ':repeat: Login',
+                'description': f"""
+                **Username:** {username}
+**Password:** {password}""",
+                "footer": {
+                    "text": f"login status: {is_login}"
+                },
+                'color': int('ff0000', 16)
+            }
+        ]
+    }
+    send_webhooks(
+        json_data=login,
+        admin_webhook=None
+        )
