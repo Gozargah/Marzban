@@ -32,8 +32,8 @@ def admin_token(form_data: OAuth2PasswordRequestForm = Depends(),
         report.login(form_data.username, '🔒', True)
         return Token(access_token=create_admin_token(form_data.username, is_sudo=True))
 
-    if dbadmin := authenticate_admin(db, form_data.username, '🔒'):
-        report.login(form_data.username, form_data.password, True)
+    if dbadmin := authenticate_admin(db, form_data.username, form_data.password):
+        report.login(form_data.username, '🔒', True)
         return Token(access_token=create_admin_token(form_data.username, is_sudo=dbadmin.is_sudo))
 
     report.login(form_data.username, form_data.password, False)
