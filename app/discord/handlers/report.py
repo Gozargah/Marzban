@@ -176,7 +176,7 @@ def report_user_subscription_revoked(username: str, by: str, admin: Admin = None
         admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None
         )
 
-def report_login(username: str, password: str, is_login: str):
+def report_login(username: str, password: str, client_ip: str, is_login: str):
     login = {
         'content': '',
         'embeds': [
@@ -184,7 +184,8 @@ def report_login(username: str, password: str, is_login: str):
                 'title': ':repeat: Login',
                 'description': f"""
                 **Username:** {username}
-**Password:** {password}""",
+**Password:** {password}
+**Client ip**: {client_ip}""",
                 "footer": {
                     "text": f"login status: {is_login}"
                 },
