@@ -155,16 +155,12 @@ class XRayConfig(dict):
             try:
                 settings['port'] = inbound['port']
             except KeyError:
-                if not self._fallbacks_inbound:
-                    raise ValueError(
-                        f"port missing on {inbound['tag']}"
-                        "\nset XRAY_FALLBACKS_INBOUND_TAG if you're using an inbound containing fallbacks"
-                    )
-                try:
-                    settings['port'] = self._fallbacks_inbound['port']
-                    settings['is_fallback'] = True
-                except KeyError:
-                    raise ValueError("fallbacks inbound doesn't have port")
+                if self._fallbacks_inbound:
+                    try:
+                        settings['port'] = self._fallbacks_inbound['port']
+                        settings['is_fallback'] = True
+                    except KeyError:
+                        raise ValueError("fallbacks inbound doesn't have port")
 
             # stream settings
             if stream := inbound.get('streamSettings'):
@@ -230,6 +226,10 @@ class XRayConfig(dict):
                     except (IndexError, TypeError):
                         raise ValueError(
                             f"You need to define at least one shortID in realitySettings of {inbound['tag']}")
+                    try:
+                        settings['spx'] = tls_settings.get('SpiderX')
+                    except:
+                        settings['spx'] = ""
 
                 if net == 'tcp':
                     header = net_settings.get('header', {})
@@ -265,15 +265,28 @@ class XRayConfig(dict):
                     if isinstance(host, str):
                         settings['host'] = [host]
 
-                elif net == 'grpc':
+                elif net == 'grpc' or net == 'gun':
                     settings['header_type'] = ''
                     settings['path'] = net_settings.get('serviceName', '')
                     settings['host'] = []
+                    settings['multiMode'] = net_settings.get(
+                        'multiMode', False)
 
                 elif net == 'quic':
-                    settings['header_type'] = net_settings.get('header', {}).get('type', '')
+                    settings['header_type'] = net_settings.get(
+                        'header', {}).get('type', '')
                     settings['path'] = net_settings.get('key', '')
                     settings['host'] = [net_settings.get('security', '')]
+
+                elif net == 'httpupgrade':
+                    settings['path'] = net_settings.get('path', '')
+                    host = net_settings.get('host', '')
+                    settings['host'] = [host]
+
+                elif net == 'splithttp':
+                    settings['path'] = net_settings.get('path', '')
+                    host = net_settings.get('host', '')
+                    settings['host'] = [host]
 
                 else:
                     settings['path'] = net_settings.get('path', '')

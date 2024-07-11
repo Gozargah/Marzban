@@ -48,7 +48,19 @@ CLASH_SUBSCRIPTION_TEMPLATE = config("CLASH_SUBSCRIPTION_TEMPLATE", default="cla
 SUBSCRIPTION_PAGE_TEMPLATE = config("SUBSCRIPTION_PAGE_TEMPLATE", default="subscription/index.html")
 HOME_PAGE_TEMPLATE = config("HOME_PAGE_TEMPLATE", default="home/index.html")
 SINGBOX_SUBSCRIPTION_TEMPLATE = config("SINGBOX_SUBSCRIPTION_TEMPLATE", default="singbox/default.json")
-SINGBOX_MUX_CONFIGURATION = config("SINGBOX_MUX_CONFIGURATION", default="singbox/mux_config.json")
+MUX_TEMPLATE = config("MUX_TEMPLATE", default="mux/default.json")
+V2RAY_SUBSCRIPTION_TEMPLATE = config("V2RAY_SUBSCRIPTION_TEMPLATE", default="v2ray/default.json")
+
+USE_CUSTOM_JSON_DEFAULT = config("USE_CUSTOM_JSON_DEFAULT", default=False, cast=bool)
+USE_CUSTOM_JSON_FOR_V2RAYN = config("USE_CUSTOM_JSON_FOR_V2RAYN", default=False, cast=bool)
+USE_CUSTOM_JSON_FOR_V2RAYNG = config("USE_CUSTOM_JSON_FOR_V2RAYNG", default=False, cast=bool)
+USE_CUSTOM_JSON_FOR_STREISAND = config("USE_CUSTOM_JSON_FOR_STREISAND", default=False, cast=bool)
+
+ACTIVE_STATUS_TEXT = config("ACTIVE_STATUS_TEXT", default="Active")
+EXPIRED_STATUS_TEXT = config("EXPIRED_STATUS_TEXT", default="Expired")
+LIMITED_STATUS_TEXT = config("LIMITED_STATUS_TEXT", default="Limited")
+DISABLED_STATUS_TEXT = config("DISABLED_STATUS_TEXT", default="Disabled")
+ONHOLD_STATUS_TEXT = config("ONHOLD_STATUS_TEXT", default="On-Hold")
 
 
 # USERNAME: PASSWORD

@@ -7,7 +7,7 @@ import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 
 export type FilterType = {
-  username?: string;
+  search?: string;
   limit?: number;
   offset?: number;
   sort: string;

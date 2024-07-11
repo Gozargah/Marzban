@@ -19,7 +19,7 @@ from app.models.user import (ReminderType, UserDataLimitResetStrategy,
 class Admin(Base):
     __tablename__ = "admins"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     username = Column(String(34), unique=True, index=True)
     hashed_password = Column(String(128))
     users = relationship("User", back_populates="admin")
@@ -34,7 +34,7 @@ class Admin(Base):
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     username = Column(String(34, collation='NOCASE'), unique=True, index=True)
     proxies = relationship("Proxy", back_populates="user", cascade="all, delete-orphan")
     status = Column(Enum(UserStatus), nullable=False, default=UserStatus.active)
@@ -110,7 +110,7 @@ template_inbounds_association = Table(
 class UserTemplate(Base):
     __tablename__ = "user_templates"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String(64), nullable=False, unique=True)
     data_limit = Column(BigInteger, default=0)
     expire_duration = Column(BigInteger, default=0)  # in seconds
@@ -125,7 +125,7 @@ class UserTemplate(Base):
 class UserUsageResetLogs(Base):
     __tablename__ = "user_usage_logs"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", back_populates="usage_logs")
     used_traffic_at_reset = Column(BigInteger, nullable=False)
@@ -135,7 +135,7 @@ class UserUsageResetLogs(Base):
 class Proxy(Base):
     __tablename__ = "proxies"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", back_populates="proxies")
     type = Column(Enum(ProxyTypes), nullable=False)
@@ -193,12 +193,14 @@ class ProxyHost(Base):
     inbound = relationship("ProxyInbound", back_populates="hosts")
     allowinsecure = Column(Boolean, nullable=True)
     is_disabled = Column(Boolean, nullable=True, default=False)
+    mux_enable = Column(Boolean, nullable=False, default=False, server_default='0')
+    fragment_setting = Column(String(100), nullable=True)
 
 
 class System(Base):
     __tablename__ = "system"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     uplink = Column(BigInteger, default=0)
     downlink = Column(BigInteger, default=0)
 
@@ -223,7 +225,7 @@ class TLS(Base):
 class Node(Base):
     __tablename__ = "nodes"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String(256, collation='NOCASE'), unique=True)
     address = Column(String(256), unique=False, nullable=False)
     port = Column(Integer, unique=False, nullable=False)
@@ -247,7 +249,7 @@ class NodeUserUsage(Base):
         UniqueConstraint('created_at', 'user_id', 'node_id'),
     )
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, unique=False, nullable=False)  # one hour per record
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", back_populates="node_usages")
@@ -275,7 +277,7 @@ class NodeUsage(Base):
         UniqueConstraint('created_at', 'node_id'),
     )
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, unique=False, nullable=False)  # one hour per record
     node_id = Column(Integer, ForeignKey("nodes.id"))
     node = relationship("Node", back_populates="usages")
@@ -286,7 +288,7 @@ class NodeUsage(Base):
 class NotificationReminder(Base):
     __tablename__ = "notification_reminders"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", back_populates="notification_reminders")
     type = Column(Enum(ReminderType), nullable=False)

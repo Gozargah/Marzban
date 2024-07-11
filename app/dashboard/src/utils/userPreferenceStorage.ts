@@ -1,4 +1,4 @@
-const NUM_USERS_PER_PAGE_LOCAL_STORAGE_KEY = "marzban-num-users-per-page";
+const NUM_USERS_PER_PAGE_LOCAL_STORAGE_KEY = "marzgosha-num-users-per-page";
 const NUM_USERS_PER_PAGE_DEFAULT = 10;
 export const getUsersPerPageLimitSize = () => {
   const numUsersPerPage =
