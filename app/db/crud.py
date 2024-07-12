@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
 from sqlalchemy import and_, delete
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Query, Session, joinedload
 
 from app.db.models import (JWT, TLS, Admin, Node, NodeUsage, NodeUserUsage,
                            NotificationReminder, Proxy, ProxyHost,
@@ -93,7 +93,7 @@ def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostMo
 
 
 def get_user_queryset(db: Session) -> Query:
-    return db.query(User).join(User.admin)
+    return db.query(User).options(joinedload(User.admin))
 
 
 def get_user(db: Session, username: str):
