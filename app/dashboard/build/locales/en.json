@@ -105,6 +105,7 @@
   "hostsDialog.host.wildcard": "Use <badge>*</badge> to generate a random string (works for wildcard domain names)",
   "hostsDialog.sockopt": "Sockopt",
   "hostsDialog.muxEnable": "Enable MUX",
+  "hostsDialog.randomUserAgent":"Use random user agent",
   "hostsDialog.allowinsecure": "Allow Insecure",
   "hostsDialog.fragment": "Fragment pattern",
   "hostsDialog.fragment.info": "Correct pattern: length,interval,packets",

@@ -1,8 +1,8 @@
-"""deactive user status
+"""add h3 to alpn enum
 
-Revision ID: 51e941ed9018
-Revises: b15eba6e5867
-Create Date: 2023-03-07 19:15:24.287031
+Revision ID: 305943d779c4
+Revises: 31f92220c0d0
+Create Date: 2024-07-03 19:27:15.282711
 
 """
 from alembic import op
@@ -10,26 +10,28 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '51e941ed9018'
-down_revision = 'b15eba6e5867'
+revision = '305943d779c4'
+down_revision = '31f92220c0d0'
 branch_labels = None
 depends_on = None
 
 
 # Describing of enum
-enum_name = "status"
+enum_name = "alpn"
 temp_enum_name = f"temp_{enum_name}"
-old_values = ('active', 'limited', 'expired')
-new_values = ("deactive", *old_values)
-downgrade_to = ("deactive", "active")  # on downgrade convert [0] to [1]
+old_values = ("none", "h2", "http/1.1", "h2,http/1.1")
+new_values = ("h3", "h3,h2", "h3,h2,http/1.1", *old_values)
+# on downgrade
+downgrade_from = ("h3", "h3,h2", "h3,h2,http/1.1", "")
+downgrade_to = "none"
 old_type = sa.Enum(*old_values, name=enum_name)
 new_type = sa.Enum(*new_values, name=enum_name)
 temp_type = sa.Enum(*new_values, name=temp_enum_name)
 
 
 # Describing of table
-table_name = "users"
-column_name = "status"
+table_name = "hosts"
+column_name = "alpn"
 temp_table = sa.sql.table(
     table_name,
     sa.Column(
@@ -41,9 +43,6 @@ temp_table = sa.sql.table(
 
 
 def upgrade():
-    status_enum = sa.Enum('active', 'limited', 'expired', name='status')
-    status_enum.create(op.get_bind())
-
     # temp type to use instead of old one
     temp_type.create(op.get_bind(), checkfirst=False)
 
@@ -82,16 +81,13 @@ def downgrade():
     # before downgrading from new enum to old one,
     # we should replace new value from new enum with
     # somewhat of old values from old enum
-    op.execute(
+    update_query = (
         temp_table
         .update()
-        .where(
-            temp_table.c.status == downgrade_to[0]
-        )
-        .values(
-            status=downgrade_to[1]
-        )
+        .where(temp_table.c.alpn.in_(downgrade_from))
+        .values(alpn=downgrade_to)
     )
+    op.execute(update_query)
 
     temp_type.create(op.get_bind(), checkfirst=False)
 

@@ -103,6 +103,7 @@
   "hostsDialog.host.wildcard": "Используйте <badge>*</badge>, чтобы сгенерировать случайную строку (работает для wildcard доменов)",
   "hostsDialog.sockopt": "Sockopt",
   "hostsDialog.muxEnable": "Давать возможность MUX",
+  "hostsDialog.randomUserAgent":"Use random user agent",
   "hostsDialog.allowinsecure": "Allow Insecure",
   "hostsDialog.fragment": "Шаблон фрагмента",
   "hostsDialog.fragment.info": "length,interval,packet (e.g. 10-100,100-200,tlshello)",

@@ -1,6 +1,8 @@
 import base64
 import random
 import secrets
+import yaml
+import json
 from datetime import datetime as dt
 from datetime import timedelta
 from typing import TYPE_CHECKING, List, Literal, Union
@@ -17,7 +19,7 @@ if TYPE_CHECKING:
 
 from config import (ACTIVE_STATUS_TEXT, DISABLED_STATUS_TEXT,
                     EXPIRED_STATUS_TEXT, LIMITED_STATUS_TEXT,
-                    ONHOLD_STATUS_TEXT)
+                    ONHOLD_STATUS_TEXT, RANDOMIZE_SUBSCRIPTION_CONFIGS)
 
 SERVER_IP = get_public_ip()
 SERVER_IPV6 = get_public_ipv6()
@@ -39,85 +41,10 @@ STATUS_TEXTS = {
 }
 
 
-def get_v2ray_link(remark: str, address: str, inbound: dict, settings: dict):
-    if inbound["protocol"] == "vmess":
-        return V2rayShareLink.vmess(
-            remark=remark,
-            address=address,
-            port=inbound["port"],
-            id=settings["id"],
-            net=inbound["network"],
-            tls=inbound["tls"],
-            sni=inbound.get("sni", ""),
-            fp=inbound.get("fp", ""),
-            alpn=inbound.get("alpn", ""),
-            pbk=inbound.get("pbk", ""),
-            sid=inbound.get("sid", ""),
-            spx=inbound.get("spx", ""),
-            host=inbound["host"],
-            path=inbound["path"],
-            type=inbound["header_type"],
-            ais=inbound.get("ais", ""),
-            fs=inbound.get("fragment_setting", ""),
-        )
-
-    if inbound["protocol"] == "vless":
-        return V2rayShareLink.vless(
-            remark=remark,
-            address=address,
-            port=inbound["port"],
-            id=settings["id"],
-            flow=settings.get("flow", ""),
-            net=inbound["network"],
-            tls=inbound["tls"],
-            sni=inbound.get("sni", ""),
-            fp=inbound.get("fp", ""),
-            alpn=inbound.get("alpn", ""),
-            pbk=inbound.get("pbk", ""),
-            sid=inbound.get("sid", ""),
-            spx=inbound.get("spx", ""),
-            host=inbound["host"],
-            path=inbound["path"],
-            type=inbound["header_type"],
-            ais=inbound.get("ais", ""),
-            fs=inbound.get("fragment_setting", ""),
-        )
-
-    if inbound["protocol"] == "trojan":
-        return V2rayShareLink.trojan(
-            remark=remark,
-            address=address,
-            port=inbound["port"],
-            password=settings["password"],
-            flow=settings.get("flow", ""),
-            net=inbound["network"],
-            tls=inbound["tls"],
-            sni=inbound.get("sni", ""),
-            fp=inbound.get("fp", ""),
-            alpn=inbound.get("alpn", ""),
-            pbk=inbound.get("pbk", ""),
-            sid=inbound.get("sid", ""),
-            spx=inbound.get("spx", ""),
-            host=inbound["host"],
-            path=inbound["path"],
-            type=inbound["header_type"],
-            ais=inbound.get("ais", ""),
-            fs=inbound.get("fragment_setting", ""),
-        )
-
-    if inbound["protocol"] == "shadowsocks":
-        return V2rayShareLink.shadowsocks(
-            remark=remark,
-            address=address,
-            port=inbound["port"],
-            password=settings["password"],
-            method=settings["method"],
-        )
-
-
 def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict) -> list:
     format_variables = setup_format_variables(extra_data)
-    return process_inbounds_and_tags(inbounds, proxies, format_variables, mode="v2ray")
+    conf = V2rayShareLink()
+    return process_inbounds_and_tags(inbounds, proxies, format_variables, conf=conf)
 
 
 def generate_clash_subscription(
@@ -130,7 +57,7 @@ def generate_clash_subscription(
 
     format_variables = setup_format_variables(extra_data)
     return process_inbounds_and_tags(
-        inbounds, proxies, format_variables, mode="clash", conf=conf
+        inbounds, proxies, format_variables, conf=conf
     )
 
 
@@ -141,7 +68,7 @@ def generate_singbox_subscription(
 
     format_variables = setup_format_variables(extra_data)
     return process_inbounds_and_tags(
-        inbounds, proxies, format_variables, mode="sing-box", conf=conf
+        inbounds, proxies, format_variables, conf=conf
     )
 
 
@@ -156,7 +83,7 @@ def generate_outline_subscription(
 
     format_variables = setup_format_variables(extra_data)
     return process_inbounds_and_tags(
-        inbounds, proxies, format_variables, mode="outline", conf=conf
+        inbounds, proxies, format_variables, conf=conf
     )
 
 
@@ -167,10 +94,43 @@ def generate_v2ray_json_subscription(
 
     format_variables = setup_format_variables(extra_data)
     return process_inbounds_and_tags(
-        inbounds, proxies, format_variables, mode="v2ray-json", conf=conf
+        inbounds, proxies, format_variables, conf=conf
     )
 
+def randomize_sub_config(
+        config: str, config_format: str
+) -> str:
+    
+    if config_format == "v2ray":
+        config = config.split("\n")
+        random.shuffle(config)
+        config = "\n".join(config)
 
+    elif config_format in ("clash-meta", "clash"):
+        config = yaml.safe_load(config)
+        random.shuffle(config['proxies'])
+        for group in config['proxy-groups']:
+            if group['name'] == '♻️ Automatic':
+                group['proxies'] = [proxy['name'] for proxy in config['proxies']]
+        config = yaml.dump(config, allow_unicode=True, sort_keys=False)
+
+    elif config_format == "sing-box":
+        config = json.loads(config)
+        outbounds = config['outbounds']
+        main_outbounds = [ob for ob in outbounds if ob['type'] in {'selector', 'urltest'}]
+        other_outbounds = [ob for ob in outbounds if ob['type'] not in {'selector', 'urltest', 'direct', 'block', 'dns'}]
+        random.shuffle(other_outbounds)
+        proxy_names = [ob['tag'] for ob in other_outbounds]
+        for ob in main_outbounds:
+            ob['outbounds'] = ['Best Latency'] + proxy_names if ob['type'] == 'selector' else proxy_names
+        config['outbounds'] = main_outbounds + other_outbounds + [ob for ob in outbounds if ob['type'] in {'direct', 'block', 'dns'}]
+        config = json.dumps(config, indent=4)
+
+    elif config_format == "v2ray-json":
+        random.shuffle(config)
+
+    return config
+    
 def generate_subscription(
     user: "UserResponse",
     config_format: Literal["v2ray", "clash-meta", "clash", "sing-box", "outline", "v2ray-json"],
@@ -197,6 +157,9 @@ def generate_subscription(
     else:
         raise ValueError(f'Unsupported format "{config_format}"')
 
+    if RANDOMIZE_SUBSCRIPTION_CONFIGS is not False:
+        config = randomize_sub_config(config, config_format)
+        
     if as_base64:
         config = base64.b64encode(config.encode()).decode()
 
@@ -232,6 +195,8 @@ def setup_format_variables(extra_data: dict) -> dict:
     user_status = extra_data.get("status")
     expire_timestamp = extra_data.get("expire")
     on_hold_expire_duration = extra_data.get("on_hold_expire_duration")
+    now = dt.utcnow()
+    now_ts = now.timestamp()
 
     if user_status != UserStatus.on_hold:
         if expire_timestamp is not None and expire_timestamp >= 0:
@@ -241,8 +206,13 @@ def setup_format_variables(extra_data: dict) -> dict:
             jalali_expire_date = jd.fromgregorian(
                 year=expire_date.year, month=expire_date.month, day=expire_date.day
             ).strftime("%Y-%m-%d")
-            days_left = (expire_datetime - dt.utcnow()).days + 1
-            time_left = format_time_left(seconds_left)
+            if now_ts < expire_timestamp:
+                days_left = (expire_datetime - dt.utcnow()).days + 1
+                time_left = format_time_left(seconds_left)
+            else:
+                days_left = "0"
+                time_left = "0"
+
         else:
             days_left = "∞"
             time_left = "∞"
@@ -295,10 +265,8 @@ def process_inbounds_and_tags(
     inbounds: dict,
     proxies: dict,
     format_variables: dict,
-    mode: str = "v2ray",
     conf=None,
 ) -> Union[List, str]:
-    results = []
 
     _inbounds = []
     for protocol, tags in inbounds.items():
@@ -352,32 +320,19 @@ def process_inbounds_and_tags(
                         "ais": host["allowinsecure"]
                         or inbound.get("allowinsecure", ""),
                         "mux_enable": host["mux_enable"],
-                        "fragment_setting": host["fragment_setting"]
+                        "fragment_setting": host["fragment_setting"],
+                        "random_user_agent": host["random_user_agent"],
                     }
                 )
 
-                if mode == "v2ray":
-                    results.append(
-                        get_v2ray_link(
-                            remark=host["remark"].format_map(format_variables),
-                            address=address.format_map(
-                                format_variables),
-                            inbound=host_inbound,
-                            settings=settings.dict(no_obj=True),
-                        )
-                    )
-                elif mode in ["clash", "sing-box", "outline", "v2ray-json"]:
-                    conf.add(
-                        remark=host["remark"].format_map(format_variables),
-                        address=address.format_map(format_variables),
-                        inbound=host_inbound,
-                        settings=settings.dict(no_obj=True),
-                    )
+                conf.add(
+                    remark=host["remark"].format_map(format_variables),
+                    address=address.format_map(format_variables),
+                    inbound=host_inbound,
+                    settings=settings.dict(no_obj=True),
+                )
 
-    if mode in ["clash", "sing-box", "outline", "v2ray-json"]:
-        return conf.render()
-
-    return results
+    return conf.render()
 
 
 def encode_title(text: str) -> str:
