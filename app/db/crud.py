@@ -2,8 +2,9 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
-from sqlalchemy import and_, delete
+from sqlalchemy import and_, delete, or_
 from sqlalchemy.orm import Query, Session, joinedload
+
 
 from app.db.models import (JWT, TLS, Admin, Node, NodeUsage, NodeUserUsage,
                            NotificationReminder, Proxy, ProxyHost,
@@ -85,6 +86,7 @@ def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostMo
             is_disabled=host.is_disabled,
             mux_enable=host.mux_enable,
             fragment_setting=host.fragment_setting,
+            random_user_agent=host.random_user_agent,
         ) for host in modified_hosts
     ]
     db.commit()
@@ -122,12 +124,16 @@ def get_users(db: Session,
               offset: Optional[int] = None,
               limit: Optional[int] = None,
               usernames: Optional[List[str]] = None,
+              search: Optional[str] = None,
               status: Optional[Union[UserStatus, list]] = None,
               sort: Optional[List[UsersSortingOptions]] = None,
               admin: Optional[Admin] = None,
               reset_strategy: Optional[Union[UserDataLimitResetStrategy, list]] = None,
               return_with_count: bool = False) -> Union[List[User], Tuple[List[User], int]]:
     query = get_user_queryset(db)
+
+    if search:
+        query = query.filter(or_(User.username.ilike(f"%{search}%"), User.note.ilike(f"%{search}%")))
 
     if usernames:
         if len(usernames) == 1:

@@ -13,10 +13,10 @@ from xray_api.types.account import (
     TrojanAccount,
     VLESSAccount,
     VMessAccount,
-    XTLSFlows,
+    XTLSFlows
 )
 
-FRAGMENT_PATTERN = re.compile(r'^(\d{1,3}-\d{1,3}),(\d{1,3}-\d{1,3}),(tlshello|\d|\d\-\d)$')
+FRAGMENT_PATTERN = re.compile(r'^((\d{1,3}-\d{1,3})|(\d{1,3})),((\d{1,3}-\d{1,3})|(\d{1,3})),(tlshello|\d|\d\-\d)$')
 
 
 class ProxyTypes(str, Enum):
@@ -102,8 +102,11 @@ ProxyHostALPN = Enum(
     "ProxyHostALPN",
     {
         "none": "",
+        "h3": "h3",
         "h2": "h2",
         "http/1.1": "http/1.1",
+        "h3,h2,http/1.1": "h3,h2,http/1.1",
+        "h3,h2": "h3,h2",
         "h2,http/1.1": "h2,http/1.1",
     },
 )
@@ -146,6 +149,7 @@ class ProxyHost(BaseModel):
     is_disabled: Union[bool, None] = None
     mux_enable: Union[bool, None] = None
     fragment_setting: Optional[str] = Field(None, nullable=True)
+    random_user_agent: Union[bool, None] = None
 
     class Config:
         orm_mode = True

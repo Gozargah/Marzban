@@ -15,7 +15,7 @@ _sym_db = _symbol_database.Default()
 from xray_api.proto.common.serial import typed_message_pb2 as common_dot_serial_dot_typed__message__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1a\x61pp/commander/config.proto\x12\x12xray.app.commander\x1a!common/serial/typed_message.proto\"H\n\x06\x43onfig\x12\x0b\n\x03tag\x18\x01 \x01(\t\x12\x31\n\x07service\x18\x02 \x03(\x0b\x32 .xray.common.serial.TypedMessage\"\x12\n\x10ReflectionConfigBX\n\x16\x63om.xray.app.commanderP\x01Z\'github.com/xtls/xray-core/app/commander\xaa\x02\x12Xray.App.Commanderb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1a\x61pp/commander/config.proto\x12\x12xray.app.commander\x1a!common/serial/typed_message.proto\"X\n\x06\x43onfig\x12\x0b\n\x03tag\x18\x01 \x01(\t\x12\x0e\n\x06listen\x18\x03 \x01(\t\x12\x31\n\x07service\x18\x02 \x03(\x0b\x32 .xray.common.serial.TypedMessage\"\x12\n\x10ReflectionConfigBX\n\x16\x63om.xray.app.commanderP\x01Z\'github.com/xtls/xray-core/app/commander\xaa\x02\x12Xray.App.Commanderb\x06proto3')
 
 
 
@@ -40,7 +40,7 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
   DESCRIPTOR._serialized_options = b'\n\026com.xray.app.commanderP\001Z\'github.com/xtls/xray-core/app/commander\252\002\022Xray.App.Commander'
   _CONFIG._serialized_start=85
-  _CONFIG._serialized_end=157
-  _REFLECTIONCONFIG._serialized_start=159
-  _REFLECTIONCONFIG._serialized_end=177
+  _CONFIG._serialized_end=173
+  _REFLECTIONCONFIG._serialized_start=175
+  _REFLECTIONCONFIG._serialized_end=193
 # @@protoc_insertion_point(module_scope)

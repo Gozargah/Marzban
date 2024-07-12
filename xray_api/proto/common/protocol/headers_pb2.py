@@ -15,12 +15,11 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1d\x63ommon/protocol/headers.proto\x12\x14xray.common.protocol\"B\n\x0eSecurityConfig\x12\x30\n\x04type\x18\x01 \x01(\x0e\x32\".xray.common.protocol.SecurityType*l\n\x0cSecurityType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\n\n\x06LEGACY\x10\x01\x12\x08\n\x04\x41UTO\x10\x02\x12\x0e\n\nAES128_GCM\x10\x03\x12\x15\n\x11\x43HACHA20_POLY1305\x10\x04\x12\x08\n\x04NONE\x10\x05\x12\x08\n\x04ZERO\x10\x06\x42^\n\x18\x63om.xray.common.protocolP\x01Z)github.com/xtls/xray-core/common/protocol\xaa\x02\x14Xray.Common.Protocolb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1d\x63ommon/protocol/headers.proto\x12\x14xray.common.protocol\"B\n\x0eSecurityConfig\x12\x30\n\x04type\x18\x01 \x01(\x0e\x32\".xray.common.protocol.SecurityType*`\n\x0cSecurityType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x08\n\x04\x41UTO\x10\x02\x12\x0e\n\nAES128_GCM\x10\x03\x12\x15\n\x11\x43HACHA20_POLY1305\x10\x04\x12\x08\n\x04NONE\x10\x05\x12\x08\n\x04ZERO\x10\x06\x42^\n\x18\x63om.xray.common.protocolP\x01Z)github.com/xtls/xray-core/common/protocol\xaa\x02\x14Xray.Common.Protocolb\x06proto3')
 
 _SECURITYTYPE = DESCRIPTOR.enum_types_by_name['SecurityType']
 SecurityType = enum_type_wrapper.EnumTypeWrapper(_SECURITYTYPE)
 UNKNOWN = 0
-LEGACY = 1
 AUTO = 2
 AES128_GCM = 3
 CHACHA20_POLY1305 = 4
@@ -41,7 +40,7 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
   DESCRIPTOR._serialized_options = b'\n\030com.xray.common.protocolP\001Z)github.com/xtls/xray-core/common/protocol\252\002\024Xray.Common.Protocol'
   _SECURITYTYPE._serialized_start=123
-  _SECURITYTYPE._serialized_end=231
+  _SECURITYTYPE._serialized_end=219
   _SECURITYCONFIG._serialized_start=55
   _SECURITYCONFIG._serialized_end=121
 # @@protoc_insertion_point(module_scope)

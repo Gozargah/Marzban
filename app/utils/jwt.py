@@ -1,13 +1,15 @@
+import time
+from base64 import b64decode, b64encode
 from datetime import datetime, timedelta
 from functools import lru_cache
+from hashlib import sha256
+from math import ceil
 from typing import Union
 
 from jose import JWTError, jwt
 
 from config import JWT_ACCESS_TOKEN_EXPIRE_MINUTES
 
-from hashlib import sha256
-from base64 import b64encode, b64decode
 
 @lru_cache(maxsize=None)
 def get_secret_key():
@@ -43,9 +45,14 @@ def get_admin_payload(token: str) -> Union[dict, None]:
 
 
 def create_subscription_token(username: str) -> str:
-    data = username + ',' + str(int(datetime.now().timestamp()))
+    data = username + ',' + str(ceil(time.time()))
     data_b64_str = b64encode(data.encode('utf-8'), altchars=b'-_').decode('utf-8').rstrip('=')
-    data_b64_sign = b64encode(sha256((data_b64_str+get_secret_key()).encode('utf-8')).digest(), altchars=b'-_').decode('utf-8')[:10]
+    data_b64_sign = b64encode(
+        sha256(
+            (data_b64_str+get_secret_key()).encode('utf-8')
+        ).digest(),
+        altchars=b'-_'
+    ).decode('utf-8')[:10]
     data_final = data_b64_str + data_b64_sign
     return data_final
 
@@ -55,25 +62,28 @@ def get_subscription_payload(token: str) -> Union[dict, None]:
         if len(token) < 15:
             return
 
-        if "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." in token:
+        if token.startswith("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."):
             payload = jwt.decode(token, get_secret_key(), algorithms=["HS256"])
             if payload.get("access") == "subscription":
-                return {"username": payload['sub'], "created_at": datetime.fromtimestamp(payload['iat'])}
+                return {"username": payload['sub'], "created_at": datetime.utcfromtimestamp(payload['iat'])}
             else:
                 return
         else:
             u_token = token[:-10]
             u_signature = token[-10:]
             try:
-                u_token_dec = b64decode((u_token.encode('utf-8')+b'='*(-len(u_token.encode('utf-8'))%4)), altchars=b'-_', validate=True)
+                u_token_dec = b64decode(
+                    (u_token.encode('utf-8') + b'=' * (-len(u_token.encode('utf-8')) % 4)),
+                    altchars=b'-_', validate=True)
                 u_token_dec_str = u_token_dec.decode('utf-8')
             except:
                 return
-            u_token_resign = b64encode(sha256((u_token+get_secret_key()).encode('utf-8')).digest(), altchars=b'-_').decode('utf-8')[:10]
+            u_token_resign = b64encode(sha256((u_token+get_secret_key()).encode('utf-8')
+                                              ).digest(), altchars=b'-_').decode('utf-8')[:10]
             if u_signature == u_token_resign:
                 u_username = u_token_dec_str.split(',')[0]
                 u_created_at = int(u_token_dec_str.split(',')[1])
-                return {"username": u_username, "created_at": datetime.fromtimestamp(u_created_at)}
+                return {"username": u_username, "created_at": datetime.utcfromtimestamp(u_created_at)}
             else:
                 return
     except JWTError:

@@ -1,8 +1,16 @@
-import yaml
 import json
-from app.templates import render_template
+from random import choice
 
-from config import CLASH_SUBSCRIPTION_TEMPLATE, MUX_TEMPLATE
+import yaml
+
+from app.subscription.funcs import get_grpc_gun
+from app.templates import render_template
+from config import (
+    CLASH_SUBSCRIPTION_TEMPLATE, 
+    MUX_TEMPLATE,
+    USER_AGENT_TEMPLATE,
+    GRPC_USER_AGENT_TEMPLATE,
+)
 
 
 class ClashConfiguration(object):
@@ -15,6 +23,21 @@ class ClashConfiguration(object):
         }
         self.proxy_remarks = []
         self.mux_template = render_template(MUX_TEMPLATE)
+        temp_user_agent_data = render_template(USER_AGENT_TEMPLATE)
+        user_agent_data = json.loads(temp_user_agent_data)
+
+        if 'list' in user_agent_data and isinstance(user_agent_data['list'], list):
+            self.user_agent_list = user_agent_data['list']
+        else:
+            self.user_agent_list = []
+
+        temp_grpc_user_agent_data = render_template(GRPC_USER_AGENT_TEMPLATE)
+        grpc_user_agent_data = json.loads(temp_grpc_user_agent_data)
+
+        if 'list' in grpc_user_agent_data and isinstance(grpc_user_agent_data['list'], list):
+            self.grpc_user_agent_data = grpc_user_agent_data['list']
+        else:
+            self.grpc_user_agent_data = []
 
     def render(self):
         return yaml.dump(
@@ -59,7 +82,11 @@ class ClashConfiguration(object):
                   udp: bool = True,
                   alpn: str = '',
                   ais: bool = '',
-                  mux_enable : bool = False):
+                  mux_enable: bool = False,
+                  random_user_agent: bool = False):
+
+        if network in ["grpc", "gun"]:
+            path = get_grpc_gun(path)
 
         if type == 'shadowsocks':
             type = 'ss'
@@ -76,6 +103,14 @@ class ClashConfiguration(object):
             f'{network}-opts': {},
             'udp': udp
         }
+
+        if "?ed=" in path:
+            path, max_early_data = path.split("?ed=")
+            max_early_data, = max_early_data.split("/")
+            max_early_data = int(max_early_data)
+            early_data_header_name = "Sec-WebSocket-Protocol"
+        else:
+            max_early_data = None
 
         if type == 'ss':  # shadowsocks
             return node
@@ -100,16 +135,31 @@ class ClashConfiguration(object):
             if host:
                 net_opts['method'] = 'GET'
                 net_opts['Host'] = host
+            if random_user_agent:
+                net_opts['header'] = {"User-Agent": choice(self.user_agent_list)}
 
-        if network == 'ws':
+        if network == 'ws' or network == 'httpupgrade':
             if path:
                 net_opts['path'] = path
-            if host:
-                net_opts['headers'] = {"Host": host}
+            if host or random_user_agent:
+                net_opts['headers'] = {}
+                if host:
+                    net_opts['headers']["Host"] = host
+                if random_user_agent:
+                    net_opts['headers']["User-Agent"] = choice(self.user_agent_list)
+            if max_early_data:
+                net_opts['max-early-data'] = max_early_data
+                net_opts['early-data-header-name'] = early_data_header_name
+            if network == 'httpupgrade':
+                net_opts['v2ray-http-upgrade'] = True
+                if max_early_data:
+                    net_opts['v2ray-http-upgrade-fast-open'] = True
 
-        if network == 'grpc':
+        if network == 'grpc' or network == 'gun':
             if path:
                 net_opts['grpc-service-name'] = path
+            if random_user_agent:
+                net_opts['header'] = {"User-Agent": choice(self.user_agent_list)}
 
         if network == 'h2':
             if path:
@@ -128,9 +178,9 @@ class ClashConfiguration(object):
         mux_json = json.loads(self.mux_template)
         mux_config = mux_json["clash"]
 
-        net_opts['smux'] = mux_config
-        if net_opts['smux']["enabled"]:
-            net_opts['smux']["enabled"] = mux_enable
+        if mux_enable:
+            net_opts['smux'] = mux_config
+            net_opts['smux']["enabled"] = True
 
         return node
 
@@ -149,7 +199,8 @@ class ClashConfiguration(object):
             udp=True,
             alpn=inbound.get('alpn', ''),
             ais=inbound.get('ais', ''),
-            mux_enable=inbound.get('mux_enable', '')
+            mux_enable=inbound.get('mux_enable', ''),
+            random_user_agent=inbound.get("random_user_agent")
         )
 
         if inbound['protocol'] == 'vmess':
@@ -189,7 +240,8 @@ class ClashMetaConfiguration(ClashConfiguration):
                   pbk: str = '',
                   sid: str = '',
                   ais: bool = '',
-                  mux_enable : bool = False):
+                  mux_enable: bool = False,
+                  random_user_agent: bool = False):
         node = super().make_node(
             name=name,
             type=type,
@@ -204,7 +256,8 @@ class ClashMetaConfiguration(ClashConfiguration):
             udp=udp,
             alpn=alpn,
             ais=ais,
-            mux_enable=mux_enable
+            mux_enable=mux_enable,
+            random_user_agent=random_user_agent
         )
         if fp:
             node['client-fingerprint'] = fp
@@ -231,7 +284,8 @@ class ClashMetaConfiguration(ClashConfiguration):
             pbk=inbound.get('pbk', ''),
             sid=inbound.get('sid', ''),
             ais=inbound.get('ais', ''),
-            mux_enable=inbound.get('mux_enable', '')
+            mux_enable=inbound.get('mux_enable', ''),
+            random_user_agent=inbound.get("random_user_agent")
         )
 
         if inbound['protocol'] == 'vmess':
@@ -244,7 +298,7 @@ class ClashMetaConfiguration(ClashConfiguration):
         if inbound['protocol'] == 'vless':
             node['uuid'] = settings['id']
 
-            if inbound['network'] in ('tcp', 'kcp') and inbound['header_type'] != 'http':
+            if inbound['network'] in ('tcp', 'kcp') and inbound['header_type'] != 'http' and inbound['tls'] != 'none':
                 node['flow'] = settings.get('flow', '')
 
             self.data['proxies'].append(node)

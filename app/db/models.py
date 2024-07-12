@@ -3,9 +3,10 @@ from datetime import datetime
 
 from sqlalchemy import (JSON, BigInteger, Boolean, Column, DateTime, Enum,
                         Float, ForeignKey, Integer, String, Table,
-                        UniqueConstraint)
+                        UniqueConstraint, func)
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql.expression import text
+from sqlalchemy.sql.expression import text, select
 
 from app import xray
 from app.db.base import Base
@@ -46,7 +47,7 @@ class User(Base):
         nullable=False,
         default=UserDataLimitResetStrategy.no_reset,
     )
-    usage_logs = relationship("UserUsageResetLogs", back_populates="user")
+    usage_logs = relationship("UserUsageResetLogs", back_populates="user")  # maybe rename it to reset_usage_logs?
     expire = Column(Integer, nullable=True)
     admin_id = Column(Integer, ForeignKey("admins.id"))
     admin = relationship("Admin", back_populates="users")
@@ -59,6 +60,18 @@ class User(Base):
     on_hold_expire_duration = Column(BigInteger, nullable=True, default=None)
     on_hold_timeout = Column(DateTime, nullable=True, default=None)
     edit_at = Column(DateTime, nullable=True, default=None)
+
+    @hybrid_property
+    def reseted_usage(self):
+        return sum([log.used_traffic_at_reset for log in self.usage_logs])
+
+    @reseted_usage.expression
+    def reseted_usage(self):
+        return (
+            select([func.sum(UserUsageResetLogs.used_traffic_at_reset)]).
+            where(UserUsageResetLogs.user_id == self.id).
+            label('reseted_usage')
+        )
 
     @property
     def lifetime_used_traffic(self):
@@ -194,6 +207,7 @@ class ProxyHost(Base):
     is_disabled = Column(Boolean, nullable=True, default=False)
     mux_enable = Column(Boolean, nullable=False, default=False, server_default='0')
     fragment_setting = Column(String(100), nullable=True)
+    random_user_agent = Column(Boolean, nullable=False, default=False, server_default='0')
 
 
 class System(Base):
