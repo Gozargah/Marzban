@@ -383,7 +383,7 @@ def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
     db.commit()
 
 
-def delete_all_expired_users(db: Session,
+def autodelete_expired_users(db: Session,
                              include_limited_users: bool = False) -> list[User]:
     """
     Deletes expired (optionally also limited) users whose auto-delete time has passed.
