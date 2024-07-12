@@ -312,6 +312,9 @@ class SubscriptionUserResponse(UserResponse):
                 "online_at",
                 "links",
                 "subscription_url",
+                "sub_updated_at",
+                "sub_last_user_agent",
+                "online_at",
             ]
         }
 
