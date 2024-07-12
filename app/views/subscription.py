@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse
 
 from app import app
 from app.db import Session, crud, get_db
-from app.models.user import LimitedUserResponse, UserResponse
+from app.models.user import SubscriptionUserResponse, UserResponse
 from app.templates import render_template
 from app.utils.jwt import get_subscription_payload
 from app.subscription.share import encode_title, generate_subscription
@@ -31,7 +31,7 @@ def user_subscription(token: str,
     """
     accept_header = request.headers.get("Accept", "")
 
-    def get_subscription_user_info(user: LimitedUserResponse) -> dict:
+    def get_subscription_user_info(user: UserResponse) -> dict:
         return {
             "upload": 0,
             "download": user.used_traffic,
@@ -105,7 +105,7 @@ def user_subscription(token: str,
         return Response(content=conf, media_type="text/plain", headers=response_headers)
 
 
-@app.get("/%s/{token}/info" % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'], response_model=LimitedUserResponse)
+@app.get("/%s/{token}/info" % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'], response_model=SubscriptionUserResponse)
 def user_subscription_info(token: str,
                            db: Session = Depends(get_db)):
     sub = get_subscription_payload(token)
@@ -165,7 +165,7 @@ def user_subscription_with_client_type(
     Subscription link, v2ray, clash, sing-box, outline and clash-meta supported
     """
 
-    def get_subscription_user_info(user: LimitedUserResponse) -> dict:
+    def get_subscription_user_info(user: UserResponse) -> dict:
         return {
             "upload": 0,
             "download": user.used_traffic,
@@ -184,7 +184,7 @@ def user_subscription_with_client_type(
     if dbuser.sub_revoked_at and dbuser.sub_revoked_at > sub['created_at']:
         return Response(status_code=204)
 
-    user: LimitedUserResponse = LimitedUserResponse.from_orm(dbuser)
+    user: UserResponse = UserResponse.from_orm(dbuser)
 
     response_headers = {
         "content-disposition": f'attachment; filename="{user.username}"',

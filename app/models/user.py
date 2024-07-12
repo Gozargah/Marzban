@@ -294,7 +294,7 @@ class UserResponse(User):
         return super().validate_proxies(v, values, **kwargs)
 
 
-class LimitedUserResponse(UserResponse):
+class SubscriptionUserResponse(UserResponse):
     class Config:
         orm_mode = True
         fields = {
