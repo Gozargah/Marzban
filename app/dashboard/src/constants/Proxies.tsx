@@ -22,6 +22,10 @@ export const proxyALPN: { title: string; value: string }[] = [
     value: "",
   },
   {
+    title: "h3",
+    value: "h3",
+  },
+  {
     title: "h2",
     value: "h2",
   },
@@ -30,7 +34,15 @@ export const proxyALPN: { title: string; value: string }[] = [
     value: "http/1.1",
   },
   {
-    title: "h2, http/1.1",
+    title: "h3,h2,http/1.1",
+    value: "h3,h2,http/1.1",
+  },
+  {
+    title: "h3,h2",
+    value: "h3,h2",
+  },
+  {
+    title: "h2,http/1.1",
     value: "h2,http/1.1",
   },
 ];

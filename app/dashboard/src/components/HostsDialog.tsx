@@ -119,6 +119,7 @@ const hostsSchema = z.record(
       allowinsecure: z.boolean().nullable().default(false),
       is_disabled: z.boolean().default(true),
       fragment_setting: z.string().nullable(),
+      random_user_agent: z.boolean().default(false),
       security: z.string(),
       alpn: z.string(),
       fingerprint: z.string(),
@@ -175,6 +176,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
       allowinsecure: false,
       is_disabled: false,
       fragment_setting: "",
+      random_user_agent: false,
       security: "inbound_default",
       alpn: "",
       fingerprint: "",
@@ -255,6 +257,12 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                     {"{"}SERVER_IP{"}"}
                                   </Badge>{" "}
                                   {t("hostsDialog.currentServer")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}SERVER_IPV6{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.currentServerv6")}
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
@@ -371,6 +379,12 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                   {"{"}SERVER_IP{"}"}
                                 </Badge>{" "}
                                 {t("hostsDialog.currentServer")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
+                                  {"{"}SERVER_IPV6{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.currentServerv6")}
                               </Text>
                               <Text mt={1}>
                                 <Badge>
@@ -905,6 +919,28 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                           accordionErrors[index]?.mux_enable && (
                             <Error>
                               {accordionErrors[index]?.mux_enable?.message}
+                            </Error>
+                          )}
+                      </FormControl>
+                      <FormControl
+                        isInvalid={
+                          !!(
+                            accordionErrors &&
+                            accordionErrors[index]?.random_user_agent
+                          )
+                        }
+                      >
+                        <Checkbox
+                          {...form.register(
+                            hostKey + "." + index + ".random_user_agent"
+                          )}
+                        >
+                          <FormLabel>{t("hostsDialog.randomUserAgent")}</FormLabel>
+                        </Checkbox>
+                        {accordionErrors &&
+                          accordionErrors[index]?.random_user_agent && (
+                            <Error>
+                              {accordionErrors[index]?.random_user_agent?.message}
                             </Error>
                           )}
                       </FormControl>

@@ -15,7 +15,7 @@ _sym_db = _symbol_database.Default()
 from xray_api.proto.common.protocol import user_pb2 as common_dot_protocol_dot_user__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n proxy/vmess/inbound/config.proto\x12\x18xray.proxy.vmess.inbound\x1a\x1a\x63ommon/protocol/user.proto\"\x1a\n\x0c\x44\x65tourConfig\x12\n\n\x02to\x18\x01 \x01(\t\"0\n\rDefaultConfig\x12\x10\n\x08\x61lter_id\x18\x01 \x01(\r\x12\r\n\x05level\x18\x02 \x01(\r\"\xc4\x01\n\x06\x43onfig\x12(\n\x04user\x18\x01 \x03(\x0b\x32\x1a.xray.common.protocol.User\x12\x38\n\x07\x64\x65\x66\x61ult\x18\x02 \x01(\x0b\x32\'.xray.proxy.vmess.inbound.DefaultConfig\x12\x36\n\x06\x64\x65tour\x18\x03 \x01(\x0b\x32&.xray.proxy.vmess.inbound.DetourConfig\x12\x1e\n\x16secure_encryption_only\x18\x04 \x01(\x08\x42j\n\x1c\x63om.xray.proxy.vmess.inboundP\x01Z-github.com/xtls/xray-core/proxy/vmess/inbound\xaa\x02\x18Xray.Proxy.Vmess.Inboundb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n proxy/vmess/inbound/config.proto\x12\x18xray.proxy.vmess.inbound\x1a\x1a\x63ommon/protocol/user.proto\"\x1a\n\x0c\x44\x65tourConfig\x12\n\n\x02to\x18\x01 \x01(\t\"\x1e\n\rDefaultConfig\x12\r\n\x05level\x18\x02 \x01(\r\"\xa4\x01\n\x06\x43onfig\x12(\n\x04user\x18\x01 \x03(\x0b\x32\x1a.xray.common.protocol.User\x12\x38\n\x07\x64\x65\x66\x61ult\x18\x02 \x01(\x0b\x32\'.xray.proxy.vmess.inbound.DefaultConfig\x12\x36\n\x06\x64\x65tour\x18\x03 \x01(\x0b\x32&.xray.proxy.vmess.inbound.DetourConfigBj\n\x1c\x63om.xray.proxy.vmess.inboundP\x01Z-github.com/xtls/xray-core/proxy/vmess/inbound\xaa\x02\x18Xray.Proxy.Vmess.Inboundb\x06proto3')
 
 
 
@@ -50,7 +50,7 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _DETOURCONFIG._serialized_start=90
   _DETOURCONFIG._serialized_end=116
   _DEFAULTCONFIG._serialized_start=118
-  _DEFAULTCONFIG._serialized_end=166
-  _CONFIG._serialized_start=169
-  _CONFIG._serialized_end=365
+  _DEFAULTCONFIG._serialized_end=148
+  _CONFIG._serialized_start=151
+  _CONFIG._serialized_end=315
 # @@protoc_insertion_point(module_scope)
