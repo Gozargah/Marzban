@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse
 
 from app import app
 from app.db import Session, crud, get_db
-from app.models.user import UserResponse
+from app.models.user import SubscriptionUserResponse, UserResponse
 from app.subscription.share import encode_title, generate_subscription
 from app.templates import render_template
 from app.utils.jwt import get_subscription_payload
@@ -128,7 +128,7 @@ def user_subscription(token: str,
         return Response(content=conf, media_type="text/plain", headers=response_headers)
 
 
-@app.get("/%s/{token}/info" % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'], response_model=UserResponse)
+@app.get("/%s/{token}/info" % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'], response_model=SubscriptionUserResponse)
 def user_subscription_info(token: str,
                            db: Session = Depends(get_db)):
     sub = get_subscription_payload(token)

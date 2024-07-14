@@ -3,7 +3,8 @@ from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
 from sqlalchemy import and_, delete, or_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session, joinedload
+
 
 from app.db.models import (JWT, TLS, Admin, Node, NodeUsage, NodeUserUsage,
                            NotificationReminder, Proxy, ProxyHost,
@@ -93,12 +94,16 @@ def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostMo
     return inbound.hosts
 
 
+def get_user_queryset(db: Session) -> Query:
+    return db.query(User).options(joinedload(User.admin))
+
+
 def get_user(db: Session, username: str):
-    return db.query(User).filter(User.username == username).first()
+    return get_user_queryset(db).filter(User.username == username).first()
 
 
 def get_user_by_id(db: Session, user_id: int):
-    return db.query(User).filter(User.id == user_id).first()
+    return get_user_queryset(db).filter(User.id == user_id).first()
 
 
 UsersSortingOptions = Enum('UsersSortingOptions', {
@@ -125,7 +130,7 @@ def get_users(db: Session,
               admins: Optional[List[str]] = None,
               reset_strategy: Optional[Union[UserDataLimitResetStrategy, list]] = None,
               return_with_count: bool = False) -> Union[List[User], Tuple[List[User], int]]:
-    query = db.query(User)
+    query = get_user_queryset(db)
 
     if search:
         query = query.filter(or_(User.username.ilike(f"%{search}%"), User.note.ilike(f"%{search}%")))
@@ -364,7 +369,7 @@ def update_user_sub(db: Session, dbuser: User, user_agent: str):
 
 
 def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
-    query = db.query(User)
+    query = get_user_queryset(db)
 
     if admin:
         query = query.filter(User.admin == admin)

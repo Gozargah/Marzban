@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, validator
 
 from app import xray
 from app.models.proxy import ProxySettings, ProxyTypes
+from app.models.admin import Admin
 from app.utils.jwt import create_subscription_token
 from app.subscription.share import generate_v2ray_links
 from config import XRAY_SUBSCRIPTION_PATH, XRAY_SUBSCRIPTION_URL_PREFIX
@@ -264,6 +265,8 @@ class UserResponse(User):
     proxies: dict
     excluded_inbounds: Dict[ProxyTypes, List[str]] = {}
 
+    admin: Optional[Admin]
+
     class Config:
         orm_mode = True
 
@@ -289,6 +292,31 @@ class UserResponse(User):
         if isinstance(v, list):
             v = {p.type: p.settings for p in v}
         return super().validate_proxies(v, values, **kwargs)
+
+
+class SubscriptionUserResponse(UserResponse):
+    class Config:
+        orm_mode = True
+        fields = {
+            field: {"include": True} for field in [
+                "username",
+                "status",
+                "expire",
+                "data_limit",
+                "data_limit_reset_strategy",
+                "used_traffic",
+                "lifetime_used_traffic",
+                "proxies",
+                "created_at",
+                "sub_updated_at",
+                "online_at",
+                "links",
+                "subscription_url",
+                "sub_updated_at",
+                "sub_last_user_agent",
+                "online_at",
+            ]
+        }
 
 
 class UsersResponse(BaseModel):
