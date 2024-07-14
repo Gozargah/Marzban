@@ -1,12 +1,10 @@
 import logging
-from app import scheduler
+from app import logger, scheduler
 from app.db import GetDB, crud
 from app.models.admin import Admin
-from config import USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS
 from app.utils import report
 from app.jobs.utils import SYSTEM_ADMIN
-
-logger = logging.getLogger(__name__)
+from config import USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS
 
 
 def remove_expired_users():
