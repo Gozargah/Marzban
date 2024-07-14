@@ -66,6 +66,8 @@ class User(BaseModel):
     on_hold_expire_duration: Optional[int] = Field(None, nullable=True)
     on_hold_timeout: Optional[Union[datetime, None]] = Field(None, nullable=True)
 
+    auto_delete_in_days: Optional[int] = Field(None, nullable=True)
+
     @validator("proxies", pre=True, always=True)
     def validate_proxies(cls, v, values, **kwargs):
         if not v:
