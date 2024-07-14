@@ -242,6 +242,8 @@ class SingBoxConfiguration(str):
         if net in ["grpc", "gun"]:
             path = get_grpc_gun(path)
 
+        alpn = inbound.get('alpn', None)
+
         outbound = self.make_outbound(
             remark=remark,
             type=inbound['protocol'],
@@ -253,7 +255,7 @@ class SingBoxConfiguration(str):
             sni=inbound['sni'],
             host=inbound['host'],
             path=path,
-            alpn=inbound.get('alpn', '').rsplit(sep=","),
+            alpn=alpn.rsplit(sep=",") if alpn else None,
             fp=inbound.get('fp', ''),
             pbk=inbound.get('pbk', ''),
             sid=inbound.get('sid', ''),
