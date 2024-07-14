@@ -273,7 +273,7 @@ $ user list [OPTIONS]
 * `-u, --username TEXT`: Search by username(s)
 * `-s, --search TEXT`: Search by username/note
 * `--status [active|disabled|limited|expired|on_hold]`
-* `--admin, --owner TEXT`: Search by owner admin's username
+* `--admin, --owner TEXT`: Search by owner admin's username(s)
 * `--help`: Show this message and exit.
 
 ### `user set-owner`

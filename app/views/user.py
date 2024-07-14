@@ -222,6 +222,7 @@ def get_users(offset: int = None,
               limit: int = None,
               username: List[str] = Query(None),
               search: Union[str, None] = None,
+              owner: Union[list[str], None] = Query(None, alias="admin"),
               status: UserStatus = None,
               sort: str = None,
               db: Session = Depends(get_db),
@@ -229,8 +230,6 @@ def get_users(offset: int = None,
     """
     Get all users
     """
-    dbadmin = crud.get_admin(db, admin.username)
-
     if sort is not None:
         opts = sort.strip(',').split(',')
         sort = []
@@ -248,7 +247,7 @@ def get_users(offset: int = None,
                                   usernames=username,
                                   status=status,
                                   sort=sort,
-                                  admin=dbadmin if not admin.is_sudo else None,
+                                  admins=owner if admin.is_sudo else [admin.username],
                                   return_with_count=True)
 
     return {"users": users, "total": count}
