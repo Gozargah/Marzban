@@ -1,0 +1,20 @@
+{
+    "list": [
+        "grpc-dotnet/2.41.0 (.NET 6.0.1; CLR 6.0.1; net6.0; windows; x64)",
+        "grpc-dotnet/2.41.0 (.NET 6.0.0-preview.7.21377.19; CLR 6.0.0; net6.0; osx; x64)",
+        "grpc-dotnet/2.41.0 (Mono 6.12.0.140; CLR 4.0.30319; netstandard2.0; osx; x64)",
+        "grpc-dotnet/2.41.0 (.NET 6.0.0-rc.1.21380.1; CLR 6.0.0; net6.0; linux; arm64)",
+        "grpc-dotnet/2.41.0 (.NET 5.0.8; CLR 5.0.8; net5.0; linux; arm64)",
+        "grpc-dotnet/2.41.0 (.NET Core; CLR 3.1.4; netstandard2.1; linux; arm64)",
+        "grpc-dotnet/2.41.0 (.NET Framework; CLR 4.0.30319.42000; netstandard2.0; windows; x86)",
+        "grpc-dotnet/2.41.0 (.NET 6.0.0-rc.1.21380.1; CLR 6.0.0; net6.0; windows; x64)",
+        "grpc-python-asyncio/1.62.1 grpc-c/39.0.0 (linux; chttp2)",
+        "grpc-go/1.58.1",
+        "grpc-java-okhttp/1.55.1",
+        "grpc-node/1.7.1 grpc-c/1.7.1 (osx; chttp2)",
+        "grpc-node/1.24.2 grpc-c/8.0.0 (linux; chttp2; ganges)",
+        "grpc-c++/1.16.0 grpc-c/6.0.0 (linux; nghttp2; hw)",
+        "grpc-node/1.19.0 grpc-c/7.0.0 (linux; chttp2; gold)",
+        "grpc-ruby/1.62.0 grpc-c/39.0.0 (osx; chttp2)]"
+    ]
+}

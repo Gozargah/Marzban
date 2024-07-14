@@ -295,6 +295,8 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | RECURRENT_NOTIFICATIONS_TIMEOUT   | Timeout between each retry if an error detected in sending a notification in seconds (default: `180`) |
 | NOTIFY_REACHED_USAGE_PERCENT      | At which percentage of usage to send the warning notification (default: `80`)                         |
 | NOTIFY_DAYS_LEFT                  | When to send warning notifaction about expiration (default: `3`)                                      |
+| USERS_AUTODELETE_DAYS             | Delete expired (and optionally limited users) after this many days (Negative values disable this feature, default: `-1`)   |
+| USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS             | Weather to include limited accounts in the auto-delete feature (default: `False`)   |
 
 # API
 

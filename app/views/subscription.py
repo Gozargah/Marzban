@@ -7,20 +7,20 @@ from fastapi.responses import HTMLResponse
 
 from app import app
 from app.db import Session, crud, get_db
-from app.models.user import UserResponse
+from app.models.user import SubscriptionUserResponse, UserResponse
+from app.subscription.share import encode_title, generate_subscription
 from app.templates import render_template
 from app.utils.jwt import get_subscription_payload
-from app.subscription.share import encode_title, generate_subscription
 from config import (
     SUB_PROFILE_TITLE,
     SUB_SUPPORT_URL,
     SUB_UPDATE_INTERVAL,
     SUBSCRIPTION_PAGE_TEMPLATE,
-    XRAY_SUBSCRIPTION_PATH,
     USE_CUSTOM_JSON_DEFAULT,
+    USE_CUSTOM_JSON_FOR_STREISAND,
     USE_CUSTOM_JSON_FOR_V2RAYN,
     USE_CUSTOM_JSON_FOR_V2RAYNG,
-    USE_CUSTOM_JSON_FOR_STREISAND
+    XRAY_SUBSCRIPTION_PATH
 )
 
 
@@ -79,7 +79,7 @@ def user_subscription(token: str,
 
     crud.update_user_sub(db, dbuser, user_agent)
 
-    if re.match('^([Cc]lash-verge|[Cc]lash-?[Mm]eta)', user_agent):
+    if re.match('^([Cc]lash-verge|[Cc]lash[-\.]?[Mm]eta|[Ff][Ll][Cc]lash|[Mm]ihomo)', user_agent):
         conf = generate_subscription(user=user, config_format="clash-meta", as_base64=False)
         return Response(content=conf, media_type="text/yaml", headers=response_headers)
 
@@ -128,7 +128,7 @@ def user_subscription(token: str,
         return Response(content=conf, media_type="text/plain", headers=response_headers)
 
 
-@app.get("/%s/{token}/info" % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'], response_model=UserResponse)
+@app.get("/%s/{token}/info" % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'], response_model=SubscriptionUserResponse)
 def user_subscription_info(token: str,
                            db: Session = Depends(get_db)):
     sub = get_subscription_payload(token)
@@ -183,6 +183,7 @@ def user_subscription_with_client_type(
     request: Request,
     client_type: str = Path(..., regex="sing-box|clash-meta|clash|outline|v2ray|v2ray-json"),
     db: Session = Depends(get_db),
+    user_agent: str = Header(default="")
 ):
     """
     Subscription link, v2ray, clash, sing-box, outline and clash-meta supported
@@ -192,8 +193,8 @@ def user_subscription_with_client_type(
         return {
             "upload": 0,
             "download": user.used_traffic,
-            "total": user.data_limit,
-            "expire": user.expire,
+            "total": user.data_limit if user.data_limit is not None else 0,
+            "expire": user.expire if user.expire is not None else 0,
         }
 
     sub = get_subscription_payload(token)
@@ -218,9 +219,10 @@ def user_subscription_with_client_type(
         "subscription-userinfo": "; ".join(
             f"{key}={val}"
             for key, val in get_subscription_user_info(user).items()
-            if val is not None
         )
     }
+
+    crud.update_user_sub(db, dbuser, user_agent)
 
     if client_type == "clash-meta":
         conf = generate_subscription(user=user, config_format="clash-meta", as_base64=False)

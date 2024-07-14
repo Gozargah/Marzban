@@ -270,7 +270,8 @@ class XRayConfig(dict):
                 elif net == 'grpc' or net == 'gun':
                     settings['header_type'] = ''
                     settings['path'] = net_settings.get('serviceName', '')
-                    settings['host'] = []
+                    host = net_settings.get('authority', '')
+                    settings['host'] = [host]
                     settings['multiMode'] = net_settings.get('multiMode', False)
 
                 elif net == 'quic':
@@ -282,6 +283,13 @@ class XRayConfig(dict):
                     settings['path'] = net_settings.get('path', '')
                     host = net_settings.get('host', '')
                     settings['host'] = [host]
+
+                elif net == 'splithttp':
+                    settings['path'] = net_settings.get('path', '')
+                    host = net_settings.get('host', '')
+                    settings['host'] = [host]
+                    settings['maxUploadSize'] = net_settings.get('maxUploadSize', 1000000)
+                    settings['maxConcurrentUploads'] = net_settings.get('maxConcurrentUploads', 10)
 
                 else:
                     settings['path'] = net_settings.get('path', '')
@@ -334,7 +342,9 @@ class XRayConfig(dict):
                 db_models.User.status.in_([UserStatus.active, UserStatus.on_hold])
             ).group_by(
                 func.lower(db_models.Proxy.type),
-                db_models.User.id
+                db_models.User.id,
+                db_models.User.username,
+                db_models.Proxy.settings,
             )
             result = query.all()
 
