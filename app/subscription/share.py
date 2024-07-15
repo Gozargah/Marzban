@@ -132,23 +132,22 @@ def randomize_sub_config(
 
     return config
     
-def manage_notice(user: "UserResponse"):
-
-    if not any(NOTICE_INACTIVE_USERS in inbounds for inbounds in user.inbounds.values()):
-        return user.inbounds, user.proxies
+def manage_notice(proxies, inbounds, status):
+    if not any(NOTICE_INACTIVE_USERS in inbounds for inbounds in inbounds.values()):
+        return proxies, inbounds
     
-    if user.status in ['active', 'on_hold']:
-        filtered_inbounds = {p: i for p, i in user.inbounds.items() if NOTICE_INACTIVE_USERS not in i}
-        filtered_proxies = {p: user.proxies.get(p, {}) for p in filtered_inbounds}
+    if status in [ONHOLD_STATUS_TEXT, ACTIVE_STATUS_TEXT]:
+        filtered_inbounds = {p: [i for i in inb if NOTICE_INACTIVE_USERS not in i] for p, inb in inbounds.items()}
+        filtered_inbounds = {p: inb for p, inb in filtered_inbounds.items() if inb}
+        filtered_proxies = {p: proxies.get(p, {}) for p in filtered_inbounds}
     else:
-        protocol = next((p for p, i in user.inbounds.items() if NOTICE_INACTIVE_USERS in i), None)
+        protocol = next((p for p, inb in inbounds.items() if NOTICE_INACTIVE_USERS in inb), None)
         if not protocol:
             return {}, {}
         filtered_inbounds = {protocol: [NOTICE_INACTIVE_USERS]}
-        filtered_proxies = {protocol: user.proxies.get(protocol, {})}
+        filtered_proxies = {protocol: proxies.get(protocol, {})}
     
-    return filtered_inbounds, filtered_proxies
-
+    return filtered_proxies, filtered_inbounds
 
 
 def generate_subscription(
@@ -156,16 +155,10 @@ def generate_subscription(
     config_format: Literal["v2ray", "clash-meta", "clash", "sing-box", "outline", "v2ray-json"],
     as_base64: bool,
 ) -> str:
-    
-    if NOTICE_INACTIVE_USERS:
-        inbounds, proxies = manage_notice(user)
-    else:
-        inbounds = user.inbounds
-        proxies = user.proxies
 
     kwargs = {
-        "proxies": proxies,
-        "inbounds": inbounds,
+        "proxies": user.proxies,
+        "inbounds": user.inbounds,
         "extra_data": user.__dict__,
     }
 
@@ -294,6 +287,9 @@ def process_inbounds_and_tags(
     format_variables: dict,
     conf=None,
 ) -> Union[List, str]:
+
+    if NOTICE_INACTIVE_USERS:
+        proxies, inbounds = manage_notice(proxies, inbounds, format_variables.get('STATUS_TEXT'))
 
     _inbounds = []
     for protocol, tags in inbounds.items():
