@@ -175,3 +175,22 @@ def report_user_subscription_revoked(username: str, by: str, admin: Admin = None
         json_data=subscriptionRevoked,
         admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None
         )
+
+def report_node_error(name: str, status: str, error: str):
+    NodeError = {
+        'content': '',
+        'embeds': [
+            {
+                'title': ':repeat: NodeError',
+                'description': f'**name:** {name}',
+                "footer": {
+                    "text": f"Status: {status} \nError: {error}"
+                },
+                'color': int('ff0000', 16)
+            }
+        ]
+    }
+    send_webhooks(
+        json_data=NodeError,
+        admin_webhook=None
+        )

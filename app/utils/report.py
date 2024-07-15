@@ -6,6 +6,7 @@ from app.db import Session, create_notification_reminder, get_admin_by_id, GetDB
 from app.db.models import UserStatus, User
 from app.models.admin import Admin
 from app.models.user import ReminderType, UserResponse
+from app.models.node import NodeResponse
 from app.utils.notification import (Notification, ReachedDaysLeft,
                                     ReachedUsagePercent, UserCreated,
                                     UserDataUsageReset, UserDeleted,
@@ -141,6 +142,27 @@ def user_subscription_revoked(user: UserResponse, by: Admin, user_admin: Admin =
     except Exception:
         pass
 
+
+
+def node_error_monitoring(node: NodeResponse) -> None:
+    try:
+        telegram.report_node_error(
+            name=node.name,
+            status=node.status,
+            error=node.message if node.message else "no error message"
+        )
+    except Exception:
+        pass
+    try:
+        discord.report_node_error(
+            name=node.name,
+            status=node.status,
+            error=node.message if node.message else "no error message"
+        )
+    except Exception:
+        pass
+
+        
 
 def data_usage_percent_reached(
         db: Session, percent: float, user: UserResponse, user_id: int, expire: Optional[int] = None) -> None:
