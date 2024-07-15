@@ -82,9 +82,11 @@
   "hostsDialog.jalaliExpireDate": "تاریخ انقضای کاربر به شمسی",
   "hostsDialog.remainingTime": "زمان باقی مانده کاربر",
   "hostsDialog.statusEmoji": "وضعیت کاربر در قالب اموجی (✅,⌛️,🪫,❌,🔌)",
+  "hostsDialog.statusText": "وضعیت کاربر",
   "hostsDialog.proxyProtocol": "پروتکل پروکسی (مانند VMess)",
   "hostsDialog.proxyMethod": "روش انتقال پروکسی (مانند ws)",
   "hostsDialog.currentServer": "IP کنونی سرور",
+  "hostsDialog.currentServerv6": "IPv6 کنونی سرور",
   "hostsDialog.security": "لایه امنیت",
   "hostsDialog.host": "هاست درخواست",
   "hostsDialog.port": "پورت",
@@ -102,6 +104,14 @@
   "hostsDialog.fingerprint": "اثرانگشت",
   "hostsDialog.host.multiHost": "برای تنظیم چند آدرس، با <badge>,</badge> از هم جدا کنید. هر دفعه آدرسی به صورت تصادفی قرار داده می‌شود.",
   "hostsDialog.host.wildcard": "از <badge>*</badge> برای ساخت عبارت تصادفی استفاده کنید (برای نام‌های wildcard کار می‌کند)",
+  "hostsDialog.sockopt": "Sockopt",
+  "hostsDialog.muxEnable": "فعالسازی MUX",
+  "hostsDialog.randomUserAgent":"استفاده از User Agent تصادفی",
+  "hostsDialog.allowinsecure": "Allow Insecure",
+  "hostsDialog.fragment": "الگو فرگمنت",
+  "hostsDialog.fragment.info": "length,interval,packet (e.g. 10-100,100-200,tlshello)",
+  "hostsDialog.proxyOutbound": "جیسون پراکسی outbound",
+  "hostsDialog.proxyOutbound.info": "outbound اضافه (تنها در کانفیگ دستی v2ray)",
   "nodes.title": "با استفاده از Marzban-Node, شما می‌توانید با افزودن گره‌های متفاوت در سرورهای متفاوت، کیفیت اتصال خود را بالاتر ببرید.",
   "nodes.addNewMarzbanNode": "افزودن گره مرزبان",
   "nodes.certificate": "گواهی",

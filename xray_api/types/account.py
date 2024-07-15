@@ -32,7 +32,7 @@ class VMessAccount(Account):
 
     @property
     def message(self):
-        return Message(VMessAccountPb2(id=str(self.id), alter_id=0))
+        return Message(VMessAccountPb2(id=str(self.id)))
 
 
 class XTLSFlows(Enum):
@@ -55,7 +55,7 @@ class TrojanAccount(Account):
 
     @property
     def message(self):
-        return Message(TrojanAccountPb2(password=self.password, flow=self.flow.value))
+        return Message(TrojanAccountPb2(password=self.password))
 
 
 class ShadowsocksMethods(Enum):

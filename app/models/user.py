@@ -9,8 +9,9 @@ from pydantic import BaseModel, Field, validator
 
 from app import xray
 from app.models.proxy import ProxySettings, ProxyTypes
+from app.models.admin import Admin
 from app.utils.jwt import create_subscription_token
-from app.utils.share import generate_v2ray_links
+from app.subscription.share import generate_v2ray_links
 from config import XRAY_SUBSCRIPTION_PATH, XRAY_SUBSCRIPTION_URL_PREFIX
 
 USERNAME_REGEXP = re.compile(r"^(?=\w{3,32}\b)[a-zA-Z0-9-_@.]+(?:_[a-zA-Z0-9-_@.]+)*$")
@@ -64,6 +65,8 @@ class User(BaseModel):
     online_at: Optional[datetime] = Field(None, nullable=True)
     on_hold_expire_duration: Optional[int] = Field(None, nullable=True)
     on_hold_timeout: Optional[Union[datetime, None]] = Field(None, nullable=True)
+
+    auto_delete_in_days: Optional[int] = Field(None, nullable=True)
 
     @validator("proxies", pre=True, always=True)
     def validate_proxies(cls, v, values, **kwargs):
@@ -264,6 +267,8 @@ class UserResponse(User):
     proxies: dict
     excluded_inbounds: Dict[ProxyTypes, List[str]] = {}
 
+    admin: Optional[Admin]
+
     class Config:
         orm_mode = True
 
@@ -289,6 +294,31 @@ class UserResponse(User):
         if isinstance(v, list):
             v = {p.type: p.settings for p in v}
         return super().validate_proxies(v, values, **kwargs)
+
+
+class SubscriptionUserResponse(UserResponse):
+    class Config:
+        orm_mode = True
+        fields = {
+            field: {"include": True} for field in [
+                "username",
+                "status",
+                "expire",
+                "data_limit",
+                "data_limit_reset_strategy",
+                "used_traffic",
+                "lifetime_used_traffic",
+                "proxies",
+                "created_at",
+                "sub_updated_at",
+                "online_at",
+                "links",
+                "subscription_url",
+                "sub_updated_at",
+                "sub_last_user_agent",
+                "online_at",
+            ]
+        }
 
 
 class UsersResponse(BaseModel):

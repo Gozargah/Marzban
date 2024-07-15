@@ -15,11 +15,12 @@ _sym_db = _symbol_database.Default()
 from xray_api.proto.common.protocol import server_spec_pb2 as common_dot_protocol_dot_server__spec__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aproxy/freedom/config.proto\x12\x12xray.proxy.freedom\x1a!common/protocol/server_spec.proto\"K\n\x13\x44\x65stinationOverride\x12\x34\n\x06server\x18\x01 \x01(\x0b\x32$.xray.common.protocol.ServerEndpoint\"\xff\x01\n\x06\x43onfig\x12\x42\n\x0f\x64omain_strategy\x18\x01 \x01(\x0e\x32).xray.proxy.freedom.Config.DomainStrategy\x12\x13\n\x07timeout\x18\x02 \x01(\rB\x02\x18\x01\x12\x45\n\x14\x64\x65stination_override\x18\x03 \x01(\x0b\x32\'.xray.proxy.freedom.DestinationOverride\x12\x12\n\nuser_level\x18\x04 \x01(\r\"A\n\x0e\x44omainStrategy\x12\t\n\x05\x41S_IS\x10\x00\x12\n\n\x06USE_IP\x10\x01\x12\x0b\n\x07USE_IP4\x10\x02\x12\x0b\n\x07USE_IP6\x10\x03\x42X\n\x16\x63om.xray.proxy.freedomP\x01Z\'github.com/xtls/xray-core/proxy/freedom\xaa\x02\x12Xray.Proxy.Freedomb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aproxy/freedom/config.proto\x12\x12xray.proxy.freedom\x1a!common/protocol/server_spec.proto\"K\n\x13\x44\x65stinationOverride\x12\x34\n\x06server\x18\x01 \x01(\x0b\x32$.xray.common.protocol.ServerEndpoint\"\x88\x01\n\x08\x46ragment\x12\x14\n\x0cpackets_from\x18\x01 \x01(\x04\x12\x12\n\npackets_to\x18\x02 \x01(\x04\x12\x12\n\nlength_min\x18\x03 \x01(\x04\x12\x12\n\nlength_max\x18\x04 \x01(\x04\x12\x14\n\x0cinterval_min\x18\x05 \x01(\x04\x12\x14\n\x0cinterval_max\x18\x06 \x01(\x04\"\xb0\x03\n\x06\x43onfig\x12\x42\n\x0f\x64omain_strategy\x18\x01 \x01(\x0e\x32).xray.proxy.freedom.Config.DomainStrategy\x12\x13\n\x07timeout\x18\x02 \x01(\rB\x02\x18\x01\x12\x45\n\x14\x64\x65stination_override\x18\x03 \x01(\x0b\x32\'.xray.proxy.freedom.DestinationOverride\x12\x12\n\nuser_level\x18\x04 \x01(\r\x12.\n\x08\x66ragment\x18\x05 \x01(\x0b\x32\x1c.xray.proxy.freedom.Fragment\x12\x16\n\x0eproxy_protocol\x18\x06 \x01(\r\"\xa9\x01\n\x0e\x44omainStrategy\x12\t\n\x05\x41S_IS\x10\x00\x12\n\n\x06USE_IP\x10\x01\x12\x0b\n\x07USE_IP4\x10\x02\x12\x0b\n\x07USE_IP6\x10\x03\x12\x0c\n\x08USE_IP46\x10\x04\x12\x0c\n\x08USE_IP64\x10\x05\x12\x0c\n\x08\x46ORCE_IP\x10\x06\x12\r\n\tFORCE_IP4\x10\x07\x12\r\n\tFORCE_IP6\x10\x08\x12\x0e\n\nFORCE_IP46\x10\t\x12\x0e\n\nFORCE_IP64\x10\nBX\n\x16\x63om.xray.proxy.freedomP\x01Z\'github.com/xtls/xray-core/proxy/freedom\xaa\x02\x12Xray.Proxy.Freedomb\x06proto3')
 
 
 
 _DESTINATIONOVERRIDE = DESCRIPTOR.message_types_by_name['DestinationOverride']
+_FRAGMENT = DESCRIPTOR.message_types_by_name['Fragment']
 _CONFIG = DESCRIPTOR.message_types_by_name['Config']
 _CONFIG_DOMAINSTRATEGY = _CONFIG.enum_types_by_name['DomainStrategy']
 DestinationOverride = _reflection.GeneratedProtocolMessageType('DestinationOverride', (_message.Message,), {
@@ -28,6 +29,13 @@ DestinationOverride = _reflection.GeneratedProtocolMessageType('DestinationOverr
   # @@protoc_insertion_point(class_scope:xray.proxy.freedom.DestinationOverride)
   })
 _sym_db.RegisterMessage(DestinationOverride)
+
+Fragment = _reflection.GeneratedProtocolMessageType('Fragment', (_message.Message,), {
+  'DESCRIPTOR' : _FRAGMENT,
+  '__module__' : 'proxy.freedom.config_pb2'
+  # @@protoc_insertion_point(class_scope:xray.proxy.freedom.Fragment)
+  })
+_sym_db.RegisterMessage(Fragment)
 
 Config = _reflection.GeneratedProtocolMessageType('Config', (_message.Message,), {
   'DESCRIPTOR' : _CONFIG,
@@ -44,8 +52,10 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _CONFIG.fields_by_name['timeout']._serialized_options = b'\030\001'
   _DESTINATIONOVERRIDE._serialized_start=85
   _DESTINATIONOVERRIDE._serialized_end=160
-  _CONFIG._serialized_start=163
-  _CONFIG._serialized_end=418
-  _CONFIG_DOMAINSTRATEGY._serialized_start=353
-  _CONFIG_DOMAINSTRATEGY._serialized_end=418
+  _FRAGMENT._serialized_start=163
+  _FRAGMENT._serialized_end=299
+  _CONFIG._serialized_start=302
+  _CONFIG._serialized_end=734
+  _CONFIG_DOMAINSTRATEGY._serialized_start=565
+  _CONFIG_DOMAINSTRATEGY._serialized_end=734
 # @@protoc_insertion_point(module_scope)

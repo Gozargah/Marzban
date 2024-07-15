@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import List
+from typing import List, Union
 
 import sqlalchemy
 from fastapi import BackgroundTasks, Depends, HTTPException, Query
@@ -221,6 +221,8 @@ def revoke_user_subscription(username: str,
 def get_users(offset: int = None,
               limit: int = None,
               username: List[str] = Query(None),
+              search: Union[str, None] = None,
+              owner: Union[List[str], None] = Query(None, alias="admin"),
               status: UserStatus = None,
               sort: str = None,
               db: Session = Depends(get_db),
@@ -228,8 +230,6 @@ def get_users(offset: int = None,
     """
     Get all users
     """
-    dbadmin = crud.get_admin(db, admin.username)
-
     if sort is not None:
         opts = sort.strip(',').split(',')
         sort = []
@@ -243,10 +243,11 @@ def get_users(offset: int = None,
     users, count = crud.get_users(db=db,
                                   offset=offset,
                                   limit=limit,
+                                  search=search,
                                   usernames=username,
                                   status=status,
                                   sort=sort,
-                                  admin=dbadmin if not admin.is_sudo else None,
+                                  admins=owner if admin.is_sudo else [admin.username],
                                   return_with_count=True)
 
     return {"users": users, "total": count}

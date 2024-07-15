@@ -8,6 +8,8 @@ import {
   Box,
   Button,
   Select as ChakraSelect,
+  Checkbox,
+  Container,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -28,6 +30,7 @@ import {
   PopoverContent,
   PopoverTrigger,
   Portal,
+  Switch,
   Text,
   Tooltip,
   VStack,
@@ -44,6 +47,7 @@ import {
 import { useHosts } from "contexts/HostsContext";
 import { FC, useEffect, useState } from "react";
 import {
+  Controller,
   FormProvider,
   useFieldArray,
   useForm,
@@ -111,11 +115,16 @@ const hostsSchema = z.record(
       path: z.string().nullable(),
       sni: z.string().nullable(),
       host: z.string().nullable(),
+      mux_enable: z.boolean().default(false),
+      allowinsecure: z.boolean().nullable().default(false),
+      is_disabled: z.boolean().default(true),
+      fragment_setting: z.string().nullable(),
+      random_user_agent: z.boolean().default(false),
       security: z.string(),
       alpn: z.string(),
       fingerprint: z.string(),
-    }),
-  ),
+    })
+  )
 );
 
 const Error = chakra(FormErrorMessage, {
@@ -163,6 +172,11 @@ const AccordionInbound: FC<AccordionInboundType> = ({
       path: null,
       address: "",
       remark: "",
+      mux_enable: false,
+      allowinsecure: false,
+      is_disabled: false,
+      fragment_setting: "",
+      random_user_agent: false,
       security: "inbound_default",
       alpn: "",
       fingerprint: "",
@@ -173,6 +187,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
       toggleAccordion();
     }
   }, [accordionErrors]);
+
   return (
     <AccordionItem
       border="1px solid"
@@ -245,6 +260,12 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
+                                    {"{"}SERVER_IPV6{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.currentServerv6")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
                                     {"{"}USERNAME{"}"}
                                   </Badge>{" "}
                                   {t("hostsDialog.username")}
@@ -290,6 +311,12 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                     {"{"}TIME_LEFT{"}"}
                                   </Badge>{" "}
                                   {t("hostsDialog.remainingTime")}
+                                </Text>
+                                <Text mt={1}>
+                                  <Badge>
+                                    {"{"}STATUS_TEXT{"}"}
+                                  </Badge>{" "}
+                                  {t("hostsDialog.statusText")}
                                 </Text>
                                 <Text mt={1}>
                                   <Badge>
@@ -355,6 +382,12 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                               </Text>
                               <Text mt={1}>
                                 <Badge>
+                                  {"{"}SERVER_IPV6{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.currentServerv6")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
                                   {"{"}USERNAME{"}"}
                                 </Badge>{" "}
                                 {t("hostsDialog.username")}
@@ -403,6 +436,12 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                               </Text>
                               <Text mt={1}>
                                 <Badge>
+                                  {"{"}STATUS_TEXT{"}"}
+                                </Badge>{" "}
+                                {t("hostsDialog.statusText")}
+                              </Text>
+                              <Text mt={1}>
+                                <Badge>
                                   {"{"}STATUS_EMOJI{"}"}
                                 </Badge>{" "}
                                 {t("hostsDialog.statusEmoji")}
@@ -435,13 +474,14 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                 <AccordionItem border="0">
                   <AccordionButton
                     display="flex"
-                    justifyContent="space-between"
                     px={0}
                     py={1}
                     borderRadius={3}
                     _hover={{ bg: "transparent" }}
                   >
                     <Text
+                      flex="3"
+                      align="start"
                       fontSize="xs"
                       color="gray.600"
                       _dark={{ color: "gray.500" }}
@@ -451,17 +491,38 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                       <AccordionIcon fontSize="sm" ml={1} />
                     </Text>
 
-                    <Tooltip label="Delete" placement="top">
-                      <IconButton
-                        aria-label="Delete"
-                        size="sm"
-                        colorScheme="red"
-                        variant="ghost"
-                        onClick={removeHost.bind(null, index)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
+                    <Container flex="1" px="0">
+                      <Controller
+                        control={form.control}
+                        name={`${hostKey}.${index}.is_disabled`}
+                        render={({ field }) => {
+                          return (
+                            <Switch
+                              mx="1.5"
+                              colorScheme="primary"
+                              {...field}
+                              value={undefined}
+                              isChecked={!field.value}
+                              onChange={(e) => {
+                                console.log(e.target.checked);
+                                field.onChange(!e.target.checked);
+                              }}
+                            />
+                          );
+                        }}
+                      />
+                      <Tooltip label="Delete" placement="top">
+                        <IconButton
+                          aria-label="Delete"
+                          size="sm"
+                          colorScheme="red"
+                          variant="ghost"
+                          onClick={removeHost.bind(null, index)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </Container>
                   </AccordionButton>
                   <AccordionPanel w="full" p={1}>
                     <VStack key={index} w="full" borderRadius="4px">
@@ -685,7 +746,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                         <Select
                           size="sm"
                           {...form.register(
-                            hostKey + "." + index + ".security",
+                            hostKey + "." + index + ".security"
                           )}
                         >
                           {proxyHostSecurity.map((s) => {
@@ -737,7 +798,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                         <Select
                           size="sm"
                           {...form.register(
-                            hostKey + "." + index + ".fingerprint",
+                            hostKey + "." + index + ".fingerprint"
                           )}
                         >
                           {proxyFingerprint.map((s) => {
@@ -748,6 +809,140 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             );
                           })}
                         </Select>
+                      </FormControl>
+
+                      <FormControl
+                        isInvalid={
+                          !!(
+                            accordionErrors &&
+                            accordionErrors[index]?.fragment_setting
+                          )
+                        }
+                      >
+                        <FormLabel
+                          display="flex"
+                          pb={1}
+                          alignItems="center"
+                          gap={1}
+                          justifyContent="space-between"
+                          m="0"
+                        >
+                          <span>{t("hostsDialog.fragment")}</span>
+
+                          <Popover isLazy placement="right">
+                            <PopoverTrigger>
+                              <InfoIcon />
+                            </PopoverTrigger>
+                            <Portal>
+                              <PopoverContent p={2}>
+                                <PopoverArrow />
+                                <PopoverCloseButton />
+                                <Text fontSize="xs" pr={5}>
+                                  {t("hostsDialog.fragment.info")}
+                                </Text>
+                                <Text fontSize="xs" pr={5} pt={2} pb={1}>
+                                  {t("hostsDialog.fragment.info.examples")}
+                                </Text>
+                                <Text fontSize="xs" pr={5}>
+                                  100-200,10-20,tlshello
+                                </Text>
+                                <Text fontSize="xs" pr={5}>
+                                  100-200,10-20,1-3
+                                </Text>
+                                <Text fontSize="xs" pr={5} pt="3">
+                                  {t("hostsDialog.fragment.info.attention")}
+                                </Text>
+                              </PopoverContent>
+                            </Portal>
+                          </Popover>
+                        </FormLabel>
+                        <Input
+                          size="sm"
+                          borderRadius="4px"
+                          placeholder="Fragment settings by pattern"
+                          {...form.register(
+                            hostKey + "." + index + ".fragment_setting"
+                          )}
+                        />
+                        {accordionErrors &&
+                          accordionErrors[index]?.fragment_setting && (
+                            <Error>
+                              {
+                                accordionErrors[index]?.fragment_setting
+                                  ?.message
+                              }
+                            </Error>
+                          )}
+                      </FormControl>
+
+                      <FormControl
+                        isInvalid={
+                          !!(
+                            accordionErrors &&
+                            accordionErrors[index]?.allowinsecure
+                          )
+                        }
+                      >
+                        <Checkbox
+                          {...form.register(
+                            hostKey + "." + index + ".allowinsecure"
+                          )}
+                          name={hostKey + "." + index + ".allowinsecure"}
+                        >
+                          <FormLabel>
+                            {t("hostsDialog.allowinsecure")}
+                          </FormLabel>
+                          {accordionErrors &&
+                            accordionErrors[index]?.allowinsecure && (
+                              <Error>
+                                {accordionErrors[index]?.allowinsecure?.message}
+                              </Error>
+                            )}
+                        </Checkbox>
+                      </FormControl>
+                      <FormControl
+                        isInvalid={
+                          !!(
+                            accordionErrors &&
+                            accordionErrors[index]?.mux_enable
+                          )
+                        }
+                      >
+                        <Checkbox
+                          {...form.register(
+                            hostKey + "." + index + ".mux_enable"
+                          )}
+                        >
+                          <FormLabel>{t("hostsDialog.muxEnable")}</FormLabel>
+                        </Checkbox>
+                        {accordionErrors &&
+                          accordionErrors[index]?.mux_enable && (
+                            <Error>
+                              {accordionErrors[index]?.mux_enable?.message}
+                            </Error>
+                          )}
+                      </FormControl>
+                      <FormControl
+                        isInvalid={
+                          !!(
+                            accordionErrors &&
+                            accordionErrors[index]?.random_user_agent
+                          )
+                        }
+                      >
+                        <Checkbox
+                          {...form.register(
+                            hostKey + "." + index + ".random_user_agent"
+                          )}
+                        >
+                          <FormLabel>{t("hostsDialog.randomUserAgent")}</FormLabel>
+                        </Checkbox>
+                        {accordionErrors &&
+                          accordionErrors[index]?.random_user_agent && (
+                            <Error>
+                              {accordionErrors[index]?.random_user_agent?.message}
+                            </Error>
+                          )}
                       </FormControl>
                     </VStack>
                   </AccordionPanel>

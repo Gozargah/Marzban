@@ -52,7 +52,9 @@ $ admin create [OPTIONS]
 **Options**:
 
 * `-u, --username TEXT`: [required]
-* `--sudo / --no-sudo`
+* `--sudo / --no-sudo`: [default: no-sudo]
+* `-tg, --telegram-id TEXT`
+* `-dc, --discord-webhook TEXT`
 * `--help`: Show this message and exit.
 
 ### `admin delete`
@@ -154,15 +156,12 @@ Install completion for the specified shell.
 **Usage**:
 
 ```console
-$ completion install [OPTIONS] [SHELL]:[bash|zsh|fish|powershell|pwsh]
+$ completion install [OPTIONS]
 ```
-
-**Arguments**:
-
-* `[SHELL]:[bash|zsh|fish|powershell|pwsh]`: The shell to install completion for.
 
 **Options**:
 
+* `--shell [bash|zsh|fish|powershell|pwsh]`: The shell to install completion for.
 * `--help`: Show this message and exit.
 
 ### `completion show`
@@ -172,15 +171,12 @@ Show completion for the specified shell, to copy or customize it.
 **Usage**:
 
 ```console
-$ completion show [OPTIONS] [SHELL]:[bash|zsh|fish|powershell|pwsh]
+$ completion show [OPTIONS]
 ```
-
-**Arguments**:
-
-* `[SHELL]:[bash|zsh|fish|powershell|pwsh]`: The shell to install completion for.
 
 **Options**:
 
+* `--shell [bash|zsh|fish|powershell|pwsh]`: The shell to install completion for.
 * `--help`: Show this message and exit.
 
 ## `subscription`
@@ -274,9 +270,10 @@ $ user list [OPTIONS]
 
 * `-o, --offset INTEGER`
 * `-l, --limit INTEGER`
-* `-u, --username TEXT`: Search by username
-* `--status [active|disabled|limited|expired]`
-* `--admin, --owner TEXT`: Search by owner admin's username
+* `-u, --username TEXT`: Search by username(s)
+* `-s, --search TEXT`: Search by username/note
+* `--status [active|disabled|limited|expired|on_hold]`
+* `--admin, --owner TEXT`: Search by owner admin's username(s)
 * `--help`: Show this message and exit.
 
 ### `user set-owner`
@@ -297,4 +294,3 @@ $ user set-owner [OPTIONS]
 * `--admin, --owner TEXT`: Admin's username
 * `-y, --yes`: Skips confirmations
 * `--help`: Show this message and exit.
-

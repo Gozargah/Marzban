@@ -1,9 +1,10 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
-from sqlalchemy import and_, delete
-from sqlalchemy.orm import Session
+from sqlalchemy import and_, delete, or_
+from sqlalchemy.orm import Query, Session, joinedload
+from sqlalchemy.sql.functions import coalesce
 
 from app.db.models import (JWT, TLS, Admin, Node, NodeUsage, NodeUserUsage,
                            NotificationReminder, Proxy, ProxyHost,
@@ -20,7 +21,8 @@ from app.models.user_template import UserTemplateCreate, UserTemplateModify
 from app.utils.helpers import (calculate_expiration_days,
                                calculate_usage_percent)
 from app.utils.notification import Notification
-from config import NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT
+from config import (NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT,
+                    USERS_AUTODELETE_DAYS)
 
 
 def add_default_host(db: Session, inbound: ProxyInbound):
@@ -82,7 +84,10 @@ def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostMo
             alpn=host.alpn,
             fingerprint=host.fingerprint,
             allowinsecure=host.allowinsecure,
-            is_disabled=host.is_disabled
+            is_disabled=host.is_disabled,
+            mux_enable=host.mux_enable,
+            fragment_setting=host.fragment_setting,
+            random_user_agent=host.random_user_agent,
         ) for host in modified_hosts
     ]
     db.commit()
@@ -90,12 +95,16 @@ def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostMo
     return inbound.hosts
 
 
+def get_user_queryset(db: Session) -> Query:
+    return db.query(User).options(joinedload(User.admin))
+
+
 def get_user(db: Session, username: str):
-    return db.query(User).filter(User.username == username).first()
+    return get_user_queryset(db).filter(User.username == username).first()
 
 
 def get_user_by_id(db: Session, user_id: int):
-    return db.query(User).filter(User.id == user_id).first()
+    return get_user_queryset(db).filter(User.id == user_id).first()
 
 
 UsersSortingOptions = Enum('UsersSortingOptions', {
@@ -116,18 +125,19 @@ def get_users(db: Session,
               offset: Optional[int] = None,
               limit: Optional[int] = None,
               usernames: Optional[List[str]] = None,
+              search: Optional[str] = None,
               status: Optional[Union[UserStatus, list]] = None,
               sort: Optional[List[UsersSortingOptions]] = None,
-              admin: Optional[Admin] = None,
+              admins: Optional[List[str]] = None,
               reset_strategy: Optional[Union[UserDataLimitResetStrategy, list]] = None,
               return_with_count: bool = False) -> Union[List[User], Tuple[List[User], int]]:
-    query = db.query(User)
+    query = get_user_queryset(db)
+
+    if search:
+        query = query.filter(or_(User.username.ilike(f"%{search}%"), User.note.ilike(f"%{search}%")))
 
     if usernames:
-        if len(usernames) == 1:
-            query = query.filter(User.username.ilike(f"%{usernames[0]}%"))
-        else:
-            query = query.filter(User.username.in_(usernames))
+        query = query.filter(User.username.in_(usernames))
 
     if status:
         if isinstance(status, list):
@@ -141,8 +151,8 @@ def get_users(db: Session,
         else:
             query = query.filter(User.data_limit_reset_strategy == reset_strategy)
 
-    if admin:
-        query = query.filter(User.admin == admin)
+    if admins:
+        query = query.filter(User.admin.has(Admin.username.in_(admins)))
 
     # count it before applying limit and offset
     if return_with_count:
@@ -225,6 +235,7 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None):
         note=user.note,
         on_hold_expire_duration=(user.on_hold_expire_duration or None),
         on_hold_timeout=(user.on_hold_timeout or None),
+        auto_delete_in_days=user.auto_delete_in_days
     )
     db.add(dbuser)
     db.commit()
@@ -357,7 +368,7 @@ def update_user_sub(db: Session, dbuser: User, user_agent: str):
 
 
 def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
-    query = db.query(User)
+    query = get_user_queryset(db)
 
     if admin:
         query = query.filter(User.admin == admin)
@@ -373,8 +384,49 @@ def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
     db.commit()
 
 
+def autodelete_expired_users(db: Session,
+                             include_limited_users: bool = False) -> List[User]:
+    """
+    Deletes expired (optionally also limited) users whose auto-delete time has passed.
+
+    Args:
+        db (Session): Database session
+        include_limited_users (bool, optional): Whether to delete limited users as well.
+            Defaults to False.
+
+    Returns:
+        list[User]: List of deleted users.
+    """
+    target_status = (
+        [UserStatus.expired] if not include_limited_users
+        else [UserStatus.expired, UserStatus.limited]
+    )
+
+    auto_delete = coalesce(User.auto_delete_in_days, USERS_AUTODELETE_DAYS)
+
+    query = db.query(
+        User, auto_delete,  # Use global auto-delete days as fallback
+    ).filter(
+        auto_delete >= 0,  # Negative values prevent auto-deletion
+        User.status.in_(target_status),
+    )
+
+    # TODO: Handle time filter in query itself (NOTE: Be careful with sqlite's strange datetime handling)
+    expired_users = [
+        user
+        for (user, auto_delete) in query
+        if user.last_status_change + timedelta(days=auto_delete) <= datetime.utcnow()
+    ]
+
+    if expired_users:
+        remove_users(db, expired_users)
+
+    return expired_users
+
+
 def update_user_status(db: Session, dbuser: User, status: UserStatus):
     dbuser.status = status
+    dbuser.last_status_change = datetime.utcnow()
     db.commit()
     db.refresh(dbuser)
     return dbuser

@@ -11,7 +11,7 @@ from fastapi_responses import custom_openapi
 
 from config import DOCS, XRAY_SUBSCRIPTION_PATH
 
-__version__ = "0.4.9"
+__version__ = "0.5.1"
 
 
 app = FastAPI(
