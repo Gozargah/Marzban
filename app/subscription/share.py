@@ -19,7 +19,8 @@ if TYPE_CHECKING:
 
 from config import (ACTIVE_STATUS_TEXT, DISABLED_STATUS_TEXT,
                     EXPIRED_STATUS_TEXT, LIMITED_STATUS_TEXT,
-                    ONHOLD_STATUS_TEXT, RANDOMIZE_SUBSCRIPTION_CONFIGS)
+                    ONHOLD_STATUS_TEXT, RANDOMIZE_SUBSCRIPTION_CONFIGS,
+                    EXTERNAL_CONFIG)
 
 SERVER_IP = get_public_ip()
 SERVER_IPV6 = get_public_ipv6()
@@ -144,6 +145,7 @@ def generate_subscription(
 
     if config_format == "v2ray":
         config = "\n".join(generate_v2ray_links(**kwargs))
+        config += "\n" + EXTERNAL_CONFIG 
     elif config_format == "clash-meta":
         config = generate_clash_subscription(**kwargs, is_meta=True)
     elif config_format == "clash":
