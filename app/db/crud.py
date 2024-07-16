@@ -128,6 +128,7 @@ def get_users(db: Session,
               search: Optional[str] = None,
               status: Optional[Union[UserStatus, list]] = None,
               sort: Optional[List[UsersSortingOptions]] = None,
+              admin: Optional[Admin] = None,
               admins: Optional[List[str]] = None,
               reset_strategy: Optional[Union[UserDataLimitResetStrategy, list]] = None,
               return_with_count: bool = False) -> Union[List[User], Tuple[List[User], int]]:
@@ -150,6 +151,9 @@ def get_users(db: Session,
             query = query.filter(User.data_limit_reset_strategy.in_(reset_strategy))
         else:
             query = query.filter(User.data_limit_reset_strategy == reset_strategy)
+
+    if admin:
+        query = query.filter(User.admin == admin)
 
     if admins:
         query = query.filter(User.admin.has(Admin.username.in_(admins)))
