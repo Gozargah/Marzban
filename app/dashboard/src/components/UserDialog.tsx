@@ -30,6 +30,11 @@ import {
   chakra,
   useColorMode,
   useToast,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
 } from "@chakra-ui/react";
 import {
   ChartPieIcon,
@@ -112,6 +117,8 @@ const schema = z.object({
       return 0;
     }),
   expire: z.number().nullable(),
+  on_hold_expire_duration: z.string().nullable(),
+  on_hold_timeout: z.string().nullable(),
   data_limit_reset_strategy: z.string(),
   status: z.string(),
   inbounds: z.record(z.string(), z.array(z.string())).transform((ins) => {
@@ -151,6 +158,8 @@ const getDefaultValues = (): FormType => {
     username: "",
     data_limit_reset_strategy: "no_reset",
     status: "active",
+    on_hold_expire_duration: null,
+    on_hold_timeout: null,
     note: "",
     inbounds,
     proxies: {
@@ -259,6 +268,8 @@ export const UserDialog: FC<UserDialogProps> = () => {
 
     let body: UserCreate = {
       ...rest,
+      on_hold_expire_duration: values.on_hold_expire_duration && Number(values.on_hold_expire_duration),
+      on_hold_timeout: values.on_hold_timeout && Number(values.on_hold_timeout),
       data_limit: values.data_limit,
       proxies: mergeProxies(selected_proxies, values.proxies),
       data_limit_reset_strategy:
@@ -266,7 +277,9 @@ export const UserDialog: FC<UserDialogProps> = () => {
           ? values.data_limit_reset_strategy
           : "no_reset",
       status:
-        values.status === "active" || values.status === "disabled"
+        values.status === "active" ||
+        values.status === "disabled" ||
+        values.status === "on_hold"
           ? values.status
           : "active",
     };
@@ -356,6 +369,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                 }}
                 gap={3}
               >
+                {/* left panel (Usernamem, data limit etc. inputs) */}
                 <GridItem>
                   <VStack justifyContent="space-between">
                     <Flex
@@ -363,6 +377,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       gridAutoRows="min-content"
                       w="full"
                     >
+                      {/* username section */}
                       <FormControl mb={"10px"}>
                         <FormLabel>{t("username")}</FormLabel>
                         <HStack>
@@ -411,6 +426,8 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           )}
                         </HStack>
                       </FormControl>
+
+                      {/* data limit section */}
                       <FormControl mb={"10px"}>
                         <FormLabel>{t("userDialog.dataLimit")}</FormLabel>
                         <Controller
@@ -464,75 +481,99 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           />
                         </FormControl>
                       </Collapse>
+
+                      {/* Select expire date section */}
                       <FormControl mb={"10px"}>
-                        <FormLabel>{t("userDialog.expiryDate")}</FormLabel>
-                        <Controller
-                          name="expire"
-                          control={form.control}
-                          render={({ field }) => {
-                            function createDateAsUTC(num: number) {
-                              return dayjs(
-                                dayjs(num * 1000).utc()
-                                // .format("MMMM D, YYYY") // exception with: dayjs.locale(lng);
-                              ).toDate();
-                            }
-                            const { status, time } = relativeExpiryDate(
-                              field.value
-                            );
-                            return (
-                              <>
-                                <ReactDatePicker
-                                  locale={i18n.language.toLocaleLowerCase()}
-                                  dateFormat={t("dateFormat")}
-                                  minDate={new Date()}
-                                  selected={
-                                    field.value
-                                      ? createDateAsUTC(field.value)
-                                      : undefined
-                                  }
-                                  onChange={(date: Date) => {
-                                    field.onChange({
-                                      target: {
-                                        value: date
-                                          ? dayjs(
-                                              dayjs(date)
-                                                .set("hour", 23)
-                                                .set("minute", 59)
-                                                .set("second", 59)
-                                            )
-                                              .utc()
-                                              .valueOf() / 1000
-                                          : 0,
-                                        name: "expire",
-                                      },
-                                    });
+                        <Tabs isFitted variant="enclosed">
+                          <TabList mb="1em">
+                            <Tab fontSize={"sm"}>Active</Tab>
+                            <Tab fontSize={"sm"}>On Hold</Tab>
+                          </TabList>
+                          <TabPanels>
+                            {/* active panel */}
+                            <TabPanel padding={0}>
+                              {/* expire date controller */}
+                              <Box>
+                                <FormLabel>
+                                  {t("userDialog.expiryDate")}
+                                </FormLabel>
+                                <Controller
+                                  name="expire"
+                                  control={form.control}
+                                  render={({ field }) => {
+                                    function createDateAsUTC(num: number) {
+                                      return dayjs(
+                                        dayjs(num * 1000).utc()
+                                        // .format("MMMM D, YYYY") // exception with: dayjs.locale(lng);
+                                      ).toDate();
+                                    }
+                                    const { status, time } = relativeExpiryDate(
+                                      field.value
+                                    );
+                                    return (
+                                      <>
+                                        <ReactDatePicker
+                                          locale={i18n.language.toLocaleLowerCase()}
+                                          dateFormat={t("dateFormat")}
+                                          minDate={new Date()}
+                                          selected={
+                                            field.value
+                                              ? createDateAsUTC(field.value)
+                                              : undefined
+                                          }
+                                          onChange={(date: Date) => {
+                                            field.onChange({
+                                              target: {
+                                                value: date
+                                                  ? dayjs(
+                                                      dayjs(date)
+                                                        .set("hour", 23)
+                                                        .set("minute", 59)
+                                                        .set("second", 59)
+                                                    )
+                                                      .utc()
+                                                      .valueOf() / 1000
+                                                  : 0,
+                                                name: "expire",
+                                              }
+                                            });
+                                          }}
+                                          customInput={
+                                            <Input
+                                              size="sm"
+                                              type="text"
+                                              borderRadius="6px"
+                                              clearable
+                                              disabled={disabled}
+                                              error={
+                                                form.formState.errors.expire
+                                                  ?.message
+                                              }
+                                            />
+                                          }
+                                        />
+                                        {field.value ? (
+                                          <FormHelperText>
+                                            {t(status, { time: time })}
+                                          </FormHelperText>
+                                        ) : (
+                                          ""
+                                        )}
+                                      </>
+                                    );
                                   }}
-                                  customInput={
-                                    <Input
-                                      size="sm"
-                                      type="text"
-                                      borderRadius="6px"
-                                      clearable
-                                      disabled={disabled}
-                                      error={
-                                        form.formState.errors.expire?.message
-                                      }
-                                    />
-                                  }
                                 />
-                                {field.value ? (
-                                  <FormHelperText>
-                                    {t(status, { time: time })}
-                                  </FormHelperText>
-                                ) : (
-                                  ""
-                                )}
-                              </>
-                            );
-                          }}
-                        />
+                              </Box>
+                            </TabPanel>
+                            {/* on hold panel */}
+                            <TabPanel padding={0}>
+                              <p>On Hold Mode</p>
+                            </TabPanel>
+                          </TabPanels>
+                        </Tabs>
                       </FormControl>
 
+                      {/* Write note section */}
                       <FormControl
                         mb={"10px"}
                         isInvalid={!!form.formState.errors.note}
@@ -555,6 +596,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                     )}
                   </VStack>
                 </GridItem>
+                {/* right panel (Protocols) */}
                 <GridItem>
                   <FormControl
                     isInvalid={
