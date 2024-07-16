@@ -15,7 +15,7 @@ from app.utils.system import get_public_ip, get_public_ipv6, readable_size
 from . import *
 
 if TYPE_CHECKING:
-    from app.models.user import UserResponse
+    from app.models.user import UserResponse, UserStatus
 
 from config import (ACTIVE_STATUS_TEXT, DISABLED_STATUS_TEXT,
                     EXPIRED_STATUS_TEXT, LIMITED_STATUS_TEXT,
@@ -145,7 +145,8 @@ def generate_subscription(
 
     if config_format == "v2ray":
         config = "\n".join(generate_v2ray_links(**kwargs))
-        config += "\n" + EXTERNAL_CONFIG 
+        if user.status == UserStatus.active:
+            config += "\n" + EXTERNAL_CONFIG 
     elif config_format == "clash-meta":
         config = generate_clash_subscription(**kwargs, is_meta=True)
     elif config_format == "clash":
