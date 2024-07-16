@@ -5,6 +5,7 @@ from app import telegram
 from app.db import Session, create_notification_reminder, get_admin_by_id, GetDB
 from app.db.models import UserStatus, User
 from app.models.admin import Admin
+from app.models.node import NodeResponse
 from app.models.user import ReminderType, UserResponse
 from app.utils.notification import (Notification, ReachedDaysLeft,
                                     ReachedUsagePercent, UserCreated,
@@ -154,3 +155,21 @@ def expire_days_reached(db: Session, days: int, user: UserResponse, user_id: int
     create_notification_reminder(
         db, ReminderType.expiration_date, expires_at=dt.utcfromtimestamp(expire),
         user_id=user_id)
+
+def node_error_monitoring(node: NodeResponse) -> None:
+    try:
+        telegram.report_node_error(
+            name=node.name,
+            status=node.status,
+            error=node.message if node.message else "no error message"
+        )
+    except Exception:
+        pass
+    try:
+        discord.report_node_error(
+            name=node.name,
+            status=node.status,
+            error=node.message if node.message else "no error message"
+        )
+    except Exception:
+        pass

@@ -68,6 +68,13 @@ ONHOLD_STATUS_TEXT = config("ONHOLD_STATUS_TEXT", default="On-Hold")
 USERS_AUTODELETE_DAYS = config("USERS_AUTODELETE_DAYS", default=-1, cast=int)
 USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS = config("USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS", default=False, cast=bool)
 
+NODE_MONITORING = config("NODE_MONITORING", default=False, cast=bool)
+EXLURED_NODE_MONITORING = config(
+    'EXCLUDED_NAME_NODES_ERROR_MONITORING',
+    default="",
+    cast=lambda v: [str(i) for i in (s.strip() for s in v.split(','))]
+)
+
 # USERNAME: PASSWORD
 SUDOERS = {config("SUDO_USERNAME"): config("SUDO_PASSWORD")} \
     if config("SUDO_USERNAME", default='') and config("SUDO_PASSWORD", default='') \
