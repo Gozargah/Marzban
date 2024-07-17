@@ -648,7 +648,9 @@ def links_command(call: types.CallbackQuery):
 
     text = f"<code>{user.subscription_url}</code>\n\n\n"
     for link in user.links:
-        text += f"<code>{link}</code>\n\n"
+        if len(text) > 4056 :
+            text += '\n\n<b>...</b>'
+            break
 
     bot.edit_message_text(
         text,
@@ -713,6 +715,9 @@ def genqr_command(call: types.CallbackQuery):
 
     text = f"<code>{user.subscription_url}</code>\n\n\n"
     for link in user.links:
+        if len(text) > 4056 :
+            text += '\n\n<b>...</b>'
+            break
         text += f"<code>{link}</code>\n\n"
 
     bot.send_message(
