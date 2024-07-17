@@ -661,7 +661,8 @@ def links_command(call: types.CallbackQuery):
 
 @bot.callback_query_handler(cb_query_startswith("genqr:"), is_admin=True)
 def genqr_command(call: types.CallbackQuery):
-    username = call.data.split(":")[1]
+    qr_select = call.data.split(":")[1]
+    username = call.data.split(":")[2]
 
     with GetDB() as db:
         db_user = crud.get_user(db, username)
@@ -672,37 +673,39 @@ def genqr_command(call: types.CallbackQuery):
 
     bot.answer_callback_query(call.id, "Generating QR code...")
 
-    for link in user.links:
-        f = io.BytesIO()
-        qr = qrcode.QRCode(border=6)
-        qr.add_data(link)
-        qr.make_image().save(f)
-        f.seek(0)
-        bot.send_photo(
-            call.message.chat.id,
-            photo=f,
-            caption=f"<code>{link}</code>",
-            parse_mode="HTML"
-        )
-    with io.BytesIO() as f:
-        qr = qrcode.QRCode(border=6)
-        qr.add_data(user.subscription_url)
-        qr.make_image().save(f)
-        f.seek(0)
-        bot.send_photo(
-            call.message.chat.id,
-            photo=f,
-            caption=get_user_info_text(
-                status=user.status,
-                username=user.username,
-                sub_url=user.subscription_url,
-                data_limit=user.data_limit,
-                usage=user.used_traffic,
-                expire=user.expire
-            ),
-            parse_mode="HTML",
-            reply_markup=BotKeyboard.subscription_page(user.subscription_url)
-        )
+    if qr_select == 'configs':
+        for link in user.links:
+            f = io.BytesIO()
+            qr = qrcode.QRCode(border=6)
+            qr.add_data(link)
+            qr.make_image().save(f)
+            f.seek(0)
+            bot.send_photo(
+                call.message.chat.id,
+                photo=f,
+                caption=f"<code>{link}</code>",
+                parse_mode="HTML"
+            )
+    else:
+        with io.BytesIO() as f:
+            qr = qrcode.QRCode(border=6)
+            qr.add_data(user.subscription_url)
+            qr.make_image().save(f)
+            f.seek(0)
+            bot.send_photo(
+                call.message.chat.id,
+                photo=f,
+                caption=get_user_info_text(
+                    status=user.status,
+                    username=user.username,
+                    sub_url=user.subscription_url,
+                    data_limit=user.data_limit,
+                    usage=user.used_traffic,
+                    expire=user.expire
+                ),
+                parse_mode="HTML",
+                reply_markup=BotKeyboard.subscription_page(user.subscription_url)
+            )
     try:
         bot.delete_message(call.message.chat.id, call.message.message_id)
     except:
@@ -1236,7 +1239,7 @@ def select_protocols(call: types.CallbackQuery):
             {protocol: [inbound['tag'] for inbound in xray.config.inbounds_by_protocol[protocol]]})
     mem_store.set(f'{call.message.chat.id}:protocols', protocols)
 
-    if action in ["edit", "create_from_template"]:
+    if action == ["edit", "create_from_template"]:
         return bot.edit_message_text(
             call.message.text,
             call.message.chat.id,
