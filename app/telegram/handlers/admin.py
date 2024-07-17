@@ -4,7 +4,7 @@ import os
 import random
 import re
 import string
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import qrcode
 import sqlalchemy
@@ -382,7 +382,7 @@ def edit_user_command(call: types.CallbackQuery):
     elif action == "expire":
         msg = bot.send_message(
             call.message.chat.id,
-            '⬆️ Enter Expire Date (YYYY-MM-DD)\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|D) :\n⚠️ Send 0 for never expire.',
+            '⬆️ Enter Expire Date (Days)\nOr You Can Use Regex Symbol: ^[0-9]{1,3} :\n⚠️ Send 0 for never expire.',
             reply_markup=BotKeyboard.inline_cancel_action(f'user:{username}'))
         mem_store.set(f"{call.message.chat.id}:edit_msg_text", call.message.text)
         bot.clear_step_handler_by_chat_id(call.message.chat.id)
@@ -427,18 +427,12 @@ def edit_user_expire_step(message: types.Message, username: str):
             minute=59,
             second=59
         )
-        if re.match(r'^[0-9]{1,3}(M|m|D|d)$', message.text):
-            expire_date = today
-            number_pattern = r'^[0-9]{1,3}'
-            number = int(re.findall(number_pattern, message.text)[0])
-            symbol_pattern = r'(M|m|D|d)$'
-            symbol = re.findall(symbol_pattern, message.text)[0].upper()
-            if symbol == 'M':
-                expire_date = today + relativedelta(months=number)
-            elif symbol == 'D':
-                expire_date = today + relativedelta(days=number)
-        elif message.text != '0':
-            expire_date = datetime.strptime(message.text, "%Y-%m-%d")
+        
+        if message.text == '0' :
+            expire_date = None
+        elif re.match(r'^[0-9]{1,3}$', message.text):
+            number = int(message.text)
+            expire_date = today + timedelta(days=number)
         else:
             expire_date = None
         if expire_date and expire_date < today:
@@ -448,7 +442,7 @@ def edit_user_expire_step(message: types.Message, username: str):
     except ValueError:
         wait_msg = bot.send_message(
             message.chat.id,
-            '❌ Expire date must be in YYYY-MM-DD format.\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|D)')
+            '❌ Please enter the number of days as a positive integer.')
         schedule_delete_message(message.chat.id, wait_msg.message_id)
         return bot.register_next_step_handler(wait_msg, edit_user_expire_step, username=username)
 
@@ -1121,7 +1115,7 @@ def add_user_data_limit_step(message: types.Message, username: str):
     cleanup_messages(message.chat.id)
     msg = bot.send_message(
         message.chat.id,
-        '⬆️ Enter Expire Date (YYYY-MM-DD)\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|D) :\n⚠️ Send 0 for never expire.',
+        '⬆️ Enter Expire Date (Days)\nOr You Can Use Regex Symbol: ^[0-9]{1,3} :\n⚠️ Send 0 for never expire.',
         reply_markup=BotKeyboard.inline_cancel_action())
     schedule_delete_message(message.chat.id, msg.id)
     bot.register_next_step_handler(msg, add_user_expire_step, username=username, data_limit=data_limit)
@@ -1138,18 +1132,12 @@ def add_user_expire_step(message: types.Message, username: str, data_limit: int)
             minute=59,
             second=59
         )
-        if re.match(r'^[0-9]{1,3}(M|m|D|d)$', message.text):
-            expire_date = today
-            number_pattern = r'^[0-9]{1,3}'
-            number = int(re.findall(number_pattern, message.text)[0])
-            symbol_pattern = r'(M|m|D|d)$'
-            symbol = re.findall(symbol_pattern, message.text)[0].upper()
-            if symbol == 'M':
-                expire_date = today + relativedelta(months=number)
-            elif symbol == 'D':
-                expire_date = today + relativedelta(days=number)
-        elif message.text != '0':
-            expire_date = datetime.strptime(message.text, "%Y-%m-%d")
+        
+        if message.text == '0' :
+            expire_date = None
+        elif re.match(r'^[0-9]{1,3}$', message.text):
+            number = int(message.text)
+            expire_date = today + timedelta(days=number)
         else:
             expire_date = None
         if expire_date and expire_date < today:
@@ -1161,7 +1149,7 @@ def add_user_expire_step(message: types.Message, username: str, data_limit: int)
     except ValueError:
         wait_msg = bot.send_message(
             message.chat.id,
-            '❌ Expire date must be in YYYY-MM-DD format.\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|D)')
+            '❌ Please enter the number of days as a positive integer.')
         schedule_delete_message(message.chat.id, wait_msg.id)
         schedule_delete_message(message.chat.id, message.id)
         return bot.register_next_step_handler(wait_msg, add_user_expire_step, username=username, data_limit=data_limit)
@@ -1236,7 +1224,7 @@ def select_protocols(call: types.CallbackQuery):
             {protocol: [inbound['tag'] for inbound in xray.config.inbounds_by_protocol[protocol]]})
     mem_store.set(f'{call.message.chat.id}:protocols', protocols)
 
-    if action in ["edit", "create_from_template"]:
+    if action == ["edit", "create_from_template"]:
         return bot.edit_message_text(
             call.message.text,
             call.message.chat.id,
