@@ -258,6 +258,10 @@ class V2rayShareLink(str):
             payload["maxUploadSize"] = max_upload_size
             payload["maxConcurrentUploads"] = max_concurrent_uploads
 
+        elif net == 'kcp':
+            payload['seed'] = path
+            payload["host"] = host
+
         else:
             payload["path"] = path
             payload["host"] = host
@@ -337,6 +341,11 @@ class V2rayShareLink(str):
         elif net == 'quic':
             payload['key'] = path
             payload["quicSecurity"] = host
+
+        elif net == 'kcp':
+            payload['seed'] = path
+            payload["host"] = host
+
         else:
             payload["path"] = path
             payload["host"] = host
@@ -580,7 +589,7 @@ class V2rayJsonConfig(str):
         return quicSettings
 
     @staticmethod
-    def kcp_config(path=None, host=None, header=None):
+    def kcp_config(seed=None, host=None, header=None):
 
         kcpSettings = {}
         kcpSettings["header"] = {}
@@ -593,12 +602,14 @@ class V2rayJsonConfig(str):
         kcpSettings["readBufferSize"] = 2
         kcpSettings["writeBufferSize"] = 2
 
-        if path:
-            kcpSettings["seed"] = path
+        if seed:
+            kcpSettings["seed"] = seed
         if header:
             kcpSettings["header"]["type"] = header
         else:
             kcpSettings["header"]["type"] = "none"
+        if host:
+            kcpSettings["header"]["domain"] = host
 
         return kcpSettings
 
@@ -756,7 +767,7 @@ class V2rayJsonConfig(str):
                 path=path, host=host, random_user_agent=random_user_agent)
         elif net == "kcp":
             network_setting = self.kcp_config(
-                path=path, host=host, header=headers)
+                seed=path, host=host, header=headers)
         elif net == "tcp":
             network_setting = self.tcp_http_config(
                 path=path, host=host, random_user_agent=random_user_agent)

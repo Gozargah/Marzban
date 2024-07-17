@@ -239,7 +239,11 @@ class SingBoxConfiguration(str):
         net = inbound["network"]
         path = inbound["path"]
 
-        if net in ["grpc", "gun"]:
+        # not supported by sing-box
+        if net in ("kcp", "splithttp"):
+            return
+
+        if net in ("grpc", "gun"):
             path = get_grpc_gun(path)
 
         alpn = inbound.get('alpn', None)

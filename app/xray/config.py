@@ -291,6 +291,13 @@ class XRayConfig(dict):
                     settings['maxUploadSize'] = net_settings.get('maxUploadSize', 1000000)
                     settings['maxConcurrentUploads'] = net_settings.get('maxConcurrentUploads', 10)
 
+                elif net == 'kcp':
+                    header = net_settings.get('header', {})
+
+                    settings['header_type'] = header.get('type', '')
+                    settings['host'] = header.get('domain', '')
+                    settings['path'] = net_settings.get('seed', '')
+
                 else:
                     settings['path'] = net_settings.get('path', '')
                     host = net_settings.get(
