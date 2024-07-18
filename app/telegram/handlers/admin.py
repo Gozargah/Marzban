@@ -503,7 +503,7 @@ def get_user_info_text(
         'expired': '🕰',
         'limited': '🪫',
         'disabled': '❌',
-        'onhold': '🔌',
+        'on_hold': '🔌',
     }
     text = f'''\
 ┌─{statuses[status]} <b>Status:</b> <code>{status.title()}</code>
@@ -513,7 +513,7 @@ def get_user_info_text(
 │          └─<b>Data Used:</b> <code>{readable_size(usage) if usage else "-"}</code>
 │
 '''
-    if status == 'onhold':
+    if status == UserStatus.on_hold:
         if on_hold_timeout:
             if isinstance(on_hold_timeout, int):
                 timeout_str = datetime.fromtimestamp(on_hold_timeout).strftime("%Y-%m-%d")
