@@ -39,7 +39,9 @@ class ClashConfiguration(object):
         else:
             self.grpc_user_agent_data = []
 
-    def render(self):
+    def render(self, reverse=False):
+        if reverse:
+            self.data['proxies'].reverse()
         return yaml.dump(
             yaml.load(
                 render_template(
