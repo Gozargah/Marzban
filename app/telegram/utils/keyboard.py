@@ -146,6 +146,28 @@ class BotKeyboard:
         return keyboard
 
     @staticmethod
+    def user_status_select():
+        keyboard = types.InlineKeyboardMarkup()
+
+        keyboard.add(
+            types.InlineKeyboardButton(
+                text="🟢 active",
+                callback_data='status:active'
+            ),
+            types.InlineKeyboardButton(
+                text="🟣 onhold",
+                callback_data='status:onhold'
+            )
+        )
+        keyboard.add(
+            types.InlineKeyboardButton(
+                text='🔙 Back',
+                callback_data='cancel'
+            )
+        )
+        return keyboard        
+
+    @staticmethod
     def show_links(username: str):
         keyboard = types.InlineKeyboardMarkup()
 
@@ -237,7 +259,7 @@ class BotKeyboard:
                     'expired': '🕰',
                     'limited': '📵',
                     'disabled': '❌',
-                    'on_hold': '🟡'
+                    'on_hold': '🔌'
                 }
                 row.append(types.InlineKeyboardButton(
                     text=f"{p.username} ({status[p.status]})",
