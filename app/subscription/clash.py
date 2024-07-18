@@ -187,6 +187,10 @@ class ClashConfiguration(object):
         return node
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
+        # not supported by clash
+        if inbound['network'] in ("kcp", "splithttp"):
+            return
+        
         node = self.make_node(
             name=remark,
             type=inbound['protocol'],
@@ -269,6 +273,10 @@ class ClashMetaConfiguration(ClashConfiguration):
         return node
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
+        # not supported by clash-meta
+        if inbound['network'] in ("kcp", "splithttp"):
+            return
+        
         node = self.make_node(
             name=remark,
             type=inbound['protocol'],

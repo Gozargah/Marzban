@@ -831,36 +831,31 @@ class V2rayJsonConfig(str):
         }
 
         if inbound['protocol'] == 'vmess':
-            vnext = self.vmess_config(address=address,
-                                      port=port,
-                                      id=settings['id'])
-            outbound["settings"] = {}
-            outbound["settings"]["vnext"] = vnext
+            outbound["settings"] =  self.vmess_config(address=address,
+                                           port=port,
+                                           id=settings['id'])
 
         elif inbound['protocol'] == 'vless':
             if net in ('tcp', 'kcp') and headers != 'http' and tls in ('tls', 'reality'):
                 flow = settings.get('flow', '')
             else:
                 flow = None
-            vnext = self.vless_config(address=address,
-                                      port=port,
-                                      id=settings['id'],
-                                      flow=flow)
-            outbound["settings"] = {}
-            outbound["settings"]["vnext"] = vnext
+
+            outbound["settings"] = self.vless_config(address=address,
+                                           port=port,
+                                           id=settings['id'],
+                                           flow=flow)
 
         elif inbound['protocol'] == 'trojan':
-            settings = self.trojan_config(address=address,
-                                          port=port,
-                                          password=settings['password'])
-            outbound["settings"] = settings
+            outbound["settings"] = self.trojan_config(address=address,
+                                                      port=port,
+                                                      password=settings['password'])
 
         elif inbound['protocol'] == 'shadowsocks':
-            settings = self.shadowsocks_config(address=address,
-                                               port=port,
-                                               password=settings['password'],
-                                               method=settings['method'])
-            outbound["settings"] = settings
+            outbound["settings"] = self.shadowsocks_config(address=address,
+                                                           port=port,
+                                                           password=settings['password'],
+                                                           method=settings['method'])
 
         outbounds = [outbound]
         dialer_proxy = ''
