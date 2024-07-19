@@ -172,7 +172,7 @@ def report_user_subscription_revoked(username: str, by: str, admin: Admin = None
         message=text
         )
 
-def report_login(username: str, password: str, client_ip: str, is_login: str):
+def report_login(username: str, password: str, client_ip: str, status: str):
     text = """  
 🔐 <b>#Login</b>
 ➖➖➖➖➖➖➖➖➖
@@ -180,11 +180,11 @@ def report_login(username: str, password: str, client_ip: str, is_login: str):
 <b>Password</b> : <code>{password}</code>
 <b>Client ip </b>: <code>{client_ip}</code>
 ➖➖➖➖➖➖➖➖➖
-<b>login status </b>: <code>{is_login}</code>  
+<b>login status </b>: <code>{status}</code>  
     """.format(
         username=escape_html(username),
         password=escape_html(password),
-        is_login=escape_html(is_login),
+        success=escape_html(status),
         client_ip=escape_html(client_ip)
     )
 

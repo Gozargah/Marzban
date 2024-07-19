@@ -5,10 +5,11 @@ from app import app
 from app.db import Session, crud, get_db
 from app.models.admin import Admin, AdminCreate, AdminInDB, AdminModify, Token
 from app.utils.jwt import create_admin_token
-from config import SUDOERS, NOTIFE_LOGINS
+from config import SUDOERS
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from app.utils import report
+
 
 def authenticate_env_sudo(username: str, password: str) -> bool:
     try:
@@ -31,6 +32,7 @@ def get_client_ip(request: Request) -> str:
         return forwarded_for.split(",")[0].strip()
     return request.client.host
 
+
 @app.post("/api/admin/token", tags=['Admin'], response_model=Token)
 def admin_token(
     request: Request,
@@ -38,16 +40,16 @@ def admin_token(
     db: Session = Depends(get_db)
 ):
     client_ip = get_client_ip(request)
-    
+
     if authenticate_env_sudo(form_data.username, form_data.password):
-        if NOTIFE_LOGINS: report.login(form_data.username, '🔒', client_ip, True)
+        report.login(form_data.username, '🔒', client_ip, True)
         return Token(access_token=create_admin_token(form_data.username, is_sudo=True))
 
     if dbadmin := authenticate_admin(db, form_data.username, form_data.password):
-        if NOTIFE_LOGINS: report.login(form_data.username, '🔒', client_ip, True)
+        report.login(form_data.username, '🔒', client_ip, True)
         return Token(access_token=create_admin_token(form_data.username, is_sudo=dbadmin.is_sudo))
 
-    if NOTIFE_LOGINS: report.login(form_data.username, form_data.password, client_ip, False)
+    report.login(form_data.username, form_data.password, client_ip, False)
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Incorrect username or password",
