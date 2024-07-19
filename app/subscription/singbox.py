@@ -256,6 +256,11 @@ class SingBoxConfiguration(str):
         if net in ("kcp", "splithttp"):
             return
 
+        if net == "quic" and inbound["header_type"] != 'none':
+            return
+
+        if 
+
         if net in ("grpc", "gun"):
             path = get_grpc_gun(path)
 
