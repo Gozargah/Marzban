@@ -511,9 +511,8 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               minW="150px"
               cursor={"pointer"}
             >
-              <HStack spacing={0} position="relative">
+              <HStack position="relative" gap={"5px"}>
                 <Text
-                  position="absolute"
                   _dark={{
                     bg: "gray.750",
                   }}
@@ -523,17 +522,23 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   userSelect="none"
                   pointerEvents="none"
                   zIndex={1}
-                  w="100%"
                 >
                   {t("usersTable.status")}
                   {filters.status ? ": " + filters.status : ""}
                 </Text>
+                <Text>/</Text>
+                <Sort sort={filters.sort} column="expire" />
+                <HStack onClick={handleSort.bind(null, "expire")}>
+                  <Text>Sort by expire</Text>
+                </HStack>
                 <Select
                   fontSize="xs"
                   fontWeight="extrabold"
                   textTransform="uppercase"
                   cursor="pointer"
+                  position={"absolute"}
                   p={0}
+                  left={"-40px"}
                   border={0}
                   h="auto"
                   w="auto"
