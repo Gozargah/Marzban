@@ -1,13 +1,13 @@
 import json
 from random import choice
-from app.templates import render_template
-from app.subscription.funcs import get_grpc_gun
 
+from app.subscription.funcs import get_grpc_gun
+from app.templates import render_template
 from config import (
-    SINGBOX_SUBSCRIPTION_TEMPLATE,
-    MUX_TEMPLATE,
-    USER_AGENT_TEMPLATE,
     GRPC_USER_AGENT_TEMPLATE,
+    MUX_TEMPLATE,
+    SINGBOX_SUBSCRIPTION_TEMPLATE,
+    USER_AGENT_TEMPLATE
 )
 
 
@@ -38,9 +38,26 @@ class SingBoxConfiguration(str):
 
     def render(self):
         urltest_types = ["vmess", "vless", "trojan", "shadowsocks"]
-        urltest_tags = [outbound["tag"]
-                        for outbound in self.config["outbounds"] if outbound["type"] in urltest_types]
         selector_types = ["vmess", "vless", "trojan", "shadowsocks", "urltest"]
+
+        unique = set()
+        urltest_tags = []
+        i = 1
+        for outbound in self.config["outbounds"]:
+            if outbound["type"] not in urltest_types:
+                continue
+            tag = outbound["tag"]
+            if outbound["tag"] not in unique:
+                urltest_tags.append(tag)
+                unique.add(tag)
+                i = 1
+            else:
+                new_tag = f'{tag} ({i+1})'
+                urltest_tags.append(new_tag)
+                unique.add(new_tag)
+                outbound["tag"] = new_tag
+                i += 1
+
         selector_tags = [outbound["tag"]
                          for outbound in self.config["outbounds"] if outbound["type"] in selector_types]
 
