@@ -4,7 +4,7 @@ import os
 import random
 import re
 import string
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import qrcode
 import sqlalchemy
@@ -41,7 +41,8 @@ def get_system_info():
     with GetDB() as db:
         bandwidth = crud.get_system_usage(db)
         total_users = crud.get_users_count(db)
-        users_active = crud.get_users_count(db, UserStatus.active)
+        active_users = crud.get_users_count(db, UserStatus.active)
+        onhold_users = crud.get_users_count(db, UserStatus.on_hold)
     return """\
 🎛 *CPU Cores*: `{cpu_cores}`
 🖥 *CPU Usage*: `{cpu_percent}%`
@@ -56,6 +57,7 @@ def get_system_info():
 ➖➖➖➖➖➖➖
 👥 *Total Users*: `{total_users}`
 🟢 *Active Users*: `{active_users}`
+🟣 *OnHold Users*: `{onhold_users}`
 🔴 *Deactivate Users*: `{deactivate_users}`
 ➖➖➖➖➖➖➖
 ⏫ *Upload Speed*: `{up_speed}/s`
@@ -70,8 +72,9 @@ def get_system_info():
         up_bandwidth=readable_size(bandwidth.uplink),
         down_bandwidth=readable_size(bandwidth.downlink),
         total_users=total_users,
-        active_users=users_active,
-        deactivate_users=total_users - users_active,
+        active_users=active_users,
+        onhold_users=onhold_users,
+        deactivate_users=total_users -(active_users + onhold_users),
         up_speed=readable_size(realtime_bandwidth().outgoing_bytes),
         down_speed=readable_size(realtime_bandwidth().incoming_bytes)
     )
@@ -189,12 +192,14 @@ def edit_all_command(call: types.CallbackQuery):
         disabled_users = crud.get_users_count(db, UserStatus.disabled)
         expired_users = crud.get_users_count(db, UserStatus.expired)
         limited_users = crud.get_users_count(db, UserStatus.limited)
+        onhold_users = crud.get_users_count(db, UserStatus.on_hold)
         text = f'''
 👥 *Total Users*: `{total_users}`
 ✅ *Active Users*: `{active_users}`
 ❌ *Disabled Users*: `{disabled_users}`
 🕰 *Expired Users*: `{expired_users}`
-🪫 *Limited Users*: `{limited_users}`'''
+🪫 *Limited Users*: `{limited_users}`
+🔌 *OnHold Users*: `{onhold_users}`'''
     return bot.edit_message_text(
         text,
         call.message.chat.id,
@@ -476,7 +481,8 @@ def users_command(call: types.CallbackQuery):
 ✅ Active
 ❌ Disabled
 🕰 Expired
-🪫 Limited""".format(page=page, total_pages=total_pages)
+🪫 Limited
+🔌 OnHold""".format(page=page, total_pages=total_pages)
 
     bot.edit_message_text(
         text,
@@ -490,7 +496,8 @@ def users_command(call: types.CallbackQuery):
 
 def get_user_info_text(
         status: str, username: str, sub_url: str, data_limit: int = None,
-        usage: int = None, expire: int = None, note: str = None) -> str:
+        usage: int = None, expire: int = None, note: str = None,
+        on_hold_expire_duration: int = None, on_hold_timeout: datetime = None) -> str:
     statuses = {
         'active': '✅',
         'expired': '🕰',
@@ -505,8 +512,32 @@ def get_user_info_text(
 ├─🔋 <b>Data limit:</b> <code>{readable_size(data_limit) if data_limit else 'Unlimited'}</code>
 │          └─<b>Data Used:</b> <code>{readable_size(usage) if usage else "-"}</code>
 │
-├─📅 <b>Expiry Date:</b> <code>{datetime.fromtimestamp(expire).date() if expire else 'Never'}</code>
-│           └─<b>Days left:</b> <code>{(datetime.fromtimestamp(expire or 0) - datetime.now()).days if expire else '-'}</code>
+'''
+    if status == UserStatus.on_hold:
+        if on_hold_timeout:
+            if isinstance(on_hold_timeout, int):
+                timeout_str = datetime.fromtimestamp(on_hold_timeout).strftime("%Y-%m-%d")
+            else:
+                timeout_str = on_hold_timeout.strftime("%Y-%m-%d")
+        else:
+            timeout_str = 'Not set'
+        
+        text += f'''\
+├─📅 <b>On Hold Duration:</b> <code>{on_hold_expire_duration // (24*60*60)} days</code>
+│           └─<b>On Hold Timeout:</b> <code>{timeout_str}</code>
+│
+'''
+    else:
+        if expire:
+            expiry_date = datetime.fromtimestamp(expire).date() if isinstance(expire, int) else expire.date()
+            days_left = (expiry_date - datetime.now().date()).days
+        else:
+            expiry_date = 'Never'
+            days_left = '-'
+        
+        text += f'''\
+├─📅 <b>Expiry Date:</b> <code>{expiry_date}</code>
+│           └─<b>Days left:</b> <code>{days_left}</code>
 │
 '''
     if note:
@@ -613,9 +644,27 @@ def user_command(call: types.CallbackQuery):
         note = user.note or ' '
     except:
         note = None
-    text = get_user_info_text(
-        status=user.status, username=username, sub_url=user.subscription_url,
-        data_limit=user.data_limit, usage=user.used_traffic, expire=user.expire, note=note),
+    if user.status == UserStatus.on_hold:
+        text = get_user_info_text(
+            status=user.status,
+            username=user.username,
+            sub_url=user.subscription_url,
+            data_limit=user.data_limit,
+            usage=user.used_traffic,
+            on_hold_expire_duration=user.on_hold_expire_duration,
+            on_hold_timeout=user.on_hold_timeout,
+            note=note
+            )
+    else:
+        text = get_user_info_text(
+            status=user.status,
+            username=user.username,
+            sub_url=user.subscription_url,
+            data_limit=user.data_limit,
+            usage=user.used_traffic,
+            expire=user.expire,
+            note=note
+            )
     bot.edit_message_text(
         text,
         call.message.chat.id, call.message.message_id, parse_mode="HTML",
@@ -928,11 +977,8 @@ def random_username(call: types.CallbackQuery):
     template_id = int(call.data.split(":")[1] or 0)
     mem_store.delete(f'{call.message.chat.id}:template_id')
 
-    characters = string.ascii_letters + '1234567890'
-    username = random.choice(characters)
-    username += ''.join(random.choices(characters, k=4))
-    username += '_'
-    username += ''.join(random.choices(characters, k=4))
+    username = ''.join([random.choice(string.ascii_letters)] + random.choices(string.ascii_letters + string.digits, k=7))
+
 
     schedule_delete_message(call.message.chat.id, call.message.id)
     cleanup_messages(call.message.chat.id)
@@ -1125,68 +1171,94 @@ def add_user_data_limit_step(message: types.Message, username: str):
         schedule_delete_message(message.chat.id, wait_msg.id)
         schedule_delete_message(message.chat.id, message.id)
         return bot.register_next_step_handler(wait_msg, add_user_data_limit_step, username=username)
+    
     schedule_delete_message(message.chat.id, message.id)
     cleanup_messages(message.chat.id)
     msg = bot.send_message(
         message.chat.id,
-        '⬆️ Enter Expire Date (YYYY-MM-DD)\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|D) :\n⚠️ Send 0 for never expire.',
-        reply_markup=BotKeyboard.inline_cancel_action())
+        '⚡ Select User Status:\nOn Hold: Expiration starts after the first connection\nActive: Expiration starts from now',
+        reply_markup=BotKeyboard.user_status_select())
     schedule_delete_message(message.chat.id, msg.id)
-    bot.register_next_step_handler(msg, add_user_expire_step, username=username, data_limit=data_limit)
+    
+    mem_store.set(f'{message.chat.id}:data_limit', data_limit)
+    mem_store.set(f'{message.chat.id}:username', username)
 
 
-def add_user_expire_step(message: types.Message, username: str, data_limit: int):
+@bot.callback_query_handler(cb_query_startswith('status:'), is_admin=True)
+def add_user_status_step(call: types.CallbackQuery):
+    user_status = call.data.split(':')[1]
+    username = mem_store.get(f'{call.message.chat.id}:username')
+    data_limit = mem_store.get(f'{call.message.chat.id}:data_limit')
+    
+    if user_status not in ['active', 'onhold']:
+        return bot.answer_callback_query(call.id, '❌ Invalid status. Please choose Active or OnHold.')
+    
+    bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
+    bot.delete_message(call.message.chat.id, call.message.message_id)
+    
+    if user_status == 'onhold':
+        expiry_message = '⬆️ Enter Expire Days\nYou Can Use Regex Symbol: ^[0-9]{1,3}(M|D) :\n⚠️ Send 0 for never expire.'
+    else:
+        expiry_message = '⬆️ Enter Expire Date (YYYY-MM-DD)\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|D) :\n⚠️ Send 0 for never expire.'
+    
+    msg = bot.send_message(
+        call.message.chat.id,
+        expiry_message,
+        reply_markup=BotKeyboard.inline_cancel_action())
+    schedule_delete_message(call.message.chat.id, msg.id)
+    bot.register_next_step_handler(msg, add_user_expire_step, username=username, data_limit=data_limit, user_status=user_status)
+
+
+def add_user_expire_step(message: types.Message, username: str, data_limit: int, user_status: str):
     try:
         now = datetime.now()
-        today = datetime(
-            year=now.year,
-            month=now.month,
-            day=now.day,
-            hour=23,
-            minute=59,
-            second=59
-        )
+        today = datetime(year=now.year, month=now.month, day=now.day, hour=23, minute=59, second=59)
+        
         if re.match(r'^[0-9]{1,3}(M|m|D|d)$', message.text):
-            expire_date = today
             number_pattern = r'^[0-9]{1,3}'
             number = int(re.findall(number_pattern, message.text)[0])
             symbol_pattern = r'(M|m|D|d)$'
             symbol = re.findall(symbol_pattern, message.text)[0].upper()
-            if symbol == 'M':
-                expire_date = today + relativedelta(months=number)
-            elif symbol == 'D':
-                expire_date = today + relativedelta(days=number)
-        elif message.text != '0':
-            expire_date = datetime.strptime(message.text, "%Y-%m-%d")
-        else:
+            
+            if user_status == 'onhold':
+                if symbol == 'M':
+                    expire_date = number * 30
+                elif symbol == 'D':
+                    expire_date = number
+            else:  # active
+                if symbol == 'M':
+                    expire_date = today + relativedelta(months=number)
+                elif symbol == 'D':
+                    expire_date = today + relativedelta(days=number)
+        elif message.text == '0':
             expire_date = None
-        if expire_date and expire_date < today:
-            wait_msg = bot.send_message(message.chat.id, '❌ Expire date must be greater than today.')
-            schedule_delete_message(message.chat.id, wait_msg.id)
-            schedule_delete_message(message.chat.id, message.id)
-            return bot.register_next_step_handler(
-                wait_msg, add_user_expire_step, username=username, data_limit=data_limit)
-    except ValueError:
-        wait_msg = bot.send_message(
-            message.chat.id,
-            '❌ Expire date must be in YYYY-MM-DD format.\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|D)')
+        elif user_status == 'active':
+            expire_date = datetime.strptime(message.text, "%Y-%m-%d")
+            if expire_date < today:
+                raise ValueError("Expire date must be greater than today.")
+        else:
+            raise ValueError("Invalid input for onhold status.")
+    except ValueError as e:
+        error_message = str(e) if str(e) != "Invalid input for onhold status." else "Invalid input. Please try again."
+        wait_msg = bot.send_message(message.chat.id, f'❌ {error_message}')
         schedule_delete_message(message.chat.id, wait_msg.id)
         schedule_delete_message(message.chat.id, message.id)
-        return bot.register_next_step_handler(wait_msg, add_user_expire_step, username=username, data_limit=data_limit)
+        return bot.register_next_step_handler(wait_msg, add_user_expire_step, username=username, data_limit=data_limit, user_status=user_status)
+
     mem_store.set(f'{message.chat.id}:username', username)
     mem_store.set(f'{message.chat.id}:data_limit', data_limit)
+    mem_store.set(f'{message.chat.id}:user_status', user_status)
     mem_store.set(f'{message.chat.id}:expire_date', expire_date)
 
     schedule_delete_message(message.chat.id, message.id)
     cleanup_messages(message.chat.id)
     bot.send_message(
         message.chat.id,
-        'Select Protocols:\nUsernames: {}\nData Limit: {}\nExpiry Date {}'.format(
+        'Select Protocols:\nUsername: {}\nData Limit: {}\nStatus: {}\nExpiry Date: {}'.format(
             mem_store.get(f'{message.chat.id}:username'),
-            readable_size(mem_store.get(f'{message.chat.id}:data_limit'))
-            if mem_store.get(f'{message.chat.id}:data_limit') else "Unlimited",
-            mem_store.get(f'{message.chat.id}:expire_date').strftime("%Y-%m-%d")
-            if mem_store.get(f'{message.chat.id}:expire_date') else 'Never'
+            readable_size(mem_store.get(f'{message.chat.id}:data_limit')) if mem_store.get(f'{message.chat.id}:data_limit') else "Unlimited",
+            mem_store.get(f'{message.chat.id}:user_status'),
+            mem_store.get(f'{message.chat.id}:expire_date').strftime("%Y-%m-%d") if isinstance(mem_store.get(f'{message.chat.id}:expire_date'), datetime) else mem_store.get(f'{message.chat.id}:expire_date') if mem_store.get(f'{message.chat.id}:expire_date') else 'Never'
         ),
         reply_markup=BotKeyboard.select_protocols({}, action="create")
     )
@@ -1645,8 +1717,7 @@ def confirm_user_command(call: types.CallbackQuery):
     elif data == 'add_user':
         if mem_store.get(f'{call.message.chat.id}:username') is None:
             try:
-                bot.delete_message(call.message.chat.id,
-                                   call.message.message_id)
+                bot.delete_message(call.message.chat.id, call.message.message_id)
             except Exception:
                 pass
             return bot.send_message(
@@ -1665,16 +1736,38 @@ def confirm_user_command(call: types.CallbackQuery):
         inbounds: dict[str, list[str]] = {
             k: v for k, v in mem_store.get(f'{call.message.chat.id}:protocols').items() if v}
         proxies = {p: ({'flow': TELEGRAM_DEFAULT_VLESS_FLOW} if
-                       TELEGRAM_DEFAULT_VLESS_FLOW and p == ProxyTypes.VLESS else {}) for p in inbounds}
+                    TELEGRAM_DEFAULT_VLESS_FLOW and p == ProxyTypes.VLESS else {}) for p in inbounds}
 
-        new_user = UserCreate(
-            username=mem_store.get(f'{call.message.chat.id}:username'),
-            expire=int(mem_store.get(f'{call.message.chat.id}:expire_date').timestamp())
-            if mem_store.get(f'{call.message.chat.id}:expire_date') else None,
-            data_limit=mem_store.get(f'{call.message.chat.id}:data_limit')
-            if mem_store.get(f'{call.message.chat.id}:data_limit') else None,
-            proxies=proxies,
-            inbounds=inbounds)
+        user_status = mem_store.get(f'{call.message.chat.id}:user_status')
+        
+        if user_status == 'active':
+            new_user = UserCreate(
+                username=mem_store.get(f'{call.message.chat.id}:username'),
+                status='active',
+                expire=int(mem_store.get(f'{call.message.chat.id}:expire_date').timestamp())
+                if mem_store.get(f'{call.message.chat.id}:expire_date') else None,
+                data_limit=mem_store.get(f'{call.message.chat.id}:data_limit')
+                if mem_store.get(f'{call.message.chat.id}:data_limit') else None,
+                proxies=proxies,
+                inbounds=inbounds)
+        elif user_status == 'onhold':
+            expire_days = mem_store.get(f'{call.message.chat.id}:expire_date')
+            
+            new_user = UserCreate(
+                username=mem_store.get(f'{call.message.chat.id}:username'),
+                status='on_hold',
+                on_hold_expire_duration=int(expire_days) * 24 * 60 * 60,
+                on_hold_timeout=datetime.now() + timedelta(days=365),
+                data_limit=mem_store.get(f'{call.message.chat.id}:data_limit')
+                if mem_store.get(f'{call.message.chat.id}:data_limit') else None,
+                proxies=proxies,
+                inbounds=inbounds)
+        else:
+            return bot.answer_callback_query(
+                call.id,
+                '❌ Invalid user status.',
+                show_alert=True
+            )
 
         for proxy_type in new_user.proxies:
             if not xray.config.inbounds_by_protocol.get(proxy_type):
@@ -1703,15 +1796,30 @@ def confirm_user_command(call: types.CallbackQuery):
             note = user.note or ' '
         except:
             note = None
-        text = get_user_info_text(
-            status=user.status,
-            username=user.username,
-            sub_url=user.subscription_url,
-            data_limit=user.data_limit,
-            usage=user.used_traffic,
-            expire=user.expire,
-            note=note
-        )
+        
+        if user.status == 'on_hold':
+            text = get_user_info_text(
+                status=user.status,
+                username=user.username,
+                sub_url=user.subscription_url,
+                data_limit=user.data_limit,
+                usage=user.used_traffic,
+                on_hold_expire_duration=user.on_hold_expire_duration,
+                on_hold_timeout=user.on_hold_timeout,
+                note=note
+                )
+        else:
+            text = get_user_info_text(
+                status=user.status,
+                username=username,
+                sub_url=user.subscription_url,
+                data_limit=user.data_limit,
+                usage=user.used_traffic,
+                expire=user.expire,
+                note=note
+                )
+
+
         bot.edit_message_text(
             text,
             call.message.chat.id,
@@ -1721,15 +1829,22 @@ def confirm_user_command(call: types.CallbackQuery):
 
         if TELEGRAM_LOGGER_CHANNEL_ID:
             text = f'''\
-🆕 <b>#Created #From_Bot</b>
-➖➖➖➖➖➖➖➖➖
-<b>Username :</b> <code>{user.username}</code>
-<b>Traffic Limit :</b> <code>{readable_size(user.data_limit) if user.data_limit else "Unlimited"}</code>
-<b>Expire Date :</b> <code>\
-{datetime.fromtimestamp(user.expire).strftime('%H:%M:%S %Y-%m-%d') if user.expire else "Never"}</code>
-<b>Proxies :</b> <code>{"" if not proxies else ", ".join([proxy.type for proxy in proxies])}</code>
-➖➖➖➖➖➖➖➖➖
-<b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>'''
+    🆕 <b>#Created #From_Bot</b>
+    ➖➖➖➖➖➖➖➖➖
+    <b>Username :</b> <code>{user.username}</code>
+    <b>Status :</b> <code>{'Active' if user_status == 'active' else 'On Hold'}</code>
+    <b>Traffic Limit :</b> <code>{readable_size(user.data_limit) if user.data_limit else "Unlimited"}</code>
+    '''
+            if user_status == 'active':
+                text += f'<b>Expire Date :</b> <code>{datetime.fromtimestamp(user.expire).strftime("%H:%M:%S %Y-%m-%d") if user.expire else "Never"}</code>\n'
+            else:
+                text += f'<b>On Hold Expire Duration :</b> <code>{new_user.on_hold_expire_duration // (24*60*60)} days</code>\n'
+                text += f'<b>On Hold Timeout :</b> <code>{datetime.fromtimestamp(new_user.on_hold_timeout).strftime("%H:%M:%S %Y-%m-%d")}</code>\n'
+            
+            text += f'''\
+    <b>Proxies :</b> <code>{"" if not proxies else ", ".join([proxy.type for proxy in proxies])}</code>
+    ➖➖➖➖➖➖➖➖➖
+    <b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>'''
             try:
                 bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
             except:
