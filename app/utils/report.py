@@ -6,6 +6,7 @@ from app.db import Session, create_notification_reminder, get_admin_by_id, GetDB
 from app.db.models import UserStatus, User
 from app.models.admin import Admin
 from app.models.user import ReminderType, UserResponse
+from app.models.node import NodeResponse
 from app.utils.notification import (Notification, ReachedDaysLeft,
                                     ReachedUsagePercent, UserCreated,
                                     UserDataUsageReset, UserDeleted,
@@ -172,6 +173,26 @@ def login(username: str, password: str, client_ip: str, success: bool) -> None:
             password=password,
             client_ip=client_ip,
             status="✅ Success" if success else "❌ Failed"
+        )
+    except Exception:
+        pass
+
+def node_error_monitoring(node: NodeResponse) -> None:
+    try:
+        telegram.report_node_error(
+            name=node.name,
+            status=node.status,
+            xray=node.xray_version if node.xray_version else "None",
+            error=node.message if node.message else "None"
+        )
+    except Exception:
+        pass
+    try:
+        discord.report_node_error(
+            name=node.name,
+            status=node.status,
+            xray=node.xray_version if node.xray_version else "None",
+            error=node.message if node.message else "None"
         )
     except Exception:
         pass

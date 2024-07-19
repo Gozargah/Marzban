@@ -192,3 +192,24 @@ def report_login(username: str, password: str, client_ip: str, status: str):
         admin_id=None,
         message=text
         )
+
+def report_node_error(name: str, status: str, xray: str, error: str):
+    text = """
+❌ <b>#NodeError</b>
+➖➖➖➖➖➖➖➖➖
+<b>Name</b> : <code>{name}</code>
+<b>Status</b> : <code>{status}</code>
+<b>Xray-V</b> : <code>{xray}</code>
+➖➖➖➖➖➖➖➖➖
+<b>Error</b> : <b>{error}</b>\
+    """.format(
+        name=escape_html(name),
+        status=escape_html(status),
+        xray=escape_html(xray),
+        error=escape_html(error)
+    )
+
+    return report(
+        admin_id=None,
+        message=text
+        )

@@ -197,3 +197,22 @@ def report_login(username: str, password: str, client_ip: str, status: str):
         json_data=login,
         admin_webhook=None
         )
+    
+def report_node_error(name: str, status: str, xray: str, error: str):
+    NodeError = {
+        'content': '',
+        'embeds': [
+            {
+                'title': ':repeat: NodeError',
+                'description': f'**name:** {name}',
+                "footer": {
+                    "text": f"Status: {status} \nXray-V: {xray}\nError: {error}"
+                },
+                'color': int('ff0000', 16)
+            }
+        ]
+    }
+    send_webhooks(
+        json_data=NodeError,
+        admin_webhook=None
+        )

@@ -55,6 +55,9 @@ GRPC_USER_AGENT_TEMPLATE = config("GRPC_USER_AGENT_TEMPLATE", default="user_agen
 
 EXTERNAL_CONFIG = config("EXTERNAL_CONFIG", default=False, cast=str)
 
+NODE_MONITORING = config("NODE_MONITORING", default=True, cast=bool)
+EXLURED_NODE_MONITORING = config("EXLURED_NODE_MONITORING", default='').split()
+
 USE_CUSTOM_JSON_DEFAULT = config("USE_CUSTOM_JSON_DEFAULT", default=False, cast=bool)
 USE_CUSTOM_JSON_FOR_V2RAYN = config("USE_CUSTOM_JSON_FOR_V2RAYN", default=False, cast=bool)
 USE_CUSTOM_JSON_FOR_V2RAYNG = config("USE_CUSTOM_JSON_FOR_V2RAYNG", default=False, cast=bool)
