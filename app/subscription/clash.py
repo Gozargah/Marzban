@@ -191,7 +191,10 @@ class ClashConfiguration(object):
         # not supported by clash
         if inbound['network'] in ("kcp", "splithttp"):
             return
-        
+
+        if net == "quic" and inbound["header_type"] != 'none':
+            return
+
         node = self.make_node(
             name=remark,
             type=inbound['protocol'],
