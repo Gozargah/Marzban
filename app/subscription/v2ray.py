@@ -583,7 +583,7 @@ class V2rayJsonConfig(str):
 
         quicSettings = {
             "security": "none",
-            "header": {"none"},
+            "header": {},
             "key": ""
         }
 
@@ -593,6 +593,8 @@ class V2rayJsonConfig(str):
             quicSettings["security"] = host
         if header:
             quicSettings["header"]["type"] = header
+        else:
+            quicSettings["header"]["type"] = "none"
 
         return quicSettings
 
