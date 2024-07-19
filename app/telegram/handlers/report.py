@@ -184,7 +184,7 @@ def report_login(username: str, password: str, client_ip: str, status: str):
     """.format(
         username=escape_html(username),
         password=escape_html(password),
-        success=escape_html(status),
+        status=escape_html(status),
         client_ip=escape_html(client_ip)
     )
 
