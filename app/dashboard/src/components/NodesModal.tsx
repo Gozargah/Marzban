@@ -470,8 +470,8 @@ const NodeForm: NodeFormType = ({
             />
           </HStack>
         </HStack>
-        <HStack alignItems="flex-start">
-          <Box w="50%">
+        <HStack alignItems="flex-start" w="100%">
+          <Box w="100%">
             <CustomInput
               label={t("nodes.nodeAddress")}
               size="sm"
@@ -480,7 +480,9 @@ const NodeForm: NodeFormType = ({
               error={form.formState?.errors?.address?.message}
             />
           </Box>
-          <Box w="25%">
+        </HStack>
+        <HStack alignItems="flex-start" w="100%">
+        <Box>
             <CustomInput
               label={t("nodes.nodePort")}
               size="sm"
@@ -489,13 +491,22 @@ const NodeForm: NodeFormType = ({
               error={form.formState?.errors?.port?.message}
             />
           </Box>
-          <Box w="25%">
+          <Box>
             <CustomInput
               label={t("nodes.nodeAPIPort")}
               size="sm"
               placeholder="62051"
               {...form.register("api_port")}
               error={form.formState?.errors?.api_port?.message}
+            />
+          </Box>
+          <Box>
+            <CustomInput
+              label={t("nodes.usageCoefficient")}
+              size="sm"
+              placeholder="1"
+              {...form.register("usage_coefficient")}
+              error={form.formState?.errors?.usage_coefficient?.message}
             />
           </Box>
         </HStack>

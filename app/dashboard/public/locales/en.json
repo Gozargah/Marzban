@@ -131,6 +131,7 @@
   "nodes.editNode": "Update Node",
   "nodes.reconnect": "Reconnect",
   "nodes.reconnecting": "Reconnecting...",
+  "nodes.usageCoefficient": "Usage Ratio",
   "deleteNode.title": "Delete Node",
   "deleteNode.prompt": "Are you sure you want to delete the <b>{{name}}</b> node?",
   "deleteNode.deleteSuccess": "Node {{name}} removed successfully",

@@ -120,6 +120,7 @@
   "nodes.show-certificate": "如何证书",
   "nodes.hide-certificate": "隐藏证书",
   "nodes.reconnecting": "重连中...",
+  "nodes.usageCoefficient": "使用系数",
   "deleteNode.title": "删除节点",
   "deleteNode.prompt": "您确实要删除 <b>{{name}}</b> 节点吗？",
   "deleteNode.deleteSuccess": "节点 {{name}} 删除成功",

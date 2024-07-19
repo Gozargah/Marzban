@@ -130,6 +130,7 @@
   "nodes.show-certificate": "نمایش دادن گواهی",
   "nodes.hide-certificate": "مخفی کردن گواهی",
   "nodes.reconnecting": "درحال اتصال مجدد...",
+  "nodes.usageCoefficient": "ضریب گره",
   "deleteNode.title": "حذف گره",
   "deleteNode.prompt": "از حذف گره <b>{{name}}</b> مطمئن هستید؟",
   "deleteNode.deleteSuccess": "گره {{name}} با موفقیت حذف شد",

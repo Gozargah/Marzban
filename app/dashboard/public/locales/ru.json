@@ -127,6 +127,7 @@
   "nodes.show-certificate": "Показать сертификат",
   "nodes.hide-certificate": "Скрыть сертификат",
   "nodes.reconnecting": "Переподключение...",
+  "nodes.usageCoefficient": "Коэффициент использования",
   "deleteNode.title": "Удалить узел",
   "deleteNode.prompt": "Вы уверены, что хотите удалить узел <b>{{name}}</b>?",
   "deleteNode.deleteSuccess": "Узел {{name}} успешно удалён",
