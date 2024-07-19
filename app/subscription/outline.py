@@ -8,7 +8,11 @@ class OutlineConfiguration:
     def add_directly(self, data: dict):
         self.config.update(data)
 
-    def render(self):
+    def render(self, reverse=False):
+        if reverse:
+            items = list(self.config.items())
+            items.reverse()
+            self.config = dict(items)
         return json.dumps(self.config, indent=0)
 
     def make_outbound(

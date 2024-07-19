@@ -36,7 +36,7 @@ class SingBoxConfiguration(str):
     def add_outbound(self, outbound_data):
         self.config["outbounds"].append(outbound_data)
 
-    def render(self):
+    def render(self, reverse=False):
         urltest_types = ["vmess", "vless", "trojan", "shadowsocks"]
         urltest_tags = [outbound["tag"]
                         for outbound in self.config["outbounds"] if outbound["type"] in urltest_types]
@@ -52,6 +52,8 @@ class SingBoxConfiguration(str):
             if outbound.get("type") == "selector":
                 outbound["outbounds"] = selector_tags
 
+        if reverse:
+            self.config["outbounds"].reverse()
         return json.dumps(self.config, indent=4)
 
     @staticmethod

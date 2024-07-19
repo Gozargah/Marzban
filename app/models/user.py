@@ -276,7 +276,7 @@ class UserResponse(User):
     def validate_links(cls, v, values, **kwargs):
         if not v:
             return generate_v2ray_links(
-                values.get("proxies", {}), values.get("inbounds", {}), extra_data=values
+                values.get("proxies", {}), values.get("inbounds", {}), extra_data=values, reverse=False,
             )
         return v
 

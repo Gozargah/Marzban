@@ -39,7 +39,9 @@ class ClashConfiguration(object):
         else:
             self.grpc_user_agent_data = []
 
-    def render(self):
+    def render(self, reverse=False):
+        if reverse:
+            self.data['proxies'].reverse()
         return yaml.dump(
             yaml.load(
                 render_template(
@@ -185,6 +187,10 @@ class ClashConfiguration(object):
         return node
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
+        # not supported by clash
+        if inbound['network'] in ("kcp", "splithttp"):
+            return
+        
         node = self.make_node(
             name=remark,
             type=inbound['protocol'],
@@ -267,6 +273,10 @@ class ClashMetaConfiguration(ClashConfiguration):
         return node
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
+        # not supported by clash-meta
+        if inbound['network'] in ("kcp", "splithttp"):
+            return
+        
         node = self.make_node(
             name=remark,
             type=inbound['protocol'],
