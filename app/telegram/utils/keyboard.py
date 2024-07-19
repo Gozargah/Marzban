@@ -151,8 +151,12 @@ class BotKeyboard:
 
         keyboard.add(
             types.InlineKeyboardButton(
-                text="🖼 QR code",
-                callback_data=f'genqr:{username}'
+                text="🖼 Configs QRcode",
+                callback_data=f'genqr:configs:{username}'
+            ),
+            types.InlineKeyboardButton(
+                text="🚀 Sub QRcode",
+                callback_data=f'genqr:sub:{username}'
             )
         )
         keyboard.add(
