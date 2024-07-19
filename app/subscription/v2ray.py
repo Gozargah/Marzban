@@ -13,6 +13,7 @@ from config import (
     USER_AGENT_TEMPLATE,
     V2RAY_SUBSCRIPTION_TEMPLATE,
     GRPC_USER_AGENT_TEMPLATE,
+    EXTERNAL_CONFIG
 )
 
 
@@ -24,6 +25,8 @@ class V2rayShareLink(str):
         self.links.append(link)
 
     def render(self, reverse=False):
+        if EXTERNAL_CONFIG:
+            self.links.append(EXTERNAL_CONFIG)
         if reverse:
             self.links.reverse()
         return self.links
@@ -831,9 +834,9 @@ class V2rayJsonConfig(str):
         }
 
         if inbound['protocol'] == 'vmess':
-            outbound["settings"] =  self.vmess_config(address=address,
-                                           port=port,
-                                           id=settings['id'])
+            outbound["settings"] = self.vmess_config(address=address,
+                                                     port=port,
+                                                     id=settings['id'])
 
         elif inbound['protocol'] == 'vless':
             if net in ('tcp', 'kcp') and headers != 'http' and tls in ('tls', 'reality'):
@@ -842,9 +845,9 @@ class V2rayJsonConfig(str):
                 flow = None
 
             outbound["settings"] = self.vless_config(address=address,
-                                           port=port,
-                                           id=settings['id'],
-                                           flow=flow)
+                                                     port=port,
+                                                     id=settings['id'],
+                                                     flow=flow)
 
         elif inbound['protocol'] == 'trojan':
             outbound["settings"] = self.trojan_config(address=address,
