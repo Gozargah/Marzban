@@ -515,7 +515,7 @@ class V2rayJsonConfig(str):
             "idle_timeout": 60,
             "health_check_timeout": 20,
             "permit_without_stream": False,
-            "initial_windows_size": 35538
+            "initial_windows_size": 65536
         }
 
         if path:
@@ -829,7 +829,7 @@ class V2rayJsonConfig(str):
                 path = get_grpc_gun(path)
 
         outbound = {
-            "tag": remark,
+            "tag": "proxy",
             "protocol": protocol
         }
 
