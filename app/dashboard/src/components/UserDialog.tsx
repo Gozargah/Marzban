@@ -81,57 +81,6 @@ const UserUsageIcon = chakra(ChartPieIcon, {
   },
 });
 
-const schema = z.object({
-  username: z.string().min(1, { message: "Required" }),
-  selected_proxies: z.array(z.string()).refine((value) => value.length > 0, {
-    message: "userDialog.selectOneProtocol",
-  }),
-  note: z.string().nullable(),
-  proxies: z
-    .record(z.string(), z.record(z.string(), z.any()))
-    .transform((ins) => {
-      const deleteIfEmpty = (obj: any, key: string) => {
-        if (obj && obj[key] === "") {
-          delete obj[key];
-        }
-      };
-      deleteIfEmpty(ins.vmess, "id");
-      deleteIfEmpty(ins.vless, "id");
-      deleteIfEmpty(ins.trojan, "password");
-      deleteIfEmpty(ins.shadowsocks, "password");
-      deleteIfEmpty(ins.shadowsocks, "method");
-      return ins;
-    }),
-  data_limit: z
-    .string()
-    .min(0, "The minimum number is 0")
-    .or(z.number())
-    .nullable()
-    .transform((str) => {
-      if (str) return Number((parseFloat(String(str)) * 1073741824).toFixed(5));
-      return 0;
-    }),
-  expire: z.number().nullable(),
-  on_hold_expire_duration: z
-    .string()
-    .min(0.1, "The minimum number is 0.1")
-    .or(z.number())
-    .nullable()
-    .transform((str) => {
-      if (str) return Number(parseFloat(String(str)) * (24 * 60 * 60));
-      return 0;
-    }),
-  data_limit_reset_strategy: z.string(),
-  status: z.string(),
-  inbounds: z.record(z.string(), z.array(z.string())).transform((ins) => {
-    Object.keys(ins).forEach((protocol) => {
-      if (Array.isArray(ins[protocol]) && !ins[protocol]?.length)
-        delete ins[protocol];
-    });
-    return ins;
-  }),
-});
-
 export type UserDialogProps = {};
 
 export type FormType = Pick<UserCreate, keyof UserCreate> & {
@@ -208,6 +157,60 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const [error, setError] = useState<string | null>("");
   const toast = useToast();
   const { t, i18n } = useTranslation();
+  const schema = z.object({
+    username: z.string().min(1, { message: "Required" }),
+    selected_proxies: z.array(z.string()).refine((value) => value.length > 0, {
+      message: "userDialog.selectOneProtocol",
+    }),
+    note: z.string().nullable(),
+    proxies: z
+      .record(z.string(), z.record(z.string(), z.any()))
+      .transform((ins) => {
+        const deleteIfEmpty = (obj: any, key: string) => {
+          if (obj && obj[key] === "") {
+            delete obj[key];
+          }
+        };
+        deleteIfEmpty(ins.vmess, "id");
+        deleteIfEmpty(ins.vless, "id");
+        deleteIfEmpty(ins.trojan, "password");
+        deleteIfEmpty(ins.shadowsocks, "password");
+        deleteIfEmpty(ins.shadowsocks, "method");
+        return ins;
+      }),
+    data_limit: z
+      .string()
+      .min(0, "The minimum number is 0")
+      .or(z.number())
+      .nullable()
+      .transform((str) => {
+        if (str)
+          return Number((parseFloat(String(str)) * 1073741824).toFixed(5));
+        return 0;
+      }),
+    expire: z.number().nullable(),
+    on_hold_expire_duration: z
+      .string()
+      .min(0.1, "The minimum number is 0.1")
+      .or(z.number())
+      .nullable()
+      .refine((value) => userStatus !== "on_hold", {
+        message: "Required",
+      })
+      .transform((str) => {
+        if (str) return Number(parseFloat(String(str)) * (24 * 60 * 60));
+        return 0;
+      }),
+    data_limit_reset_strategy: z.string(),
+    status: z.string(),
+    inbounds: z.record(z.string(), z.array(z.string())).transform((ins) => {
+      Object.keys(ins).forEach((protocol) => {
+        if (Array.isArray(ins[protocol]) && !ins[protocol]?.length)
+          delete ins[protocol];
+      });
+      return ins;
+    }),
+  });
 
   const { colorMode } = useColorMode();
 
