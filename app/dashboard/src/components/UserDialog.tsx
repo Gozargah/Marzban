@@ -112,6 +112,15 @@ const schema = z.object({
       return 0;
     }),
   expire: z.number().nullable(),
+  on_hold_expire_duration: z
+    .string()
+    .min(0.1, "The minimum number is 0.1")
+    .or(z.number())
+    .nullable()
+    .transform((str) => {
+      if (str) return Number(parseFloat(String(str)) * (24 * 60 * 60));
+      return 0;
+    }),
   data_limit_reset_strategy: z.string(),
   status: z.string(),
   inbounds: z.record(z.string(), z.array(z.string())).transform((ins) => {
@@ -135,6 +144,9 @@ const formatUser = (user: User): FormType => {
     data_limit: user.data_limit
       ? Number((user.data_limit / 1073741824).toFixed(5))
       : user.data_limit,
+    on_hold_expire_duration: user.on_hold_expire_duration
+      ? Number(user.on_hold_expire_duration / (24 * 60 * 60))
+      : user.on_hold_expire_duration,
     selected_proxies: Object.keys(user.proxies) as ProxyKeys,
   };
 };
@@ -151,6 +163,7 @@ const getDefaultValues = (): FormType => {
     username: "",
     data_limit_reset_strategy: "no_reset",
     status: "active",
+    on_hold_expire_duration: null,
     note: "",
     inbounds,
     proxies: {
@@ -242,6 +255,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
   useEffect(() => {
     if (editingUser) {
       form.reset(formatUser(editingUser));
+      setUserStatus(form.getValues().status);
 
       fetchUsageWithFilter({
         start: dayjs().utc().subtract(30, "day").format("YYYY-MM-DDTHH:00:00"),
@@ -266,7 +280,9 @@ export const UserDialog: FC<UserDialogProps> = () => {
           ? values.data_limit_reset_strategy
           : "no_reset",
       status:
-        values.status === "active" || values.status === "disabled"
+        values.status === "active" ||
+        values.status === "disabled" ||
+        values.status === "on_hold"
           ? values.status
           : "active",
     };
@@ -313,6 +329,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
     setError(null);
     setUsageVisible(false);
     setUsageFilter("1m");
+    setUserStatus(null);
   };
 
   const handleResetUsage = () => {
@@ -324,6 +341,18 @@ export const UserDialog: FC<UserDialogProps> = () => {
   };
 
   const disabled = loading;
+
+  const [userStatus, setUserStatus] = useState<User["status"] | null>();
+  const [statusOnEditing, setStatusOnEditing] = useState<
+    User["status"] | null
+  >();
+
+  useEffect(() => {
+    setUserStatus(form.getValues().status);
+  }, [form]);
+  useEffect(() => {
+    setStatusOnEditing(form.getValues().status);
+  }, []);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl">
@@ -390,8 +419,8 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                         <Switch
                                           colorScheme="primary"
                                           disabled={
-                                            field.value !== "active" &&
-                                            field.value !== "disabled"
+                                            field.value !== "disabled" &&
+                                            field.value !== "on_hold"
                                           }
                                           isChecked={field.value === "active"}
                                           onChange={(e) => {
@@ -464,74 +493,174 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           />
                         </FormControl>
                       </Collapse>
-                      <FormControl mb={"10px"}>
-                        <FormLabel>{t("userDialog.expiryDate")}</FormLabel>
-                        <Controller
-                          name="expire"
-                          control={form.control}
-                          render={({ field }) => {
-                            function createDateAsUTC(num: number) {
-                              return dayjs(
-                                dayjs(num * 1000).utc()
-                                // .format("MMMM D, YYYY") // exception with: dayjs.locale(lng);
-                              ).toDate();
-                            }
-                            const { status, time } = relativeExpiryDate(
-                              field.value
-                            );
-                            return (
-                              <>
-                                <ReactDatePicker
-                                  locale={i18n.language.toLocaleLowerCase()}
-                                  dateFormat={t("dateFormat")}
-                                  minDate={new Date()}
-                                  selected={
-                                    field.value
-                                      ? createDateAsUTC(field.value)
-                                      : undefined
-                                  }
-                                  onChange={(date: Date) => {
+                      <Flex
+                        flexDirection="row"
+                        w="full"
+                        gap={"1rem"}
+                        mb={"10px"}
+                      >
+                        <FormControl
+                          display={
+                            userStatus === "on_hold" &&
+                            form.getValues().status === "on_hold"
+                              ? "none"
+                              : "block"
+                          }
+                        >
+                          <FormLabel>{t("userDialog.expiryDate")}</FormLabel>
+
+                          <Controller
+                            name="expire"
+                            control={form.control}
+                            render={({ field }) => {
+                              function createDateAsUTC(num: number) {
+                                return dayjs(
+                                  dayjs(num * 1000).utc()
+                                  // .format("MMMM D, YYYY") // exception with: dayjs.locale(lng);
+                                ).toDate();
+                              }
+                              const { status, time } = relativeExpiryDate(
+                                field.value
+                              );
+                              return (
+                                <>
+                                  <ReactDatePicker
+                                    locale={i18n.language.toLocaleLowerCase()}
+                                    dateFormat={t("dateFormat")}
+                                    minDate={new Date()}
+                                    selected={
+                                      field.value
+                                        ? createDateAsUTC(field.value)
+                                        : undefined
+                                    }
+                                    onChange={(date: Date) => {
+                                      form.setValue(
+                                        "on_hold_expire_duration",
+                                        null
+                                      );
+                                      field.onChange({
+                                        target: {
+                                          value: date
+                                            ? dayjs(
+                                                dayjs(date)
+                                                  .set("hour", 23)
+                                                  .set("minute", 59)
+                                                  .set("second", 59)
+                                              )
+                                                .utc()
+                                                .valueOf() / 1000
+                                            : 0,
+                                          name: "expire",
+                                        },
+                                      });
+                                    }}
+                                    customInput={
+                                      <Input
+                                        size="sm"
+                                        type="text"
+                                        borderRadius="6px"
+                                        clearable
+                                        disabled={disabled}
+                                        error={
+                                          form.formState.errors.expire?.message
+                                        }
+                                      />
+                                    }
+                                  />
+                                  {field.value ? (
+                                    <FormHelperText>
+                                      {t(status, { time: time })}
+                                    </FormHelperText>
+                                  ) : (
+                                    ""
+                                  )}
+                                </>
+                              );
+                            }}
+                          />
+                        </FormControl>
+
+                        <FormControl
+                          display={
+                            userStatus !== "on_hold" &&
+                            form.getValues().status !== "on_hold"
+                              ? "none"
+                              : "block"
+                          }
+                        >
+                          <FormLabel>
+                            {t("userDialog.onHoldExpireDuration")}
+                          </FormLabel>
+                          <Controller
+                            control={form.control}
+                            name="on_hold_expire_duration"
+                            render={({ field }) => {
+                              return (
+                                <Input
+                                  endAdornment="Days"
+                                  type="number"
+                                  size="sm"
+                                  borderRadius="6px"
+                                  onChange={(on_hold) => {
+                                    form.setValue("expire", null);
                                     field.onChange({
                                       target: {
-                                        value: date
-                                          ? dayjs(
-                                              dayjs(date)
-                                                .set("hour", 23)
-                                                .set("minute", 59)
-                                                .set("second", 59)
-                                            )
-                                              .utc()
-                                              .valueOf() / 1000
-                                          : 0,
-                                        name: "expire",
+                                        value: on_hold,
                                       },
                                     });
                                   }}
-                                  customInput={
-                                    <Input
-                                      size="sm"
-                                      type="text"
-                                      borderRadius="6px"
-                                      clearable
-                                      disabled={disabled}
-                                      error={
-                                        form.formState.errors.expire?.message
-                                      }
-                                    />
+                                  disabled={disabled}
+                                  error={
+                                    form.formState.errors
+                                      .on_hold_expire_duration?.message
                                   }
+                                  value={field.value ? String(field.value) : ""}
                                 />
-                                {field.value ? (
-                                  <FormHelperText>
-                                    {t(status, { time: time })}
-                                  </FormHelperText>
-                                ) : (
-                                  ""
-                                )}
-                              </>
-                            );
-                          }}
-                        />
-                      </FormControl>
+                              );
+                            }}
+                          />
+                        </FormControl>
+
+                        <FormControl flex="1">
+                          <FormLabel whiteSpace={"nowrap"}>
+                            {t("userDialog.onHold")}
+                          </FormLabel>
+                          <Controller
+                            name="status"
+                            control={form.control}
+                            render={({ field }) => {
+                              function createDateAsUTC(num: number) {
+                                return dayjs(
+                                  dayjs(num * 1000).utc()
+                                  // .format("MMMM D, YYYY") // exception with: dayjs.locale(lng);
+                                ).toDate();
+                              }
+                              const status = field.value;
+                              return (
+                                <>
+                                  {status ? (
+                                    <Switch
+                                      colorScheme="primary"
+                                      isChecked={status === "on_hold"}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          field.onChange("on_hold");
+                                          setUserStatus("on_hold");
+                                        } else {
+                                          field.onChange(statusOnEditing);
+                                          setUserStatus(statusOnEditing);
+                                        }
+                                      }}
+                                    />
+                                  ) : (
+                                    ""
+                                  )}
+                                </>
+                              );
+                            }}
+                          />
+                        </FormControl>
+                      </Flex>
 
                       <FormControl
                         mb={"10px"}

@@ -68,6 +68,8 @@
   "userDialog.revokeSubscription": "Отозвать подписку",
   "revoke": "Отозвать",
   "userDialog.total": "Всего: ",
+  "userDialog.onHold": "В режиме ожидания",
+  "userDialog.onHoldExpireDuration":"Продолжительность срока действия",
   "hostsDialog.title": "Используя эту настройку, Вы можете настроить свои inbound.",
   "hostsDialog.desc": "Используйте эти переменные, чтобы сделать его динамическим",
   "hostsDialog.username": "Имя пользователя",
