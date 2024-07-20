@@ -39,7 +39,6 @@ export type User = {
   proxies: ProxyType;
   expire: number | null;
   on_hold_expire_duration: number | null;
-  on_hold_timeout: number | null;
   data_limit: number | null;
   data_limit_reset_strategy: DataLimitResetStrategy;
   lifetime_used_traffic: number;
@@ -64,5 +63,4 @@ export type UserCreate = Pick<
   | "status"
   | "note"
   | "on_hold_expire_duration"
-  | "on_hold_timeout"
 >;
