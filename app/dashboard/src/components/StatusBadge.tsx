@@ -43,7 +43,7 @@ export const StatusBadge: FC<UserStatusProps> = ({
             fontWeight="medium"
             letterSpacing="tighter"
           >
-            {userStatus}
+            {t(userStatus)}
             {extraText && `: ${extraText}`}
           </Text>
         )}
