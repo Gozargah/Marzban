@@ -1461,6 +1461,8 @@ def confirm_user_command(call: types.CallbackQuery):
         with GetDB() as db:
             db_user = crud.get_user(db, username)
             crud.reset_user_data_usage(db, db_user)
+            if db_user.status in [UserStatus.active, UserStatus.on_hold]:
+                xray.operations.add_user(db_user)
             user = UserResponse.from_orm(db_user)
             try:
                 note = user.note or ' '
