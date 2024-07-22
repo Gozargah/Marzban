@@ -187,7 +187,7 @@ const schema = z.discriminatedUnion("status", [
     status: z.literal("active"),
     ...baseSchema,
   }),
-z.object({
+  z.object({
     status: z.literal("disabled"),
     ...baseSchema,
   }),
@@ -514,6 +514,11 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                   bg={disabled ? "gray.100" : "transparent"}
                                   _dark={{
                                     bg: disabled ? "gray.600" : "transparent",
+                                  }}
+                                  sx={{
+                                    option: {
+                                      backgroundColor: colorMode === "dark" ? "#222C3B" : "white"
+                                    }
                                   }}
                                 >
                                   {resetStrategy.map((s) => {
