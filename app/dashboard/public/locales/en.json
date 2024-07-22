@@ -68,6 +68,8 @@
   "userDialog.revokeSubscription": "Revoke Subscription",
   "revoke": "Revoke",
   "userDialog.total": "Total: ",
+  "userDialog.onHold" : "On Hold",
+  "userDialog.onHoldExpireDuration":"Expire Duration",
   "hostsDialog.title": "Using this setting, you are able to assign specific address for each inbound.",
   "hostsDialog.desc": "Use these variables to make it dynamic",
   "hostsDialog.username": "The username of the user",
@@ -131,6 +133,7 @@
   "nodes.editNode": "Update Node",
   "nodes.reconnect": "Reconnect",
   "nodes.reconnecting": "Reconnecting...",
+  "nodes.usageCoefficient": "Usage Ratio",
   "deleteNode.title": "Delete Node",
   "deleteNode.prompt": "Are you sure you want to delete the <b>{{name}}</b> node?",
   "deleteNode.deleteSuccess": "Node {{name}} removed successfully",
@@ -170,5 +173,6 @@
   "core.logs": "Logs",
   "core.configuration": "Configuration",
   "core.generalErrorMessage": "Something went wrong, please check the configuration",
-  "core.successMessage": "Core settings updated successfully"
+  "core.successMessage": "Core settings updated successfully",
+  "on_hold": "On Hold"
 }

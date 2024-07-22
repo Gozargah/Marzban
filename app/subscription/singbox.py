@@ -15,6 +15,7 @@ from config import (
 class SingBoxConfiguration(str):
 
     def __init__(self):
+        self.proxy_remarks = []
         template = render_template(SINGBOX_SUBSCRIPTION_TEMPLATE)
         self.config = json.loads(template)
         self.mux_template = render_template(MUX_TEMPLATE)
@@ -34,10 +35,21 @@ class SingBoxConfiguration(str):
         else:
             self.grpc_user_agent_data = []
 
+
         temp_settings = render_template(SINGBOX_SETTINGS_TEMPLATE)
         self.settings = json.loads(temp_settings)
 
         del temp_user_agent_data, user_agent_data, temp_grpc_user_agent_data, grpc_user_agent_data, temp_settings
+
+    def _remark_validation(self, remark):
+        if not remark in self.proxy_remarks:
+            return remark
+        c = 2
+        while True:
+            new = f'{remark} ({c})'
+            if not new in self.proxy_remarks:
+                return new
+            c += 1
 
     def add_outbound(self, outbound_data):
         self.config["outbounds"].append(outbound_data)
@@ -295,6 +307,9 @@ class SingBoxConfiguration(str):
             path = get_grpc_gun(path)
 
         alpn = inbound.get('alpn', None)
+
+        remark = self._remark_validation(remark)
+        self.proxy_remarks.append(remark)
 
         outbound = self.make_outbound(
             remark=remark,

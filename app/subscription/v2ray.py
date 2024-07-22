@@ -14,6 +14,7 @@ from config import (
     V2RAY_SUBSCRIPTION_TEMPLATE,
     V2RAY_SETTINGS_TEMPLATE,
     GRPC_USER_AGENT_TEMPLATE,
+    EXTERNAL_CONFIG
 )
 
 
@@ -25,6 +26,8 @@ class V2rayShareLink(str):
         self.links.append(link)
 
     def render(self, reverse=False):
+        if EXTERNAL_CONFIG:
+            self.links.append(EXTERNAL_CONFIG)
         if reverse:
             self.links.reverse()
         return self.links

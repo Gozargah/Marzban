@@ -16,7 +16,7 @@ from app.utils.system import get_public_ip, get_public_ipv6, readable_size
 from . import *
 
 if TYPE_CHECKING:
-    from app.models.user import UserResponse
+    from app.models.user import UserResponse, UserStatus
 
 from config import (ACTIVE_STATUS_TEXT, DISABLED_STATUS_TEXT,
                     EXPIRED_STATUS_TEXT, LIMITED_STATUS_TEXT,
