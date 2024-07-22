@@ -12,6 +12,7 @@ from config import (
     MUX_TEMPLATE,
     USER_AGENT_TEMPLATE,
     V2RAY_SUBSCRIPTION_TEMPLATE,
+    V2RAY_SETTINGS_TEMPLATE,
     GRPC_USER_AGENT_TEMPLATE,
 )
 
@@ -134,27 +135,27 @@ class V2rayShareLink(str):
 
     @classmethod
     def vmess(
-        cls,
-        remark: str,
-        address: str,
-        port: int,
-        id: Union[str, UUID],
-        host="",
-        net="tcp",
-        path="",
-        type="",
-        tls="none",
-        sni="",
-        fp="",
-        alpn="",
-        pbk="",
-        sid="",
-        spx="",
-        ais="",
-        fs="",
-        multiMode: bool = False,
-        max_upload_size: int = 1000000,
-        max_concurrent_uploads: int = 10,
+            cls,
+            remark: str,
+            address: str,
+            port: int,
+            id: Union[str, UUID],
+            host="",
+            net="tcp",
+            path="",
+            type="",
+            tls="none",
+            sni="",
+            fp="",
+            alpn="",
+            pbk="",
+            sid="",
+            spx="",
+            ais="",
+            fs="",
+            multiMode: bool = False,
+            max_upload_size: int = 1000000,
+            max_concurrent_uploads: int = 10,
     ):
         payload = {
             "add": address,
@@ -203,10 +204,10 @@ class V2rayShareLink(str):
             payload["maxConcurrentUploads"] = max_concurrent_uploads
 
         return (
-            "vmess://"
-            + base64.b64encode(
-                json.dumps(payload, sort_keys=True).encode("utf-8")
-            ).decode()
+                "vmess://"
+                + base64.b64encode(
+            json.dumps(payload, sort_keys=True).encode("utf-8")
+        ).decode()
         )
 
     @classmethod
@@ -287,10 +288,10 @@ class V2rayShareLink(str):
                 payload["spx"] = spx
 
         return (
-            "vless://"
-            + f"{id}@{address}:{port}?"
-            + urlparse.urlencode(payload)
-            + f"#{( urlparse.quote(remark))}"
+                "vless://"
+                + f"{id}@{address}:{port}?"
+                + urlparse.urlencode(payload)
+                + f"#{(urlparse.quote(remark))}"
         )
 
     @classmethod
@@ -370,20 +371,20 @@ class V2rayShareLink(str):
                 payload["spx"] = spx
 
         return (
-            "trojan://"
-            + f"{urlparse.quote(password, safe=':')}@{address}:{port}?"
-            + urlparse.urlencode(payload)
-            + f"#{urlparse.quote(remark)}"
+                "trojan://"
+                + f"{urlparse.quote(password, safe=':')}@{address}:{port}?"
+                + urlparse.urlencode(payload)
+                + f"#{urlparse.quote(remark)}"
         )
 
     @classmethod
     def shadowsocks(
-        cls, remark: str, address: str, port: int, password: str, method: str
+            cls, remark: str, address: str, port: int, password: str, method: str
     ):
         return (
-            "ss://"
-            + base64.b64encode(f"{method}:{password}".encode()).decode()
-            + f"@{address}:{port}#{urlparse.quote(remark)}"
+                "ss://"
+                + base64.b64encode(f"{method}:{password}".encode()).decode()
+                + f"@{address}:{port}#{urlparse.quote(remark)}"
         )
 
 
@@ -408,6 +409,11 @@ class V2rayJsonConfig(str):
             self.grpc_user_agent_data = grpc_user_agent_data['list']
         else:
             self.grpc_user_agent_data = []
+
+        temp_settings = render_template(V2RAY_SETTINGS_TEMPLATE)
+        self.settings = json.loads(temp_settings)
+
+        del temp_user_agent_data, user_agent_data, temp_grpc_user_agent_data, grpc_user_agent_data, temp_settings
 
     def add_config(self, remarks, outbounds):
         json_template = json.loads(self.template)
@@ -460,9 +466,10 @@ class V2rayJsonConfig(str):
         return realitySettings
 
     def ws_config(self, path=None, host=None, random_user_agent=None):
+        wsSettings = self.settings.get("wsSettings", {})
 
-        wsSettings = {}
-        wsSettings["headers"] = {}
+        if "headers" not in wsSettings:
+            wsSettings["headers"] = {}
         if path:
             wsSettings["path"] = path
         if host:
@@ -473,9 +480,10 @@ class V2rayJsonConfig(str):
         return wsSettings
 
     def httpupgrade_config(self, path=None, host=None, random_user_agent=None):
+        httpupgradeSettings = self.settings.get("httpupgradeSettings", {})
 
-        httpupgradeSettings = {}
-        httpupgradeSettings["headers"] = {}
+        if "headers" not in httpupgradeSettings:
+            httpupgradeSettings["headers"] = {}
         if path:
             httpupgradeSettings["path"] = path
         if host:
@@ -490,9 +498,8 @@ class V2rayJsonConfig(str):
                          max_upload_size: int = 1000000,
                          max_concurrent_uploads: int = 10,
                          ):
+        splithttpSettings = self.settings.get("splithttpSettings", {})
 
-        splithttpSettings = {}
-        splithttpSettings["headers"] = {}
         if path:
             splithttpSettings["path"] = path
         if host:
@@ -506,14 +513,13 @@ class V2rayJsonConfig(str):
         return splithttpSettings
 
     def grpc_config(self, path=None, host=None, multiMode=False, random_user_agent=None):
-
-        grpcSettings = {
+        grpcSettings = self.settings.get("grpcSettings", {
             "multiMode": multiMode,
             "idle_timeout": 60,
             "health_check_timeout": 20,
             "permit_without_stream": False,
             "initial_windows_size": 35538
-        }
+        })
 
         if path:
             grpcSettings["serviceName"] = path
@@ -526,40 +532,38 @@ class V2rayJsonConfig(str):
         return grpcSettings
 
     def tcp_http_config(self, path=None, host=None, random_user_agent=None):
-        tcpSettings = {}
+        tcpSettings = self.settings.get("tcpSettings", {
+            "header": {}
+        })
+        if "header" not in tcpSettings:
+            tcpSettings["header"] = {}
 
-        if any((path, host)):
-            tcpSettings["header"] = {
-                "type": "http",
-                "request": {
-                    "version": "1.1",
-                    "method": "GET",
-                    "headers": {
-                        "Accept-Encoding": ["gzip", "deflate"],
-                        "Connection": ["keep-alive"],
-                        "Pragma": "no-cache",
-                        "User-Agent": []
-                    },
-                }
-            }
+        if any((path, host, random_user_agent)):
+            if "request" not in tcpSettings["header"]:
+                tcpSettings["header"]["request"] = {}
 
-            if path:
-                tcpSettings["header"]["request"]["path"] = [path]
+        if any((random_user_agent, host)):
+            if "headers" not in tcpSettings["header"]["request"]:
+                tcpSettings["header"]["request"]["headers"] = {}
 
-            if host:
-                tcpSettings["header"]["request"]["headers"]["Host"] = [host]
+        if path:
+            tcpSettings["header"]["request"]["path"] = [path]
 
-            if random_user_agent:
-                tcpSettings["header"]["request"]["headers"]["User-Agent"] = [
-                    choice(self.user_agent_list)]
+        if host:
+            tcpSettings["header"]["request"]["headers"]["Host"] = [host]
+
+        if random_user_agent:
+            tcpSettings["header"]["request"]["headers"]["User-Agent"] = [
+                choice(self.user_agent_list)]
 
         return tcpSettings
 
     def h2_config(self, path=None, host=None, random_user_agent=None):
-
-        httpSettings = {
-            "headers": {}
-        }
+        httpSettings = self.settings.get("httpSettings", {
+            "header": {}
+        })
+        if "header" not in httpSettings:
+            httpSettings["header"] = {}
 
         if path:
             httpSettings["path"] = path
@@ -575,14 +579,16 @@ class V2rayJsonConfig(str):
 
         return httpSettings
 
-    @staticmethod
-    def quic_config(path=None, host=None, header=None):
-
-        quicSettings = {
+    def quic_config(self, path=None, host=None, header=None):
+        quicSettings = self.settings.get("quicSettings", {
             "security": "none",
-            "header": {"none"},
+            "header": {
+                "type": "none"
+            },
             "key": ""
-        }
+        })
+        if "header" not in quicSettings:
+            quicSettings["header"] = {"type": "none"}
 
         if path:
             quicSettings["key"] = path
@@ -593,11 +599,11 @@ class V2rayJsonConfig(str):
 
         return quicSettings
 
-    @staticmethod
-    def kcp_config(seed=None, host=None, header=None):
-
-        kcpSettings = {
-            "header": {},
+    def kcp_config(self, seed=None, host=None, header=None):
+        kcpSettings = self.settings.get("kcpSettings", {
+            "header": {
+                "type": "none"
+            },
             "mtu": 1350,
             "tti": 50,
             "uplinkCapacity": 12,
@@ -605,14 +611,14 @@ class V2rayJsonConfig(str):
             "congestion": False,
             "readBufferSize": 2,
             "writeBufferSize": 2,
-        }
+        })
+        if "header" not in kcpSettings:
+            kcpSettings["header"] = {"type": "none"}
 
         if seed:
             kcpSettings["seed"] = seed
         if header:
             kcpSettings["header"]["type"] = header
-        else:
-            kcpSettings["header"]["type"] = "none"
         if host:
             kcpSettings["header"]["domain"] = host
 
@@ -831,9 +837,9 @@ class V2rayJsonConfig(str):
         }
 
         if inbound['protocol'] == 'vmess':
-            outbound["settings"] =  self.vmess_config(address=address,
-                                           port=port,
-                                           id=settings['id'])
+            outbound["settings"] = self.vmess_config(address=address,
+                                                     port=port,
+                                                     id=settings['id'])
 
         elif inbound['protocol'] == 'vless':
             if net in ('tcp', 'kcp') and headers != 'http' and tls in ('tls', 'reality'):
@@ -842,9 +848,9 @@ class V2rayJsonConfig(str):
                 flow = None
 
             outbound["settings"] = self.vless_config(address=address,
-                                           port=port,
-                                           id=settings['id'],
-                                           flow=flow)
+                                                     port=port,
+                                                     id=settings['id'],
+                                                     flow=flow)
 
         elif inbound['protocol'] == 'trojan':
             outbound["settings"] = self.trojan_config(address=address,

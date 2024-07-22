@@ -1,0 +1,19 @@
+{
+  "grpcSettings": {
+    "idle_timeout": "15s",
+    "ping_timeout": "15s",
+    "permit_without_stream": false
+  },
+  "httpSettings": {
+    "idle_timeout": "15s",
+    "ping_timeout": "15s",
+    "method": "GET",
+    "headers": {}
+  },
+  "wsSettings": {
+    "headers": {}
+  },
+  "httpupgradeSettings": {
+    "headers": {}
+  }
+}
