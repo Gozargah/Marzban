@@ -187,6 +187,10 @@ const schema = z.discriminatedUnion("status", [
     status: z.literal("active"),
     ...baseSchema,
   }),
+z.object({
+    status: z.literal("disabled"),
+    ...baseSchema,
+  }),
   z.object({
     status: z.literal("on_hold"),
     on_hold_expire_duration: z.coerce
