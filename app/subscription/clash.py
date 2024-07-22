@@ -161,9 +161,6 @@ class ClashConfiguration(object):
         if network == 'grpc' or network == 'gun':
             if path:
                 net_opts['grpc-service-name'] = path
-            if random_user_agent:
-                net_opts['header'] = {"User-Agent": choice(self.user_agent_list)}
-
         if network == 'h2':
             if path:
                 net_opts['path'] = path
