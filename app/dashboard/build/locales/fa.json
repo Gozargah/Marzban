@@ -71,8 +71,8 @@
   "userDialog.startDate": "تاریخ شروع",
   "userDialog.endDate": "تاریخ پایان",
   "userDialog.total": "مجموع: ",
-  "userDialog.onHold" : "در انتظار",
-  "userDialog.onHoldExpireDuration":"مدت انقضا",
+  "userDialog.onHold": "در انتظار",
+  "userDialog.onHoldExpireDuration": "مدت انقضا",
   "hostsDialog.title": "با انتخاب این تنظیمات، می‌توانید برای هر ورودی یک آدرس منحصر به فرد انتخاب کنید.",
   "hostsDialog.desc": "برای ساخت نوشته پویا، از این متغیرها استفاده کنید",
   "hostsDialog.username": "نام کاربری کاربر",
@@ -108,7 +108,7 @@
   "hostsDialog.host.wildcard": "از <badge>*</badge> برای ساخت عبارت تصادفی استفاده کنید (برای نام‌های wildcard کار می‌کند)",
   "hostsDialog.sockopt": "Sockopt",
   "hostsDialog.muxEnable": "فعالسازی MUX",
-  "hostsDialog.randomUserAgent":"استفاده از User Agent تصادفی",
+  "hostsDialog.randomUserAgent": "استفاده از User Agent تصادفی",
   "hostsDialog.allowinsecure": "Allow Insecure",
   "hostsDialog.fragment": "الگو فرگمنت",
   "hostsDialog.fragment.info": "length,interval,packet (e.g. 10-100,100-200,tlshello)",
@@ -168,5 +168,6 @@
   "core.logs": "گزارش",
   "core.configuration": "پیکربندی",
   "core.generalErrorMessage": "مشکلی پیش آمده، لطفا پیکربندی را بررسی کنید",
-  "core.successMessage": "تنظیمات هسته با موفقیت ثبت شد"
+  "core.successMessage": "تنظیمات هسته با موفقیت ثبت شد",
+  "on_hold": "در انتظار اتصال"
 }

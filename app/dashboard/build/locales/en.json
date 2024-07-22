@@ -173,5 +173,6 @@
   "core.logs": "Logs",
   "core.configuration": "Configuration",
   "core.generalErrorMessage": "Something went wrong, please check the configuration",
-  "core.successMessage": "Core settings updated successfully"
+  "core.successMessage": "Core settings updated successfully",
+  "on_hold": "On Hold"
 }
