@@ -156,9 +156,6 @@ class SingBoxConfiguration(str):
                     transport_config['ping_timeout'] = ping_timeout
                 if permit_without_stream:
                     transport_config['permit_without_stream'] = permit_without_stream
-                if random_user_agent:
-                    transport_config['headers'] = {}
-                    transport_config['headers']['User-Agent'] = choice(self.grpc_user_agent_data)
 
             elif transport_type == "httpupgrade":
                 transport_config['host'] = host
