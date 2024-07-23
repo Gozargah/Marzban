@@ -16,19 +16,22 @@ For example, you can change these values for gRPC configs (you can change anythi
     "idle_timeout": "15s",
     "ping_timeout": "15s",
     "permit_without_stream": false
-  },
+  }
 }
 ```
 ### supported network type
-| network | support |
-|--------------------------------|-----:|
-| WebSocket | ✅ |
-| gRPC | ✅ |
-| http | ✅ |
-| kcp | ❌ |
-| tcp | ❌ |
-| httpupgrade | ✅ |
-| splithttp | ❌ |
+| network     | support |
+|-------------|--------:|
+| WebSocket   |       ✅ |
+| gRPC        |       ✅ |
+| http        |       ✅ |
+| h2          |      ♻️ |
+| kcp         |       ❌ |
+| tcp         |       ❌ |
+| httpupgrade |       ✅ |
+| splithttp   |       ❌ |
+
+♻️ In Sing-box h2 it's part of http.
 
 ## How To Use
 First of all, you need to set a directory for all of your templates (home, subscription page, etc.).
@@ -37,7 +40,7 @@ CUSTOM_TEMPLATES_DIRECTORY="/var/lib/marzban/templates/"
 ```
 Make sure you put all of your templates in this folder.\
 If you are using Docker, make sure Docker has access to this folder.\
-Then, we need to make a directory for our V2ray template.
+Then, we need to make a directory for our Sing-box template.
 ```shell
 mkdir /var/lib/marzban/templates/sing-box
 ```
@@ -49,7 +52,7 @@ SINGBOX_SETTINGS_TEMPLATE="singbox/settings.json"
 ```
 Now, restart your Marzban and enjoy.
 
-If you have already changed your env variables and you want to just update the template files, there is no need to restart Marzban.
+If you have already changed your env variables, and you want to just update the template files, there is no need to restart Marzban.
 
 ## Docs
 you can use sing-box official documentation to find out how to modify template files

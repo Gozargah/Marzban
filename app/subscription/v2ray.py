@@ -397,26 +397,23 @@ class V2rayJsonConfig(str):
         self.config = []
         self.template = render_template(V2RAY_SUBSCRIPTION_TEMPLATE)
         self.mux_template = render_template(MUX_TEMPLATE)
-        temp_user_agent_data = render_template(USER_AGENT_TEMPLATE)
-        user_agent_data = json.loads(temp_user_agent_data)
+        user_agent_data = json.loads(render_template(USER_AGENT_TEMPLATE))
 
         if 'list' in user_agent_data and isinstance(user_agent_data['list'], list):
             self.user_agent_list = user_agent_data['list']
         else:
             self.user_agent_list = []
 
-        temp_grpc_user_agent_data = render_template(GRPC_USER_AGENT_TEMPLATE)
-        grpc_user_agent_data = json.loads(temp_grpc_user_agent_data)
+        grpc_user_agent_data = json.loads(render_template(GRPC_USER_AGENT_TEMPLATE))
 
         if 'list' in grpc_user_agent_data and isinstance(grpc_user_agent_data['list'], list):
             self.grpc_user_agent_data = grpc_user_agent_data['list']
         else:
             self.grpc_user_agent_data = []
 
-        temp_settings = render_template(V2RAY_SETTINGS_TEMPLATE)
-        self.settings = json.loads(temp_settings)
+        self.settings = json.loads(render_template(V2RAY_SETTINGS_TEMPLATE))
 
-        del temp_user_agent_data, user_agent_data, temp_grpc_user_agent_data, grpc_user_agent_data, temp_settings
+        del user_agent_data, grpc_user_agent_data
 
     def add_config(self, remarks, outbounds):
         json_template = json.loads(self.template)
@@ -562,25 +559,25 @@ class V2rayJsonConfig(str):
         return tcpSettings
 
     def h2_config(self, path=None, host=None, random_user_agent=None):
-        httpSettings = self.settings.get("httpSettings", {
+        h2Settings = self.settings.get("h2Settings", {
             "header": {}
         })
-        if "header" not in httpSettings:
-            httpSettings["header"] = {}
+        if "header" not in h2Settings:
+            h2Settings["header"] = {}
 
         if path:
-            httpSettings["path"] = path
+            h2Settings["path"] = path
         else:
-            httpSettings["path"] = ""
+            h2Settings["path"] = ""
         if host:
-            httpSettings["host"] = [host]
+            h2Settings["host"] = [host]
         else:
-            httpSettings["host"] = []
+            h2Settings["host"] = []
         if random_user_agent:
-            httpSettings["headers"]["User-Agent"] = [
+            h2Settings["headers"]["User-Agent"] = [
                 choice(self.user_agent_list)]
 
-        return httpSettings
+        return h2Settings
 
     def quic_config(self, path=None, host=None, header=None):
         quicSettings = self.settings.get("quicSettings", {

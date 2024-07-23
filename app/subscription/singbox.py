@@ -15,21 +15,18 @@ class SingBoxConfiguration(str):
 
     def __init__(self):
         self.proxy_remarks = []
-        template = render_template(SINGBOX_SUBSCRIPTION_TEMPLATE)
-        self.config = json.loads(template)
+        self.config = json.loads(render_template(SINGBOX_SUBSCRIPTION_TEMPLATE))
         self.mux_template = render_template(MUX_TEMPLATE)
-        temp_user_agent_data = render_template(USER_AGENT_TEMPLATE)
-        user_agent_data = json.loads(temp_user_agent_data)
+        user_agent_data = json.loads(render_template(USER_AGENT_TEMPLATE))
 
         if 'list' in user_agent_data and isinstance(user_agent_data['list'], list):
             self.user_agent_list = user_agent_data['list']
         else:
             self.user_agent_list = []
 
-        temp_settings = render_template(SINGBOX_SETTINGS_TEMPLATE)
-        self.settings = json.loads(temp_settings)
+        self.settings = json.loads(render_template(SINGBOX_SETTINGS_TEMPLATE))
 
-        del temp_user_agent_data, user_agent_data, temp_settings
+        del user_agent_data
 
     def _remark_validation(self, remark):
         if not remark in self.proxy_remarks:

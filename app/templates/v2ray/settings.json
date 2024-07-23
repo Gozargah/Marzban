@@ -48,6 +48,11 @@
       "Pragma": "no-cache"
     }
   },
+  "h2Settings": {
+    "headers": {
+      "Pragma": "no-cache"
+    }
+  },
   "httpupgradeSettings": {
     "headers": {
       "Pragma": "no-cache"
