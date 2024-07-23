@@ -8,7 +8,6 @@ from config import (
     SINGBOX_SETTINGS_TEMPLATE,
     MUX_TEMPLATE,
     USER_AGENT_TEMPLATE,
-    GRPC_USER_AGENT_TEMPLATE,
 )
 
 
@@ -27,19 +26,10 @@ class SingBoxConfiguration(str):
         else:
             self.user_agent_list = []
 
-        temp_grpc_user_agent_data = render_template(GRPC_USER_AGENT_TEMPLATE)
-        grpc_user_agent_data = json.loads(temp_grpc_user_agent_data)
-
-        if 'list' in grpc_user_agent_data and isinstance(grpc_user_agent_data['list'], list):
-            self.grpc_user_agent_data = grpc_user_agent_data['list']
-        else:
-            self.grpc_user_agent_data = []
-
-
         temp_settings = render_template(SINGBOX_SETTINGS_TEMPLATE)
         self.settings = json.loads(temp_settings)
 
-        del temp_user_agent_data, user_agent_data, temp_grpc_user_agent_data, grpc_user_agent_data, temp_settings
+        del temp_user_agent_data, user_agent_data, temp_settings
 
     def _remark_validation(self, remark):
         if not remark in self.proxy_remarks:
@@ -147,17 +137,11 @@ class SingBoxConfiguration(str):
 
         return config
 
-    def grpc_config(self, path='', random_user_agent: bool = False):
-        config = self.settings.get("grpcSettings", {
-            "headers": {}
-        })
-        if "headers" not in config:
-            config["headers"] = {}
+    def grpc_config(self, path=''):
+        config = self.settings.get("grpcSettings", {})
 
         if path:
             config["service_name"] = path
-        if random_user_agent:
-            config["headers"]["User-Agent"] = choice(self.grpc_user_agent_data)
 
         return config
 
@@ -182,7 +166,8 @@ class SingBoxConfiguration(str):
                          path='',
                          max_early_data=None,
                          early_data_header_name=None,
-                         random_user_agent: bool = False):
+                         random_user_agent: bool = False,
+                         ):
 
         transport_config = {}
 
@@ -191,7 +176,7 @@ class SingBoxConfiguration(str):
                 transport_config = self.http_config(
                     host=host,
                     path=path,
-                    random_user_agent=random_user_agent
+                    random_user_agent=random_user_agent,
                 )
 
             elif transport_type == "ws":
@@ -200,19 +185,18 @@ class SingBoxConfiguration(str):
                     path=path,
                     random_user_agent=random_user_agent,
                     max_early_data=max_early_data,
-                    early_data_header_name=early_data_header_name
+                    early_data_header_name=early_data_header_name,
                 )
 
             elif transport_type == "grpc":
-                transport_config = self.grpc_config(
-                    path=path,
-                    random_user_agent=random_user_agent)
+                transport_config = self.grpc_config(path=path)
 
             elif transport_type == "httpupgrade":
                 transport_config = self.httpupgrade_config(
                     host=host,
                     path=path,
-                    random_user_agent=random_user_agent)
+                    random_user_agent=random_user_agent,
+                )
 
         transport_config['type'] = transport_type
         return transport_config
