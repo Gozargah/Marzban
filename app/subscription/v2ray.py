@@ -822,6 +822,10 @@ class V2rayJsonConfig(str):
         net = inbound['network']
         protocol = inbound['protocol']
         port = inbound['port']
+        if isinstance(port, str):
+            ports = port.split(',')
+            port = int(choice(ports))
+
         tls = (inbound['tls'])
         headers = inbound['header_type']
         fragment = inbound['fragment_setting']
@@ -880,7 +884,6 @@ class V2rayJsonConfig(str):
                 pass
 
         alpn = inbound.get('alpn', None)
-
         outbound["streamSettings"] = self.make_stream_setting(
             net=net,
             tls=tls,
