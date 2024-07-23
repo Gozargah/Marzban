@@ -19,6 +19,17 @@ For example, you can change these values for gRPC configs (you can change anythi
   },
 }
 ```
+### supported network type
+| network | support |
+|--------------------------------|-----:|
+| WebSocket | ✅ |
+| gRPC | ✅ |
+| http | ✅ |
+| kcp | ❌ |
+| tcp | ❌ |
+| httpupgrade | ✅ |
+| splithttp | ❌ |
+
 ## How To Use
 First of all, you need to set a directory for all of your templates (home, subscription page, etc.).
 ```shell
