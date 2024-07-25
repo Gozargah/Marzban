@@ -285,8 +285,9 @@ class UserResponse(User):
         if not v:
             salt = secrets.token_hex(8)
             url_prefix = (XRAY_SUBSCRIPTION_URL_PREFIX).replace('*', salt)
-            token = create_subscription_token(values["username"])
-            return f"{url_prefix}/{XRAY_SUBSCRIPTION_PATH}/{token}"
+            username = values["username"]
+            token = create_subscription_token(username)
+            return f"{url_prefix}/{XRAY_SUBSCRIPTION_PATH}/{token}#{username}"
         return v
 
     @validator("proxies", pre=True, always=True)
