@@ -1201,7 +1201,7 @@ def add_user_status_step(call: types.CallbackQuery):
     bot.delete_message(call.message.chat.id, call.message.message_id)
 
     if user_status == 'onhold':
-        expiry_message = '⬆️ Enter Expire Days\nYou Can Use Regex Symbol: ^[0-9]{1,3}(M|D) :\n⚠️ Send 0 for never expire.'
+        expiry_message = '⬆️ Enter Expire Days\nYou Can Use Regex Symbol: ^[0-9]{1,3}(M|D) :'
     else:
         expiry_message = '⬆️ Enter Expire Date (YYYY-MM-DD)\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|D) :\n⚠️ Send 0 for never expire.'
 
@@ -1236,6 +1236,8 @@ def add_user_expire_step(message: types.Message, username: str, data_limit: int,
                 elif symbol == 'D':
                     expire_date = today + relativedelta(days=number)
         elif message.text == '0':
+            if user_status == 'onhold':
+                raise ValueError("Expire days is required for an on hold user.")
             expire_date = None
         elif user_status == 'active':
             expire_date = datetime.strptime(message.text, "%Y-%m-%d")
@@ -1248,7 +1250,8 @@ def add_user_expire_step(message: types.Message, username: str, data_limit: int,
         wait_msg = bot.send_message(message.chat.id, f'❌ {error_message}')
         schedule_delete_message(message.chat.id, wait_msg.id)
         schedule_delete_message(message.chat.id, message.id)
-        return bot.register_next_step_handler(wait_msg, add_user_expire_step, username=username, data_limit=data_limit, user_status=user_status)
+        return bot.register_next_step_handler(
+            wait_msg, add_user_expire_step, username=username, data_limit=data_limit, user_status=user_status)
 
     mem_store.set(f'{message.chat.id}:username', username)
     mem_store.set(f'{message.chat.id}:data_limit', data_limit)
@@ -1258,7 +1261,7 @@ def add_user_expire_step(message: types.Message, username: str, data_limit: int,
     schedule_delete_message(message.chat.id, message.id)
     cleanup_messages(message.chat.id)
     if user_status == "onhold":
-        timeout_message = '⬆️ Enter timeout (YYYY-MM-DD)\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|D) :\n⚠️ Send 0 for never expire.'
+        timeout_message = '⬆️ Enter timeout (YYYY-MM-DD)\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|D) :\n⚠️ Send 0 for never timeout.'
         msg = bot.send_message(
             message.chat.id,
             timeout_message,
@@ -1268,16 +1271,17 @@ def add_user_expire_step(message: types.Message, username: str, data_limit: int,
         return bot.register_next_step_handler(msg, add_on_hold_timeout)
 
     bot.send_message(
-        message.chat.id,
-        'Select Protocols:\nUsername: {}\nData Limit: {}\nStatus: {}\nExpiry Date: {}'.format(
+        message.chat.id, 'Select Protocols:\nUsername: {}\nData Limit: {}\nStatus: {}\nExpiry Date: {}'.format(
             mem_store.get(f'{message.chat.id}:username'),
-            readable_size(mem_store.get(f'{message.chat.id}:data_limit')) if mem_store.get(
-                f'{message.chat.id}:data_limit') else "Unlimited",
-            mem_store.get(f'{message.chat.id}:user_status'),
-            mem_store.get(f'{message.chat.id}:expire_date').strftime("%Y-%m-%d") if isinstance(mem_store.get(f'{message.chat.id}:expire_date'), datetime)
-            else mem_store.get(f'{message.chat.id}:expire_date') if mem_store.get(f'{message.chat.id}:expire_date') else 'Never'),
-        reply_markup=BotKeyboard.select_protocols({}, action="create")
-    )
+            readable_size(mem_store.get(f'{message.chat.id}:data_limit'))
+            if mem_store.get(f'{message.chat.id}:data_limit') else "Unlimited", mem_store.get(
+                f'{message.chat.id}:user_status'),
+            mem_store.get(f'{message.chat.id}:expire_date').strftime("%Y-%m-%d")
+            if isinstance(mem_store.get(f'{message.chat.id}:expire_date'),
+                          datetime) else mem_store.get(f'{message.chat.id}:expire_date')
+            if mem_store.get(f'{message.chat.id}:expire_date') else 'Never'),
+        reply_markup=BotKeyboard.select_protocols({},
+                                                  action="create"))
 
 
 def add_on_hold_timeout(message: types.Message):
@@ -1313,16 +1317,17 @@ def add_on_hold_timeout(message: types.Message):
     cleanup_messages(message.chat.id)
 
     bot.send_message(
-        message.chat.id,
-        'Select Protocols:\nUsername: {}\nData Limit: {}\nStatus: {}\nExpiry Date: {}'.format(
+        message.chat.id, 'Select Protocols:\nUsername: {}\nData Limit: {}\nStatus: {}\nExpiry Date: {}'.format(
             mem_store.get(f'{message.chat.id}:username'),
-            readable_size(mem_store.get(f'{message.chat.id}:data_limit')) if mem_store.get(
-                f'{message.chat.id}:data_limit') else "Unlimited",
-            mem_store.get(f'{message.chat.id}:user_status'),
-            mem_store.get(f'{message.chat.id}:expire_date').strftime("%Y-%m-%d") if isinstance(mem_store.get(f'{message.chat.id}:expire_date'), datetime)
-            else mem_store.get(f'{message.chat.id}:expire_date') if mem_store.get(f'{message.chat.id}:expire_date') else 'Never'),
-        reply_markup=BotKeyboard.select_protocols({}, action="create")
-    )
+            readable_size(mem_store.get(f'{message.chat.id}:data_limit'))
+            if mem_store.get(f'{message.chat.id}:data_limit') else "Unlimited", mem_store.get(
+                f'{message.chat.id}:user_status'),
+            mem_store.get(f'{message.chat.id}:expire_date').strftime("%Y-%m-%d")
+            if isinstance(mem_store.get(f'{message.chat.id}:expire_date'),
+                          datetime) else mem_store.get(f'{message.chat.id}:expire_date')
+            if mem_store.get(f'{message.chat.id}:expire_date') else 'Never'),
+        reply_markup=BotKeyboard.select_protocols({},
+                                                  action="create"))
 
 
 @bot.callback_query_handler(cb_query_startswith('select_inbound:'), is_admin=True)
