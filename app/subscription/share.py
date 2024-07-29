@@ -267,6 +267,7 @@ def process_inbounds_and_tags(
             format_variables.update({"TRANSPORT": inbound["network"]})
             host_inbound = inbound.copy()
             for host in xray.hosts.get(tag, []):
+                
                 sni = ""
                 sni_list = host["sni"] or inbound["sni"]
                 if sni_list:
@@ -278,9 +279,13 @@ def process_inbounds_and_tags(
                 if req_host_list:
                     salt = secrets.token_hex(8)
                     req_host = random.choice(req_host_list).replace("*", salt)
+                
+                address = ""
+                address_list = host['address']
                 if host['address']:
                     salt = secrets.token_hex(8)
-                    address = host['address'].replace('*', salt)
+                    address = random.choice(address_list).replace('*', salt)
+                
                 if host["path"] is not None:
                     path = host["path"].format_map(format_variables)
                 else:
