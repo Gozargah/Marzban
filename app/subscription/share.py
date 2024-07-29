@@ -265,8 +265,9 @@ def process_inbounds_and_tags(
                 continue
 
             format_variables.update({"TRANSPORT": inbound["network"]})
-            host_inbound = inbound.copy()
+
             for host in xray.hosts.get(tag, []):
+                host_inbound = inbound.copy()
                 
                 sni = ""
                 sni_list = host["sni"] or inbound["sni"]
