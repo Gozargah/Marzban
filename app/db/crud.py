@@ -625,6 +625,25 @@ def autodelete_expired_users(db: Session,
     return expired_users
 
 
+def update_user_status(db: Session, dbuser: User, status: UserStatus) -> User:
+    """
+    Updates a user's status and records the time of change.
+
+    Args:
+        db (Session): Database session.
+        dbuser (User): The user to update.
+        status (UserStatus): The new status.
+
+    Returns:
+        User: The updated user object.
+    """
+    dbuser.status = status
+    dbuser.last_status_change = datetime.utcnow()
+    db.commit()
+    db.refresh(dbuser)
+    return dbuser
+
+
 def set_owner(db: Session, dbuser: User, admin: Admin) -> User:
     """
     Sets the owner (admin) of a user.
