@@ -1,14 +1,12 @@
 import json
 from random import choice
-from app.templates import render_template
-from app.subscription.funcs import get_grpc_gun
 
-from config import (
-    SINGBOX_SUBSCRIPTION_TEMPLATE,
-    SINGBOX_SETTINGS_TEMPLATE,
-    MUX_TEMPLATE,
-    USER_AGENT_TEMPLATE,
-)
+from jinja2.exceptions import TemplateNotFound
+
+from app.subscription.funcs import get_grpc_gun
+from app.templates import render_template
+from config import (MUX_TEMPLATE, SINGBOX_SETTINGS_TEMPLATE,
+                    SINGBOX_SUBSCRIPTION_TEMPLATE, USER_AGENT_TEMPLATE)
 
 
 class SingBoxConfiguration(str):
@@ -24,7 +22,10 @@ class SingBoxConfiguration(str):
         else:
             self.user_agent_list = []
 
-        self.settings = json.loads(render_template(SINGBOX_SETTINGS_TEMPLATE))
+        try:
+            self.settings = json.loads(render_template(SINGBOX_SETTINGS_TEMPLATE))
+        except TemplateNotFound:
+            self.settings = {}
 
         del user_agent_data
 

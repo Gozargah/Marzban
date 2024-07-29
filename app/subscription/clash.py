@@ -3,15 +3,12 @@ import json
 from random import choice
 
 import yaml
+from jinja2.exceptions import TemplateNotFound
 
 from app.subscription.funcs import get_grpc_gun
 from app.templates import render_template
-from config import (
-    CLASH_SUBSCRIPTION_TEMPLATE,
-    CLASH_SETTINGS_TEMPLATE,
-    MUX_TEMPLATE,
-    USER_AGENT_TEMPLATE,
-)
+from config import (CLASH_SETTINGS_TEMPLATE, CLASH_SUBSCRIPTION_TEMPLATE,
+                    MUX_TEMPLATE, USER_AGENT_TEMPLATE)
 
 
 class ClashConfiguration(object):
@@ -31,7 +28,10 @@ class ClashConfiguration(object):
         else:
             self.user_agent_list = []
 
-        self.settings = yaml.load(render_template(CLASH_SETTINGS_TEMPLATE), Loader=yaml.SafeLoader)
+        try:
+            self.settings = yaml.load(render_template(CLASH_SETTINGS_TEMPLATE), Loader=yaml.SafeLoader)
+        except TemplateNotFound:
+            self.settings = {}
 
         del user_agent_data
 
@@ -93,7 +93,7 @@ class ClashConfiguration(object):
             host="",
             max_early_data=None,
             early_data_header_name="",
-            is_httpupgrade: bool =False,
+            is_httpupgrade: bool = False,
             random_user_agent: bool = False,
     ):
         config = copy.deepcopy(self.settings.get("ws-opts", {}))

@@ -6,16 +6,13 @@ from typing import Union
 from urllib.parse import quote
 from uuid import UUID
 
+from jinja2.exceptions import TemplateNotFound
+
 from app.subscription.funcs import get_grpc_gun, get_grpc_multi
 from app.templates import render_template
-from config import (
-    MUX_TEMPLATE,
-    USER_AGENT_TEMPLATE,
-    V2RAY_SUBSCRIPTION_TEMPLATE,
-    V2RAY_SETTINGS_TEMPLATE,
-    GRPC_USER_AGENT_TEMPLATE,
-    EXTERNAL_CONFIG
-)
+from config import (EXTERNAL_CONFIG, GRPC_USER_AGENT_TEMPLATE, MUX_TEMPLATE,
+                    USER_AGENT_TEMPLATE, V2RAY_SETTINGS_TEMPLATE,
+                    V2RAY_SUBSCRIPTION_TEMPLATE)
 
 
 class V2rayShareLink(str):
@@ -207,10 +204,10 @@ class V2rayShareLink(str):
             payload["maxConcurrentUploads"] = max_concurrent_uploads
 
         return (
-                "vmess://"
-                + base64.b64encode(
-            json.dumps(payload, sort_keys=True).encode("utf-8")
-        ).decode()
+            "vmess://"
+            + base64.b64encode(
+                json.dumps(payload, sort_keys=True).encode("utf-8")
+            ).decode()
         )
 
     @classmethod
@@ -291,10 +288,10 @@ class V2rayShareLink(str):
                 payload["spx"] = spx
 
         return (
-                "vless://"
-                + f"{id}@{address}:{port}?"
-                + urlparse.urlencode(payload)
-                + f"#{(urlparse.quote(remark))}"
+            "vless://"
+            + f"{id}@{address}:{port}?"
+            + urlparse.urlencode(payload)
+            + f"#{(urlparse.quote(remark))}"
         )
 
     @classmethod
@@ -374,10 +371,10 @@ class V2rayShareLink(str):
                 payload["spx"] = spx
 
         return (
-                "trojan://"
-                + f"{urlparse.quote(password, safe=':')}@{address}:{port}?"
-                + urlparse.urlencode(payload)
-                + f"#{urlparse.quote(remark)}"
+            "trojan://"
+            + f"{urlparse.quote(password, safe=':')}@{address}:{port}?"
+            + urlparse.urlencode(payload)
+            + f"#{urlparse.quote(remark)}"
         )
 
     @classmethod
@@ -385,9 +382,9 @@ class V2rayShareLink(str):
             cls, remark: str, address: str, port: int, password: str, method: str
     ):
         return (
-                "ss://"
-                + base64.b64encode(f"{method}:{password}".encode()).decode()
-                + f"@{address}:{port}#{urlparse.quote(remark)}"
+            "ss://"
+            + base64.b64encode(f"{method}:{password}".encode()).decode()
+            + f"@{address}:{port}#{urlparse.quote(remark)}"
         )
 
 
@@ -411,7 +408,10 @@ class V2rayJsonConfig(str):
         else:
             self.grpc_user_agent_data = []
 
-        self.settings = json.loads(render_template(V2RAY_SETTINGS_TEMPLATE))
+        try:
+            self.settings = json.loads(render_template(V2RAY_SETTINGS_TEMPLATE))
+        except TemplateNotFound:
+            self.settings = {}
 
         del user_agent_data, grpc_user_agent_data
 
