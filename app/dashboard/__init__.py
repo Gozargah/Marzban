@@ -7,7 +7,7 @@ from app import app
 from config import DEBUG, VITE_BASE_API, DASHBOARD_PATH
 from fastapi.staticfiles import StaticFiles
 
-path = DASHBOARD_PATH if DASHBOARD_PATH[-1] == "/" else f"{DASHBOARD_PATH}/" 
+path = f"/{DASHBOARD_PATH}/" 
 base_dir = Path(__file__).parent
 build_dir = base_dir / 'build'
 
