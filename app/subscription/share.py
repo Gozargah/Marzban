@@ -49,7 +49,7 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict, revers
 
 
 def generate_clash_subscription(
-    proxies: dict, inbounds: dict, extra_data: dict, reverse: bool, is_meta: bool = False
+        proxies: dict, inbounds: dict, extra_data: dict, reverse: bool, is_meta: bool = False
 ) -> str:
     if is_meta is True:
         conf = ClashMetaConfiguration()
@@ -63,7 +63,7 @@ def generate_clash_subscription(
 
 
 def generate_singbox_subscription(
-    proxies: dict, inbounds: dict, extra_data: dict, reverse: bool
+        proxies: dict, inbounds: dict, extra_data: dict, reverse: bool
 ) -> str:
     conf = SingBoxConfiguration()
 
@@ -74,7 +74,7 @@ def generate_singbox_subscription(
 
 
 def generate_outline_subscription(
-    proxies: dict, inbounds: dict, extra_data: dict, reverse: bool,
+        proxies: dict, inbounds: dict, extra_data: dict, reverse: bool,
 ) -> str:
     conf = OutlineConfiguration()
 
@@ -85,7 +85,7 @@ def generate_outline_subscription(
 
 
 def generate_v2ray_json_subscription(
-    proxies: dict, inbounds: dict, extra_data: dict, reverse: bool,
+        proxies: dict, inbounds: dict, extra_data: dict, reverse: bool,
 ) -> str:
     conf = V2rayJsonConfig()
 
@@ -98,7 +98,6 @@ def generate_v2ray_json_subscription(
 def randomize_sub_config(
         config: str, config_format: str
 ) -> str:
-
     if config_format == "v2ray":
         config = config.split("\n")
         random.shuffle(config)
@@ -124,10 +123,10 @@ def randomize_sub_config(
         proxy_names = [ob['tag'] for ob in other_outbounds]
         for ob in main_outbounds:
             ob['outbounds'] = ['Best Latency'] + \
-                proxy_names if ob['type'] == 'selector' else proxy_names
+                              proxy_names if ob['type'] == 'selector' else proxy_names
         config['outbounds'] = main_outbounds + other_outbounds + \
-            [ob for ob in outbounds if ob['type']
-                in {'direct', 'block', 'dns'}]
+                              [ob for ob in outbounds if ob['type']
+                               in {'direct', 'block', 'dns'}]
         config = json.dumps(config, indent=4)
 
     elif config_format == "v2ray-json":
@@ -137,10 +136,10 @@ def randomize_sub_config(
 
 
 def generate_subscription(
-    user: "UserResponse",
-    config_format: Literal["v2ray", "clash-meta", "clash", "sing-box", "outline", "v2ray-json"],
-    as_base64: bool,
-    reverse: bool,
+        user: "UserResponse",
+        config_format: Literal["v2ray", "clash-meta", "clash", "sing-box", "outline", "v2ray-json"],
+        as_base64: bool,
+        reverse: bool,
 ) -> str:
     kwargs = {
         "proxies": user.proxies,
@@ -272,13 +271,19 @@ def setup_format_variables(extra_data: dict) -> dict:
 
 
 def process_inbounds_and_tags(
-    inbounds: dict,
-    proxies: dict,
-    format_variables: dict,
-    conf=None,
-    reverse=False,
+        inbounds: dict,
+        proxies: dict,
+        format_variables: dict,
+        conf: Union[
+            V2rayShareLink,
+            V2rayJsonConfig,
+            SingBoxConfiguration,
+            ClashConfiguration,
+            ClashMetaConfiguration,
+            OutlineConfiguration
+        ],
+        reverse=False,
 ) -> Union[List, str]:
-
     _inbounds = []
     for protocol, tags in inbounds.items():
         for tag in tags:
@@ -331,7 +336,7 @@ def process_inbounds_and_tags(
                         "path": path,
                         "fp": host["fingerprint"] or inbound.get("fp", ""),
                         "ais": host["allowinsecure"]
-                        or inbound.get("allowinsecure", ""),
+                               or inbound.get("allowinsecure", ""),
                         "mux_enable": host["mux_enable"],
                         "fragment_setting": host["fragment_setting"],
                         "random_user_agent": host["random_user_agent"],
