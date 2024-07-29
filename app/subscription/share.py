@@ -95,46 +95,6 @@ def generate_v2ray_json_subscription(
     )
 
 
-def randomize_sub_config(
-        config: str, config_format: str
-) -> str:
-    if config_format == "v2ray":
-        config = config.split("\n")
-        random.shuffle(config)
-        config = "\n".join(config)
-
-    elif config_format in ("clash-meta", "clash"):
-        config = yaml.safe_load(config)
-        random.shuffle(config['proxies'])
-        for group in config['proxy-groups']:
-            if group['name'] == '♻️ Automatic':
-                group['proxies'] = [proxy['name']
-                                    for proxy in config['proxies']]
-        config = yaml.dump(config, allow_unicode=True, sort_keys=False)
-
-    elif config_format == "sing-box":
-        config = json.loads(config)
-        outbounds = config['outbounds']
-        main_outbounds = [ob for ob in outbounds if ob['type']
-                          in {'selector', 'urltest'}]
-        other_outbounds = [ob for ob in outbounds if ob['type'] not in {
-            'selector', 'urltest', 'direct', 'block', 'dns'}]
-        random.shuffle(other_outbounds)
-        proxy_names = [ob['tag'] for ob in other_outbounds]
-        for ob in main_outbounds:
-            ob['outbounds'] = ['Best Latency'] + \
-                              proxy_names if ob['type'] == 'selector' else proxy_names
-        config['outbounds'] = main_outbounds + other_outbounds + \
-                              [ob for ob in outbounds if ob['type']
-                               in {'direct', 'block', 'dns'}]
-        config = json.dumps(config, indent=4)
-
-    elif config_format == "v2ray-json":
-        random.shuffle(config)
-
-    return config
-
-
 def generate_subscription(
         user: "UserResponse",
         config_format: Literal["v2ray", "clash-meta", "clash", "sing-box", "outline", "v2ray-json"],
@@ -163,8 +123,6 @@ def generate_subscription(
     else:
         raise ValueError(f'Unsupported format "{config_format}"')
 
-    if RANDOMIZE_SUBSCRIPTION_CONFIGS is not False:
-        config = randomize_sub_config(config, config_format)
 
     if as_base64:
         config = base64.b64encode(config.encode()).decode()
@@ -293,6 +251,8 @@ def process_inbounds_and_tags(
     inbounds = sorted(
         _inbounds, key=lambda x: index_dict.get(x[1][0], float('inf')))
 
+    all_hosts = []
+
     for protocol, tags in inbounds:
         settings = proxies.get(protocol)
         if not settings:
@@ -343,12 +303,18 @@ def process_inbounds_and_tags(
                     }
                 )
 
-                conf.add(
-                    remark=host["remark"].format_map(format_variables),
-                    address=address.format_map(format_variables),
-                    inbound=host_inbound,
-                    settings=settings.dict(no_obj=True),
-                )
+                all_hosts.append({
+                    "remark": host["remark"].format_map(format_variables),
+                    "address": address.format_map(format_variables),
+                    "inbound": host_inbound,
+                    "settings": settings.dict(no_obj=True)
+                })
+
+    if RANDOMIZE_SUBSCRIPTION_CONFIGS:
+        random.shuffle(all_hosts)
+
+    for host in all_hosts:
+        conf.add(**host)
 
     return conf.render(reverse=reverse)
 
