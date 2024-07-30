@@ -187,8 +187,16 @@ const schema = z.discriminatedUnion("status", [
     status: z.literal("active"),
     ...baseSchema,
   }),
-z.object({
+  z.object({
     status: z.literal("disabled"),
+    ...baseSchema,
+  }),
+  z.object({
+    status: z.literal("limited"),
+    ...baseSchema,
+  }),
+  z.object({
+    status: z.literal("expired"),
     ...baseSchema,
   }),
   z.object({
@@ -292,8 +300,8 @@ export const UserDialog: FC<UserDialogProps> = () => {
           : "no_reset",
       status:
         values.status === "active" ||
-        values.status === "disabled" ||
-        values.status === "on_hold"
+          values.status === "disabled" ||
+          values.status === "on_hold"
           ? values.status
           : "active",
     };
@@ -412,7 +420,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                     return (
                                       <Tooltip
                                         placement="top"
-                                        label={"status: " + t(field.value)}
+                                        label={"status: " + t(`status.${field.value}`)}
                                         textTransform="capitalize"
                                       >
                                         <Box>
@@ -603,13 +611,13 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                         target: {
                                           value: date
                                             ? dayjs(
-                                                dayjs(date)
-                                                  .set("hour", 23)
-                                                  .set("minute", 59)
-                                                  .set("second", 59)
-                                              )
-                                                .utc()
-                                                .valueOf() / 1000
+                                              dayjs(date)
+                                                .set("hour", 23)
+                                                .set("minute", 59)
+                                                .set("second", 59)
+                                            )
+                                              .utc()
+                                              .valueOf() / 1000
                                             : 0,
                                           name: "expire",
                                         },
