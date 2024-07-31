@@ -65,9 +65,9 @@ class V2rayShareLink(str):
                 ais=inbound.get("ais", ""),
                 fs=inbound.get("fragment_setting", ""),
                 multiMode=multi_mode,
-                max_upload_size=inbound.get('max_upload_size', 1000000),
-                max_concurrent_uploads=inbound.get(
-                    'max_concurrent_uploads', 10),
+                sc_max_each_post_bytes=inbound.get('scMaxEachPostBytes', 1000000),
+                sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
+                sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 10),
             )
 
         elif inbound["protocol"] == "vless":
@@ -91,9 +91,9 @@ class V2rayShareLink(str):
                 ais=inbound.get("ais", ""),
                 fs=inbound.get("fragment_setting", ""),
                 multiMode=multi_mode,
-                max_upload_size=inbound.get('max_upload_size', 1000000),
-                max_concurrent_uploads=inbound.get(
-                    'max_concurrent_uploads', 10),
+                sc_max_each_post_bytes=inbound.get('scMaxEachPostBytes', 1000000),
+                sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
+                sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 10),
             )
 
         elif inbound["protocol"] == "trojan":
@@ -117,9 +117,9 @@ class V2rayShareLink(str):
                 ais=inbound.get("ais", ""),
                 fs=inbound.get("fragment_setting", ""),
                 multiMode=multi_mode,
-                max_upload_size=inbound.get('max_upload_size', 1000000),
-                max_concurrent_uploads=inbound.get(
-                    'max_concurrent_uploads', 10),
+                sc_max_each_post_bytes=inbound.get('scMaxEachPostBytes', 1000000),
+                sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
+                sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 10),
             )
 
         elif inbound["protocol"] == "shadowsocks":
@@ -130,6 +130,8 @@ class V2rayShareLink(str):
                 password=settings["password"],
                 method=settings["method"],
             )
+        else:
+            return
 
         self.add_link(link=link)
 
@@ -154,8 +156,9 @@ class V2rayShareLink(str):
             ais="",
             fs="",
             multiMode: bool = False,
-            max_upload_size: int = 1000000,
-            max_concurrent_uploads: int = 10,
+            sc_max_each_post_bytes: int = 1000000,
+            sc_max_concurrent_posts: int = 100,
+            sc_min_posts_interval_ms: int = 30,
     ):
         payload = {
             "add": address,
@@ -200,8 +203,13 @@ class V2rayShareLink(str):
                 payload["mode"] = "gun"
 
         elif net == "splithttp":
-            payload["maxUploadSize"] = max_upload_size
-            payload["maxConcurrentUploads"] = max_concurrent_uploads
+            # before 1.8.23
+            payload["maxUploadSize"] = sc_max_each_post_bytes
+            payload["maxConcurrentUploads"] = sc_max_concurrent_posts
+            # 1.8.23 and later
+            payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
+            payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
+            payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
 
         return (
             "vmess://"
@@ -231,8 +239,9 @@ class V2rayShareLink(str):
               ais='',
               fs="",
               multiMode: bool = False,
-              max_upload_size: int = 1000000,
-              max_concurrent_uploads: int = 10,
+              sc_max_each_post_bytes: int = 1000000,
+              sc_max_concurrent_posts: int = 100,
+              sc_min_posts_interval_ms: int = 30,
               ):
 
         payload = {
@@ -258,8 +267,13 @@ class V2rayShareLink(str):
         elif net == "splithttp":
             payload["path"] = path
             payload["host"] = host
-            payload["maxUploadSize"] = max_upload_size
-            payload["maxConcurrentUploads"] = max_concurrent_uploads
+            # before 1.8.23
+            payload["maxUploadSize"] = sc_max_each_post_bytes
+            payload["maxConcurrentUploads"] = sc_max_concurrent_posts
+            # 1.8.23 and later
+            payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
+            payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
+            payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
 
         elif net == 'kcp':
             payload['seed'] = path
@@ -315,8 +329,9 @@ class V2rayShareLink(str):
                ais='',
                fs="",
                multiMode: bool = False,
-               max_upload_size: int = 1000000,
-               max_concurrent_uploads: int = 10,
+               sc_max_each_post_bytes: int = 1000000,
+               sc_max_concurrent_posts: int = 100,
+               sc_min_posts_interval_ms: int = 30,
                ):
 
         payload = {
@@ -338,8 +353,13 @@ class V2rayShareLink(str):
         elif net == "splithttp":
             payload["path"] = path
             payload["host"] = host
-            payload["maxUploadSize"] = max_upload_size
-            payload["maxConcurrentUploads"] = max_concurrent_uploads
+            # before 1.8.23
+            payload["maxUploadSize"] = sc_max_each_post_bytes
+            payload["maxConcurrentUploads"] = sc_max_concurrent_posts
+            # 1.8.23 and later
+            payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
+            payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
+            payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
 
         elif net == 'quic':
             payload['key'] = path
@@ -495,22 +515,30 @@ class V2rayJsonConfig(str):
         return httpupgradeSettings
 
     def splithttp_config(self, path=None, host=None, random_user_agent=None,
-                         max_upload_size: int = 1000000,
-                         max_concurrent_uploads: int = 10,
+                         sc_max_each_post_bytes: int = 1000000,
+                         sc_max_concurrent_posts: int = 100,
+                         sc_min_posts_interval_ms : int = 30,
                          ):
-        splithttpSettings = self.settings.get("splithttpSettings", {})
+        config = self.settings.get("splithttpSettings", {})
 
         if path:
-            splithttpSettings["path"] = path
+            config["path"] = path
         if host:
-            splithttpSettings["host"] = host
+            config["host"] = host
         if random_user_agent:
-            splithttpSettings["headers"]["User-Agent"] = choice(
+            config["headers"]["User-Agent"] = choice(
                 self.user_agent_list)
-        splithttpSettings["maxUploadSize"] = max_upload_size
-        splithttpSettings["maxConcurrentUploads"] = max_concurrent_uploads
+        # before 1.8.23
+        config["maxUploadSize"] = sc_max_each_post_bytes
+        config["maxConcurrentUploads"] = sc_max_concurrent_posts
+        # 1.8.23 and later
+        config["scMaxEachPostBytes"] = sc_max_each_post_bytes
+        config["scMaxConcurrentPosts"] = sc_max_concurrent_posts
+        config["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
 
-        return splithttpSettings
+        # core will ignore unknown variables
+
+        return config
 
     def grpc_config(self, path=None, host=None, multiMode=False, random_user_agent=None):
         config = self.settings.get("grpcSettings", {
@@ -756,8 +784,9 @@ class V2rayJsonConfig(str):
                             dialer_proxy='',
                             multiMode: bool = False,
                             random_user_agent: bool = False,
-                            max_upload_size: int = 1,
-                            max_concurrent_uploads: int = 10,
+                            sc_max_each_post_bytes: int = 1000000,
+                            sc_max_concurrent_posts: int = 100,
+                            sc_min_posts_interval_ms: int = 30,
                             ):
 
         if net == "ws":
@@ -783,8 +812,10 @@ class V2rayJsonConfig(str):
                 path=path, host=host, random_user_agent=random_user_agent)
         elif net == "splithttp":
             network_setting = self.splithttp_config(path=path, host=host, random_user_agent=random_user_agent,
-                                                    max_upload_size=max_upload_size,
-                                                    max_concurrent_uploads=max_concurrent_uploads)
+                                                    sc_max_each_post_bytes=sc_max_each_post_bytes,
+                                                    sc_max_concurrent_posts=sc_max_concurrent_posts,
+                                                    sc_min_posts_interval_ms=sc_min_posts_interval_ms
+                                                    )
 
         if tls == "tls":
             tls_settings = self.tls_config(sni=sni, fp=fp, alpn=alpn, ais=ais)
@@ -891,8 +922,9 @@ class V2rayJsonConfig(str):
             dialer_proxy=dialer_proxy,
             multiMode=multi_mode,
             random_user_agent=inbound.get('random_user_agent', False),
-            max_upload_size=inbound.get('max_upload_size', 1000000),
-            max_concurrent_uploads=inbound.get('max_concurrent_uploads', 10),
+            sc_max_each_post_bytes=inbound.get('scMaxEachPostBytes', 1000000),
+            sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
+            sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 10),
         )
 
         mux_json = json.loads(self.mux_template)
