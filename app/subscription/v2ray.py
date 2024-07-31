@@ -677,7 +677,7 @@ class V2rayJsonConfig(str):
             streamSettings[f"{security}Settings"] = tls_settings
 
         if network and network_setting:
-            streamSettings[f"{network}Settings"] = network
+            streamSettings[f"{network}Settings"] = network_setting
 
         if sockopt:
             streamSettings['sockopt'] = sockopt
@@ -752,8 +752,8 @@ class V2rayJsonConfig(str):
             ]
         }
 
-    def make_fragment_outbound(self, packets="tlshello", length="100-200", interval="10-20"):
-
+    @staticmethod
+    def make_fragment_outbound(packets="tlshello", length="100-200", interval="10-20"):
         outbound = {
             "tag": "fragment_out",
             "protocol": "freedom",
