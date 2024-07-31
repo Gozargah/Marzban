@@ -672,7 +672,7 @@ class V2rayJsonConfig(str):
 
         streamSettings = {"network": network}
 
-        if security:
+        if security and security != "none":
             streamSettings["security"] = security
             streamSettings[f"{security}Settings"] = tls_settings
 
