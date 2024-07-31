@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 from fastapi_responses import custom_openapi
 
-from config import DOCS, XRAY_SUBSCRIPTION_PATH
+from config import ALLWED_ORIGINS, DOCS, XRAY_SUBSCRIPTION_PATH
 
 __version__ = "0.6.0"
 
@@ -26,7 +26,7 @@ scheduler = BackgroundScheduler({'apscheduler.job_defaults.max_instances': 20}, 
 logger = logging.getLogger('uvicorn.error')
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
