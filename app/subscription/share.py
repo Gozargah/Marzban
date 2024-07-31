@@ -252,7 +252,7 @@ def process_inbounds_and_tags(
     inbounds = sorted(
         _inbounds, key=lambda x: index_dict.get(x[1][0], float('inf')))
 
-    all_hosts = []
+    #all_hosts = []
 
     for protocol, tags in inbounds:
         settings = proxies.get(protocol)
@@ -266,10 +266,8 @@ def process_inbounds_and_tags(
                 continue
 
             format_variables.update({"TRANSPORT": inbound["network"]})
-
+            host_inbound = inbound.copy()
             for host in xray.hosts.get(tag, []):
-                host_inbound = copy.deepcopy(inbound)
-
                 sni = ""
                 sni_list = host["sni"] or inbound["sni"]
                 if sni_list:
@@ -310,18 +308,18 @@ def process_inbounds_and_tags(
                     }
                 )
 
-                all_hosts.append({
+                conf.add({
                     "remark": host["remark"].format_map(format_variables),
                     "address": address.format_map(format_variables),
                     "inbound": host_inbound,
                     "settings": settings.dict(no_obj=True)
                 })
 
-    if RANDOMIZE_SUBSCRIPTION_CONFIGS:
-        random.shuffle(all_hosts)
+    #if RANDOMIZE_SUBSCRIPTION_CONFIGS:
+    #    random.shuffle(all_hosts)
 
-    for host in all_hosts:
-        conf.add(**host)
+    #for host in all_hosts:
+    #    conf.add(**host)
 
     return conf.render(reverse=reverse)
 
