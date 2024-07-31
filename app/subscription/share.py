@@ -1,4 +1,5 @@
 import base64
+import copy
 import random
 import secrets
 import yaml
@@ -267,8 +268,8 @@ def process_inbounds_and_tags(
             format_variables.update({"TRANSPORT": inbound["network"]})
 
             for host in xray.hosts.get(tag, []):
-                host_inbound = inbound.copy()
-                
+                host_inbound = copy.deepcopy(inbound)
+
                 sni = ""
                 sni_list = host["sni"] or inbound["sni"]
                 if sni_list:
