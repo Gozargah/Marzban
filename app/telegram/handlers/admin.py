@@ -527,7 +527,7 @@ def get_user_info_text(
             timeout_str = 'Not set'
 
         text += f'''\
-├─📅 <b>On Hold Duration:</b> <code>{on_hold_expire_duration // (24*60*60)} days</code>
+├─📅 <b>On Hold Duration:</b> <code>{on_hold_expire_duration // (24*60*60) if on_hold_expire_duration else None} days</code>
 │           └─<b>On Hold Timeout:</b> <code>{timeout_str}</code>
 │
 '''
@@ -704,6 +704,7 @@ def links_command(call: types.CallbackQuery):
         if len(text) > 4056:
             text += '\n\n<b>...</b>'
             break
+        text += f'\n<code>{link}</code>'
 
     bot.edit_message_text(
         text,
@@ -747,17 +748,29 @@ def genqr_command(call: types.CallbackQuery):
             qr.add_data(user.subscription_url)
             qr.make_image().save(f)
             f.seek(0)
-            bot.send_photo(
-                call.message.chat.id,
-                photo=f,
-                caption=get_user_info_text(
+            if user.status == UserStatus.on_hold:
+                text = get_user_info_text(
+                    status=user.status,
+                    username=user.username,
+                    sub_url=user.subscription_url,
+                    data_limit=user.data_limit,
+                    usage=user.used_traffic,
+                    on_hold_expire_duration=user.on_hold_expire_duration,
+                    on_hold_timeout=user.on_hold_timeout
+                    )
+            else:
+                text = get_user_info_text(
                     status=user.status,
                     username=user.username,
                     sub_url=user.subscription_url,
                     data_limit=user.data_limit,
                     usage=user.used_traffic,
                     expire=user.expire
-                ),
+                    )
+            bot.send_photo(
+                call.message.chat.id,
+                photo=f,
+                caption=text,
                 parse_mode="HTML",
                 reply_markup=BotKeyboard.subscription_page(user.subscription_url)
             )
