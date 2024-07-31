@@ -640,27 +640,10 @@ class V2rayJsonConfig(str):
 
         if security:
             streamSettings["security"] = security
-            if security == "reality":
-                streamSettings["realitySettings"] = tls_settings
-            elif security == "tls":
-                streamSettings["tlsSettings"] = tls_settings
+            streamSettings[f"{security}Settings"] = tls_settings
 
-        if network == "ws":
-            streamSettings["wsSettings"] = network_setting
-        elif network == "grpc":
-            streamSettings["grpcSettings"] = network_setting
-        elif network == "h2":
-            streamSettings["httpSettings"] = network_setting
-        elif network == "kcp":
-            streamSettings["kcpSettings"] = network_setting
-        elif network == "tcp" and network_setting:
-            streamSettings["tcpSettings"] = network_setting
-        elif network == "quic":
-            streamSettings["quicSettings"] = network_setting
-        elif network == "httpupgrade":
-            streamSettings["httpupgradeSettings"] = network_setting
-        elif network == "splithttp":
-            streamSettings["splithttpSettings"] = network_setting
+        if network and network_setting:
+            streamSettings[f"{network}Settings"] = network
 
         if sockopt:
             streamSettings['sockopt'] = sockopt
