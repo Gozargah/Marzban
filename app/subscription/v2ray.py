@@ -67,7 +67,7 @@ class V2rayShareLink(str):
                 multiMode=multi_mode,
                 sc_max_each_post_bytes=inbound.get('scMaxEachPostBytes', 1000000),
                 sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
-                sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 10),
+                sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
             )
 
         elif inbound["protocol"] == "vless":
@@ -93,7 +93,7 @@ class V2rayShareLink(str):
                 multiMode=multi_mode,
                 sc_max_each_post_bytes=inbound.get('scMaxEachPostBytes', 1000000),
                 sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
-                sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 10),
+                sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
             )
 
         elif inbound["protocol"] == "trojan":
@@ -119,7 +119,7 @@ class V2rayShareLink(str):
                 multiMode=multi_mode,
                 sc_max_each_post_bytes=inbound.get('scMaxEachPostBytes', 1000000),
                 sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
-                sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 10),
+                sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
             )
 
         elif inbound["protocol"] == "shadowsocks":
@@ -926,7 +926,7 @@ class V2rayJsonConfig(str):
             random_user_agent=inbound.get('random_user_agent', False),
             sc_max_each_post_bytes=inbound.get('scMaxEachPostBytes', 1000000),
             sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
-            sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 10),
+            sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
         )
 
         mux_json = json.loads(self.mux_template)
