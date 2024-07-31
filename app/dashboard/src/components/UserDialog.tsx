@@ -523,6 +523,11 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                   _dark={{
                                     bg: disabled ? "gray.600" : "transparent",
                                   }}
+                                  sx={{
+                                    option: {
+                                      backgroundColor: colorMode === "dark" ? "#222C3B" : "white"
+                                    }
+                                  }}
                                 >
                                   {resetStrategy.map((s) => {
                                     return (
