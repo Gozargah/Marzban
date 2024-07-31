@@ -1,38 +1,33 @@
 import json
 from random import choice
-from app.templates import render_template
-from app.subscription.funcs import get_grpc_gun
 
-from config import (
-    SINGBOX_SUBSCRIPTION_TEMPLATE,
-    MUX_TEMPLATE,
-    USER_AGENT_TEMPLATE,
-    GRPC_USER_AGENT_TEMPLATE,
-)
+from jinja2.exceptions import TemplateNotFound
+
+from app.subscription.funcs import get_grpc_gun
+from app.templates import render_template
+from config import (MUX_TEMPLATE, SINGBOX_SETTINGS_TEMPLATE,
+                    SINGBOX_SUBSCRIPTION_TEMPLATE, USER_AGENT_TEMPLATE)
 
 
 class SingBoxConfiguration(str):
 
     def __init__(self):
         self.proxy_remarks = []
-        template = render_template(SINGBOX_SUBSCRIPTION_TEMPLATE)
-        self.config = json.loads(template)
+        self.config = json.loads(render_template(SINGBOX_SUBSCRIPTION_TEMPLATE))
         self.mux_template = render_template(MUX_TEMPLATE)
-        temp_user_agent_data = render_template(USER_AGENT_TEMPLATE)
-        user_agent_data = json.loads(temp_user_agent_data)
+        user_agent_data = json.loads(render_template(USER_AGENT_TEMPLATE))
 
         if 'list' in user_agent_data and isinstance(user_agent_data['list'], list):
             self.user_agent_list = user_agent_data['list']
         else:
             self.user_agent_list = []
 
-        temp_grpc_user_agent_data = render_template(GRPC_USER_AGENT_TEMPLATE)
-        grpc_user_agent_data = json.loads(temp_grpc_user_agent_data)
+        try:
+            self.settings = json.loads(render_template(SINGBOX_SETTINGS_TEMPLATE))
+        except TemplateNotFound:
+            self.settings = {}
 
-        if 'list' in grpc_user_agent_data and isinstance(grpc_user_agent_data['list'], list):
-            self.grpc_user_agent_data = grpc_user_agent_data['list']
-        else:
-            self.grpc_user_agent_data = []
+        del user_agent_data
 
     def _remark_validation(self, remark):
         if not remark in self.proxy_remarks:
@@ -99,75 +94,109 @@ class SingBoxConfiguration(str):
 
         return config
 
+    def http_config(self, host='', path='', random_user_agent: bool = False):
+        config = self.settings.get("httpSettings", {
+            "idle_timeout": "15s",
+            "ping_timeout": "15s",
+            "method": "GET",
+            "headers": {}
+        })
+        if "headers" not in config:
+            config["headers"] = {}
+
+        config["host"] = []
+        if path:
+            config["path"] = path
+        if host:
+            config["host"] = [host]
+        if random_user_agent:
+            config["headers"]["User-Agent"] = choice(self.user_agent_list)
+
+        return config
+
+    def ws_config(self, host='', path='', random_user_agent: bool = False,
+                  max_early_data=None, early_data_header_name=None):
+        config = self.settings.get("wsSettings", {
+            "headers": {}
+        })
+        if "headers" not in config:
+            config["headers"] = {}
+
+        if path:
+            config["path"] = path
+        if host:
+            config["headers"] = {"Host": host}
+        if random_user_agent:
+            config["headers"]["User-Agent"] = choice(self.user_agent_list)
+        if max_early_data is not None:
+            config["max_early_data"] = max_early_data
+        if early_data_header_name:
+            config["early_data_header_name"] = early_data_header_name
+
+        return config
+
+    def grpc_config(self, path=''):
+        config = self.settings.get("grpcSettings", {})
+
+        if path:
+            config["service_name"] = path
+
+        return config
+
+    def httpupgrade_config(self, host='', path='', random_user_agent: bool = False):
+        config = self.settings.get("httpupgradeSettings", {
+            "headers": {}
+        })
+        if "headers" not in config:
+            config["headers"] = {}
+
+        config["host"] = host
+        if path:
+            config["path"] = path
+        if random_user_agent:
+            config["headers"]["User-Agent"] = choice(self.user_agent_list)
+
+        return config
+
     def transport_config(self,
                          transport_type='',
                          host='',
                          path='',
-                         method='',
-                         idle_timeout="15s",
-                         ping_timeout="15s",
                          max_early_data=None,
                          early_data_header_name=None,
-                         permit_without_stream=False,
-                         random_user_agent: bool = False):
+                         random_user_agent: bool = False,
+                         ):
 
         transport_config = {}
 
         if transport_type:
-            transport_config['type'] = transport_type
-
             if transport_type == "http":
-                transport_config['host'] = []
-                if path:
-                    transport_config['path'] = path
-                if method:
-                    transport_config['method'] = method
-                if host or random_user_agent:
-                    transport_config['headers'] = {}
-                if host:
-                    transport_config["host"] = [host]
-                if random_user_agent:
-                    transport_config['headers']['User-Agent'] = choice(self.user_agent_list)
-                if idle_timeout:
-                    transport_config['idle_timeout'] = idle_timeout
-                if ping_timeout:
-                    transport_config['ping_timeout'] = ping_timeout
+                transport_config = self.http_config(
+                    host=host,
+                    path=path,
+                    random_user_agent=random_user_agent,
+                )
 
             elif transport_type == "ws":
-                if path:
-                    transport_config['path'] = path
-                if host or random_user_agent:
-                    transport_config['headers'] = {}
-                if host:
-                    transport_config['headers'] = {'Host': host}
-                if random_user_agent:
-                    transport_config['headers']['User-Agent'] = choice(self.user_agent_list)
-                if max_early_data is not None:
-                    transport_config['max_early_data'] = max_early_data
-                if early_data_header_name:
-                    transport_config['early_data_header_name'] = early_data_header_name
+                transport_config = self.ws_config(
+                    host=host,
+                    path=path,
+                    random_user_agent=random_user_agent,
+                    max_early_data=max_early_data,
+                    early_data_header_name=early_data_header_name,
+                )
 
             elif transport_type == "grpc":
-                if path:
-                    transport_config['service_name'] = path
-                if idle_timeout:
-                    transport_config['idle_timeout'] = idle_timeout
-                if ping_timeout:
-                    transport_config['ping_timeout'] = ping_timeout
-                if permit_without_stream:
-                    transport_config['permit_without_stream'] = permit_without_stream
-                if random_user_agent:
-                    transport_config['headers'] = {}
-                    transport_config['headers']['User-Agent'] = choice(self.grpc_user_agent_data)
+                transport_config = self.grpc_config(path=path)
 
             elif transport_type == "httpupgrade":
-                transport_config['host'] = host
-                if path:
-                    transport_config['path'] = path
-                if random_user_agent:
-                    transport_config['headers'] = {}
-                    transport_config['headers']['User-Agent'] = choice(self.user_agent_list)
+                transport_config = self.httpupgrade_config(
+                    host=host,
+                    path=path,
+                    random_user_agent=random_user_agent,
+                )
 
+        transport_config['type'] = transport_type
         return transport_config
 
     def make_outbound(self,

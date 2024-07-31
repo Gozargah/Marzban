@@ -1,16 +1,14 @@
+import copy
 import json
 from random import choice
 
 import yaml
+from jinja2.exceptions import TemplateNotFound
 
 from app.subscription.funcs import get_grpc_gun
 from app.templates import render_template
-from config import (
-    CLASH_SUBSCRIPTION_TEMPLATE,
-    GRPC_USER_AGENT_TEMPLATE,
-    MUX_TEMPLATE,
-    USER_AGENT_TEMPLATE
-)
+from config import (CLASH_SETTINGS_TEMPLATE, CLASH_SUBSCRIPTION_TEMPLATE,
+                    MUX_TEMPLATE, USER_AGENT_TEMPLATE)
 
 
 class ClashConfiguration(object):
@@ -23,21 +21,19 @@ class ClashConfiguration(object):
         }
         self.proxy_remarks = []
         self.mux_template = render_template(MUX_TEMPLATE)
-        temp_user_agent_data = render_template(USER_AGENT_TEMPLATE)
-        user_agent_data = json.loads(temp_user_agent_data)
+        user_agent_data = json.loads(render_template(USER_AGENT_TEMPLATE))
 
         if 'list' in user_agent_data and isinstance(user_agent_data['list'], list):
             self.user_agent_list = user_agent_data['list']
         else:
             self.user_agent_list = []
 
-        temp_grpc_user_agent_data = render_template(GRPC_USER_AGENT_TEMPLATE)
-        grpc_user_agent_data = json.loads(temp_grpc_user_agent_data)
+        try:
+            self.settings = yaml.load(render_template(CLASH_SETTINGS_TEMPLATE), Loader=yaml.SafeLoader)
+        except TemplateNotFound:
+            self.settings = {}
 
-        if 'list' in grpc_user_agent_data and isinstance(grpc_user_agent_data['list'], list):
-            self.grpc_user_agent_data = grpc_user_agent_data['list']
-        else:
-            self.grpc_user_agent_data = []
+        del user_agent_data
 
     def render(self, reverse=False):
         if reverse:
@@ -51,7 +47,7 @@ class ClashConfiguration(object):
                 Loader=yaml.SafeLoader
             ),
             sort_keys=False,
-            allow_unicode=True
+            allow_unicode=True,
         )
 
     def __str__(self) -> str:
@@ -69,6 +65,82 @@ class ClashConfiguration(object):
             if not new in self.proxy_remarks:
                 return new
             c += 1
+
+    def http_config(
+            self,
+            path="",
+            host="",
+            random_user_agent: bool = False,
+    ):
+        config = copy.deepcopy(self.settings.get("http-opts", {
+            'headers': {}
+        }))
+
+        if path:
+            config["path"] = [path]
+        if host:
+            config["Host"] = host
+        if random_user_agent:
+            if "headers" not in config:
+                config["headers"] = {}
+            config["header"]["User-Agent"] = choice(self.user_agent_list)
+
+        return config
+
+    def ws_config(
+            self,
+            path="",
+            host="",
+            max_early_data=None,
+            early_data_header_name="",
+            is_httpupgrade: bool = False,
+            random_user_agent: bool = False,
+    ):
+        config = copy.deepcopy(self.settings.get("ws-opts", {}))
+        if (host or random_user_agent) and "headers" not in config:
+            config["headers"] = {}
+        if path:
+            config["path"] = path
+        if host:
+            config["headers"]["Host"] = host
+        if random_user_agent:
+            config["headers"]["User-Agent"] = choice(self.user_agent_list)
+        if max_early_data:
+            config["max-early-data"] = max_early_data
+            config["early-data-header-name"] = early_data_header_name
+        if is_httpupgrade:
+            config["v2ray-http-upgrade"] = True
+            if max_early_data:
+                config["v2ray-http-upgrade-fast-open"] = True
+
+        return config
+
+    def grpc_config(self, path=""):
+        config = copy.deepcopy(self.settings.get("grpc-opts", {}))
+        if path:
+            config["grpc-service-name"] = path
+
+        return config
+
+    def h2_config(self, path="", host=""):
+        config = copy.deepcopy(self.settings.get("h2-opts", {}))
+        if path:
+            config["path"] = path
+        if host:
+            config["host"] = [host]
+
+        return config
+
+    def tcp_config(self, path="", host=""):
+        config = copy.deepcopy(self.settings.get("tcp-opts", {}))
+        if path:
+            config["path"] = [path]
+        if host:
+            if "headers" not in config:
+                config["headers"] = {}
+            config["headers"]["Host"] = host
+
+        return config
 
     def make_node(self,
                   name: str,
@@ -94,16 +166,19 @@ class ClashConfiguration(object):
             type = 'ss'
         if network == 'tcp' and headers == 'http':
             network = 'http'
+        if network == 'httpupgrade':
+            network = 'ws'
+            is_httpupgrade = True
+        else:
+            is_httpupgrade = False
 
         remark = self._remark_validation(name)
-        self.proxy_remarks.append(remark)
         node = {
             'name': remark,
             'type': type,
             'server': server,
             'port': port,
             'network': network,
-            f'{network}-opts': {},
             'udp': udp
         }
 
@@ -114,6 +189,7 @@ class ClashConfiguration(object):
             early_data_header_name = "Sec-WebSocket-Protocol"
         else:
             max_early_data = None
+            early_data_header_name = ""
 
         if type == 'ss':  # shadowsocks
             return node
@@ -129,54 +205,36 @@ class ClashConfiguration(object):
             if ais:
                 node['skip-cert-verify'] = ais
 
-        net_opts = node[f'{network}-opts']
-
         if network == 'http':
-            if path:
-                net_opts['method'] = 'GET'
-                net_opts['path'] = [path]
-            if host:
-                net_opts['method'] = 'GET'
-                net_opts['Host'] = host
-            if random_user_agent:
-                net_opts['header'] = {"User-Agent": choice(self.user_agent_list)}
+            net_opts = self.http_config(
+                path=path,
+                host=host,
+                random_user_agent=random_user_agent,
+            )
 
-        if network == 'ws' or network == 'httpupgrade':
-            if path:
-                net_opts['path'] = path
-            if host or random_user_agent:
-                net_opts['headers'] = {}
-                if host:
-                    net_opts['headers']["Host"] = host
-                if random_user_agent:
-                    net_opts['headers']["User-Agent"] = choice(self.user_agent_list)
-            if max_early_data:
-                net_opts['max-early-data'] = max_early_data
-                net_opts['early-data-header-name'] = early_data_header_name
-            if network == 'httpupgrade':
-                net_opts['v2ray-http-upgrade'] = True
-                if max_early_data:
-                    net_opts['v2ray-http-upgrade-fast-open'] = True
+        elif network == 'ws':
+            net_opts = self.ws_config(
+                path=path,
+                host=host,
+                max_early_data=max_early_data,
+                early_data_header_name=early_data_header_name,
+                is_httpupgrade=is_httpupgrade,
+                random_user_agent=random_user_agent,
+            )
 
-        if network == 'grpc' or network == 'gun':
-            if path:
-                net_opts['grpc-service-name'] = path
-            if random_user_agent:
-                net_opts['header'] = {"User-Agent": choice(self.user_agent_list)}
+        elif network == 'grpc' or network == 'gun':
+            net_opts = self.grpc_config(path=path)
 
-        if network == 'h2':
-            if path:
-                net_opts['path'] = path
-            if host:
-                net_opts['host'] = [host]
+        elif network == 'h2':
+            net_opts = self.h2_config(path=path, host=host)
 
-        if network == 'tcp':
-            if path:
-                net_opts['method'] = 'GET'
-                net_opts['path'] = [path]
-            if host:
-                net_opts['method'] = 'GET'
-                net_opts['headers'] = {"Host": host}
+        elif network == 'tcp':
+            net_opts = self.tcp_config(path=path, host=host)
+
+        else:
+            net_opts = {}
+
+        node[f'{network}-opts'] = net_opts
 
         mux_json = json.loads(self.mux_template)
         mux_config = mux_json["clash"]
@@ -191,7 +249,7 @@ class ClashConfiguration(object):
         # not supported by clash
         if inbound['network'] in ("kcp", "splithttp"):
             return
-        
+
         node = self.make_node(
             name=remark,
             type=inbound['protocol'],
@@ -205,8 +263,8 @@ class ClashConfiguration(object):
             headers=inbound['header_type'],
             udp=True,
             alpn=inbound.get('alpn', ''),
-            ais=inbound.get('ais', ''),
-            mux_enable=inbound.get('mux_enable', ''),
+            ais=inbound.get('ais', False),
+            mux_enable=inbound.get('mux_enable', False),
             random_user_agent=inbound.get("random_user_agent")
         )
 
@@ -214,16 +272,19 @@ class ClashConfiguration(object):
             node['uuid'] = settings['id']
             node['alterId'] = 0
             node['cipher'] = 'auto'
-            self.data['proxies'].append(node)
 
-        if inbound['protocol'] == 'trojan':
+        elif inbound['protocol'] == 'trojan':
             node['password'] = settings['password']
-            self.data['proxies'].append(node)
 
-        if inbound['protocol'] == 'shadowsocks':
+        elif inbound['protocol'] == 'shadowsocks':
             node['password'] = settings['password']
             node['cipher'] = settings['method']
-            self.data['proxies'].append(node)
+
+        else:
+            return
+
+        self.data['proxies'].append(node)
+        self.proxy_remarks.append(remark)
 
 
 class ClashMetaConfiguration(ClashConfiguration):
@@ -274,7 +335,7 @@ class ClashMetaConfiguration(ClashConfiguration):
         # not supported by clash-meta
         if inbound['network'] in ("kcp", "splithttp"):
             return
-        
+
         node = self.make_node(
             name=remark,
             type=inbound['protocol'],
@@ -291,8 +352,8 @@ class ClashMetaConfiguration(ClashConfiguration):
             fp=inbound.get('fp', ''),
             pbk=inbound.get('pbk', ''),
             sid=inbound.get('sid', ''),
-            ais=inbound.get('ais', ''),
-            mux_enable=inbound.get('mux_enable', ''),
+            ais=inbound.get('ais', False),
+            mux_enable=inbound.get('mux_enable', False),
             random_user_agent=inbound.get("random_user_agent")
         )
 
@@ -300,25 +361,22 @@ class ClashMetaConfiguration(ClashConfiguration):
             node['uuid'] = settings['id']
             node['alterId'] = 0
             node['cipher'] = 'auto'
-            self.data['proxies'].append(node)
 
-        if inbound['protocol'] == 'vless':
+        elif inbound['protocol'] == 'vless':
             node['uuid'] = settings['id']
 
             if inbound['network'] in ('tcp', 'kcp') and inbound['header_type'] != 'http' and inbound['tls'] != 'none':
                 node['flow'] = settings.get('flow', '')
 
-            self.data['proxies'].append(node)
-
-        if inbound['protocol'] == 'trojan':
+        elif inbound['protocol'] == 'trojan':
             node['password'] = settings['password']
 
-            if inbound['network'] in ('tcp', 'kcp') and inbound['header_type'] != 'http' and inbound['tls']:
-                node['flow'] = settings.get('flow', '')
-
-            self.data['proxies'].append(node)
-
-        if inbound['protocol'] == 'shadowsocks':
+        elif inbound['protocol'] == 'shadowsocks':
             node['password'] = settings['password']
             node['cipher'] = settings['method']
-            self.data['proxies'].append(node)
+
+        else:
+            return
+
+        self.data['proxies'].append(node)
+        self.proxy_remarks.append(remark)
