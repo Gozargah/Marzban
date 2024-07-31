@@ -125,7 +125,7 @@ class SingBoxConfiguration(str):
         if path:
             config["path"] = path
         if host:
-            config["headers"] = {"Host": host}
+            config["headers"]["Host"] = host
         if random_user_agent:
             config["headers"]["User-Agent"] = choice(self.user_agent_list)
         if max_early_data is not None:
