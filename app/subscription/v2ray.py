@@ -513,23 +513,24 @@ class V2rayJsonConfig(str):
         return splithttpSettings
 
     def grpc_config(self, path=None, host=None, multiMode=False, random_user_agent=None):
-        grpcSettings = self.settings.get("grpcSettings", {
-            "multiMode": multiMode,
+        config = self.settings.get("grpcSettings", {
             "idle_timeout": 60,
             "health_check_timeout": 20,
             "permit_without_stream": False,
             "initial_windows_size": 35538
         })
 
+        config["multiMode"] = multiMode
+
         if path:
-            grpcSettings["serviceName"] = path
+            config["serviceName"] = path
         if host:
-            grpcSettings["authority"] = host
+            config["authority"] = host
 
         if random_user_agent:
-            grpcSettings["user_agent"] = choice(self.grpc_user_agent_data)
+            config["user_agent"] = choice(self.grpc_user_agent_data)
 
-        return grpcSettings
+        return config
 
     def tcp_config(self, headers="none", path=None, host=None, random_user_agent=None):
         if headers == "http":
