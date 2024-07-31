@@ -565,26 +565,31 @@ class V2rayJsonConfig(str):
 
         return config
 
-    def h2_config(self, path=None, host=None, random_user_agent=None):
-        h2Settings = self.settings.get("h2Settings", {
-            "header": {}
-        })
-        if "header" not in h2Settings:
-            h2Settings["header"] = {}
+    def http_config(self, net="http", path=None, host=None, random_user_agent=None):
+        if net == "h2":
+            config = self.settings.get("h2Settings", {
+                "header": {}
+            })
+        else:
+            config = self.settings.get("httpSettings", {
+                "header": {}
+            })
+        if "header" not in config:
+            config["header"] = {}
 
         if path:
-            h2Settings["path"] = path
+            config["path"] = path
         else:
-            h2Settings["path"] = ""
+            config["path"] = ""
         if host:
-            h2Settings["host"] = [host]
+            config["host"] = [host]
         else:
-            h2Settings["host"] = []
+            config["host"] = []
         if random_user_agent:
-            h2Settings["headers"]["User-Agent"] = [
+            config["headers"]["User-Agent"] = [
                 choice(self.user_agent_list)]
 
-        return h2Settings
+        return config
 
     def quic_config(self, path=None, host=None, header=None):
         quicSettings = self.settings.get("quicSettings", {
@@ -760,9 +765,9 @@ class V2rayJsonConfig(str):
         elif net == "grpc":
             network_setting = self.grpc_config(
                 path=path, host=host, multiMode=multiMode, random_user_agent=random_user_agent)
-        elif net == "h2":
-            network_setting = self.h2_config(
-                path=path, host=host, random_user_agent=random_user_agent)
+        elif net in ("h2", "http"):
+            network_setting = self.http_config(
+                net=net, path=path, host=host, random_user_agent=random_user_agent)
         elif net == "kcp":
             network_setting = self.kcp_config(
                 seed=path, host=host, header=headers)
