@@ -801,7 +801,7 @@ class V2rayJsonConfig(str):
         elif net == "kcp":
             network_setting = self.kcp_config(
                 seed=path, host=host, header=headers)
-        elif net == "tcp":
+        elif net == "tcp" and tls != "reality":
             network_setting = self.tcp_config(
                 headers=headers, path=path, host=host, random_user_agent=random_user_agent)
         elif net == "quic":
@@ -816,6 +816,8 @@ class V2rayJsonConfig(str):
                                                     sc_max_concurrent_posts=sc_max_concurrent_posts,
                                                     sc_min_posts_interval_ms=sc_min_posts_interval_ms
                                                     )
+        else:
+            network_setting = {}
 
         if tls == "tls":
             tls_settings = self.tls_config(sni=sni, fp=fp, alpn=alpn, ais=ais)
