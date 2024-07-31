@@ -531,32 +531,39 @@ class V2rayJsonConfig(str):
 
         return grpcSettings
 
-    def tcp_http_config(self, path=None, host=None, random_user_agent=None):
-        tcpSettings = self.settings.get("tcpSettings", {
-            "header": {}
-        })
-        if "header" not in tcpSettings:
-            tcpSettings["header"] = {}
+    def tcp_config(self, headers="none", path=None, host=None, random_user_agent=None):
+        if headers == "http":
+            config = self.settings.get("tcphttpSettings", {
+                "header": {}
+            })
+        else:
+            config = self.settings.get("tcpSettings", {
+                "header": {}
+            })
+        if "header" not in config:
+            config["header"] = {}
+
+        config["header"]["type"] = headers
 
         if any((path, host, random_user_agent)):
-            if "request" not in tcpSettings["header"]:
-                tcpSettings["header"]["request"] = {}
+            if "request" not in config["header"]:
+                config["header"]["request"] = {}
 
         if any((random_user_agent, host)):
-            if "headers" not in tcpSettings["header"]["request"]:
-                tcpSettings["header"]["request"]["headers"] = {}
+            if "headers" not in config["header"]["request"]:
+                config["header"]["request"]["headers"] = {}
 
         if path:
-            tcpSettings["header"]["request"]["path"] = [path]
+            config["header"]["request"]["path"] = [path]
 
         if host:
-            tcpSettings["header"]["request"]["headers"]["Host"] = [host]
+            config["header"]["request"]["headers"]["Host"] = [host]
 
         if random_user_agent:
-            tcpSettings["header"]["request"]["headers"]["User-Agent"] = [
+            config["header"]["request"]["headers"]["User-Agent"] = [
                 choice(self.user_agent_list)]
 
-        return tcpSettings
+        return config
 
     def h2_config(self, path=None, host=None, random_user_agent=None):
         h2Settings = self.settings.get("h2Settings", {
@@ -629,9 +636,7 @@ class V2rayJsonConfig(str):
                               network_setting=None, tls_settings=None,
                               sockopt=None):
 
-        streamSettings = {}
-
-        streamSettings["network"] = network
+        streamSettings = {"network": network}
 
         if security:
             streamSettings["security"] = security
@@ -779,8 +784,8 @@ class V2rayJsonConfig(str):
             network_setting = self.kcp_config(
                 seed=path, host=host, header=headers)
         elif net == "tcp":
-            network_setting = self.tcp_http_config(
-                path=path, host=host, random_user_agent=random_user_agent)
+            network_setting = self.tcp_config(
+                headers=headers, path=path, host=host, random_user_agent=random_user_agent)
         elif net == "quic":
             network_setting = self.quic_config(
                 path=path, host=host, header=headers)
