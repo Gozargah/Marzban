@@ -36,7 +36,8 @@ from .handlers.report import (  # noqa
     report_status_change,
     report_user_usage_reset,
     report_user_subscription_revoked,
-    report_login
+    report_login,
+    report_node_error
 )
 
 __all__ = [
@@ -48,5 +49,6 @@ __all__ = [
     "report_status_change",
     "report_user_usage_reset",
     "report_user_subscription_revoked",
-    "report_login"
+    "report_login",
+    "report_node_error"
 ]

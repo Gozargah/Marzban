@@ -6,6 +6,12 @@ from app.db import GetDB, crud
 from app.models.node import NodeStatus
 from xray_api import exc as xray_exc
 
+from config import EXCLUDE_NOTIFY_NODE_MONITORING
+from datetime import datetime, timedelta
+from app.utils import report
+
+last_alert_times = {}
+ALERT_INTERVAL = timedelta(minutes=1)
 
 def core_health_check():
     config = None
@@ -32,6 +38,14 @@ def core_health_check():
                 config = xray.config.include_db_users()
             xray.operations.connect_node(node_id, config)
 
+    with GetDB as db:
+        nodes = crud.get_nodes(db, enabled=True, status=[NodeStatus.connecting, NodeStatus.error])
+        current_time = datetime.now()
+        for node in nodes: 
+            if node.name not in EXCLUDE_NOTIFY_NODE_MONITORING: 
+                if node.name not in last_alert_times or (current_time - last_alert_times[node.name]) >= ALERT_INTERVAL:
+                    report.node_error(node)
+                    last_alert_times[node.name] = current_time
 
 @app.on_event("startup")
 def start_core():
