@@ -4,6 +4,7 @@ from typing import Optional
 from app import telegram
 from app.db import Session, create_notification_reminder, get_admin_by_id, GetDB
 from app.db.models import UserStatus, User
+from app.models.node import NodeResponse
 from app.models.admin import Admin
 from app.models.user import ReminderType, UserResponse
 from app.utils.notification import (Notification, ReachedDaysLeft,
@@ -23,7 +24,8 @@ from config import (
     NOTIFY_USER_SUB_REVOKED,
     NOTIFY_DATA_USAGE_PERCENT_REACHED,
     NOTIFY_DAYS_LEFT,
-    NOTIFY_LOGIN
+    NOTIFY_LOGIN,
+    NOTIFY_NODE_MONITORING
 )
 
 def status_change(
@@ -194,6 +196,28 @@ def login(username: str, password: str, client_ip: str, success: bool) -> None:
                 password=password,
                 client_ip=client_ip,
                 status="✅ Success" if success else "❌ Failed"
+            )
+        except Exception:
+            pass
+
+
+def node_error(node: NodeResponse) -> None:
+    if NOTIFY_NODE_MONITORING:
+        try:
+            telegram.report_node_error(
+                name=node.name,
+                status=node.status,
+                xray=node.xray_version if node.xray_version else "None",
+                error=node.message if node.message else "None"
+            )
+        except Exception:
+            pass
+        try:
+            discord.report_node_error(
+                name=node.name,
+                status=node.status,
+                xray=node.xray_version if node.xray_version else "None",
+                error=node.message if node.message else "None"
             )
         except Exception:
             pass

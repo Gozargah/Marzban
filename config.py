@@ -77,6 +77,10 @@ NOTIFY_USER_SUB_REVOKED = config("NOTIFY_USER_SUB_REVOKED", default=True, cast=b
 NOTIFY_DATA_USAGE_PERCENT_REACHED = config("NOTIFY_DATA_USAGE_PERCENT_REACHED", default=True, cast=bool)
 NOTIFY_DAYS_LEFT = config("NOTIFY_DAYS_LEFT", default=True, cast=bool)
 NOTIFY_LOGIN = config("NOTIFY_LOGIN", default=True, cast=bool)
+NOTIFY_NODE_MONITORING = config("NOTIFY_NODE_MONITORING", default=True, cast=bool)
+
+
+EXCLUDE_NOTIFY_NODE_MONITORING = config("EXCLUDE_NOTIFY_NODE_MONITORING", default='', cast=str).split(',')
 
 ACTIVE_STATUS_TEXT = config("ACTIVE_STATUS_TEXT", default="Active")
 EXPIRED_STATUS_TEXT = config("EXPIRED_STATUS_TEXT", default="Expired")
