@@ -333,7 +333,7 @@ class ClashMetaConfiguration(ClashConfiguration):
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
         # not supported by clash-meta
-        if inbound['network'] in ("kcp", "splithttp"):
+        if inbound['network'] in ("kcp", "splithttp") or (inbound['network'] == "quic" and inbound["header_type"] != "none"):
             return
 
         node = self.make_node(
