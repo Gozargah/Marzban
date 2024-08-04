@@ -1,5 +1,6 @@
 import base64
 import json
+import copy
 import urllib.parse as urlparse
 from random import choice
 from typing import Union
@@ -486,7 +487,7 @@ class V2rayJsonConfig(str):
         return realitySettings
 
     def ws_config(self, path=None, host=None, random_user_agent=None):
-        wsSettings = self.settings.get("wsSettings", {})
+        wsSettings = copy.deepcopy(self.settings.get("wsSettings", {}))
 
         if "headers" not in wsSettings:
             wsSettings["headers"] = {}
@@ -500,7 +501,7 @@ class V2rayJsonConfig(str):
         return wsSettings
 
     def httpupgrade_config(self, path=None, host=None, random_user_agent=None):
-        httpupgradeSettings = self.settings.get("httpupgradeSettings", {})
+        httpupgradeSettings = copy.deepcopy(self.settings.get("httpupgradeSettings", {}))
 
         if "headers" not in httpupgradeSettings:
             httpupgradeSettings["headers"] = {}
@@ -519,7 +520,7 @@ class V2rayJsonConfig(str):
                          sc_max_concurrent_posts: int = 100,
                          sc_min_posts_interval_ms: int = 30,
                          ):
-        config = self.settings.get("splithttpSettings", {})
+        config = copy.deepcopy(self.settings.get("splithttpSettings", {}))
 
         if path:
             config["path"] = path
@@ -541,12 +542,12 @@ class V2rayJsonConfig(str):
         return config
 
     def grpc_config(self, path=None, host=None, multiMode=False, random_user_agent=None):
-        config = self.settings.get("grpcSettings", {
+        config = copy.deepcopy(self.settings.get("grpcSettings", {
             "idle_timeout": 60,
             "health_check_timeout": 20,
             "permit_without_stream": False,
             "initial_windows_size": 35538
-        })
+        }))
 
         config["multiMode"] = multiMode
 
@@ -562,13 +563,13 @@ class V2rayJsonConfig(str):
 
     def tcp_config(self, headers="none", path=None, host=None, random_user_agent=None):
         if headers == "http":
-            config = self.settings.get("tcphttpSettings", {
+            config = copy.deepcopy(self.settings.get("tcphttpSettings", {
                 "header": {}
-            })
+            }))
         else:
-            config = self.settings.get("tcpSettings", {
+            config = copy.deepcopy(self.settings.get("tcpSettings", {
                 "header": {}
-            })
+            }))
         if "header" not in config:
             config["header"] = {}
 
@@ -596,9 +597,9 @@ class V2rayJsonConfig(str):
 
     def http_config(self, net="http", path=None, host=None, random_user_agent=None):
         if net == "h2":
-            config = self.settings.get("h2Settings", {
+            config = copy.deepcopy(self.settings.get("h2Settings", {
                 "header": {}
-            })
+            }))
         else:
             config = self.settings.get("httpSettings", {
                 "header": {}
@@ -621,13 +622,13 @@ class V2rayJsonConfig(str):
         return config
 
     def quic_config(self, path=None, host=None, header=None):
-        quicSettings = self.settings.get("quicSettings", {
+        quicSettings = copy.deepcopy(self.settings.get("quicSettings", {
             "security": "none",
             "header": {
                 "type": "none"
             },
             "key": ""
-        })
+        }))
         if "header" not in quicSettings:
             quicSettings["header"] = {"type": "none"}
 
@@ -641,7 +642,7 @@ class V2rayJsonConfig(str):
         return quicSettings
 
     def kcp_config(self, seed=None, host=None, header=None):
-        kcpSettings = self.settings.get("kcpSettings", {
+        kcpSettings = copy.deepcopy(self.settings.get("kcpSettings", {
             "header": {
                 "type": "none"
             },
@@ -652,7 +653,7 @@ class V2rayJsonConfig(str):
             "congestion": False,
             "readBufferSize": 2,
             "writeBufferSize": 2,
-        })
+        }))
         if "header" not in kcpSettings:
             kcpSettings["header"] = {"type": "none"}
 
