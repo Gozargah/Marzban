@@ -26,8 +26,10 @@
     "header": {}
   },
   "tcpSettings": {
+    "header": {}
+  },
+  "tcphttpSettings": {
     "header": {
-      "type": "http",
       "request": {
         "headers": {
           "Accept-Encoding": [
