@@ -21,10 +21,11 @@ from config import (
     NOTIFY_USER_DELETED,
     NOTIFY_USER_DATA_USED_RESET,
     NOTIFY_USER_SUB_REVOKED,
-    NOTIFY_DATA_USAGE_PERCENT_REACHED,
-    NOTIFY_DAYS_LEFT,
+    NOTIFY_IF_DATA_USAGE_PERCENT_REACHED,
+    NOTIFY_IF_DAYS_LEF_REACHED,
     NOTIFY_LOGIN
 )
+
 
 def status_change(
         username: str, status: UserStatus, user: UserResponse, user_admin: Admin = None, by: Admin = None) -> None:
@@ -150,7 +151,8 @@ def user_subscription_revoked(user: UserResponse, by: Admin, user_admin: Admin =
             )
         except Exception:
             pass
-        notify(UserSubscriptionRevoked(username=user.username, action=Notification.Type.subscription_revoked, by=by, user=user))
+        notify(UserSubscriptionRevoked(username=user.username,
+               action=Notification.Type.subscription_revoked, by=by, user=user))
         try:
             discord.report_user_subscription_revoked(
                 username=user.username,
@@ -163,15 +165,15 @@ def user_subscription_revoked(user: UserResponse, by: Admin, user_admin: Admin =
 
 def data_usage_percent_reached(
         db: Session, percent: float, user: UserResponse, user_id: int, expire: Optional[int] = None) -> None:
-    if NOTIFY_DATA_USAGE_PERCENT_REACHED:
+    if NOTIFY_IF_DATA_USAGE_PERCENT_REACHED:
         notify(ReachedUsagePercent(username=user.username, user=user, used_percent=percent))
         create_notification_reminder(db, ReminderType.data_usage,
-                                    expires_at=dt.utcfromtimestamp(expire) if expire else None, user_id=user_id)
+                                     expires_at=dt.utcfromtimestamp(expire) if expire else None, user_id=user_id)
 
 
 def expire_days_reached(db: Session, days: int, user: UserResponse, user_id: int, expire: int) -> None:
     notify(ReachedDaysLeft(username=user.username, user=user, days_left=days))
-    if NOTIFY_DAYS_LEFT:
+    if NOTIFY_IF_DAYS_LEF_REACHED:
         create_notification_reminder(
             db, ReminderType.expiration_date, expires_at=dt.utcfromtimestamp(expire),
             user_id=user_id)
