@@ -1,4 +1,5 @@
 import json
+import copy
 from random import choice
 
 from jinja2.exceptions import TemplateNotFound
@@ -95,12 +96,12 @@ class SingBoxConfiguration(str):
         return config
 
     def http_config(self, host='', path='', random_user_agent: bool = False):
-        config = self.settings.get("httpSettings", {
+        config = copy.deepcopy(self.settings.get("httpSettings", {
             "idle_timeout": "15s",
             "ping_timeout": "15s",
             "method": "GET",
             "headers": {}
-        })
+        }))
         if "headers" not in config:
             config["headers"] = {}
 
@@ -116,9 +117,9 @@ class SingBoxConfiguration(str):
 
     def ws_config(self, host='', path='', random_user_agent: bool = False,
                   max_early_data=None, early_data_header_name=None):
-        config = self.settings.get("wsSettings", {
+        config = copy.deepcopy(self.settings.get("wsSettings", {
             "headers": {}
-        })
+        }))
         if "headers" not in config:
             config["headers"] = {}
 
@@ -136,7 +137,7 @@ class SingBoxConfiguration(str):
         return config
 
     def grpc_config(self, path=''):
-        config = self.settings.get("grpcSettings", {})
+        config = copy.deepcopy(self.settings.get("grpcSettings", {}))
 
         if path:
             config["service_name"] = path
@@ -144,9 +145,9 @@ class SingBoxConfiguration(str):
         return config
 
     def httpupgrade_config(self, host='', path='', random_user_agent: bool = False):
-        config = self.settings.get("httpupgradeSettings", {
+        config = copy.deepcopy(self.settings.get("httpupgradeSettings", {
             "headers": {}
-        })
+        }))
         if "headers" not in config:
             config["headers"] = {}
 
