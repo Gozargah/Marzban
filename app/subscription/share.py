@@ -124,7 +124,6 @@ def generate_subscription(
     else:
         raise ValueError(f'Unsupported format "{config_format}"')
 
-
     if as_base64:
         config = base64.b64encode(config.encode()).decode()
 
@@ -252,8 +251,6 @@ def process_inbounds_and_tags(
     inbounds = sorted(
         _inbounds, key=lambda x: index_dict.get(x[1][0], float('inf')))
 
-    #all_hosts = []
-
     for protocol, tags in inbounds:
         settings = proxies.get(protocol)
         if not settings:
@@ -279,13 +276,13 @@ def process_inbounds_and_tags(
                 if req_host_list:
                     salt = secrets.token_hex(8)
                     req_host = random.choice(req_host_list).replace("*", salt)
-                
+
                 address = ""
                 address_list = host['address']
                 if host['address']:
                     salt = secrets.token_hex(8)
                     address = random.choice(address_list).replace('*', salt)
-                
+
                 if host["path"] is not None:
                     path = host["path"].format_map(format_variables)
                 else:
@@ -301,25 +298,19 @@ def process_inbounds_and_tags(
                         "path": path,
                         "fp": host["fingerprint"] or inbound.get("fp", ""),
                         "ais": host["allowinsecure"]
-                               or inbound.get("allowinsecure", ""),
+                        or inbound.get("allowinsecure", ""),
                         "mux_enable": host["mux_enable"],
                         "fragment_setting": host["fragment_setting"],
                         "random_user_agent": host["random_user_agent"],
                     }
                 )
 
-                conf.add({
-                    "remark": host["remark"].format_map(format_variables),
-                    "address": address.format_map(format_variables),
-                    "inbound": host_inbound,
-                    "settings": settings.dict(no_obj=True)
-                })
-
-    #if RANDOMIZE_SUBSCRIPTION_CONFIGS:
-    #    random.shuffle(all_hosts)
-
-    #for host in all_hosts:
-    #    conf.add(**host)
+                conf.add(
+                    remark=host["remark"].format_map(format_variables),
+                    address=address.format_map(format_variables),
+                    inbound=host_inbound,
+                    settings=settings.dict(no_obj=True)
+                )
 
     return conf.render(reverse=reverse)
 

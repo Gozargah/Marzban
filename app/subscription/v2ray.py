@@ -517,7 +517,7 @@ class V2rayJsonConfig(str):
     def splithttp_config(self, path=None, host=None, random_user_agent=None,
                          sc_max_each_post_bytes: int = 1000000,
                          sc_max_concurrent_posts: int = 100,
-                         sc_min_posts_interval_ms : int = 30,
+                         sc_min_posts_interval_ms: int = 30,
                          ):
         config = self.settings.get("splithttpSettings", {})
 
