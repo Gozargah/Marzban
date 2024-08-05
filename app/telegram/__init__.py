@@ -1,52 +1,81 @@
-import importlib.util
-from os.path import dirname
-from threading import Thread
-from config import TELEGRAM_API_TOKEN, TELEGRAM_PROXY_URL
-from app import app
-from telebot import TeleBot, apihelper
+from aiogram import Bot, Dispatcher
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums.parse_mode import ParseMode
+from aiogram.utils.token import TokenValidationError
+from aiogram.exceptions import TelegramAPIError
 
+from .middlewares.auth import AdminOnlyMiddleware
 
-bot = None
-if TELEGRAM_API_TOKEN:
-    apihelper.proxy = {'http': TELEGRAM_PROXY_URL, 'https': TELEGRAM_PROXY_URL}
-    bot = TeleBot(TELEGRAM_API_TOKEN)
+from config import TELEGRAM_API_TOKEN
+from app import app, logger
 
-handler_names = ["admin", "report", "user"]
+class TelegramBot:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.bot = None
+            cls._instance.dp = None
+        return cls._instance
+
+    async def initialize(self):
+        if not TELEGRAM_API_TOKEN:
+            return False
+
+        try:
+            self.bot = Bot(
+                token=TELEGRAM_API_TOKEN,
+                default=DefaultBotProperties(
+                    parse_mode=ParseMode.HTML,
+                    link_preview_is_disabled=True
+                )
+            )
+            self.dp = Dispatcher()
+
+            self.dp.message.middleware(AdminOnlyMiddleware())
+            self.dp.callback_query.middleware(AdminOnlyMiddleware())
+            self.dp.inline_query.middleware(AdminOnlyMiddleware())
+
+            logger.info("Telegram bot initialized successfully")
+            return True
+        except TokenValidationError:
+            logger.error("Invalid Telegram bot token")
+        except Exception as e:
+            logger.error(f"Error initializing Telegram bot: {e}")
+        return False
+
+    async def start(self):
+        if not self.bot or not self.dp:
+            logger.error("Telegram bot not initialized")
+            return
+
+        try:
+            logger.info("Starting Telegram bot")
+            await self.bot.delete_webhook(drop_pending_updates=True)
+            await self.dp.start_polling(self.bot)
+        except TelegramAPIError as e:
+            logger.error(f"Telegram API error while starting bot: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error while starting Telegram bot: {e}")
+
+    async def stop(self):
+        if self.dp:
+            logger.info("Stopping Telegram bot")
+            await self.dp.stop_polling()
+        if self.bot:
+            await self.bot.session.close()
+        self.bot = None
+        self.dp = None
+        logger.info("Telegram bot stopped")
+
+tgbot = TelegramBot()
 
 @app.on_event("startup")
-def start_bot():
-    if bot:
-        handler_dir = dirname(__file__) + "/handlers/"
-        for name in handler_names:
-            spec = importlib.util.spec_from_file_location(name, f"{handler_dir}{name}.py")
-            spec.loader.exec_module(importlib.util.module_from_spec(spec))
+async def start_bot():
+    if await tgbot.initialize():
+        await tgbot.start()
 
-        from app.telegram import utils # setup custom handlers
-        utils.setup()
-
-        thread = Thread(target=bot.infinity_polling, daemon=True)
-        thread.start()
-
-
-from .handlers.report import (  # noqa
-    report,
-    report_new_user,
-    report_user_modification,
-    report_user_deletion,
-    report_status_change,
-    report_user_usage_reset,
-    report_user_subscription_revoked,
-    report_login
-)
-
-__all__ = [
-    "bot",
-    "report",
-    "report_new_user",
-    "report_user_modification",
-    "report_user_deletion",
-    "report_status_change",
-    "report_user_usage_reset",
-    "report_user_subscription_revoked",
-    "report_login"
-]
+@app.on_event("shutdown")
+async def stop_bot():
+    await tgbot.stop()
