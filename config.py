@@ -124,3 +124,11 @@ SUB_PROFILE_TITLE = config("SUB_PROFILE_TITLE", default="Subscription")
 
 # discord webhook log
 DISCORD_WEBHOOK_URL = config("DISCORD_WEBHOOK_URL", default="")
+
+
+# Interval jobs, all values are in seconds
+JOB_CORE_HEALTH_CHECK_INTERVAL = config("JOB_CORE_HEALTH_CHECK_INTERVAL", cast=int, default=10)
+JOB_RECORD_NODE_USAGES_INTERVAL = config("JOB_RECORD_NODE_USAGES_INTERVAL", cast=int, default=30)
+JOB_RECORD_USER_USAGES_INTERVAL = config("JOB_RECORD_USER_USAGES_INTERVAL", cast=int, default=10)
+JOB_REVIEW_USERS_INTERVAL = config("JOB_REVIEW_USERS_INTERVAL", cast=int, default=10)
+JOB_SEND_NOTIFICATIONS_INTERVAL = config("JOB_SEND_NOTIFICATIONS_INTERVAL", cast=int, default=30)
