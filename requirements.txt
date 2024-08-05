@@ -76,3 +76,4 @@ websocket-client==1.7.0
 websockets==10.4
 wrapt==1.14.1
 zipp==3.10.0
+aiogram==3.10.0
