@@ -4,6 +4,8 @@ from aiogram.enums.parse_mode import ParseMode
 from aiogram.utils.token import TokenValidationError
 from aiogram.exceptions import TelegramAPIError
 
+from .middlewares.auth import AdminOnlyMiddleware
+
 from config import TELEGRAM_API_TOKEN
 from app import app, logger
 
@@ -30,6 +32,11 @@ class TelegramBot:
                 )
             )
             self.dp = Dispatcher()
+
+            self.dp.message.middleware(AdminOnlyMiddleware())
+            self.dp.callback_query.middleware(AdminOnlyMiddleware())
+            self.dp.inline_query.middleware(AdminOnlyMiddleware())
+
             logger.info("Telegram bot initialized successfully")
             return True
         except TokenValidationError:
