@@ -206,6 +206,43 @@ def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime,
     return list(usages.values())
 
 
+def get_all_users_usages(
+        db: Session, admin: Admin, start: datetime, end: datetime
+    ) -> List[UserUsageResponse]:
+    
+    usages = {}
+
+    usages[0] = UserUsageResponse(  # Main Core
+        node_id=None,
+        node_name="Master",
+        used_traffic=0
+    )
+
+    for node in db.query(Node).all():
+
+        usages[node.id] = UserUsageResponse(
+            node_id=node.id,
+            node_name=node.name,
+            used_traffic=0
+        )
+
+    admin_users = set(user.id for user in get_users(db=db, admins=admin))
+
+    cond = and_(
+        NodeUserUsage.created_at >= start,
+        NodeUserUsage.created_at <= end,
+        NodeUserUsage.user_id.in_(admin_users)
+    )
+
+    for v in db.query(NodeUserUsage).filter(cond):
+        try:
+            usages[v.node_id or 0].used_traffic += v.used_traffic
+        except KeyError:
+            pass
+
+    return list(usages.values())
+
+
 def get_users_count(db: Session, status: UserStatus = None, admin: Admin = None):
     query = db.query(User.id)
     if admin:

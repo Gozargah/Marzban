@@ -8,7 +8,7 @@ from app import app, logger, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.user import (UserCreate, UserModify, UserResponse,
-                             UsersResponse, UserStatus, UserUsagesResponse)
+                             UsersResponse, UserStatus, UserUsagesResponse, UsersUsagesResponse)
 from app.utils import report
 
 
@@ -325,6 +325,33 @@ def set_owner(username: str,
 
     return user
 
+@app.get("/api/users/usage", tags=['User'], response_model=UsersUsagesResponse)
+def get_users_usage(start: str = None,
+                   end: str = None,
+                   db: Session = Depends(get_db),
+                   owner: Union[List[str], None] = Query(None, alias="admin"),
+                   admin: Admin = Depends(Admin.get_current)):
+    """
+    Get all users usage
+    """
+    if start is None:
+        start_date = datetime.fromtimestamp(
+            datetime.utcnow().timestamp() - 30 * 24 * 3600)
+    else:
+        start_date = datetime.fromisoformat(start)
+
+    if end is None:
+        end_date = datetime.utcnow()
+    else:
+        end_date = datetime.fromisoformat(end)
+
+    usages = crud.get_all_users_usages(db=db,
+                                        start=start_date,
+                                        end=end_date,
+                                        admin=owner if admin.is_sudo else [admin.username]
+                                    )
+
+    return {"usages": usages}
 
 @app.get("/api/users/expired", tags=['User'], response_model=List[str])
 def get_expired_users(expired_before: datetime = None,
