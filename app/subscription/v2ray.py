@@ -573,7 +573,8 @@ class V2rayJsonConfig(str):
         if "header" not in config:
             config["header"] = {}
 
-        config["header"]["type"] = headers
+        if headers:
+            config["header"]["type"] = headers
 
         if any((path, host, random_user_agent)):
             if "request" not in config["header"]:
@@ -705,7 +706,7 @@ class V2rayJsonConfig(str):
         }
 
     @staticmethod
-    def vless_config(address=None, port=None, id=None, flow=None):
+    def vless_config(address=None, port=None, id=None, flow=""):
         return {
             "vnext": [
                 {
