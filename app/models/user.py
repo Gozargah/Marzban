@@ -335,3 +335,6 @@ class UserUsageResponse(BaseModel):
 class UserUsagesResponse(BaseModel):
     username: str
     usages: List[UserUsageResponse]
+
+class UsersUsagesResponse(BaseModel):
+    usages: List[UserUsageResponse]
