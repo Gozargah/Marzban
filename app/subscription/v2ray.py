@@ -864,7 +864,7 @@ class V2rayJsonConfig(str):
                 path = get_grpc_gun(path)
 
         outbound = {
-            "tag": remark,
+            "tag": "proxy",
             "protocol": protocol
         }
 

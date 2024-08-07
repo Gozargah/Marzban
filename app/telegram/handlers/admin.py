@@ -2138,6 +2138,8 @@ def confirm_user_command(call: types.CallbackQuery):
             if not db_user:
                 return bot.answer_callback_query(call.id, text=f"User not found!", show_alert=True)
             db_user = crud.revoke_user_sub(db, db_user)
+            if db_user.status in (UserStatus.active, UserStatus.on_hold):
+                xray.operations.update_user(dbuser=db_user)
             user = UserResponse.from_orm(db_user)
             try:
                 note = user.note or ' '

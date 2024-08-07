@@ -39,8 +39,8 @@ def user_subscription(token: str,
         return {
             "upload": 0,
             "download": user.used_traffic,
-            "total": user.data_limit,
-            "expire": user.expire,
+            "total": user.data_limit if user.data_limit is not None else 0,
+            "expire": user.expire if user.expire is not None else 0,
         }
 
     sub = get_subscription_payload(token)
@@ -73,7 +73,6 @@ def user_subscription(token: str,
         "subscription-userinfo": "; ".join(
             f"{key}={val}"
             for key, val in get_subscription_user_info(user).items()
-            if val is not None
         )
     }
 
