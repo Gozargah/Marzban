@@ -91,7 +91,7 @@ class BotKeyboard:
 
 
     @staticmethod
-    def user_menu(user_info, with_back: bool = True, page: int = 1, note: bool = False):
+    def user_menu(user_info, with_back: bool = True, page: int = 1):
         keyboard = types.InlineKeyboardMarkup()
         keyboard.add(
             types.InlineKeyboardButton(
@@ -103,29 +103,20 @@ class BotKeyboard:
                 callback_data=f"delete:{user_info['username']}"
             ),
         )
-        if note:
-            keyboard.add(
-                types.InlineKeyboardButton(
-                    text='🚫 Revoke Sub',
-                    callback_data=f"revoke_sub:{user_info['username']}"),
-                types.InlineKeyboardButton(
-                    text='✏️ Edit',
-                    callback_data=f"edit:{user_info['username']}"))
-            keyboard.add(
-                types.InlineKeyboardButton(
-                    text='📝 Edit Note',
-                    callback_data=f"edit_note:{user_info['username']}"),
-                types.InlineKeyboardButton(
-                    text='📡 Links',
-                    callback_data=f"links:{user_info['username']}"))
-        else:
-            keyboard.add(
-                types.InlineKeyboardButton(
-                    text='📡 Links',
-                    callback_data=f"links:{user_info['username']}"),
-                types.InlineKeyboardButton(
-                    text='✏️ Edit',
-                    callback_data=f"edit:{user_info['username']}"))
+        keyboard.add(
+            types.InlineKeyboardButton(
+                text='🚫 Revoke Sub',
+                callback_data=f"revoke_sub:{user_info['username']}"),
+            types.InlineKeyboardButton(
+                text='✏️ Edit',
+                callback_data=f"edit:{user_info['username']}"))
+        keyboard.add(
+            types.InlineKeyboardButton(
+                text='📝 Edit Note',
+                callback_data=f"edit_note:{user_info['username']}"),
+            types.InlineKeyboardButton(
+                text='📡 Links',
+                callback_data=f"links:{user_info['username']}"))
         keyboard.add(
             types.InlineKeyboardButton(
                 text='🔁 Reset usage',
