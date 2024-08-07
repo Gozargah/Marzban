@@ -331,8 +331,16 @@ def edit_command(call: types.CallbackQuery):
         user = UserResponse.from_orm(db_user)
     mem_store.set(f'{call.message.chat.id}:username', username)
     mem_store.set(f'{call.message.chat.id}:data_limit', db_user.data_limit)
-    mem_store.set(f'{call.message.chat.id}:expire_date', datetime.fromtimestamp(
-        db_user.expire) if db_user.expire else None)
+
+    # if status is on_hold set expire_date to an integer that is duration else set a datetime
+    if db_user.status == UserStatus.on_hold:
+        mem_store.set(f'{call.message.chat.id}:expire_date', db_user.on_hold_expire_duration)
+        mem_store.set(f'{call.message.chat.id}:expire_on_hold_timeout', db_user.on_hold_timeout)
+        expire_date = db_user.on_hold_expire_duration
+    else:
+        mem_store.set(f'{call.message.chat.id}:expire_date',
+                      datetime.fromtimestamp(db_user.expire) if db_user.expire else None)
+        expire_date = datetime.fromtimestamp(db_user.expire) if db_user.expire else None
     mem_store.set(
         f'{call.message.chat.id}:protocols',
         {protocol.value: inbounds for protocol, inbounds in db_user.inbounds.items()})
@@ -346,7 +354,9 @@ def edit_command(call: types.CallbackQuery):
             "edit",
             username=username,
             data_limit=db_user.data_limit,
-            expire_date=mem_store.get(f"{call.message.chat.id}:expire_date"),
+            expire_date=expire_date,
+            expire_on_hold_duration=expire_date if isinstance(expire_date, int) else None,
+            expire_on_hold_timeout=mem_store.get(f'{call.message.chat.id}:expire_on_hold_timeout'),
         )
     )
 
@@ -377,10 +387,11 @@ def edit_user_command(call: types.CallbackQuery):
     _, username, action = call.data.split(":")
     schedule_delete_message(call.message.chat.id, call.message.id)
     cleanup_messages(call.message.chat.id)
+    expire_date = mem_store.get(f"{call.message.chat.id}:expire_date")
     if action == "data":
         msg = bot.send_message(
             call.message.chat.id,
-            '⬆️ Enter Data Limit (GB):\n⚠️ Send 0 for unlimited.',
+            '📶 Enter Data Limit (GB):\n⚠️ Send 0 for unlimited.',
             reply_markup=BotKeyboard.inline_cancel_action(f'user:{username}')
         )
         mem_store.set(f"{call.message.chat.id}:edit_msg_text", call.message.text)
@@ -389,15 +400,86 @@ def edit_user_command(call: types.CallbackQuery):
             call.message, edit_user_data_limit_step, username)
         schedule_delete_message(call.message.chat.id, msg.message_id)
     elif action == "expire":
+        text = """\
+📅 Enter expire date like below:
+`3d` for 3 days
+`2m` for 2 months
+or date as (YYYY-MM-DD)
+⚠️ Send 0 for never expire."""
+        if isinstance(expire_date, int):
+            text = """\
+📅 Enter on-hold expire duration like below:
+`3d` for 3 days
+`2m` for 2 months"""
         msg = bot.send_message(
             call.message.chat.id,
-            '⬆️ Enter Expire Date (YYYY-MM-DD)\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|D) :\n⚠️ Send 0 for never expire.',
+            text,
+            parse_mode="markdown",
             reply_markup=BotKeyboard.inline_cancel_action(f'user:{username}'))
         mem_store.set(f"{call.message.chat.id}:edit_msg_text", call.message.text)
         bot.clear_step_handler_by_chat_id(call.message.chat.id)
         bot.register_next_step_handler(
             call.message, edit_user_expire_step, username=username)
         schedule_delete_message(call.message.chat.id, msg.message_id)
+    elif action == 'expire_on_hold_timeout':
+        text = """\
+📅 Enter Timeout for on hold
+`3d` for 3 days
+`2m` for 2 months
+or date as (YYYY-MM-DD)
+⚠️ Send 0 for never expire."""
+        msg = bot.send_message(
+            call.message.chat.id,
+            text,
+            parse_mode="markdown",
+            reply_markup=BotKeyboard.inline_cancel_action(f'user:{username}'))
+        bot.clear_step_handler_by_chat_id(call.message.chat.id)
+        bot.register_next_step_handler(call.message, edit_user_expire_on_hold_timeout_step, username=username)
+        schedule_delete_message(call.message.chat.id, msg.message_id)
+
+
+def edit_user_expire_on_hold_timeout_step(message: types.Message, username: str):
+    try:
+        now = datetime.now()
+        today = datetime(year=now.year, month=now.month, day=now.day, hour=23, minute=59, second=59)
+        if re.match(r'^[0-9]{1,3}([MmDd])$', message.text):
+            expire_on_hold_timeout = today
+            number = int(re.findall(r'^[0-9]{1,3}', message.text)[0])
+            symbol = re.findall('[MmDd]$', message.text)[0].upper()
+            if symbol == 'M':
+                expire_on_hold_timeout = today + relativedelta(months=number)
+            elif symbol == 'D':
+                expire_on_hold_timeout = today + relativedelta(days=number)
+        elif not message.text.isnumeric():
+            expire_on_hold_timeout = datetime.strptime(message.text, "%Y-%m-%d")
+        elif int(message.text) == 0:
+            expire_on_hold_timeout = None
+        else:
+            raise ValueError
+        if expire_on_hold_timeout and expire_on_hold_timeout < today:
+            wait_msg = bot.send_message(message.chat.id, '❌ Expire date must be greater than today.')
+            schedule_delete_message(message.chat.id, wait_msg.message_id)
+            return bot.register_next_step_handler(wait_msg, edit_user_expire_on_hold_timeout_step, username=username)
+    except ValueError:
+        wait_msg = bot.send_message(message.chat.id, '❌ Date is not in any of valid formats.')
+        schedule_delete_message(message.chat.id, wait_msg.message_id)
+        return bot.register_next_step_handler(wait_msg, edit_user_expire_on_hold_timeout_step, username=username)
+
+    mem_store.set(f'{message.chat.id}:expire_on_hold_timeout', expire_on_hold_timeout)
+    expire_date = mem_store.get(f"{message.chat.id}:expire_date")
+    schedule_delete_message(message.chat.id, message.message_id)
+    bot.send_message(
+        message.chat.id,
+        f"📝 Editing user: <code>{username}</code>",
+        parse_mode="html",
+        reply_markup=BotKeyboard.select_protocols(
+            mem_store.get(f'{message.chat.id}:protocols'), "edit",
+            username=username, data_limit=mem_store.get(f'{message.chat.id}:data_limit'),
+            expire_on_hold_duration=expire_date if isinstance(expire_date, int) else None,
+            expire_on_hold_timeout=mem_store.get(f'{message.chat.id}:expire_on_hold_timeout')
+        )
+    )
+    cleanup_messages(message.chat.id)
 
 
 def edit_user_data_limit_step(message: types.Message, username: str):
@@ -426,38 +508,36 @@ def edit_user_data_limit_step(message: types.Message, username: str):
 
 
 def edit_user_expire_step(message: types.Message, username: str):
+    last_expiry = mem_store.get(f'{message.chat.id}:expire_date')
     try:
         now = datetime.now()
-        today = datetime(
-            year=now.year,
-            month=now.month,
-            day=now.day,
-            hour=23,
-            minute=59,
-            second=59
-        )
-        if re.match(r'^[0-9]{1,3}(M|m|D|d)$', message.text):
+        today = datetime(year=now.year, month=now.month, day=now.day, hour=23, minute=59, second=59)
+        if re.match(r'^[0-9]{1,3}([MmDd])$', message.text):
             expire_date = today
             number_pattern = r'^[0-9]{1,3}'
             number = int(re.findall(number_pattern, message.text)[0])
-            symbol_pattern = r'(M|m|D|d)$'
+            symbol_pattern = r'[MmDd]$'
             symbol = re.findall(symbol_pattern, message.text)[0].upper()
             if symbol == 'M':
                 expire_date = today + relativedelta(months=number)
+                if isinstance(last_expiry, int):
+                    expire_date = number * 24 * 60 * 60 * 30
             elif symbol == 'D':
                 expire_date = today + relativedelta(days=number)
-        elif message.text != '0':
+                if isinstance(last_expiry, int):
+                    expire_date = number * 24 * 60 * 60
+        elif not message.text.isnumeric() and not isinstance(last_expiry, int):
             expire_date = datetime.strptime(message.text, "%Y-%m-%d")
-        else:
+        elif int(message.text) == 0:
             expire_date = None
-        if expire_date and expire_date < today:
+        else:
+            raise ValueError
+        if expire_date and isinstance(expire_date, datetime) and expire_date < today:
             wait_msg = bot.send_message(message.chat.id, '❌ Expire date must be greater than today.')
             schedule_delete_message(message.chat.id, wait_msg.message_id)
             return bot.register_next_step_handler(wait_msg, edit_user_expire_step, username=username)
     except ValueError:
-        wait_msg = bot.send_message(
-            message.chat.id,
-            '❌ Expire date must be in YYYY-MM-DD format.\nOr You Can Use Regex Symbol: ^[0-9]{1,3}(M|D)')
+        wait_msg = bot.send_message(message.chat.id, '❌ Date is not in any of valid formats.')
         schedule_delete_message(message.chat.id, wait_msg.message_id)
         return bot.register_next_step_handler(wait_msg, edit_user_expire_step, username=username)
 
@@ -467,11 +547,14 @@ def edit_user_expire_step(message: types.Message, username: str):
     mem_store.delete(f"{message.chat.id}:edit_msg_text")
     bot.send_message(
         message.chat.id,
-        text or f"📝 Editing user <code>{username}</code>",
+        text or f"📝 Editing user: <code>{username}</code>",
         parse_mode="html",
         reply_markup=BotKeyboard.select_protocols(
             mem_store.get(f'{message.chat.id}:protocols'), "edit",
-            username=username, data_limit=mem_store.get(f'{message.chat.id}:data_limit'), expire_date=expire_date))
+            username=username, data_limit=mem_store.get(f'{message.chat.id}:data_limit'),
+            expire_date=expire_date,
+            expire_on_hold_duration=expire_date if isinstance(expire_date, int) else None,
+            expire_on_hold_timeout=mem_store.get(f'{message.chat.id}:expire_on_hold_timeout')))
     cleanup_messages(message.chat.id)
 
 
@@ -1717,11 +1800,23 @@ def confirm_user_command(call: types.CallbackQuery):
                 elif protocol in db_user.inbounds and protocol not in inbounds:
                     del proxies[protocol]
 
-            modify = UserModify(
-                expire=int(mem_store.get(f'{call.message.chat.id}:expire_date').timestamp())
-                if mem_store.get(f'{call.message.chat.id}:expire_date') else 0, data_limit=mem_store.get(
-                    f"{call.message.chat.id}:data_limit"),
-                proxies=proxies, inbounds=inbounds)
+            data_limit = mem_store.get(f"{call.message.chat.id}:data_limit")
+            expire_date = mem_store.get(f'{call.message.chat.id}:expire_date')
+            if isinstance(expire_date, int):
+                modify = UserModify(
+                    on_hold_expire_duration=expire_date,
+                    on_hold_timeout=mem_store.get(f'{call.message.chat.id}:expire_on_hold_timeout'),
+                    data_limit=data_limit,
+                    proxies=proxies,
+                    inbounds=inbounds
+                )
+            else:
+                modify = UserModify(
+                    expire=int(expire_date.timestamp()) if expire_date else 0,
+                    data_limit=data_limit,
+                    proxies=proxies,
+                    inbounds=inbounds
+                )
             last_user = UserResponse.from_orm(db_user)
             db_user = crud.update_user(db, db_user, modify)
 
@@ -1734,19 +1829,27 @@ def confirm_user_command(call: types.CallbackQuery):
 
         bot.answer_callback_query(call.id, "✅ User updated successfully.")
 
-        try:
-            note = user.note or ' '
-        except:
-            note = None
-        text = get_user_info_text(
-            status=user.status,
-            username=user.username,
-            sub_url=user.subscription_url,
-            data_limit=user.data_limit,
-            usage=user.used_traffic,
-            expire=user.expire,
-            note=note
-        )
+        if user.status == UserStatus.on_hold:
+            text = get_user_info_text(
+                status=user.status,
+                username=user.username,
+                sub_url=user.subscription_url,
+                data_limit=user.data_limit,
+                usage=user.used_traffic,
+                on_hold_expire_duration=user.on_hold_expire_duration,
+                on_hold_timeout=user.on_hold_timeout,
+                note=user.note
+            )
+        else:
+            text = get_user_info_text(
+                status=user.status,
+                username=username,
+                sub_url=user.subscription_url,
+                data_limit=user.data_limit,
+                usage=user.used_traffic,
+                expire=user.expire,
+                note=user.note
+            )
         bot.edit_message_text(
             text,
             call.message.chat.id,
@@ -1755,7 +1858,7 @@ def confirm_user_command(call: types.CallbackQuery):
             reply_markup=BotKeyboard.user_menu({
                 'username': db_user.username,
                 'status': db_user.status},
-                note=note)
+                note=user.note)
         )
         if TELEGRAM_LOGGER_CHANNEL_ID:
             tag = f'\n➖➖➖➖➖➖➖➖➖ \n<b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>'

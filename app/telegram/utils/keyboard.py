@@ -299,42 +299,39 @@ class BotKeyboard:
                          action: Literal["edit", "create", "create_from_template"],
                          username: str = None,
                          data_limit: float = None,
-                         expire_date: dt = None):
+                         expire_date: dt = None,
+                         expire_on_hold_duration: int = None,
+                         expire_on_hold_timeout: dt = None):
         keyboard = types.InlineKeyboardMarkup()
 
         if action == "edit":
-            keyboard.add(
-                types.InlineKeyboardButton(
-                    text="⚠️ Data Limit:",
-                    callback_data=f"help_edit"
-                )
-            )
+            keyboard.add(types.InlineKeyboardButton(text="⚠️ Data Limit:", callback_data=f"help_edit"))
             keyboard.add(
                 types.InlineKeyboardButton(
                     text=f"{readable_size(data_limit) if data_limit else 'Unlimited'}",
                     callback_data=f"help_edit"
                 ),
-                types.InlineKeyboardButton(
-                    text="✏️ Edit",
-                    callback_data=f"edit_user:{username}:data"
-                )
-            )
-            keyboard.add(
-                types.InlineKeyboardButton(
-                    text="📅 Expire Date:",
-                    callback_data=f"help_edit"
-                )
-            )
-            keyboard.add(
-                types.InlineKeyboardButton(
-                    text=f"{expire_date.strftime('%Y-%m-%d') if expire_date else 'Never'}",
-                    callback_data=f"help_edit"
-                ),
-                types.InlineKeyboardButton(
-                    text="✏️ Edit",
-                    callback_data=f"edit_user:{username}:expire"
-                )
-            )
+                types.InlineKeyboardButton(text="✏️ Edit", callback_data=f"edit_user:{username}:data"))
+            if expire_on_hold_duration:
+                keyboard.add(types.InlineKeyboardButton(text="⏳ Duration:", callback_data=f"edit_user:{username}:expire"))
+                keyboard.add(
+                    types.InlineKeyboardButton(text=f"{int(expire_on_hold_duration / 24 / 60 / 60)} روز",
+                        callback_data=f"edit_user:{username}:expire"),
+                    types.InlineKeyboardButton(text="✏️ Edit", callback_data=f"edit_user:{username}:expire"))
+
+                keyboard.add(types.InlineKeyboardButton(text="🌀 Auto enable at:", callback_data=f"edit_user:{username}:expire_on_hold_timeout"))
+                keyboard.add(
+                    types.InlineKeyboardButton(text=f"{expire_on_hold_timeout.strftime('%Y-%m-%d') if expire_on_hold_timeout else 'Never'}",
+                        callback_data=f"edit_user:{username}:expire_on_hold_timeout"),
+                    types.InlineKeyboardButton(text="✏️ Edit", callback_data=f"edit_user:{username}:expire_on_hold_timeout"))
+            else:
+                keyboard.add(types.InlineKeyboardButton(text="📅 Expire Date:", callback_data=f"help_edit"))
+                keyboard.add(
+                    types.InlineKeyboardButton(
+                        text=f"{expire_date.strftime('%Y-%m-%d') if expire_date else 'Never'}",
+                        callback_data=f"help_edit"
+                    ),
+                    types.InlineKeyboardButton(text="✏️ Edit", callback_data=f"edit_user:{username}:expire"))
 
         if action != 'create_from_template':
             for protocol, inbounds in xray.config.inbounds_by_protocol.items():
