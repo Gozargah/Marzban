@@ -1212,8 +1212,8 @@ def add_user_expire_step(message: types.Message, username: str, data_limit: int,
             if isinstance(mem_store.get(f'{message.chat.id}:expire_date'),
                           datetime) else mem_store.get(f'{message.chat.id}:expire_date')
             if mem_store.get(f'{message.chat.id}:expire_date') else 'Never'),
-        reply_markup=BotKeyboard.select_protocols({},
-                                                  action="create"))
+        reply_markup=BotKeyboard.select_protocols(
+            mem_store.get(f'{message.chat.id}:protocols', {}), action="create"))
 
 
 def add_on_hold_timeout(message: types.Message):
@@ -1258,8 +1258,8 @@ def add_on_hold_timeout(message: types.Message):
             if isinstance(mem_store.get(f'{message.chat.id}:expire_date'),
                           datetime) else mem_store.get(f'{message.chat.id}:expire_date')
             if mem_store.get(f'{message.chat.id}:expire_date') else 'Never'),
-        reply_markup=BotKeyboard.select_protocols({},
-                                                  action="create"))
+        reply_markup=BotKeyboard.select_protocols(
+            mem_store.get(f'{message.chat.id}:protocols', {}), action="create"))
 
 
 @bot.callback_query_handler(cb_query_startswith('select_inbound:'), is_admin=True)
