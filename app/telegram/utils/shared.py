@@ -3,6 +3,7 @@ from datetime import datetime as dt
 from dateutil.relativedelta import relativedelta
 
 from app.models.user import User, UserStatus, UserResponse
+from app.models.user_template import UserTemplate
 from app.utils.system import readable_size
 
 
@@ -78,19 +79,20 @@ def get_user_info_text(db_user: User) -> str:
 🚀 <b><a href="{user.subscription_url}">Subscription</a>:</b> <code>{user.subscription_url}</code>"""
 
 
-def get_template_info_text(
-        _id: int, data_limit: int, expire_duration: int, username_prefix: str, username_suffix: str, inbounds: dict):
+def get_template_info_text(template: UserTemplate):
     protocols = ""
-    for p, inbounds in inbounds.items():
+    for p, inbounds in template.inbounds.items():
         protocols += f"\n├─ <b>{p.upper()}</b>\n"
         protocols += "├───" + ", ".join([f"<code>{i}</code>" for i in inbounds])
+    data_limit = readable_size(template.data_limit) if template.data_limit else "Unlimited"
+    expire = ((dt.now() + relativedelta(seconds=template.expire_duration))
+              .strftime("%Y-%m-%d")) if template.expire_duration else "Never"
     text = f"""
 📊 Template Info:
-┌ ID: <b>{_id}</b>
-├ Data Limit: <b>{readable_size(data_limit) if data_limit else 'Unlimited'}</b>
-├ Expire Date: <b>{(dt.now() + relativedelta(seconds=expire_duration)).strftime('%Y-%m-%d') if expire_duration else 'Never'}</b>
-├ Username Prefix: <b>{username_prefix if username_prefix else '🚫'}</b>
-├ Username Suffix: <b>{username_suffix if username_suffix else '🚫'}</b>
-├ Protocols: {protocols}
-        """
+ID: <b>{template.id}</b>
+Data Limit: <b>{data_limit}</b>
+Expire Date: <b>{expire}</b>
+Username Prefix: <b>{template.username_prefix if template.username_prefix else "-"}</b>
+Username Suffix: <b>{template.username_suffix if template.username_suffix else "-"}</b>
+Protocols: {protocols}"""
     return text

@@ -898,10 +898,7 @@ def add_user_from_template(call: types.CallbackQuery):
             return bot.answer_callback_query(call.id, "Template not found!", show_alert=True)
         template = UserTemplateResponse.from_orm(template)
 
-    text = get_template_info_text(
-        template_id, data_limit=template.data_limit, expire_duration=template.expire_duration,
-        username_prefix=template.username_prefix, username_suffix=template.username_suffix,
-        inbounds=template.inbounds)
+    text = get_template_info_text(template)
     if template.username_prefix:
         text += f"\n⚠️ Username will be prefixed with <code>{template.username_prefix}</code>"
     if template.username_suffix:
@@ -955,22 +952,15 @@ def random_username(call: types.CallbackQuery):
     mem_store.set(f"{call.message.chat.id}:username", username)
     mem_store.set(f"{call.message.chat.id}:data_limit", template.data_limit)
     mem_store.set(f"{call.message.chat.id}:protocols", template.inbounds)
+    mem_store.set(f"{call.message.chat.id}:user_status", UserStatus.active)
     now = datetime.now()
-    today = datetime(
-        year=now.year,
-        month=now.month,
-        day=now.day,
-        hour=23,
-        minute=59,
-        second=59)
+    today = datetime(year=now.year, month=now.month, day=now.day, hour=23, minute=59, second=59)
     expire_date = None
     if template.expire_duration:
         expire_date = today + relativedelta(seconds=template.expire_duration)
     mem_store.set(f"{call.message.chat.id}:expire_date", expire_date)
 
-    text = f"📝 Creating user <code>{username}</code>\n" + get_template_info_text(
-        id=template.id, data_limit=template.data_limit, expire_duration=template.expire_duration,
-        username_prefix=template.username_prefix, username_suffix=template.username_suffix, inbounds=template.inbounds)
+    text = f"📝 Creating user <code>{username}</code>\n" + get_template_info_text(template)
 
     bot.send_message(
         call.message.chat.id,
@@ -987,7 +977,7 @@ def random_username(call: types.CallbackQuery):
 def add_user_from_template_username_step(message: types.Message):
     template_id = mem_store.get(f"{message.chat.id}:template_id")
     if template_id is None:
-        return bot.send_message(message.chat.id, "An error occured in the process! try again.")
+        return bot.send_message(message.chat.id, "An error occurred in the process! try again.")
 
     if not message.text:
         wait_msg = bot.send_message(message.chat.id, '❌ Username can not be empty.')
@@ -1034,23 +1024,15 @@ def add_user_from_template_username_step(message: types.Message):
     mem_store.set(f"{message.chat.id}:username", username)
     mem_store.set(f"{message.chat.id}:data_limit", template.data_limit)
     mem_store.set(f"{message.chat.id}:protocols", template.inbounds)
+    mem_store.set(f"{message.chat.id}:user_status", UserStatus.active)
     now = datetime.now()
-    today = datetime(
-        year=now.year,
-        month=now.month,
-        day=now.day,
-        hour=23,
-        minute=59,
-        second=59
-    )
+    today = datetime(year=now.year, month=now.month, day=now.day, hour=23, minute=59, second=59)
     expire_date = None
     if template.expire_duration:
         expire_date = today + relativedelta(seconds=template.expire_duration)
     mem_store.set(f"{message.chat.id}:expire_date", expire_date)
 
-    text = f"📝 Creating user <code>{username}</code>\n" + get_template_info_text(
-        id=template.id, data_limit=template.data_limit, expire_duration=template.expire_duration,
-        username_prefix=template.username_prefix, username_suffix=template.username_suffix, inbounds=template.inbounds)
+    text = f"📝 Creating user <code>{username}</code>\n" + get_template_info_text(template)
 
     bot.send_message(
         message.chat.id,
@@ -1169,21 +1151,21 @@ def add_user_expire_step(message: types.Message, username: str, data_limit: int,
         now = datetime.now()
         today = datetime(year=now.year, month=now.month, day=now.day, hour=23, minute=59, second=59)
 
-        if re.match(r'^[0-9]{1,3}(M|m|D|d)$', message.text):
+        if re.match(r'^[0-9]{1,3}([MmDd])$', message.text):
             number_pattern = r'^[0-9]{1,3}'
             number = int(re.findall(number_pattern, message.text)[0])
-            symbol_pattern = r'(M|m|D|d)$'
+            symbol_pattern = r'([MmDd])$'
             symbol = re.findall(symbol_pattern, message.text)[0].upper()
 
             if user_status == 'onhold':
                 if symbol == 'M':
                     expire_date = number * 30
-                elif symbol == 'D':
+                else:
                     expire_date = number
             else:  # active
                 if symbol == 'M':
                     expire_date = today + relativedelta(months=number)
-                elif symbol == 'D':
+                else:
                     expire_date = today + relativedelta(days=number)
         elif message.text == '0':
             if user_status == 'onhold':
@@ -1239,14 +1221,14 @@ def add_on_hold_timeout(message: types.Message):
         now = datetime.now()
         today = datetime(year=now.year, month=now.month, day=now.day, hour=23, minute=59, second=59)
 
-        if re.match(r'^[0-9]{1,3}(M|m|D|d)$', message.text):
+        if re.match(r'^[0-9]{1,3}([MmDd])$', message.text):
             number_pattern = r'^[0-9]{1,3}'
             number = int(re.findall(number_pattern, message.text)[0])
-            symbol_pattern = r'(M|m|D|d)$'
+            symbol_pattern = r'([MmDd])$'
             symbol = re.findall(symbol_pattern, message.text)[0].upper()
             if symbol == 'M':
                 onhold_timeout = today + relativedelta(months=number)
-            elif symbol == 'D':
+            else:
                 onhold_timeout = today + relativedelta(days=number)
         elif message.text == '0':
             onhold_timeout = None
@@ -1687,17 +1669,7 @@ def confirm_user_command(call: types.CallbackQuery):
 
         user_status = mem_store.get(f'{call.message.chat.id}:user_status')
 
-        if user_status == 'active':
-            new_user = UserCreate(
-                username=mem_store.get(f'{call.message.chat.id}:username'),
-                status='active',
-                expire=int(mem_store.get(f'{call.message.chat.id}:expire_date').timestamp())
-                if mem_store.get(f'{call.message.chat.id}:expire_date') else None,
-                data_limit=mem_store.get(f'{call.message.chat.id}:data_limit')
-                if mem_store.get(f'{call.message.chat.id}:data_limit') else None,
-                proxies=proxies,
-                inbounds=inbounds)
-        elif user_status == 'onhold':
+        if user_status == 'onhold':
             expire_days = mem_store.get(f'{call.message.chat.id}:expire_date')
             onhold_timeout = mem_store.get(f'{call.message.chat.id}:onhold_timeout')
             new_user = UserCreate(
@@ -1710,11 +1682,15 @@ def confirm_user_command(call: types.CallbackQuery):
                 proxies=proxies,
                 inbounds=inbounds)
         else:
-            return bot.answer_callback_query(
-                call.id,
-                '❌ Invalid user status.',
-                show_alert=True
-            )
+            new_user = UserCreate(
+                username=mem_store.get(f'{call.message.chat.id}:username'),
+                status='active',
+                expire=int(mem_store.get(f'{call.message.chat.id}:expire_date').timestamp())
+                if mem_store.get(f'{call.message.chat.id}:expire_date') else None,
+                data_limit=mem_store.get(f'{call.message.chat.id}:data_limit')
+                if mem_store.get(f'{call.message.chat.id}:data_limit') else None,
+                proxies=proxies,
+                inbounds=inbounds)
         for proxy_type in new_user.proxies:
             if not xray.config.inbounds_by_protocol.get(proxy_type):
                 return bot.answer_callback_query(
@@ -1749,12 +1725,13 @@ def confirm_user_command(call: types.CallbackQuery):
 <b>Status :</b> <code>{'Active' if user_status == 'active' else 'On Hold'}</code>
 <b>Traffic Limit :</b> <code>{readable_size(user.data_limit) if user.data_limit else "Unlimited"}</code>
 """
-            if user_status == 'active':
-                text += f'<b>Expire Date :</b> <code>{datetime.fromtimestamp(user.expire).strftime("%H:%M:%S %Y-%m-%d") if user.expire else "Never"}</code>\n'
-            else:
+            if user_status == 'onhold':
                 text += f"""\
 <b>On Hold Expire Duration :</b> <code>{new_user.on_hold_expire_duration // (24*60*60)} days</code>
-<b>On Hold Timeout :</b> <code>{datetime.fromtimestamp(new_user.on_hold_timeout).strftime("%H:%M:%S %Y-%m-%d")}</code>"""
+<b>On Hold Timeout :</b> <code>{new_user.on_hold_timeout.strftime("%H:%M:%S %Y-%m-%d")}</code>"""
+            else:
+                text += f"""<b>Expire Date :</b> \
+<code>{datetime.fromtimestamp(user.expire).strftime("%H:%M:%S %Y-%m-%d") if user.expire else "Never"}</code>\n"""
             text += f"""
 <b>Proxies :</b> <code>{"" if not proxies else ", ".join([proxy.type for proxy in proxies])}</code>
 ➖➖➖➖➖➖➖➖➖
