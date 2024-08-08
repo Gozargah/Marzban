@@ -4,7 +4,7 @@ import os
 import random
 import re
 import string
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import qrcode
 import sqlalchemy
@@ -16,24 +16,14 @@ from telebot.util import extract_arguments, user_link
 from app import xray
 from app.db import GetDB, crud
 from app.models.proxy import ProxyTypes
-from app.models.user import (
-    UserCreate,
-    UserModify,
-    UserResponse,
-    UserStatus,
-    UserStatusModify, User
-)
+from app.models.user import UserCreate, UserModify, UserResponse, UserStatus, UserStatusModify
 from app.models.user_template import UserTemplateResponse
 from app.telegram import bot
 from app.telegram.utils.custom_filters import cb_query_equals, cb_query_startswith
 from app.telegram.utils.keyboard import BotKeyboard
+from app.telegram.utils.shared import get_user_info_text, get_template_info_text, time_to_string, statuses
 from app.utils.store import MemoryStorage
-from app.utils.system import cpu_usage, memory_usage, readable_size
-
-try:
-    from app.utils.system import realtime_bandwith as realtime_bandwidth
-except ImportError:
-    from app.utils.system import realtime_bandwidth
+from app.utils.system import cpu_usage, memory_usage, readable_size, realtime_bandwidth
 
 from config import TELEGRAM_DEFAULT_VLESS_FLOW, TELEGRAM_LOGGER_CHANNEL_ID
 
@@ -582,63 +572,6 @@ def users_command(call: types.CallbackQuery):
     )
 
 
-def get_user_info_text(db_user: User) -> str:
-    statuses = {
-        "active": "✅",
-        "expired": "🕰",
-        "limited": "🪫",
-        "disabled": "❌",
-        "on_hold": "🔌",
-    }
-    user: UserResponse = UserResponse.from_orm(db_user)
-    text = f"""\
-┌─{statuses[user.status]} <b>Status:</b> <code>{user.status.title()}</code>
-│          └─<b>Username:</b> <code>{user.username}</code>
-│
-├─🔋 <b>Data limit:</b> <code>{readable_size(user.data_limit) if user.data_limit else 'Unlimited'}</code>
-│          └─<b>Data Used:</b> <code>{readable_size(user.used_traffic) if user.used_traffic else "-"}</code>
-│
-"""
-    if user.status == UserStatus.on_hold:
-        timeout_str = user.on_hold_timeout.strftime("%Y-%m-%d") if user.on_hold_timeout else "-"
-        text += f"""\
-├─📅 <b>On Hold Duration:</b> <code>{user.on_hold_expire_duration // (24*60*60) if user.on_hold_expire_duration else None} days</code>
-│           └─<b>On Hold Timeout:</b> <code>{timeout_str}</code>
-│
-"""
-    else:
-        expiry_date = datetime.fromtimestamp(user.expire).date() if user.expire else "Never"
-        days_left = (expiry_date - datetime.now().date()).days if user.expire else "-"
-        text += f"""\
-├─📅 <b>Expiry Date:</b> <code>{expiry_date}</code>
-│           └─<b>Days left:</b> <code>{days_left}</code>
-│
-"""
-    text += f"""\
-├─📝 <b>Note:</b> <code>{user.note or "-"}</code>
-│
-└─🚀 <b><a href="{user.subscription_url}">Subscription</a>:</b> <code>{user.subscription_url}</code>"""
-    return text
-
-
-def get_template_info_text(
-        id: int, data_limit: int, expire_duration: int, username_prefix: str, username_suffix: str, inbounds: dict):
-    protocols = ""
-    for p, inbounds in inbounds.items():
-        protocols += f"\n├─ <b>{p.upper()}</b>\n"
-        protocols += "├───" + ", ".join([f"<code>{i}</code>" for i in inbounds])
-    text = f"""
-📊 Template Info:
-┌ ID: <b>{id}</b>
-├ Data Limit: <b>{readable_size(data_limit) if data_limit else 'Unlimited'}</b>
-├ Expire Date: <b>{(datetime.now() + relativedelta(seconds=expire_duration)).strftime('%Y-%m-%d') if expire_duration else 'Never'}</b>
-├ Username Prefix: <b>{username_prefix if username_prefix else '🚫'}</b>
-├ Username Suffix: <b>{username_suffix if username_suffix else '🚫'}</b>
-├ Protocols: {protocols}
-        """
-    return text
-
-
 @bot.callback_query_handler(cb_query_startswith('edit_note:'), is_admin=True)
 def edit_note_command(call: types.CallbackQuery):
     username = call.data.split(':')[1]
@@ -775,15 +708,36 @@ def genqr_command(call: types.CallbackQuery):
                     parse_mode="HTML"
                 )
         else:
+            data_limit = readable_size(user.data_limit) if user.data_limit else "Unlimited"
+            used_traffic = readable_size(user.used_traffic) if user.used_traffic else "-"
+            data_left = readable_size(user.data_limit - user.used_traffic) if user.data_limit else "-"
+            on_hold_timeout = user.on_hold_timeout.strftime("%Y-%m-%d") if user.on_hold_timeout else "-"
+            on_hold_duration = user.on_hold_expire_duration // (24 * 60 * 60) if user.on_hold_expire_duration else None
+            expiry_date = datetime.fromtimestamp(user.expire).date() if user.expire else "Never"
+            time_left = time_to_string(datetime.fromtimestamp(user.expire)) if user.expire else "-"
+            if user.status == UserStatus.on_hold:
+                expiry_text = f"⏰ <b>On Hold Duration:</b> <code>{on_hold_duration} days</code> (auto start at <code>{on_hold_timeout}</code>)"
+            else:
+                expiry_text = f"📅 <b>Expiry Date:</b> <code>{expiry_date}</code> ({time_left})"
+            text = f"""\
+{statuses[user.status]} <b>Status:</b> <code>{user.status.title()}</code>
+
+🔤 <b>Username:</b> <code>{user.username}</code>
+
+🔋 <b>Data limit:</b> <code>{data_limit}</code>
+📶 <b>Data Used:</b> <code>{used_traffic}</code> (<code>{data_left}</code> left)
+{expiry_text}
+🚀 <b><a href="{user.subscription_url}">Subscription</a>:</b> <code>{user.subscription_url}</code>"""
+
             with io.BytesIO() as f:
                 qr = qrcode.QRCode(border=6)
                 qr.add_data(user.subscription_url)
                 qr.make_image().save(f)
                 f.seek(0)
-                bot.send_photo(
+                return bot.send_photo(
                     call.message.chat.id,
                     photo=f,
-                    caption=get_user_info_text(db_user),
+                    caption=text,
                     parse_mode="HTML",
                     reply_markup=BotKeyboard.subscription_page(user.subscription_url)
                 )
