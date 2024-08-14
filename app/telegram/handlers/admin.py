@@ -1892,7 +1892,7 @@ def confirm_user_command(call: types.CallbackQuery):
         else:
             text = get_user_info_text(
                 status=user.status,
-                username=username,
+                username=user.username,
                 sub_url=user.subscription_url,
                 data_limit=user.data_limit,
                 usage=user.used_traffic,
