@@ -219,8 +219,8 @@ def remove_node(node_id: int,
 
 @app.get("/api/nodes/usage", tags=['Node'], response_model=NodesUsageResponse)
 def get_usage(db: Session = Depends(get_db),
-              start: str = Query(None, example="2024-01-01T00:00:00"),
-              end: str = Query(None, example="2024-01-31T23:59:59"),
+              start: datetime = Query(None, example="2024-01-01T00:00:00"),
+              end: datetime = Query(None, example="2024-01-31T23:59:59"),
               admin: Admin = Depends(Admin.get_current)):
     """
     Get nodes usage
@@ -229,11 +229,8 @@ def get_usage(db: Session = Depends(get_db),
     if not admin.is_sudo:
         raise HTTPException(status_code=403, detail="You're not allowed")
 
-    if not validate.validate_dates(start, end):
-        raise HTTPException(status_code=400, detail="Invalid date range or format")
-
-    start_date = datetime.fromisoformat(start) if start else datetime.utcnow() - timedelta(days=30)
-    end_date = datetime.fromisoformat(end) if end else datetime.utcnow()
+    start_date = start if start else datetime.utcnow() - timedelta(days=30)
+    end_date = end if end else datetime.utcnow()
 
     usages = crud.get_nodes_usage(db, start_date, end_date)
 
