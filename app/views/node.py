@@ -1,10 +1,10 @@
 import asyncio
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 
 import sqlalchemy
-from fastapi import BackgroundTasks, Depends, HTTPException, WebSocket
+from fastapi import BackgroundTasks, Depends, HTTPException, WebSocket, Query
 from starlette.websockets import WebSocketDisconnect
 
 from app import app, logger, xray
@@ -13,7 +13,7 @@ from app.models.admin import Admin
 from app.models.node import (NodeCreate, NodeModify, NodeResponse,
                              NodeSettings, NodeStatus, NodesUsageResponse)
 from app.models.proxy import ProxyHost
-
+from app.utils import validate
 
 @app.get("/api/node/settings", tags=['Node'], response_model=NodeSettings)
 def get_node_settings(db: Session = Depends(get_db),
@@ -219,8 +219,8 @@ def remove_node(node_id: int,
 
 @app.get("/api/nodes/usage", tags=['Node'], response_model=NodesUsageResponse)
 def get_usage(db: Session = Depends(get_db),
-              start: str = None,
-              end: str = None,
+              start: str = Query(None, example="2024-01-01T00:00:00"),
+              end: str = Query(None, example="2024-01-31T23:59:59"),
               admin: Admin = Depends(Admin.get_current)):
     """
     Get nodes usage
@@ -229,15 +229,11 @@ def get_usage(db: Session = Depends(get_db),
     if not admin.is_sudo:
         raise HTTPException(status_code=403, detail="You're not allowed")
 
-    if start is None:
-        start_date = datetime.fromtimestamp(datetime.utcnow().timestamp() - 30 * 24 * 3600)
-    else:
-        start_date = datetime.fromisoformat(start)
+    if not validate.validate_dates(start, end):
+        raise HTTPException(status_code=400, detail="Invalid date range or format")
 
-    if end is None:
-        end_date = datetime.utcnow()
-    else:
-        end_date = datetime.fromisoformat(end)
+    start_date = datetime.fromisoformat(start) if start else datetime.utcnow() - timedelta(days=30)
+    end_date = datetime.fromisoformat(end) if end else datetime.utcnow()
 
     usages = crud.get_nodes_usage(db, start_date, end_date)
 

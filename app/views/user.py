@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta
 from typing import List, Union
 
 import sqlalchemy
@@ -9,7 +9,7 @@ from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.user import (UserCreate, UserModify, UserResponse,
                              UsersResponse, UserStatus, UserUsagesResponse)
-from app.utils import report
+from app.utils import report, validate
 
 
 @app.post("/api/user", tags=['User'], response_model=UserResponse)
@@ -274,8 +274,8 @@ def reset_users_data_usage(db: Session = Depends(get_db),
 
 @app.get("/api/user/{username}/usage", tags=['User'], response_model=UserUsagesResponse)
 def get_user_usage(username: str,
-                   start: str = None,
-                   end: str = None,
+                   start: str = Query(None, example="2024-01-01T00:00:00"),
+                   end: str = Query(None, example="2024-01-31T23:59:59"),
                    db: Session = Depends(get_db),
                    admin: Admin = Depends(Admin.get_current)):
     """
@@ -285,16 +285,11 @@ def get_user_usage(username: str,
     if not dbuser:
         raise HTTPException(status_code=404, detail="User not found")
 
-    if start is None:
-        start_date = datetime.fromtimestamp(
-            datetime.utcnow().timestamp() - 30 * 24 * 3600)
-    else:
-        start_date = datetime.fromisoformat(start)
+    if not validate.validate_dates(start, end):
+        raise HTTPException(status_code=400, detail="Invalid date range or format")
 
-    if end is None:
-        end_date = datetime.utcnow()
-    else:
-        end_date = datetime.fromisoformat(end)
+    start_date = datetime.fromisoformat(start) if start else datetime.utcnow() - timedelta(days=30)
+    end_date = datetime.fromisoformat(end) if end else datetime.utcnow()
 
     usages = crud.get_user_usages(db, dbuser, start_date, end_date)
 

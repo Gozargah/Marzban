@@ -1,8 +1,8 @@
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from distutils.version import LooseVersion
 
-from fastapi import Depends, Header, HTTPException, Path, Request, Response
+from fastapi import Depends, Header, HTTPException, Path, Request, Response, Query
 from fastapi.responses import HTMLResponse
 
 from app import app
@@ -11,6 +11,7 @@ from app.models.user import SubscriptionUserResponse, UserResponse
 from app.subscription.share import encode_title, generate_subscription
 from app.templates import render_template
 from app.utils.jwt import get_subscription_payload
+from app.utils import validate
 from config import (
     SUB_PROFILE_TITLE,
     SUB_SUPPORT_URL,
@@ -149,8 +150,8 @@ def user_subscription_info(token: str,
 
 @app.get("/%s/{token}/usage" % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'])
 def user_get_usage(token: str,
-                   start: str = None,
-                   end: str = None,
+                   start: str = Query(None, example="2024-01-01T00:00:00"),
+                   end: str = Query(None, example="2024-01-31T23:59:59"),
                    db: Session = Depends(get_db)):
 
     sub = get_subscription_payload(token)
@@ -164,15 +165,11 @@ def user_get_usage(token: str,
     if dbuser.sub_revoked_at and dbuser.sub_revoked_at > sub['created_at']:
         return Response(status_code=204)
 
-    if start is None:
-        start_date = datetime.utcfromtimestamp(datetime.utcnow().timestamp() - 30 * 24 * 3600)
-    else:
-        start_date = datetime.fromisoformat(start)
+    if not validate.validate_dates(start, end):
+        raise HTTPException(status_code=400, detail="Invalid date range or format")
 
-    if end is None:
-        end_date = datetime.utcnow()
-    else:
-        end_date = datetime.fromisoformat(end)
+    start_date = datetime.fromisoformat(start) if start else datetime.utcnow() - timedelta(days=30)
+    end_date = datetime.fromisoformat(end) if end else datetime.utcnow()
 
     usages = crud.get_user_usages(db, dbuser, start_date, end_date)
 
