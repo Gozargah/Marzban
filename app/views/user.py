@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import List, Union
+from typing import List, Union, Optional
 
 import sqlalchemy
 from fastapi import BackgroundTasks, Depends, HTTPException, Query
@@ -322,84 +322,58 @@ def set_owner(username: str,
 
 
 @app.get("/api/users/expired", tags=['User'], response_model=List[str])
-def get_expired_users(expired_before: datetime = None,
-                      expired_after: datetime = None,
-                      db: Session = Depends(get_db),
-                      admin: Admin = Depends(Admin.get_current)):
+def get_expired_users_api(
+    expired_after: Optional[datetime] = Query(None, example="2024-01-01T00:00:00"),
+    expired_before: Optional[datetime] = Query(None, example="2024-01-31T23:59:59"),
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.get_current)
+):
     """
-    Get users who has expired
+    Get users who have expired within the specified date range.
 
-    - **expired_before** must be an UTC datetime
-    - **expired_after** must be an UTC datetime
+    - **expired_after** UTC datetime (optional)
+    - **expired_before** UTC datetime (optional)
+    - At least one of expired_after or expired_before must be provided for filtering
+    - If both are omitted, returns all expired users
     """
+    if not validate.validate_dates(expired_after, expired_before, allow_both_none=True):
+        raise HTTPException(status_code=400, detail="Invalid date range or format")
 
-    expired_before_ts = expired_before.timestamp() if expired_before else 0
-    expired_after_ts = expired_after.timestamp() if expired_after else 0
-    now_ts = datetime.utcnow().timestamp()
-
-    dbadmin = crud.get_admin(db, admin.username)
-
-    dbusers = crud.get_users(db=db,
-                             status=[UserStatus.expired, UserStatus.limited],
-                             admin=dbadmin if not admin.is_sudo else None)
-
-    if expired_before and expired_after:
-        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and
-                               u.expire <= expired_before_ts and u.expire >= expired_after_ts, dbusers)
-
-    elif expired_before:
-        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and u.expire <= expired_before_ts, dbusers)
-
-    elif expired_after:
-        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and u.expire >= expired_after_ts, dbusers)
-
-    else:
-        expired_users = dbusers
-
+    expired_users = validate.get_expired_users(db, admin, expired_after, expired_before)
     return [u.username for u in expired_users]
 
 
 @app.delete("/api/users/expired", tags=['User'], response_model=List[str])
-def delete_expired_users(bg: BackgroundTasks,
-                         expired_before: datetime = None,
-                         expired_after: datetime = None,
-                         db: Session = Depends(get_db),
-                         admin: Admin = Depends(Admin.get_current)):
+def delete_expired_users(
+    bg: BackgroundTasks,
+    expired_after: Optional[datetime] = Query(None, example="2024-01-01T00:00:00"),
+    expired_before: Optional[datetime] = Query(None, example="2024-01-31T23:59:59"),
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.get_current)
+):
     """
-    Delete users who has expired
+    Delete users who have expired within the specified date range.
 
-    - **expired_before** must be an UTC datetime
-    - **expired_after** must be an UTC datetime
+    - **expired_after** UTC datetime (optional)
+    - **expired_before** UTC datetime (optional)
+    - At least one of expired_after or expired_before must be provided
     """
+    if expired_after is None and expired_before is None:
+        raise HTTPException(status_code=400, detail="At least one of expired_after or expired_before must be provided")
 
-    expired_before_ts = expired_before.timestamp() if expired_before else 0
-    expired_after_ts = expired_after.timestamp() if expired_after else 0
-    now_ts = datetime.utcnow().timestamp()
+    if not validate.validate_dates(expired_after, expired_before, allow_both_none=False):
+        raise HTTPException(status_code=400, detail="Invalid date range or format")
 
-    dbadmin = crud.get_admin(db, admin.username)
-
-    dbusers = crud.get_users(db=db,
-                             status=[UserStatus.expired, UserStatus.limited],
-                             admin=dbadmin if not admin.is_sudo else None)
-
-    if expired_before and expired_after:
-        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and
-                               u.expire <= expired_before_ts and u.expire >= expired_after_ts, dbusers)
-
-    elif expired_before:
-        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and u.expire <= expired_before_ts, dbusers)
-
-    elif expired_after:
-        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and u.expire >= expired_after_ts, dbusers)
-
-    else:
-        expired_users = dbusers
-
-    expired_users = list(expired_users)
+    expired_users = validate.get_expired_users(db, admin, expired_after, expired_before)
     removed_users = [u.username for u in expired_users]
+    
+    if not removed_users:
+        raise HTTPException(status_code=404, detail="No expired users found in the specified date range")
+    
     crud.remove_users(db, expired_users)
 
     for removed_user in removed_users:
         logger.info(f"User \"{removed_user}\" deleted")
+        bg.add_task(report.user_deleted, username=removed_user, user_admin=next((u.admin for u in expired_users if u.username == removed_user), None), by=admin)
 
     return removed_users
