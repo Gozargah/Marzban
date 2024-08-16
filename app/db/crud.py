@@ -100,7 +100,7 @@ def get_user_queryset(db: Session) -> Query:
 
 
 def get_user(db: Session, username: str):
-    return get_user_queryset(db).filter(User.username == username).first()
+    return get_user_queryset(db).filter(User.username.ilike(username)).first()
 
 
 def get_user_by_id(db: Session, user_id: int):
