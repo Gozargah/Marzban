@@ -2,17 +2,18 @@ from datetime import datetime, timezone
 from typing import List, Union
 
 import sqlalchemy
-from fastapi import BackgroundTasks, Depends, HTTPException, Query
+from fastapi import BackgroundTasks, Depends, HTTPException, Query, APIRouter
 
-from app import app, logger, xray
+from app import logger, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.user import (UserCreate, UserModify, UserResponse,
                              UsersResponse, UserStatus, UserUsagesResponse)
 from app.utils import report
 
+router = APIRouter(tags=['User'], prefix='/api')
 
-@app.post("/api/user", tags=['User'], response_model=UserResponse)
+@router.post("/user", response_model=UserResponse)
 def add_user(new_user: UserCreate,
              bg: BackgroundTasks,
              db: Session = Depends(get_db),
@@ -52,7 +53,7 @@ def add_user(new_user: UserCreate,
     return user
 
 
-@app.get("/api/user/{username}", tags=['User'], response_model=UserResponse)
+@router.get("/user/{username}", response_model=UserResponse)
 def get_user(username: str,
              db: Session = Depends(get_db),
              admin: Admin = Depends(Admin.get_current)):
@@ -69,7 +70,7 @@ def get_user(username: str,
     return dbuser
 
 
-@app.put("/api/user/{username}", tags=['User'], response_model=UserResponse)
+@router.put("/user/{username}", response_model=UserResponse)
 def modify_user(username: str,
                 modified_user: UserModify,
                 bg: BackgroundTasks,
@@ -124,7 +125,7 @@ def modify_user(username: str,
     return user
 
 
-@app.delete("/api/user/{username}", tags=['User'])
+@router.delete("/user/{username}")
 def remove_user(username: str,
                 bg: BackgroundTasks,
                 db: Session = Depends(get_db),
@@ -155,7 +156,7 @@ def remove_user(username: str,
     return {}
 
 
-@app.post("/api/user/{username}/reset", tags=['User'], response_model=UserResponse)
+@router.post("/user/{username}/reset", response_model=UserResponse)
 def reset_user_data_usage(username: str,
                           bg: BackgroundTasks,
                           db: Session = Depends(get_db),
@@ -185,7 +186,7 @@ def reset_user_data_usage(username: str,
     return dbuser
 
 
-@app.post("/api/user/{username}/revoke_sub", tags=['User'], response_model=UserResponse)
+@router.post("/user/{username}/revoke_sub", response_model=UserResponse)
 def revoke_user_subscription(username: str,
                              bg: BackgroundTasks,
                              db: Session = Depends(get_db),
@@ -217,7 +218,7 @@ def revoke_user_subscription(username: str,
     return user
 
 
-@app.get("/api/users", tags=['User'], response_model=UsersResponse)
+@router.get("/users", response_model=UsersResponse)
 def get_users(offset: int = None,
               limit: int = None,
               username: List[str] = Query(None),
@@ -253,7 +254,7 @@ def get_users(offset: int = None,
     return {"users": users, "total": count}
 
 
-@app.post("/api/users/reset", tags=['User'])
+@router.post("/users/reset")
 def reset_users_data_usage(db: Session = Depends(get_db),
                            admin: Admin = Depends(Admin.get_current)):
     """
@@ -272,7 +273,7 @@ def reset_users_data_usage(db: Session = Depends(get_db),
     return {}
 
 
-@app.get("/api/user/{username}/usage", tags=['User'], response_model=UserUsagesResponse)
+@router.get("/user/{username}/usage", response_model=UserUsagesResponse)
 def get_user_usage(username: str,
                    start: str = None,
                    end: str = None,
@@ -301,7 +302,7 @@ def get_user_usage(username: str,
     return {"usages": usages, "username": username}
 
 
-@app.put("/api/user/{username}/set-owner", tags=['User'], response_model=UserResponse)
+@router.put("/user/{username}/set-owner", response_model=UserResponse)
 def set_owner(username: str,
               admin_username: str,
               db: Session = Depends(get_db),
@@ -326,7 +327,7 @@ def set_owner(username: str,
     return user
 
 
-@app.get("/api/users/expired", tags=['User'], response_model=List[str])
+@router.get("/users/expired", response_model=List[str])
 def get_expired_users(expired_before: datetime = None,
                       expired_after: datetime = None,
                       db: Session = Depends(get_db),
@@ -364,7 +365,7 @@ def get_expired_users(expired_before: datetime = None,
     return [u.username for u in expired_users]
 
 
-@app.delete("/api/users/expired", tags=['User'], response_model=List[str])
+@router.delete("/users/expired", response_model=List[str])
 def delete_expired_users(bg: BackgroundTasks,
                          expired_before: datetime = None,
                          expired_after: datetime = None,

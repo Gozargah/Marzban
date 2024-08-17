@@ -4,18 +4,20 @@ from datetime import datetime
 from typing import List
 
 import sqlalchemy
-from fastapi import BackgroundTasks, Depends, HTTPException, WebSocket
+from fastapi import BackgroundTasks, Depends, HTTPException, WebSocket, APIRouter
 from starlette.websockets import WebSocketDisconnect
 
-from app import app, logger, xray
+from app import logger, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.node import (NodeCreate, NodeModify, NodeResponse,
                              NodeSettings, NodeStatus, NodesUsageResponse)
 from app.models.proxy import ProxyHost
 
+router = APIRouter(tags=['Node'], prefix='/api')
 
-@app.get("/api/node/settings", tags=['Node'], response_model=NodeSettings)
+
+@router.get("/node/settings", response_model=NodeSettings)
 def get_node_settings(db: Session = Depends(get_db),
                       admin: Admin = Depends(Admin.get_current)):
     if not admin.is_sudo:
@@ -28,7 +30,7 @@ def get_node_settings(db: Session = Depends(get_db),
     )
 
 
-@app.post("/api/node", tags=['Node'], response_model=NodeResponse)
+@router.post("/node", response_model=NodeResponse)
 def add_node(new_node: NodeCreate,
              bg: BackgroundTasks,
              db: Session = Depends(get_db),
@@ -62,7 +64,7 @@ def add_node(new_node: NodeCreate,
     return dbnode
 
 
-@app.get("/api/node/{node_id}", tags=['Node'], response_model=NodeResponse)
+@router.get("/node/{node_id}", response_model=NodeResponse)
 def get_node(node_id: int,
              db: Session = Depends(get_db),
              admin: Admin = Depends(Admin.get_current)):
@@ -76,7 +78,7 @@ def get_node(node_id: int,
     return dbnode
 
 
-@app.websocket("/api/node/{node_id}/logs")
+@router.websocket("/node/{node_id}/logs")
 async def node_logs(node_id: int, websocket: WebSocket, db: Session = Depends(get_db)):
     token = (
         websocket.query_params.get('token')
@@ -144,7 +146,7 @@ async def node_logs(node_id: int, websocket: WebSocket, db: Session = Depends(ge
                 break
 
 
-@app.get("/api/nodes", tags=['Node'], response_model=List[NodeResponse])
+@router.get("/nodes", response_model=List[NodeResponse])
 def get_nodes(db: Session = Depends(get_db),
               admin: Admin = Depends(Admin.get_current)):
     if not admin.is_sudo:
@@ -152,7 +154,7 @@ def get_nodes(db: Session = Depends(get_db),
     return crud.get_nodes(db)
 
 
-@app.put("/api/node/{node_id}", tags=['Node'], response_model=NodeResponse)
+@router.put("/node/{node_id}", response_model=NodeResponse)
 def modify_node(node_id: int,
                 modified_node: NodeModify,
                 bg: BackgroundTasks,
@@ -179,7 +181,7 @@ def modify_node(node_id: int,
     return dbnode
 
 
-@app.post("/api/node/{node_id}/reconnect", tags=['Node'])
+@router.post("/node/{node_id}/reconnect")
 def reconnect_node(node_id: int,
                    bg: BackgroundTasks,
                    db: Session = Depends(get_db),
@@ -198,7 +200,7 @@ def reconnect_node(node_id: int,
     return {}
 
 
-@app.delete("/api/node/{node_id}", tags=['Node'])
+@router.delete("/node/{node_id}")
 def remove_node(node_id: int,
                 db: Session = Depends(get_db),
                 admin: Admin = Depends(Admin.get_current)):
@@ -217,7 +219,7 @@ def remove_node(node_id: int,
     return {}
 
 
-@app.get("/api/nodes/usage", tags=['Node'], response_model=NodesUsageResponse)
+@router.get("/nodes/usage", response_model=NodesUsageResponse)
 def get_usage(db: Session = Depends(get_db),
               start: str = None,
               end: str = None,

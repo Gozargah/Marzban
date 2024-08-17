@@ -3,18 +3,19 @@ import json
 import time
 
 import commentjson
-from fastapi import Depends, HTTPException, WebSocket
+from fastapi import Depends, HTTPException, WebSocket, APIRouter
 from starlette.websockets import WebSocketDisconnect
 
-from app import app, xray
+from app import xray
 from app.db import Session, get_db
 from app.models.admin import Admin
 from app.models.core import CoreStats
 from app.xray import XRayConfig
 from config import XRAY_JSON
 
+router = APIRouter(tags=['Core'], prefix='/api')
 
-@app.websocket("/api/core/logs")
+@router.websocket("/core/logs")
 async def core_logs(websocket: WebSocket, db: Session = Depends(get_db)):
     token = (
         websocket.query_params.get('token')
@@ -72,16 +73,16 @@ async def core_logs(websocket: WebSocket, db: Session = Depends(get_db)):
                 break
 
 
-@app.get("/api/core", tags=["Core"], response_model=CoreStats)
+@router.get("/core", response_model=CoreStats)
 def get_core_stats(admin: Admin = Depends(Admin.get_current)):
     return CoreStats(
         version=xray.core.version,
         started=xray.core.started,
-        logs_websocket=app.url_path_for('core_logs')
+        logs_websocket=router.url_path_for('core_logs')
     )
 
 
-@app.post("/api/core/restart", tags=["Core"])
+@router.post("/core/restart")
 def restart_core(admin: Admin = Depends(Admin.get_current)):
     if not admin.is_sudo:
         raise HTTPException(status_code=403, detail="You're not allowed")
@@ -94,7 +95,7 @@ def restart_core(admin: Admin = Depends(Admin.get_current)):
     return {}
 
 
-@app.get("/api/core/config", tags=["Core"])
+@router.get("/core/config")
 def get_core_config(admin: Admin = Depends(Admin.get_current)) -> dict:
     if not admin.is_sudo:
         raise HTTPException(status_code=403, detail="You're not allowed")
@@ -105,7 +106,7 @@ def get_core_config(admin: Admin = Depends(Admin.get_current)) -> dict:
     return config
 
 
-@app.put("/api/core/config", tags=["Core"])
+@router.put("/core/config")
 def modify_core_config(payload: dict, admin: Admin = Depends(Admin.get_current)) -> dict:
     if not admin.is_sudo:
         raise HTTPException(status_code=403, detail="You're not allowed")

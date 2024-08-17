@@ -1,16 +1,16 @@
 from typing import List
 
 import sqlalchemy
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, APIRouter
 
-from app import app
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.user_template import (UserTemplateCreate, UserTemplateModify,
                                       UserTemplateResponse)
 
+router = APIRouter(tags=['User Template'], prefix='/api')
 
-@app.post("/api/user_template", tags=['User Template'], response_model=UserTemplateResponse)
+@router.post("/user_template", response_model=UserTemplateResponse)
 def add_user_template(new_user_template: UserTemplateCreate,
                       db: Session = Depends(get_db),
                       admin: Admin = Depends(Admin.get_current)):
@@ -31,7 +31,7 @@ def add_user_template(new_user_template: UserTemplateCreate,
         raise HTTPException(status_code=409, detail="Template by this name already exists")
 
 
-@app.get("/api/user_template/{id}", tags=['User Template'], response_model=UserTemplateResponse)
+@router.get("/user_template/{id}", response_model=UserTemplateResponse)
 def get_user_template(id: int, db: Session = Depends(get_db), admin: Admin = Depends(Admin.get_current)):
     """
     Get User Template information with id
@@ -43,7 +43,7 @@ def get_user_template(id: int, db: Session = Depends(get_db), admin: Admin = Dep
     return dbuser_template
 
 
-@app.put("/api/user_template/{id}", tags=['User Template'], response_model=UserTemplateResponse)
+@router.put("/user_template/{id}", response_model=UserTemplateResponse)
 def modify_user_template(id: int, modify_user_template: UserTemplateModify,
                          db: Session = Depends(get_db),
                          admin: Admin = Depends(Admin.get_current)):
@@ -68,7 +68,7 @@ def modify_user_template(id: int, modify_user_template: UserTemplateModify,
         raise HTTPException(status_code=409, detail="Template by this name already exists")
 
 
-@app.delete("/api/user_template/{id}", tags=['User Template'])
+@router.delete("/user_template/{id}")
 def remove_user_template(id: int,
                          db: Session = Depends(get_db),
                          admin: Admin = Depends(Admin.get_current)):
@@ -81,7 +81,7 @@ def remove_user_template(id: int,
     return crud.remove_user_template(db, dbuser_template)
 
 
-@app.get("/api/user_template", tags=['User Template'], response_model=List[UserTemplateResponse])
+@router.get("/user_template", response_model=List[UserTemplateResponse])
 def get_user_templates(
         offset: int = None, limit: int = None, db: Session = Depends(get_db),
         admin: Admin = Depends(Admin.get_current)):

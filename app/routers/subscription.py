@@ -2,10 +2,9 @@ import re
 from datetime import datetime
 from distutils.version import LooseVersion
 
-from fastapi import Depends, Header, HTTPException, Path, Request, Response
+from fastapi import Depends, Header, HTTPException, Path, Request, Response, APIRouter
 from fastapi.responses import HTMLResponse
 
-from app import app
 from app.db import Session, crud, get_db
 from app.models.user import SubscriptionUserResponse, UserResponse
 from app.subscription.share import encode_title, generate_subscription
@@ -23,9 +22,10 @@ from config import (
     XRAY_SUBSCRIPTION_PATH
 )
 
+router = APIRouter(tags=['Subscription'], prefix=f'/{XRAY_SUBSCRIPTION_PATH}')
 
-@app.get("/%s/{token}/" % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'])
-@app.get("/%s/{token}" % XRAY_SUBSCRIPTION_PATH, include_in_schema=False)
+@router.get("/{token}/")
+@router.get("/{token}", include_in_schema=False)
 def user_subscription(token: str,
                       request: Request,
                       db: Session = Depends(get_db),
@@ -130,7 +130,7 @@ def user_subscription(token: str,
         return Response(content=conf, media_type="text/plain", headers=response_headers)
 
 
-@app.get("/%s/{token}/info" % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'], response_model=SubscriptionUserResponse)
+@router.get("/{token}/info", response_model=SubscriptionUserResponse)
 def user_subscription_info(token: str,
                            db: Session = Depends(get_db)):
     sub = get_subscription_payload(token)
@@ -147,7 +147,7 @@ def user_subscription_info(token: str,
     return dbuser
 
 
-@app.get("/%s/{token}/usage" % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'])
+@router.get("/{token}/usage")
 def user_get_usage(token: str,
                    start: str = None,
                    end: str = None,
@@ -179,7 +179,7 @@ def user_get_usage(token: str,
     return {"usages": usages, "username": dbuser.username}
 
 
-@app.get("/%s/{token}/{client_type}" % XRAY_SUBSCRIPTION_PATH, tags=['Subscription'])
+@router.get("/{token}/{client_type}")
 def user_subscription_with_client_type(
     token: str,
     request: Request,

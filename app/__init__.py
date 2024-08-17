@@ -10,6 +10,8 @@ from fastapi.routing import APIRoute
 from fastapi_responses import custom_openapi
 
 from config import DOCS, XRAY_SUBSCRIPTION_PATH
+from app import dashboard, telegram, routers, jobs  # noqa
+from app.routers import api_router
 
 __version__ = "0.6.0"
 
@@ -21,9 +23,11 @@ app = FastAPI(
     docs_url='/docs' if DOCS else None,
     redoc_url='/redoc' if DOCS else None
 )
+
 app.openapi = custom_openapi(app)
 scheduler = BackgroundScheduler({'apscheduler.job_defaults.max_instances': 20}, timezone='UTC')
 logger = logging.getLogger('uvicorn.error')
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -32,9 +36,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-from app import dashboard, telegram, routers, jobs  # noqa
-
+app.include_router(api_router)
 
 def use_route_names_as_operation_ids(app: FastAPI) -> None:
     for route in app.routes:

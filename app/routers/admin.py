@@ -1,15 +1,15 @@
 from typing import List, Optional
 
 import sqlalchemy
-from app import app
 from app.db import Session, crud, get_db
 from app.models.admin import Admin, AdminCreate, AdminInDB, AdminModify, Token
 from app.utils.jwt import create_admin_token
 from config import SUDOERS
-from fastapi import Depends, HTTPException, status, Request
+from fastapi import Depends, HTTPException, status, Request, APIRouter
 from fastapi.security import OAuth2PasswordRequestForm
 from app.utils import report
 
+router = APIRouter(tags=['Admin'], prefix='/api')
 
 def authenticate_env_sudo(username: str, password: str) -> bool:
     try:
@@ -35,7 +35,7 @@ def get_client_ip(request: Request) -> str:
     return "Unknown"
 
 
-@app.post("/api/admin/token", tags=['Admin'], response_model=Token)
+@router.post("/admin/token", response_model=Token)
 def admin_token(
     request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -59,7 +59,7 @@ def admin_token(
     )
 
 
-@app.post("/api/admin", tags=['Admin'], response_model=Admin)
+@router.post("/admin", response_model=Admin)
 def create_admin(new_admin: AdminCreate,
                  db: Session = Depends(get_db),
                  admin: Admin = Depends(Admin.get_current)):
@@ -76,7 +76,7 @@ def create_admin(new_admin: AdminCreate,
     return dbadmin
 
 
-@app.put("/api/admin/{username}", tags=['Admin'], response_model=Admin)
+@router.put("/admin/{username}", response_model=Admin)
 def modify_admin(username: str,
                  modified_admin: AdminModify,
                  db: Session = Depends(get_db),
@@ -103,7 +103,7 @@ def modify_admin(username: str,
     return dbadmin
 
 
-@app.delete("/api/admin/{username}", tags=['Admin'])
+@router.delete("/admin/{username}")
 def remove_admin(username: str,
                  db: Session = Depends(get_db),
                  admin: Admin = Depends(Admin.get_current)):
@@ -124,12 +124,12 @@ def remove_admin(username: str,
     return {}
 
 
-@app.get("/api/admin", tags=["Admin"], response_model=Admin)
+@router.get("/admin", response_model=Admin)
 def get_current_admin(admin: Admin = Depends(Admin.get_current)):
     return admin
 
 
-@app.get("/api/admins", tags=['Admin'], response_model=List[Admin])
+@router.get("/admins", response_model=List[Admin])
 def get_admins(offset: int = None,
                limit: int = None,
                username: str = None,

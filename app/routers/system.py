@@ -1,8 +1,8 @@
 from typing import Dict, List, Union
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, APIRouter
 
-from app import app, xray
+from app import xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.proxy import ProxyHost, ProxyInbound, ProxyTypes
@@ -11,8 +11,9 @@ from app.models.user import UserStatus
 from app.utils.system import memory_usage, cpu_usage, realtime_bandwidth
 from app import __version__
 
+router = APIRouter(tags=['System'], prefix='/api')
 
-@app.get("/api/system", tags=["System"], response_model=SystemStats)
+@router.get("/system", response_model=SystemStats)
 def get_system_stats(db: Session = Depends(get_db), admin: Admin = Depends(Admin.get_current)):
     mem = memory_usage()
     cpu = cpu_usage()
@@ -38,12 +39,12 @@ def get_system_stats(db: Session = Depends(get_db), admin: Admin = Depends(Admin
     )
 
 
-@app.get('/api/inbounds', tags=["System"], response_model=Dict[ProxyTypes, List[ProxyInbound]])
+@router.get('/inbounds', response_model=Dict[ProxyTypes, List[ProxyInbound]])
 def get_inbounds(admin: Admin = Depends(Admin.get_current)):
     return xray.config.inbounds_by_protocol
 
 
-@app.get('/api/hosts', tags=["System"], response_model=Dict[str, List[ProxyHost]])
+@router.get('/hosts', response_model=Dict[str, List[ProxyHost]])
 def get_hosts(db: Session = Depends(get_db), admin: Admin = Depends(Admin.get_current)):
     if not admin.is_sudo:
         raise HTTPException(status_code=403, detail="You're not allowed")
@@ -55,7 +56,7 @@ def get_hosts(db: Session = Depends(get_db), admin: Admin = Depends(Admin.get_cu
     return hosts
 
 
-@app.put('/api/hosts', tags=["System"], response_model=Dict[str, List[ProxyHost]])
+@router.put('/hosts', response_model=Dict[str, List[ProxyHost]])
 def modify_hosts(modified_hosts: Dict[str, List[ProxyHost]],
                  db: Session = Depends(get_db),
                  admin: Admin = Depends(Admin.get_current)):
