@@ -1,15 +1,14 @@
 from typing import Optional, Union
 from app.models.admin import AdminInDB, AdminValidationResult
+from app.models.user import UserResponse
 from app.db import Session, crud, get_db
 from config import SUDOERS
 from fastapi import Depends, HTTPException
 from datetime import datetime
-
+from app.utils.jwt import get_subscription_payload
 
 def validate_admin(db: Session, username: str, password: str) -> Optional[AdminValidationResult]:
-    """
-    Validate admin credentials with environment variables or database.
-    """
+    """Validate admin credentials with environment variables or database."""
     if SUDOERS.get(username) == password:
         return AdminValidationResult(username, True)
 
@@ -21,9 +20,7 @@ def validate_admin(db: Session, username: str, password: str) -> Optional[AdminV
 
 
 def get_admin_by_username(username: str, db: Session = Depends(get_db)):
-    """
-    Fetch an admin by username from the database.
-    """
+    """Fetch an admin by username from the database."""
     dbadmin = crud.get_admin(db, username)
     if not dbadmin:
         raise HTTPException(status_code=404, detail="Admin not found")
@@ -37,9 +34,7 @@ def get_dbnode(node_id: int, db: Session = Depends(get_db)):
     return dbnode
 
 def validate_dates(start: Optional[Union[str, datetime]], end: Optional[Union[str, datetime]]) -> bool:
-    """
-    Validate if start and end dates are correct and if end is after start.
-    """
+    """Validate if start and end dates are correct and if end is after start."""
     try:
         if start:
             start_date = start if isinstance(start, datetime) else datetime.fromisoformat(start)
@@ -57,3 +52,20 @@ def get_user_template(template_id: int, db: Session = Depends(get_db)):
     if not dbuser_template:
         raise HTTPException(status_code=404, detail="User Template not found")
     return dbuser_template
+
+def get_validated_user(
+    token: str,
+    db: Session = Depends(get_db)
+) -> UserResponse:
+    sub = get_subscription_payload(token)
+    if not sub:
+        raise HTTPException(status_code=204, detail="Invalid subscription token")
+
+    dbuser = crud.get_user(db, sub['username'])
+    if not dbuser or dbuser.created_at > sub['created_at']:
+        raise HTTPException(status_code=204, detail="User not found or invalid creation date")
+
+    if dbuser.sub_revoked_at and dbuser.sub_revoked_at > sub['created_at']:
+        raise HTTPException(status_code=204, detail="Subscription has been revoked")
+
+    return dbuser
