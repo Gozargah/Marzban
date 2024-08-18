@@ -34,7 +34,7 @@ def reset_user_data_usage():
 
             crud.reset_user_data_usage(db, user)
             # make user active if limited on usage reset
-            if user.status == UserStatus.limited:
+            if user.status in [UserStatus.active, UserStatus.limited]:
                 xray.operations.add_user(user)
 
             logger.info(f"User data usage reset for User \"{user.username}\"")
