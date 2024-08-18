@@ -1,20 +1,19 @@
 import logging
-
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.routing import APIRoute
 from fastapi_responses import custom_openapi
 
-from config import DOCS, XRAY_SUBSCRIPTION_PATH
+from config import DOCS, XRAY_SUBSCRIPTION_PATH, HOME_PAGE_TEMPLATE
 from app import dashboard, telegram, routers, jobs  # noqa
 from app.routers import api_router
+from app.templates import render_template
 
 __version__ = "0.6.0"
-
 
 app = FastAPI(
     title="MarzbanAPI",
@@ -43,9 +42,7 @@ def use_route_names_as_operation_ids(app: FastAPI) -> None:
         if isinstance(route, APIRoute):
             route.operation_id = route.name
 
-
 use_route_names_as_operation_ids(app)
-
 
 @app.on_event("startup")
 def on_startup():
@@ -70,3 +67,8 @@ def validation_exception_handler(request: Request, exc: RequestValidationError):
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content=jsonable_encoder({"detail": details}),
     )
+
+
+@app.get("/", response_class=HTMLResponse)
+def base():
+    return render_template(HOME_PAGE_TEMPLATE)
