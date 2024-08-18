@@ -72,45 +72,46 @@ async def core_logs(websocket: WebSocket, db: Session = Depends(get_db)):
             except (WebSocketDisconnect, RuntimeError):
                 break
 
-
 @router.get("/core", response_model=CoreStats)
-def get_core_stats(admin: Admin = Depends(Admin.get_current)):
+def get_core_stats(
+    admin: Admin = Depends(Admin.get_current)
+):
+    """Retrieve core statistics such as version and uptime."""
     return CoreStats(
         version=xray.core.version,
         started=xray.core.started,
         logs_websocket=router.url_path_for('core_logs')
     )
 
-
 @router.post("/core/restart")
-def restart_core(admin: Admin = Depends(Admin.get_current)):
-    if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
+def restart_core(
+    admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Restart the core and all connected nodes."""
     startup_config = xray.config.include_db_users()
     xray.core.restart(startup_config)
+
     for node_id, node in list(xray.nodes.items()):
         if node.connected:
             xray.operations.restart_node(node_id, startup_config)
+    
     return {}
 
-
 @router.get("/core/config")
-def get_core_config(admin: Admin = Depends(Admin.get_current)) -> dict:
-    if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
+def get_core_config(
+    admin: Admin = Depends(Admin.check_sudo_admin)
+) -> dict:
+    """Get the current core configuration."""
     with open(XRAY_JSON, "r") as f:
         config = commentjson.loads(f.read())
 
     return config
 
-
 @router.put("/core/config")
-def modify_core_config(payload: dict, admin: Admin = Depends(Admin.get_current)) -> dict:
-    if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
+def modify_core_config(
+    payload: dict, admin: Admin = Depends(Admin.check_sudo_admin)
+) -> dict:
+    """Modify the core configuration and restart the core."""
     try:
         config = XRayConfig(payload, api_port=xray.config.api_port)
     except ValueError as err:
