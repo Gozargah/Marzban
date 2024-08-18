@@ -1,10 +1,10 @@
 import asyncio
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 
-import sqlalchemy
-from fastapi import BackgroundTasks, Depends, HTTPException, WebSocket, APIRouter
+from sqlalchemy.exc import IntegrityError
+from fastapi import BackgroundTasks, Depends, HTTPException, WebSocket, APIRouter, Query
 from starlette.websockets import WebSocketDisconnect
 
 from app import logger, xray
@@ -13,68 +13,60 @@ from app.models.admin import Admin
 from app.models.node import (NodeCreate, NodeModify, NodeResponse,
                              NodeSettings, NodeStatus, NodesUsageResponse)
 from app.models.proxy import ProxyHost
+from app.dependencies import get_dbnode, validate_dates
 
 router = APIRouter(tags=['Node'], prefix='/api')
 
 
-@router.get("/node/settings", response_model=NodeSettings)
-def get_node_settings(db: Session = Depends(get_db),
-                      admin: Admin = Depends(Admin.get_current)):
-    if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
-    tls = crud.get_tls_certificate(db)
-
-    return NodeSettings(
-        certificate=tls.certificate
-    )
-
-
-@router.post("/node", response_model=NodeResponse)
-def add_node(new_node: NodeCreate,
-             bg: BackgroundTasks,
-             db: Session = Depends(get_db),
-             admin: Admin = Depends(Admin.get_current)):
-
-    if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
-    try:
-        dbnode = crud.create_node(db, new_node)
-    except sqlalchemy.exc.IntegrityError:
-        db.rollback()
-        raise HTTPException(status_code=409, detail=f"Node \"{new_node.name}\" already exists")
-
-    bg.add_task(
-        xray.operations.connect_node,
-        node_id=dbnode.id
-    )
-
-    if new_node.add_as_new_host is True:
+def add_host_if_needed(new_node: NodeCreate, db: Session):
+    """Add a host if specified in the new node settings."""
+    if new_node.add_as_new_host:
         host = ProxyHost(
-            remark=(new_node.name + " ({USERNAME}) [{PROTOCOL} - {TRANSPORT}]"),
+            remark=f"{new_node.name} ({{USERNAME}}) [{{PROTOCOL}} - {{TRANSPORT}}]",
             address=new_node.address
         )
         for inbound_tag in xray.config.inbounds_by_tag:
             crud.add_host(db, inbound_tag, host)
-
         xray.hosts.update()
+
+
+@router.get("/node/settings", response_model=NodeSettings)
+def get_node_settings(
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Retrieve the current node settings, including TLS certificate."""
+    tls = crud.get_tls_certificate(db)
+    return NodeSettings(certificate=tls.certificate)
+
+
+@router.post("/node", response_model=NodeResponse)
+def add_node(
+    new_node: NodeCreate,
+    bg: BackgroundTasks,
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Add a new node to the database and optionally add it as a host."""
+    try:
+        dbnode = crud.create_node(db, new_node)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail=f"Node \"{new_node.name}\" already exists")
+
+    bg.add_task(xray.operations.connect_node, node_id=dbnode.id)
+    bg.add_task(add_host_if_needed, new_node, db)
 
     logger.info(f"New node \"{dbnode.name}\" added")
     return dbnode
 
 
 @router.get("/node/{node_id}", response_model=NodeResponse)
-def get_node(node_id: int,
-             db: Session = Depends(get_db),
-             admin: Admin = Depends(Admin.get_current)):
-    if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
-    dbnode = crud.get_node_by_id(db, node_id)
-    if not dbnode:
-        raise HTTPException(status_code=404, detail="Node not found")
-
+def get_node(
+    dbnode: NodeResponse = Depends(get_dbnode),
+    admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Retrieve details of a specific node by its ID."""
     return dbnode
 
 
@@ -147,71 +139,50 @@ async def node_logs(node_id: int, websocket: WebSocket, db: Session = Depends(ge
 
 
 @router.get("/nodes", response_model=List[NodeResponse])
-def get_nodes(db: Session = Depends(get_db),
-              admin: Admin = Depends(Admin.get_current)):
-    if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed")
+def get_nodes(
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Retrieve a list of all nodes. Accessible only to sudo admins."""
     return crud.get_nodes(db)
 
 
 @router.put("/node/{node_id}", response_model=NodeResponse)
-def modify_node(node_id: int,
-                modified_node: NodeModify,
-                bg: BackgroundTasks,
-                db: Session = Depends(get_db),
-                admin: Admin = Depends(Admin.get_current)):
-
-    if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
-    dbnode = crud.get_node_by_id(db, node_id)
-    if not dbnode:
-        raise HTTPException(status_code=404, detail="Node not found")
-
-    dbnode = crud.update_node(db, dbnode, modified_node)
-
-    xray.operations.remove_node(dbnode.id)
-    if dbnode.status != NodeStatus.disabled:
-        bg.add_task(
-            xray.operations.connect_node,
-            node_id=dbnode.id
-        )
+def modify_node(
+    modified_node: NodeModify,
+    bg: BackgroundTasks,
+    dbnode: NodeResponse = Depends(get_node),
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Update a node's details. Only accessible to sudo admins."""
+    updated_node = crud.update_node(db, dbnode, modified_node)
+    xray.operations.remove_node(updated_node.id)
+    if updated_node.status != NodeStatus.disabled:
+        bg.add_task(xray.operations.connect_node, node_id=updated_node.id)
 
     logger.info(f"Node \"{dbnode.name}\" modified")
     return dbnode
 
 
 @router.post("/node/{node_id}/reconnect")
-def reconnect_node(node_id: int,
-                   bg: BackgroundTasks,
-                   db: Session = Depends(get_db),
-                   admin: Admin = Depends(Admin.get_current)):
-
-    if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
-    dbnode = crud.get_node_by_id(db, node_id)
-    if not dbnode:
-        raise HTTPException(status_code=404, detail="Node not found")
-    bg.add_task(
-        xray.operations.connect_node,
-        node_id=dbnode.id
-    )
-    return {}
+def reconnect_node(    
+    bg: BackgroundTasks,
+    dbnode: NodeResponse = Depends(get_node),
+    admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Trigger a reconnection for the specified node. Only accessible to sudo admins."""
+    bg.add_task(xray.operations.connect_node,node_id=dbnode.id)
+    return {"detail": "Reconnection task scheduled"}
 
 
 @router.delete("/node/{node_id}")
-def remove_node(node_id: int,
-                db: Session = Depends(get_db),
-                admin: Admin = Depends(Admin.get_current)):
-
-    if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
-    dbnode = crud.get_node_by_id(db, node_id)
-    if not dbnode:
-        raise HTTPException(status_code=404, detail="Node not found")
-
+def remove_node(
+    dbnode: NodeResponse = Depends(get_node),
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Delete a node and remove it from xray in the background."""
     crud.remove_node(db, dbnode)
     xray.operations.remove_node(dbnode.id)
 
@@ -220,27 +191,18 @@ def remove_node(node_id: int,
 
 
 @router.get("/nodes/usage", response_model=NodesUsageResponse)
-def get_usage(db: Session = Depends(get_db),
-              start: str = None,
-              end: str = None,
-              admin: Admin = Depends(Admin.get_current)):
-    """
-    Get nodes usage
-    """
+def get_usage(
+    db: Session = Depends(get_db),
+    start: datetime = Query(None, example="2024-01-01T00:00:00"),
+    end: datetime = Query(None, example="2024-01-31T23:59:59"),
+    admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Retrieve usage statistics for nodes within a specified date range."""
+    if not validate_dates(start, end):
+        raise HTTPException(status_code=400, detail="Invalid date range or format")
 
-    if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
-    if start is None:
-        start_date = datetime.fromtimestamp(datetime.utcnow().timestamp() - 30 * 24 * 3600)
-    else:
-        start_date = datetime.fromisoformat(start)
-
-    if end is None:
-        end_date = datetime.utcnow()
-    else:
-        end_date = datetime.fromisoformat(end)
-
+    start_date = start if start else datetime.utcnow() - timedelta(days=30)
+    end_date = end if end else datetime.utcnow()
     usages = crud.get_nodes_usage(db, start_date, end_date)
 
     return {"usages": usages}

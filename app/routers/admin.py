@@ -31,8 +31,8 @@ def admin_token(
 ):
     """Authenticate an admin and issue a token."""
     client_ip = get_client_ip(request)
+
     dbadmin = validate_admin(db, form_data.username, form_data.password)
-    
     if not dbadmin:
         report.login(form_data.username, form_data.password, client_ip, False)
         raise HTTPException(
