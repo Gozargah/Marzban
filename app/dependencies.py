@@ -50,3 +50,10 @@ def validate_dates(start: Optional[Union[str, datetime]], end: Optional[Union[st
         return True
     except ValueError:
         return False
+    
+def get_user_template(template_id: int, db: Session = Depends(get_db)):
+    """Fetch a User Template by its ID, raise 404 if not found."""
+    dbuser_template = crud.get_user_template(db, template_id)
+    if not dbuser_template:
+        raise HTTPException(status_code=404, detail="User Template not found")
+    return dbuser_template
