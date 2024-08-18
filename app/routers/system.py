@@ -1,20 +1,21 @@
 from typing import Dict, List, Union
-
 from fastapi import Depends, HTTPException, APIRouter
-
-from app import xray
+from app import xray, __version__
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.proxy import ProxyHost, ProxyInbound, ProxyTypes
 from app.models.system import SystemStats
 from app.models.user import UserStatus
 from app.utils.system import memory_usage, cpu_usage, realtime_bandwidth
-from app import __version__
 
 router = APIRouter(tags=['System'], prefix='/api')
 
 @router.get("/system", response_model=SystemStats)
-def get_system_stats(db: Session = Depends(get_db), admin: Admin = Depends(Admin.get_current)):
+def get_system_stats(
+    db: Session = Depends(get_db), 
+    admin: Admin = Depends(Admin.get_current)
+):
+    """Fetch system stats including memory, CPU, and user metrics."""
     mem = memory_usage()
     cpu = cpu_usage()
     system = crud.get_system_usage(db)
@@ -38,34 +39,26 @@ def get_system_stats(db: Session = Depends(get_db), admin: Admin = Depends(Admin
         outgoing_bandwidth_speed=realtime_bandwidth_stats.outgoing_bytes,
     )
 
-
 @router.get('/inbounds', response_model=Dict[ProxyTypes, List[ProxyInbound]])
 def get_inbounds(admin: Admin = Depends(Admin.get_current)):
+    """Retrieve inbound configurations grouped by protocol."""
     return xray.config.inbounds_by_protocol
 
-
 @router.get('/hosts', response_model=Dict[str, List[ProxyHost]])
-def get_hosts(db: Session = Depends(get_db), admin: Admin = Depends(Admin.get_current)):
-    if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
-    hosts = {}
-    for inbound_tag in xray.config.inbounds_by_tag:
-        hosts[inbound_tag] = crud.get_hosts(db, inbound_tag)
-
+def get_hosts(db: Session = Depends(get_db), admin: Admin = Depends(Admin.check_sudo_admin)):
+    """Get a list of proxy hosts grouped by inbound tag."""
+    hosts = {tag: crud.get_hosts(db, tag) for tag in xray.config.inbounds_by_tag}
     return hosts
 
-
 @router.put('/hosts', response_model=Dict[str, List[ProxyHost]])
-def modify_hosts(modified_hosts: Dict[str, List[ProxyHost]],
-                 db: Session = Depends(get_db),
-                 admin: Admin = Depends(Admin.get_current)):
-    if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
-    # validate
-    for inbound_tag, hosts in modified_hosts.items():
-        if not xray.config.inbounds_by_tag.get(inbound_tag):
+def modify_hosts(
+    modified_hosts: Dict[str, List[ProxyHost]],
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Modify proxy hosts and update the configuration."""
+    for inbound_tag in modified_hosts:
+        if inbound_tag not in xray.config.inbounds_by_tag:
             raise HTTPException(status_code=400, detail=f"Inbound {inbound_tag} doesn't exist")
 
     for inbound_tag, hosts in modified_hosts.items():
@@ -73,8 +66,4 @@ def modify_hosts(modified_hosts: Dict[str, List[ProxyHost]],
 
     xray.hosts.update()
 
-    hosts = {}
-    for inbound_tag in xray.config.inbounds_by_tag:
-        hosts[inbound_tag] = crud.get_hosts(db, inbound_tag)
-
-    return hosts
+    return {tag: crud.get_hosts(db, tag) for tag in xray.config.inbounds_by_tag}
