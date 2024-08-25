@@ -59,6 +59,8 @@ import { Icon } from "./Icon";
 import { Input } from "./Input";
 import { RadioGroup } from "./RadioGroup";
 import { UsageFilter, createUsageConfig } from "./UsageFilter";
+import { ReloadIcon } from "./Filters";
+import classNames from "classnames";
 
 const AddUserIcon = chakra(UserPlusIcon, {
   baseStyle: {
@@ -187,7 +189,7 @@ const schema = z.discriminatedUnion("status", [
     status: z.literal("active"),
     ...baseSchema,
   }),
-z.object({
+  z.object({
     status: z.literal("disabled"),
     ...baseSchema,
   }),
@@ -353,6 +355,22 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const disabled = loading;
   const isOnHold = userStatus === "on_hold";
 
+  const [randomUsernameLoading, setrandomUsernameLoading] = useState(false);
+
+  const createRandomUsername = (): string => {
+    setrandomUsernameLoading(true);
+    let result = "";
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const charactersLength = characters.length;
+    let counter = 0;
+    while (counter < 6) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      counter += 1;
+    }
+    return result;
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl">
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
@@ -393,7 +411,27 @@ export const UserDialog: FC<UserDialogProps> = () => {
                     >
                       <Flex flexDirection="row" w="full" gap={2}>
                         <FormControl mb={"10px"}>
-                          <FormLabel>{t("username")}</FormLabel>
+                          <FormLabel>
+                            <Flex gap={2} alignItems={"center"}>
+                              {t("username")}
+                              {!isEditing && (
+                                <ReloadIcon
+                                  cursor={"pointer"}
+                                  className={classNames({
+                                    "animate-spin": randomUsernameLoading,
+                                  })}
+                                  onClick={() => {
+                                    const randomUsername =
+                                      createRandomUsername();
+                                    form.setValue("username", randomUsername);
+                                    setTimeout(() => {
+                                      setrandomUsernameLoading(false);
+                                    }, 350);
+                                  }}
+                                />
+                              )}
+                            </Flex>
+                          </FormLabel>
                           <HStack>
                             <Input
                               size="sm"
