@@ -37,7 +37,11 @@ import {
   chakra,
   useToast,
 } from "@chakra-ui/react";
-import { InformationCircleIcon, LinkIcon } from "@heroicons/react/24/outline";
+import {
+  DocumentDuplicateIcon,
+  InformationCircleIcon,
+  LinkIcon,
+} from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   proxyALPN,
@@ -61,6 +65,13 @@ import { useDashboard } from "../contexts/DashboardContext";
 import { DeleteIcon } from "./DeleteUserModal";
 import { Icon } from "./Icon";
 import { Input as CustomInput } from "./Input";
+
+export const DublicateIcon = chakra(DocumentDuplicateIcon, {
+  baseStyle: {
+    w: 5,
+    h: 5,
+  },
+});
 
 const Select = chakra(ChakraSelect, {
   baseStyle: {
@@ -157,6 +168,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
     fields: hosts,
     append: addHost,
     remove: removeHost,
+    insert: insertHost,
   } = useFieldArray({
     control: form.control,
     name: hostKey,
@@ -181,6 +193,11 @@ const AccordionInbound: FC<AccordionInboundType> = ({
       alpn: "",
       fingerprint: "",
     });
+  };
+  const duplicateHost = (index: number) => {
+    if (index < 0 || index >= hosts.length) return;
+    const hostToDuplicate = hosts[index];
+    insertHost(index + 1, hostToDuplicate);
   };
   useEffect(() => {
     if (accordionErrors && !isOpen) {
@@ -471,7 +488,10 @@ const AccordionInbound: FC<AccordionInboundType> = ({
               </FormControl>
 
               <Accordion w="full" allowToggle>
-                <AccordionItem border="0">
+                <AccordionItem
+                  border="0"
+                  style={{ display: "flex", alignItems: "center" }}
+                >
                   <AccordionButton
                     display="flex"
                     px={0}
@@ -524,6 +544,17 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                       </Tooltip>
                     </Container>
                   </AccordionButton>
+                  <Tooltip label="Dublicate" placement="top">
+                    <IconButton
+                      aria-label="Dublicate"
+                      size="sm"
+                      colorScheme="white"
+                      variant="ghost"
+                      onClick={() => duplicateHost(index)}
+                    >
+                      <DublicateIcon />
+                    </IconButton>
+                  </Tooltip>
                   <AccordionPanel w="full" p={1}>
                     <VStack key={index} w="full" borderRadius="4px">
                       <FormControl
@@ -935,12 +966,17 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             hostKey + "." + index + ".random_user_agent"
                           )}
                         >
-                          <FormLabel>{t("hostsDialog.randomUserAgent")}</FormLabel>
+                          <FormLabel>
+                            {t("hostsDialog.randomUserAgent")}
+                          </FormLabel>
                         </Checkbox>
                         {accordionErrors &&
                           accordionErrors[index]?.random_user_agent && (
                             <Error>
-                              {accordionErrors[index]?.random_user_agent?.message}
+                              {
+                                accordionErrors[index]?.random_user_agent
+                                  ?.message
+                              }
                             </Error>
                           )}
                       </FormControl>
