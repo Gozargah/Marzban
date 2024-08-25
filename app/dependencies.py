@@ -1,10 +1,10 @@
 from typing import Optional, Union
-from app.models.admin import AdminInDB, AdminValidationResult
-from app.models.user import UserResponse
+from app.models.admin import AdminInDB, AdminValidationResult, Admin
+from app.models.user import UserResponse, UserStatus
 from app.db import Session, crud, get_db
 from config import SUDOERS
 from fastapi import Depends, HTTPException
-from datetime import datetime
+from datetime import datetime, timezone
 from app.utils.jwt import get_subscription_payload
 
 def validate_admin(db: Session, username: str, password: str) -> Optional[AdminValidationResult]:
@@ -53,7 +53,7 @@ def get_user_template(template_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User Template not found")
     return dbuser_template
 
-def get_validated_user(
+def get_validated_sub(
     token: str,
     db: Session = Depends(get_db)
 ) -> UserResponse:
@@ -69,3 +69,34 @@ def get_validated_user(
         raise HTTPException(status_code=204, detail="Subscription has been revoked")
 
     return dbuser
+
+def get_validated_user(
+    username: str, 
+    admin: Admin = Depends(Admin.get_current),
+    db: Session = Depends(get_db)
+) -> UserResponse:
+    dbuser = crud.get_user(db, username)
+    if not dbuser:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
+        raise HTTPException(status_code=403, detail="You're not allowed")
+
+    return dbuser
+
+def get_expired_users_list(db: Session, admin: Admin, expired_after: Optional[datetime] = None, expired_before: Optional[datetime] = None):
+
+    expired_before = expired_before or datetime.now(timezone.utc)
+    expired_after = expired_after or datetime.min.replace(tzinfo=timezone.utc)
+
+    dbadmin = crud.get_admin(db, admin.username)
+    dbusers = crud.get_users(
+        db=db,
+        status=[UserStatus.expired, UserStatus.limited],
+        admin=dbadmin if not admin.is_sudo else None
+    )
+
+    return [
+        u for u in dbusers
+        if u.expire and expired_after.timestamp() <= u.expire <= expired_before.timestamp()
+    ]

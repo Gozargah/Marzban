@@ -1,7 +1,7 @@
-from datetime import datetime, timezone
-from typing import List, Union
+from datetime import datetime, timedelta
+from typing import List, Union, Optional
 
-import sqlalchemy
+from sqlalchemy.exc import IntegrityError
 from fastapi import BackgroundTasks, Depends, HTTPException, Query, APIRouter
 
 from app import logger, xray
@@ -10,23 +10,32 @@ from app.models.admin import Admin
 from app.models.user import (UserCreate, UserModify, UserResponse,
                              UsersResponse, UserStatus, UserUsagesResponse)
 from app.utils import report
+from app.dependencies import get_validated_user, validate_dates, get_expired_users_list
 
 router = APIRouter(tags=['User'], prefix='/api')
 
 @router.post("/user", response_model=UserResponse)
-def add_user(new_user: UserCreate,
-             bg: BackgroundTasks,
-             db: Session = Depends(get_db),
-             admin: Admin = Depends(Admin.get_current)):
+def add_user(
+    new_user: UserCreate,
+    bg: BackgroundTasks,
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.get_current)
+):
     """
     Add a new user
 
-    - **username** must have 3 to 32 characters and is allowed to contain a-z, 0-9, and underscores in between
-    - **expire** must be an UTC timestamp
-    - **data_limit** must be in Bytes, e.g. 1073741824B = 1GB
-    - **proxies** dictionary of protocol:settings
-    - **inbounds** dictionary of protocol:inbound_tags, empty means all inbounds
+    - **username**: 3 to 32 characters, can include a-z, 0-9, and underscores.
+    - **status**: User's status, defaults to `active`. Special rules if `on_hold`.
+    - **expire**: UTC timestamp for account expiration. Use `0` for unlimited.
+    - **data_limit**: Max data usage in bytes (e.g., `1073741824` for 1GB). `0` means unlimited.
+    - **data_limit_reset_strategy**: Defines how/if data limit resets. `no_reset` means it never resets.
+    - **proxies**: Dictionary of protocol settings (e.g., `vmess`, `vless`).
+    - **inbounds**: Dictionary of protocol tags to specify inbound connections.
+    - **note**: Optional text field for additional user information or notes.
+    - **on_hold_timeout**: UTC timestamp when `on_hold` status should start or end.
+    - **on_hold_expire_duration**: Duration (in seconds) for how long the user should stay in `on_hold` status.
     """
+
     # TODO expire should be datetime instead of timestamp
 
     for proxy_type in new_user.proxies:
@@ -37,7 +46,7 @@ def add_user(new_user: UserCreate,
     try:
         dbuser = crud.create_user(db, new_user,
                                   admin=crud.get_admin(db, admin.username))
-    except sqlalchemy.exc.IntegrityError:
+    except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=409, detail="User already exists")
 
@@ -54,48 +63,42 @@ def add_user(new_user: UserCreate,
 
 
 @router.get("/user/{username}", response_model=UserResponse)
-def get_user(username: str,
-             db: Session = Depends(get_db),
-             admin: Admin = Depends(Admin.get_current)):
-    """
-    Get users information
-    """
-    dbuser = crud.get_user(db, username)
-    if not dbuser:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
+def get_user(
+    dbuser: UserResponse = Depends(get_validated_user) 
+):
+    """Get user information"""
     return dbuser
 
 
 @router.put("/user/{username}", response_model=UserResponse)
-def modify_user(username: str,
-                modified_user: UserModify,
-                bg: BackgroundTasks,
-                db: Session = Depends(get_db),
-                admin: Admin = Depends(Admin.get_current)):
+def modify_user(
+    modified_user: UserModify,
+    bg: BackgroundTasks,
+    db: Session = Depends(get_db),
+    dbuser: UsersResponse = Depends(get_validated_user)
+):
     """
-    Modify a user
+    Modify an existing user
 
-    - set **expire** to 0 to make the user unlimited in time, null to no change
-    - set **data_limit** to 0 to make the user unlimited in data, null to no change
-    - **proxies** dictionary of protocol:settings, empty means no change
-    - **inbounds** dictionary of protocol:inbound_tags, empty means no change
+    - **username**: Cannot be changed. Used to identify the user.
+    - **status**: User's new status. Can be 'active', 'disabled', 'on_hold', 'limited', or 'expired'.
+    - **expire**: UTC timestamp for new account expiration. Set to `0` for unlimited, `null` for no change.
+    - **data_limit**: New max data usage in bytes (e.g., `1073741824` for 1GB). Set to `0` for unlimited, `null` for no change.
+    - **data_limit_reset_strategy**: New strategy for data limit reset. Options include 'daily', 'weekly', 'monthly', or 'no_reset'.
+    - **proxies**: Dictionary of new protocol settings (e.g., `vmess`, `vless`). Empty dictionary means no change.
+    - **inbounds**: Dictionary of new protocol tags to specify inbound connections. Empty dictionary means no change.
+    - **note**: New optional text for additional user information or notes. `null` means no change.
+    - **on_hold_timeout**: New UTC timestamp for when `on_hold` status should start or end. Only applicable if status is changed to 'on_hold'.
+    - **on_hold_expire_duration**: New duration (in seconds) for how long the user should stay in `on_hold` status. Only applicable if status is changed to 'on_hold'.
+
+    Note: Fields set to `null` or omitted will not be modified.
     """
 
     for proxy_type in modified_user.proxies:
         if not xray.config.inbounds_by_protocol.get(proxy_type):
             raise HTTPException(
-                status_code=400, detail=f"Protocol {proxy_type} is disabled on your server")
-
-    dbuser = crud.get_user(db, username)
-    if not dbuser:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
-        raise HTTPException(status_code=403, detail="You're not allowed")
+                status_code=400, detail=f"Protocol {proxy_type} is disabled on your server"
+            )
 
     old_status = dbuser.status
     dbuser = crud.update_user(db, dbuser, modified_user)
@@ -106,71 +109,61 @@ def modify_user(username: str,
     else:
         bg.add_task(xray.operations.remove_user, dbuser=dbuser)
 
-    bg.add_task(report.user_updated,
-                user=user,
-                user_admin=dbuser.admin,
-                by=admin)
+    bg.add_task(
+        report.user_updated,
+        user=user,
+        user_admin=dbuser.admin,
+        by=dbuser.admin
+    )
+
     logger.info(f"User \"{user.username}\" modified")
 
     if user.status != old_status:
-        bg.add_task(report.status_change,
-                    username=user.username,
-                    status=user.status,
-                    user=user,
-                    user_admin=dbuser.admin,
-                    by=admin)
+        bg.add_task(
+            report.status_change,
+            username=user.username,
+            status=user.status,
+            user=user,
+            user_admin=dbuser.admin,
+            by=dbuser.admin
+        )
         logger.info(
-            f"User \"{dbuser.username}\" status changed from {old_status} to {user.status}")
+            f"User \"{dbuser.username}\" status changed from {old_status} to {user.status}"
+        )
 
     return user
 
 
 @router.delete("/user/{username}")
-def remove_user(username: str,
-                bg: BackgroundTasks,
-                db: Session = Depends(get_db),
-                admin: Admin = Depends(Admin.get_current)):
-    """
-    Remove a user
-    """
-
-    dbuser = crud.get_user(db, username)
-    if not dbuser:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
-    user_admin = dbuser.admin
+def remove_user(
+    bg: BackgroundTasks,
+    db: Session = Depends(get_db),
+    dbuser: UserResponse = Depends(get_validated_user)
+):
+    """Remove a user"""
     crud.remove_user(db, dbuser)
-
     bg.add_task(xray.operations.remove_user, dbuser=dbuser)
 
     bg.add_task(
         report.user_deleted,
         username=dbuser.username,
-        user_admin=user_admin,
-        by=admin
+        user_admin=dbuser.admin,
+        by=dbuser.admin
     )
-    logger.info(f"User \"{username}\" deleted")
-    return {}
+
+    logger.info(f"User \"{dbuser.username}\" deleted")
+    return {"detail": "User successfully deleted"}
+
 
 
 @router.post("/user/{username}/reset", response_model=UserResponse)
-def reset_user_data_usage(username: str,
-                          bg: BackgroundTasks,
-                          db: Session = Depends(get_db),
-                          admin: Admin = Depends(Admin.get_current)):
-    """
-    Reset user data usage
-    """
-    dbuser = crud.get_user(db, username)
-    if not dbuser:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
+def reset_user_data_usage(
+    bg: BackgroundTasks,
+    db: Session = Depends(get_db),
+    dbuser: UserResponse = Depends(get_validated_user),
+    admin: Admin = Depends(Admin.get_current)
+):
+    """Reset user data usage"""
     dbuser = crud.reset_user_data_usage(db=db, dbuser=dbuser)
     if dbuser.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.add_user, dbuser=dbuser)
@@ -181,26 +174,18 @@ def reset_user_data_usage(username: str,
                 user_admin=dbuser.admin,
                 by=admin)
 
-    logger.info(f"User \"{username}\"'s usage was reset")
-
+    logger.info(f"User \"{dbuser.username}\"'s usage was reset")
     return dbuser
 
 
 @router.post("/user/{username}/revoke_sub", response_model=UserResponse)
-def revoke_user_subscription(username: str,
-                             bg: BackgroundTasks,
-                             db: Session = Depends(get_db),
-                             admin: Admin = Depends(Admin.get_current)):
-    """
-    Revoke users subscription (Subscription link and proxies)
-    """
-    dbuser = crud.get_user(db, username)
-    if not dbuser:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    if not (admin.is_sudo or (dbuser.admin and dbuser.admin.username == admin.username)):
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
+def revoke_user_subscription(
+    bg: BackgroundTasks,
+    db: Session = Depends(get_db),
+    dbuser: UserResponse = Depends(get_validated_user),
+    admin: Admin = Depends(Admin.get_current)
+):
+    """Revoke users subscription (Subscription link and proxies)"""
     dbuser = crud.revoke_user_sub(db=db, dbuser=dbuser)
 
     if dbuser.status in [UserStatus.active, UserStatus.on_hold]:
@@ -213,24 +198,24 @@ def revoke_user_subscription(username: str,
         by=admin
     )
 
-    logger.info(f"User \"{username}\" subscription revoked")
+    logger.info(f"User \"{dbuser.username}\" subscription revoked")
 
     return user
 
 
 @router.get("/users", response_model=UsersResponse)
-def get_users(offset: int = None,
-              limit: int = None,
-              username: List[str] = Query(None),
-              search: Union[str, None] = None,
-              owner: Union[List[str], None] = Query(None, alias="admin"),
-              status: UserStatus = None,
-              sort: str = None,
-              db: Session = Depends(get_db),
-              admin: Admin = Depends(Admin.get_current)):
-    """
-    Get all users
-    """
+def get_users(
+    offset: int = None,
+    limit: int = None,
+    username: List[str] = Query(None),
+    search: Union[str, None] = None,
+    owner: Union[List[str], None] = Query(None, alias="admin"),
+    status: UserStatus = None,
+    sort: str = None,
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.get_current)
+):
+    """Get all users"""
     if sort is not None:
         opts = sort.strip(',').split(',')
         sort = []
@@ -255,14 +240,11 @@ def get_users(offset: int = None,
 
 
 @router.post("/users/reset")
-def reset_users_data_usage(db: Session = Depends(get_db),
-                           admin: Admin = Depends(Admin.get_current)):
-    """
-    Reset all users data usage
-    """
-    if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
+def reset_users_data_usage(
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Reset all users data usage"""
     dbadmin = crud.get_admin(db, admin.username)
     crud.reset_all_users_data_usage(db=db, admin=dbadmin)
     startup_config = xray.config.include_db_users()
@@ -270,51 +252,37 @@ def reset_users_data_usage(db: Session = Depends(get_db),
     for node_id, node in list(xray.nodes.items()):
         if node.connected:
             xray.operations.restart_node(node_id, startup_config)
-    return {}
+    return {"detail": "Users successfully reset."}
 
 
 @router.get("/user/{username}/usage", response_model=UserUsagesResponse)
-def get_user_usage(username: str,
-                   start: str = None,
-                   end: str = None,
-                   db: Session = Depends(get_db),
-                   admin: Admin = Depends(Admin.get_current)):
-    """
-    Get users usage
-    """
-    dbuser = crud.get_user(db, username)
-    if not dbuser:
-        raise HTTPException(status_code=404, detail="User not found")
+def get_user_usage(
+    dbuser: UserResponse = Depends(get_validated_user),
+    start: str = None,
+    end: str = None,
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.get_current)
+):
+    """Get users usage"""
+    if not validate_dates(start, end):
+        raise HTTPException(status_code=400, detail="Invalid date range or format")
 
-    if start is None:
-        start_date = datetime.fromtimestamp(
-            datetime.utcnow().timestamp() - 30 * 24 * 3600)
-    else:
-        start_date = datetime.fromisoformat(start)
-
-    if end is None:
-        end_date = datetime.utcnow()
-    else:
-        end_date = datetime.fromisoformat(end)
+    start_date = start or datetime.utcnow() - timedelta(days=30)
+    end_date = end or datetime.utcnow()
 
     usages = crud.get_user_usages(db, dbuser, start_date, end_date)
 
-    return {"usages": usages, "username": username}
+    return {"usages": usages, "username": dbuser.username}
 
 
 @router.put("/user/{username}/set-owner", response_model=UserResponse)
-def set_owner(username: str,
-              admin_username: str,
-              db: Session = Depends(get_db),
-              admin: Admin = Depends(Admin.get_current)):
-
-    if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
-    dbuser = crud.get_user(db, username)
-    if not dbuser:
-        raise HTTPException(status_code=404, detail="User not found")
-
+def set_owner(
+    admin_username: str,
+    dbuser: UserResponse = Depends(get_validated_user),
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Set a new owner (admin) for a user."""
     new_admin = crud.get_admin(db, username=admin_username)
     if not new_admin:
         raise HTTPException(status_code=404, detail="Admin not found")
@@ -328,84 +296,57 @@ def set_owner(username: str,
 
 
 @router.get("/users/expired", response_model=List[str])
-def get_expired_users(expired_before: datetime = None,
-                      expired_after: datetime = None,
-                      db: Session = Depends(get_db),
-                      admin: Admin = Depends(Admin.get_current)):
+def get_expired_users(
+    expired_after: Optional[datetime] = Query(None, example="2024-01-01T00:00:00"),
+    expired_before: Optional[datetime] = Query(None, example="2024-01-31T23:59:59"),
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.get_current)
+):
+
     """
-    Get users who has expired
+    Get users who have expired within the specified date range.
 
-    - **expired_before** must be an UTC datetime
-    - **expired_after** must be an UTC datetime
+    - **expired_after** UTC datetime (optional)
+    - **expired_before** UTC datetime (optional)
+    - At least one of expired_after or expired_before must be provided for filtering
+    - If both are omitted, returns all expired users
     """
 
-    expired_before_ts = expired_before.timestamp() if expired_before else 0
-    expired_after_ts = expired_after.timestamp() if expired_after else 0
-    now_ts = datetime.utcnow().timestamp()
+    if not validate_dates(expired_after, expired_before, allow_both_none=True):
+        raise HTTPException(status_code=400, detail="Invalid date range or format")
 
-    dbadmin = crud.get_admin(db, admin.username)
-
-    dbusers = crud.get_users(db=db,
-                             status=[UserStatus.expired, UserStatus.limited],
-                             admin=dbadmin if not admin.is_sudo else None)
-
-    if expired_before and expired_after:
-        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and
-                               u.expire <= expired_before_ts and u.expire >= expired_after_ts, dbusers)
-
-    elif expired_before:
-        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and u.expire <= expired_before_ts, dbusers)
-
-    elif expired_after:
-        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and u.expire >= expired_after_ts, dbusers)
-
-    else:
-        expired_users = dbusers
-
+    expired_users = get_expired_users_list(db, admin, expired_after, expired_before)
     return [u.username for u in expired_users]
 
 
 @router.delete("/users/expired", response_model=List[str])
-def delete_expired_users(bg: BackgroundTasks,
-                         expired_before: datetime = None,
-                         expired_after: datetime = None,
-                         db: Session = Depends(get_db),
-                         admin: Admin = Depends(Admin.get_current)):
+def delete_expired_users(
+    bg: BackgroundTasks,
+    expired_after: Optional[datetime] = Query(None, example="2024-01-01T00:00:00"),
+    expired_before: Optional[datetime] = Query(None, example="2024-01-31T23:59:59"),
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.get_current)
+):
     """
-    Delete users who has expired
+    Delete users who have expired within the specified date range.
 
-    - **expired_before** must be an UTC datetime
-    - **expired_after** must be an UTC datetime
+    - **expired_after** UTC datetime (optional)
+    - **expired_before** UTC datetime (optional)
+    - At least one of expired_after or expired_before must be provided
     """
-
-    expired_before_ts = expired_before.timestamp() if expired_before else 0
-    expired_after_ts = expired_after.timestamp() if expired_after else 0
-    now_ts = datetime.utcnow().timestamp()
-
-    dbadmin = crud.get_admin(db, admin.username)
-
-    dbusers = crud.get_users(db=db,
-                             status=[UserStatus.expired, UserStatus.limited],
-                             admin=dbadmin if not admin.is_sudo else None)
-
-    if expired_before and expired_after:
-        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and
-                               u.expire <= expired_before_ts and u.expire >= expired_after_ts, dbusers)
-
-    elif expired_before:
-        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and u.expire <= expired_before_ts, dbusers)
-
-    elif expired_after:
-        expired_users = filter(lambda u: u.expire and u.expire <= now_ts and u.expire >= expired_after_ts, dbusers)
-
-    else:
-        expired_users = dbusers
-
-    expired_users = list(expired_users)
+    if not validate_dates(expired_after, expired_before, allow_both_none=False):
+        raise HTTPException(status_code=400, detail="Invalid date range or format")
+    
+    expired_users = get_expired_users_list(db, admin, expired_after, expired_before)
     removed_users = [u.username for u in expired_users]
+
+    if not removed_users:
+        raise HTTPException(status_code=404, detail="No expired users found in the specified date range")
+
     crud.remove_users(db, expired_users)
 
     for removed_user in removed_users:
         logger.info(f"User \"{removed_user}\" deleted")
+        bg.add_task(report.user_deleted, username=removed_user, user_admin=next((u.admin for u in expired_users if u.username == removed_user), None), by=admin)
 
     return removed_users

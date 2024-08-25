@@ -201,8 +201,8 @@ def get_usage(
     if not validate_dates(start, end):
         raise HTTPException(status_code=400, detail="Invalid date range or format")
 
-    start_date = start if start else datetime.utcnow() - timedelta(days=30)
-    end_date = end if end else datetime.utcnow()
+    start_date = start or datetime.utcnow() - timedelta(days=30)
+    end_date = end or datetime.utcnow()
     usages = crud.get_nodes_usage(db, start_date, end_date)
 
     return {"usages": usages}

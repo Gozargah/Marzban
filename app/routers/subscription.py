@@ -2,14 +2,14 @@ import re
 from datetime import datetime, timedelta
 from distutils.version import LooseVersion
 
-from fastapi import Depends, Header, HTTPException, Path, Request, Response, APIRouter
+from fastapi import Depends, Header, HTTPException, Path, Request, Response, APIRouter, Query
 from fastapi.responses import HTMLResponse
 
 from app.db import Session, crud, get_db
 from app.models.user import SubscriptionUserResponse, UserResponse
 from app.subscription.share import encode_title, generate_subscription
 from app.templates import render_template
-from app.dependencies import get_validated_user, validate_dates
+from app.dependencies import get_validated_sub, validate_dates
 from config import (
     SUB_PROFILE_TITLE,
     SUB_SUPPORT_URL,
@@ -39,7 +39,7 @@ def get_subscription_user_info(user: UserResponse) -> dict:
 def user_subscription(
     request: Request,
     db: Session = Depends(get_db),
-    dbuser: UserResponse = Depends(get_validated_user),
+    dbuser: UserResponse = Depends(get_validated_sub),
     user_agent: str = Header(default="")
 ):
     """Provides a subscription link based on the user agent (Clash, V2Ray, etc.)."""
@@ -120,7 +120,7 @@ def user_subscription(
 
 @router.get("/{token}/info", response_model=SubscriptionUserResponse)
 def user_subscription_info(
-    dbuser: UserResponse = Depends(get_validated_user),
+    dbuser: UserResponse = Depends(get_validated_sub),
 ):
     """Retrieves detailed information about the user's subscription."""
     return dbuser
@@ -128,17 +128,17 @@ def user_subscription_info(
 
 @router.get("/{token}/usage")
 def user_get_usage(
-    dbuser: UserResponse = Depends(get_validated_user),
-    start: str = None,
-    end: str = None,
+    dbuser: UserResponse = Depends(get_validated_sub),
+    start: datetime = Query(None, example="2024-01-01T00:00:00"),
+    end: datetime = Query(None, example="2024-01-31T23:59:59"),
     db: Session = Depends(get_db)
 ):
     """Fetches the usage statistics for the user within a specified date range."""
     if not validate_dates(start, end):
         raise HTTPException(status_code=400, detail="Invalid date range or format")
 
-    start_date = start if start else datetime.utcnow() - timedelta(days=30)
-    end_date = end if end else datetime.utcnow()
+    start_date = start or datetime.utcnow() - timedelta(days=30)
+    end_date = end or datetime.utcnow()
 
     usages = crud.get_user_usages(db, dbuser, start_date, end_date)
 
@@ -148,7 +148,7 @@ def user_get_usage(
 @router.get("/{token}/{client_type}")
 def user_subscription_with_client_type(
     request: Request,
-    dbuser: UserResponse = Depends(get_validated_user),
+    dbuser: UserResponse = Depends(get_validated_sub),
     client_type: str = Path(..., regex="sing-box|clash-meta|clash|outline|v2ray|v2ray-json"),
     db: Session = Depends(get_db),
     user_agent: str = Header(default="")
