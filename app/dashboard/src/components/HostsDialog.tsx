@@ -223,14 +223,12 @@ const AccordionInbound: FC<AccordionInboundType> = ({
     }
   }, [accordionErrors]);
 
-  const moveUpHost = (index: number) => {
-    if (index <= 0) return; // Cannot move up if it's already at the top
-    moveHost(index, index - 1);
-  };
-
-  const moveDownHost = (index: number) => {
-    if (index >= hosts.length - 1) return; // Cannot move down if it's already at the bottom
-    moveHost(index, index + 1);
+  const moveHostPosition = (index: number, direction: "up" | "down") => {
+    if (direction === "up" && index > 0) {
+      moveHost(index, index - 1);
+    } else if (direction === "down" && index < hosts.length - 1) {
+      moveHost(index, index + 1);
+    }
   };
 
   return (
@@ -608,7 +606,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                               size="sm"
                               colorScheme="white"
                               variant="ghost"
-                              onClick={() => moveDownHost(index)}
+                              onClick={() => moveHostPosition(index, "down")}
                             >
                               <DownIcon />
                             </IconButton>
@@ -621,7 +619,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                               size="sm"
                               colorScheme="white"
                               variant="ghost"
-                              onClick={() => moveUpHost(index)}
+                              onClick={() => moveHostPosition(index, "up")}
                             >
                               <UpIcon />
                             </IconButton>
