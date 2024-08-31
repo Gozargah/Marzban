@@ -4,10 +4,10 @@ import subprocess
 from pathlib import Path
 
 from app import app
-from config import DEBUG, VITE_BASE_API
+from config import DEBUG, VITE_BASE_API, DASHBOARD_PATH
 from fastapi.staticfiles import StaticFiles
 
-path = '/dashboard/'
+path = f"/{DASHBOARD_PATH}/"
 base_dir = Path(__file__).parent
 build_dir = base_dir / 'build'
 
@@ -23,6 +23,8 @@ def build():
         html = file.read()
     with open(build_dir / '404.html', 'w') as file:
         file.write(html)
+    with open(build_dir / "last_path", "w") as file:
+        file.write(path)
 
 
 def run_dev():
@@ -37,6 +39,15 @@ def run_dev():
 
 def run_build():
     if not build_dir.is_dir():
+        build()
+        
+    try:
+        with open(build_dir / "last_path", "r") as file:
+            last_path = file.read()
+
+        if (last_path != path):
+            build()
+    except FileNotFoundError:
         build()
 
     app.mount(
