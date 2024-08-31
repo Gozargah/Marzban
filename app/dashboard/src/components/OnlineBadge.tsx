@@ -1,31 +1,43 @@
-import {FC} from "react";
+import { Box } from "@chakra-ui/react";
+import { FC } from "react";
 
 type UserStatusProps = {
-    lastOnline?: string | null;
+  lastOnline?: string | null;
 };
 
-const convertDateFormat = (lastOnline: string | null | undefined): number | null => {
-    if (!lastOnline) {
-        return null;
-    }
+const convertDateFormat = (lastOnline?: string | null): number | null => {
+  if (!lastOnline) return null;
 
-    const date = new Date(lastOnline + "Z");
-    return Math.floor(date.getTime() / 1000);
+  const date = new Date(`${lastOnline}Z`);
+  return Math.floor(date.getTime() / 1000);
 };
 
-export const OnlineBadge: FC<UserStatusProps> = ({lastOnline}) => {
-    const currentTimeInSeconds = Math.floor(Date.now() / 1000);
-    const unixTime = convertDateFormat(lastOnline);
+export const OnlineBadge: FC<UserStatusProps> = ({ lastOnline }) => {
+  const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+  const unixTime = convertDateFormat(lastOnline);
 
-    if (typeof lastOnline === 'undefined' || lastOnline === null) {
-        return <div className="circle pulse orange"></div>;
-    }
+  if (!lastOnline || unixTime === null) {
+    return (
+      <Box
+        border="1px solid"
+        borderColor="gray.400"
+        _dark={{ borderColor: "gray.600" }}
+        className="circle"
+      />
+    );
+  }
 
-    const timeDifferenceInSeconds = unixTime ? currentTimeInSeconds - unixTime : Infinity;
+  const timeDifferenceInSeconds = currentTimeInSeconds - unixTime;
 
-    if (timeDifferenceInSeconds > 0 && timeDifferenceInSeconds <= 60) {
-        return <div className="circle pulse green"></div>;
-    }
+  if (timeDifferenceInSeconds <= 60) {
+    return (
+      <Box
+        bg="green.300"
+        _dark={{ bg: "green.500" }}
+        className="circle pulse green"
+      />
+    );
+  }
 
-    return <div className="circle pulse red"></div>;
+  return <Box bg="gray.400" _dark={{ bg: "gray.600" }} className="circle" />;
 };
