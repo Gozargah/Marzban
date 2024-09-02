@@ -9,9 +9,6 @@ from fastapi.routing import APIRoute
 from fastapi_responses import custom_openapi
 
 from config import DOCS, XRAY_SUBSCRIPTION_PATH, HOME_PAGE_TEMPLATE
-from app import dashboard, telegram, routers, jobs  # noqa
-from app.routers import api_router
-from app.templates import render_template
 
 __version__ = "0.6.0"
 
@@ -34,6 +31,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+from app import dashboard, telegram, routers, jobs  # noqa
+from app.routers import api_router
+from app.templates import render_template
 
 app.include_router(api_router)
 
