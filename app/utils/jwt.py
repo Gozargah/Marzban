@@ -8,7 +8,7 @@ from typing import Union
 
 from jose import JWTError, jwt
 
-from config import JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+from config import JWT_ACCESS_TOKEN_EXPIRE_MINUTES, SECONDARY_KEY
 
 
 @lru_cache(maxsize=None)
@@ -23,13 +23,15 @@ def create_admin_token(username: str, is_sudo=False) -> str:
     if JWT_ACCESS_TOKEN_EXPIRE_MINUTES > 0:
         expire = datetime.utcnow() + timedelta(minutes=JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
         data["exp"] = expire
-    encoded_jwt = jwt.encode(data, get_secret_key(), algorithm="HS256")
+    combined_key = sha256((get_secret_key() + SECONDARY_KEY).encode()).hexdigest()
+    encoded_jwt = jwt.encode(data, combined_key, algorithm="HS256")
     return encoded_jwt
 
 
 def get_admin_payload(token: str) -> Union[dict, None]:
     try:
-        payload = jwt.decode(token, get_secret_key(), algorithms=["HS256"])
+        combined_key = sha256((get_secret_key() + SECONDARY_KEY).encode()).hexdigest()
+        payload = jwt.decode(token, combined_key, algorithms=["HS256"])
         username: str = payload.get("sub")
         access: str = payload.get("access")
         if not username or access not in ('admin', 'sudo'):
