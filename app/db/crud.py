@@ -625,6 +625,58 @@ def autodelete_expired_users(db: Session,
     return expired_users
 
 
+def get_all_users_usages(
+        db: Session, admin: Admin, start: datetime, end: datetime
+    ) -> List[UserUsageResponse]:
+    """
+    Retrieves usage data for all users associated with an admin within a specified time range.
+
+    This function calculates the total traffic used by users across different nodes,
+    including a "Master" node that represents the main core.
+
+    Args:
+        db (Session): Database session for querying.
+        admin (Admin): The admin user for which to retrieve user usage data.
+        start (datetime): The start date and time of the period to consider.
+        end (datetime): The end date and time of the period to consider.
+
+    Returns:
+        List[UserUsageResponse]: A list of UserUsageResponse objects, each representing
+        the usage data for a specific node or the main core.
+    """
+    usages = {}
+
+    usages[0] = UserUsageResponse(  # Main Core
+        node_id=None,
+        node_name="Master",
+        used_traffic=0
+    )
+
+    for node in db.query(Node).all():
+
+        usages[node.id] = UserUsageResponse(
+            node_id=node.id,
+            node_name=node.name,
+            used_traffic=0
+        )
+
+    admin_users = set(user.id for user in get_users(db=db, admins=admin))
+
+    cond = and_(
+        NodeUserUsage.created_at >= start,
+        NodeUserUsage.created_at <= end,
+        NodeUserUsage.user_id.in_(admin_users)
+    )
+
+    for v in db.query(NodeUserUsage).filter(cond):
+        try:
+            usages[v.node_id or 0].used_traffic += v.used_traffic
+        except KeyError:
+            pass
+
+    return list(usages.values())
+
+
 def update_user_status(db: Session, dbuser: User, status: UserStatus) -> User:
     """
     Updates a user's status and records the time of change.

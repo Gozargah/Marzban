@@ -8,7 +8,7 @@ from app import logger, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.user import (UserCreate, UserModify, UserResponse,
-                             UsersResponse, UserStatus, UserUsagesResponse)
+                             UsersResponse, UserStatus, UserUsagesResponse, UsersUsagesResponse)
 from app.utils import report
 from app.dependencies import get_validated_user, validate_dates, get_expired_users_list
 
@@ -273,6 +273,30 @@ def get_user_usage(
     usages = crud.get_user_usages(db, dbuser, start_date, end_date)
 
     return {"usages": usages, "username": dbuser.username}
+
+@router.get("/users/usage", response_model=UsersUsagesResponse)
+def get_users_usage(
+    start: datetime = Query(None, example="2024-01-01T00:00:00"),
+    end: datetime = Query(None, example="2024-01-31T23:59:59"),
+    db: Session = Depends(get_db),
+    owner: Union[List[str], None] = Query(None, alias="admin"),
+    admin: Admin = Depends(Admin.get_current)
+):
+    """Get all users usage"""
+    if not validate_dates(start, end):
+        raise HTTPException(status_code=400, detail="Invalid date range or format")
+
+    start_date = start or datetime.utcnow() - timedelta(days=30)
+    end_date = end or datetime.utcnow()
+
+    usages = crud.get_all_users_usages(
+        db=db,
+        start=start_date,
+        end=end_date,
+        admin=owner if admin.is_sudo else [admin.username]
+    )
+
+    return {"usages": usages}
 
 
 @router.put("/user/{username}/set-owner", response_model=UserResponse)
