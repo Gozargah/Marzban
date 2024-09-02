@@ -66,7 +66,6 @@ GRPC_USER_AGENT_TEMPLATE = config("GRPC_USER_AGENT_TEMPLATE", default="user_agen
 
 EXTERNAL_CONFIG = config("EXTERNAL_CONFIG", default="", cast=str)
 LOGIN_WHITE_LIST = [ip.strip() for ip in config("LOGIN_WHITE_LIST", default="", cast=str).split(",") if ip.strip()]
-MASTER_SERVER_USAGE_RATIO = config("MASTER_SERVER_USAGE_RATIO", default=1.0, cast=float)
 
 USE_CUSTOM_JSON_DEFAULT = config("USE_CUSTOM_JSON_DEFAULT", default=False, cast=bool)
 USE_CUSTOM_JSON_FOR_V2RAYN = config("USE_CUSTOM_JSON_FOR_V2RAYN", default=False, cast=bool)
