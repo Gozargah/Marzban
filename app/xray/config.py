@@ -288,8 +288,11 @@ class XRayConfig(dict):
                     settings['path'] = net_settings.get('path', '')
                     host = net_settings.get('host', '')
                     settings['host'] = [host]
-                    settings['maxUploadSize'] = net_settings.get('maxUploadSize', 1000000)
-                    settings['maxConcurrentUploads'] = net_settings.get('maxConcurrentUploads', 10)
+                    settings['scMaxEachPostBytes'] = net_settings.get('scMaxEachPostBytes',
+                                                                      net_settings.get('maxUploadSize', 1000000))
+                    settings['scMaxConcurrentPosts'] = net_settings.get('scMaxConcurrentPosts',
+                                                                        net_settings.get('maxConcurrentUploads', 100))
+                    settings['scMinPostsIntervalMs'] = net_settings.get('scMinPostsIntervalMs', 30)
 
                 elif net == 'kcp':
                     header = net_settings.get('header', {})
@@ -344,7 +347,8 @@ class XRayConfig(dict):
             ).join(
                 db_models.Proxy, db_models.User.id == db_models.Proxy.user_id
             ).outerjoin(
-                db_models.excluded_inbounds_association, db_models.Proxy.id == db_models.excluded_inbounds_association.c.proxy_id
+                db_models.excluded_inbounds_association,
+                db_models.Proxy.id == db_models.excluded_inbounds_association.c.proxy_id
             ).filter(
                 db_models.User.status.in_([UserStatus.active, UserStatus.on_hold])
             ).group_by(
@@ -387,15 +391,15 @@ class XRayConfig(dict):
 
                         # XTLS currently only supports transmission methods of TCP and mKCP
                         if client.get('flow') and (
-                            inbound.get('network', 'tcp') not in ('tcp', 'kcp')
-                            or
-                            (
-                                inbound.get('network', 'tcp') in ('tcp', 'kcp')
-                                and
-                                inbound.get('tls') not in ('tls', 'reality')
-                            )
-                            or
-                            inbound.get('header_type') == 'http'
+                                inbound.get('network', 'tcp') not in ('tcp', 'kcp')
+                                or
+                                (
+                                        inbound.get('network', 'tcp') in ('tcp', 'kcp')
+                                        and
+                                        inbound.get('tls') not in ('tls', 'reality')
+                                )
+                                or
+                                inbound.get('header_type') == 'http'
                         ):
                             del client['flow']
 

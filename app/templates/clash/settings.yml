@@ -1,0 +1,19 @@
+http-opts:
+  ip-version: dual
+  method: "GET"
+  headers:
+    Connection:
+      - keep-alive
+
+grpc-opts:
+  ip-version: dual
+
+h2-opts:
+  ip-version: dual
+
+# ws and httpupgrade are same in clash
+ws-opts:
+  ip-version: dual
+
+tcp-opts:
+  ip-version: dual

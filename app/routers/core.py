@@ -3,18 +3,19 @@ import json
 import time
 
 import commentjson
-from fastapi import Depends, HTTPException, WebSocket
+from fastapi import Depends, HTTPException, WebSocket, APIRouter
 from starlette.websockets import WebSocketDisconnect
 
-from app import app, xray
+from app import xray
 from app.db import Session, get_db
 from app.models.admin import Admin
 from app.models.core import CoreStats
 from app.xray import XRayConfig
 from config import XRAY_JSON
 
+router = APIRouter(tags=['Core'], prefix='/api')
 
-@app.websocket("/api/core/logs")
+@router.websocket("/core/logs")
 async def core_logs(websocket: WebSocket, db: Session = Depends(get_db)):
     token = (
         websocket.query_params.get('token')
@@ -71,45 +72,46 @@ async def core_logs(websocket: WebSocket, db: Session = Depends(get_db)):
             except (WebSocketDisconnect, RuntimeError):
                 break
 
-
-@app.get("/api/core", tags=["Core"], response_model=CoreStats)
-def get_core_stats(admin: Admin = Depends(Admin.get_current)):
+@router.get("/core", response_model=CoreStats)
+def get_core_stats(
+    admin: Admin = Depends(Admin.get_current)
+):
+    """Retrieve core statistics such as version and uptime."""
     return CoreStats(
         version=xray.core.version,
         started=xray.core.started,
-        logs_websocket=app.url_path_for('core_logs')
+        logs_websocket=router.url_path_for('core_logs')
     )
 
-
-@app.post("/api/core/restart", tags=["Core"])
-def restart_core(admin: Admin = Depends(Admin.get_current)):
-    if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
+@router.post("/core/restart")
+def restart_core(
+    admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Restart the core and all connected nodes."""
     startup_config = xray.config.include_db_users()
     xray.core.restart(startup_config)
+
     for node_id, node in list(xray.nodes.items()):
         if node.connected:
             xray.operations.restart_node(node_id, startup_config)
+    
     return {}
 
-
-@app.get("/api/core/config", tags=["Core"])
-def get_core_config(admin: Admin = Depends(Admin.get_current)) -> dict:
-    if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
+@router.get("/core/config")
+def get_core_config(
+    admin: Admin = Depends(Admin.check_sudo_admin)
+) -> dict:
+    """Get the current core configuration."""
     with open(XRAY_JSON, "r") as f:
         config = commentjson.loads(f.read())
 
     return config
 
-
-@app.put("/api/core/config", tags=["Core"])
-def modify_core_config(payload: dict, admin: Admin = Depends(Admin.get_current)) -> dict:
-    if not admin.is_sudo:
-        raise HTTPException(status_code=403, detail="You're not allowed")
-
+@router.put("/core/config")
+def modify_core_config(
+    payload: dict, admin: Admin = Depends(Admin.check_sudo_admin)
+) -> dict:
+    """Modify the core configuration and restart the core."""
     try:
         config = XRayConfig(payload, api_port=xray.config.api_port)
     except ValueError as err:
