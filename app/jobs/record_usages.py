@@ -12,7 +12,8 @@ from app.db import GetDB
 from app.db.models import NodeUsage, NodeUserUsage, System, User
 from config import (DISABLE_RECORDING_NODE_USAGE,
                     JOB_RECORD_NODE_USAGES_INTERVAL,
-                    JOB_RECORD_USER_USAGES_INTERVAL)
+                    JOB_RECORD_USER_USAGES_INTERVAL,
+                    MASTER_SERVER_USAGE_RATIO)
 from xray_api import XRay as XRayAPI
 from xray_api import exc as xray_exc
 
@@ -125,7 +126,7 @@ def get_outbounds_stats(api: XRayAPI):
 
 def record_user_usages():
     api_instances = {None: xray.api}
-    usage_coefficient = {None: 1}  # default usage coefficient for the main api instance
+    usage_coefficient = {None: MASTER_SERVER_USAGE_RATIO}  # default usage coefficient for the main api instance
 
     for node_id, node in list(xray.nodes.items()):
         if node.connected and node.started:
