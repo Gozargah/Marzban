@@ -530,15 +530,13 @@ class V2rayJsonConfig(str):
             config["headers"]["User-Agent"] = choice(
                 self.user_agent_list)
         # before 1.8.23
-        config["maxUploadSize"] = sc_max_each_post_bytes
-        config["maxConcurrentUploads"] = sc_max_concurrent_posts
+        config.setdefault('maxUploadSize', sc_max_each_post_bytes)
+        config.setdefault('maxConcurrentUploads', sc_max_concurrent_posts)
         # 1.8.23 and later
-        config["scMaxEachPostBytes"] = sc_max_each_post_bytes
-        config["scMaxConcurrentPosts"] = sc_max_concurrent_posts
-        config["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
-
+        config.setdefault('scMaxEachPostBytes', sc_max_each_post_bytes)
+        config.setdefault('scMaxConcurrentPosts', sc_max_concurrent_posts)
+        config.setdefault('scMinPostsIntervalMs', sc_min_posts_interval_ms)
         # core will ignore unknown variables
-
         return config
 
     def grpc_config(self, path=None, host=None, multiMode=False, random_user_agent=None):
