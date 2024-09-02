@@ -64,7 +64,6 @@ def user_subscription(
         "subscription-userinfo": "; ".join(
             f"{key}={val}"
             for key, val in get_subscription_user_info(user).items()
-            if val is not None
         )
     }
 

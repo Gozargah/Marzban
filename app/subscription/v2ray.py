@@ -213,10 +213,10 @@ class V2rayShareLink(str):
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
 
         return (
-            "vmess://"
-            + base64.b64encode(
-                json.dumps(payload, sort_keys=True).encode("utf-8")
-            ).decode()
+                "vmess://"
+                + base64.b64encode(
+            json.dumps(payload, sort_keys=True).encode("utf-8")
+        ).decode()
         )
 
     @classmethod
@@ -303,10 +303,10 @@ class V2rayShareLink(str):
                 payload["spx"] = spx
 
         return (
-            "vless://"
-            + f"{id}@{address}:{port}?"
-            + urlparse.urlencode(payload)
-            + f"#{(urlparse.quote(remark))}"
+                "vless://"
+                + f"{id}@{address}:{port}?"
+                + urlparse.urlencode(payload)
+                + f"#{(urlparse.quote(remark))}"
         )
 
     @classmethod
@@ -392,10 +392,10 @@ class V2rayShareLink(str):
                 payload["spx"] = spx
 
         return (
-            "trojan://"
-            + f"{urlparse.quote(password, safe=':')}@{address}:{port}?"
-            + urlparse.urlencode(payload)
-            + f"#{urlparse.quote(remark)}"
+                "trojan://"
+                + f"{urlparse.quote(password, safe=':')}@{address}:{port}?"
+                + urlparse.urlencode(payload)
+                + f"#{urlparse.quote(remark)}"
         )
 
     @classmethod
@@ -403,9 +403,9 @@ class V2rayShareLink(str):
             cls, remark: str, address: str, port: int, password: str, method: str
     ):
         return (
-            "ss://"
-            + base64.b64encode(f"{method}:{password}".encode()).decode()
-            + f"@{address}:{port}#{urlparse.quote(remark)}"
+                "ss://"
+                + base64.b64encode(f"{method}:{password}".encode()).decode()
+                + f"@{address}:{port}#{urlparse.quote(remark)}"
         )
 
 
@@ -564,16 +564,33 @@ class V2rayJsonConfig(str):
     def tcp_config(self, headers="none", path=None, host=None, random_user_agent=None):
         if headers == "http":
             config = copy.deepcopy(self.settings.get("tcphttpSettings", {
-                "header": {}
+                "header": {
+                    "request": {
+                        "headers": {
+                            "Accept-Encoding": [
+                                "gzip", "deflate"
+                            ],
+                            "Connection": [
+                                "keep-alive"
+                            ],
+                            "Pragma": "no-cache"
+                        },
+                        "method": "GET",
+                        "version": "1.1"
+                    }
+                }
             }))
         else:
             config = copy.deepcopy(self.settings.get("tcpSettings", {
-                "header": {}
+                "header": {
+                    "type": "none"
+                }
             }))
         if "header" not in config:
             config["header"] = {}
 
-        config["header"]["type"] = headers
+        if headers:
+            config["header"]["type"] = headers
 
         if any((path, host, random_user_agent)):
             if "request" not in config["header"]:
@@ -705,7 +722,7 @@ class V2rayJsonConfig(str):
         }
 
     @staticmethod
-    def vless_config(address=None, port=None, id=None, flow=None):
+    def vless_config(address=None, port=None, id=None, flow=""):
         return {
             "vnext": [
                 {
@@ -864,7 +881,7 @@ class V2rayJsonConfig(str):
                 path = get_grpc_gun(path)
 
         outbound = {
-            "tag": remark,
+            "tag": "proxy",
             "protocol": protocol
         }
 

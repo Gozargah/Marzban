@@ -7,8 +7,12 @@ from jinja2.exceptions import TemplateNotFound
 
 from app.subscription.funcs import get_grpc_gun
 from app.templates import render_template
-from config import (CLASH_SETTINGS_TEMPLATE, CLASH_SUBSCRIPTION_TEMPLATE,
-                    MUX_TEMPLATE, USER_AGENT_TEMPLATE)
+from config import (
+    CLASH_SETTINGS_TEMPLATE,
+    CLASH_SUBSCRIPTION_TEMPLATE,
+    MUX_TEMPLATE,
+    USER_AGENT_TEMPLATE
+)
 
 
 class ClashConfiguration(object):
@@ -173,6 +177,7 @@ class ClashConfiguration(object):
             is_httpupgrade = False
 
         remark = self._remark_validation(name)
+        self.proxy_remarks.append(remark)
         node = {
             'name': remark,
             'type': type,
@@ -284,7 +289,6 @@ class ClashConfiguration(object):
             return
 
         self.data['proxies'].append(node)
-        self.proxy_remarks.append(remark)
 
 
 class ClashMetaConfiguration(ClashConfiguration):
@@ -379,4 +383,3 @@ class ClashMetaConfiguration(ClashConfiguration):
             return
 
         self.data['proxies'].append(node)
-        self.proxy_remarks.append(remark)
