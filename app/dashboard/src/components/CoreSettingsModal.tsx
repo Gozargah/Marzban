@@ -279,7 +279,6 @@ const CoreSettingModalContent: FC = () => {
               {nodes?.[0] && (
                 <Select
                   size="sm"
-                  className="bx-shadow"
                   style={{ width: "auto" }}
                   disabled={disabled}
                   bg={disabled ? "gray.100" : "transparent"}
@@ -294,7 +293,7 @@ const CoreSettingModalContent: FC = () => {
                   }
                 >
                   <option key={"host"} value={"host"} defaultChecked>
-                    Host
+                    Master
                   </option>
                   {nodes &&
                     nodes.map((s) => {
