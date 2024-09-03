@@ -8,7 +8,7 @@ from fastapi import Depends, HTTPException, status, Request, APIRouter
 from fastapi.security import OAuth2PasswordRequestForm
 from app.utils import report
 from app.dependencies import validate_admin, get_admin_by_username
-from config import LOGIN_WHITE_LIST
+from config import LOGIN_NOTIFY_WHITE_LIST
 
 router = APIRouter(tags=['Admin'], prefix='/api')
 
@@ -41,7 +41,7 @@ def admin_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    if client_ip not in LOGIN_WHITE_LIST:
+    if client_ip not in LOGIN_NOTIFY_WHITE_LIST:
         report.login(form_data.username, '🔒', client_ip, True)
     
     return Token(
