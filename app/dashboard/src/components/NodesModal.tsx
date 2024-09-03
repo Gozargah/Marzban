@@ -249,7 +249,7 @@ const AddNodeForm: FC<AddNodeFormType> = ({
     resolver: zodResolver(NodeSchema),
     defaultValues: {
       ...getNodeDefaultValues(),
-      add_as_new_host: true,
+      add_as_new_host: false,
     },
   });
   const { isLoading, mutate } = useMutation(addNode, {
