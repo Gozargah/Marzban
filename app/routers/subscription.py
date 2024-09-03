@@ -24,6 +24,7 @@ from config import (
 
 router = APIRouter(tags=['Subscription'], prefix=f'/{XRAY_SUBSCRIPTION_PATH}')
 
+
 def get_subscription_user_info(user: UserResponse) -> dict:
     """Retrieve user subscription information including upload, download, total data, and expiry."""
     return {
@@ -175,10 +176,13 @@ def user_subscription_with_client_type(
         "outline":    {"config_format": "outline",     "media_type": "application/json",   "as_base64": False, "reverse": False},
         "v2ray-json": {"config_format": "v2ray-json",  "media_type": "application/json",   "as_base64": False, "reverse": False}
     }
-    
+
     if client_type in client_config:
         config = client_config[client_type]
-        conf = generate_subscription(user=user, **config)
+        conf = generate_subscription(user=user,
+                                     config_format=client_config["config_format"],
+                                     as_base64=client_config["as_base64"],
+                                     reverse=client_config["reverse"])
         return Response(content=conf, media_type=config["media_type"], headers=response_headers)
     else:
         raise HTTPException(status_code=400, detail="Invalid subscription type")
