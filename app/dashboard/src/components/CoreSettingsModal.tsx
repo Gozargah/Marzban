@@ -19,6 +19,7 @@ import {
   Text,
   Tooltip,
   useToast,
+  useColorMode
 } from "@chakra-ui/react";
 import {
   ArrowPathIcon,
@@ -107,6 +108,9 @@ const getWebsocketUrl = (nodeID: string) => {
 
 let logsTmp: string[] = [];
 const CoreSettingModalContent: FC = () => {
+
+  const { colorMode } = useColorMode();
+
   const { data: nodes } = useNodesQuery();
   const disabled = false;
   const [selectedNode, setNode] = useState<string>("");
@@ -284,6 +288,11 @@ const CoreSettingModalContent: FC = () => {
                   bg={disabled ? "gray.100" : "transparent"}
                   _dark={{
                     bg: disabled ? "gray.600" : "transparent",
+                  }}
+                  sx={{
+                    option: {
+                      backgroundColor: colorMode === "dark" ? "#222C3B" : "white"
+                    }
                   }}
                   onChange={(v) =>
                     handleLog(
