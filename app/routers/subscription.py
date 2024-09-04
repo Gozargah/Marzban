@@ -22,6 +22,16 @@ from config import (
     XRAY_SUBSCRIPTION_PATH
 )
 
+client_config = {
+    "clash-meta": {"config_format": "clash-meta", "media_type": "text/yaml", "as_base64": False, "reverse": False},
+    "sing-box": {"config_format": "sing-box", "media_type": "application/json", "as_base64": False, "reverse": False},
+    "clash": {"config_format": "clash", "media_type": "text/yaml", "as_base64": False, "reverse": False},
+    "v2ray": {"config_format": "v2ray", "media_type": "text/plain", "as_base64": True, "reverse": False},
+    "outline": {"config_format": "outline", "media_type": "application/json", "as_base64": False, "reverse": False},
+    "v2ray-json": {"config_format": "v2ray-json", "media_type": "application/json", "as_base64": False,
+                   "reverse": False}
+}
+
 router = APIRouter(tags=['Subscription'], prefix=f'/{XRAY_SUBSCRIPTION_PATH}')
 
 
@@ -168,21 +178,11 @@ def user_subscription_with_client_type(
             for key, val in get_subscription_user_info(user).items()
         )
     }
-    client_config = {
-        "clash-meta": {"config_format": "clash-meta",  "media_type": "text/yaml",          "as_base64": False, "reverse": False},
-        "sing-box":   {"config_format": "sing-box",    "media_type": "application/json",   "as_base64": False, "reverse": False},
-        "clash":      {"config_format": "clash",       "media_type": "text/yaml",          "as_base64": False, "reverse": False},
-        "v2ray":      {"config_format": "v2ray",       "media_type": "text/plain",         "as_base64": True,  "reverse": False},
-        "outline":    {"config_format": "outline",     "media_type": "application/json",   "as_base64": False, "reverse": False},
-        "v2ray-json": {"config_format": "v2ray-json",  "media_type": "application/json",   "as_base64": False, "reverse": False}
-    }
 
-    if client_type in client_config:
-        config = client_config[client_type]
-        conf = generate_subscription(user=user,
-                                     config_format=client_config["config_format"],
-                                     as_base64=client_config["as_base64"],
-                                     reverse=client_config["reverse"])
-        return Response(content=conf, media_type=config["media_type"], headers=response_headers)
-    else:
-        raise HTTPException(status_code=400, detail="Invalid subscription type")
+    config = client_config.get(client_type)
+    conf = generate_subscription(user=user,
+                                 config_format=config["config_format"],
+                                 as_base64=config["as_base64"],
+                                 reverse=config["reverse"])
+
+    return Response(content=conf, media_type=config["media_type"], headers=response_headers)
