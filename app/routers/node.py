@@ -1,6 +1,6 @@
 import asyncio
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List
 
 from sqlalchemy.exc import IntegrityError
@@ -45,7 +45,7 @@ def add_node(
     new_node: NodeCreate,
     bg: BackgroundTasks,
     db: Session = Depends(get_db),
-    admin: Admin = Depends(Admin.check_sudo_admin)
+    _: Admin = Depends(Admin.check_sudo_admin)
 ):
     """Add a new node to the database and optionally add it as a host."""
     try:
@@ -64,7 +64,7 @@ def add_node(
 @router.get("/node/{node_id}", response_model=NodeResponse)
 def get_node(
     dbnode: NodeResponse = Depends(get_dbnode),
-    admin: Admin = Depends(Admin.check_sudo_admin)
+    _: Admin = Depends(Admin.check_sudo_admin)
 ):
     """Retrieve details of a specific node by its ID."""
     return dbnode
@@ -141,7 +141,7 @@ async def node_logs(node_id: int, websocket: WebSocket, db: Session = Depends(ge
 @router.get("/nodes", response_model=List[NodeResponse])
 def get_nodes(
     db: Session = Depends(get_db),
-    admin: Admin = Depends(Admin.check_sudo_admin)
+    _: Admin = Depends(Admin.check_sudo_admin)
 ):
     """Retrieve a list of all nodes. Accessible only to sudo admins."""
     return crud.get_nodes(db)
@@ -153,7 +153,7 @@ def modify_node(
     bg: BackgroundTasks,
     dbnode: NodeResponse = Depends(get_node),
     db: Session = Depends(get_db),
-    admin: Admin = Depends(Admin.check_sudo_admin)
+    _: Admin = Depends(Admin.check_sudo_admin)
 ):
     """Update a node's details. Only accessible to sudo admins."""
     updated_node = crud.update_node(db, dbnode, modified_node)
@@ -169,7 +169,7 @@ def modify_node(
 def reconnect_node(    
     bg: BackgroundTasks,
     dbnode: NodeResponse = Depends(get_node),
-    admin: Admin = Depends(Admin.check_sudo_admin)
+    _: Admin = Depends(Admin.check_sudo_admin)
 ):
     """Trigger a reconnection for the specified node. Only accessible to sudo admins."""
     bg.add_task(xray.operations.connect_node,node_id=dbnode.id)
@@ -195,14 +195,21 @@ def get_usage(
     db: Session = Depends(get_db),
     start: datetime = Query(None, example="2024-01-01T00:00:00"),
     end: datetime = Query(None, example="2024-01-31T23:59:59"),
-    admin: Admin = Depends(Admin.check_sudo_admin)
+    _: Admin = Depends(Admin.check_sudo_admin)
 ):
     """Retrieve usage statistics for nodes within a specified date range."""
     if not validate_dates(start, end):
         raise HTTPException(status_code=400, detail="Invalid date range or format")
 
-    start_date = start or datetime.utcnow() - timedelta(days=30)
-    end_date = end or datetime.utcnow()
-    usages = crud.get_nodes_usage(db, start_date, end_date)
+    if not start:
+        start = datetime.now(timezone.utc) - timedelta(days=30)
+    else:
+        start = datetime.fromisoformat(start).astimezone(timezone.utc)
+    if not end:
+        end = datetime.now(timezone.utc)
+    else:
+        end = datetime.fromisoformat(end).astimezone(timezone.utc)
+
+    usages = crud.get_nodes_usage(db, start, end)
 
     return {"usages": usages}
