@@ -74,6 +74,8 @@ class V2rayShareLink(str):
                 sc_max_each_post_bytes=inbound.get('scMaxEachPostBytes', 1000000),
                 sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
                 sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
+                x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
+                no_sse_header=inbound.get("noSSEHeader", False),
             )
 
         elif inbound["protocol"] == "vless":
@@ -100,6 +102,8 @@ class V2rayShareLink(str):
                 sc_max_each_post_bytes=inbound.get('scMaxEachPostBytes', 1000000),
                 sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
                 sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
+                x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
+                no_sse_header=inbound.get("noSSEHeader", False),
             )
 
         elif inbound["protocol"] == "trojan":
@@ -126,6 +130,8 @@ class V2rayShareLink(str):
                 sc_max_each_post_bytes=inbound.get('scMaxEachPostBytes', 1000000),
                 sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
                 sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
+                x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
+                no_sse_header=inbound.get("noSSEHeader", False),
             )
 
         elif inbound["protocol"] == "shadowsocks":
@@ -252,8 +258,8 @@ class V2rayShareLink(str):
               sc_max_each_post_bytes: int = 1000000,
               sc_max_concurrent_posts: int = 100,
               sc_min_posts_interval_ms: int = 30,
-no_sse_header: bool = False,
-                         x_padding_bytes: str = "100-1000",
+              no_sse_header: bool = False,
+              x_padding_bytes: str = "100-1000",
               ):
 
         payload = {
@@ -346,6 +352,8 @@ no_sse_header: bool = False,
                sc_max_each_post_bytes: int = 1000000,
                sc_max_concurrent_posts: int = 100,
                sc_min_posts_interval_ms: int = 30,
+               no_sse_header: bool = False,
+               x_padding_bytes: str = "100-1000",
                ):
 
         payload = {
@@ -374,6 +382,8 @@ no_sse_header: bool = False,
             payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
             payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
+            payload["noSSEHeader"] = no_sse_header
+            payload["xPaddingBytes"] = x_padding_bytes
 
         elif net == 'quic':
             payload['key'] = path
