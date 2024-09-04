@@ -293,6 +293,8 @@ class XRayConfig(dict):
                     settings['scMaxConcurrentPosts'] = net_settings.get('scMaxConcurrentPosts',
                                                                         net_settings.get('maxConcurrentUploads', 100))
                     settings['scMinPostsIntervalMs'] = net_settings.get('scMinPostsIntervalMs', 30)
+                    settings['noSSEHeader'] = net_settings.get('noSSEHeader', False)
+                    settings['xPaddingBytes'] = net_settings.get('xPaddingBytes', "100-1000")
 
                 elif net == 'kcp':
                     header = net_settings.get('header', {})
@@ -394,9 +396,9 @@ class XRayConfig(dict):
                                 inbound.get('network', 'tcp') not in ('tcp', 'kcp')
                                 or
                                 (
-                                        inbound.get('network', 'tcp') in ('tcp', 'kcp')
-                                        and
-                                        inbound.get('tls') not in ('tls', 'reality')
+                                    inbound.get('network', 'tcp') in ('tcp', 'kcp')
+                                    and
+                                    inbound.get('tls') not in ('tls', 'reality')
                                 )
                                 or
                                 inbound.get('header_type') == 'http'

@@ -165,6 +165,8 @@ class V2rayShareLink(str):
             sc_max_each_post_bytes: int = 1000000,
             sc_max_concurrent_posts: int = 100,
             sc_min_posts_interval_ms: int = 30,
+            no_sse_header: bool = False,
+            x_padding_bytes: str = "100-1000",
     ):
         payload = {
             "add": address,
@@ -216,6 +218,8 @@ class V2rayShareLink(str):
             payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
             payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
+            payload["noSSEHeader"] = no_sse_header
+            payload["xPaddingBytes"] = x_padding_bytes
 
         return (
             "vmess://"
@@ -248,6 +252,8 @@ class V2rayShareLink(str):
               sc_max_each_post_bytes: int = 1000000,
               sc_max_concurrent_posts: int = 100,
               sc_min_posts_interval_ms: int = 30,
+no_sse_header: bool = False,
+                         x_padding_bytes: str = "100-1000",
               ):
 
         payload = {
@@ -280,6 +286,8 @@ class V2rayShareLink(str):
             payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
             payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
+            payload["noSSEHeader"] = no_sse_header
+            payload["xPaddingBytes"] = x_padding_bytes
 
         elif net == 'kcp':
             payload['seed'] = path
@@ -524,6 +532,8 @@ class V2rayJsonConfig(str):
                          sc_max_each_post_bytes: int = 1000000,
                          sc_max_concurrent_posts: int = 100,
                          sc_min_posts_interval_ms: int = 30,
+                         no_sse_header: bool = False,
+                         x_padding_bytes: str = "100-1000",
                          ):
         config = copy.deepcopy(self.settings.get("splithttpSettings", {}))
 
@@ -541,6 +551,8 @@ class V2rayJsonConfig(str):
         config["scMaxEachPostBytes"] = sc_max_each_post_bytes
         config["scMaxConcurrentPosts"] = sc_max_concurrent_posts
         config["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
+        config["noSSEHeader"] = no_sse_header
+        config["xPaddingBytes"] = x_padding_bytes
 
         # core will ignore unknown variables
 
@@ -825,6 +837,8 @@ class V2rayJsonConfig(str):
                             sc_max_each_post_bytes: int = 1000000,
                             sc_max_concurrent_posts: int = 100,
                             sc_min_posts_interval_ms: int = 30,
+                            no_sse_header: bool = False,
+                            x_padding_bytes: str = "100-1000",
                             ):
 
         if net == "ws":
@@ -852,7 +866,9 @@ class V2rayJsonConfig(str):
             network_setting = self.splithttp_config(path=path, host=host, random_user_agent=random_user_agent,
                                                     sc_max_each_post_bytes=sc_max_each_post_bytes,
                                                     sc_max_concurrent_posts=sc_max_concurrent_posts,
-                                                    sc_min_posts_interval_ms=sc_min_posts_interval_ms
+                                                    sc_min_posts_interval_ms=sc_min_posts_interval_ms,
+                                                    x_padding_bytes=x_padding_bytes,
+                                                    no_sse_header=no_sse_header
                                                     )
         else:
             network_setting = {}
