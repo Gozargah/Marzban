@@ -75,7 +75,6 @@ class V2rayShareLink(str):
                 sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
                 sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
                 x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
-                no_sse_header=inbound.get("noSSEHeader", False),
             )
 
         elif inbound["protocol"] == "vless":
@@ -103,7 +102,6 @@ class V2rayShareLink(str):
                 sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
                 sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
                 x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
-                no_sse_header=inbound.get("noSSEHeader", False),
             )
 
         elif inbound["protocol"] == "trojan":
@@ -131,7 +129,6 @@ class V2rayShareLink(str):
                 sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
                 sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
                 x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
-                no_sse_header=inbound.get("noSSEHeader", False),
             )
 
         elif inbound["protocol"] == "shadowsocks":
@@ -171,7 +168,6 @@ class V2rayShareLink(str):
             sc_max_each_post_bytes: int = 1000000,
             sc_max_concurrent_posts: int = 100,
             sc_min_posts_interval_ms: int = 30,
-            no_sse_header: bool = False,
             x_padding_bytes: str = "100-1000",
     ):
         payload = {
@@ -224,7 +220,6 @@ class V2rayShareLink(str):
             payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
             payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
-            payload["noSSEHeader"] = no_sse_header
             payload["xPaddingBytes"] = x_padding_bytes
 
         return (
@@ -258,7 +253,6 @@ class V2rayShareLink(str):
               sc_max_each_post_bytes: int = 1000000,
               sc_max_concurrent_posts: int = 100,
               sc_min_posts_interval_ms: int = 30,
-              no_sse_header: bool = False,
               x_padding_bytes: str = "100-1000",
               ):
 
@@ -292,7 +286,6 @@ class V2rayShareLink(str):
             payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
             payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
-            payload["noSSEHeader"] = no_sse_header
             payload["xPaddingBytes"] = x_padding_bytes
 
         elif net == 'kcp':
@@ -352,7 +345,6 @@ class V2rayShareLink(str):
                sc_max_each_post_bytes: int = 1000000,
                sc_max_concurrent_posts: int = 100,
                sc_min_posts_interval_ms: int = 30,
-               no_sse_header: bool = False,
                x_padding_bytes: str = "100-1000",
                ):
 
@@ -382,7 +374,6 @@ class V2rayShareLink(str):
             payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
             payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
-            payload["noSSEHeader"] = no_sse_header
             payload["xPaddingBytes"] = x_padding_bytes
 
         elif net == 'quic':
@@ -542,7 +533,6 @@ class V2rayJsonConfig(str):
                          sc_max_each_post_bytes: int = 1000000,
                          sc_max_concurrent_posts: int = 100,
                          sc_min_posts_interval_ms: int = 30,
-                         no_sse_header: bool = False,
                          x_padding_bytes: str = "100-1000",
                          ):
         config = copy.deepcopy(self.settings.get("splithttpSettings", {}))
@@ -561,7 +551,6 @@ class V2rayJsonConfig(str):
         config["scMaxEachPostBytes"] = sc_max_each_post_bytes
         config["scMaxConcurrentPosts"] = sc_max_concurrent_posts
         config["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
-        config["noSSEHeader"] = no_sse_header
         config["xPaddingBytes"] = x_padding_bytes
 
         # core will ignore unknown variables
@@ -847,7 +836,6 @@ class V2rayJsonConfig(str):
                             sc_max_each_post_bytes: int = 1000000,
                             sc_max_concurrent_posts: int = 100,
                             sc_min_posts_interval_ms: int = 30,
-                            no_sse_header: bool = False,
                             x_padding_bytes: str = "100-1000",
                             ):
 
@@ -878,7 +866,6 @@ class V2rayJsonConfig(str):
                                                     sc_max_concurrent_posts=sc_max_concurrent_posts,
                                                     sc_min_posts_interval_ms=sc_min_posts_interval_ms,
                                                     x_padding_bytes=x_padding_bytes,
-                                                    no_sse_header=no_sse_header
                                                     )
         else:
             network_setting = {}
