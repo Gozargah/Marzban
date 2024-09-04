@@ -10,23 +10,39 @@ from sqlalchemy import and_, delete, or_
 from sqlalchemy.orm import Query, Session, joinedload
 from sqlalchemy.sql.functions import coalesce
 
-from app.db.models import (JWT, TLS, Admin, Node, NodeUsage, NodeUserUsage,
-                           NotificationReminder, Proxy, ProxyHost,
-                           ProxyInbound, ProxyTypes, System, User,
-                           UserTemplate, UserUsageResetLogs)
+from app.db.models import (
+    JWT,
+    TLS,
+    Admin,
+    Node,
+    NodeUsage,
+    NodeUserUsage,
+    NotificationReminder,
+    Proxy,
+    ProxyHost,
+    ProxyInbound,
+    ProxyTypes,
+    System,
+    User,
+    UserTemplate,
+    UserUsageResetLogs
+)
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
-from app.models.node import (NodeCreate, NodeModify, NodeStatus,
-                             NodeUsageResponse)
+from app.models.node import NodeCreate, NodeModify, NodeStatus, NodeUsageResponse
 from app.models.proxy import ProxyHost as ProxyHostModify
-from app.models.user import (ReminderType, UserCreate,
-                             UserDataLimitResetStrategy, UserModify,
-                             UserResponse, UserStatus, UserUsageResponse)
+from app.models.user import (
+    ReminderType,
+    UserCreate,
+    UserDataLimitResetStrategy,
+    UserModify,
+    UserResponse,
+    UserStatus,
+    UserUsageResponse
+)
 from app.models.user_template import UserTemplateCreate, UserTemplateModify
-from app.utils.helpers import (calculate_expiration_days,
-                               calculate_usage_percent)
+from app.utils.helpers import calculate_expiration_days, calculate_usage_percent
 from app.utils.notification import Notification
-from config import (NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT,
-                    USERS_AUTODELETE_DAYS)
+from config import NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT, USERS_AUTODELETE_DAYS
 
 
 def add_default_host(db: Session, inbound: ProxyInbound):
@@ -139,6 +155,7 @@ def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostMo
             is_disabled=host.is_disabled,
             mux_enable=host.mux_enable,
             fragment_setting=host.fragment_setting,
+            noise_setting=host.noise_setting,
             random_user_agent=host.random_user_agent,
         ) for host in modified_hosts
     ]
@@ -626,8 +643,8 @@ def autodelete_expired_users(db: Session,
 
 
 def get_all_users_usages(
-        db: Session, admin: Admin, start: datetime, end: datetime
-    ) -> List[UserUsageResponse]:
+    db: Session, admin: Admin, start: datetime, end: datetime
+) -> List[UserUsageResponse]:
     """
     Retrieves usage data for all users associated with an admin within a specified time range.
 
@@ -783,6 +800,7 @@ def get_admin(db: Session, username: str) -> Admin:
         Admin: The admin object.
     """
     return db.query(Admin).filter(Admin.username == username).first()
+
 
 def create_admin(db: Session, admin: AdminCreate) -> Admin:
     """
@@ -1041,6 +1059,7 @@ def get_user_templates(
         dbuser_templates = dbuser_templates.limit(limit)
 
     return dbuser_templates.all()
+
 
 def get_node(db: Session, name: str) -> Optional[Node]:
     """

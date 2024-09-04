@@ -51,7 +51,8 @@ import {
   proxyHostSecurity,
 } from "constants/Proxies";
 import { useHosts } from "contexts/HostsContext";
-import { FC, useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import { FC, useEffect, useState } from "react";
 import {
   Controller,
   FormProvider,
@@ -67,7 +68,6 @@ import { useDashboard } from "../contexts/DashboardContext";
 import { DeleteIcon } from "./DeleteUserModal";
 import { Icon } from "./Icon";
 import { Input as CustomInput } from "./Input";
-import { motion } from "framer-motion";
 
 export const DublicateIcon = chakra(DocumentDuplicateIcon, {
   baseStyle: {
@@ -147,6 +147,7 @@ const hostsSchema = z.record(
       allowinsecure: z.boolean().nullable().default(false),
       is_disabled: z.boolean().default(true),
       fragment_setting: z.string().nullable(),
+      noise_setting: z.string().nullable(),
       random_user_agent: z.boolean().default(false),
       security: z.string(),
       alpn: z.string(),
@@ -206,6 +207,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
       allowinsecure: false,
       is_disabled: false,
       fragment_setting: "",
+      noise_setting: "",
       random_user_agent: false,
       security: "inbound_default",
       alpn: "",
@@ -998,6 +1000,68 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                 </Error>
                               )}
                           </FormControl>
+
+                          <FormControl
+                            isInvalid={
+                              !!(
+                                accordionErrors &&
+                                accordionErrors[index]?.noise_setting
+                              )
+                            }
+                          >
+                            <FormLabel
+                              display="flex"
+                              pb={1}
+                              alignItems="center"
+                              gap={1}
+                              justifyContent="space-between"
+                              m="0"
+                            >
+                              <span>{t("hostsDialog.noise")}</span>
+
+                              <Popover isLazy placement="right">
+                                <PopoverTrigger>
+                                  <InfoIcon />
+                                </PopoverTrigger>
+                                <Portal>
+                                  <PopoverContent p={2}>
+                                    <PopoverArrow />
+                                    <PopoverCloseButton />
+                                    <Text fontSize="xs" pr={5}>
+                                      {t("hostsDialog.noise.info")}
+                                    </Text>
+                                    <Text fontSize="xs" pr={5} pt={2} pb={1}>
+                                      {t("hostsDialog.noise.info.examples")}
+                                    </Text>
+                                    <Text fontSize="xs" pr={5}>
+                                      rand:10-20,10-20
+                                    </Text>
+                                    <Text fontSize="xs" pr={5} pt="3">
+                                      {t("hostsDialog.noise.info.attention")}
+                                    </Text>
+                                  </PopoverContent>
+                                </Portal>
+                              </Popover>
+                            </FormLabel>
+                            <Input
+                              size="sm"
+                              borderRadius="4px"
+                              placeholder="Noise settings by pattern"
+                              {...form.register(
+                                hostKey + "." + index + ".noise_setting"
+                              )}
+                            />
+                            {accordionErrors &&
+                              accordionErrors[index]?.noise_setting && (
+                                <Error>
+                                  {
+                                    accordionErrors[index]?.noise_setting
+                                      ?.message
+                                  }
+                                </Error>
+                              )}
+                          </FormControl>
+
 
                           <FormControl
                             isInvalid={

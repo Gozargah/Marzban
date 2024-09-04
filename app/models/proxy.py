@@ -1,8 +1,8 @@
 import json
+import re
 from enum import Enum
 from typing import Optional, Union
 from uuid import UUID, uuid4
-import re
 
 from pydantic import BaseModel, Field, validator
 
@@ -17,6 +17,8 @@ from xray_api.types.account import (
 )
 
 FRAGMENT_PATTERN = re.compile(r'^((\d{1,4}-\d{1,4})|(\d{1,4})),((\d{1,3}-\d{1,3})|(\d{1,3})),(tlshello|\d|\d\-\d)$')
+
+NOISE_PATTERN = re.compile(r'^(rand:(\d{1,4}-\d{1,4})|rand:(\d{1,4})|str:(.+)),((\d{1,3}-\d{1,3})|(\d{1,3}))$')
 
 
 class ProxyTypes(str, Enum):
@@ -149,6 +151,7 @@ class ProxyHost(BaseModel):
     is_disabled: Union[bool, None] = None
     mux_enable: Union[bool, None] = None
     fragment_setting: Optional[str] = Field(None, nullable=True)
+    noise_setting: Optional[str] = Field(None, nullable=True)
     random_user_agent: Union[bool, None] = None
 
     class Config:
@@ -177,6 +180,14 @@ class ProxyHost(BaseModel):
         if v and not FRAGMENT_PATTERN.match(v):
             raise ValueError(
                 "Fragment setting must be like this: length,interval,packet (10-100,100-200,tlshello)."
+            )
+        return v
+
+    @validator("noise_setting", check_fields=False)
+    def validate_noise(cls, v):
+        if v and not NOISE_PATTERN.match(v):
+            raise ValueError(
+                "Noise setting must be like this: packet,delay (rand:10-20,100-200)."
             )
         return v
 
