@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Union, Optional
 
 from sqlalchemy.exc import IntegrityError
@@ -13,6 +13,7 @@ from app.utils import report
 from app.dependencies import get_validated_user, validate_dates, get_expired_users_list
 
 router = APIRouter(tags=['User'], prefix='/api')
+
 
 @router.post("/user", response_model=UserResponse)
 def add_user(
@@ -155,7 +156,6 @@ def remove_user(
     return {"detail": "User successfully deleted"}
 
 
-
 @router.post("/user/{username}/reset", response_model=UserResponse)
 def reset_user_data_usage(
     bg: BackgroundTasks,
@@ -258,26 +258,32 @@ def reset_users_data_usage(
 @router.get("/user/{username}/usage", response_model=UserUsagesResponse)
 def get_user_usage(
     dbuser: UserResponse = Depends(get_validated_user),
-    start: str = None,
-    end: str = None,
-    db: Session = Depends(get_db),
-    admin: Admin = Depends(Admin.get_current)
+    start: str = "",
+    end: str = "",
+    db: Session = Depends(get_db)
 ):
     """Get users usage"""
     if not validate_dates(start, end):
         raise HTTPException(status_code=400, detail="Invalid date range or format")
 
-    start_date = start or datetime.utcnow() - timedelta(days=30)
-    end_date = end or datetime.utcnow()
+    if not start:
+        start = datetime.now(timezone.utc) - timedelta(days=30)
+    else:
+        start = datetime.fromisoformat(start).astimezone(timezone.utc)
+    if not end:
+        end = datetime.now(timezone.utc)
+    else:
+        end = datetime.fromisoformat(end).astimezone(timezone.utc)
 
-    usages = crud.get_user_usages(db, dbuser, start_date, end_date)
+    usages = crud.get_user_usages(db, dbuser, start, end)
 
     return {"usages": usages, "username": dbuser.username}
 
+
 @router.get("/users/usage", response_model=UsersUsagesResponse)
 def get_users_usage(
-    start: datetime = Query(None, example="2024-01-01T00:00:00"),
-    end: datetime = Query(None, example="2024-01-31T23:59:59"),
+    start: str = "",
+    end: str = "",
     db: Session = Depends(get_db),
     owner: Union[List[str], None] = Query(None, alias="admin"),
     admin: Admin = Depends(Admin.get_current)
@@ -286,13 +292,19 @@ def get_users_usage(
     if not validate_dates(start, end):
         raise HTTPException(status_code=400, detail="Invalid date range or format")
 
-    start_date = start or datetime.utcnow() - timedelta(days=30)
-    end_date = end or datetime.utcnow()
+    if not start:
+        start = datetime.now(timezone.utc) - timedelta(days=30)
+    else:
+        start = datetime.fromisoformat(start).astimezone(timezone.utc)
+    if not end:
+        end = datetime.now(timezone.utc)
+    else:
+        end = datetime.fromisoformat(end).astimezone(timezone.utc)
 
     usages = crud.get_all_users_usages(
         db=db,
-        start=start_date,
-        end=end_date,
+        start=start,
+        end=end,
         admin=owner if admin.is_sudo else [admin.username]
     )
 
@@ -336,7 +348,7 @@ def get_expired_users(
     - If both are omitted, returns all expired users
     """
 
-    if not validate_dates(expired_after, expired_before, allow_both_none=True):
+    if not validate_dates(expired_after, expired_before):
         raise HTTPException(status_code=400, detail="Invalid date range or format")
 
     expired_users = get_expired_users_list(db, admin, expired_after, expired_before)

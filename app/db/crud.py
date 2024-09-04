@@ -288,13 +288,13 @@ def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime) -
     Returns:
         List[UserUsageResponse]: List of user usage responses.
     """
-    usages = {}
 
-    usages[0] = UserUsageResponse(  # Main Core
+    usages = {0: UserUsageResponse(  # Main Core
         node_id=None,
         node_name="Master",
         used_traffic=0
-    )
+    )}
+
     for node in db.query(Node).all():
         usages[node.id] = UserUsageResponse(
             node_id=node.id,
@@ -438,8 +438,8 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
     if modify.inbounds:
         for proxy_type, tags in modify.excluded_inbounds.items():
             dbproxy = db.query(Proxy) \
-                .where(Proxy.user == dbuser, Proxy.type == proxy_type) \
-                .first() or added_proxies.get(proxy_type)
+                          .where(Proxy.user == dbuser, Proxy.type == proxy_type) \
+                          .first() or added_proxies.get(proxy_type)
             if dbproxy:
                 dbproxy.excluded_inbounds = [get_or_create_inbound(db, tag) for tag in tags]
 
@@ -627,7 +627,7 @@ def autodelete_expired_users(db: Session,
 
 def get_all_users_usages(
         db: Session, admin: Admin, start: datetime, end: datetime
-    ) -> List[UserUsageResponse]:
+) -> List[UserUsageResponse]:
     """
     Retrieves usage data for all users associated with an admin within a specified time range.
 
@@ -644,16 +644,13 @@ def get_all_users_usages(
         List[UserUsageResponse]: A list of UserUsageResponse objects, each representing
         the usage data for a specific node or the main core.
     """
-    usages = {}
-
-    usages[0] = UserUsageResponse(  # Main Core
+    usages = {0: UserUsageResponse(  # Main Core
         node_id=None,
         node_name="Master",
         used_traffic=0
-    )
+    )}
 
     for node in db.query(Node).all():
-
         usages[node.id] = UserUsageResponse(
             node_id=node.id,
             node_name=node.name,
@@ -783,6 +780,7 @@ def get_admin(db: Session, username: str) -> Admin:
         Admin: The admin object.
     """
     return db.query(Admin).filter(Admin.username == username).first()
+
 
 def create_admin(db: Session, admin: AdminCreate) -> Admin:
     """
@@ -1042,6 +1040,7 @@ def get_user_templates(
 
     return dbuser_templates.all()
 
+
 def get_node(db: Session, name: str) -> Optional[Node]:
     """
     Retrieves a node by its name.
@@ -1110,14 +1109,13 @@ def get_nodes_usage(db: Session, start: datetime, end: datetime) -> List[NodeUsa
     Returns:
         List[NodeUsageResponse]: A list of NodeUsageResponse objects containing usage data.
     """
-    usages = {}
-
-    usages[0] = NodeUsageResponse(  # Main Core
+    usages = {0: NodeUsageResponse(  # Main Core
         node_id=None,
         node_name="Master",
         uplink=0,
         downlink=0
-    )
+    )}
+
     for node in db.query(Node).all():
         usages[node.id] = NodeUsageResponse(
             node_id=node.id,

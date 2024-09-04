@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from distutils.version import LooseVersion
 
 from fastapi import Depends, Header, HTTPException, Path, Request, Response, APIRouter, Query
@@ -139,18 +139,24 @@ def user_subscription_info(
 @router.get("/{token}/usage")
 def user_get_usage(
     dbuser: UserResponse = Depends(get_validated_sub),
-    start: datetime = Query(None, example="2024-01-01T00:00:00"),
-    end: datetime = Query(None, example="2024-01-31T23:59:59"),
+    start: str = "",
+    end: str = "",
     db: Session = Depends(get_db)
 ):
     """Fetches the usage statistics for the user within a specified date range."""
     if not validate_dates(start, end):
         raise HTTPException(status_code=400, detail="Invalid date range or format")
 
-    start_date = start or datetime.utcnow() - timedelta(days=30)
-    end_date = end or datetime.utcnow()
+    if not start:
+        start = datetime.now(timezone.utc) - timedelta(days=30)
+    else:
+        start = datetime.fromisoformat(start).astimezone(timezone.utc)
+    if not end:
+        end = datetime.now(timezone.utc)
+    else:
+        end = datetime.fromisoformat(end).astimezone(timezone.utc)
 
-    usages = crud.get_user_usages(db, dbuser, start_date, end_date)
+    usages = crud.get_user_usages(db, dbuser, start, end)
 
     return {"usages": usages, "username": dbuser.username}
 
