@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.routing import APIRoute
 from fastapi_responses import custom_openapi
 
-from config import DOCS, XRAY_SUBSCRIPTION_PATH, HOME_PAGE_TEMPLATE, ALLOWED_ORIGINS
+from config import DOCS, XRAY_SUBSCRIPTION_PATH, ALLOWED_ORIGINS
 
 __version__ = "0.6.0"
 
@@ -34,16 +34,18 @@ app.add_middleware(
 
 from app import dashboard, telegram, routers, jobs  # noqa
 from app.routers import api_router
-from app.templates import render_template
 
 app.include_router(api_router)
+
 
 def use_route_names_as_operation_ids(app: FastAPI) -> None:
     for route in app.routes:
         if isinstance(route, APIRoute):
             route.operation_id = route.name
 
+
 use_route_names_as_operation_ids(app)
+
 
 @app.on_event("startup")
 def on_startup():
@@ -68,8 +70,3 @@ def validation_exception_handler(request: Request, exc: RequestValidationError):
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content=jsonable_encoder({"detail": details}),
     )
-
-
-@app.get("/", response_class=HTMLResponse)
-def base():
-    return render_template(HOME_PAGE_TEMPLATE)

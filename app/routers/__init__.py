@@ -6,7 +6,8 @@ from . import (
     subscription, 
     system, 
     user_template, 
-    user
+    user,
+    home,
 )
 
 api_router = APIRouter()
@@ -19,6 +20,7 @@ routers = [
     system.router,
     user_template.router,
     user.router,
+    home.router,
 ]
 
 for router in routers:
