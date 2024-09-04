@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.routing import APIRoute
 from fastapi_responses import custom_openapi
 
-from config import DOCS, XRAY_SUBSCRIPTION_PATH, HOME_PAGE_TEMPLATE, ALLWED_ORIGINS
+from config import DOCS, XRAY_SUBSCRIPTION_PATH, HOME_PAGE_TEMPLATE, ALLOWED_ORIGINS
 
 __version__ = "0.6.0"
 
@@ -26,7 +26,7 @@ logger = logging.getLogger('uvicorn.error')
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLWED_ORIGINS,
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
