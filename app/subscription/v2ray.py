@@ -804,13 +804,13 @@ class V2rayJsonConfig(str):
         return outbound
 
     @staticmethod
-    def make_noise_outbound(packets="rand:10-20",  delay="10-20"):
+    def make_noise_outbound(packet="rand:10-20",  delay="10-20"):
         outbound = {
             "tag": "noise_out",
             "protocol": "freedom",
             "settings": {
                 "noise": {
-                    "packets": packets,
+                    "packet": packet,
                     "delay": delay
                 }
             }
@@ -954,17 +954,17 @@ class V2rayJsonConfig(str):
 
         if fragment:
             try:
-                length, interval, packets = fragment.split(',')
+                length, interval, packet = fragment.split(',')
                 fragment_outbound = self.make_fragment_outbound(
-                    packets, length, interval)
+                    packet, length, interval)
                 outbounds.append(fragment_outbound)
                 dialer_proxy = fragment_outbound['tag']
             except ValueError:
                 pass
         if noise:
             try:
-                packets, delay = noise.split(',')
-                noise_outbound = self.make_noise_outbound(packets, delay)
+                packet, delay = noise.split(',')
+                noise_outbound = self.make_noise_outbound(packet, delay)
                 outbounds.append(noise_outbound)
                 dialer_proxy = noise_outbound['tag']
             except ValueError:
