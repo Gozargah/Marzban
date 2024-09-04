@@ -987,6 +987,7 @@ class V2rayJsonConfig(str):
             sc_max_each_post_bytes=inbound.get('scMaxEachPostBytes', 1000000),
             sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
             sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
+            x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
         )
 
         mux_json = json.loads(self.mux_template)
