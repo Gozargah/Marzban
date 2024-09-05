@@ -166,13 +166,13 @@ def modify_node(
 
 
 @router.post("/node/{node_id}/reconnect")
-def reconnect_node(    
+def reconnect_node(
     bg: BackgroundTasks,
     dbnode: NodeResponse = Depends(get_node),
     _: Admin = Depends(Admin.check_sudo_admin)
 ):
     """Trigger a reconnection for the specified node. Only accessible to sudo admins."""
-    bg.add_task(xray.operations.connect_node,node_id=dbnode.id)
+    bg.add_task(xray.operations.connect_node, node_id=dbnode.id)
     return {"detail": "Reconnection task scheduled"}
 
 
@@ -204,11 +204,11 @@ def get_usage(
     if not start:
         start = datetime.now(timezone.utc) - timedelta(days=30)
     else:
-        start = datetime.fromisoformat(start).astimezone(timezone.utc)
+        start = datetime.fromisoformat(start.isoformat()).astimezone(timezone.utc)
     if not end:
         end = datetime.now(timezone.utc)
     else:
-        end = datetime.fromisoformat(end).astimezone(timezone.utc)
+        end = datetime.fromisoformat(end.isoformat()).astimezone(timezone.utc)
 
     usages = crud.get_nodes_usage(db, start, end)
 
