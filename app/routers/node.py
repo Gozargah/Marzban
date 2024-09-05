@@ -193,8 +193,8 @@ def remove_node(
 @router.get("/nodes/usage", response_model=NodesUsageResponse)
 def get_usage(
     db: Session = Depends(get_db),
-    start: datetime = Query(None, example="2024-01-01T00:00:00"),
-    end: datetime = Query(None, example="2024-01-31T23:59:59"),
+    start: str = "",
+    end: str = "",
     _: Admin = Depends(Admin.check_sudo_admin)
 ):
     """Retrieve usage statistics for nodes within a specified date range."""
