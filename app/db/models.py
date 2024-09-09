@@ -214,7 +214,7 @@ class ProxyHost(Base):
     is_disabled = Column(Boolean, nullable=True, default=False)
     mux_enable = Column(Boolean, nullable=False, default=False, server_default='0')
     fragment_setting = Column(String(100), nullable=True)
-    noise_setting = Column(String(1000), nullable=True)
+    noise_setting = Column(String(), nullable=True)
     random_user_agent = Column(Boolean, nullable=False, default=False, server_default='0')
 
 
