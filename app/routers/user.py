@@ -265,17 +265,7 @@ def get_user_usage(
     db: Session = Depends(get_db)
 ):
     """Get users usage"""
-    if not validate_dates(start, end):
-        raise HTTPException(status_code=400, detail="Invalid date range or format")
-
-    if not start:
-        start = datetime.now(timezone.utc) - timedelta(days=30)
-    else:
-        start = datetime.fromisoformat(start).astimezone(timezone.utc)
-    if not end:
-        end = datetime.now(timezone.utc)
-    else:
-        end = datetime.fromisoformat(end).astimezone(timezone.utc)
+    start, end = validate_dates(start, end)
 
     usages = crud.get_user_usages(db, dbuser, start, end)
 
@@ -291,17 +281,7 @@ def get_users_usage(
     admin: Admin = Depends(Admin.get_current)
 ):
     """Get all users usage"""
-    if not validate_dates(start, end):
-        raise HTTPException(status_code=400, detail="Invalid date range or format")
-
-    if not start:
-        start = datetime.now(timezone.utc) - timedelta(days=30)
-    else:
-        start = datetime.fromisoformat(start).astimezone(timezone.utc)
-    if not end:
-        end = datetime.now(timezone.utc)
-    else:
-        end = datetime.fromisoformat(end).astimezone(timezone.utc)
+    start, end = validate_dates(start, end)
 
     usages = crud.get_all_users_usages(
         db=db,
@@ -350,8 +330,7 @@ def get_expired_users(
     - If both are omitted, returns all expired users
     """
 
-    if not validate_dates(expired_after, expired_before):
-        raise HTTPException(status_code=400, detail="Invalid date range or format")
+    expired_after, expired_before = validate_dates(expired_after, expired_before)
 
     expired_users = get_expired_users_list(db, admin, expired_after, expired_before)
     return [u.username for u in expired_users]
@@ -372,8 +351,7 @@ def delete_expired_users(
     - **expired_before** UTC datetime (optional)
     - At least one of expired_after or expired_before must be provided
     """
-    if not validate_dates(expired_after, expired_before, allow_both_none=False):
-        raise HTTPException(status_code=400, detail="Invalid date range or format")
+    expired_after, expired_before = validate_dates(expired_after, expired_before)
     
     expired_users = get_expired_users_list(db, admin, expired_after, expired_before)
     removed_users = [u.username for u in expired_users]

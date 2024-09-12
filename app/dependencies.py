@@ -4,7 +4,7 @@ from app.models.user import UserResponse, UserStatus
 from app.db import Session, crud, get_db
 from config import SUDOERS
 from fastapi import Depends, HTTPException
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from app.utils.jwt import get_subscription_payload
 
 
@@ -36,20 +36,23 @@ def get_dbnode(node_id: int, db: Session = Depends(get_db)):
     return dbnode
 
 
-def validate_dates(start: Optional[Union[str, datetime]], end: Optional[Union[str, datetime]]) -> bool:
+def validate_dates(start: Optional[Union[str, datetime]], end: Optional[Union[str, datetime]]) -> (datetime, datetime):
     """Validate if start and end dates are correct and if end is after start."""
     try:
         if start:
-            start_date = start if isinstance(start, datetime) else datetime.fromisoformat(start)
+            start_date = start if isinstance(start, datetime) else datetime.fromisoformat(start).astimezone(timezone.utc)
         else:
-            start_date = None
+            start_date = datetime.now(timezone.utc) - timedelta(days=30)
         if end:
-            end_date = end if isinstance(end, datetime) else datetime.fromisoformat(end)
+            end_date = end if isinstance(end, datetime) else datetime.fromisoformat(end).astimezone(timezone.utc)
             if start_date and end_date < start_date:
-                return False
-        return True
+                raise HTTPException(status_code=400, detail="Start date must be before end date")
+        else:
+            end_date = datetime.now(timezone.utc)
+
+        return start_date, end_date
     except ValueError:
-        return False
+        raise HTTPException(status_code=400, detail="Invalid date range or format")
 
 
 def get_user_template(template_id: int, db: Session = Depends(get_db)):
@@ -61,8 +64,8 @@ def get_user_template(template_id: int, db: Session = Depends(get_db)):
 
 
 def get_validated_sub(
-    token: str,
-    db: Session = Depends(get_db)
+        token: str,
+        db: Session = Depends(get_db)
 ) -> UserResponse:
     sub = get_subscription_payload(token)
     if not sub:
@@ -79,9 +82,9 @@ def get_validated_sub(
 
 
 def get_validated_user(
-    username: str, 
-    admin: Admin = Depends(Admin.get_current),
-    db: Session = Depends(get_db)
+        username: str,
+        admin: Admin = Depends(Admin.get_current),
+        db: Session = Depends(get_db)
 ) -> UserResponse:
     dbuser = crud.get_user(db, username)
     if not dbuser:
@@ -93,8 +96,8 @@ def get_validated_user(
     return dbuser
 
 
-def get_expired_users_list(db: Session, admin: Admin, expired_after: Optional[datetime] = None, expired_before: Optional[datetime] = None):
-
+def get_expired_users_list(db: Session, admin: Admin, expired_after: Optional[datetime] = None,
+                           expired_before: Optional[datetime] = None):
     expired_before = expired_before or datetime.now(timezone.utc)
     expired_after = expired_after or datetime.min.replace(tzinfo=timezone.utc)
 

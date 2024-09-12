@@ -198,17 +198,7 @@ def get_usage(
     _: Admin = Depends(Admin.check_sudo_admin)
 ):
     """Retrieve usage statistics for nodes within a specified date range."""
-    if not validate_dates(start, end):
-        raise HTTPException(status_code=400, detail="Invalid date range or format")
-
-    if not start:
-        start = datetime.now(timezone.utc) - timedelta(days=30)
-    else:
-        start = datetime.fromisoformat(start).astimezone(timezone.utc)
-    if not end:
-        end = datetime.now(timezone.utc)
-    else:
-        end = datetime.fromisoformat(end).astimezone(timezone.utc)
+    start, end = validate_dates(start, end)
 
     usages = crud.get_nodes_usage(db, start, end)
 
