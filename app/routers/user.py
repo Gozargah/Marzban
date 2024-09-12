@@ -76,7 +76,8 @@ def modify_user(
     modified_user: UserModify,
     bg: BackgroundTasks,
     db: Session = Depends(get_db),
-    dbuser: UsersResponse = Depends(get_validated_user)
+    dbuser: UsersResponse = Depends(get_validated_user),
+    admin: Admin = Depends(Admin.get_current),
 ):
     """
     Modify an existing user
@@ -114,7 +115,7 @@ def modify_user(
         report.user_updated,
         user=user,
         user_admin=dbuser.admin,
-        by=dbuser.admin
+        by=admin
     )
 
     logger.info(f"User \"{user.username}\" modified")
@@ -126,7 +127,7 @@ def modify_user(
             status=user.status,
             user=user,
             user_admin=dbuser.admin,
-            by=dbuser.admin
+            by=admin
         )
         logger.info(
             f"User \"{dbuser.username}\" status changed from {old_status} to {user.status}"
@@ -139,7 +140,8 @@ def modify_user(
 def remove_user(
     bg: BackgroundTasks,
     db: Session = Depends(get_db),
-    dbuser: UserResponse = Depends(get_validated_user)
+    dbuser: UserResponse = Depends(get_validated_user),
+    admin: Admin = Depends(Admin.get_current),
 ):
     """Remove a user"""
     crud.remove_user(db, dbuser)
@@ -149,7 +151,7 @@ def remove_user(
         report.user_deleted,
         username=dbuser.username,
         user_admin=dbuser.admin,
-        by=dbuser.admin
+        by=admin
     )
 
     logger.info(f"User \"{dbuser.username}\" deleted")
@@ -161,7 +163,7 @@ def reset_user_data_usage(
     bg: BackgroundTasks,
     db: Session = Depends(get_db),
     dbuser: UserResponse = Depends(get_validated_user),
-    admin: Admin = Depends(Admin.get_current)
+    admin: Admin = Depends(Admin.get_current),
 ):
     """Reset user data usage"""
     dbuser = crud.reset_user_data_usage(db=db, dbuser=dbuser)
