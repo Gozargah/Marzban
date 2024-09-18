@@ -534,6 +534,12 @@ class V2rayJsonConfig(str):
                          sc_max_concurrent_posts: int = 100,
                          sc_min_posts_interval_ms: int = 30,
                          x_padding_bytes: str = "100-1000",
+                         xmux: dict = {
+                             "maxConcurrency": 0,
+                             "maxConnections": 0,
+                             "cMaxReuseTimes": 0,
+                             "cMaxLifetimeMs": 0
+                         },
                          ):
         config = copy.deepcopy(self.settings.get("splithttpSettings", {}))
 
@@ -552,6 +558,7 @@ class V2rayJsonConfig(str):
         config["scMaxConcurrentPosts"] = sc_max_concurrent_posts
         config["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
         config["xPaddingBytes"] = x_padding_bytes
+        config["xmux"] = xmux
 
         # core will ignore unknown variables
 
@@ -869,6 +876,12 @@ class V2rayJsonConfig(str):
                             sc_max_concurrent_posts: int = 100,
                             sc_min_posts_interval_ms: int = 30,
                             x_padding_bytes: str = "100-1000",
+                            xmux: dict = {
+                                "maxConcurrency": 0,
+                                "maxConnections": 0,
+                                "cMaxReuseTimes": 0,
+                                "cMaxLifetimeMs": 0
+                            },
                             ):
 
         if net == "ws":
@@ -898,6 +911,7 @@ class V2rayJsonConfig(str):
                                                     sc_max_concurrent_posts=sc_max_concurrent_posts,
                                                     sc_min_posts_interval_ms=sc_min_posts_interval_ms,
                                                     x_padding_bytes=x_padding_bytes,
+                                                    xmux=xmux,
                                                     )
         else:
             network_setting = {}
@@ -1006,6 +1020,12 @@ class V2rayJsonConfig(str):
             sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
             sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
             x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
+            xmux=inbound.get("xmux", {
+                             "maxConcurrency": 0,
+                             "maxConnections": 0,
+                             "cMaxReuseTimes": 0,
+                             "cMaxLifetimeMs": 0
+                             }),
         )
 
         mux_json = json.loads(self.mux_template)
