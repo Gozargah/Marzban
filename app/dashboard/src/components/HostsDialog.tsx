@@ -1036,6 +1036,9 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                     <Text fontSize="xs" pr={5}>
                                       rand:10-20,10-20
                                     </Text>
+                                    <Text fontSize="xs" pr={5}>
+                                      rand:10-20,10-20&base64:7nQBAAABAAAAAAAABnQtcmluZwZtc2VkZ2UDbmV0AAABAAE=,10-25
+                                    </Text>
                                     <Text fontSize="xs" pr={5} pt="3">
                                       {t("hostsDialog.noise.info.attention")}
                                     </Text>
