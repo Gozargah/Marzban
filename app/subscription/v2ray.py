@@ -803,38 +803,50 @@ class V2rayJsonConfig(str):
         return outbound
 
     @staticmethod
-    def make_noise_outbound(packet="rand:10-20",  delay="10-20"):
+    def make_fragment_and_noise_outbound(fragment="", noises=""):
         outbound = {
-            "tag": "noise_out",
             "protocol": "freedom",
-            "settings": {
-                "noise": {
-                    "packet": packet,
-                    "delay": delay
-                }
-            }
         }
+        tag = ""
+        settings = {}
 
-        return outbound
-
-    @staticmethod
-    def make_fragment_and_noise_outbound(packets="tlshello", length="100-200", interval="10-20", packet="rand:10-20",  delay="10-20"):
-        outbound = {
-            "tag": "fragment_and_noise_out",
-            "protocol": "freedom",
-            "settings": {
-                "noise": {
-                    "packet": packet,
-                    "delay": delay
-                },
-                "fragment": {
+        if fragment:
+            fragment_settings = {}
+            try:
+                length, interval, packets = fragment.split(',')
+                fragment_settings["fragment"] = {
                     "packets": packets,
                     "length": length,
                     "interval": interval
                 }
-            }
-        }
-
+                settings.update(fragment_settings)
+                tag = "fragment"
+            except ValueError:
+                pass
+        if noises:
+            sn = noises.split("&")
+            noises_settings = []
+            for n in sn:
+                try:
+                    tp, delay = n.split(',')
+                    _type, packet = tp.split(":")
+                    noises_settings.append({
+                        "type": _type,
+                        "packet": packet,
+                        "delay": delay
+                    })
+                except ValueError:
+                    pass
+            settings["noises"] = noises_settings
+            if not tag:
+                tag = "noises"
+            else:
+                tag += "_and_noises"
+        if not tag:
+            return
+        outbound["settings"] = settings
+        tag += "_out"
+        outbound["tag"] = tag
         return outbound
 
     def make_stream_setting(self,
@@ -968,33 +980,10 @@ class V2rayJsonConfig(str):
 
         outbounds = [outbound]
         dialer_proxy = ''
-        if fragment and noise:
-            try:
-                length, interval, packets = fragment.split(',')
-                packet, delay = noise.split(',')
-                fragment_and_noise_outbound = self.make_fragment_and_noise_outbound(
-                    packets, length, interval, packet, delay)
-                outbounds.append(fragment_and_noise_outbound)
-                dialer_proxy = fragment_and_noise_outbound['tag']
-            except ValueError:
-                pass
-        elif fragment:
-            try:
-                length, interval, packets = fragment.split(',')
-                fragment_outbound = self.make_fragment_outbound(
-                    packets, length, interval)
-                outbounds.append(fragment_outbound)
-                dialer_proxy = fragment_outbound['tag']
-            except ValueError:
-                pass
-        elif noise:
-            try:
-                packet, delay = noise.split(',')
-                noise_outbound = self.make_noise_outbound(packet, delay)
-                outbounds.append(noise_outbound)
-                dialer_proxy = noise_outbound['tag']
-            except ValueError:
-                pass
+        extra_outbound = self.make_fragment_and_noise_outbound(fragment, noise)
+        if extra_outbound:
+            dialer_proxy = extra_outbound['tag']
+            outbounds.append(extra_outbound)
 
         alpn = inbound.get('alpn', None)
         outbound["streamSettings"] = self.make_stream_setting(
