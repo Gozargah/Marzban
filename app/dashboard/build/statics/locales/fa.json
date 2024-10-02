@@ -1,0 +1,173 @@
+﻿{
+  "password": "گذرواژه",
+  "login": "ورود",
+  "cancel": "لغو",
+  "apply": "تایید",
+  "delete": "حذف",
+  "reset": "بازنشانی",
+  "createUser": "افزودن کاربر",
+  "username": "نام کاربری",
+  "dateInfo.year": " سال",
+  "dateInfo.month": " ماه",
+  "dateInfo.day": " روز",
+  "dateInfo.hour": " ساعت",
+  "dateInfo.min": " دقیقه",
+  "expires": "پایان در {{time}}",
+  "expired": "{{time}} پیش به پایان رسیده",
+  "dateFormat": "MM/dd/yyyy",
+  "inbound": "ورودی",
+  "login.loginYourAccount": "وارد حساب خود شوید",
+  "login.welcomeBack": "خوش آمدید, لطفا اطلاعات خود را وارد کنید",
+  "login.fieldRequired": "This field is required",
+  "header.hostSettings": "تنظیمات هاست",
+  "header.nodeSettings": "تنظیمات گره‌ها",
+  "header.nodesUsage": "نمودار گره‌ها",
+  "header.donation": "کمک مالی",
+  "header.logout": "خروج",
+  "deleteUser.title": "حذف کاربر",
+  "deleteUser.prompt": "از حذف کاربر <b>{{username}}</b> مطمئن هستید?",
+  "deleteUser.deleteSuccess": "{{username}} با موفقیت حذف شد.",
+  "usersTable.status": "وضعیت",
+  "usersTable.dataUsage": "مصرف داده",
+  "usersTable.noUserMatched": "به‌نظر میرسه کاربری که جستجو کردید، وجود ندارد",
+  "usersTable.noUser": "کاربری افزوده نشده است",
+  "usersTable.copyLink": "کپی لینک اشتراک",
+  "usersTable.copied": "کپی شد",
+  "usersTable.copyConfigs": "تنظیمات کپی",
+  "usersTable.total": "مجموع",
+  "userDialog.dataLimit": "حد مصرف داده",
+  "userDialog.periodicUsageReset": "بازنشانی دوره‌ای مصرف",
+  "userDialog.warningNoProtocol": "لطفا حداقل یک پروتکل انتخاب کنید",
+  "userDialog.note": "توضیحات",
+  "userDialog.expiryDate": "تاریخ پایان",
+  "userDialog.resetUsage": "بازنشانی مصرف",
+  "userDialog.usage": "مصرف",
+  "userDialog.protocols": "پروتکل‌ها",
+  "userDialog.editUserTitle": "ویرایش کاربر",
+  "userDialog.editUser": "ویرایش کاربر",
+  "userDialog.userEdited": "کاربر {{username}} ویرایش شد.",
+  "userDialog.userCreated": "کاربر {{username}} ساخته شد.",
+  "userDialog.userAlreadyExists": "کاربر وجود دارد",
+  "userDialog.vmessDesc": "سریع و امن",
+  "userDialog.vlessDesc": "سبک، سریع و امن",
+  "userDialog.trojanDesc": "سبک، امن و فوق‌العاده سریع",
+  "userDialog.shadowsocksDesc": "سریع و امن، اما کارآمد کمتر از بقیه",
+  "userDialog.resetStrategyNo": "خیر",
+  "userDialog.resetStrategyDaily": "روزانه",
+  "userDialog.resetStrategyWeekly": "هفتگی",
+  "userDialog.resetStrategyMonthly": "ماهانه",
+  "userDialog.resetStrategyAnnually": "سالانه",
+  "userDialog.selectOneProtocol": "لطفا حداقل یک پروتکل انتخاب کنید",
+  "userDialog.optional": "اختیاری",
+  "userDialog.method": "روش",
+  "userDialog.generatedByDefault": "پیش‌فرض ساخته می‌شود",
+  "userDialog.hours": "ساعات",
+  "userDialog.days": "روزها",
+  "userDialog.weeks": "هفته‌ها",
+  "userDialog.months": "ماه‌ها",
+  "userDialog.relative": "نسبی",
+  "userDialog.absolute": "مطلق",
+  "userDialog.custom": "انتخابی",
+  "userDialog.startDate": "تاریخ شروع",
+  "userDialog.endDate": "تاریخ پایان",
+  "userDialog.total": "مجموع: ",
+  "userDialog.onHold": "در انتظار",
+  "userDialog.onHoldExpireDuration": "مدت انقضا",
+  "hostsDialog.title": "با انتخاب این تنظیمات، می‌توانید برای هر ورودی یک آدرس منحصر به فرد انتخاب کنید.",
+  "hostsDialog.desc": "برای ساخت نوشته پویا، از این متغیرها استفاده کنید",
+  "hostsDialog.username": "نام کاربری کاربر",
+  "hostsDialog.dataUsage": "مصرف کنونی کاربر",
+  "hostsDialog.remainingData": "حجم باقی‌مانده کاربر",
+  "hostsDialog.dataLimit": "حد مصرف کاربر",
+  "hostsDialog.remainingDays": "روزهای باقی مانده کاربر",
+  "hostsDialog.expireDate": "تاریخ انقضای کاربر به میلادی",
+  "hostsDialog.jalaliExpireDate": "تاریخ انقضای کاربر به شمسی",
+  "hostsDialog.remainingTime": "زمان باقی مانده کاربر",
+  "hostsDialog.statusEmoji": "وضعیت کاربر در قالب اموجی (✅,⌛️,🪫,❌,🔌)",
+  "hostsDialog.statusText": "وضعیت کاربر",
+  "hostsDialog.proxyProtocol": "پروتکل پروکسی (مانند VMess)",
+  "hostsDialog.proxyMethod": "روش انتقال پروکسی (مانند ws)",
+  "hostsDialog.currentServer": "IP کنونی سرور",
+  "hostsDialog.currentServerv6": "IPv6 کنونی سرور",
+  "hostsDialog.security": "لایه امنیت",
+  "hostsDialog.host": "هاست درخواست",
+  "hostsDialog.port": "پورت",
+  "hostsDialog.sni": "SNI",
+  "hostsDialog.advancedOptions": "تنظیمات پیشرفته",
+  "hostsDialog.addHost": "افزودن هاست",
+  "hostsDialog.savedSuccess": "هاست‌ها با موفقیت ذخیره شدند",
+  "hostsDialog.loading": "درحال بارگزاری...",
+  "hostsDialog.apply": "اعمال",
+  "hostsDialog.port.info": "به طور پیش‌فرض، هاست، از پورت پیش‌فرض ورودی استفاده میکند، در صورتی که این هاست ترافیک را از پورتی، متفاوت از پورت سرور، منتقل می‌کند، می‌توانید آن را تغییر دهید. برای مثال، ممکن از سرور ترافیک را از پورت 8443 به پورت پیش‌فرض سرور ورودی شما منتقل کند.",
+  "hostsDialog.sni.info": "به طور پیش‌فرض، هاست، از SNI پیش‌فرض ورودی استفاده میکند، در صورتی که این هاست یک SNI دیگری دارد، می‌توانید آن را تغییر دهید. برای مثال، ممکن است سرور ترافیک با SSL متفاوت را دریافت و منتقل کند.",
+  "hostsDialog.host.info": "به‌طور پیش‌فرض، اگر هاست درخواستی در پیکربندی *** تنظیم شده باشد، این هاست استفاده می‌شود. اما می‌توانید یک هاست درخواستی متفاوت در اینجا قرار دهید.",
+  "hostsDialog.security.info": "اگر میان‌افزار سرور این هاست، از لایه امنیتی متفاوتی از ورودی استفاده می‌کند، می‌توانید اینجا انتخاب کنید",
+  "hostsDialog.alpn": "ALPN",
+  "hostsDialog.fingerprint": "اثرانگشت",
+  "hostsDialog.host.multiHost": "برای تنظیم چند آدرس، با <badge>,</badge> از هم جدا کنید. هر دفعه آدرسی به صورت تصادفی قرار داده می‌شود.",
+  "hostsDialog.host.wildcard": "از <badge>*</badge> برای ساخت عبارت تصادفی استفاده کنید (برای نام‌های wildcard کار می‌کند)",
+  "hostsDialog.sockopt": "Sockopt",
+  "hostsDialog.muxEnable": "فعالسازی MUX",
+  "hostsDialog.randomUserAgent": "استفاده از User Agent تصادفی",
+  "hostsDialog.allowinsecure": "Allow Insecure",
+  "hostsDialog.fragment": "الگو فرگمنت",
+  "hostsDialog.fragment.info": "length,interval,packet (e.g. 10-100,100-200,tlshello)",
+  "hostsDialog.proxyOutbound": "جیسون پراکسی outbound",
+  "hostsDialog.proxyOutbound.info": "outbound اضافه (تنها در کانفیگ دستی v2ray)",
+  "nodes.title": "با استفاده از Marzban-Node, شما می‌توانید با افزودن گره‌های متفاوت در سرورهای متفاوت، کیفیت اتصال خود را بالاتر ببرید.",
+  "nodes.addNewMarzbanNode": "افزودن گره مرزبان",
+  "nodes.certificate": "گواهی",
+  "nodes.addHostForEveryInbound": "استفاده از این گره به عنوان میزبان تمام ورودی‌ها",
+  "nodes.addNode": "افزودن گره",
+  "nodes.addNodeSuccess": "گره {{name}} با موفقیت افزوده شد",
+  "nodes.apply": "ویرایش گره",
+  "nodes.nodeName": "نام",
+  "nodes.nodeAddress": "آدرس",
+  "nodes.nodePort": "پورت",
+  "nodes.nodeAPIPort": "پورت API",
+  "nodes.editNode": "ویرایش گره",
+  "nodes.reconnect": "اتصال مجدد",
+  "nodes.connection-hint": "برای راه اندازی یک گره جدید، لازم است گواهی زیر را روی گره تنظیم کنید تا یک اتصال امن بین سرور اصلی و گره ایجاد شود.",
+  "nodes.download-certificate": "دانلود گواهی",
+  "nodes.show-certificate": "نمایش دادن گواهی",
+  "nodes.hide-certificate": "مخفی کردن گواهی",
+  "nodes.reconnecting": "درحال اتصال مجدد...",
+  "nodes.usageCoefficient": "ضریب گره",
+  "deleteNode.title": "حذف گره",
+  "deleteNode.prompt": "از حذف گره <b>{{name}}</b> مطمئن هستید؟",
+  "deleteNode.deleteSuccess": "گره {{name}} با موفقیت حذف شد",
+  "active": "فعال",
+  "disabled": "غیر فعال",
+  "users": "کاربران",
+  "activeUsers": "کاربران فعال",
+  "dataUsage": "مصرف داده",
+  "memoryUsage": "مصرف حافظه",
+  "itemsPerPage": "تعداد در صفحه",
+  "previous": "قبلی",
+  "next": "بعدی",
+  "createNewUser": "ساخت کاربر",
+  "search": "جستجو",
+  "resetAllUsage": "بازنشانی کل مصرف",
+  "qrcodeDialog.sublink": "لینک اشتراک",
+  "resetUserUsage.prompt": "از بازنشانی مصرف <b>{{username}}</b> مطئمن هستید؟",
+  "resetUserUsage.title": "بازنشانی مصرف کاربر",
+  "resetUserUsage.success": "مصرف {{username}} با موفقیت بازنشانی شد.",
+  "resetUserUsage.error": "بازنشانی مصرف انجام نشد، دوباره تلاش کنید.",
+  "resetAllUsage.title": "بازنشانی مصرف تمام کاربران",
+  "resetAllUsage.prompt": "این عمل مصرف تمام کاربران را بازنشانی می‌کند. از این بازنشانی مطمئن هستید؟ این عمل قابل بازگشت نیست!",
+  "resetAllUsage.success": "مصرف کل با موفقیت بازنشانی شد.",
+  "resetAllUsage.error": "بازنشانی مصرف انجام نشد، دوباره تلاش کنید.",
+  "core.title": "تنظیمات هسته",
+  "core.socket.connecting": "در حال اتصال...",
+  "core.socket.connected": "متصل",
+  "core.socket.not_connected": "عدم اتصال",
+  "core.socket.closed": "بسته شده",
+  "core.restarting": "درحال اجرا مجدد...",
+  "core.restartCore": "اجرا مجدد هسته",
+  "core.save": "ذخیره",
+  "core.logs": "گزارش",
+  "core.configuration": "پیکربندی",
+  "core.generalErrorMessage": "مشکلی پیش آمده، لطفا پیکربندی را بررسی کنید",
+  "core.successMessage": "تنظیمات هسته با موفقیت ثبت شد",
+  "on_hold": "در انتظار اتصال"
+}
