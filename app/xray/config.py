@@ -233,7 +233,7 @@ class XRayConfig(dict):
                     except:
                         settings['spx'] = ""
 
-                if net == 'tcp':
+                if net in ('tcp', 'raw'):
                     header = net_settings.get('header', {})
                     request = header.get('request', {})
                     path = request.get('path')
@@ -398,10 +398,10 @@ class XRayConfig(dict):
 
                         # XTLS currently only supports transmission methods of TCP and mKCP
                         if client.get('flow') and (
-                                inbound.get('network', 'tcp') not in ('tcp', 'kcp')
+                                inbound.get('network', 'tcp') not in ('tcp', 'raw', 'kcp')
                                 or
                                 (
-                                    inbound.get('network', 'tcp') in ('tcp', 'kcp')
+                                    inbound.get('network', 'tcp') in ('tcp', 'raw', 'kcp')
                                     and
                                     inbound.get('tls') not in ('tls', 'reality')
                                 )

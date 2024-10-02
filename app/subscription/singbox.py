@@ -1,13 +1,17 @@
-import json
 import copy
+import json
 from random import choice
 
 from jinja2.exceptions import TemplateNotFound
 
 from app.subscription.funcs import get_grpc_gun
 from app.templates import render_template
-from config import (MUX_TEMPLATE, SINGBOX_SETTINGS_TEMPLATE,
-                    SINGBOX_SUBSCRIPTION_TEMPLATE, USER_AGENT_TEMPLATE)
+from config import (
+    MUX_TEMPLATE,
+    SINGBOX_SETTINGS_TEMPLATE,
+    SINGBOX_SUBSCRIPTION_TEMPLATE,
+    USER_AGENT_TEMPLATE
+)
 
 
 class SingBoxConfiguration(str):
@@ -232,14 +236,14 @@ class SingBoxConfiguration(str):
             "server_port": port,
         }
 
-        if net in ('tcp', 'kcp') and headers != 'http' and (tls or tls != 'none'):
+        if net in ('tcp', 'raw', 'kcp') and headers != 'http' and (tls or tls != 'none'):
             if flow:
                 config["flow"] = flow
 
         if net == 'h2':
             net = 'http'
             alpn = 'h2'
-        elif net in ['tcp'] and headers == 'http':
+        elif net in ['tcp', 'raw'] and headers == 'http':
             net = 'http'
 
         if net in ['http', 'ws', 'quic', 'grpc', 'httpupgrade']:

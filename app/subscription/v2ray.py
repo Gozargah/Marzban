@@ -261,7 +261,7 @@ class V2rayShareLink(str):
             "type": net,
             "headerType": type
         }
-        if flow and (tls in ('tls', 'reality') and net in ('tcp', 'kcp') and type != 'http'):
+        if flow and (tls in ('tls', 'reality') and net in ('tcp', 'raw', 'kcp') and type != 'http'):
             payload['flow'] = flow
 
         if net == 'grpc':
@@ -353,7 +353,7 @@ class V2rayShareLink(str):
             "type": net,
             "headerType": type
         }
-        if flow and (tls in ('tls', 'reality') and net in ('tcp', 'kcp') and type != 'http'):
+        if flow and (tls in ('tls', 'reality') and net in ('tcp', 'raw', 'kcp') and type != 'http'):
             payload['flow'] = flow
 
         if net == 'grpc':
@@ -604,11 +604,11 @@ class V2rayJsonConfig(str):
                 }
             }))
         else:
-            config = copy.deepcopy(self.settings.get("tcpSettings", {
+            config = copy.deepcopy(self.settings.get("tcpSettings", self.settings.get("rawSettings", {
                 "header": {
                     "type": "none"
                 }
-            }))
+            })))
         if "header" not in config:
             config["header"] = {}
 
@@ -896,7 +896,7 @@ class V2rayJsonConfig(str):
         elif net == "kcp":
             network_setting = self.kcp_config(
                 seed=path, host=host, header=headers)
-        elif net == "tcp" and tls != "reality":
+        elif net in ("tcp", "raw") and tls != "reality":
             network_setting = self.tcp_config(
                 headers=headers, path=path, host=host, random_user_agent=random_user_agent)
         elif net == "quic":
@@ -971,7 +971,7 @@ class V2rayJsonConfig(str):
                                                      id=settings['id'])
 
         elif inbound['protocol'] == 'vless':
-            if net in ('tcp', 'kcp') and headers != 'http' and tls in ('tls', 'reality'):
+            if net in ('tcp', 'raw', 'kcp') and headers != 'http' and tls in ('tls', 'reality'):
                 flow = settings.get('flow', '')
             else:
                 flow = None
