@@ -294,12 +294,7 @@ class XRayConfig(dict):
                                                                         net_settings.get('maxConcurrentUploads', 100))
                     settings['scMinPostsIntervalMs'] = net_settings.get('scMinPostsIntervalMs', 30)
                     settings['xPaddingBytes'] = net_settings.get('xPaddingBytes', "100-1000")
-                    settings['xmux'] = net_settings.get('xmux', {
-                        "maxConcurrency": 0,
-                        "maxConnections": 0,
-                        "cMaxReuseTimes": 0,
-                        "cMaxLifetimeMs": 0
-                    })
+                    settings['xmux'] = net_settings.get('xmux', {})
 
                 elif net == 'kcp':
                     header = net_settings.get('header', {})
