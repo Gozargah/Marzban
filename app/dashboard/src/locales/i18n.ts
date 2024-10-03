@@ -11,41 +11,44 @@ import { registerLocale } from "react-datepicker";
 import { initReactI18next } from "react-i18next";
 
 declare module "i18next" {
-  interface CustomTypeOptions {
-    returnNull: false;
-  }
+    interface CustomTypeOptions {
+        returnNull: false;
+    }
 }
 
 i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .use(HttpApi)
-  .init(
-    {
-      debug: import.meta.env.NODE_ENV === "development",
-      returnNull: false,
-      fallbackLng: "en",
-      interpolation: {
-        escapeValue: false,
-      },
-      react: {
-        useSuspense: false,
-      },
-      load: "languageOnly",
-      detection: {
-        caches: ["localStorage", "sessionStorage", "cookie"],
-      },
-      backend: {
-        loadPath: joinPaths([import.meta.env.BASE_URL, `locales/{{lng}}.json`]),
-      },
-    },
-    function (err, t) {
-      dayjs.locale(i18n.language);
-    }
-  );
+    .use(LanguageDetector)
+    .use(initReactI18next)
+    .use(HttpApi)
+    .init(
+        {
+            debug: import.meta.env.NODE_ENV === "development",
+            returnNull: false,
+            fallbackLng: "en",
+            interpolation: {
+                escapeValue: false,
+            },
+            react: {
+                useSuspense: false,
+            },
+            load: "languageOnly",
+            detection: {
+                caches: ["localStorage", "sessionStorage", "cookie"],
+            },
+            backend: {
+                loadPath: joinPaths([
+                    import.meta.env.BASE_URL,
+                    `statics/locales/{{lng}}.json`,
+                ]),
+            },
+        },
+        function (err, t) {
+            dayjs.locale(i18n.language);
+        }
+    );
 
 i18n.on("languageChanged", (lng) => {
-  dayjs.locale(lng);
+    dayjs.locale(lng);
 });
 
 // DataPicker
