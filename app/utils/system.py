@@ -1,3 +1,4 @@
+import ipaddress
 import math
 import secrets
 import socket
@@ -6,7 +7,6 @@ from dataclasses import dataclass
 
 import psutil
 import requests
-import ipaddress
 
 from app import scheduler
 
@@ -166,7 +166,7 @@ def get_public_ipv6():
 
 
 def readable_size(size_bytes):
-    if size_bytes == 0:
+    if size_bytes <= 0:
         return "0 B"
     size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
     i = int(math.floor(math.log(size_bytes, 1024)))
