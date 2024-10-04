@@ -193,22 +193,12 @@ def remove_node(
 @router.get("/nodes/usage", response_model=NodesUsageResponse)
 def get_usage(
     db: Session = Depends(get_db),
-    start: datetime = Query(None, example="2024-01-01T00:00:00"),
-    end: datetime = Query(None, example="2024-01-31T23:59:59"),
+    start: str = "",
+    end: str = "",
     _: Admin = Depends(Admin.check_sudo_admin)
 ):
     """Retrieve usage statistics for nodes within a specified date range."""
-    if not validate_dates(start, end):
-        raise HTTPException(status_code=400, detail="Invalid date range or format")
-
-    if not start:
-        start = datetime.now(timezone.utc) - timedelta(days=30)
-    else:
-        start = datetime.fromisoformat(start).astimezone(timezone.utc)
-    if not end:
-        end = datetime.now(timezone.utc)
-    else:
-        end = datetime.fromisoformat(end).astimezone(timezone.utc)
+    start, end = validate_dates(start, end)
 
     usages = crud.get_nodes_usage(db, start, end)
 
