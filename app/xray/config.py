@@ -16,6 +16,13 @@ from app.models.user import UserStatus
 from app.utils.crypto import get_cert_SANs
 from config import DEBUG, XRAY_EXCLUDE_INBOUND_TAGS, XRAY_FALLBACKS_INBOUND_TAG
 
+def merge_dicts(a, b): # B will override A dictionary key and values
+    for key, value in b.items():
+        if isinstance(value, dict) and key in a and isinstance(a[key], dict):
+            merge_dicts(a[key], value) # Recursively merge nested dictionaries
+        else:
+            a[key] = value
+    return a
 
 class XRayConfig(dict):
     def __init__(self,
@@ -69,7 +76,7 @@ class XRayConfig(dict):
             "tag": "API"
         }
         self["stats"] = {}
-        self["policy"] = {
+        forced_policies = {
             "levels": {
                 "0": {
                     "statsUserUplink": True,
@@ -83,6 +90,10 @@ class XRayConfig(dict):
                 "statsOutboundUplink": True
             }
         }
+        if self.get("policy"):
+            self["policy"] = merge_dicts(self.get("policy"), forced_policies)
+        else:
+            self["policy"] = forced_policies
         inbound = {
             "listen": self.api_host,
             "port": self.api_port,
