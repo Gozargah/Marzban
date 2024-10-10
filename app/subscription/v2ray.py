@@ -205,8 +205,14 @@ class V2rayShareLink(str):
 
         elif net == "splithttp":
             # before 1.8.23
-            payload["maxUploadSize"] = sc_max_each_post_bytes
-            payload["maxConcurrentUploads"] = sc_max_concurrent_posts
+            if isinstance(sc_max_each_post_bytes, int):
+                payload["maxUploadSize"] = sc_max_each_post_bytes
+            else:
+                payload["maxUploadSize"] = sc_max_each_post_bytes.split("-")[1]
+            if isinstance(sc_max_concurrent_posts, int):
+                payload["maxConcurrentUploads"] = sc_max_concurrent_posts
+            else:
+                payload["maxConcurrentUploads"] = sc_max_concurrent_posts.split("-")[1]
             # 1.8.23 and later
             payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
             payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
@@ -269,8 +275,14 @@ class V2rayShareLink(str):
             payload["path"] = path
             payload["host"] = host
             # before 1.8.23
-            payload["maxUploadSize"] = sc_max_each_post_bytes
-            payload["maxConcurrentUploads"] = sc_max_concurrent_posts
+            if isinstance(sc_max_each_post_bytes, int):
+                payload["maxUploadSize"] = sc_max_each_post_bytes
+            else:
+                payload["maxUploadSize"] = sc_max_each_post_bytes.split("-")[1]
+            if isinstance(sc_max_concurrent_posts, int):
+                payload["maxConcurrentUploads"] = sc_max_concurrent_posts
+            else:
+                payload["maxConcurrentUploads"] = sc_max_concurrent_posts.split("-")[1]
             # 1.8.23 and later
             payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
             payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
@@ -355,8 +367,14 @@ class V2rayShareLink(str):
             payload["path"] = path
             payload["host"] = host
             # before 1.8.23
-            payload["maxUploadSize"] = sc_max_each_post_bytes
-            payload["maxConcurrentUploads"] = sc_max_concurrent_posts
+            if isinstance(sc_max_each_post_bytes, int):
+                payload["maxUploadSize"] = sc_max_each_post_bytes
+            else:
+                payload["maxUploadSize"] = sc_max_each_post_bytes.split("-")[1]
+            if isinstance(sc_max_concurrent_posts, int):
+                payload["maxConcurrentUploads"] = sc_max_concurrent_posts
+            else:
+                payload["maxConcurrentUploads"] = sc_max_concurrent_posts.split("-")[1]
             # 1.8.23 and later
             payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
             payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
@@ -530,15 +548,17 @@ class V2rayJsonConfig(str):
             config["headers"]["User-Agent"] = choice(
                 self.user_agent_list)
         # before 1.8.23
-        config["maxUploadSize"] = sc_max_each_post_bytes
-        config["maxConcurrentUploads"] = sc_max_concurrent_posts
+        config.setdefault('maxUploadSize', sc_max_each_post_bytes)
+        config.setdefault('maxConcurrentUploads', sc_max_concurrent_posts)
+        if isinstance(config["maxUploadSize"], str):
+            payload["maxUploadSize"] = config["maxUploadSize"].split("-")[1]
+        if isinstance(config["maxConcurrentUploads"], str):
+            payload["maxConcurrentUploads"] = config["maxConcurrentUploads"].split("-")[1]
         # 1.8.23 and later
-        config["scMaxEachPostBytes"] = sc_max_each_post_bytes
-        config["scMaxConcurrentPosts"] = sc_max_concurrent_posts
-        config["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
-
+        config.setdefault('scMaxEachPostBytes', sc_max_each_post_bytes)
+        config.setdefault('scMaxConcurrentPosts', sc_max_concurrent_posts)
+        config.setdefault('scMinPostsIntervalMs', sc_min_posts_interval_ms)
         # core will ignore unknown variables
-
         return config
 
     def grpc_config(self, path=None, host=None, multiMode=False, random_user_agent=None):
