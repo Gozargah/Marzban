@@ -168,7 +168,7 @@ class ClashConfiguration(object):
 
         if type == 'shadowsocks':
             type = 'ss'
-        if network == 'tcp' and headers == 'http':
+        if network in ('tcp', 'raw') and headers == 'http':
             network = 'http'
         if network == 'httpupgrade':
             network = 'ws'
@@ -233,7 +233,7 @@ class ClashConfiguration(object):
         elif network == 'h2':
             net_opts = self.h2_config(path=path, host=host)
 
-        elif network == 'tcp':
+        elif network in ('tcp', 'raw'):
             net_opts = self.tcp_config(path=path, host=host)
 
         else:
@@ -369,7 +369,7 @@ class ClashMetaConfiguration(ClashConfiguration):
         elif inbound['protocol'] == 'vless':
             node['uuid'] = settings['id']
 
-            if inbound['network'] in ('tcp', 'kcp') and inbound['header_type'] != 'http' and inbound['tls'] != 'none':
+            if inbound['network'] in ('tcp', 'raw', 'kcp') and inbound['header_type'] != 'http' and inbound['tls'] != 'none':
                 node['flow'] = settings.get('flow', '')
 
         elif inbound['protocol'] == 'trojan':

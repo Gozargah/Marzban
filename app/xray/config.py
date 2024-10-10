@@ -233,7 +233,7 @@ class XRayConfig(dict):
                     except:
                         settings['spx'] = ""
 
-                if net == 'tcp':
+                if net in ('tcp', 'raw'):
                     header = net_settings.get('header', {})
                     request = header.get('request', {})
                     path = request.get('path')
@@ -293,6 +293,8 @@ class XRayConfig(dict):
                     settings['scMaxConcurrentPosts'] = net_settings.get('scMaxConcurrentPosts',
                                                                         net_settings.get('maxConcurrentUploads', 100))
                     settings['scMinPostsIntervalMs'] = net_settings.get('scMinPostsIntervalMs', 30)
+                    settings['xPaddingBytes'] = net_settings.get('xPaddingBytes', "100-1000")
+                    settings['xmux'] = net_settings.get('xmux', {})
 
                 elif net == 'kcp':
                     header = net_settings.get('header', {})
@@ -391,12 +393,12 @@ class XRayConfig(dict):
 
                         # XTLS currently only supports transmission methods of TCP and mKCP
                         if client.get('flow') and (
-                                inbound.get('network', 'tcp') not in ('tcp', 'kcp')
+                                inbound.get('network', 'tcp') not in ('tcp', 'raw', 'kcp')
                                 or
                                 (
-                                        inbound.get('network', 'tcp') in ('tcp', 'kcp')
-                                        and
-                                        inbound.get('tls') not in ('tls', 'reality')
+                                    inbound.get('network', 'tcp') in ('tcp', 'raw', 'kcp')
+                                    and
+                                    inbound.get('tls') not in ('tls', 'reality')
                                 )
                                 or
                                 inbound.get('header_type') == 'http'

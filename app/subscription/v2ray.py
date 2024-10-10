@@ -1,6 +1,6 @@
 import base64
-import json
 import copy
+import json
 import urllib.parse as urlparse
 from random import choice
 from typing import Union
@@ -11,9 +11,14 @@ from jinja2.exceptions import TemplateNotFound
 
 from app.subscription.funcs import get_grpc_gun, get_grpc_multi
 from app.templates import render_template
-from config import (EXTERNAL_CONFIG, GRPC_USER_AGENT_TEMPLATE, MUX_TEMPLATE,
-                    USER_AGENT_TEMPLATE, V2RAY_SETTINGS_TEMPLATE,
-                    V2RAY_SUBSCRIPTION_TEMPLATE)
+from config import (
+    EXTERNAL_CONFIG,
+    GRPC_USER_AGENT_TEMPLATE,
+    MUX_TEMPLATE,
+    USER_AGENT_TEMPLATE,
+    V2RAY_SETTINGS_TEMPLATE,
+    V2RAY_SUBSCRIPTION_TEMPLATE
+)
 
 
 class V2rayShareLink(str):
@@ -69,6 +74,7 @@ class V2rayShareLink(str):
                 sc_max_each_post_bytes=inbound.get('scMaxEachPostBytes', 1000000),
                 sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
                 sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
+                x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
             )
 
         elif inbound["protocol"] == "vless":
@@ -95,6 +101,7 @@ class V2rayShareLink(str):
                 sc_max_each_post_bytes=inbound.get('scMaxEachPostBytes', 1000000),
                 sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
                 sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
+                x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
             )
 
         elif inbound["protocol"] == "trojan":
@@ -121,6 +128,7 @@ class V2rayShareLink(str):
                 sc_max_each_post_bytes=inbound.get('scMaxEachPostBytes', 1000000),
                 sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
                 sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
+                x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
             )
 
         elif inbound["protocol"] == "shadowsocks":
@@ -160,6 +168,7 @@ class V2rayShareLink(str):
             sc_max_each_post_bytes: int = 1000000,
             sc_max_concurrent_posts: int = 100,
             sc_min_posts_interval_ms: int = 30,
+            x_padding_bytes: str = "100-1000",
     ):
         payload = {
             "add": address,
@@ -211,12 +220,13 @@ class V2rayShareLink(str):
             payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
             payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
+            payload["xPaddingBytes"] = x_padding_bytes
 
         return (
-                "vmess://"
-                + base64.b64encode(
-            json.dumps(payload, sort_keys=True).encode("utf-8")
-        ).decode()
+            "vmess://"
+            + base64.b64encode(
+                json.dumps(payload, sort_keys=True).encode("utf-8")
+            ).decode()
         )
 
     @classmethod
@@ -243,6 +253,7 @@ class V2rayShareLink(str):
               sc_max_each_post_bytes: int = 1000000,
               sc_max_concurrent_posts: int = 100,
               sc_min_posts_interval_ms: int = 30,
+              x_padding_bytes: str = "100-1000",
               ):
 
         payload = {
@@ -250,7 +261,7 @@ class V2rayShareLink(str):
             "type": net,
             "headerType": type
         }
-        if flow and (tls in ('tls', 'reality') and net in ('tcp', 'kcp') and type != 'http'):
+        if flow and (tls in ('tls', 'reality') and net in ('tcp', 'raw', 'kcp') and type != 'http'):
             payload['flow'] = flow
 
         if net == 'grpc':
@@ -275,6 +286,7 @@ class V2rayShareLink(str):
             payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
             payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
+            payload["xPaddingBytes"] = x_padding_bytes
 
         elif net == 'kcp':
             payload['seed'] = path
@@ -303,10 +315,10 @@ class V2rayShareLink(str):
                 payload["spx"] = spx
 
         return (
-                "vless://"
-                + f"{id}@{address}:{port}?"
-                + urlparse.urlencode(payload)
-                + f"#{(urlparse.quote(remark))}"
+            "vless://"
+            + f"{id}@{address}:{port}?"
+            + urlparse.urlencode(payload)
+            + f"#{(urlparse.quote(remark))}"
         )
 
     @classmethod
@@ -333,6 +345,7 @@ class V2rayShareLink(str):
                sc_max_each_post_bytes: int = 1000000,
                sc_max_concurrent_posts: int = 100,
                sc_min_posts_interval_ms: int = 30,
+               x_padding_bytes: str = "100-1000",
                ):
 
         payload = {
@@ -340,7 +353,7 @@ class V2rayShareLink(str):
             "type": net,
             "headerType": type
         }
-        if flow and (tls in ('tls', 'reality') and net in ('tcp', 'kcp') and type != 'http'):
+        if flow and (tls in ('tls', 'reality') and net in ('tcp', 'raw', 'kcp') and type != 'http'):
             payload['flow'] = flow
 
         if net == 'grpc':
@@ -361,6 +374,7 @@ class V2rayShareLink(str):
             payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
             payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
+            payload["xPaddingBytes"] = x_padding_bytes
 
         elif net == 'quic':
             payload['key'] = path
@@ -392,10 +406,10 @@ class V2rayShareLink(str):
                 payload["spx"] = spx
 
         return (
-                "trojan://"
-                + f"{urlparse.quote(password, safe=':')}@{address}:{port}?"
-                + urlparse.urlencode(payload)
-                + f"#{urlparse.quote(remark)}"
+            "trojan://"
+            + f"{urlparse.quote(password, safe=':')}@{address}:{port}?"
+            + urlparse.urlencode(payload)
+            + f"#{urlparse.quote(remark)}"
         )
 
     @classmethod
@@ -403,9 +417,9 @@ class V2rayShareLink(str):
             cls, remark: str, address: str, port: int, password: str, method: str
     ):
         return (
-                "ss://"
-                + base64.b64encode(f"{method}:{password}".encode()).decode()
-                + f"@{address}:{port}#{urlparse.quote(remark)}"
+            "ss://"
+            + base64.b64encode(f"{method}:{password}".encode()).decode()
+            + f"@{address}:{port}#{urlparse.quote(remark)}"
         )
 
 
@@ -519,6 +533,13 @@ class V2rayJsonConfig(str):
                          sc_max_each_post_bytes: int = 1000000,
                          sc_max_concurrent_posts: int = 100,
                          sc_min_posts_interval_ms: int = 30,
+                         x_padding_bytes: str = "100-1000",
+                         xmux: dict = {
+                             "maxConcurrency": 0,
+                             "maxConnections": 0,
+                             "cMaxReuseTimes": 0,
+                             "cMaxLifetimeMs": 0
+                         },
                          ):
         config = copy.deepcopy(self.settings.get("splithttpSettings", {}))
 
@@ -536,6 +557,9 @@ class V2rayJsonConfig(str):
         config["scMaxEachPostBytes"] = sc_max_each_post_bytes
         config["scMaxConcurrentPosts"] = sc_max_concurrent_posts
         config["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
+        config["xPaddingBytes"] = x_padding_bytes
+        if xmux:
+            config["xmux"] = xmux
 
         # core will ignore unknown variables
 
@@ -581,11 +605,11 @@ class V2rayJsonConfig(str):
                 }
             }))
         else:
-            config = copy.deepcopy(self.settings.get("tcpSettings", {
+            config = copy.deepcopy(self.settings.get("tcpSettings", self.settings.get("rawSettings", {
                 "header": {
                     "type": "none"
                 }
-            }))
+            })))
         if "header" not in config:
             config["header"] = {}
 
@@ -786,6 +810,53 @@ class V2rayJsonConfig(str):
 
         return outbound
 
+    @staticmethod
+    def make_fragment_and_noise_outbound(fragment="", noises=""):
+        outbound = {
+            "protocol": "freedom",
+        }
+        tag = ""
+        settings = {}
+
+        if fragment:
+            fragment_settings = {}
+            try:
+                length, interval, packets = fragment.split(',')
+                fragment_settings["fragment"] = {
+                    "packets": packets,
+                    "length": length,
+                    "interval": interval
+                }
+                settings.update(fragment_settings)
+                tag = "fragment"
+            except ValueError:
+                pass
+        if noises:
+            sn = noises.split("&")
+            noises_settings = []
+            for n in sn:
+                try:
+                    tp, delay = n.split(',')
+                    _type, packet = tp.split(":")
+                    noises_settings.append({
+                        "type": _type,
+                        "packet": packet,
+                        "delay": delay
+                    })
+                except ValueError:
+                    pass
+            settings["noises"] = noises_settings
+            if not tag:
+                tag = "noises"
+            else:
+                tag += "_and_noises"
+        if not tag:
+            return
+        outbound["settings"] = settings
+        tag += "_out"
+        outbound["tag"] = tag
+        return outbound
+
     def make_stream_setting(self,
                             net='',
                             path='',
@@ -805,6 +876,8 @@ class V2rayJsonConfig(str):
                             sc_max_each_post_bytes: int = 1000000,
                             sc_max_concurrent_posts: int = 100,
                             sc_min_posts_interval_ms: int = 30,
+                            x_padding_bytes: str = "100-1000",
+                            xmux: dict = {},
                             ):
 
         if net == "ws":
@@ -819,7 +892,7 @@ class V2rayJsonConfig(str):
         elif net == "kcp":
             network_setting = self.kcp_config(
                 seed=path, host=host, header=headers)
-        elif net == "tcp" and tls != "reality":
+        elif net in ("tcp", "raw") and tls != "reality":
             network_setting = self.tcp_config(
                 headers=headers, path=path, host=host, random_user_agent=random_user_agent)
         elif net == "quic":
@@ -832,7 +905,9 @@ class V2rayJsonConfig(str):
             network_setting = self.splithttp_config(path=path, host=host, random_user_agent=random_user_agent,
                                                     sc_max_each_post_bytes=sc_max_each_post_bytes,
                                                     sc_max_concurrent_posts=sc_max_concurrent_posts,
-                                                    sc_min_posts_interval_ms=sc_min_posts_interval_ms
+                                                    sc_min_posts_interval_ms=sc_min_posts_interval_ms,
+                                                    x_padding_bytes=x_padding_bytes,
+                                                    xmux=xmux,
                                                     )
         else:
             network_setting = {}
@@ -871,6 +946,7 @@ class V2rayJsonConfig(str):
         tls = (inbound['tls'])
         headers = inbound['header_type']
         fragment = inbound['fragment_setting']
+        noise = inbound['noise_setting']
         path = inbound["path"]
         multi_mode = inbound.get("multiMode", False)
 
@@ -891,7 +967,7 @@ class V2rayJsonConfig(str):
                                                      id=settings['id'])
 
         elif inbound['protocol'] == 'vless':
-            if net in ('tcp', 'kcp') and headers != 'http' and tls in ('tls', 'reality'):
+            if net in ('tcp', 'raw', 'kcp') and headers != 'http' and tls in ('tls', 'reality'):
                 flow = settings.get('flow', '')
             else:
                 flow = None
@@ -914,16 +990,10 @@ class V2rayJsonConfig(str):
 
         outbounds = [outbound]
         dialer_proxy = ''
-
-        if fragment:
-            try:
-                length, interval, packets = fragment.split(',')
-                fragment_outbound = self.make_fragment_outbound(
-                    packets, length, interval)
-                outbounds.append(fragment_outbound)
-                dialer_proxy = fragment_outbound['tag']
-            except ValueError:
-                pass
+        extra_outbound = self.make_fragment_and_noise_outbound(fragment, noise)
+        if extra_outbound:
+            dialer_proxy = extra_outbound['tag']
+            outbounds.append(extra_outbound)
 
         alpn = inbound.get('alpn', None)
         outbound["streamSettings"] = self.make_stream_setting(
@@ -945,6 +1015,8 @@ class V2rayJsonConfig(str):
             sc_max_each_post_bytes=inbound.get('scMaxEachPostBytes', 1000000),
             sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
             sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
+            x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
+            xmux=inbound.get("xmux", {}),
         )
 
         mux_json = json.loads(self.mux_template)
