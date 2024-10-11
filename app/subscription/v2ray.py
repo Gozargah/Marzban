@@ -223,10 +223,10 @@ class V2rayShareLink(str):
             payload["xPaddingBytes"] = x_padding_bytes
 
         return (
-            "vmess://"
-            + base64.b64encode(
-                json.dumps(payload, sort_keys=True).encode("utf-8")
-            ).decode()
+                "vmess://"
+                + base64.b64encode(
+            json.dumps(payload, sort_keys=True).encode("utf-8")
+        ).decode()
         )
 
     @classmethod
@@ -315,10 +315,10 @@ class V2rayShareLink(str):
                 payload["spx"] = spx
 
         return (
-            "vless://"
-            + f"{id}@{address}:{port}?"
-            + urlparse.urlencode(payload)
-            + f"#{(urlparse.quote(remark))}"
+                "vless://"
+                + f"{id}@{address}:{port}?"
+                + urlparse.urlencode(payload)
+                + f"#{(urlparse.quote(remark))}"
         )
 
     @classmethod
@@ -406,10 +406,10 @@ class V2rayShareLink(str):
                 payload["spx"] = spx
 
         return (
-            "trojan://"
-            + f"{urlparse.quote(password, safe=':')}@{address}:{port}?"
-            + urlparse.urlencode(payload)
-            + f"#{urlparse.quote(remark)}"
+                "trojan://"
+                + f"{urlparse.quote(password, safe=':')}@{address}:{port}?"
+                + urlparse.urlencode(payload)
+                + f"#{urlparse.quote(remark)}"
         )
 
     @classmethod
@@ -417,9 +417,9 @@ class V2rayShareLink(str):
             cls, remark: str, address: str, port: int, password: str, method: str
     ):
         return (
-            "ss://"
-            + base64.b64encode(f"{method}:{password}".encode()).decode()
-            + f"@{address}:{port}#{urlparse.quote(remark)}"
+                "ss://"
+                + base64.b64encode(f"{method}:{password}".encode()).decode()
+                + f"@{address}:{port}#{urlparse.quote(remark)}"
         )
 
 
@@ -462,7 +462,7 @@ class V2rayJsonConfig(str):
         return json.dumps(self.config, indent=4)
 
     @staticmethod
-    def tls_config(sni=None, fp=None, alpn=None, ais=None):
+    def tls_config(sni=None, fp=None, alpn=None, ais: bool = False) -> dict:
 
         tlsSettings = {}
         if sni is not None:
@@ -481,7 +481,7 @@ class V2rayJsonConfig(str):
         return tlsSettings
 
     @staticmethod
-    def reality_config(sni=None, fp=None, pbk=None, sid=None, spx=None):
+    def reality_config(sni=None, fp=None, pbk=None, sid=None, spx=None) -> dict:
 
         realitySettings = {}
         if sni is not None:
@@ -500,7 +500,7 @@ class V2rayJsonConfig(str):
 
         return realitySettings
 
-    def ws_config(self, path=None, host=None, random_user_agent=None):
+    def ws_config(self, path: str = "", host: str = "", random_user_agent: bool = False) -> dict:
         wsSettings = copy.deepcopy(self.settings.get("wsSettings", {}))
 
         if "headers" not in wsSettings:
@@ -514,7 +514,7 @@ class V2rayJsonConfig(str):
 
         return wsSettings
 
-    def httpupgrade_config(self, path=None, host=None, random_user_agent=None):
+    def httpupgrade_config(self, path: str = "", host: str = "", random_user_agent: bool = False) -> dict:
         httpupgradeSettings = copy.deepcopy(self.settings.get("httpupgradeSettings", {}))
 
         if "headers" not in httpupgradeSettings:
@@ -529,18 +529,13 @@ class V2rayJsonConfig(str):
 
         return httpupgradeSettings
 
-    def splithttp_config(self, path=None, host=None, random_user_agent=None,
+    def splithttp_config(self, path: str = "", host: str = "", random_user_agent: bool = False,
                          sc_max_each_post_bytes: int = 1000000,
                          sc_max_concurrent_posts: int = 100,
                          sc_min_posts_interval_ms: int = 30,
                          x_padding_bytes: str = "100-1000",
-                         xmux: dict = {
-                             "maxConcurrency": 0,
-                             "maxConnections": 0,
-                             "cMaxReuseTimes": 0,
-                             "cMaxLifetimeMs": 0
-                         },
-                         ):
+                         xmux: dict = {},
+                         ) -> dict:
         config = copy.deepcopy(self.settings.get("splithttpSettings", {}))
 
         if path:
@@ -565,7 +560,8 @@ class V2rayJsonConfig(str):
 
         return config
 
-    def grpc_config(self, path=None, host=None, multiMode=False, random_user_agent=None):
+    def grpc_config(self, path: str = "", host: str = "", multiMode: bool = False,
+                    random_user_agent: bool = False) -> dict:
         config = copy.deepcopy(self.settings.get("grpcSettings", {
             "idle_timeout": 60,
             "health_check_timeout": 20,
@@ -585,7 +581,7 @@ class V2rayJsonConfig(str):
 
         return config
 
-    def tcp_config(self, headers="none", path=None, host=None, random_user_agent=None):
+    def tcp_config(self, headers="none", path: str = "", host: str = "", random_user_agent: bool = False) -> dict:
         if headers == "http":
             config = copy.deepcopy(self.settings.get("tcphttpSettings", {
                 "header": {
@@ -636,7 +632,7 @@ class V2rayJsonConfig(str):
 
         return config
 
-    def http_config(self, net="http", path=None, host=None, random_user_agent=None):
+    def http_config(self, net="http", path: str = "", host: str = "", random_user_agent: bool = False) -> dict:
         if net == "h2":
             config = copy.deepcopy(self.settings.get("h2Settings", {
                 "header": {}
@@ -648,10 +644,7 @@ class V2rayJsonConfig(str):
         if "header" not in config:
             config["header"] = {}
 
-        if path:
-            config["path"] = path
-        else:
-            config["path"] = ""
+        config["path"] = path
         if host:
             config["host"] = [host]
         else:
@@ -662,7 +655,7 @@ class V2rayJsonConfig(str):
 
         return config
 
-    def quic_config(self, path=None, host=None, header=None):
+    def quic_config(self, path=None, host=None, header=None) -> dict:
         quicSettings = copy.deepcopy(self.settings.get("quicSettings", {
             "security": "none",
             "header": {
@@ -682,7 +675,7 @@ class V2rayJsonConfig(str):
 
         return quicSettings
 
-    def kcp_config(self, seed=None, host=None, header=None):
+    def kcp_config(self, seed=None, host=None, header=None) -> dict:
         kcpSettings = copy.deepcopy(self.settings.get("kcpSettings", {
             "header": {
                 "type": "none"
@@ -710,7 +703,7 @@ class V2rayJsonConfig(str):
     @staticmethod
     def stream_setting_config(network=None, security=None,
                               network_setting=None, tls_settings=None,
-                              sockopt=None):
+                              sockopt=None) -> dict:
 
         streamSettings = {"network": network}
 
@@ -727,7 +720,7 @@ class V2rayJsonConfig(str):
         return streamSettings
 
     @staticmethod
-    def vmess_config(address=None, port=None, id=None):
+    def vmess_config(address=None, port=None, id=None) -> dict:
         return {
             "vnext": [
                 {
@@ -746,7 +739,7 @@ class V2rayJsonConfig(str):
         }
 
     @staticmethod
-    def vless_config(address=None, port=None, id=None, flow=""):
+    def vless_config(address=None, port=None, id=None, flow="") -> dict:
         return {
             "vnext": [
                 {
@@ -767,7 +760,7 @@ class V2rayJsonConfig(str):
         }
 
     @staticmethod
-    def trojan_config(address=None, port=None, password=None):
+    def trojan_config(address=None, port=None, password=None) -> dict:
         return {
             "servers": [
                 {
@@ -780,7 +773,7 @@ class V2rayJsonConfig(str):
         }
 
     @staticmethod
-    def shadowsocks_config(address=None, port=None, password=None, method=None):
+    def shadowsocks_config(address=None, port=None, password=None, method=None) -> dict:
         return {
             "servers": [
                 {
@@ -795,67 +788,48 @@ class V2rayJsonConfig(str):
         }
 
     @staticmethod
-    def make_fragment_outbound(packets="tlshello", length="100-200", interval="10-20"):
-        outbound = {
-            "tag": "fragment_out",
-            "protocol": "freedom",
-            "settings": {
-                "fragment": {
-                    "packets": packets,
-                    "length": length,
-                    "interval": interval
-                }
-            }
+    def make_fragment(fragment: str) -> dict:
+        length, interval, packets = fragment.split(',')
+        return {
+            "packets": packets,
+            "length": length,
+            "interval": interval
         }
-
-        return outbound
 
     @staticmethod
-    def make_fragment_and_noise_outbound(fragment="", noises=""):
-        outbound = {
-            "protocol": "freedom",
-        }
-        tag = ""
-        settings = {}
-
-        if fragment:
-            fragment_settings = {}
+    def make_noises(noises: str) -> list:
+        sn = noises.split("&")
+        noises_settings = []
+        for n in sn:
             try:
-                length, interval, packets = fragment.split(',')
-                fragment_settings["fragment"] = {
-                    "packets": packets,
-                    "length": length,
-                    "interval": interval
-                }
-                settings.update(fragment_settings)
-                tag = "fragment"
+                tp, delay = n.split(',')
+                _type, packet = tp.split(":")
+                noises_settings.append({
+                    "type": _type,
+                    "packet": packet,
+                    "delay": delay
+                })
             except ValueError:
                 pass
+
+        return noises_settings
+
+    @staticmethod
+    def make_dialer_outbound(fragment: str = "", noises: str = "") -> Union[dict, None]:
+        dialer_settings = {}
+        if fragment:
+            dialer_settings["fragment"] = V2rayJsonConfig.make_fragment(fragment)
         if noises:
-            sn = noises.split("&")
-            noises_settings = []
-            for n in sn:
-                try:
-                    tp, delay = n.split(',')
-                    _type, packet = tp.split(":")
-                    noises_settings.append({
-                        "type": _type,
-                        "packet": packet,
-                        "delay": delay
-                    })
-                except ValueError:
-                    pass
-            settings["noises"] = noises_settings
-            if not tag:
-                tag = "noises"
-            else:
-                tag += "_and_noises"
-        if not tag:
-            return
-        outbound["settings"] = settings
-        tag += "_out"
-        outbound["tag"] = tag
-        return outbound
+            dialer_settings["noises"] = V2rayJsonConfig.make_noises(noises)
+
+        if dialer_settings:
+            return {
+                "tag": "dialer",
+                "protocol": "freedom",
+                "settings": dialer_settings
+            }
+
+        return None
 
     def make_stream_setting(self,
                             net='',
@@ -878,7 +852,7 @@ class V2rayJsonConfig(str):
                             sc_min_posts_interval_ms: int = 30,
                             x_padding_bytes: str = "100-1000",
                             xmux: dict = {},
-                            ):
+                            ) -> dict:
 
         if net == "ws":
             network_setting = self.ws_config(
@@ -927,12 +901,10 @@ class V2rayJsonConfig(str):
         else:
             sockopt = None
 
-        streamSettings = self.stream_setting_config(network=net, security=tls,
-                                                    network_setting=network_setting,
-                                                    tls_settings=tls_settings,
-                                                    sockopt=sockopt)
-
-        return streamSettings
+        return self.stream_setting_config(network=net, security=tls,
+                                          network_setting=network_setting,
+                                          tls_settings=tls_settings,
+                                          sockopt=sockopt)
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
 
@@ -990,7 +962,7 @@ class V2rayJsonConfig(str):
 
         outbounds = [outbound]
         dialer_proxy = ''
-        extra_outbound = self.make_fragment_and_noise_outbound(fragment, noise)
+        extra_outbound = self.make_dialer_outbound(fragment, noise)
         if extra_outbound:
             dialer_proxy = extra_outbound['tag']
             outbounds.append(extra_outbound)
