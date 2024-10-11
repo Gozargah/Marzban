@@ -190,6 +190,10 @@ class ProxyHost(BaseModel):
             raise ValueError(
                 "Noise setting must be like this: packet,delay (rand:10-20,100-200)."
             )
+        if len(v) > 2000:
+            raise ValueError(
+                "Noise can't be longer that 2000 character"
+            )
         return v
 
 
