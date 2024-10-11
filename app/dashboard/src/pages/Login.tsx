@@ -1,49 +1,22 @@
-import {
-  Alert,
-  AlertDescription,
-  AlertIcon,
-  Box,
-  Button,
-  chakra,
-  FormControl,
-  FormLabel,
-  HStack,
-  Text,
-  VStack,
-} from "@chakra-ui/react";
-import { ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ReactComponent as Logo } from "assets/logo.svg";
+import { Footer } from "components/Footer";
+import { Language } from "components/Language";
+import { CircleAlertIcon } from "lucide-react";
 import { FC, useEffect, useState } from "react";
 import { FieldValues, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
-import { z } from "zod";
-import { Footer } from "components/Footer";
-import { Input } from "components/Input";
 import { fetch } from "service/http";
 import { removeAuthToken, setAuthToken } from "utils/authStorage";
-import { ReactComponent as Logo } from "assets/logo.svg";
-import { useTranslation } from "react-i18next";
-import { Language } from "components/Language";
+import { z } from "zod";
 
 const schema = z.object({
   username: z.string().min(1, "login.fieldRequired"),
   password: z.string().min(1, "login.fieldRequired"),
-});
-
-export const LogoIcon = chakra(Logo, {
-  baseStyle: {
-    strokeWidth: "10px",
-    w: 12,
-    h: 12,
-  },
-});
-
-const LoginIcon = chakra(ArrowRightOnRectangleIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-    strokeWidth: "2px",
-  },
 });
 
 export const Login: FC = () => {
@@ -82,66 +55,55 @@ export const Login: FC = () => {
       })
       .finally(setLoading.bind(null, false));
   };
+
   return (
-    <VStack justifyContent="space-between" minH="100vh" p="6" w="full">
-      <Box w="full">
-        <HStack justifyContent="end" w="full">
+    <div className="flex flex-col justify-between min-h-screen p-6 w-full">
+      <div className="w-full">
+        <div className="flex justify-end w-full">
           <Language />
-        </HStack>
-        <HStack w="full" justifyContent="center" alignItems="center">
-          <Box w="full" maxW="340px" mt="6">
-            <VStack alignItems="center" w="full">
-              <LogoIcon />
-              <Text fontSize="2xl" fontWeight="semibold">
+        </div>
+        <div className="w-full justify-center flex items-center">
+          <div className="w-full max-w-[340px] mt-6">
+            <div className="flex flex-col items-center gap-2">
+              <Logo className="w-12 h-12 stroke-[12px]" />
+              <span className="text-2xl font-semibold">
                 {t("login.loginYourAccount")}
-              </Text>
-              <Text color="gray.600" _dark={{ color: "gray.400" }}>
+              </span>
+              <span className="text-gray-600 dark:text-gray-500">
                 {t("login.welcomeBack")}
-              </Text>
-            </VStack>
-            <Box w="full" maxW="300px" m="auto" pt="4">
+              </span>
+            </div>
+            <div className="w-full max-w-[300px] mx-auto pt-4">
               <form onSubmit={handleSubmit(login)}>
-                <VStack mt={4} rowGap={2}>
-                  <FormControl>
-                    <Input
-                      w="full"
-                      placeholder={t("username")}
-                      {...register("username")}
-                      error={t(errors?.username?.message as string)}
-                    />
-                  </FormControl>
-                  <FormControl>
-                    <Input
-                      w="full"
-                      type="password"
-                      placeholder={t("password")}
-                      {...register("password")}
-                      error={t(errors?.password?.message as string)}
-                    />
-                  </FormControl>
+                <div className="flex flex-col mt-4 gap-y-2">
+                  <Input
+                    placeholder={t("username")}
+                    {...register("username")}
+                    error={t(errors?.username?.message as string)}
+                  />
+                  <Input
+                    type="password"
+                    placeholder={t("password")}
+                    {...register("password")}
+                    error={t(errors?.password?.message as string)}
+                  />
                   {error && (
-                    <Alert status="error" rounded="md">
-                      <AlertIcon />
+                    <Alert variant="destructive">
+                      <CircleAlertIcon size="18px" />
                       <AlertDescription>{error}</AlertDescription>
                     </Alert>
                   )}
-                  <Button
-                    isLoading={loading}
-                    type="submit"
-                    w="full"
-                    colorScheme="primary"
-                  >
-                    {<LoginIcon marginRight={1} />}
+                  <Button isLoading={loading} type="submit" className="w-full">
                     {t("login")}
                   </Button>
-                </VStack>
+                </div>
               </form>
-            </Box>
-          </Box>
-        </HStack>
-      </Box>
+            </div>
+          </div>
+        </div>
+      </div>
       <Footer />
-    </VStack>
+    </div>
   );
 };
 
