@@ -186,14 +186,15 @@ class ProxyHost(BaseModel):
 
     @validator("noise_setting", check_fields=False)
     def validate_noise(cls, v):
-        if v and not NOISE_PATTERN.match(v):
-            raise ValueError(
-                "Noise setting must be like this: packet,delay (rand:10-20,100-200)."
-            )
-        if len(v) > 2000:
-            raise ValueError(
-                "Noise can't be longer that 2000 character"
-            )
+        if v:
+            if not NOISE_PATTERN.match(v):
+                raise ValueError(
+                    "Noise setting must be like this: packet,delay (rand:10-20,100-200)."
+                )
+            if len(v) > 2000:
+                raise ValueError(
+                    "Noise can't be longer that 2000 character"
+                )
         return v
 
 
