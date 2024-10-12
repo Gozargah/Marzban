@@ -297,6 +297,7 @@ class ClashConfiguration(object):
 class ClashMetaConfiguration(ClashConfiguration):
     def make_node(self,
                   name: str,
+                  remark: str,
                   type: str,
                   server: str,
                   port: int,
@@ -316,6 +317,7 @@ class ClashMetaConfiguration(ClashConfiguration):
                   random_user_agent: bool = False):
         node = super().make_node(
             name=name,
+            remark=remark,
             type=type,
             server=server,
             port=port,
