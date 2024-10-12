@@ -148,6 +148,7 @@ class ClashConfiguration(object):
 
     def make_node(self,
                   name: str,
+                  remark: str,
                   type: str,
                   server: str,
                   port: int,
@@ -176,8 +177,6 @@ class ClashConfiguration(object):
         else:
             is_httpupgrade = False
 
-        remark = self._remark_validation(name)
-        self.proxy_remarks.append(remark)
         node = {
             'name': remark,
             'type': type,
@@ -255,8 +254,11 @@ class ClashConfiguration(object):
         if inbound['network'] in ("kcp", "splithttp"):
             return
 
+        proxy_remark = self._remark_validation(remark)
+
         node = self.make_node(
             name=remark,
+            remark=proxy_remark,
             type=inbound['protocol'],
             server=address,
             port=inbound['port'],
@@ -289,6 +291,7 @@ class ClashConfiguration(object):
             return
 
         self.data['proxies'].append(node)
+        self.proxy_remarks.append(proxy_remark)
 
 
 class ClashMetaConfiguration(ClashConfiguration):
