@@ -264,8 +264,6 @@ class SingBoxConfiguration(str):
                 early_data_header_name=early_data_header_name,
                 random_user_agent=random_user_agent,
             )
-        else:
-            config["network"] = net
 
         if tls in ('tls', 'reality'):
             config['tls'] = self.tls_config(sni=sni, fp=fp, tls=tls,
