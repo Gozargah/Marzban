@@ -343,8 +343,11 @@ class ClashMetaConfiguration(ClashConfiguration):
         if inbound['network'] in ("kcp", "splithttp") or (inbound['network'] == "quic" and inbound["header_type"] != "none"):
             return
 
+        proxy_remark = self._remark_validation(remark)
+
         node = self.make_node(
             name=remark,
+            remark=proxy_remark,
             type=inbound['protocol'],
             server=address,
             port=inbound['port'],
@@ -386,3 +389,4 @@ class ClashMetaConfiguration(ClashConfiguration):
             return
 
         self.data['proxies'].append(node)
+        self.proxy_remarks.append(proxy_remark)
