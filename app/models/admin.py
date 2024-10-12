@@ -7,7 +7,6 @@ from pydantic import BaseModel, validator
 
 from app.db import Session, crud, get_db
 from app.utils.jwt import get_admin_payload
-from config import SUDOERS
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/admin/token")  # Admin view url
@@ -32,9 +31,6 @@ class Admin(BaseModel):
         payload = get_admin_payload(token)
         if not payload:
             return
-
-        if payload['username'] in SUDOERS and payload['is_sudo'] is True:
-            return cls(username=payload['username'], is_sudo=True)
 
         dbadmin = crud.get_admin(db, payload['username'])
         if not dbadmin:

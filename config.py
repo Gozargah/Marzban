@@ -91,13 +91,6 @@ ONHOLD_STATUS_TEXT = config("ONHOLD_STATUS_TEXT", default="On-Hold")
 USERS_AUTODELETE_DAYS = config("USERS_AUTODELETE_DAYS", default=-1, cast=int)
 USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS = config("USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS", default=False, cast=bool)
 
-
-# USERNAME: PASSWORD
-SUDOERS = {config("SUDO_USERNAME"): config("SUDO_PASSWORD")} \
-    if config("SUDO_USERNAME", default='') and config("SUDO_PASSWORD", default='') \
-    else {}
-
-
 WEBHOOK_ADDRESS = config(
     'WEBHOOK_ADDRESS',
     default="",

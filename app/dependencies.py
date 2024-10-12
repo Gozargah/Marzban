@@ -2,17 +2,13 @@ from typing import Optional, Union
 from app.models.admin import AdminInDB, AdminValidationResult, Admin
 from app.models.user import UserResponse, UserStatus
 from app.db import Session, crud, get_db
-from config import SUDOERS
 from fastapi import Depends, HTTPException
 from datetime import datetime, timezone, timedelta
 from app.utils.jwt import get_subscription_payload
 
 
 def validate_admin(db: Session, username: str, password: str) -> Optional[AdminValidationResult]:
-    """Validate admin credentials with environment variables or database."""
-    if SUDOERS.get(username) == password:
-        return AdminValidationResult(username=username, is_sudo=True)
-
+    """Validate admin credentials with database."""
     dbadmin = crud.get_admin(db, username)
     if dbadmin and AdminInDB.from_orm(dbadmin).verify_password(password):
         return AdminValidationResult(username=dbadmin.username, is_sudo=dbadmin.is_sudo)
