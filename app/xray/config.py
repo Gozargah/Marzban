@@ -264,7 +264,7 @@ class XRayConfig(dict):
 
                 elif net == 'ws':
                     path = net_settings.get('path', '')
-                    host = net_settings.get('headers', {}).get('Host')
+                    host = net_settings.get('host', '') or net_settings.get('headers', {}).get('Host')
 
                     settings['header_type'] = ''
 
@@ -314,14 +314,20 @@ class XRayConfig(dict):
                     settings['host'] = header.get('domain', '')
                     settings['path'] = net_settings.get('seed', '')
 
+                elif net in ("http", "h2", "h3"):
+                    net_settings = stream.get("httpSettings", {})
+
+                    settings['host'] = net_settings.get('host') or net_settings.get('Host', '')
+                    settings['path'] = net_settings.get('path', '')
+
                 else:
                     settings['path'] = net_settings.get('path', '')
                     host = net_settings.get(
                         'host', {}) or net_settings.get('Host', {})
-                    if host and isinstance(host, list):
-                        settings['host'] = host[0]
-                    elif host and isinstance(host, str):
+                    if host and isinstance(host, str):
                         settings['host'] = host
+                    elif host and isinstance(host, list):
+                        settings['host'] = host[0]
 
             self.inbounds.append(settings)
             self.inbounds_by_tag[inbound['tag']] = settings
