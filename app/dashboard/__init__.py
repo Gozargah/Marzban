@@ -48,7 +48,7 @@ def run_build():
 
 @app.on_event("startup")
 def startup():
-    if DEBUG is True:
+    if DEBUG:
         run_dev()
     else:
         run_build()
