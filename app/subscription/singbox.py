@@ -243,6 +243,9 @@ class SingBoxConfiguration(str):
         if net == 'h2':
             net = 'http'
             alpn = 'h2'
+        elif net == 'h3':
+            net = 'http'
+            alpn = 'h3'
         elif net in ['tcp', 'raw'] and headers == 'http':
             net = 'http'
 

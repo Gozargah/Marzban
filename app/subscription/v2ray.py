@@ -637,6 +637,10 @@ class V2rayJsonConfig(str):
             config = copy.deepcopy(self.settings.get("h2Settings", {
                 "header": {}
             }))
+        elif net == "h3":
+            config = copy.deepcopy(self.settings.get("h3Settings", {
+                "header": {}
+            }))
         else:
             config = self.settings.get("httpSettings", {
                 "header": {}
@@ -860,7 +864,7 @@ class V2rayJsonConfig(str):
         elif net == "grpc":
             network_setting = self.grpc_config(
                 path=path, host=host, multiMode=multiMode, random_user_agent=random_user_agent)
-        elif net in ("h2", "http"):
+        elif net in ("h3", "h2", "http"):
             network_setting = self.http_config(
                 net=net, path=path, host=host, random_user_agent=random_user_agent)
         elif net == "kcp":
