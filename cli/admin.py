@@ -31,8 +31,8 @@ def validate_telegram_id(value: Union[int, str]) -> Union[int, None]:
 def validate_discord_webhook(value: str) -> Union[str, None]:
     if not value or value == "0":
         return ""
-    if not value.startswith("https://discord.com"):
-        utils.error("Discord webhook must start with 'https://discord.com'")
+    if not value.startswith("https://discord.com/api/webhooks/"):
+        utils.error("Discord webhook must start with 'https://discord.com/api/webhooks/'")
     return value
 
 
