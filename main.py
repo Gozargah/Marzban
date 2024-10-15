@@ -13,7 +13,7 @@ from config import (DEBUG, UVICORN_HOST, UVICORN_PORT, UVICORN_SSL_CERTFILE,
 
 
 def validate_cert_and_key(cert_file_path, key_file_path, ca_type):
-    if ca_type != "public":
+    if ca_type == "private":
         logger.warning(f"""
 {click.style('IMPORTANT!', blink=True, bold=True, fg="yellow")} 
 You're running Marzban with: {click.style('UVICORN_SSL_CA_TYPE', italic=True, fg="magenta")}: {click.style(f'{ca_type}', bold=True, fg="yellow")}. 
