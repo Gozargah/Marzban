@@ -9,10 +9,18 @@ from cryptography.hazmat.backends import default_backend
 
 from app import app, logger
 from config import (DEBUG, UVICORN_HOST, UVICORN_PORT, UVICORN_SSL_CERTFILE,
-                    UVICORN_SSL_KEYFILE, UVICORN_UDS)
+                    UVICORN_SSL_KEYFILE, UVICORN_SSL_CA_TYPE, UVICORN_UDS)
 
 
-def validate_cert_and_key(cert_file_path, key_file_path):
+def validate_cert_and_key(cert_file_path, key_file_path, ca_type):
+    if ca_type != "public":
+        logger.warning(f"""
+{click.style('IMPORTANT!', blink=True, bold=True, fg="yellow")} 
+You're running Marzban with: {click.style('UVICORN_SSL_CA_TYPE', italic=True, fg="magenta")}: {click.style(f'{ca_type}', bold=True, fg="yellow")}. 
+Self-signed CAs are useful in testing or internal use cases, they’re not suitable for secure public internet communications.
+        """)
+        return
+
     if not os.path.isfile(cert_file_path):
         raise ValueError(f"SSL certificate file '{cert_file_path}' does not exist.")
     if not os.path.isfile(key_file_path):
@@ -41,9 +49,11 @@ if __name__ == "__main__":
     # multi-workers support isn't implemented yet for APScheduler and XRay module
 
     bind_args = {}
+    if UVICORN_SSL_CA_TYPE not in ["public", "private"]:
+        UVICORN_SSL_CA_TYPE = "public"
 
-    if UVICORN_SSL_CERTFILE and UVICORN_SSL_KEYFILE:
-        validate_cert_and_key(UVICORN_SSL_CERTFILE, UVICORN_SSL_KEYFILE)
+    if UVICORN_SSL_CERTFILE and UVICORN_SSL_KEYFILE and UVICORN_SSL_CA_TYPE:
+        validate_cert_and_key(UVICORN_SSL_CERTFILE, UVICORN_SSL_KEYFILE, UVICORN_SSL_CA_TYPE)
 
         bind_args['ssl_certfile'] = UVICORN_SSL_CERTFILE
         bind_args['ssl_keyfile'] = UVICORN_SSL_KEYFILE
