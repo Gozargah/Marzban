@@ -55,6 +55,11 @@
   "hostsDialog.fragment.info": "length,interval,packet (e.g. 10-100,100-200,tlshello)",
   "hostsDialog.fragment.info.attention": "توجه: در حال حاضر، این ویژگی فقط در streisand >= 1.6.12 و v2rayNG >= 1.8.16 (پیکربندی سفارشی) پشتیبانی می شود",
   "hostsDialog.fragment.info.examples": "نمونه ها:",
+  "hostsDialog.noise": "الگو نویز",
+  "hostsDialog.noise.info": "packet,delay (e.g. rand:10-20,100-200)",
+  "hostsDialog.noise.info.attention": "توجه: در حال حاضر، این ویژگی فقط در streisand >= 1.6.32 و v2rayNG >= 1.8.39 (پیکربندی سفارشی) پشتیبانی می شود",
+  "hostsDialog.noise.info.examples": "نمونه ها:",
+
   "hostsDialog.host": "هاست درخواست",
   "hostsDialog.host.info": "به‌طور پیش‌فرض، اگر هاست درخواستی در پیکربندی *** تنظیم شده باشد، این هاست استفاده می‌شود. اما می‌توانید یک هاست درخواستی متفاوت در اینجا قرار دهید.",
   "hostsDialog.host.multiHost": "برای تنظیم چند آدرس، با <badge>,</badge> از هم جدا کنید. هر دفعه آدرسی به صورت تصادفی قرار داده می‌شود.",

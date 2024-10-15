@@ -57,6 +57,11 @@
       "Pragma": "no-cache"
     }
   },
+  "h3Settings": {
+    "headers": {
+      "Pragma": "no-cache"
+    }
+  },
   "httpupgradeSettings": {
     "headers": {
       "Pragma": "no-cache"
