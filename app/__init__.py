@@ -1,4 +1,3 @@
-from app.routers import api_router
 import logging
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI, Request, status
@@ -34,6 +33,7 @@ app.add_middleware(
 )
 
 from app import dashboard, telegram, routers, jobs  # noqa
+from app.routers import api_router  # noqa
 
 app.include_router(api_router)
 
