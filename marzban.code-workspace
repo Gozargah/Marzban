@@ -4,5 +4,14 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"[python]": {
+			"editor.defaultFormatter": "ms-python.autopep8",
+			"editor.formatOnSave": true,
+		},
+		"autopep8.args": [ "--max-line-length", "120" ],
+		"editor.codeActionsOnSave": {
+			"source.organizeImports": "never"
+		}
+	}
 }
