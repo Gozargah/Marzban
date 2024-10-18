@@ -41,7 +41,6 @@ from app.models.user import (
 )
 from app.models.user_template import UserTemplateCreate, UserTemplateModify
 from app.utils.helpers import calculate_expiration_days, calculate_usage_percent
-from app.utils.notification import Notification
 from config import NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT, USERS_AUTODELETE_DAYS
 
 
@@ -455,8 +454,8 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
     if modify.inbounds:
         for proxy_type, tags in modify.excluded_inbounds.items():
             dbproxy = db.query(Proxy) \
-                          .where(Proxy.user == dbuser, Proxy.type == proxy_type) \
-                          .first() or added_proxies.get(proxy_type)
+                .where(Proxy.user == dbuser, Proxy.type == proxy_type) \
+                .first() or added_proxies.get(proxy_type)
             if dbproxy:
                 dbproxy.excluded_inbounds = [get_or_create_inbound(db, tag) for tag in tags]
 
@@ -470,9 +469,13 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
                 if dbuser.status != UserStatus.on_hold:
                     dbuser.status = UserStatus.active
 
-                if not dbuser.data_limit or (calculate_usage_percent(
-                        dbuser.used_traffic, dbuser.data_limit) < NOTIFY_REACHED_USAGE_PERCENT):
-                    delete_notification_reminder_by_type(db, dbuser.id, ReminderType.data_usage)
+                for percent in sorted(NOTIFY_REACHED_USAGE_PERCENT, reverse=True):
+                    if not dbuser.data_limit or (calculate_usage_percent(
+                            dbuser.used_traffic, dbuser.data_limit) < percent):
+                        reminder = get_notification_reminder(db, dbuser.id, ReminderType.data_usage, threshold=percent)
+                        if reminder:
+                            delete_notification_reminder(db, reminder)
+
             else:
                 dbuser.status = UserStatus.limited
 
@@ -481,9 +484,12 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
         if dbuser.status in (UserStatus.active, UserStatus.expired):
             if not dbuser.expire or dbuser.expire > datetime.utcnow().timestamp():
                 dbuser.status = UserStatus.active
-                if not dbuser.expire or (calculate_expiration_days(
-                        dbuser.expire) > NOTIFY_DAYS_LEFT):
-                    delete_notification_reminder_by_type(db, dbuser.id, ReminderType.expiration_date)
+                for days_left in sorted(NOTIFY_DAYS_LEFT):
+                    if not dbuser.expire or (calculate_expiration_days(
+                            dbuser.expire) > days_left):
+                        reminder = get_notification_reminder(db, dbuser.id, ReminderType.expiration_date, threshold=days_left)
+                        if reminder:
+                            delete_notification_reminder(db, reminder)
             else:
                 dbuser.status = UserStatus.expired
 
@@ -1254,7 +1260,7 @@ def update_node_status(db: Session, dbnode: Node, status: NodeStatus, message: s
 
 
 def create_notification_reminder(
-        db: Session, reminder_type: ReminderType, expires_at: datetime, user_id: int) -> NotificationReminder:
+        db: Session, reminder_type: ReminderType, expires_at: datetime, user_id: int, threshold: Optional[int] = None) -> NotificationReminder:
     """
     Creates a new notification reminder.
 
@@ -1263,11 +1269,14 @@ def create_notification_reminder(
         reminder_type (ReminderType): The type of reminder.
         expires_at (datetime): The expiration time of the reminder.
         user_id (int): The ID of the user associated with the reminder.
+        threshold (Optional[int]): The threshold value to check for (e.g., days left or usage percent).
 
     Returns:
         NotificationReminder: The newly created NotificationReminder object.
     """
     reminder = NotificationReminder(type=reminder_type, expires_at=expires_at, user_id=user_id)
+    if threshold is not None:
+        reminder.threshold = threshold
     db.add(reminder)
     db.commit()
     db.refresh(reminder)
@@ -1275,7 +1284,7 @@ def create_notification_reminder(
 
 
 def get_notification_reminder(
-        db: Session, user_id: int, reminder_type: ReminderType,
+        db: Session, user_id: int, reminder_type: ReminderType, threshold: Optional[int] = None
 ) -> Union[NotificationReminder, None]:
     """
     Retrieves a notification reminder for a user.
@@ -1284,38 +1293,57 @@ def get_notification_reminder(
         db (Session): The database session.
         user_id (int): The ID of the user.
         reminder_type (ReminderType): The type of reminder to retrieve.
+        threshold (Optional[int]): The threshold value to check for (e.g., days left or usage percent).
 
     Returns:
         Union[NotificationReminder, None]: The NotificationReminder object if found and not expired, None otherwise.
     """
-    reminder = db.query(NotificationReminder).filter(
-        NotificationReminder.user_id == user_id).filter(
-        NotificationReminder.type == reminder_type).first()
+    query = db.query(NotificationReminder).filter(
+        NotificationReminder.user_id == user_id,
+        NotificationReminder.type == reminder_type
+    )
+
+    # If a threshold is provided, filter for reminders with this threshold
+    if threshold is not None:
+        query = query.filter(NotificationReminder.threshold == threshold)
+
+    reminder = query.first()
+
     if reminder is None:
-        return
+        return None
+
+    # Check if the reminder has expired
     if reminder.expires_at and reminder.expires_at < datetime.utcnow():
         db.delete(reminder)
         db.commit()
-        return
+        return None
+
     return reminder
 
 
-def delete_notification_reminder_by_type(db: Session, user_id: int, reminder_type: ReminderType) -> None:
+def delete_notification_reminder_by_type(
+        db: Session, user_id: int, reminder_type: ReminderType, threshold: Optional[int] = None
+) -> None:
     """
-    Deletes a notification reminder for a user based on the reminder type.
+    Deletes a notification reminder for a user based on the reminder type and optional threshold.
 
     Args:
         db (Session): The database session.
         user_id (int): The ID of the user.
         reminder_type (ReminderType): The type of reminder to delete.
+        threshold (Optional[int]): The threshold to delete (e.g., days left or usage percent). If not provided, deletes all reminders of that type.
     """
     stmt = delete(NotificationReminder).where(
         NotificationReminder.user_id == user_id,
-        NotificationReminder.type == reminder_type,
+        NotificationReminder.type == reminder_type
     )
+
+    # If a threshold is provided, include it in the filter
+    if threshold is not None:
+        stmt = stmt.where(NotificationReminder.threshold == threshold)
+
     db.execute(stmt)
     db.commit()
-    return
 
 
 def delete_notification_reminder(db: Session, dbreminder: NotificationReminder) -> None:
