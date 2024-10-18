@@ -299,10 +299,8 @@ class XRayConfig(dict):
                     settings['path'] = net_settings.get('path', '')
                     host = net_settings.get('host', '')
                     settings['host'] = [host]
-                    settings['scMaxEachPostBytes'] = net_settings.get('scMaxEachPostBytes',
-                                                                      net_settings.get('maxUploadSize', 1000000))
-                    settings['scMaxConcurrentPosts'] = net_settings.get('scMaxConcurrentPosts',
-                                                                        net_settings.get('maxConcurrentUploads', 100))
+                    settings['scMaxEachPostBytes'] = net_settings.get('scMaxEachPostBytes', 1000000)
+                    settings['scMaxConcurrentPosts'] = net_settings.get('scMaxConcurrentPosts', 100)
                     settings['scMinPostsIntervalMs'] = net_settings.get('scMinPostsIntervalMs', 30)
                     settings['xPaddingBytes'] = net_settings.get('xPaddingBytes', "100-1000")
                     settings['xmux'] = net_settings.get('xmux', {})
