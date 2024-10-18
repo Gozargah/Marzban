@@ -69,7 +69,7 @@ export const Login: FC = () => {
               <span className="text-2xl font-semibold">
                 {t("login.loginYourAccount")}
               </span>
-              <span className="text-gray-600 dark:text-gray-500">
+              <span className="text-gray-600 dark:text-gray-400">
                 {t("login.welcomeBack")}
               </span>
             </div>
