@@ -1,4 +1,5 @@
 import { ChakraProvider, localStorageManager } from "@chakra-ui/react";
+import { ThemeProvider } from "components/theme-provider";
 import dayjs from "dayjs";
 import Duration from "dayjs/plugin/duration";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
@@ -27,7 +28,9 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <ChakraProvider theme={theme}>
       <QueryClientProvider client={queryClient}>
-        <App />
+        <ThemeProvider defaultTheme="system" storageKey="theme">
+          <App />
+        </ThemeProvider>
       </QueryClientProvider>
     </ChakraProvider>
   </React.StrictMode>

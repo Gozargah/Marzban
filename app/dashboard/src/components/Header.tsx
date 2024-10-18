@@ -1,3 +1,4 @@
+import { useTheme } from "@/components/theme-provider";
 import {
   Box,
   chakra,
@@ -26,13 +27,13 @@ import { DONATION_URL, REPO_URL } from "constants/Project";
 import { useDashboard } from "contexts/DashboardContext";
 import differenceInDays from "date-fns/differenceInDays";
 import isValid from "date-fns/isValid";
+import useGetUser from "hooks/useGetUser";
 import { FC, ReactNode, useState } from "react";
 import GitHubButton from "react-github-btn";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { updateThemeColor } from "utils/themeColor";
 import { Language } from "./Language";
-import useGetUser from "hooks/useGetUser";
 
 type HeaderProps = {
   actions?: ReactNode;
@@ -99,6 +100,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
   } = useDashboard();
   const { t } = useTranslation();
   const { colorMode, toggleColorMode } = useColorMode();
+  const { setTheme } = useTheme();
   const [showDonationNotif, setShowDonationNotif] = useState(
     shouldShowDonation()
   );
@@ -219,8 +221,10 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
             variant="outline"
             aria-label="switch theme"
             onClick={() => {
-              updateThemeColor(colorMode == "dark" ? "light" : "dark");
+              const color = colorMode == "dark" ? "light" : "dark";
+              updateThemeColor(color);
               toggleColorMode();
+              setTheme(color);
             }}
           >
             {colorMode === "light" ? <DarkIcon /> : <LightIcon />}
