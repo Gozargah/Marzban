@@ -4,11 +4,11 @@ import { RouterProvider } from "react-router-dom";
 import { router } from "./pages/Router";
 
 function App() {
-    return (
-        <main className="p-8">
-            <RouterProvider router={router} />
-        </main>
-    );
+  return (
+    <main className="p-8">
+      <RouterProvider router={router} />
+    </main>
+  );
 }
 
 export default App;
