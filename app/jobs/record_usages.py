@@ -10,7 +10,9 @@ from sqlalchemy import and_, bindparam, insert, select, sql, update
 from app import scheduler, xray
 from app.db import GetDB
 from app.db.models import NodeUsage, NodeUserUsage, System, User
-from config import DISABLE_RECORDING_NODE_USAGE
+from config import (DISABLE_RECORDING_NODE_USAGE,
+                    JOB_RECORD_NODE_USAGES_INTERVAL,
+                    JOB_RECORD_USER_USAGES_INTERVAL)
 from xray_api import XRay as XRayAPI
 from xray_api import exc as xray_exc
 
@@ -195,5 +197,9 @@ def record_node_usages():
         record_node_stats(params, node_id)
 
 
-scheduler.add_job(record_user_usages, 'interval', coalesce=True, seconds=30, max_instances=1)
-scheduler.add_job(record_node_usages, 'interval', coalesce=True, seconds=10, max_instances=1)
+scheduler.add_job(record_user_usages, 'interval',
+                  seconds=JOB_RECORD_NODE_USAGES_INTERVAL,
+                  coalesce=True, max_instances=1)
+scheduler.add_job(record_node_usages, 'interval',
+                  seconds=JOB_RECORD_USER_USAGES_INTERVAL,
+                  coalesce=True, max_instances=1)

@@ -1,12 +1,10 @@
 import base64
 import random
 import secrets
-import yaml
-import json
+from collections import defaultdict
 from datetime import datetime as dt
 from datetime import timedelta
 from typing import TYPE_CHECKING, List, Literal, Union
-from collections import defaultdict
 
 from jdatetime import date as jd
 
@@ -16,11 +14,15 @@ from app.utils.system import get_public_ip, get_public_ipv6, readable_size
 from . import *
 
 if TYPE_CHECKING:
-    from app.models.user import UserResponse, UserStatus
+    from app.models.user import UserResponse
 
-from config import (ACTIVE_STATUS_TEXT, DISABLED_STATUS_TEXT,
-                    EXPIRED_STATUS_TEXT, LIMITED_STATUS_TEXT,
-                    ONHOLD_STATUS_TEXT, RANDOMIZE_SUBSCRIPTION_CONFIGS)
+from config import (
+    ACTIVE_STATUS_TEXT,
+    DISABLED_STATUS_TEXT,
+    EXPIRED_STATUS_TEXT,
+    LIMITED_STATUS_TEXT,
+    ONHOLD_STATUS_TEXT
+)
 
 SERVER_IP = get_public_ip()
 SERVER_IPV6 = get_public_ipv6()
@@ -49,7 +51,7 @@ def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict, revers
 
 
 def generate_clash_subscription(
-    proxies: dict, inbounds: dict, extra_data: dict, reverse: bool, is_meta: bool = False
+        proxies: dict, inbounds: dict, extra_data: dict, reverse: bool, is_meta: bool = False
 ) -> str:
     if is_meta is True:
         conf = ClashMetaConfiguration()
@@ -63,7 +65,7 @@ def generate_clash_subscription(
 
 
 def generate_singbox_subscription(
-    proxies: dict, inbounds: dict, extra_data: dict, reverse: bool
+        proxies: dict, inbounds: dict, extra_data: dict, reverse: bool
 ) -> str:
     conf = SingBoxConfiguration()
 
@@ -74,7 +76,7 @@ def generate_singbox_subscription(
 
 
 def generate_outline_subscription(
-    proxies: dict, inbounds: dict, extra_data: dict, reverse: bool,
+        proxies: dict, inbounds: dict, extra_data: dict, reverse: bool,
 ) -> str:
     conf = OutlineConfiguration()
 
@@ -85,7 +87,7 @@ def generate_outline_subscription(
 
 
 def generate_v2ray_json_subscription(
-    proxies: dict, inbounds: dict, extra_data: dict, reverse: bool,
+        proxies: dict, inbounds: dict, extra_data: dict, reverse: bool,
 ) -> str:
     conf = V2rayJsonConfig()
 
@@ -95,52 +97,11 @@ def generate_v2ray_json_subscription(
     )
 
 
-def randomize_sub_config(
-        config: str, config_format: str
-) -> str:
-
-    if config_format == "v2ray":
-        config = config.split("\n")
-        random.shuffle(config)
-        config = "\n".join(config)
-
-    elif config_format in ("clash-meta", "clash"):
-        config = yaml.safe_load(config)
-        random.shuffle(config['proxies'])
-        for group in config['proxy-groups']:
-            if group['name'] == '♻️ Automatic':
-                group['proxies'] = [proxy['name']
-                                    for proxy in config['proxies']]
-        config = yaml.dump(config, allow_unicode=True, sort_keys=False)
-
-    elif config_format == "sing-box":
-        config = json.loads(config)
-        outbounds = config['outbounds']
-        main_outbounds = [ob for ob in outbounds if ob['type']
-                          in {'selector', 'urltest'}]
-        other_outbounds = [ob for ob in outbounds if ob['type'] not in {
-            'selector', 'urltest', 'direct', 'block', 'dns'}]
-        random.shuffle(other_outbounds)
-        proxy_names = [ob['tag'] for ob in other_outbounds]
-        for ob in main_outbounds:
-            ob['outbounds'] = ['Best Latency'] + \
-                proxy_names if ob['type'] == 'selector' else proxy_names
-        config['outbounds'] = main_outbounds + other_outbounds + \
-            [ob for ob in outbounds if ob['type']
-                in {'direct', 'block', 'dns'}]
-        config = json.dumps(config, indent=4)
-
-    elif config_format == "v2ray-json":
-        random.shuffle(config)
-
-    return config
-
-
 def generate_subscription(
-    user: "UserResponse",
-    config_format: Literal["v2ray", "clash-meta", "clash", "sing-box", "outline", "v2ray-json"],
-    as_base64: bool,
-    reverse: bool,
+        user: "UserResponse",
+        config_format: Literal["v2ray", "clash-meta", "clash", "sing-box", "outline", "v2ray-json"],
+        as_base64: bool,
+        reverse: bool,
 ) -> str:
     kwargs = {
         "proxies": user.proxies,
@@ -163,9 +124,6 @@ def generate_subscription(
         config = generate_v2ray_json_subscription(**kwargs)
     else:
         raise ValueError(f'Unsupported format "{config_format}"')
-
-    if RANDOMIZE_SUBSCRIPTION_CONFIGS is not False:
-        config = randomize_sub_config(config, config_format)
 
     if as_base64:
         config = base64.b64encode(config.encode()).decode()
@@ -272,13 +230,19 @@ def setup_format_variables(extra_data: dict) -> dict:
 
 
 def process_inbounds_and_tags(
-    inbounds: dict,
-    proxies: dict,
-    format_variables: dict,
-    conf=None,
-    reverse=False,
+        inbounds: dict,
+        proxies: dict,
+        format_variables: dict,
+        conf: Union[
+            V2rayShareLink,
+            V2rayJsonConfig,
+            SingBoxConfiguration,
+            ClashConfiguration,
+            ClashMetaConfiguration,
+            OutlineConfiguration
+        ],
+        reverse=False,
 ) -> Union[List, str]:
-
     _inbounds = []
     for protocol, tags in inbounds.items():
         for tag in tags:
@@ -313,9 +277,13 @@ def process_inbounds_and_tags(
                 if req_host_list:
                     salt = secrets.token_hex(8)
                     req_host = random.choice(req_host_list).replace("*", salt)
+
+                address = ""
+                address_list = host['address']
                 if host['address']:
                     salt = secrets.token_hex(8)
-                    address = host['address'].replace('*', salt)
+                    address = random.choice(address_list).replace('*', salt)
+
                 if host["path"] is not None:
                     path = host["path"].format_map(format_variables)
                 else:
@@ -334,6 +302,7 @@ def process_inbounds_and_tags(
                         or inbound.get("allowinsecure", ""),
                         "mux_enable": host["mux_enable"],
                         "fragment_setting": host["fragment_setting"],
+                        "noise_setting": host["noise_setting"],
                         "random_user_agent": host["random_user_agent"],
                     }
                 )
@@ -342,7 +311,7 @@ def process_inbounds_and_tags(
                     remark=host["remark"].format_map(format_variables),
                     address=address.format_map(format_variables),
                     inbound=host_inbound,
-                    settings=settings.dict(no_obj=True),
+                    settings=settings.dict(no_obj=True)
                 )
 
     return conf.render(reverse=reverse)

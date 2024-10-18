@@ -5,17 +5,20 @@ load_dotenv()
 
 
 SQLALCHEMY_DATABASE_URL = config("SQLALCHEMY_DATABASE_URL", default="sqlite:///db.sqlite3")
-
+SQLALCHEMY_POOL_SIZE = config("SQLALCHEMY_POOL_SIZE", cast=int, default=10)
+SQLIALCHEMY_MAX_OVERFLOW = config("SQLIALCHEMY_MAX_OVERFLOW", cast=int, default=30)
 
 UVICORN_HOST = config("UVICORN_HOST", default="0.0.0.0")
 UVICORN_PORT = config("UVICORN_PORT", cast=int, default=8000)
 UVICORN_UDS = config("UVICORN_UDS", default=None)
 UVICORN_SSL_CERTFILE = config("UVICORN_SSL_CERTFILE", default=None)
 UVICORN_SSL_KEYFILE = config("UVICORN_SSL_KEYFILE", default=None)
-
+DASHBOARD_PATH = config("DASHBOARD_PATH", default="/dashboard/")
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 DOCS = config("DOCS", default=False, cast=bool)
+
+ALLOWED_ORIGINS = config("ALLOWED_ORIGINS", default="*").split(",")
 
 VITE_BASE_API = f"http://127.0.0.1:{UVICORN_PORT}/api/" \
     if DEBUG and config("VITE_BASE_API", default="/api/") == "/api/" \
@@ -44,21 +47,40 @@ TELEGRAM_DEFAULT_VLESS_FLOW = config("TELEGRAM_DEFAULT_VLESS_FLOW", default="")
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = config("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=1440)
 
 CUSTOM_TEMPLATES_DIRECTORY = config("CUSTOM_TEMPLATES_DIRECTORY", default=None)
-CLASH_SUBSCRIPTION_TEMPLATE = config("CLASH_SUBSCRIPTION_TEMPLATE", default="clash/default.yml")
 SUBSCRIPTION_PAGE_TEMPLATE = config("SUBSCRIPTION_PAGE_TEMPLATE", default="subscription/index.html")
 HOME_PAGE_TEMPLATE = config("HOME_PAGE_TEMPLATE", default="home/index.html")
+
+CLASH_SUBSCRIPTION_TEMPLATE = config("CLASH_SUBSCRIPTION_TEMPLATE", default="clash/default.yml")
+CLASH_SETTINGS_TEMPLATE = config("CLASH_SETTINGS_TEMPLATE", default="clash/settings.yml")
+
 SINGBOX_SUBSCRIPTION_TEMPLATE = config("SINGBOX_SUBSCRIPTION_TEMPLATE", default="singbox/default.json")
+SINGBOX_SETTINGS_TEMPLATE = config("SINGBOX_SETTINGS_TEMPLATE", default="singbox/settings.json")
+
 MUX_TEMPLATE = config("MUX_TEMPLATE", default="mux/default.json")
+
 V2RAY_SUBSCRIPTION_TEMPLATE = config("V2RAY_SUBSCRIPTION_TEMPLATE", default="v2ray/default.json")
+V2RAY_SETTINGS_TEMPLATE = config("V2RAY_SETTINGS_TEMPLATE", default="v2ray/settings.json")
+
 USER_AGENT_TEMPLATE = config("USER_AGENT_TEMPLATE", default="user_agent/default.json")
 GRPC_USER_AGENT_TEMPLATE = config("GRPC_USER_AGENT_TEMPLATE", default="user_agent/grpc.json")
 
-EXTERNAL_CONFIG = config("EXTERNAL_CONFIG", default=False, cast=str)
+EXTERNAL_CONFIG = config("EXTERNAL_CONFIG", default="", cast=str)
+LOGIN_NOTIFY_WHITE_LIST = [ip.strip() for ip in config("LOGIN_NOTIFY_WHITE_LIST", default="", cast=str).split(",") if ip.strip()]
 
 USE_CUSTOM_JSON_DEFAULT = config("USE_CUSTOM_JSON_DEFAULT", default=False, cast=bool)
 USE_CUSTOM_JSON_FOR_V2RAYN = config("USE_CUSTOM_JSON_FOR_V2RAYN", default=False, cast=bool)
 USE_CUSTOM_JSON_FOR_V2RAYNG = config("USE_CUSTOM_JSON_FOR_V2RAYNG", default=False, cast=bool)
 USE_CUSTOM_JSON_FOR_STREISAND = config("USE_CUSTOM_JSON_FOR_STREISAND", default=False, cast=bool)
+
+NOTIFY_STATUS_CHANGE = config("NOTIFY_STATUS_CHANGE", default=True, cast=bool)
+NOTIFY_USER_CREATED = config("NOTIFY_USER_CREATED", default=True, cast=bool)
+NOTIFY_USER_UPDATED = config("NOTIFY_USER_UPDATED", default=True, cast=bool)
+NOTIFY_USER_DELETED = config("NOTIFY_USER_DELETED", default=True, cast=bool)
+NOTIFY_USER_DATA_USED_RESET = config("NOTIFY_USER_DATA_USED_RESET", default=True, cast=bool)
+NOTIFY_USER_SUB_REVOKED = config("NOTIFY_USER_SUB_REVOKED", default=True, cast=bool)
+NOTIFY_IF_DATA_USAGE_PERCENT_REACHED = config("NOTIFY_IF_DATA_USAGE_PERCENT_REACHED", default=True, cast=bool)
+NOTIFY_IF_DAYS_LEF_REACHED = config("NOTIFY_IF_DAYS_LEF_REACHED", default=True, cast=bool)
+NOTIFY_LOGIN = config("NOTIFY_LOGIN", default=True, cast=bool)
 
 ACTIVE_STATUS_TEXT = config("ACTIVE_STATUS_TEXT", default="Active")
 EXPIRED_STATUS_TEXT = config("EXPIRED_STATUS_TEXT", default="Expired")
@@ -102,7 +124,14 @@ DISABLE_RECORDING_NODE_USAGE = config("DISABLE_RECORDING_NODE_USAGE", cast=bool,
 SUB_UPDATE_INTERVAL = config("SUB_UPDATE_INTERVAL", default="12")
 SUB_SUPPORT_URL = config("SUB_SUPPORT_URL", default="https://t.me/")
 SUB_PROFILE_TITLE = config("SUB_PROFILE_TITLE", default="Subscription")
-RANDOMIZE_SUBSCRIPTION_CONFIGS = config("RANDOMIZE_SUBSCRIPTION_CONFIGS", default=False, cast=bool)
 
 # discord webhook log
 DISCORD_WEBHOOK_URL = config("DISCORD_WEBHOOK_URL", default="")
+
+
+# Interval jobs, all values are in seconds
+JOB_CORE_HEALTH_CHECK_INTERVAL = config("JOB_CORE_HEALTH_CHECK_INTERVAL", cast=int, default=10)
+JOB_RECORD_NODE_USAGES_INTERVAL = config("JOB_RECORD_NODE_USAGES_INTERVAL", cast=int, default=30)
+JOB_RECORD_USER_USAGES_INTERVAL = config("JOB_RECORD_USER_USAGES_INTERVAL", cast=int, default=10)
+JOB_REVIEW_USERS_INTERVAL = config("JOB_REVIEW_USERS_INTERVAL", cast=int, default=10)
+JOB_SEND_NOTIFICATIONS_INTERVAL = config("JOB_SEND_NOTIFICATIONS_INTERVAL", cast=int, default=30)

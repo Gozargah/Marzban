@@ -66,7 +66,7 @@ import { DeleteNodeModal } from "./DeleteNodeModal";
 import { DeleteIcon } from "./DeleteUserModal";
 import { ReloadIcon } from "./Filters";
 import { Icon } from "./Icon";
-import { StatusBadge } from "./StatusBadge";
+import { NodeModalStatusBadge } from "./NodeModalStatusBadge";
 
 import { fetch } from "service/http";
 import { Input } from "./Input";
@@ -177,7 +177,7 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
                 </Text>
               </Badge>
             )}
-            {node.status && <StatusBadge status={nodeStatus} compact />}
+            {node.status && <NodeModalStatusBadge status={nodeStatus} compact />}
           </HStack>
         </HStack>
         <AccordionIcon />
@@ -249,7 +249,7 @@ const AddNodeForm: FC<AddNodeFormType> = ({
     resolver: zodResolver(NodeSchema),
     defaultValues: {
       ...getNodeDefaultValues(),
-      add_as_new_host: true,
+      add_as_new_host: false,
     },
   });
   const { isLoading, mutate } = useMutation(addNode, {

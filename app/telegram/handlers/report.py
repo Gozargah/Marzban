@@ -12,22 +12,30 @@ from app.models.admin import Admin
 from app.models.user import UserDataLimitResetStrategy
 
 
-def report(admin_id: int, message: str, parse_mode="html", keyboard=None):
+def report(text: str, chat_id: int = None, parse_mode="html", keyboard=None):
     if bot and (TELEGRAM_ADMIN_ID or TELEGRAM_LOGGER_CHANNEL_ID):
         try:
             if TELEGRAM_LOGGER_CHANNEL_ID:
-                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, message, parse_mode=parse_mode)
+                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, parse_mode=parse_mode)
             else:
                 for admin in TELEGRAM_ADMIN_ID:
-                    bot.send_message(admin, message, parse_mode=parse_mode, reply_markup=keyboard)
-            if admin_id:
-                bot.send_message(admin_id, message, parse_mode=parse_mode)
+                    bot.send_message(admin, text, parse_mode=parse_mode, reply_markup=keyboard)
+            if chat_id:
+                bot.send_message(chat_id, text, parse_mode=parse_mode)
         except ApiTelegramException as e:
             logger.error(e)
 
 
-def report_new_user(user_id: int, username: str, by: str, expire_date: int, data_limit: int, proxies: list, 
-                    data_limit_reset_strategy:UserDataLimitResetStrategy, admin: Admin = None):
+def report_new_user(
+        user_id: int,
+        username: str,
+        by: str,
+        expire_date: int,
+        data_limit: int,
+        proxies: list,
+        data_limit_reset_strategy: UserDataLimitResetStrategy,
+        admin: Admin = None
+):
     text = '''\
 🆕 <b>#Created</b>
 ➖➖➖➖➖➖➖➖➖
@@ -49,8 +57,8 @@ def report_new_user(user_id: int, username: str, by: str, expire_date: int, data
     )
 
     return report(
-        admin_id=admin.telegram_id if admin and admin.telegram_id else None,
-        message=text,
+        chat_id=admin.telegram_id if admin and admin.telegram_id else None,
+        text=text,
         keyboard=BotKeyboard.user_menu({
             'username': username,
             'id': user_id,
@@ -59,8 +67,15 @@ def report_new_user(user_id: int, username: str, by: str, expire_date: int, data
     )
 
 
-def report_user_modification(username: str, expire_date: int, data_limit: int, proxies: list, by: str, 
-                             data_limit_reset_strategy:UserDataLimitResetStrategy, admin: Admin = None):
+def report_user_modification(
+        username: str,
+        expire_date: int,
+        data_limit: int,
+        proxies: list,
+        by: str,
+        data_limit_reset_strategy: UserDataLimitResetStrategy,
+        admin: Admin = None
+):
     text = '''\
 ✏️ <b>#Modified</b>
 ➖➖➖➖➖➖➖➖➖
@@ -83,12 +98,9 @@ def report_user_modification(username: str, expire_date: int, data_limit: int, p
     )
 
     return report(
-        admin_id=admin.telegram_id if admin and admin.telegram_id else None,
-        message=text, 
-        keyboard=BotKeyboard.user_menu({
-        'username': username,
-        'status': 'active'
-    }, with_back=False))
+        chat_id=admin.telegram_id if admin and admin.telegram_id else None,
+        text=text,
+        keyboard=BotKeyboard.user_menu({'username': username, 'status': 'active'}, with_back=False))
 
 
 def report_user_deletion(username: str, by: str, admin: Admin = None):
@@ -104,10 +116,7 @@ def report_user_deletion(username: str, by: str, admin: Admin = None):
         by=escape_html(by),
         username=escape_html(username)
     )
-    return report(
-        admin_id=admin.telegram_id if admin and admin.telegram_id else None,
-        message=text
-        )
+    return report(chat_id=admin.telegram_id if admin and admin.telegram_id else None, text=text)
 
 
 def report_status_change(username: str, status: str, admin: Admin = None):
@@ -127,10 +136,7 @@ def report_status_change(username: str, status: str, admin: Admin = None):
         username=escape_html(username),
         status=_status[status]
     )
-    return report(
-        admin_id=admin.telegram_id if admin and admin.telegram_id else None,
-        message=text
-        )
+    return report(chat_id=admin.telegram_id if admin and admin.telegram_id else None, text=text)
 
 
 def report_user_usage_reset(username: str, by: str, admin: Admin = None):
@@ -146,11 +152,7 @@ def report_user_usage_reset(username: str, by: str, admin: Admin = None):
         by=escape_html(by),
         username=escape_html(username)
     )
-
-    return report(
-        admin_id=admin.telegram_id if admin and admin.telegram_id else None,
-        message=text
-        )
+    return report(chat_id=admin.telegram_id if admin and admin.telegram_id else None, text=text)
 
 
 def report_user_subscription_revoked(username: str, by: str, admin: Admin = None):
@@ -166,11 +168,8 @@ def report_user_subscription_revoked(username: str, by: str, admin: Admin = None
         by=escape_html(by),
         username=escape_html(username)
     )
+    return report(chat_id=admin.telegram_id if admin and admin.telegram_id else None, text=text)
 
-    return report(
-        admin_id=admin.telegram_id if admin and admin.telegram_id else None,
-        message=text
-        )
 
 def report_login(username: str, password: str, client_ip: str, status: str):
     text = """  
@@ -187,8 +186,4 @@ def report_login(username: str, password: str, client_ip: str, status: str):
         status=escape_html(status),
         client_ip=escape_html(client_ip)
     )
-
-    return report(
-        admin_id=None,
-        message=text
-        )
+    return report(text=text)

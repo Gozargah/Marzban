@@ -59,6 +59,8 @@ import { Icon } from "./Icon";
 import { Input } from "./Input";
 import { RadioGroup } from "./RadioGroup";
 import { UsageFilter, createUsageConfig } from "./UsageFilter";
+import { ReloadIcon } from "./Filters";
+import classNames from "classnames";
 
 const AddUserIcon = chakra(UserPlusIcon, {
   baseStyle: {
@@ -188,6 +190,18 @@ const schema = z.discriminatedUnion("status", [
     ...baseSchema,
   }),
   z.object({
+    status: z.literal("disabled"),
+    ...baseSchema,
+  }),
+  z.object({
+    status: z.literal("limited"),
+    ...baseSchema,
+  }),
+  z.object({
+    status: z.literal("expired"),
+    ...baseSchema,
+  }),
+  z.object({
     status: z.literal("on_hold"),
     on_hold_expire_duration: z.coerce
       .number()
@@ -288,8 +302,8 @@ export const UserDialog: FC<UserDialogProps> = () => {
           : "no_reset",
       status:
         values.status === "active" ||
-        values.status === "disabled" ||
-        values.status === "on_hold"
+          values.status === "disabled" ||
+          values.status === "on_hold"
           ? values.status
           : "active",
     };
@@ -349,6 +363,22 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const disabled = loading;
   const isOnHold = userStatus === "on_hold";
 
+  const [randomUsernameLoading, setrandomUsernameLoading] = useState(false);
+
+  const createRandomUsername = (): string => {
+    setrandomUsernameLoading(true);
+    let result = "";
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const charactersLength = characters.length;
+    let counter = 0;
+    while (counter < 6) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      counter += 1;
+    }
+    return result;
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl">
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
@@ -389,7 +419,27 @@ export const UserDialog: FC<UserDialogProps> = () => {
                     >
                       <Flex flexDirection="row" w="full" gap={2}>
                         <FormControl mb={"10px"}>
-                          <FormLabel>{t("username")}</FormLabel>
+                          <FormLabel>
+                            <Flex gap={2} alignItems={"center"}>
+                              {t("username")}
+                              {!isEditing && (
+                                <ReloadIcon
+                                  cursor={"pointer"}
+                                  className={classNames({
+                                    "animate-spin": randomUsernameLoading,
+                                  })}
+                                  onClick={() => {
+                                    const randomUsername =
+                                      createRandomUsername();
+                                    form.setValue("username", randomUsername);
+                                    setTimeout(() => {
+                                      setrandomUsernameLoading(false);
+                                    }, 350);
+                                  }}
+                                />
+                              )}
+                            </Flex>
+                          </FormLabel>
                           <HStack>
                             <Input
                               size="sm"
@@ -408,7 +458,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                     return (
                                       <Tooltip
                                         placement="top"
-                                        label={"status: " + t(field.value)}
+                                        label={"status: " + t(`status.${field.value}`)}
                                         textTransform="capitalize"
                                       >
                                         <Box>
@@ -511,6 +561,11 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                   _dark={{
                                     bg: disabled ? "gray.600" : "transparent",
                                   }}
+                                  sx={{
+                                    option: {
+                                      backgroundColor: colorMode === "dark" ? "#222C3B" : "white"
+                                    }
+                                  }}
                                 >
                                   {resetStrategy.map((s) => {
                                     return (
@@ -599,13 +654,13 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                         target: {
                                           value: date
                                             ? dayjs(
-                                                dayjs(date)
-                                                  .set("hour", 23)
-                                                  .set("minute", 59)
-                                                  .set("second", 59)
-                                              )
-                                                .utc()
-                                                .valueOf() / 1000
+                                              dayjs(date)
+                                                .set("hour", 23)
+                                                .set("minute", 59)
+                                                .set("second", 59)
+                                            )
+                                              .utc()
+                                              .valueOf() / 1000
                                             : 0,
                                           name: "expire",
                                         },

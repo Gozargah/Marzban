@@ -64,3 +64,18 @@ export type UserCreate = Pick<
   | "status"
   | "note"
 >;
+
+export type UserApi = {
+  discord_webook: string;
+  is_sudo: boolean;
+  telegram_id: number | string;
+  username: string;
+}
+
+export type UseGetUserReturn = {
+  userData: UserApi;
+  getUserIsPending: boolean;
+  getUserIsSuccess: boolean;
+  getUserIsError: boolean;
+  getUserError: Error | null;
+}

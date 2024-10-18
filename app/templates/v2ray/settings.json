@@ -1,0 +1,75 @@
+{
+  "grpcSettings": {
+    "idle_timeout": 60,
+    "health_check_timeout": 20,
+    "permit_without_stream": false,
+    "initial_windows_size": 0
+  },
+  "httpSettings": {
+    "read_idle_timeout": 10,
+    "health_check_timeout": 15,
+    "method": "GET",
+    "headers": {
+      "Pragma": [
+        "no-cache"
+      ]
+    }
+  },
+  "kcpSettings": {
+    "mtu": 1350,
+    "tti": 50,
+    "uplinkCapacity": 5,
+    "downlinkCapacity": 20,
+    "congestion": false,
+    "readBufferSize": 2,
+    "writeBufferSize": 2,
+    "header": {}
+  },
+  "tcpSettings": {
+    "header": {
+      "type": "none"
+    }
+  },
+  "tcphttpSettings": {
+    "header": {
+      "request": {
+        "headers": {
+          "Accept-Encoding": [
+            "gzip", "deflate"
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "Pragma": "no-cache"
+        },
+        "method": "GET",
+        "version": "1.1"
+      }
+    }
+  },
+  "wsSettings": {
+    "headers": {
+      "Pragma": "no-cache"
+    }
+  },
+  "h2Settings": {
+    "headers": {
+      "Pragma": "no-cache"
+    }
+  },
+  "h3Settings": {
+    "headers": {
+      "Pragma": "no-cache"
+    }
+  },
+  "httpupgradeSettings": {
+    "headers": {
+      "Pragma": "no-cache"
+    }
+  },
+  "splithttpSettings": {
+    "headers": {
+      "Pragma": "no-cache"
+    }
+  }
+}

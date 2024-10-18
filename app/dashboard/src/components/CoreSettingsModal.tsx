@@ -15,9 +15,11 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Select,
   Text,
   Tooltip,
   useToast,
+  useColorMode
 } from "@chakra-ui/react";
 import {
   ArrowPathIcon,
@@ -40,6 +42,7 @@ import { getAuthToken } from "utils/authStorage";
 import { Icon } from "./Icon";
 import { JsonEditor } from "./JsonEditor";
 import "./JsonEditor/themes.js";
+import { useNodesQuery } from "contexts/NodesContext";
 
 export const MAX_NUMBER_OF_LOGS = 500;
 
@@ -79,7 +82,7 @@ const getStatus = (status: string) => {
   }[status];
 };
 
-const getWebsocketUrl = () => {
+const getWebsocketUrl = (nodeID: string) => {
   try {
     let baseURL = new URL(
       import.meta.env.VITE_BASE_API.startsWith("/")
@@ -89,7 +92,10 @@ const getWebsocketUrl = () => {
 
     return (
       (baseURL.protocol === "https:" ? "wss://" : "ws://") +
-      joinPaths([baseURL.host + baseURL.pathname, "/core/logs"]) +
+      joinPaths([
+        baseURL.host + baseURL.pathname,
+        !nodeID ? "/core/logs" : `/node/${nodeID}/logs`,
+      ]) +
       "?interval=1&token=" +
       getAuthToken()
     );
@@ -102,6 +108,24 @@ const getWebsocketUrl = () => {
 
 let logsTmp: string[] = [];
 const CoreSettingModalContent: FC = () => {
+
+  const { colorMode } = useColorMode();
+
+  const { data: nodes } = useNodesQuery();
+  const disabled = false;
+  const [selectedNode, setNode] = useState<string>("");
+
+  const handleLog = (id: string, title: string) => {
+    if (id === selectedNode) return;
+    else if (id === "host") {
+      setNode("");
+      setLogs([]);
+    } else {
+      setNode(id);
+      setLogs([]);
+    }
+  };
+
   const { isEditingCore } = useDashboard();
   const {
     fetchCoreSettings,
@@ -145,7 +169,7 @@ const CoreSettingModalContent: FC = () => {
     []
   );
 
-  const { readyState } = useWebSocket(getWebsocketUrl(), {
+  const { readyState } = useWebSocket(getWebsocketUrl(selectedNode), {
     onMessage: (e: any) => {
       logsTmp.push(e.data);
       if (logsTmp.length > MAX_NUMBER_OF_LOGS)
@@ -251,8 +275,47 @@ const CoreSettingModalContent: FC = () => {
           </Box>
         </FormControl>
         <FormControl mt="4">
-          <HStack justifyContent="space-between">
-            <FormLabel>{t("core.logs")}</FormLabel>
+          <HStack
+            justifyContent="space-between"
+            style={{ paddingBottom: "1rem" }}
+          >
+            <HStack>
+              {nodes?.[0] && (
+                <Select
+                  size="sm"
+                  style={{ width: "auto" }}
+                  disabled={disabled}
+                  bg={disabled ? "gray.100" : "transparent"}
+                  _dark={{
+                    bg: disabled ? "gray.600" : "transparent",
+                  }}
+                  sx={{
+                    option: {
+                      backgroundColor: colorMode === "dark" ? "#222C3B" : "white"
+                    }
+                  }}
+                  onChange={(v) =>
+                    handleLog(
+                      v.currentTarget.value,
+                      v.currentTarget.selectedOptions[0].text
+                    )
+                  }
+                >
+                  <option key={"host"} value={"host"} defaultChecked>
+                    Master
+                  </option>
+                  {nodes &&
+                    nodes.map((s) => {
+                      return (
+                        <option key={s.address} value={String(s.id)}>
+                          {t(s.name)}
+                        </option>
+                      );
+                    })}
+                </Select>
+              )}
+              <FormLabel className="w-au">{t("core.logs")}</FormLabel>
+            </HStack>
             <Text as={FormLabel}>{t(`core.socket.${status}`)}</Text>
           </HStack>
           <Box
@@ -280,21 +343,24 @@ const CoreSettingModalContent: FC = () => {
       </ModalBody>
       <ModalFooter>
         <HStack w="full" justifyContent="space-between">
-          <Box>
-            <Button
-              size="sm"
-              leftIcon={
-                <ReloadIcon
-                  className={classNames({
-                    "animate-spin": isRestarting,
-                  })}
-                />
-              }
-              onClick={() => handleRestartCore()}
-            >
-              {t(isRestarting ? "core.restarting" : "core.restartCore")}
-            </Button>
-          </Box>
+          <HStack>
+            <Box>
+              <Button
+                size="sm"
+                leftIcon={
+                  <ReloadIcon
+                    className={classNames({
+                      "animate-spin": isRestarting,
+                    })}
+                  />
+                }
+                onClick={() => handleRestartCore()}
+              >
+                {t(isRestarting ? "core.restarting" : "core.restartCore")}
+              </Button>
+            </Box>
+          </HStack>
+
           <HStack>
             <Button
               size="sm"

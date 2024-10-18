@@ -8,11 +8,10 @@ from app.db import (GetDB, get_notification_reminder, get_users,
                     start_user_expire, update_user_status)
 from app.models.user import ReminderType, UserResponse, UserStatus
 from app.utils import report
-from app.utils.concurrency import GetBG
 from app.utils.helpers import (calculate_expiration_days,
                                calculate_usage_percent)
-from config import (NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT,
-                    WEBHOOK_ADDRESS)
+from config import (JOB_REVIEW_USERS_INTERVAL, NOTIFY_DAYS_LEFT,
+                    NOTIFY_REACHED_USAGE_PERCENT, WEBHOOK_ADDRESS)
 
 if TYPE_CHECKING:
     from app.db.models import User
@@ -38,7 +37,7 @@ def add_notification_reminders(db: Session, user: "User", now: datetime = dateti
 def review():
     now = datetime.utcnow()
     now_ts = now.timestamp()
-    with GetDB() as db, GetBG() as bg:
+    with GetDB() as db:
         for user in get_users(db, status=UserStatus.active):
 
             limited = user.data_limit and user.used_traffic >= user.data_limit
@@ -56,7 +55,7 @@ def review():
             update_user_status(db, user, status)
 
             report.status_change(username=user.username, status=status,
-                user=UserResponse.from_orm(user), user_admin=user.admin)
+                                 user=UserResponse.from_orm(user), user_admin=user.admin)
 
             logger.info(f"User \"{user.username}\" status changed to {status}")
 
@@ -80,11 +79,13 @@ def review():
 
             update_user_status(db, user, status)
             start_user_expire(db, user)
-            
+
             report.status_change(username=user.username, status=status,
-                user=UserResponse.from_orm(user), user_admin=user.admin)
+                                 user=UserResponse.from_orm(user), user_admin=user.admin)
 
             logger.info(f"User \"{user.username}\" status changed to {status}")
 
 
-scheduler.add_job(review, 'interval', seconds=10, coalesce=True, max_instances=1)
+scheduler.add_job(review, 'interval',
+                  seconds=JOB_REVIEW_USERS_INTERVAL,
+                  coalesce=True, max_instances=1)
