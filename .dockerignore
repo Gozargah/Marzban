@@ -1,11 +1,12 @@
 **/node_modules
-__pycache__
+*.log
 *.pyc
-*.pyo
 *.pyd
+*.pyo
 .env*
+__pycache__
 db.sqlite3
 db.sqlite3-journal
-*.log
 v2ray-core
+venv
 xray-core
