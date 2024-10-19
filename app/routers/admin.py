@@ -93,7 +93,6 @@ def modify_admin(
 
 @router.delete(
     "/admin/{username}",
-    status_code=204,
     responses={401: responses._401, 403: responses._403},
 )
 def remove_admin(
@@ -109,7 +108,7 @@ def remove_admin(
         )
 
     crud.remove_admin(db, dbadmin)
-    return
+    return {"detail": "Admin removed successfully"}
 
 
 @router.get("/admin", response_model=Admin, responses={401: responses._401})
