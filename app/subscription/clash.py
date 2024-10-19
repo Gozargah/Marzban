@@ -247,7 +247,6 @@ class ClashConfiguration(object):
 
         if mux_enable:
             net_opts['smux'] = mux_config
-            net_opts['smux']["enabled"] = True
 
         return node
 
