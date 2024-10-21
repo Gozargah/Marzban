@@ -19,19 +19,28 @@ if TYPE_CHECKING:
 
 def add_notification_reminders(db: Session, user: "User", now: datetime = datetime.utcnow()) -> None:
     if user.data_limit:
-        usage_percent = calculate_usage_percent(
-            user.used_traffic, user.data_limit)
-        if (usage_percent >= NOTIFY_REACHED_USAGE_PERCENT) and (not get_notification_reminder(db, user.id, ReminderType.data_usage)):
-            report.data_usage_percent_reached(
-                db, usage_percent, UserResponse.from_orm(user),
-                user.id, user.expire)
+        usage_percent = calculate_usage_percent(user.used_traffic, user.data_limit)
 
-    if user.expire and ((now - user.created_at).days >= NOTIFY_DAYS_LEFT):
+        for percent in sorted(NOTIFY_REACHED_USAGE_PERCENT, reverse=True):
+            if usage_percent >= percent:
+                if not get_notification_reminder(db, user.id, ReminderType.data_usage, threshold=percent):
+                    report.data_usage_percent_reached(
+                        db, usage_percent, UserResponse.from_orm(user),
+                        user.id, user.expire, threshold=percent
+                    )
+                break
+
+    if user.expire:
         expire_days = calculate_expiration_days(user.expire)
-        if (expire_days <= NOTIFY_DAYS_LEFT) and (not get_notification_reminder(db, user.id, ReminderType.expiration_date)):
-            report.expire_days_reached(
-                db, expire_days, UserResponse.from_orm(user),
-                user.id, user.expire)
+
+        for days_left in sorted(NOTIFY_DAYS_LEFT):
+            if expire_days <= days_left:
+                if not get_notification_reminder(db, user.id, ReminderType.expiration_date, threshold=days_left):
+                    report.expire_days_reached(
+                        db, expire_days, UserResponse.from_orm(user),
+                        user.id, user.expire, threshold=days_left
+                    )
+                break
 
 
 def review():
