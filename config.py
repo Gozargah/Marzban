@@ -116,14 +116,14 @@ NUMBER_OF_RECURRENT_NOTIFICATIONS = config("NUMBER_OF_RECURRENT_NOTIFICATIONS", 
 # sends a notification when the user uses this much of thier data
 NOTIFY_REACHED_USAGE_PERCENT = config(
     "NOTIFY_REACHED_USAGE_PERCENT",
-    default=[80],
+    default="80",
     cast=lambda v: [int(p.strip()) for p in v.split(',')] if v else []
 )
 
 # sends a notification when there is n days left of their service
 NOTIFY_DAYS_LEFT = config(
     "NOTIFY_DAYS_LEFT",
-    default=[3],
+    default="3",
     cast=lambda v: [int(d.strip()) for d in v.split(',')] if v else []
 )
 
