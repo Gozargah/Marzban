@@ -11,7 +11,7 @@ from app.utils import report, responses
 from app.utils.jwt import create_admin_token
 from config import LOGIN_NOTIFY_WHITE_LIST
 
-router = APIRouter(tags=["Admin"], prefix="/api")
+router = APIRouter(tags=["Admin"], prefix="/api", responses={401: responses._401})
 
 
 def get_client_ip(request: Request) -> str:
@@ -51,7 +51,7 @@ def admin_token(
 @router.post(
     "/admin",
     response_model=Admin,
-    responses={401: responses._401, 403: responses._403, 409: responses._409},
+    responses={403: responses._403, 409: responses._409},
 )
 def create_admin(
     new_admin: AdminCreate,
@@ -71,7 +71,7 @@ def create_admin(
 @router.put(
     "/admin/{username}",
     response_model=Admin,
-    responses={401: responses._401, 403: responses._403},
+    responses={403: responses._403},
 )
 def modify_admin(
     modified_admin: AdminModify,
@@ -93,7 +93,7 @@ def modify_admin(
 
 @router.delete(
     "/admin/{username}",
-    responses={401: responses._401, 403: responses._403},
+    responses={403: responses._403},
 )
 def remove_admin(
     dbadmin: Admin = Depends(get_admin_by_username),
@@ -111,7 +111,7 @@ def remove_admin(
     return {"detail": "Admin removed successfully"}
 
 
-@router.get("/admin", response_model=Admin, responses={401: responses._401})
+@router.get("/admin", response_model=Admin)
 def get_current_admin(admin: Admin = Depends(Admin.get_current)):
     """Retrieve the current authenticated admin."""
     return admin
@@ -120,7 +120,7 @@ def get_current_admin(admin: Admin = Depends(Admin.get_current)):
 @router.get(
     "/admins",
     response_model=List[Admin],
-    responses={401: responses._401, 403: responses._403},
+    responses={403: responses._403},
 )
 def get_admins(
     offset: Optional[int] = None,
