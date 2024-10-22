@@ -71,7 +71,7 @@ def create_admin(
 @router.put(
     "/admin/{username}",
     response_model=Admin,
-    responses={403: responses._403},
+    responses={403: responses._403, 404: responses._404},
 )
 def modify_admin(
     modified_admin: AdminModify,
