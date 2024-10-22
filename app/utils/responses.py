@@ -23,10 +23,10 @@ class Conflict(HTTPException):
     detail: str = "'Entity' already exists"
 
 
-_400 = {"description": "Bad request", "model": HTTPException}
+_400 = {"description": "BadRequest Error", "model": HTTPException}
 
 _401 = {
-    "description": "Unauthorized",
+    "description": "Unauthorized Error",
     "model": Unauthorized,
     "headers": {
         "WWW-Authenticate": {
@@ -36,8 +36,8 @@ _401 = {
     },
 }
 
-_403 = {"description": "Forbidden", "model": Forbidden}
+_403 = {"description": "Forbidden Error", "model": Forbidden}
 
-_404 = {"description": "Not found", "model": NotFound}
+_404 = {"description": "NotFound Error", "model": NotFound}
 
-_409 = {"description": "Conflict", "model": Conflict}
+_409 = {"description": "Conflict Error", "model": Conflict}
