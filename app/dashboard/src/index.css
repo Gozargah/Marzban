@@ -316,14 +316,22 @@ table thead {
 		--chart-4: 43 74% 66%;
 		--chart-5: 27 87% 67%;
 		--radius: 0.5rem;
+		--sidebar-background: 0 0% 98%;
+		--sidebar-foreground: 240 5.3% 26.1%;
+		--sidebar-primary: 240 5.9% 10%;
+		--sidebar-primary-foreground: 0 0% 98%;
+		--sidebar-accent: 240 4.8% 95.9%;
+		--sidebar-accent-foreground: 240 5.9% 10%;
+		--sidebar-border: 220 13% 91%;
+		--sidebar-ring: 217.2 91.2% 59.8%;
 	}
 
 	.dark {
-		--background: 217 28% 12%;
+		--background: 240 4% 10%;
 		--foreground: 0 0% 98%;
 		--card: 0 0% 3.9%;
 		--card-foreground: 0 0% 98%;
-		--popover: 0 0% 3.9%;
+		--popover: 240 4% 10%;
 		--popover-foreground: 0 0% 98%;
 		--primary: 212 52% 51%;
 		--primary-foreground: 0 0% 5%;
@@ -335,23 +343,31 @@ table thead {
 		--accent-foreground: 0 0% 98%;
 		--destructive: 0 60% 55%;
 		--destructive-foreground: 0 0% 98%;
-		--border: 0 0% 14.9%;
-		--input: 216 23% 24%;
+		--border: 0 0% 20%;
+		--input: 0, 0%, 26%;
 		--ring: 212 52% 40%;
 		--chart-1: 220 70% 50%;
 		--chart-2: 160 60% 45%;
 		--chart-3: 30 80% 55%;
 		--chart-4: 280 65% 60%;
 		--chart-5: 340 75% 55%;
+		--sidebar-background: 240 5.9% 10%;
+		--sidebar-foreground: 240 4.8% 95.9%;
+		--sidebar-primary: 224.3 76.3% 48%;
+		--sidebar-primary-foreground: 0 0% 100%;
+		--sidebar-accent: 240 3.7% 15.9%;
+		--sidebar-accent-foreground: 240 4.8% 95.9%;
+		--sidebar-border: 240 3.7% 15.9%;
+		--sidebar-ring: 212 52% 40%;
 	}
 }
 
 @layer base {
 	* {
-		@apply border-border;
+		@apply !border-border;
 	}
 
 	body {
-		@apply bg-background text-foreground;
+		@apply !bg-background !text-foreground;
 	}
 }
