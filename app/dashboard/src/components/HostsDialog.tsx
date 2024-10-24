@@ -570,7 +570,6 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                     value={undefined}
                                     isChecked={!field.value}
                                     onChange={(e) => {
-                                      console.log(e.target.checked);
                                       field.onChange(!e.target.checked);
                                     }}
                                   />
@@ -1064,7 +1063,6 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                                 </Error>
                               )}
                           </FormControl>
-
 
                           <FormControl
                             isInvalid={
