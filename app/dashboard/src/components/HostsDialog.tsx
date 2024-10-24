@@ -69,7 +69,7 @@ import { DeleteIcon } from "./DeleteUserModal";
 import { Icon } from "./Icon";
 import { Input as CustomInput } from "./Input";
 
-export const DublicateIcon = chakra(DocumentDuplicateIcon, {
+export const DuplicateIcon = chakra(DocumentDuplicateIcon, {
   baseStyle: {
     w: 5,
     h: 5,
@@ -589,15 +589,15 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             </Tooltip>
                           </Container>
                         </AccordionButton>
-                        <Tooltip label="Dublicate" placement="top">
+                        <Tooltip label="Duplicate" placement="top">
                           <IconButton
-                            aria-label="Dublicate"
+                            aria-label="Duplicate"
                             size="sm"
                             colorScheme="white"
                             variant="ghost"
                             onClick={() => duplicateHost(index)}
                           >
-                            <DublicateIcon />
+                            <DuplicateIcon />
                           </IconButton>
                         </Tooltip>
                         {index < hosts.length - 1 && (

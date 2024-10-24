@@ -213,10 +213,6 @@ class V2rayShareLink(str):
                 payload["mode"] = "gun"
 
         elif net == "splithttp":
-            # before 1.8.23
-            payload["maxUploadSize"] = sc_max_each_post_bytes
-            payload["maxConcurrentUploads"] = sc_max_concurrent_posts
-            # 1.8.23 and later
             payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
             payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
@@ -279,10 +275,6 @@ class V2rayShareLink(str):
         elif net == "splithttp":
             payload["path"] = path
             payload["host"] = host
-            # before 1.8.23
-            payload["maxUploadSize"] = sc_max_each_post_bytes
-            payload["maxConcurrentUploads"] = sc_max_concurrent_posts
-            # 1.8.23 and later
             payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
             payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
@@ -367,10 +359,6 @@ class V2rayShareLink(str):
         elif net == "splithttp":
             payload["path"] = path
             payload["host"] = host
-            # before 1.8.23
-            payload["maxUploadSize"] = sc_max_each_post_bytes
-            payload["maxConcurrentUploads"] = sc_max_concurrent_posts
-            # 1.8.23 and later
             payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
             payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
@@ -545,14 +533,10 @@ class V2rayJsonConfig(str):
         if random_user_agent:
             config["headers"]["User-Agent"] = choice(
                 self.user_agent_list)
-        # before 1.8.23
-        config["maxUploadSize"] = sc_max_each_post_bytes
-        config["maxConcurrentUploads"] = sc_max_concurrent_posts
-        # 1.8.23 and later
-        config["scMaxEachPostBytes"] = sc_max_each_post_bytes
-        config["scMaxConcurrentPosts"] = sc_max_concurrent_posts
-        config["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
-        config["xPaddingBytes"] = x_padding_bytes
+        config.setdefault("scMaxEachPostBytes", sc_max_each_post_bytes)
+        config.setdefault("scMaxConcurrentPosts", sc_max_concurrent_posts)
+        config.setdefault("scMinPostsIntervalMs", sc_min_posts_interval_ms)
+        config.setdefault("xPaddingBytes", x_padding_bytes)
         if xmux:
             config["xmux"] = xmux
 
