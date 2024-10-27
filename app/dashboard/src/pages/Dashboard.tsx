@@ -1,10 +1,7 @@
-import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { Box, VStack } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import { CoreSettingsModal } from "components/CoreSettingsModal";
 import { DeleteUserModal } from "components/DeleteUserModal";
 import { Filters } from "components/Filters";
-import { Footer } from "components/Footer";
 import { Header } from "components/Header";
 import { HostsDialog } from "components/HostsDialog";
 import { NodesDialog } from "components/NodesModal";
@@ -25,30 +22,22 @@ export const Dashboard: FC = () => {
     fetchInbounds();
   }, []);
   return (
-    <div className="w-full flex gap-1">
-      <SidebarProvider>
-        <AppSidebar />
-        <VStack justifyContent="space-between" minH="100vh" p="6" rowGap={4}>
-          <Box w="full">
-            <Header />
-            <Statistics mt="4" />
-            <Filters />
-            <UsersTable />
-            <UserDialog />
-            <DeleteUserModal />
-            <QRCodeDialog />
-            <HostsDialog />
-            <ResetUserUsageModal />
-            <RevokeSubscriptionModal />
-            <NodesDialog />
-            <NodesUsage />
-            <ResetAllUsageModal />
-            <CoreSettingsModal />
-          </Box>
-          <Footer />
-        </VStack>
-      </SidebarProvider>
-    </div>
+    <Box w="full">
+      <Header />
+      <Statistics mt="4" />
+      <Filters />
+      <UsersTable />
+      <UserDialog />
+      <DeleteUserModal />
+      <QRCodeDialog />
+      <HostsDialog />
+      <ResetUserUsageModal />
+      <RevokeSubscriptionModal />
+      <NodesDialog />
+      <NodesUsage />
+      <ResetAllUsageModal />
+      <CoreSettingsModal />
+    </Box>
   );
 };
 

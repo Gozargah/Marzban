@@ -1,6 +1,7 @@
 import { ReactComponent as Logo } from "assets/logo.svg";
 import {
   BookOpen,
+  GithubIcon,
   LifeBuoy,
   PieChart,
   RssIcon,
@@ -33,34 +34,34 @@ const data = {
   navMain: [
     {
       title: "Users",
-      url: "#",
+      url: "/",
       icon: UsersIcon,
     },
     {
       title: "Statistics",
-      url: "#",
+      url: "/statistics",
       icon: PieChart,
     },
     {
       title: "Settings",
-      url: "#",
+      url: "/settings",
       icon: Settings2,
       items: [
         {
           title: "General",
-          url: "#",
+          url: "/settings",
         },
         {
           title: "Interfaces",
-          url: "#",
+          url: "/settings/interfaces",
         },
         {
           title: "Nodes",
-          url: "#",
+          url: "/settings/nodes",
         },
         {
           title: "Core",
-          url: "#",
+          url: "/settings/core",
         },
       ],
     },
@@ -80,9 +81,14 @@ const data = {
       icon: BookOpen,
     },
     {
-      title: "Community Group",
+      title: "Discussion Group",
       url: "#",
       icon: RssIcon,
+    },
+    {
+      title: "GitHub",
+      url: "#",
+      icon: GithubIcon,
     },
   ],
 };
