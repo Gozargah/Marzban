@@ -176,7 +176,7 @@ class ClashConfiguration(object):
             is_httpupgrade = True
         else:
             is_httpupgrade = False
-        if network in ("http","h2","h3"):
+        if network in ("http", "h2", "h3"):
             network = "h2"
 
         node = {
@@ -246,7 +246,7 @@ class ClashConfiguration(object):
         mux_config = mux_json["clash"]
 
         if mux_enable:
-            net_opts['smux'] = mux_config
+            node['smux'] = mux_config
 
         return node
 
