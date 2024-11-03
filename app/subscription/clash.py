@@ -109,13 +109,12 @@ class ClashConfiguration(object):
             config["headers"]["Host"] = host
         if random_user_agent:
             config["headers"]["User-Agent"] = choice(self.user_agent_list)
-        if max_early_data:
+        if max_early_data and not is_httpupgrade:
             config["max-early-data"] = max_early_data
             config["early-data-header-name"] = early_data_header_name
         if is_httpupgrade:
             config["v2ray-http-upgrade"] = True
-            if max_early_data:
-                config["v2ray-http-upgrade-fast-open"] = True
+            config["v2ray-http-upgrade-fast-open"] = True
 
         return config
 
