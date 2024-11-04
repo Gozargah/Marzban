@@ -1,11 +1,11 @@
+import re
 from datetime import datetime as dt
 
 from dateutil.relativedelta import relativedelta
 
-from app.models.user import User, UserStatus, UserResponse
+from app.models.user import User, UserResponse, UserStatus
 from app.models.user_template import UserTemplate
 from app.utils.system import readable_size
-
 
 statuses = {
     UserStatus.active: "✅",
@@ -96,3 +96,9 @@ Username Prefix: <b>{template.username_prefix if template.username_prefix else "
 Username Suffix: <b>{template.username_suffix if template.username_suffix else "-"}</b>
 Protocols: {protocols}"""
     return text
+
+
+def get_number_at_end(username: str):
+    n = re.search(r'(\d+)$', username)
+    if n:
+        return n.group(1)
