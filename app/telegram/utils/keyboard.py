@@ -28,6 +28,8 @@ class BotKeyboard:
         keyboard.add(
             types.InlineKeyboardButton(text='➕ Create User From Template', callback_data='template_add_user'))
         keyboard.add(
+            types.InlineKeyboardButton(text='➕ Bulk User From Template', callback_data='template_add_bulk_user'))
+        keyboard.add(
             types.InlineKeyboardButton(text='➕ Create User', callback_data='add_user'))
         keyboard.add(
             types.InlineKeyboardButton(text='➕ Create Bulk User', callback_data='add_bulk_user'))
