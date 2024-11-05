@@ -212,17 +212,17 @@ class V2rayShareLink(str):
             else:
                 payload["mode"] = "gun"
 
-        elif net == "splithttp":
+        elif net in ("splithttp", "xhttp"):
             payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
             payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
             payload["xPaddingBytes"] = x_padding_bytes
 
         return (
-                "vmess://"
-                + base64.b64encode(
-            json.dumps(payload, sort_keys=True).encode("utf-8")
-        ).decode()
+            "vmess://"
+            + base64.b64encode(
+                json.dumps(payload, sort_keys=True).encode("utf-8")
+            ).decode()
         )
 
     @classmethod
@@ -272,7 +272,7 @@ class V2rayShareLink(str):
             payload['key'] = path
             payload["quicSecurity"] = host
 
-        elif net == "splithttp":
+        elif net in ("splithttp", "xhttp"):
             payload["path"] = path
             payload["host"] = host
             payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
@@ -307,10 +307,10 @@ class V2rayShareLink(str):
                 payload["spx"] = spx
 
         return (
-                "vless://"
-                + f"{id}@{address}:{port}?"
-                + urlparse.urlencode(payload)
-                + f"#{(urlparse.quote(remark))}"
+            "vless://"
+            + f"{id}@{address}:{port}?"
+            + urlparse.urlencode(payload)
+            + f"#{(urlparse.quote(remark))}"
         )
 
     @classmethod
@@ -356,7 +356,7 @@ class V2rayShareLink(str):
             else:
                 payload["mode"] = "gun"
 
-        elif net == "splithttp":
+        elif net in ("splithttp", "xhttp"):
             payload["path"] = path
             payload["host"] = host
             payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
@@ -394,10 +394,10 @@ class V2rayShareLink(str):
                 payload["spx"] = spx
 
         return (
-                "trojan://"
-                + f"{urlparse.quote(password, safe=':')}@{address}:{port}?"
-                + urlparse.urlencode(payload)
-                + f"#{urlparse.quote(remark)}"
+            "trojan://"
+            + f"{urlparse.quote(password, safe=':')}@{address}:{port}?"
+            + urlparse.urlencode(payload)
+            + f"#{urlparse.quote(remark)}"
         )
 
     @classmethod
@@ -405,9 +405,9 @@ class V2rayShareLink(str):
             cls, remark: str, address: str, port: int, password: str, method: str
     ):
         return (
-                "ss://"
-                + base64.b64encode(f"{method}:{password}".encode()).decode()
-                + f"@{address}:{port}#{urlparse.quote(remark)}"
+            "ss://"
+            + base64.b64encode(f"{method}:{password}".encode()).decode()
+            + f"@{address}:{port}#{urlparse.quote(remark)}"
         )
 
 
@@ -863,7 +863,7 @@ class V2rayJsonConfig(str):
         elif net == "httpupgrade":
             network_setting = self.httpupgrade_config(
                 path=path, host=host, random_user_agent=random_user_agent)
-        elif net == "splithttp":
+        elif net in ("splithttp", "xhttp"):
             network_setting = self.splithttp_config(path=path, host=host, random_user_agent=random_user_agent,
                                                     sc_max_each_post_bytes=sc_max_each_post_bytes,
                                                     sc_max_concurrent_posts=sc_max_concurrent_posts,
