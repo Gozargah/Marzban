@@ -996,11 +996,25 @@ def random_username(call: types.CallbackQuery):
         schedule_delete_message(call.message.chat.id, msg.id)
         return bot.register_next_step_handler(msg, add_user_bulk_number_step, username=username)
     else:
-        msg = bot.send_message(
-            call.message.chat.id,
-            '⚡ Select User Status:\nOn Hold: Expiration starts after the first connection\nActive: Expiration starts from now',
-            reply_markup=BotKeyboard.user_status_select())
-        schedule_delete_message(call.message.chat.id, msg.id)
+        if expire_date:
+            msg = bot.send_message(
+                call.message.chat.id,
+                '⚡ Select User Status:\nOn Hold: Expiration starts after the first connection\nActive: Expiration starts from now',
+                reply_markup=BotKeyboard.user_status_select())
+            schedule_delete_message(call.message.chat.id, msg.id)
+        else:
+            mem_store.set(f"{call.message.chat.id}:template_info_text", None)
+            mem_store.set(f"{call.message.chat.id}:user_status", UserStatus.active)
+            bot.send_message(
+                call.message.chat.id,
+                text,
+                parse_mode="HTML",
+                reply_markup=BotKeyboard.select_protocols(
+                    template.inbounds,
+                    "create_from_template",
+                    username=username,
+                    data_limit=template.data_limit,
+                    expire_date=expire_date,))
 
 
 def add_user_from_template_username_step(message: types.Message):
@@ -1071,11 +1085,25 @@ def add_user_from_template_username_step(message: types.Message):
         schedule_delete_message(message.chat.id, msg.id)
         return bot.register_next_step_handler(msg, add_user_bulk_number_step, username=username)
     else:
-        msg = bot.send_message(
-            message.chat.id,
-            '⚡ Select User Status:\nOn Hold: Expiration starts after the first connection\nActive: Expiration starts from now',
-            reply_markup=BotKeyboard.user_status_select())
-        schedule_delete_message(message.chat.id, msg.id)
+        if expire_date:
+            msg = bot.send_message(
+                message.chat.id,
+                '⚡ Select User Status:\nOn Hold: Expiration starts after the first connection\nActive: Expiration starts from now',
+                reply_markup=BotKeyboard.user_status_select())
+            schedule_delete_message(message.chat.id, msg.id)
+        else:
+            mem_store.set(f"{message.chat.id}:template_info_text", None)
+            mem_store.set(f"{message.chat.id}:user_status", UserStatus.active)
+            bot.send_message(
+                message.chat.id,
+                text,
+                parse_mode="HTML",
+                reply_markup=BotKeyboard.select_protocols(
+                    template.inbounds,
+                    "create_from_template",
+                    username=username,
+                    data_limit=template.data_limit,
+                    expire_date=expire_date,))
 
 
 @bot.callback_query_handler(cb_query_equals('add_bulk_user'), is_admin=True)
@@ -1154,12 +1182,31 @@ def add_user_bulk_number_step(message: types.Message, username: str):
     schedule_delete_message(message.chat.id, message.id)
     cleanup_messages(message.chat.id)
     if mem_store.get(f"{message.chat.id}:is_bulk_from_template", False):
-        msg = bot.send_message(
-            message.chat.id,
-            '⚡ Select User Status:\nOn Hold: Expiration starts after the first connection\nActive: Expiration starts from now',
-            reply_markup=BotKeyboard.user_status_select())
-        schedule_delete_message(message.chat.id, msg.id)
-        return
+        expire_date = mem_store.get(f'{message.chat.id}:expire_date')
+        if expire_date:
+            msg = bot.send_message(
+                message.chat.id,
+                '⚡ Select User Status:\nOn Hold: Expiration starts after the first connection\nActive: Expiration starts from now',
+                reply_markup=BotKeyboard.user_status_select())
+            schedule_delete_message(message.chat.id, msg.id)
+            return
+        else:
+            text = mem_store.get(f"{message.chat.id}:template_info_text")
+            mem_store.set(f"{message.chat.id}:template_info_text", None)
+            inbounds = mem_store.get(f"{message.chat.id}:protocols")
+            mem_store.set(f'{message.chat.id}:user_status', UserStatus.active)
+            data_limit = mem_store.get(f'{message.chat.id}:data_limit')
+            return bot.send_message(
+                message.chat.id,
+                text,
+                parse_mode="HTML",
+                reply_markup=BotKeyboard.select_protocols(
+                    inbounds,
+                    "create_from_template",
+                    username=username,
+                    data_limit=data_limit,
+                    expire_date=expire_date,))
+
     msg = bot.send_message(message.chat.id,
                            '⬆️ Enter Data Limit (GB):\n⚠️ Send 0 for unlimited.',
                            reply_markup=BotKeyboard.inline_cancel_action())
