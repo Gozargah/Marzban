@@ -251,7 +251,7 @@ class ClashConfiguration(object):
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
         # not supported by clash
-        if inbound['network'] in ("kcp", "splithttp"):
+        if inbound['network'] in ("kcp", "splithttp", "xhttp"):
             return
 
         proxy_remark = self._remark_validation(remark)
@@ -342,7 +342,7 @@ class ClashMetaConfiguration(ClashConfiguration):
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
         # not supported by clash-meta
-        if inbound['network'] in ("kcp", "splithttp") or (inbound['network'] == "quic" and inbound["header_type"] != "none"):
+        if inbound['network'] in ("kcp", "splithttp", "xhttp") or (inbound['network'] == "quic" and inbound["header_type"] != "none"):
             return
 
         proxy_remark = self._remark_validation(remark)
