@@ -67,6 +67,8 @@ class User(BaseModel):
     on_hold_timeout: Optional[Union[datetime, None]] = Field(None, nullable=True)
 
     auto_delete_in_days: Optional[int] = Field(None, nullable=True)
+    
+    auto_reset_usage: bool = Field(False)
 
     @validator("proxies", pre=True, always=True)
     def validate_proxies(cls, v, values, **kwargs):
@@ -266,6 +268,7 @@ class UserResponse(User):
     subscription_url: str = ""
     proxies: dict
     excluded_inbounds: Dict[ProxyTypes, List[str]] = {}
+    auto_reset_usage: bool
 
     admin: Optional[Admin]
 

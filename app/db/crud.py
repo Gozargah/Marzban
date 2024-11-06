@@ -386,7 +386,8 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None) -> User:
         note=user.note,
         on_hold_expire_duration=(user.on_hold_expire_duration or None),
         on_hold_timeout=(user.on_hold_timeout or None),
-        auto_delete_in_days=user.auto_delete_in_days
+        auto_delete_in_days=user.auto_delete_in_days,
+        auto_reset_usage=user.auto_reset_usage
     )
     db.add(dbuser)
     db.commit()
@@ -463,6 +464,9 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
         dbuser.status = modify.status
 
     if modify.data_limit is not None:
+        if modify.auto_reset_usage is not None:
+            dbuser.auto_reset_usage = modify.auto_reset_usage
+            
         dbuser.data_limit = (modify.data_limit or None)
         if dbuser.status not in (UserStatus.expired, UserStatus.disabled):
             if not dbuser.data_limit or dbuser.used_traffic < dbuser.data_limit:
@@ -530,6 +534,7 @@ def reset_user_data_usage(db: Session, dbuser: User) -> User:
     db.add(usage_log)
 
     dbuser.used_traffic = 0
+    dbuser.auto_reset_usage = False
     dbuser.node_usages.clear()
     if dbuser.status not in (UserStatus.expired or UserStatus.disabled):
         dbuser.status = UserStatus.active.value

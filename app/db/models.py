@@ -64,6 +64,8 @@ class User(Base):
     # * Negative values: User won't be deleted automatically at all.
     # * NULL: Uses global settings.
     auto_delete_in_days = Column(Integer, nullable=True, default=None)
+    
+    auto_reset_usage = Column(Boolean, nullable=False, default=False)
 
     edit_at = Column(DateTime, nullable=True, default=None)
     last_status_change = Column(DateTime, default=datetime.utcnow, nullable=True)

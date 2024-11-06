@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app import logger, scheduler, xray
 from app.db import (GetDB, get_notification_reminder, get_users,
-                    start_user_expire, update_user_status)
+                    start_user_expire, update_user_status, reset_user_data_usage)
 from app.models.user import ReminderType, UserResponse, UserStatus
 from app.utils import report
 from app.utils.helpers import (calculate_expiration_days,
@@ -52,7 +52,11 @@ def review():
             limited = user.data_limit and user.used_traffic >= user.data_limit
             expired = user.expire and user.expire <= now_ts
             if limited:
-                status = UserStatus.limited
+                if user.auto_reset_usage:
+                    reset_user_data_usage(db, user)
+                    continue
+                else:
+                    status = UserStatus.limited
             elif expired:
                 status = UserStatus.expired
             else:
