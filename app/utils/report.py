@@ -7,7 +7,7 @@ from app.db.models import UserStatus, User
 from app.models.admin import Admin
 from app.models.user import ReminderType, UserResponse
 from app.utils.notification import (Notification, ReachedDaysLeft,
-                                    ReachedUsagePercent, UserCreated,
+                                    ReachedUsagePercent, UserCreated, UserDataResetByNext,
                                     UserDataUsageReset, UserDeleted,
                                     UserDisabled, UserEnabled, UserExpired,
                                     UserLimited, UserSubscriptionRevoked,
@@ -135,6 +135,25 @@ def user_data_usage_reset(user: UserResponse, by: Admin, user_admin: Admin = Non
             discord.report_user_usage_reset(
                 username=user.username,
                 by=by.username,
+                admin=user_admin
+            )
+        except Exception:
+            pass
+
+
+def user_data_reset_by_next(user: UserResponse, user_admin: Admin = None) -> None:
+    if NOTIFY_USER_DATA_USED_RESET:
+        try:
+            telegram.report_user_data_reset_by_next(
+                username=user.username,
+                admin=user_admin
+            )
+        except Exception:
+            pass
+        notify(UserDataResetByNext(username=user.username, action=Notification.Type.data_reset_by_next, user=user))
+        try:
+            discord.report_user_data_reset_by_next(
+                username=user.username,
                 admin=user_admin
             )
         except Exception:

@@ -64,11 +64,16 @@ class User(Base):
     # * Negative values: User won't be deleted automatically at all.
     # * NULL: Uses global settings.
     auto_delete_in_days = Column(Integer, nullable=True, default=None)
-    
-    auto_reset_usage = Column(Boolean, nullable=False, default=False)
 
     edit_at = Column(DateTime, nullable=True, default=None)
     last_status_change = Column(DateTime, default=datetime.utcnow, nullable=True)
+    
+    next_user = relationship(
+        "NextUser",
+        uselist=False,
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
 
     @hybrid_property
     def reseted_usage(self):
@@ -126,6 +131,19 @@ template_inbounds_association = Table(
     Column("user_template_id", ForeignKey("user_templates.id")),
     Column("inbound_tag", ForeignKey("inbounds.tag")),
 )
+
+
+class NextUser(Base):
+    __tablename__ = 'next_users'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    data_limit = Column(BigInteger, nullable=False)
+    expire = Column(Integer, nullable=True)
+    add_remaining_traffic = Column(Boolean, nullable=False, default=False, server_default='0')
+    fire_on_either = Column(Boolean, nullable=False, default=True, server_default='0')
+
+    user = relationship("User", back_populates="next_user")
 
 
 class UserTemplate(Base):

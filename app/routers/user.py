@@ -42,7 +42,7 @@ def add_user(
     - **note**: Optional text field for additional user information or notes.
     - **on_hold_timeout**: UTC timestamp when `on_hold` status should start or end.
     - **on_hold_expire_duration**: Duration (in seconds) for how long the user should stay in `on_hold` status.
-    - **auto_reset_usage**: Boolean for auto reset if user usage reaches limit (Reverts to False after effect).
+    - **next_user**: Next user plan (resets after use).
     """
 
     # TODO expire should be datetime instead of timestamp
@@ -96,8 +96,8 @@ def modify_user(
     - **note**: New optional text for additional user information or notes. `null` means no change.
     - **on_hold_timeout**: New UTC timestamp for when `on_hold` status should start or end. Only applicable if status is changed to 'on_hold'.
     - **on_hold_expire_duration**: New duration (in seconds) for how long the user should stay in `on_hold` status. Only applicable if status is changed to 'on_hold'.
-    - **auto_reset_usage**: Boolean for auto reset if user usage reaches limit (Reverts to False after effect).
-
+    - **next_user**: Next user plan (resets after use).
+    
     Note: Fields set to `null` or omitted will not be modified.
     """
 

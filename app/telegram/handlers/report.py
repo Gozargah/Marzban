@@ -154,6 +154,16 @@ def report_user_usage_reset(username: str, by: str, admin: Admin = None):
     )
     return report(chat_id=admin.telegram_id if admin and admin.telegram_id else None, text=text)
 
+def report_user_data_reset_by_next(username: str, admin: Admin = None):
+    text = """  
+🔁 <b>#AutoReset</b>
+➖➖➖➖➖➖➖➖➖
+<b>Username</b> : <code>{username}</code>
+➖➖➖➖➖➖➖➖➖
+    """.format(username=escape_html(username)
+    )
+    return report(chat_id=admin.telegram_id if admin and admin.telegram_id else None, text=text)
+
 
 def report_user_subscription_revoked(username: str, by: str, admin: Admin = None):
     text = """  
