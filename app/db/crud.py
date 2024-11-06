@@ -614,8 +614,6 @@ def revoke_user_sub(db: Session, dbuser: User) -> User:
         settings.revoke()
         user.proxies[proxy_type] = settings
     dbuser = update_user(db, dbuser, user)
-    db.delete(dbuser.next_user)
-    dbuser.next_user = None
 
     db.commit()
     db.refresh(dbuser)
