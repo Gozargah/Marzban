@@ -412,7 +412,6 @@ def remove_user(db: Session, dbuser: User) -> User:
     Returns:
         User: The removed user object.
     """
-    db.delete(dbuser.next_plan)
     db.delete(dbuser)
     db.commit()
     return dbuser
@@ -427,7 +426,6 @@ def remove_users(db: Session, dbusers: List[User]):
         dbusers (List[User]): List of user objects to be removed.
     """
     for dbuser in dbusers:
-        db.delete(dbuser.next_plan)
         db.delete(dbuser)
     db.commit()
     return
