@@ -574,6 +574,9 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
         User: The updated user object.
     """
     
+    if (dbuser.next_plan is None):
+        return
+    
     usage_log = UserUsageResetLogs(
         user=dbuser,
         used_traffic_at_reset=dbuser.used_traffic,

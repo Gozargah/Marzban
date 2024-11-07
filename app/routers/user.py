@@ -273,10 +273,16 @@ def active_next_plan(
     bg: BackgroundTasks,
     db: Session = Depends(get_db),
     dbuser: UserResponse = Depends(get_validated_user),
-    admin: Admin = Depends(Admin.get_current),
 ):
-    """Get users usage"""
+    """Reset user by next plan"""
     dbuser = crud.reset_user_by_next(db=db, dbuser=dbuser)
+
+    if (dbuser is None or dbuser.next_plan is None):
+        raise HTTPException(
+                status_code=404,
+                detail=f"User doesn't have next plan",
+            )
+
     if dbuser.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.add_user, dbuser=dbuser)
 
