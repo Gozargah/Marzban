@@ -14,7 +14,7 @@ from app.db.models import (
     JWT,
     TLS,
     Admin,
-    NextUser,
+    NextPlan,
     Node,
     NodeUsage,
     NodeUserUsage,
@@ -174,7 +174,7 @@ def get_user_queryset(db: Session) -> Query:
     Returns:
         Query: Base user query.
     """
-    return db.query(User).options(joinedload(User.admin)).options(joinedload(User.next_user))
+    return db.query(User).options(joinedload(User.admin)).options(joinedload(User.next_plan))
 
 
 def get_user(db: Session, username: str) -> Optional[User]:
@@ -388,12 +388,12 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None) -> User:
         on_hold_expire_duration=(user.on_hold_expire_duration or None),
         on_hold_timeout=(user.on_hold_timeout or None),
         auto_delete_in_days=user.auto_delete_in_days,
-        next_user=NextUser(
-            data_limit=user.next_user.data_limit,
-            expire=user.next_user.expire,
-            add_remaining_traffic=user.next_user.add_remaining_traffic,
-            fire_on_either=user.next_user.fire_on_either,
-        ) if user.next_user else None
+        next_plan=NextPlan(
+            data_limit=user.next_plan.data_limit,
+            expire=user.next_plan.expire,
+            add_remaining_traffic=user.next_plan.add_remaining_traffic,
+            fire_on_either=user.next_plan.fire_on_either,
+        ) if user.next_plan else None
     )
     db.add(dbuser)
     db.commit()
@@ -412,7 +412,7 @@ def remove_user(db: Session, dbuser: User) -> User:
     Returns:
         User: The removed user object.
     """
-    db.delete(dbuser.next_user)
+    db.delete(dbuser.next_plan)
     db.delete(dbuser)
     db.commit()
     return dbuser
@@ -427,7 +427,7 @@ def remove_users(db: Session, dbusers: List[User]):
         dbusers (List[User]): List of user objects to be removed.
     """
     for dbuser in dbusers:
-        db.delete(dbuser.next_user)
+        db.delete(dbuser.next_plan)
         db.delete(dbuser)
     db.commit()
     return
@@ -514,15 +514,15 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
     if modify.on_hold_expire_duration is not None:
         dbuser.on_hold_expire_duration = modify.on_hold_expire_duration
     
-    if modify.next_user is not None:
-        dbuser.next_user=NextUser(
-            data_limit=modify.next_user.data_limit,
-            expire=modify.next_user.expire,
-            add_remaining_traffic=modify.next_user.add_remaining_traffic,
-            fire_on_either=modify.next_user.fire_on_either,
+    if modify.next_plan is not None:
+        dbuser.next_plan=NextPlan(
+            data_limit=modify.next_plan.data_limit,
+            expire=modify.next_plan.expire,
+            add_remaining_traffic=modify.next_plan.add_remaining_traffic,
+            fire_on_either=modify.next_plan.fire_on_either,
         )
-    elif dbuser.next_user is not None:
-        db.delete(dbuser.next_user)
+    elif dbuser.next_plan is not None:
+        db.delete(dbuser.next_plan)
         
     dbuser.edit_at = datetime.utcnow()
 
@@ -553,8 +553,8 @@ def reset_user_data_usage(db: Session, dbuser: User) -> User:
     if dbuser.status not in (UserStatus.expired or UserStatus.disabled):
         dbuser.status = UserStatus.active.value
         
-    db.delete(dbuser.next_user)
-    dbuser.next_user = None
+    db.delete(dbuser.next_plan)
+    dbuser.next_plan = None
     db.add(dbuser)
 
     db.commit()
@@ -583,12 +583,12 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
     dbuser.node_usages.clear()
     dbuser.status = UserStatus.active.value
     
-    dbuser.data_limit = dbuser.next_user.data_limit + (0 if dbuser.next_user.add_remaining_traffic else dbuser.data_limit - dbuser.used_traffic)
-    dbuser.expire = dbuser.next_user.expire
+    dbuser.data_limit = dbuser.next_plan.data_limit + (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit - dbuser.used_traffic)
+    dbuser.expire = dbuser.next_plan.expire
     
     dbuser.used_traffic = 0
-    db.delete(dbuser.next_user)
-    dbuser.next_user = None
+    db.delete(dbuser.next_plan)
+    dbuser.next_plan = None
     db.add(dbuser)
 
     db.commit()
@@ -659,8 +659,8 @@ def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
             dbuser.status = UserStatus.active
         dbuser.usage_logs.clear()
         dbuser.node_usages.clear()
-        db.delete(dbuser.next_user)
-        dbuser.next_user = None
+        db.delete(dbuser.next_plan)
+        dbuser.next_plan = None
         db.add(dbuser)
 
     db.commit()

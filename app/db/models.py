@@ -68,8 +68,8 @@ class User(Base):
     edit_at = Column(DateTime, nullable=True, default=None)
     last_status_change = Column(DateTime, default=datetime.utcnow, nullable=True)
     
-    next_user = relationship(
-        "NextUser",
+    next_plan = relationship(
+        "NextPlan",
         uselist=False,
         back_populates="user",
         cascade="all, delete-orphan"
@@ -133,8 +133,8 @@ template_inbounds_association = Table(
 )
 
 
-class NextUser(Base):
-    __tablename__ = 'next_users'
+class NextPlan(Base):
+    __tablename__ = 'next_plans'
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
@@ -143,7 +143,7 @@ class NextUser(Base):
     add_remaining_traffic = Column(Boolean, nullable=False, default=False, server_default='0')
     fire_on_either = Column(Boolean, nullable=False, default=True, server_default='0')
 
-    user = relationship("User", back_populates="next_user")
+    user = relationship("User", back_populates="next_plan")
 
 
 class UserTemplate(Base):

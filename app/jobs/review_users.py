@@ -57,11 +57,11 @@ def review():
 
             limited = user.data_limit and user.used_traffic >= user.data_limit
             expired = user.expire and user.expire <= now_ts
-            
-            if (limited or expired):
-                if user.next_user is not None:
+
+            if (limited or expired) and user.next_plan is not None:
+                if user.next_plan is not None:
                     
-                    if user.next_user.fire_on_either:
+                    if user.next_plan.fire_on_either:
                         reset_user_by_next_report(db, user)
                         continue
                     

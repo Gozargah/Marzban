@@ -48,7 +48,7 @@ class UserDataLimitResetStrategy(str, Enum):
     month = "month"
     year = "year"
 
-class NextUserModel(BaseModel):
+class NextPlanModel(BaseModel):
     data_limit: Optional[int]
     expire: Optional[int]
     add_remaining_traffic: bool = False
@@ -76,7 +76,7 @@ class User(BaseModel):
 
     auto_delete_in_days: Optional[int] = Field(None, nullable=True)
     
-    next_user: Optional[NextUserModel] = Field(None, nullable=True)
+    next_plan: Optional[NextPlanModel] = Field(None, nullable=True)
         
     @validator("proxies", pre=True, always=True)
     def validate_proxies(cls, v, values, **kwargs):
@@ -126,7 +126,7 @@ class UserCreate(User):
                     "vmess": ["VMess TCP", "VMess Websocket"],
                     "vless": ["VLESS TCP REALITY", "VLESS GRPC REALITY"],
                 },
-                "next_user": {
+                "next_plan": {
                     "data_limit": 0,
                     "expire": 0,
                     "add_remaining_traffic": False,
@@ -215,7 +215,7 @@ class UserModify(User):
                     "vmess": ["VMess TCP", "VMess Websocket"],
                     "vless": ["VLESS TCP REALITY", "VLESS GRPC REALITY"],
                 },
-                "next_user": {
+                "next_plan": {
                     "data_limit": 0,
                     "expire": 0,
                     "add_remaining_traffic": False,

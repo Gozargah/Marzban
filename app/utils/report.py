@@ -58,6 +58,7 @@ def user_created(user: UserResponse, user_id: int, by: Admin, user_admin: Admin 
                 expire_date=user.expire,
                 data_limit=user.data_limit,
                 proxies=user.proxies,
+                has_next_plan=user.next_plan is not None,
                 data_limit_reset_strategy=user.data_limit_reset_strategy,
                 admin=user_admin
             )
@@ -71,6 +72,7 @@ def user_created(user: UserResponse, user_id: int, by: Admin, user_admin: Admin 
                 expire_date=user.expire,
                 data_limit=user.data_limit,
                 proxies=user.proxies,
+                has_next_plan=user.next_plan is not None,
                 data_limit_reset_strategy=user.data_limit_reset_strategy,
                 admin=user_admin
             )
@@ -87,6 +89,7 @@ def user_updated(user: UserResponse, by: Admin, user_admin: Admin = None) -> Non
                 data_limit=user.data_limit,
                 proxies=user.proxies,
                 by=by.username,
+                has_next_plan=user.next_plan is not None,
                 data_limit_reset_strategy=user.data_limit_reset_strategy,
                 admin=user_admin
             )
@@ -100,6 +103,7 @@ def user_updated(user: UserResponse, by: Admin, user_admin: Admin = None) -> Non
                 data_limit=user.data_limit,
                 proxies=user.proxies,
                 by=by.username,
+                has_next_plan=user.next_plan is not None,
                 data_limit_reset_strategy=user.data_limit_reset_strategy,
                 admin=user_admin
             )
@@ -145,7 +149,7 @@ def user_data_reset_by_next(user: UserResponse, user_admin: Admin = None) -> Non
     if NOTIFY_USER_DATA_USED_RESET:
         try:
             telegram.report_user_data_reset_by_next(
-                username=user.username,
+                user=user,
                 admin=user_admin
             )
         except Exception:
@@ -153,7 +157,7 @@ def user_data_reset_by_next(user: UserResponse, user_admin: Admin = None) -> Non
         notify(UserDataResetByNext(username=user.username, action=Notification.Type.data_reset_by_next, user=user))
         try:
             discord.report_user_data_reset_by_next(
-                username=user.username,
+                user=user,
                 admin=user_admin
             )
         except Exception:

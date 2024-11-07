@@ -1,5 +1,6 @@
 import requests
 from datetime import datetime
+from app.db.models import User
 from app.utils.system import readable_size
 from app.models.user import UserDataLimitResetStrategy
 from app.models.admin import Admin
@@ -56,7 +57,7 @@ def report_status_change(username: str, status: str, admin: Admin = None):
         admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None
         )
 
-def report_new_user(username: str, by: str, expire_date: int, data_limit: int, proxies: list, 
+def report_new_user(username: str, by: str, expire_date: int, data_limit: int, proxies: list, has_next_plan: bool,
                     data_limit_reset_strategy:UserDataLimitResetStrategy, admin: Admin = None):
 
     data_limit=readable_size(data_limit) if data_limit else "Unlimited"
@@ -73,7 +74,8 @@ def report_new_user(username: str, by: str, expire_date: int, data_limit: int, p
 **Traffic Limit:** {data_limit}
 **Expire Date:** {expire_date}
 **Proxies:** {proxies}
-**Data Limit Reset Strategy:**{data_limit_reset_strategy}""",
+**Data Limit Reset Strategy:**{data_limit_reset_strategy}
+**Has Next Plan:**{has_next_plan}""",
 
                 "footer": {
                     "text": f"Belongs To: {admin.username if admin else None}\nBy: {by}"
@@ -87,7 +89,7 @@ def report_new_user(username: str, by: str, expire_date: int, data_limit: int, p
         admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None
         )
 
-def report_user_modification(username: str, expire_date: int, data_limit: int, proxies: list, by: str, 
+def report_user_modification(username: str, expire_date: int, data_limit: int, proxies: list, by: str, has_next_plan: bool,
                     data_limit_reset_strategy:UserDataLimitResetStrategy, admin: Admin = None):
 
     data_limit=readable_size(data_limit) if data_limit else "Unlimited"
@@ -105,7 +107,8 @@ def report_user_modification(username: str, expire_date: int, data_limit: int, p
 **Traffic Limit:** {data_limit}
 **Expire Date:** {expire_date}
 **Proxies:** {proxies}
-**Data Limit Reset Strategy:**{data_limit_reset_strategy}""",
+**Data Limit Reset Strategy:**{data_limit_reset_strategy}
+**Has Next Plan:**{has_next_plan}""",
 
                 "footer": {
                     "text": f"Belongs To: {admin.username if admin else None}\nBy: {by}"
@@ -147,6 +150,29 @@ def report_user_usage_reset(username: str, by: str, admin: Admin = None):
                 'description': f'**Username:** {username}',
                 "footer": {
                     "text": f"Belongs To: {admin.username if admin else None}\nBy: {by}"
+                },
+                'color': int('00ffff', 16)
+            }
+        ]
+    }
+    send_webhooks(
+        json_data=userUsageReset,
+        admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None
+        )
+
+def report_user_data_reset_by_next(user: User, admin: Admin = None):
+    userUsageReset = {
+        'content': '',
+        'embeds': [
+            {
+                'title': ':repeat: AutoReset',
+                'description': f"""
+                **Username:** {user.username}
+**Traffic Limit:** {user.data_limit}
+**Expire Date:** {user.expire}""",
+
+                "footer": {
+                    "text": f"Belongs To: {admin.username if admin else None}"
                 },
                 'color': int('00ffff', 16)
             }
