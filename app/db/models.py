@@ -67,6 +67,13 @@ class User(Base):
 
     edit_at = Column(DateTime, nullable=True, default=None)
     last_status_change = Column(DateTime, default=datetime.utcnow, nullable=True)
+    
+    next_plan = relationship(
+        "NextPlan",
+        uselist=False,
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
 
     @hybrid_property
     def reseted_usage(self):
@@ -124,6 +131,19 @@ template_inbounds_association = Table(
     Column("user_template_id", ForeignKey("user_templates.id")),
     Column("inbound_tag", ForeignKey("inbounds.tag")),
 )
+
+
+class NextPlan(Base):
+    __tablename__ = 'next_plans'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    data_limit = Column(BigInteger, nullable=False)
+    expire = Column(Integer, nullable=True)
+    add_remaining_traffic = Column(Boolean, nullable=False, default=False, server_default='0')
+    fire_on_either = Column(Boolean, nullable=False, default=True, server_default='0')
+
+    user = relationship("User", back_populates="next_plan")
 
 
 class UserTemplate(Base):

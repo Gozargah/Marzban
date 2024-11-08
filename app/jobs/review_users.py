@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app import logger, scheduler, xray
 from app.db import (GetDB, get_notification_reminder, get_users,
-                    start_user_expire, update_user_status)
+                    start_user_expire, update_user_status, reset_user_by_next)
 from app.models.user import ReminderType, UserResponse, UserStatus
 from app.utils import report
 from app.utils.helpers import (calculate_expiration_days,
@@ -42,6 +42,12 @@ def add_notification_reminders(db: Session, user: "User", now: datetime = dateti
                     )
                 break
 
+def reset_user_by_next_report(db: Session, user: "User"):
+    user = reset_user_by_next(db, user)
+    
+    xray.operations.update_user(user)
+    
+    report.user_data_reset_by_next(user=UserResponse.from_orm(user), user_admin=user.admin)
 
 def review():
     now = datetime.utcnow()
@@ -51,6 +57,18 @@ def review():
 
             limited = user.data_limit and user.used_traffic >= user.data_limit
             expired = user.expire and user.expire <= now_ts
+
+            if (limited or expired) and user.next_plan is not None:
+                if user.next_plan is not None:
+                    
+                    if user.next_plan.fire_on_either:
+                        reset_user_by_next_report(db, user)
+                        continue
+                    
+                    elif limited and expired:
+                        reset_user_by_next_report(db, user)
+                        continue
+            
             if limited:
                 status = UserStatus.limited
             elif expired:

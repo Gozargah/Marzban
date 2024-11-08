@@ -48,6 +48,14 @@ class UserDataLimitResetStrategy(str, Enum):
     month = "month"
     year = "year"
 
+class NextPlanModel(BaseModel):
+    data_limit: Optional[int]
+    expire: Optional[int]
+    add_remaining_traffic: bool = False
+    fire_on_either: bool = True
+    
+    class Config:
+        orm_mode = True
 
 class User(BaseModel):
     proxies: Dict[ProxyTypes, ProxySettings] = {}
@@ -67,7 +75,9 @@ class User(BaseModel):
     on_hold_timeout: Optional[Union[datetime, None]] = Field(None, nullable=True)
 
     auto_delete_in_days: Optional[int] = Field(None, nullable=True)
-
+    
+    next_plan: Optional[NextPlanModel] = Field(None, nullable=True)
+        
     @validator("proxies", pre=True, always=True)
     def validate_proxies(cls, v, values, **kwargs):
         if not v:
@@ -115,6 +125,12 @@ class UserCreate(User):
                 "inbounds": {
                     "vmess": ["VMess TCP", "VMess Websocket"],
                     "vless": ["VLESS TCP REALITY", "VLESS GRPC REALITY"],
+                },
+                "next_plan": {
+                    "data_limit": 0,
+                    "expire": 0,
+                    "add_remaining_traffic": False,
+                    "fire_on_either": True
                 },
                 "expire": 0,
                 "data_limit": 0,
@@ -198,6 +214,12 @@ class UserModify(User):
                 "inbounds": {
                     "vmess": ["VMess TCP", "VMess Websocket"],
                     "vless": ["VLESS TCP REALITY", "VLESS GRPC REALITY"],
+                },
+                "next_plan": {
+                    "data_limit": 0,
+                    "expire": 0,
+                    "add_remaining_traffic": False,
+                    "fire_on_either": True
                 },
                 "expire": 0,
                 "data_limit": 0,

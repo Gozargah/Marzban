@@ -42,6 +42,7 @@ def add_user(
     - **note**: Optional text field for additional user information or notes.
     - **on_hold_timeout**: UTC timestamp when `on_hold` status should start or end.
     - **on_hold_expire_duration**: Duration (in seconds) for how long the user should stay in `on_hold` status.
+    - **next_plan**: Next user plan (resets after use).
     """
 
     # TODO expire should be datetime instead of timestamp
@@ -95,7 +96,8 @@ def modify_user(
     - **note**: New optional text for additional user information or notes. `null` means no change.
     - **on_hold_timeout**: New UTC timestamp for when `on_hold` status should start or end. Only applicable if status is changed to 'on_hold'.
     - **on_hold_expire_duration**: New duration (in seconds) for how long the user should stay in `on_hold` status. Only applicable if status is changed to 'on_hold'.
-
+    - **next_plan**: Next user plan (resets after use).
+    
     Note: Fields set to `null` or omitted will not be modified.
     """
 
@@ -264,6 +266,33 @@ def get_user_usage(
     usages = crud.get_user_usages(db, dbuser, start, end)
 
     return {"usages": usages, "username": dbuser.username}
+
+
+@router.post("/user/{username}/active-next", response_model=UserResponse,responses={403: responses._403, 404: responses._404})
+def active_next_plan(
+    bg: BackgroundTasks,
+    db: Session = Depends(get_db),
+    dbuser: UserResponse = Depends(get_validated_user),
+):
+    """Reset user by next plan"""
+    dbuser = crud.reset_user_by_next(db=db, dbuser=dbuser)
+
+    if (dbuser is None or dbuser.next_plan is None):
+        raise HTTPException(
+                status_code=404,
+                detail=f"User doesn't have next plan",
+            )
+
+    if dbuser.status in [UserStatus.active, UserStatus.on_hold]:
+        bg.add_task(xray.operations.add_user, dbuser=dbuser)
+
+    user = UserResponse.from_orm(dbuser)
+    bg.add_task(
+        report.user_data_reset_by_next, user=user, user_admin=dbuser.admin,
+    )
+
+    logger.info(f'User "{dbuser.username}"\'s usage was reset by next plan')
+    return dbuser
 
 
 @router.get("/users/usage", response_model=UsersUsagesResponse)
