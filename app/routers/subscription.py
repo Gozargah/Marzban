@@ -55,7 +55,6 @@ def user_subscription(
 ):
     """Provides a subscription link based on the user agent (Clash, V2Ray, etc.)."""
     user: UserResponse = UserResponse.from_orm(dbuser)
-    crud.update_user_sub(db, dbuser, user_agent)
 
     accept_header = request.headers.get("Accept", "")
     if "text/html" in accept_header:
@@ -66,6 +65,7 @@ def user_subscription(
             )
         )
 
+    crud.update_user_sub(db, dbuser, user_agent)
     response_headers = {
         "content-disposition": f'attachment; filename="{user.username}"',
         "profile-web-page-url": str(request.url),
@@ -161,7 +161,6 @@ def user_subscription_with_client_type(
 ):
     """Provides a subscription link based on the specified client type (e.g., Clash, V2Ray)."""
     user: UserResponse = UserResponse.from_orm(dbuser)
-    crud.update_user_sub(db, dbuser, user_agent)
 
     response_headers = {
         "content-disposition": f'attachment; filename="{user.username}"',
