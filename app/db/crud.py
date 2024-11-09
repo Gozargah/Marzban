@@ -511,9 +511,9 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
 
     if modify.on_hold_expire_duration is not None:
         dbuser.on_hold_expire_duration = modify.on_hold_expire_duration
-    
+
     if modify.next_plan is not None:
-        dbuser.next_plan=NextPlan(
+        dbuser.next_plan = NextPlan(
             data_limit=modify.next_plan.data_limit,
             expire=modify.next_plan.expire,
             add_remaining_traffic=modify.next_plan.add_remaining_traffic,
@@ -521,7 +521,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
         )
     elif dbuser.next_plan is not None:
         db.delete(dbuser.next_plan)
-        
+
     dbuser.edit_at = datetime.utcnow()
 
     db.commit()
@@ -550,9 +550,10 @@ def reset_user_data_usage(db: Session, dbuser: User) -> User:
     dbuser.node_usages.clear()
     if dbuser.status not in (UserStatus.expired or UserStatus.disabled):
         dbuser.status = UserStatus.active.value
-        
-    db.delete(dbuser.next_plan)
-    dbuser.next_plan = None
+
+    if dbuser.next_plan:
+        db.delete(dbuser.next_plan)
+        dbuser.next_plan = None
     db.add(dbuser)
 
     db.commit()
@@ -571,10 +572,10 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
     Returns:
         User: The updated user object.
     """
-    
+
     if (dbuser.next_plan is None):
         return
-    
+
     usage_log = UserUsageResetLogs(
         user=dbuser,
         used_traffic_at_reset=dbuser.used_traffic,
@@ -583,10 +584,11 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
 
     dbuser.node_usages.clear()
     dbuser.status = UserStatus.active.value
-    
-    dbuser.data_limit = dbuser.next_plan.data_limit + (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit - dbuser.used_traffic)
+
+    dbuser.data_limit = dbuser.next_plan.data_limit + \
+        (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit - dbuser.used_traffic)
     dbuser.expire = dbuser.next_plan.expire
-    
+
     dbuser.used_traffic = 0
     db.delete(dbuser.next_plan)
     dbuser.next_plan = None
