@@ -1,8 +1,0 @@
-services:
-  marzban:
-    image: gozargah/marzban:latest
-    restart: always
-    env_file: .env
-    network_mode: host
-    volumes:
-      - /var/lib/marzban:/var/lib/marzban
