@@ -1014,6 +1014,22 @@ def get_admins(db: Session,
     return query.all()
 
 
+def reset_admin_usage(db: Session, dbadmin: Admin) -> int:
+    """
+    Retrieves an admin's usage by their username.
+    Args:
+        db (Session): Database session.
+        dbadmin (Admin): The admin object to be updated.
+    Returns:
+        Admin: The updated admin.
+    """
+    dbadmin.users_usage = 0
+
+    db.commit()
+    db.refresh(dbadmin)
+    return dbadmin
+
+
 def create_user_template(db: Session, user_template: UserTemplateCreate) -> UserTemplate:
     """
     Creates a new user template in the database.
