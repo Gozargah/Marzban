@@ -132,16 +132,12 @@ def get_admins(
     """Fetch a list of admins with optional filters for pagination and username."""
     return crud.get_admins(db, offset, limit, username)
 
-@router.get("/admin_usage/{username}", response_model=int)
-def get_admin_usage(
-    dbadmin: Admin = Depends(get_admin_by_username),
-    current_admin: Admin = Depends(Admin.check_sudo_admin)
-):
-    """Retrieve the usage of given admin."""
-    return dbadmin.users_usage
 
-
-@router.post("/reset_admin_usage/{username}", response_model=Admin)
+@router.post(
+    "/admin/usage/reset/{username}",
+    response_model=Admin,
+    responses={403: responses._403},
+)
 def reset_admin_usage(
     dbadmin: Admin = Depends(get_admin_by_username),
     db: Session = Depends(get_db),
@@ -149,3 +145,16 @@ def reset_admin_usage(
 ):
     """Resets usage of admin."""
     return crud.reset_admin_usage(db, dbadmin)
+
+
+@router.get(
+    "/admin/usage/{username}",
+    response_model=int,
+    responses={403: responses._403},
+)
+def get_admin_usage(
+    dbadmin: Admin = Depends(get_admin_by_username),
+    current_admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Retrieve the usage of given admin."""
+    return dbadmin.users_usage
