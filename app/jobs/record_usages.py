@@ -146,15 +146,15 @@ def record_user_usages():
     users_usage = list({"uid": uid, "value": value} for uid, value in users_usage.items())
     if not users_usage:
         return
-    
+
     with GetDB() as db:
         user_admin_map = dict(db.query(User.id, User.admin_id).all())
 
     admin_usage = defaultdict(int)
-    for uid, usage in users_usage.items():
-        admin_id = user_admin_map.get(uid)
+    for user_usage in users_usage:
+        admin_id = user_admin_map.get(user_usage["uid"])
         if admin_id:
-            admin_usage[admin_id] += usage
+            admin_usage[admin_id] += user_usage["value"]
 
     # record users usage
     with GetDB() as db:
@@ -169,7 +169,7 @@ def record_user_usages():
 
     if DISABLE_RECORDING_NODE_USAGE:
         return
-    
+
     admin_data = [{"admin_id": admin_id, "value": value} for admin_id, value in admin_usage.items()]
     if admin_data:
         admin_update_stmt = update(Admin). \
