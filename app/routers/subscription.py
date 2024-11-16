@@ -63,6 +63,10 @@ def user_subscription(
                 {"user": user}
             )
         )
+    
+    if len(user.sub_tags) > 0 and len(user.sub_url_prefix) > 0:
+        from app.routers.clash import generate_subscription
+        return generate_subscription(db=db, dbuser=dbuser, user_agent=user_agent)
 
     crud.update_user_sub(db, dbuser, user_agent)
     response_headers = {

@@ -48,6 +48,9 @@ export type User = {
   links: string[];
   subscription_url: string;
   inbounds: UserInbounds;
+  sub_url_prefix: string;
+  sub_tags: string;
+  sub_revoked_at?: string;
   note: string;
   online_at: string;
 };
@@ -62,6 +65,9 @@ export type UserCreate = Pick<
   | "on_hold_expire_duration"
   | "username"
   | "status"
+  | "sub_url_prefix"
+  | "sub_tags"
+  | "sub_revoked_at"
   | "note"
 >;
 

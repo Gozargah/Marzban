@@ -8,6 +8,8 @@ from app import logger, xray
 from app.db import Session, crud, get_db
 from app.dependencies import get_expired_users_list, get_validated_user, validate_dates
 from app.models.admin import Admin
+from app.utils import report
+from app.dependencies import get_validated_user, validate_dates, get_expired_users_list
 from app.models.user import (
     UserCreate,
     UserModify,
@@ -16,6 +18,7 @@ from app.models.user import (
     UserStatus,
     UsersUsagesResponse,
     UserUsagesResponse,
+    UserUsageTop10Response,
 )
 from app.utils import report, responses
 
@@ -252,6 +255,29 @@ def reset_users_data_usage(
             xray.operations.restart_node(node_id, startup_config)
     return {"detail": "Users successfully reset."}
 
+@router.get("/user/usage/top10", tags=['User'], response_model=UserUsageTop10Response)
+def get_topusage(db: Session = Depends(get_db),
+              start: str = None,
+              end: str = None,
+              admin: Admin = Depends(Admin.get_current)):
+    """
+    Get top10 usage
+    """
+
+    if not admin.is_sudo:
+        raise HTTPException(status_code=403, detail="You're not allowed")
+
+    if start is None:
+        start_date = datetime.fromtimestamp(datetime.utcnow().timestamp() - 30 * 24 * 3600)
+    else:
+        start_date = datetime.fromisoformat(start)
+
+    if end is None:
+        end_date = datetime.utcnow()
+    else:
+        end_date = datetime.fromisoformat(end)
+
+    return crud.get_user_usage_top10(db, start_date, end_date)
 
 @router.get("/user/{username}/usage", response_model=UserUsagesResponse,responses={403: responses._403, 404: responses._404})
 def get_user_usage(

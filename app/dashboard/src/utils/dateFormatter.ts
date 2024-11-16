@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import i18n from "i18next";
 
 export const relativeExpiryDate = (expiryDate: number | null | undefined) => {
   let dateInfo = { status: "", time: "" };
@@ -56,6 +57,19 @@ export const relativeExpiryDate = (expiryDate: number | null | undefined) => {
       }
     }
     dateInfo.time = durationSlots.join(", ");
+    if (i18n.language.toLocaleLowerCase() === "zh-cn") {
+      dateInfo.time = dateInfo.time.replace(/year[s]?/, "年");
+      dateInfo.time = dateInfo.time.replace(/month[s]?/, "个月");
+      dateInfo.time = dateInfo.time.replace(/day[s]?/, "天");
+      dateInfo.time = dateInfo.time.replace(/hour[s]?/, "小时");
+      dateInfo.time = dateInfo.time.replace(/min[s]?/, "分钟");
+      dateInfo.time = dateInfo.time.replace(/,/g, "");
+      if (dateInfo.status == "expires") {
+        dateInfo.time += "内";
+      } else {
+        dateInfo.time += "前";
+      }
+    }
   }
   return dateInfo;
 };

@@ -529,7 +529,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 <Text>/</Text>
                 <Sort sort={filters.sort} column="expire" />
                 <HStack onClick={handleSort.bind(null, "expire")}>
-                  <Text>Sort by expire</Text>
+                  <Text>{t("usersTable.sortByExpire")}</Text>
                 </HStack>
                 <Select
                   fontSize="xs"
@@ -627,7 +627,17 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
           )}
         </Tbody>
       </Table>
-      <Pagination />
+      <Pagination
+        onChange={(page, limit) => {
+          onFilterChange({
+            ...filters,
+            limit,
+            offset: page * limit
+          })
+        }}
+        total={totalUsers.total}
+        limit={filters.limit}
+        offset={filters.offset}/>
     </Box>
   );
 };

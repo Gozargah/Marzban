@@ -4,9 +4,17 @@ Functions for managing proxy hosts, users, user templates, nodes, and administra
 
 from datetime import datetime, timedelta
 from enum import Enum
+import re
 from typing import Dict, List, Optional, Tuple, Union
 
 from sqlalchemy import and_, delete, func, or_
+from app.models.clash import (
+    ClashProxyCreate,
+    ClashProxyGroupCreate,
+    ClashRuleCreate,
+    ClashRulesetCreate,
+    ClashSettingCreate
+)
 from sqlalchemy.orm import Query, Session, joinedload
 from sqlalchemy.sql.functions import coalesce
 
@@ -16,6 +24,11 @@ from app.db.models import (
     Admin,
     AdminUsageLogs,
     NextPlan,
+    ClashProxy,
+    ClashProxyGroup,
+    ClashRule,
+    ClashRuleset,
+    ClashSetting,
     Node,
     NodeUsage,
     NodeUserUsage,
@@ -40,6 +53,7 @@ from app.models.user import (
     UserResponse,
     UserStatus,
     UserUsageResponse,
+    UserUsageTop10Response
 )
 from app.models.user_template import UserTemplateCreate, UserTemplateModify
 from app.utils.helpers import calculate_expiration_days, calculate_usage_percent
@@ -332,6 +346,55 @@ def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime) -
 
     return list(usages.values())
 
+def get_user_usage_top10(db: Session, start: datetime, end: datetime) -> UserUsageTop10Response:
+    nodes = {}
+    usages = {}
+
+    nodes[0] = "Master"
+    for node in db.query(Node).all():
+        nodes[node.id] = node.name
+
+    cond = and_(NodeUserUsage.created_at >= start,
+                NodeUserUsage.created_at <= end)
+    for v in db.query(NodeUserUsage).filter(cond):
+        try:
+            item = usages.get(v.user_id)
+            if not item:
+                item = {
+                    "username": v.user.username,
+                    "total": 0,
+                    "usages": {},
+                }
+                usages[v.user_id] = item
+
+                for node_id in nodes.keys():
+                    item["usages"][node_id] = 0
+
+            item["total"] += v.used_traffic
+            item["usages"][v.node_id or 0] += v.used_traffic
+        except KeyError:
+            pass
+
+    usages = list(usages.values())
+    usages.sort(key=lambda v: -v["total"])
+    usages = usages[0:9]
+
+    top10_usages = UserUsageTop10Response(usages=[], users=[])
+
+    for v in usages:
+        top10_usages.users.append(v["username"])
+        if len(top10_usages.users) >= 10:
+            break
+
+    for node_id, node_name in nodes.items():
+        top10 = UserUsageTop10Response.Item(name=node_name, data=[])
+        top10_usages.usages.append(top10)
+        for v in usages:
+            top10.data.append(v["usages"][node_id])
+            if len(top10.data) >= 10:
+                break 
+
+    return top10_usages
 
 def get_users_count(db: Session, status: UserStatus = None, admin: Admin = None) -> int:
     """
@@ -522,6 +585,11 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
         )
     elif dbuser.next_plan is not None:
         db.delete(dbuser.next_plan)
+    if modify.sub_url_prefix is not None:
+        dbuser.sub_url_prefix = re.sub(r"/+$", "", modify.sub_url_prefix)
+
+    if modify.sub_tags is not None:
+        dbuser.sub_tags = modify.sub_tags
 
     dbuser.edit_at = datetime.utcnow()
 
@@ -667,6 +735,27 @@ def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
             db.delete(dbuser.next_plan)
             dbuser.next_plan = None
         db.add(dbuser)
+
+    db.commit()
+
+def reset_all_data_usage(db: Session, admin: Optional[Admin] = None):
+    for dbuser in db.query(User).all():
+        dbuser.used_traffic = 0
+        db.add(dbuser)    
+
+    for dbnode in db.query(Node).all():
+        dbnode.uplink = 0
+        dbnode.downlink = 0
+        db.add(dbnode)
+
+    for dbsys in db.query(System).all():
+        dbsys.uplink = 0
+        dbsys.downlink = 0
+        db.add(dbsys)
+
+    db.query(NodeUsage).delete()
+    db.query(NodeUserUsage).delete()
+    db.query(UserUsageResetLogs).delete()
 
     db.commit()
 
@@ -1496,3 +1585,361 @@ def count_online_users(db: Session, hours: int = 24):
     query = db.query(func.count(User.id)).filter(User.online_at.isnot(
         None), User.online_at >= twenty_four_hours_ago)
     return query.scalar()
+
+def update_user_tag(db: Session, old_tag: str, new_tag: str):
+    if not old_tag or old_tag == new_tag:
+        return
+    
+    found = db.query(ClashProxy.id).filter(ClashProxy.tag == old_tag).first() or \
+        db.query(ClashProxyGroup.id).filter(ClashProxyGroup.tag == old_tag).first()
+    
+    query = db.query(User).filter(User.sub_tags.ilike(f'%{old_tag}%'))
+    for dbuser in query.all():
+        tags = str(dbuser.sub_tags).split(",")
+        try:
+            idx = tags.index(old_tag)
+            if new_tag and not new_tag in tags:
+                tags.insert(idx + 1, new_tag)
+            if not found:
+                tags.remove(old_tag)
+            dbuser.sub_tags = ",".join(tags)
+        except Exception:
+            pass
+
+    db.commit()
+
+def create_clash_rule(db: Session, rule: ClashRuleCreate):
+    dbrule = ClashRule(
+        type=rule.type,
+        content=rule.content,
+        option=rule.option,
+        policy=rule.policy,
+        priority=rule.priority,
+        ruleset_id=rule.ruleset_id,
+        modified_at=datetime.utcnow()
+    )
+    db.add(dbrule)
+    db.commit()
+    db.refresh(dbrule)
+    return dbrule
+
+def get_clash_rule(db: Session, id: int):
+    return db.query(ClashRule).filter(ClashRule.id == id).first()
+
+def update_clash_rule(db: Session, dbrule: ClashRule, modify: ClashRuleCreate):
+    dbrule.content = modify.content
+    dbrule.option = modify.option
+    dbrule.policy = modify.policy
+    dbrule.priority = modify.priority
+    dbrule.type = modify.type
+    dbrule.ruleset_id = modify.ruleset_id
+    dbrule.modified_at = datetime.utcnow()
+    db.commit()
+    db.refresh(dbrule)
+    return dbrule
+
+def remove_clash_rule(db: Session, dbrule: ClashRule):
+    db.delete(dbrule)
+    db.commit()
+    return dbrule
+
+def create_clash_ruleset(db: Session, ruleset: ClashRulesetCreate):
+    dbruleset = ClashRuleset(
+        name=ruleset.name,
+        builtin=False,
+        policy=ruleset.policy,
+        settings=ruleset.settings,
+        modified_at=datetime.utcnow()
+    )
+    db.add(dbruleset)
+    db.commit()
+    db.refresh(dbruleset)
+    return dbruleset
+
+def get_clash_ruleset(db: Session, name: Optional[str] = None, id: Optional[int] = None) -> ClashRuleset:
+    if name is not None:
+        return db.query(ClashRuleset).filter(ClashRuleset.name == name).first()
+    else:
+        return db.query(ClashRuleset).filter(ClashRuleset.id == id).first()
+
+def update_clash_ruleset(db: Session, dbruleset: ClashRuleset, modify: ClashRulesetCreate):
+    dbruleset.name = modify.name
+    dbruleset.settings = modify.settings
+    dbruleset.policy = modify.policy
+    dbruleset.modified_at = datetime.utcnow()
+    db.commit()
+    db.refresh(dbruleset)
+    return dbruleset
+
+def remove_clash_ruleset(db: Session, dbruleset: ClashRuleset):
+    if dbruleset.builtin:
+        dbruleset.rules.clear()
+    else:
+        db.delete(dbruleset)
+
+    db.commit()
+    return dbruleset
+
+ClashRuleSortingOptions = Enum('ClashRuleSortingOptions', {
+    'modified_at': ClashRule.modified_at.asc(),
+    'type': ClashRule.type.asc(),
+    'content': ClashRule.content.asc(),
+    'option': ClashRule.option.asc(),
+    '-modified_at': ClashRule.modified_at.desc(),
+    '-type': ClashRule.type.desc(),
+    '-content': ClashRule.content.desc(),
+    '-option': ClashRule.option.desc(),
+})
+
+def get_clash_rules(db: Session,
+              offset: Optional[int] = None,
+              limit: Optional[int] = None,
+              search: Optional[str] = None,
+              ruleset: Optional[str] = None,
+              sort: Optional[List[ClashRuleSortingOptions]] = None
+            ) -> Tuple[List[ClashRule], int]:
+    query = db.query(ClashRule)
+
+    if search:
+        query = query.filter(ClashRule.content.ilike(f'%{search}%'))
+
+    if ruleset:
+        v = db.query(ClashRuleset).filter(ClashRuleset.name == ruleset).first()
+        if v is None:
+            return [], 0
+        else:
+            query = query.filter(ClashRule.ruleset_id == v.id)
+
+    count = query.count()
+
+    if sort:
+        query = query.order_by(*(opt.value for opt in sort))
+
+    if offset:
+        query = query.offset(offset)
+        
+    if limit:
+        query = query.limit(limit)
+
+    return query.all(), count
+
+def get_clash_rulesets(db: Session) -> List[ClashRuleset]:
+    query = db.query(ClashRuleset)
+
+    query = query.order_by(ClashRuleset.name)
+
+    return query.all()
+
+ClashProxySortingOptions = Enum('ClashProxySortingOptions', {
+    'id': ClashProxy.id.asc(),
+    'modified_at': ClashProxy.modified_at.asc(),
+    'inbound': ClashProxy.inbound.asc(),
+    'name': ClashProxy.name.asc(),
+    'server': ClashProxy.server.asc(),
+    'tag': ClashProxy.tag.asc(),
+    '-id': ClashProxy.id.desc(),
+    '-modified_at': ClashProxy.modified_at.desc(),
+    '-inbound': ClashProxy.inbound.desc(),
+    '-name': ClashProxy.name.desc(),
+    '-server': ClashProxy.server.desc(),
+    '-tag': ClashProxy.tag.desc(),
+})
+
+def get_clash_proxies(db: Session,
+              offset: Optional[int] = None,
+              limit: Optional[int] = None,
+              search: Optional[str] = None,
+              sort: Optional[List[ClashProxySortingOptions]] = None
+            ) -> Tuple[List[ClashProxy], int]:
+    query = db.query(ClashProxy)
+
+    if search:
+        query = query.filter(or_(ClashProxy.name.ilike(f'%{search}%'),
+                                 ClashProxy.server.ilike(f'%{search}%'),
+                                 ClashProxy.inbound.ilike(f'%{search}%'),
+                                 ClashProxy.tag.ilike(f'%{search}%')))
+
+    count = query.count()
+
+    if sort:
+        query = query.order_by(*(opt.value for opt in sort))
+
+    if offset:
+        query = query.offset(offset)
+        
+    if limit:
+        query = query.limit(limit)
+
+    return query.all(), count
+
+def get_clash_proxy(db: Session, id: int) -> ClashProxy:
+    return db.query(ClashProxy).filter(ClashProxy.id == id).first()
+
+def get_clash_proxy_setting(protocol):
+    settings = {
+        "trojan": {"security": "tls", "fingerprint": "chrome", "udp": True, "allow_insecure": False},
+        "vless": {"security": "tls", "fingerprint": "chrome", "udp": True, "allow_insecure": False},
+        "vmess": {"fingerprint": "chrome", "udp": True, "allow_insecure": False},
+        "shadowsocks": {"udp": True},
+    }
+    return settings.get(protocol, {})
+
+def create_clash_proxy(db: Session, proxy: ClashProxyCreate):
+    dbproxy = ClashProxy(
+        name=proxy.name,
+        inbound=proxy.inbound,
+        server=proxy.server,
+        tag=proxy.tag,
+        port=proxy.port,
+        settings=proxy.settings,
+        modified_at=datetime.utcnow()
+    )
+    db.add(dbproxy)
+    db.commit()
+    db.refresh(dbproxy)
+    return dbproxy
+
+def update_clash_proxy(db: Session, dbproxy: ClashProxy, modify: ClashProxyCreate):
+    old_tag = dbproxy.tag
+    new_tag = old_tag
+
+    dbproxy.name = modify.name
+    dbproxy.port = modify.port
+    dbproxy.server = modify.server
+    dbproxy.settings = modify.settings
+    dbproxy.modified_at = datetime.utcnow()
+
+    if not dbproxy.builtin:
+        new_tag = modify.tag
+        dbproxy.tag = modify.tag
+        dbproxy.inbound = modify.inbound
+    
+    db.commit()
+    db.refresh(dbproxy)
+
+    update_user_tag(db, old_tag, new_tag)
+
+    return dbproxy
+
+def remove_clash_proxy(db: Session, dbproxy: ClashProxy):
+    old_tag = dbproxy.tag
+    new_tag = ""
+
+    db.delete(dbproxy)
+    db.commit()
+
+    update_user_tag(db, old_tag, new_tag)
+
+    return dbproxy
+
+ClashProxyGroupSortingOptions = Enum('ClashProxyGroupSortingOptions', {
+    'id': ClashProxyGroup.id.asc(),
+    'modified_at': ClashProxyGroup.modified_at.asc(),
+    'type': ClashProxyGroup.type.asc(),
+    'name': ClashProxyGroup.name.asc(),
+    'tag': ClashProxyGroup.tag.asc(),
+    '-id': ClashProxyGroup.id.desc(),
+    '-modified_at': ClashProxyGroup.modified_at.desc(),
+    '-type': ClashProxyGroup.type.desc(),
+    '-name': ClashProxyGroup.name.desc(),
+    '-tag': ClashProxyGroup.tag.desc(),
+})
+
+def get_clash_proxy_group(db: Session, id: int) -> ClashProxyGroup:
+    return db.query(ClashProxyGroup).filter(ClashProxyGroup.id == id).first()
+
+def create_clash_proxy_group(db: Session, proxy_group: ClashProxyGroupCreate):
+    dbproxy_group = ClashProxyGroup(
+        name=proxy_group.name,
+        type=proxy_group.type,
+        tag=proxy_group.tag,
+        proxies=proxy_group.proxies,
+        settings=proxy_group.settings,
+        builtin=False,
+        modified_at=datetime.utcnow()
+    )
+    db.add(dbproxy_group)
+    db.commit()
+    db.refresh(dbproxy_group)
+    return dbproxy_group
+
+def update_clash_proxy_group(db: Session, dbproxy_group: ClashProxyGroup, modify: ClashProxyGroupCreate):
+    old_tag = dbproxy_group.tag
+    new_tag = old_tag
+
+    dbproxy_group.name = modify.name
+    dbproxy_group.settings = modify.settings
+    dbproxy_group.modified_at = datetime.utcnow()
+    if not dbproxy_group.builtin:
+        new_tag = modify.tag
+        dbproxy_group.tag = modify.tag
+        dbproxy_group.type = modify.type
+        dbproxy_group.proxies = modify.proxies
+        dbproxy_group.settings = modify.settings
+
+    db.commit()
+    db.refresh(dbproxy_group)
+
+    update_user_tag(db, old_tag, new_tag)
+
+    return dbproxy_group
+
+def remove_clash_proxy_group(db: Session, dbproxy_group: ClashProxyGroup):
+    old_tag = dbproxy_group.tag
+    new_tag = ""
+
+    db.delete(dbproxy_group)
+    db.commit()
+
+    update_user_tag(db, old_tag, new_tag)
+
+    return dbproxy_group
+
+def get_clash_proxy_groups(db: Session,
+              offset: Optional[int] = None,
+              limit: Optional[int] = None,
+              search: Optional[str] = None,
+              sort: Optional[List[ClashProxyGroupSortingOptions]] = None,
+              builtin: Optional[bool] = None,
+            ) -> Tuple[List[ClashProxyGroup], int]:
+    query = db.query(ClashProxyGroup)
+
+    if search:
+        query = query.filter(or_(ClashProxyGroup.name.ilike(f'%{search}%'),
+                                 ClashProxyGroup.tag.ilike(f'%{search}%')))
+        
+    if builtin:
+        query = query.filter(ClashProxyGroup.builtin == builtin)
+
+    count = query.count()
+
+    if sort:
+        query = query.order_by(*(opt.value for opt in sort))
+
+    if offset:
+        query = query.offset(offset)
+        
+    if limit:
+        query = query.limit(limit)
+
+    return query.all(), count
+
+def get_all_clash_proxy_briefs(db:Session):
+    return db.query(ClashProxy.id, ClashProxy.name, ClashProxy.server, ClashProxy.builtin, ClashProxy.tag).all()
+
+def get_all_clash_proxy_group_briefs(db:Session):
+    return db.query(ClashProxyGroup.id, ClashProxyGroup.name, 
+                    ClashProxyGroup.tag, ClashProxyGroup.builtin).all()
+
+def get_clash_settings(db: Session) -> Tuple[List[ClashSetting], int]:
+    query = db.query(ClashSetting)
+    return query.all(), query.count()
+
+def get_clash_setting(db: Session, name: str) -> ClashSetting:
+    return db.query(ClashSetting).filter(ClashSetting.name == name).first()
+
+def update_clash_setting(db: Session, dbsetting: ClashSetting, modify: ClashSettingCreate):
+    dbsetting.content = modify.content
+    db.commit()
+    db.refresh(dbsetting)
+    return dbsetting

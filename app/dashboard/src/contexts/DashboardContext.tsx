@@ -45,6 +45,7 @@ type DashboardStateType = {
   QRcodeLinks: string[] | null;
   isEditingHosts: boolean;
   isEditingNodes: boolean;
+  isEditingSubscription: boolean;
   isShowingNodesUsage: boolean;
   isResetingAllUsage: boolean;
   resetUsageUser: User | null;
@@ -61,10 +62,12 @@ type DashboardStateType = {
   createUser: (user: UserCreate) => Promise<void>;
   editUser: (user: UserCreate) => Promise<void>;
   fetchUserUsage: (user: User, query: FilterUsageType) => Promise<void>;
+  fetchUserUsageTop10: (query: FilterUsageType) => Promise<void>;
   setQRCode: (links: string[] | null) => void;
   setSubLink: (subscribeURL: string | null) => void;
   onEditingHosts: (isEditingHosts: boolean) => void;
   onEditingNodes: (isEditingHosts: boolean) => void;
+  onEditingSubscription: (isEditingSubscription: boolean) => void;
   onShowingNodesUsage: (isShowingNodesUsage: boolean) => void;
   resetDataUsage: (user: User) => Promise<void>;
   revokeSubscription: (user: User) => Promise<void>;
@@ -113,6 +116,7 @@ export const useDashboard = create(
     isResetingAllUsage: false,
     isEditingHosts: false,
     isEditingNodes: false,
+    isEditingSubscription: false,
     isShowingNodesUsage: false,
     resetUsageUser: null,
     revokeSubscriptionUser: null,
@@ -126,11 +130,10 @@ export const useDashboard = create(
     refetchUsers: () => {
       fetchUsers(get().filters);
     },
-    resetAllUsage: () => {
-      return fetch(`/users/reset`, { method: "POST" }).then(() => {
-        get().onResetAllUsage(false);
-        get().refetchUsers();
-      });
+    resetAllUsage: async () => {
+      await fetch(`/nodes/reset`, { method: "POST" });
+      get().onResetAllUsage(false);
+      get().refetchUsers();
     },
     onResetAllUsage: (isResetingAllUsage) => set({ isResetingAllUsage }),
     onCreateUser: (isCreatingNewUser) => set({ isCreatingNewUser }),
@@ -182,11 +185,17 @@ export const useDashboard = create(
       }
       return fetch(`/user/${body.username}/usage`, { method: "GET", query });
     },
+    fetchUserUsageTop10(query) {
+      return fetch("/user/usage/top10", { query });
+    },
     onEditingHosts: (isEditingHosts: boolean) => {
       set({ isEditingHosts });
     },
     onEditingNodes: (isEditingNodes: boolean) => {
       set({ isEditingNodes });
+    },
+    onEditingSubscription: (isEditingSubscription: boolean) => {
+      set({ isEditingSubscription });
     },
     onShowingNodesUsage: (isShowingNodesUsage: boolean) => {
       set({ isShowingNodesUsage });

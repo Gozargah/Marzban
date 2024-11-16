@@ -379,4 +379,112 @@ export function createUsageConfig(
       colors: generateDistinctColors(series.length),
     } as ApexOptions,
   };
-}
+};
+
+export const createTop10UsageConfig = (
+  colorMode: ColorMode,
+  series: any = [],
+  categories: any = []
+) => {
+  return {
+    series: series,
+    options: {
+      chart: {
+        type: "bar",
+        stacked: true,
+        width: "100%",
+        toolbar: {
+          show: false,
+        },
+      },
+      plotOptions: {
+        bar: {
+          horizontal: true,
+          borderRadius: 6,
+          dataLabels: {
+            total: {
+              enabled: true,
+              offsetX: 20,
+              style: {
+                fontSize: "var(--chakra-fontSizes-xs)",
+                fontWeight: 900,
+                color:
+                  colorMode === "dark"
+                    ? "var(--chakra-colors-gray-300)"
+                    : undefined,
+              },
+            },
+          },
+        },
+      },
+      stroke: {
+        width: 1,
+        colors: ["#fff"],
+      },
+      dataLabels: {
+        formatter: (val, { seriesIndex, w }) => {
+          return formatBytes(val as number, 1);
+        },
+      },
+      xaxis: {
+        type: "category",
+        categories: categories,
+        labels: {
+          formatter: function (val: any) {
+            return formatBytes(val, 0);
+          },
+          style: {
+            colors:
+              colorMode === "dark"
+                ? "var(--chakra-colors-gray-300)"
+                : undefined,
+          },
+        },
+      },
+      yaxis: {
+        title: {
+          text: undefined,
+        },
+        labels: {
+          style: {
+            fontSize: "var(--chakra-fontSizes-sm)",
+            colors:
+              colorMode === "dark"
+                ? "var(--chakra-colors-gray-300)"
+                : undefined,
+          },
+        },
+      },
+      tooltip: {
+        custom: ({ series, seriesIndex, dataPointIndex, w }) => {
+          console.log(series);
+          const data = series[seriesIndex];
+          const readable = formatBytes(data[dataPointIndex], 1);
+          return `
+            <div style="
+                    background-color: ${w.globals.colors[seriesIndex]};
+                    padding-left:12px;
+                    padding-right:12px;
+                    padding-top:6px;
+                    padding-bottom:6px;
+                    font-size:0.725rem;
+                  "
+            >
+              ${w.globals.seriesNames[seriesIndex]}: <b>${readable}</b>
+            </div>
+          `;
+        },
+      },
+      fill: {
+        opacity: 1,
+      },
+      legend: {
+        position: "bottom",
+        labels: {
+          colors: colorMode === "dark" ? "#CBD5E0" : undefined,
+          useSeriesColors: false,
+        },
+      },
+    } as ApexOptions,
+  };
+};

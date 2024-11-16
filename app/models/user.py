@@ -67,6 +67,8 @@ class User(BaseModel):
         UserDataLimitResetStrategy.no_reset
     )
     inbounds: Dict[ProxyTypes, List[str]] = {}
+    sub_url_prefix: Union[None, str] = ""
+    sub_tags: Union[None, str] = ""
     note: Optional[str] = Field(None, nullable=True)
     sub_updated_at: Optional[datetime] = Field(None, nullable=True)
     sub_last_user_agent: Optional[str] = Field(None, nullable=True)
@@ -288,6 +290,7 @@ class UserResponse(User):
     subscription_url: str = ""
     proxies: dict
     excluded_inbounds: Dict[ProxyTypes, List[str]] = {}
+    sub_revoked_at: datetime
 
     admin: Optional[Admin]
 
@@ -306,7 +309,9 @@ class UserResponse(User):
     def validate_subscription_url(cls, v, values, **kwargs):
         if not v:
             salt = secrets.token_hex(8)
-            url_prefix = (XRAY_SUBSCRIPTION_URL_PREFIX).replace('*', salt)
+            url_prefix = values["sub_url_prefix"]
+            if not url_prefix:
+                url_prefix = (XRAY_SUBSCRIPTION_URL_PREFIX).replace('*', salt)
             token = create_subscription_token(values["username"])
             return f"{url_prefix}/{XRAY_SUBSCRIPTION_PATH}/{token}"
         return v
@@ -317,6 +322,12 @@ class UserResponse(User):
             v = {p.type: p.settings for p in v}
         return super().validate_proxies(v, values, **kwargs)
 
+    @validator("sub_revoked_at", pre=True, always=True)
+    def validate_sub_revoked_at(cls, v, values, **kwargs):
+        if not v:
+            return values.get("created_at", 0)
+        else:
+            return v
 
 class SubscriptionUserResponse(UserResponse):
     class Config:
@@ -358,5 +369,13 @@ class UserUsagesResponse(BaseModel):
     username: str
     usages: List[UserUsageResponse]
 
+class UserUsageTop10Response(BaseModel):
+    class Item(BaseModel):
+        name: str
+        data: List[int]
+
+    usages: List[Item]
+    users: List[str]
+    
 class UsersUsagesResponse(BaseModel):
     usages: List[UserUsageResponse]

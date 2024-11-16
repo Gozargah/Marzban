@@ -6,6 +6,9 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, WebSocke
 from sqlalchemy.exc import IntegrityError
 from starlette.websockets import WebSocketDisconnect
 
+from config import UVICORN_PORT
+from app.subscription.share import SERVER_IP
+
 from app import logger, xray
 from app.db import Session, crud, get_db
 from app.dependencies import get_dbnode, validate_dates
@@ -152,7 +155,19 @@ def get_nodes(
     db: Session = Depends(get_db), _: Admin = Depends(Admin.check_sudo_admin)
 ):
     """Retrieve a list of all nodes. Accessible only to sudo admins."""
-    return crud.get_nodes(db)
+
+    nodes = [v for v in crud.get_nodes(db)]
+    nodes.insert(0, NodeResponse(
+        id=0,
+        name="Master",
+        address=SERVER_IP,
+        port=UVICORN_PORT,
+        api_port=xray.config.api_port,
+        xray_version=xray.core.get_version(),
+        status=NodeStatus.connected if xray.core.started else NodeStatus.error,
+    ))
+
+    return nodes
 
 
 @router.put("/node/{node_id}", response_model=NodeResponse)
@@ -211,3 +226,13 @@ def get_usage(
     usages = crud.get_nodes_usage(db, start, end)
 
     return {"usages": usages}
+
+@router.post("/nodes/reset")
+def reset_usage(
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Reset all nodes data usage"""
+    dbadmin = crud.get_admin(db, admin.username)
+    crud.reset_all_data_usage(db=db, admin=dbadmin)
+    return {"detail": "Users successfully reset."}
