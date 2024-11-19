@@ -1,17 +1,16 @@
 import re
+import secrets
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Union
-import random
-import secrets
 
 from pydantic import BaseModel, Field, validator
 
 from app import xray
-from app.models.proxy import ProxySettings, ProxyTypes
 from app.models.admin import Admin
-from app.utils.jwt import create_subscription_token
+from app.models.proxy import ProxySettings, ProxyTypes
 from app.subscription.share import generate_v2ray_links
+from app.utils.jwt import create_subscription_token
 from config import XRAY_SUBSCRIPTION_PATH, XRAY_SUBSCRIPTION_URL_PREFIX
 
 USERNAME_REGEXP = re.compile(r"^(?=\w{3,32}\b)[a-zA-Z0-9-_@.]+(?:_[a-zA-Z0-9-_@.]+)*$")
@@ -48,14 +47,16 @@ class UserDataLimitResetStrategy(str, Enum):
     month = "month"
     year = "year"
 
+
 class NextPlanModel(BaseModel):
     data_limit: Optional[int]
     expire: Optional[int]
     add_remaining_traffic: bool = False
     fire_on_either: bool = True
-    
+
     class Config:
         orm_mode = True
+
 
 class User(BaseModel):
     proxies: Dict[ProxyTypes, ProxySettings] = {}
@@ -75,9 +76,9 @@ class User(BaseModel):
     on_hold_timeout: Optional[Union[datetime, None]] = Field(None, nullable=True)
 
     auto_delete_in_days: Optional[int] = Field(None, nullable=True)
-    
+
     next_plan: Optional[NextPlanModel] = Field(None, nullable=True)
-        
+
     @validator("proxies", pre=True, always=True)
     def validate_proxies(cls, v, values, **kwargs):
         if not v:
@@ -358,5 +359,30 @@ class UserUsagesResponse(BaseModel):
     username: str
     usages: List[UserUsageResponse]
 
+
 class UsersUsagesResponse(BaseModel):
     usages: List[UserUsageResponse]
+
+
+class ChangeStatus(BaseModel):
+    from_status: List[UserStatus]
+    to_status: UserStatus
+
+    @validator("from_status", pre=True, always=True)
+    def validate_from_status(cls, v, values, **kwargs):
+        for i in v:
+            if i not in (UserStatus.active, UserStatus.disabled, UserStatus.on_hold):
+                raise ValueError("value is not a valid enumeration member; permitted: 'active', 'disabled', 'on_hold'")
+        return v
+
+    @validator("to_status", pre=True, always=True)
+    def validate_to_status(cls, v, values, **kwargs):
+        if v in (UserStatus.active, UserStatus.disabled, UserStatus.on_hold):
+            return v
+        raise ValueError("value is not a valid enumeration member; permitted: 'active', 'disabled', 'on_hold'")
+
+    class Config:
+        schema_extra = {
+            "from_status": ["active"],
+            "to_status": "disabled",
+        }

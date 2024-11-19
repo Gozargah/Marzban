@@ -32,6 +32,7 @@ from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
 from app.models.node import NodeCreate, NodeModify, NodeStatus, NodeUsageResponse
 from app.models.proxy import ProxyHost as ProxyHostModify
 from app.models.user import (
+    ChangeStatus,
     ReminderType,
     UserCreate,
     UserDataLimitResetStrategy,
@@ -666,6 +667,25 @@ def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
         dbuser.next_plan = None
         db.add(dbuser)
 
+    db.commit()
+
+
+def change_users_status(db: Session, admin: Admin, change_status: ChangeStatus):
+    """
+    Updates the status of users in the database based on specified admin.
+
+    Args:
+        db (Session): The SQLAlchemy database session.
+        admin (Admin): The admin whose users' statuses are being updated.
+        change_status (ChangeStatus): A Pydantic model containing the details of the status
+    """
+    query = db.query(User).filter(User.status.in_(change_status.from_status)).filter(User.admin == admin)
+    if change_status.to_status == UserStatus.on_hold:
+        query = query.filter(and_(User.on_hold_expire_duration != None, or_(
+            User.on_hold_timeout == None, User.on_hold_timeout > datetime.now())))
+        query.update({User.status: change_status.to_status, User.expire: None}, synchronize_session=False)
+    else:
+        query.update({User.status: change_status.to_status}, synchronize_session=False)
     db.commit()
 
 

@@ -4,9 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import IntegrityError
 
+from app import xray
 from app.db import Session, crud, get_db
 from app.dependencies import get_admin_by_username, validate_admin
 from app.models.admin import Admin, AdminCreate, AdminModify, Token
+from app.models.user import ChangeStatus
 from app.utils import report, responses
 from app.utils.jwt import create_admin_token
 from config import LOGIN_NOTIFY_WHITE_LIST
@@ -109,6 +111,23 @@ def remove_admin(
 
     crud.remove_admin(db, dbadmin)
     return {"detail": "Admin removed successfully"}
+
+
+@router.post("/admin/{username}/users/change-status", responses={403: responses._403, 404: responses._404})
+def change_users_status(
+    change_status: ChangeStatus, dbadmin: Admin = Depends(get_admin_by_username), db: Session = Depends(get_db), admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Change all users status"""
+    if change_status.to_status in change_status.from_status:
+        raise HTTPException(400, detail="this is not allowd")
+
+    crud.change_users_status(db=db, admin=dbadmin, change_status=change_status)
+    startup_config = xray.config.include_db_users()
+    xray.core.restart(startup_config)
+    for node_id, node in list(xray.nodes.items()):
+        if node.connected:
+            xray.operations.restart_node(node_id, startup_config)
+    return {"detail": f"Users status change to '{change_status.to_status}' successfully."}
 
 
 @router.get("/admin", response_model=Admin)
