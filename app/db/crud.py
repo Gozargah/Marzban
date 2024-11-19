@@ -662,8 +662,51 @@ def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
             dbuser.status = UserStatus.active
         dbuser.usage_logs.clear()
         dbuser.node_usages.clear()
-        db.delete(dbuser.next_plan)
-        dbuser.next_plan = None
+        if dbuser.next_plan:
+            db.delete(dbuser.next_plan)
+            dbuser.next_plan = None
+        db.add(dbuser)
+
+    db.commit()
+
+
+def disable_all_users(db: Session, admin: Optional[Admin] = None):
+    """
+    Disable all users or users under a specific admin.
+
+    Args:
+        db (Session): Database session.
+        admin (Optional[Admin]): Admin to filter users by, if any.
+    """
+    query = get_user_queryset(db)
+
+    if admin:
+        query = query.filter(User.admin == admin)
+
+    for dbuser in query.all():
+        if dbuser.status not in [UserStatus.on_hold, UserStatus.expired, UserStatus.disabled, UserStatus.limited]:
+            dbuser.status = UserStatus.disabled
+        db.add(dbuser)
+
+    db.commit()
+
+
+def active_all_users(db: Session, admin: Optional[Admin] = None):
+    """
+    Active all users or users under a specific admin.
+
+    Args:
+        db (Session): Database session.
+        admin (Optional[Admin]): Admin to filter users by, if any.
+    """
+    query = get_user_queryset(db)
+
+    if admin:
+        query = query.filter(User.admin == admin)
+
+    for dbuser in query.all():
+        if dbuser.status not in [UserStatus.on_hold, UserStatus.expired, UserStatus.limited, UserStatus.active]:
+            dbuser.status = UserStatus.active
         db.add(dbuser)
 
     db.commit()

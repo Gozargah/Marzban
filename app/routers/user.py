@@ -15,7 +15,7 @@ from app.models.user import (
     UsersResponse,
     UserStatus,
     UsersUsagesResponse,
-    UserUsagesResponse,
+    UserUsagesResponse
 )
 from app.utils import report, responses
 
@@ -75,7 +75,7 @@ def get_user(dbuser: UserResponse = Depends(get_validated_user)):
     return dbuser
 
 
-@router.put("/user/{username}", response_model=UserResponse, responses={400: responses._400,403: responses._403, 404: responses._404})
+@router.put("/user/{username}", response_model=UserResponse, responses={400: responses._400, 403: responses._403, 404: responses._404})
 def modify_user(
     modified_user: UserModify,
     bg: BackgroundTasks,
@@ -97,7 +97,7 @@ def modify_user(
     - **on_hold_timeout**: New UTC timestamp for when `on_hold` status should start or end. Only applicable if status is changed to 'on_hold'.
     - **on_hold_expire_duration**: New duration (in seconds) for how long the user should stay in `on_hold` status. Only applicable if status is changed to 'on_hold'.
     - **next_plan**: Next user plan (resets after use).
-    
+
     Note: Fields set to `null` or omitted will not be modified.
     """
 
@@ -253,7 +253,37 @@ def reset_users_data_usage(
     return {"detail": "Users successfully reset."}
 
 
-@router.get("/user/{username}/usage", response_model=UserUsagesResponse,responses={403: responses._403, 404: responses._404})
+@router.post("/users/disable", responses={403: responses._403, 404: responses._404})
+def disable_users(
+    db: Session = Depends(get_db), admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Disable all users"""
+    dbadmin = crud.get_admin(db, admin.username)
+    crud.disable_all_users(db=db, admin=dbadmin)
+    startup_config = xray.config.include_db_users()
+    xray.core.restart(startup_config)
+    for node_id, node in list(xray.nodes.items()):
+        if node.connected:
+            xray.operations.restart_node(node_id, startup_config)
+    return {"detail": "Users successfully disabled."}
+
+
+@router.post("/users/active", responses={403: responses._403, 404: responses._404})
+def active_users(
+    db: Session = Depends(get_db), admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Active all users"""
+    dbadmin = crud.get_admin(db, admin.username)
+    crud.active_all_users(db=db, admin=dbadmin)
+    startup_config = xray.config.include_db_users()
+    xray.core.restart(startup_config)
+    for node_id, node in list(xray.nodes.items()):
+        if node.connected:
+            xray.operations.restart_node(node_id, startup_config)
+    return {"detail": "Users successfully activated."}
+
+
+@router.get("/user/{username}/usage", response_model=UserUsagesResponse, responses={403: responses._403, 404: responses._404})
 def get_user_usage(
     dbuser: UserResponse = Depends(get_validated_user),
     start: str = "",
@@ -268,7 +298,7 @@ def get_user_usage(
     return {"usages": usages, "username": dbuser.username}
 
 
-@router.post("/user/{username}/active-next", response_model=UserResponse,responses={403: responses._403, 404: responses._404})
+@router.post("/user/{username}/active-next", response_model=UserResponse, responses={403: responses._403, 404: responses._404})
 def active_next_plan(
     bg: BackgroundTasks,
     db: Session = Depends(get_db),
@@ -279,9 +309,9 @@ def active_next_plan(
 
     if (dbuser is None or dbuser.next_plan is None):
         raise HTTPException(
-                status_code=404,
-                detail=f"User doesn't have next plan",
-            )
+            status_code=404,
+            detail=f"User doesn't have next plan",
+        )
 
     if dbuser.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.add_user, dbuser=dbuser)
