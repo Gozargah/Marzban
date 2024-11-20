@@ -812,6 +812,9 @@ def update_user_status(db: Session, dbuser: User, status: UserStatus) -> User:
     Returns:
         User: The updated user object.
     """
+    if dbuser.status == UserStatus.on_hold and status == UserStatus.active:
+        dbuser.on_hold_expire_duration = None
+        dbuser.on_hold_timeout = None
     dbuser.status = status
     dbuser.last_status_change = datetime.utcnow()
     db.commit()
