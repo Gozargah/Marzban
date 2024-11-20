@@ -662,8 +662,9 @@ def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
             dbuser.status = UserStatus.active
         dbuser.usage_logs.clear()
         dbuser.node_usages.clear()
-        db.delete(dbuser.next_plan)
-        dbuser.next_plan = None
+        if dbuser.next_plan:
+            db.delete(dbuser.next_plan)
+            dbuser.next_plan = None
         db.add(dbuser)
 
     db.commit()
