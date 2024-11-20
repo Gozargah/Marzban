@@ -669,6 +669,47 @@ def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
     db.commit()
 
 
+def disable_all_active_users(db: Session, admin: Optional[Admin] = None):
+    """
+    Disable all active users or users under a specific admin.
+
+    Args:
+        db (Session): Database session.
+        admin (Optional[Admin]): Admin to filter users by, if any.
+    """
+    query = db.query(User).filter(User.status.in_((UserStatus.active, UserStatus.on_hold)))
+    if admin:
+        query = query.filter(User.admin == admin)
+
+    query.update({User.status: UserStatus.disabled}, synchronize_session=False)
+
+    db.commit()
+
+
+def activate_all_disabled_users(db: Session, admin: Optional[Admin] = None):
+    """
+    Activate all disabled users or users under a specific admin.
+
+    Args:
+        db (Session): Database session.
+        admin (Optional[Admin]): Admin to filter users by, if any.
+    """
+    query_for_active_users = db.query(User).filter(User.status == UserStatus.disabled)
+    query_for_on_hold_users = db.query(User).filter(
+        and_(
+            User.status == UserStatus.disabled, User.expire.is_(
+                None), User.on_hold_expire_duration.isnot(None), User.online_at.is_(None)
+        ))
+    if admin:
+        query_for_active_users = query_for_active_users.filter(User.admin == admin)
+        query_for_on_hold_users = query_for_on_hold_users.filter(User.admin == admin)
+
+    query_for_on_hold_users.update({User.status: UserStatus.on_hold}, synchronize_session=False)
+    query_for_active_users.update({User.status: UserStatus.active}, synchronize_session=False)
+
+    db.commit()
+
+
 def autodelete_expired_users(db: Session,
                              include_limited_users: bool = False) -> List[User]:
     """

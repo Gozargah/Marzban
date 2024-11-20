@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import IntegrityError
 
+from app import xray
 from app.db import Session, crud, get_db
 from app.dependencies import get_admin_by_username, validate_admin
 from app.models.admin import Admin, AdminCreate, AdminModify, Token
@@ -131,6 +132,36 @@ def get_admins(
 ):
     """Fetch a list of admins with optional filters for pagination and username."""
     return crud.get_admins(db, offset, limit, username)
+
+
+@router.post("/admin/{username}/users/disable", responses={403: responses._403, 404: responses._404})
+def disable_all_active_users(
+    dbadmin: Admin = Depends(get_admin_by_username),
+    db: Session = Depends(get_db), admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Disable all active users under a specific admin"""
+    crud.disable_all_active_users(db=db, admin=dbadmin)
+    startup_config = xray.config.include_db_users()
+    xray.core.restart(startup_config)
+    for node_id, node in list(xray.nodes.items()):
+        if node.connected:
+            xray.operations.restart_node(node_id, startup_config)
+    return {"detail": "Users successfully disabled"}
+
+
+@router.post("/admin/{username}/users/activate", responses={403: responses._403, 404: responses._404})
+def activate_all_disabled_users(
+    dbadmin: Admin = Depends(get_admin_by_username),
+    db: Session = Depends(get_db), admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Activate all disabled users under a specific admin"""
+    crud.activate_all_disabled_users(db=db, admin=dbadmin)
+    startup_config = xray.config.include_db_users()
+    xray.core.restart(startup_config)
+    for node_id, node in list(xray.nodes.items()):
+        if node.connected:
+            xray.operations.restart_node(node_id, startup_config)
+    return {"detail": "Users successfully activated"}
 
 
 @router.post(
