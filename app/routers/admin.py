@@ -119,7 +119,7 @@ def change_users_status(
 ):
     """Change all users status"""
     if change_status.to_status in change_status.from_status:
-        raise HTTPException(400, detail="this is not allowd")
+        raise HTTPException(400, detail="this is not allow")
 
     crud.change_users_status(db=db, admin=dbadmin, change_status=change_status)
     startup_config = xray.config.include_db_users()

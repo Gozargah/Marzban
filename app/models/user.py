@@ -365,22 +365,8 @@ class UsersUsagesResponse(BaseModel):
 
 
 class ChangeStatus(BaseModel):
-    from_status: List[UserStatus]
-    to_status: UserStatus
-
-    @validator("from_status", pre=True, always=True)
-    def validate_from_status(cls, v, values, **kwargs):
-        for i in v:
-            if i not in (UserStatus.active, UserStatus.disabled, UserStatus.on_hold):
-                raise ValueError("value is not a valid enumeration member; permitted: 'active', 'disabled', 'on_hold'")
-        return v
-
-    @validator("to_status", pre=True, always=True)
-    def validate_to_status(cls, v, values, **kwargs):
-        if v in (UserStatus.active, UserStatus.disabled, UserStatus.on_hold):
-            return v
-        raise ValueError("value is not a valid enumeration member; permitted: 'active', 'disabled', 'on_hold'")
-
+    from_status: List[UserStatusModify]
+    to_status: UserStatusModify
     class Config:
         schema_extra = {
             "from_status": ["active"],
