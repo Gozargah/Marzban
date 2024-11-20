@@ -682,7 +682,7 @@ def disable_all_active_users(db: Session, admin: Optional[Admin] = None):
     if admin:
         query = query.filter(User.admin == admin)
 
-    query.update({User.status: UserStatus.disabled}, synchronize_session=False)
+    query.update({User.status: UserStatus.disabled, User.last_status_change: datetime.utcnow()}, synchronize_session=False)
 
     db.commit()
 
@@ -705,8 +705,10 @@ def activate_all_disabled_users(db: Session, admin: Optional[Admin] = None):
         query_for_active_users = query_for_active_users.filter(User.admin == admin)
         query_for_on_hold_users = query_for_on_hold_users.filter(User.admin == admin)
 
-    query_for_on_hold_users.update({User.status: UserStatus.on_hold}, synchronize_session=False)
-    query_for_active_users.update({User.status: UserStatus.active}, synchronize_session=False)
+    query_for_on_hold_users.update(
+        {User.status: UserStatus.on_hold, User.last_status_change: datetime.utcnow()}, synchronize_session=False)
+    query_for_active_users.update(
+        {User.status: UserStatus.active, User.last_status_change: datetime.utcnow()}, synchronize_session=False)
 
     db.commit()
 
