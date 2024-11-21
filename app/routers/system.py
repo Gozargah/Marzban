@@ -28,6 +28,18 @@ def get_system_stats(
     users_active = crud.get_users_count(
         db, status=UserStatus.active, admin=dbadmin if not admin.is_sudo else None
     )
+    users_disabled = crud.get_users_count(
+        db, status=UserStatus.disabled, admin=dbadmin if not admin.is_sudo else None
+    )
+    users_on_hold = crud.get_users_count(
+        db, status=UserStatus.on_hold, admin=dbadmin if not admin.is_sudo else None
+    )
+    users_expired = crud.get_users_count(
+        db, status=UserStatus.expired, admin=dbadmin if not admin.is_sudo else None
+    )
+    users_limited = crud.get_users_count(
+        db, status=UserStatus.limited, admin=dbadmin if not admin.is_sudo else None
+    )
     realtime_bandwidth_stats = realtime_bandwidth()
 
     return SystemStats(
@@ -38,6 +50,10 @@ def get_system_stats(
         cpu_usage=cpu.percent,
         total_user=total_user,
         users_active=users_active,
+        users_disabled=users_disabled,
+        users_expired=users_expired,
+        users_limited=users_limited,
+        users_on_hold=users_on_hold,
         incoming_bandwidth=system.uplink,
         outgoing_bandwidth=system.downlink,
         incoming_bandwidth_speed=realtime_bandwidth_stats.incoming_bytes,
