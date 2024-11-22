@@ -1482,8 +1482,8 @@ def delete_notification_reminder(db: Session, dbreminder: NotificationReminder) 
     return
 
 
-def count_online_users(db: Session):
-    twenty_four_hours_ago = datetime.now() - timedelta(hours=24)
+def count_online_users(db: Session, hours: int = 24):
+    twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=hours)
     query = db.query(func.count(User.id)).filter(User.online_at.isnot(
         None), func.datetime(User.online_at) >= twenty_four_hours_ago)
     return query.scalar()
