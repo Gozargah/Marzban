@@ -50,7 +50,7 @@ def get_system_stats(
         cpu_cores=cpu.cores,
         cpu_usage=cpu.percent,
         total_user=total_user,
-        online_at_last_24H=online_users,
+        online_users=online_users,
         users_active=users_active,
         users_disabled=users_disabled,
         users_expired=users_expired,
