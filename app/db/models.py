@@ -30,6 +30,17 @@ class Admin(Base):
     telegram_id = Column(BigInteger, nullable=True, default=None)
     discord_webhook = Column(String(1024), nullable=True, default=None)
     users_usage = Column(BigInteger, nullable=False, default=0)
+    usage_logs = relationship("AdminUsageLogs", back_populates="admin")
+
+
+class AdminUsageLogs(Base):
+    __tablename__ = "admin_usage_logs"
+
+    id = Column(Integer, primary_key=True)
+    admin_id = Column(Integer, ForeignKey("admins.id"))
+    admin = relationship("Admin", back_populates="usage_logs")
+    used_traffic_at_reset = Column(BigInteger, nullable=False)
+    reset_at = Column(DateTime, default=datetime.utcnow)
 
 
 class User(Base):
