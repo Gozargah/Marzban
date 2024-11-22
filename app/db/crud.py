@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
-from sqlalchemy import and_, delete, or_
+from sqlalchemy import and_, delete, func, or_
 from sqlalchemy.orm import Query, Session, joinedload
 from sqlalchemy.sql.functions import coalesce
 
@@ -1480,3 +1480,10 @@ def delete_notification_reminder(db: Session, dbreminder: NotificationReminder) 
     db.delete(dbreminder)
     db.commit()
     return
+
+
+def count_online_users(db: Session, hours: int = 24):
+    twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=hours)
+    query = db.query(func.count(User.id)).filter(User.online_at.isnot(
+        None), func.datetime(User.online_at) >= twenty_four_hours_ago)
+    return query.scalar()
