@@ -230,10 +230,9 @@ class V2rayShareLink(str):
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
             payload["xPaddingBytes"] = x_padding_bytes
             payload["type"] = mode
-            payload["noGRPCHeader"] = noGRPCHeader
             if extra:
                 payload["extra"] = extra
-
+            payload["noGRPCHeader"] = int(noGRPCHeader)
         return (
             "vmess://"
             + base64.b64encode(
@@ -299,9 +298,9 @@ class V2rayShareLink(str):
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
             payload["xPaddingBytes"] = x_padding_bytes
             payload["mode"] = mode
-            payload["noGRPCHeader"] = noGRPCHeader
             if extra:
                 payload["extra"] = json.dumps(extra)
+            payload["noGRPCHeader"] = int(noGRPCHeader)
 
         elif net == 'kcp':
             payload['seed'] = path
@@ -390,9 +389,9 @@ class V2rayShareLink(str):
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
             payload["xPaddingBytes"] = x_padding_bytes
             payload["mode"] = mode
-            payload["noGRPCHeader"] = noGRPCHeader
             if extra:
                 payload["extra"] = json.dumps(extra)
+            payload["noGRPCHeader"] = int(noGRPCHeader)
 
         elif net == 'quic':
             payload['key'] = path
