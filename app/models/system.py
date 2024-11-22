@@ -9,6 +9,7 @@ class SystemStats(BaseModel):
     cpu_usage: float
     total_user: int
     online_users: int
+    offline_users: int
     users_active: int
     users_on_hold: int
     users_disabled: int
