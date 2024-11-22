@@ -16,13 +16,15 @@ from app.models.user import UserStatus
 from app.utils.crypto import get_cert_SANs
 from config import DEBUG, XRAY_EXCLUDE_INBOUND_TAGS, XRAY_FALLBACKS_INBOUND_TAG
 
-def merge_dicts(a, b): # B will override A dictionary key and values
+
+def merge_dicts(a, b):  # B will override A dictionary key and values
     for key, value in b.items():
         if isinstance(value, dict) and key in a and isinstance(a[key], dict):
-            merge_dicts(a[key], value) # Recursively merge nested dictionaries
+            merge_dicts(a[key], value)  # Recursively merge nested dictionaries
         else:
             a[key] = value
     return a
+
 
 class XRayConfig(dict):
     def __init__(self,
@@ -295,7 +297,7 @@ class XRayConfig(dict):
                     host = net_settings.get('host', '')
                     settings['host'] = [host]
 
-                elif net in ('splithttp','xhttp'):
+                elif net in ('splithttp', 'xhttp'):
                     settings['path'] = net_settings.get('path', '')
                     host = net_settings.get('host', '')
                     settings['host'] = [host]
@@ -304,6 +306,9 @@ class XRayConfig(dict):
                     settings['scMinPostsIntervalMs'] = net_settings.get('scMinPostsIntervalMs', 30)
                     settings['xPaddingBytes'] = net_settings.get('xPaddingBytes', "100-1000")
                     settings['xmux'] = net_settings.get('xmux', {})
+                    settings["mode"] = net_settings.get("mode", "auto")
+                    settings["extra"] = net_settings.get("extra", {})
+                    settings["noGRPCHeader"] = net_settings.get("noGRPCHeader", False)
 
                 elif net == 'kcp':
                     header = net_settings.get('header', {})

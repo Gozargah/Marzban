@@ -75,6 +75,9 @@ class V2rayShareLink(str):
                 sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
                 sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
                 x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
+                mode=inbound.get("mode", "auto"),
+                extra=inbound.get("extra", {}),
+                noGRPCHeader=inbound.get("noGRPCHeader", False),
             )
 
         elif inbound["protocol"] == "vless":
@@ -102,6 +105,9 @@ class V2rayShareLink(str):
                 sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
                 sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
                 x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
+                mode=inbound.get("mode", "auto"),
+                extra=inbound.get("extra", {}),
+                noGRPCHeader=inbound.get("noGRPCHeader", False),
             )
 
         elif inbound["protocol"] == "trojan":
@@ -129,6 +135,9 @@ class V2rayShareLink(str):
                 sc_max_concurrent_posts=inbound.get('scMaxConcurrentPosts', 100),
                 sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
                 x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
+                mode=inbound.get("mode", "auto"),
+                extra=inbound.get("extra", {}),
+                noGRPCHeader=inbound.get("noGRPCHeader", False),
             )
 
         elif inbound["protocol"] == "shadowsocks":
@@ -169,6 +178,9 @@ class V2rayShareLink(str):
             sc_max_concurrent_posts: int = 100,
             sc_min_posts_interval_ms: int = 30,
             x_padding_bytes: str = "100-1000",
+            mode: str = "auto",
+            extra: dict = {},
+            noGRPCHeader: bool = False
     ):
         payload = {
             "add": address,
@@ -217,7 +229,10 @@ class V2rayShareLink(str):
             payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
             payload["xPaddingBytes"] = x_padding_bytes
-
+            payload["type"] = mode
+            if extra:
+                payload["extra"] = extra
+            payload["noGRPCHeader"] = int(noGRPCHeader)
         return (
             "vmess://"
             + base64.b64encode(
@@ -250,6 +265,9 @@ class V2rayShareLink(str):
               sc_max_concurrent_posts: int = 100,
               sc_min_posts_interval_ms: int = 30,
               x_padding_bytes: str = "100-1000",
+              mode: str = "auto",
+              extra: dict = {},
+              noGRPCHeader: bool = False,
               ):
 
         payload = {
@@ -279,6 +297,10 @@ class V2rayShareLink(str):
             payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
             payload["xPaddingBytes"] = x_padding_bytes
+            payload["mode"] = mode
+            if extra:
+                payload["extra"] = json.dumps(extra)
+            payload["noGRPCHeader"] = int(noGRPCHeader)
 
         elif net == 'kcp':
             payload['seed'] = path
@@ -338,6 +360,9 @@ class V2rayShareLink(str):
                sc_max_concurrent_posts: int = 100,
                sc_min_posts_interval_ms: int = 30,
                x_padding_bytes: str = "100-1000",
+               mode: str = "auto",
+               extra: dict = {},
+               noGRPCHeader: bool = False
                ):
 
         payload = {
@@ -363,6 +388,10 @@ class V2rayShareLink(str):
             payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
             payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
             payload["xPaddingBytes"] = x_padding_bytes
+            payload["mode"] = mode
+            if extra:
+                payload["extra"] = json.dumps(extra)
+            payload["noGRPCHeader"] = int(noGRPCHeader)
 
         elif net == 'quic':
             payload['key'] = path
@@ -523,9 +552,13 @@ class V2rayJsonConfig(str):
                          sc_min_posts_interval_ms: int = 30,
                          x_padding_bytes: str = "100-1000",
                          xmux: dict = {},
+                         extra: dict = {},
+                         mode: str = "auto",
+                         noGRPCHeader: bool = False,
                          ) -> dict:
         config = copy.deepcopy(self.settings.get("splithttpSettings", {}))
 
+        config["mode"] = mode
         if path:
             config["path"] = path
         if host:
@@ -537,9 +570,12 @@ class V2rayJsonConfig(str):
         config.setdefault("scMaxConcurrentPosts", sc_max_concurrent_posts)
         config.setdefault("scMinPostsIntervalMs", sc_min_posts_interval_ms)
         config.setdefault("xPaddingBytes", x_padding_bytes)
+        config["noGRPCHeader"] = noGRPCHeader
         if xmux:
             config["xmux"] = xmux
 
+        if extra:
+            config["extra"] = extra
         # core will ignore unknown variables
 
         return config
@@ -840,6 +876,9 @@ class V2rayJsonConfig(str):
                             sc_min_posts_interval_ms: int = 30,
                             x_padding_bytes: str = "100-1000",
                             xmux: dict = {},
+                            extra: dict = {},
+                            mode: str = "auto",
+                            noGRPCHeader: bool = False,
                             ) -> dict:
 
         if net == "ws":
@@ -870,6 +909,9 @@ class V2rayJsonConfig(str):
                                                     sc_min_posts_interval_ms=sc_min_posts_interval_ms,
                                                     x_padding_bytes=x_padding_bytes,
                                                     xmux=xmux,
+                                                    extra=extra,
+                                                    mode=mode,
+                                                    noGRPCHeader=noGRPCHeader
                                                     )
         else:
             network_setting = {}
@@ -977,6 +1019,9 @@ class V2rayJsonConfig(str):
             sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
             x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
             xmux=inbound.get("xmux", {}),
+            mode=inbound.get("mode", "auto"),
+            extra=inbound.get("extra", {}),
+            noGRPCHeader=inbound.get("noGRPCHeader", False),
         )
 
         mux_json = json.loads(self.mux_template)
