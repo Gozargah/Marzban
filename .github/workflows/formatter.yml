@@ -26,4 +26,4 @@ jobs:
 
     - name: Run Ruff Format
       run: |
-        ruff format --line-length 120 --check . --exclude xray_api/ ,app/db/migrations/versions
+        ruff format --line-length 120 --check . --exclude xray_api,app/db/migrations/versions
