@@ -19,32 +19,42 @@ app.add_typer(cli.user.app, name="user")
 
 
 # Hidden completion app
-app_completion = typer.Typer(no_args_is_help=True, help="Generate and install completion scripts.", hidden=True)
+app_completion = typer.Typer(
+    no_args_is_help=True, help="Generate and install completion scripts.", hidden=True
+)
 app.add_typer(app_completion, name="completion")
 
 
 def get_default_shell() -> Shells:
-    shell = os.environ.get('SHELL')
+    shell = os.environ.get("SHELL")
     if shell:
-        shell = shell.split('/')[-1]
+        shell = shell.split("/")[-1]
         if shell in Shells.__members__:
             return getattr(Shells, shell)
     return Shells.bash
 
 
-@app_completion.command(help="Show completion for the specified shell, to copy or customize it.")
-def show(ctx: typer.Context, shell: Shells = typer.Option(None,
-                                                          help="The shell to install completion for.",
-                                                          case_sensitive=False)) -> None:
+@app_completion.command(
+    help="Show completion for the specified shell, to copy or customize it."
+)
+def show(
+    ctx: typer.Context,
+    shell: Shells = typer.Option(
+        None, help="The shell to install completion for.", case_sensitive=False
+    ),
+) -> None:
     if shell is None:
         shell = get_default_shell()
     typer.completion.show_callback(ctx, None, shell)
 
 
 @app_completion.command(help="Install completion for the specified shell.")
-def install(ctx: typer.Context, shell: Shells = typer.Option(None,
-                                                             help="The shell to install completion for.",
-                                                             case_sensitive=False)) -> None:
+def install(
+    ctx: typer.Context,
+    shell: Shells = typer.Option(
+        None, help="The shell to install completion for.", case_sensitive=False
+    ),
+) -> None:
     if shell is None:
         shell = get_default_shell()
     typer.completion.install_callback(ctx, None, shell)
@@ -52,4 +62,4 @@ def install(ctx: typer.Context, shell: Shells = typer.Option(None,
 
 if __name__ == "__main__":
     typer.completion.completion_init()
-    app(prog_name=os.environ.get('CLI_PROG_NAME'))
+    app(prog_name=os.environ.get("CLI_PROG_NAME"))

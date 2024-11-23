@@ -8,8 +8,14 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
 from app import app, logger
-from config import (DEBUG, UVICORN_HOST, UVICORN_PORT, UVICORN_SSL_CERTFILE,
-                    UVICORN_SSL_KEYFILE, UVICORN_UDS)
+from config import (
+    DEBUG,
+    UVICORN_HOST,
+    UVICORN_PORT,
+    UVICORN_SSL_CERTFILE,
+    UVICORN_SSL_KEYFILE,
+    UVICORN_UDS,
+)
 
 
 def validate_cert_and_key(cert_file_path, key_file_path):
@@ -25,12 +31,14 @@ def validate_cert_and_key(cert_file_path, key_file_path):
         raise ValueError(f"SSL Error: {e}")
 
     try:
-        with open(cert_file_path, 'rb') as cert_file:
+        with open(cert_file_path, "rb") as cert_file:
             cert_data = cert_file.read()
             cert = x509.load_pem_x509_certificate(cert_data, default_backend())
 
         if cert.issuer == cert.subject:
-            raise ValueError("The certificate is self-signed and not issued by a trusted CA.")
+            raise ValueError(
+                "The certificate is self-signed and not issued by a trusted CA."
+            )
 
     except Exception as e:
         raise ValueError(f"Certificate verification failed: {e}")
@@ -45,20 +53,19 @@ if __name__ == "__main__":
     if UVICORN_SSL_CERTFILE and UVICORN_SSL_KEYFILE:
         validate_cert_and_key(UVICORN_SSL_CERTFILE, UVICORN_SSL_KEYFILE)
 
-        bind_args['ssl_certfile'] = UVICORN_SSL_CERTFILE
-        bind_args['ssl_keyfile'] = UVICORN_SSL_KEYFILE
+        bind_args["ssl_certfile"] = UVICORN_SSL_CERTFILE
+        bind_args["ssl_keyfile"] = UVICORN_SSL_KEYFILE
 
         if UVICORN_UDS:
-            bind_args['uds'] = UVICORN_UDS
+            bind_args["uds"] = UVICORN_UDS
         else:
-            bind_args['host'] = UVICORN_HOST
-            bind_args['port'] = UVICORN_PORT
+            bind_args["host"] = UVICORN_HOST
+            bind_args["port"] = UVICORN_PORT
 
     else:
         if UVICORN_UDS:
-            bind_args['uds'] = UVICORN_UDS
+            bind_args["uds"] = UVICORN_UDS
         else:
-
             logger.warning(f"""
 {click.style('IMPORTANT!', blink=True, bold=True, fg="yellow")}
 You're running Marzban without specifying {click.style('UVICORN_SSL_CERTFILE', italic=True, fg="magenta")} and {click.style('UVICORN_SSL_KEYFILE', italic=True, fg="magenta")}.
@@ -75,12 +82,12 @@ Use the following command:
 Then, navigate to {click.style(f'http://127.0.0.1:{UVICORN_PORT}', bold=True)} on your computer.
             """)
 
-            bind_args['host'] = '127.0.0.1'
-            bind_args['port'] = UVICORN_PORT
+            bind_args["host"] = "127.0.0.1"
+            bind_args["port"] = UVICORN_PORT
 
     if DEBUG:
-        bind_args['uds'] = None
-        bind_args['host'] = '0.0.0.0'
+        bind_args["uds"] = None
+        bind_args["host"] = "0.0.0.0"
 
     try:
         uvicorn.run(
@@ -88,7 +95,7 @@ Then, navigate to {click.style(f'http://127.0.0.1:{UVICORN_PORT}', bold=True)} o
             **bind_args,
             workers=1,
             reload=DEBUG,
-            log_level=logging.DEBUG if DEBUG else logging.INFO
+            log_level=logging.DEBUG if DEBUG else logging.INFO,
         )
     except FileNotFoundError:  # to prevent error on removing unix sock
         pass

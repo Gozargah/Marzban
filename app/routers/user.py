@@ -22,7 +22,11 @@ from app.utils import report, responses
 router = APIRouter(tags=["User"], prefix="/api", responses={401: responses._401})
 
 
-@router.post("/user", response_model=UserResponse, responses={400: responses._400, 409: responses._409})
+@router.post(
+    "/user",
+    response_model=UserResponse,
+    responses={400: responses._400, 409: responses._409},
+)
 def add_user(
     new_user: UserCreate,
     bg: BackgroundTasks,
@@ -69,13 +73,21 @@ def add_user(
     return user
 
 
-@router.get("/user/{username}", response_model=UserResponse, responses={403: responses._403, 404: responses._404})
+@router.get(
+    "/user/{username}",
+    response_model=UserResponse,
+    responses={403: responses._403, 404: responses._404},
+)
 def get_user(dbuser: UserResponse = Depends(get_validated_user)):
     """Get user information"""
     return dbuser
 
 
-@router.put("/user/{username}", response_model=UserResponse, responses={400: responses._400,403: responses._403, 404: responses._404})
+@router.put(
+    "/user/{username}",
+    response_model=UserResponse,
+    responses={400: responses._400, 403: responses._403, 404: responses._404},
+)
 def modify_user(
     modified_user: UserModify,
     bg: BackgroundTasks,
@@ -97,7 +109,7 @@ def modify_user(
     - **on_hold_timeout**: New UTC timestamp for when `on_hold` status should start or end. Only applicable if status is changed to 'on_hold'.
     - **on_hold_expire_duration**: New duration (in seconds) for how long the user should stay in `on_hold` status. Only applicable if status is changed to 'on_hold'.
     - **next_plan**: Next user plan (resets after use).
-    
+
     Note: Fields set to `null` or omitted will not be modified.
     """
 
@@ -156,7 +168,11 @@ def remove_user(
     return {"detail": "User successfully deleted"}
 
 
-@router.post("/user/{username}/reset", response_model=UserResponse, responses={403: responses._403, 404: responses._404})
+@router.post(
+    "/user/{username}/reset",
+    response_model=UserResponse,
+    responses={403: responses._403, 404: responses._404},
+)
 def reset_user_data_usage(
     bg: BackgroundTasks,
     db: Session = Depends(get_db),
@@ -177,7 +193,11 @@ def reset_user_data_usage(
     return dbuser
 
 
-@router.post("/user/{username}/revoke_sub", response_model=UserResponse, responses={403: responses._403, 404: responses._404})
+@router.post(
+    "/user/{username}/revoke_sub",
+    response_model=UserResponse,
+    responses={403: responses._403, 404: responses._404},
+)
 def revoke_user_subscription(
     bg: BackgroundTasks,
     db: Session = Depends(get_db),
@@ -199,7 +219,11 @@ def revoke_user_subscription(
     return user
 
 
-@router.get("/users", response_model=UsersResponse, responses={400: responses._400, 403: responses._403, 404: responses._404})
+@router.get(
+    "/users",
+    response_model=UsersResponse,
+    responses={400: responses._400, 403: responses._403, 404: responses._404},
+)
 def get_users(
     offset: int = None,
     limit: int = None,
@@ -253,7 +277,11 @@ def reset_users_data_usage(
     return {"detail": "Users successfully reset."}
 
 
-@router.get("/user/{username}/usage", response_model=UserUsagesResponse,responses={403: responses._403, 404: responses._404})
+@router.get(
+    "/user/{username}/usage",
+    response_model=UserUsagesResponse,
+    responses={403: responses._403, 404: responses._404},
+)
 def get_user_usage(
     dbuser: UserResponse = Depends(get_validated_user),
     start: str = "",
@@ -268,7 +296,11 @@ def get_user_usage(
     return {"usages": usages, "username": dbuser.username}
 
 
-@router.post("/user/{username}/active-next", response_model=UserResponse,responses={403: responses._403, 404: responses._404})
+@router.post(
+    "/user/{username}/active-next",
+    response_model=UserResponse,
+    responses={403: responses._403, 404: responses._404},
+)
 def active_next_plan(
     bg: BackgroundTasks,
     db: Session = Depends(get_db),
@@ -277,18 +309,20 @@ def active_next_plan(
     """Reset user by next plan"""
     dbuser = crud.reset_user_by_next(db=db, dbuser=dbuser)
 
-    if (dbuser is None or dbuser.next_plan is None):
+    if dbuser is None or dbuser.next_plan is None:
         raise HTTPException(
-                status_code=404,
-                detail=f"User doesn't have next plan",
-            )
+            status_code=404,
+            detail=f"User doesn't have next plan",
+        )
 
     if dbuser.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.add_user, dbuser=dbuser)
 
     user = UserResponse.from_orm(dbuser)
     bg.add_task(
-        report.user_data_reset_by_next, user=user, user_admin=dbuser.admin,
+        report.user_data_reset_by_next,
+        user=user,
+        user_admin=dbuser.admin,
     )
 
     logger.info(f'User "{dbuser.username}"\'s usage was reset by next plan')

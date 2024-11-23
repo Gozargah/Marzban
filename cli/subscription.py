@@ -19,9 +19,7 @@ class ConfigFormat(str, Enum):
 
 
 @app.command(name="get-link")
-def get_link(
-    username: str = typer.Option(..., *utils.FLAGS["username"], prompt=True)
-):
+def get_link(username: str = typer.Option(..., *utils.FLAGS["username"], prompt=True)):
     """
     Prints the given user's subscription link.
 
@@ -36,13 +34,20 @@ def get_link(
 @app.command(name="get-config")
 def get_config(
     username: str = typer.Option(..., *utils.FLAGS["username"], prompt=True),
-    config_format: ConfigFormat = typer.Option(..., *utils.FLAGS["format"], prompt=True),
+    config_format: ConfigFormat = typer.Option(
+        ..., *utils.FLAGS["format"], prompt=True
+    ),
     output_file: Optional[str] = typer.Option(
-        None, *utils.FLAGS["output_file"], help="Writes the generated config in the file if provided"
+        None,
+        *utils.FLAGS["output_file"],
+        help="Writes the generated config in the file if provided",
     ),
     as_base64: bool = typer.Option(
-        False, "--base64", is_flag=True, help="Encodes output in base64 format if present"
-    )
+        False,
+        "--base64",
+        is_flag=True,
+        help="Encodes output in base64 format if present",
+    ),
 ):
     """
     Generates a subscription config.
@@ -68,8 +73,8 @@ def get_config(
             )
         else:
             utils.success(
-                'No output file specified.'
+                "No output file specified."
                 f' using pager for {username}\'s config in "{config_format}" format.',
-                auto_exit=False
+                auto_exit=False,
             )
             utils.paginate(conf)

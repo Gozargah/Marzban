@@ -35,7 +35,7 @@ class NodeCreate(Node):
                 "port": 62050,
                 "api_port": 62051,
                 "add_as_new_host": True,
-                "usage_coefficient": 1
+                "usage_coefficient": 1,
             }
         }
 
@@ -56,7 +56,7 @@ class NodeModify(Node):
                 "port": 62050,
                 "api_port": 62051,
                 "status": "disabled",
-                "usage_coefficient": 1.0
+                "usage_coefficient": 1.0,
             }
         }
 

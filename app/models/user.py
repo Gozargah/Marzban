@@ -48,14 +48,16 @@ class UserDataLimitResetStrategy(str, Enum):
     month = "month"
     year = "year"
 
+
 class NextPlanModel(BaseModel):
     data_limit: Optional[int]
     expire: Optional[int]
     add_remaining_traffic: bool = False
     fire_on_either: bool = True
-    
+
     class Config:
         orm_mode = True
+
 
 class User(BaseModel):
     proxies: Dict[ProxyTypes, ProxySettings] = {}
@@ -75,16 +77,15 @@ class User(BaseModel):
     on_hold_timeout: Optional[Union[datetime, None]] = Field(None, nullable=True)
 
     auto_delete_in_days: Optional[int] = Field(None, nullable=True)
-    
+
     next_plan: Optional[NextPlanModel] = Field(None, nullable=True)
-        
+
     @validator("proxies", pre=True, always=True)
     def validate_proxies(cls, v, values, **kwargs):
         if not v:
             raise ValueError("Each user needs at least one proxy")
         return {
-            proxy_type: ProxySettings.from_dict(
-                proxy_type, v.get(proxy_type, {}))
+            proxy_type: ProxySettings.from_dict(proxy_type, v.get(proxy_type, {}))
             for proxy_type in v
         }
 
@@ -105,7 +106,7 @@ class User(BaseModel):
     @validator("on_hold_expire_duration", "on_hold_timeout", pre=True, always=True)
     def validate_timeout(cls, v, values):
         # Check if expire is 0 or None and timeout is not 0 or None
-        if (v in (0, None)):
+        if v in (0, None):
             return None
         return v
 
@@ -130,7 +131,7 @@ class UserCreate(User):
                     "data_limit": 0,
                     "expire": 0,
                     "add_remaining_traffic": False,
-                    "fire_on_either": True
+                    "fire_on_either": True,
                 },
                 "expire": 0,
                 "data_limit": 0,
@@ -193,8 +194,10 @@ class UserCreate(User):
         on_hold_expire = values.get("on_hold_expire_duration")
         expire = values.get("expire")
         if status == UserStatusCreate.on_hold:
-            if (on_hold_expire == 0 or on_hold_expire is None):
-                raise ValueError("User cannot be on hold without a valid on_hold_expire_duration.")
+            if on_hold_expire == 0 or on_hold_expire is None:
+                raise ValueError(
+                    "User cannot be on hold without a valid on_hold_expire_duration."
+                )
             if expire:
                 raise ValueError("User cannot be on hold with specified expire.")
         return status
@@ -219,7 +222,7 @@ class UserModify(User):
                     "data_limit": 0,
                     "expire": 0,
                     "add_remaining_traffic": False,
-                    "fire_on_either": True
+                    "fire_on_either": True,
                 },
                 "expire": 0,
                 "data_limit": 0,
@@ -248,7 +251,6 @@ class UserModify(User):
         # so inbounds particularly can be modified
         if inbounds:
             for proxy_type, tags in inbounds.items():
-
                 # if not tags:
                 #     raise ValueError(f"{proxy_type} inbounds cannot be empty")
 
@@ -261,8 +263,7 @@ class UserModify(User):
     @validator("proxies", pre=True, always=True)
     def validate_proxies(cls, v):
         return {
-            proxy_type: ProxySettings.from_dict(
-                proxy_type, v.get(proxy_type, {}))
+            proxy_type: ProxySettings.from_dict(proxy_type, v.get(proxy_type, {}))
             for proxy_type in v
         }
 
@@ -271,8 +272,10 @@ class UserModify(User):
         on_hold_expire = values.get("on_hold_expire_duration")
         expire = values.get("expire")
         if status == UserStatusCreate.on_hold:
-            if (on_hold_expire == 0 or on_hold_expire is None):
-                raise ValueError("User cannot be on hold without a valid on_hold_expire_duration.")
+            if on_hold_expire == 0 or on_hold_expire is None:
+                raise ValueError(
+                    "User cannot be on hold without a valid on_hold_expire_duration."
+                )
             if expire:
                 raise ValueError("User cannot be on hold with specified expire.")
         return status
@@ -298,7 +301,10 @@ class UserResponse(User):
     def validate_links(cls, v, values, **kwargs):
         if not v:
             return generate_v2ray_links(
-                values.get("proxies", {}), values.get("inbounds", {}), extra_data=values, reverse=False,
+                values.get("proxies", {}),
+                values.get("inbounds", {}),
+                extra_data=values,
+                reverse=False,
             )
         return v
 
@@ -306,7 +312,7 @@ class UserResponse(User):
     def validate_subscription_url(cls, v, values, **kwargs):
         if not v:
             salt = secrets.token_hex(8)
-            url_prefix = (XRAY_SUBSCRIPTION_URL_PREFIX).replace('*', salt)
+            url_prefix = (XRAY_SUBSCRIPTION_URL_PREFIX).replace("*", salt)
             token = create_subscription_token(values["username"])
             return f"{url_prefix}/{XRAY_SUBSCRIPTION_PATH}/{token}"
         return v
@@ -322,7 +328,8 @@ class SubscriptionUserResponse(UserResponse):
     class Config:
         orm_mode = True
         fields = {
-            field: {"include": True} for field in [
+            field: {"include": True}
+            for field in [
                 "username",
                 "status",
                 "expire",
@@ -357,6 +364,7 @@ class UserUsageResponse(BaseModel):
 class UserUsagesResponse(BaseModel):
     username: str
     usages: List[UserUsageResponse]
+
 
 class UsersUsagesResponse(BaseModel):
     usages: List[UserUsageResponse]

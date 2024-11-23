@@ -33,10 +33,10 @@ class Admin(BaseModel):
         if not payload:
             return
 
-        if payload['username'] in SUDOERS and payload['is_sudo'] is True:
-            return cls(username=payload['username'], is_sudo=True)
+        if payload["username"] in SUDOERS and payload["is_sudo"] is True:
+            return cls(username=payload["username"], is_sudo=True)
 
-        dbadmin = crud.get_admin(db, payload['username'])
+        dbadmin = crud.get_admin(db, payload["username"])
         if not dbadmin:
             return
 
@@ -49,9 +49,9 @@ class Admin(BaseModel):
         return cls.from_orm(dbadmin)
 
     @classmethod
-    def get_current(cls,
-                    db: Session = Depends(get_db),
-                    token: str = Depends(oauth2_scheme)):
+    def get_current(
+        cls, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
+    ):
         admin = cls.get_admin(token, db)
         if not admin:
             raise HTTPException(
@@ -63,9 +63,9 @@ class Admin(BaseModel):
         return admin
 
     @classmethod
-    def check_sudo_admin(cls,
-                        db: Session = Depends(get_db),
-                        token: str = Depends(oauth2_scheme)):
+    def check_sudo_admin(
+        cls, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
+    ):
         admin = cls.get_admin(token, db)
         if not admin:
             raise HTTPException(
@@ -75,10 +75,10 @@ class Admin(BaseModel):
             )
         if not admin.is_sudo:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You're not allowed"
+                status_code=status.HTTP_403_FORBIDDEN, detail="You're not allowed"
             )
         return admin
+
 
 class AdminCreate(Admin):
     password: str
@@ -124,6 +124,7 @@ class AdminInDB(Admin):
 
     def verify_password(self, plain_password):
         return pwd_context.verify(plain_password, self.hashed_password)
+
 
 class AdminValidationResult(BaseModel):
     username: str

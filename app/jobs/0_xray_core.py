@@ -40,7 +40,9 @@ def start_core():
 
     start_time = time.time()
     config = xray.config.include_db_users()
-    logger.info(f"Xray core config generated in {(time.time() - start_time):.2f} seconds")
+    logger.info(
+        f"Xray core config generated in {(time.time() - start_time):.2f} seconds"
+    )
 
     # main core
     logger.info("Starting main Xray core")
@@ -60,9 +62,13 @@ def start_core():
     for node_id in node_ids:
         xray.operations.connect_node(node_id, config)
 
-    scheduler.add_job(core_health_check, 'interval',
-                      seconds=JOB_CORE_HEALTH_CHECK_INTERVAL,
-                      coalesce=True, max_instances=1)
+    scheduler.add_job(
+        core_health_check,
+        "interval",
+        seconds=JOB_CORE_HEALTH_CHECK_INTERVAL,
+        coalesce=True,
+        max_instances=1,
+    )
 
 
 @app.on_event("shutdown")

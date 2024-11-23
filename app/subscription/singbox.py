@@ -10,20 +10,19 @@ from config import (
     MUX_TEMPLATE,
     SINGBOX_SETTINGS_TEMPLATE,
     SINGBOX_SUBSCRIPTION_TEMPLATE,
-    USER_AGENT_TEMPLATE
+    USER_AGENT_TEMPLATE,
 )
 
 
 class SingBoxConfiguration(str):
-
     def __init__(self):
         self.proxy_remarks = []
         self.config = json.loads(render_template(SINGBOX_SUBSCRIPTION_TEMPLATE))
         self.mux_template = render_template(MUX_TEMPLATE)
         user_agent_data = json.loads(render_template(USER_AGENT_TEMPLATE))
 
-        if 'list' in user_agent_data and isinstance(user_agent_data['list'], list):
-            self.user_agent_list = user_agent_data['list']
+        if "list" in user_agent_data and isinstance(user_agent_data["list"], list):
+            self.user_agent_list = user_agent_data["list"]
         else:
             self.user_agent_list = []
 
@@ -39,7 +38,7 @@ class SingBoxConfiguration(str):
             return remark
         c = 2
         while True:
-            new = f'{remark} ({c})'
+            new = f"{remark} ({c})"
             if not new in self.proxy_remarks:
                 return new
             c += 1
@@ -49,11 +48,17 @@ class SingBoxConfiguration(str):
 
     def render(self, reverse=False):
         urltest_types = ["vmess", "vless", "trojan", "shadowsocks"]
-        urltest_tags = [outbound["tag"]
-                        for outbound in self.config["outbounds"] if outbound["type"] in urltest_types]
+        urltest_tags = [
+            outbound["tag"]
+            for outbound in self.config["outbounds"]
+            if outbound["type"] in urltest_types
+        ]
         selector_types = ["vmess", "vless", "trojan", "shadowsocks", "urltest"]
-        selector_tags = [outbound["tag"]
-                         for outbound in self.config["outbounds"] if outbound["type"] in selector_types]
+        selector_tags = [
+            outbound["tag"]
+            for outbound in self.config["outbounds"]
+            if outbound["type"] in selector_types
+        ]
 
         for outbound in self.config["outbounds"]:
             if outbound.get("type") == "urltest":
@@ -68,20 +73,20 @@ class SingBoxConfiguration(str):
         return json.dumps(self.config, indent=4)
 
     @staticmethod
-    def tls_config(sni=None, fp=None, tls=None, pbk=None,
-                   sid=None, alpn=None, ais=None):
-
+    def tls_config(
+        sni=None, fp=None, tls=None, pbk=None, sid=None, alpn=None, ais=None
+    ):
         config = {}
-        if tls in ['tls', 'reality']:
+        if tls in ["tls", "reality"]:
             config["enabled"] = True
 
         if sni is not None:
             config["server_name"] = sni
 
-        if tls == 'tls' and ais:
-            config['insecure'] = ais
+        if tls == "tls" and ais:
+            config["insecure"] = ais
 
-        if tls == 'reality':
+        if tls == "reality":
             config["reality"] = {"enabled": True}
             if pbk:
                 config["reality"]["public_key"] = pbk
@@ -89,23 +94,25 @@ class SingBoxConfiguration(str):
                 config["reality"]["short_id"] = sid
 
         if fp:
-            config["utls"] = {
-                "enabled": bool(fp),
-                "fingerprint": fp
-            }
+            config["utls"] = {"enabled": bool(fp), "fingerprint": fp}
 
         if alpn:
             config["alpn"] = [alpn] if not isinstance(alpn, list) else alpn
 
         return config
 
-    def http_config(self, host='', path='', random_user_agent: bool = False):
-        config = copy.deepcopy(self.settings.get("httpSettings", {
-            "idle_timeout": "15s",
-            "ping_timeout": "15s",
-            "method": "GET",
-            "headers": {}
-        }))
+    def http_config(self, host="", path="", random_user_agent: bool = False):
+        config = copy.deepcopy(
+            self.settings.get(
+                "httpSettings",
+                {
+                    "idle_timeout": "15s",
+                    "ping_timeout": "15s",
+                    "method": "GET",
+                    "headers": {},
+                },
+            )
+        )
         if "headers" not in config:
             config["headers"] = {}
 
@@ -119,11 +126,15 @@ class SingBoxConfiguration(str):
 
         return config
 
-    def ws_config(self, host='', path='', random_user_agent: bool = False,
-                  max_early_data=None, early_data_header_name=None):
-        config = copy.deepcopy(self.settings.get("wsSettings", {
-            "headers": {}
-        }))
+    def ws_config(
+        self,
+        host="",
+        path="",
+        random_user_agent: bool = False,
+        max_early_data=None,
+        early_data_header_name=None,
+    ):
+        config = copy.deepcopy(self.settings.get("wsSettings", {"headers": {}}))
         if "headers" not in config:
             config["headers"] = {}
 
@@ -140,7 +151,7 @@ class SingBoxConfiguration(str):
 
         return config
 
-    def grpc_config(self, path=''):
+    def grpc_config(self, path=""):
         config = copy.deepcopy(self.settings.get("grpcSettings", {}))
 
         if path:
@@ -148,10 +159,10 @@ class SingBoxConfiguration(str):
 
         return config
 
-    def httpupgrade_config(self, host='', path='', random_user_agent: bool = False):
-        config = copy.deepcopy(self.settings.get("httpupgradeSettings", {
-            "headers": {}
-        }))
+    def httpupgrade_config(self, host="", path="", random_user_agent: bool = False):
+        config = copy.deepcopy(
+            self.settings.get("httpupgradeSettings", {"headers": {}})
+        )
         if "headers" not in config:
             config["headers"] = {}
 
@@ -163,15 +174,15 @@ class SingBoxConfiguration(str):
 
         return config
 
-    def transport_config(self,
-                         transport_type='',
-                         host='',
-                         path='',
-                         max_early_data=None,
-                         early_data_header_name=None,
-                         random_user_agent: bool = False,
-                         ):
-
+    def transport_config(
+        self,
+        transport_type="",
+        host="",
+        path="",
+        max_early_data=None,
+        early_data_header_name=None,
+        random_user_agent: bool = False,
+    ):
         transport_config = {}
 
         if transport_type:
@@ -201,32 +212,32 @@ class SingBoxConfiguration(str):
                     random_user_agent=random_user_agent,
                 )
 
-        transport_config['type'] = transport_type
+        transport_config["type"] = transport_type
         return transport_config
 
-    def make_outbound(self,
-                      type: str,
-                      remark: str,
-                      address: str,
-                      port: int,
-                      net='',
-                      path='',
-                      host='',
-                      flow='',
-                      tls='',
-                      sni='',
-                      fp='',
-                      alpn='',
-                      pbk='',
-                      sid='',
-                      headers='',
-                      ais='',
-                      mux_enable: bool = False,
-                      random_user_agent: bool = False,
-                      ):
-
+    def make_outbound(
+        self,
+        type: str,
+        remark: str,
+        address: str,
+        port: int,
+        net="",
+        path="",
+        host="",
+        flow="",
+        tls="",
+        sni="",
+        fp="",
+        alpn="",
+        pbk="",
+        sid="",
+        headers="",
+        ais="",
+        mux_enable: bool = False,
+        random_user_agent: bool = False,
+    ):
         if isinstance(port, str):
-            ports = port.split(',')
+            ports = port.split(",")
             port = int(choice(ports))
 
         config = {
@@ -236,30 +247,34 @@ class SingBoxConfiguration(str):
             "server_port": port,
         }
 
-        if net in ('tcp', 'raw', 'kcp') and headers != 'http' and (tls or tls != 'none'):
+        if (
+            net in ("tcp", "raw", "kcp")
+            and headers != "http"
+            and (tls or tls != "none")
+        ):
             if flow:
                 config["flow"] = flow
 
-        if net == 'h2':
-            net = 'http'
-            alpn = 'h2'
-        elif net == 'h3':
-            net = 'http'
-            alpn = 'h3'
-        elif net in ['tcp', 'raw'] and headers == 'http':
-            net = 'http'
+        if net == "h2":
+            net = "http"
+            alpn = "h2"
+        elif net == "h3":
+            net = "http"
+            alpn = "h3"
+        elif net in ["tcp", "raw"] and headers == "http":
+            net = "http"
 
-        if net in ['http', 'ws', 'quic', 'grpc', 'httpupgrade']:
+        if net in ["http", "ws", "quic", "grpc", "httpupgrade"]:
             max_early_data = None
             early_data_header_name = None
 
             if "?ed=" in path:
                 path, max_early_data = path.split("?ed=")
-                max_early_data, = max_early_data.split("/")
+                (max_early_data,) = max_early_data.split("/")
                 max_early_data = int(max_early_data)
                 early_data_header_name = "Sec-WebSocket-Protocol"
 
-            config['transport'] = self.transport_config(
+            config["transport"] = self.transport_config(
                 transport_type=net,
                 host=host,
                 path=path,
@@ -268,68 +283,70 @@ class SingBoxConfiguration(str):
                 random_user_agent=random_user_agent,
             )
 
-        if tls in ('tls', 'reality'):
-            config['tls'] = self.tls_config(sni=sni, fp=fp, tls=tls,
-                                            pbk=pbk, sid=sid, alpn=alpn,
-                                            ais=ais)
+        if tls in ("tls", "reality"):
+            config["tls"] = self.tls_config(
+                sni=sni, fp=fp, tls=tls, pbk=pbk, sid=sid, alpn=alpn, ais=ais
+            )
 
         mux_json = json.loads(self.mux_template)
         mux_config = mux_json["sing-box"]
 
-        config['multiplex'] = mux_config
-        if config['multiplex']["enabled"]:
-            config['multiplex']["enabled"] = mux_enable
+        config["multiplex"] = mux_config
+        if config["multiplex"]["enabled"]:
+            config["multiplex"]["enabled"] = mux_enable
 
         return config
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
-
         net = inbound["network"]
         path = inbound["path"]
 
         # not supported by sing-box
-        if net in ("kcp", "splithttp", "xhttp") or (net == "quic" and inbound["header_type"] != "none"):
+        if net in ("kcp", "splithttp", "xhttp") or (
+            net == "quic" and inbound["header_type"] != "none"
+        ):
             return
 
         if net in ("grpc", "gun"):
             path = get_grpc_gun(path)
 
-        alpn = inbound.get('alpn', None)
+        alpn = inbound.get("alpn", None)
 
         remark = self._remark_validation(remark)
         self.proxy_remarks.append(remark)
 
         outbound = self.make_outbound(
             remark=remark,
-            type=inbound['protocol'],
+            type=inbound["protocol"],
             address=address,
-            port=inbound['port'],
+            port=inbound["port"],
             net=net,
-            tls=(inbound['tls']),
-            flow=settings.get('flow', ''),
-            sni=inbound['sni'],
-            host=inbound['host'],
+            tls=(inbound["tls"]),
+            flow=settings.get("flow", ""),
+            sni=inbound["sni"],
+            host=inbound["host"],
             path=path,
             alpn=alpn.rsplit(sep=",") if alpn else None,
-            fp=inbound.get('fp', ''),
-            pbk=inbound.get('pbk', ''),
-            sid=inbound.get('sid', ''),
-            headers=inbound['header_type'],
-            ais=inbound.get('ais', ''),
-            mux_enable=inbound.get('mux_enable', False),
-            random_user_agent=inbound.get('random_user_agent', False),)
+            fp=inbound.get("fp", ""),
+            pbk=inbound.get("pbk", ""),
+            sid=inbound.get("sid", ""),
+            headers=inbound["header_type"],
+            ais=inbound.get("ais", ""),
+            mux_enable=inbound.get("mux_enable", False),
+            random_user_agent=inbound.get("random_user_agent", False),
+        )
 
-        if inbound['protocol'] == 'vmess':
-            outbound['uuid'] = settings['id']
+        if inbound["protocol"] == "vmess":
+            outbound["uuid"] = settings["id"]
 
-        elif inbound['protocol'] == 'vless':
-            outbound['uuid'] = settings['id']
+        elif inbound["protocol"] == "vless":
+            outbound["uuid"] = settings["id"]
 
-        elif inbound['protocol'] == 'trojan':
-            outbound['password'] = settings['password']
+        elif inbound["protocol"] == "trojan":
+            outbound["password"] = settings["password"]
 
-        elif inbound['protocol'] == 'shadowsocks':
-            outbound['password'] = settings['password']
-            outbound['method'] = settings['method']
+        elif inbound["protocol"] == "shadowsocks":
+            outbound["password"] = settings["password"]
+            outbound["method"] = settings["method"]
 
         self.add_outbound(outbound)

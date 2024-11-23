@@ -13,13 +13,16 @@ from xray_api.types.account import (
     TrojanAccount,
     VLESSAccount,
     VMessAccount,
-    XTLSFlows
+    XTLSFlows,
 )
 
-FRAGMENT_PATTERN = re.compile(r'^((\d{1,4}-\d{1,4})|(\d{1,4})),((\d{1,3}-\d{1,3})|(\d{1,3})),(tlshello|\d|\d\-\d)$')
+FRAGMENT_PATTERN = re.compile(
+    r"^((\d{1,4}-\d{1,4})|(\d{1,4})),((\d{1,3}-\d{1,3})|(\d{1,3})),(tlshello|\d|\d\-\d)$"
+)
 
 NOISE_PATTERN = re.compile(
-    r'^(rand:(\d{1,4}-\d{1,4}|\d{1,4})|str:.+|base64:.+)(,(\d{1,4}-\d{1,4}|\d{1,4}))?(&(rand:(\d{1,4}-\d{1,4}|\d{1,4})|str:.+|base64:.+)(,(\d{1,4}-\d{1,4}|\d{1,4}))?)*$')
+    r"^(rand:(\d{1,4}-\d{1,4}|\d{1,4})|str:.+|base64:.+)(,(\d{1,4}-\d{1,4}|\d{1,4}))?(&(rand:(\d{1,4}-\d{1,4}|\d{1,4})|str:.+|base64:.+)(,(\d{1,4}-\d{1,4}|\d{1,4}))?)*$"
+)
 
 
 class ProxyTypes(str, Enum):
@@ -192,9 +195,7 @@ class ProxyHost(BaseModel):
                     "Noise setting must be like this: packet,delay (rand:10-20,100-200)."
                 )
             if len(v) > 2000:
-                raise ValueError(
-                    "Noise can't be longer that 2000 character"
-                )
+                raise ValueError("Noise can't be longer that 2000 character")
         return v
 
 

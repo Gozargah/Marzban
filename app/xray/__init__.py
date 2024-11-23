@@ -47,11 +47,15 @@ def hosts(storage: dict):
             storage[inbound_tag] = [
                 {
                     "remark": host.remark,
-                    "address": [i.strip() for i in host.address.split(',')] if host.address else [],
+                    "address": [i.strip() for i in host.address.split(",")]
+                    if host.address
+                    else [],
                     "port": host.port,
                     "path": host.path if host.path else None,
-                    "sni": [i.strip() for i in host.sni.split(',')] if host.sni else [],
-                    "host": [i.strip() for i in host.host.split(',')] if host.host else [],
+                    "sni": [i.strip() for i in host.sni.split(",")] if host.sni else [],
+                    "host": [i.strip() for i in host.host.split(",")]
+                    if host.host
+                    else [],
                     "alpn": host.alpn.value,
                     "fingerprint": host.fingerprint.value,
                     # None means the tls is not specified by host itself and
@@ -64,7 +68,9 @@ def hosts(storage: dict):
                     "fragment_setting": host.fragment_setting,
                     "noise_setting": host.noise_setting,
                     "random_user_agent": host.random_user_agent,
-                } for host in inbound_hosts if not host.is_disabled
+                }
+                for host in inbound_hosts
+                if not host.is_disabled
             ]
 
 

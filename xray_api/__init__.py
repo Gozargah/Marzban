@@ -9,9 +9,4 @@ class XRay(Proxyman, Stats):
     pass
 
 
-__all__ = [
-    "XRay",
-    "exceptions",
-    "exc",
-    "types"
-]
+__all__ = ["XRay", "exceptions", "exc", "types"]
