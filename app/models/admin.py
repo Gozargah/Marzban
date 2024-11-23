@@ -25,7 +25,7 @@ class Admin(BaseModel):
     discord_webhook: Optional[str]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
     @classmethod
     def get_admin(cls, token: str, db: Session):
@@ -64,8 +64,8 @@ class Admin(BaseModel):
 
     @classmethod
     def check_sudo_admin(cls,
-                        db: Session = Depends(get_db),
-                        token: str = Depends(oauth2_scheme)):
+                         db: Session = Depends(get_db),
+                         token: str = Depends(oauth2_scheme)):
         admin = cls.get_admin(token, db)
         if not admin:
             raise HTTPException(
@@ -79,6 +79,7 @@ class Admin(BaseModel):
                 detail="You're not allowed"
             )
         return admin
+
 
 class AdminCreate(Admin):
     password: str
@@ -124,6 +125,7 @@ class AdminInDB(Admin):
 
     def verify_password(self, plain_password):
         return pwd_context.verify(plain_password, self.hashed_password)
+
 
 class AdminValidationResult(BaseModel):
     username: str

@@ -13,7 +13,7 @@ from xray_api.types.account import (
     TrojanAccount,
     VLESSAccount,
     VMessAccount,
-    XTLSFlows
+    XTLSFlows,
 )
 
 FRAGMENT_PATTERN = re.compile(r'^((\d{1,4}-\d{1,4})|(\d{1,4})),((\d{1,3}-\d{1,3})|(\d{1,3})),(tlshello|\d|\d\-\d)$')
@@ -156,7 +156,7 @@ class ProxyHost(BaseModel):
     random_user_agent: Union[bool, None] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
     @validator("remark", pre=False, always=True)
     def validate_remark(cls, v):

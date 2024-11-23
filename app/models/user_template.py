@@ -61,4 +61,4 @@ class UserTemplateResponse(UserTemplate):
         return final
 
     class Config:
-        orm_mode = True
+        from_attributes = True

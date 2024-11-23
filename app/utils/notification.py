@@ -5,9 +5,9 @@ from typing import Type
 
 from pydantic import BaseModel
 
-from config import WEBHOOK_ADDRESS
 from app.models.admin import Admin
 from app.models.user import UserResponse
+from config import WEBHOOK_ADDRESS
 
 queue = deque()
 
@@ -101,7 +101,7 @@ class UserDataResetByNext(UserNotification):
 
 
 class UserSubscriptionRevoked(UserNotification):
-    action = Notification.Type = Notification.Type.subscription_revoked
+    action: Notification.Type = Notification.Type.subscription_revoked
     by: Admin
     user: UserResponse
 

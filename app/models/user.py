@@ -1,17 +1,17 @@
+import random
 import re
+import secrets
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Union
-import random
-import secrets
 
 from pydantic import BaseModel, Field, validator
 
 from app import xray
-from app.models.proxy import ProxySettings, ProxyTypes
 from app.models.admin import Admin
-from app.utils.jwt import create_subscription_token
+from app.models.proxy import ProxySettings, ProxyTypes
 from app.subscription.share import generate_v2ray_links
+from app.utils.jwt import create_subscription_token
 from config import XRAY_SUBSCRIPTION_PATH, XRAY_SUBSCRIPTION_URL_PREFIX
 
 USERNAME_REGEXP = re.compile(r"^(?=\w{3,32}\b)[a-zA-Z0-9-_@.]+(?:_[a-zA-Z0-9-_@.]+)*$")
@@ -48,14 +48,16 @@ class UserDataLimitResetStrategy(str, Enum):
     month = "month"
     year = "year"
 
+
 class NextPlanModel(BaseModel):
     data_limit: Optional[int]
     expire: Optional[int]
     add_remaining_traffic: bool = False
     fire_on_either: bool = True
-    
+
     class Config:
-        orm_mode = True
+        from_attributes = True
+
 
 class User(BaseModel):
     proxies: Dict[ProxyTypes, ProxySettings] = {}
@@ -75,9 +77,9 @@ class User(BaseModel):
     on_hold_timeout: Optional[Union[datetime, None]] = Field(None, nullable=True)
 
     auto_delete_in_days: Optional[int] = Field(None, nullable=True)
-    
+
     next_plan: Optional[NextPlanModel] = Field(None, nullable=True)
-        
+
     @validator("proxies", pre=True, always=True)
     def validate_proxies(cls, v, values, **kwargs):
         if not v:
@@ -292,7 +294,7 @@ class UserResponse(User):
     admin: Optional[Admin]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
     @validator("links", pre=False, always=True)
     def validate_links(cls, v, values, **kwargs):
@@ -320,7 +322,7 @@ class UserResponse(User):
 
 class SubscriptionUserResponse(UserResponse):
     class Config:
-        orm_mode = True
+        from_attributes = True
         fields = {
             field: {"include": True} for field in [
                 "username",
@@ -357,6 +359,7 @@ class UserUsageResponse(BaseModel):
 class UserUsagesResponse(BaseModel):
     username: str
     usages: List[UserUsageResponse]
+
 
 class UsersUsagesResponse(BaseModel):
     usages: List[UserUsageResponse]

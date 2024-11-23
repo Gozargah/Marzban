@@ -68,7 +68,7 @@ class NodeResponse(Node):
     message: Optional[str]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class NodeUsageResponse(BaseModel):
