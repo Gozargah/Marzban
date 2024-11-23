@@ -41,7 +41,9 @@ _sym_db.RegisterMessage(NetworkList)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\023com.xray.common.netP\001Z$github.com/xtls/xray-core/common/net\252\002\017Xray.Common.Net"
+    DESCRIPTOR._serialized_options = (
+        b"\n\023com.xray.common.netP\001Z$github.com/xtls/xray-core/common/net\252\002\017Xray.Common.Net"
+    )
     _NETWORK.values_by_name["RawTCP"]._options = None
     _NETWORK.values_by_name["RawTCP"]._serialized_options = b"\010\001"
     _NETWORK._serialized_start = 103

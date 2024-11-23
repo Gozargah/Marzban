@@ -19,9 +19,7 @@ DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
 
 
 _OBSERVATIONRESULT = DESCRIPTOR.message_types_by_name["ObservationResult"]
-_HEALTHPINGMEASUREMENTRESULT = DESCRIPTOR.message_types_by_name[
-    "HealthPingMeasurementResult"
-]
+_HEALTHPINGMEASUREMENTRESULT = DESCRIPTOR.message_types_by_name["HealthPingMeasurementResult"]
 _OUTBOUNDSTATUS = DESCRIPTOR.message_types_by_name["OutboundStatus"]
 _PROBERESULT = DESCRIPTOR.message_types_by_name["ProbeResult"]
 _INTENSITY = DESCRIPTOR.message_types_by_name["Intensity"]

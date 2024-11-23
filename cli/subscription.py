@@ -34,9 +34,7 @@ def get_link(username: str = typer.Option(..., *utils.FLAGS["username"], prompt=
 @app.command(name="get-config")
 def get_config(
     username: str = typer.Option(..., *utils.FLAGS["username"], prompt=True),
-    config_format: ConfigFormat = typer.Option(
-        ..., *utils.FLAGS["format"], prompt=True
-    ),
+    config_format: ConfigFormat = typer.Option(..., *utils.FLAGS["format"], prompt=True),
     output_file: Optional[str] = typer.Option(
         None,
         *utils.FLAGS["output_file"],
@@ -59,9 +57,7 @@ def get_config(
     """
     with GetDB() as db:
         user: UserResponse = UserResponse.from_orm(utils.get_user(db, username))
-        conf: str = generate_subscription(
-            user=user, config_format=config_format.name, as_base64=as_base64
-        )
+        conf: str = generate_subscription(user=user, config_format=config_format.name, as_base64=as_base64)
 
         if output_file:
             with open(output_file, "w") as out_file:
@@ -73,8 +69,7 @@ def get_config(
             )
         else:
             utils.success(
-                "No output file specified."
-                f' using pager for {username}\'s config in "{config_format}" format.',
+                "No output file specified." f' using pager for {username}\'s config in "{config_format}" format.',
                 auto_exit=False,
             )
             utils.paginate(conf)

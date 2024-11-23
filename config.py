@@ -4,9 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-SQLALCHEMY_DATABASE_URL = config(
-    "SQLALCHEMY_DATABASE_URL", default="sqlite:///db.sqlite3"
-)
+SQLALCHEMY_DATABASE_URL = config("SQLALCHEMY_DATABASE_URL", default="sqlite:///db.sqlite3")
 SQLALCHEMY_POOL_SIZE = config("SQLALCHEMY_POOL_SIZE", cast=int, default=10)
 SQLIALCHEMY_MAX_OVERFLOW = config("SQLIALCHEMY_MAX_OVERFLOW", cast=int, default=30)
 
@@ -29,99 +27,63 @@ VITE_BASE_API = (
 )
 
 XRAY_JSON = config("XRAY_JSON", default="./xray_config.json")
-XRAY_FALLBACKS_INBOUND_TAG = config(
-    "XRAY_FALLBACKS_INBOUND_TAG", cast=str, default=""
-) or config("XRAY_FALLBACK_INBOUND_TAG", cast=str, default="")
+XRAY_FALLBACKS_INBOUND_TAG = config("XRAY_FALLBACKS_INBOUND_TAG", cast=str, default="") or config(
+    "XRAY_FALLBACK_INBOUND_TAG", cast=str, default=""
+)
 XRAY_EXECUTABLE_PATH = config("XRAY_EXECUTABLE_PATH", default="/usr/local/bin/xray")
 XRAY_ASSETS_PATH = config("XRAY_ASSETS_PATH", default="/usr/local/share/xray")
 XRAY_EXCLUDE_INBOUND_TAGS = config("XRAY_EXCLUDE_INBOUND_TAGS", default="").split()
-XRAY_SUBSCRIPTION_URL_PREFIX = config("XRAY_SUBSCRIPTION_URL_PREFIX", default="").strip(
-    "/"
-)
+XRAY_SUBSCRIPTION_URL_PREFIX = config("XRAY_SUBSCRIPTION_URL_PREFIX", default="").strip("/")
 XRAY_SUBSCRIPTION_PATH = config("XRAY_SUBSCRIPTION_PATH", default="sub").strip("/")
 
 TELEGRAM_API_TOKEN = config("TELEGRAM_API_TOKEN", default="")
 TELEGRAM_ADMIN_ID = config(
     "TELEGRAM_ADMIN_ID",
     default="",
-    cast=lambda v: [
-        int(i) for i in filter(str.isdigit, (s.strip() for s in v.split(",")))
-    ],
+    cast=lambda v: [int(i) for i in filter(str.isdigit, (s.strip() for s in v.split(",")))],
 )
 TELEGRAM_PROXY_URL = config("TELEGRAM_PROXY_URL", default="")
 TELEGRAM_LOGGER_CHANNEL_ID = config("TELEGRAM_LOGGER_CHANNEL_ID", cast=int, default=0)
 TELEGRAM_DEFAULT_VLESS_FLOW = config("TELEGRAM_DEFAULT_VLESS_FLOW", default="")
 
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES = config(
-    "JWT_ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=1440
-)
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES = config("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=1440)
 
 CUSTOM_TEMPLATES_DIRECTORY = config("CUSTOM_TEMPLATES_DIRECTORY", default=None)
-SUBSCRIPTION_PAGE_TEMPLATE = config(
-    "SUBSCRIPTION_PAGE_TEMPLATE", default="subscription/index.html"
-)
+SUBSCRIPTION_PAGE_TEMPLATE = config("SUBSCRIPTION_PAGE_TEMPLATE", default="subscription/index.html")
 HOME_PAGE_TEMPLATE = config("HOME_PAGE_TEMPLATE", default="home/index.html")
 
-CLASH_SUBSCRIPTION_TEMPLATE = config(
-    "CLASH_SUBSCRIPTION_TEMPLATE", default="clash/default.yml"
-)
-CLASH_SETTINGS_TEMPLATE = config(
-    "CLASH_SETTINGS_TEMPLATE", default="clash/settings.yml"
-)
+CLASH_SUBSCRIPTION_TEMPLATE = config("CLASH_SUBSCRIPTION_TEMPLATE", default="clash/default.yml")
+CLASH_SETTINGS_TEMPLATE = config("CLASH_SETTINGS_TEMPLATE", default="clash/settings.yml")
 
-SINGBOX_SUBSCRIPTION_TEMPLATE = config(
-    "SINGBOX_SUBSCRIPTION_TEMPLATE", default="singbox/default.json"
-)
-SINGBOX_SETTINGS_TEMPLATE = config(
-    "SINGBOX_SETTINGS_TEMPLATE", default="singbox/settings.json"
-)
+SINGBOX_SUBSCRIPTION_TEMPLATE = config("SINGBOX_SUBSCRIPTION_TEMPLATE", default="singbox/default.json")
+SINGBOX_SETTINGS_TEMPLATE = config("SINGBOX_SETTINGS_TEMPLATE", default="singbox/settings.json")
 
 MUX_TEMPLATE = config("MUX_TEMPLATE", default="mux/default.json")
 
-V2RAY_SUBSCRIPTION_TEMPLATE = config(
-    "V2RAY_SUBSCRIPTION_TEMPLATE", default="v2ray/default.json"
-)
-V2RAY_SETTINGS_TEMPLATE = config(
-    "V2RAY_SETTINGS_TEMPLATE", default="v2ray/settings.json"
-)
+V2RAY_SUBSCRIPTION_TEMPLATE = config("V2RAY_SUBSCRIPTION_TEMPLATE", default="v2ray/default.json")
+V2RAY_SETTINGS_TEMPLATE = config("V2RAY_SETTINGS_TEMPLATE", default="v2ray/settings.json")
 
 USER_AGENT_TEMPLATE = config("USER_AGENT_TEMPLATE", default="user_agent/default.json")
-GRPC_USER_AGENT_TEMPLATE = config(
-    "GRPC_USER_AGENT_TEMPLATE", default="user_agent/grpc.json"
-)
+GRPC_USER_AGENT_TEMPLATE = config("GRPC_USER_AGENT_TEMPLATE", default="user_agent/grpc.json")
 
 EXTERNAL_CONFIG = config("EXTERNAL_CONFIG", default="", cast=str)
 LOGIN_NOTIFY_WHITE_LIST = [
-    ip.strip()
-    for ip in config("LOGIN_NOTIFY_WHITE_LIST", default="", cast=str).split(",")
-    if ip.strip()
+    ip.strip() for ip in config("LOGIN_NOTIFY_WHITE_LIST", default="", cast=str).split(",") if ip.strip()
 ]
 
 USE_CUSTOM_JSON_DEFAULT = config("USE_CUSTOM_JSON_DEFAULT", default=False, cast=bool)
-USE_CUSTOM_JSON_FOR_V2RAYN = config(
-    "USE_CUSTOM_JSON_FOR_V2RAYN", default=False, cast=bool
-)
-USE_CUSTOM_JSON_FOR_V2RAYNG = config(
-    "USE_CUSTOM_JSON_FOR_V2RAYNG", default=False, cast=bool
-)
-USE_CUSTOM_JSON_FOR_STREISAND = config(
-    "USE_CUSTOM_JSON_FOR_STREISAND", default=False, cast=bool
-)
+USE_CUSTOM_JSON_FOR_V2RAYN = config("USE_CUSTOM_JSON_FOR_V2RAYN", default=False, cast=bool)
+USE_CUSTOM_JSON_FOR_V2RAYNG = config("USE_CUSTOM_JSON_FOR_V2RAYNG", default=False, cast=bool)
+USE_CUSTOM_JSON_FOR_STREISAND = config("USE_CUSTOM_JSON_FOR_STREISAND", default=False, cast=bool)
 
 NOTIFY_STATUS_CHANGE = config("NOTIFY_STATUS_CHANGE", default=True, cast=bool)
 NOTIFY_USER_CREATED = config("NOTIFY_USER_CREATED", default=True, cast=bool)
 NOTIFY_USER_UPDATED = config("NOTIFY_USER_UPDATED", default=True, cast=bool)
 NOTIFY_USER_DELETED = config("NOTIFY_USER_DELETED", default=True, cast=bool)
-NOTIFY_USER_DATA_USED_RESET = config(
-    "NOTIFY_USER_DATA_USED_RESET", default=True, cast=bool
-)
+NOTIFY_USER_DATA_USED_RESET = config("NOTIFY_USER_DATA_USED_RESET", default=True, cast=bool)
 NOTIFY_USER_SUB_REVOKED = config("NOTIFY_USER_SUB_REVOKED", default=True, cast=bool)
-NOTIFY_IF_DATA_USAGE_PERCENT_REACHED = config(
-    "NOTIFY_IF_DATA_USAGE_PERCENT_REACHED", default=True, cast=bool
-)
-NOTIFY_IF_DAYS_LEFT_REACHED = config(
-    "NOTIFY_IF_DAYS_LEFT_REACHED", default=True, cast=bool
-)
+NOTIFY_IF_DATA_USAGE_PERCENT_REACHED = config("NOTIFY_IF_DATA_USAGE_PERCENT_REACHED", default=True, cast=bool)
+NOTIFY_IF_DAYS_LEFT_REACHED = config("NOTIFY_IF_DAYS_LEFT_REACHED", default=True, cast=bool)
 NOTIFY_LOGIN = config("NOTIFY_LOGIN", default=True, cast=bool)
 
 ACTIVE_STATUS_TEXT = config("ACTIVE_STATUS_TEXT", default="Active")
@@ -131,9 +93,7 @@ DISABLED_STATUS_TEXT = config("DISABLED_STATUS_TEXT", default="Disabled")
 ONHOLD_STATUS_TEXT = config("ONHOLD_STATUS_TEXT", default="On-Hold")
 
 USERS_AUTODELETE_DAYS = config("USERS_AUTODELETE_DAYS", default=-1, cast=int)
-USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS = config(
-    "USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS", default=False, cast=bool
-)
+USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS = config("USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS", default=False, cast=bool)
 
 
 # USERNAME: PASSWORD
@@ -154,13 +114,9 @@ WEBHOOK_SECRET = config("WEBHOOK_SECRET", default=None)
 # recurrent notifications
 
 # timeout between each retry of sending a notification in seconds
-RECURRENT_NOTIFICATIONS_TIMEOUT = config(
-    "RECURRENT_NOTIFICATIONS_TIMEOUT", default=180, cast=int
-)
+RECURRENT_NOTIFICATIONS_TIMEOUT = config("RECURRENT_NOTIFICATIONS_TIMEOUT", default=180, cast=int)
 # how many times to try after ok response not recevied after sending a notifications
-NUMBER_OF_RECURRENT_NOTIFICATIONS = config(
-    "NUMBER_OF_RECURRENT_NOTIFICATIONS", default=3, cast=int
-)
+NUMBER_OF_RECURRENT_NOTIFICATIONS = config("NUMBER_OF_RECURRENT_NOTIFICATIONS", default=3, cast=int)
 
 # sends a notification when the user uses this much of thier data
 NOTIFY_REACHED_USAGE_PERCENT = config(
@@ -176,9 +132,7 @@ NOTIFY_DAYS_LEFT = config(
     cast=lambda v: [int(d.strip()) for d in v.split(",")] if v else [],
 )
 
-DISABLE_RECORDING_NODE_USAGE = config(
-    "DISABLE_RECORDING_NODE_USAGE", cast=bool, default=False
-)
+DISABLE_RECORDING_NODE_USAGE = config("DISABLE_RECORDING_NODE_USAGE", cast=bool, default=False)
 
 # headers: profile-update-interval, support-url, profile-title
 SUB_UPDATE_INTERVAL = config("SUB_UPDATE_INTERVAL", default="12")
@@ -190,16 +144,8 @@ DISCORD_WEBHOOK_URL = config("DISCORD_WEBHOOK_URL", default="")
 
 
 # Interval jobs, all values are in seconds
-JOB_CORE_HEALTH_CHECK_INTERVAL = config(
-    "JOB_CORE_HEALTH_CHECK_INTERVAL", cast=int, default=10
-)
-JOB_RECORD_NODE_USAGES_INTERVAL = config(
-    "JOB_RECORD_NODE_USAGES_INTERVAL", cast=int, default=30
-)
-JOB_RECORD_USER_USAGES_INTERVAL = config(
-    "JOB_RECORD_USER_USAGES_INTERVAL", cast=int, default=10
-)
+JOB_CORE_HEALTH_CHECK_INTERVAL = config("JOB_CORE_HEALTH_CHECK_INTERVAL", cast=int, default=10)
+JOB_RECORD_NODE_USAGES_INTERVAL = config("JOB_RECORD_NODE_USAGES_INTERVAL", cast=int, default=30)
+JOB_RECORD_USER_USAGES_INTERVAL = config("JOB_RECORD_USER_USAGES_INTERVAL", cast=int, default=10)
 JOB_REVIEW_USERS_INTERVAL = config("JOB_REVIEW_USERS_INTERVAL", cast=int, default=10)
-JOB_SEND_NOTIFICATIONS_INTERVAL = config(
-    "JOB_SEND_NOTIFICATIONS_INTERVAL", cast=int, default=30
-)
+JOB_SEND_NOTIFICATIONS_INTERVAL = config("JOB_SEND_NOTIFICATIONS_INTERVAL", cast=int, default=30)

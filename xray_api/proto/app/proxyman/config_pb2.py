@@ -36,12 +36,10 @@ TLS = 1
 
 _INBOUNDCONFIG = DESCRIPTOR.message_types_by_name["InboundConfig"]
 _ALLOCATIONSTRATEGY = DESCRIPTOR.message_types_by_name["AllocationStrategy"]
-_ALLOCATIONSTRATEGY_ALLOCATIONSTRATEGYCONCURRENCY = (
-    _ALLOCATIONSTRATEGY.nested_types_by_name["AllocationStrategyConcurrency"]
-)
-_ALLOCATIONSTRATEGY_ALLOCATIONSTRATEGYREFRESH = (
-    _ALLOCATIONSTRATEGY.nested_types_by_name["AllocationStrategyRefresh"]
-)
+_ALLOCATIONSTRATEGY_ALLOCATIONSTRATEGYCONCURRENCY = _ALLOCATIONSTRATEGY.nested_types_by_name[
+    "AllocationStrategyConcurrency"
+]
+_ALLOCATIONSTRATEGY_ALLOCATIONSTRATEGYREFRESH = _ALLOCATIONSTRATEGY.nested_types_by_name["AllocationStrategyRefresh"]
 _SNIFFINGCONFIG = DESCRIPTOR.message_types_by_name["SniffingConfig"]
 _RECEIVERCONFIG = DESCRIPTOR.message_types_by_name["ReceiverConfig"]
 _INBOUNDHANDLERCONFIG = DESCRIPTOR.message_types_by_name["InboundHandlerConfig"]
@@ -159,7 +157,9 @@ _sym_db.RegisterMessage(MultiplexingConfig)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\025com.xray.app.proxymanP\001Z&github.com/xtls/xray-core/app/proxyman\252\002\021Xray.App.Proxyman"
+    DESCRIPTOR._serialized_options = (
+        b"\n\025com.xray.app.proxymanP\001Z&github.com/xtls/xray-core/app/proxyman\252\002\021Xray.App.Proxyman"
+    )
     _RECEIVERCONFIG.fields_by_name["domain_override"]._options = None
     _RECEIVERCONFIG.fields_by_name["domain_override"]._serialized_options = b"\030\001"
     _KNOWNPROTOCOLS._serialized_start = 1675

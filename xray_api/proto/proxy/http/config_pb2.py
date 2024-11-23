@@ -84,7 +84,9 @@ _sym_db.RegisterMessage(ClientConfig)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\023com.xray.proxy.httpP\001Z$github.com/xtls/xray-core/proxy/http\252\002\017Xray.Proxy.Http"
+    DESCRIPTOR._serialized_options = (
+        b"\n\023com.xray.proxy.httpP\001Z$github.com/xtls/xray-core/proxy/http\252\002\017Xray.Proxy.Http"
+    )
     _SERVERCONFIG_ACCOUNTSENTRY._options = None
     _SERVERCONFIG_ACCOUNTSENTRY._serialized_options = b"8\001"
     _SERVERCONFIG.fields_by_name["timeout"]._options = None

@@ -32,7 +32,9 @@ _sym_db.RegisterMessage(TypedMessage)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\026com.xray.common.serialP\001Z'github.com/xtls/xray-core/common/serial\252\002\022Xray.Common.Serial"
+    DESCRIPTOR._serialized_options = (
+        b"\n\026com.xray.common.serialP\001Z'github.com/xtls/xray-core/common/serial\252\002\022Xray.Common.Serial"
+    )
     _TYPEDMESSAGE._serialized_start = 57
     _TYPEDMESSAGE._serialized_end = 100
 # @@protoc_insertion_point(module_scope)

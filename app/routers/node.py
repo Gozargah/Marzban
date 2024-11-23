@@ -21,9 +21,7 @@ from app.models.node import (
 from app.models.proxy import ProxyHost
 from app.utils import responses
 
-router = APIRouter(
-    tags=["Node"], prefix="/api", responses={401: responses._401, 403: responses._403}
-)
+router = APIRouter(tags=["Node"], prefix="/api", responses={401: responses._401, 403: responses._403})
 
 
 def add_host_if_needed(new_node: NodeCreate, db: Session):
@@ -39,9 +37,7 @@ def add_host_if_needed(new_node: NodeCreate, db: Session):
 
 
 @router.get("/node/settings", response_model=NodeSettings)
-def get_node_settings(
-    db: Session = Depends(get_db), admin: Admin = Depends(Admin.check_sudo_admin)
-):
+def get_node_settings(db: Session = Depends(get_db), admin: Admin = Depends(Admin.check_sudo_admin)):
     """Retrieve the current node settings, including TLS certificate."""
     tls = crud.get_tls_certificate(db)
     return NodeSettings(certificate=tls.certificate)
@@ -59,9 +55,7 @@ def add_node(
         dbnode = crud.create_node(db, new_node)
     except IntegrityError:
         db.rollback()
-        raise HTTPException(
-            status_code=409, detail=f'Node "{new_node.name}" already exists'
-        )
+        raise HTTPException(status_code=409, detail=f'Node "{new_node.name}" already exists')
 
     bg.add_task(xray.operations.connect_node, node_id=dbnode.id)
     bg.add_task(add_host_if_needed, new_node, db)
@@ -81,9 +75,7 @@ def get_node(
 
 @router.websocket("/node/{node_id}/logs")
 async def node_logs(node_id: int, websocket: WebSocket, db: Session = Depends(get_db)):
-    token = websocket.query_params.get("token") or websocket.headers.get(
-        "Authorization", ""
-    ).removeprefix("Bearer ")
+    token = websocket.query_params.get("token") or websocket.headers.get("Authorization", "").removeprefix("Bearer ")
     admin = Admin.get_admin(token, db)
     if not admin:
         return await websocket.close(reason="Unauthorized", code=4401)
@@ -104,9 +96,7 @@ async def node_logs(node_id: int, websocket: WebSocket, db: Session = Depends(ge
         except ValueError:
             return await websocket.close(reason="Invalid interval value", code=4400)
         if interval > 10:
-            return await websocket.close(
-                reason="Interval must be more than 0 and at most 10 seconds", code=4400
-            )
+            return await websocket.close(reason="Interval must be more than 0 and at most 10 seconds", code=4400)
 
     await websocket.accept()
 
@@ -148,9 +138,7 @@ async def node_logs(node_id: int, websocket: WebSocket, db: Session = Depends(ge
 
 
 @router.get("/nodes", response_model=List[NodeResponse])
-def get_nodes(
-    db: Session = Depends(get_db), _: Admin = Depends(Admin.check_sudo_admin)
-):
+def get_nodes(db: Session = Depends(get_db), _: Admin = Depends(Admin.check_sudo_admin)):
     """Retrieve a list of all nodes. Accessible only to sudo admins."""
     return crud.get_nodes(db)
 

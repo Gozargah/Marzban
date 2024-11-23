@@ -31,9 +31,7 @@ def upgrade() -> None:
     op.create_index(op.f("ix_admins_username"), "admins", ["username"], unique=True)
     with op.batch_alter_table("users") as batch_op:
         batch_op.add_column(sa.Column("admin_id", sa.Integer(), nullable=True))
-        batch_op.create_foreign_key(
-            "fk_users_admin_id_admins", "admins", ["admin_id"], ["id"]
-        )
+        batch_op.create_foreign_key("fk_users_admin_id_admins", "admins", ["admin_id"], ["id"])
     # ### end Alembic commands ###
 
 

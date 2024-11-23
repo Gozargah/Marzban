@@ -22,9 +22,7 @@ def upgrade() -> None:
 
     if bind.engine.name == "sqlite":
         with op.batch_alter_table("hosts") as batch_op:
-            batch_op.alter_column(
-                "noise_setting", existing_type=sa.String(length=2000), nullable=True
-            )
+            batch_op.alter_column("noise_setting", existing_type=sa.String(length=2000), nullable=True)
 
 
 def downgrade() -> None:

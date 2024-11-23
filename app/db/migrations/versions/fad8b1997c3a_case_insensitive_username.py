@@ -32,14 +32,10 @@ def upgrade() -> None:
             if not (r := q.fetchall()):
                 break
             for username, c in r:
-                bind.execute(
-                    f"UPDATE users SET username = '{username}_{c}' WHERE username = '{username}';"
-                )
+                bind.execute(f"UPDATE users SET username = '{username}_{c}' WHERE username = '{username}';")
 
         with op.batch_alter_table("users") as batch_op:
-            batch_op.alter_column(
-                "username", type_=sa.String(length=34, collation="NOCASE")
-            )
+            batch_op.alter_column("username", type_=sa.String(length=34, collation="NOCASE"))
         op.create_index(op.f("ix_users_username"), "users", ["username"], unique=True)
 
 

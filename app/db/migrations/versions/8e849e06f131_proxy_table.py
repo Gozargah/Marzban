@@ -42,10 +42,7 @@ def upgrade() -> None:
     results = q.fetchall()
     op.bulk_insert(
         proxies_table,
-        [
-            {"user_id": p[0], "type": p[1], "settings": json.loads(p[2])}
-            for p in results
-        ],
+        [{"user_id": p[0], "type": p[1], "settings": json.loads(p[2])} for p in results],
     )
 
     with op.batch_alter_table("users") as batch_op:
@@ -68,9 +65,7 @@ def downgrade() -> None:
 
     with op.batch_alter_table("users") as batch_op:
         batch_op.add_column(sa.Column("settings", sqlite.JSON(), nullable=False))
-        batch_op.add_column(
-            sa.Column("proxy_type", sa.VARCHAR(length=11), nullable=False)
-        )
+        batch_op.add_column(sa.Column("proxy_type", sa.VARCHAR(length=11), nullable=False))
         batch_op.alter_column(
             "created_at",
             existing_type=sa.DATETIME(),

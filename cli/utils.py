@@ -54,9 +54,7 @@ def get_user(db, username: str) -> User:
     return user
 
 
-def print_table(
-    table: Table, rows: Iterable[Iterable[Any]], console: Optional[Console] = None
-):
+def print_table(table: Table, rows: Iterable[Iterable[Any]], console: Optional[Console] = None):
     for row in rows:
         table.add_row(*row)
 

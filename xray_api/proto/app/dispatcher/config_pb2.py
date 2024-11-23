@@ -44,7 +44,9 @@ _sym_db.RegisterMessage(Config)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\027com.xray.app.dispatcherP\001Z(github.com/xtls/xray-core/app/dispatcher\252\002\023Xray.App.Dispatcher"
+    DESCRIPTOR._serialized_options = (
+        b"\n\027com.xray.app.dispatcherP\001Z(github.com/xtls/xray-core/app/dispatcher\252\002\023Xray.App.Dispatcher"
+    )
     _SESSIONCONFIG._serialized_start = 52
     _SESSIONCONFIG._serialized_end = 73
     _CONFIG._serialized_start = 75

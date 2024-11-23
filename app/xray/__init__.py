@@ -47,22 +47,16 @@ def hosts(storage: dict):
             storage[inbound_tag] = [
                 {
                     "remark": host.remark,
-                    "address": [i.strip() for i in host.address.split(",")]
-                    if host.address
-                    else [],
+                    "address": [i.strip() for i in host.address.split(",")] if host.address else [],
                     "port": host.port,
                     "path": host.path if host.path else None,
                     "sni": [i.strip() for i in host.sni.split(",")] if host.sni else [],
-                    "host": [i.strip() for i in host.host.split(",")]
-                    if host.host
-                    else [],
+                    "host": [i.strip() for i in host.host.split(",")] if host.host else [],
                     "alpn": host.alpn.value,
                     "fingerprint": host.fingerprint.value,
                     # None means the tls is not specified by host itself and
                     #  complies with its inbound's settings.
-                    "tls": None
-                    if host.security == ProxyHostSecurity.inbound_default
-                    else host.security.value,
+                    "tls": None if host.security == ProxyHostSecurity.inbound_default else host.security.value,
                     "allowinsecure": host.allowinsecure,
                     "mux_enable": host.mux_enable,
                     "fragment_setting": host.fragment_setting,

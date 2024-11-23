@@ -74,7 +74,9 @@ _sym_db.RegisterMessage(ServerConfig)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\025com.xray.proxy.trojanP\001Z&github.com/xtls/xray-core/proxy/trojan\252\002\021Xray.Proxy.Trojan"
+    DESCRIPTOR._serialized_options = (
+        b"\n\025com.xray.proxy.trojanP\001Z&github.com/xtls/xray-core/proxy/trojan\252\002\021Xray.Proxy.Trojan"
+    )
     _ACCOUNT._serialized_start = 111
     _ACCOUNT._serialized_end = 138
     _FALLBACK._serialized_start = 140

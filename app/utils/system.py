@@ -66,9 +66,7 @@ class RealtimeBandwidthStat:
     outgoing_packets: int
 
 
-rt_bw = RealtimeBandwidth(
-    incoming_bytes=0, outgoing_bytes=0, incoming_packets=0, outgoing_packets=0
-)
+rt_bw = RealtimeBandwidth(incoming_bytes=0, outgoing_bytes=0, incoming_packets=0, outgoing_packets=0)
 
 
 # sample time is 2 seconds, values lower than this may not produce good results

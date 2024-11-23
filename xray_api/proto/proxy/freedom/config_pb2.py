@@ -62,7 +62,9 @@ _sym_db.RegisterMessage(Config)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\026com.xray.proxy.freedomP\001Z'github.com/xtls/xray-core/proxy/freedom\252\002\022Xray.Proxy.Freedom"
+    DESCRIPTOR._serialized_options = (
+        b"\n\026com.xray.proxy.freedomP\001Z'github.com/xtls/xray-core/proxy/freedom\252\002\022Xray.Proxy.Freedom"
+    )
     _CONFIG.fields_by_name["timeout"]._options = None
     _CONFIG.fields_by_name["timeout"]._serialized_options = b"\030\001"
     _DESTINATIONOVERRIDE._serialized_start = 85

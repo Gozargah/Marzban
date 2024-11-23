@@ -42,9 +42,7 @@ def add_LoggerServiceServicer_to_server(servicer, server):
             response_serializer=app_dot_log_dot_command_dot_config__pb2.RestartLoggerResponse.SerializeToString,
         ),
     }
-    generic_handler = grpc.method_handlers_generic_handler(
-        "xray.app.log.command.LoggerService", rpc_method_handlers
-    )
+    generic_handler = grpc.method_handlers_generic_handler("xray.app.log.command.LoggerService", rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 

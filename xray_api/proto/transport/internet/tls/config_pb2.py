@@ -47,9 +47,7 @@ if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
     DESCRIPTOR._serialized_options = b"\n\037com.xray.transport.internet.tlsP\001Z0github.com/xtls/xray-core/transport/internet/tls\252\002\033Xray.Transport.Internet.Tls"
     _CONFIG.fields_by_name["prefer_server_cipher_suites"]._options = None
-    _CONFIG.fields_by_name[
-        "prefer_server_cipher_suites"
-    ]._serialized_options = b"\030\001"
+    _CONFIG.fields_by_name["prefer_server_cipher_suites"]._serialized_options = b"\030\001"
     _CERTIFICATE._serialized_start = 69
     _CERTIFICATE._serialized_end = 342
     _CERTIFICATE_USAGE._serialized_start = 274

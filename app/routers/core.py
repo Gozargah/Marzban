@@ -19,9 +19,7 @@ router = APIRouter(tags=["Core"], prefix="/api", responses={401: responses._401}
 
 @router.websocket("/core/logs")
 async def core_logs(websocket: WebSocket, db: Session = Depends(get_db)):
-    token = websocket.query_params.get("token") or websocket.headers.get(
-        "Authorization", ""
-    ).removeprefix("Bearer ")
+    token = websocket.query_params.get("token") or websocket.headers.get("Authorization", "").removeprefix("Bearer ")
     admin = Admin.get_admin(token, db)
     if not admin:
         return await websocket.close(reason="Unauthorized", code=4401)
@@ -36,9 +34,7 @@ async def core_logs(websocket: WebSocket, db: Session = Depends(get_db)):
         except ValueError:
             return await websocket.close(reason="Invalid interval value", code=4400)
         if interval > 10:
-            return await websocket.close(
-                reason="Interval must be more than 0 and at most 10 seconds", code=4400
-            )
+            return await websocket.close(reason="Interval must be more than 0 and at most 10 seconds", code=4400)
 
     await websocket.accept()
 
@@ -108,9 +104,7 @@ def get_core_config(admin: Admin = Depends(Admin.check_sudo_admin)) -> dict:
 
 
 @router.put("/core/config", responses={403: responses._403})
-def modify_core_config(
-    payload: dict, admin: Admin = Depends(Admin.check_sudo_admin)
-) -> dict:
+def modify_core_config(payload: dict, admin: Admin = Depends(Admin.check_sudo_admin)) -> dict:
     """Modify the core configuration and restart the core."""
     try:
         config = XRayConfig(payload, api_port=xray.config.api_port)

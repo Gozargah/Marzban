@@ -72,11 +72,7 @@ def downgrade():
     # before downgrading from new enum to old one,
     # we should replace new value from new enum with
     # somewhat of old values from old enum
-    op.execute(
-        temp_table.update()
-        .where(temp_table.c.status == downgrade_to[0])
-        .values(status=downgrade_to[1])
-    )
+    op.execute(temp_table.update().where(temp_table.c.status == downgrade_to[0]).values(status=downgrade_to[1]))
 
     temp_type.create(op.get_bind(), checkfirst=False)
 

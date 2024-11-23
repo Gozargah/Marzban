@@ -24,11 +24,7 @@ def send_webhook(json_data, webhook):
     except requests.exceptions.HTTPError as err:
         logger.error(err)
     else:
-        logger.debug(
-            "Discord payload delivered successfully, code {}.".format(
-                result.status_code
-            )
-        )
+        logger.debug("Discord payload delivered successfully, code {}.".format(result.status_code))
 
 
 def report_status_change(username: str, status: str, admin: Admin = None):
@@ -56,9 +52,7 @@ def report_status_change(username: str, status: str, admin: Admin = None):
     }
     send_webhooks(
         json_data=statusChange,
-        admin_webhook=admin.discord_webhook
-        if admin and admin.discord_webhook
-        else None,
+        admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None,
     )
 
 
@@ -73,14 +67,8 @@ def report_new_user(
     admin: Admin = None,
 ):
     data_limit = readable_size(data_limit) if data_limit else "Unlimited"
-    expire_date = (
-        datetime.fromtimestamp(expire_date).strftime("%H:%M:%S %Y-%m-%d")
-        if expire_date
-        else "Never"
-    )
-    proxies = (
-        "" if not proxies else ", ".join([escape_html(proxy) for proxy in proxies])
-    )
+    expire_date = datetime.fromtimestamp(expire_date).strftime("%H:%M:%S %Y-%m-%d") if expire_date else "Never"
+    proxies = "" if not proxies else ", ".join([escape_html(proxy) for proxy in proxies])
 
     reportNewUser = {
         "content": "",
@@ -94,18 +82,14 @@ def report_new_user(
 **Proxies:** {proxies}
 **Data Limit Reset Strategy:**{data_limit_reset_strategy}
 **Has Next Plan:**{has_next_plan}""",
-                "footer": {
-                    "text": f"Belongs To: {admin.username if admin else None}\nBy: {by}"
-                },
+                "footer": {"text": f"Belongs To: {admin.username if admin else None}\nBy: {by}"},
                 "color": int("00ff00", 16),
             }
         ],
     }
     send_webhooks(
         json_data=reportNewUser,
-        admin_webhook=admin.discord_webhook
-        if admin and admin.discord_webhook
-        else None,
+        admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None,
     )
 
 
@@ -120,14 +104,8 @@ def report_user_modification(
     admin: Admin = None,
 ):
     data_limit = readable_size(data_limit) if data_limit else "Unlimited"
-    expire_date = (
-        datetime.fromtimestamp(expire_date).strftime("%H:%M:%S %Y-%m-%d")
-        if expire_date
-        else "Never"
-    )
-    proxies = (
-        "" if not proxies else ", ".join([escape_html(proxy) for proxy in proxies])
-    )
+    expire_date = datetime.fromtimestamp(expire_date).strftime("%H:%M:%S %Y-%m-%d") if expire_date else "Never"
+    proxies = "" if not proxies else ", ".join([escape_html(proxy) for proxy in proxies])
     protocols = proxies
 
     reportUserModification = {
@@ -142,18 +120,14 @@ def report_user_modification(
 **Proxies:** {proxies}
 **Data Limit Reset Strategy:**{data_limit_reset_strategy}
 **Has Next Plan:**{has_next_plan}""",
-                "footer": {
-                    "text": f"Belongs To: {admin.username if admin else None}\nBy: {by}"
-                },
+                "footer": {"text": f"Belongs To: {admin.username if admin else None}\nBy: {by}"},
                 "color": int("00ffff", 16),
             }
         ],
     }
     send_webhooks(
         reportUserModification,
-        admin_webhook=admin.discord_webhook
-        if admin and admin.discord_webhook
-        else None,
+        admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None,
     )
 
 
@@ -164,18 +138,14 @@ def report_user_deletion(username: str, by: str, admin: Admin = None):
             {
                 "title": ":wastebasket: Deleted",
                 "description": f"**Username: **{username}",
-                "footer": {
-                    "text": f"Belongs To: {admin.username if admin else None}\nBy: {by}"
-                },
+                "footer": {"text": f"Belongs To: {admin.username if admin else None}\nBy: {by}"},
                 "color": int("ff0000", 16),
             }
         ],
     }
     send_webhooks(
         json_data=userDeletion,
-        admin_webhook=admin.discord_webhook
-        if admin and admin.discord_webhook
-        else None,
+        admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None,
     )
 
 
@@ -186,18 +156,14 @@ def report_user_usage_reset(username: str, by: str, admin: Admin = None):
             {
                 "title": ":repeat: Reset",
                 "description": f"**Username:** {username}",
-                "footer": {
-                    "text": f"Belongs To: {admin.username if admin else None}\nBy: {by}"
-                },
+                "footer": {"text": f"Belongs To: {admin.username if admin else None}\nBy: {by}"},
                 "color": int("00ffff", 16),
             }
         ],
     }
     send_webhooks(
         json_data=userUsageReset,
-        admin_webhook=admin.discord_webhook
-        if admin and admin.discord_webhook
-        else None,
+        admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None,
     )
 
 
@@ -218,9 +184,7 @@ def report_user_data_reset_by_next(user: User, admin: Admin = None):
     }
     send_webhooks(
         json_data=userUsageReset,
-        admin_webhook=admin.discord_webhook
-        if admin and admin.discord_webhook
-        else None,
+        admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None,
     )
 
 
@@ -231,18 +195,14 @@ def report_user_subscription_revoked(username: str, by: str, admin: Admin = None
             {
                 "title": ":repeat: Revoked",
                 "description": f"**Username:** {username}",
-                "footer": {
-                    "text": f"Belongs To: {admin.username if admin else None} \nBy: {by}"
-                },
+                "footer": {"text": f"Belongs To: {admin.username if admin else None} \nBy: {by}"},
                 "color": int("ff0000", 16),
             }
         ],
     }
     send_webhooks(
         json_data=subscriptionRevoked,
-        admin_webhook=admin.discord_webhook
-        if admin and admin.discord_webhook
-        else None,
+        admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None,
     )
 
 

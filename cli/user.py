@@ -16,16 +16,10 @@ app = typer.Typer(no_args_is_help=True)
 def list_users(
     offset: Optional[int] = typer.Option(None, *utils.FLAGS["offset"]),
     limit: Optional[int] = typer.Option(None, *utils.FLAGS["limit"]),
-    username: Optional[List[str]] = typer.Option(
-        None, *utils.FLAGS["username"], help="Search by username(s)"
-    ),
-    search: Optional[str] = typer.Option(
-        None, *utils.FLAGS["search"], help="Search by username/note"
-    ),
+    username: Optional[List[str]] = typer.Option(None, *utils.FLAGS["username"], help="Search by username(s)"),
+    search: Optional[str] = typer.Option(None, *utils.FLAGS["search"], help="Search by username/note"),
     status: Optional[crud.UserStatus] = typer.Option(None, *utils.FLAGS["status"]),
-    admins: Optional[List[str]] = typer.Option(
-        None, *utils.FLAGS["admin"], help="Search by owner admin's username(s)"
-    ),
+    admins: Optional[List[str]] = typer.Option(None, *utils.FLAGS["admin"], help="Search by owner admin's username(s)"),
 ):
     """
     Displays a table of users
@@ -73,12 +67,8 @@ def list_users(
 @app.command(name="set-owner")
 def set_owner(
     username: str = typer.Option(None, *utils.FLAGS["username"], prompt=True),
-    admin: str = typer.Option(
-        None, "--admin", "--owner", prompt=True, help="Admin's username"
-    ),
-    yes_to_all: bool = typer.Option(
-        False, *utils.FLAGS["yes_to_all"], help="Skips confirmations"
-    ),
+    admin: str = typer.Option(None, "--admin", "--owner", prompt=True, help="Admin's username"),
+    yes_to_all: bool = typer.Option(False, *utils.FLAGS["yes_to_all"], help="Skips confirmations"),
 ):
     """
     Transfers user's ownership
@@ -86,13 +76,9 @@ def set_owner(
     NOTE: This command needs additional confirmation for users who already have an owner.
     """
     with GetDB() as db:
-        user: User = utils.raise_if_falsy(
-            crud.get_user(db, username=username), f'User "{username}" not found.'
-        )
+        user: User = utils.raise_if_falsy(crud.get_user(db, username=username), f'User "{username}" not found.')
 
-        dbadmin = utils.raise_if_falsy(
-            crud.get_admin(db, username=admin), f'Admin "{admin}" not found.'
-        )
+        dbadmin = utils.raise_if_falsy(crud.get_admin(db, username=admin), f'Admin "{admin}" not found.')
 
         # Ask for confirmation if user already has an owner
         if (

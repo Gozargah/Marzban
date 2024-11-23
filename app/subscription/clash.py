@@ -33,9 +33,7 @@ class ClashConfiguration(object):
             self.user_agent_list = []
 
         try:
-            self.settings = yaml.load(
-                render_template(CLASH_SETTINGS_TEMPLATE), Loader=yaml.SafeLoader
-            )
+            self.settings = yaml.load(render_template(CLASH_SETTINGS_TEMPLATE), Loader=yaml.SafeLoader)
         except TemplateNotFound:
             self.settings = {}
 

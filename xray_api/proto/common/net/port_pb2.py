@@ -44,7 +44,9 @@ _sym_db.RegisterMessage(PortList)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\023com.xray.common.netP\001Z$github.com/xtls/xray-core/common/net\252\002\017Xray.Common.Net"
+    DESCRIPTOR._serialized_options = (
+        b"\n\023com.xray.common.netP\001Z$github.com/xtls/xray-core/common/net\252\002\017Xray.Common.Net"
+    )
     _PORTRANGE._serialized_start = 42
     _PORTRANGE._serialized_end = 79
     _PORTLIST._serialized_start = 81

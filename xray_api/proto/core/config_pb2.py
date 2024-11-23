@@ -18,9 +18,7 @@ from xray_api.proto.common.serial import (
 )
 import importlib
 
-transport_dot_global_dot_config__pb2 = importlib.import_module(
-    "xray_api.proto.transport.global.config_pb2"
-)
+transport_dot_global_dot_config__pb2 = importlib.import_module("xray_api.proto.transport.global.config_pb2")
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
@@ -66,9 +64,7 @@ _sym_db.RegisterMessage(OutboundHandlerConfig)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = (
-        b"\n\rcom.xray.coreP\001Z\036github.com/xtls/xray-core/core\252\002\tXray.Core"
-    )
+    DESCRIPTOR._serialized_options = b"\n\rcom.xray.coreP\001Z\036github.com/xtls/xray-core/core\252\002\tXray.Core"
     _CONFIG.fields_by_name["transport"]._options = None
     _CONFIG.fields_by_name["transport"]._serialized_options = b"\030\001"
     _CONFIG._serialized_start = 99

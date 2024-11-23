@@ -19,9 +19,7 @@ def start_bot():
     if bot:
         handler_dir = dirname(__file__) + "/handlers/"
         for name in handler_names:
-            spec = importlib.util.spec_from_file_location(
-                name, f"{handler_dir}{name}.py"
-            )
+            spec = importlib.util.spec_from_file_location(name, f"{handler_dir}{name}.py")
             spec.loader.exec_module(importlib.util.module_from_spec(spec))
 
         from app.telegram import utils  # setup custom handlers

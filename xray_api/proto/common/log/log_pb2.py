@@ -29,7 +29,9 @@ Debug = 4
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\023com.xray.common.logP\001Z$github.com/xtls/xray-core/common/log\252\002\017Xray.Common.Log"
+    DESCRIPTOR._serialized_options = (
+        b"\n\023com.xray.common.logP\001Z$github.com/xtls/xray-core/common/log\252\002\017Xray.Common.Log"
+    )
     _SEVERITY._serialized_start = 41
     _SEVERITY._serialized_end = 109
 # @@protoc_insertion_point(module_scope)

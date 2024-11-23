@@ -55,9 +55,7 @@ def get_admin_payload(token: str) -> Union[dict, None]:
 
 def create_subscription_token(username: str) -> str:
     data = username + "," + str(ceil(time.time()))
-    data_b64_str = (
-        b64encode(data.encode("utf-8"), altchars=b"-_").decode("utf-8").rstrip("=")
-    )
+    data_b64_str = b64encode(data.encode("utf-8"), altchars=b"-_").decode("utf-8").rstrip("=")
     data_b64_sign = b64encode(
         sha256((data_b64_str + get_secret_key()).encode("utf-8")).digest(),
         altchars=b"-_",
@@ -85,10 +83,7 @@ def get_subscription_payload(token: str) -> Union[dict, None]:
             u_signature = token[-10:]
             try:
                 u_token_dec = b64decode(
-                    (
-                        u_token.encode("utf-8")
-                        + b"=" * (-len(u_token.encode("utf-8")) % 4)
-                    ),
+                    (u_token.encode("utf-8") + b"=" * (-len(u_token.encode("utf-8")) % 4)),
                     altchars=b"-_",
                     validate=True,
                 )

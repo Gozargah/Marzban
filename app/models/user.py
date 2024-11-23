@@ -62,12 +62,8 @@ class NextPlanModel(BaseModel):
 class User(BaseModel):
     proxies: Dict[ProxyTypes, ProxySettings] = {}
     expire: Optional[int] = Field(None, nullable=True)
-    data_limit: Optional[int] = Field(
-        ge=0, default=None, description="data_limit can be 0 or greater"
-    )
-    data_limit_reset_strategy: UserDataLimitResetStrategy = (
-        UserDataLimitResetStrategy.no_reset
-    )
+    data_limit: Optional[int] = Field(ge=0, default=None, description="data_limit can be 0 or greater")
+    data_limit_reset_strategy: UserDataLimitResetStrategy = UserDataLimitResetStrategy.no_reset
     inbounds: Dict[ProxyTypes, List[str]] = {}
     note: Optional[str] = Field(None, nullable=True)
     sub_updated_at: Optional[datetime] = Field(None, nullable=True)
@@ -84,10 +80,7 @@ class User(BaseModel):
     def validate_proxies(cls, v, values, **kwargs):
         if not v:
             raise ValueError("Each user needs at least one proxy")
-        return {
-            proxy_type: ProxySettings.from_dict(proxy_type, v.get(proxy_type, {}))
-            for proxy_type in v
-        }
+        return {proxy_type: ProxySettings.from_dict(proxy_type, v.get(proxy_type, {})) for proxy_type in v}
 
     @validator("username", check_fields=False)
     def validate_username(cls, v):
@@ -176,10 +169,7 @@ class UserCreate(User):
             #     raise ValueError(f"{proxy_type} inbounds cannot be empty")
 
             else:
-                inbounds[proxy_type] = [
-                    i["tag"]
-                    for i in xray.config.inbounds_by_protocol.get(proxy_type, [])
-                ]
+                inbounds[proxy_type] = [i["tag"] for i in xray.config.inbounds_by_protocol.get(proxy_type, [])]
 
         return inbounds
 
@@ -195,9 +185,7 @@ class UserCreate(User):
         expire = values.get("expire")
         if status == UserStatusCreate.on_hold:
             if on_hold_expire == 0 or on_hold_expire is None:
-                raise ValueError(
-                    "User cannot be on hold without a valid on_hold_expire_duration."
-                )
+                raise ValueError("User cannot be on hold without a valid on_hold_expire_duration.")
             if expire:
                 raise ValueError("User cannot be on hold with specified expire.")
         return status
@@ -262,10 +250,7 @@ class UserModify(User):
 
     @validator("proxies", pre=True, always=True)
     def validate_proxies(cls, v):
-        return {
-            proxy_type: ProxySettings.from_dict(proxy_type, v.get(proxy_type, {}))
-            for proxy_type in v
-        }
+        return {proxy_type: ProxySettings.from_dict(proxy_type, v.get(proxy_type, {})) for proxy_type in v}
 
     @validator("status", pre=True, always=True, allow_reuse=True)
     def validate_status(cls, status, values):
@@ -273,9 +258,7 @@ class UserModify(User):
         expire = values.get("expire")
         if status == UserStatusCreate.on_hold:
             if on_hold_expire == 0 or on_hold_expire is None:
-                raise ValueError(
-                    "User cannot be on hold without a valid on_hold_expire_duration."
-                )
+                raise ValueError("User cannot be on hold without a valid on_hold_expire_duration.")
             if expire:
                 raise ValueError("User cannot be on hold with specified expire.")
         return status

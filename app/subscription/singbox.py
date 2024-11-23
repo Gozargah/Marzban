@@ -48,17 +48,9 @@ class SingBoxConfiguration(str):
 
     def render(self, reverse=False):
         urltest_types = ["vmess", "vless", "trojan", "shadowsocks"]
-        urltest_tags = [
-            outbound["tag"]
-            for outbound in self.config["outbounds"]
-            if outbound["type"] in urltest_types
-        ]
+        urltest_tags = [outbound["tag"] for outbound in self.config["outbounds"] if outbound["type"] in urltest_types]
         selector_types = ["vmess", "vless", "trojan", "shadowsocks", "urltest"]
-        selector_tags = [
-            outbound["tag"]
-            for outbound in self.config["outbounds"]
-            if outbound["type"] in selector_types
-        ]
+        selector_tags = [outbound["tag"] for outbound in self.config["outbounds"] if outbound["type"] in selector_types]
 
         for outbound in self.config["outbounds"]:
             if outbound.get("type") == "urltest":
@@ -73,9 +65,7 @@ class SingBoxConfiguration(str):
         return json.dumps(self.config, indent=4)
 
     @staticmethod
-    def tls_config(
-        sni=None, fp=None, tls=None, pbk=None, sid=None, alpn=None, ais=None
-    ):
+    def tls_config(sni=None, fp=None, tls=None, pbk=None, sid=None, alpn=None, ais=None):
         config = {}
         if tls in ["tls", "reality"]:
             config["enabled"] = True
@@ -160,9 +150,7 @@ class SingBoxConfiguration(str):
         return config
 
     def httpupgrade_config(self, host="", path="", random_user_agent: bool = False):
-        config = copy.deepcopy(
-            self.settings.get("httpupgradeSettings", {"headers": {}})
-        )
+        config = copy.deepcopy(self.settings.get("httpupgradeSettings", {"headers": {}}))
         if "headers" not in config:
             config["headers"] = {}
 
@@ -247,11 +235,7 @@ class SingBoxConfiguration(str):
             "server_port": port,
         }
 
-        if (
-            net in ("tcp", "raw", "kcp")
-            and headers != "http"
-            and (tls or tls != "none")
-        ):
+        if net in ("tcp", "raw", "kcp") and headers != "http" and (tls or tls != "none"):
             if flow:
                 config["flow"] = flow
 
@@ -284,9 +268,7 @@ class SingBoxConfiguration(str):
             )
 
         if tls in ("tls", "reality"):
-            config["tls"] = self.tls_config(
-                sni=sni, fp=fp, tls=tls, pbk=pbk, sid=sid, alpn=alpn, ais=ais
-            )
+            config["tls"] = self.tls_config(sni=sni, fp=fp, tls=tls, pbk=pbk, sid=sid, alpn=alpn, ais=ais)
 
         mux_json = json.loads(self.mux_template)
         mux_config = mux_json["sing-box"]
@@ -302,9 +284,7 @@ class SingBoxConfiguration(str):
         path = inbound["path"]
 
         # not supported by sing-box
-        if net in ("kcp", "splithttp", "xhttp") or (
-            net == "quic" and inbound["header_type"] != "none"
-        ):
+        if net in ("kcp", "splithttp", "xhttp") or (net == "quic" and inbound["header_type"] != "none"):
             return
 
         if net in ("grpc", "gun"):

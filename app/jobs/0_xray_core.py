@@ -40,9 +40,7 @@ def start_core():
 
     start_time = time.time()
     config = xray.config.include_db_users()
-    logger.info(
-        f"Xray core config generated in {(time.time() - start_time):.2f} seconds"
-    )
+    logger.info(f"Xray core config generated in {(time.time() - start_time):.2f} seconds")
 
     # main core
     logger.info("Starting main Xray core")

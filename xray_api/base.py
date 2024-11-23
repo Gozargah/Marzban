@@ -2,9 +2,7 @@ import grpc
 
 
 class XRayBase(object):
-    def __init__(
-        self, address: str, port: int, ssl_cert: str = None, ssl_target_name: str = None
-    ):
+    def __init__(self, address: str, port: int, ssl_cert: str = None, ssl_target_name: str = None):
         if ssl_cert is None:
             self.address = address
             self.port = port
@@ -21,6 +19,4 @@ class XRayBase(object):
                         ssl_target_name,
                     ),
                 )
-            self._channel = grpc.secure_channel(
-                f"{address}:{port}", credentials=creds, options=opts
-            )
+            self._channel = grpc.secure_channel(f"{address}:{port}", credentials=creds, options=opts)

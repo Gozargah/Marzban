@@ -36,7 +36,9 @@ _sym_db.RegisterMessage(Endpoint)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\023com.xray.common.netP\001Z$github.com/xtls/xray-core/common/net\252\002\017Xray.Common.Net"
+    DESCRIPTOR._serialized_options = (
+        b"\n\023com.xray.common.netP\001Z$github.com/xtls/xray-core/common/net\252\002\017Xray.Common.Net"
+    )
     _ENDPOINT._serialized_start = 101
     _ENDPOINT._serialized_end = 214
 # @@protoc_insertion_point(module_scope)

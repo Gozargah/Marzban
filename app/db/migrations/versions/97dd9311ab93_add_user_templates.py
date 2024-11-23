@@ -30,9 +30,7 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("name"),
     )
-    op.create_index(
-        op.f("ix_user_templates_id"), "user_templates", ["id"], unique=False
-    )
+    op.create_index(op.f("ix_user_templates_id"), "user_templates", ["id"], unique=False)
     op.create_table(
         "template_inbounds_association",
         sa.Column("user_template_id", sa.Integer(), nullable=True),

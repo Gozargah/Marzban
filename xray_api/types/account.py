@@ -72,6 +72,4 @@ class ShadowsocksAccount(Account):
 
     @property
     def message(self):
-        return Message(
-            ShadowsocksAccountPb2(password=self.password, cipher_type=self.cipher_type)
-        )
+        return Message(ShadowsocksAccountPb2(password=self.password, cipher_type=self.cipher_type))

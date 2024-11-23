@@ -39,9 +39,7 @@ def downgrade() -> None:
     op.create_index("ix_user_templates_id", "user_templates", ["id"], unique=False)
     op.create_index("ix_system_id", "system", ["id"], unique=False)
     op.create_index("ix_proxies_id", "proxies", ["id"], unique=False)
-    op.create_index(
-        "ix_notification_reminders_id", "notification_reminders", ["id"], unique=False
-    )
+    op.create_index("ix_notification_reminders_id", "notification_reminders", ["id"], unique=False)
     op.create_index("ix_nodes_id", "nodes", ["id"], unique=False)
     op.create_index("ix_node_user_usages_id", "node_user_usages", ["id"], unique=False)
     op.create_index("ix_node_usages_id", "node_usages", ["id"], unique=False)

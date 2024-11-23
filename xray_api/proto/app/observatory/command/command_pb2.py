@@ -24,9 +24,7 @@ DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
 
 
 _GETOUTBOUNDSTATUSREQUEST = DESCRIPTOR.message_types_by_name["GetOutboundStatusRequest"]
-_GETOUTBOUNDSTATUSRESPONSE = DESCRIPTOR.message_types_by_name[
-    "GetOutboundStatusResponse"
-]
+_GETOUTBOUNDSTATUSRESPONSE = DESCRIPTOR.message_types_by_name["GetOutboundStatusResponse"]
 _CONFIG = DESCRIPTOR.message_types_by_name["Config"]
 GetOutboundStatusRequest = _reflection.GeneratedProtocolMessageType(
     "GetOutboundStatusRequest",

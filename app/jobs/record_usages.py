@@ -43,9 +43,7 @@ def safe_execute(db, stmt, params=None):
         db.commit()
 
 
-def record_user_stats(
-    params: list, node_id: Union[int, None], consumption_factor: int = 1
-):
+def record_user_stats(params: list, node_id: Union[int, None], consumption_factor: int = 1):
     if not params:
         return
 
@@ -54,9 +52,7 @@ def record_user_stats(
     with GetDB() as db:
         # make user usage row if doesn't exist
         select_stmt = select(NodeUserUsage.user_id).where(
-            and_(
-                NodeUserUsage.node_id == node_id, NodeUserUsage.created_at == created_at
-            )
+            and_(NodeUserUsage.node_id == node_id, NodeUserUsage.created_at == created_at)
         )
         existings = [r[0] for r in db.execute(select_stmt).fetchall()]
         uids_to_insert = set()
@@ -79,10 +75,7 @@ def record_user_stats(
         # record
         stmt = (
             update(NodeUserUsage)
-            .values(
-                used_traffic=NodeUserUsage.used_traffic
-                + bindparam("value") * consumption_factor
-            )
+            .values(used_traffic=NodeUserUsage.used_traffic + bindparam("value") * consumption_factor)
             .where(
                 and_(
                     NodeUserUsage.user_id == bindparam("uid"),
@@ -107,9 +100,7 @@ def record_node_stats(params: dict, node_id: Union[int, None]):
         )
         notfound = db.execute(select_stmt).first() is None
         if notfound:
-            stmt = insert(NodeUsage).values(
-                created_at=created_at, node_id=node_id, uplink=0, downlink=0
-            )
+            stmt = insert(NodeUsage).values(created_at=created_at, node_id=node_id, uplink=0, downlink=0)
             safe_execute(db, stmt)
 
         # record
@@ -119,9 +110,7 @@ def record_node_stats(params: dict, node_id: Union[int, None]):
                 uplink=NodeUsage.uplink + bindparam("up"),
                 downlink=NodeUsage.downlink + bindparam("down"),
             )
-            .where(
-                and_(NodeUsage.node_id == node_id, NodeUsage.created_at == created_at)
-            )
+            .where(and_(NodeUsage.node_id == node_id, NodeUsage.created_at == created_at))
         )
 
         safe_execute(db, stmt, params)
@@ -130,9 +119,7 @@ def record_node_stats(params: dict, node_id: Union[int, None]):
 def get_users_stats(api: XRayAPI):
     try:
         params = defaultdict(int)
-        for stat in filter(
-            attrgetter("value"), api.get_users_stats(reset=True, timeout=30)
-        ):
+        for stat in filter(attrgetter("value"), api.get_users_stats(reset=True, timeout=30)):
             params[stat.name.split(".", 1)[0]] += stat.value
         params = list({"uid": uid, "value": value} for uid, value in params.items())
         return params
@@ -143,12 +130,8 @@ def get_users_stats(api: XRayAPI):
 def get_outbounds_stats(api: XRayAPI):
     try:
         params = [
-            {"up": stat.value, "down": 0}
-            if stat.link == "uplink"
-            else {"up": 0, "down": stat.value}
-            for stat in filter(
-                attrgetter("value"), api.get_outbounds_stats(reset=True, timeout=10)
-            )
+            {"up": stat.value, "down": 0} if stat.link == "uplink" else {"up": 0, "down": stat.value}
+            for stat in filter(attrgetter("value"), api.get_outbounds_stats(reset=True, timeout=10))
         ]
         return params
     except xray_exc.XrayError:
@@ -162,29 +145,18 @@ def record_user_usages():
     for node_id, node in list(xray.nodes.items()):
         if node.connected and node.started:
             api_instances[node_id] = node.api
-            usage_coefficient[node_id] = (
-                node.usage_coefficient
-            )  # fetch the usage coefficient
+            usage_coefficient[node_id] = node.usage_coefficient  # fetch the usage coefficient
 
     with ThreadPoolExecutor(max_workers=10) as executor:
-        futures = {
-            node_id: executor.submit(get_users_stats, api)
-            for node_id, api in api_instances.items()
-        }
+        futures = {node_id: executor.submit(get_users_stats, api) for node_id, api in api_instances.items()}
     api_params = {node_id: future.result() for node_id, future in futures.items()}
 
     users_usage = defaultdict(int)
     for node_id, params in api_params.items():
-        coefficient = usage_coefficient.get(
-            node_id, 1
-        )  # get the usage coefficient for the node
+        coefficient = usage_coefficient.get(node_id, 1)  # get the usage coefficient for the node
         for param in params:
-            users_usage[param["uid"]] += (
-                param["value"] * coefficient
-            )  # apply the usage coefficient
-    users_usage = list(
-        {"uid": uid, "value": value} for uid, value in users_usage.items()
-    )
+            users_usage[param["uid"]] += param["value"] * coefficient  # apply the usage coefficient
+    users_usage = list({"uid": uid, "value": value} for uid, value in users_usage.items())
     if not users_usage:
         return
 
@@ -213,10 +185,7 @@ def record_user_usages():
     if DISABLE_RECORDING_NODE_USAGE:
         return
 
-    admin_data = [
-        {"admin_id": admin_id, "value": value}
-        for admin_id, value in admin_usage.items()
-    ]
+    admin_data = [{"admin_id": admin_id, "value": value} for admin_id, value in admin_usage.items()]
     if admin_data:
         admin_update_stmt = (
             update(Admin)
@@ -236,10 +205,7 @@ def record_node_usages():
             api_instances[node_id] = node.api
 
     with ThreadPoolExecutor(max_workers=10) as executor:
-        futures = {
-            node_id: executor.submit(get_outbounds_stats, api)
-            for node_id, api in api_instances.items()
-        }
+        futures = {node_id: executor.submit(get_outbounds_stats, api) for node_id, api in api_instances.items()}
     api_params = {node_id: future.result() for node_id, future in futures.items()}
 
     total_up = 0
@@ -253,9 +219,7 @@ def record_node_usages():
 
     # record nodes usage
     with GetDB() as db:
-        stmt = update(System).values(
-            uplink=System.uplink + total_up, downlink=System.downlink + total_down
-        )
+        stmt = update(System).values(uplink=System.uplink + total_up, downlink=System.downlink + total_down)
         safe_execute(db, stmt)
 
     if DISABLE_RECORDING_NODE_USAGE:

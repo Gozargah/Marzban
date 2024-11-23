@@ -49,9 +49,7 @@ class Admin(BaseModel):
         return cls.from_orm(dbadmin)
 
     @classmethod
-    def get_current(
-        cls, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
-    ):
+    def get_current(cls, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
         admin = cls.get_admin(token, db)
         if not admin:
             raise HTTPException(
@@ -63,9 +61,7 @@ class Admin(BaseModel):
         return admin
 
     @classmethod
-    def check_sudo_admin(
-        cls, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
-    ):
+    def check_sudo_admin(cls, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
         admin = cls.get_admin(token, db)
         if not admin:
             raise HTTPException(
@@ -74,9 +70,7 @@ class Admin(BaseModel):
                 headers={"WWW-Authenticate": "Bearer"},
             )
         if not admin.is_sudo:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="You're not allowed"
-            )
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You're not allowed")
         return admin
 
 

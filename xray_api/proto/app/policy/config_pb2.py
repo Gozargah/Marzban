@@ -123,7 +123,9 @@ _sym_db.RegisterMessage(Config.LevelEntry)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\023com.xray.app.policyP\001Z$github.com/xtls/xray-core/app/policy\252\002\017Xray.App.Policy"
+    DESCRIPTOR._serialized_options = (
+        b"\n\023com.xray.app.policyP\001Z$github.com/xtls/xray-core/app/policy\252\002\017Xray.App.Policy"
+    )
     _CONFIG_LEVELENTRY._options = None
     _CONFIG_LEVELENTRY._serialized_options = b"8\001"
     _SECOND._serialized_start = 44

@@ -37,7 +37,9 @@ _sym_db.RegisterMessage(Account)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\024com.xray.proxy.vmessP\001Z%github.com/xtls/xray-core/proxy/vmess\252\002\020Xray.Proxy.Vmess"
+    DESCRIPTOR._serialized_options = (
+        b"\n\024com.xray.proxy.vmessP\001Z%github.com/xtls/xray-core/proxy/vmess\252\002\020Xray.Proxy.Vmess"
+    )
     _ACCOUNT._serialized_start = 78
     _ACCOUNT._serialized_end = 187
 # @@protoc_insertion_point(module_scope)

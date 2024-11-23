@@ -26,9 +26,7 @@ def upgrade() -> None:
         if settings.get("method") == "chacha20-poly1305":
             new_settings = settings.copy()
             new_settings["method"] = "chacha20-ietf-poly1305"
-            bind.execute(
-                f"UPDATE proxies SET settings = '{json.dumps(new_settings)}' WHERE id = {pid}"
-            )
+            bind.execute(f"UPDATE proxies SET settings = '{json.dumps(new_settings)}' WHERE id = {pid}")
 
 
 def downgrade() -> None:
@@ -40,6 +38,4 @@ def downgrade() -> None:
         if settings.get("method") == "chacha20-ietf-poly1305":
             new_settings = settings.copy()
             new_settings["method"] = "chacha20-poly1305"
-            bind.execute(
-                f"UPDATE proxies SET settings = '{json.dumps(new_settings)}' WHERE id = {pid}"
-            )
+            bind.execute(f"UPDATE proxies SET settings = '{json.dumps(new_settings)}' WHERE id = {pid}")

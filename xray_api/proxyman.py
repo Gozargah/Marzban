@@ -14,9 +14,7 @@ except ModuleNotFoundError:
 
 
 class Proxyman(XRayBase):
-    def alter_inbound(
-        self, tag: str, operation: TypedMessage, timeout: int = None
-    ) -> bool:
+    def alter_inbound(self, tag: str, operation: TypedMessage, timeout: int = None) -> bool:
         stub = command_pb2_grpc.HandlerServiceStub(self._channel)
         try:
             stub.AlterInbound(
@@ -28,9 +26,7 @@ class Proxyman(XRayBase):
         except grpc.RpcError as e:
             raise RelatedError(e)
 
-    def alter_outbound(
-        self, tag: str, operation: TypedMessage, timeout: int = None
-    ) -> bool:
+    def alter_outbound(self, tag: str, operation: TypedMessage, timeout: int = None) -> bool:
         stub = command_pb2_grpc.HandlerServiceStub(self._channel)
         try:
             stub.AlterInbound(
@@ -47,9 +43,7 @@ class Proxyman(XRayBase):
             tag=tag,
             operation=Message(
                 command_pb2.AddUserOperation(
-                    user=user_pb2.User(
-                        level=user.level, email=user.email, account=user.message
-                    )
+                    user=user_pb2.User(level=user.level, email=user.email, account=user.message)
                 )
             ),
             timeout=timeout,
@@ -67,9 +61,7 @@ class Proxyman(XRayBase):
             tag=tag,
             operation=Message(
                 command_pb2.AddUserOperation(
-                    user=user_pb2.User(
-                        level=user.level, email=user.email, account=user.message
-                    )
+                    user=user_pb2.User(level=user.level, email=user.email, account=user.message)
                 )
             ),
             timeout=timeout,

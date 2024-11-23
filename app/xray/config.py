@@ -171,12 +171,8 @@ class XRayConfig(dict):
 
                 if settings["is_fallback"] is True:
                     # probably this is a fallback
-                    security = self._fallbacks_inbound.get("streamSettings", {}).get(
-                        "security"
-                    )
-                    tls_settings = self._fallbacks_inbound.get(
-                        "streamSettings", {}
-                    ).get(f"{security}Settings", {})
+                    security = self._fallbacks_inbound.get("streamSettings", {}).get("security")
+                    tls_settings = self._fallbacks_inbound.get("streamSettings", {}).get(f"{security}Settings", {})
 
                 settings["network"] = net
 
@@ -208,9 +204,7 @@ class XRayConfig(dict):
                     except KeyError:
                         pvk = tls_settings.get("privateKey")
                         if not pvk:
-                            raise ValueError(
-                                f"You need to provide privateKey in realitySettings of {inbound['tag']}"
-                            )
+                            raise ValueError(f"You need to provide privateKey in realitySettings of {inbound['tag']}")
 
                         try:
                             from app.xray import core
@@ -221,9 +215,7 @@ class XRayConfig(dict):
                             pass
 
                         if not settings.get("pbk"):
-                            raise ValueError(
-                                f"You need to provide publicKey in realitySettings of {inbound['tag']}"
-                            )
+                            raise ValueError(f"You need to provide publicKey in realitySettings of {inbound['tag']}")
 
                     try:
                         settings["sid"] = tls_settings.get("shortIds")[0]
@@ -258,9 +250,7 @@ class XRayConfig(dict):
 
                 elif net == "ws":
                     path = net_settings.get("path", "")
-                    host = net_settings.get("host", "") or net_settings.get(
-                        "headers", {}
-                    ).get("Host")
+                    host = net_settings.get("host", "") or net_settings.get("headers", {}).get("Host")
 
                     settings["header_type"] = ""
 
@@ -284,9 +274,7 @@ class XRayConfig(dict):
                     settings["multiMode"] = net_settings.get("multiMode", False)
 
                 elif net == "quic":
-                    settings["header_type"] = net_settings.get("header", {}).get(
-                        "type", ""
-                    )
+                    settings["header_type"] = net_settings.get("header", {}).get("type", "")
                     settings["path"] = net_settings.get("key", "")
                     settings["host"] = [net_settings.get("security", "")]
 
@@ -299,18 +287,10 @@ class XRayConfig(dict):
                     settings["path"] = net_settings.get("path", "")
                     host = net_settings.get("host", "")
                     settings["host"] = [host]
-                    settings["scMaxEachPostBytes"] = net_settings.get(
-                        "scMaxEachPostBytes", 1000000
-                    )
-                    settings["scMaxConcurrentPosts"] = net_settings.get(
-                        "scMaxConcurrentPosts", 100
-                    )
-                    settings["scMinPostsIntervalMs"] = net_settings.get(
-                        "scMinPostsIntervalMs", 30
-                    )
-                    settings["xPaddingBytes"] = net_settings.get(
-                        "xPaddingBytes", "100-1000"
-                    )
+                    settings["scMaxEachPostBytes"] = net_settings.get("scMaxEachPostBytes", 1000000)
+                    settings["scMaxConcurrentPosts"] = net_settings.get("scMaxConcurrentPosts", 100)
+                    settings["scMinPostsIntervalMs"] = net_settings.get("scMinPostsIntervalMs", 30)
+                    settings["xPaddingBytes"] = net_settings.get("xPaddingBytes", "100-1000")
                     settings["xmux"] = net_settings.get("xmux", {})
                     settings["mode"] = net_settings.get("mode", "auto")
                     settings["extra"] = net_settings.get("extra", {})
@@ -326,9 +306,7 @@ class XRayConfig(dict):
                 elif net in ("http", "h2", "h3"):
                     net_settings = stream.get("httpSettings", {})
 
-                    settings["host"] = net_settings.get("host") or net_settings.get(
-                        "Host", ""
-                    )
+                    settings["host"] = net_settings.get("host") or net_settings.get("Host", "")
                     settings["path"] = net_settings.get("path", "")
 
                 else:
@@ -373,19 +351,16 @@ class XRayConfig(dict):
                     db_models.User.username,
                     func.lower(db_models.Proxy.type).label("type"),
                     db_models.Proxy.settings,
-                    func.group_concat(
-                        db_models.excluded_inbounds_association.c.inbound_tag
-                    ).label("excluded_inbound_tags"),
+                    func.group_concat(db_models.excluded_inbounds_association.c.inbound_tag).label(
+                        "excluded_inbound_tags"
+                    ),
                 )
                 .join(db_models.Proxy, db_models.User.id == db_models.Proxy.user_id)
                 .outerjoin(
                     db_models.excluded_inbounds_association,
-                    db_models.Proxy.id
-                    == db_models.excluded_inbounds_association.c.proxy_id,
+                    db_models.Proxy.id == db_models.excluded_inbounds_association.c.proxy_id,
                 )
-                .filter(
-                    db_models.User.status.in_([UserStatus.active, UserStatus.on_hold])
-                )
+                .filter(db_models.User.status.in_([UserStatus.active, UserStatus.on_hold]))
                 .group_by(
                     func.lower(db_models.Proxy.type),
                     db_models.User.id,
@@ -420,10 +395,7 @@ class XRayConfig(dict):
                     for row in rows:
                         user_id, username, settings, excluded_inbound_tags = row
 
-                        if (
-                            excluded_inbound_tags
-                            and inbound["tag"] in excluded_inbound_tags
-                        ):
+                        if excluded_inbound_tags and inbound["tag"] in excluded_inbound_tags:
                             continue
 
                         client = {"email": f"{user_id}.{username}", **settings}

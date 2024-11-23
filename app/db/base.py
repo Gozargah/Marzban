@@ -11,9 +11,7 @@ from config import (
 IS_SQLITE = SQLALCHEMY_DATABASE_URL.startswith("sqlite")
 
 if IS_SQLITE:
-    engine = create_engine(
-        SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-    )
+    engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 else:
     engine = create_engine(
         SQLALCHEMY_DATABASE_URL,

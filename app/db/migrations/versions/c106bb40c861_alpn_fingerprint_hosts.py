@@ -18,9 +18,7 @@ depends_on = None
 
 
 def upgrade() -> None:
-    proxyhostalpn_enum = sa.Enum(
-        "none", "h2", "http/1.1", "h2,http/1.1", name="proxyhostalpn"
-    )
+    proxyhostalpn_enum = sa.Enum("none", "h2", "http/1.1", "h2,http/1.1", name="proxyhostalpn")
     proxyhostalpn_enum.create(op.get_bind(), checkfirst=True)
 
     proxyhostfingerprint_enum = sa.Enum(

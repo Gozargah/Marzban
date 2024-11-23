@@ -74,9 +74,7 @@ def add_StatsServiceServicer_to_server(servicer, server):
             response_serializer=app_dot_stats_dot_command_dot_command__pb2.SysStatsResponse.SerializeToString,
         ),
     }
-    generic_handler = grpc.method_handlers_generic_handler(
-        "xray.app.stats.command.StatsService", rpc_method_handlers
-    )
+    generic_handler = grpc.method_handlers_generic_handler("xray.app.stats.command.StatsService", rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 

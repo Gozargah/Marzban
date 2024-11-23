@@ -108,7 +108,9 @@ _sym_db.RegisterMessage(Config.HostMapping)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\020com.xray.app.dnsP\001Z!github.com/xtls/xray-core/app/dns\252\002\014Xray.App.Dns"
+    DESCRIPTOR._serialized_options = (
+        b"\n\020com.xray.app.dnsP\001Z!github.com/xtls/xray-core/app/dns\252\002\014Xray.App.Dns"
+    )
     _CONFIG_HOSTSENTRY._options = None
     _CONFIG_HOSTSENTRY._serialized_options = b"8\001"
     _CONFIG.fields_by_name["NameServers"]._options = None

@@ -50,12 +50,8 @@ def run_build():
     if not build_dir.is_dir():
         build()
 
-    app.mount(
-        DASHBOARD_PATH, StaticFiles(directory=build_dir, html=True), name="dashboard"
-    )
-    app.mount(
-        "/statics/", StaticFiles(directory=statics_dir, html=True), name="statics"
-    )
+    app.mount(DASHBOARD_PATH, StaticFiles(directory=build_dir, html=True), name="dashboard")
+    app.mount("/statics/", StaticFiles(directory=statics_dir, html=True), name="statics")
 
 
 @app.on_event("startup")

@@ -55,21 +55,15 @@ class User(Base):
     proxies = relationship("Proxy", back_populates="user", cascade="all, delete-orphan")
     status = Column(Enum(UserStatus), nullable=False, default=UserStatus.active)
     used_traffic = Column(BigInteger, default=0)
-    node_usages = relationship(
-        "NodeUserUsage", back_populates="user", cascade="all, delete-orphan"
-    )
-    notification_reminders = relationship(
-        "NotificationReminder", back_populates="user", cascade="all, delete-orphan"
-    )
+    node_usages = relationship("NodeUserUsage", back_populates="user", cascade="all, delete-orphan")
+    notification_reminders = relationship("NotificationReminder", back_populates="user", cascade="all, delete-orphan")
     data_limit = Column(BigInteger, nullable=True)
     data_limit_reset_strategy = Column(
         Enum(UserDataLimitResetStrategy),
         nullable=False,
         default=UserDataLimitResetStrategy.no_reset,
     )
-    usage_logs = relationship(
-        "UserUsageResetLogs", back_populates="user"
-    )  # maybe rename it to reset_usage_logs?
+    usage_logs = relationship("UserUsageResetLogs", back_populates="user")  # maybe rename it to reset_usage_logs?
     expire = Column(Integer, nullable=True)
     admin_id = Column(Integer, ForeignKey("admins.id"))
     admin = relationship("Admin", back_populates="users")
@@ -90,9 +84,7 @@ class User(Base):
     edit_at = Column(DateTime, nullable=True, default=None)
     last_status_change = Column(DateTime, default=datetime.utcnow, nullable=True)
 
-    next_plan = relationship(
-        "NextPlan", uselist=False, back_populates="user", cascade="all, delete-orphan"
-    )
+    next_plan = relationship("NextPlan", uselist=False, back_populates="user", cascade="all, delete-orphan")
 
     @hybrid_property
     def reseted_usage(self):
@@ -108,10 +100,7 @@ class User(Base):
 
     @property
     def lifetime_used_traffic(self):
-        return (
-            sum([log.used_traffic_at_reset for log in self.usage_logs])
-            + self.used_traffic
-        )
+        return sum([log.used_traffic_at_reset for log in self.usage_logs]) + self.used_traffic
 
     @property
     def last_traffic_reset_time(self):
@@ -159,9 +148,7 @@ class NextPlan(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     data_limit = Column(BigInteger, nullable=False)
     expire = Column(Integer, nullable=True)
-    add_remaining_traffic = Column(
-        Boolean, nullable=False, default=False, server_default="0"
-    )
+    add_remaining_traffic = Column(Boolean, nullable=False, default=False, server_default="0")
     fire_on_either = Column(Boolean, nullable=False, default=True, server_default="0")
 
     user = relationship("User", back_populates="next_plan")
@@ -198,9 +185,7 @@ class Proxy(Base):
     user = relationship("User", back_populates="proxies")
     type = Column(Enum(ProxyTypes), nullable=False)
     settings = Column(JSON, nullable=False)
-    excluded_inbounds = relationship(
-        "ProxyInbound", secondary=excluded_inbounds_association
-    )
+    excluded_inbounds = relationship("ProxyInbound", secondary=excluded_inbounds_association)
 
 
 class ProxyInbound(Base):
@@ -208,9 +193,7 @@ class ProxyInbound(Base):
 
     id = Column(Integer, primary_key=True)
     tag = Column(String(256), unique=True, nullable=False, index=True)
-    hosts = relationship(
-        "ProxyHost", back_populates="inbound", cascade="all, delete-orphan"
-    )
+    hosts = relationship("ProxyHost", back_populates="inbound", cascade="all, delete-orphan")
 
 
 class ProxyHost(Base):
@@ -254,9 +237,7 @@ class ProxyHost(Base):
     mux_enable = Column(Boolean, nullable=False, default=False, server_default="0")
     fragment_setting = Column(String(100), nullable=True)
     noise_setting = Column(String(2000), nullable=True)
-    random_user_agent = Column(
-        Boolean, nullable=False, default=False, server_default="0"
-    )
+    random_user_agent = Column(Boolean, nullable=False, default=False, server_default="0")
 
 
 class System(Base):
@@ -271,9 +252,7 @@ class JWT(Base):
     __tablename__ = "jwt"
 
     id = Column(Integer, primary_key=True)
-    secret_key = Column(
-        String(64), nullable=False, default=lambda: os.urandom(32).hex()
-    )
+    secret_key = Column(String(64), nullable=False, default=lambda: os.urandom(32).hex())
 
 
 class TLS(Base):
@@ -299,15 +278,9 @@ class Node(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     uplink = Column(BigInteger, default=0)
     downlink = Column(BigInteger, default=0)
-    user_usages = relationship(
-        "NodeUserUsage", back_populates="node", cascade="all, delete-orphan"
-    )
-    usages = relationship(
-        "NodeUsage", back_populates="node", cascade="all, delete-orphan"
-    )
-    usage_coefficient = Column(
-        Float, nullable=False, server_default=text("1.0"), default=1
-    )
+    user_usages = relationship("NodeUserUsage", back_populates="node", cascade="all, delete-orphan")
+    usages = relationship("NodeUsage", back_populates="node", cascade="all, delete-orphan")
+    usage_coefficient = Column(Float, nullable=False, server_default=text("1.0"), default=1)
 
 
 class NodeUserUsage(Base):

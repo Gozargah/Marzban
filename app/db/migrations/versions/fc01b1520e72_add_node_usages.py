@@ -58,9 +58,7 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("created_at", "user_id", "node_id"),
     )
-    op.create_index(
-        op.f("ix_node_user_usages_id"), "node_user_usages", ["id"], unique=False
-    )
+    op.create_index(op.f("ix_node_user_usages_id"), "node_user_usages", ["id"], unique=False)
 
 
 def downgrade() -> None:
@@ -90,6 +88,4 @@ def downgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("user_username", "node_id"),
     )
-    op.create_index(
-        op.f("ix_node_user_usages_id"), "node_user_usages", ["id"], unique=False
-    )
+    op.create_index(op.f("ix_node_user_usages_id"), "node_user_usages", ["id"], unique=False)

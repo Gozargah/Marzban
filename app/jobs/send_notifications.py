@@ -64,9 +64,7 @@ def send_notifications():
             if notification.tries > NUMBER_OF_RECURRENT_NOTIFICATIONS:
                 continue
             if notification.send_at > dt.utcnow().timestamp():
-                queue.append(
-                    notification
-                )  # add it to the queue again for the next check
+                queue.append(notification)  # add it to the queue again for the next check
                 continue
             notifications_to_send.append(notification)
     except IndexError:  # if the queue is empty
@@ -87,9 +85,7 @@ def send_notifications():
 
 def delete_expired_reminders() -> None:
     with GetDB() as db:
-        db.query(NotificationReminder).filter(
-            NotificationReminder.expires_at < dt.utcnow()
-        ).delete()
+        db.query(NotificationReminder).filter(NotificationReminder.expires_at < dt.utcnow()).delete()
         db.commit()
 
 

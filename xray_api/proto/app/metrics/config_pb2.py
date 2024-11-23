@@ -32,7 +32,9 @@ _sym_db.RegisterMessage(Config)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\024com.xray.app.metricsP\001Z%github.com/xtls/xray-core/app/metrics\252\002\020Xray.App.Metrics"
+    DESCRIPTOR._serialized_options = (
+        b"\n\024com.xray.app.metricsP\001Z%github.com/xtls/xray-core/app/metrics\252\002\020Xray.App.Metrics"
+    )
     _CONFIG._serialized_start = 46
     _CONFIG._serialized_end = 67
 # @@protoc_insertion_point(module_scope)

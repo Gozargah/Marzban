@@ -32,9 +32,7 @@ _sym_db.RegisterMessage(Config)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = (
-        b"Z1github.com/xtls/xray-core/transport/internet/grpc"
-    )
+    DESCRIPTOR._serialized_options = b"Z1github.com/xtls/xray-core/transport/internet/grpc"
     _CONFIG._serialized_start = 80
     _CONFIG._serialized_end = 282
 # @@protoc_insertion_point(module_scope)

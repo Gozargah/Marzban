@@ -49,7 +49,9 @@ _sym_db.RegisterMessage(ReflectionConfig)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\026com.xray.app.commanderP\001Z'github.com/xtls/xray-core/app/commander\252\002\022Xray.App.Commander"
+    DESCRIPTOR._serialized_options = (
+        b"\n\026com.xray.app.commanderP\001Z'github.com/xtls/xray-core/app/commander\252\002\022Xray.App.Commander"
+    )
     _CONFIG._serialized_start = 85
     _CONFIG._serialized_end = 173
     _REFLECTIONCONFIG._serialized_start = 175

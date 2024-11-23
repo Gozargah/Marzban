@@ -15,9 +15,7 @@ class OutlineConfiguration:
             self.config = dict(items)
         return json.dumps(self.config, indent=0)
 
-    def make_outbound(
-        self, remark: str, address: str, port: int, password: str, method: str
-    ):
+    def make_outbound(self, remark: str, address: str, port: int, password: str, method: str):
         config = {
             "method": method,
             "password": password,

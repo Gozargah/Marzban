@@ -18,9 +18,7 @@ depends_on = None
 
 def upgrade():
     op.add_column("users", sa.Column("on_hold_timeout", sa.DateTime))
-    op.add_column(
-        "users", sa.Column("on_hold_expire_duration", sa.BigInteger(), nullable=True)
-    )
+    op.add_column("users", sa.Column("on_hold_expire_duration", sa.BigInteger(), nullable=True))
     with op.batch_alter_table("users") as batch_op:
         batch_op.drop_column("timeout")
 

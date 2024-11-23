@@ -36,7 +36,9 @@ _sym_db.RegisterMessage(Config)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\027com.xray.proxy.dokodemoP\001Z(github.com/xtls/xray-core/proxy/dokodemo\252\002\023Xray.Proxy.Dokodemo"
+    DESCRIPTOR._serialized_options = (
+        b"\n\027com.xray.proxy.dokodemoP\001Z(github.com/xtls/xray-core/proxy/dokodemo\252\002\023Xray.Proxy.Dokodemo"
+    )
     _CONFIG.fields_by_name["network_list"]._options = None
     _CONFIG.fields_by_name["network_list"]._serialized_options = b"\030\001"
     _CONFIG.fields_by_name["timeout"]._options = None

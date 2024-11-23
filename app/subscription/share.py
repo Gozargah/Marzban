@@ -44,14 +44,10 @@ STATUS_TEXTS = {
 }
 
 
-def generate_v2ray_links(
-    proxies: dict, inbounds: dict, extra_data: dict, reverse: bool
-) -> list:
+def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict, reverse: bool) -> list:
     format_variables = setup_format_variables(extra_data)
     conf = V2rayShareLink()
-    return process_inbounds_and_tags(
-        inbounds, proxies, format_variables, conf=conf, reverse=reverse
-    )
+    return process_inbounds_and_tags(inbounds, proxies, format_variables, conf=conf, reverse=reverse)
 
 
 def generate_clash_subscription(
@@ -67,20 +63,14 @@ def generate_clash_subscription(
         conf = ClashConfiguration()
 
     format_variables = setup_format_variables(extra_data)
-    return process_inbounds_and_tags(
-        inbounds, proxies, format_variables, conf=conf, reverse=reverse
-    )
+    return process_inbounds_and_tags(inbounds, proxies, format_variables, conf=conf, reverse=reverse)
 
 
-def generate_singbox_subscription(
-    proxies: dict, inbounds: dict, extra_data: dict, reverse: bool
-) -> str:
+def generate_singbox_subscription(proxies: dict, inbounds: dict, extra_data: dict, reverse: bool) -> str:
     conf = SingBoxConfiguration()
 
     format_variables = setup_format_variables(extra_data)
-    return process_inbounds_and_tags(
-        inbounds, proxies, format_variables, conf=conf, reverse=reverse
-    )
+    return process_inbounds_and_tags(inbounds, proxies, format_variables, conf=conf, reverse=reverse)
 
 
 def generate_outline_subscription(
@@ -92,9 +82,7 @@ def generate_outline_subscription(
     conf = OutlineConfiguration()
 
     format_variables = setup_format_variables(extra_data)
-    return process_inbounds_and_tags(
-        inbounds, proxies, format_variables, conf=conf, reverse=reverse
-    )
+    return process_inbounds_and_tags(inbounds, proxies, format_variables, conf=conf, reverse=reverse)
 
 
 def generate_v2ray_json_subscription(
@@ -106,16 +94,12 @@ def generate_v2ray_json_subscription(
     conf = V2rayJsonConfig()
 
     format_variables = setup_format_variables(extra_data)
-    return process_inbounds_and_tags(
-        inbounds, proxies, format_variables, conf=conf, reverse=reverse
-    )
+    return process_inbounds_and_tags(inbounds, proxies, format_variables, conf=conf, reverse=reverse)
 
 
 def generate_subscription(
     user: "UserResponse",
-    config_format: Literal[
-        "v2ray", "clash-meta", "clash", "sing-box", "outline", "v2ray-json"
-    ],
+    config_format: Literal["v2ray", "clash-meta", "clash", "sing-box", "outline", "v2ray-json"],
     as_base64: bool,
     reverse: bool,
 ) -> str:
@@ -263,9 +247,7 @@ def process_inbounds_and_tags(
     for protocol, tags in inbounds.items():
         for tag in tags:
             _inbounds.append((protocol, [tag]))
-    index_dict = {
-        proxy: index for index, proxy in enumerate(xray.config.inbounds_by_tag.keys())
-    }
+    index_dict = {proxy: index for index, proxy in enumerate(xray.config.inbounds_by_tag.keys())}
     inbounds = sorted(_inbounds, key=lambda x: index_dict.get(x[1][0], float("inf")))
 
     for protocol, tags in inbounds:
@@ -314,8 +296,7 @@ def process_inbounds_and_tags(
                         "alpn": host["alpn"] if host["alpn"] else None,
                         "path": path,
                         "fp": host["fingerprint"] or inbound.get("fp", ""),
-                        "ais": host["allowinsecure"]
-                        or inbound.get("allowinsecure", ""),
+                        "ais": host["allowinsecure"] or inbound.get("allowinsecure", ""),
                         "mux_enable": host["mux_enable"],
                         "fragment_setting": host["fragment_setting"],
                         "noise_setting": host["noise_setting"],

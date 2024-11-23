@@ -45,9 +45,7 @@ _sym_db.RegisterMessage(MultiHunk)
 _GRPCSERVICE = DESCRIPTOR.services_by_name["GRPCService"]
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = (
-        b"Z:github.com/xtls/xray-core/transport/internet/grpc/encoding"
-    )
+    DESCRIPTOR._serialized_options = b"Z:github.com/xtls/xray-core/transport/internet/grpc/encoding"
     _HUNK._serialized_start = 88
     _HUNK._serialized_end = 108
     _MULTIHUNK._serialized_start = 110

@@ -37,7 +37,9 @@ _sym_db.RegisterMessage(Config)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\022com.xray.proxy.dnsP\001Z#github.com/xtls/xray-core/proxy/dns\252\002\016Xray.Proxy.Dns"
+    DESCRIPTOR._serialized_options = (
+        b"\n\022com.xray.proxy.dnsP\001Z#github.com/xtls/xray-core/proxy/dns\252\002\016Xray.Proxy.Dns"
+    )
     _CONFIG._serialized_start = 72
     _CONFIG._serialized_end = 165
 # @@protoc_insertion_point(module_scope)

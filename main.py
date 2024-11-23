@@ -36,9 +36,7 @@ def validate_cert_and_key(cert_file_path, key_file_path):
             cert = x509.load_pem_x509_certificate(cert_data, default_backend())
 
         if cert.issuer == cert.subject:
-            raise ValueError(
-                "The certificate is self-signed and not issued by a trusted CA."
-            )
+            raise ValueError("The certificate is self-signed and not issued by a trusted CA.")
 
     except Exception as e:
         raise ValueError(f"Certificate verification failed: {e}")

@@ -71,10 +71,7 @@ def add_user(dbuser: "DBUser"):
             # XTLS currently only supports transmission methods of TCP and mKCP
             if getattr(account, "flow", None) and (
                 inbound.get("network", "tcp") not in ("tcp", "kcp")
-                or (
-                    inbound.get("network", "tcp") in ("tcp", "kcp")
-                    and inbound.get("tls") not in ("tls", "reality")
-                )
+                or (inbound.get("network", "tcp") in ("tcp", "kcp") and inbound.get("tls") not in ("tls", "reality"))
                 or inbound.get("header_type") == "http"
             ):
                 account.flow = XTLSFlows.NONE
@@ -114,10 +111,7 @@ def update_user(dbuser: "DBUser"):
             # XTLS currently only supports transmission methods of TCP and mKCP
             if getattr(account, "flow", None) and (
                 inbound.get("network", "tcp") not in ("tcp", "kcp")
-                or (
-                    inbound.get("network", "tcp") in ("tcp", "kcp")
-                    and inbound.get("tls") not in ("tls", "reality")
-                )
+                or (inbound.get("network", "tcp") in ("tcp", "kcp") and inbound.get("tls") not in ("tls", "reality"))
                 or inbound.get("header_type") == "http"
             ):
                 account.flow = XTLSFlows.NONE
@@ -166,9 +160,7 @@ def add_node(dbnode: "DBNode"):
     return xray.nodes[dbnode.id]
 
 
-def _change_node_status(
-    node_id: int, status: NodeStatus, message: str = None, version: str = None
-):
+def _change_node_status(node_id: int, status: NodeStatus, message: str = None, version: str = None):
     with GetDB() as db:
         try:
             dbnode = crud.get_node_by_id(db, node_id)

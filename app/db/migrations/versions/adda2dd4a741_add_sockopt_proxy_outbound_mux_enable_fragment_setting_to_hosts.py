@@ -25,9 +25,7 @@ def upgrade() -> None:
         "hosts",
         sa.Column("mux_enable", sa.Boolean(), server_default="0", nullable=False),
     )
-    op.add_column(
-        "hosts", sa.Column("fragment_setting", sa.String(length=100), nullable=True)
-    )
+    op.add_column("hosts", sa.Column("fragment_setting", sa.String(length=100), nullable=True))
     # ### end Alembic commands ###
 
 

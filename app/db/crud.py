@@ -130,9 +130,7 @@ def add_host(db: Session, inbound_tag: str, host: ProxyHostModify) -> List[Proxy
     return inbound.hosts
 
 
-def update_hosts(
-    db: Session, inbound_tag: str, modified_hosts: List[ProxyHostModify]
-) -> List[ProxyHost]:
+def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostModify]) -> List[ProxyHost]:
     """
     Updates hosts for a given inbound tag.
 
@@ -181,11 +179,7 @@ def get_user_queryset(db: Session) -> Query:
     Returns:
         Query: Base user query.
     """
-    return (
-        db.query(User)
-        .options(joinedload(User.admin))
-        .options(joinedload(User.next_plan))
-    )
+    return db.query(User).options(joinedload(User.admin)).options(joinedload(User.next_plan))
 
 
 def get_user(db: Session, username: str) -> Optional[User]:
@@ -268,9 +262,7 @@ def get_users(
     query = get_user_queryset(db)
 
     if search:
-        query = query.filter(
-            or_(User.username.ilike(f"%{search}%"), User.note.ilike(f"%{search}%"))
-        )
+        query = query.filter(or_(User.username.ilike(f"%{search}%"), User.note.ilike(f"%{search}%")))
 
     if usernames:
         query = query.filter(User.username.in_(usernames))
@@ -310,9 +302,7 @@ def get_users(
     return query.all()
 
 
-def get_user_usages(
-    db: Session, dbuser: User, start: datetime, end: datetime
-) -> List[UserUsageResponse]:
+def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime) -> List[UserUsageResponse]:
     """
     Retrieves user usages within a specified date range.
 
@@ -333,9 +323,7 @@ def get_user_usages(
     }
 
     for node in db.query(Node).all():
-        usages[node.id] = UserUsageResponse(
-            node_id=node.id, node_name=node.name, used_traffic=0
-        )
+        usages[node.id] = UserUsageResponse(node_id=node.id, node_name=node.name, used_traffic=0)
 
     cond = and_(
         NodeUserUsage.user_id == dbuser.id,
@@ -387,9 +375,7 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None) -> User:
     excluded_inbounds_tags = user.excluded_inbounds
     proxies = []
     for proxy_type, settings in user.proxies.items():
-        excluded_inbounds = [
-            get_or_create_inbound(db, tag) for tag in excluded_inbounds_tags[proxy_type]
-        ]
+        excluded_inbounds = [get_or_create_inbound(db, tag) for tag in excluded_inbounds_tags[proxy_type]]
         proxies.append(
             Proxy(
                 type=proxy_type.value,
@@ -470,11 +456,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
     added_proxies: Dict[ProxyTypes, Proxy] = {}
     if modify.proxies:
         for proxy_type, settings in modify.proxies.items():
-            dbproxy = (
-                db.query(Proxy)
-                .where(Proxy.user == dbuser, Proxy.type == proxy_type)
-                .first()
-            )
+            dbproxy = db.query(Proxy).where(Proxy.user == dbuser, Proxy.type == proxy_type).first()
             if dbproxy:
                 dbproxy.settings = settings.dict(no_obj=True)
             else:
@@ -490,9 +472,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
                 Proxy.user == dbuser, Proxy.type == proxy_type
             ).first() or added_proxies.get(proxy_type)
             if dbproxy:
-                dbproxy.excluded_inbounds = [
-                    get_or_create_inbound(db, tag) for tag in tags
-                ]
+                dbproxy.excluded_inbounds = [get_or_create_inbound(db, tag) for tag in tags]
 
     if modify.status is not None:
         dbuser.status = modify.status
@@ -506,12 +486,9 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
 
                 for percent in sorted(NOTIFY_REACHED_USAGE_PERCENT, reverse=True):
                     if not dbuser.data_limit or (
-                        calculate_usage_percent(dbuser.used_traffic, dbuser.data_limit)
-                        < percent
+                        calculate_usage_percent(dbuser.used_traffic, dbuser.data_limit) < percent
                     ):
-                        reminder = get_notification_reminder(
-                            db, dbuser.id, ReminderType.data_usage, threshold=percent
-                        )
+                        reminder = get_notification_reminder(db, dbuser.id, ReminderType.data_usage, threshold=percent)
                         if reminder:
                             delete_notification_reminder(db, reminder)
 
@@ -524,9 +501,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
             if not dbuser.expire or dbuser.expire > datetime.utcnow().timestamp():
                 dbuser.status = UserStatus.active
                 for days_left in sorted(NOTIFY_DAYS_LEFT):
-                    if not dbuser.expire or (
-                        calculate_expiration_days(dbuser.expire) > days_left
-                    ):
+                    if not dbuser.expire or (calculate_expiration_days(dbuser.expire) > days_left):
                         reminder = get_notification_reminder(
                             db,
                             dbuser.id,
@@ -624,9 +599,7 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
     dbuser.status = UserStatus.active.value
 
     dbuser.data_limit = dbuser.next_plan.data_limit + (
-        0
-        if dbuser.next_plan.add_remaining_traffic
-        else dbuser.data_limit - dbuser.used_traffic
+        0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit - dbuser.used_traffic
     )
     dbuser.expire = dbuser.next_plan.expire
 
@@ -723,9 +696,7 @@ def disable_all_active_users(db: Session, admin: Optional[Admin] = None):
         db (Session): Database session.
         admin (Optional[Admin]): Admin to filter users by, if any.
     """
-    query = db.query(User).filter(
-        User.status.in_((UserStatus.active, UserStatus.on_hold))
-    )
+    query = db.query(User).filter(User.status.in_((UserStatus.active, UserStatus.on_hold)))
     if admin:
         query = query.filter(User.admin == admin)
 
@@ -770,9 +741,7 @@ def activate_all_disabled_users(db: Session, admin: Optional[Admin] = None):
     db.commit()
 
 
-def autodelete_expired_users(
-    db: Session, include_limited_users: bool = False
-) -> List[User]:
+def autodelete_expired_users(db: Session, include_limited_users: bool = False) -> List[User]:
     """
     Deletes expired (optionally also limited) users whose auto-delete time has passed.
 
@@ -784,11 +753,7 @@ def autodelete_expired_users(
     Returns:
         list[User]: List of deleted users.
     """
-    target_status = (
-        [UserStatus.expired]
-        if not include_limited_users
-        else [UserStatus.expired, UserStatus.limited]
-    )
+    target_status = [UserStatus.expired] if not include_limited_users else [UserStatus.expired, UserStatus.limited]
 
     auto_delete = coalesce(User.auto_delete_in_days, USERS_AUTODELETE_DAYS)
 
@@ -813,9 +778,7 @@ def autodelete_expired_users(
     return expired_users
 
 
-def get_all_users_usages(
-    db: Session, admin: Admin, start: datetime, end: datetime
-) -> List[UserUsageResponse]:
+def get_all_users_usages(db: Session, admin: Admin, start: datetime, end: datetime) -> List[UserUsageResponse]:
     """
     Retrieves usage data for all users associated with an admin within a specified time range.
 
@@ -839,9 +802,7 @@ def get_all_users_usages(
     }
 
     for node in db.query(Node).all():
-        usages[node.id] = UserUsageResponse(
-            node_id=node.id, node_name=node.name, used_traffic=0
-        )
+        usages[node.id] = UserUsageResponse(node_id=node.id, node_name=node.name, used_traffic=0)
 
     admin_users = set(user.id for user in get_users(db=db, admins=admin))
 
@@ -1008,10 +969,7 @@ def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify) -> Ad
     """
     if modified_admin.is_sudo:
         dbadmin.is_sudo = modified_admin.is_sudo
-    if (
-        modified_admin.password is not None
-        and dbadmin.hashed_password != modified_admin.hashed_password
-    ):
+    if modified_admin.password is not None and dbadmin.hashed_password != modified_admin.hashed_password:
         dbadmin.hashed_password = modified_admin.hashed_password
         dbadmin.password_reset_at = datetime.utcnow()
     if modified_admin.telegram_id:
@@ -1024,9 +982,7 @@ def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify) -> Ad
     return dbadmin
 
 
-def partial_update_admin(
-    db: Session, dbadmin: Admin, modified_admin: AdminPartialModify
-) -> Admin:
+def partial_update_admin(db: Session, dbadmin: Admin, modified_admin: AdminPartialModify) -> Admin:
     """
     Partially updates an admin's details.
 
@@ -1040,10 +996,7 @@ def partial_update_admin(
     """
     if modified_admin.is_sudo is not None:
         dbadmin.is_sudo = modified_admin.is_sudo
-    if (
-        modified_admin.password is not None
-        and dbadmin.hashed_password != modified_admin.hashed_password
-    ):
+    if modified_admin.password is not None and dbadmin.hashed_password != modified_admin.hashed_password:
         dbadmin.hashed_password = modified_admin.hashed_password
         dbadmin.password_reset_at = datetime.utcnow()
     if modified_admin.telegram_id is not None:
@@ -1144,9 +1097,7 @@ def reset_admin_usage(db: Session, dbadmin: Admin) -> int:
     return dbadmin
 
 
-def create_user_template(
-    db: Session, user_template: UserTemplateCreate
-) -> UserTemplate:
+def create_user_template(db: Session, user_template: UserTemplateCreate) -> UserTemplate:
     """
     Creates a new user template in the database.
 
@@ -1166,9 +1117,7 @@ def create_user_template(
         expire_duration=user_template.expire_duration,
         username_prefix=user_template.username_prefix,
         username_suffix=user_template.username_suffix,
-        inbounds=db.query(ProxyInbound)
-        .filter(ProxyInbound.tag.in_(inbound_tags))
-        .all(),
+        inbounds=db.query(ProxyInbound).filter(ProxyInbound.tag.in_(inbound_tags)).all(),
     )
     db.add(dbuser_template)
     db.commit()
@@ -1207,9 +1156,7 @@ def update_user_template(
         inbound_tags: List[str] = []
         for _, i in modified_user_template.inbounds.items():
             inbound_tags.extend(i)
-        dbuser_template.inbounds = (
-            db.query(ProxyInbound).filter(ProxyInbound.tag.in_(inbound_tags)).all()
-        )
+        dbuser_template.inbounds = db.query(ProxyInbound).filter(ProxyInbound.tag.in_(inbound_tags)).all()
 
     db.commit()
     db.refresh(dbuser_template)
@@ -1293,9 +1240,7 @@ def get_node_by_id(db: Session, node_id: int) -> Optional[Node]:
     return db.query(Node).filter(Node.id == node_id).first()
 
 
-def get_nodes(
-    db: Session, status: Optional[Union[NodeStatus, list]] = None, enabled: bool = None
-) -> List[Node]:
+def get_nodes(db: Session, status: Optional[Union[NodeStatus, list]] = None, enabled: bool = None) -> List[Node]:
     """
     Retrieves nodes based on optional status and enabled filters.
 
@@ -1321,9 +1266,7 @@ def get_nodes(
     return query.all()
 
 
-def get_nodes_usage(
-    db: Session, start: datetime, end: datetime
-) -> List[NodeUsageResponse]:
+def get_nodes_usage(db: Session, start: datetime, end: datetime) -> List[NodeUsageResponse]:
     """
     Retrieves usage data for all nodes within a specified time range.
 
@@ -1342,9 +1285,7 @@ def get_nodes_usage(
     }
 
     for node in db.query(Node).all():
-        usages[node.id] = NodeUsageResponse(
-            node_id=node.id, node_name=node.name, uplink=0, downlink=0
-        )
+        usages[node.id] = NodeUsageResponse(node_id=node.id, node_name=node.name, uplink=0, downlink=0)
 
     cond = and_(NodeUsage.created_at >= start, NodeUsage.created_at <= end)
 
@@ -1369,9 +1310,7 @@ def create_node(db: Session, node: NodeCreate) -> Node:
     Returns:
         Node: The newly created Node object.
     """
-    dbnode = Node(
-        name=node.name, address=node.address, port=node.port, api_port=node.api_port
-    )
+    dbnode = Node(name=node.name, address=node.address, port=node.port, api_port=node.api_port)
 
     db.add(dbnode)
     db.commit()
@@ -1483,9 +1422,7 @@ def create_notification_reminder(
     Returns:
         NotificationReminder: The newly created NotificationReminder object.
     """
-    reminder = NotificationReminder(
-        type=reminder_type, expires_at=expires_at, user_id=user_id
-    )
+    reminder = NotificationReminder(type=reminder_type, expires_at=expires_at, user_id=user_id)
     if threshold is not None:
         reminder.threshold = threshold
     db.add(reminder)

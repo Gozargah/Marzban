@@ -183,7 +183,9 @@ _sym_db.RegisterMessage(Config)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\023com.xray.app.routerP\001Z$github.com/xtls/xray-core/app/router\252\002\017Xray.App.Router"
+    DESCRIPTOR._serialized_options = (
+        b"\n\023com.xray.app.routerP\001Z$github.com/xtls/xray-core/app/router\252\002\017Xray.App.Router"
+    )
     _ROUTINGRULE_ATTRIBUTESENTRY._options = None
     _ROUTINGRULE_ATTRIBUTESENTRY._serialized_options = b"8\001"
     _ROUTINGRULE.fields_by_name["cidr"]._options = None

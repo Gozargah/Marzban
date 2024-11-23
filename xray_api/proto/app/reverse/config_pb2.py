@@ -69,7 +69,9 @@ _sym_db.RegisterMessage(Config)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\026com.xray.proxy.reverseP\001Z%github.com/xtls/xray-core/app/reverse\252\002\022Xray.Proxy.Reverse"
+    DESCRIPTOR._serialized_options = (
+        b"\n\026com.xray.proxy.reverseP\001Z%github.com/xtls/xray-core/app/reverse\252\002\022Xray.Proxy.Reverse"
+    )
     _CONTROL._serialized_start = 46
     _CONTROL._serialized_end = 151
     _CONTROL_STATE._serialized_start = 121

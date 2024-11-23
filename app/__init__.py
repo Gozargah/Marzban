@@ -20,9 +20,7 @@ app = FastAPI(
     redoc_url="/redoc" if DOCS else None,
 )
 
-scheduler = BackgroundScheduler(
-    {"apscheduler.job_defaults.max_instances": 20}, timezone="UTC"
-)
+scheduler = BackgroundScheduler({"apscheduler.job_defaults.max_instances": 20}, timezone="UTC")
 logger = logging.getLogger("uvicorn.error")
 
 app.add_middleware(
@@ -53,9 +51,7 @@ def on_startup():
     paths = [f"{r.path}/" for r in app.routes]
     paths.append("/api/")
     if f"/{XRAY_SUBSCRIPTION_PATH}/" in paths:
-        raise ValueError(
-            f"you can't use /{XRAY_SUBSCRIPTION_PATH}/ as subscription path it reserved for {app.title}"
-        )
+        raise ValueError(f"you can't use /{XRAY_SUBSCRIPTION_PATH}/ as subscription path it reserved for {app.title}")
     scheduler.start()
 
 

@@ -59,9 +59,7 @@ def add_user(
             )
 
     try:
-        dbuser = crud.create_user(
-            db, new_user, admin=crud.get_admin(db, admin.username)
-        )
+        dbuser = crud.create_user(db, new_user, admin=crud.get_admin(db, admin.username))
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=409, detail="User already exists")
@@ -142,9 +140,7 @@ def modify_user(
             user_admin=dbuser.admin,
             by=admin,
         )
-        logger.info(
-            f'User "{dbuser.username}" status changed from {old_status} to {user.status}'
-        )
+        logger.info(f'User "{dbuser.username}" status changed from {old_status} to {user.status}')
 
     return user
 
@@ -160,9 +156,7 @@ def remove_user(
     crud.remove_user(db, dbuser)
     bg.add_task(xray.operations.remove_user, dbuser=dbuser)
 
-    bg.add_task(
-        report.user_deleted, username=dbuser.username, user_admin=dbuser.admin, by=admin
-    )
+    bg.add_task(report.user_deleted, username=dbuser.username, user_admin=dbuser.admin, by=admin)
 
     logger.info(f'User "{dbuser.username}" deleted')
     return {"detail": "User successfully deleted"}
@@ -185,9 +179,7 @@ def reset_user_data_usage(
         bg.add_task(xray.operations.add_user, dbuser=dbuser)
 
     user = UserResponse.from_orm(dbuser)
-    bg.add_task(
-        report.user_data_usage_reset, user=user, user_admin=dbuser.admin, by=admin
-    )
+    bg.add_task(report.user_data_usage_reset, user=user, user_admin=dbuser.admin, by=admin)
 
     logger.info(f'User "{dbuser.username}"\'s usage was reset')
     return dbuser
@@ -210,9 +202,7 @@ def revoke_user_subscription(
     if dbuser.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.update_user, dbuser=dbuser)
     user = UserResponse.from_orm(dbuser)
-    bg.add_task(
-        report.user_subscription_revoked, user=user, user_admin=dbuser.admin, by=admin
-    )
+    bg.add_task(report.user_subscription_revoked, user=user, user_admin=dbuser.admin, by=admin)
 
     logger.info(f'User "{dbuser.username}" subscription revoked')
 
@@ -243,9 +233,7 @@ def get_users(
             try:
                 sort.append(crud.UsersSortingOptions[opt])
             except KeyError:
-                raise HTTPException(
-                    status_code=400, detail=f'"{opt}" is not a valid sort option'
-                )
+                raise HTTPException(status_code=400, detail=f'"{opt}" is not a valid sort option')
 
     users, count = crud.get_users(
         db=db,
@@ -263,9 +251,7 @@ def get_users(
 
 
 @router.post("/users/reset", responses={403: responses._403, 404: responses._404})
-def reset_users_data_usage(
-    db: Session = Depends(get_db), admin: Admin = Depends(Admin.check_sudo_admin)
-):
+def reset_users_data_usage(db: Session = Depends(get_db), admin: Admin = Depends(Admin.check_sudo_admin)):
     """Reset all users data usage"""
     dbadmin = crud.get_admin(db, admin.username)
     crud.reset_all_users_data_usage(db=db, admin=dbadmin)
@@ -340,9 +326,7 @@ def get_users_usage(
     """Get all users usage"""
     start, end = validate_dates(start, end)
 
-    usages = crud.get_all_users_usages(
-        db=db, start=start, end=end, admin=owner if admin.is_sudo else [admin.username]
-    )
+    usages = crud.get_all_users_usages(db=db, start=start, end=end, admin=owner if admin.is_sudo else [admin.username])
 
     return {"usages": usages}
 
@@ -410,9 +394,7 @@ def delete_expired_users(
     removed_users = [u.username for u in expired_users]
 
     if not removed_users:
-        raise HTTPException(
-            status_code=404, detail="No expired users found in the specified date range"
-        )
+        raise HTTPException(status_code=404, detail="No expired users found in the specified date range")
 
     crud.remove_users(db, expired_users)
 
@@ -421,9 +403,7 @@ def delete_expired_users(
         bg.add_task(
             report.user_deleted,
             username=removed_user,
-            user_admin=next(
-                (u.admin for u in expired_users if u.username == removed_user), None
-            ),
+            user_admin=next((u.admin for u in expired_users if u.username == removed_user), None),
             by=admin,
         )
 

@@ -233,12 +233,7 @@ class V2rayShareLink(str):
             if extra:
                 payload["extra"] = extra
             payload["noGRPCHeader"] = int(noGRPCHeader)
-        return (
-            "vmess://"
-            + base64.b64encode(
-                json.dumps(payload, sort_keys=True).encode("utf-8")
-            ).decode()
-        )
+        return "vmess://" + base64.b64encode(json.dumps(payload, sort_keys=True).encode("utf-8")).decode()
 
     @classmethod
     def vless(
@@ -271,11 +266,7 @@ class V2rayShareLink(str):
         noGRPCHeader: bool = False,
     ):
         payload = {"security": tls, "type": net, "headerType": type}
-        if flow and (
-            tls in ("tls", "reality")
-            and net in ("tcp", "raw", "kcp")
-            and type != "http"
-        ):
+        if flow and (tls in ("tls", "reality") and net in ("tcp", "raw", "kcp") and type != "http"):
             payload["flow"] = flow
 
         if net == "grpc":
@@ -328,12 +319,7 @@ class V2rayShareLink(str):
             if spx:
                 payload["spx"] = spx
 
-        return (
-            "vless://"
-            + f"{id}@{address}:{port}?"
-            + urlparse.urlencode(payload)
-            + f"#{(urlparse.quote(remark))}"
-        )
+        return "vless://" + f"{id}@{address}:{port}?" + urlparse.urlencode(payload) + f"#{(urlparse.quote(remark))}"
 
     @classmethod
     def trojan(
@@ -366,11 +352,7 @@ class V2rayShareLink(str):
         noGRPCHeader: bool = False,
     ):
         payload = {"security": tls, "type": net, "headerType": type}
-        if flow and (
-            tls in ("tls", "reality")
-            and net in ("tcp", "raw", "kcp")
-            and type != "http"
-        ):
+        if flow and (tls in ("tls", "reality") and net in ("tcp", "raw", "kcp") and type != "http"):
             payload["flow"] = flow
 
         if net == "grpc":
@@ -430,9 +412,7 @@ class V2rayShareLink(str):
         )
 
     @classmethod
-    def shadowsocks(
-        cls, remark: str, address: str, port: int, password: str, method: str
-    ):
+    def shadowsocks(cls, remark: str, address: str, port: int, password: str, method: str):
         return (
             "ss://"
             + base64.b64encode(f"{method}:{password}".encode()).decode()
@@ -454,9 +434,7 @@ class V2rayJsonConfig(str):
 
         grpc_user_agent_data = json.loads(render_template(GRPC_USER_AGENT_TEMPLATE))
 
-        if "list" in grpc_user_agent_data and isinstance(
-            grpc_user_agent_data["list"], list
-        ):
+        if "list" in grpc_user_agent_data and isinstance(grpc_user_agent_data["list"], list):
             self.grpc_user_agent_data = grpc_user_agent_data["list"]
         else:
             self.grpc_user_agent_data = []
@@ -515,9 +493,7 @@ class V2rayJsonConfig(str):
 
         return realitySettings
 
-    def ws_config(
-        self, path: str = "", host: str = "", random_user_agent: bool = False
-    ) -> dict:
+    def ws_config(self, path: str = "", host: str = "", random_user_agent: bool = False) -> dict:
         wsSettings = copy.deepcopy(self.settings.get("wsSettings", {}))
 
         if "headers" not in wsSettings:
@@ -531,12 +507,8 @@ class V2rayJsonConfig(str):
 
         return wsSettings
 
-    def httpupgrade_config(
-        self, path: str = "", host: str = "", random_user_agent: bool = False
-    ) -> dict:
-        httpupgradeSettings = copy.deepcopy(
-            self.settings.get("httpupgradeSettings", {})
-        )
+    def httpupgrade_config(self, path: str = "", host: str = "", random_user_agent: bool = False) -> dict:
+        httpupgradeSettings = copy.deepcopy(self.settings.get("httpupgradeSettings", {}))
 
         if "headers" not in httpupgradeSettings:
             httpupgradeSettings["headers"] = {}
@@ -671,9 +643,7 @@ class V2rayJsonConfig(str):
             config["header"]["request"]["headers"]["Host"] = [host]
 
         if random_user_agent:
-            config["header"]["request"]["headers"]["User-Agent"] = [
-                choice(self.user_agent_list)
-            ]
+            config["header"]["request"]["headers"]["User-Agent"] = [choice(self.user_agent_list)]
 
         return config
 
@@ -853,9 +823,7 @@ class V2rayJsonConfig(str):
             try:
                 tp, delay = n.split(",")
                 _type, packet = tp.split(":")
-                noises_settings.append(
-                    {"type": _type, "packet": packet, "delay": delay}
-                )
+                noises_settings.append({"type": _type, "packet": packet, "delay": delay})
             except ValueError:
                 pass
 
@@ -901,9 +869,7 @@ class V2rayJsonConfig(str):
         noGRPCHeader: bool = False,
     ) -> dict:
         if net == "ws":
-            network_setting = self.ws_config(
-                path=path, host=host, random_user_agent=random_user_agent
-            )
+            network_setting = self.ws_config(path=path, host=host, random_user_agent=random_user_agent)
         elif net == "grpc":
             network_setting = self.grpc_config(
                 path=path,
@@ -912,9 +878,7 @@ class V2rayJsonConfig(str):
                 random_user_agent=random_user_agent,
             )
         elif net in ("h3", "h2", "http"):
-            network_setting = self.http_config(
-                net=net, path=path, host=host, random_user_agent=random_user_agent
-            )
+            network_setting = self.http_config(net=net, path=path, host=host, random_user_agent=random_user_agent)
         elif net == "kcp":
             network_setting = self.kcp_config(seed=path, host=host, header=headers)
         elif net in ("tcp", "raw") and tls != "reality":
@@ -927,9 +891,7 @@ class V2rayJsonConfig(str):
         elif net == "quic":
             network_setting = self.quic_config(path=path, host=host, header=headers)
         elif net == "httpupgrade":
-            network_setting = self.httpupgrade_config(
-                path=path, host=host, random_user_agent=random_user_agent
-            )
+            network_setting = self.httpupgrade_config(path=path, host=host, random_user_agent=random_user_agent)
         elif net in ("splithttp", "xhttp"):
             network_setting = self.splithttp_config(
                 path=path,
@@ -950,9 +912,7 @@ class V2rayJsonConfig(str):
         if tls == "tls":
             tls_settings = self.tls_config(sni=sni, fp=fp, alpn=alpn, ais=ais)
         elif tls == "reality":
-            tls_settings = self.reality_config(
-                sni=sni, fp=fp, pbk=pbk, sid=sid, spx=spx
-            )
+            tls_settings = self.reality_config(sni=sni, fp=fp, pbk=pbk, sid=sid, spx=spx)
         else:
             tls_settings = None
 
@@ -993,28 +953,18 @@ class V2rayJsonConfig(str):
         outbound = {"tag": "proxy", "protocol": protocol}
 
         if inbound["protocol"] == "vmess":
-            outbound["settings"] = self.vmess_config(
-                address=address, port=port, id=settings["id"]
-            )
+            outbound["settings"] = self.vmess_config(address=address, port=port, id=settings["id"])
 
         elif inbound["protocol"] == "vless":
-            if (
-                net in ("tcp", "raw", "kcp")
-                and headers != "http"
-                and tls in ("tls", "reality")
-            ):
+            if net in ("tcp", "raw", "kcp") and headers != "http" and tls in ("tls", "reality"):
                 flow = settings.get("flow", "")
             else:
                 flow = None
 
-            outbound["settings"] = self.vless_config(
-                address=address, port=port, id=settings["id"], flow=flow
-            )
+            outbound["settings"] = self.vless_config(address=address, port=port, id=settings["id"], flow=flow)
 
         elif inbound["protocol"] == "trojan":
-            outbound["settings"] = self.trojan_config(
-                address=address, port=port, password=settings["password"]
-            )
+            outbound["settings"] = self.trojan_config(address=address, port=port, password=settings["password"])
 
         elif inbound["protocol"] == "shadowsocks":
             outbound["settings"] = self.shadowsocks_config(

@@ -50,17 +50,9 @@ def status_change(
         except Exception:
             pass
         if status == UserStatus.limited:
-            notify(
-                UserLimited(
-                    username=username, action=Notification.Type.user_limited, user=user
-                )
-            )
+            notify(UserLimited(username=username, action=Notification.Type.user_limited, user=user))
         elif status == UserStatus.expired:
-            notify(
-                UserExpired(
-                    username=username, action=Notification.Type.user_expired, user=user
-                )
-            )
+            notify(UserExpired(username=username, action=Notification.Type.user_expired, user=user))
         elif status == UserStatus.disabled:
             notify(
                 UserDisabled(
@@ -85,9 +77,7 @@ def status_change(
             pass
 
 
-def user_created(
-    user: UserResponse, user_id: int, by: Admin, user_admin: Admin = None
-) -> None:
+def user_created(user: UserResponse, user_id: int, by: Admin, user_admin: Admin = None) -> None:
     if NOTIFY_USER_CREATED:
         try:
             telegram.report_new_user(
@@ -167,30 +157,20 @@ def user_updated(user: UserResponse, by: Admin, user_admin: Admin = None) -> Non
 def user_deleted(username: str, by: Admin, user_admin: Admin = None) -> None:
     if NOTIFY_USER_DELETED:
         try:
-            telegram.report_user_deletion(
-                username=username, by=by.username, admin=user_admin
-            )
+            telegram.report_user_deletion(username=username, by=by.username, admin=user_admin)
         except Exception:
             pass
-        notify(
-            UserDeleted(username=username, action=Notification.Type.user_deleted, by=by)
-        )
+        notify(UserDeleted(username=username, action=Notification.Type.user_deleted, by=by))
         try:
-            discord.report_user_deletion(
-                username=username, by=by.username, admin=user_admin
-            )
+            discord.report_user_deletion(username=username, by=by.username, admin=user_admin)
         except Exception:
             pass
 
 
-def user_data_usage_reset(
-    user: UserResponse, by: Admin, user_admin: Admin = None
-) -> None:
+def user_data_usage_reset(user: UserResponse, by: Admin, user_admin: Admin = None) -> None:
     if NOTIFY_USER_DATA_USED_RESET:
         try:
-            telegram.report_user_usage_reset(
-                username=user.username, by=by.username, admin=user_admin
-            )
+            telegram.report_user_usage_reset(username=user.username, by=by.username, admin=user_admin)
         except Exception:
             pass
         notify(
@@ -202,9 +182,7 @@ def user_data_usage_reset(
             )
         )
         try:
-            discord.report_user_usage_reset(
-                username=user.username, by=by.username, admin=user_admin
-            )
+            discord.report_user_usage_reset(username=user.username, by=by.username, admin=user_admin)
         except Exception:
             pass
 
@@ -228,14 +206,10 @@ def user_data_reset_by_next(user: UserResponse, user_admin: Admin = None) -> Non
             pass
 
 
-def user_subscription_revoked(
-    user: UserResponse, by: Admin, user_admin: Admin = None
-) -> None:
+def user_subscription_revoked(user: UserResponse, by: Admin, user_admin: Admin = None) -> None:
     if NOTIFY_USER_SUB_REVOKED:
         try:
-            telegram.report_user_subscription_revoked(
-                username=user.username, by=by.username, admin=user_admin
-            )
+            telegram.report_user_subscription_revoked(username=user.username, by=by.username, admin=user_admin)
         except Exception:
             pass
         notify(
@@ -247,9 +221,7 @@ def user_subscription_revoked(
             )
         )
         try:
-            discord.report_user_subscription_revoked(
-                username=user.username, by=by.username, admin=user_admin
-            )
+            discord.report_user_subscription_revoked(username=user.username, by=by.username, admin=user_admin)
         except Exception:
             pass
 
@@ -263,9 +235,7 @@ def data_usage_percent_reached(
     threshold: Optional[int] = None,
 ) -> None:
     if NOTIFY_IF_DATA_USAGE_PERCENT_REACHED:
-        notify(
-            ReachedUsagePercent(username=user.username, user=user, used_percent=percent)
-        )
+        notify(ReachedUsagePercent(username=user.username, user=user, used_percent=percent))
         create_notification_reminder(
             db,
             ReminderType.data_usage,

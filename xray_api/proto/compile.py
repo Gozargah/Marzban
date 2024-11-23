@@ -22,20 +22,14 @@ def compile_proto_from_source(dist):
 
     # download and extract source
     print("Getting latest version...")
-    latest = (
-        requests.get("https://api.github.com/repos/XTLS/xray-core/releases/latest")
-        .json()
-        .get("tag_name")
-    )
+    latest = requests.get("https://api.github.com/repos/XTLS/xray-core/releases/latest").json().get("tag_name")
     print("Latest version is", latest)
 
     # version = 'v4.45.2'
     version = latest
 
     print("Downloading source", version, "...")
-    download_url = (
-        f"https://github.com/XTLS/xray-core/archive/refs/tags/{version}.tar.gz"
-    )
+    download_url = f"https://github.com/XTLS/xray-core/archive/refs/tags/{version}.tar.gz"
     print("Source downloaded. extracting and compiling...")
     r = requests.get(download_url, stream=True)
     io_bytes = io.BytesIO(r.content)
@@ -90,13 +84,9 @@ def fix_proto_imports(dist):
                     content = pyfile.read()
                     for imp in imports:
                         for found in re.findall(f"from {imp}", content):
-                            content = content.replace(
-                                found, "from " + new_imp.format(imp)
-                            )
+                            content = content.replace(found, "from " + new_imp.format(imp))
                         for found in re.findall(f"import_module\('{imp}", content):
-                            content = content.replace(
-                                found, "import_module('" + new_imp.format(imp)
-                            )
+                            content = content.replace(found, "import_module('" + new_imp.format(imp))
 
                     # Only for v2fly
                     content = content.replace(

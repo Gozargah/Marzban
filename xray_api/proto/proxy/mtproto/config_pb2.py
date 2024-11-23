@@ -59,7 +59,9 @@ _sym_db.RegisterMessage(ClientConfig)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\026com.xray.proxy.mtprotoP\001Z'github.com/xtls/xray-core/proxy/mtproto\252\002\022Xray.Proxy.Mtproto"
+    DESCRIPTOR._serialized_options = (
+        b"\n\026com.xray.proxy.mtprotoP\001Z'github.com/xtls/xray-core/proxy/mtproto\252\002\022Xray.Proxy.Mtproto"
+    )
     _ACCOUNT._serialized_start = 78
     _ACCOUNT._serialized_end = 103
     _SERVERCONFIG._serialized_start = 105

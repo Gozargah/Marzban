@@ -32,9 +32,7 @@ def string_to_temp_file(content: str):
 
 class SANIgnoringAdaptor(HTTPAdapter):
     def init_poolmanager(self, connections, maxsize, block=False):
-        self.poolmanager = PoolManager(
-            num_pools=connections, maxsize=maxsize, block=block, assert_hostname=False
-        )
+        self.poolmanager = PoolManager(num_pools=connections, maxsize=maxsize, block=block, assert_hostname=False)
 
 
 class NodeAPIError(Exception):
@@ -73,9 +71,7 @@ class ReSTXRayNode:
         self._ssl_context = ssl.create_default_context()
         self._ssl_context.check_hostname = False
         self._ssl_context.verify_mode = ssl.CERT_NONE
-        self._ssl_context.load_cert_chain(
-            certfile=self.session.cert[0], keyfile=self.session.cert[1]
-        )
+        self._ssl_context.load_cert_chain(certfile=self.session.cert[0], keyfile=self.session.cert[1])
         self._logs_ws_url = f"wss://{self.address.strip('/')}:{self.port}/logs"
         self._logs_queues = []
         self._logs_bg_thread = threading.Thread(target=self._bg_fetch_logs, daemon=True)
@@ -91,9 +87,7 @@ class ReSTXRayNode:
             for certificate in certificates:
                 if certificate.get("certificateFile"):
                     with open(certificate["certificateFile"]) as file:
-                        certificate["certificate"] = [
-                            line.strip() for line in file.readlines()
-                        ]
+                        certificate["certificate"] = [line.strip() for line in file.readlines()]
                         del certificate["certificateFile"]
 
                 if certificate.get("keyFile"):
@@ -237,13 +231,9 @@ class ReSTXRayNode:
     def _bg_fetch_logs(self):
         while self._logs_queues:
             try:
-                websocket_url = (
-                    f"{self._logs_ws_url}?session_id={self._session_id}&interval=0.7"
-                )
+                websocket_url = f"{self._logs_ws_url}?session_id={self._session_id}&interval=0.7"
                 self._ssl_context.load_verify_locations(self.session.verify)
-                ws = create_connection(
-                    websocket_url, sslopt={"context": self._ssl_context}, timeout=2
-                )
+                ws = create_connection(websocket_url, sslopt={"context": self._ssl_context}, timeout=2)
                 while self._logs_queues:
                     try:
                         logs = ws.recv()
@@ -269,9 +259,7 @@ class ReSTXRayNode:
                 try:
                     self._logs_bg_thread.start()
                 except RuntimeError:
-                    self._logs_bg_thread = threading.Thread(
-                        target=self._bg_fetch_logs, daemon=True
-                    )
+                    self._logs_bg_thread = threading.Thread(target=self._bg_fetch_logs, daemon=True)
                     self._logs_bg_thread.start()
 
             yield buf
@@ -407,9 +395,7 @@ class RPyCXRayNode:
             for certificate in certificates:
                 if certificate.get("certificateFile"):
                     with open(certificate["certificateFile"]) as file:
-                        certificate["certificate"] = [
-                            line.strip() for line in file.readlines()
-                        ]
+                        certificate["certificate"] = [line.strip() for line in file.readlines()]
                         del certificate["certificateFile"]
 
                 if certificate.get("keyFile"):

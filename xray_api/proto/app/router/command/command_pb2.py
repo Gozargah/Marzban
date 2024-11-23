@@ -25,24 +25,16 @@ DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
 
 
 _ROUTINGCONTEXT = DESCRIPTOR.message_types_by_name["RoutingContext"]
-_ROUTINGCONTEXT_ATTRIBUTESENTRY = _ROUTINGCONTEXT.nested_types_by_name[
-    "AttributesEntry"
-]
-_SUBSCRIBEROUTINGSTATSREQUEST = DESCRIPTOR.message_types_by_name[
-    "SubscribeRoutingStatsRequest"
-]
+_ROUTINGCONTEXT_ATTRIBUTESENTRY = _ROUTINGCONTEXT.nested_types_by_name["AttributesEntry"]
+_SUBSCRIBEROUTINGSTATSREQUEST = DESCRIPTOR.message_types_by_name["SubscribeRoutingStatsRequest"]
 _TESTROUTEREQUEST = DESCRIPTOR.message_types_by_name["TestRouteRequest"]
 _PRINCIPLETARGETINFO = DESCRIPTOR.message_types_by_name["PrincipleTargetInfo"]
 _OVERRIDEINFO = DESCRIPTOR.message_types_by_name["OverrideInfo"]
 _BALANCERMSG = DESCRIPTOR.message_types_by_name["BalancerMsg"]
 _GETBALANCERINFOREQUEST = DESCRIPTOR.message_types_by_name["GetBalancerInfoRequest"]
 _GETBALANCERINFORESPONSE = DESCRIPTOR.message_types_by_name["GetBalancerInfoResponse"]
-_OVERRIDEBALANCERTARGETREQUEST = DESCRIPTOR.message_types_by_name[
-    "OverrideBalancerTargetRequest"
-]
-_OVERRIDEBALANCERTARGETRESPONSE = DESCRIPTOR.message_types_by_name[
-    "OverrideBalancerTargetResponse"
-]
+_OVERRIDEBALANCERTARGETREQUEST = DESCRIPTOR.message_types_by_name["OverrideBalancerTargetRequest"]
+_OVERRIDEBALANCERTARGETRESPONSE = DESCRIPTOR.message_types_by_name["OverrideBalancerTargetResponse"]
 _ADDRULEREQUEST = DESCRIPTOR.message_types_by_name["AddRuleRequest"]
 _ADDRULERESPONSE = DESCRIPTOR.message_types_by_name["AddRuleResponse"]
 _REMOVERULEREQUEST = DESCRIPTOR.message_types_by_name["RemoveRuleRequest"]

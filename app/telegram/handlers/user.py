@@ -15,9 +15,7 @@ bot.add_custom_filter(ChatFilter())
 def usage_command(message):
     username = extract_arguments(message.text)
     if not username:
-        return bot.reply_to(
-            message, "Usage: `/usage <username>`", parse_mode="MarkdownV2"
-        )
+        return bot.reply_to(message, "Usage: `/usage <username>`", parse_mode="MarkdownV2")
 
     with GetDB() as db:
         dbuser = crud.get_user(db, username)

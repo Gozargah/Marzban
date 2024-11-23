@@ -33,9 +33,7 @@ def add_user_template(
         return crud.create_user_template(db, new_user_template)
     except IntegrityError:
         db.rollback()
-        raise HTTPException(
-            status_code=409, detail="Template by this name already exists"
-        )
+        raise HTTPException(status_code=409, detail="Template by this name already exists")
 
 
 @router.get("/user_template/{id}", response_model=UserTemplateResponse)
@@ -66,9 +64,7 @@ def modify_user_template(
         return crud.update_user_template(db, dbuser_template, modify_user_template)
     except IntegrityError:
         db.rollback()
-        raise HTTPException(
-            status_code=409, detail="Template by this name already exists"
-        )
+        raise HTTPException(status_code=409, detail="Template by this name already exists")
 
 
 @router.delete("/user_template/{id}")

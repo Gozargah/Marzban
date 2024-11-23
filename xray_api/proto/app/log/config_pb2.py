@@ -43,7 +43,9 @@ _sym_db.RegisterMessage(Config)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b"\n\020com.xray.app.logP\001Z!github.com/xtls/xray-core/app/log\252\002\014Xray.App.Log"
+    DESCRIPTOR._serialized_options = (
+        b"\n\020com.xray.app.logP\001Z!github.com/xtls/xray-core/app/log\252\002\014Xray.App.Log"
+    )
     _LOGTYPE._serialized_start = 291
     _LOGTYPE._serialized_end = 344
     _CONFIG._serialized_start = 61

@@ -25,9 +25,7 @@ def upgrade() -> None:
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("data_limit", sa.BigInteger(), nullable=False),
         sa.Column("expire", sa.Integer(), nullable=True),
-        sa.Column(
-            "add_remaining_traffic", sa.Boolean(), server_default="0", nullable=False
-        ),
+        sa.Column("add_remaining_traffic", sa.Boolean(), server_default="0", nullable=False),
         sa.Column("fire_on_either", sa.Boolean(), server_default="0", nullable=False),
         sa.ForeignKeyConstraint(
             ["user_id"],
