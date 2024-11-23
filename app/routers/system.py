@@ -51,7 +51,6 @@ def get_system_stats(
         cpu_usage=cpu.percent,
         total_user=total_user,
         online_users=online_users,
-        offline_users=total_user - online_users,
         users_active=users_active,
         users_disabled=users_disabled,
         users_expired=users_expired,
