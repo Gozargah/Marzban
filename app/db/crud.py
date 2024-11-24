@@ -26,7 +26,7 @@ from app.db.models import (
     System,
     User,
     UserTemplate,
-    UserUsageResetLogs
+    UserUsageResetLogs,
 )
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
 from app.models.node import NodeCreate, NodeModify, NodeStatus, NodeUsageResponse
@@ -38,7 +38,7 @@ from app.models.user import (
     UserModify,
     UserResponse,
     UserStatus,
-    UserUsageResponse
+    UserUsageResponse,
 )
 from app.models.user_template import UserTemplateCreate, UserTemplateModify
 from app.utils.helpers import calculate_expiration_days, calculate_usage_percent
@@ -1485,5 +1485,5 @@ def delete_notification_reminder(db: Session, dbreminder: NotificationReminder) 
 def count_online_users(db: Session, hours: int = 24):
     twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=hours)
     query = db.query(func.count(User.id)).filter(User.online_at.isnot(
-        None), func.datetime(User.online_at) >= twenty_four_hours_ago)
+        None), User.online_at >= twenty_four_hours_ago)
     return query.scalar()
