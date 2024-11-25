@@ -14,6 +14,7 @@ from app.db.models import (
     JWT,
     TLS,
     Admin,
+    AdminUsageLogs,
     NextPlan,
     Node,
     NodeUsage,
@@ -1069,6 +1070,14 @@ def reset_admin_usage(db: Session, dbadmin: Admin) -> int:
     Returns:
         Admin: The updated admin.
     """
+    if (dbadmin.users_usage == 0):
+        return dbadmin
+    
+    usage_log = AdminUsageLogs(
+        admin=dbadmin,
+        used_traffic_at_reset=dbadmin.users_usage
+    )
+    db.add(usage_log)
     dbadmin.users_usage = 0
 
     db.commit()
