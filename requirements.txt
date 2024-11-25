@@ -22,6 +22,7 @@ jdatetime==4.1.1
 passlib==1.7.4
 psutil==5.9.4
 pyOpenSSL==24.2.1
+PySocks==1.7.1
 pyTelegramBotAPI==4.9.0
 pydantic==1.10.16
 python-dateutil==2.8.2
@@ -29,7 +30,7 @@ python-decouple==3.6
 python-dotenv==0.21.1
 python-multipart==0.0.7
 qrcode==7.4.2
-requests==2.32.0
+requests==2.32.3
 rich==13.7.1
 rpyc==6.0.0
 rsa==4.9
