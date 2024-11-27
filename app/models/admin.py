@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
-from pydantic import field_validator, ConfigDict, BaseModel
+from pydantic import field_validator, Config, BaseModel
 
 from app.db import Session, crud, get_db
 from app.utils.jwt import get_admin_payload
@@ -23,7 +23,7 @@ class Admin(BaseModel):
     is_sudo: bool
     telegram_id: Optional[int] = None
     discord_webhook: Optional[str] = None
-    model_config = ConfigDict(from_attributes=True)
+    model_config = Config(from_attributes=True)
 
     @classmethod
     def get_admin(cls, token: str, db: Session):
@@ -44,7 +44,7 @@ class Admin(BaseModel):
             if dbadmin.password_reset_at > payload.get("created_at"):
                 return
 
-        return cls.from_orm(dbadmin)
+        return cls.model_validate(dbadmin)
 
     @classmethod
     def get_current(cls,

@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Union
 
-from pydantic import field_validator, ConfigDict, BaseModel, Field
+from pydantic import field_validator, ConfigDict, BaseModel,Field
 
 from app import xray
 from app.models.proxy import ProxyTypes

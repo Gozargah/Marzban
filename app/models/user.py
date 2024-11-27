@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Union
 import random
 import secrets
 
-from pydantic import field_validator, ConfigDict, BaseModel, Field, validator
+from pydantic import field_validator, ConfigDict, BaseModel, Field
 
 from app import xray
 from app.models.proxy import ProxySettings, ProxyTypes
@@ -49,13 +49,11 @@ class UserDataLimitResetStrategy(str, Enum):
     year = "year"
 
 class NextPlanModel(BaseModel):
-    data_limit: Optional[int]
-    expire: Optional[int]
+    data_limit: Optional[int] = None
+    expire: Optional[int] = None
     add_remaining_traffic: bool = False
     fire_on_either: bool = True
-    
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class User(BaseModel):
     proxies: Dict[ProxyTypes, ProxySettings] = {}
@@ -81,7 +79,7 @@ class User(BaseModel):
         if not v:
             raise ValueError("Each user needs at least one proxy")
         return {
-            proxy_type: ProxySettings.from_dict(
+            proxy_type: ProxySettings.model_validate(
                 proxy_type, v.get(proxy_type, {}))
             for proxy_type in v
         }
@@ -245,7 +243,7 @@ class UserModify(User):
     @field_validator("proxies", pre=True, always=True)
     def validate_proxies(cls, v):
         return {
-            proxy_type: ProxySettings.from_dict(
+            proxy_type: ProxySettings.model_validate(
                 proxy_type, v.get(proxy_type, {}))
             for proxy_type in v
         }
