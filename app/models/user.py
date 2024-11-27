@@ -76,7 +76,7 @@ class User(BaseModel):
     
     next_plan: Optional[NextPlanModel] = Field(None, nullable=True)
         
-    @field_validator("proxies")
+    @field_validator("proxies", mode="before")
     def validate_proxies(cls, v, values, **kwargs):
         if not v:
             raise ValueError("Each user needs at least one proxy")
@@ -99,7 +99,7 @@ class User(BaseModel):
     @classmethod
     def validate_note(cls, v):
         if v and len(v) > 500:
-            raise ValueError("User's note can be a maximum of 500 character")
+            raise ValueError("User's note can be a maximum of 500 character", mode="before")
         return v
 
     @field_validator("on_hold_expire_duration", "on_hold_timeout")
@@ -151,7 +151,7 @@ class UserCreate(User):
 
         return excluded
 
-    @field_validator("inbounds")
+    @field_validator("inbounds", mode="before")
     def validate_inbounds(cls, inbounds, values, **kwargs):
         proxies = values.get("proxies", [])
 
@@ -180,13 +180,13 @@ class UserCreate(User):
 
         return inbounds
 
-    @field_validator("status")
+    @field_validator("status", mode="before")
     def validate_status(cls, value):
         if not value or value not in UserStatusCreate.__members__:
             return UserStatusCreate.active  # Set to the default if not valid
         return value
 
-    @field_validator("status")
+    @field_validator("status", mode="before")
     def validate_status(cls, status, values):
         on_hold_expire = values.get("on_hold_expire_duration")
         expire = values.get("expire")
@@ -238,7 +238,7 @@ class UserModify(User):
 
         return excluded
 
-    @field_validator("inbounds")
+    @field_validator("inbounds", mode="before")
     def validate_inbounds(cls, inbounds, values, **kwargs):
         # check with inbounds, "proxies" is optional on modifying
         # so inbounds particularly can be modified
@@ -254,7 +254,7 @@ class UserModify(User):
 
         return inbounds
 
-    @field_validator("proxies")
+    @field_validator("proxies", mode="before")
     def validate_proxies(cls, v):
         return {
             proxy_type: ProxySettings.from_dict(
@@ -262,7 +262,7 @@ class UserModify(User):
             for proxy_type in v
         }
 
-    @field_validator("status")
+    @field_validator("status", mode="before")
     def validate_status(cls, status, values):
         on_hold_expire = values.get("on_hold_expire_duration")
         expire = values.get("expire")
@@ -305,7 +305,7 @@ class UserResponse(User):
             return f"{url_prefix}/{XRAY_SUBSCRIPTION_PATH}/{token}"
         return v
 
-    @field_validator("proxies")
+    @field_validator("proxies", mode="before")
     def validate_proxies(cls, v, values, **kwargs):
         if isinstance(v, list):
             v = {p.type: p.settings for p in v}
