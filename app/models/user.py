@@ -288,7 +288,7 @@ class UserResponse(User):
     admin: Optional[Admin] = None
     model_config = ConfigDict(from_attributes=True)
 
-    @field_validator("links", pre=False, always=True)
+    @field_validator("links")
     def validate_links(cls, v, values, **kwargs):
         if not v:
             return generate_v2ray_links(
@@ -296,7 +296,7 @@ class UserResponse(User):
             )
         return v
 
-    @field_validator("subscription_url", pre=False, always=True)
+    @field_validator("subscription_url")
     def validate_subscription_url(cls, v, values, **kwargs):
         if not v:
             salt = secrets.token_hex(8)
