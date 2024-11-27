@@ -17,15 +17,15 @@ class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
-
 class Admin(BaseModel):
     username: str
     is_sudo: bool
     telegram_id: Optional[int] = None
     discord_webhook: Optional[str] = None
     users_usage: Optional[int] = None
-    model_config = ConfigDict(from_attributes=True)
-
+    model_config = {
+        "from_attributes": True
+    }
     @classmethod
     def get_admin(cls, token: str, db: Session):
         payload = get_admin_payload(token)
@@ -45,8 +45,7 @@ class Admin(BaseModel):
             if dbadmin.password_reset_at > payload.get("created_at"):
                 return
 
-        return cls.from_orm(dbadmin)
-
+        return cls.model_validate(dbadmin)
     @classmethod
     def get_current(cls,
                     db: Session = Depends(get_db),
@@ -58,7 +57,6 @@ class Admin(BaseModel):
                 detail="Could not validate credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-
         return admin
 
     @classmethod

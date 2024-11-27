@@ -12,6 +12,7 @@ from app.models.admin import Admin
 from app.utils.jwt import create_subscription_token
 from app.subscription.share import generate_v2ray_links
 from config import XRAY_SUBSCRIPTION_PATH, XRAY_SUBSCRIPTION_URL_PREFIX
+from typing import Annotated
 
 USERNAME_REGEXP = re.compile(r"^(?=\w{3,32}\b)[a-zA-Z0-9-_@.]+(?:_[a-zA-Z0-9-_@.]+)*$")
 
@@ -311,29 +312,29 @@ class UserResponse(User):
         return super().validate_proxies(v, values, **kwargs)
 
 
+from pydantic import BaseModel, ConfigDict
+
 class SubscriptionUserResponse(UserResponse):
-    # TODO[pydantic]: The following keys were removed: `fields`.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    model_config = ConfigDict(from_attributes=True, fields={
-        field: {"include": True} for field in [
-            "username",
-            "status",
-            "expire",
-            "data_limit",
-            "data_limit_reset_strategy",
-            "used_traffic",
-            "lifetime_used_traffic",
-            "proxies",
-            "created_at",
-            "sub_updated_at",
-            "online_at",
-            "links",
-            "subscription_url",
-            "sub_updated_at",
-            "sub_last_user_agent",
-            "online_at",
-        ]
-    })
+    model_config = {
+        "from_attributes": True,
+        "fields": {
+            "username": {"include": True},
+            "status": {"include": True},
+            "expire": {"include": True},
+            "data_limit": {"include": True},
+            "data_limit_reset_strategy": {"include": True},
+            "used_traffic": {"include": True},
+            "lifetime_used_traffic": {"include": True},
+            "proxies": {"include": True},
+            "created_at": {"include": True},
+            "sub_updated_at": {"include": True},
+            "online_at": {"include": True},
+            "links": {"include": True},
+            "subscription_url": {"include": True},
+            "sub_last_user_agent": {"include": True},
+        },
+    }
+
 
 
 class UsersResponse(BaseModel):
