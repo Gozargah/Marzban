@@ -186,7 +186,7 @@ class UserCreate(User):
             return UserStatusCreate.active  # Set to the default if not valid
         return value
 
-    @field_validator("status", allow_reuse=True)
+    @field_validator("status")
     def validate_status(cls, status, values):
         on_hold_expire = values.get("on_hold_expire_duration")
         expire = values.get("expire")
@@ -262,7 +262,7 @@ class UserModify(User):
             for proxy_type in v
         }
 
-    @field_validator("status", allow_reuse=True)
+    @field_validator("status")
     def validate_status(cls, status, values):
         on_hold_expire = values.get("on_hold_expire_duration")
         expire = values.get("expire")
