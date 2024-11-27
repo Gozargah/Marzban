@@ -1,6 +1,7 @@
 import datetime
 
 from app import logger
+from app.db.models import User
 from app.telegram import bot
 from telebot.apihelper import ApiTelegramException
 from datetime import datetime
@@ -33,6 +34,7 @@ def report_new_user(
         expire_date: int,
         data_limit: int,
         proxies: list,
+        has_next_plan: bool,
         data_limit_reset_strategy: UserDataLimitResetStrategy,
         admin: Admin = None
 ):
@@ -44,6 +46,7 @@ def report_new_user(
 <b>Expire Date :</b> <code>{expire_date}</code>
 <b>Proxies :</b> <code>{proxies}</code>
 <b>Data Limit Reset Strategy :</b> <code>{data_limit_reset_strategy}</code>
+<b>Has Next Plan :</b> <code>{next_plan}</code>
 ➖➖➖➖➖➖➖➖➖
 <b>Belongs To :</b> <code>{belong_to}</code>
 <b>By :</b> <b>#{by}</b>'''.format(
@@ -54,6 +57,7 @@ def report_new_user(
         expire_date=datetime.fromtimestamp(expire_date).strftime("%H:%M:%S %Y-%m-%d") if expire_date else "Never",
         proxies="" if not proxies else ", ".join([escape_html(proxy) for proxy in proxies]),
         data_limit_reset_strategy=escape_html(data_limit_reset_strategy),
+        next_plan="True" if has_next_plan else "False",
     )
 
     return report(
@@ -72,6 +76,7 @@ def report_user_modification(
         expire_date: int,
         data_limit: int,
         proxies: list,
+        has_next_plan: bool,
         by: str,
         data_limit_reset_strategy: UserDataLimitResetStrategy,
         admin: Admin = None
@@ -84,6 +89,7 @@ def report_user_modification(
 <b>Expire Date :</b> <code>{expire_date}</code>
 <b>Protocols :</b> <code>{protocols}</code>
 <b>Data Limit Reset Strategy :</b> <code>{data_limit_reset_strategy}</code>
+<b>Has Next Plan :</b> <code>{next_plan}</code>
 ➖➖➖➖➖➖➖➖➖
 <b>Belongs To :</b> <code>{belong_to}</code>
 <b>By :</b> <b>#{by}</b>\
@@ -95,6 +101,7 @@ def report_user_modification(
         expire_date=datetime.fromtimestamp(expire_date).strftime("%H:%M:%S %Y-%m-%d") if expire_date else "Never",
         protocols=', '.join([p for p in proxies]),
         data_limit_reset_strategy=escape_html(data_limit_reset_strategy),
+        next_plan="True" if has_next_plan else "False",
     )
 
     return report(
@@ -151,6 +158,21 @@ def report_user_usage_reset(username: str, by: str, admin: Admin = None):
         belong_to=escape_html(admin.username) if admin else None,
         by=escape_html(by),
         username=escape_html(username)
+    )
+    return report(chat_id=admin.telegram_id if admin and admin.telegram_id else None, text=text)
+
+def report_user_data_reset_by_next(user: User, admin: Admin = None):
+    text = """  
+🔁 <b>#AutoReset</b>
+➖➖➖➖➖➖➖➖➖
+<b>Username :</b> <code>{username}</code>
+<b>Traffic Limit :</b> <code>{data_limit}</code>
+<b>Expire Date :</b> <code>{expire_date}</code>
+➖➖➖➖➖➖➖➖➖
+    """.format(
+        username=escape_html(user.username),
+        data_limit=readable_size(user.data_limit) if user.data_limit else "Unlimited",
+        expire_date=datetime.fromtimestamp(user.expire).strftime("%H:%M:%S %Y-%m-%d") if user.expire else "Never",
     )
     return report(chat_id=admin.telegram_id if admin and admin.telegram_id else None, text=text)
 

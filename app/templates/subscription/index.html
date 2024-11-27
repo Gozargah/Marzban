@@ -137,7 +137,8 @@
                 const qrCode = new QRCode(qrCodeContainer, {
                     text: link,
                     width: 256,
-                    height: 256
+                    height: 256,
+                    correctLevel: QRCode.CorrectLevel.L
                 });
                 qrPopup.style.display = 'block';
             });

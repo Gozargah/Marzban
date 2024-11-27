@@ -208,7 +208,7 @@ server {
     ssl_certificate      /etc/letsencrypt/live/example.com/fullchain.pem;
     ssl_certificate_key  /etc/letsencrypt/live/example.com/privkey.pem;
 
-    location ~* /(dashboard|api|docs|redoc|openapi.json) {
+    location ~* /(dashboard|statics|sub|api|docs|redoc|openapi.json) {
         proxy_pass http://0.0.0.0:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -263,7 +263,7 @@ server {
 > Ниже приведены настройки, которые можно задать с помощью переменных окружения поместив их в файл `.env`.
 
 | Перменная                                | Описание                                                                                                                       |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| ---------------------------------------- |--------------------------------------------------------------------------------------------------------------------------------|
 | SUDO_USERNAME                            | Имя пользователя главного администратора                                                                                       |
 | SUDO_PASSWORD                            | Пароль главного администратора                                                                                                 |
 | SQLALCHEMY_DATABASE_URL                  | Путь к файлу БД ([SQLAlchemy's docs](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls))                       |
@@ -272,6 +272,7 @@ server {
 | UVICORN_UDS                              | Привязка приложения к UNIX domain socket                                                                                       |
 | UVICORN_SSL_CERTFILE                     | Адрес файла сертификата SSL                                                                                                    |
 | UVICORN_SSL_KEYFILE                      | Адрес файла ключа SSL                                                                                                          |
+| UVICORN_SSL_CA_TYPE                      | Тип центра сертификации ключа SSL. Используйте `private` для тестирования самоподписанных CA (по умолчанию: `public`)          |
 | XRAY_JSON                                | Адрес файла JSON конфигурации Xray. (по умолчанию: `xray_config.json`)                                                         |
 | XRAY_EXECUTABLE_PATH                     | Путь к бинарникам Xray  (по умолчанию: `/usr/local/bin/xray`)                                                                  |
 | XRAY_ASSETS_PATH                         | Путь к папке с рессурсными файлами для Xray (файлы geoip.dat и geosite.dat) (по умолчанию: `/usr/local/share/xray`)            |

@@ -48,6 +48,14 @@ class UserDataLimitResetStrategy(str, Enum):
     month = "month"
     year = "year"
 
+class NextPlanModel(BaseModel):
+    data_limit: Optional[int]
+    expire: Optional[int]
+    add_remaining_traffic: bool = False
+    fire_on_either: bool = True
+    
+    class Config:
+        orm_mode = True
 
 class User(BaseModel):
     proxies: Dict[ProxyTypes, ProxySettings] = {}

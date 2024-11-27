@@ -9,10 +9,12 @@ from sqlalchemy import and_, bindparam, insert, select, sql, update
 
 from app import scheduler, xray
 from app.db import GetDB
-from app.db.models import NodeUsage, NodeUserUsage, System, User
-from config import (DISABLE_RECORDING_NODE_USAGE,
-                    JOB_RECORD_NODE_USAGES_INTERVAL,
-                    JOB_RECORD_USER_USAGES_INTERVAL)
+from app.db.models import Admin, NodeUsage, NodeUserUsage, System, User
+from config import (
+    DISABLE_RECORDING_NODE_USAGE,
+    JOB_RECORD_NODE_USAGES_INTERVAL,
+    JOB_RECORD_USER_USAGES_INTERVAL
+)
 from xray_api import XRay as XRayAPI
 from xray_api import exc as xray_exc
 
@@ -145,6 +147,15 @@ def record_user_usages():
     if not users_usage:
         return
 
+    with GetDB() as db:
+        user_admin_map = dict(db.query(User.id, User.admin_id).all())
+
+    admin_usage = defaultdict(int)
+    for user_usage in users_usage:
+        admin_id = user_admin_map.get(user_usage["uid"])
+        if admin_id:
+            admin_usage[admin_id] += user_usage["value"]
+
     # record users usage
     with GetDB() as db:
         stmt = update(User). \
@@ -158,6 +169,13 @@ def record_user_usages():
 
     if DISABLE_RECORDING_NODE_USAGE:
         return
+
+    admin_data = [{"admin_id": admin_id, "value": value} for admin_id, value in admin_usage.items()]
+    if admin_data:
+        admin_update_stmt = update(Admin). \
+            where(Admin.id == bindparam('admin_id')). \
+            values(users_usage=Admin.users_usage + bindparam('value'))
+        safe_execute(db, admin_update_stmt, admin_data)
 
     for node_id, params in api_params.items():
         record_user_stats(params, node_id, usage_coefficient[node_id])
@@ -198,8 +216,8 @@ def record_node_usages():
 
 
 scheduler.add_job(record_user_usages, 'interval',
-                  seconds=JOB_RECORD_NODE_USAGES_INTERVAL,
+                  seconds=JOB_RECORD_USER_USAGES_INTERVAL,
                   coalesce=True, max_instances=1)
 scheduler.add_job(record_node_usages, 'interval',
-                  seconds=JOB_RECORD_USER_USAGES_INTERVAL,
+                  seconds=JOB_RECORD_NODE_USAGES_INTERVAL,
                   coalesce=True, max_instances=1)

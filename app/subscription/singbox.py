@@ -288,7 +288,7 @@ class SingBoxConfiguration(str):
         path = inbound["path"]
 
         # not supported by sing-box
-        if net in ("kcp", "splithttp") or (net == "quic" and inbound["header_type"] != "none"):
+        if net in ("kcp", "splithttp", "xhttp") or (net == "quic" and inbound["header_type"] != "none"):
             return
 
         if net in ("grpc", "gun"):

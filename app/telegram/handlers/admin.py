@@ -1,3 +1,4 @@
+import copy
 import io
 import math
 import os
@@ -16,15 +17,26 @@ from telebot.util import extract_arguments, user_link
 from app import xray
 from app.db import GetDB, crud
 from app.models.proxy import ProxyTypes
-from app.models.user import UserCreate, UserModify, UserResponse, UserStatus, UserStatusModify
+from app.models.user import (
+    UserCreate,
+    UserModify,
+    UserResponse,
+    UserStatus,
+    UserStatusModify
+)
 from app.models.user_template import UserTemplateResponse
 from app.telegram import bot
 from app.telegram.utils.custom_filters import cb_query_equals, cb_query_startswith
 from app.telegram.utils.keyboard import BotKeyboard
-from app.telegram.utils.shared import get_user_info_text, get_template_info_text, time_to_string, statuses
+from app.telegram.utils.shared import (
+    get_number_at_end,
+    get_template_info_text,
+    get_user_info_text,
+    statuses,
+    time_to_string
+)
 from app.utils.store import MemoryStorage
 from app.utils.system import cpu_usage, memory_usage, readable_size, realtime_bandwidth
-
 from config import TELEGRAM_DEFAULT_VLESS_FLOW, TELEGRAM_LOGGER_CHANNEL_ID
 
 mem_store = MemoryStorage()
@@ -874,11 +886,19 @@ def charge_command(call: types.CallbackQuery):
 
 
 @bot.callback_query_handler(cb_query_equals('template_add_user'), is_admin=True)
+@bot.callback_query_handler(cb_query_equals('template_add_bulk_user'), is_admin=True)
 def add_user_from_template_command(call: types.CallbackQuery):
     with GetDB() as db:
         templates = crud.get_user_templates(db)
         if not templates:
             return bot.answer_callback_query(call.id, "You don't have any User Templates!")
+
+    if call.data == "template_add_bulk_user":
+        mem_store.set(f"{call.message.chat.id}:is_bulk", True)
+        mem_store.set(f"{call.message.chat.id}:is_bulk_from_template", True)
+    else:
+        mem_store.set(f"{call.message.chat.id}:is_bulk", False)
+        mem_store.set(f"{call.message.chat.id}:is_bulk_from_template", False)
 
     bot.edit_message_text(
         "<b>Select a Template to create user from</b>:",
@@ -933,6 +953,12 @@ def random_username(call: types.CallbackQuery):
 
     schedule_delete_message(call.message.chat.id, call.message.id)
     cleanup_messages(call.message.chat.id)
+    if mem_store.get(f"{call.message.chat.id}:is_bulk", False) and not mem_store.get(f"{call.message.chat.id}:is_bulk_from_template", False):
+        msg = bot.send_message(call.message.chat.id,
+                               'how many do you want?',
+                               reply_markup=BotKeyboard.inline_cancel_action())
+        schedule_delete_message(call.message.chat.id, msg.id)
+        return bot.register_next_step_handler(msg, add_user_bulk_number_step, username=username)
 
     if not template_id:
         msg = bot.send_message(call.message.chat.id,
@@ -952,7 +978,6 @@ def random_username(call: types.CallbackQuery):
     mem_store.set(f"{call.message.chat.id}:username", username)
     mem_store.set(f"{call.message.chat.id}:data_limit", template.data_limit)
     mem_store.set(f"{call.message.chat.id}:protocols", template.inbounds)
-    mem_store.set(f"{call.message.chat.id}:user_status", UserStatus.active)
     now = datetime.now()
     today = datetime(year=now.year, month=now.month, day=now.day, hour=23, minute=59, second=59)
     expire_date = None
@@ -962,16 +987,34 @@ def random_username(call: types.CallbackQuery):
 
     text = f"📝 Creating user <code>{username}</code>\n" + get_template_info_text(template)
 
-    bot.send_message(
-        call.message.chat.id,
-        text,
-        parse_mode="HTML",
-        reply_markup=BotKeyboard.select_protocols(
-            template.inbounds,
-            "create_from_template",
-            username=username,
-            data_limit=template.data_limit,
-            expire_date=expire_date,))
+    mem_store.set(f"{call.message.chat.id}:template_info_text", text)
+
+    if mem_store.get(f"{call.message.chat.id}:is_bulk", False):
+        msg = bot.send_message(call.message.chat.id,
+                               'how many do you want?',
+                               reply_markup=BotKeyboard.inline_cancel_action())
+        schedule_delete_message(call.message.chat.id, msg.id)
+        return bot.register_next_step_handler(msg, add_user_bulk_number_step, username=username)
+    else:
+        if expire_date:
+            msg = bot.send_message(
+                call.message.chat.id,
+                '⚡ Select User Status:\nOn Hold: Expiration starts after the first connection\nActive: Expiration starts from now',
+                reply_markup=BotKeyboard.user_status_select())
+            schedule_delete_message(call.message.chat.id, msg.id)
+        else:
+            mem_store.set(f"{call.message.chat.id}:template_info_text", None)
+            mem_store.set(f"{call.message.chat.id}:user_status", UserStatus.active)
+            bot.send_message(
+                call.message.chat.id,
+                text,
+                parse_mode="HTML",
+                reply_markup=BotKeyboard.select_protocols(
+                    template.inbounds,
+                    "create_from_template",
+                    username=username,
+                    data_limit=template.data_limit,
+                    expire_date=expire_date,))
 
 
 def add_user_from_template_username_step(message: types.Message):
@@ -1024,7 +1067,6 @@ def add_user_from_template_username_step(message: types.Message):
     mem_store.set(f"{message.chat.id}:username", username)
     mem_store.set(f"{message.chat.id}:data_limit", template.data_limit)
     mem_store.set(f"{message.chat.id}:protocols", template.inbounds)
-    mem_store.set(f"{message.chat.id}:user_status", UserStatus.active)
     now = datetime.now()
     today = datetime(year=now.year, month=now.month, day=now.day, hour=23, minute=59, second=59)
     expire_date = None
@@ -1034,28 +1076,51 @@ def add_user_from_template_username_step(message: types.Message):
 
     text = f"📝 Creating user <code>{username}</code>\n" + get_template_info_text(template)
 
-    bot.send_message(
-        message.chat.id,
-        text,
-        parse_mode="HTML",
-        reply_markup=BotKeyboard.select_protocols(
-            template.inbounds,
-            "create_from_template",
-            username=username,
-            data_limit=template.data_limit,
-            expire_date=expire_date,
-        )
-    )
-    schedule_delete_message(message.chat.id, message.id)
-    cleanup_messages(message.chat.id)
+    mem_store.set(f"{message.chat.id}:template_info_text", text)
+
+    if mem_store.get(f"{message.chat.id}:is_bulk", False):
+        msg = bot.send_message(message.chat.id,
+                               'how many do you want?',
+                               reply_markup=BotKeyboard.inline_cancel_action())
+        schedule_delete_message(message.chat.id, msg.id)
+        return bot.register_next_step_handler(msg, add_user_bulk_number_step, username=username)
+    else:
+        if expire_date:
+            msg = bot.send_message(
+                message.chat.id,
+                '⚡ Select User Status:\nOn Hold: Expiration starts after the first connection\nActive: Expiration starts from now',
+                reply_markup=BotKeyboard.user_status_select())
+            schedule_delete_message(message.chat.id, msg.id)
+        else:
+            mem_store.set(f"{message.chat.id}:template_info_text", None)
+            mem_store.set(f"{message.chat.id}:user_status", UserStatus.active)
+            bot.send_message(
+                message.chat.id,
+                text,
+                parse_mode="HTML",
+                reply_markup=BotKeyboard.select_protocols(
+                    template.inbounds,
+                    "create_from_template",
+                    username=username,
+                    data_limit=template.data_limit,
+                    expire_date=expire_date,))
 
 
+@bot.callback_query_handler(cb_query_equals('add_bulk_user'), is_admin=True)
 @bot.callback_query_handler(cb_query_equals('add_user'), is_admin=True)
 def add_user_command(call: types.CallbackQuery):
     try:
         bot.delete_message(call.message.chat.id, call.message.message_id)
     except ApiTelegramException:  # noqa
         pass
+
+    if call.data == "add_bulk_user":
+        mem_store.set(f"{call.message.chat.id}:is_bulk", True)
+    else:
+        mem_store.set(f"{call.message.chat.id}:is_bulk", False)
+
+    mem_store.set(f"{call.message.chat.id}:is_bulk_from_template", False)
+
     username_msg = bot.send_message(
         call.message.chat.id,
         '👤 Enter username:\n⚠️Username only can be 3 to 32 characters and contain a-z, A-Z 0-9, and underscores in '
@@ -1087,6 +1152,61 @@ def add_user_username_step(message: types.Message):
             return bot.register_next_step_handler(wait_msg, add_user_username_step)
     schedule_delete_message(message.chat.id, message.id)
     cleanup_messages(message.chat.id)
+    if mem_store.get(f"{message.chat.id}:is_bulk", False):
+        msg = bot.send_message(message.chat.id,
+                               'how many do you want?',
+                               reply_markup=BotKeyboard.inline_cancel_action())
+        schedule_delete_message(message.chat.id, msg.id)
+        return bot.register_next_step_handler(msg, add_user_bulk_number_step, username=username)
+    msg = bot.send_message(message.chat.id,
+                           '⬆️ Enter Data Limit (GB):\n⚠️ Send 0 for unlimited.',
+                           reply_markup=BotKeyboard.inline_cancel_action())
+    schedule_delete_message(message.chat.id, msg.id)
+    bot.register_next_step_handler(msg, add_user_data_limit_step, username=username)
+
+
+def add_user_bulk_number_step(message: types.Message, username: str):
+    try:
+        if int(message.text) < 1:
+            wait_msg = bot.send_message(message.chat.id, '❌ Bulk number must be greater or equal to 1.')
+            schedule_delete_message(message.chat.id, wait_msg.id)
+            schedule_delete_message(message.chat.id, message.id)
+            return bot.register_next_step_handler(wait_msg, add_user_bulk_number_step, username=username)
+        mem_store.set(f'{message.chat.id}:number', int(message.text))
+    except ValueError:
+        wait_msg = bot.send_message(message.chat.id, '❌ bulk must be a number.')
+        schedule_delete_message(message.chat.id, wait_msg.id)
+        schedule_delete_message(message.chat.id, message.id)
+        return bot.register_next_step_handler(wait_msg, add_user_bulk_number_step, username=username)
+
+    schedule_delete_message(message.chat.id, message.id)
+    cleanup_messages(message.chat.id)
+    if mem_store.get(f"{message.chat.id}:is_bulk_from_template", False):
+        expire_date = mem_store.get(f'{message.chat.id}:expire_date')
+        if expire_date:
+            msg = bot.send_message(
+                message.chat.id,
+                '⚡ Select User Status:\nOn Hold: Expiration starts after the first connection\nActive: Expiration starts from now',
+                reply_markup=BotKeyboard.user_status_select())
+            schedule_delete_message(message.chat.id, msg.id)
+            return
+        else:
+            text = mem_store.get(f"{message.chat.id}:template_info_text")
+            mem_store.set(f"{message.chat.id}:template_info_text", None)
+            inbounds = mem_store.get(f"{message.chat.id}:protocols")
+            mem_store.set(f'{message.chat.id}:user_status', UserStatus.active)
+            data_limit = mem_store.get(f'{message.chat.id}:data_limit')
+            return bot.send_message(
+                message.chat.id,
+                text,
+                parse_mode="HTML",
+                reply_markup=BotKeyboard.select_protocols(
+                    inbounds,
+                    "create_from_template",
+                    username=username,
+                    data_limit=data_limit,
+                    expire_date=expire_date,))
+
     msg = bot.send_message(message.chat.id,
                            '⬆️ Enter Data Limit (GB):\n⚠️ Send 0 for unlimited.',
                            reply_markup=BotKeyboard.inline_cancel_action())
@@ -1131,6 +1251,24 @@ def add_user_status_step(call: types.CallbackQuery):
 
     bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
     bot.delete_message(call.message.chat.id, call.message.message_id)
+
+    if text := mem_store.get(f"{call.message.chat.id}:template_info_text"):
+        mem_store.set(f"{call.message.chat.id}:template_info_text", None)
+        inbounds = mem_store.get(f"{call.message.chat.id}:protocols")
+        expire_date = mem_store.get(f'{call.message.chat.id}:expire_date')
+        mem_store.set(f'{call.message.chat.id}:user_status', user_status)
+        if user_status == "onhold":
+            mem_store.set(f'{call.message.chat.id}:onhold_timeout', None)
+        return bot.send_message(
+            call.message.chat.id,
+            text,
+            parse_mode="HTML",
+            reply_markup=BotKeyboard.select_protocols(
+                inbounds,
+                "create_from_template",
+                username=username,
+                data_limit=data_limit,
+                expire_date=expire_date,))
 
     if user_status == 'onhold':
         expiry_message = '⬆️ Enter Expire Days\nYou Can Use Regex Symbol: ^[0-9]{1,3}(M|D) :'
@@ -1664,82 +1802,105 @@ def confirm_user_command(call: types.CallbackQuery):
 
         inbounds: dict[str, list[str]] = {
             k: v for k, v in mem_store.get(f'{call.message.chat.id}:protocols').items() if v}
-        proxies = {p: ({'flow': TELEGRAM_DEFAULT_VLESS_FLOW} if
-                       TELEGRAM_DEFAULT_VLESS_FLOW and p == ProxyTypes.VLESS else {}) for p in inbounds}
+        original_proxies = {p: ({'flow': TELEGRAM_DEFAULT_VLESS_FLOW} if
+                                TELEGRAM_DEFAULT_VLESS_FLOW and p == ProxyTypes.VLESS else {}) for p in inbounds}
 
         user_status = mem_store.get(f'{call.message.chat.id}:user_status')
+        number = mem_store.get(f'{call.message.chat.id}:number', 1)
+        if not mem_store.get(f"{call.message.chat.id}:is_bulk", False):
+            number = 1
 
-        if user_status == 'onhold':
-            expire_days = mem_store.get(f'{call.message.chat.id}:expire_date')
-            onhold_timeout = mem_store.get(f'{call.message.chat.id}:onhold_timeout')
-            new_user = UserCreate(
-                username=mem_store.get(f'{call.message.chat.id}:username'),
-                status='on_hold',
-                on_hold_expire_duration=int(expire_days) * 24 * 60 * 60,
-                on_hold_timeout=onhold_timeout,
-                data_limit=mem_store.get(f'{call.message.chat.id}:data_limit')
-                if mem_store.get(f'{call.message.chat.id}:data_limit') else None,
-                proxies=proxies,
-                inbounds=inbounds)
-        else:
-            new_user = UserCreate(
-                username=mem_store.get(f'{call.message.chat.id}:username'),
-                status='active',
-                expire=int(mem_store.get(f'{call.message.chat.id}:expire_date').timestamp())
-                if mem_store.get(f'{call.message.chat.id}:expire_date') else None,
-                data_limit=mem_store.get(f'{call.message.chat.id}:data_limit')
-                if mem_store.get(f'{call.message.chat.id}:data_limit') else None,
-                proxies=proxies,
-                inbounds=inbounds)
-        for proxy_type in new_user.proxies:
-            if not xray.config.inbounds_by_protocol.get(proxy_type):
+        for i in range(number):
+            proxies = copy.deepcopy(original_proxies)
+            username: str = mem_store.get(f'{call.message.chat.id}:username')
+            if mem_store.get(f"{call.message.chat.id}:is_bulk", False):
+                if n := get_number_at_end(username):
+                    username = username.replace(n, str(int(n)+i))
+                else:
+                    username += str(i+1) if i > 0 else ""
+            if user_status == 'onhold':
+                expire_days = mem_store.get(f'{call.message.chat.id}:expire_date')
+                onhold_timeout = mem_store.get(f'{call.message.chat.id}:onhold_timeout')
+                if isinstance(expire_days, datetime):
+                    expire_days = (expire_days - datetime.now()).days
+                new_user = UserCreate(
+                    username=username,
+                    status='on_hold',
+                    on_hold_expire_duration=int(expire_days) * 24 * 60 * 60,
+                    on_hold_timeout=onhold_timeout,
+                    data_limit=mem_store.get(f'{call.message.chat.id}:data_limit')
+                    if mem_store.get(f'{call.message.chat.id}:data_limit') else None,
+                    proxies=proxies,
+                    inbounds=inbounds)
+            else:
+                new_user = UserCreate(
+                    username=username,
+                    status='active',
+                    expire=int(mem_store.get(f'{call.message.chat.id}:expire_date').timestamp())
+                    if mem_store.get(f'{call.message.chat.id}:expire_date') else None,
+                    data_limit=mem_store.get(f'{call.message.chat.id}:data_limit')
+                    if mem_store.get(f'{call.message.chat.id}:data_limit') else None,
+                    proxies=proxies,
+                    inbounds=inbounds)
+            for proxy_type in new_user.proxies:
+                if not xray.config.inbounds_by_protocol.get(proxy_type):
+                    return bot.answer_callback_query(
+                        call.id,
+                        f'❌ Protocol {proxy_type} is disabled on your server',
+                        show_alert=True
+                    )
+            try:
+                with GetDB() as db:
+                    db_user = crud.create_user(db, new_user)
+                    proxies = db_user.proxies
+                    user = UserResponse.from_orm(db_user)
+                    xray.operations.add_user(db_user)
+                    if mem_store.get(f"{call.message.chat.id}:is_bulk", False):
+                        schedule_delete_message(call.message.chat.id, call.message.id)
+                        cleanup_messages(call.message.chat.id)
+                        bot.send_message(
+                            call.message.chat.id,
+                            get_user_info_text(db_user),
+                            parse_mode="HTML",
+                            reply_markup=BotKeyboard.user_menu(user_info={'status': user.status, 'username': user.username})
+                        )
+                    else:
+                        bot.edit_message_text(
+                            get_user_info_text(db_user),
+                            call.message.chat.id,
+                            call.message.message_id,
+                            parse_mode="HTML",
+                            reply_markup=BotKeyboard.user_menu(user_info={'status': user.status, 'username': user.username}))
+            except sqlalchemy.exc.IntegrityError:
+                db.rollback()
                 return bot.answer_callback_query(
                     call.id,
-                    f'❌ Protocol {proxy_type} is disabled on your server',
+                    '❌ Username already exists.',
                     show_alert=True
                 )
-        try:
-            with GetDB() as db:
-                db_user = crud.create_user(db, new_user)
-                proxies = db_user.proxies
-                user = UserResponse.from_orm(db_user)
-                xray.operations.add_user(db_user)
-                bot.edit_message_text(
-                    get_user_info_text(db_user),
-                    call.message.chat.id,
-                    call.message.message_id,
-                    parse_mode="HTML",
-                    reply_markup=BotKeyboard.user_menu(user_info={'status': user.status, 'username': user.username}))
-        except sqlalchemy.exc.IntegrityError:
-            db.rollback()
-            return bot.answer_callback_query(
-                call.id,
-                '❌ Username already exists.',
-                show_alert=True
-            )
-        if TELEGRAM_LOGGER_CHANNEL_ID:
-            text = f"""\
+            if TELEGRAM_LOGGER_CHANNEL_ID:
+                text = f"""\
 🆕 <b>#Created #From_Bot</b>
 ➖➖➖➖➖➖➖➖➖
 <b>Username :</b> <code>{user.username}</code>
 <b>Status :</b> <code>{'Active' if user_status == 'active' else 'On Hold'}</code>
 <b>Traffic Limit :</b> <code>{readable_size(user.data_limit) if user.data_limit else "Unlimited"}</code>
 """
-            if user_status == 'onhold':
-                text += f"""\
+                if user_status == 'onhold':
+                    text += f"""\
 <b>On Hold Expire Duration :</b> <code>{new_user.on_hold_expire_duration // (24*60*60)} days</code>
 <b>On Hold Timeout :</b> <code>{new_user.on_hold_timeout.strftime("%H:%M:%S %Y-%m-%d")}</code>"""
-            else:
-                text += f"""<b>Expire Date :</b> \
+                else:
+                    text += f"""<b>Expire Date :</b> \
 <code>{datetime.fromtimestamp(user.expire).strftime("%H:%M:%S %Y-%m-%d") if user.expire else "Never"}</code>\n"""
-            text += f"""
+                text += f"""
 <b>Proxies :</b> <code>{"" if not proxies else ", ".join([proxy.type for proxy in proxies])}</code>
 ➖➖➖➖➖➖➖➖➖
 <b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>"""
-            try:
-                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
-            except ApiTelegramException:
-                pass
+                try:
+                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+                except ApiTelegramException:
+                    pass
 
     elif data in ['delete_expired', 'delete_limited']:
         bot.edit_message_text(
@@ -1995,4 +2156,4 @@ def search_user(message: types.Message):
                 message,
                 get_user_info_text(db_user),
                 parse_mode="html",
-                reply_markup=BotKeyboard.user_menu(user_info={'status': user.status,'username': user.username}))
+                reply_markup=BotKeyboard.user_menu(user_info={'status': user.status, 'username': user.username}))

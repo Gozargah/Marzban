@@ -109,13 +109,12 @@ class ClashConfiguration(object):
             config["headers"]["Host"] = host
         if random_user_agent:
             config["headers"]["User-Agent"] = choice(self.user_agent_list)
-        if max_early_data:
+        if max_early_data and not is_httpupgrade:
             config["max-early-data"] = max_early_data
             config["early-data-header-name"] = early_data_header_name
         if is_httpupgrade:
             config["v2ray-http-upgrade"] = True
-            if max_early_data:
-                config["v2ray-http-upgrade-fast-open"] = True
+            config["v2ray-http-upgrade-fast-open"] = True
 
         return config
 
@@ -176,6 +175,8 @@ class ClashConfiguration(object):
             is_httpupgrade = True
         else:
             is_httpupgrade = False
+        if network in ("http", "h2", "h3"):
+            network = "h2"
 
         node = {
             'name': remark,
@@ -244,14 +245,13 @@ class ClashConfiguration(object):
         mux_config = mux_json["clash"]
 
         if mux_enable:
-            net_opts['smux'] = mux_config
-            net_opts['smux']["enabled"] = True
+            node['smux'] = mux_config
 
         return node
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
         # not supported by clash
-        if inbound['network'] in ("kcp", "splithttp"):
+        if inbound['network'] in ("kcp", "splithttp", "xhttp"):
             return
 
         proxy_remark = self._remark_validation(remark)
@@ -342,7 +342,7 @@ class ClashMetaConfiguration(ClashConfiguration):
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
         # not supported by clash-meta
-        if inbound['network'] in ("kcp", "splithttp") or (inbound['network'] == "quic" and inbound["header_type"] != "none"):
+        if inbound['network'] in ("kcp", "splithttp", "xhttp") or (inbound['network'] == "quic" and inbound["header_type"] != "none"):
             return
 
         proxy_remark = self._remark_validation(remark)
