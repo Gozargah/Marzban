@@ -1,4 +1,4 @@
-from abc import ABC, abstractproperty
+from abc import ABC, abstractmethod, abstractproperty
 from enum import Enum
 from uuid import UUID
 
@@ -19,8 +19,9 @@ class Account(BaseModel, ABC):
     email: str
     level: int = 0
 
-    @abstractproperty
-    def message(self) -> TypedMessage:
+    @property
+    @abstractmethod
+    def message(self):
         pass
 
     def __repr__(self) -> str:

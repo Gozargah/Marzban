@@ -5,8 +5,7 @@ from typing import Dict, List, Optional, Union
 import random
 import secrets
 
-from pydantic import field_validator, ConfigDict, BaseModel, Field, validator
-
+from pydantic import field_validator, ConfigDict, BaseModel, Field
 from app import xray
 from app.models.proxy import ProxySettings, ProxyTypes
 from app.models.admin import Admin
