@@ -181,12 +181,6 @@ class UserCreate(User):
         return inbounds
 
     @field_validator("status", mode="before")
-    def validate_status(cls, value):
-        if not value or value not in UserStatusCreate.__members__:
-            return UserStatusCreate.active  # Set to the default if not valid
-        return value
-
-    @field_validator("status", mode="before")
     def validate_status(cls, status, values):
         on_hold_expire = values.get("on_hold_expire_duration")
         expire = values.get("expire")
@@ -311,13 +305,12 @@ class UserResponse(User):
             v = {p.type: p.settings for p in v}
         return super().validate_proxies(v, values, **kwargs)
 
-
 from pydantic import BaseModel, ConfigDict
 
 class SubscriptionUserResponse(UserResponse):
     model_config = {
         "from_attributes": True,
-        "fields": {
+        "model_fields": {
             "username": {"include": True},
             "status": {"include": True},
             "expire": {"include": True},

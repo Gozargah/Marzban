@@ -61,8 +61,8 @@ class Admin(BaseModel):
 
     @classmethod
     def check_sudo_admin(cls,
-                        db: Session = Depends(get_db),
-                        token: str = Depends(oauth2_scheme)):
+                         db: Session = Depends(get_db),
+                         token: str = Depends(oauth2_scheme)):
         admin = cls.get_admin(token, db)
         if not admin:
             raise HTTPException(

@@ -56,7 +56,7 @@ class ProxyTypes(str, Enum):
 class ProxySettings(BaseModel):
     @classmethod
     def from_dict(cls, proxy_type: ProxyTypes, _dict: dict):
-        return ProxyTypes(proxy_type).settings_model.parse_obj(_dict)
+        return ProxyTypes(proxy_type).settings_model.model_validate(_dict)
 
     def dict(self, *, no_obj=False, **kwargs):
         if no_obj:
