@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
-from pydantic import BaseModel, validator
+from pydantic import field_validator, ConfigDict, BaseModel
 
 from app.db import Session, crud, get_db
 from app.utils.jwt import get_admin_payload
@@ -21,11 +21,9 @@ class Token(BaseModel):
 class Admin(BaseModel):
     username: str
     is_sudo: bool
-    telegram_id: Optional[int]
-    discord_webhook: Optional[str]
-
-    class Config:
-        orm_mode = True
+    telegram_id: Optional[int] = None
+    discord_webhook: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     def get_admin(cls, token: str, db: Session):
@@ -82,14 +80,15 @@ class Admin(BaseModel):
 
 class AdminCreate(Admin):
     password: str
-    telegram_id: Optional[int]
-    discord_webhook: Optional[str]
+    telegram_id: Optional[int] = None
+    discord_webhook: Optional[str] = None
 
     @property
     def hashed_password(self):
         return pwd_context.hash(self.password)
 
-    @validator("discord_webhook")
+    @field_validator("discord_webhook")
+    @classmethod
     def validate_discord_webhook(cls, value):
         if value and not value.startswith("https://discord.com"):
             raise ValueError("Discord webhook must start with 'https://discord.com'")
@@ -97,17 +96,18 @@ class AdminCreate(Admin):
 
 
 class AdminModify(BaseModel):
-    password: Optional[str]
+    password: Optional[str] = None
     is_sudo: bool
-    telegram_id: Optional[int]
-    discord_webhook: Optional[str]
+    telegram_id: Optional[int] = None
+    discord_webhook: Optional[str] = None
 
     @property
     def hashed_password(self):
         if self.password:
             return pwd_context.hash(self.password)
 
-    @validator("discord_webhook")
+    @field_validator("discord_webhook")
+    @classmethod
     def validate_discord_webhook(cls, value):
         if value and not value.startswith("https://discord.com"):
             raise ValueError("Discord webhook must start with 'https://discord.com'")

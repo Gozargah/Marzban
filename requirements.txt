@@ -38,7 +38,7 @@ psutil==5.9.4
 psycopg2-binary==2.9.7
 pyasn1==0.4.8
 pycparser==2.21
-pydantic==1.10.2
+pydantic==2.10.2
 Pygments==2.14.0
 PyMySQL==1.0.3
 pyOpenSSL==23.2.0
