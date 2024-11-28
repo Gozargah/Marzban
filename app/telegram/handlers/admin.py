@@ -261,7 +261,7 @@ def add_data_step(message):
     msg = bot.send_message(
         message.chat.id,
         f"⚠️ Are you sure? this will change Data limit of all users according to <b>"
-        f"{'+' if data_limit > 0 else '-'}{readable_size(abs(data_limit *1024*1024*1024))}</b>",
+        f"{'+' if data_limit > 0 else '-'}{readable_size(abs(data_limit * 1024*1024*1024))}</b>",
         parse_mode="html",
         reply_markup=BotKeyboard.confirm_action('add_data', data_limit))
     cleanup_messages(message.chat.id)
@@ -728,7 +728,8 @@ def genqr_command(call: types.CallbackQuery):
             expiry_date = datetime.fromtimestamp(user.expire).date() if user.expire else "Never"
             time_left = time_to_string(datetime.fromtimestamp(user.expire)) if user.expire else "-"
             if user.status == UserStatus.on_hold:
-                expiry_text = f"⏰ <b>On Hold Duration:</b> <code>{on_hold_duration} days</code> (auto start at <code>{on_hold_timeout}</code>)"
+                expiry_text = f"⏰ <b>On Hold Duration:</b> <code>{on_hold_duration} days</code> (auto start at <code>{
+                    on_hold_timeout}</code>)"
             else:
                 expiry_text = f"📅 <b>Expiry Date:</b> <code>{expiry_date}</code> ({time_left})"
             text = f"""\
@@ -1047,14 +1048,16 @@ def add_user_from_template_username_step(message: types.Message):
         if len(username) < 3:
             wait_msg = bot.send_message(
                 message.chat.id,
-                f"❌ Username can't be generated because is shorter than 32 characters! username: <code>{username}</code>",
+                f"❌ Username can't be generated because is shorter than 32 characters! username: <code>{
+                    username}</code>",
                 parse_mode="HTML")
             schedule_delete_message(message.chat.id, wait_msg.message_id, message.message_id)
             return bot.register_next_step_handler(wait_msg, add_user_from_template_username_step)
         elif len(username) > 32:
             wait_msg = bot.send_message(
                 message.chat.id,
-                f"❌ Username can't be generated because is longer than 32 characters! username: <code>{username}</code>",
+                f"❌ Username can't be generated because is longer than 32 characters! username: <code>{
+                    username}</code>",
                 parse_mode="HTML")
             schedule_delete_message(message.chat.id, wait_msg.message_id, message.message_id)
             return bot.register_next_step_handler(wait_msg, add_user_from_template_username_step)
@@ -1862,7 +1865,8 @@ def confirm_user_command(call: types.CallbackQuery):
                             call.message.chat.id,
                             get_user_info_text(db_user),
                             parse_mode="HTML",
-                            reply_markup=BotKeyboard.user_menu(user_info={'status': user.status, 'username': user.username})
+                            reply_markup=BotKeyboard.user_menu(
+                                user_info={'status': user.status, 'username': user.username})
                         )
                     else:
                         bot.edit_message_text(
@@ -1889,7 +1893,7 @@ def confirm_user_command(call: types.CallbackQuery):
                 if user_status == 'onhold':
                     text += f"""\
 <b>On Hold Expire Duration :</b> <code>{new_user.on_hold_expire_duration // (24*60*60)} days</code>
-<b>On Hold Timeout :</b> <code>{new_user.on_hold_timeout.strftime("%H:%M:%S %Y-%m-%d")}</code>"""
+<b>On Hold Timeout :</b> <code>{new_user.on_hold_timeout.strftime("%H:%M:%S %Y-%m-%d") if new_user.on_hold_timeout else "-"}</code>"""
                 else:
                     text += f"""<b>Expire Date :</b> \
 <code>{datetime.fromtimestamp(user.expire).strftime("%H:%M:%S %Y-%m-%d") if user.expire else "Never"}</code>\n"""
@@ -1974,7 +1978,8 @@ def confirm_user_command(call: types.CallbackQuery):
             cleanup_messages(chat_id)
             bot.send_message(
                 chat_id,
-                f'✅ <b>{counter}/{len(users)} Users</b> Data Limit according to <code>{"+" if data_limit > 0 else "-"}{readable_size(abs(data_limit))}</code>',
+                f'✅ <b>{counter}/{len(users)} Users</b> Data Limit according to <code>{"+" if data_limit >
+                                                                                       0 else "-"}{readable_size(abs(data_limit))}</code>',
                 'HTML',
                 reply_markup=BotKeyboard.main_menu())
             if TELEGRAM_LOGGER_CHANNEL_ID:
@@ -2095,7 +2100,7 @@ def confirm_user_command(call: types.CallbackQuery):
                 text = f"""\
 ✏️ <b>#Modified #Inbound_{data[8:].title()} #From_Bot</b>
 ➖➖➖➖➖➖➖➖➖
-<b>Inbound:</b> <code>{inbound}</code> 
+<b>Inbound:</b> <code>{inbound}</code>
 ➖➖➖➖➖➖➖➖➖
 <b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>"""
                 try:
@@ -2123,7 +2128,7 @@ def confirm_user_command(call: types.CallbackQuery):
             text = f"""\
 🚫 <b>#Revoke_sub #From_Bot</b>
 ➖➖➖➖➖➖➖➖➖
-<b>Username:</b> <code>{username}</code> 
+<b>Username:</b> <code>{username}</code>
 ➖➖➖➖➖➖➖➖➖
 <b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>"""
             try:
