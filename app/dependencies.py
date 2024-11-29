@@ -69,14 +69,14 @@ def get_validated_sub(
 ) -> UserResponse:
     sub = get_subscription_payload(token)
     if not sub:
-        raise HTTPException(status_code=400, detail="Invalid subscription token")
+        raise HTTPException(status_code=404, detail="Not Found")
 
     dbuser = crud.get_user(db, sub['username'])
     if not dbuser or dbuser.created_at > sub['created_at']:
-        raise HTTPException(status_code=404, detail="User not found or invalid creation date")
+        raise HTTPException(status_code=404, detail="Not Found")
 
     if dbuser.sub_revoked_at and dbuser.sub_revoked_at > sub['created_at']:
-        raise HTTPException(status_code=403, detail="Subscription has been revoked")
+        raise HTTPException(status_code=404, detail="Not Found")
 
     return dbuser
 
