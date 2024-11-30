@@ -280,6 +280,7 @@ class XRayConfig(dict):
                     if isinstance(host, str):
                         settings['host'] = [host]
 
+                    settings["heartbeatPeriod"] = net_settings.get('heartbeatPeriod', 0)
                 elif net == 'grpc' or net == 'gun':
                     settings['header_type'] = ''
                     settings['path'] = net_settings.get('serviceName', '')
@@ -309,6 +310,7 @@ class XRayConfig(dict):
                     settings["mode"] = net_settings.get("mode", "auto")
                     settings["extra"] = net_settings.get("extra", {})
                     settings["noGRPCHeader"] = net_settings.get("noGRPCHeader", False)
+                    settings["keepAlivePeriod"] = net_settings.get("keepAlivePeriod", 0)
 
                 elif net == 'kcp':
                     header = net_settings.get('header', {})

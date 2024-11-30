@@ -17,7 +17,7 @@ from config import (
     MUX_TEMPLATE,
     USER_AGENT_TEMPLATE,
     V2RAY_SETTINGS_TEMPLATE,
-    V2RAY_SUBSCRIPTION_TEMPLATE
+    V2RAY_SUBSCRIPTION_TEMPLATE,
 )
 
 
@@ -78,6 +78,8 @@ class V2rayShareLink(str):
                 mode=inbound.get("mode", "auto"),
                 extra=inbound.get("extra", {}),
                 noGRPCHeader=inbound.get("noGRPCHeader", False),
+                heartbeatPeriod=inbound.get("heartbeatPeriod", 0),
+                keepAlivePeriod=inbound.get("keepAlivePeriod", 0),
             )
 
         elif inbound["protocol"] == "vless":
@@ -108,6 +110,8 @@ class V2rayShareLink(str):
                 mode=inbound.get("mode", "auto"),
                 extra=inbound.get("extra", {}),
                 noGRPCHeader=inbound.get("noGRPCHeader", False),
+                heartbeatPeriod=inbound.get("heartbeatPeriod", 0),
+                keepAlivePeriod=inbound.get("keepAlivePeriod", 0),
             )
 
         elif inbound["protocol"] == "trojan":
@@ -138,6 +142,8 @@ class V2rayShareLink(str):
                 mode=inbound.get("mode", "auto"),
                 extra=inbound.get("extra", {}),
                 noGRPCHeader=inbound.get("noGRPCHeader", False),
+                heartbeatPeriod=inbound.get("heartbeatPeriod", 0),
+                keepAlivePeriod=inbound.get("keepAlivePeriod", 0),
             )
 
         elif inbound["protocol"] == "shadowsocks":
@@ -180,7 +186,9 @@ class V2rayShareLink(str):
             x_padding_bytes: str = "100-1000",
             mode: str = "auto",
             extra: dict = {},
-            noGRPCHeader: bool = False
+            noGRPCHeader: bool = False,
+            heartbeatPeriod: int = 0,
+            keepAlivePeriod: int = 0,
     ):
         payload = {
             "add": address,
@@ -233,6 +241,12 @@ class V2rayShareLink(str):
             if extra:
                 payload["extra"] = extra
             payload["noGRPCHeader"] = int(noGRPCHeader)
+            payload["keepAlivePeriod"] = keepAlivePeriod
+
+        elif net == "ws":
+            if heartbeatPeriod:
+                payload["heartbeatPeriod"] = heartbeatPeriod
+
         return (
             "vmess://"
             + base64.b64encode(
@@ -268,6 +282,8 @@ class V2rayShareLink(str):
               mode: str = "auto",
               extra: dict = {},
               noGRPCHeader: bool = False,
+              heartbeatPeriod: int = 0,
+              keepAlivePeriod: int = 0,
               ):
 
         payload = {
@@ -301,10 +317,15 @@ class V2rayShareLink(str):
             if extra:
                 payload["extra"] = json.dumps(extra)
             payload["noGRPCHeader"] = int(noGRPCHeader)
+            payload["keepAlivePeriod"] = keepAlivePeriod
 
         elif net == 'kcp':
             payload['seed'] = path
             payload["host"] = host
+
+        elif net == "ws":
+            if heartbeatPeriod:
+                payload["heartbeatPeriod"] = heartbeatPeriod
 
         else:
             payload["path"] = path
@@ -362,7 +383,9 @@ class V2rayShareLink(str):
                x_padding_bytes: str = "100-1000",
                mode: str = "auto",
                extra: dict = {},
-               noGRPCHeader: bool = False
+               noGRPCHeader: bool = False,
+               heartbeatPeriod: int = 0,
+               keepAlivePeriod: int = 0,
                ):
 
         payload = {
@@ -392,6 +415,7 @@ class V2rayShareLink(str):
             if extra:
                 payload["extra"] = json.dumps(extra)
             payload["noGRPCHeader"] = int(noGRPCHeader)
+            payload["keepAlivePeriod"] = keepAlivePeriod
 
         elif net == 'quic':
             payload['key'] = path
@@ -400,6 +424,10 @@ class V2rayShareLink(str):
         elif net == 'kcp':
             payload['seed'] = path
             payload["host"] = host
+
+        elif net == "ws":
+            if heartbeatPeriod:
+                payload["heartbeatPeriod"] = heartbeatPeriod
 
         else:
             payload["path"] = path
@@ -517,7 +545,7 @@ class V2rayJsonConfig(str):
 
         return realitySettings
 
-    def ws_config(self, path: str = "", host: str = "", random_user_agent: bool = False) -> dict:
+    def ws_config(self, path: str = "", host: str = "", random_user_agent: bool = False, heartbeatPeriod: int = 0) -> dict:
         wsSettings = copy.deepcopy(self.settings.get("wsSettings", {}))
 
         if "headers" not in wsSettings:
@@ -528,6 +556,8 @@ class V2rayJsonConfig(str):
             wsSettings["headers"]["Host"] = host
         if random_user_agent:
             wsSettings["headers"]["User-Agent"] = choice(self.user_agent_list)
+        if heartbeatPeriod:
+            wsSettings["heartbeatPeriod"] = heartbeatPeriod
 
         return wsSettings
 
@@ -555,6 +585,7 @@ class V2rayJsonConfig(str):
                          extra: dict = {},
                          mode: str = "auto",
                          noGRPCHeader: bool = False,
+                         keepAlivePeriod: int = 0,
                          ) -> dict:
         config = copy.deepcopy(self.settings.get("splithttpSettings", {}))
 
@@ -576,6 +607,7 @@ class V2rayJsonConfig(str):
 
         if extra:
             config["extra"] = extra
+        config["keepAlivePeriod"] = keepAlivePeriod
         # core will ignore unknown variables
 
         return config
@@ -879,11 +911,13 @@ class V2rayJsonConfig(str):
                             extra: dict = {},
                             mode: str = "auto",
                             noGRPCHeader: bool = False,
+                            heartbeatPeriod: int = 0,
+                            keepAlivePeriod: int = 0,
                             ) -> dict:
 
         if net == "ws":
             network_setting = self.ws_config(
-                path=path, host=host, random_user_agent=random_user_agent)
+                path=path, host=host, random_user_agent=random_user_agent, heartbeatPeriod=heartbeatPeriod)
         elif net == "grpc":
             network_setting = self.grpc_config(
                 path=path, host=host, multiMode=multiMode, random_user_agent=random_user_agent)
@@ -911,7 +945,8 @@ class V2rayJsonConfig(str):
                                                     xmux=xmux,
                                                     extra=extra,
                                                     mode=mode,
-                                                    noGRPCHeader=noGRPCHeader
+                                                    noGRPCHeader=noGRPCHeader,
+                                                    keepAlivePeriod=keepAlivePeriod,
                                                     )
         else:
             network_setting = {}
@@ -1022,6 +1057,8 @@ class V2rayJsonConfig(str):
             mode=inbound.get("mode", "auto"),
             extra=inbound.get("extra", {}),
             noGRPCHeader=inbound.get("noGRPCHeader", False),
+            heartbeatPeriod=inbound.get("heartbeatPeriod", 0),
+            keepAlivePeriod=inbound.get("keepAlivePeriod", 0),
         )
 
         mux_json = json.loads(self.mux_template)
