@@ -280,6 +280,7 @@ class XRayConfig(dict):
                     if isinstance(host, str):
                         settings['host'] = [host]
 
+                    settings["heartbeatPeriod"] = net_settings.get('heartbeatPeriod', 0)
                 elif net == 'grpc' or net == 'gun':
                     settings['header_type'] = ''
                     settings['path'] = net_settings.get('serviceName', '')
