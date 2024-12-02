@@ -324,6 +324,8 @@ class V2rayShareLink(str):
             payload["host"] = host
 
         elif net == "ws":
+            payload["path"] = path
+            payload["host"] = host
             if heartbeatPeriod:
                 payload["heartbeatPeriod"] = heartbeatPeriod
 
@@ -426,6 +428,8 @@ class V2rayShareLink(str):
             payload["host"] = host
 
         elif net == "ws":
+            payload["path"] = path
+            payload["host"] = host
             if heartbeatPeriod:
                 payload["heartbeatPeriod"] = heartbeatPeriod
 
