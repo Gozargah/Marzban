@@ -1,7 +1,7 @@
 """add_telegram_id_to_admin
 
 Revision ID: 5575fe410515
-Revises: 4aa420578f51
+Revises: 470465472326
 Create Date: 2024-02-01 22:30:47.515512
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '5575fe410515'
-down_revision = '4aa420578f51'
+down_revision = '470465472326'
 branch_labels = None
 depends_on = None
 

@@ -1,7 +1,7 @@
 """add clash sub
 
 Revision ID: 4aa420578f51
-Revises: 470465472326
+Revises: d0a3960f5dad
 Create Date: 2024-02-07 19:46:25.147532
 
 """
@@ -16,7 +16,7 @@ from app.db.models import ClashProxyGroup, ClashRuleset, ClashRule, ClashSetting
 
 # revision identifiers, used by Alembic.
 revision = '4aa420578f51'
-down_revision = '470465472326'
+down_revision = 'd0a3960f5dad'
 branch_labels = None
 depends_on = None
 
