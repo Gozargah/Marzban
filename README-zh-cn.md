@@ -94,7 +94,7 @@ Marzban 是一个用户友好、功能丰富且可靠的工具。它让您可以
 - 单端口的**多入站**支持（使用 fallbacks）
 - **流量**和**过期日期**限制
 - 周期性的流量限制（例如每天、每周等）
-- 兼容 **V2ray** 的**订阅链接**（例如 V2RayNG、OneClick、Nekoray 等）和 **Clash**
+- 兼容 **V2ray** 的**订阅链接**（例如 V2RayNG、SingBox、Nekoray 等）和 **Clash**
 - 自动化的**分享链接**和**二维码**生成器
 - 系统监控和**流量统计**
 - 可自定义的 xray 配置
@@ -104,10 +104,21 @@ Marzban 是一个用户友好、功能丰富且可靠的工具。它让您可以
 
 
 # 安装指南
-Run the following command
+运行以下命令以使用 SQLite 数据库安装 Marzban。
 
 ```bash
 sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install
+```
+
+运行以下命令以使用 MySQL 数据库安装 Marzban。
+
+```bash
+sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install --database mysql
+```
+
+运行以下命令以使用 MariaDB 数据库安装 Marzban。
+```bash
+sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install --database mariadb
 ```
 
 Once the installation is complete:
@@ -300,6 +311,23 @@ Marzban 提供了 REST API，使开发人员能够以编程方式与 Marzban 服
 
 1. 默认情况下，所有重要的 Marzban 文件都保存在 `/var/lib/marzban` ( Docker 版本)中。将整个 `/var/lib/marzban` 目录复制到您选择的备份位置，比如外部硬盘或云存储。
 2. 此外，请确保备份您的 `env` 文件，其中包含您的配置变量，以及您的 `Xray` 配置文件。
+
+Marzban 的备份服务会高效地压缩所有必要文件并将它们发送到您指定的 Telegram 机器人。它支持 SQLite、MySQL 和 MariaDB 数据库。其一个主要功能是自动化，允许您每小时安排一次备份。对于 Telegram 机器人的上传限制没有限制；如果文件超过限制，它会被拆分并以多个部分发送。此外，您可以在任何时间启动即时备份。
+
+安装最新版 Marzban 命令：
+```bash
+sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install-script
+```
+
+设置备份服务：
+```bash
+marzban backup-service
+```
+
+获取即时备份：
+```bash
+marzban backup
+```
 
 按照这些步骤，您可以确保有备份所有 Marzban 文件和数据，以及您的配置变量和 Xray 配置，以备将来恢复使用。请记得定期更新备份，以保持它们的最新性。
 
