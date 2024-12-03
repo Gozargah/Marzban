@@ -32,7 +32,7 @@ def add_user_template(
         raise HTTPException(status_code=409, detail="Template by this name already exists")
 
 
-@router.get("/user_template/{id}", response_model=UserTemplateResponse)
+@router.get("/user_template/{template_id}", response_model=UserTemplateResponse)
 def get_user_template_endpoint(
     dbuser_template: UserTemplateResponse = Depends(get_user_template),
     admin: Admin = Depends(Admin.get_current)):
@@ -40,7 +40,7 @@ def get_user_template_endpoint(
     return dbuser_template
 
 
-@router.put("/user_template/{id}", response_model=UserTemplateResponse)
+@router.put("/user_template/{template_id}", response_model=UserTemplateResponse)
 def modify_user_template(
     modify_user_template: UserTemplateModify,
     db: Session = Depends(get_db),
@@ -62,7 +62,7 @@ def modify_user_template(
         raise HTTPException(status_code=409, detail="Template by this name already exists")
 
 
-@router.delete("/user_template/{id}")
+@router.delete("/user_template/{template_id}")
 def remove_user_template(
     db: Session = Depends(get_db),
     admin: Admin = Depends(Admin.check_sudo_admin),
@@ -74,8 +74,8 @@ def remove_user_template(
 
 @router.get("/user_template", response_model=List[UserTemplateResponse])
 def get_user_templates(
-    offset: int = None, 
-    limit: int = None, 
+    offset: int = None,
+    limit: int = None,
     db: Session = Depends(get_db),
     admin: Admin = Depends(Admin.get_current)
 ):
