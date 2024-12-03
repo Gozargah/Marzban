@@ -156,7 +156,7 @@ class ProxyHost(BaseModel):
     random_user_agent: Union[bool, None] = None
     model_config = ConfigDict(from_attributes=True)
 
-    @field_validator("remark")
+    @field_validator("remark", mode="after")
     def validate_remark(cls, v):
         try:
             v.format_map(FormatVariables())
@@ -165,7 +165,7 @@ class ProxyHost(BaseModel):
 
         return v
 
-    @field_validator("address")
+    @field_validator("address", mode="after")
     def validate_address(cls, v):
         try:
             v.format_map(FormatVariables())
