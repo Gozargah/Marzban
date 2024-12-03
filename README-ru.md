@@ -95,7 +95,7 @@ Marzban удобен в использовании, многофункциона
 - **Несколько inbound** на **одном порту** (поддержка fallbacks)
 - Ограничения на основе **количества трафика** и **срока действия**
 - Ограничение трафика по **периодам** (например выдавать трафик на день, неделю и т. д.)
-- Поддержка **ссылок-подписок** совместимых с **V2ray** _(такие как V2RayNG, OneClick, Nekoray, и др.)_, **Clash** и **ClashMeta**
+- Поддержка **ссылок-подписок** совместимых с **V2ray** _(такие как V2RayNG, SingBox, Nekoray, и др.)_, **Clash** и **ClashMeta**
 - Автоматическая генерация **Ссылок** и **QRcode** 
 - Мониторинг ресурсов сервера и **использования трафика**
 - Настраиваемые конфигурации xray
@@ -107,10 +107,21 @@ Marzban удобен в использовании, многофункциона
 
 # Руководство по установке
 
-Выполните быструю установку с помощью следующей команды:
+Установка Marzban с базой данных SQLite (по умолчанию):
 
 ```bash
 sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install
+```
+
+Установка Marzban с базой данных MySQL:
+
+```bash
+sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install --database MySQL
+```
+
+Установка Marzban с базой данных MariaDB:
+```
+sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install --database MariaDB
 ```
 
 Когда установка будет завершена:
@@ -323,6 +334,26 @@ Marzban поставляется с встроенным ботом Telegram, к
 
 1. установите `TELEGRAM_API_TOKEN` в качестве API-токена вашего бота.
 2. установите `TELEGRAM_ADMIN_ID` в качестве цифрового ID вашего Telegram-аккаунта, который вы можете получить от [@userinfobot](https://t.me/userinfobot)
+
+Сервис резервного копирования Marzban эффективно архивирует все необходимые файлы и отправляет их вашему указанному Telegram-боту. Он поддерживает базы данных SQLite, MySQL и MariaDB. Одной из ключевых особенностей является автоматизация, позволяющая настроить расписание резервного копирования, например, каждый час. При этом ограничений на размер файлов для загрузки в Telegram через бота нет: если файл превышает лимит, он будет автоматически разделен и отправлен частями. Также можно запустить резервное копирование вручную в любой момент.
+
+Установка последней версии Marzban:
+
+```bash
+sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install-script
+```
+
+Настройка сервиса резервного копирования:
+
+```bash
+marzban backup-service
+```
+
+Мгновенное резервное копирование:
+
+```bash
+marzban backup
+```
 
 # Marzban CLI
 
