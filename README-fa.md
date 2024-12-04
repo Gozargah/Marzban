@@ -66,6 +66,7 @@
     - [امکانات](#امکانات)
 - [راهنمای نصب](#راهنمای-نصب)
 - [تنظیمات](#تنظیمات)
+- [داکیومنت](#داکیومنت)
 - [استفاده از API](#استفاده-از-api)
 - [پشتیبان گیری از مرزبان](#پشتیبان-گیری-از-مرزبان)
 - [ربات تلگرام](#ربات-تلگرام)
@@ -116,7 +117,7 @@ sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/
 sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install --database mysql
 ```
 
-با دستور زیر مرزبان را با دیتابیس MariaD نصب کنید:
+با دستور زیر مرزبان را با دیتابیس MariaDB نصب کنید:
 
 ```bash
 sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install --database mariadb
@@ -128,7 +129,7 @@ sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/
 - فایل های مرزبان در پوشه `/opt/marzban` قرار می‌گیرند
 - فایل تنظیمات در مسیر `/opt/marzban/.env` قرار می‌گیرد ([تنظیمات](#تنظیمات) را مشاهده کنید)
 - فایل های مهم (اطلاعات) مرزبان در مسیر `/usr/lib/marzban` قرار می‌گیرند
-- شما از طریق آدرس `http://YOUR_SERVER_IP:8000/dashboard/` می‌توانید وارد داشبورد مرزبان شوید (YOUR_SERVER_IP را با آیپی سرور خود عوض کنید)
+به دلایل امنیتی، داشبورد مرزبان از طریق آیپی قابل دسترسی نیست. بنابراین، باید برای دامنه خود [گواهی SSL](https://gozargah.github.io/marzban/fa/examples/issue-ssl-certificate) بگیرید و از طریق آدرس https://YOUR_DOMAIN:8000/dashboard/ وارد داشبورد مرزبان شوید (نام دامنه خود را جایگزین YOUR_DOMAIN کنید)
 
 در مرحله بعد, باید یک ادمین سودو بسازید
 
@@ -285,6 +286,9 @@ server {
 |                                                                              فعال کردن کانفیگ سفارشی JSON فقط برای برنامه‌ی Streisand (پیش‌فرض: `False`) | USE_CUSTOM_JSON_FOR_STREISAND |
 |                                                                                 فعال کردن کانفیگ سفارشی JSON فقط برای برنامه‌ی V2rayN (پیش‌فرض: `False`) | USE_CUSTOM_JSON_FOR_V2RAYN |
 
+
+# داکیومنت
+[داکیومنت مرزبان](https://gozargah.github.io/marzban) تمامی آموزش‌های ضروری برای شروع را فراهم می‌کند و در سه زبان فارسی، انگلیسی و روسی در دسترس است. این داکیومنت نیاز به تلاش زیادی دارد تا تمامی جنبه‌های پروژه را به طور کامل پوشش دهد. ما از کمک و همکاری شما برای بهبود آن استقبال و قدردانی می‌کنیم. می‌توانید در این صفحه [گیت‌هاب](https://github.com/Gozargah/gozargah.github.io) مشارکت کنید.
 
 # استفاده از API
 مرزبان به توسعه دهندگانAPI REST ارائه می دهد. برای مشاهده اسناد API در قالب Swagger UI یا ReDoc، متغیر `DOCS=True` را در تنظیمات خود ست کنید و در مرورگر به مسیر `/docs` و `/redoc` بروید.
