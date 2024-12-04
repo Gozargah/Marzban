@@ -66,6 +66,7 @@
     - [Функции](#функции)
 - [Руководство по установке](#руководство-по-установке)
 - [Конфигурация](#конфигурация)
+- [документация](#документация)
 - [API](#api)
 - [Backup](#backup)
 - [Telegram Bot](#telegram-bot)
@@ -129,7 +130,18 @@ sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/
 - Файлы Marzban будут размещены по адресу `/opt/marzban`.
 - Файл конфигурации будет размещен по адресу `/opt/marzban/.env` (см. [Конфигурация](#конфигурация)).
 - Файлы с данными будут размещены по адресу `/var/lib/marzban`.
-- Вы можете получить доступ к панели управления, введя в адресной строке `http://YOUR_SERVER_IP:8000/dashboard/` (заменив YOUR_SERVER_IP на актуальный IP адрес вашего сервера).
+- По соображениям безопасности, панель управления Marzban недоступна через IP-адрес. Поэтому вам необходимо [получить SSL-сертификат](https://gozargah.github.io/marzban/ru/examples/issue-ssl-certificate) и получить доступ к панели управления Marzban, открыв веб-браузер и перейдя по адресу `https://YOUR_DOMAIN:8000/dashboard/` (замените YOUR_DOMAIN на ваш фактический домен).
+- Вы также можете использовать перенаправление портов SSH для локального доступа к панели управления Marzban без домена. Замените `user@serverip` на ваше фактическое имя пользователя SSH и IP-адрес сервера и выполните следующую команду:
+
+```bash
+ssh -L 8000:localhost:8000 user@serverip
+```
+
+Наконец, введите следующую ссылку в ваш браузер, чтобы получить доступ к панели управления Marzban:
+
+http://localhost:8000/dashboard/
+
+Вы потеряете доступ к панели управления, как только закроете терминал SSH. Поэтому этот метод рекомендуется использовать только для тестирования.
 
 Далее, Вам нужно создать главного администратора для входа в панель управления Marzban, выполнив следующую команду: 
 
@@ -312,6 +324,10 @@ server {
 | USE_CUSTOM_JSON_FOR_V2RAYNG              | Enable custom JSON config only for V2rayNG (default: `False`)                                                                  |
 | USE_CUSTOM_JSON_FOR_STREISAND            | Enable custom JSON config only for Streisand (default: `False`)                                                                |
 | USE_CUSTOM_JSON_FOR_V2RAYN               | Enable custom JSON config only for V2rayN (default: `False`)                                                                   |
+
+# документация
+
+[Документация Marzban](https://gozargah.github.io/marzban/ru/) предоставляет все необходимые руководства для начала работы и доступна на трех языках: фарси, английском и русском. Для полного охвата всех аспектов проекта требуется значительное количество усилий. Мы приветствуем и ценим ваш вклад в улучшение документации. Вы можете внести свой вклад в этот [репозиторий на GitHub](https://github.com/Gozargah/gozargah.github.io).
 
 # API
 
