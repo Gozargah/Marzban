@@ -21,7 +21,7 @@ from config import (
     DISABLED_STATUS_TEXT,
     EXPIRED_STATUS_TEXT,
     LIMITED_STATUS_TEXT,
-    ONHOLD_STATUS_TEXT
+    ONHOLD_STATUS_TEXT,
 )
 
 SERVER_IP = get_public_ip()
@@ -271,6 +271,9 @@ def process_inbounds_and_tags(
                 if sni_list:
                     salt = secrets.token_hex(8)
                     sni = random.choice(sni_list).replace("*", salt)
+
+                if sids := inbound.get("sids"):
+                    inbound["sid"] = random.choice(sids)
 
                 req_host = ""
                 req_host_list = host["host"] or inbound["host"]
