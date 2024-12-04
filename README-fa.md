@@ -116,7 +116,7 @@ sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/
 sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install --database mysql
 ```
 
-با دستور زیر مرزبان را با دیتابیس MariaD نصب کنید:
+با دستور زیر مرزبان را با دیتابیس MariaDB نصب کنید:
 
 ```bash
 sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install --database mariadb
@@ -128,7 +128,7 @@ sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/
 - فایل های مرزبان در پوشه `/opt/marzban` قرار می‌گیرند
 - فایل تنظیمات در مسیر `/opt/marzban/.env` قرار می‌گیرد ([تنظیمات](#تنظیمات) را مشاهده کنید)
 - فایل های مهم (اطلاعات) مرزبان در مسیر `/usr/lib/marzban` قرار می‌گیرند
-- شما از طریق آدرس `http://YOUR_SERVER_IP:8000/dashboard/` می‌توانید وارد داشبورد مرزبان شوید (YOUR_SERVER_IP را با آیپی سرور خود عوض کنید)
+- به دلایل امنیتی، داشبورد مرزبان از طریق آیپی قابل دسترسی نیست. بنابراین، باید برای دامنه خود گواهی SSL بگیرید و از طریق آدرس `https://YOUR_DOMAIN:8000/dashboard/` وارد داشبورد مرزبان شوید (نام دامنه خود را جایگزین YOUR_DOMAIN کنید)
 
 در مرحله بعد, باید یک ادمین سودو بسازید
 
