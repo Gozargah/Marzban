@@ -1,14 +1,16 @@
-import "react-datepicker/dist/react-datepicker.css";
-import "react-loading-skeleton/dist/skeleton.css";
 import { RouterProvider } from "react-router-dom";
-import { router } from "./pages/Router";
+import "./index.css";
+import { router } from "@/pages/Router";
+import { ThemeProvider } from "@/components/theme-provider";
 
 function App() {
-    return (
-        <main className="p-8">
-            <RouterProvider router={router} />
-        </main>
-    );
+  return (
+    <ThemeProvider>
+      <main className="">
+        <RouterProvider router={router} />
+      </main>
+    </ThemeProvider>
+  );
 }
 
 export default App;

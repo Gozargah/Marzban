@@ -1,24 +1,31 @@
-import { createHashRouter } from "react-router-dom";
-import { fetch } from "../service/http";
-import { getAuthToken } from "../utils/authStorage";
-import { Dashboard } from "./Dashboard";
-import { Login } from "./Login";
-const fetchAdminLoader = () => {
-    return fetch("/admin", {
-        headers: {
-            Authorization: `Bearer ${getAuthToken()}`,
-        },
+import { createBrowserRouter, createHashRouter, RouteObject } from "react-router-dom";
+import { fetch } from "@/service/http";
+import { getAuthToken } from "@/utils/authStorage";
+import Dashboard from "./dashboard";
+import Login from "./login";
+
+const fetchAdminLoader = async (): Promise<any> => {
+  try {
+    const response = await fetch("/admin", {
+      headers: {
+        Authorization: `Bearer ${getAuthToken()}`,
+      },
     });
+    return response;
+  } catch (error) {
+    throw new Response("Unauthorized", { status: 401 });
+  }
 };
-export const router = createHashRouter([
-    {
-        path: "/",
-        element: <Dashboard />,
-        errorElement: <Login />,
-        loader: fetchAdminLoader,
-    },
-    {
-        path: "/login/",
-        element: <Login />,
-    },
-]);
+
+export const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Dashboard />,
+    errorElement: <Login />,
+    loader: fetchAdminLoader,
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+] as RouteObject[]);
