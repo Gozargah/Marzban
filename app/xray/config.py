@@ -237,7 +237,8 @@ class XRayConfig(dict):
                                 f"You need to provide publicKey in realitySettings of {inbound['tag']}")
 
                     try:
-                        settings['sid'] = tls_settings.get('shortIds')[0]
+                        settings['sids'] = tls_settings.get('shortIds')
+                        settings['sids'][0]  # check if there is any shortIds
                     except (IndexError, TypeError):
                         raise ValueError(
                             f"You need to define at least one shortID in realitySettings of {inbound['tag']}")
@@ -308,7 +309,6 @@ class XRayConfig(dict):
                     settings['xPaddingBytes'] = net_settings.get('xPaddingBytes', "100-1000")
                     settings['xmux'] = net_settings.get('xmux', {})
                     settings["mode"] = net_settings.get("mode", "auto")
-                    settings["extra"] = net_settings.get("extra", {})
                     settings["noGRPCHeader"] = net_settings.get("noGRPCHeader", False)
                     settings["keepAlivePeriod"] = net_settings.get("keepAlivePeriod", 0)
 

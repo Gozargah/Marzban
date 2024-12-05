@@ -76,10 +76,10 @@ class V2rayShareLink(str):
                 sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
                 x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
                 mode=inbound.get("mode", "auto"),
-                extra=inbound.get("extra", {}),
                 noGRPCHeader=inbound.get("noGRPCHeader", False),
                 heartbeatPeriod=inbound.get("heartbeatPeriod", 0),
                 keepAlivePeriod=inbound.get("keepAlivePeriod", 0),
+                xmux=inbound.get("xmux", {}),
             )
 
         elif inbound["protocol"] == "vless":
@@ -108,10 +108,10 @@ class V2rayShareLink(str):
                 sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
                 x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
                 mode=inbound.get("mode", "auto"),
-                extra=inbound.get("extra", {}),
                 noGRPCHeader=inbound.get("noGRPCHeader", False),
                 heartbeatPeriod=inbound.get("heartbeatPeriod", 0),
                 keepAlivePeriod=inbound.get("keepAlivePeriod", 0),
+                xmux=inbound.get("xmux", {}),
             )
 
         elif inbound["protocol"] == "trojan":
@@ -140,10 +140,10 @@ class V2rayShareLink(str):
                 sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
                 x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
                 mode=inbound.get("mode", "auto"),
-                extra=inbound.get("extra", {}),
                 noGRPCHeader=inbound.get("noGRPCHeader", False),
                 heartbeatPeriod=inbound.get("heartbeatPeriod", 0),
                 keepAlivePeriod=inbound.get("keepAlivePeriod", 0),
+                xmux=inbound.get("xmux", {}),
             )
 
         elif inbound["protocol"] == "shadowsocks":
@@ -185,10 +185,10 @@ class V2rayShareLink(str):
             sc_min_posts_interval_ms: int = 30,
             x_padding_bytes: str = "100-1000",
             mode: str = "auto",
-            extra: dict = {},
             noGRPCHeader: bool = False,
             heartbeatPeriod: int = 0,
             keepAlivePeriod: int = 0,
+            xmux: dict = {},
     ):
         payload = {
             "add": address,
@@ -233,15 +233,18 @@ class V2rayShareLink(str):
                 payload["mode"] = "gun"
 
         elif net in ("splithttp", "xhttp"):
-            payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
-            payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
-            payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
-            payload["xPaddingBytes"] = x_padding_bytes
+            extra = {
+                "scMaxEachPostBytes": sc_max_each_post_bytes,
+                "scMaxConcurrentPosts": sc_max_concurrent_posts,
+                "scMinPostsIntervalMs": sc_min_posts_interval_ms,
+                "xPaddingBytes": x_padding_bytes,
+                "noGRPCHeader": noGRPCHeader,
+                "keepAlivePeriod": keepAlivePeriod,
+            }
+            if xmux:
+                extra["xmux"] = xmux
             payload["type"] = mode
-            if extra:
-                payload["extra"] = extra
-            payload["noGRPCHeader"] = int(noGRPCHeader)
-            payload["keepAlivePeriod"] = keepAlivePeriod
+            payload["extra"] = extra
 
         elif net == "ws":
             if heartbeatPeriod:
@@ -280,10 +283,10 @@ class V2rayShareLink(str):
               sc_min_posts_interval_ms: int = 30,
               x_padding_bytes: str = "100-1000",
               mode: str = "auto",
-              extra: dict = {},
               noGRPCHeader: bool = False,
               heartbeatPeriod: int = 0,
               keepAlivePeriod: int = 0,
+              xmux: dict = {},
               ):
 
         payload = {
@@ -309,21 +312,26 @@ class V2rayShareLink(str):
         elif net in ("splithttp", "xhttp"):
             payload["path"] = path
             payload["host"] = host
-            payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
-            payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
-            payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
-            payload["xPaddingBytes"] = x_padding_bytes
             payload["mode"] = mode
-            if extra:
-                payload["extra"] = json.dumps(extra)
-            payload["noGRPCHeader"] = int(noGRPCHeader)
-            payload["keepAlivePeriod"] = keepAlivePeriod
+            extra = {
+                "scMaxEachPostBytes": sc_max_each_post_bytes,
+                "scMaxConcurrentPosts": sc_max_concurrent_posts,
+                "scMinPostsIntervalMs": sc_min_posts_interval_ms,
+                "xPaddingBytes": x_padding_bytes,
+                "noGRPCHeader": noGRPCHeader,
+                "keepAlivePeriod": keepAlivePeriod,
+            }
+            if xmux:
+                extra["xmux"] = xmux
+            payload["extra"] = json.dumps(extra)
 
         elif net == 'kcp':
             payload['seed'] = path
             payload["host"] = host
 
         elif net == "ws":
+            payload["path"] = path
+            payload["host"] = host
             if heartbeatPeriod:
                 payload["heartbeatPeriod"] = heartbeatPeriod
 
@@ -382,10 +390,10 @@ class V2rayShareLink(str):
                sc_min_posts_interval_ms: int = 30,
                x_padding_bytes: str = "100-1000",
                mode: str = "auto",
-               extra: dict = {},
                noGRPCHeader: bool = False,
                heartbeatPeriod: int = 0,
                keepAlivePeriod: int = 0,
+               xmux: dict = {},
                ):
 
         payload = {
@@ -407,15 +415,18 @@ class V2rayShareLink(str):
         elif net in ("splithttp", "xhttp"):
             payload["path"] = path
             payload["host"] = host
-            payload["scMaxEachPostBytes"] = sc_max_each_post_bytes
-            payload["scMaxConcurrentPosts"] = sc_max_concurrent_posts
-            payload["scMinPostsIntervalMs"] = sc_min_posts_interval_ms
-            payload["xPaddingBytes"] = x_padding_bytes
             payload["mode"] = mode
-            if extra:
-                payload["extra"] = json.dumps(extra)
-            payload["noGRPCHeader"] = int(noGRPCHeader)
-            payload["keepAlivePeriod"] = keepAlivePeriod
+            extra = {
+                "scMaxEachPostBytes": sc_max_each_post_bytes,
+                "scMaxConcurrentPosts": sc_max_concurrent_posts,
+                "scMinPostsIntervalMs": sc_min_posts_interval_ms,
+                "xPaddingBytes": x_padding_bytes,
+                "noGRPCHeader": noGRPCHeader,
+                "keepAlivePeriod": keepAlivePeriod,
+            }
+            if xmux:
+                extra["xmux"] = xmux
+            payload["extra"] = json.dumps(extra)
 
         elif net == 'quic':
             payload['key'] = path
@@ -426,6 +437,8 @@ class V2rayShareLink(str):
             payload["host"] = host
 
         elif net == "ws":
+            payload["path"] = path
+            payload["host"] = host
             if heartbeatPeriod:
                 payload["heartbeatPeriod"] = heartbeatPeriod
 
@@ -582,7 +595,6 @@ class V2rayJsonConfig(str):
                          sc_min_posts_interval_ms: int = 30,
                          x_padding_bytes: str = "100-1000",
                          xmux: dict = {},
-                         extra: dict = {},
                          mode: str = "auto",
                          noGRPCHeader: bool = False,
                          keepAlivePeriod: int = 0,
@@ -604,9 +616,6 @@ class V2rayJsonConfig(str):
         config["noGRPCHeader"] = noGRPCHeader
         if xmux:
             config["xmux"] = xmux
-
-        if extra:
-            config["extra"] = extra
         config["keepAlivePeriod"] = keepAlivePeriod
         # core will ignore unknown variables
 
@@ -908,7 +917,6 @@ class V2rayJsonConfig(str):
                             sc_min_posts_interval_ms: int = 30,
                             x_padding_bytes: str = "100-1000",
                             xmux: dict = {},
-                            extra: dict = {},
                             mode: str = "auto",
                             noGRPCHeader: bool = False,
                             heartbeatPeriod: int = 0,
@@ -943,7 +951,6 @@ class V2rayJsonConfig(str):
                                                     sc_min_posts_interval_ms=sc_min_posts_interval_ms,
                                                     x_padding_bytes=x_padding_bytes,
                                                     xmux=xmux,
-                                                    extra=extra,
                                                     mode=mode,
                                                     noGRPCHeader=noGRPCHeader,
                                                     keepAlivePeriod=keepAlivePeriod,
@@ -1055,7 +1062,6 @@ class V2rayJsonConfig(str):
             x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
             xmux=inbound.get("xmux", {}),
             mode=inbound.get("mode", "auto"),
-            extra=inbound.get("extra", {}),
             noGRPCHeader=inbound.get("noGRPCHeader", False),
             heartbeatPeriod=inbound.get("heartbeatPeriod", 0),
             keepAlivePeriod=inbound.get("keepAlivePeriod", 0),

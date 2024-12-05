@@ -22,7 +22,7 @@ from config import (
     DISABLED_STATUS_TEXT,
     EXPIRED_STATUS_TEXT,
     LIMITED_STATUS_TEXT,
-    ONHOLD_STATUS_TEXT
+    ONHOLD_STATUS_TEXT,
 )
 
 SERVER_IP = get_public_ip()
@@ -275,6 +275,9 @@ def process_inbounds_and_tags(
         if host['address']:
             salt = secrets.token_hex(8)
             address = random.choice(address_list).replace('*', salt)
+        if sids := host_inbound.get("sids"):
+            host_inbound["sid"] = random.choice(sids)
+
 
         if host["path"] is not None:
             path = host["path"].format_map(format_variables)
