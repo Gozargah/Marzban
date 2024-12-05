@@ -1,11 +1,11 @@
 import re
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Any, Self
 import random
 import secrets
 
-from pydantic import field_validator, ConfigDict, BaseModel, Field
+from pydantic import field_validator, ConfigDict, BaseModel, Field, model_validator
 from app import xray
 from app.models.proxy import ProxySettings, ProxyTypes
 from app.models.admin import Admin
@@ -13,6 +13,7 @@ from app.utils.jwt import create_subscription_token
 from app.subscription.share import generate_v2ray_links
 from config import XRAY_SUBSCRIPTION_PATH, XRAY_SUBSCRIPTION_URL_PREFIX
 from typing import Annotated
+from sqlalchemy.orm.collections import InstrumentedList
 
 USERNAME_REGEXP = re.compile(r"^(?=\w{3,32}\b)[a-zA-Z0-9-_@.]+(?:_[a-zA-Z0-9-_@.]+)*$")
 
@@ -76,38 +77,46 @@ class User(BaseModel):
     
     next_plan: Optional[NextPlanModel] = Field(None, nullable=True)
         
-    @field_validator("proxies", mode="before")
-    def validate_proxies(cls, v, values, **kwargs):
-        if not v:
-            raise ValueError("Each user needs at least one proxy")
-        return {
-            proxy_type: ProxySettings.from_dict(
-                proxy_type, v.get(proxy_type, {}))
-            for proxy_type in v
-        }
-
-    @field_validator("username", check_fields=False)
+    @model_validator(mode='before')
     @classmethod
-    def validate_username(cls, v):
-        if not USERNAME_REGEXP.match(v):
-            raise ValueError(
-                "Username only can be 3 to 32 characters and contain a-z, 0-9, and underscores in between."
-            )
-        return v
+    def validate_proxies(cls, data: Any) -> Any:
+        if isinstance(data, dict) and 'proxies' in data:
+            if not data['proxies']:
+                raise ValueError("Each user needs at least one proxy")
+            v = data['proxies']
+            data['proxies'] = {
+                proxy_type: ProxySettings.from_dict(
+                    proxy_type, v.get(proxy_type, {}))
+                for proxy_type in v
+            }
+        return data
 
-    @field_validator("note", check_fields=False)
+    @model_validator(mode='before')
     @classmethod
-    def validate_note(cls, v):
-        if v and len(v) > 500:
-            raise ValueError("User's note can be a maximum of 500 character", mode="before")
-        return v
+    def validate_username(cls, data: Any) -> Any:
+        if isinstance(data, dict) and 'username' in data:
+            if not USERNAME_REGEXP.match(data['username']):
+                raise ValueError(
+                    "Username only can be 3 to 32 characters and contain a-z, 0-9, and underscores in between."
+                )
+        return data
 
-    @field_validator("on_hold_expire_duration", "on_hold_timeout")
-    def validate_timeout(cls, v, values):
-        # Check if expire is 0 or None and timeout is not 0 or None
-        if (v in (0, None)):
-            return None
-        return v
+    @model_validator(mode='before')
+    @classmethod
+    def validate_note(cls, data: Any) -> Any:
+        if isinstance(data, dict) and 'note' in data:
+            if data['note'] and len(data['note']) > 500:
+                raise ValueError("User's note can be a maximum of 500 character")
+        return data
+
+    @model_validator(mode='before')
+    @classmethod
+    def validate_timeout(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            for field in ['on_hold_expire_duration', 'on_hold_timeout']:
+                if field in data and data[field] in (0, None):
+                    data[field] = None
+        return data
 
 
 class UserCreate(User):
@@ -153,7 +162,7 @@ class UserCreate(User):
 
     @field_validator("inbounds", mode="before")
     def validate_inbounds(cls, inbounds, values, **kwargs):
-        proxies = values.get("proxies", [])
+        proxies = values.data.get("proxies", [])
 
         # delete inbounds that are for protocols not activated
         for proxy_type in inbounds.copy():
@@ -182,8 +191,8 @@ class UserCreate(User):
 
     @field_validator("status", mode="before")
     def validate_status(cls, status, values):
-        on_hold_expire = values.get("on_hold_expire_duration")
-        expire = values.get("expire")
+        on_hold_expire = values.data.get("on_hold_expire_duration")
+        expire = values.data.get("expire")
         if status == UserStatusCreate.on_hold:
             if (on_hold_expire == 0 or on_hold_expire is None):
                 raise ValueError("User cannot be on hold without a valid on_hold_expire_duration.")
@@ -258,8 +267,8 @@ class UserModify(User):
 
     @field_validator("status", mode="before")
     def validate_status(cls, status, values):
-        on_hold_expire = values.get("on_hold_expire_duration")
-        expire = values.get("expire")
+        on_hold_expire = values.data.get("on_hold_expire_duration")
+        expire = values.data.get("expire")
         if status == UserStatusCreate.on_hold:
             if (on_hold_expire == 0 or on_hold_expire is None):
                 raise ValueError("User cannot be on hold without a valid on_hold_expire_duration.")
@@ -274,38 +283,55 @@ class UserResponse(User):
     used_traffic: int
     lifetime_used_traffic: int = 0
     created_at: datetime
-    links: List[str] = []
     subscription_url: str = ""
-    proxies: dict
+    proxies: Dict[ProxyTypes, ProxySettings] = {}
     excluded_inbounds: Dict[ProxyTypes, List[str]] = {}
-
     admin: Optional[Admin] = None
     model_config = ConfigDict(from_attributes=True)
 
-    @field_validator("links")
-    def validate_links(cls, v, values, **kwargs):
-        if not v:
-            return generate_v2ray_links(
-                values.get("proxies", {}), values.get("inbounds", {}), extra_data=values, reverse=False,
-            )
-        return v
+    @model_validator(mode='before')
+    @classmethod
+    def response(cls, data: Any) -> Any:
+        if not data:
+            return data
 
-    @field_validator("subscription_url")
-    def validate_subscription_url(cls, v, values, **kwargs):
-        if not v:
+        if isinstance(data, dict):
+            # Generate subscription URL
             salt = secrets.token_hex(8)
             url_prefix = (XRAY_SUBSCRIPTION_URL_PREFIX).replace('*', salt)
-            token = create_subscription_token(values["username"])
-            return f"{url_prefix}/{XRAY_SUBSCRIPTION_PATH}/{token}"
-        return v
+            token = create_subscription_token(data.get('username', ''))
+            data['subscription_url'] = f"{url_prefix}/{XRAY_SUBSCRIPTION_PATH}/{token}"
+            
+            # Handle proxy conversion
+            if "proxies" in data:
+                proxies = data['proxies']
+                proxy_dict = {}
+                
+                # Convert SQLAlchemy list to Python list if needed
+                if hasattr(proxies, '_sa_instance_state'):
+                    proxies = list(proxies)
+                
+                # Handle list of Proxy objects
+                if isinstance(proxies, (list, InstrumentedList)):
+                    for proxy in proxies:
+                        # Get proxy type and settings
+                        proxy_type = getattr(proxy, 'type', None)
+                        settings = getattr(proxy, 'settings', {})
+                        
+                        if proxy_type:
+                            # Ensure settings is a dictionary
+                            if hasattr(settings, '_sa_instance_state'):
+                                settings = dict(settings)
+                            proxy_dict[proxy_type] = settings
+                
+                # Handle direct dictionary
+                elif isinstance(proxies, dict):
+                    proxy_dict = proxies
+                
+                data['proxies'] = proxy_dict or {}  # Ensure we always return a dict
 
-    @field_validator("proxies", mode="before")
-    def validate_proxies(cls, v, values, **kwargs):
-        if isinstance(v, list):
-            v = {p.type: p.settings for p in v}
-        return super().validate_proxies(v, values, **kwargs)
+        return data
 
-from pydantic import BaseModel, ConfigDict
 
 class SubscriptionUserResponse(UserResponse):
     model_config = {
