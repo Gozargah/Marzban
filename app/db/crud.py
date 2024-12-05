@@ -31,7 +31,7 @@ from app.db.models import (
 )
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
 from app.models.node import NodeCreate, NodeModify, NodeStatus, NodeUsageResponse
-from app.models.proxy import ProxyHost as ProxyHostModify
+from app.models.host import Host as ProxyHostModify
 from app.models.user import (
     ReminderType,
     UserCreate,
@@ -77,92 +77,126 @@ def get_or_create_inbound(db: Session, inbound_tag: str) -> ProxyInbound:
         db.commit()
         add_default_host(db, inbound)
         db.refresh(inbound)
+
     return inbound
 
 
-def get_hosts(db: Session, inbound_tag: str) -> List[ProxyHost]:
+def get_hosts(
+        db: Session,
+        offset: Optional[int] = 0,
+        limit: Optional[int] = 0,
+) -> List[ProxyHost]:
     """
-    Retrieves hosts for a given inbound tag.
+    Retrieves hosts.
 
     Args:
         db (Session): Database session.
-        inbound_tag (str): The tag of the inbound.
+        offset (Optional[int]): Number of records to skip.
+        limit (Optional[int]): Number of records to retrieve.
 
     Returns:
         List[ProxyHost]: List of hosts for the inbound.
     """
-    inbound = get_or_create_inbound(db, inbound_tag)
-    return inbound.hosts
+    query = db.query(ProxyHost)
+
+    if offset:
+        query = query.offset(offset)
+    if limit:
+        query = query.limit(limit)
+
+    return query.all()
 
 
-def add_host(db: Session, inbound_tag: str, host: ProxyHostModify) -> List[ProxyHost]:
+def get_host_by_id(db: Session, id: int) -> ProxyHost:
     """
-    Adds a new host to a proxy inbound.
+    Retrieves host by id.
 
     Args:
         db (Session): Database session.
-        inbound_tag (str): The tag of the inbound.
-        host (ProxyHostModify): Host details to be added.
+        id (int): The ID of the host.
 
     Returns:
-        List[ProxyHost]: Updated list of hosts for the inbound.
+        List[ProxyHost]: List of hosts for the inbound.
     """
-    inbound = get_or_create_inbound(db, inbound_tag)
-    inbound.hosts.append(
-        ProxyHost(
-            remark=host.remark,
-            address=host.address,
-            port=host.port,
-            path=host.path,
-            sni=host.sni,
-            host=host.host,
-            inbound=inbound,
-            security=host.security,
-            alpn=host.alpn,
-            fingerprint=host.fingerprint
-        )
+    return db.query(ProxyHost).filter(ProxyHost.id == id).first()
+
+
+def add_host(db: Session, host: ProxyHostModify) -> ProxyHost:
+    """
+    Creates a proxy Host based on the host.
+
+    Args:
+        db (Session): Database session.
+        host (ProxyHostModify): The new host to add.
+
+    Returns:
+        ProxyHost: The retrieved or newly created proxy host.
+    """
+    inbound = get_or_create_inbound(db, host.inbound_tag)
+    db_host = ProxyHost(
+        remark=host.remark,
+        address=host.address,
+        port=host.port,
+        path=host.path,
+        sni=host.sni,
+        host=host.host,
+        inbound=inbound,
+        security=host.security,
+        alpn=host.alpn,
+        fingerprint=host.fingerprint,
+        allowinsecure=host.allowinsecure,
+        is_disabled=host.is_disabled,
+        mux_enable=host.mux_enable,
+        fragment_setting=host.fragment_setting,
+        random_user_agent=host.random_user_agent,
+        noise_setting=host.noise_setting,
     )
+
+    db.add(db_host)
     db.commit()
     db.refresh(inbound)
-    return inbound.hosts
+    return db_host
 
 
-def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostModify]) -> List[ProxyHost]:
+def update_host(db: Session, db_host: ProxyHost, modified_host: ProxyHostModify):
+    inbound = get_or_create_inbound(db, modified_host.inbound_tag)
+
+    db_host.remark = modified_host.remark
+    db_host.address = modified_host.address
+    db_host.port = modified_host.port
+    db_host.path = modified_host.path
+    db_host.sni = modified_host.sni
+    db_host.host = modified_host.host
+    db_host.inbound = inbound
+    db_host.security = modified_host.security
+    db_host.alpn = modified_host.alpn
+    db_host.fingerprint = modified_host.fingerprint
+    db_host.allowinsecure = modified_host.allowinsecure
+    db_host.is_disabled = modified_host.is_disabled
+    db_host.mux_enable = modified_host.mux_enable
+    db_host.fragment_setting = modified_host.fragment_setting
+    db_host.random_user_agent = modified_host.random_user_agent
+    db_host.noise_setting = modified_host.noise_setting
+
+    db.commit()
+    db.refresh(inbound)
+    return db_host
+
+
+def remove_host(db: Session, db_host: ProxyHost) -> ProxyHost:
     """
-    Updates hosts for a given inbound tag.
+    Removes a proxy Host from the database.
 
     Args:
         db (Session): Database session.
-        inbound_tag (str): The tag of the inbound.
-        modified_hosts (List[ProxyHostModify]): List of modified hosts.
+        db_host (ProxyHost): The host to remove.
 
     Returns:
-        List[ProxyHost]: Updated list of hosts for the inbound.
+        ProxyHost: The removed proxy host.
     """
-    inbound = get_or_create_inbound(db, inbound_tag)
-    inbound.hosts = [
-        ProxyHost(
-            remark=host.remark,
-            address=host.address,
-            port=host.port,
-            path=host.path,
-            sni=host.sni,
-            host=host.host,
-            inbound=inbound,
-            security=host.security,
-            alpn=host.alpn,
-            fingerprint=host.fingerprint,
-            allowinsecure=host.allowinsecure,
-            is_disabled=host.is_disabled,
-            mux_enable=host.mux_enable,
-            fragment_setting=host.fragment_setting,
-            noise_setting=host.noise_setting,
-            random_user_agent=host.random_user_agent,
-        ) for host in modified_hosts
-    ]
+    db.delete(db_host)
     db.commit()
-    db.refresh(inbound)
-    return inbound.hosts
+    return db_host
 
 
 def get_user_queryset(db: Session) -> Query:

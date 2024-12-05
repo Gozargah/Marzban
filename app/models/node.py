@@ -25,8 +25,6 @@ class Node(BaseModel):
 
 
 class NodeCreate(Node):
-    add_as_new_host: bool = True
-
     class Config:
         schema_extra = {
             "example": {
@@ -34,7 +32,6 @@ class NodeCreate(Node):
                 "address": "192.168.1.1",
                 "port": 62050,
                 "api_port": 62051,
-                "add_as_new_host": True,
                 "usage_coefficient": 1
             }
         }

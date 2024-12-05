@@ -1,6 +1,7 @@
 import base64
 import random
 import secrets
+from copy import deepcopy
 from collections import defaultdict
 from datetime import datetime as dt
 from datetime import timedelta
@@ -243,76 +244,67 @@ def process_inbounds_and_tags(
         ],
         reverse=False,
 ) -> Union[List, str]:
-    _inbounds = []
-    for protocol, tags in inbounds.items():
-        for tag in tags:
-            _inbounds.append((protocol, [tag]))
-    index_dict = {proxy: index for index, proxy in enumerate(
-        xray.config.inbounds_by_tag.keys())}
-    inbounds = sorted(
-        _inbounds, key=lambda x: index_dict.get(x[1][0], float('inf')))
+    for _, host in xray.hosts.items():
+        tag = host["inbound_tag"]
+        host_inbound = deepcopy(xray.config.inbounds_by_tag[tag])
 
-    for protocol, tags in inbounds:
+        protocol = host_inbound["protocol"]
+        if tag not in inbounds[protocol]:
+            continue
+
         settings = proxies.get(protocol)
         if not settings:
             continue
 
-        format_variables.update({"PROTOCOL": protocol.name})
-        for tag in tags:
-            inbound = xray.config.inbounds_by_tag.get(tag)
-            if not inbound:
-                continue
+        format_variables.update({"PROTOCOL": protocol})
+        format_variables.update({"TRANSPORT": host_inbound["network"]})
+        sni = ""
+        sni_list = host["sni"] or host_inbound["sni"]
+        if sni_list:
+            salt = secrets.token_hex(8)
+            sni = random.choice(sni_list).replace("*", salt)
 
-            format_variables.update({"TRANSPORT": inbound["network"]})
-            host_inbound = inbound.copy()
-            for host in xray.hosts.get(tag, []):
-                sni = ""
-                sni_list = host["sni"] or inbound["sni"]
-                if sni_list:
-                    salt = secrets.token_hex(8)
-                    sni = random.choice(sni_list).replace("*", salt)
+        req_host = ""
+        req_host_list = host["host"] or host_inbound["host"]
+        if req_host_list:
+            salt = secrets.token_hex(8)
+            req_host = random.choice(req_host_list).replace("*", salt)
 
-                req_host = ""
-                req_host_list = host["host"] or inbound["host"]
-                if req_host_list:
-                    salt = secrets.token_hex(8)
-                    req_host = random.choice(req_host_list).replace("*", salt)
+        address = ""
+        address_list = host["address"]
+        if host['address']:
+            salt = secrets.token_hex(8)
+            address = random.choice(address_list).replace('*', salt)
 
-                address = ""
-                address_list = host['address']
-                if host['address']:
-                    salt = secrets.token_hex(8)
-                    address = random.choice(address_list).replace('*', salt)
+        if host["path"] is not None:
+            path = host["path"].format_map(format_variables)
+        else:
+            path = host_inbound.get("path", "").format_map(format_variables)
 
-                if host["path"] is not None:
-                    path = host["path"].format_map(format_variables)
-                else:
-                    path = inbound.get("path", "").format_map(format_variables)
+        host_inbound.update(
+            {
+                "port": host["port"] or host_inbound["port"],
+                "sni": sni,
+                "host": req_host,
+                "tls": host_inbound["tls"] if host["tls"] is None else host["tls"],
+                "alpn": host["alpn"] if host["alpn"] else None,
+                "path": path,
+                "fp": host["fingerprint"] or host_inbound.get("fp", ""),
+                "ais": host["allowinsecure"]
+                or host_inbound.get("allowinsecure", ""),
+                "mux_enable": host["mux_enable"],
+                "fragment_setting": host["fragment_setting"],
+                "noise_setting": host["noise_setting"],
+                "random_user_agent": host["random_user_agent"],
+            }
+        )
 
-                host_inbound.update(
-                    {
-                        "port": host["port"] or inbound["port"],
-                        "sni": sni,
-                        "host": req_host,
-                        "tls": inbound["tls"] if host["tls"] is None else host["tls"],
-                        "alpn": host["alpn"] if host["alpn"] else None,
-                        "path": path,
-                        "fp": host["fingerprint"] or inbound.get("fp", ""),
-                        "ais": host["allowinsecure"]
-                        or inbound.get("allowinsecure", ""),
-                        "mux_enable": host["mux_enable"],
-                        "fragment_setting": host["fragment_setting"],
-                        "noise_setting": host["noise_setting"],
-                        "random_user_agent": host["random_user_agent"],
-                    }
-                )
-
-                conf.add(
-                    remark=host["remark"].format_map(format_variables),
-                    address=address.format_map(format_variables),
-                    inbound=host_inbound,
-                    settings=settings.dict(no_obj=True)
-                )
+        conf.add(
+            remark=host["remark"].format_map(format_variables),
+            address=address.format_map(format_variables),
+            inbound=host_inbound,
+            settings=settings.dict(no_obj=True)
+        )
 
     return conf.render(reverse=reverse)
 
