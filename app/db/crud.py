@@ -31,7 +31,7 @@ from app.db.models import (
 )
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
 from app.models.node import NodeCreate, NodeModify, NodeStatus, NodeUsageResponse
-from app.models.host import Host as ProxyHostModify
+from app.models.host import HostResponse as ProxyHostModify
 from app.models.user import (
     ReminderType,
     UserCreate,

@@ -2,17 +2,15 @@ from typing import Dict, List, Union
 
 from fastapi import APIRouter, Depends
 
-from app import __version__, xray, logger
+from app import __version__, xray
 from app.db import Session, crud, get_db
-from app.db.models import ProxyHost
 from app.models.admin import Admin
 from app.models.proxy import ProxyTypes
-from app.models.host import Host, ProxyInbound
+from app.models.host import ProxyInbound
 from app.models.system import SystemStats
 from app.models.user import UserStatus
 from app.utils import responses
 from app.utils.system import cpu_usage, memory_usage, realtime_bandwidth
-from app.dependencies import get_host
 
 router = APIRouter(tags=["System"], prefix="/api", responses={401: responses._401})
 

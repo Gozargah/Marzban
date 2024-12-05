@@ -54,8 +54,7 @@ class FormatVariables(dict):
         return key.join("{}")
 
 
-class Host(BaseModel):
-    id: int
+class CreateHost(BaseModel):
     remark: str
     address: str
     inbound_tag: str
@@ -120,6 +119,13 @@ class Host(BaseModel):
                     "Noise can't be longer that 2000 character"
                 )
         return v
+
+
+class HostResponse(CreateHost):
+    id: int
+
+    class Config:
+        orm_mode = True
 
 
 class ProxyInbound(BaseModel):

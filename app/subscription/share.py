@@ -249,7 +249,7 @@ def process_inbounds_and_tags(
         host_inbound = deepcopy(xray.config.inbounds_by_tag[tag])
 
         protocol = host_inbound["protocol"]
-        if tag not in inbounds[protocol]:
+        if tag not in inbounds.get(protocol):
             continue
 
         settings = proxies.get(protocol)
@@ -277,7 +277,6 @@ def process_inbounds_and_tags(
             address = random.choice(address_list).replace('*', salt)
         if sids := host_inbound.get("sids"):
             host_inbound["sid"] = random.choice(sids)
-
 
         if host["path"] is not None:
             path = host["path"].format_map(format_variables)

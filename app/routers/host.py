@@ -6,16 +6,16 @@ from app import xray, logger
 from app.db import Session, crud, get_db
 from app.db.models import ProxyHost
 from app.models.admin import Admin
-from app.models.host import Host
+from app.models.host import HostResponse, CreateHost
 from app.utils import responses
 from app.dependencies import get_host
 
 router = APIRouter(tags=["Host"], prefix="/api/host", responses={401: responses._401, 403: responses._403})
 
 
-@router.post('/', response_model=Host)
+@router.post('/', response_model=HostResponse)
 def add_host(
-        new_host: Host,
+        new_host: CreateHost,
         db: Session = Depends(get_db),
         _: Admin = Depends(Admin.check_sudo_admin),
 ):
@@ -32,9 +32,9 @@ def add_host(
     return db_host
 
 
-@router.put('/{host_id}', response_model=Host, responses={404: responses._404})
+@router.put('/{host_id}', response_model=HostResponse, responses={404: responses._404})
 def modify_host(
-        modified_host: Host,
+        modified_host: HostResponse,
         db_host: ProxyHost = Depends(get_host),
         db: Session = Depends(get_db),
         _: Admin = Depends(Admin.check_sudo_admin),
@@ -71,9 +71,9 @@ def remove_host(
     return {}
 
 
-@router.get('/{host_id}', response_model=Host)
+@router.get('/{host_id}', response_model=HostResponse)
 def get_host(
-        db_host: Host = Depends(get_host),
+        db_host: HostResponse = Depends(get_host),
         _: Admin = Depends(Admin.check_sudo_admin),
 ):
     """
@@ -83,7 +83,7 @@ def get_host(
     return db_host
 
 
-@router.get('s', response_model=List[Host])
+@router.get('s', response_model=List[HostResponse])
 def get_hosts(
         offset: int = 0,
         limit: int = 0,
@@ -96,9 +96,9 @@ def get_hosts(
     return crud.get_hosts(db, offset, limit)
 
 
-@router.put("s", response_model=List[Host])
+@router.put("s", response_model=List[HostResponse])
 def modify_hosts(
-        modified_hosts: List[Host],
+        modified_hosts: List[HostResponse],
         db: Session = Depends(get_db),
         _: Admin = Depends(Admin.check_sudo_admin),
 ):
