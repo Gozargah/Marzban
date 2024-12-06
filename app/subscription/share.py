@@ -249,7 +249,11 @@ def process_inbounds_and_tags(
         host_inbound = deepcopy(xray.config.inbounds_by_tag[tag])
 
         protocol = host_inbound["protocol"]
-        if tag not in inbounds.get(protocol):
+        tags = inbounds.get(protocol)
+        if tags is None:
+            continue
+
+        if tag not in tags:
             continue
 
         settings = proxies.get(protocol)
