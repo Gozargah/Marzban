@@ -1,4 +1,5 @@
 import { RouterProvider } from "react-router-dom";
+import './styles/fonts.css';
 import "./index.css";
 import { router } from "@/pages/Router";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -6,7 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 function App() {
   return (
     <ThemeProvider>
-      <main className="">
+      <main>
         <RouterProvider router={router} />
       </main>
     </ThemeProvider>

@@ -1,4 +1,4 @@
-import { createBrowserRouter, createHashRouter, RouteObject } from "react-router-dom";
+import { createBrowserRouter, RouteObject } from "react-router-dom";
 import { fetch } from "@/service/http";
 import { getAuthToken } from "@/utils/authStorage";
 import Dashboard from "./dashboard";
@@ -21,8 +21,8 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: <Dashboard />,
-    errorElement: <Login />,
-    loader: fetchAdminLoader,
+    // errorElement: <Login />,
+    // loader: fetchAdminLoader,
   },
   {
     path: "/login",

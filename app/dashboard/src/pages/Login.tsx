@@ -11,7 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Language } from "@/components/Language";
 import { ModeToggle } from "@/components/mode-toggle";
 import LogoIcon from "@/assets/logo.svg";
-import { LogIn } from "lucide-react";
+import { AlertCircle, LogIn } from "lucide-react";
 
 const schema = Yup.object({
   username: Yup.string().required("login.fieldRequired"),
@@ -22,7 +22,8 @@ export const Login: React.FC = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.language === "fa";
   let location = useLocation();
 
   useEffect(() => {
@@ -55,7 +56,9 @@ export const Login: React.FC = () => {
         navigate("/");
       })
       .catch((err) => {
-        setError(err.response?._data?.detail || "An error occurred.");
+        console.log(err);
+
+        setError(err.response.data.detail || "An error occurred.");
       })
       .finally(() => {
         setLoading(false);
@@ -66,7 +69,7 @@ export const Login: React.FC = () => {
   return (
     <div className="flex flex-col justify-between min-h-screen p-6 w-full">
       <div className="w-full">
-        <div className="flex justify-between w-full">
+        <div className="flex gap-x-2 w-full">
           <ModeToggle />
           <Language />
         </div>
@@ -98,12 +101,16 @@ export const Login: React.FC = () => {
                           className="py-5 px-4"
                           placeholder={t("username")}
                           name="username"
-                          error={
-                            errors.username && touched.username
-                              ? t(errors.username)
-                              : ""
-                          }
                         />
+                        {errors.username && touched.username && (
+                          <div
+                            className={`text-red-500 text-xs mt-1 font-bold ${
+                              isRtl && "text-right"
+                            }`}
+                          >
+                            {t(errors.username)}
+                          </div>
+                        )}
                       </div>
                       <div className="form-control">
                         <Field
@@ -112,19 +119,27 @@ export const Login: React.FC = () => {
                           type="password"
                           placeholder={t("password")}
                           name="password"
-                          error={
-                            errors.password && touched.password
-                              ? t(errors.password)
-                              : ""
-                          }
                         />
+                        {errors.password && touched.password && (
+                          <div
+                            className={`text-red-500 text-xs mt-1 font-bold ${
+                              isRtl && "text-right"
+                            }`}
+                          >
+                            {t(errors.password)}
+                          </div>
+                        )}
                       </div>
                       {error && (
-                        <Alert variant="destructive">
-                          <AlertTitle>!</AlertTitle>
-                          <AlertDescription>{error}</AlertDescription>
+                        <Alert
+                          variant="destructive"
+                          className="p-4 rounded-lg flex items-center bg-[#a32929d4] border-none text-red-700 justify-between"
+                        >
+                          <AlertCircle className="h-6 w-6 fill-red-300" />
+                          <span className="text-white ml-1 font-semibold">{error}</span>
                         </Alert>
                       )}
+
                       <Button
                         type="submit"
                         className="w-full"

@@ -4,8 +4,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { LanguagesIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
