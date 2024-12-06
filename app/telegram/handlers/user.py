@@ -21,7 +21,7 @@ def usage_command(message):
 
         if not dbuser:
             return bot.reply_to(message, "No user found with this username")
-        user = UserResponse.from_orm(dbuser)
+        user = UserResponse.model_validate(dbuser)
 
         statuses = {
             'active': '✅',

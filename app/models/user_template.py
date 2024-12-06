@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, validator
+from pydantic import field_validator, ConfigDict, BaseModel, Field
 
 from app import xray
 from app.models.proxy import ProxyTypes
@@ -21,33 +21,32 @@ class UserTemplate(BaseModel):
 
 
 class UserTemplateCreate(UserTemplate):
-    class Config:
-        schema_extra = {
-            "example": {
-                "name": "my template 1",
-                "inbounds": {"vmess": ["VMESS_INBOUND"], "vless": ["VLESS_INBOUND"]},
-                "data_limit": 0,
-                "expire_duration": 0,
-            }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "name": "my template 1",
+            "inbounds": {"vmess": ["VMESS_INBOUND"], "vless": ["VLESS_INBOUND"]},
+            "data_limit": 0,
+            "expire_duration": 0,
         }
+    })
 
 
 class UserTemplateModify(UserTemplate):
-    class Config:
-        schema_extra = {
-            "example": {
-                "name": "my template 1",
-                "inbounds": {"vmess": ["VMESS_INBOUND"], "vless": ["VLESS_INBOUND"]},
-                "data_limit": 0,
-                "expire_duration": 0,
-            }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "name": "my template 1",
+            "inbounds": {"vmess": ["VMESS_INBOUND"], "vless": ["VLESS_INBOUND"]},
+            "data_limit": 0,
+            "expire_duration": 0,
         }
+    })
 
 
 class UserTemplateResponse(UserTemplate):
     id: int
 
-    @validator("inbounds", pre=True)
+    @field_validator("inbounds", mode="before")
+    @classmethod
     def validate_inbounds(cls, v):
         final = {}
         inbound_tags = [i.tag for i in v]
@@ -59,6 +58,4 @@ class UserTemplateResponse(UserTemplate):
                     else:
                         final[protocol] = [inbound["tag"]]
         return final
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
