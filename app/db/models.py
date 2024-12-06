@@ -11,8 +11,8 @@ from sqlalchemy.sql.expression import text, select
 from app import xray
 from app.db.base import Base
 from app.models.node import NodeStatus
-from app.models.proxy import (ProxyHostALPN, ProxyHostFingerprint,
-                              ProxyHostSecurity, ProxyTypes)
+from app.models.proxy import ProxyTypes
+from app.models.host import ProxyHostSecurity, ProxyHostALPN, ProxyHostFingerprint
 from app.models.user import (ReminderType, UserDataLimitResetStrategy,
                              UserStatus)
 

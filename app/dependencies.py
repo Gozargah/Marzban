@@ -2,6 +2,7 @@ from typing import Optional, Union
 from app.models.admin import AdminInDB, AdminValidationResult, Admin
 from app.models.user import UserResponse, UserStatus
 from app.db import Session, crud, get_db
+from app.db.models import ProxyHost
 from config import SUDOERS
 from fastapi import Depends, HTTPException
 from datetime import datetime, timezone, timedelta
@@ -112,3 +113,11 @@ def get_expired_users_list(db: Session, admin: Admin, expired_after: Optional[da
         u for u in dbusers
         if u.expire and expired_after.timestamp() <= u.expire <= expired_before.timestamp()
     ]
+
+
+def get_host(host_id: int, db: Session = Depends(get_db)) -> ProxyHost:
+    """Fetch a Proxy Host by its ID, raise 404 if not found."""
+    db_host = crud.get_host_by_id(db, host_id)
+    if not db_host:
+        raise HTTPException(status_code=404, detail="Host not found")
+    return db_host

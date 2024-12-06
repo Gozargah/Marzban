@@ -18,24 +18,11 @@ from app.models.node import (
     NodeStatus,
     NodesUsageResponse,
 )
-from app.models.proxy import ProxyHost
 from app.utils import responses
 
 router = APIRouter(
     tags=["Node"], prefix="/api", responses={401: responses._401, 403: responses._403}
 )
-
-
-def add_host_if_needed(new_node: NodeCreate, db: Session):
-    """Add a host if specified in the new node settings."""
-    if new_node.add_as_new_host:
-        host = ProxyHost(
-            remark=f"{new_node.name} ({{USERNAME}}) [{{PROTOCOL}} - {{TRANSPORT}}]",
-            address=new_node.address,
-        )
-        for inbound_tag in xray.config.inbounds_by_tag:
-            crud.add_host(db, inbound_tag, host)
-        xray.hosts.update()
 
 
 @router.get("/node/settings", response_model=NodeSettings)
@@ -64,7 +51,6 @@ def add_node(
         )
 
     bg.add_task(xray.operations.connect_node, node_id=dbnode.id)
-    bg.add_task(add_host_if_needed, new_node, db)
 
     logger.info(f'New node "{dbnode.name}" added')
     return dbnode
