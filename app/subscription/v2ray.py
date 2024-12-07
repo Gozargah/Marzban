@@ -6,6 +6,7 @@ from random import choice
 from typing import Union
 from urllib.parse import quote
 from uuid import UUID
+from app.utils.helpers import UUIDEncoder
 
 from jinja2.exceptions import TemplateNotFound
 
@@ -517,7 +518,7 @@ class V2rayJsonConfig(str):
     def render(self, reverse=False):
         if reverse:
             self.config.reverse()
-        return json.dumps(self.config, indent=4)
+        return json.dumps(self.config, indent=4,cls=UUIDEncoder)
 
     @staticmethod
     def tls_config(sni=None, fp=None, alpn=None, ais: bool = False) -> dict:

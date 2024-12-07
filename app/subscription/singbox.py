@@ -2,6 +2,7 @@ import copy
 import json
 from random import choice
 
+from app.utils.helpers import UUIDEncoder
 from jinja2.exceptions import TemplateNotFound
 
 from app.subscription.funcs import get_grpc_gun
@@ -65,7 +66,7 @@ class SingBoxConfiguration(str):
 
         if reverse:
             self.config["outbounds"].reverse()
-        return json.dumps(self.config, indent=4)
+        return json.dumps(self.config, indent=4,cls=UUIDEncoder)
 
     @staticmethod
     def tls_config(sni=None, fp=None, tls=None, pbk=None,
