@@ -1,11 +1,10 @@
-from pydantic import BaseModel, ConfigDict, model_validator
 import re
 import secrets
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app import xray
 from app.models.admin import Admin

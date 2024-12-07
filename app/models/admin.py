@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
-from pydantic import field_validator, ConfigDict, BaseModel
+from pydantic import ConfigDict, field_validator,  BaseModel
 
 from app.db import Session, crud, get_db
 from app.utils.jwt import get_admin_payload
@@ -17,15 +17,15 @@ class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
+
 class Admin(BaseModel):
     username: str
     is_sudo: bool
     telegram_id: Optional[int] = None
     discord_webhook: Optional[str] = None
     users_usage: Optional[int] = None
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = ConfigDict(from_attributes=True)
+
     @classmethod
     def get_admin(cls, token: str, db: Session):
         payload = get_admin_payload(token)
@@ -46,6 +46,7 @@ class Admin(BaseModel):
                 return
 
         return cls.model_validate(dbadmin)
+
     @classmethod
     def get_current(cls,
                     db: Session = Depends(get_db),
@@ -76,6 +77,7 @@ class Admin(BaseModel):
                 detail="You're not allowed"
             )
         return admin
+
 
 class AdminCreate(Admin):
     password: str
@@ -123,6 +125,7 @@ class AdminInDB(Admin):
 
     def verify_password(self, plain_password):
         return pwd_context.verify(plain_password, self.hashed_password)
+
 
 class AdminValidationResult(BaseModel):
     username: str
