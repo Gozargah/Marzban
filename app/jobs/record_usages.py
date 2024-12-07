@@ -167,15 +167,15 @@ def record_user_usages():
 
         safe_execute(db, stmt, users_usage)
 
+        admin_data = [{"admin_id": admin_id, "value": value} for admin_id, value in admin_usage.items()]
+        if admin_data:
+            admin_update_stmt = update(Admin). \
+                where(Admin.id == bindparam('admin_id')). \
+                values(users_usage=Admin.users_usage + bindparam('value'))
+            safe_execute(db, admin_update_stmt, admin_data)
+
     if DISABLE_RECORDING_NODE_USAGE:
         return
-
-    admin_data = [{"admin_id": admin_id, "value": value} for admin_id, value in admin_usage.items()]
-    if admin_data:
-        admin_update_stmt = update(Admin). \
-            where(Admin.id == bindparam('admin_id')). \
-            values(users_usage=Admin.users_usage + bindparam('value'))
-        safe_execute(db, admin_update_stmt, admin_data)
 
     for node_id, params in api_params.items():
         record_user_stats(params, node_id, usage_coefficient[node_id])
