@@ -1,18 +1,20 @@
+from pydantic.json_schema import SkipJsonSchema
+from pydantic import BaseModel, ConfigDict, model_validator
+import random
 import re
+import secrets
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Union
-import random
-import secrets
+from typing import Annotated, Dict, List, Optional, Union
 
-from pydantic import field_validator, ConfigDict, BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
 from app import xray
-from app.models.proxy import ProxySettings, ProxyTypes
 from app.models.admin import Admin
-from app.utils.jwt import create_subscription_token
+from app.models.proxy import ProxySettings, ProxyTypes
 from app.subscription.share import generate_v2ray_links
+from app.utils.jwt import create_subscription_token
 from config import XRAY_SUBSCRIPTION_PATH, XRAY_SUBSCRIPTION_URL_PREFIX
-from typing import Annotated
 
 USERNAME_REGEXP = re.compile(r"^(?=\w{3,32}\b)[a-zA-Z0-9-_@.]+(?:_[a-zA-Z0-9-_@.]+)*$")
 
@@ -48,12 +50,14 @@ class UserDataLimitResetStrategy(str, Enum):
     month = "month"
     year = "year"
 
+
 class NextPlanModel(BaseModel):
     data_limit: Optional[int] = None
     expire: Optional[int] = None
     add_remaining_traffic: bool = False
     fire_on_either: bool = True
     model_config = ConfigDict(from_attributes=True)
+
 
 class User(BaseModel):
     proxies: Dict[ProxyTypes, ProxySettings] = {}
@@ -73,9 +77,9 @@ class User(BaseModel):
     on_hold_timeout: Optional[Union[datetime, None]] = Field(None, nullable=True)
 
     auto_delete_in_days: Optional[int] = Field(None, nullable=True)
-    
+
     next_plan: Optional[NextPlanModel] = Field(None, nullable=True)
-        
+
     @field_validator("proxies", mode="before")
     def validate_proxies(cls, v, values, **kwargs):
         if not v:
@@ -153,7 +157,7 @@ class UserCreate(User):
 
     @field_validator("inbounds", mode="before")
     def validate_inbounds(cls, inbounds, values, **kwargs):
-        proxies = values.get("proxies", [])
+        proxies = values.data.get("proxies", [])
 
         # delete inbounds that are for protocols not activated
         for proxy_type in inbounds.copy():
@@ -182,8 +186,8 @@ class UserCreate(User):
 
     @field_validator("status", mode="before")
     def validate_status(cls, status, values):
-        on_hold_expire = values.get("on_hold_expire_duration")
-        expire = values.get("expire")
+        on_hold_expire = values.data.get("on_hold_expire_duration")
+        expire = values.data.get("expire")
         if status == UserStatusCreate.on_hold:
             if (on_hold_expire == 0 or on_hold_expire is None):
                 raise ValueError("User cannot be on hold without a valid on_hold_expire_duration.")
@@ -258,8 +262,8 @@ class UserModify(User):
 
     @field_validator("status", mode="before")
     def validate_status(cls, status, values):
-        on_hold_expire = values.get("on_hold_expire_duration")
-        expire = values.get("expire")
+        on_hold_expire = values.data.get("on_hold_expire_duration")
+        expire = values.data.get("expire")
         if status == UserStatusCreate.on_hold:
             if (on_hold_expire == 0 or on_hold_expire is None):
                 raise ValueError("User cannot be on hold without a valid on_hold_expire_duration.")
@@ -282,22 +286,22 @@ class UserResponse(User):
     admin: Optional[Admin] = None
     model_config = ConfigDict(from_attributes=True)
 
-    @field_validator("links")
-    def validate_links(cls, v, values, **kwargs):
-        if not v:
-            return generate_v2ray_links(
-                values.get("proxies", {}), values.get("inbounds", {}), extra_data=values, reverse=False,
+    @model_validator(mode="after")
+    def validate_links(self):
+        if not self.links:
+            self.links = generate_v2ray_links(
+                self.proxies, self.inbounds, extra_data=self.model_dump(), reverse=False,
             )
-        return v
+        return self
 
-    @field_validator("subscription_url")
-    def validate_subscription_url(cls, v, values, **kwargs):
-        if not v:
+    @model_validator(mode="after")
+    def validate_subscription_url(self):
+        if not self.subscription_url:
             salt = secrets.token_hex(8)
             url_prefix = (XRAY_SUBSCRIPTION_URL_PREFIX).replace('*', salt)
-            token = create_subscription_token(values["username"])
-            return f"{url_prefix}/{XRAY_SUBSCRIPTION_PATH}/{token}"
-        return v
+            token = create_subscription_token(self.username)
+            self.subscription_url = f"{url_prefix}/{XRAY_SUBSCRIPTION_PATH}/{token}"
+        return self
 
     @field_validator("proxies", mode="before")
     def validate_proxies(cls, v, values, **kwargs):
@@ -305,29 +309,16 @@ class UserResponse(User):
             v = {p.type: p.settings for p in v}
         return super().validate_proxies(v, values, **kwargs)
 
-from pydantic import BaseModel, ConfigDict
 
 class SubscriptionUserResponse(UserResponse):
-    model_config = {
-        "from_attributes": True,
-        "model_fields": {
-            "username": {"include": True},
-            "status": {"include": True},
-            "expire": {"include": True},
-            "data_limit": {"include": True},
-            "data_limit_reset_strategy": {"include": True},
-            "used_traffic": {"include": True},
-            "lifetime_used_traffic": {"include": True},
-            "proxies": {"include": True},
-            "created_at": {"include": True},
-            "sub_updated_at": {"include": True},
-            "online_at": {"include": True},
-            "links": {"include": True},
-            "subscription_url": {"include": True},
-            "sub_last_user_agent": {"include": True},
-        },
-    }
-
+    admin: Admin | None = Field(default=None, exclude=True)
+    excluded_inbounds: Dict[ProxyTypes, List[str]] | None = Field(None, exclude=True)
+    note: str | None = Field(None, exclude=True)
+    inbounds: Dict[ProxyTypes, List[str]] | None = Field(None, exclude=True)
+    auto_delete_in_days: int | None = Field(None, exclude=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+    )
 
 
 class UsersResponse(BaseModel):
@@ -344,6 +335,7 @@ class UserUsageResponse(BaseModel):
 class UserUsagesResponse(BaseModel):
     username: str
     usages: List[UserUsageResponse]
+
 
 class UsersUsagesResponse(BaseModel):
     usages: List[UserUsageResponse]

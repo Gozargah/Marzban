@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Optional, Union
 from uuid import UUID, uuid4
 
-from pydantic import field_validator, ConfigDict, BaseModel, Field, validator
+from pydantic import field_validator, ConfigDict, BaseModel, Field
 
 from app.utils.system import random_password
 from xray_api.types.account import (
@@ -53,7 +53,7 @@ class ProxyTypes(str, Enum):
             return ShadowsocksSettings
 
 
-class ProxySettings(BaseModel):
+class ProxySettings(BaseModel, use_enum_values=True):
     @classmethod
     def from_dict(cls, proxy_type: ProxyTypes, _dict: dict):
         return ProxyTypes(proxy_type).settings_model.model_validate(_dict)
