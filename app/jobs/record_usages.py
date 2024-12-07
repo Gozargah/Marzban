@@ -152,7 +152,7 @@ def record_user_usages():
 
     admin_usage = defaultdict(int)
     for user_usage in users_usage:
-        admin_id = user_admin_map.get(user_usage["uid"])
+        admin_id = user_admin_map.get(int(user_usage["uid"]))
         if admin_id:
             admin_usage[admin_id] += user_usage["value"]
 
