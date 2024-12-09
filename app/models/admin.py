@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
-from pydantic import BaseModel, validator
+from pydantic import ConfigDict, field_validator,  BaseModel
 
 from app.db import Session, crud, get_db
 from app.utils.jwt import get_admin_payload
@@ -21,12 +21,10 @@ class Token(BaseModel):
 class Admin(BaseModel):
     username: str
     is_sudo: bool
-    telegram_id: Optional[int]
-    discord_webhook: Optional[str]
-    users_usage: Optional[int]
-
-    class Config:
-        orm_mode = True
+    telegram_id: Optional[int] = None
+    discord_webhook: Optional[str] = None
+    users_usage: Optional[int] = None
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     def get_admin(cls, token: str, db: Session):
@@ -47,7 +45,7 @@ class Admin(BaseModel):
             if dbadmin.password_reset_at > payload.get("created_at"):
                 return
 
-        return cls.from_orm(dbadmin)
+        return cls.model_validate(dbadmin)
 
     @classmethod
     def get_current(cls,
@@ -60,13 +58,12 @@ class Admin(BaseModel):
                 detail="Could not validate credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-
         return admin
 
     @classmethod
     def check_sudo_admin(cls,
-                        db: Session = Depends(get_db),
-                        token: str = Depends(oauth2_scheme)):
+                         db: Session = Depends(get_db),
+                         token: str = Depends(oauth2_scheme)):
         admin = cls.get_admin(token, db)
         if not admin:
             raise HTTPException(
@@ -81,16 +78,18 @@ class Admin(BaseModel):
             )
         return admin
 
+
 class AdminCreate(Admin):
     password: str
-    telegram_id: Optional[int]
-    discord_webhook: Optional[str]
+    telegram_id: Optional[int] = None
+    discord_webhook: Optional[str] = None
 
     @property
     def hashed_password(self):
         return pwd_context.hash(self.password)
 
-    @validator("discord_webhook")
+    @field_validator("discord_webhook")
+    @classmethod
     def validate_discord_webhook(cls, value):
         if value and not value.startswith("https://discord.com"):
             raise ValueError("Discord webhook must start with 'https://discord.com'")
@@ -98,17 +97,18 @@ class AdminCreate(Admin):
 
 
 class AdminModify(BaseModel):
-    password: Optional[str]
+    password: Optional[str] = None
     is_sudo: bool
-    telegram_id: Optional[int]
-    discord_webhook: Optional[str]
+    telegram_id: Optional[int] = None
+    discord_webhook: Optional[str] = None
 
     @property
     def hashed_password(self):
         if self.password:
             return pwd_context.hash(self.password)
 
-    @validator("discord_webhook")
+    @field_validator("discord_webhook")
+    @classmethod
     def validate_discord_webhook(cls, value):
         if value and not value.startswith("https://discord.com"):
             raise ValueError("Discord webhook must start with 'https://discord.com'")
@@ -125,6 +125,7 @@ class AdminInDB(Admin):
 
     def verify_password(self, plain_password):
         return pwd_context.verify(plain_password, self.hashed_password)
+
 
 class AdminValidationResult(BaseModel):
     username: str

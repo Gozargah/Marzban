@@ -1,6 +1,8 @@
 import copy
 import json
 from random import choice
+from uuid import UUID
+from app.utils.helpers import yml_uuid_representer
 
 import yaml
 from jinja2.exceptions import TemplateNotFound
@@ -42,6 +44,8 @@ class ClashConfiguration(object):
     def render(self, reverse=False):
         if reverse:
             self.data['proxies'].reverse()
+
+        yaml.add_representer(UUID, yml_uuid_representer)
         return yaml.dump(
             yaml.load(
                 render_template(
@@ -49,6 +53,7 @@ class ClashConfiguration(object):
                     {"conf": self.data, "proxy_remarks": self.proxy_remarks}
                 ),
                 Loader=yaml.SafeLoader
+
             ),
             sort_keys=False,
             allow_unicode=True,

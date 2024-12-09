@@ -57,7 +57,7 @@ def _alter_inbound_user(api: XRayAPI, inbound_tag: str, account: Account):
 
 
 def add_user(dbuser: "DBUser"):
-    user = UserResponse.from_orm(dbuser)
+    user = UserResponse.model_validate(dbuser)
     email = f"{dbuser.id}.{dbuser.username}"
 
     for proxy_type, inbound_tags in user.inbounds.items():
@@ -101,7 +101,7 @@ def remove_user(dbuser: "DBUser"):
 
 
 def update_user(dbuser: "DBUser"):
-    user = UserResponse.from_orm(dbuser)
+    user = UserResponse.model_validate(dbuser)
     email = f"{dbuser.id}.{dbuser.username}"
 
     active_inbounds = []

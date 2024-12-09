@@ -314,7 +314,7 @@ def process_inbounds_and_tags(
                     remark=host["remark"].format_map(format_variables),
                     address=address.format_map(format_variables),
                     inbound=host_inbound,
-                    settings=settings.dict(no_obj=True)
+                    settings=settings.model_dump()
                 )
 
     return conf.render(reverse=reverse)
