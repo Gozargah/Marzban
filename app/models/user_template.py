@@ -24,6 +24,8 @@ class UserTemplateCreate(UserTemplate):
     model_config = ConfigDict(json_schema_extra={
         "example": {
             "name": "my template 1",
+            "username_prefix": None,
+            "username_suffix": None,
             "inbounds": {"vmess": ["VMESS_INBOUND"], "vless": ["VLESS_INBOUND"]},
             "data_limit": 0,
             "expire_duration": 0,
@@ -35,6 +37,8 @@ class UserTemplateModify(UserTemplate):
     model_config = ConfigDict(json_schema_extra={
         "example": {
             "name": "my template 1",
+            "username_prefix": None,
+            "username_suffix": None,
             "inbounds": {"vmess": ["VMESS_INBOUND"], "vless": ["VLESS_INBOUND"]},
             "data_limit": 0,
             "expire_duration": 0,

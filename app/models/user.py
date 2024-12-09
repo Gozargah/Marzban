@@ -313,9 +313,7 @@ class SubscriptionUserResponse(UserResponse):
     note: str | None = Field(None, exclude=True)
     inbounds: Dict[ProxyTypes, List[str]] | None = Field(None, exclude=True)
     auto_delete_in_days: int | None = Field(None, exclude=True)
-    model_config = ConfigDict(
-        from_attributes=True,
-    )
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UsersResponse(BaseModel):
