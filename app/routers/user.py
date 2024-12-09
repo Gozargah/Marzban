@@ -63,7 +63,7 @@ def add_user(
         raise HTTPException(status_code=409, detail="User already exists")
 
     bg.add_task(xray.operations.add_user, dbuser=dbuser)
-    user = UserResponse.from_orm(dbuser)
+    user = UserResponse.model_validate(dbuser)
     report.user_created(user=user, user_id=dbuser.id, by=admin, user_admin=dbuser.admin)
     logger.info(f'New user "{dbuser.username}" added')
     return user
@@ -75,7 +75,7 @@ def get_user(dbuser: UserResponse = Depends(get_validated_user)):
     return dbuser
 
 
-@router.put("/user/{username}", response_model=UserResponse, responses={400: responses._400,403: responses._403, 404: responses._404})
+@router.put("/user/{username}", response_model=UserResponse, responses={400: responses._400, 403: responses._403, 404: responses._404})
 def modify_user(
     modified_user: UserModify,
     bg: BackgroundTasks,
@@ -97,7 +97,7 @@ def modify_user(
     - **on_hold_timeout**: New UTC timestamp for when `on_hold` status should start or end. Only applicable if status is changed to 'on_hold'.
     - **on_hold_expire_duration**: New duration (in seconds) for how long the user should stay in `on_hold` status. Only applicable if status is changed to 'on_hold'.
     - **next_plan**: Next user plan (resets after use).
-    
+
     Note: Fields set to `null` or omitted will not be modified.
     """
 
@@ -110,7 +110,7 @@ def modify_user(
 
     old_status = dbuser.status
     dbuser = crud.update_user(db, dbuser, modified_user)
-    user = UserResponse.from_orm(dbuser)
+    user = UserResponse.model_validate(dbuser)
 
     if user.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.update_user, dbuser=dbuser)
@@ -168,7 +168,7 @@ def reset_user_data_usage(
     if dbuser.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.add_user, dbuser=dbuser)
 
-    user = UserResponse.from_orm(dbuser)
+    user = UserResponse.model_validate(dbuser)
     bg.add_task(
         report.user_data_usage_reset, user=user, user_admin=dbuser.admin, by=admin
     )
@@ -189,7 +189,7 @@ def revoke_user_subscription(
 
     if dbuser.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.update_user, dbuser=dbuser)
-    user = UserResponse.from_orm(dbuser)
+    user = UserResponse.model_validate(dbuser)
     bg.add_task(
         report.user_subscription_revoked, user=user, user_admin=dbuser.admin, by=admin
     )
@@ -253,7 +253,7 @@ def reset_users_data_usage(
     return {"detail": "Users successfully reset."}
 
 
-@router.get("/user/{username}/usage", response_model=UserUsagesResponse,responses={403: responses._403, 404: responses._404})
+@router.get("/user/{username}/usage", response_model=UserUsagesResponse, responses={403: responses._403, 404: responses._404})
 def get_user_usage(
     dbuser: UserResponse = Depends(get_validated_user),
     start: str = "",
@@ -268,7 +268,7 @@ def get_user_usage(
     return {"usages": usages, "username": dbuser.username}
 
 
-@router.post("/user/{username}/active-next", response_model=UserResponse,responses={403: responses._403, 404: responses._404})
+@router.post("/user/{username}/active-next", response_model=UserResponse, responses={403: responses._403, 404: responses._404})
 def active_next_plan(
     bg: BackgroundTasks,
     db: Session = Depends(get_db),
@@ -279,14 +279,14 @@ def active_next_plan(
 
     if (dbuser is None or dbuser.next_plan is None):
         raise HTTPException(
-                status_code=404,
-                detail=f"User doesn't have next plan",
-            )
+            status_code=404,
+            detail=f"User doesn't have next plan",
+        )
 
     if dbuser.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.add_user, dbuser=dbuser)
 
-    user = UserResponse.from_orm(dbuser)
+    user = UserResponse.model_validate(dbuser)
     bg.add_task(
         report.user_data_reset_by_next, user=user, user_admin=dbuser.admin,
     )
@@ -326,7 +326,7 @@ def set_owner(
         raise HTTPException(status_code=404, detail="Admin not found")
 
     dbuser = crud.set_owner(db, dbuser, new_admin)
-    user = UserResponse.from_orm(dbuser)
+    user = UserResponse.model_validate(dbuser)
 
     logger.info(f'{user.username}"owner successfully set to{admin.username}')
 

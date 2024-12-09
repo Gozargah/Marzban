@@ -53,7 +53,7 @@ def user_subscription(
     user_agent: str = Header(default="")
 ):
     """Provides a subscription link based on the user agent (Clash, V2Ray, etc.)."""
-    user: UserResponse = UserResponse.from_orm(dbuser)
+    user: UserResponse = UserResponse.model_validate(dbuser)
 
     accept_header = request.headers.get("Accept", "")
     if "text/html" in accept_header:
@@ -159,7 +159,7 @@ def user_subscription_with_client_type(
     user_agent: str = Header(default="")
 ):
     """Provides a subscription link based on the specified client type (e.g., Clash, V2Ray)."""
-    user: UserResponse = UserResponse.from_orm(dbuser)
+    user: UserResponse = UserResponse.model_validate(dbuser)
 
     response_headers = {
         "content-disposition": f'attachment; filename="{user.username}"',
