@@ -18,23 +18,23 @@ depends_on = None
 
 def upgrade() -> None:
     bind = op.get_bind()
-    q = bind.execute("SELECT id, settings FROM proxies WHERE type = 'Shadowsocks';")
+    q = bind.execute(sa.sql.text("SELECT id, settings FROM proxies WHERE type = 'Shadowsocks';"))
     proxies = q.fetchall()
     for pid, settings in proxies:
         settings = json.loads(settings)
         if settings.get('method') == 'chacha20-poly1305':
             new_settings = settings.copy()
             new_settings['method'] = 'chacha20-ietf-poly1305'
-            bind.execute(f"UPDATE proxies SET settings = '{json.dumps(new_settings)}' WHERE id = {pid}")
+            bind.execute(sa.sql.text(f"UPDATE proxies SET settings = '{json.dumps(new_settings)}' WHERE id = {pid}"))
 
 
 def downgrade() -> None:
     bind = op.get_bind()
-    q = bind.execute("SELECT id, settings FROM proxies WHERE type = 'Shadowsocks';")
+    q = bind.execute(sa.sql.text("SELECT id, settings FROM proxies WHERE type = 'Shadowsocks';"))
     proxies = q.fetchall()
     for pid, settings in proxies:
         settings = json.loads(settings)
         if settings.get('method') == 'chacha20-ietf-poly1305':
             new_settings = settings.copy()
             new_settings['method'] = 'chacha20-poly1305'
-            bind.execute(f"UPDATE proxies SET settings = '{json.dumps(new_settings)}' WHERE id = {pid}")
+            bind.execute(sa.sql.text(f"UPDATE proxies SET settings = '{json.dumps(new_settings)}' WHERE id = {pid}"))

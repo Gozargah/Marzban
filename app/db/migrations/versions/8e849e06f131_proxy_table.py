@@ -34,7 +34,7 @@ def upgrade() -> None:
                                     sa.PrimaryKeyConstraint('id'))
 
     conn = op.get_bind()
-    q = conn.execute('SELECT id, proxy_type, settings FROM users')
+    q = conn.execute(sa.sql.text('SELECT id, proxy_type, settings FROM users'))
     results = q.fetchall()
     op.bulk_insert(proxies_table, [{"user_id": p[0], "type": p[1], "settings": json.loads(p[2])} for p in results])
 
