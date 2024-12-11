@@ -5,7 +5,9 @@ from operator import attrgetter
 from typing import Union
 
 from pymysql.err import OperationalError
-from sqlalchemy import and_, bindparam, insert, select, sql, update
+from sqlalchemy import and_, bindparam, insert, select,  update
+from sqlalchemy.orm import Session
+from sqlalchemy.sql.dml import Insert
 
 from app import scheduler, xray
 from app.db import GetDB
@@ -19,16 +21,16 @@ from xray_api import XRay as XRayAPI
 from xray_api import exc as xray_exc
 
 
-def safe_execute(db, stmt, params=None):
+def safe_execute(db: Session, stmt, params=None):
     if db.bind.name == 'mysql':
-        if isinstance(stmt, sql.dml.Insert):
+        if isinstance(stmt, Insert):
             stmt = stmt.prefix_with('IGNORE')
 
         tries = 0
         done = False
         while not done:
             try:
-                db.execute(stmt, params)
+                db.connection().execute(stmt, params, execution_options={"synchronize_session": None})
                 db.commit()
                 done = True
             except OperationalError as err:
@@ -39,7 +41,7 @@ def safe_execute(db, stmt, params=None):
                 raise err
 
     else:
-        db.execute(stmt, params)
+        db.connection().execute(stmt, params, execution_options={"synchronize_session": None})
         db.commit()
 
 
