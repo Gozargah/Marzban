@@ -34,7 +34,7 @@ def add_user(
 
     - **username**: 3 to 32 characters, can include a-z, 0-9, and underscores.
     - **status**: User's status, defaults to `active`. Special rules if `on_hold`.
-    - **expire**: UTC timestamp for account expiration. Use `0` for unlimited.
+    - **expire**: UTC datetime for account expiration. Use `0` for unlimited.
     - **data_limit**: Max data usage in bytes (e.g., `1073741824` for 1GB). `0` means unlimited.
     - **data_limit_reset_strategy**: Defines how/if data limit resets. `no_reset` means it never resets.
     - **proxies**: Dictionary of protocol settings (e.g., `vmess`, `vless`).
@@ -88,7 +88,7 @@ def modify_user(
 
     - **username**: Cannot be changed. Used to identify the user.
     - **status**: User's new status. Can be 'active', 'disabled', 'on_hold', 'limited', or 'expired'.
-    - **expire**: UTC timestamp for new account expiration. Set to `0` for unlimited, `null` for no change.
+    - **expire**: UTC datetime for new account expiration. Set to `0` for unlimited, `null` for no change.
     - **data_limit**: New max data usage in bytes (e.g., `1073741824` for 1GB). Set to `0` for unlimited, `null` for no change.
     - **data_limit_reset_strategy**: New strategy for data limit reset. Options include 'daily', 'weekly', 'monthly', or 'no_reset'.
     - **proxies**: Dictionary of new protocol settings (e.g., `vmess`, `vless`). Empty dictionary means no change.
@@ -131,7 +131,7 @@ def modify_user(
             by=admin,
         )
         logger.info(
-            f'User "{dbuser.username}" status changed from {old_status} to {user.status}'
+            f'User "{dbuser.username}" status changed from {old_status.value} to {user.status.value}'
         )
 
     return user
@@ -255,9 +255,9 @@ def reset_users_data_usage(
 
 @router.get("/user/{username}/usage", response_model=UserUsagesResponse, responses={403: responses._403, 404: responses._404})
 def get_user_usage(
-    dbuser: UserResponse = Depends(get_validated_user),
     start: str = "",
     end: str = "",
+    dbuser: UserResponse = Depends(get_validated_user),
     db: Session = Depends(get_db),
 ):
     """Get users usage"""
@@ -277,7 +277,7 @@ def active_next_plan(
     """Reset user by next plan"""
     dbuser = crud.reset_user_by_next(db=db, dbuser=dbuser)
 
-    if (dbuser is None or dbuser.next_plan is None):
+    if dbuser is None or dbuser.next_plan is None:
         raise HTTPException(
             status_code=404,
             detail=f"User doesn't have next plan",

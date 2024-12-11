@@ -78,13 +78,13 @@ class UserExpired(UserNotification):
 
 class UserEnabled(UserNotification):
     action: Notification.Type = Notification.Type.user_enabled
-    by: Admin = None
+    by: Admin | None = None
     user: UserResponse
 
 
 class UserDisabled(UserNotification):
     action: Notification.Type = Notification.Type.user_disabled
-    by: Admin
+    by: Admin | None = None
     user: UserResponse
     reason: str = None
 

@@ -98,10 +98,8 @@ def get_validated_user(
     return dbuser
 
 
-def get_expired_users_list(db: Session, admin: Admin, expired_after: Optional[datetime] = None,
-                           expired_before: Optional[datetime] = None):
-    expired_before = expired_before or datetime.now(timezone.utc)
-    expired_after = expired_after or datetime.min.replace(tzinfo=timezone.utc)
+def get_expired_users_list(db: Session, admin: Admin, expired_after: datetime = None,
+                           expired_before: datetime = None):
 
     dbadmin = crud.get_admin(db, admin.username)
     dbusers = crud.get_users(
@@ -112,7 +110,7 @@ def get_expired_users_list(db: Session, admin: Admin, expired_after: Optional[da
 
     return [
         u for u in dbusers
-        if u.expire and expired_after.timestamp() <= u.expire <= expired_before.timestamp()
+        if u.expire and expired_after <= u.expire <= expired_before
     ]
 
 
