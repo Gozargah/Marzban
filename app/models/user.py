@@ -100,8 +100,9 @@ class User(BaseModel):
     @classmethod
     def validate_note(cls, v):
         if v and len(v) > 500:
-            raise ValueError("User's note can be a maximum of 500 character", mode="before")
+            raise ValueError("User's note can be a maximum of 500 character")
         return v
+
 
     @field_validator("on_hold_expire_duration")
     @classmethod
