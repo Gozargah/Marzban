@@ -25,7 +25,7 @@ def add_notification_reminders(db: Session, user: "User", now: datetime = dateti
             if usage_percent >= percent:
                 if not get_notification_reminder(db, user.id, ReminderType.data_usage, threshold=percent):
                     report.data_usage_percent_reached(
-                        db, usage_percent, UserResponse.from_orm(user),
+                        db, usage_percent, UserResponse.model_validate(user),
                         user.id, user.expire, threshold=percent
                     )
                 break
@@ -37,17 +37,19 @@ def add_notification_reminders(db: Session, user: "User", now: datetime = dateti
             if expire_days <= days_left:
                 if not get_notification_reminder(db, user.id, ReminderType.expiration_date, threshold=days_left):
                     report.expire_days_reached(
-                        db, expire_days, UserResponse.from_orm(user),
+                        db, expire_days, UserResponse.model_validate(user),
                         user.id, user.expire, threshold=days_left
                     )
                 break
 
+
 def reset_user_by_next_report(db: Session, user: "User"):
     user = reset_user_by_next(db, user)
-    
+
     xray.operations.update_user(user)
-    
-    report.user_data_reset_by_next(user=UserResponse.from_orm(user), user_admin=user.admin)
+
+    report.user_data_reset_by_next(user=UserResponse.model_validate(user), user_admin=user.admin)
+
 
 def review():
     now = datetime.utcnow()
@@ -60,15 +62,15 @@ def review():
 
             if (limited or expired) and user.next_plan is not None:
                 if user.next_plan is not None:
-                    
+
                     if user.next_plan.fire_on_either:
                         reset_user_by_next_report(db, user)
                         continue
-                    
+
                     elif limited and expired:
                         reset_user_by_next_report(db, user)
                         continue
-            
+
             if limited:
                 status = UserStatus.limited
             elif expired:
@@ -82,7 +84,7 @@ def review():
             update_user_status(db, user, status)
 
             report.status_change(username=user.username, status=status,
-                                 user=UserResponse.from_orm(user), user_admin=user.admin)
+                                 user=UserResponse.model_validate(user), user_admin=user.admin)
 
             logger.info(f"User \"{user.username}\" status changed to {status}")
 
@@ -108,7 +110,7 @@ def review():
             start_user_expire(db, user)
 
             report.status_change(username=user.username, status=status,
-                                 user=UserResponse.from_orm(user), user_admin=user.admin)
+                                 user=UserResponse.model_validate(user), user_admin=user.admin)
 
             logger.info(f"User \"{user.username}\" status changed to {status}")
 

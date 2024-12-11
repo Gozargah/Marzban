@@ -386,11 +386,11 @@ class XRayConfig(dict):
             grouped_data = defaultdict(list)
 
             for row in result:
-                grouped_data[row["type"]].append((
-                    row["id"],
-                    row["username"],
-                    row["settings"],
-                    [i for i in row['excluded_inbound_tags'].split(',') if i] if row['excluded_inbound_tags'] else None
+                grouped_data[row.type].append((
+                    row.id,
+                    row.username,
+                    row.settings,
+                    [i for i in row.excluded_inbound_tags.split(',') if i] if row.excluded_inbound_tags else None
                 ))
 
             for proxy_type, rows in grouped_data.items():

@@ -647,7 +647,7 @@ def revoke_user_sub(db: Session, dbuser: User) -> User:
     """
     dbuser.sub_revoked_at = datetime.utcnow()
 
-    user = UserResponse.from_orm(dbuser)
+    user = UserResponse.model_validate(dbuser)
     for proxy_type, settings in user.proxies.copy().items():
         settings.revoke()
         user.proxies[proxy_type] = settings

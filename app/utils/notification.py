@@ -101,7 +101,7 @@ class UserDataResetByNext(UserNotification):
 
 
 class UserSubscriptionRevoked(UserNotification):
-    action = Notification.Type = Notification.Type.subscription_revoked
+    action: Notification.Type = Notification.Type.subscription_revoked
     by: Admin
     user: UserResponse
 

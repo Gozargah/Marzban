@@ -29,7 +29,7 @@ def get_link(
       in order to work correctly.
     """
     with GetDB() as db:
-        user: UserResponse = UserResponse.from_orm(utils.get_user(db, username))
+        user: UserResponse = UserResponse.model_validate(utils.get_user(db, username))
         print(user.subscription_url)
 
 
@@ -53,7 +53,7 @@ def get_config(
       otherwise will be shown in the terminal.
     """
     with GetDB() as db:
-        user: UserResponse = UserResponse.from_orm(utils.get_user(db, username))
+        user: UserResponse = UserResponse.model_validate(utils.get_user(db, username))
         conf: str = generate_subscription(
             user=user, config_format=config_format.name, as_base64=as_base64
         )

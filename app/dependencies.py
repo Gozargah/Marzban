@@ -15,7 +15,7 @@ def validate_admin(db: Session, username: str, password: str) -> Optional[AdminV
         return AdminValidationResult(username=username, is_sudo=True)
 
     dbadmin = crud.get_admin(db, username)
-    if dbadmin and AdminInDB.from_orm(dbadmin).verify_password(password):
+    if dbadmin and AdminInDB.model_validate(dbadmin).verify_password(password):
         return AdminValidationResult(username=dbadmin.username, is_sudo=dbadmin.is_sudo)
 
     return None
@@ -41,7 +41,8 @@ def validate_dates(start: Optional[Union[str, datetime]], end: Optional[Union[st
     """Validate if start and end dates are correct and if end is after start."""
     try:
         if start:
-            start_date = start if isinstance(start, datetime) else datetime.fromisoformat(start).astimezone(timezone.utc)
+            start_date = start if isinstance(start, datetime) else datetime.fromisoformat(
+                start).astimezone(timezone.utc)
         else:
             start_date = datetime.now(timezone.utc) - timedelta(days=30)
         if end:

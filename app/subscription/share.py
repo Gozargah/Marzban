@@ -279,6 +279,7 @@ def process_inbounds_and_tags(
         if host['address']:
             salt = secrets.token_hex(8)
             address = random.choice(address_list).replace('*', salt)
+
         if sids := host_inbound.get("sids"):
             host_inbound["sid"] = random.choice(sids)
 
