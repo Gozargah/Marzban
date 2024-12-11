@@ -18,8 +18,8 @@ depends_on = None
 
 def upgrade() -> None:
     bind = op.get_bind()
-    metadata = sa.MetaData(bind=bind.engine)
-    metadata.reflect()
+    metadata = sa.MetaData()
+    metadata.reflect(bind=bind.engine)
 
     if bind.engine.name == 'mysql':
 
@@ -75,8 +75,8 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     bind = op.get_bind()
-    metadata = sa.MetaData(bind=bind.engine)
-    metadata.reflect()
+    metadata = sa.MetaData()
+    metadata.reflect(bind=bind.engine)
 
     if bind.engine.name == 'mysql':
 

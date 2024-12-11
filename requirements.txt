@@ -5,8 +5,8 @@ MarkupSafe==2.1.1
 PyJWT==2.8.0
 PyMySQL==1.1.1
 PyYAML==6.0.2
-SQLAlchemy==1.4.44
-alembic==1.8.1
+SQLAlchemy==2.0.36
+alembic==1.14.0
 anyio==4.2.0
 bcrypt==4.0.1
 certifi==2024.07.04
