@@ -2,7 +2,7 @@ import re
 from enum import Enum
 from typing import Optional, Union
 
-from pydantic import BaseModel, Field, validator
+from pydantic import ConfigDict, BaseModel, Field, field_validator
 
 from app.models.proxy import ProxyTypes
 from app import xray
@@ -72,34 +72,34 @@ class CreateHost(BaseModel):
     random_user_agent: Union[bool, None] = None
     noise_setting: Optional[str] = Field(None, nullable=True)
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
-    @validator("remark", pre=False, always=True)
+    @field_validator("remark", mode="after")
     def validate_remark(cls, v):
         try:
             v.format_map(FormatVariables())
-        except ValueError:
+        except ValueError as exc:
             raise ValueError("Invalid formatting variables")
 
         return v
-
-    @validator("address", pre=False, always=True)
-    def validate_address(cls, v):
-        try:
-            v.format_map(FormatVariables())
-        except ValueError:
-            raise ValueError("Invalid formatting variables")
-
-        return v
-
-    @validator("inbound_tag", pre=True, always=True)
+    
+    @field_validator("inbound_tag", mode="after")
     def validate_inbound(cls, v):
         if xray.config.get_inbound(v) is None:
             raise ValueError(f"Inbound {v} doesn't exist")
         return v
 
-    @validator("fragment_setting", check_fields=False)
+    @field_validator("address", mode="after")
+    def validate_address(cls, v):
+        try:
+            v.format_map(FormatVariables())
+        except ValueError as exc:
+            raise ValueError("Invalid formatting variables")
+
+        return v
+
+    @field_validator("fragment_setting", check_fields=False)
+    @classmethod
     def validate_fragment(cls, v):
         if v and not FRAGMENT_PATTERN.match(v):
             raise ValueError(
@@ -107,7 +107,8 @@ class CreateHost(BaseModel):
             )
         return v
 
-    @validator("noise_setting", check_fields=False)
+    @field_validator("noise_setting", check_fields=False)
+    @classmethod
     def validate_noise(cls, v):
         if v:
             if not NOISE_PATTERN.match(v):
@@ -124,8 +125,7 @@ class CreateHost(BaseModel):
 class HostResponse(CreateHost):
     id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProxyInbound(BaseModel):
