@@ -100,10 +100,10 @@ class User(BaseModel):
     @classmethod
     def validate_note(cls, v):
         if v and len(v) > 500:
-            raise ValueError("User's note can be a maximum of 500 character", mode="before")
+            raise ValueError("User's note can be a maximum of 500 character")
         return v
 
-    @field_validator("on_hold_expire_duration", "on_hold_timeout")
+    @field_validator("on_hold_expire_duration", "on_hold_timeout", mode="before")
     def validate_timeout(cls, v, values):
         # Check if expire is 0 or None and timeout is not 0 or None
         if (v in (0, None)):
