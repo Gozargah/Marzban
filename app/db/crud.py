@@ -2,7 +2,7 @@
 Functions for managing proxy hosts, users, user templates, nodes, and administrative tasks.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -629,7 +629,7 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
 
     dbuser.data_limit = dbuser.next_plan.data_limit + \
         (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit or 0 - dbuser.used_traffic)
-    dbuser.expire = dbuser.next_plan.expire
+    dbuser.expire = timedelta(seconds=dbuser.next_plan.expire)
 
     dbuser.used_traffic = 0
     db.delete(dbuser.next_plan)
@@ -892,7 +892,7 @@ def start_user_expire(db: Session, dbuser: User) -> User:
     Returns:
         User: The updated user object.
     """
-    dbuser.expire = datetime.utcnow() + timedelta(dbuser.on_hold_expire_duration)
+    dbuser.expire = datetime.now(timezone.utc) + timedelta(seconds=dbuser.on_hold_expire_duration)
     dbuser.on_hold_expire_duration = None
     dbuser.on_hold_timeout = None
     db.commit()

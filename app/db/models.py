@@ -151,7 +151,7 @@ class NextPlan(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     data_limit = Column(BigInteger, nullable=False)
-    expire = Column(DateTime, nullable=True)
+    expire = Column(Integer, nullable=True)
     add_remaining_traffic = Column(Boolean, nullable=False, default=False, server_default='0')
     fire_on_either = Column(Boolean, nullable=False, default=True, server_default='0')
 

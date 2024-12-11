@@ -50,7 +50,7 @@ class UserDataLimitResetStrategy(str, Enum):
 
 class NextPlanModel(BaseModel):
     data_limit: Optional[int] = None
-    expire: Optional[datetime] = None
+    expire: Optional[int] = None
     add_remaining_traffic: bool = False
     fire_on_either: bool = True
     model_config = ConfigDict(from_attributes=True)
