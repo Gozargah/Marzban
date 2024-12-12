@@ -1,20 +1,35 @@
 import os
 from datetime import datetime
 
-from sqlalchemy import (JSON, BigInteger, Boolean, Column, DateTime, Enum,
-                        Float, ForeignKey, Integer, String, Table,
-                        UniqueConstraint, func)
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql.expression import text, select
+from sqlalchemy.sql.expression import select, text
 
 from app import xray
 from app.db.base import Base
 from app.models.node import NodeStatus
-from app.models.proxy import (ProxyHostALPN, ProxyHostFingerprint,
-                              ProxyHostSecurity, ProxyTypes)
-from app.models.user import (ReminderType, UserDataLimitResetStrategy,
-                             UserStatus)
+from app.models.proxy import (
+    ProxyHostALPN,
+    ProxyHostFingerprint,
+    ProxyHostSecurity,
+    ProxyTypes,
+)
+from app.models.user import ReminderType, UserDataLimitResetStrategy, UserStatus
 
 
 class Admin(Base):
@@ -79,7 +94,7 @@ class User(Base):
 
     edit_at = Column(DateTime, nullable=True, default=None)
     last_status_change = Column(DateTime, default=datetime.utcnow, nullable=True)
-    
+
     next_plan = relationship(
         "NextPlan",
         uselist=False,
@@ -217,8 +232,8 @@ class ProxyHost(Base):
     address = Column(String(256), unique=False, nullable=False)
     port = Column(Integer, nullable=True)
     path = Column(String(256), unique=False, nullable=True)
-    sni = Column(String(256), unique=False, nullable=True)
-    host = Column(String(256), unique=False, nullable=True)
+    sni = Column(String(1000), unique=False, nullable=True)
+    host = Column(String(1000), unique=False, nullable=True)
     security = Column(
         Enum(ProxyHostSecurity),
         unique=False,
