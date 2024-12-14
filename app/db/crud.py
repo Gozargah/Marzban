@@ -495,7 +495,8 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
                 for days_left in sorted(NOTIFY_DAYS_LEFT):
                     if not dbuser.expire or (calculate_expiration_days(
                             dbuser.expire) > days_left):
-                        reminder = get_notification_reminder(db, dbuser.id, ReminderType.expiration_date, threshold=days_left)
+                        reminder = get_notification_reminder(
+                            db, dbuser.id, ReminderType.expiration_date, threshold=days_left)
                         if reminder:
                             delete_notification_reminder(db, reminder)
             else:
@@ -739,7 +740,7 @@ def autodelete_expired_users(db: Session,
     ).filter(
         auto_delete >= 0,  # Negative values prevent auto-deletion
         User.status.in_(target_status),
-    )
+    ).options(joinedload(User.admin))
 
     # TODO: Handle time filter in query itself (NOTE: Be careful with sqlite's strange datetime handling)
     expired_users = [
@@ -1072,7 +1073,7 @@ def reset_admin_usage(db: Session, dbadmin: Admin) -> int:
     """
     if (dbadmin.users_usage == 0):
         return dbadmin
-    
+
     usage_log = AdminUsageLogs(
         admin=dbadmin,
         used_traffic_at_reset=dbadmin.users_usage
