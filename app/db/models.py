@@ -107,10 +107,10 @@ class User(Base):
         return sum([log.used_traffic_at_reset for log in self.usage_logs])
 
     @reseted_usage.expression
-    def reseted_usage(self):
+    def reseted_usage(cls):
         return (
-            select([func.sum(UserUsageResetLogs.used_traffic_at_reset)]).
-            where(UserUsageResetLogs.user_id == self.id).
+            select(func.sum(UserUsageResetLogs.used_traffic_at_reset)).
+            where(UserUsageResetLogs.user_id == cls.id).
             label('reseted_usage')
         )
 
