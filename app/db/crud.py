@@ -158,6 +158,7 @@ def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostMo
             fragment_setting=host.fragment_setting,
             noise_setting=host.noise_setting,
             random_user_agent=host.random_user_agent,
+            use_sni_as_host=host.use_sni_as_host,
         ) for host in modified_hosts
     ]
     db.commit()

@@ -152,6 +152,7 @@ const hostsSchema = z.record(
       security: z.string(),
       alpn: z.string(),
       fingerprint: z.string(),
+      use_sni_as_host: z.boolean().default(false),
     })
   )
 );
@@ -212,6 +213,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
       security: "inbound_default",
       alpn: "",
       fingerprint: "",
+      use_sni_as_host: false,
     });
   };
   const duplicateHost = (index: number) => {
@@ -1067,6 +1069,33 @@ const AccordionInbound: FC<AccordionInboundType> = ({
 
 
                           <FormControl
+                            isInvalid={
+                              !!(
+                                accordionErrors &&
+                                accordionErrors[index]?.use_sni_as_host
+                              )
+                            }
+                          >
+                            <Checkbox
+                              {...form.register(
+                                hostKey + "." + index + ".use_sni_as_host"
+                              )}
+                            >
+                              <FormLabel>
+                                {t("hostsDialog.useSniAsHost")}
+                              </FormLabel>
+                            </Checkbox>
+                            {accordionErrors &&
+                              accordionErrors[index]?.use_sni_as_host && (
+                                <Error>
+                                  {
+                                    accordionErrors[index]?.use_sni_as_host
+                                      ?.message
+                                  }
+                                </Error>
+                              )}
+                        </FormControl>
+                         <FormControl
                             isInvalid={
                               !!(
                                 accordionErrors &&

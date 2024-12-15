@@ -37,6 +37,7 @@
   "hostsDialog.addHost": "Добавить хост",
   "hostsDialog.advancedOptions": "Дополнительные опции",
   "hostsDialog.allowinsecure": "Allow Insecure",
+  "hostsDialog.useSniAsHost": "Use sni as host",
   "hostsDialog.alpn": "ALPN",
   "hostsDialog.apply": "Применить",
   "hostsDialog.currentServer": "IP текущего сервера",
