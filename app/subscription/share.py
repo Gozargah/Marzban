@@ -292,7 +292,7 @@ def process_inbounds_and_tags(
                 else:
                     path = inbound.get("path", "").format_map(format_variables)
 
-                if host.get("use_sni_as_host", False):
+                if host.get("use_sni_as_host", False) and sni:
                     req_host = sni
 
                 host_inbound.update(
