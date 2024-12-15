@@ -44,7 +44,7 @@ def calculate_admin_usage(admin_id: int) -> str:
 
 def calculate_admin_reseted_usage(admin_id: int) -> str:
     with GetDB() as db:
-        usage = db.query(func.sum(User.reseted_usage)).filter_by(admin_id=admin_id).first()[0]
+        usage = db.query(func.sum(User.reseted_usage)).filter_by(admin_id=admin_id).scalar()
         return readable_size(int(usage or 0))
 
 
@@ -58,7 +58,8 @@ def list_admins(
     with GetDB() as db:
         admins: list[Admin] = crud.get_admins(db, offset=offset, limit=limit, username=username)
         utils.print_table(
-            table=Table("Username", 'Usage', 'Reseted usage', "Is sudo", "Created at", "Telegram ID", "Discord Webhook"),
+            table=Table("Username", 'Usage', 'Reseted usage', "Is sudo",
+                        "Created at", "Telegram ID", "Discord Webhook"),
             rows=[
                 (str(admin.username),
                  calculate_admin_usage(admin.id),
