@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Optional, Union
 from uuid import UUID, uuid4
 
-from pydantic import field_validator, ConfigDict, BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.utils.system import random_password
 from xray_api.types.account import (
@@ -13,7 +13,7 @@ from xray_api.types.account import (
     TrojanAccount,
     VLESSAccount,
     VMessAccount,
-    XTLSFlows
+    XTLSFlows,
 )
 
 FRAGMENT_PATTERN = re.compile(r'^((\d{1,4}-\d{1,4})|(\d{1,4})),((\d{1,3}-\d{1,3})|(\d{1,3})),(tlshello|\d|\d\-\d)$')
@@ -154,6 +154,7 @@ class ProxyHost(BaseModel):
     fragment_setting: Optional[str] = Field(None, nullable=True)
     noise_setting: Optional[str] = Field(None, nullable=True)
     random_user_agent: Union[bool, None] = None
+    use_sni_as_host: Union[bool, None] = None
     model_config = ConfigDict(from_attributes=True)
 
     @field_validator("remark", mode="after")
