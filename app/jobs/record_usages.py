@@ -144,7 +144,7 @@ def record_user_usages():
     for node_id, params in api_params.items():
         coefficient = usage_coefficient.get(node_id, 1)  # get the usage coefficient for the node
         for param in params:
-            users_usage[param['uid']] += param['value'] * coefficient  # apply the usage coefficient
+            users_usage[param['uid']] += int(param['value'] * coefficient)  # apply the usage coefficient
     users_usage = list({"uid": uid, "value": value} for uid, value in users_usage.items())
     if not users_usage:
         return
