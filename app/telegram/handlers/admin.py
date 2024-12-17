@@ -342,8 +342,8 @@ def edit_command(call: types.CallbackQuery):
         expire_date = db_user.on_hold_expire_duration
     else:
         mem_store.set(f'{call.message.chat.id}:expire_date',
-                      datetime.fromtimestamp(db_user.expire) if db_user.expire else None)
-        expire_date = datetime.fromtimestamp(db_user.expire) if db_user.expire else None
+                      db_user.expire if db_user.expire else None)
+        expire_date = db_user.expire if db_user.expire else None
     mem_store.set(
         f'{call.message.chat.id}:protocols',
         {protocol.value: inbounds for protocol, inbounds in db_user.inbounds.items()})
@@ -728,8 +728,7 @@ def genqr_command(call: types.CallbackQuery):
             expiry_date = datetime.fromtimestamp(user.expire).date() if user.expire else "Never"
             time_left = time_to_string(datetime.fromtimestamp(user.expire)) if user.expire else "-"
             if user.status == UserStatus.on_hold:
-                expiry_text = f"⏰ <b>On Hold Duration:</b> <code>{on_hold_duration} days</code> (auto start at <code>{
-                    on_hold_timeout}</code>)"
+                expiry_text = f"⏰ <b>On Hold Duration:</b> <code>{on_hold_duration} days</code> (auto start at <code>{on_hold_timeout}</code>)"
             else:
                 expiry_text = f"📅 <b>Expiry Date:</b> <code>{expiry_date}</code> ({time_left})"
             text = f"""\
@@ -790,7 +789,7 @@ def template_charge_command(call: types.CallbackQuery):
             return bot.answer_callback_query(call.id, "User not found!", show_alert=True)
         user = UserResponse.model_validate(db_user)
         if (user.data_limit and not user.expire) or (not user.data_limit and user.expire):
-            expire = (datetime.fromtimestamp(db_user.expire) if db_user.expire else today)
+            expire = (db_user.expire if db_user.expire else today)
             expire += relativedelta(seconds=template.expire_duration)
             db_user.expire = expire.timestamp()
             db_user.data_limit = (user.data_limit - user.used_traffic + template.data_limit
@@ -838,7 +837,7 @@ def template_charge_command(call: types.CallbackQuery):
 <u><b>New status</b></u>
 <b>├Traffic Limit :</b> <code>{readable_size(db_user.data_limit) if db_user.data_limit else "Unlimited"}</code>
 <b>├Expire Date :</b> <code>\
-{datetime.fromtimestamp(db_user.expire).strftime('%H:%M:%S %Y-%m-%d') if db_user.expire else "Never"}</code>
+{db_user.expire.strftime('%H:%M:%S %Y-%m-%d') if db_user.expire else "Never"}</code>
 ➖➖➖➖➖➖➖➖➖
 <b>By :</b> <a href="tg://user?id={call.from_user.id}">{call.from_user.full_name}</a>"""
                 try:
@@ -846,7 +845,7 @@ def template_charge_command(call: types.CallbackQuery):
                 except ApiTelegramException:
                     pass
         else:
-            expire = (datetime.fromtimestamp(db_user.expire) if db_user.expire else today)
+            expire = (db_user.expire if db_user.expire else today)
             expire += relativedelta(seconds=template.expire_duration)
             db_user.expire = expire.timestamp()
             db_user.data_limit = (user.data_limit - user.used_traffic + template.data_limit
@@ -1048,16 +1047,14 @@ def add_user_from_template_username_step(message: types.Message):
         if len(username) < 3:
             wait_msg = bot.send_message(
                 message.chat.id,
-                f"❌ Username can't be generated because is shorter than 32 characters! username: <code>{
-                    username}</code>",
+                f"❌ Username can't be generated because is shorter than 32 characters! username: <code>{username}</code>",
                 parse_mode="HTML")
             schedule_delete_message(message.chat.id, wait_msg.message_id, message.message_id)
             return bot.register_next_step_handler(wait_msg, add_user_from_template_username_step)
         elif len(username) > 32:
             wait_msg = bot.send_message(
                 message.chat.id,
-                f"❌ Username can't be generated because is longer than 32 characters! username: <code>{
-                    username}</code>",
+                f"❌ Username can't be generated because is longer than 32 characters! username: <code>{username}</code>",
                 parse_mode="HTML")
             schedule_delete_message(message.chat.id, wait_msg.message_id, message.message_id)
             return bot.register_next_step_handler(wait_msg, add_user_from_template_username_step)
@@ -1508,7 +1505,7 @@ def confirm_user_command(call: types.CallbackQuery):
 <b>Username :</b> <code>{db_user.username}</code>
 <b>Traffic Limit :</b> <code>{readable_size(db_user.data_limit) if db_user.data_limit else "Unlimited"}</code>
 <b>Expire Date :</b> <code>\
-{datetime.fromtimestamp(db_user.expire).strftime('%H:%M:%S %Y-%m-%d') if db_user.expire else "Never"}</code>
+{db_user.expire.strftime('%H:%M:%S %Y-%m-%d') if db_user.expire else "Never"}</code>
 ➖➖➖➖➖➖➖➖➖
 <b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>"""
             try:
@@ -1668,7 +1665,7 @@ def confirm_user_command(call: types.CallbackQuery):
 <u><b>New status</b></u>
 <b>├Traffic Limit :</b> <code>{readable_size(db_user.data_limit) if db_user.data_limit else "Unlimited"}</code>
 <b>├Expire Date :</b> <code>\
-{datetime.fromtimestamp(db_user.expire).strftime('%H:%M:%S %Y-%m-%d') if db_user.expire else "Never"}</code>
+{db_user.expire.strftime('%H:%M:%S %Y-%m-%d') if db_user.expire else "Never"}</code>
 ➖➖➖➖➖➖➖➖➖
 <b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>\
 """
@@ -1926,7 +1923,7 @@ def confirm_user_command(call: types.CallbackQuery):
                         deleted += 1
                         f.write(
                             f'{user.username}\
-\t{datetime.fromtimestamp(user.expire) if user.expire else "never"}\
+\t{user.expire if user.expire else "never"}\
 \t{readable_size(user.used_traffic) if user.used_traffic else 0}\
 /{readable_size(user.data_limit) if user.data_limit else "Unlimited"}\
 \t{user.status}\n')
@@ -1969,7 +1966,7 @@ def confirm_user_command(call: types.CallbackQuery):
                             counter += 1
                             f.write(
                                 f'{user.username}\
-\t{datetime.fromtimestamp(user.expire) if user.expire else "never"}\
+\t{user.expire if user.expire else "never"}\
 \t{readable_size(user.used_traffic) if user.used_traffic else 0}\
 /{readable_size(user.data_limit) if user.data_limit else "Unlimited"}\
 \t{user.status}\n')
@@ -1978,8 +1975,7 @@ def confirm_user_command(call: types.CallbackQuery):
             cleanup_messages(chat_id)
             bot.send_message(
                 chat_id,
-                f'✅ <b>{counter}/{len(users)} Users</b> Data Limit according to <code>{"+" if data_limit >
-                                                                                       0 else "-"}{readable_size(abs(data_limit))}</code>',
+                f'✅ <b>{counter}/{len(users)} Users</b> Data Limit according to <code>{"+" if data_limit > 0 else "-"}{readable_size(abs(data_limit))}</code>',
                 'HTML',
                 reply_markup=BotKeyboard.main_menu())
             if TELEGRAM_LOGGER_CHANNEL_ID:
@@ -2015,11 +2011,11 @@ def confirm_user_command(call: types.CallbackQuery):
                                 db, user,
                                 UserModify(
                                     expire=int(
-                                        (datetime.fromtimestamp(user.expire) + relativedelta(days=days)).timestamp())))
+                                        (user.expire + relativedelta(days=days)).timestamp())))
                             counter += 1
                             f.write(
                                 f'{user.username}\
-\t{datetime.fromtimestamp(user.expire) if user.expire else "never"}\
+\t{user.expire if user.expire else "never"}\
 \t{readable_size(user.used_traffic) if user.used_traffic else 0}\
 /{readable_size(user.data_limit) if user.data_limit else "Unlimited"}\
 \t{user.status}\n')

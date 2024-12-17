@@ -2,7 +2,7 @@
 Functions for managing proxy hosts, users, user templates, nodes, and administrative tasks.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -521,10 +521,15 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
             else:
                 dbuser.status = UserStatus.limited
 
-    if modify.expire is not None:
-        dbuser.expire = (modify.expire or None)
+    if modify.expire == 0:
+        dbuser.expire = None
+        if dbuser.status is UserStatus.expired:
+            dbuser.status = UserStatus.active
+
+    elif modify.expire is not None:
+        dbuser.expire = modify.expire
         if dbuser.status in (UserStatus.active, UserStatus.expired):
-            if not dbuser.expire or dbuser.expire > datetime.utcnow().timestamp():
+            if not dbuser.expire or dbuser.expire > datetime.utcnow():
                 dbuser.status = UserStatus.active
                 for days_left in sorted(NOTIFY_DAYS_LEFT):
                     if not dbuser.expire or (calculate_expiration_days(
@@ -541,7 +546,9 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
     if modify.data_limit_reset_strategy is not None:
         dbuser.data_limit_reset_strategy = modify.data_limit_reset_strategy.value
 
-    if modify.on_hold_timeout is not None:
+    if modify.on_hold_timeout == 0:
+        dbuser.on_hold_timeout = None
+    elif modify.on_hold_timeout is not None:
         dbuser.on_hold_timeout = modify.on_hold_timeout
 
     if modify.on_hold_expire_duration is not None:
@@ -608,7 +615,7 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
         User: The updated user object.
     """
 
-    if (dbuser.next_plan is None):
+    if dbuser.next_plan is None:
         return
 
     usage_log = UserUsageResetLogs(
@@ -621,8 +628,8 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
     dbuser.status = UserStatus.active.value
 
     dbuser.data_limit = dbuser.next_plan.data_limit + \
-        (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit - dbuser.used_traffic)
-    dbuser.expire = dbuser.next_plan.expire
+        (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit or 0 - dbuser.used_traffic)
+    dbuser.expire = timedelta(seconds=dbuser.next_plan.expire)
 
     dbuser.used_traffic = 0
     db.delete(dbuser.next_plan)
@@ -885,8 +892,7 @@ def start_user_expire(db: Session, dbuser: User) -> User:
     Returns:
         User: The updated user object.
     """
-    expire = int(datetime.utcnow().timestamp()) + dbuser.on_hold_expire_duration
-    dbuser.expire = expire
+    dbuser.expire = datetime.now(timezone.utc) + timedelta(seconds=dbuser.on_hold_expire_duration)
     dbuser.on_hold_expire_duration = None
     dbuser.on_hold_timeout = None
     db.commit()

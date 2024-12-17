@@ -57,6 +57,7 @@ def report_status_change(username: str, status: str, admin: Admin = None):
         admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None
         )
 
+
 def report_new_user(username: str, by: str, expire_date: int, data_limit: int, proxies: list, has_next_plan: bool,
                     data_limit_reset_strategy:UserDataLimitResetStrategy, admin: Admin = None):
 
@@ -88,6 +89,7 @@ def report_new_user(username: str, by: str, expire_date: int, data_limit: int, p
         json_data=reportNewUser, 
         admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None
         )
+
 
 def report_user_modification(username: str, expire_date: int, data_limit: int, proxies: list, by: str, has_next_plan: bool,
                     data_limit_reset_strategy:UserDataLimitResetStrategy, admin: Admin = None):
@@ -122,6 +124,7 @@ def report_user_modification(username: str, expire_date: int, data_limit: int, p
         admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None
         )
 
+
 def report_user_deletion(username: str, by: str, admin: Admin = None):
     userDeletion = {
         'content': '',
@@ -141,6 +144,7 @@ def report_user_deletion(username: str, by: str, admin: Admin = None):
         admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None
         )
 
+
 def report_user_usage_reset(username: str, by: str, admin: Admin = None):
     userUsageReset = {
         'content': '',
@@ -159,6 +163,7 @@ def report_user_usage_reset(username: str, by: str, admin: Admin = None):
         json_data=userUsageReset,
         admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None
         )
+
 
 def report_user_data_reset_by_next(user: User, admin: Admin = None):
     userUsageReset = {
@@ -183,6 +188,7 @@ def report_user_data_reset_by_next(user: User, admin: Admin = None):
         admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None
         )
 
+
 def report_user_subscription_revoked(username: str, by: str, admin: Admin = None):
     subscriptionRevoked = {
         'content': '',
@@ -201,6 +207,7 @@ def report_user_subscription_revoked(username: str, by: str, admin: Admin = None
         json_data=subscriptionRevoked,
         admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None
         )
+
 
 def report_login(username: str, password: str, client_ip: str, status: str):
     login = {
