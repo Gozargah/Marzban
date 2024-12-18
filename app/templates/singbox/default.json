@@ -1,66 +1,58 @@
 {
   "log": {
-    "level": "warn",
-    "timestamp": true
+    "level": "warn"
   },
   "dns": {
     "servers": [
       {
-        "tag": "dns_proxy",
-        "address": "1.1.1.1",
-        "address_resolver": "dns_direct",
-        "strategy": "prefer_ipv4",
-        "detour": "Internet"
+        "tag": "dns-remote",
+        "address": "1.1.1.2",
+        "detour": "proxy"
       },
       {
-        "tag": "dns_direct",
+        "tag": "dns-local",
         "address": "local",
-        "strategy": "prefer_ipv4",
         "detour": "direct"
-      },
-      {
-        "tag": "dns_block",
-        "address": "rcode://success"
       }
     ],
     "rules": [
       {
-        "geosite": "private",
-        "server": "dns_direct"
-      },
-      {
         "outbound": "any",
-        "server": "dns_direct"
+        "server": "dns-local"
       }
     ],
-    "fakeip": {},
-    "independent_cache": true
+    "final": "dns-remote",
+    "strategy": "prefer_ipv4"
   },
   "inbounds": [
     {
       "type": "tun",
-      "mtu": 1400,
-      "inet4_address": "172.19.0.1/30",
-      "inet6_address": "fdfe:dcba:9876::1/126",
+      "tag": "tun-in",
+      "interface_name": "sing-tun",
+      "address": [
+        "172.19.0.1/30",
+        "fdfe:dcba:9876::1/126"
+      ],
       "auto_route": true,
-      "strict_route": true,
-      "endpoint_independent_nat": true,
-      "stack": "mixed",
-      "sniff": true
+      "route_exclude_address": [
+        "192.168.0.0/16",
+        "fc00::/7"
+      ],
+      "sniff": true,
+      "domain_strategy": "prefer_ipv4"
     }
   ],
   "outbounds": [
     {
       "type": "selector",
-      "tag": "Internet",
-      "outbounds": null
+      "tag": "proxy",
+      "outbounds": null,
+      "interrupt_exist_connections": true
     },
     {
       "type": "urltest",
       "tag": "Best Latency",
-      "outbounds": null,
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1m0s"
+      "outbounds": null
     },
     {
       "type": "direct",
@@ -76,25 +68,24 @@
     }
   ],
   "route": {
-    "geoip": {
-      "download_url": "https://github.com/soffchen/sing-geoip/releases/latest/download/geoip.db",
-      "download_detour": "direct"
-    },
-    "geosite": {
-      "download_url": "https://github.com/soffchen/sing-geosite/releases/latest/download/geosite.db",
-      "download_detour": "direct"
-    },
     "rules": [
       {
         "protocol": "dns",
         "outbound": "dns-out"
       },
       {
-        "geoip": "private",
+        "ip_is_private": true,
         "outbound": "direct"
       }
     ],
-    "auto_detect_interface": true
+    "final": "proxy",
+    "auto_detect_interface": true,
+    "override_android_vpn": true
   },
-  "experimental": {}
+  "experimental": {
+    "cache_file": {
+      "enabled": true,
+      "store_rdrc": true
+    }
+  }
 }
