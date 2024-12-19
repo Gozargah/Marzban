@@ -1,5 +1,3 @@
-"use client";
-
 import { Link, useLocation } from "react-router-dom"; // Import useLocation from react-router-dom
 import { useState } from "react";
 import { ChevronDown, Dot, LucideIcon } from "lucide-react";
@@ -26,6 +24,7 @@ import {
   DropdownMenuContent,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import useDirDetection from "@/hooks/use-dir-detection";
 
 type Submenu = {
   href: string;
@@ -47,6 +46,8 @@ export function CollapseMenuButton({
   submenus,
   isOpen,
 }: CollapseMenuButtonProps) {
+  const isRTL = useDirDetection() === "rtl";
+
   const location = useLocation(); // Use useLocation hook
   const pathname = location.pathname; // Get the pathname from location object
 
@@ -69,9 +70,16 @@ export function CollapseMenuButton({
           variant={isSubmenuActive ? "secondary" : "ghost"}
           className="w-full justify-start h-10"
         >
-          <div className="w-full items-center flex justify-between">
-            <div className="flex items-center">
-              <span className="mr-4">
+          <div
+            className={cn(
+              "w-full flex-row items-center flex justify-between",
+              isRTL && "flex-row-reverse"
+            )}
+          >
+            <div
+              className={cn("flex items-center", isRTL && "flex-row-reverse")}
+            >
+              <span className={cn(isRTL ? "ml-4" : "mr-4")}>
                 <Icon size={18} />
               </span>
               <p
@@ -113,8 +121,8 @@ export function CollapseMenuButton({
             className="w-full justify-start h-10 mb-1"
             asChild
           >
-            <Link to={href}>
-              <span className="mr-4 ml-2">
+            <Link className={cn(isRTL && "flex-row-reverse")} to={href}>
+              <span className={cn(isRTL ? "ml-4 mr-2" : "mr-4 ml-2")}>
                 <Dot size={18} />
               </span>
               <p

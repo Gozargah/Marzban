@@ -1,5 +1,7 @@
 {
   "active": "active",
+  "platform": "Platform",
+  "statistics": "Statistics",
   "activeUsers": "active users",
   "apply": "Apply",
   "cancel": "Cancel",

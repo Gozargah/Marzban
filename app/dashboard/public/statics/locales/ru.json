@@ -1,6 +1,8 @@
 {
   "active": "active",
   "activeUsers": "Пользователи",
+  "platform": "Платформа",
+  "statistics": "Статистика",
   "apply": "Применить",
   "cancel": "Отмена",
   "core.configuration": "Конфигурация",

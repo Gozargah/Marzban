@@ -10,27 +10,40 @@ import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
-  TooltipProvider
+  TooltipProvider,
 } from "@/components/ui/tooltip";
+import { useTranslation } from "react-i18next";
+import { useEffect, useState } from "react";
 
 interface MenuProps {
   isOpen: boolean | undefined;
 }
 
 export function Menu({ isOpen }: MenuProps) {
+  const { t, i18n } = useTranslation();
+  const [isRTL, setIsRTL] = useState<boolean>(i18n.dir() === "rtl");
+
+  useEffect(() => {
+    if (i18n.dir() === "rtl") setIsRTL(true);
+    else setIsRTL(false);
+  }, [i18n.language]);
+
   const location = useLocation();
   const pathname = location.pathname;
   const menuList = getMenuList(pathname);
 
   return (
     <ScrollArea className="[&>div>div[style]]:!block">
-      <nav className="mt-8 h-full w-full pb-4">
+      <nav className="mt-6 h-full w-full pb-4">
         <ul className="flex flex-col min-h-[calc(100vh-48px-36px-16px-32px)] lg:min-h-[calc(100vh-32px-40px-32px)] items-start space-y-1 px-2">
           {menuList.map(({ groupLabel, menus }, index) => (
-            <li className={cn("w-full", groupLabel ? "pt-5" : "")} key={index}>
+            <li
+              className={cn("w-full",isRTL && "text-right", groupLabel ? "pt-5" : "")}
+              key={index}
+            >
               {(isOpen && groupLabel) || isOpen === undefined ? (
-                <p className="text-sm font-medium text-muted-foreground px-4 pb-2 max-w-[248px] truncate">
-                  {groupLabel}
+                <p className="text-sm font-medium text-muted-foreground px-4 pb-2 w-full truncate">
+                  {t(groupLabel)}
                 </p>
               ) : !isOpen && isOpen !== undefined && groupLabel ? (
                 <TooltipProvider>
@@ -41,7 +54,7 @@ export function Menu({ isOpen }: MenuProps) {
                       </div>
                     </TooltipTrigger>
                     <TooltipContent side="right">
-                      <p>{groupLabel}</p>
+                      <p>{t(groupLabel)}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -66,9 +79,9 @@ export function Menu({ isOpen }: MenuProps) {
                               className="w-full justify-start h-10 mb-1"
                               asChild
                             >
-                              <Link to={href}>
+                              <Link className={cn(isRTL && "flex-row-reverse")} to={href}>
                                 <span
-                                  className={cn(isOpen === false ? "" : "mr-4")}
+                                  className={cn(isOpen === false ? "" : isRTL ? "ml-4" : "mr-4" )}
                                 >
                                   <Icon size={18} />
                                 </span>
@@ -80,14 +93,14 @@ export function Menu({ isOpen }: MenuProps) {
                                       : "translate-x-0 opacity-100"
                                   )}
                                 >
-                                  {label}
+                                  {t(label)}
                                 </p>
                               </Link>
                             </Button>
                           </TooltipTrigger>
                           {isOpen === false && (
                             <TooltipContent side="right">
-                              {label}
+                              {t(label)}
                             </TooltipContent>
                           )}
                         </Tooltip>

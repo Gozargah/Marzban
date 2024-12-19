@@ -2,8 +2,7 @@ import { ChevronLeft } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useTranslation } from "react-i18next";
-import { useEffect, useState } from "react";
+import useDirDetection from "@/hooks/use-dir-detection";
 
 interface SidebarToggleProps {
   isOpen: boolean | undefined;
@@ -11,13 +10,7 @@ interface SidebarToggleProps {
 }
 
 export function SidebarToggle({ isOpen, setIsOpen }: SidebarToggleProps) {
-  const { i18n } = useTranslation();
-  const [isRTL, setIsRTL] = useState<boolean>(i18n.dir() === "rtl");
-
-  useEffect(() => {
-    if (i18n.dir() === "rtl") setIsRTL(true);
-    else setIsRTL(false);
-  }, [i18n.language]);
+  const isRTL = useDirDetection() === "rtl";
 
   return (
     <div
@@ -38,10 +31,10 @@ export function SidebarToggle({ isOpen, setIsOpen }: SidebarToggleProps) {
             isRTL
               ? isOpen === false
                 ? "rotate-0"
-                : "rotate-180" 
+                : "rotate-180"
               : isOpen === false
               ? "rotate-180"
-              : "rotate-0" 
+              : "rotate-0"
           )}
         />
       </Button>

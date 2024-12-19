@@ -1,8 +1,9 @@
-import { createBrowserRouter, RouteObject } from "react-router-dom";
+import { createHashRouter, RouteObject } from "react-router-dom";
 import { fetch } from "@/service/http";
 import { getAuthToken } from "@/utils/authStorage";
-import Dashboard from "./dashboard";
-import Login from "./login";
+import Dashboard from "./Dashboard";
+import Login from "./Login";
+import Layout from "./Layout";
 
 const fetchAdminLoader = async (): Promise<any> => {
   try {
@@ -17,12 +18,18 @@ const fetchAdminLoader = async (): Promise<any> => {
   }
 };
 
-export const router = createBrowserRouter([
+export const router = createHashRouter([
   {
-    path: "/",
-    element: <Dashboard />,
-    // errorElement: <Login />,
-    // loader: fetchAdminLoader,
+    element: <Layout />,
+    errorElement: <Login />,
+    loader: fetchAdminLoader,
+    children: [
+      {
+        path: "/",
+        index: true,
+        element: <Dashboard />,
+      },
+    ],
   },
   {
     path: "/login",
