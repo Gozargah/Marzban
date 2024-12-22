@@ -31,6 +31,20 @@ from app.models.proxy import (
 )
 from app.models.user import ReminderType, UserDataLimitResetStrategy, UserStatus
 
+inbounds_groups_association = Table(
+    "inbounds_groups_association",
+    Base.metadata,
+    Column("inbound_id", ForeignKey("inbounds.id"), primary_key=True),
+    Column("group_id", ForeignKey("groups.id"), primary_key=True),
+)
+
+users_groups_association = Table(
+    "users_groups_association",
+    Base.metadata,
+    Column("user_id", ForeignKey("users.id"), primary_key=True),
+    Column("groups_id", ForeignKey("groups.id"), primary_key=True),
+)
+
 
 class Admin(Base):
     __tablename__ = "admins"
@@ -101,6 +115,12 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan"
     )
+    groups = relationship(
+        "Group",
+        secondary=users_groups_association,
+        back_populates="users",
+        lazy="joined",
+    )
 
     @hybrid_property
     def reseted_usage(self):
@@ -145,18 +165,11 @@ class User(Base):
         return _
 
 
-excluded_inbounds_association = Table(
-    "exclude_inbounds_association",
-    Base.metadata,
-    Column("proxy_id", ForeignKey("proxies.id")),
-    Column("inbound_tag", ForeignKey("inbounds.tag")),
-)
-
-template_inbounds_association = Table(
-    "template_inbounds_association",
+template_group_association = Table(
+    "template_group_association",
     Base.metadata,
     Column("user_template_id", ForeignKey("user_templates.id")),
-    Column("inbound_tag", ForeignKey("inbounds.tag")),
+    Column("group_id", ForeignKey("groups.id")),
 )
 
 
@@ -183,8 +196,8 @@ class UserTemplate(Base):
     username_prefix = Column(String(20), nullable=True)
     username_suffix = Column(String(20), nullable=True)
 
-    inbounds = relationship(
-        "ProxyInbound", secondary=template_inbounds_association
+    groups = relationship(
+        "Group", secondary=template_group_association, back_populates="templates",
     )
 
 
@@ -206,9 +219,6 @@ class Proxy(Base):
     user = relationship("User", back_populates="proxies")
     type = Column(Enum(ProxyTypes), nullable=False)
     settings = Column(JSON, nullable=False)
-    excluded_inbounds = relationship(
-        "ProxyInbound", secondary=excluded_inbounds_association
-    )
 
 
 class ProxyInbound(Base):
@@ -219,6 +229,7 @@ class ProxyInbound(Base):
     hosts = relationship(
         "ProxyHost", back_populates="inbound", cascade="all, delete-orphan"
     )
+    groups = relationship("Group", secondary=inbounds_groups_association, back_populates="inbounds")
 
 
 class ProxyHost(Base):
@@ -350,3 +361,23 @@ class NotificationReminder(Base):
     threshold = Column(Integer, nullable=True)
     expires_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class Group(Base):
+    __tablename__ = "groups"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(64))
+
+    users = relationship(
+        "User", secondary=users_groups_association, back_populates="groups"
+    )
+    inbounds = relationship(
+        "ProxyInbound", secondary=inbounds_groups_association, back_populates="groups"
+    )
+    templates = relationship(
+        "UserTemplate", secondary=template_group_association, back_populates="groups"
+    )
+
+    @property
+    def inbound_ids(self):
+        return [inbound.id for inbound in self.inbounds]
