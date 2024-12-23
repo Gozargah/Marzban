@@ -88,7 +88,7 @@ const fetchUsers = (query: FilterType): Promise<User[]> => {
     });
 };
 
-const fetchInbounds = () => {
+export const fetchInbounds = () => {
   return fetch
     .get("/inbounds")
     .then((inbounds: Inbounds) => {

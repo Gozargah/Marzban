@@ -7,11 +7,11 @@ import { removeAuthToken, setAuthToken } from "@/utils/authStorage";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert } from "@/components/ui/alert";
 import { Language } from "@/components/Language";
 import { ModeToggle } from "@/components/mode-toggle";
 import LogoIcon from "@/assets/logo.svg";
-import { AlertCircle, LogIn } from "lucide-react";
+import { AlertCircle, Loader2, LogIn } from "lucide-react";
 
 const schema = Yup.object({
   username: Yup.string().required("login.fieldRequired"),
@@ -136,19 +136,22 @@ export const Login: React.FC = () => {
                           className="p-4 rounded-lg flex items-center bg-[#a32929d4] border-none text-red-700 justify-between"
                         >
                           <AlertCircle className="h-6 w-6 fill-red-300" />
-                          <span className="text-white ml-1 font-semibold">{error}</span>
+                          <span className="text-white ml-1 font-semibold">
+                            {error}
+                          </span>
                         </Alert>
                       )}
 
-                      <Button
-                        type="submit"
-                        className="w-full"
-                        color="primary"
-                        loading={loading || isSubmitting}
-                      >
+                      <Button disabled={loading || isSubmitting} type="submit" className="w-full" color="primary">
                         <div className="flex items-center gap-x-2">
-                          <LogIn className="w-5 h-5" />
-                          <span>{t("login")}</span>
+                          {loading || isSubmitting ? (
+                            <Loader2 className="animate-spin h-6 w-6" />
+                          ) : (
+                            <>
+                              <LogIn className="w-5 h-5" />
+                              <span>{t("login")}</span>
+                            </>
+                          )}
                         </div>
                       </Button>
                     </div>

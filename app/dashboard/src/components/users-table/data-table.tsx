@@ -16,19 +16,23 @@ import {
 } from "@/components/ui/table";
 import useDirDetection from "@/hooks/use-dir-detection";
 import { cn } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
+import ActionButtons from "../ActionButtons";
+import { User } from "@/types/User";
+import UsageSliderCompact from "../UsageSliderCompact";
+import { StatusBadge } from "../StatusBadge";
+import { OnlineStatus } from "../OnlineStatus";
 
-
-interface DataTableProps<TData, TValue> {
+interface DataTableProps<TData extends User, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends User, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const [expandedRow, setExpandedRow] = useState<string | null>(null); // Track expanded row
-  const [filters, setFilters] = useState({ status: "", sort: "" }); // Filters for status and sort
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const table = useReactTable({
     data,
     columns,
@@ -40,19 +44,7 @@ export function DataTable<TData, TValue>({
     setExpandedRow(expandedRow === rowId ? null : rowId);
   };
 
-  const handleSort = (column: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      sort: prev.sort === column ? `${column} DESC` : column,
-    }));
-  };
-
-  const handleStatusFilter = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFilters((prev) => ({
-      ...prev,
-      status: e.target.value,
-    }));
-  };
+  const dir = useDirDetection();
 
   return (
     <div className="rounded-md border">
@@ -64,9 +56,13 @@ export function DataTable<TData, TValue>({
                 <TableHead
                   key={header.id}
                   className={cn(
-                    "font-bold text-xs px-8",
+                    "font-bold text-xs py-2",
                     isRTL && "text-right",
-                    index >= 3 && "hidden md:table-cell" // Hide extra columns on md
+                    index === 0 && "w-[270px] md:w-auto",
+                    index === 1 && "max-w-[70px] md:w-auto md:px-0",
+                    index === 2 && "min-w-[100px] md:w-[450px]",
+                    index >= 3 && "hidden md:table-cell",
+                    header.id === "chevron" && "table-cell md:hidden"
                   )}
                 >
                   {header.isPlaceholder
@@ -87,7 +83,7 @@ export function DataTable<TData, TValue>({
                 {/* Collapsible Row */}
                 <TableRow
                   className={cn(
-                    "cursor-pointer md:cursor-default hover:bg-gray-100 border-b",
+                    "cursor-pointer md:cursor-default border-b hover:!bg-inherit md:hover:!bg-muted/50",
                     expandedRow === row.id && "border-transparent"
                   )}
                   onClick={() =>
@@ -99,30 +95,71 @@ export function DataTable<TData, TValue>({
                     <TableCell
                       key={cell.id}
                       className={cn(
-                        "py-4 text-sm sm:py-2",
-                        index >= 3 && "hidden md:table-cell" // Hide extra columns on md
+                        "py-4 text-sm",
+                        index <= 1 &&
+                          "md:py-2 max-w-[calc(100vw-50px-32px-100px-48px)]",
+                        index === 2 && "w-[120px]",
+                        index === 3 && "w-8",
+                        index === 3 && dir === "rtl"
+                          ? "pr-0"
+                          : index === 3 && dir === "ltr" && "pl-0",
+                        index >= 4 && "hidden md:table-cell",
+                        cell.column.id === "chevron" && "table-cell md:hidden",
+                        dir === "rtl" ? "pl-3" : "pr-3"
                       )}
                     >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
+                      {cell.column.id === "chevron" ? (
+                        <div
+                          className="flex items-center justify-center cursor-pointer"
+                          onClick={() => handleRowToggle(row.id)}
+                        >
+                          <ChevronDown
+                            className={cn(
+                              "h-4 w-4 transition-transform duration-300",
+                              expandedRow === row.id && "rotate-180"
+                            )}
+                          />
+                        </div>
+                      ) : (
+                        flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )
                       )}
                     </TableCell>
                   ))}
                 </TableRow>
                 {/* Expanded Content */}
                 {expandedRow === row.id && (
-                  <TableRow className="bg-gray-50 md:hidden border-b">
+                  <TableRow className=" md:hidden border-b hover:!bg-inherit">
                     {/* Expanded content only visible on small screens */}
-                    <TableCell
-                      colSpan={columns.length}
-                      className="p-4 text-sm"
-                    >
-                      <div>
-                        <p className="text-gray-700">
-                          Expanded content for row {row.id}.
-                        </p>
-                        {/* Add more content here */}
+                    <TableCell colSpan={columns.length} className="p-4 text-sm">
+                      <div className="flex flex-col gap-y-4">
+                        <UsageSliderCompact
+                          isMobile
+                          status={row.original.status}
+                          total={row.original.data_limit}
+                          totalUsedTraffic={row.original.lifetime_used_traffic}
+                          used={row.original.used_traffic}
+                          dataLimitResetStrategy={
+                            row.original.data_limit_reset_strategy
+                          }
+                        />
+                        <div className="flex flex-col">
+                          <div className="flex items-center justify-between mt-2">
+                            <div className="flex items-center">
+                              <StatusBadge
+                                expiryDate={row.original.expire}
+                                status={row.original.status}
+                                isMobile
+                              />
+                            </div>
+                            <ActionButtons user={row.original} />
+                          </div>
+                          <div>
+                            <OnlineStatus lastOnline={row.original.online_at}/>
+                          </div>
+                        </div>
                       </div>
                     </TableCell>
                   </TableRow>

@@ -11,7 +11,7 @@ const Dashboard = () => {
   if (!sidebar) return null;
   return (
     <ContentLayout>
-      <div className="container mx-auto py-10">
+      <div className="mx-auto py-10">
         <UsersTable />
         <PaginationControls />
 

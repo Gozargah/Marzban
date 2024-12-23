@@ -54,6 +54,30 @@ module.exports = {
       fontFamily: {
         yekan: ["YekanBakh", "Arial", "sans-serif"],
       },
+      keyframes: {
+        pulseAnimation: {
+          "0%": { boxShadow: "0 0 0 0px rgba(0, 0, 0, 0.4)" },
+          "100%": { boxShadow: "0 0 0 10px rgba(0, 0, 0, 0)" },
+        },
+        greenPulseAnimation: {
+          "0%": { boxShadow: "0 0 0 0px #66ff9975" },
+          "100%": { boxShadow: "0 0 0 10px #66ff9900" },
+        },
+        redPulseAnimation: {
+          "0%": { boxShadow: "0 0 0 0px #e53e3e8c" },
+          "100%": { boxShadow: "0 0 0 10px #e53e3e00" },
+        },
+        orangePulseAnimation: {
+          "0%": { boxShadow: "0 0 0 0px #fbd38d85" },
+          "100%": { boxShadow: "0 0 0 10px #fbd38d00" },
+        },
+      },
+      animation: {
+        pulse: "pulseAnimation 3s infinite",
+        greenPulse: "greenPulseAnimation 3s infinite",
+        redPulse: "redPulseAnimation 3s infinite",
+        orangePulse: "orangePulseAnimation 3s infinite",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

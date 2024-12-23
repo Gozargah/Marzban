@@ -181,7 +181,7 @@ export const PaginationControls = () => {
     <div className="flex flex-col md:flex-row-reverse gap-y-3 justify-between items-center my-4">
       {/* Pagination Controls */}
       <div className=" max-w-full overflow-y-auto">
-        <Pagination className="justify-end min-w-[28rem]">
+        <Pagination className="justify-end w-[26rem]">
           <PaginationContent>
             {/* Previous Button */}
             <PaginationItem>
