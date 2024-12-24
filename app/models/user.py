@@ -65,7 +65,7 @@ class User(BaseModel):
     data_limit_reset_strategy: UserDataLimitResetStrategy = (
         UserDataLimitResetStrategy.no_reset
     )
-    inbounds: Dict[ProxyTypes, List[str]] = {}
+    inbounds: List[str] = []
     note: Optional[str] = Field(None, nullable=True)
     sub_updated_at: Optional[datetime] = Field(None, nullable=True)
     sub_last_user_agent: Optional[str] = Field(None, nullable=True)
@@ -141,17 +141,6 @@ class UserCreate(User):
         }
     })
 
-    @property
-    def excluded_inbounds(self):
-        excluded = {}
-        for proxy_type in self.proxies:
-            excluded[proxy_type] = []
-            for inbound in xray.config.inbounds_by_protocol.get(proxy_type, []):
-                if not inbound["tag"] in self.inbounds.get(proxy_type, []):
-                    excluded[proxy_type].append(inbound["tag"])
-
-        return excluded
-
     @field_validator("inbounds", mode="before")
     def validate_inbounds(cls, inbounds, values, **kwargs):
         proxies = values.data.get("proxies", [])
@@ -221,17 +210,6 @@ class UserModify(User):
             "on_hold_expire_duration": 0,
         }
     })
-
-    @property
-    def excluded_inbounds(self):
-        excluded = {}
-        for proxy_type in self.inbounds:
-            excluded[proxy_type] = []
-            for inbound in xray.config.inbounds_by_protocol.get(proxy_type, []):
-                if not inbound["tag"] in self.inbounds.get(proxy_type, []):
-                    excluded[proxy_type].append(inbound["tag"])
-
-        return excluded
 
     @field_validator("inbounds", mode="before")
     def validate_inbounds(cls, inbounds, values, **kwargs):
@@ -309,9 +287,8 @@ class UserResponse(User):
 
 class SubscriptionUserResponse(UserResponse):
     admin: Admin | None = Field(default=None, exclude=True)
-    excluded_inbounds: Dict[ProxyTypes, List[str]] | None = Field(None, exclude=True)
     note: str | None = Field(None, exclude=True)
-    inbounds: Dict[ProxyTypes, List[str]] | None = Field(None, exclude=True)
+    inbounds: List[str] | None = Field(None, exclude=True)
     auto_delete_in_days: int | None = Field(None, exclude=True)
     model_config = ConfigDict(from_attributes=True)
 

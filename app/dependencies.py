@@ -1,11 +1,14 @@
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Union
-from app.models.admin import AdminInDB, AdminValidationResult, Admin
-from app.models.user import UserResponse, UserStatus
-from app.db import Session, crud, get_db
-from config import SUDOERS
+
+from click import Group
 from fastapi import Depends, HTTPException
-from datetime import datetime, timezone, timedelta
+
+from app.db import Session, crud, get_db
+from app.models.admin import Admin, AdminInDB, AdminValidationResult
+from app.models.user import UserResponse, UserStatus
 from app.utils.jwt import get_subscription_payload
+from config import SUDOERS
 
 
 def validate_admin(db: Session, username: str, password: str) -> Optional[AdminValidationResult]:
@@ -95,6 +98,14 @@ def get_validated_user(
         raise HTTPException(status_code=403, detail="You're not allowed")
 
     return dbuser
+
+
+def get_validated_group(group_id: int, admin: Admin = Depends(Admin.get_current), db: Session = Depends(get_db)) -> Group:
+    dbgroup = crud.get_group_by_id(db, group_id)
+    if not dbgroup:
+        raise HTTPException(status_code=404, detail="Group not found")
+
+    return dbgroup
 
 
 def get_expired_users_list(db: Session, admin: Admin, expired_after: Optional[datetime] = None,

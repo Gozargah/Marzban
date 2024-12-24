@@ -15,6 +15,7 @@ from app.db.models import (
     TLS,
     Admin,
     AdminUsageLogs,
+    Group,
     NextPlan,
     Node,
     NodeUsage,
@@ -30,6 +31,7 @@ from app.db.models import (
     UserUsageResetLogs,
 )
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
+from app.models.group import GroupCreate, GroupModify
 from app.models.node import NodeCreate, NodeModify, NodeStatus, NodeUsageResponse
 from app.models.proxy import ProxyHost as ProxyHostModify
 from app.models.user import (
@@ -1498,3 +1500,46 @@ def count_online_users(db: Session, hours: int = 24):
     query = db.query(func.count(User.id)).filter(User.online_at.isnot(
         None), User.online_at >= twenty_four_hours_ago)
     return query.scalar()
+
+
+def create_group(db: Session, group: GroupCreate) -> Group:
+    dbgroup = Group(
+        name=group.name,
+        inbounds=db.query(ProxyInbound).filter(ProxyInbound.tag.in_(group.inbound_tags)).all()
+    )
+    db.add(dbgroup)
+    db.commit()
+    db.refresh(dbgroup)
+    return dbgroup
+
+
+def get_group(db: Session, offset: int = None, limit: int = None):
+    groups = db.query(Group)
+    if offset:
+        groups = groups.offset(offset)
+    if limit:
+        groups = groups.limit(limit)
+
+    count = groups.count()
+
+    return groups.all(), count
+
+
+def get_group_by_id(db: Session, group_id: int) -> Group | None:
+    return db.query(Group).filter(Group.id == group_id).first()
+
+
+def update_group(db: Session, dbgroup: Group, modified_group: GroupModify) -> Group:
+    if dbgroup.name != modified_group.name:
+        dbgroup.name = modified_group.name
+    if modified_group.inbound_tags is not None:
+        dbgroup.inbounds = db.query(ProxyInbound).filter(ProxyInbound.tag.in_(modified_group.inbound_tags)).all()
+
+    db.commit()
+    db.refresh(dbgroup)
+    return dbgroup
+
+
+def remove_group(db: Session, dbgroup: Group):
+    db.delete(dbgroup)
+    db.commit()

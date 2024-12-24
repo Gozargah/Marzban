@@ -146,23 +146,22 @@ class User(Base):
         return self.usage_logs[-1].reset_at if self.usage_logs else self.created_at
 
     @property
-    def excluded_inbounds(self):
-        _ = {}
-        for proxy in self.proxies:
-            _[proxy.type] = [i.tag for i in proxy.excluded_inbounds]
+    def inbounds(self):
+        _ = []
+        for group in self.groups:
+            for inbound in xray.config.inbounds:
+                if inbound["tag"] in group.inbounds:
+                    _.append(inbound["tag"])
+
         return _
 
     @property
-    def inbounds(self):
-        _ = {}
-        for proxy in self.proxies:
-            _[proxy.type] = []
-            excluded_tags = [i.tag for i in proxy.excluded_inbounds]
-            for inbound in xray.config.inbounds_by_protocol.get(proxy.type, []):
-                if inbound["tag"] not in excluded_tags:
-                    _[proxy.type].append(inbound["tag"])
+    def group_ids(self):
+        return [group.id for group in self.groups]
 
-        return _
+    @property
+    def group_names(self):
+        return [group.name for group in self.groups]
 
 
 template_group_association = Table(
@@ -381,3 +380,11 @@ class Group(Base):
     @property
     def inbound_ids(self):
         return [inbound.id for inbound in self.inbounds]
+
+    @property
+    def inbound_tags(self):
+        return [inbound.tag for inbound in self.inbounds]
+
+    @property
+    def total_users(self):
+        return len(self.users)

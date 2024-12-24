@@ -367,12 +367,18 @@ class XRayConfig(dict):
                 db_models.User.username,
                 func.lower(db_models.Proxy.type).label('type'),
                 db_models.Proxy.settings,
-                func.group_concat(db_models.excluded_inbounds_association.c.inbound_tag).label('excluded_inbound_tags')
+                func.group_concat(db_models.ProxyInbound.tag).label('inbound_tags')
             ).join(
                 db_models.Proxy, db_models.User.id == db_models.Proxy.user_id
             ).outerjoin(
-                db_models.excluded_inbounds_association,
-                db_models.Proxy.id == db_models.excluded_inbounds_association.c.proxy_id
+                db_models.users_groups_association,
+                db_models.User.id == db_models.users_groups_association.c.user_id
+            ).outerjoin(
+                db_models.inbounds_groups_association,
+                db_models.users_groups_association.c.groups_id == db_models.inbounds_groups_association.c.group_id
+            ).outerjoin(
+                db_models.ProxyInbound,
+                db_models.inbounds_groups_association.c.inbound_id == db_models.ProxyInbound.id
             ).filter(
                 db_models.User.status.in_([UserStatus.active, UserStatus.on_hold])
             ).group_by(
@@ -390,7 +396,7 @@ class XRayConfig(dict):
                     row.id,
                     row.username,
                     row.settings,
-                    [i for i in row.excluded_inbound_tags.split(',') if i] if row.excluded_inbound_tags else None
+                    [tag for tag in row.inbound_tags.split(',')]
                 ))
 
             for proxy_type, rows in grouped_data.items():
@@ -403,9 +409,9 @@ class XRayConfig(dict):
                     clients = config.get_inbound(inbound['tag'])['settings']['clients']
 
                     for row in rows:
-                        user_id, username, settings, excluded_inbound_tags = row
+                        user_id, username, settings, inbound_tags = row
 
-                        if excluded_inbound_tags and inbound['tag'] in excluded_inbound_tags:
+                        if inbound['tag'] not in inbound_tags:
                             continue
 
                         client = {
