@@ -12,15 +12,15 @@ class Unauthorized(HTTPException):
 
 
 class Forbidden(HTTPException):
-    detail: str = "You're not allowed 'to ...'"
+    detail: str = "You are not allowed to ..."
 
 
 class NotFound(HTTPException):
-    detail: str = "'Entity' '{}' not found"
+    detail: str = "Entity {} not found"
 
 
 class Conflict(HTTPException):
-    detail: str = "'Entity' already exists"
+    detail: str = "Entity already exists"
 
 
 _400 = {"description": "Bad request", "model": HTTPException}
