@@ -31,7 +31,9 @@ _401 = {
     "headers": {
         "WWW-Authenticate": {
             "description": "Authentication type",
-            "type": "string",
+            "schema": {
+                "type": "string"
+            },
         },
     },
 }
