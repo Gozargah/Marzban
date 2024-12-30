@@ -21,7 +21,6 @@ from app.db.models import (
     NodeUsage,
     NodeUserUsage,
     NotificationReminder,
-    Proxy,
     ProxyHost,
     ProxyInbound,
     ProxyTypes,
@@ -368,27 +367,16 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None) -> User:
     Returns:
         User: The created user object.
     """
-    excluded_inbounds_tags = user.excluded_inbounds
-    proxies = []
-    for proxy_type, settings in user.proxies.items():
-        excluded_inbounds = [
-            get_or_create_inbound(db, tag) for tag in excluded_inbounds_tags[proxy_type]
-        ]
-        proxies.append(
-            Proxy(type=proxy_type.value,
-                  settings=settings.dict(no_obj=True),
-                  excluded_inbounds=excluded_inbounds)
-        )
-
     dbuser = User(
         username=user.username,
-        proxies=proxies,
+        proxy_settings=user.proxy_settings,
         status=user.status,
         data_limit=(user.data_limit or None),
         expire=(user.expire or None),
         admin=admin,
         data_limit_reset_strategy=user.data_limit_reset_strategy,
         note=user.note,
+        groups=db.query(Group).filter(Group.id.in_(user.group_ids)).all(),
         on_hold_expire_duration=(user.on_hold_expire_duration or None),
         on_hold_timeout=(user.on_hold_timeout or None),
         auto_delete_in_days=user.auto_delete_in_days,
@@ -447,32 +435,12 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
     Returns:
         User: The updated user object.
     """
-    added_proxies: Dict[ProxyTypes, Proxy] = {}
-    if modify.proxies:
-        for proxy_type, settings in modify.proxies.items():
-            dbproxy = db.query(Proxy) \
-                .where(Proxy.user == dbuser, Proxy.type == proxy_type) \
-                .first()
-            if dbproxy:
-                dbproxy.settings = settings.dict(no_obj=True)
-            else:
-                new_proxy = Proxy(type=proxy_type, settings=settings.dict(no_obj=True))
-                dbuser.proxies.append(new_proxy)
-                added_proxies.update({proxy_type: new_proxy})
-        for proxy in dbuser.proxies:
-            if proxy.type not in modify.proxies:
-                db.delete(proxy)
-    if modify.inbounds:
-        for proxy_type, tags in modify.excluded_inbounds.items():
-            dbproxy = db.query(Proxy) \
-                .where(Proxy.user == dbuser, Proxy.type == proxy_type) \
-                .first() or added_proxies.get(proxy_type)
-            if dbproxy:
-                dbproxy.excluded_inbounds = [get_or_create_inbound(db, tag) for tag in tags]
-
+    if modify.proxy_settings:
+        dbuser.proxy_settings.update(modify.proxy_settings)
+    if modify.group_ids:
+        dbuser.groups = db.query(Group).filter(Group.id.in_(modify.group_ids)).all()
     if modify.status is not None:
         dbuser.status = modify.status
-
     if modify.data_limit is not None:
         dbuser.data_limit = (modify.data_limit or None)
         if dbuser.status not in (UserStatus.expired, UserStatus.disabled):
@@ -618,9 +586,9 @@ def revoke_user_sub(db: Session, dbuser: User) -> User:
     dbuser.sub_revoked_at = datetime.utcnow()
 
     user = UserResponse.model_validate(dbuser)
-    for proxy_type, settings in user.proxies.copy().items():
+    for proxy_type, settings in user.proxy_settings.copy().items():
         settings.revoke()
-        user.proxies[proxy_type] = settings
+        user.proxy_settings[proxy_type] = settings
     dbuser = update_user(db, dbuser, user)
 
     db.commit()
@@ -1100,16 +1068,13 @@ def create_user_template(db: Session, user_template: UserTemplateCreate) -> User
     Returns:
         UserTemplate: The created user template object.
     """
-    inbound_tags: List[str] = []
-    for _, i in user_template.inbounds.items():
-        inbound_tags.extend(i)
     dbuser_template = UserTemplate(
         name=user_template.name,
         data_limit=user_template.data_limit,
         expire_duration=user_template.expire_duration,
         username_prefix=user_template.username_prefix,
         username_suffix=user_template.username_suffix,
-        inbounds=db.query(ProxyInbound).filter(ProxyInbound.tag.in_(inbound_tags)).all()
+        groups=db.query(Group).filter(Group.id.in_(user_template.group_ids)).all()
     )
     db.add(dbuser_template)
     db.commit()
@@ -1141,11 +1106,8 @@ def update_user_template(
     if modified_user_template.username_suffix is not None:
         dbuser_template.username_suffix = modified_user_template.username_suffix
 
-    if modified_user_template.inbounds:
-        inbound_tags: List[str] = []
-        for _, i in modified_user_template.inbounds.items():
-            inbound_tags.extend(i)
-        dbuser_template.inbounds = db.query(ProxyInbound).filter(ProxyInbound.tag.in_(inbound_tags)).all()
+    if modified_user_template.group_ids:
+        dbuser_template.groups = db.query(Group).filter(Group.id.in_(modified_user_template.group_ids)).all()
 
     db.commit()
     db.refresh(dbuser_template)
@@ -1533,7 +1495,7 @@ def update_group(db: Session, dbgroup: Group, modified_group: GroupModify) -> Gr
     if dbgroup.name != modified_group.name:
         dbgroup.name = modified_group.name
     if modified_group.inbound_tags is not None:
-        dbgroup.inbounds = db.query(ProxyInbound).filter(ProxyInbound.tag.in_(modified_group.inbound_tags)).all()
+        dbgroup.inbounds = [get_or_create_inbound(db, i) for i in modified_group.inbound_tags]
 
     db.commit()
     db.refresh(dbgroup)

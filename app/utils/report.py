@@ -1,29 +1,37 @@
 from datetime import datetime as dt
 from typing import Optional
 
-from app import telegram
-from app.db import Session, create_notification_reminder, get_admin_by_id, GetDB
-from app.db.models import UserStatus, User
+from app import discord, telegram
+from app.db import GetDB, Session, create_notification_reminder, get_admin_by_id
+from app.db.models import User, UserStatus
 from app.models.admin import Admin
 from app.models.user import ReminderType, UserResponse
-from app.utils.notification import (Notification, ReachedDaysLeft,
-                                    ReachedUsagePercent, UserCreated, UserDataResetByNext,
-                                    UserDataUsageReset, UserDeleted,
-                                    UserDisabled, UserEnabled, UserExpired,
-                                    UserLimited, UserSubscriptionRevoked,
-                                    UserUpdated, notify)
-from app import discord
-
+from app.utils.notification import (
+    Notification,
+    ReachedDaysLeft,
+    ReachedUsagePercent,
+    UserCreated,
+    UserDataResetByNext,
+    UserDataUsageReset,
+    UserDeleted,
+    UserDisabled,
+    UserEnabled,
+    UserExpired,
+    UserLimited,
+    UserSubscriptionRevoked,
+    UserUpdated,
+    notify,
+)
 from config import (
-    NOTIFY_STATUS_CHANGE,
-    NOTIFY_USER_CREATED,
-    NOTIFY_USER_UPDATED,
-    NOTIFY_USER_DELETED,
-    NOTIFY_USER_DATA_USED_RESET,
-    NOTIFY_USER_SUB_REVOKED,
     NOTIFY_IF_DATA_USAGE_PERCENT_REACHED,
     NOTIFY_IF_DAYS_LEFT_REACHED,
-    NOTIFY_LOGIN
+    NOTIFY_LOGIN,
+    NOTIFY_STATUS_CHANGE,
+    NOTIFY_USER_CREATED,
+    NOTIFY_USER_DATA_USED_RESET,
+    NOTIFY_USER_DELETED,
+    NOTIFY_USER_SUB_REVOKED,
+    NOTIFY_USER_UPDATED,
 )
 
 
@@ -57,7 +65,7 @@ def user_created(user: UserResponse, user_id: int, by: Admin, user_admin: Admin 
                 by=by.username,
                 expire_date=user.expire,
                 data_limit=user.data_limit,
-                proxies=user.proxies,
+                proxies=user.proxy_settings,
                 has_next_plan=user.next_plan is not None,
                 data_limit_reset_strategy=user.data_limit_reset_strategy,
                 admin=user_admin
@@ -71,7 +79,7 @@ def user_created(user: UserResponse, user_id: int, by: Admin, user_admin: Admin 
                 by=by.username,
                 expire_date=user.expire,
                 data_limit=user.data_limit,
-                proxies=user.proxies,
+                proxies=user.proxy_settings,
                 has_next_plan=user.next_plan is not None,
                 data_limit_reset_strategy=user.data_limit_reset_strategy,
                 admin=user_admin
@@ -87,7 +95,7 @@ def user_updated(user: UserResponse, by: Admin, user_admin: Admin = None) -> Non
                 username=user.username,
                 expire_date=user.expire,
                 data_limit=user.data_limit,
-                proxies=user.proxies,
+                proxies=user.proxy_settings,
                 by=by.username,
                 has_next_plan=user.next_plan is not None,
                 data_limit_reset_strategy=user.data_limit_reset_strategy,
@@ -101,7 +109,7 @@ def user_updated(user: UserResponse, by: Admin, user_admin: Admin = None) -> Non
                 username=user.username,
                 expire_date=user.expire,
                 data_limit=user.data_limit,
-                proxies=user.proxies,
+                proxies=user.proxy_settings,
                 by=by.username,
                 has_next_plan=user.next_plan is not None,
                 data_limit_reset_strategy=user.data_limit_reset_strategy,

@@ -42,7 +42,7 @@ users_groups_association = Table(
     "users_groups_association",
     Base.metadata,
     Column("user_id", ForeignKey("users.id"), primary_key=True),
-    Column("groups_id", ForeignKey("groups.id"), primary_key=True),
+    Column("group_id", ForeignKey("groups.id"), primary_key=True),
 )
 
 
@@ -77,7 +77,6 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     username = Column(String(34, collation='NOCASE'), unique=True, index=True)
-    proxies = relationship("Proxy", back_populates="user", cascade="all, delete-orphan")
     status = Column(Enum(UserStatus), nullable=False, default=UserStatus.active)
     used_traffic = Column(BigInteger, default=0)
     node_usages = relationship("NodeUserUsage", back_populates="user", cascade="all, delete-orphan")
@@ -108,6 +107,7 @@ class User(Base):
 
     edit_at = Column(DateTime, nullable=True, default=None)
     last_status_change = Column(DateTime, default=datetime.utcnow, nullable=True)
+    proxy_settings = Column(JSON, nullable=False, server_default=text("'{}'"), default=lambda: {})
 
     next_plan = relationship(
         "NextPlan",
@@ -119,7 +119,6 @@ class User(Base):
         "Group",
         secondary=users_groups_association,
         back_populates="users",
-        lazy="joined",
     )
 
     @hybrid_property
@@ -147,12 +146,16 @@ class User(Base):
 
     @property
     def inbounds(self):
-        _ = []
-        for group in self.groups:
-            for inbound in xray.config.inbounds:
-                if inbound["tag"] in group.inbounds:
-                    _.append(inbound["tag"])
-
+        _ = {}
+        for proxy_type in self.proxy_settings:
+            _[proxy_type] = []
+            for group in self.groups:
+                tags = group.inbound_tags
+                for inbound in xray.config.inbounds_by_protocol.get(proxy_type, []):
+                    if inbound["tag"] in tags and inbound["tag"] not in _[proxy_type]:
+                        _[proxy_type].append(inbound["tag"])
+            if not _[proxy_type]:
+                del _[proxy_type]
         return _
 
     @property
@@ -164,8 +167,8 @@ class User(Base):
         return [group.name for group in self.groups]
 
 
-template_group_association = Table(
-    "template_group_association",
+template_groups_association = Table(
+    "template_groups_association",
     Base.metadata,
     Column("user_template_id", ForeignKey("user_templates.id")),
     Column("group_id", ForeignKey("groups.id")),
@@ -196,8 +199,12 @@ class UserTemplate(Base):
     username_suffix = Column(String(20), nullable=True)
 
     groups = relationship(
-        "Group", secondary=template_group_association, back_populates="templates",
+        "Group", secondary=template_groups_association, back_populates="templates",
     )
+
+    @property
+    def group_ids(self):
+        return [group.id for group in self.groups]
 
 
 class UserUsageResetLogs(Base):
@@ -208,16 +215,6 @@ class UserUsageResetLogs(Base):
     user = relationship("User", back_populates="usage_logs")
     used_traffic_at_reset = Column(BigInteger, nullable=False)
     reset_at = Column(DateTime, default=datetime.utcnow)
-
-
-class Proxy(Base):
-    __tablename__ = "proxies"
-
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    user = relationship("User", back_populates="proxies")
-    type = Column(Enum(ProxyTypes), nullable=False)
-    settings = Column(JSON, nullable=False)
 
 
 class ProxyInbound(Base):
@@ -233,9 +230,6 @@ class ProxyInbound(Base):
 
 class ProxyHost(Base):
     __tablename__ = "hosts"
-    # __table_args__ = (
-    #     UniqueConstraint('inbound_tag', 'remark'),
-    # )
 
     id = Column(Integer, primary_key=True)
     remark = Column(String(256), unique=False, nullable=False)
@@ -374,7 +368,7 @@ class Group(Base):
         "ProxyInbound", secondary=inbounds_groups_association, back_populates="groups"
     )
     templates = relationship(
-        "UserTemplate", secondary=template_group_association, back_populates="groups"
+        "UserTemplate", secondary=template_groups_association, back_populates="groups"
     )
 
     @property

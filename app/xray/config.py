@@ -365,39 +365,36 @@ class XRayConfig(dict):
             query = db.query(
                 db_models.User.id,
                 db_models.User.username,
-                func.lower(db_models.Proxy.type).label('type'),
-                db_models.Proxy.settings,
+                db_models.User.proxy_settings,
                 func.group_concat(db_models.ProxyInbound.tag).label('inbound_tags')
-            ).join(
-                db_models.Proxy, db_models.User.id == db_models.Proxy.user_id
             ).outerjoin(
                 db_models.users_groups_association,
                 db_models.User.id == db_models.users_groups_association.c.user_id
             ).outerjoin(
                 db_models.inbounds_groups_association,
-                db_models.users_groups_association.c.groups_id == db_models.inbounds_groups_association.c.group_id
+                db_models.users_groups_association.c.group_id == db_models.inbounds_groups_association.c.group_id
             ).outerjoin(
                 db_models.ProxyInbound,
                 db_models.inbounds_groups_association.c.inbound_id == db_models.ProxyInbound.id
             ).filter(
                 db_models.User.status.in_([UserStatus.active, UserStatus.on_hold])
             ).group_by(
-                func.lower(db_models.Proxy.type),
                 db_models.User.id,
                 db_models.User.username,
-                db_models.Proxy.settings,
+                db_models.User.proxy_settings
             )
             result = query.all()
 
             grouped_data = defaultdict(list)
 
             for row in result:
-                grouped_data[row.type].append((
-                    row.id,
-                    row.username,
-                    row.settings,
-                    [tag for tag in row.inbound_tags.split(',')]
-                ))
+                for p_type, settings in row.proxy_settings.items():
+                    grouped_data[p_type].append((
+                        row.id,
+                        row.username,
+                        settings,
+                        [tag for tag in row.inbound_tags.split(',')]
+                    ))
 
             for proxy_type, rows in grouped_data.items():
 

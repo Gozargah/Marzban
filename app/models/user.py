@@ -6,7 +6,6 @@ from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from app import xray
 from app.models.admin import Admin
 from app.models.proxy import ProxySettings, ProxyTypes
 from app.subscription.share import generate_v2ray_links
@@ -57,7 +56,7 @@ class NextPlanModel(BaseModel):
 
 
 class User(BaseModel):
-    proxies: Dict[ProxyTypes, ProxySettings] = {}
+    proxy_settings: Dict[ProxyTypes, ProxySettings] = {}
     expire: Optional[int] = Field(None, nullable=True)
     data_limit: Optional[int] = Field(
         ge=0, default=None, description="data_limit can be 0 or greater"
@@ -65,7 +64,7 @@ class User(BaseModel):
     data_limit_reset_strategy: UserDataLimitResetStrategy = (
         UserDataLimitResetStrategy.no_reset
     )
-    inbounds: List[str] = []
+    group_ids: List[int]
     note: Optional[str] = Field(None, nullable=True)
     sub_updated_at: Optional[datetime] = Field(None, nullable=True)
     sub_last_user_agent: Optional[str] = Field(None, nullable=True)
@@ -77,10 +76,14 @@ class User(BaseModel):
 
     next_plan: Optional[NextPlanModel] = Field(None, nullable=True)
 
-    @field_validator("proxies", mode="before")
+    @field_validator("proxy_settings", mode="before")
     def validate_proxies(cls, v, values, **kwargs):
-        if not v:
-            raise ValueError("Each user needs at least one proxy")
+        missing_protocols = {}
+        for element in ProxyTypes:
+            if element not in v:
+                missing_protocols[element] = {}
+        if missing_protocols:
+            v.update(missing_protocols)
         return {
             proxy_type: ProxySettings.from_dict(
                 proxy_type, v.get(proxy_type, {}))
@@ -117,14 +120,11 @@ class UserCreate(User):
     model_config = ConfigDict(json_schema_extra={
         "example": {
             "username": "user1234",
-            "proxies": {
+            "proxy_settings": {
                 "vmess": {"id": "35e4e39c-7d5c-4f4b-8b71-558e4f37ff53"},
                 "vless": {},
             },
-            "inbounds": {
-                "vmess": ["VMess TCP", "VMess Websocket"],
-                "vless": ["VLESS TCP REALITY", "VLESS GRPC REALITY"],
-            },
+            "group_ids": [1, 3, 5],
             "next_plan": {
                 "data_limit": 0,
                 "expire": 0,
@@ -140,35 +140,6 @@ class UserCreate(User):
             "on_hold_expire_duration": 0,
         }
     })
-
-    @field_validator("inbounds", mode="before")
-    def validate_inbounds(cls, inbounds, values, **kwargs):
-        proxies = values.data.get("proxies", [])
-
-        # delete inbounds that are for protocols not activated
-        for proxy_type in inbounds.copy():
-            if proxy_type not in proxies:
-                del inbounds[proxy_type]
-
-        # check by proxies to ensure that every protocol has inbounds set
-        for proxy_type in proxies:
-            tags = inbounds.get(proxy_type)
-
-            if tags:
-                for tag in tags:
-                    if tag not in xray.config.inbounds_by_tag:
-                        raise ValueError(f"Inbound {tag} doesn't exist")
-
-            # elif isinstance(tags, list) and not tags:
-            #     raise ValueError(f"{proxy_type} inbounds cannot be empty")
-
-            else:
-                inbounds[proxy_type] = [
-                    i["tag"]
-                    for i in xray.config.inbounds_by_protocol.get(proxy_type, [])
-                ]
-
-        return inbounds
 
     @field_validator("status", mode="before")
     def validate_status(cls, status, values):
@@ -187,14 +158,11 @@ class UserModify(User):
     data_limit_reset_strategy: UserDataLimitResetStrategy = None
     model_config = ConfigDict(json_schema_extra={
         "example": {
-            "proxies": {
+            "proxy_settings": {
                 "vmess": {"id": "35e4e39c-7d5c-4f4b-8b71-558e4f37ff53"},
                 "vless": {},
             },
-            "inbounds": {
-                "vmess": ["VMess TCP", "VMess Websocket"],
-                "vless": ["VLESS TCP REALITY", "VLESS GRPC REALITY"],
-            },
+            "group_ids": [1, 3, 5],
             "next_plan": {
                 "data_limit": 0,
                 "expire": 0,
@@ -211,23 +179,7 @@ class UserModify(User):
         }
     })
 
-    @field_validator("inbounds", mode="before")
-    def validate_inbounds(cls, inbounds, values, **kwargs):
-        # check with inbounds, "proxies" is optional on modifying
-        # so inbounds particularly can be modified
-        if inbounds:
-            for proxy_type, tags in inbounds.items():
-
-                # if not tags:
-                #     raise ValueError(f"{proxy_type} inbounds cannot be empty")
-
-                for tag in tags:
-                    if tag not in xray.config.inbounds_by_tag:
-                        raise ValueError(f"Inbound {tag} doesn't exist")
-
-        return inbounds
-
-    @field_validator("proxies", mode="before")
+    @field_validator("proxy_settings", mode="before")
     def validate_proxies(cls, v):
         return {
             proxy_type: ProxySettings.from_dict(
@@ -255,8 +207,8 @@ class UserResponse(User):
     created_at: datetime
     links: List[str] = []
     subscription_url: str = ""
-    proxies: dict
-    excluded_inbounds: Dict[ProxyTypes, List[str]] = {}
+    proxy_settings: dict
+    inbounds: Dict[ProxyTypes, List[str]] = {}
 
     admin: Optional[Admin] = None
     model_config = ConfigDict(from_attributes=True)
@@ -265,7 +217,7 @@ class UserResponse(User):
     def validate_links(self):
         if not self.links:
             self.links = generate_v2ray_links(
-                self.proxies, self.inbounds, extra_data=self.model_dump(), reverse=False,
+                self.proxy_settings, self.inbounds, extra_data=self.model_dump(), reverse=False,
             )
         return self
 
@@ -278,7 +230,7 @@ class UserResponse(User):
             self.subscription_url = f"{url_prefix}/{XRAY_SUBSCRIPTION_PATH}/{token}"
         return self
 
-    @field_validator("proxies", mode="before")
+    @field_validator("proxy_settings", mode="before")
     def validate_proxies(cls, v, values, **kwargs):
         if isinstance(v, list):
             v = {p.type: p.settings for p in v}
@@ -288,7 +240,7 @@ class UserResponse(User):
 class SubscriptionUserResponse(UserResponse):
     admin: Admin | None = Field(default=None, exclude=True)
     note: str | None = Field(None, exclude=True)
-    inbounds: List[str] | None = Field(None, exclude=True)
+    inbounds: Dict[ProxyTypes, List[str]] | None = Field(None, exclude=True)
     auto_delete_in_days: int | None = Field(None, exclude=True)
     model_config = ConfigDict(from_attributes=True)
 

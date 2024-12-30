@@ -65,7 +65,7 @@ def add_user(dbuser: "DBUser"):
             inbound = xray.config.inbounds_by_tag.get(inbound_tag, {})
 
             try:
-                proxy_settings = user.proxies[proxy_type].dict(no_obj=True)
+                proxy_settings = user.proxy_settings[proxy_type].dict(no_obj=True)
             except KeyError:
                 pass
             account = proxy_type.account_model(email=email, **proxy_settings)
@@ -111,7 +111,7 @@ def update_user(dbuser: "DBUser"):
             inbound = xray.config.inbounds_by_tag.get(inbound_tag, {})
 
             try:
-                proxy_settings = user.proxies[proxy_type].dict(no_obj=True)
+                proxy_settings = user.proxy_settings[proxy_type].dict(no_obj=True)
             except KeyError:
                 pass
             account = proxy_type.account_model(email=email, **proxy_settings)

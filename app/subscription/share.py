@@ -104,7 +104,7 @@ def generate_subscription(
         reverse: bool,
 ) -> str:
     kwargs = {
-        "proxies": user.proxies,
+        "proxies": user.proxy_settings,
         "inbounds": user.inbounds,
         "extra_data": user.__dict__,
         "reverse": reverse,

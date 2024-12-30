@@ -1,7 +1,7 @@
 """migrate to groups
 
 Revision ID: ed16dd5f1bc4
-Revises: 02723eca82a4
+Revises: ed4ea5ae1cf0
 Create Date: 2024-12-20 09:26:23.847134
 
 """
@@ -9,22 +9,23 @@ import json
 from collections import defaultdict
 
 import commentjson
+import sqlalchemy as sa
 from alembic import op
 from sqlalchemy import Column, ForeignKey, MetaData, Table
 from sqlalchemy.orm import Session, joinedload
 
 from app.db.models import (
     Group,
-    Proxy,
     ProxyInbound,
     User,
     UserTemplate,
 )
+from app.models.proxy import ProxyTypes
 from config import XRAY_JSON
 
 # revision identifiers, used by Alembic.
 revision = 'ed16dd5f1bc4'
-down_revision = '02723eca82a4'
+down_revision = 'ed4ea5ae1cf0'
 branch_labels = None
 depends_on = None
 
@@ -32,9 +33,16 @@ depends_on = None
 def upgrade() -> None:
     connection = op.get_bind()
     db = Session(bind=connection)
-    if db.query(User).count() <= 0:
+    if db.query(User.id).count() <= 0:
         return
-
+    proxy_table = Table(
+        'proxies',
+        MetaData(),
+        Column('id', sa.Integer, primary_key=True),
+        Column('user_id', ForeignKey("users.id")),
+        Column('type', sa.Enum(ProxyTypes)),
+        Column('settings', sa.JSON)
+    )
     template_inbounds_association = Table(
         "template_inbounds_association",
         MetaData(),
@@ -50,14 +58,14 @@ def upgrade() -> None:
     result = (
         db.query(
             User.id.label("user_id"),
-            Proxy.type.label("proxy_type"),
+            proxy_table.c.type.label("proxy_type"),
             ProxyInbound.tag.label("excluded_inbound_tag"),
         )
-        .outerjoin(Proxy, User.proxies)
-        .outerjoin(excluded_inbounds_association, Proxy.id == excluded_inbounds_association.c.proxy_id)
+        .join(proxy_table, proxy_table.c.user_id == User.id)
+        .outerjoin(excluded_inbounds_association, proxy_table.c.id == excluded_inbounds_association.c.proxy_id)
         .outerjoin(ProxyInbound, excluded_inbounds_association.c.inbound_tag == ProxyInbound.tag)
-        .group_by(User.id,  Proxy.type,  ProxyInbound.tag)
-        .order_by(User.id, Proxy.type)
+        .group_by(User.id,  proxy_table.c.type,  ProxyInbound.tag)
+        .order_by(User.id, proxy_table.c.type)
         .all()
     )
     template_count = db.query(UserTemplate).count()
