@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Union
 
-from click import Group
 from fastapi import Depends, HTTPException
 
 from app.db import Session, crud, get_db
+from app.db.models import Group
 from app.models.admin import Admin, AdminInDB, AdminValidationResult
 from app.models.user import UserResponse, UserStatus
 from app.utils.jwt import get_subscription_payload
