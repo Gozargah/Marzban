@@ -76,6 +76,16 @@ class User(BaseModel):
 
     next_plan: Optional[NextPlanModel] = Field(None, nullable=True)
 
+    @field_validator('data_limit', mode='before')
+    def cast_to_int(cls, v):
+        if v is None:  # Allow None values
+            return v
+        if isinstance(v, float):  # Allow float to int conversion
+            return int(v)
+        if isinstance(v, int):  # Allow integers directly
+            return v
+        raise ValueError("data_limit must be an integer or a float, not a string")  # Reject strings
+
     @field_validator("proxy_settings", mode="before")
     def validate_proxies(cls, v, values, **kwargs):
         missing_protocols = {}
@@ -236,6 +246,16 @@ class UserResponse(User):
             v = {p.type: p.settings for p in v}
         return super().validate_proxies(v, values, **kwargs)
 
+    @field_validator("used_traffic", "lifetime_used_traffic", mode='before')
+    def cast_to_int(cls, v):
+        if v is None:  # Allow None values
+            return v
+        if isinstance(v, float):  # Allow float to int conversion
+            return int(v)
+        if isinstance(v, int):  # Allow integers directly
+            return v
+        raise ValueError("must be an integer or a float, not a string")  # Reject strings
+
 
 class SubscriptionUserResponse(UserResponse):
     admin: Admin | None = Field(default=None, exclude=True)
@@ -254,6 +274,16 @@ class UserUsageResponse(BaseModel):
     node_id: Union[int, None] = None
     node_name: str
     used_traffic: int
+
+    @field_validator("used_traffic",  mode='before')
+    def cast_to_int(cls, v):
+        if v is None:  # Allow None values
+            return v
+        if isinstance(v, float):  # Allow float to int conversion
+            return int(v)
+        if isinstance(v, int):  # Allow integers directly
+            return v
+        raise ValueError("must be an integer or a float, not a string")  # Reject strings
 
 
 class UserUsagesResponse(BaseModel):
