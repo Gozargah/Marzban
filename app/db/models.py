@@ -1,20 +1,49 @@
 import os
 from datetime import datetime
 
-from sqlalchemy import (JSON, BigInteger, Boolean, Column, DateTime, Enum,
-                        Float, ForeignKey, Integer, String, Table,
-                        UniqueConstraint, func)
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql.expression import text, select
+from sqlalchemy.sql.expression import select, text
 
 from app import xray
 from app.db.base import Base
+from app.models.host import (
+    ProxyHostALPN,
+    ProxyHostFingerprint,
+    ProxyHostSecurity,
+    ProxyTypes,
+)
 from app.models.node import NodeStatus
-from app.models.proxy import ProxyTypes
-from app.models.host import ProxyHostSecurity, ProxyHostALPN, ProxyHostFingerprint
-from app.models.user import (ReminderType, UserDataLimitResetStrategy,
-                             UserStatus)
+from app.models.user import ReminderType, UserDataLimitResetStrategy, UserStatus
+
+inbounds_groups_association = Table(
+    "inbounds_groups_association",
+    Base.metadata,
+    Column("inbound_id", ForeignKey("inbounds.id"), primary_key=True),
+    Column("group_id", ForeignKey("groups.id"), primary_key=True),
+)
+
+users_groups_association = Table(
+    "users_groups_association",
+    Base.metadata,
+    Column("user_id", ForeignKey("users.id"), primary_key=True),
+    Column("group_id", ForeignKey("groups.id"), primary_key=True),
+)
 
 
 class Admin(Base):
@@ -48,7 +77,6 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     username = Column(String(34, collation='NOCASE'), unique=True, index=True)
-    proxies = relationship("Proxy", back_populates="user", cascade="all, delete-orphan")
     status = Column(Enum(UserStatus), nullable=False, default=UserStatus.active)
     used_traffic = Column(BigInteger, default=0)
     node_usages = relationship("NodeUserUsage", back_populates="user", cascade="all, delete-orphan")
@@ -79,29 +107,35 @@ class User(Base):
 
     edit_at = Column(DateTime, nullable=True, default=None)
     last_status_change = Column(DateTime, default=datetime.utcnow, nullable=True)
-    
+    proxy_settings = Column(JSON, nullable=False, server_default=text("'{}'"), default=lambda: {})
+
     next_plan = relationship(
         "NextPlan",
         uselist=False,
         back_populates="user",
         cascade="all, delete-orphan"
     )
+    groups = relationship(
+        "Group",
+        secondary=users_groups_association,
+        back_populates="users",
+    )
 
     @hybrid_property
-    def reseted_usage(self):
-        return sum([log.used_traffic_at_reset for log in self.usage_logs])
+    def reseted_usage(self) -> int:
+        return int(sum([log.used_traffic_at_reset for log in self.usage_logs]))
 
     @reseted_usage.expression
-    def reseted_usage(self):
+    def reseted_usage(cls):
         return (
-            select([func.sum(UserUsageResetLogs.used_traffic_at_reset)]).
-            where(UserUsageResetLogs.user_id == self.id).
+            select(func.sum(UserUsageResetLogs.used_traffic_at_reset)).
+            where(UserUsageResetLogs.user_id == cls.id).
             label('reseted_usage')
         )
 
     @property
-    def lifetime_used_traffic(self):
-        return (
+    def lifetime_used_traffic(self) -> int:
+        return int(
             sum([log.used_traffic_at_reset for log in self.usage_logs])
             + self.used_traffic
         )
@@ -111,37 +145,33 @@ class User(Base):
         return self.usage_logs[-1].reset_at if self.usage_logs else self.created_at
 
     @property
-    def excluded_inbounds(self):
+    def inbounds(self):
         _ = {}
-        for proxy in self.proxies:
-            _[proxy.type] = [i.tag for i in proxy.excluded_inbounds]
+        for proxy_type in self.proxy_settings:
+            _[proxy_type] = []
+            for group in self.groups:
+                tags = group.inbound_tags
+                for inbound in xray.config.inbounds_by_protocol.get(proxy_type, []):
+                    if inbound["tag"] in tags and inbound["tag"] not in _[proxy_type]:
+                        _[proxy_type].append(inbound["tag"])
+            if not _[proxy_type]:
+                del _[proxy_type]
         return _
 
     @property
-    def inbounds(self):
-        _ = {}
-        for proxy in self.proxies:
-            _[proxy.type] = []
-            excluded_tags = [i.tag for i in proxy.excluded_inbounds]
-            for inbound in xray.config.inbounds_by_protocol.get(proxy.type, []):
-                if inbound["tag"] not in excluded_tags:
-                    _[proxy.type].append(inbound["tag"])
+    def group_ids(self):
+        return [group.id for group in self.groups]
 
-        return _
+    @property
+    def group_names(self):
+        return [group.name for group in self.groups]
 
 
-excluded_inbounds_association = Table(
-    "exclude_inbounds_association",
-    Base.metadata,
-    Column("proxy_id", ForeignKey("proxies.id")),
-    Column("inbound_tag", ForeignKey("inbounds.tag")),
-)
-
-template_inbounds_association = Table(
-    "template_inbounds_association",
+template_groups_association = Table(
+    "template_groups_association",
     Base.metadata,
     Column("user_template_id", ForeignKey("user_templates.id")),
-    Column("inbound_tag", ForeignKey("inbounds.tag")),
+    Column("group_id", ForeignKey("groups.id")),
 )
 
 
@@ -168,9 +198,13 @@ class UserTemplate(Base):
     username_prefix = Column(String(20), nullable=True)
     username_suffix = Column(String(20), nullable=True)
 
-    inbounds = relationship(
-        "ProxyInbound", secondary=template_inbounds_association
+    groups = relationship(
+        "Group", secondary=template_groups_association, back_populates="templates",
     )
+
+    @property
+    def group_ids(self):
+        return [group.id for group in self.groups]
 
 
 class UserUsageResetLogs(Base):
@@ -183,19 +217,6 @@ class UserUsageResetLogs(Base):
     reset_at = Column(DateTime, default=datetime.utcnow)
 
 
-class Proxy(Base):
-    __tablename__ = "proxies"
-
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    user = relationship("User", back_populates="proxies")
-    type = Column(Enum(ProxyTypes), nullable=False)
-    settings = Column(JSON, nullable=False)
-    excluded_inbounds = relationship(
-        "ProxyInbound", secondary=excluded_inbounds_association
-    )
-
-
 class ProxyInbound(Base):
     __tablename__ = "inbounds"
 
@@ -204,21 +225,19 @@ class ProxyInbound(Base):
     hosts = relationship(
         "ProxyHost", back_populates="inbound", cascade="all, delete-orphan"
     )
+    groups = relationship("Group", secondary=inbounds_groups_association, back_populates="inbounds")
 
 
 class ProxyHost(Base):
     __tablename__ = "hosts"
-    # __table_args__ = (
-    #     UniqueConstraint('inbound_tag', 'remark'),
-    # )
 
     id = Column(Integer, primary_key=True)
     remark = Column(String(256), unique=False, nullable=False)
     address = Column(String(256), unique=False, nullable=False)
     port = Column(Integer, nullable=True)
     path = Column(String(256), unique=False, nullable=True)
-    sni = Column(String(256), unique=False, nullable=True)
-    host = Column(String(256), unique=False, nullable=True)
+    sni = Column(String(1000), unique=False, nullable=True)
+    host = Column(String(1000), unique=False, nullable=True)
     security = Column(
         Enum(ProxyHostSecurity),
         unique=False,
@@ -248,6 +267,7 @@ class ProxyHost(Base):
     fragment_setting = Column(String(100), nullable=True)
     noise_setting = Column(String(2000), nullable=True)
     random_user_agent = Column(Boolean, nullable=False, default=False, server_default='0')
+    use_sni_as_host = Column(Boolean, nullable=False, default=False, server_default="0")
 
 
 class System(Base):
@@ -334,3 +354,31 @@ class NotificationReminder(Base):
     threshold = Column(Integer, nullable=True)
     expires_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class Group(Base):
+    __tablename__ = "groups"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(64))
+
+    users = relationship(
+        "User", secondary=users_groups_association, back_populates="groups"
+    )
+    inbounds = relationship(
+        "ProxyInbound", secondary=inbounds_groups_association, back_populates="groups"
+    )
+    templates = relationship(
+        "UserTemplate", secondary=template_groups_association, back_populates="groups"
+    )
+
+    @property
+    def inbound_ids(self):
+        return [inbound.id for inbound in self.inbounds]
+
+    @property
+    def inbound_tags(self):
+        return [inbound.tag for inbound in self.inbounds]
+
+    @property
+    def total_users(self):
+        return len(self.users)

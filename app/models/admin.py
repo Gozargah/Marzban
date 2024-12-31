@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
-from pydantic import ConfigDict, field_validator,  BaseModel
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from app.db import Session, crud, get_db
 from app.utils.jwt import get_admin_payload
@@ -25,6 +25,16 @@ class Admin(BaseModel):
     discord_webhook: Optional[str] = None
     users_usage: Optional[int] = None
     model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("users_usage",  mode='before')
+    def cast_to_int(cls, v):
+        if v is None:  # Allow None values
+            return v
+        if isinstance(v, float):  # Allow float to int conversion
+            return int(v)
+        if isinstance(v, int):  # Allow integers directly
+            return v
+        raise ValueError("must be an integer or a float, not a string")  # Reject strings
 
     @classmethod
     def get_admin(cls, token: str, db: Session):

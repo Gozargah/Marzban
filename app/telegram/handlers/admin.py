@@ -22,7 +22,7 @@ from app.models.user import (
     UserModify,
     UserResponse,
     UserStatus,
-    UserStatusModify
+    UserStatusModify,
 )
 from app.models.user_template import UserTemplateResponse
 from app.telegram import bot
@@ -33,7 +33,7 @@ from app.telegram.utils.shared import (
     get_template_info_text,
     get_user_info_text,
     statuses,
-    time_to_string
+    time_to_string,
 )
 from app.utils.store import MemoryStorage
 from app.utils.system import cpu_usage, memory_usage, readable_size, realtime_bandwidth
@@ -1613,7 +1613,7 @@ def confirm_user_command(call: types.CallbackQuery):
             user = UserResponse.model_validate(db_user)
 
             inbounds = template.inbounds
-            proxies = {p.type.value: p.settings for p in db_user.proxies}
+            proxies = {p.type.value: p.settings for p in db_user.proxy_settings}
 
             for protocol in xray.config.inbounds_by_protocol:
                 if protocol in inbounds and protocol not in db_user.inbounds:
@@ -1702,7 +1702,7 @@ def confirm_user_command(call: types.CallbackQuery):
             if not db_user:
                 return bot.answer_callback_query(call.id, text=f"User not found!", show_alert=True)
 
-            proxies = {p.type.value: p.settings for p in db_user.proxies}
+            proxies = {p.type.value: p.settings for p in db_user.proxy_settings}
 
             for protocol in xray.config.inbounds_by_protocol:
                 if protocol in inbounds and protocol not in db_user.inbounds:
@@ -1842,7 +1842,7 @@ def confirm_user_command(call: types.CallbackQuery):
                     if mem_store.get(f'{call.message.chat.id}:data_limit') else None,
                     proxies=proxies,
                     inbounds=inbounds)
-            for proxy_type in new_user.proxies:
+            for proxy_type in new_user.proxy_settings:
                 if not xray.config.inbounds_by_protocol.get(proxy_type):
                     return bot.answer_callback_query(
                         call.id,
@@ -1852,7 +1852,7 @@ def confirm_user_command(call: types.CallbackQuery):
             try:
                 with GetDB() as db:
                     db_user = crud.create_user(db, new_user)
-                    proxies = db_user.proxies
+                    proxies = db_user.proxy_settings
                     user = UserResponse.model_validate(db_user)
                     xray.operations.add_user(db_user)
                     if mem_store.get(f"{call.message.chat.id}:is_bulk", False):
@@ -2069,7 +2069,7 @@ def confirm_user_command(call: types.CallbackQuery):
                             new_inbounds[protocol].remove(inbound)
                 if (data == 'inbound_remove' and inbound in inbound_tags)\
                         or (data == 'inbound_add' and inbound not in inbound_tags):
-                    proxies = {p.type.value: p.settings for p in user.proxies}
+                    proxies = {p.type.value: p.settings for p in user.proxy_settings}
                     for protocol in xray.config.inbounds_by_protocol:
                         if protocol in new_inbounds and protocol not in user.inbounds:
                             proxies.update({protocol: {'flow': TELEGRAM_DEFAULT_VLESS_FLOW} if

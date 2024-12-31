@@ -1,8 +1,8 @@
 import base64
 import random
 import secrets
-from copy import deepcopy
 from collections import defaultdict
+from copy import deepcopy
 from datetime import datetime as dt
 from datetime import timedelta
 from typing import TYPE_CHECKING, List, Literal, Union
@@ -105,7 +105,7 @@ def generate_subscription(
         reverse: bool,
 ) -> str:
     kwargs = {
-        "proxies": user.proxies,
+        "proxies": user.proxy_settings,
         "inbounds": user.inbounds,
         "extra_data": user.__dict__,
         "reverse": reverse,
@@ -285,6 +285,9 @@ def process_inbounds_and_tags(
             path = host["path"].format_map(format_variables)
         else:
             path = host_inbound.get("path", "").format_map(format_variables)
+
+        if host.get("use_sni_as_host", False) and sni:
+            req_host = sni
 
         host_inbound.update(
             {

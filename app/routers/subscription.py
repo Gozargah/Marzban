@@ -15,6 +15,7 @@ from config import (
     SUB_UPDATE_INTERVAL,
     SUBSCRIPTION_PAGE_TEMPLATE,
     USE_CUSTOM_JSON_DEFAULT,
+    USE_CUSTOM_JSON_FOR_HAPP,
     USE_CUSTOM_JSON_FOR_STREISAND,
     USE_CUSTOM_JSON_FOR_V2RAYN,
     USE_CUSTOM_JSON_FOR_V2RAYNG,
@@ -121,6 +122,17 @@ def user_subscription(
         else:
             conf = generate_subscription(user=user, config_format="v2ray", as_base64=True, reverse=False)
             return Response(content=conf, media_type="text/plain", headers=response_headers)
+
+    elif (USE_CUSTOM_JSON_DEFAULT or USE_CUSTOM_JSON_FOR_HAPP) and re.match(r'^Happ/(\d+\.\d+\.\d+)', user_agent):
+        version_str = re.match(r'^Happ/(\d+\.\d+\.\d+)', user_agent).group(1)
+        if LooseVersion(version_str) >= LooseVersion("1.63.1"):
+            conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False, reverse=False)
+            return Response(content=conf, media_type="application/json", headers=response_headers)
+        else:
+            conf = generate_subscription(user=user, config_format="v2ray", as_base64=True, reverse=False)
+            return Response(content=conf, media_type="text/plain", headers=response_headers)
+
+
 
     else:
         conf = generate_subscription(user=user, config_format="v2ray", as_base64=True, reverse=False)

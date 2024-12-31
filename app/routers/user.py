@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from typing import List, Optional, Union
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
@@ -6,7 +6,12 @@ from sqlalchemy.exc import IntegrityError
 
 from app import logger, xray
 from app.db import Session, crud, get_db
-from app.dependencies import get_expired_users_list, get_validated_user, validate_dates
+from app.dependencies import (
+    get_expired_users_list,
+    get_validated_group,
+    get_validated_user,
+    validate_dates,
+)
 from app.models.admin import Admin
 from app.models.user import (
     UserCreate,
@@ -37,7 +42,7 @@ def add_user(
     - **expire**: UTC datetime for account expiration. Use `0` for unlimited.
     - **data_limit**: Max data usage in bytes (e.g., `1073741824` for 1GB). `0` means unlimited.
     - **data_limit_reset_strategy**: Defines how/if data limit resets. `no_reset` means it never resets.
-    - **proxies**: Dictionary of protocol settings (e.g., `vmess`, `vless`).
+    - **proxy_settings**: Dictionary of protocol settings (e.g., `vmess`, `vless`) will generate data for all protocol by default.
     - **inbounds**: Dictionary of protocol tags to specify inbound connections.
     - **note**: Optional text field for additional user information or notes.
     - **on_hold_timeout**: UTC timestamp when `on_hold` status should start or end.
@@ -47,12 +52,8 @@ def add_user(
 
     # TODO expire should be datetime instead of timestamp
 
-    for proxy_type in new_user.proxies:
-        if not xray.config.inbounds_by_protocol.get(proxy_type):
-            raise HTTPException(
-                status_code=400,
-                detail=f"Protocol {proxy_type} is disabled on your server",
-            )
+    for group_id in new_user.group_ids:
+        get_validated_group(group_id, admin, db)
 
     try:
         dbuser = crud.create_user(
@@ -91,8 +92,8 @@ def modify_user(
     - **expire**: UTC datetime for new account expiration. Set to `0` for unlimited, `null` for no change.
     - **data_limit**: New max data usage in bytes (e.g., `1073741824` for 1GB). Set to `0` for unlimited, `null` for no change.
     - **data_limit_reset_strategy**: New strategy for data limit reset. Options include 'daily', 'weekly', 'monthly', or 'no_reset'.
-    - **proxies**: Dictionary of new protocol settings (e.g., `vmess`, `vless`). Empty dictionary means no change.
-    - **inbounds**: Dictionary of new protocol tags to specify inbound connections. Empty dictionary means no change.
+    - **oroxy_settings**: Dictionary of new protocol settings (e.g., `vmess`, `vless`). Empty dictionary means no change.
+    - **group_ids**: List of group ids
     - **note**: New optional text for additional user information or notes. `null` means no change.
     - **on_hold_timeout**: New UTC timestamp for when `on_hold` status should start or end. Only applicable if status is changed to 'on_hold'.
     - **on_hold_expire_duration**: New duration (in seconds) for how long the user should stay in `on_hold` status. Only applicable if status is changed to 'on_hold'.
@@ -100,13 +101,8 @@ def modify_user(
 
     Note: Fields set to `null` or omitted will not be modified.
     """
-
-    for proxy_type in modified_user.proxies:
-        if not xray.config.inbounds_by_protocol.get(proxy_type):
-            raise HTTPException(
-                status_code=400,
-                detail=f"Protocol {proxy_type} is disabled on your server",
-            )
+    for group_id in modified_user.group_ids:
+        get_validated_group(group_id, admin, db)
 
     old_status = dbuser.status
     dbuser = crud.update_user(db, dbuser, modified_user)

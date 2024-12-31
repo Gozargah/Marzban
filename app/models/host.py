@@ -2,11 +2,10 @@ import re
 from enum import Enum
 from typing import Optional, Union
 
-from pydantic import ConfigDict, BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.models.proxy import ProxyTypes
 from app import xray
-
+from app.models.proxy import ProxyTypes
 
 FRAGMENT_PATTERN = re.compile(r'^((\d{1,4}-\d{1,4})|(\d{1,4})),((\d{1,3}-\d{1,3})|(\d{1,3})),(tlshello|\d|\d\-\d)$')
 NOISE_PATTERN = re.compile(
@@ -71,6 +70,7 @@ class CreateHost(BaseModel):
     fragment_setting: Optional[str] = Field(None, nullable=True)
     random_user_agent: Union[bool, None] = None
     noise_setting: Optional[str] = Field(None, nullable=True)
+    use_sni_as_host: Union[bool, None] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -82,7 +82,7 @@ class CreateHost(BaseModel):
             raise ValueError("Invalid formatting variables")
 
         return v
-    
+
     @field_validator("inbound_tag", mode="after")
     def validate_inbound(cls, v):
         if xray.config.get_inbound(v) is None:
