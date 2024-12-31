@@ -161,6 +161,7 @@ def report_user_usage_reset(username: str, by: str, admin: Admin = None):
     )
     return report(chat_id=admin.telegram_id if admin and admin.telegram_id else None, text=text)
 
+
 def report_user_data_reset_by_next(user: User, admin: Admin = None):
     text = """  
 🔁 <b>#AutoReset</b>
@@ -172,7 +173,7 @@ def report_user_data_reset_by_next(user: User, admin: Admin = None):
     """.format(
         username=escape_html(user.username),
         data_limit=readable_size(user.data_limit) if user.data_limit else "Unlimited",
-        expire_date=datetime.fromtimestamp(user.expire).strftime("%H:%M:%S %Y-%m-%d") if user.expire else "Never",
+        expire_date=user.expire.strftime("%H:%M:%S %Y-%m-%d") if user.expire else "Never",
     )
     return report(chat_id=admin.telegram_id if admin and admin.telegram_id else None, text=text)
 

@@ -57,7 +57,7 @@ class NextPlanModel(BaseModel):
 
 class User(BaseModel):
     proxy_settings: Dict[ProxyTypes, ProxySettings] = {}
-    expire: Optional[int] = Field(None, nullable=True)
+    expire: datetime | int | None = Field(None, nullable=True)
     data_limit: Optional[int] = Field(
         ge=0, default=None, description="data_limit can be 0 or greater"
     )
@@ -70,7 +70,7 @@ class User(BaseModel):
     sub_last_user_agent: Optional[str] = Field(None, nullable=True)
     online_at: Optional[datetime] = Field(None, nullable=True)
     on_hold_expire_duration: Optional[int] = Field(None, nullable=True)
-    on_hold_timeout: Optional[Union[datetime, None]] = Field(None, nullable=True)
+    on_hold_timeout: datetime | int | None = Field(None, nullable=True)
 
     auto_delete_in_days: Optional[int] = Field(None, nullable=True)
 
@@ -116,12 +116,32 @@ class User(BaseModel):
             raise ValueError("User's note can be a maximum of 500 character")
         return v
 
-    @field_validator("on_hold_expire_duration", "on_hold_timeout", mode="before")
-    def validate_timeout(cls, v, values):
+
+    @field_validator("on_hold_expire_duration")
+    @classmethod
+    def validate_timeout(cls, v):
         # Check if expire is 0 or None and timeout is not 0 or None
-        if (v in (0, None)):
+        if v in (0, None):
             return None
         return v
+
+    @field_validator("on_hold_timeout", check_fields=False)
+    @classmethod
+    def validator_on_hold_timeout(cls, value):
+        if value == 0 or isinstance(value, datetime) or value is None:
+            return value
+        else:
+            raise ValueError("on_hold_timeout can be datetime or 0")
+
+    @field_validator("expire", check_fields=False)
+    @classmethod
+    def validator_expire(cls, value):
+        if value == 0 or isinstance(value, datetime) or value is None:
+            return value
+        elif isinstance(value, int):
+            return datetime.utcfromtimestamp(value)
+        else:
+            raise ValueError("expire can be datetime, timestamp or 0")
 
 
 class UserCreate(User):

@@ -10,20 +10,22 @@ from . import (
     system,
     user,
     user_template,
+    host,
 )
 
 api_router = APIRouter()
 
 routers = [
     admin.router,
-    core.router,
-    node.router,
-    subscription.router,
-    system.router,
-    user_template.router,
-    user.router,
     group.router,
     home.router,
+    system.router,
+    core.router,
+    host.router,
+    node.router,
+    user.router,
+    subscription.router,
+    user_template.router
 ]
 
 for router in routers:

@@ -84,7 +84,7 @@ class UserEnabled(UserNotification):
 
 class UserDisabled(UserNotification):
     action: Notification.Type = Notification.Type.user_disabled
-    by: Admin
+    by: Admin | None = None
     user: UserResponse
     reason: str | None = None
 

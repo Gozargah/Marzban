@@ -22,13 +22,13 @@ from sqlalchemy.sql.expression import select, text
 
 from app import xray
 from app.db.base import Base
-from app.models.node import NodeStatus
-from app.models.proxy import (
+from app.models.host import (
     ProxyHostALPN,
     ProxyHostFingerprint,
     ProxyHostSecurity,
     ProxyTypes,
 )
+from app.models.node import NodeStatus
 from app.models.user import ReminderType, UserDataLimitResetStrategy, UserStatus
 
 inbounds_groups_association = Table(
@@ -88,7 +88,7 @@ class User(Base):
         default=UserDataLimitResetStrategy.no_reset,
     )
     usage_logs = relationship("UserUsageResetLogs", back_populates="user")  # maybe rename it to reset_usage_logs?
-    expire = Column(Integer, nullable=True)
+    expire = Column(DateTime, nullable=True)
     admin_id = Column(Integer, ForeignKey("admins.id"))
     admin = relationship("Admin", back_populates="users")
     sub_revoked_at = Column(DateTime, nullable=True, default=None)

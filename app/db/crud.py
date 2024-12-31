@@ -2,9 +2,9 @@
 Functions for managing proxy hosts, users, user templates, nodes, and administrative tasks.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
-from typing import Dict, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 from sqlalchemy import and_, delete, func, or_
 from sqlalchemy.orm import Query, Session, joinedload
@@ -31,8 +31,8 @@ from app.db.models import (
 )
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
 from app.models.group import GroupCreate, GroupModify
+from app.models.host import HostResponse as ProxyHostModify
 from app.models.node import NodeCreate, NodeModify, NodeStatus, NodeUsageResponse
-from app.models.proxy import ProxyHost as ProxyHostModify
 from app.models.user import (
     ReminderType,
     UserCreate,
@@ -78,93 +78,128 @@ def get_or_create_inbound(db: Session, inbound_tag: str) -> ProxyInbound:
         db.commit()
         add_default_host(db, inbound)
         db.refresh(inbound)
+
     return inbound
 
 
-def get_hosts(db: Session, inbound_tag: str) -> List[ProxyHost]:
+def get_hosts(
+        db: Session,
+        offset: Optional[int] = 0,
+        limit: Optional[int] = 0,
+) -> List[ProxyHost]:
     """
-    Retrieves hosts for a given inbound tag.
+    Retrieves hosts.
 
     Args:
         db (Session): Database session.
-        inbound_tag (str): The tag of the inbound.
+        offset (Optional[int]): Number of records to skip.
+        limit (Optional[int]): Number of records to retrieve.
 
     Returns:
         List[ProxyHost]: List of hosts for the inbound.
     """
-    inbound = get_or_create_inbound(db, inbound_tag)
-    return inbound.hosts
+    query = db.query(ProxyHost)
+
+    if offset:
+        query = query.offset(offset)
+    if limit:
+        query = query.limit(limit)
+
+    return query.all()
 
 
-def add_host(db: Session, inbound_tag: str, host: ProxyHostModify) -> List[ProxyHost]:
+def get_host_by_id(db: Session, id: int) -> ProxyHost:
     """
-    Adds a new host to a proxy inbound.
+    Retrieves host by id.
 
     Args:
         db (Session): Database session.
-        inbound_tag (str): The tag of the inbound.
-        host (ProxyHostModify): Host details to be added.
+        id (int): The ID of the host.
 
     Returns:
-        List[ProxyHost]: Updated list of hosts for the inbound.
+        List[ProxyHost]: List of hosts for the inbound.
     """
-    inbound = get_or_create_inbound(db, inbound_tag)
-    inbound.hosts.append(
-        ProxyHost(
-            remark=host.remark,
-            address=host.address,
-            port=host.port,
-            path=host.path,
-            sni=host.sni,
-            host=host.host,
-            inbound=inbound,
-            security=host.security,
-            alpn=host.alpn,
-            fingerprint=host.fingerprint
-        )
+    return db.query(ProxyHost).filter(ProxyHost.id == id).first()
+
+
+def add_host(db: Session, host: ProxyHostModify) -> ProxyHost:
+    """
+    Creates a proxy Host based on the host.
+
+    Args:
+        db (Session): Database session.
+        host (ProxyHostModify): The new host to add.
+
+    Returns:
+        ProxyHost: The retrieved or newly created proxy host.
+    """
+    inbound = get_or_create_inbound(db, host.inbound_tag)
+    db_host = ProxyHost(
+        remark=host.remark,
+        address=host.address,
+        port=host.port,
+        path=host.path,
+        sni=host.sni,
+        host=host.host,
+        inbound=inbound,
+        security=host.security,
+        alpn=host.alpn,
+        fingerprint=host.fingerprint,
+        allowinsecure=host.allowinsecure,
+        is_disabled=host.is_disabled,
+        mux_enable=host.mux_enable,
+        fragment_setting=host.fragment_setting,
+        random_user_agent=host.random_user_agent,
+        noise_setting=host.noise_setting,
+        use_sni_as_host=host.use_sni_as_host,
     )
+
+    db.add(db_host)
     db.commit()
     db.refresh(inbound)
-    return inbound.hosts
+    return db_host
 
 
-def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostModify]) -> List[ProxyHost]:
+def update_host(db: Session, db_host: ProxyHost, modified_host: ProxyHostModify):
+    inbound = get_or_create_inbound(db, modified_host.inbound_tag)
+
+    db_host.remark = modified_host.remark
+    db_host.address = modified_host.address
+    db_host.port = modified_host.port
+    db_host.path = modified_host.path
+    db_host.sni = modified_host.sni
+    db_host.host = modified_host.host
+    db_host.inbound = inbound
+    db_host.security = modified_host.security
+    db_host.alpn = modified_host.alpn
+    db_host.fingerprint = modified_host.fingerprint
+    db_host.allowinsecure = modified_host.allowinsecure
+    db_host.is_disabled = modified_host.is_disabled
+    db_host.mux_enable = modified_host.mux_enable
+    db_host.fragment_setting = modified_host.fragment_setting
+    db_host.random_user_agent = modified_host.random_user_agent
+    db_host.noise_setting = modified_host.noise_setting
+    db_host.use_sni_as_host = modified_host.use_sni_as_host
+
+    db.commit()
+    db.refresh(inbound)
+    return db_host
+
+
+def remove_host(db: Session, db_host: ProxyHost) -> ProxyHost:
     """
-    Updates hosts for a given inbound tag.
+    Removes a proxy Host from the database.
 
     Args:
         db (Session): Database session.
-        inbound_tag (str): The tag of the inbound.
-        modified_hosts (List[ProxyHostModify]): List of modified hosts.
+        db_host (ProxyHost): The host to remove.
 
     Returns:
-        List[ProxyHost]: Updated list of hosts for the inbound.
+        ProxyHost: The removed proxy host.
     """
-    inbound = get_or_create_inbound(db, inbound_tag)
-    inbound.hosts = [
-        ProxyHost(
-            remark=host.remark,
-            address=host.address,
-            port=host.port,
-            path=host.path,
-            sni=host.sni,
-            host=host.host,
-            inbound=inbound,
-            security=host.security,
-            alpn=host.alpn,
-            fingerprint=host.fingerprint,
-            allowinsecure=host.allowinsecure,
-            is_disabled=host.is_disabled,
-            mux_enable=host.mux_enable,
-            fragment_setting=host.fragment_setting,
-            noise_setting=host.noise_setting,
-            random_user_agent=host.random_user_agent,
-            use_sni_as_host=host.use_sni_as_host,
-        ) for host in modified_hosts
-    ]
+    db.delete(db_host)
     db.commit()
-    db.refresh(inbound)
-    return inbound.hosts
+    return db_host
 
 
 def get_user_queryset(db: Session) -> Query:
@@ -458,10 +493,15 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
             else:
                 dbuser.status = UserStatus.limited
 
-    if modify.expire is not None:
-        dbuser.expire = (modify.expire or None)
+    if modify.expire == 0:
+        dbuser.expire = None
+        if dbuser.status is UserStatus.expired:
+            dbuser.status = UserStatus.active
+
+    elif modify.expire is not None:
+        dbuser.expire = modify.expire
         if dbuser.status in (UserStatus.active, UserStatus.expired):
-            if not dbuser.expire or dbuser.expire > datetime.utcnow().timestamp():
+            if not dbuser.expire or dbuser.expire > datetime.utcnow():
                 dbuser.status = UserStatus.active
                 for days_left in sorted(NOTIFY_DAYS_LEFT):
                     if not dbuser.expire or (calculate_expiration_days(
@@ -479,7 +519,9 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
     if modify.data_limit_reset_strategy is not None:
         dbuser.data_limit_reset_strategy = modify.data_limit_reset_strategy.value
 
-    if modify.on_hold_timeout is not None:
+    if modify.on_hold_timeout == 0:
+        dbuser.on_hold_timeout = None
+    elif modify.on_hold_timeout is not None:
         dbuser.on_hold_timeout = modify.on_hold_timeout
 
     if modify.on_hold_expire_duration is not None:
@@ -546,7 +588,7 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
         User: The updated user object.
     """
 
-    if (dbuser.next_plan is None):
+    if dbuser.next_plan is None:
         return
 
     usage_log = UserUsageResetLogs(
@@ -559,8 +601,8 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
     dbuser.status = UserStatus.active.value
 
     dbuser.data_limit = dbuser.next_plan.data_limit + \
-        (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit - dbuser.used_traffic)
-    dbuser.expire = dbuser.next_plan.expire
+        (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit or 0 - dbuser.used_traffic)
+    dbuser.expire = timedelta(seconds=dbuser.next_plan.expire)
 
     dbuser.used_traffic = 0
     db.delete(dbuser.next_plan)
@@ -823,8 +865,7 @@ def start_user_expire(db: Session, dbuser: User) -> User:
     Returns:
         User: The updated user object.
     """
-    expire = int(datetime.utcnow().timestamp()) + dbuser.on_hold_expire_duration
-    dbuser.expire = expire
+    dbuser.expire = datetime.now(timezone.utc) + timedelta(seconds=dbuser.on_hold_expire_duration)
     dbuser.on_hold_expire_duration = None
     dbuser.on_hold_timeout = None
     db.commit()

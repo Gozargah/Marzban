@@ -4,7 +4,7 @@ from typing import Optional, Union
 from fastapi import Depends, HTTPException
 
 from app.db import Session, crud, get_db
-from app.db.models import Group
+from app.db.models import Group, ProxyHost
 from app.models.admin import Admin, AdminInDB, AdminValidationResult
 from app.models.user import UserResponse, UserStatus
 from app.utils.jwt import get_subscription_payload
@@ -108,10 +108,8 @@ def get_validated_group(group_id: int, admin: Admin = Depends(Admin.get_current)
     return dbgroup
 
 
-def get_expired_users_list(db: Session, admin: Admin, expired_after: Optional[datetime] = None,
-                           expired_before: Optional[datetime] = None):
-    expired_before = expired_before or datetime.now(timezone.utc)
-    expired_after = expired_after or datetime.min.replace(tzinfo=timezone.utc)
+def get_expired_users_list(db: Session, admin: Admin, expired_after: datetime = None,
+                           expired_before: datetime = None):
 
     dbadmin = crud.get_admin(db, admin.username)
     dbusers = crud.get_users(
@@ -122,5 +120,13 @@ def get_expired_users_list(db: Session, admin: Admin, expired_after: Optional[da
 
     return [
         u for u in dbusers
-        if u.expire and expired_after.timestamp() <= u.expire <= expired_before.timestamp()
+        if u.expire and expired_after <= u.expire <= expired_before
     ]
+
+
+def get_host(host_id: int, db: Session = Depends(get_db)) -> ProxyHost:
+    """Fetch a Proxy Host by its ID, raise 404 if not found."""
+    db_host = crud.get_host_by_id(db, host_id)
+    if not db_host:
+        raise HTTPException(status_code=404, detail="Host not found")
+    return db_host

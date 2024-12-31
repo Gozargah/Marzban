@@ -195,18 +195,18 @@ def user_subscription_revoked(user: UserResponse, by: Admin, user_admin: Admin =
 
 
 def data_usage_percent_reached(
-        db: Session, percent: float, user: UserResponse, user_id: int, expire: Optional[int] = None, threshold: Optional[int] = None) -> None:
+        db: Session, percent: float, user: UserResponse, user_id: int, expire: Optional[dt] = None, threshold: Optional[int] = None) -> None:
     if NOTIFY_IF_DATA_USAGE_PERCENT_REACHED:
         notify(ReachedUsagePercent(username=user.username, user=user, used_percent=percent))
         create_notification_reminder(db, ReminderType.data_usage,
-                                     expires_at=dt.utcfromtimestamp(expire) if expire else None, user_id=user_id, threshold=threshold)
+                                     expires_at=expire if expire else None, user_id=user_id, threshold=threshold)
 
 
-def expire_days_reached(db: Session, days: int, user: UserResponse, user_id: int, expire: int, threshold=None) -> None:
+def expire_days_reached(db: Session, days: int, user: UserResponse, user_id: int, expire: dt, threshold=None) -> None:
     notify(ReachedDaysLeft(username=user.username, user=user, days_left=days))
     if NOTIFY_IF_DAYS_LEFT_REACHED:
         create_notification_reminder(
-            db, ReminderType.expiration_date, expires_at=dt.utcfromtimestamp(expire),
+            db, ReminderType.expiration_date, expires_at=expire,
             user_id=user_id, threshold=threshold)
 
 

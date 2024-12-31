@@ -5,7 +5,7 @@ from operator import attrgetter
 from typing import Union
 
 from pymysql.err import OperationalError
-from sqlalchemy import and_, bindparam, insert, select, update
+from sqlalchemy import and_, bindparam, insert, select,  update
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.dml import Insert
 
