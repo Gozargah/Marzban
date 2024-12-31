@@ -593,17 +593,22 @@ class V2rayJsonConfig(str):
 
         return httpupgradeSettings
 
-    def splithttp_config(self, path: str = "", host: str = "", random_user_agent: bool = False,
-                         sc_max_each_post_bytes: int = 1000000,
-                         sc_max_concurrent_posts: int = 100,
-                         sc_min_posts_interval_ms: int = 30,
-                         x_padding_bytes: str = "100-1000",
-                         xmux: dict = {},
+    def xhttp_config(self, path: str = "", host: str = "", random_user_agent: bool = False,
                          mode: str = "auto",
-                         noGRPCHeader: bool = False,
-                         keepAlivePeriod: int = 0,
+                         extra: dict = None,
                          ) -> dict:
-        config = copy.deepcopy(self.settings.get("splithttpSettings", {}))
+        config = copy.deepcopy(self.settings.get("xhttpSettings", {}))
+
+        if extra is not None:
+            config["extra"] = extra
+        elif "extra" not in config:
+            config["extra"] = {
+                "x_padding_bytes": "100-1000",
+                "noGRPCHeader": False,
+                "sc_max_each_post_bytes": 1000000,
+                "sc_min_posts_interval_ms": 30,
+                "xmux": {},
+            }
 
         config["mode"] = mode
         if path:
@@ -613,15 +618,6 @@ class V2rayJsonConfig(str):
         if random_user_agent:
             config["headers"]["User-Agent"] = choice(
                 self.user_agent_list)
-        config.setdefault("scMaxEachPostBytes", sc_max_each_post_bytes)
-        config.setdefault("scMaxConcurrentPosts", sc_max_concurrent_posts)
-        config.setdefault("scMinPostsIntervalMs", sc_min_posts_interval_ms)
-        config.setdefault("xPaddingBytes", x_padding_bytes)
-        config["noGRPCHeader"] = noGRPCHeader
-        if xmux:
-            config["xmux"] = xmux
-        if keepAlivePeriod > 0:
-            config["keepAlivePeriod"] = keepAlivePeriod
         # core will ignore unknown variables
 
         return config
@@ -922,6 +918,7 @@ class V2rayJsonConfig(str):
                             sc_min_posts_interval_ms: int = 30,
                             x_padding_bytes: str = "100-1000",
                             xmux: dict = {},
+                            extra: dict = {},
                             mode: str = "auto",
                             noGRPCHeader: bool = False,
                             heartbeatPeriod: int = 0,
@@ -950,16 +947,8 @@ class V2rayJsonConfig(str):
             network_setting = self.httpupgrade_config(
                 path=path, host=host, random_user_agent=random_user_agent)
         elif net in ("splithttp", "xhttp"):
-            network_setting = self.splithttp_config(path=path, host=host, random_user_agent=random_user_agent,
-                                                    sc_max_each_post_bytes=sc_max_each_post_bytes,
-                                                    sc_max_concurrent_posts=sc_max_concurrent_posts,
-                                                    sc_min_posts_interval_ms=sc_min_posts_interval_ms,
-                                                    x_padding_bytes=x_padding_bytes,
-                                                    xmux=xmux,
-                                                    mode=mode,
-                                                    noGRPCHeader=noGRPCHeader,
-                                                    keepAlivePeriod=keepAlivePeriod,
-                                                    )
+            network_setting = self.xhttp_config(path=path, host=host, random_user_agent=random_user_agent, mode=mode)
+
         else:
             network_setting = {}
 
@@ -1066,6 +1055,7 @@ class V2rayJsonConfig(str):
             sc_min_posts_interval_ms=inbound.get('scMinPostsIntervalMs', 30),
             x_padding_bytes=inbound.get("xPaddingBytes", "100-1000"),
             xmux=inbound.get("xmux", {}),
+            extra=inbound.get("extra", {}),
             mode=inbound.get("mode", "auto"),
             noGRPCHeader=inbound.get("noGRPCHeader", False),
             heartbeatPeriod=inbound.get("heartbeatPeriod", 0),
