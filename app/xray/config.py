@@ -299,18 +299,19 @@ class XRayConfig(dict):
                     host = net_settings.get('host', '')
                     settings['host'] = [host]
 
-                elif net in ('splithttp', 'xhttp'):
+                elif net == 'xhttp':
                     settings['path'] = net_settings.get('path', '')
                     host = net_settings.get('host', '')
                     settings['host'] = [host]
-                    settings['scMaxEachPostBytes'] = net_settings.get('scMaxEachPostBytes', 1000000)
-                    settings['scMaxConcurrentPosts'] = net_settings.get('scMaxConcurrentPosts', 100)
-                    settings['scMinPostsIntervalMs'] = net_settings.get('scMinPostsIntervalMs', 30)
-                    settings['xPaddingBytes'] = net_settings.get('xPaddingBytes', "100-1000")
-                    settings['xmux'] = net_settings.get('xmux', {})
-                    settings["mode"] = net_settings.get("mode", "auto")
-                    settings["noGRPCHeader"] = net_settings.get("noGRPCHeader", False)
-                    settings["keepAlivePeriod"] = net_settings.get("keepAlivePeriod", 0)
+                    settings['mode'] = net_settings.get('mode', 'auto')
+                    extra = net_settings.get('extra', {})
+                    settings['extra'] = {
+                        'headers': extra.get('headers', {}),
+                        'xPaddingBytes': extra.get('xPaddingBytes', ''),
+                        'noSSEHeader': extra.get('noSSEHeader', False),
+                        'scMaxEachPostBytes': extra.get('scMaxEachPostBytes', ''),
+                        'scMaxBufferedPosts': extra.get('scMaxBufferedPosts', '')
+                    }
 
                 elif net == 'kcp':
                     header = net_settings.get('header', {})
