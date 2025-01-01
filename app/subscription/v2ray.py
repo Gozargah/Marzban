@@ -570,7 +570,7 @@ class V2rayJsonConfig(str):
         if path:
             wsSettings["path"] = path
         if host:
-            wsSettings["headers"]["Host"] = host
+            wsSettings["host"] = host
         if random_user_agent:
             wsSettings["headers"]["User-Agent"] = choice(self.user_agent_list)
         if heartbeatPeriod:
