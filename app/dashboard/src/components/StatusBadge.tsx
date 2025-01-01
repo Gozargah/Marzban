@@ -1,67 +1,57 @@
-import { Badge, Text } from "@chakra-ui/react";
-
-import { statusColors } from "constants/UserSettings";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { Status as UserStatusType } from "types/User";
-import { relativeExpiryDate } from "utils/dateFormatter";
+import { Status as UserStatusType } from "@/types/User";
+import { relativeExpiryDate } from "@/utils/dateFormatter";
+import { statusColors } from "@/constants/UserSettings";
 
 type UserStatusProps = {
   expiryDate?: number | null;
   status: UserStatusType;
-  compact?: boolean;
-  showDetail?: boolean;
   extraText?: string | null;
+  isMobile?: boolean;
 };
+
 export const StatusBadge: FC<UserStatusProps> = ({
   expiryDate,
   status: userStatus,
-  compact = false,
-  showDetail = true,
   extraText,
+  isMobile
 }) => {
   const { t } = useTranslation();
   const dateInfo = relativeExpiryDate(expiryDate);
-  const Icon = statusColors[userStatus].icon;
+
+  const Icon = statusColors[userStatus]?.icon;
+
   return (
     <>
       <Badge
-        colorScheme={statusColors[userStatus].statusColor}
-        rounded="full"
-        display="inline-flex"
-        px={3}
-        py={1}
-        columnGap={compact ? 1 : 2}
-        alignItems="center"
+        className={cn(
+          "flex items-center justify-center rounded-full px-3 py-1 w-fit max-w-[150px] gap-x-2 pointer-events-none",
+          statusColors[userStatus]?.statusColor || "bg-gray-400 text-white",
+          isMobile && "py-0 h-6"
+        )}
       >
-        <Icon w={compact ? 3 : 4} />
-        {showDetail && (
-          <Text
-            textTransform="capitalize"
-            fontSize={compact ? ".7rem" : ".875rem"}
-            lineHeight={compact ? "1rem" : "1.25rem"}
-            fontWeight="medium"
-            letterSpacing="tighter"
-          >
+        {Icon && <Icon className={cn(isMobile? "w-3 h-3": "w-4 h-4")} />}
+        <div className={cn(isMobile ? "block" : "hidden md:block")}>
+          <span className={cn("capitalize font-medium text-sm leading-5" , isMobile && "text-[11.1px] leading-3")}>
             {userStatus && t(`status.${userStatus}`)}
             {extraText && `: ${extraText}`}
-          </Text>
-        )}
+          </span>
+        </div>
       </Badge>
-      {showDetail && expiryDate && (
-        <Text
-          display="inline-block"
-          fontSize="xs"
-          fontWeight="medium"
-          ml="2"
-          color="gray.600"
-          _dark={{
-            color: "gray.400",
-          }}
-        >
-          {t(dateInfo.status, { time: dateInfo.time })}
-        </Text>
-      )}
+      <div className={cn(!dateInfo.time && !dateInfo.status && "hidden")}>
+        <div className={cn(isMobile ? "block" : "hidden md:block")}>
+          <span
+            className={cn(
+              "inline-block text-xs font-medium ml-2 text-gray-600 dark:text-gray-400"
+            )}
+          >
+            {t(dateInfo.status, { time: dateInfo.time })}
+          </span>
+        </div>
+      </div>
     </>
   );
 };

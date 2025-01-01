@@ -1,5 +1,12 @@
 {
   "active": "激活",
+  "platform": "平台",
+  "statistics": "统计",
+  "hosts": "主机",
+  "nodes": "节点",
+  "settings": "设置",
+  "general": "常规",
+  "core": "核心",
   "activeUsers": "活跃用户",
   "apply": "应用",
   "cancel": "取消",

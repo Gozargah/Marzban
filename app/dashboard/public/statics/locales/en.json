@@ -1,5 +1,12 @@
 {
   "active": "active",
+  "platform": "Platform",
+  "statistics": "Statistics",
+  "hosts": "Hosts",
+  "nodes": "Nodes",
+  "settings": "Settings",
+  "general": "General",
+  "core": "Core",
   "activeUsers": "active users",
   "apply": "Apply",
   "cancel": "Cancel",
