@@ -67,9 +67,15 @@
       "Pragma": "no-cache"
     }
   },
-  "splithttpSettings": {
+  "xhttpSettings": {
+    "extra": {
     "headers": {
       "Pragma": "no-cache"
+    },
+    "x_padding_bytes": "100-1000",
+    "noGRPCHeader": false,
+    "sc_max_each_post_bytes": 1000000,
+    "sc_min_posts_interval_ms": 30
     }
   }
 }
