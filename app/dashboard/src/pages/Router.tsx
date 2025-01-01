@@ -4,6 +4,9 @@ import { getAuthToken } from "@/utils/authStorage";
 import Dashboard from "./Dashboard";
 import Login from "./Login";
 import Layout from "./Layout";
+import Statistics from "./Statistics";
+import Settings from "./Settings";
+import CoreSettings from "@/components/settings/CoreSettings";
 
 const fetchAdminLoader = async (): Promise<any> => {
   try {
@@ -28,6 +31,21 @@ export const router = createHashRouter([
         path: "/",
         index: true,
         element: <Dashboard />,
+      },
+      {
+        path: "/statistics",
+        element: <Statistics />,
+      },
+
+      {
+        path: "/settings",
+        element: <Settings />,
+        children: [
+          {
+            path: "/settings/core",
+            element: <CoreSettings />,
+          },
+        ],
       },
     ],
   },

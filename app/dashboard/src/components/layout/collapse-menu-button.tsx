@@ -25,6 +25,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import useDirDetection from "@/hooks/use-dir-detection";
+import { useTranslation } from "react-i18next";
 
 type Submenu = {
   href: string;
@@ -50,6 +51,7 @@ export function CollapseMenuButton({
 
   const location = useLocation(); // Use useLocation hook
   const pathname = location.pathname; // Get the pathname from location object
+  const { t } = useTranslation();
 
   const isSubmenuActive = submenus.some((submenu) =>
     submenu.active === undefined ? submenu.href === pathname : submenu.active
@@ -79,7 +81,7 @@ export function CollapseMenuButton({
             <div
               className={cn("flex items-center", isRTL && "flex-row-reverse")}
             >
-              <span className={cn(isRTL ? "ml-4" : "mr-4")}>
+              <span className={cn(isRTL ? "ml-6" : "mr-6")}>
                 <Icon size={18} />
               </span>
               <p
@@ -90,7 +92,7 @@ export function CollapseMenuButton({
                     : "-translate-x-96 opacity-0"
                 )}
               >
-                {label}
+                {t(label)}
               </p>
             </div>
             <div
@@ -123,7 +125,7 @@ export function CollapseMenuButton({
           >
             <Link className={cn(isRTL && "flex-row-reverse")} to={href}>
               <span className={cn(isRTL ? "ml-4 mr-2" : "mr-4 ml-2")}>
-                <Dot size={18} />
+                <Dot className="h-6 w-6" />
               </span>
               <p
                 className={cn(
@@ -133,7 +135,7 @@ export function CollapseMenuButton({
                     : "-translate-x-96 opacity-0"
                 )}
               >
-                {label}
+                {t(label)}
               </p>
             </Link>
           </Button>

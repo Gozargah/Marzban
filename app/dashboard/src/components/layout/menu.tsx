@@ -29,7 +29,7 @@ export function Menu({ isOpen }: MenuProps) {
   }, [i18n.language]);
 
   const location = useLocation();
-  const pathname = location.pathname;
+  const { pathname, hash } = location;
   const menuList = getMenuList(pathname);
 
   return (
@@ -38,7 +38,11 @@ export function Menu({ isOpen }: MenuProps) {
         <ul className="flex flex-col min-h-[calc(100vh-48px-36px-16px-32px)] lg:min-h-[calc(100vh-32px-40px-32px)] items-start space-y-1 px-2">
           {menuList.map(({ groupLabel, menus }, index) => (
             <li
-              className={cn("w-full",isRTL && "text-right", groupLabel ? "pt-5" : "")}
+              className={cn(
+                "w-full",
+                isRTL && "text-right",
+                groupLabel ? "pt-5" : ""
+              )}
               key={index}
             >
               {(isOpen && groupLabel) || isOpen === undefined ? (
@@ -71,7 +75,9 @@ export function Menu({ isOpen }: MenuProps) {
                             <Button
                               variant={
                                 (active === undefined &&
-                                  pathname.startsWith(href)) ||
+                                  (pathname + hash === href ||
+                                    (href !== "/" &&
+                                      (pathname + hash).startsWith(href)))) ||
                                 active
                                   ? "secondary"
                                   : "ghost"
@@ -79,9 +85,18 @@ export function Menu({ isOpen }: MenuProps) {
                               className="w-full justify-start h-10 mb-1"
                               asChild
                             >
-                              <Link className={cn(isRTL && "flex-row-reverse")} to={href}>
+                              <Link
+                                className={cn(isRTL && "flex-row-reverse")}
+                                to={href}
+                              >
                                 <span
-                                  className={cn(isOpen === false ? "" : isRTL ? "ml-4" : "mr-4" )}
+                                  className={cn(
+                                    isOpen === false
+                                      ? ""
+                                      : isRTL
+                                      ? "ml-4"
+                                      : "mr-4"
+                                  )}
                                 >
                                   <Icon size={18} />
                                 </span>
