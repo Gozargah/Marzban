@@ -103,7 +103,6 @@ class User(BaseModel):
             raise ValueError("User's note can be a maximum of 500 character")
         return v
 
-
     @field_validator("on_hold_expire_duration")
     @classmethod
     def validate_timeout(cls, v):
@@ -295,7 +294,6 @@ class UserResponse(User):
     used_traffic: int
     lifetime_used_traffic: int = 0
     created_at: datetime
-    links: List[str] = []
     subscription_url: str = ""
     proxies: dict
     excluded_inbounds: Dict[ProxyTypes, List[str]] = {}
@@ -303,13 +301,11 @@ class UserResponse(User):
     admin: Optional[Admin] = None
     model_config = ConfigDict(from_attributes=True)
 
-    @model_validator(mode="after")
-    def validate_links(self):
-        if not self.links:
-            self.links = generate_v2ray_links(
-                self.proxies, self.inbounds, extra_data=self.model_dump(), reverse=False,
-            )
-        return self
+    def get_v2ray_links(self):
+        links = generate_v2ray_links(
+            self.proxies, self.inbounds, extra_data=self.model_dump(), reverse=False,
+        )
+        return links
 
     @model_validator(mode="after")
     def validate_subscription_url(self):
