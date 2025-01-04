@@ -125,7 +125,7 @@ def get_host(host_id: int, db: Session = Depends(get_db)) -> ProxyHost:
     return db_host
 
 
-def get_v2ray_links(user) -> list:
+def get_v2ray_links(user: UserResponse) -> list:
     return generate_v2ray_links(
         user.proxies, user.inbounds, extra_data=user.model_dump(), reverse=False,
     )
