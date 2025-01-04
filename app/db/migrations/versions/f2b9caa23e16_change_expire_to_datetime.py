@@ -3,11 +3,11 @@ Revision ID: f2b9caa23e16
 Revises: 4eb0a0eb835f
 Create Date: 2024-12-11 13:34:31.935829
 """
-from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 
+import sqlalchemy as sa
+from alembic import op
+from sqlalchemy.orm import Session
 
 # revision identifiers, used by Alembic.
 revision = 'f2b9caa23e16'
@@ -23,7 +23,7 @@ def upgrade():
     def expire_to_datetime(table: sa.Table):
         for row in session.query(table.c.id, table.c.expire).all():
             expire_timestamp = row.expire
-            expire_datetime = datetime.fromtimestamp(expire_timestamp, tz=datetime.timezone.utc) if expire_timestamp else None
+            expire_datetime = datetime.fromtimestamp(expire_timestamp, tz=timezone.utc) if expire_timestamp else None
 
             session.execute(
                 table.update().where(table.c.id == row.id).values(expire_temp=expire_datetime)
