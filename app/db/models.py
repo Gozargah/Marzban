@@ -360,6 +360,7 @@ class Group(Base):
     __tablename__ = "groups"
     id = Column(Integer, primary_key=True)
     name = Column(String(64))
+    is_disabled = Column(Boolean, nullable=False, server_default='0', default=False)
 
     users = relationship(
         "User", secondary=users_groups_association, back_populates="groups"

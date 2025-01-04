@@ -20,6 +20,7 @@ def upgrade() -> None:
     op.create_table('groups',
                     sa.Column('id', sa.Integer(), nullable=False),
                     sa.Column('name', sa.String(length=64), nullable=True),
+                    sa.Column('is_disabled', sa.Boolean(), server_default='0', nullable=False),
                     sa.PrimaryKeyConstraint('id')
                     )
     op.create_table('inbounds_groups_association',
