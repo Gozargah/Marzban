@@ -1,12 +1,15 @@
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Union
-from app.models.admin import AdminInDB, AdminValidationResult, Admin
-from app.models.user import UserResponse, UserStatus
+
+from fastapi import Depends, HTTPException
+
 from app.db import Session, crud, get_db
 from app.db.models import ProxyHost
-from config import SUDOERS
-from fastapi import Depends, HTTPException
-from datetime import datetime, timezone, timedelta
+from app.models.admin import Admin, AdminInDB, AdminValidationResult
+from app.models.user import UserResponse, UserStatus
+from app.subscription.share import generate_v2ray_links
 from app.utils.jwt import get_subscription_payload
+from config import SUDOERS
 
 
 def validate_admin(db: Session, username: str, password: str) -> Optional[AdminValidationResult]:
@@ -120,3 +123,9 @@ def get_host(host_id: int, db: Session = Depends(get_db)) -> ProxyHost:
     if not db_host:
         raise HTTPException(status_code=404, detail="Host not found")
     return db_host
+
+
+def get_v2ray_links(user) -> list:
+    return generate_v2ray_links(
+        user.proxies, user.inbounds, extra_data=user.model_dump(), reverse=False,
+    )

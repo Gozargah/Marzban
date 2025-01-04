@@ -16,6 +16,7 @@ from telebot.util import extract_arguments, user_link
 
 from app import xray
 from app.db import GetDB, crud
+from app.dependencies import get_v2ray_links
 from app.models.proxy import ProxyTypes
 from app.models.user import (
     UserCreate,
@@ -677,7 +678,7 @@ def links_command(call: types.CallbackQuery):
         user = UserResponse.model_validate(db_user)
 
     text = f"<code>{user.subscription_url}</code>\n\n\n"
-    for link in user.get_v2ray_links():
+    for link in get_v2ray_links(user):
         if len(text) > 4056:
             text += '\n\n<b>...</b>'
             break
@@ -707,7 +708,7 @@ def genqr_command(call: types.CallbackQuery):
         bot.answer_callback_query(call.id, "Generating QR code...")
 
         if qr_select == 'configs':
-            for link in user.get_v2ray_links():
+            for link in get_v2ray_links(user):
                 f = io.BytesIO()
                 qr = qrcode.QRCode(border=6)
                 qr.add_data(link)
@@ -760,7 +761,7 @@ def genqr_command(call: types.CallbackQuery):
         pass
 
     text = f"<code>{user.subscription_url}</code>\n\n\n"
-    for link in user.get_v2ray_links():
+    for link in get_v2ray_links(user):
         if len(text) > 4056:
             text += '\n\n<b>...</b>'
             break
