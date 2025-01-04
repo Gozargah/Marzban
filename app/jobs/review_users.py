@@ -4,14 +4,23 @@ from typing import TYPE_CHECKING
 from sqlalchemy.orm import Session
 
 from app import logger, scheduler, xray
-from app.db import (GetDB, get_notification_reminder, get_users,
-                    start_user_expire, update_user_status, reset_user_by_next)
+from app.db import (
+    GetDB,
+    get_notification_reminder,
+    get_users,
+    reset_user_by_next,
+    start_user_expire,
+    update_user_status,
+)
 from app.models.user import ReminderType, UserResponse, UserStatus
 from app.utils import report
-from app.utils.helpers import (calculate_expiration_days,
-                               calculate_usage_percent)
-from config import (JOB_REVIEW_USERS_INTERVAL, NOTIFY_DAYS_LEFT,
-                    NOTIFY_REACHED_USAGE_PERCENT, WEBHOOK_ADDRESS)
+from app.utils.helpers import calculate_expiration_days, calculate_usage_percent
+from config import (
+    JOB_REVIEW_USERS_INTERVAL,
+    NOTIFY_DAYS_LEFT,
+    NOTIFY_REACHED_USAGE_PERCENT,
+    WEBHOOK_ADDRESS,
+)
 
 if TYPE_CHECKING:
     from app.db.models import User
@@ -56,8 +65,8 @@ def review():
     with GetDB() as db:
         for user in get_users(db, status=UserStatus.active):
 
-            limited = user.data_limit and user.used_traffic >= user.data_limit
-            expired = user.expire and user.expire <= now
+            limited = user.data_limit and user.used_traffic >= user.data_limi
+            expired = user.expire and user.expire.replace(tzinfo=timezone.utc) <= now
 
             if (limited or expired) and user.next_plan is not None:
                 if user.next_plan is not None:
