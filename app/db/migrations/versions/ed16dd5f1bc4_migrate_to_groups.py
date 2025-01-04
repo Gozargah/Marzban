@@ -25,7 +25,7 @@ from config import XRAY_JSON
 
 # revision identifiers, used by Alembic.
 revision = 'ed16dd5f1bc4'
-down_revision = 'ed4ea5ae1cf0'
+down_revision = ("f2b9caa23e16", 'ed4ea5ae1cf0')
 branch_labels = None
 depends_on = None
 
