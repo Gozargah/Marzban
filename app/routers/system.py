@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Dict, List, Union
 
 from fastapi import APIRouter, Depends
@@ -5,8 +6,8 @@ from fastapi import APIRouter, Depends
 from app import __version__, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
-from app.models.proxy import ProxyTypes
 from app.models.host import ProxyInbound
+from app.models.proxy import ProxyTypes
 from app.models.system import SystemStats
 from app.models.user import UserStatus
 from app.utils import responses
@@ -41,7 +42,7 @@ def get_system_stats(
     users_limited = crud.get_users_count(
         db, status=UserStatus.limited, admin=dbadmin if not admin.is_sudo else None
     )
-    online_users = crud.count_online_users(db, 24)
+    online_users = crud.count_online_users(db, timedelta(minutes=2))
     realtime_bandwidth_stats = realtime_bandwidth()
 
     return SystemStats(

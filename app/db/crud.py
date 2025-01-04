@@ -30,8 +30,8 @@ from app.db.models import (
     UserUsageResetLogs,
 )
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
-from app.models.node import NodeCreate, NodeModify, NodeStatus, NodeUsageResponse
 from app.models.host import HostResponse as ProxyHostModify
+from app.models.node import NodeCreate, NodeModify, NodeStatus, NodeUsageResponse
 from app.models.user import (
     ReminderType,
     UserCreate,
@@ -534,7 +534,8 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
                 for days_left in sorted(NOTIFY_DAYS_LEFT):
                     if not dbuser.expire or (calculate_expiration_days(
                             dbuser.expire) > days_left):
-                        reminder = get_notification_reminder(db, dbuser.id, ReminderType.expiration_date, threshold=days_left)
+                        reminder = get_notification_reminder(
+                            db, dbuser.id, ReminderType.expiration_date, threshold=days_left)
                         if reminder:
                             delete_notification_reminder(db, reminder)
             else:
@@ -1112,7 +1113,7 @@ def reset_admin_usage(db: Session, dbadmin: Admin) -> int:
     """
     if (dbadmin.users_usage == 0):
         return dbadmin
-    
+
     usage_log = AdminUsageLogs(
         admin=dbadmin,
         used_traffic_at_reset=dbadmin.users_usage
@@ -1531,8 +1532,8 @@ def delete_notification_reminder(db: Session, dbreminder: NotificationReminder) 
     return
 
 
-def count_online_users(db: Session, hours: int = 24):
-    twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=hours)
+def count_online_users(db: Session, time_delta: timedelta):
+    twenty_four_hours_ago = datetime.utcnow() - time_delta
     query = db.query(func.count(User.id)).filter(User.online_at.isnot(
         None), User.online_at >= twenty_four_hours_ago)
     return query.scalar()
