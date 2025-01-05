@@ -10,7 +10,7 @@ from fastapi.routing import APIRoute
 
 from config import ALLOWED_ORIGINS, DOCS, XRAY_SUBSCRIPTION_PATH
 
-__version__ = "0.8.0"
+__version__ = "0.8.1"
 
 app = FastAPI(
     title="MarzbanAPI",
@@ -32,8 +32,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-from app import dashboard, jobs, routers, telegram  # noqa
+from app import dashboard, telegram, routers, jobs  # noqa
 from app.routers import api_router  # noqa
 
 app.include_router(api_router)
