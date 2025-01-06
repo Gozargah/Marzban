@@ -16,13 +16,14 @@ from telebot.util import extract_arguments, user_link
 
 from app import xray
 from app.db import GetDB, crud
+from app.dependencies import get_v2ray_links
 from app.models.proxy import ProxyTypes
 from app.models.user import (
     UserCreate,
     UserModify,
     UserResponse,
     UserStatus,
-    UserStatusModify
+    UserStatusModify,
 )
 from app.models.user_template import UserTemplateResponse
 from app.telegram import bot
@@ -33,7 +34,7 @@ from app.telegram.utils.shared import (
     get_template_info_text,
     get_user_info_text,
     statuses,
-    time_to_string
+    time_to_string,
 )
 from app.utils.store import MemoryStorage
 from app.utils.system import cpu_usage, memory_usage, readable_size, realtime_bandwidth
@@ -342,8 +343,8 @@ def edit_command(call: types.CallbackQuery):
         expire_date = db_user.on_hold_expire_duration
     else:
         mem_store.set(f'{call.message.chat.id}:expire_date',
-                      datetime.fromtimestamp(db_user.expire) if db_user.expire else None)
-        expire_date = datetime.fromtimestamp(db_user.expire) if db_user.expire else None
+                      db_user.expire if db_user.expire else None)
+        expire_date = db_user.expire if db_user.expire else None
     mem_store.set(
         f'{call.message.chat.id}:protocols',
         {protocol.value: inbounds for protocol, inbounds in db_user.inbounds.items()})
@@ -677,7 +678,7 @@ def links_command(call: types.CallbackQuery):
         user = UserResponse.model_validate(db_user)
 
     text = f"<code>{user.subscription_url}</code>\n\n\n"
-    for link in user.links:
+    for link in get_v2ray_links(user):
         if len(text) > 4056:
             text += '\n\n<b>...</b>'
             break
@@ -707,7 +708,7 @@ def genqr_command(call: types.CallbackQuery):
         bot.answer_callback_query(call.id, "Generating QR code...")
 
         if qr_select == 'configs':
-            for link in user.links:
+            for link in get_v2ray_links(user):
                 f = io.BytesIO()
                 qr = qrcode.QRCode(border=6)
                 qr.add_data(link)
@@ -760,7 +761,7 @@ def genqr_command(call: types.CallbackQuery):
         pass
 
     text = f"<code>{user.subscription_url}</code>\n\n\n"
-    for link in user.links:
+    for link in get_v2ray_links(user):
         if len(text) > 4056:
             text += '\n\n<b>...</b>'
             break
@@ -790,7 +791,7 @@ def template_charge_command(call: types.CallbackQuery):
             return bot.answer_callback_query(call.id, "User not found!", show_alert=True)
         user = UserResponse.model_validate(db_user)
         if (user.data_limit and not user.expire) or (not user.data_limit and user.expire):
-            expire = (datetime.fromtimestamp(db_user.expire) if db_user.expire else today)
+            expire = (db_user.expire if db_user.expire else today)
             expire += relativedelta(seconds=template.expire_duration)
             db_user.expire = expire.timestamp()
             db_user.data_limit = (user.data_limit - user.used_traffic + template.data_limit
@@ -838,7 +839,7 @@ def template_charge_command(call: types.CallbackQuery):
 <u><b>New status</b></u>
 <b>├Traffic Limit :</b> <code>{readable_size(db_user.data_limit) if db_user.data_limit else "Unlimited"}</code>
 <b>├Expire Date :</b> <code>\
-{datetime.fromtimestamp(db_user.expire).strftime('%H:%M:%S %Y-%m-%d') if db_user.expire else "Never"}</code>
+{db_user.expire.strftime('%H:%M:%S %Y-%m-%d') if db_user.expire else "Never"}</code>
 ➖➖➖➖➖➖➖➖➖
 <b>By :</b> <a href="tg://user?id={call.from_user.id}">{call.from_user.full_name}</a>"""
                 try:
@@ -846,7 +847,7 @@ def template_charge_command(call: types.CallbackQuery):
                 except ApiTelegramException:
                     pass
         else:
-            expire = (datetime.fromtimestamp(db_user.expire) if db_user.expire else today)
+            expire = (db_user.expire if db_user.expire else today)
             expire += relativedelta(seconds=template.expire_duration)
             db_user.expire = expire.timestamp()
             db_user.data_limit = (user.data_limit - user.used_traffic + template.data_limit
@@ -1508,7 +1509,7 @@ def confirm_user_command(call: types.CallbackQuery):
 <b>Username :</b> <code>{db_user.username}</code>
 <b>Traffic Limit :</b> <code>{readable_size(db_user.data_limit) if db_user.data_limit else "Unlimited"}</code>
 <b>Expire Date :</b> <code>\
-{datetime.fromtimestamp(db_user.expire).strftime('%H:%M:%S %Y-%m-%d') if db_user.expire else "Never"}</code>
+{db_user.expire.strftime('%H:%M:%S %Y-%m-%d') if db_user.expire else "Never"}</code>
 ➖➖➖➖➖➖➖➖➖
 <b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>"""
             try:
@@ -1668,7 +1669,7 @@ def confirm_user_command(call: types.CallbackQuery):
 <u><b>New status</b></u>
 <b>├Traffic Limit :</b> <code>{readable_size(db_user.data_limit) if db_user.data_limit else "Unlimited"}</code>
 <b>├Expire Date :</b> <code>\
-{datetime.fromtimestamp(db_user.expire).strftime('%H:%M:%S %Y-%m-%d') if db_user.expire else "Never"}</code>
+{db_user.expire.strftime('%H:%M:%S %Y-%m-%d') if db_user.expire else "Never"}</code>
 ➖➖➖➖➖➖➖➖➖
 <b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>\
 """
@@ -1926,7 +1927,7 @@ def confirm_user_command(call: types.CallbackQuery):
                         deleted += 1
                         f.write(
                             f'{user.username}\
-\t{datetime.fromtimestamp(user.expire) if user.expire else "never"}\
+\t{user.expire if user.expire else "never"}\
 \t{readable_size(user.used_traffic) if user.used_traffic else 0}\
 /{readable_size(user.data_limit) if user.data_limit else "Unlimited"}\
 \t{user.status}\n')
@@ -1969,7 +1970,7 @@ def confirm_user_command(call: types.CallbackQuery):
                             counter += 1
                             f.write(
                                 f'{user.username}\
-\t{datetime.fromtimestamp(user.expire) if user.expire else "never"}\
+\t{user.expire if user.expire else "never"}\
 \t{readable_size(user.used_traffic) if user.used_traffic else 0}\
 /{readable_size(user.data_limit) if user.data_limit else "Unlimited"}\
 \t{user.status}\n')
@@ -2015,11 +2016,11 @@ def confirm_user_command(call: types.CallbackQuery):
                                 db, user,
                                 UserModify(
                                     expire=int(
-                                        (datetime.fromtimestamp(user.expire) + relativedelta(days=days)).timestamp())))
+                                        (user.expire + relativedelta(days=days)).timestamp())))
                             counter += 1
                             f.write(
                                 f'{user.username}\
-\t{datetime.fromtimestamp(user.expire) if user.expire else "never"}\
+\t{user.expire if user.expire else "never"}\
 \t{readable_size(user.used_traffic) if user.used_traffic else 0}\
 /{readable_size(user.data_limit) if user.data_limit else "Unlimited"}\
 \t{user.status}\n')

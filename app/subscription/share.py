@@ -1,6 +1,7 @@
 import base64
 import random
 import secrets
+from copy import deepcopy
 from collections import defaultdict
 from datetime import datetime as dt
 from datetime import timedelta
@@ -158,21 +159,19 @@ def setup_format_variables(extra_data: dict) -> dict:
     from app.models.user import UserStatus
 
     user_status = extra_data.get("status")
-    expire_timestamp = extra_data.get("expire")
+    expire = extra_data.get("expire")
     on_hold_expire_duration = extra_data.get("on_hold_expire_duration")
     now = dt.utcnow()
-    now_ts = now.timestamp()
 
     if user_status != UserStatus.on_hold:
-        if expire_timestamp is not None and expire_timestamp >= 0:
-            seconds_left = expire_timestamp - int(dt.utcnow().timestamp())
-            expire_datetime = dt.fromtimestamp(expire_timestamp)
-            expire_date = expire_datetime.date()
+        if expire is not None:
+            seconds_left = (expire - now).total_seconds()
+            expire_date = expire.date()
             jalali_expire_date = jd.fromgregorian(
                 year=expire_date.year, month=expire_date.month, day=expire_date.day
             ).strftime("%Y-%m-%d")
-            if now_ts < expire_timestamp:
-                days_left = (expire_datetime - dt.utcnow()).days + 1
+            if now < expire:
+                days_left = (expire - dt.utcnow()).days + 1
                 time_left = format_time_left(seconds_left)
             else:
                 days_left = "0"
@@ -184,7 +183,7 @@ def setup_format_variables(extra_data: dict) -> dict:
             expire_date = "∞"
             jalali_expire_date = "∞"
     else:
-        if on_hold_expire_duration is not None and on_hold_expire_duration >= 0:
+        if on_hold_expire_duration:
             days_left = timedelta(seconds=on_hold_expire_duration).days
             time_left = format_time_left(on_hold_expire_duration)
             expire_date = "-"
@@ -243,82 +242,74 @@ def process_inbounds_and_tags(
         ],
         reverse=False,
 ) -> Union[List, str]:
-    _inbounds = []
-    for protocol, tags in inbounds.items():
-        for tag in tags:
-            _inbounds.append((protocol, [tag]))
-    index_dict = {proxy: index for index, proxy in enumerate(
-        xray.config.inbounds_by_tag.keys())}
-    inbounds = sorted(
-        _inbounds, key=lambda x: index_dict.get(x[1][0], float('inf')))
+    for _, host in xray.hosts.items():
+        tag = host["inbound_tag"]
+        host_inbound = deepcopy(xray.config.inbounds_by_tag[tag])
 
-    for protocol, tags in inbounds:
+        protocol = host_inbound["protocol"]
+        tags = inbounds.get(protocol)
+        if tags is None:
+            continue
+
+        if tag not in tags:
+            continue
+
         settings = proxies.get(protocol)
         if not settings:
             continue
 
-        format_variables.update({"PROTOCOL": protocol.name})
-        for tag in tags:
-            inbound = xray.config.inbounds_by_tag.get(tag)
-            if not inbound:
-                continue
+        format_variables.update({"PROTOCOL": protocol})
+        format_variables.update({"TRANSPORT": host_inbound["network"]})
+        sni = ""
+        sni_list = host["sni"] or host_inbound["sni"]
+        if sni_list:
+            salt = secrets.token_hex(8)
+            sni = random.choice(sni_list).replace("*", salt)
 
-            format_variables.update({"TRANSPORT": inbound["network"]})
-            host_inbound = inbound.copy()
-            for host in xray.hosts.get(tag, []):
-                sni = ""
-                sni_list = host["sni"] or inbound["sni"]
-                if sni_list:
-                    salt = secrets.token_hex(8)
-                    sni = random.choice(sni_list).replace("*", salt)
+        req_host = ""
+        req_host_list = host["host"] or host_inbound["host"]
+        if req_host_list:
+            salt = secrets.token_hex(8)
+            req_host = random.choice(req_host_list).replace("*", salt)
 
-                if sids := inbound.get("sids"):
-                    inbound["sid"] = random.choice(sids)
+        address = ""
+        address_list = host["address"]
+        if host['address']:
+            salt = secrets.token_hex(8)
+            address = random.choice(address_list).replace('*', salt)
 
-                req_host = ""
-                req_host_list = host["host"] or inbound["host"]
-                if req_host_list:
-                    salt = secrets.token_hex(8)
-                    req_host = random.choice(req_host_list).replace("*", salt)
+        if sids := host_inbound.get("sids"):
+            host_inbound["sid"] = random.choice(sids)
 
-                address = ""
-                address_list = host['address']
-                if host['address']:
-                    salt = secrets.token_hex(8)
-                    address = random.choice(address_list).replace('*', salt)
+        if host["path"] is not None:
+            path = host["path"].format_map(format_variables)
+        else:
+            path = host_inbound.get("path", "").format_map(format_variables)
 
-                if host["path"] is not None:
-                    path = host["path"].format_map(format_variables)
-                else:
-                    path = inbound.get("path", "").format_map(format_variables)
+        host_inbound.update(
+            {
+                "port": host["port"] or host_inbound["port"],
+                "sni": sni,
+                "host": req_host,
+                "tls": host_inbound["tls"] if host["tls"] is None else host["tls"],
+                "alpn": host["alpn"] if host["alpn"] else None,
+                "path": path,
+                "fp": host["fingerprint"] or host_inbound.get("fp", ""),
+                "ais": host["allowinsecure"]
+                or host_inbound.get("allowinsecure", ""),
+                "mux_enable": host["mux_enable"],
+                "fragment_setting": host["fragment_setting"],
+                "noise_setting": host["noise_setting"],
+                "random_user_agent": host["random_user_agent"],
+            }
+        )
 
-                if host.get("use_sni_as_host", False) and sni:
-                    req_host = sni
-
-                host_inbound.update(
-                    {
-                        "port": host["port"] or inbound["port"],
-                        "sni": sni,
-                        "host": req_host,
-                        "tls": inbound["tls"] if host["tls"] is None else host["tls"],
-                        "alpn": host["alpn"] if host["alpn"] else None,
-                        "path": path,
-                        "fp": host["fingerprint"] or inbound.get("fp", ""),
-                        "ais": host["allowinsecure"]
-                        or inbound.get("allowinsecure", ""),
-                        "mux_enable": host["mux_enable"],
-                        "fragment_setting": host["fragment_setting"],
-                        "noise_setting": host["noise_setting"],
-                        "random_user_agent": host["random_user_agent"],
-                    }
-                )
-
-                conf.add(
-                    remark=host["remark"].format_map(format_variables),
-                    address=address.format_map(format_variables),
-                    inbound=host_inbound,
-                    settings=settings.model_dump()
-                )
+        conf.add(
+            remark=host["remark"].format_map(format_variables),
+            address=address.format_map(format_variables),
+            inbound=host_inbound,
+            settings=settings.dict(no_obj=True)
+        )
 
     return conf.render(reverse=reverse)
 

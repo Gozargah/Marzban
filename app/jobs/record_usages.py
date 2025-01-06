@@ -5,7 +5,7 @@ from operator import attrgetter
 from typing import Union
 
 from pymysql.err import OperationalError
-from sqlalchemy import and_, bindparam, insert, select, update
+from sqlalchemy import and_, bindparam, insert, select,  update
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.dml import Insert
 
@@ -30,7 +30,7 @@ def safe_execute(db: Session, stmt, params=None):
         done = False
         while not done:
             try:
-                db.connection().execute(stmt, params)
+                db.connection().execute(stmt, params, execution_options={"synchronize_session": None})
                 db.commit()
                 done = True
             except OperationalError as err:
@@ -41,7 +41,7 @@ def safe_execute(db: Session, stmt, params=None):
                 raise err
 
     else:
-        db.connection().execute(stmt, params)
+        db.connection().execute(stmt, params, execution_options={"synchronize_session": None})
         db.commit()
 
 

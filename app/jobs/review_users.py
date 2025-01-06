@@ -1,23 +1,32 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 from sqlalchemy.orm import Session
 
 from app import logger, scheduler, xray
-from app.db import (GetDB, get_notification_reminder, get_users,
-                    start_user_expire, update_user_status, reset_user_by_next)
+from app.db import (
+    GetDB,
+    get_notification_reminder,
+    get_users,
+    reset_user_by_next,
+    start_user_expire,
+    update_user_status,
+)
 from app.models.user import ReminderType, UserResponse, UserStatus
 from app.utils import report
-from app.utils.helpers import (calculate_expiration_days,
-                               calculate_usage_percent)
-from config import (JOB_REVIEW_USERS_INTERVAL, NOTIFY_DAYS_LEFT,
-                    NOTIFY_REACHED_USAGE_PERCENT, WEBHOOK_ADDRESS)
+from app.utils.helpers import calculate_expiration_days, calculate_usage_percent
+from config import (
+    JOB_REVIEW_USERS_INTERVAL,
+    NOTIFY_DAYS_LEFT,
+    NOTIFY_REACHED_USAGE_PERCENT,
+    WEBHOOK_ADDRESS,
+)
 
 if TYPE_CHECKING:
     from app.db.models import User
 
 
-def add_notification_reminders(db: Session, user: "User", now: datetime = datetime.utcnow()) -> None:
+def add_notification_reminders(db: Session, user: "User") -> None:
     if user.data_limit:
         usage_percent = calculate_usage_percent(user.used_traffic, user.data_limit)
 
@@ -52,13 +61,12 @@ def reset_user_by_next_report(db: Session, user: "User"):
 
 
 def review():
-    now = datetime.utcnow()
-    now_ts = now.timestamp()
+    now = datetime.now(timezone.utc)
     with GetDB() as db:
         for user in get_users(db, status=UserStatus.active):
 
             limited = user.data_limit and user.used_traffic >= user.data_limit
-            expired = user.expire and user.expire <= now_ts
+            expired = user.expire and user.expire.replace(tzinfo=timezone.utc) <= now
 
             if (limited or expired) and user.next_plan is not None:
                 if user.next_plan is not None:
@@ -77,7 +85,7 @@ def review():
                 status = UserStatus.expired
             else:
                 if WEBHOOK_ADDRESS:
-                    add_notification_reminders(db, user, now)
+                    add_notification_reminders(db, user)
                 continue
 
             xray.operations.remove_user(user)
@@ -86,20 +94,20 @@ def review():
             report.status_change(username=user.username, status=status,
                                  user=UserResponse.model_validate(user), user_admin=user.admin)
 
-            logger.info(f"User \"{user.username}\" status changed to {status}")
+            logger.info(f"User \"{user.username}\" status changed to {status.value}")
 
         for user in get_users(db, status=UserStatus.on_hold):
 
             if user.edit_at:
-                base_time = datetime.timestamp(user.edit_at)
+                base_time = user.edit_at
             else:
-                base_time = datetime.timestamp(user.created_at)
+                base_time = user.created_at
 
             # Check if the user is online After or at 'base_time'
-            if user.online_at and base_time <= datetime.timestamp(user.online_at):
+            if user.online_at and base_time <= user.online_at:
                 status = UserStatus.active
 
-            elif user.on_hold_timeout and (datetime.timestamp(user.on_hold_timeout) <= (now_ts)):
+            elif user.on_hold_timeout and (user.on_hold_timeout <= now):
                 # If the user didn't connect within the timeout period, change status to "Active"
                 status = UserStatus.active
 
@@ -108,11 +116,12 @@ def review():
 
             update_user_status(db, user, status)
             start_user_expire(db, user)
+            user = UserResponse.model_validate(user)
 
             report.status_change(username=user.username, status=status,
-                                 user=UserResponse.model_validate(user), user_admin=user.admin)
+                                 user=user, user_admin=user.admin)
 
-            logger.info(f"User \"{user.username}\" status changed to {status}")
+            logger.info(f"User \"{user.username}\" status changed to {status.value}")
 
 
 scheduler.add_job(review, 'interval',
