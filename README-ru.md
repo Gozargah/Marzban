@@ -97,10 +97,10 @@ Marzban удобен в использовании, многофункциона
 - Ограничения на основе **количества трафика** и **срока действия**
 - Ограничение трафика по **периодам** (например выдавать трафик на день, неделю и т. д.)
 - Поддержка **ссылок-подписок** совместимых с **V2ray** _(такие как V2RayNG, SingBox, Nekoray, и др.)_, **Clash** и **ClashMeta**
-- Автоматическая генерация **Ссылок** и **QRcode** 
+- Автоматическая генерация **Ссылок** и **QRcode**
 - Мониторинг ресурсов сервера и **использования трафика**
 - Настраиваемые конфигурации xray
-- Поддержка **TLS** и **REALITY** 
+- Поддержка **TLS** и **REALITY**
 - Встроенный **Telegram Bot**
 - Встроенный **Command Line Interface (CLI)**
 - **Несколько языков**
@@ -121,11 +121,13 @@ sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/
 ```
 
 Установка Marzban с базой данных MariaDB:
+
 ```bash
 sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install --database mariadb
 ```
 
 Когда установка будет завершена:
+
 - Вы увидите логи, которые можно остановить, нажав `Ctrl+C` или закрыв терминал.
 - Файлы Marzban будут размещены по адресу `/opt/marzban`.
 - Файл конфигурации будет размещен по адресу `/opt/marzban/.env` (см. [Конфигурация](#конфигурация)).
@@ -143,7 +145,7 @@ http://localhost:8000/dashboard/
 
 Вы потеряете доступ к панели управления, как только закроете терминал SSH. Поэтому этот метод рекомендуется использовать только для тестирования.
 
-Далее, Вам нужно создать главного администратора для входа в панель управления Marzban, выполнив следующую команду: 
+Далее, Вам нужно создать главного администратора для входа в панель управления Marzban, выполнив следующую команду:
 
 ```bash
 marzban cli admin create --sudo
@@ -158,6 +160,7 @@ marzban --help
 ```
 
 Если Вы хотите запустить проект, используя его исходный код, обратитесь к разделу ниже
+
 <details markdown="1">
 <summary><h3>Ручная установка</h3></summary>
 
@@ -169,21 +172,19 @@ marzban --help
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
 ```
 
-Клонируйте этот проект и установите зависимости (Вам нужен Python >= 3.8):
+Клонируйте этот проект и установите зависимости:
 
 ```bash
 git clone https://github.com/Gozargah/Marzban.git
 cd Marzban
-wget -qO- https://bootstrap.pypa.io/get-pip.py | python3 -
-python3 -m pip install -r requirements.txt
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv sync
 ```
-
-В качестве альтернативы для создания виртуальной среды можно использовать [Python Virtualenv](https://pypi.org/project/virtualenv/).
 
 Затем выполните следующую команду для запуска скрипта миграции базы данных:
 
 ```bash
-alembic upgrade head
+uv run alembic upgrade head
 ```
 
 Если Вы хотите использовать `marzban-cli`, необходимо связать его с файлом в `$PATH`, сделать его исполняемым и установить:
@@ -210,7 +211,7 @@ nano .env
 В завершение запустите приложение с помощью следующей команды:
 
 ```bash
-python3 main.py
+uv run main.py
 ```
 
 Для запуска с помощью linux systemctl (скопируйте файл marzban.service в `/var/lib/marzban/marzban.service`):
@@ -279,6 +280,7 @@ server {
 ```
 
 По умолчанию приложение будет запускаться на `http://localhost:8000/dashboard`. Вы можете настроить его, изменив переменные окружения `UVICORN_HOST` и `UVICORN_PORT`.
+
 </details>
 
 # Конфигурация
@@ -286,7 +288,7 @@ server {
 > Ниже приведены настройки, которые можно задать с помощью переменных окружения поместив их в файл `.env`.
 
 | Перменная                                | Описание                                                                                                                       |
-| ---------------------------------------- |--------------------------------------------------------------------------------------------------------------------------------|
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | SUDO_USERNAME                            | Имя пользователя главного администратора                                                                                       |
 | SUDO_PASSWORD                            | Пароль главного администратора                                                                                                 |
 | SQLALCHEMY_DATABASE_URL                  | Путь к файлу БД ([SQLAlchemy's docs](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls))                       |
@@ -297,7 +299,7 @@ server {
 | UVICORN_SSL_KEYFILE                      | Адрес файла ключа SSL                                                                                                          |
 | UVICORN_SSL_CA_TYPE                      | Тип центра сертификации ключа SSL. Используйте `private` для тестирования самоподписанных CA (по умолчанию: `public`)          |
 | XRAY_JSON                                | Адрес файла JSON конфигурации Xray. (по умолчанию: `xray_config.json`)                                                         |
-| XRAY_EXECUTABLE_PATH                     | Путь к бинарникам Xray  (по умолчанию: `/usr/local/bin/xray`)                                                                  |
+| XRAY_EXECUTABLE_PATH                     | Путь к бинарникам Xray (по умолчанию: `/usr/local/bin/xray`)                                                                   |
 | XRAY_ASSETS_PATH                         | Путь к папке с рессурсными файлами для Xray (файлы geoip.dat и geosite.dat) (по умолчанию: `/usr/local/share/xray`)            |
 | XRAY_SUBSCRIPTION_URL_PREFIX             | Префикс адреса подписки                                                                                                        |
 | XRAY_FALLBACKS_INBOUND_TAG               | Если вы используете входящее соединение с несколькими резервными вариантами, укажите здесь его тег                             |
@@ -306,7 +308,7 @@ server {
 | CLASH_SUBSCRIPTION_TEMPLATE              | Шаблон для создания конфигурации Clash (по умолчанию: `clash/default.yml`)                                                     |
 | SUBSCRIPTION_PAGE_TEMPLATE               | Шаблон для страницы подписки (по умолчанию: `subscription/index.html`)                                                         |
 | HOME_PAGE_TEMPLATE                       | Шаблон главной страницы (по умолчанию: `home/index.html`)                                                                      |
-| TELEGRAM_API_TOKEN                       | Токен Telegram-бота  (полученный от [@botfather](https://t.me/botfather))                                                      |
+| TELEGRAM_API_TOKEN                       | Токен Telegram-бота (полученный от [@botfather](https://t.me/botfather))                                                       |
 | TELEGRAM_ADMIN_ID                        | Числовой идентификатор администратора в Telegram (полученный от [@userinfobot](https://t.me/userinfobot))                      |
 | TELEGRAM_PROXY_URL                       | URL прокси для запуска Telegram-бота (если серверы Telegram заблокированы на вашем сервере).                                   |
 | JWT_ACCESS_TOKEN_EXPIRE_MINUTES          | Время истечения срока действия доступного токена в минутах, `0` означает "без истечения срока действия" (по умолчанию: `1440`) |
@@ -314,7 +316,7 @@ server {
 | DEBUG                                    | Активация режима разработки (development) (по умолчанию: `False`)                                                              |
 | WEBHOOK_ADDRESS                          | Адрес Webhook для отправки уведомлений. Уведомления Webhook будут отправляться, если это значение было установлено             |
 | WEBHOOK_SECRET                           | Webhook secret будет передаваться с каждым запросом в виде `x-webhook-secret` в заголовке (по умолчанию: `None`)               |
-| NUMBER_OF_RECURRENT_NOTIFICATIONS        | Сколько раз повторять попытку отправки уведомления при обнаружении ошибки  (по умолчанию: `3`)                                 |
+| NUMBER_OF_RECURRENT_NOTIFICATIONS        | Сколько раз повторять попытку отправки уведомления при обнаружении ошибки (по умолчанию: `3`)                                  |
 | RECURRENT_NOTIFICATIONS_TIMEOUT          | Тайм-аут между каждым повторным запросом при обнаружении ошибки в секундах (по умолчанию: `180`)                               |
 | NOTIFY_REACHED_USAGE_PERCENT             | При каком проценте использования отправлять предупреждение (по умолчанию: `80`)                                                |
 | NOTIFY_DAYS_LEFT                         | Когда отправлять предупреждение об истечении срока действия (по умолчанию: `3`)                                                |
@@ -331,7 +333,7 @@ server {
 
 # API
 
-Marzban предоставляет REST API, позволяющий разработчикам программно взаимодействовать с сервисами Marzban. Для просмотра документации по API в Swagger UI или ReDoc установите  переменную `DOCS=True` и перейдите по ссылкам `/docs` и `/redoc`.
+Marzban предоставляет REST API, позволяющий разработчикам программно взаимодействовать с сервисами Marzban. Для просмотра документации по API в Swagger UI или ReDoc установите переменную `DOCS=True` и перейдите по ссылкам `/docs` и `/redoc`.
 
 # Backup
 
@@ -387,7 +389,6 @@ marzban cli [OPTIONS] COMMAND [ARGS]...
 
 Проект Marzban представляет [Marzban-node](https://github.com/gozargah/marzban-node), который помогает Вам в распределении инфраструктуры. С помощью Marzban-node можно распределить инфраструктуру по нескольким узлам, получив такие преимущества, как высокая доступность, масштабируемость и гибкость. Marzban-node позволяет пользователям подключаться к различным серверам, предоставляя им гибкость в выборе, а не ограничиваться только одним сервером.
 Более подробная информация и инструкции по установке приведены в [официальной документации Marzban-node](https://github.com/gozargah/marzban-node).
-
 
 # Webhook уведомления
 

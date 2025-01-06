@@ -174,16 +174,14 @@ bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release
 ```bash
 git clone https://github.com/Gozargah/Marzban.git
 cd Marzban
-wget -qO- https://bootstrap.pypa.io/get-pip.py | python3 -
-python3 -m pip install -r requirements.txt
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv sync
 ```
-
-另外，为了拥有一个隔离的环境，您可以使用 [Python Virtualenv](https://pypi.org/project/virtualenv/)。
 
 然后运行以下命令运行数据库迁移脚本：
 
 ```bash
-alembic upgrade head
+uv run alembic upgrade head
 ```
 
 现在开始配置：
@@ -202,7 +200,7 @@ nano .env
 最终，使用以下命令启动应用程序：
 
 ```bash
-python3 main.py
+uv run main.py
 ```
 
 也可使用 linux systemctl 启动：
@@ -394,4 +392,3 @@ Marzban 配备了一个集成的 Telegram bot，可以处理服务器管理、�
 <p align="center">
   Made with <a rel="noopener noreferrer" target="_blank" href="https://contrib.rocks">contrib.rocks</a>
 </p>
-

@@ -422,7 +422,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/1d/97/2288fe498044284f3
 
 [[package]]
 name = "marzban"
-version = "0.1.0"
+version = "0.8.1"
 source = { virtual = "." }
 dependencies = [
     { name = "alembic" },
