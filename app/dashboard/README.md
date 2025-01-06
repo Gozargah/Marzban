@@ -11,8 +11,8 @@ This project has been developed on the Nodejs v16.17.0 so if you faced any issue
 
 ## Install
 
-    git clone https://github.com/gozargah/marz-manager.git
-    cd marz-manager
+    git clone https://github.com/Gozargah/Marzban.git
+    cd Marzban/app/dashboard
     yarn install
 
 ### Configure app
