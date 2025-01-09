@@ -1,8 +1,9 @@
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import field_validator, ConfigDict, BaseModel, Field
 
 from app import xray
+from app.models.proxy import ProxyTypes
 
 
 class UserTemplate(BaseModel):
@@ -16,7 +17,7 @@ class UserTemplate(BaseModel):
     username_prefix: Optional[str] = Field(max_length=20, min_length=1, default=None)
     username_suffix: Optional[str] = Field(max_length=20, min_length=1, default=None)
 
-    inbounds: Dict["ProxyTypes", List[str]] = {}
+    inbounds: Dict[ProxyTypes, List[str]] = {}
 
 
 class UserTemplateCreate(UserTemplate):
@@ -62,6 +63,3 @@ class UserTemplateResponse(UserTemplate):
                         final[protocol] = [inbound["tag"]]
         return final
     model_config = ConfigDict(from_attributes=True)
-
-
-from app.models.proxy import ProxyTypes  # noqa
