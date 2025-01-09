@@ -2,13 +2,12 @@ import re
 import secrets
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Literal, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (BaseModel, ConfigDict, Field, field_validator,
+                      model_validator)
 
 from app import xray
-from app.models.admin import Admin
-from app.models.proxy import ProxySettings, ProxyTypes
 from app.subscription.share import generate_v2ray_links
 from app.utils.jwt import create_subscription_token
 from config import XRAY_SUBSCRIPTION_PATH, XRAY_SUBSCRIPTION_URL_PREFIX
@@ -57,7 +56,7 @@ class NextPlanModel(BaseModel):
 
 
 class User(BaseModel):
-    proxies: Dict[ProxyTypes, ProxySettings] = {}
+    proxies: Dict["ProxyTypes", "ProxySettings"] = {}
     expire: Optional[int] = Field(None, nullable=True)
     data_limit: Optional[int] = Field(
         ge=0, default=None, description="data_limit can be 0 or greater"
@@ -65,7 +64,7 @@ class User(BaseModel):
     data_limit_reset_strategy: UserDataLimitResetStrategy = (
         UserDataLimitResetStrategy.no_reset
     )
-    inbounds: Dict[ProxyTypes, List[str]] = {}
+    inbounds: Dict["ProxyTypes", List[str]] = {}
     note: Optional[str] = Field(None, nullable=True)
     sub_updated_at: Optional[datetime] = Field(None, nullable=True)
     sub_last_user_agent: Optional[str] = Field(None, nullable=True)
@@ -288,9 +287,9 @@ class UserResponse(User):
     links: List[str] = []
     subscription_url: str = ""
     proxies: dict
-    excluded_inbounds: Dict[ProxyTypes, List[str]] = {}
+    excluded_inbounds: Dict["ProxyTypes", List[str]] = {}
 
-    admin: Optional[Admin] = None
+    admin: Optional["Admin"] = None
     model_config = ConfigDict(from_attributes=True)
 
     @model_validator(mode="after")
@@ -328,10 +327,10 @@ class UserResponse(User):
 
 
 class SubscriptionUserResponse(UserResponse):
-    admin: Admin | None = Field(default=None, exclude=True)
-    excluded_inbounds: Dict[ProxyTypes, List[str]] | None = Field(None, exclude=True)
+    admin: Literal["Admin"] | None = Field(default=None, exclude=True)
+    excluded_inbounds: Dict["ProxyTypes", List[str]] | None = Field(None, exclude=True)
     note: str | None = Field(None, exclude=True)
-    inbounds: Dict[ProxyTypes, List[str]] | None = Field(None, exclude=True)
+    inbounds: Dict["ProxyTypes", List[str]] | None = Field(None, exclude=True)
     auto_delete_in_days: int | None = Field(None, exclude=True)
     model_config = ConfigDict(from_attributes=True)
 
@@ -364,3 +363,7 @@ class UserUsagesResponse(BaseModel):
 
 class UsersUsagesResponse(BaseModel):
     usages: List[UserUsageResponse]
+
+
+from app.models.admin import Admin  # noqa
+from app.models.proxy import ProxySettings, ProxyTypes  # noqa
