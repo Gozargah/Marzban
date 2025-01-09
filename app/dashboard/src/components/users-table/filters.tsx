@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useDashboard } from "@/contexts/DashboardContext";
 import {
   Pagination,
@@ -17,15 +17,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { debounce, toNumber } from "lodash";
+import { debounce } from "lodash";
 import { useTranslation } from "react-i18next";
 import { SearchIcon, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import useDirDetection from "@/hooks/use-dir-detection";
+import { cn } from "@/lib/utils";
 
 export const Filters = () => {
   const { t } = useTranslation();
+  const dir = useDirDetection()
   const { filters, loading, onFilterChange, refetchUsers, onCreateUser } =
     useDashboard();
   const [search, setSearch] = useState(filters.search || "");
@@ -59,10 +62,10 @@ export const Filters = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row justify-between items-center gap-4 p-4 bg-background">
+    <div dir={dir} className="flex items-center gap-4 py-4">
       {/* Search Input */}
       <div className="relative w-full md:w-1/3">
-        <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <SearchIcon className={cn("absolute", dir === "rtl" ? "right-2":"left-2 " ,"top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400")} />
         <Input
           placeholder={t("search")}
           value={search}
@@ -72,29 +75,25 @@ export const Filters = () => {
         {search && (
           <button
             onClick={clearSearch}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className={cn("absolute", dir ==="rtl" ? "left-2" : "right-2" ,"top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600")}
           >
             <X className="w-4 h-4" />
           </button>
         )}
       </div>
-
-      {/* Action Buttons */}
-      <div className="flex items-center gap-2">
+      {/* Refresh Button */}
+      <div className="flex items-center gap-2 h-full">
         <Button
-          variant="outline"
           size="sm"
           onClick={refetchUsers}
           disabled={loading}
-          className="flex items-center gap-2"
+          variant="ghost"
+          className="flex items-center gap-2 border"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-          {t("refresh")}
-        </Button>
-        <Button size="sm" onClick={() => onCreateUser(true)} className="px-4">
-          {t("createUser")}
         </Button>
       </div>
+
     </div>
   );
 };

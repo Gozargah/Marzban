@@ -69,7 +69,7 @@ export const Login: React.FC = () => {
   return (
     <div className="flex flex-col justify-between min-h-screen p-6 w-full">
       <div className="w-full">
-        <div className="flex gap-x-2 w-full">
+        <div className="flex justify-end gap-x-2 w-full">
           <ModeToggle />
           <Language />
         </div>
@@ -142,7 +142,7 @@ export const Login: React.FC = () => {
                         </Alert>
                       )}
 
-                      <Button disabled={loading || isSubmitting} type="submit" className="w-full" color="primary">
+                      <Button disabled={loading || isSubmitting} type="submit" className="w-full py-5" color="primary">
                         <div className="flex items-center gap-x-2">
                           {loading || isSubmitting ? (
                             <Loader2 className="animate-spin h-6 w-6" />

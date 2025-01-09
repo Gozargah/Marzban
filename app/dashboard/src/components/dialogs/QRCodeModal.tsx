@@ -47,14 +47,18 @@ const QRCodeModal: FC<QRCodeModalProps> = memo(
       };
     }, [api]);
 
+    useEffect(()=>{
+        console.log(isOpen);
+        
+    },[isOpen,onCloseModal])
+
     return (
       <Dialog open={isOpen} onOpenChange={onCloseModal}>
         <DialogContent className="max-w-[425px] md:max-w-[750px] py-28 md:py-6 overflow-y-auto max-h-screen md:pt-10">
           <DialogHeader>
             <DialogTitle>
               <div className="px-2">
-
-              <ScanQrCode className="h-8 w-8" />
+                <ScanQrCode className="h-8 w-8" />
               </div>
             </DialogTitle>
           </DialogHeader>

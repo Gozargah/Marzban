@@ -7,6 +7,7 @@ import Layout from "./Layout";
 import Statistics from "./Statistics";
 import Settings from "./Settings";
 import CoreSettings from "@/components/settings/CoreSettings";
+import Nodes from "./Nodes";
 
 const fetchAdminLoader = async (): Promise<any> => {
   try {
@@ -35,6 +36,10 @@ export const router = createHashRouter([
       {
         path: "/statistics",
         element: <Statistics />,
+      },
+      {
+        path: "/nodes",
+        element: <Nodes />,
       },
 
       {

@@ -49,14 +49,14 @@ export function DataTable<TData extends User, TValue>({
   return (
     <div className="rounded-md border">
       <Table dir={cn(isRTL && "rtl")}>
-        <TableHeader>
+        <TableHeader className="relative">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow className="uppercase" key={headerGroup.id}>
               {headerGroup.headers.map((header, index) => (
                 <TableHead
                   key={header.id}
                   className={cn(
-                    "font-bold text-xs py-2",
+                    "font-bold text-xs py-2 sticky z-10 bg-background overflow-visible",
                     isRTL && "text-right",
                     index === 0 && "w-[270px] md:w-auto",
                     index === 1 && "max-w-[70px] md:w-auto md:px-0",
@@ -157,7 +157,7 @@ export function DataTable<TData extends User, TValue>({
                             <ActionButtons user={row.original} />
                           </div>
                           <div>
-                            <OnlineStatus lastOnline={row.original.online_at}/>
+                            <OnlineStatus lastOnline={row.original.online_at} />
                           </div>
                         </div>
                       </div>

@@ -31,6 +31,9 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
 
   const proxyLinks = user.links.join("\r\n");
 
+  console.log(QRcodeLinks);
+  
+
   return (
     <div>
       <div className="flex justify-end space-x-2 items-center">

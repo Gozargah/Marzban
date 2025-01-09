@@ -1,6 +1,6 @@
-import { Link, useLocation } from "react-router-dom"; // Import useLocation from react-router-dom
+import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
-import { ChevronDown, Dot, LucideIcon } from "lucide-react";
+import { ChevronDown, LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import useDirDetection from "@/hooks/use-dir-detection";
 import { useTranslation } from "react-i18next";
+import { SidebarMenuSub } from "../ui/sidebar";
 
 type Submenu = {
   href: string;
@@ -70,7 +71,7 @@ export function CollapseMenuButton({
       >
         <Button
           variant={isSubmenuActive ? "secondary" : "ghost"}
-          className="w-full justify-start h-10"
+          className="w-full justify-start h-9 px-3"
         >
           <div
             className={cn(
@@ -81,7 +82,7 @@ export function CollapseMenuButton({
             <div
               className={cn("flex items-center", isRTL && "flex-row-reverse")}
             >
-              <span className={cn(isRTL ? "ml-6" : "mr-6")}>
+              <span className={cn(isRTL ? "ml-3" : "mr-3")}>
                 <Icon size={18} />
               </span>
               <p
@@ -113,32 +114,33 @@ export function CollapseMenuButton({
       </CollapsibleTrigger>
       <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
         {submenus.map(({ href, label, active }, index) => (
-          <Button
+          <SidebarMenuSub
             key={index}
-            variant={
-              (active === undefined && pathname === href) || active
-                ? "secondary"
-                : "ghost"
-            }
-            className="w-full justify-start h-10 mb-1"
-            asChild
+            className={cn(isRTL && "border-r border-l-0")}
           >
-            <Link className={cn(isRTL && "flex-row-reverse")} to={href}>
-              <span className={cn(isRTL ? "ml-4 mr-2" : "mr-4 ml-2")}>
-                <Dot className="h-6 w-6" />
-              </span>
-              <p
-                className={cn(
-                  "max-w-[170px] truncate",
-                  isOpen
-                    ? "translate-x-0 opacity-100"
-                    : "-translate-x-96 opacity-0"
-                )}
-              >
-                {t(label)}
-              </p>
-            </Link>
-          </Button>
+            <Button
+              variant={
+                (active === undefined && pathname === href) || active
+                  ? "secondary"
+                  : "ghost"
+              }
+              className="w-full justify-start h-9 mb-1"
+              asChild
+            >
+              <Link className={cn(isRTL && "flex-row-reverse")} to={href}>
+                <p
+                  className={cn(
+                    "max-w-[170px] truncate",
+                    isOpen
+                      ? "translate-x-0 opacity-100"
+                      : "-translate-x-96 opacity-0"
+                  )}
+                >
+                  {t(label)}
+                </p>
+              </Link>
+            </Button>
+          </SidebarMenuSub>
         ))}
       </CollapsibleContent>
     </Collapsible>
