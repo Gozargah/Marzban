@@ -35,7 +35,7 @@ export function Menu({ isOpen }: MenuProps) {
   return (
     <ScrollArea className="[&>div>div[style]]:!block">
       <nav className="mt-6 h-full w-full pb-4">
-        <ul className="flex flex-col min-h-[calc(100vh-48px-36px-16px-32px)] lg:min-h-[calc(100vh-32px-40px-32px)] items-start space-y-1 px-2">
+        <ul className="flex flex-col min-h-[calc(100vh-48px-36px-16px-32px)] lg:min-h-[calc(100vh-32px-40px-32px)] items-start space-y-1">
           {menuList.map(({ groupLabel, menus }, index) => (
             <li
               className={cn(
@@ -46,7 +46,7 @@ export function Menu({ isOpen }: MenuProps) {
               key={index}
             >
               {(isOpen && groupLabel) || isOpen === undefined ? (
-                <p className="text-sm font-medium text-muted-foreground px-4 pb-2 w-full truncate">
+                <p className="text-sm font-medium text-muted-foreground px-2 pb-2 w-full truncate">
                   {t(groupLabel)}
                 </p>
               ) : !isOpen && isOpen !== undefined && groupLabel ? (
@@ -82,7 +82,7 @@ export function Menu({ isOpen }: MenuProps) {
                                   ? "secondary"
                                   : "ghost"
                               }
-                              className="w-full justify-start h-10 mb-1"
+                              className="w-full justify-start h-9 mb-1 px-3"
                               asChild
                             >
                               <Link
@@ -94,8 +94,8 @@ export function Menu({ isOpen }: MenuProps) {
                                     isOpen === false
                                       ? ""
                                       : isRTL
-                                      ? "ml-4"
-                                      : "mr-4"
+                                      ? "ml-1"
+                                      : "mr-1"
                                   )}
                                 >
                                   <Icon size={18} />

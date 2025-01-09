@@ -27,8 +27,8 @@ export default function AdminPanelLayout({
                 ? "lg:mr-[90px]"
                 : "lg:ml-[90px]"
               : isRTL
-              ? "lg:mr-72"
-              : "lg:ml-72")
+              ? "lg:mr-60"
+              : "lg:ml-60")
         )}
       >
         {children}

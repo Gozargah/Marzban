@@ -8,8 +8,9 @@ const Dashboard = () => {
   const sidebar = useStore(useSidebar, (x) => x);
   if (!sidebar) return null;
   return (
-    <ContentLayout className="pt-8 pb-8 px-4 sm:px-8">
-      <div className="mx-auto py-10">
+    <ContentLayout className="pb-8 px-4 sm:px-8">
+      <div className="mx-auto pt-6 pb-10">
+        
         <UsersTable />
         <PaginationControls />
       </div>

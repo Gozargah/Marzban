@@ -35,6 +35,13 @@ export type DataLimitResetStrategy =
 export type UserInbounds = {
   [key: string]: string[];
 };
+
+export interface AdminType {
+  username: string;
+  is_sudo: boolean;
+  telegram_id: string | null;
+  discord_webhook: string | null;
+}
 export type User = {
   proxies: ProxyType;
   expire: number | null;
@@ -50,6 +57,7 @@ export type User = {
   inbounds: UserInbounds;
   note: string;
   online_at: string;
+  admin: AdminType;
 };
 
 export type UserCreate = Pick<
@@ -70,7 +78,7 @@ export type UserApi = {
   is_sudo: boolean;
   telegram_id: number | string;
   username: string;
-}
+};
 
 export type UseGetUserReturn = {
   userData: UserApi;
@@ -78,4 +86,4 @@ export type UseGetUserReturn = {
   getUserIsSuccess: boolean;
   getUserIsError: boolean;
   getUserError: Error | null;
-}
+};

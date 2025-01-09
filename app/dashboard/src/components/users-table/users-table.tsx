@@ -5,16 +5,17 @@ import { setupColumns } from "@/components/users-table/columns";
 import { Filters } from "@/components/users-table/filters";
 import { DataTable } from "@/components/users-table/data-table";
 import useDirDetection from "@/hooks/use-dir-detection";
+import UsersStatistics from "../UsersStatistics";
 
 const UsersTable = () => {
   const { t } = useTranslation();
-  const dir = useDirDetection()
+  const dir = useDirDetection();
   const {
     filters,
     onFilterChange,
     users: { users },
-    users: totalUsers,
   } = useDashboard();
+  
 
   useEffect(() => {
     useDashboard.getState().refetchUsers();
@@ -42,10 +43,18 @@ const UsersTable = () => {
     });
   };
 
-  const columns = setupColumns({ t,dir, handleSort, filters, handleStatusFilter });
+  const columns = setupColumns({
+    t,
+    dir,
+    handleSort,
+    filters,
+    handleStatusFilter,
+  });
 
   return (
     <div>
+      {/* Users Statistics */}
+      <UsersStatistics />
       {/* Filter Section */}
       <Filters />
 

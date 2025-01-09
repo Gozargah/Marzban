@@ -27,12 +27,8 @@ export const setupColumns = ({
     header: ({ column }) => (
       <Button variant="ghost" onClick={() => handleSort("username")}>
         <div className="text-xs uppercase font-bold">
-          <span className="md:hidden">
-            {t("users")}
-          </span>
-          <span className="hidden md:block">
-            {t("username")}
-          </span>
+          <span className="md:hidden">{t("users")}</span>
+          <span className="hidden md:block">{t("username")}</span>
         </div>
         {filters.sort &&
           (filters.sort === "username" || filters.sort === "-username") && (
@@ -46,26 +42,40 @@ export const setupColumns = ({
           )}
       </Button>
     ),
-    cell: ({ row }) => (
-      <div className="font-medium pl-1 md:pl-2 overflow-hidden text-ellipsis whitespace-nowrap">
-        <div className="flex items-center gap-x-3 py-1 px-1">
-          <OnlineBadge lastOnline={row.original.online_at} />
-          <span className="whitespace-nowrap text-ellipsis overflow-hidden text-base">
-            {row.getValue("username")}
-          </span>
-          <div className="hidden md:block">
-            <OnlineStatus lastOnline={row.original.online_at} />
+    cell: ({ row }) => {
+      return (
+        <div className="font-medium pl-1 md:pl-2 overflow-hidden text-ellipsis whitespace-nowrap">
+          <div className="flex items-center gap-x-3 py-1 px-1">
+            <OnlineBadge lastOnline={row.original.online_at} />
+            <div className="flex flex-col gap-y-0.5 whitespace-nowrap text-ellipsis overflow-hidden">
+              <span className="whitespace-nowrap text-ellipsis overflow-hidden text-base font-semibold">
+                {row.getValue("username")}
+              </span>
+
+              <span className="flex items-center gap-x-0.5 overflow-hidden text-xs text-muted-foreground font-medium">
+                <span className="hidden sm:block">{t("created")}</span>
+                <span>{t("by")}</span>
+                <span className="text-blue-500">
+                  {row.original.admin.username}
+                </span>
+              </span>
+            </div>
+            <div className="hidden md:block">
+              <OnlineStatus lastOnline={row.original.online_at} />
+            </div>
           </div>
         </div>
-      </div>
-    ),
+      );
+    },
   },
   {
     accessorKey: "status",
     header: () => (
       <Select dir={dir || ""} onValueChange={handleStatusFilter}>
         <SelectTrigger className="border-none p-0 ring-none px-0 md:px-2 max-w-28">
-          <span className="uppercase text-xs px-1">{t("usersTable.status")}</span>
+          <span className="uppercase text-xs px-1">
+            {t("usersTable.status")}
+          </span>
         </SelectTrigger>
         <SelectContent dir="ltr">
           <SelectItem className="py-4" value="0"></SelectItem>
