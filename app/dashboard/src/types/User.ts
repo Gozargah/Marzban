@@ -52,7 +52,7 @@ export type User = {
   username: string;
   used_traffic: number;
   status: Status;
-  links: string[];
+  auto_delete_in_days: number | null;
   subscription_url: string;
   inbounds: UserInbounds;
   note: string;

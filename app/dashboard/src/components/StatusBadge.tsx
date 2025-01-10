@@ -21,8 +21,14 @@ export const StatusBadge: FC<UserStatusProps> = ({
   isMobile
 }) => {
   const { t } = useTranslation();
-  const dir =useDirDetection()
-  const dateInfo = relativeExpiryDate(expiryDate);
+  const dir = useDirDetection();
+  const convertDateFormat = (expire: number | null | undefined) => {
+    const date = new Date(expire + "Z");
+    return Math.floor(date.getTime() / 1000);
+  };
+  const unixTime = convertDateFormat(expiryDate);
+
+  const dateInfo = relativeExpiryDate(unixTime);
 
   const Icon = statusColors[userStatus]?.icon;
 
@@ -35,9 +41,9 @@ export const StatusBadge: FC<UserStatusProps> = ({
           isMobile && "py-0 h-6"
         )}
       >
-        {Icon && <Icon className={cn(isMobile? "w-3 h-3": "w-4 h-4")} />}
+        {Icon && <Icon className={cn(isMobile ? "w-3 h-3" : "w-4 h-4")} />}
         <div className={cn(isMobile ? "block" : "hidden md:block")}>
-          <span className={cn("capitalize font-medium text-sm leading-5" , isMobile && "text-[11.1px] leading-3")}>
+          <span className={cn("capitalize font-medium text-sm leading-5", isMobile && "text-[11.1px] leading-3")}>
             {userStatus && t(`status.${userStatus}`)}
             {extraText && `: ${extraText}`}
           </span>

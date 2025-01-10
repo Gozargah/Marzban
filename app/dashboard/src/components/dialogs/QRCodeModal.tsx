@@ -16,16 +16,17 @@ import {
   CarouselPrevious,
 } from "../ui/carousel";
 import { ScanQrCode } from "lucide-react";
+import { SubscribeLink } from "../ActionButtons";
 
 interface QRCodeModalProps {
-  QRcodeLinks: string[] | null;
   subscribeUrl: string | null;
+  subscribeLinks: SubscribeLink[];
   onCloseModal: () => void;
 }
 
 const QRCodeModal: FC<QRCodeModalProps> = memo(
-  ({ QRcodeLinks, subscribeUrl, onCloseModal }) => {
-    const isOpen = QRcodeLinks !== null;
+  ({ subscribeLinks, subscribeUrl, onCloseModal }) => {
+    const isOpen = subscribeUrl !== null;
     const [index, setIndex] = useState(0);
     const [api, setApi] = useState<CarouselApi>();
 
@@ -46,11 +47,6 @@ const QRCodeModal: FC<QRCodeModalProps> = memo(
         api.off("select", updateIndex);
       };
     }, [api]);
-
-    useEffect(()=>{
-        console.log(isOpen);
-        
-    },[isOpen,onCloseModal])
 
     return (
       <Dialog open={isOpen} onOpenChange={onCloseModal}>
@@ -82,10 +78,10 @@ const QRCodeModal: FC<QRCodeModalProps> = memo(
                 className="w-full max-w-xs pt-2"
               >
                 <CarouselContent>
-                  {QRcodeLinks?.map((_, index) => (
+                  {subscribeLinks?.map((_, index) => (
                     <CarouselItem key={index}>
                       <QRCodeCanvas
-                        value={QRcodeLinks[index]}
+                        value={subscribeLinks[index].link}
                         size={300}
                         className="bg-white p-2 rounded-md"
                         level={"L"}
@@ -97,7 +93,7 @@ const QRCodeModal: FC<QRCodeModalProps> = memo(
                 <CarouselNext className="mr-6" />
               </Carousel>
               <span>
-                {index} / {QRcodeLinks?.length}
+                <span className="mx-2">{subscribeLinks[index-1]?.protocol}</span> {index} / {subscribeLinks?.length}
               </span>
             </div>
           </div>
