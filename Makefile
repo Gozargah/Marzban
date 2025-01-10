@@ -33,17 +33,33 @@ setup: create-venv
 # Install Python dependencies from requirements.txt
 .PHONY: requirements
 requirements:
-	@pip install -r requirements.txt 
+	@$(VENV_DIR)/bin/pip install -r requirements.txt 
 
 # Install frontend dependencies (Node.js packages)
 .PHONY: install-front
 install-front:
-	@cd app/dashboard && npm i  # Navigate to the frontend directory and run `npm install`
+	@cd app/dashboard && npm i 
 
 # Run database migrations using Alembic
 .PHONY: run-migration
 run-migration:
 	@alembic upgrade head 
+
+# run marzban
+.PHONY: run
+run:
+	@python main.py
+
+# Run marzban with watchfiles
+.PHONY: run-watch
+run-watch:
+	@if ! $(VENV_DIR)/bin/pip show watchfiles >/dev/null 2>&1; then \
+		echo "watchfiles is not installed. Installing..."; \
+		$(VENV_DIR)/bin/pip install watchfiles; \
+	fi
+	@echo "Running application with watchfiles..."
+	@$(VENV_DIR)/bin/watchfiles --filter python "python main.py" .
+
 
 # Clean the environment
 .PHONY: clean
