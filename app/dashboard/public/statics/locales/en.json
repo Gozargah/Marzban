@@ -39,6 +39,8 @@
   "deleteNode.deleteSuccess": "Node {{name}} removed successfully",
   "deleteNode.prompt": "Are you sure you want to delete the <b>{{name}}</b> node?",
   "deleteNode.title": "Delete Node",
+  "editNode.editSuccess": "Node {{name}} has been successfully updated",
+  "editNode.title": "Edit Node",
   "deleteUser.deleteSuccess": "{{username}} deleted successfully.",
   "deleteUser.prompt": "Are you sure you want to delete <b>{{username}}</b>?",
   "deleteUser.title": "Delete User",

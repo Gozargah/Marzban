@@ -53,7 +53,7 @@ export function Menu({ isOpen }: MenuProps) {
                 <TooltipProvider>
                   <Tooltip delayDuration={100}>
                     <TooltipTrigger className="w-full">
-                      <div className="w-full flex justify-center items-center">
+                      <div className={cn("w-full flex", isOpen ? "justify-center" : "justify-start mx-3", "items-center")}>
                         <Ellipsis className="h-5 w-5" />
                       </div>
                     </TooltipTrigger>
@@ -78,7 +78,7 @@ export function Menu({ isOpen }: MenuProps) {
                                   (pathname + hash === href ||
                                     (href !== "/" &&
                                       (pathname + hash).startsWith(href)))) ||
-                                active
+                                  active
                                   ? "secondary"
                                   : "ghost"
                               }
@@ -94,8 +94,8 @@ export function Menu({ isOpen }: MenuProps) {
                                     isOpen === false
                                       ? ""
                                       : isRTL
-                                      ? "ml-1"
-                                      : "mr-1"
+                                        ? "ml-1"
+                                        : "mr-1"
                                   )}
                                 >
                                   <Icon size={18} />
@@ -144,7 +144,7 @@ export function Menu({ isOpen }: MenuProps) {
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
                   <Button
-                    onClick={() => {}}
+                    onClick={() => { }}
                     variant="outline"
                     className="w-full justify-center h-10 mt-5"
                   >

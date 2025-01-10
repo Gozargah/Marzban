@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card, CardDescription, CardTitle } from "../ui/card";
 import FlagFromIP from "@/utils/flagFromIP";
 import { NodeStatusBadge } from "./NodeStatusBadge";
@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
-import { EllipsisVertical, Pen, Trash2, WifiOff } from "lucide-react";
+import { EllipsisVertical, Pen, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import useDirDetection from "@/hooks/use-dir-detection";
 import { NodeType } from "@/contexts/NodesContext";
@@ -23,113 +23,68 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
-// Separate Delete AlertDialog component
 const DeleteAlertDialog = ({
+  node,
   isOpen,
   onClose,
   onConfirm,
 }: {
+  node: NodeType;
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
 }) => {
   const { t } = useTranslation();
+  const dir = useDirDetection();
 
   return (
-
     <div>
-    <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{t("areYouSure")}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {t("deleteConfirmation")}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={onClose}>{t("cancel")}</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>
-            {t("continue")}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+      <AlertDialog open={isOpen} onOpenChange={onClose}>
+        <AlertDialogContent>
+          <AlertDialogHeader className={cn(dir === "rtl" && "sm:text-right")}>
+            <AlertDialogTitle>{t("deleteNode.title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              <span dir={dir} dangerouslySetInnerHTML={{ __html: t("deleteNode.prompt", { name: node.name }) }} />
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className={cn(dir === "rtl" && "sm:gap-x-2 sm:flex-row-reverse")}>
+            <AlertDialogCancel onClick={onClose}>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={onConfirm}>
+              {t("delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
-  );
-};
-
-// Separate Disable AlertDialog component
-const DisableAlertDialog = ({
-  isOpen,
-  onClose,
-  onConfirm,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-}) => {
-  const { t } = useTranslation();
-
-  return (
-    <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{t("areYouSure")}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {t("disableConfirmation")}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={onClose}>{t("cancel")}</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>
-            {t("continue")}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
   );
 };
 
 const Node = ({ node }: { node: NodeType }) => {
   const { t } = useTranslation();
   const dir = useDirDetection();
+  const { toast } = useToast()
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [isDisableDialogOpen, setDisableDialogOpen] = useState(false);
 
   const handleDeleteClick = () => {
     setDeleteDialogOpen(true);
-  };
-
-  const handleDisableClick = () => {
-    setDisableDialogOpen(true);
   };
 
   const handleCloseDeleteDialog = () => {
     setDeleteDialogOpen(false);
   };
 
-  const handleCloseDisableDialog = () => {
-    setDisableDialogOpen(false);
-    console.log(isDisableDialogOpen);
-  };
-
   const handleConfirmDelete = () => {
     // Add your delete logic here
     console.log("Node deleted");
+    toast({
+      dir,
+      description: t("deleteNode.deleteSuccess",{name:node.name}),
+    })
     setDeleteDialogOpen(false);
   };
-
-  const handleConfirmDisable = () => {
-    // Add your disable logic here
-    console.log("Node disabled");
-    setDisableDialogOpen(false);
-  };
-  useEffect(() =>{
-    console.log(isDeleteDialogOpen);
-    
-
-  },[isDeleteDialogOpen,isDisableDialogOpen])
 
   return (
     <Card className="px-5 py-6 rounded-lg">
@@ -141,7 +96,7 @@ const Node = ({ node }: { node: NodeType }) => {
           <FlagFromIP ip={node.address} />
           <span>{node.name}</span>
         </div>
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
               <EllipsisVertical />
@@ -152,14 +107,6 @@ const Node = ({ node }: { node: NodeType }) => {
             <DropdownMenuItem dir={dir} className="flex items-center">
               <Pen className="h-4 w-4" />
               <span>{t("edit")}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              dir={dir}
-              className="flex items-center"
-              onClick={handleDisableClick}
-            >
-              <WifiOff className="h-4 w-4" />
-              <span>{t("disable")}</span>
             </DropdownMenuItem>
             <DropdownMenuItem
               dir={dir}
@@ -186,17 +133,13 @@ const Node = ({ node }: { node: NodeType }) => {
         </div>
       </CardDescription>
 
-      {/* Include the Delete and Disable AlertDialog components */}
+      {/* Include the Delete AlertDialog component */}
       <div>
         <DeleteAlertDialog
+          node={node}
           isOpen={isDeleteDialogOpen}
           onClose={handleCloseDeleteDialog}
           onConfirm={handleConfirmDelete}
-        />
-        <DisableAlertDialog
-          isOpen={isDisableDialogOpen}
-          onClose={handleCloseDisableDialog}
-          onConfirm={handleConfirmDisable}
         />
       </div>
     </Card>

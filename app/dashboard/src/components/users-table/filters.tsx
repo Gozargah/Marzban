@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils";
 export const Filters = () => {
   const { t } = useTranslation();
   const dir = useDirDetection()
-  const { filters, loading, onFilterChange, refetchUsers, onCreateUser } =
+  const { filters, loading, onFilterChange, refetchUsers } =
     useDashboard();
   const [search, setSearch] = useState(filters.search || "");
 

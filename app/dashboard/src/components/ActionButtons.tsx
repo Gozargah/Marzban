@@ -1,6 +1,6 @@
-import { FC, useState, useCallback } from "react";
+import { FC, useState, useCallback, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { QrCode } from "lucide-react";
+import { Check, Copy, QrCode } from "lucide-react";
 import { User } from "@/types/User";
 import QRCodeModal from "./dialogs/QRCodeModal";
 import { CopyButton } from "./CopyButton";
@@ -10,29 +10,73 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { useTranslation } from "react-i18next";
+import CopyToClipboard from "react-copy-to-clipboard";
 
 type ActionButtonsProps = {
   user: User;
 };
 
+export interface SubscribeLink {
+  protocol: string;
+  link: string;
+};
+
 const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
-  const [QRcodeLinks, setQRCodeLinks] = useState<string[] | null>(null);
   const [subscribeUrl, setSubscribeUrl] = useState<string>("");
+  const [subscribeLinks, setSubscribeLinks] = useState<SubscribeLink[]>([]);
+  const [copied, setCopied] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout>();
 
   const onOpenModal = useCallback(() => {
-    setQRCodeLinks(user.links);
     setSubscribeUrl(user.subscription_url);
-  }, [user.links, user.subscription_url]);
+  }, [user.subscription_url]);
 
   const onCloseModal = useCallback(() => {
-    setQRCodeLinks(null);
     setSubscribeUrl("");
   }, []);
 
-  const proxyLinks = user.links.join("\r\n");
+  const { t } = useTranslation();
 
-  console.log(QRcodeLinks);
-  
+  useEffect(() => {
+    if (user.subscription_url) {
+      const subURL = user.subscription_url.startsWith("/")
+        ? window.location.origin + user.subscription_url
+        : user.subscription_url
+
+      const links = [
+        { protocol: "v2ray", link: `${subURL}/v2ray` },
+        { protocol: "v2ray-json", link: `${subURL}/v2ray-json` },
+        { protocol: "clash", link: `${subURL}/clash` },
+        { protocol: "clash-meta", link: `${subURL}/clash-meta` },
+        { protocol: "outline", link: `${subURL}/outline` },
+        { protocol: "sing-box", link: `${subURL}/sing-box` },
+      ];
+      setSubscribeLinks(links);
+    }
+  }, [subscribeUrl]);
+
+  const handleCopy = async () => {
+
+    setCopied(true);
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      setCopied(false);
+    }, 1500);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
 
   return (
     <div>
@@ -48,11 +92,41 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
             defaultMessage="usersTable.copyLink"
             icon="link"
           />
-          <CopyButton
-            value={proxyLinks}
-            copiedMessage="usersTable.copied"
-            defaultMessage="usersTable.copyConfigs"
-          />
+          <Tooltip open={copied ? true : undefined}>
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <TooltipTrigger>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                  >
+                    {copied ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                {subscribeLinks.map(subLink => (
+                  <DropdownMenuItem className="p-0 justify-start" key={subLink.link}>
+                    <CopyToClipboard onCopy={handleCopy} text={subLink.link}>
+                      <Button variant="ghost"
+                        className="w-full h-full px-2 justify-start"
+                        aria-label="Copy">
+
+                        <span>
+                          {subLink.protocol}
+                        </span>
+                      </Button>
+                    </CopyToClipboard>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <TooltipContent>{copied ? t("usersTable.copied") : t("usersTable.copyConfigs")}</TooltipContent>
+          </Tooltip>
 
           <Tooltip>
             <TooltipTrigger asChild>
@@ -68,9 +142,9 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
             <TooltipContent>QR Code</TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        {QRcodeLinks && (
+        {subscribeUrl && (
           <QRCodeModal
-            QRcodeLinks={QRcodeLinks}
+            subscribeLinks={subscribeLinks}
             subscribeUrl={subscribeUrl}
             onCloseModal={onCloseModal}
           />
