@@ -1,44 +1,46 @@
-import axios, { AxiosRequestConfig, AxiosInstance } from "axios";
-import { getAuthToken } from "@/utils/authStorage";
+import { getAuthToken } from '@/utils/authStorage'
+import { FetchError, FetchOptions, $fetch as ofetch } from 'ofetch'
 
-const axiosInstance: AxiosInstance = axios.create({
+export const $fetch = ofetch.create({
   baseURL: import.meta.env.VITE_BASE_API,
-});
+  onRequest({ options }) {
+    const token = getAuthToken()
+    if (token) {
+      options.headers.set('Authorization', `Bearer ${getAuthToken()}`)
+    }
+  },
+})
 
-export const fetcher = async <T = any>(
-  url: string,
-  options: AxiosRequestConfig = {}
-): Promise<T> => {
-  const token = getAuthToken();
-  if (token) {
-    options.headers = {
-      ...(options.headers || {}),
-      Authorization: `Bearer ${token}`,
-    };
-  }
+export const fetcher = <T>(url: string, ops: FetchOptions<'json'> = {}) => {
+  return $fetch<T>(url, ops).catch(e => {
+    if (e.status === 401) {
+      const url = new URL(window.location.href)
+      if (url.hash !== '#/login') {
+        url.hash = '#/login'
+        window.location.href = url.href
+      }
+    }
+    throw e
+  })
+}
 
-  const response = await axiosInstance.request<T>({
-    url,
-    ...options,
-  });
+export const fetch = fetcher
 
-  return response.data;
-};
+export type ErrorType<Error> = FetchError<{ detail: Error }>
+export type BodyType<BodyData> = BodyData
 
-fetcher.get = <T = any>(url: string, options: AxiosRequestConfig = {}): Promise<T> => {
-  return fetcher<T>(url, { ...options, method: 'GET' });
-};
+type OvalFetcherParams = FetchOptions<'json'> & {
+  url: string
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
+  params?: Record<string, unknown>
+  data?: FetchOptions<'json'>['body']
+}
+export const orvalFetcher = async <T>({ url, method, params, data: body }: OvalFetcherParams): Promise<T> => {
+  return fetcher(url, {
+    method,
+    params,
+    body,
+  })
+}
 
-fetcher.post = <T = any>(url: string, data: any, options: AxiosRequestConfig = {}): Promise<T> => {
-  return fetcher<T>(url, { ...options, method: 'POST', data });
-};
-
-fetcher.put = <T = any>(url: string, data: any, options: AxiosRequestConfig = {}): Promise<T> => {
-  return fetcher<T>(url, { ...options, method: 'PUT', data });
-};
-
-fetcher.delete = <T = any>(url: string, options: AxiosRequestConfig = {}): Promise<T> => {
-  return fetcher<T>(url, { ...options, method: 'DELETE' });
-};
-
-export const fetch = fetcher;
+export default orvalFetcher

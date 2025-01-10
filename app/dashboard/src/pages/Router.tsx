@@ -1,26 +1,21 @@
-import { createHashRouter, RouteObject } from "react-router-dom";
-import { fetch } from "@/service/http";
-import { getAuthToken } from "@/utils/authStorage";
-import Dashboard from "./Dashboard";
-import Login from "./Login";
-import Layout from "./Layout";
-import Statistics from "./Statistics";
-import Settings from "./Settings";
-import CoreSettings from "@/components/settings/CoreSettings";
-import Nodes from "./Nodes";
+import CoreSettings from '@/components/settings/CoreSettings'
+import { getCurrentAdmin } from '@/service/api'
+import { createHashRouter, RouteObject } from 'react-router-dom'
+import Dashboard from './Dashboard'
+import Layout from './Layout'
+import Login from './Login'
+import Nodes from './Nodes'
+import Settings from './Settings'
+import Statistics from './Statistics'
 
 const fetchAdminLoader = async (): Promise<any> => {
   try {
-    const response = await fetch("/admin", {
-      headers: {
-        Authorization: `Bearer ${getAuthToken()}`,
-      },
-    });
-    return response;
+    const response = await getCurrentAdmin()
+    return response
   } catch (error) {
-    throw new Response("Unauthorized", { status: 401 });
+    throw new Response('Unauthorized', { status: 401 })
   }
-};
+}
 
 export const router = createHashRouter([
   {
@@ -29,25 +24,25 @@ export const router = createHashRouter([
     loader: fetchAdminLoader,
     children: [
       {
-        path: "/",
+        path: '/',
         index: true,
         element: <Dashboard />,
       },
       {
-        path: "/statistics",
+        path: '/statistics',
         element: <Statistics />,
       },
       {
-        path: "/nodes",
+        path: '/nodes',
         element: <Nodes />,
       },
 
       {
-        path: "/settings",
+        path: '/settings',
         element: <Settings />,
         children: [
           {
-            path: "/settings/core",
+            path: '/settings/core',
             element: <CoreSettings />,
           },
         ],
@@ -55,7 +50,7 @@ export const router = createHashRouter([
     ],
   },
   {
-    path: "/login",
+    path: '/login',
     element: <Login />,
   },
-] as RouteObject[]);
+] as RouteObject[])

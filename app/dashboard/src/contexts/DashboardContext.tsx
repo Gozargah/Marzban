@@ -1,105 +1,103 @@
-import { create } from "zustand";
-import { subscribeWithSelector } from "zustand/middleware";
-import { fetch } from "@/service/http";
-import { User, UserCreate } from "@/types/User";
-import { queryClient } from "@/utils/react-query";
-import { getUsersPerPageLimitSize } from "@/utils/userPreferenceStorage";
-import { StatisticsQueryKey } from "@/components/Statistics";
+import { StatisticsQueryKey } from '@/components/Statistics'
+import { fetch } from '@/service/http'
+import { User, UserCreate } from '@/types/User'
+import { queryClient } from '@/utils/query-client'
+import { getUsersPerPageLimitSize } from '@/utils/userPreferenceStorage'
+import { create } from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
 
 export type FilterType = {
-  search?: string;
-  limit?: number;
-  offset?: number;
-  sort: string;
-  status?: "active" | "disabled" | "limited" | "expired" | "on_hold";
-};
+  search?: string
+  limit?: number
+  offset?: number
+  sort: string
+  status?: 'active' | 'disabled' | 'limited' | 'expired' | 'on_hold'
+}
 
-export type ProtocolType = "vmess" | "vless" | "trojan" | "shadowsocks";
+export type ProtocolType = 'vmess' | 'vless' | 'trojan' | 'shadowsocks'
 
 export type FilterUsageType = {
-  start?: string;
-  end?: string;
-};
+  start?: string
+  end?: string
+}
 
 export type InboundType = {
-  tag: string;
-  protocol: ProtocolType;
-  network: string;
-  tls: string;
-  port?: number;
-};
+  tag: string
+  protocol: ProtocolType
+  network: string
+  tls: string
+  port?: number
+}
 
-export type Inbounds = Map<ProtocolType, InboundType[]>;
+export type Inbounds = Map<ProtocolType, InboundType[]>
 
 type DashboardStateType = {
-  isCreatingNewUser: boolean;
-  editingUser: User | null | undefined;
-  deletingUser: User | null;
-  version: string | null;
+  isCreatingNewUser: boolean
+  editingUser: User | null | undefined
+  deletingUser: User | null
+  version: string | null
   users: {
-    users: User[];
-    total: number;
-  };
-  inbounds: Inbounds;
-  loading: boolean;
-  filters: FilterType;
-  subscribeUrl: string | null;
-  QRcodeLinks: string[] | null;
-  isEditingHosts: boolean;
-  isEditingNodes: boolean;
-  isShowingNodesUsage: boolean;
-  isResetingAllUsage: boolean;
-  resetUsageUser: User | null;
-  revokeSubscriptionUser: User | null;
-  isEditingCore: boolean;
-  onCreateUser: (isOpen: boolean) => void;
-  onEditingUser: (user: User | null) => void;
-  onDeletingUser: (user: User | null) => void;
-  onResetAllUsage: (isResetingAllUsage: boolean) => void;
-  refetchUsers: () => void;
-  resetAllUsage: () => Promise<void>;
-  onFilterChange: (filters: Partial<FilterType>) => void;
-  deleteUser: (user: User) => Promise<void>;
-  createUser: (user: UserCreate) => Promise<void>;
-  editUser: (user: UserCreate) => Promise<void>;
-  fetchUserUsage: (user: User, query: FilterUsageType) => Promise<void>;
-  setQRCode: (links: string[] | null) => void;
-  setSubLink: (subscribeURL: string | null) => void;
-  onEditingHosts: (isEditingHosts: boolean) => void;
-  onEditingNodes: (isEditingHosts: boolean) => void;
-  onShowingNodesUsage: (isShowingNodesUsage: boolean) => void;
-  resetDataUsage: (user: User) => Promise<void>;
-  revokeSubscription: (user: User) => Promise<void>;
-};
+    users: User[]
+    total: number
+  }
+  inbounds: Inbounds
+  loading: boolean
+  filters: FilterType
+  subscribeUrl: string | null
+  QRcodeLinks: string[] | null
+  isEditingHosts: boolean
+  isEditingNodes: boolean
+  isShowingNodesUsage: boolean
+  isResetingAllUsage: boolean
+  resetUsageUser: User | null
+  revokeSubscriptionUser: User | null
+  isEditingCore: boolean
+  onCreateUser: (isOpen: boolean) => void
+  onEditingUser: (user: User | null) => void
+  onDeletingUser: (user: User | null) => void
+  onResetAllUsage: (isResetingAllUsage: boolean) => void
+  refetchUsers: () => void
+  resetAllUsage: () => Promise<void>
+  onFilterChange: (filters: Partial<FilterType>) => void
+  deleteUser: (user: User) => Promise<void>
+  createUser: (user: UserCreate) => Promise<void>
+  editUser: (user: UserCreate) => Promise<void>
+  fetchUserUsage: (user: User, query: FilterUsageType) => Promise<void>
+  setQRCode: (links: string[] | null) => void
+  setSubLink: (subscribeURL: string | null) => void
+  onEditingHosts: (isEditingHosts: boolean) => void
+  onEditingNodes: (isEditingHosts: boolean) => void
+  onShowingNodesUsage: (isShowingNodesUsage: boolean) => void
+  resetDataUsage: (user: User) => Promise<void>
+  revokeSubscription: (user: User) => Promise<void>
+}
 
 const fetchUsers = (query: FilterType): Promise<User[]> => {
   for (const key in query) {
-    if (!query[key as keyof FilterType]) delete query[key as keyof FilterType];
+    if (!query[key as keyof FilterType]) delete query[key as keyof FilterType]
   }
-  useDashboard.setState({ loading: true });
-  return fetch
-    .get("/users", { params: query })
-    .then((users) => {
-      useDashboard.setState({ users });
-      return users;
+  useDashboard.setState({ loading: true })
+  return fetch('/users', { params: query })
+    .then(users => {
+      useDashboard.setState({ users })
+      return users
     })
     .finally(() => {
-      useDashboard.setState({ loading: false });
-    });
-};
+      useDashboard.setState({ loading: false })
+    })
+}
 
 export const fetchInbounds = () => {
-  return fetch
-    .get("/inbounds")
+  return fetch('/inbounds')
     .then((inbounds: Inbounds) => {
       useDashboard.setState({
         inbounds: new Map(Object.entries(inbounds)) as Inbounds,
-      });
+      })
     })
     .finally(() => {
-      useDashboard.setState({ loading: false });
-    });
-};
+      useDashboard.setState({ loading: false })
+    })
+}
 
 export const useDashboard = create(
   subscribeWithSelector<DashboardStateType>((set, get) => ({
@@ -121,92 +119,91 @@ export const useDashboard = create(
     resetUsageUser: null,
     revokeSubscriptionUser: null,
     filters: {
-      username: "",
+      username: '',
       limit: getUsersPerPageLimitSize(),
-      sort: "-created_at",
+      sort: '-created_at',
     },
     inbounds: new Map(),
     isEditingCore: false,
     refetchUsers: () => {
-      fetchUsers(get().filters);
+      fetchUsers(get().filters)
     },
     resetAllUsage: () => {
       return fetch.post(`/users/reset`, {}).then(() => {
-        get().onResetAllUsage(false);
-        get().refetchUsers();
-      });
+        get().onResetAllUsage(false)
+        get().refetchUsers()
+      })
     },
-    onResetAllUsage: (isResetingAllUsage) => set({ isResetingAllUsage }),
-    onCreateUser: (isCreatingNewUser) => set({ isCreatingNewUser }),
-    onEditingUser: (editingUser) => {
-      set({ editingUser });
+    onResetAllUsage: isResetingAllUsage => set({ isResetingAllUsage }),
+    onCreateUser: isCreatingNewUser => set({ isCreatingNewUser }),
+    onEditingUser: editingUser => {
+      set({ editingUser })
     },
-    onDeletingUser: (deletingUser) => {
-      set({ deletingUser });
+    onDeletingUser: deletingUser => {
+      set({ deletingUser })
     },
-    onFilterChange: (filters) => {
+    onFilterChange: filters => {
       set({
         filters: {
           ...get().filters,
           ...filters,
         },
-      });
-      get().refetchUsers();
+      })
+      get().refetchUsers()
     },
-    setQRCode: (QRcodeLinks) => {
-      set({ QRcodeLinks });
+    setQRCode: QRcodeLinks => {
+      set({ QRcodeLinks })
     },
     deleteUser: (user: User) => {
-      set({ editingUser: null });
+      set({ editingUser: null })
       return fetch.delete(`/user/${user.username}`).then(() => {
-        set({ deletingUser: null });
-        get().refetchUsers();
-        queryClient.invalidateQueries(StatisticsQueryKey);
-      });
+        set({ deletingUser: null })
+        get().refetchUsers()
+        queryClient.invalidateQueries(StatisticsQueryKey)
+      })
     },
     createUser: (body: UserCreate) => {
       return fetch.post(`/user`, { data: body }).then(() => {
-        set({ editingUser: null });
-        get().refetchUsers();
-        queryClient.invalidateQueries(StatisticsQueryKey);
-      });
+        set({ editingUser: null })
+        get().refetchUsers()
+        queryClient.invalidateQueries(StatisticsQueryKey)
+      })
     },
     editUser: (body: UserCreate) => {
       return fetch.put(`/user/${body.username}`, { data: body }).then(() => {
-        get().onEditingUser(null);
-        get().refetchUsers();
-      });
+        get().onEditingUser(null)
+        get().refetchUsers()
+      })
     },
     fetchUserUsage: (body: User, query: FilterUsageType) => {
       for (const key in query) {
-        if (!query[key as keyof FilterUsageType])
-          delete query[key as keyof FilterUsageType];
+        if (!query[key as keyof FilterUsageType]) delete query[key as keyof FilterUsageType]
       }
-      return fetch.get(`/user/${body.username}/usage`, { params: query });
+      return fetch(`/user/${body.username}/usage`, { params: query })
     },
     onEditingHosts: (isEditingHosts: boolean) => {
-      set({ isEditingHosts });
+      set({ isEditingHosts })
     },
     onEditingNodes: (isEditingNodes: boolean) => {
-      set({ isEditingNodes });
+      set({ isEditingNodes })
     },
     onShowingNodesUsage: (isShowingNodesUsage: boolean) => {
-      set({ isShowingNodesUsage });
+      set({ isShowingNodesUsage })
     },
-    setSubLink: (subscribeUrl) => {
-      set({ subscribeUrl });
+    setSubLink: subscribeUrl => {
+      set({ subscribeUrl })
     },
-    resetDataUsage: (user) => {
+    resetDataUsage: user => {
       return fetch.post(`/user/${user.username}/reset`, {}).then(() => {
-        set({ resetUsageUser: null });
-        get().refetchUsers();
-      });
+        set({ resetUsageUser: null })
+        get().refetchUsers()
+      })
     },
-    revokeSubscription: (user) => {
+    revokeSubscription: user => {
       return fetch.post(`/user/${user.username}/revoke_sub`, {}).then(() => {
-        set({ revokeSubscriptionUser: null, editingUser: user });
-        get().refetchUsers();
-      });
+        set({ revokeSubscriptionUser: null, editingUser: user })
+        get().refetchUsers()
+      })
     },
-  }))
-);
+  })),
+)

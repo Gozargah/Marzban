@@ -1,169 +1,104 @@
-import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Formik, Field, Form, FormikHelpers } from "formik";
-import * as Yup from "yup";
-import { fetch } from "@/service/http";
-import { removeAuthToken, setAuthToken } from "@/utils/authStorage";
-import { useTranslation } from "react-i18next";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Alert } from "@/components/ui/alert";
-import { Language } from "@/components/Language";
-import { ModeToggle } from "@/components/mode-toggle";
-import LogoIcon from "@/assets/logo.svg";
-import { AlertCircle, Loader2, LogIn } from "lucide-react";
+import Logo from '@/assets/logo.svg?react'
+import { Footer } from '@/components/Footer'
+import { Language } from '@/components/Language'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { useAdminToken } from '@/service/api'
+import { removeAuthToken, setAuthToken } from '@/utils/authStorage'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { CircleAlertIcon } from 'lucide-react'
+import { FC, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { z } from 'zod'
 
-const schema = Yup.object({
-  username: Yup.string().required("login.fieldRequired"),
-  password: Yup.string().required("login.fieldRequired"),
-});
+const schema = z.object({
+  username: z.string().min(1, 'login.fieldRequired'),
+  password: z.string().min(1, 'login.fieldRequired'),
+})
 
-export const Login: React.FC = () => {
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
-  const isRtl = i18n.language === "fa";
-  let location = useLocation();
+type LoginSchema = z.infer<typeof schema>
 
+export const Login: FC = () => {
+  const navigate = useNavigate()
+  const { t } = useTranslation()
+  const location = useLocation()
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+  } = useForm<LoginSchema>({
+    defaultValues: {
+      username: '',
+      password: '',
+    },
+    resolver: zodResolver(schema),
+  })
   useEffect(() => {
-    removeAuthToken();
-    if (location.pathname !== "/login") {
-      navigate("/login", { replace: true });
+    removeAuthToken()
+    if (location.pathname !== '/login') {
+      navigate('/login', { replace: true })
     }
-  }, []);
-
-  const login = (
-    values: { username: string; password: string },
-    actions: FormikHelpers<any>
-  ) => {
-    setError("");
-    setLoading(true);
-
-    const formData = new FormData();
-    formData.append("username", values.username);
-    formData.append("password", values.password);
-    formData.append("grant_type", "password");
-
-    fetch
-      .post("/admin/token", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then(({ access_token: token }) => {
-        setAuthToken(token);
-        navigate("/");
-      })
-      .catch((err) => {
-        console.log(err);
-
-        setError(err.response.data.detail || "An error occurred.");
-      })
-      .finally(() => {
-        setLoading(false);
-        actions.setSubmitting(false);
-      });
-  };
+  }, [])
+  const {
+    mutate: login,
+    isPending: loading,
+    error,
+  } = useAdminToken({
+    mutation: {
+      onSuccess({ access_token }) {
+        setAuthToken(access_token)
+        navigate('/')
+      },
+    },
+  })
+  const handleLogin = (values: LoginSchema) => {
+    login({
+      data: {
+        ...values,
+        grant_type: 'password',
+      },
+    })
+  }
 
   return (
     <div className="flex flex-col justify-between min-h-screen p-6 w-full">
       <div className="w-full">
-        <div className="flex justify-end gap-x-2 w-full">
-          <ModeToggle />
+        <div className="flex justify-end w-full">
           <Language />
         </div>
-        <div className="flex justify-center items-center w-full">
-          <div className="w-full max-w-sm mt-6">
-            <div className="flex flex-col items-center w-full">
-              <div className="w-14 h-14 mb-4">
-                <LogoIcon />
-              </div>
-              <h2 className="text-2xl font-semibold mb-2">
-                {t("login.loginYourAccount")}
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                {t("login.welcomeBack")}
-              </p>
+        <div className="w-full justify-center flex items-center">
+          <div className="w-full max-w-[340px] mt-6">
+            <div className="flex flex-col items-center gap-2">
+              <Logo className="w-12 h-12 stroke-[12px]" />
+              <span className="text-2xl font-semibold">{t('login.loginYourAccount')}</span>
+              <span className="text-gray-600 dark:text-gray-400">{t('login.welcomeBack')}</span>
             </div>
-            <div className="w-full max-w-xs m-auto pt-6">
-              <Formik
-                initialValues={{ username: "", password: "" }}
-                validationSchema={schema}
-                onSubmit={login}
-              >
-                {({ errors, touched, isSubmitting }) => (
-                  <Form>
-                    <div className="mt-4 space-y-4">
-                      <div className="form-control">
-                        <Field
-                          as={Input}
-                          className="py-5 px-4"
-                          placeholder={t("username")}
-                          name="username"
-                        />
-                        {errors.username && touched.username && (
-                          <div
-                            className={`text-red-500 text-xs mt-1 font-bold ${
-                              isRtl && "text-right"
-                            }`}
-                          >
-                            {t(errors.username)}
-                          </div>
-                        )}
-                      </div>
-                      <div className="form-control">
-                        <Field
-                          as={Input}
-                          className="py-5 px-4"
-                          type="password"
-                          placeholder={t("password")}
-                          name="password"
-                        />
-                        {errors.password && touched.password && (
-                          <div
-                            className={`text-red-500 text-xs mt-1 font-bold ${
-                              isRtl && "text-right"
-                            }`}
-                          >
-                            {t(errors.password)}
-                          </div>
-                        )}
-                      </div>
-                      {error && (
-                        <Alert
-                          variant="destructive"
-                          className="p-4 rounded-lg flex items-center bg-[#a32929d4] border-none text-red-700 justify-between"
-                        >
-                          <AlertCircle className="h-6 w-6 fill-red-300" />
-                          <span className="text-white ml-1 font-semibold">
-                            {error}
-                          </span>
-                        </Alert>
-                      )}
-
-                      <Button disabled={loading || isSubmitting} type="submit" className="w-full py-5" color="primary">
-                        <div className="flex items-center gap-x-2">
-                          {loading || isSubmitting ? (
-                            <Loader2 className="animate-spin h-6 w-6" />
-                          ) : (
-                            <>
-                              <LogIn className="w-5 h-5" />
-                              <span>{t("login")}</span>
-                            </>
-                          )}
-                        </div>
-                      </Button>
-                    </div>
-                  </Form>
-                )}
-              </Formik>
+            <div className="w-full max-w-[300px] mx-auto pt-4">
+              <form onSubmit={handleSubmit(handleLogin)}>
+                <div className="flex flex-col mt-4 gap-y-2">
+                  <Input placeholder={t('username')} {...register('username')} error={t(errors?.username?.message as string)} />
+                  <Input type="password" placeholder={t('password')} {...register('password')} error={t(errors?.password?.message as string)} />
+                  {error && error.data && (
+                    <Alert variant="destructive">
+                      <CircleAlertIcon size="18px" />
+                      <AlertDescription>{String(error.data.detail)}</AlertDescription>
+                    </Alert>
+                  )}
+                  <Button isLoading={loading} type="submit" className="w-full">
+                    {t('login')}
+                  </Button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
       </div>
+      <Footer />
     </div>
-  );
-};
+  )
+}
 
-export default Login;
+export default Login

@@ -2,15 +2,22 @@ import atexit
 import os
 import subprocess
 from pathlib import Path
-
 from app import app
-from config import DEBUG, VITE_BASE_API, DASHBOARD_PATH
+from config import DEBUG, VITE_BASE_API, DASHBOARD_PATH, UVICORN_PORT
 from fastapi.staticfiles import StaticFiles
 
 base_dir = Path(__file__).parent
 build_dir = base_dir / 'build'
 statics_dir = build_dir / 'statics'
 
+
+def build_api_interface():
+    proc = subprocess.Popen(
+        ['npm', 'run', 'wait-port-gen-api'],
+        env={**os.environ, 'UVICORN_PORT': str(UVICORN_PORT)},
+        cwd=base_dir,
+        stdout=subprocess.DEVNULL
+    )
 
 def build():
     proc = subprocess.Popen(
@@ -26,6 +33,7 @@ def build():
 
 
 def run_dev():
+    build_api_interface()
     proc = subprocess.Popen(
         ['npm', 'run', 'dev', '--', '--host', '0.0.0.0', '--clearScreen', 'false', '--base', os.path.join(DASHBOARD_PATH, '')],
         env={**os.environ, 'VITE_BASE_API': VITE_BASE_API},
