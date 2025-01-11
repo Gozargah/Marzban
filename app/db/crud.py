@@ -634,6 +634,7 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
         dbuser.expire = timedelta(seconds=dbuser.next_plan.expire)
         
     else:
+        dbuser.inbounds = dbuser.next_plan.user_template.inbounds
         dbuser.data_limit = dbuser.next_plan.user_template.data_limit + \
             (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit or 0 - dbuser.used_traffic)
         dbuser.expire = timedelta(seconds=dbuser.next_plan.user_template.expire_duration)

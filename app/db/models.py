@@ -185,6 +185,13 @@ class UserTemplate(Base):
     inbounds = relationship(
         "ProxyInbound", secondary=template_inbounds_association
     )
+    
+    next_plans = relationship(
+        "NextPlan",
+        uselist=True,
+        back_populates="user_template",
+        cascade="all"
+    )
 
 
 class UserUsageResetLogs(Base):
