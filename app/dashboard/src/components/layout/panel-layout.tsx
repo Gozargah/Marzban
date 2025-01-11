@@ -1,53 +1,27 @@
-import { Sidebar } from "@/components/layout/sidebar";
-import useDirDetection from "@/hooks/use-dir-detection";
-import { useSidebar } from "@/hooks/use-sidebar";
-import { useStore } from "@/hooks/use-store";
-import { cn } from "@/lib/utils";
+import { Footer } from '@/components/Footer'
+import { AppSidebar } from '@/components/layout/sidebar'
+import { SidebarProvider } from '@/components/ui/sidebar'
+// import useDirDetection from '@/hooks/use-dir-detection'
+import { useSidebar } from '@/hooks/use-sidebar'
+import { useStore } from '@/hooks/use-store'
+// import { cn } from '@/lib/utils'
 
-export default function AdminPanelLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const isRTL = useDirDetection() === "rtl";
+export default function AdminPanelLayout({ children }: { children: React.ReactNode }) {
+  //   const isRTL = useDirDetection() === 'rtl'
 
-  const sidebar = useStore(useSidebar, (x) => x);
-  if (!sidebar) return null;
-  const { getOpenState, settings } = sidebar;
+  const sidebar = useStore(useSidebar, x => x)
+  if (!sidebar) return null
+  //   const { getOpenState, settings } = sidebar
 
   return (
-    <>
-      <Sidebar />
-      <main
-        className={cn(
-          "min-h-[calc(100vh_-_56px)] bg-zinc-50 dark:bg-zinc-900 transition-[margin-left,margin-right] ease-in-out duration-300",
-          !settings.disabled &&
-            (!getOpenState()
-              ? isRTL
-                ? "lg:mr-[90px]"
-                : "lg:ml-[90px]"
-              : isRTL
-              ? "lg:mr-60"
-              : "lg:ml-60")
-        )}
-      >
-        {children}
-      </main>
-      <footer
-        className={cn(
-          "transition-[margin-left,margin-right] ease-in-out duration-300",
-          !settings.disabled &&
-            (!getOpenState()
-              ? isRTL
-                ? "lg:mr-[90px]"
-                : "lg:ml-[90px]"
-              : isRTL
-              ? "lg:mr-72"
-              : "lg:ml-72")
-        )}
-      >
-        {/* <Footer /> */}
-      </footer>
-    </>
-  );
+    <div className="w-full flex gap-1">
+      <SidebarProvider>
+        <AppSidebar />
+        <div className="flex flex-col justify-between min-h-screen gap-y-4 w-full px-6">
+          {children}
+          <Footer />
+        </div>
+      </SidebarProvider>
+    </div>
+  )
 }

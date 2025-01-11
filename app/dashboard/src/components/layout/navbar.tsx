@@ -1,5 +1,5 @@
-import { ModeToggle } from "@/components/mode-toggle";
 import { MobileDrawer } from "@/components/layout/mobile-drawer";
+import { ModeToggle } from "@/components/mode-toggle";
 import { Language } from "../Language";
 
 export function Navbar() {

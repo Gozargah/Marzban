@@ -1,21 +1,19 @@
-import { ContentLayout } from "@/components/layout/content-layout";
-import { useSidebar } from "@/hooks/use-sidebar";
-import { useStore } from "@/hooks/use-store";
-import UsersTable from "@/components/users-table/users-table";
-import { PaginationControls } from "@/components/users-table/filters";
+import { PaginationControls } from '@/components/users-table/filters'
+import UsersTable from '@/components/users-table/users-table'
+import { useSidebar } from '@/hooks/use-sidebar'
+import { useStore } from '@/hooks/use-store'
 
 const Dashboard = () => {
-  const sidebar = useStore(useSidebar, (x) => x);
-  if (!sidebar) return null;
+  const sidebar = useStore(useSidebar, x => x)
+  if (!sidebar) return null
   return (
-    <ContentLayout className="pb-8 px-4 sm:px-8">
+    <div className="pb-8">
       <div className="mx-auto pt-6 pb-10">
-        
         <UsersTable />
         <PaginationControls />
       </div>
-    </ContentLayout>
-  );
-};
+    </div>
+  )
+}
 
-export default Dashboard;
+export default Dashboard

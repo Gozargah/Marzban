@@ -40,48 +40,64 @@
 	}
 
 	.dark {
-		--background: 240 4% 10%;
-		--foreground: 0 0% 98%;
-		--card: 0 0% 3.9%;
-		--card-foreground: 0 0% 98%;
-		--popover: 240 4% 10%;
-		--popover-foreground: 0 0% 98%;
-		--primary: 212 52% 51%;
-		--primary-foreground: 0 0% 5%;
-		--secondary: 0 0% 14.9%;
-		--secondary-foreground: 0 0% 98%;
-		--muted: 0 0% 14.9%;
-		--muted-foreground: 0 0% 63.9%;
-		--accent: 0 0% 14.9%;
-		--accent-foreground: 0 0% 98%;
-		--destructive: 0 60% 55%;
-		--destructive-foreground: 0 0% 98%;
-		--border: 0 0% 20%;
-		--input: 0, 0%, 26%;
-		--ring: 212 52% 40%;
 		--chart-1: 220 70% 50%;
 		--chart-2: 160 60% 45%;
 		--chart-3: 30 80% 55%;
 		--chart-4: 280 65% 60%;
 		--chart-5: 340 75% 55%;
-		--sidebar-background: 240 5.9% 10%;
-		--sidebar-foreground: 240 4.8% 95.9%;
-		--sidebar-primary: 224.3 76.3% 48%;
-		--sidebar-primary-foreground: 0 0% 100%;
-		--sidebar-accent: 240 3.7% 15.9%;
-		--sidebar-accent-foreground: 240 4.8% 95.9%;
-		--sidebar-border: 240 3.7% 15.9%;
-		--sidebar-ring: 212 52% 40%;
+
+		--background: 240, 4%, 10%;
+		--foreground: 0, 0%, 98%;
+		--muted: 0 0% 14.9%;
+		--muted-foreground: 0 0% 63.9%;
+		--card: 240, 5%, 12%;
+		--card-foreground: var(--foreground);
+		--popover: var(--background);
+		--popover-foreground: var(--foreground);
+		--border: var(--sidebar-border);
+		--input: 0, 0%, 20%;
+		--primary: 0, 0%, 100%;
+		--primary-foreground: 210, 40%, 98%;
+		--secondary: 216, 46%, 53%;
+		--secondary-foreground: 0, 0%, 5%;
+		--accent: 240, 3%, 13%;
+		--accent-foreground: 0, 0%, 98%;
+		--destructive: 0, 72%, 51%;
+		--destructive-foreground: 210, 40%, 98%;
+		--ring: 215, 16%, 47%;
+		--hover-primary: 217, 33%, 17%;
+		--hover-secondary: 216, 41%, 49%;
+		--hover-destructive: 0, 84%, 60%;
+		--success: 142, 76%, 36%;
+		--hover-success: 142, 72%, 29%;
+		--border-destructive-50: 0, 72%, 51%;
+		--bg-destructive-10: 0, 72%, 51%;
+		--hover-destructive-20: 0, 72%, 51%;
+		--bg-muted-50: 210, 40%, 96%;
+		--bg-accent-50: 210, 40%, 96%;
+		--bg-muted-40: 210, 40%, 96%;
+		--border-muted-40: 210, 40%, 96%;
+		--sidebar-background: var(--background);
+		--sidebar-foreground: var(--foreground);
+		--sidebar-primary: 0, 100%, 81%;
+		--sidebar-primary-foreground: 0, 0%, 98%;
+		--sidebar-accent: var(--accent);
+		--sidebar-accent-foreground: var(--accent-foreground);
+		--sidebar-border: 0, 0%, 20%, 40%;
+		--sidebar-ring: 0, 0%, 64%;
+		--sidebar-foreground-70: 0, 0%, 98%;
+		--neon-green: 81, 96%, 55%;
+		--background-custom: 240, 4%, 8%;
 	}
 }
 
 @layer base {
 	* {
-		@apply !border-border;
+		@apply border-border;
 	}
 
 	body {
-		@apply !bg-background !text-foreground;
+		@apply bg-background text-foreground;
 	}
 
 	::-webkit-scrollbar {
