@@ -781,7 +781,7 @@ def autodelete_expired_users(db: Session,
     ).filter(
         auto_delete >= 0,  # Negative values prevent auto-deletion
         User.status.in_(target_status),
-    )
+    ).options(joinedload(User.admin))
 
     # TODO: Handle time filter in query itself (NOTE: Be careful with sqlite's strange datetime handling)
     expired_users = [

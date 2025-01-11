@@ -61,6 +61,7 @@
   "hostsDialog.addHost": "افزودن هاست",
   "hostsDialog.advancedOptions": "تنظیمات پیشرفته",
   "hostsDialog.allowinsecure": "Allow Insecure",
+  "hostsDialog.useSniAsHost": "استفاده از sni به عنوان هاست",
   "hostsDialog.alpn": "ALPN",
   "hostsDialog.apply": "اعمال",
   "hostsDialog.currentServer": "IP کنونی سرور",

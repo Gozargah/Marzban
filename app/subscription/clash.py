@@ -2,18 +2,18 @@ import copy
 import json
 from random import choice
 from uuid import UUID
-from app.utils.helpers import yml_uuid_representer
 
 import yaml
 from jinja2.exceptions import TemplateNotFound
 
 from app.subscription.funcs import get_grpc_gun
 from app.templates import render_template
+from app.utils.helpers import yml_uuid_representer
 from config import (
     CLASH_SETTINGS_TEMPLATE,
     CLASH_SUBSCRIPTION_TEMPLATE,
     MUX_TEMPLATE,
-    USER_AGENT_TEMPLATE
+    USER_AGENT_TEMPLATE,
 )
 
 
@@ -173,6 +173,8 @@ class ClashConfiguration(object):
 
         if type == 'shadowsocks':
             type = 'ss'
+        if network in ("http", "h2", "h3"):
+            network = "h2"
         if network in ('tcp', 'raw') and headers == 'http':
             network = 'http'
         if network == 'httpupgrade':
@@ -180,9 +182,6 @@ class ClashConfiguration(object):
             is_httpupgrade = True
         else:
             is_httpupgrade = False
-        if network in ("http", "h2", "h3"):
-            network = "h2"
-
         node = {
             'name': remark,
             'type': type,

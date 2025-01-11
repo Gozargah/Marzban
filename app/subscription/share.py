@@ -286,17 +286,20 @@ def process_inbounds_and_tags(
         else:
             path = host_inbound.get("path", "").format_map(format_variables)
 
+        if host.get("use_sni_as_host", False) and sni:
+            req_host = sni
+
         host_inbound.update(
             {
-                "port": host["port"] or host_inbound["port"],
+                "port": host["port"] or inbound["port"],
                 "sni": sni,
                 "host": req_host,
-                "tls": host_inbound["tls"] if host["tls"] is None else host["tls"],
+                "tls": inbound["tls"] if host["tls"] is None else host["tls"],
                 "alpn": host["alpn"] if host["alpn"] else None,
                 "path": path,
-                "fp": host["fingerprint"] or host_inbound.get("fp", ""),
+                "fp": host["fingerprint"] or inbound.get("fp", ""),
                 "ais": host["allowinsecure"]
-                or host_inbound.get("allowinsecure", ""),
+                or inbound.get("allowinsecure", ""),
                 "mux_enable": host["mux_enable"],
                 "fragment_setting": host["fragment_setting"],
                 "noise_setting": host["noise_setting"],
@@ -307,9 +310,9 @@ def process_inbounds_and_tags(
         conf.add(
             remark=host["remark"].format_map(format_variables),
             address=address.format_map(format_variables),
-            inbound=host_inbound,
-            settings=settings.dict(no_obj=True)
-        )
+                    inbound=host_inbound,
+                    settings=settings.model_dump()
+                )
 
     return conf.render(reverse=reverse)
 

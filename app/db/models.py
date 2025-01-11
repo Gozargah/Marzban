@@ -1,12 +1,24 @@
 import os
 from datetime import datetime
 
-from sqlalchemy import (JSON, BigInteger, Boolean, Column, DateTime, Enum,
-                        Float, ForeignKey, Integer, String, Table,
-                        UniqueConstraint, func)
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql.expression import text, select
+from sqlalchemy.sql.expression import select, text
 
 from app import xray
 from app.db.base import Base
@@ -79,7 +91,7 @@ class User(Base):
 
     edit_at = Column(DateTime, nullable=True, default=None)
     last_status_change = Column(DateTime, default=datetime.utcnow, nullable=True)
-    
+
     next_plan = relationship(
         "NextPlan",
         uselist=False,
@@ -88,20 +100,20 @@ class User(Base):
     )
 
     @hybrid_property
-    def reseted_usage(self):
-        return sum([log.used_traffic_at_reset for log in self.usage_logs])
+    def reseted_usage(self) -> int:
+        return int(sum([log.used_traffic_at_reset for log in self.usage_logs]))
 
     @reseted_usage.expression
-    def reseted_usage(self):
+    def reseted_usage(cls):
         return (
-            select([func.sum(UserUsageResetLogs.used_traffic_at_reset)]).
-            where(UserUsageResetLogs.user_id == self.id).
+            select(func.sum(UserUsageResetLogs.used_traffic_at_reset)).
+            where(UserUsageResetLogs.user_id == cls.id).
             label('reseted_usage')
         )
 
     @property
-    def lifetime_used_traffic(self):
-        return (
+    def lifetime_used_traffic(self) -> int:
+        return int(
             sum([log.used_traffic_at_reset for log in self.usage_logs])
             + self.used_traffic
         )
@@ -217,8 +229,8 @@ class ProxyHost(Base):
     address = Column(String(256), unique=False, nullable=False)
     port = Column(Integer, nullable=True)
     path = Column(String(256), unique=False, nullable=True)
-    sni = Column(String(256), unique=False, nullable=True)
-    host = Column(String(256), unique=False, nullable=True)
+    sni = Column(String(1000), unique=False, nullable=True)
+    host = Column(String(1000), unique=False, nullable=True)
     security = Column(
         Enum(ProxyHostSecurity),
         unique=False,
@@ -248,6 +260,7 @@ class ProxyHost(Base):
     fragment_setting = Column(String(100), nullable=True)
     noise_setting = Column(String(2000), nullable=True)
     random_user_agent = Column(Boolean, nullable=False, default=False, server_default='0')
+    use_sni_as_host = Column(Boolean, nullable=False, default=False, server_default="0")
 
 
 class System(Base):

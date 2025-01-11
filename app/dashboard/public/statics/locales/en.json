@@ -55,6 +55,7 @@
   "hostsDialog.addHost": "Add host",
   "hostsDialog.advancedOptions": "Advanced options",
   "hostsDialog.allowinsecure": "Allow Insecure",
+  "hostsDialog.useSniAsHost": "Use sni as host",
   "hostsDialog.alpn": "ALPN",
   "hostsDialog.apply": "Apply",
   "hostsDialog.currentServer": "IP Address of current server",
