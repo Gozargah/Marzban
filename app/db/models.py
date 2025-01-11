@@ -162,12 +162,14 @@ class NextPlan(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user_template_id = Column(Integer, ForeignKey('user_templates.id'), nullable=True)
     data_limit = Column(BigInteger, nullable=False)
     expire = Column(Integer, nullable=True)
     add_remaining_traffic = Column(Boolean, nullable=False, default=False, server_default='0')
     fire_on_either = Column(Boolean, nullable=False, default=True, server_default='0')
 
     user = relationship("User", back_populates="next_plan")
+    user_template = relationship("UserTemplate", back_populates="next_plan")
 
 
 class UserTemplate(Base):
