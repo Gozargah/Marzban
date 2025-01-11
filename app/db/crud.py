@@ -209,7 +209,7 @@ def get_user_queryset(db: Session) -> Query:
     Returns:
         Query: Base user query.
     """
-    return db.query(User).options(joinedload(User.admin)).options(joinedload(User.next_plan))
+    return db.query(User).options(joinedload(User.admin)).options(joinedload(User.next_plan)).options(joinedload(User.next_plan.user_template))
 
 
 def get_user(db: Session, username: str) -> Optional[User]:
@@ -628,9 +628,15 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
     dbuser.node_usages.clear()
     dbuser.status = UserStatus.active.value
 
-    dbuser.data_limit = dbuser.next_plan.data_limit + \
-        (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit or 0 - dbuser.used_traffic)
-    dbuser.expire = timedelta(seconds=dbuser.next_plan.expire)
+    if (dbuser.next_plan.user_template_id == None):
+        dbuser.data_limit = dbuser.next_plan.data_limit + \
+            (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit or 0 - dbuser.used_traffic)
+        dbuser.expire = timedelta(seconds=dbuser.next_plan.expire)
+        
+    else:
+        dbuser.data_limit = dbuser.next_plan.user_template.data_limit + \
+            (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit or 0 - dbuser.used_traffic)
+        dbuser.expire = timedelta(seconds=dbuser.next_plan.user_template.expire_duration)
 
     dbuser.used_traffic = 0
     db.delete(dbuser.next_plan)
