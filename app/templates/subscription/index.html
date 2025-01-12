@@ -85,8 +85,8 @@
         {% if not user.expire %}
         ∞
         {% else %}
-        {% set current_timestamp = now().timestamp() %}
-        {% set remaining_days = ((user.expire - current_timestamp) // (24 * 3600)) %}
+        {% set current_datetime = now() %}
+        {% set remaining_days = ((user.expire - current_datetime).days)  %}
         {{ user.expire | datetime }} ({{ remaining_days | int }} days
         remaining)
         {% endif %}</p>
@@ -94,7 +94,7 @@
     {% if user.status == 'active' %}
     <h2>Links:</h2>
     <ul>
-        {% for link in user.links %}
+        {% for link in links %}
         <li>
             <input type="text" value="{{ link }}" readonly>
             <button class="copy-button" onclick="copyLink('{{ link }}', this)">Copy</button>
