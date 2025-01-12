@@ -1,8 +1,8 @@
 import base64
 import random
 import secrets
-from copy import deepcopy
 from collections import defaultdict
+from copy import deepcopy
 from datetime import datetime as dt
 from datetime import timedelta
 from typing import TYPE_CHECKING, List, Literal, Union
@@ -291,15 +291,15 @@ def process_inbounds_and_tags(
 
         host_inbound.update(
             {
-                "port": host["port"] or inbound["port"],
+                "port": host["port"] or host_inbound["port"],
                 "sni": sni,
                 "host": req_host,
-                "tls": inbound["tls"] if host["tls"] is None else host["tls"],
+                "tls": host_inbound["tls"] if host["tls"] is None else host["tls"],
                 "alpn": host["alpn"] if host["alpn"] else None,
                 "path": path,
-                "fp": host["fingerprint"] or inbound.get("fp", ""),
+                "fp": host["fingerprint"] or host_inbound.get("fp", ""),
                 "ais": host["allowinsecure"]
-                or inbound.get("allowinsecure", ""),
+                or host_inbound.get("allowinsecure", ""),
                 "mux_enable": host["mux_enable"],
                 "fragment_setting": host["fragment_setting"],
                 "noise_setting": host["noise_setting"],
@@ -310,9 +310,9 @@ def process_inbounds_and_tags(
         conf.add(
             remark=host["remark"].format_map(format_variables),
             address=address.format_map(format_variables),
-                    inbound=host_inbound,
-                    settings=settings.model_dump()
-                )
+            inbound=host_inbound,
+            settings=settings.dict(no_obj=True)
+        )
 
     return conf.render(reverse=reverse)
 
