@@ -169,7 +169,7 @@ class NextPlan(Base):
     fire_on_either = Column(Boolean, nullable=False, default=True, server_default='0')
 
     user = relationship("User", back_populates="next_plan")
-    user_template = relationship("UserTemplate", back_populates="next_plan")
+    user_template = relationship("UserTemplate", back_populates="next_plans")
 
 
 class UserTemplate(Base):
@@ -188,9 +188,8 @@ class UserTemplate(Base):
     
     next_plans = relationship(
         "NextPlan",
-        uselist=True,
         back_populates="user_template",
-        cascade="all"
+        cascade="all, delete-orphan"
     )
 
 
