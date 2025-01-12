@@ -71,7 +71,7 @@ class Admin(BaseModel):
             )
         if admin.is_disabled:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
+                status_code=status.HTTP_403_FORBIDDEN,
                 detail="your account has been disabled",
                 headers={"WWW-Authenticate": "Bearer"},
             )
@@ -89,18 +89,17 @@ class Admin(BaseModel):
                 detail="Could not validate credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+        if admin.is_disabled:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="your account has been disabled",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         if not admin.is_sudo:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You're not allowed"
             )
-        if admin.is_disabled:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="your account has been disabled",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-
         return admin
 
 

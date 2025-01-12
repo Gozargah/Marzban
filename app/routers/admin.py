@@ -43,8 +43,9 @@ def admin_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     if dbadmin.is_disabled:
+        report.login(form_data.username, form_data.password, client_ip, False)
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="your account has been disabled",
             headers={"WWW-Authenticate": "Bearer"},
         )
