@@ -992,7 +992,7 @@ def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify) -> Ad
     """
     if modified_admin.is_sudo:
         dbadmin.is_sudo = modified_admin.is_sudo
-    if modified_admin.is_disabled:
+    if modified_admin.is_disabled is not None:
         dbadmin.is_disabled = modified_admin.is_disabled
     if modified_admin.password is not None and dbadmin.hashed_password != modified_admin.hashed_password:
         dbadmin.hashed_password = modified_admin.hashed_password

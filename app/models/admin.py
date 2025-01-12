@@ -126,7 +126,7 @@ class AdminModify(BaseModel):
     is_sudo: bool
     telegram_id: Optional[int] = None
     discord_webhook: Optional[str] = None
-    is_disabled: bool = False
+    is_disabled: Optional[bool] = None
 
     @property
     def hashed_password(self):
@@ -156,4 +156,4 @@ class AdminInDB(Admin):
 class AdminValidationResult(BaseModel):
     username: str
     is_sudo: bool
-    is_disabled: bool = False
+    is_disabled: bool
