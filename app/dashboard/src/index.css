@@ -56,8 +56,8 @@
 		--popover-foreground: var(--foreground);
 		--border: var(--sidebar-border);
 		--input: 0, 0%, 20%;
-		--primary: 0, 0%, 100%;
-		--primary-foreground: 210, 40%, 98%;
+		--primary: 216, 46%, 53%;
+		--primary-foreground: 0, 0%, 5%;
 		--secondary: 216, 46%, 53%;
 		--secondary-foreground: 0, 0%, 5%;
 		--accent: 240, 3%, 13%;

@@ -6,7 +6,7 @@ export default defineConfig({
       client: 'react-query',
       target: './src/service/api/index.ts',
       mode: 'single',
-      clean: true,
+      clean: false,
       prettier: true,
       tslint: true,
       headers: false,

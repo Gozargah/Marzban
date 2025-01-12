@@ -20,7 +20,7 @@ const UsersStatistics = () => {
     <div className="flex flex-col gap-y-4 mb-4">
       <div dir={dir} className="flex items-center justify-between flex-wrap gap-4 mb-2">
         <div dir={dir} className="flex flex-col gap-y-2">
-          <h1 className="font-semibold text-2xl sm:text-3xl">{t('users')}</h1>
+          <h1 className="font-semibold text-2xl sm:text-2xl">{t('users')}</h1>
           <span className="text-muted-foreground text-xs sm:text-sm">{t('manageAccounts')}</span>
         </div>
         <div>

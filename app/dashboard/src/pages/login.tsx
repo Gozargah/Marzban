@@ -11,7 +11,7 @@ import { CircleAlertIcon } from 'lucide-react'
 import { FC, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router'
 import { z } from 'zod'
 
 const schema = z.object({

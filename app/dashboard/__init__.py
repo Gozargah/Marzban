@@ -35,7 +35,7 @@ def build():
 def run_dev():
     build_api_interface()
     proc = subprocess.Popen(
-        ['npm', 'run', 'dev', '--', '--host', '0.0.0.0', '--clearScreen', 'false', '--base', os.path.join(DASHBOARD_PATH, '')],
+        ['npm', 'run', 'dev','--', '--base', os.path.join(DASHBOARD_PATH, '')],
         env={**os.environ, 'VITE_BASE_API': VITE_BASE_API, 'DEBUG': 'false'},
         cwd=base_dir
     )

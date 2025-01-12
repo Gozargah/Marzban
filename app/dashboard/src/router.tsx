@@ -1,25 +1,25 @@
 import CoreSettings from '@/components/settings/CoreSettings'
 import { getCurrentAdmin } from '@/service/api'
-import { createHashRouter, RouteObject } from 'react-router-dom'
-import Dashboard from './Dashboard'
-import Layout from './Layout'
-import Login from './Login'
-import Nodes from './Nodes'
-import Settings from './Settings'
-import Statistics from './Statistics'
+import { createHashRouter, RouteObject } from 'react-router'
+import DashboardLayout from './pages/_dashboard'
+import Dashboard from './pages/_dashboard._index'
+import Nodes from './pages/_dashboard.nodes'
+import Settings from './pages/_dashboard.settings'
+import Statistics from './pages/_dashboard.statistics'
+import Login from './pages/login'
 
 const fetchAdminLoader = async (): Promise<any> => {
   try {
     const response = await getCurrentAdmin()
     return response
   } catch (error) {
-    throw new Response('Unauthorized', { status: 401 })
+    throw Response.redirect('/login')
   }
 }
 
 export const router = createHashRouter([
   {
-    element: <Layout />,
+    element: <DashboardLayout />,
     errorElement: <Login />,
     loader: fetchAdminLoader,
     children: [
@@ -36,7 +36,6 @@ export const router = createHashRouter([
         path: '/nodes',
         element: <Nodes />,
       },
-
       {
         path: '/settings',
         element: <Settings />,

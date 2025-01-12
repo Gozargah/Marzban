@@ -3,8 +3,6 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useNodesQuery } from '@/contexts/NodesContext'
 import useDirDetection from '@/hooks/use-dir-detection'
-import { useSidebar } from '@/hooks/use-sidebar'
-import { useStore } from '@/hooks/use-store'
 import { Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
@@ -12,8 +10,6 @@ const Nodes = () => {
   const { t } = useTranslation()
   const dir = useDirDetection()
   const { data: nodes, isLoading } = useNodesQuery()
-  const sidebar = useStore(useSidebar, x => x)
-  if (!sidebar) return null
 
   return (
     <div className="pb-8">
