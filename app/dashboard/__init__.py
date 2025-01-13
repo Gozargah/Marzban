@@ -13,7 +13,7 @@ statics_dir = build_dir / 'statics'
 
 def build_api_interface():
     proc = subprocess.Popen(
-        ['npm', 'run', 'wait-port-gen-api'],
+        ['pnpm', 'run', 'wait-port-gen-api'],
         env={**os.environ, 'UVICORN_PORT': str(UVICORN_PORT)},
         cwd=base_dir,
         stdout=subprocess.DEVNULL
@@ -21,7 +21,7 @@ def build_api_interface():
 
 def build():
     proc = subprocess.Popen(
-        ['npm', 'run', 'build', '--',  '--outDir', build_dir, '--assetsDir', 'statics'],
+        ['pnpm', 'run', 'build', '--outDir', build_dir, '--assetsDir', 'statics'],
         env={**os.environ, 'VITE_BASE_API': VITE_BASE_API},
         cwd=base_dir
     )
@@ -35,7 +35,7 @@ def build():
 def run_dev():
     build_api_interface()
     proc = subprocess.Popen(
-        ['npm', 'run', 'dev','--', '--base', os.path.join(DASHBOARD_PATH, '')],
+        ['pnpm', 'run', 'dev', '--base', os.path.join(DASHBOARD_PATH, '')],
         env={**os.environ, 'VITE_BASE_API': VITE_BASE_API, 'DEBUG': 'false'},
         cwd=base_dir
     )
