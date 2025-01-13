@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 
 const useDirDetection = () => {
   const { i18n } = useTranslation()
-  console.log(i18n)
   const [direction, setDirection] = useState<string>(i18n.dir())
 
   useEffect(() => {
