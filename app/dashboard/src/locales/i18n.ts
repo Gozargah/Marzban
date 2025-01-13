@@ -34,4 +34,8 @@ i18n
     },
   )
 
+const lang = i18n.language
+document.documentElement.lang = lang
+document.documentElement.setAttribute('dir', i18n.dir())
+
 export default i18n

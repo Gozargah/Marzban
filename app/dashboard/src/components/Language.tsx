@@ -1,19 +1,16 @@
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import { LanguagesIcon } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { LanguagesIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 export const Language: React.FC = () => {
-  const { i18n } = useTranslation();
+  const { i18n } = useTranslation()
 
   const changeLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
-  };
+    i18n.changeLanguage(lang)
+    document.documentElement.lang = lang
+    document.documentElement.setAttribute('dir', i18n.dir())
+  }
 
   return (
     <DropdownMenu>
@@ -23,11 +20,11 @@ export const Language: React.FC = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="">
-        <DropdownMenuItem onClick={() => changeLanguage("en")}>English</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => changeLanguage("fa")}>فارسی</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => changeLanguage("zh")}>简体中文</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => changeLanguage("ru")}>Русский</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => changeLanguage('en')}>English</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => changeLanguage('fa')}>فارسی</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => changeLanguage('zh')}>简体中文</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => changeLanguage('ru')}>Русский</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-};
+  )
+}
