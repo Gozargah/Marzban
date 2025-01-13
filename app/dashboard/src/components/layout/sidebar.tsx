@@ -110,7 +110,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <NavMain items={data.navMain} />
           <NavSecondary items={data.community} label="Community" />
           <NavSecondary items={data.navSecondary} className="mt-auto" />
-          <div className="flex justify-between px-4 [&>:first-of-type]:[direction:ltr]">
+          <div className="flex justify-between px-4 [&>:first-child]:[direction:ltr]">
             <GithubStar />
             <div className="flex gap-2 items-start">
               <Language />
