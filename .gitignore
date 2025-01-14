@@ -114,7 +114,6 @@ celerybeat.pid
 .venv
 venv/
 venv.bak/
-.vscode/
 
 # Spyder project settings
 .spyderproject
