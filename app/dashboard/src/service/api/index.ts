@@ -5,7 +5,7 @@
  * Unified GUI Censorship Resistant Solution Powered by Xray
  * OpenAPI spec version: 0.7.0
  */
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from '@tanstack/react-query'
 import type {
   DataTag,
   DefinedInitialDataOptions,
@@ -18,1762 +18,1370 @@ import type {
   UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
-} from "@tanstack/react-query";
-import { orvalFetcher } from "../http";
-import type { ErrorType, BodyType } from "../http";
+} from '@tanstack/react-query'
+import { orvalFetcher } from '../http'
+import type { ErrorType, BodyType } from '../http'
 export type GetUserTemplatesParams = {
-  offset?: number;
-  limit?: number;
-};
+  offset?: number
+  limit?: number
+}
 
 export type UserGetUsageParams = {
-  start?: string;
-  end?: string;
-};
+  start?: string
+  end?: string
+}
 
 export type DeleteExpiredUsersParams = {
-  expired_after?: string | null;
-  expired_before?: string | null;
-};
+  expired_after?: string | null
+  expired_before?: string | null
+}
 
 export type GetExpiredUsersParams = {
-  expired_after?: string | null;
-  expired_before?: string | null;
-};
+  expired_after?: string | null
+  expired_before?: string | null
+}
 
 export type SetOwnerParams = {
-  admin_username: string;
-};
+  admin_username: string
+}
 
 export type GetUsersUsageParams = {
-  start?: string;
-  end?: string;
-  admin?: string[] | null;
-};
+  start?: string
+  end?: string
+  admin?: string[] | null
+}
 
 export type GetUserUsageParams = {
-  start?: string;
-  end?: string;
-};
+  start?: string
+  end?: string
+}
 
 export type GetUsersParams = {
-  offset?: number;
-  limit?: number;
-  username?: string[];
-  search?: string | null;
-  admin?: string[] | null;
-  status?: UserStatus;
-  sort?: string;
-};
+  offset?: number
+  limit?: number
+  username?: string[]
+  search?: string | null
+  admin?: string[] | null
+  status?: UserStatus
+  sort?: string
+}
 
 export type GetUsageParams = {
-  start?: string;
-  end?: string;
-};
+  start?: string
+  end?: string
+}
 
 export type GetHostsParams = {
-  offset?: number;
-  limit?: number;
-};
+  offset?: number
+  limit?: number
+}
 
-export type ModifyCoreConfig200 = { [key: string]: unknown };
+export type ModifyCoreConfig200 = { [key: string]: unknown }
 
-export type ModifyCoreConfigBody = { [key: string]: unknown };
+export type ModifyCoreConfigBody = { [key: string]: unknown }
 
-export type GetCoreConfig200 = { [key: string]: unknown };
+export type GetCoreConfig200 = { [key: string]: unknown }
 
-export type GetInbounds200 = { [key: string]: ProxyInbound[] };
+export type GetInbounds200 = { [key: string]: ProxyInbound[] }
 
 export type GetAdminsParams = {
-  offset?: number | null;
-  limit?: number | null;
-  username?: string | null;
-};
+  offset?: number | null
+  limit?: number | null
+  username?: string | null
+}
 
-export type ValidationErrorLocItem = string | number;
+export type ValidationErrorLocItem = string | number
 
 export interface ValidationError {
-  loc: ValidationErrorLocItem[];
-  msg: string;
-  type: string;
+  loc: ValidationErrorLocItem[]
+  msg: string
+  type: string
 }
 
 export interface UsersUsagesResponse {
-  usages: UserUsageResponse[];
+  usages: UserUsageResponse[]
 }
 
 export interface UsersResponse {
-  users: UserResponse[];
-  total: number;
+  users: UserResponse[]
+  total: number
 }
 
-export type UserUsageResponseNodeId = number | null;
+export type UserUsageResponseNodeId = number | null
 
 export interface UserUsageResponse {
-  node_id?: UserUsageResponseNodeId;
-  node_name: string;
-  used_traffic: number;
+  node_id?: UserUsageResponseNodeId
+  node_name: string
+  used_traffic: number
 }
 
 export interface UserUsagesResponse {
-  username: string;
-  usages: UserUsageResponse[];
+  username: string
+  usages: UserUsageResponse[]
 }
 
-export type UserTemplateResponseInbounds = { [key: string]: string[] };
+export type UserTemplateResponseInbounds = { [key: string]: string[] }
 
-export type UserTemplateResponseUsernameSuffix = string | null;
+export type UserTemplateResponseUsernameSuffix = string | null
 
-export type UserTemplateResponseUsernamePrefix = string | null;
+export type UserTemplateResponseUsernamePrefix = string | null
 
 /**
  * expire_duration can be 0 or greater in seconds
  */
-export type UserTemplateResponseExpireDuration = number | null;
+export type UserTemplateResponseExpireDuration = number | null
 
 /**
  * data_limit can be 0 or greater
  */
-export type UserTemplateResponseDataLimit = number | null;
+export type UserTemplateResponseDataLimit = number | null
 
 /**
  * @nullable
  */
-export type UserTemplateResponseName = string | null | null;
+export type UserTemplateResponseName = string | null | null
 
 export interface UserTemplateResponse {
   /** @nullable */
-  name?: UserTemplateResponseName;
+  name?: UserTemplateResponseName
   /** data_limit can be 0 or greater */
-  data_limit?: UserTemplateResponseDataLimit;
+  data_limit?: UserTemplateResponseDataLimit
   /** expire_duration can be 0 or greater in seconds */
-  expire_duration?: UserTemplateResponseExpireDuration;
-  username_prefix?: UserTemplateResponseUsernamePrefix;
-  username_suffix?: UserTemplateResponseUsernameSuffix;
-  inbounds?: UserTemplateResponseInbounds;
-  id: number;
+  expire_duration?: UserTemplateResponseExpireDuration
+  username_prefix?: UserTemplateResponseUsernamePrefix
+  username_suffix?: UserTemplateResponseUsernameSuffix
+  inbounds?: UserTemplateResponseInbounds
+  id: number
 }
 
-export type UserTemplateModifyInbounds = { [key: string]: string[] };
+export type UserTemplateModifyInbounds = { [key: string]: string[] }
 
-export type UserTemplateModifyUsernameSuffix = string | null;
+export type UserTemplateModifyUsernameSuffix = string | null
 
-export type UserTemplateModifyUsernamePrefix = string | null;
+export type UserTemplateModifyUsernamePrefix = string | null
 
 /**
  * expire_duration can be 0 or greater in seconds
  */
-export type UserTemplateModifyExpireDuration = number | null;
+export type UserTemplateModifyExpireDuration = number | null
 
 /**
  * data_limit can be 0 or greater
  */
-export type UserTemplateModifyDataLimit = number | null;
+export type UserTemplateModifyDataLimit = number | null
 
 /**
  * @nullable
  */
-export type UserTemplateModifyName = string | null | null;
+export type UserTemplateModifyName = string | null | null
 
 export interface UserTemplateModify {
   /** @nullable */
-  name?: UserTemplateModifyName;
+  name?: UserTemplateModifyName
   /** data_limit can be 0 or greater */
-  data_limit?: UserTemplateModifyDataLimit;
+  data_limit?: UserTemplateModifyDataLimit
   /** expire_duration can be 0 or greater in seconds */
-  expire_duration?: UserTemplateModifyExpireDuration;
-  username_prefix?: UserTemplateModifyUsernamePrefix;
-  username_suffix?: UserTemplateModifyUsernameSuffix;
-  inbounds?: UserTemplateModifyInbounds;
+  expire_duration?: UserTemplateModifyExpireDuration
+  username_prefix?: UserTemplateModifyUsernamePrefix
+  username_suffix?: UserTemplateModifyUsernameSuffix
+  inbounds?: UserTemplateModifyInbounds
 }
 
-export type UserTemplateCreateInbounds = { [key: string]: string[] };
+export type UserTemplateCreateInbounds = { [key: string]: string[] }
 
-export type UserTemplateCreateUsernameSuffix = string | null;
+export type UserTemplateCreateUsernameSuffix = string | null
 
-export type UserTemplateCreateUsernamePrefix = string | null;
+export type UserTemplateCreateUsernamePrefix = string | null
 
 /**
  * expire_duration can be 0 or greater in seconds
  */
-export type UserTemplateCreateExpireDuration = number | null;
+export type UserTemplateCreateExpireDuration = number | null
 
 /**
  * data_limit can be 0 or greater
  */
-export type UserTemplateCreateDataLimit = number | null;
+export type UserTemplateCreateDataLimit = number | null
 
 /**
  * @nullable
  */
-export type UserTemplateCreateName = string | null | null;
+export type UserTemplateCreateName = string | null | null
 
 export interface UserTemplateCreate {
   /** @nullable */
-  name?: UserTemplateCreateName;
+  name?: UserTemplateCreateName
   /** data_limit can be 0 or greater */
-  data_limit?: UserTemplateCreateDataLimit;
+  data_limit?: UserTemplateCreateDataLimit
   /** expire_duration can be 0 or greater in seconds */
-  expire_duration?: UserTemplateCreateExpireDuration;
-  username_prefix?: UserTemplateCreateUsernamePrefix;
-  username_suffix?: UserTemplateCreateUsernameSuffix;
-  inbounds?: UserTemplateCreateInbounds;
+  expire_duration?: UserTemplateCreateExpireDuration
+  username_prefix?: UserTemplateCreateUsernamePrefix
+  username_suffix?: UserTemplateCreateUsernameSuffix
+  inbounds?: UserTemplateCreateInbounds
 }
 
-export type UserStatusModify =
-  (typeof UserStatusModify)[keyof typeof UserStatusModify];
+export type UserStatusModify = (typeof UserStatusModify)[keyof typeof UserStatusModify]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const UserStatusModify = {
-  active: "active",
-  disabled: "disabled",
-  on_hold: "on_hold",
-} as const;
+  active: 'active',
+  disabled: 'disabled',
+  on_hold: 'on_hold',
+} as const
 
-export type UserStatusCreate =
-  (typeof UserStatusCreate)[keyof typeof UserStatusCreate];
+export type UserStatusCreate = (typeof UserStatusCreate)[keyof typeof UserStatusCreate]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const UserStatusCreate = {
-  active: "active",
-  on_hold: "on_hold",
-} as const;
+  active: 'active',
+  on_hold: 'on_hold',
+} as const
 
-export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus];
+export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const UserStatus = {
-  active: "active",
-  disabled: "disabled",
-  limited: "limited",
-  expired: "expired",
-  on_hold: "on_hold",
-} as const;
+  active: 'active',
+  disabled: 'disabled',
+  limited: 'limited',
+  expired: 'expired',
+  on_hold: 'on_hold',
+} as const
 
-export type UserResponseAdmin = Admin | null;
+export type UserResponseAdmin = Admin | null
 
-export type UserResponseExcludedInbounds = { [key: string]: string[] };
-
-/**
- * @nullable
- */
-export type UserResponseNextPlan = NextPlanModel | null | null;
+export type UserResponseExcludedInbounds = { [key: string]: string[] }
 
 /**
  * @nullable
  */
-export type UserResponseAutoDeleteInDays = number | null | null;
+export type UserResponseNextPlan = NextPlanModel | null | null
 
 /**
  * @nullable
  */
-export type UserResponseOnHoldTimeout = string | number | null | null;
+export type UserResponseAutoDeleteInDays = number | null | null
 
 /**
  * @nullable
  */
-export type UserResponseOnHoldExpireDuration = number | null | null;
+export type UserResponseOnHoldTimeout = string | number | null | null
 
 /**
  * @nullable
  */
-export type UserResponseOnlineAt = string | null | null;
+export type UserResponseOnHoldExpireDuration = number | null | null
 
 /**
  * @nullable
  */
-export type UserResponseSubLastUserAgent = string | null | null;
+export type UserResponseOnlineAt = string | null | null
 
 /**
  * @nullable
  */
-export type UserResponseSubUpdatedAt = string | null | null;
+export type UserResponseSubLastUserAgent = string | null | null
 
 /**
  * @nullable
  */
-export type UserResponseNote = string | null | null;
+export type UserResponseSubUpdatedAt = string | null | null
 
-export type UserResponseInbounds = { [key: string]: string[] };
+/**
+ * @nullable
+ */
+export type UserResponseNote = string | null | null
+
+export type UserResponseInbounds = { [key: string]: string[] }
 
 /**
  * data_limit can be 0 or greater
  */
-export type UserResponseDataLimit = number | null;
+export type UserResponseDataLimit = number | null
 
 /**
  * @nullable
  */
-export type UserResponseExpire = string | number | null | null;
+export type UserResponseExpire = string | number | null | null
 
-export type UserResponseProxies = { [key: string]: unknown };
+export type UserResponseProxies = { [key: string]: unknown }
 
 export interface UserResponse {
-  proxies: UserResponseProxies;
+  proxies: UserResponseProxies
   /** @nullable */
-  expire?: UserResponseExpire;
+  expire?: UserResponseExpire
   /** data_limit can be 0 or greater */
-  data_limit?: UserResponseDataLimit;
-  data_limit_reset_strategy?: UserDataLimitResetStrategy;
-  inbounds?: UserResponseInbounds;
+  data_limit?: UserResponseDataLimit
+  data_limit_reset_strategy?: UserDataLimitResetStrategy
+  inbounds?: UserResponseInbounds
   /** @nullable */
-  note?: UserResponseNote;
+  note?: UserResponseNote
   /** @nullable */
-  sub_updated_at?: UserResponseSubUpdatedAt;
+  sub_updated_at?: UserResponseSubUpdatedAt
   /** @nullable */
-  sub_last_user_agent?: UserResponseSubLastUserAgent;
+  sub_last_user_agent?: UserResponseSubLastUserAgent
   /** @nullable */
-  online_at?: UserResponseOnlineAt;
+  online_at?: UserResponseOnlineAt
   /** @nullable */
-  on_hold_expire_duration?: UserResponseOnHoldExpireDuration;
+  on_hold_expire_duration?: UserResponseOnHoldExpireDuration
   /** @nullable */
-  on_hold_timeout?: UserResponseOnHoldTimeout;
+  on_hold_timeout?: UserResponseOnHoldTimeout
   /** @nullable */
-  auto_delete_in_days?: UserResponseAutoDeleteInDays;
+  auto_delete_in_days?: UserResponseAutoDeleteInDays
   /** @nullable */
-  next_plan?: UserResponseNextPlan;
-  username: string;
-  status: UserStatus;
-  used_traffic: number;
-  lifetime_used_traffic?: number;
-  created_at: string;
-  subscription_url?: string;
-  excluded_inbounds?: UserResponseExcludedInbounds;
-  admin?: UserResponseAdmin;
+  next_plan?: UserResponseNextPlan
+  username: string
+  status: UserStatus
+  used_traffic: number
+  lifetime_used_traffic?: number
+  created_at: string
+  subscription_url?: string
+  excluded_inbounds?: UserResponseExcludedInbounds
+  admin?: UserResponseAdmin
 }
 
 /**
  * @nullable
  */
-export type UserModifyNextPlan = NextPlanModel | null | null;
+export type UserModifyNextPlan = NextPlanModel | null | null
 
 /**
  * @nullable
  */
-export type UserModifyAutoDeleteInDays = number | null | null;
+export type UserModifyAutoDeleteInDays = number | null | null
 
 /**
  * @nullable
  */
-export type UserModifyOnHoldTimeout = string | number | null | null;
+export type UserModifyOnHoldTimeout = string | number | null | null
 
 /**
  * @nullable
  */
-export type UserModifyOnHoldExpireDuration = number | null | null;
+export type UserModifyOnHoldExpireDuration = number | null | null
 
 /**
  * @nullable
  */
-export type UserModifyOnlineAt = string | null | null;
+export type UserModifyOnlineAt = string | null | null
 
 /**
  * @nullable
  */
-export type UserModifySubLastUserAgent = string | null | null;
+export type UserModifySubLastUserAgent = string | null | null
 
 /**
  * @nullable
  */
-export type UserModifySubUpdatedAt = string | null | null;
+export type UserModifySubUpdatedAt = string | null | null
 
 /**
  * @nullable
  */
-export type UserModifyNote = string | null | null;
+export type UserModifyNote = string | null | null
 
-export type UserModifyInbounds = { [key: string]: string[] };
+export type UserModifyInbounds = { [key: string]: string[] }
 
 /**
  * data_limit can be 0 or greater
  */
-export type UserModifyDataLimit = number | null;
+export type UserModifyDataLimit = number | null
 
 /**
  * @nullable
  */
-export type UserModifyExpire = string | number | null | null;
+export type UserModifyExpire = string | number | null | null
 
-export type UserModifyProxies = { [key: string]: ProxySettings };
+export type UserModifyProxies = { [key: string]: ProxySettings }
 
-export type UserDataLimitResetStrategy =
-  (typeof UserDataLimitResetStrategy)[keyof typeof UserDataLimitResetStrategy];
+export type UserDataLimitResetStrategy = (typeof UserDataLimitResetStrategy)[keyof typeof UserDataLimitResetStrategy]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const UserDataLimitResetStrategy = {
-  no_reset: "no_reset",
-  day: "day",
-  week: "week",
-  month: "month",
-  year: "year",
-} as const;
+  no_reset: 'no_reset',
+  day: 'day',
+  week: 'week',
+  month: 'month',
+  year: 'year',
+} as const
 
 export interface UserModify {
-  proxies?: UserModifyProxies;
+  proxies?: UserModifyProxies
   /** @nullable */
-  expire?: UserModifyExpire;
+  expire?: UserModifyExpire
   /** data_limit can be 0 or greater */
-  data_limit?: UserModifyDataLimit;
-  data_limit_reset_strategy?: UserDataLimitResetStrategy;
-  inbounds?: UserModifyInbounds;
+  data_limit?: UserModifyDataLimit
+  data_limit_reset_strategy?: UserDataLimitResetStrategy
+  inbounds?: UserModifyInbounds
   /** @nullable */
-  note?: UserModifyNote;
+  note?: UserModifyNote
   /** @nullable */
-  sub_updated_at?: UserModifySubUpdatedAt;
+  sub_updated_at?: UserModifySubUpdatedAt
   /** @nullable */
-  sub_last_user_agent?: UserModifySubLastUserAgent;
+  sub_last_user_agent?: UserModifySubLastUserAgent
   /** @nullable */
-  online_at?: UserModifyOnlineAt;
+  online_at?: UserModifyOnlineAt
   /** @nullable */
-  on_hold_expire_duration?: UserModifyOnHoldExpireDuration;
+  on_hold_expire_duration?: UserModifyOnHoldExpireDuration
   /** @nullable */
-  on_hold_timeout?: UserModifyOnHoldTimeout;
+  on_hold_timeout?: UserModifyOnHoldTimeout
   /** @nullable */
-  auto_delete_in_days?: UserModifyAutoDeleteInDays;
+  auto_delete_in_days?: UserModifyAutoDeleteInDays
   /** @nullable */
-  next_plan?: UserModifyNextPlan;
-  status?: UserStatusModify;
+  next_plan?: UserModifyNextPlan
+  status?: UserStatusModify
 }
 
 /**
  * @nullable
  */
-export type UserCreateNextPlan = NextPlanModel | null | null;
+export type UserCreateNextPlan = NextPlanModel | null | null
 
 /**
  * @nullable
  */
-export type UserCreateAutoDeleteInDays = number | null | null;
+export type UserCreateAutoDeleteInDays = number | null | null
 
 /**
  * @nullable
  */
-export type UserCreateOnHoldTimeout = string | number | null | null;
+export type UserCreateOnHoldTimeout = string | number | null | null
 
 /**
  * @nullable
  */
-export type UserCreateOnHoldExpireDuration = number | null | null;
+export type UserCreateOnHoldExpireDuration = number | null | null
 
 /**
  * @nullable
  */
-export type UserCreateOnlineAt = string | null | null;
+export type UserCreateOnlineAt = string | null | null
 
 /**
  * @nullable
  */
-export type UserCreateSubLastUserAgent = string | null | null;
+export type UserCreateSubLastUserAgent = string | null | null
 
 /**
  * @nullable
  */
-export type UserCreateSubUpdatedAt = string | null | null;
+export type UserCreateSubUpdatedAt = string | null | null
 
 /**
  * @nullable
  */
-export type UserCreateNote = string | null | null;
+export type UserCreateNote = string | null | null
 
-export type UserCreateInbounds = { [key: string]: string[] };
+export type UserCreateInbounds = { [key: string]: string[] }
 
 /**
  * data_limit can be 0 or greater
  */
-export type UserCreateDataLimit = number | null;
+export type UserCreateDataLimit = number | null
 
 /**
  * @nullable
  */
-export type UserCreateExpire = string | number | null | null;
+export type UserCreateExpire = string | number | null | null
 
-export type UserCreateProxies = { [key: string]: ProxySettings };
+export type UserCreateProxies = { [key: string]: ProxySettings }
 
 export interface UserCreate {
-  proxies?: UserCreateProxies;
+  proxies?: UserCreateProxies
   /** @nullable */
-  expire?: UserCreateExpire;
+  expire?: UserCreateExpire
   /** data_limit can be 0 or greater */
-  data_limit?: UserCreateDataLimit;
-  data_limit_reset_strategy?: UserDataLimitResetStrategy;
-  inbounds?: UserCreateInbounds;
+  data_limit?: UserCreateDataLimit
+  data_limit_reset_strategy?: UserDataLimitResetStrategy
+  inbounds?: UserCreateInbounds
   /** @nullable */
-  note?: UserCreateNote;
+  note?: UserCreateNote
   /** @nullable */
-  sub_updated_at?: UserCreateSubUpdatedAt;
+  sub_updated_at?: UserCreateSubUpdatedAt
   /** @nullable */
-  sub_last_user_agent?: UserCreateSubLastUserAgent;
+  sub_last_user_agent?: UserCreateSubLastUserAgent
   /** @nullable */
-  online_at?: UserCreateOnlineAt;
+  online_at?: UserCreateOnlineAt
   /** @nullable */
-  on_hold_expire_duration?: UserCreateOnHoldExpireDuration;
+  on_hold_expire_duration?: UserCreateOnHoldExpireDuration
   /** @nullable */
-  on_hold_timeout?: UserCreateOnHoldTimeout;
+  on_hold_timeout?: UserCreateOnHoldTimeout
   /** @nullable */
-  auto_delete_in_days?: UserCreateAutoDeleteInDays;
+  auto_delete_in_days?: UserCreateAutoDeleteInDays
   /** @nullable */
-  next_plan?: UserCreateNextPlan;
-  username: string;
-  status?: UserStatusCreate;
+  next_plan?: UserCreateNextPlan
+  username: string
+  status?: UserStatusCreate
 }
 
 export interface Unauthorized {
-  detail?: string;
+  detail?: string
 }
 
 export interface Token {
-  access_token: string;
-  token_type?: string;
+  access_token: string
+  token_type?: string
 }
 
 export interface SystemStats {
-  version: string;
-  mem_total: number;
-  mem_used: number;
-  cpu_cores: number;
-  cpu_usage: number;
-  total_user: number;
-  online_users: number;
-  users_active: number;
-  users_on_hold: number;
-  users_disabled: number;
-  users_expired: number;
-  users_limited: number;
-  incoming_bandwidth: number;
-  outgoing_bandwidth: number;
-  incoming_bandwidth_speed: number;
-  outgoing_bandwidth_speed: number;
+  version: string
+  mem_total: number
+  mem_used: number
+  cpu_cores: number
+  cpu_usage: number
+  total_user: number
+  online_users: number
+  users_active: number
+  users_on_hold: number
+  users_disabled: number
+  users_expired: number
+  users_limited: number
+  incoming_bandwidth: number
+  outgoing_bandwidth: number
+  incoming_bandwidth_speed: number
+  outgoing_bandwidth_speed: number
 }
 
 /**
  * @nullable
  */
-export type SubscriptionUserResponseNextPlan = NextPlanModel | null | null;
+export type SubscriptionUserResponseNextPlan = NextPlanModel | null | null
 
 /**
  * @nullable
  */
-export type SubscriptionUserResponseOnHoldTimeout =
-  | string
-  | number
-  | null
-  | null;
+export type SubscriptionUserResponseOnHoldTimeout = string | number | null | null
 
 /**
  * @nullable
  */
-export type SubscriptionUserResponseOnHoldExpireDuration = number | null | null;
+export type SubscriptionUserResponseOnHoldExpireDuration = number | null | null
 
 /**
  * @nullable
  */
-export type SubscriptionUserResponseOnlineAt = string | null | null;
+export type SubscriptionUserResponseOnlineAt = string | null | null
 
 /**
  * @nullable
  */
-export type SubscriptionUserResponseSubLastUserAgent = string | null | null;
+export type SubscriptionUserResponseSubLastUserAgent = string | null | null
 
 /**
  * @nullable
  */
-export type SubscriptionUserResponseSubUpdatedAt = string | null | null;
+export type SubscriptionUserResponseSubUpdatedAt = string | null | null
 
 /**
  * data_limit can be 0 or greater
  */
-export type SubscriptionUserResponseDataLimit = number | null;
+export type SubscriptionUserResponseDataLimit = number | null
 
 /**
  * @nullable
  */
-export type SubscriptionUserResponseExpire = string | number | null | null;
+export type SubscriptionUserResponseExpire = string | number | null | null
 
-export type SubscriptionUserResponseProxies = { [key: string]: unknown };
+export type SubscriptionUserResponseProxies = { [key: string]: unknown }
 
 export interface SubscriptionUserResponse {
-  proxies: SubscriptionUserResponseProxies;
+  proxies: SubscriptionUserResponseProxies
   /** @nullable */
-  expire?: SubscriptionUserResponseExpire;
+  expire?: SubscriptionUserResponseExpire
   /** data_limit can be 0 or greater */
-  data_limit?: SubscriptionUserResponseDataLimit;
-  data_limit_reset_strategy?: UserDataLimitResetStrategy;
+  data_limit?: SubscriptionUserResponseDataLimit
+  data_limit_reset_strategy?: UserDataLimitResetStrategy
   /** @nullable */
-  sub_updated_at?: SubscriptionUserResponseSubUpdatedAt;
+  sub_updated_at?: SubscriptionUserResponseSubUpdatedAt
   /** @nullable */
-  sub_last_user_agent?: SubscriptionUserResponseSubLastUserAgent;
+  sub_last_user_agent?: SubscriptionUserResponseSubLastUserAgent
   /** @nullable */
-  online_at?: SubscriptionUserResponseOnlineAt;
+  online_at?: SubscriptionUserResponseOnlineAt
   /** @nullable */
-  on_hold_expire_duration?: SubscriptionUserResponseOnHoldExpireDuration;
+  on_hold_expire_duration?: SubscriptionUserResponseOnHoldExpireDuration
   /** @nullable */
-  on_hold_timeout?: SubscriptionUserResponseOnHoldTimeout;
+  on_hold_timeout?: SubscriptionUserResponseOnHoldTimeout
   /** @nullable */
-  next_plan?: SubscriptionUserResponseNextPlan;
-  username: string;
-  status: UserStatus;
-  used_traffic: number;
-  lifetime_used_traffic?: number;
-  created_at: string;
-  subscription_url?: string;
+  next_plan?: SubscriptionUserResponseNextPlan
+  username: string
+  status: UserStatus
+  used_traffic: number
+  lifetime_used_traffic?: number
+  created_at: string
+  subscription_url?: string
 }
 
-export type ProxyTypes = (typeof ProxyTypes)[keyof typeof ProxyTypes];
+export type ProxyTypes = (typeof ProxyTypes)[keyof typeof ProxyTypes]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ProxyTypes = {
-  vmess: "vmess",
-  vless: "vless",
-  trojan: "trojan",
-  shadowsocks: "shadowsocks",
-} as const;
+  vmess: 'vmess',
+  vless: 'vless',
+  trojan: 'trojan',
+  shadowsocks: 'shadowsocks',
+} as const
 
 export interface ProxySettings {
-  [key: string]: unknown;
+  [key: string]: unknown
 }
 
-export type ProxyInboundPort = number | string;
+export type ProxyInboundPort = number | string
 
 export interface ProxyInbound {
-  tag: string;
-  protocol: ProxyTypes;
-  network: string;
-  tls: string;
-  port: ProxyInboundPort;
+  tag: string
+  protocol: ProxyTypes
+  network: string
+  tls: string
+  port: ProxyInboundPort
 }
 
-export type ProxyHostSecurity =
-  (typeof ProxyHostSecurity)[keyof typeof ProxyHostSecurity];
+export type ProxyHostSecurity = (typeof ProxyHostSecurity)[keyof typeof ProxyHostSecurity]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ProxyHostSecurity = {
-  inbound_default: "inbound_default",
-  none: "none",
-  tls: "tls",
-} as const;
+  inbound_default: 'inbound_default',
+  none: 'none',
+  tls: 'tls',
+} as const
 
-export type ProxyHostFingerprint =
-  (typeof ProxyHostFingerprint)[keyof typeof ProxyHostFingerprint];
+export type ProxyHostFingerprint = (typeof ProxyHostFingerprint)[keyof typeof ProxyHostFingerprint]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ProxyHostFingerprint = {
-  "": "",
-  chrome: "chrome",
-  firefox: "firefox",
-  safari: "safari",
-  ios: "ios",
-  android: "android",
-  edge: "edge",
-  NUMBER_360: "360",
-  qq: "qq",
-  random: "random",
-  randomized: "randomized",
-} as const;
+  '': '',
+  chrome: 'chrome',
+  firefox: 'firefox',
+  safari: 'safari',
+  ios: 'ios',
+  android: 'android',
+  edge: 'edge',
+  NUMBER_360: '360',
+  qq: 'qq',
+  random: 'random',
+  randomized: 'randomized',
+} as const
 
-export type ProxyHostALPN = (typeof ProxyHostALPN)[keyof typeof ProxyHostALPN];
+export type ProxyHostALPN = (typeof ProxyHostALPN)[keyof typeof ProxyHostALPN]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ProxyHostALPN = {
-  "": "",
-  h3: "h3",
-  h2: "h2",
-  "http/11": "http/1.1",
-  "h3,h2,http/11": "h3,h2,http/1.1",
-  "h3,h2": "h3,h2",
-  "h2,http/11": "h2,http/1.1",
-} as const;
+  '': '',
+  h3: 'h3',
+  h2: 'h2',
+  'http/11': 'http/1.1',
+  'h3,h2,http/11': 'h3,h2,http/1.1',
+  'h3,h2': 'h3,h2',
+  'h2,http/11': 'h2,http/1.1',
+} as const
 
 export interface NotFound {
-  detail?: string;
+  detail?: string
 }
 
-export type NodeUsageResponseNodeId = number | null;
+export type NodeUsageResponseNodeId = number | null
 
 export interface NodeUsageResponse {
-  node_id?: NodeUsageResponseNodeId;
-  node_name: string;
-  uplink: number;
-  downlink: number;
+  node_id?: NodeUsageResponseNodeId
+  node_name: string
+  uplink: number
+  downlink: number
 }
 
 export interface NodesUsageResponse {
-  usages: NodeUsageResponse[];
+  usages: NodeUsageResponse[]
 }
 
-export type NodeStatus = (typeof NodeStatus)[keyof typeof NodeStatus];
+export type NodeStatus = (typeof NodeStatus)[keyof typeof NodeStatus]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const NodeStatus = {
-  connected: "connected",
-  connecting: "connecting",
-  error: "error",
-  disabled: "disabled",
-} as const;
+  connected: 'connected',
+  connecting: 'connecting',
+  error: 'error',
+  disabled: 'disabled',
+} as const
 
 export interface NodeSettings {
-  min_node_version?: string;
-  certificate: string;
+  min_node_version?: string
+  certificate: string
 }
 
-export type NodeResponseMessage = string | null;
+export type NodeResponseMessage = string | null
 
-export type NodeResponseXrayVersion = string | null;
+export type NodeResponseXrayVersion = string | null
 
 export interface NodeResponse {
-  name: string;
-  address: string;
-  port?: number;
-  api_port?: number;
+  name: string
+  address: string
+  port?: number
+  api_port?: number
   /** */
-  usage_coefficient?: number;
-  id: number;
-  xray_version?: NodeResponseXrayVersion;
-  status: NodeStatus;
-  message?: NodeResponseMessage;
+  usage_coefficient?: number
+  id: number
+  xray_version?: NodeResponseXrayVersion
+  status: NodeStatus
+  message?: NodeResponseMessage
 }
 
 /**
  * @nullable
  */
-export type NodeModifyStatus = NodeStatus | null | null;
+export type NodeModifyStatus = NodeStatus | null | null
 
 /**
  * @nullable
  */
-export type NodeModifyUsageCoefficient = number | null | null;
+export type NodeModifyUsageCoefficient = number | null | null
 
 /**
  * @nullable
  */
-export type NodeModifyApiPort = number | null | null;
+export type NodeModifyApiPort = number | null | null
 
 /**
  * @nullable
  */
-export type NodeModifyPort = number | null | null;
+export type NodeModifyPort = number | null | null
 
 /**
  * @nullable
  */
-export type NodeModifyAddress = string | null | null;
+export type NodeModifyAddress = string | null | null
 
 /**
  * @nullable
  */
-export type NodeModifyName = string | null | null;
+export type NodeModifyName = string | null | null
 
 export interface NodeModify {
   /** @nullable */
-  name?: NodeModifyName;
+  name?: NodeModifyName
   /** @nullable */
-  address?: NodeModifyAddress;
+  address?: NodeModifyAddress
   /** @nullable */
-  port?: NodeModifyPort;
+  port?: NodeModifyPort
   /** @nullable */
-  api_port?: NodeModifyApiPort;
+  api_port?: NodeModifyApiPort
   /** @nullable */
-  usage_coefficient?: NodeModifyUsageCoefficient;
+  usage_coefficient?: NodeModifyUsageCoefficient
   /** @nullable */
-  status?: NodeModifyStatus;
+  status?: NodeModifyStatus
 }
 
 export interface NodeCreate {
-  name: string;
-  address: string;
-  port?: number;
-  api_port?: number;
+  name: string
+  address: string
+  port?: number
+  api_port?: number
   /** */
-  usage_coefficient?: number;
+  usage_coefficient?: number
 }
 
-export type NextPlanModelExpire = number | null;
+export type NextPlanModelExpire = number | null
 
-export type NextPlanModelDataLimit = number | null;
+export type NextPlanModelDataLimit = number | null
 
 export interface NextPlanModel {
-  data_limit?: NextPlanModelDataLimit;
-  expire?: NextPlanModelExpire;
-  add_remaining_traffic?: boolean;
-  fire_on_either?: boolean;
+  data_limit?: NextPlanModelDataLimit
+  expire?: NextPlanModelExpire
+  add_remaining_traffic?: boolean
+  fire_on_either?: boolean
 }
 
 /**
  * @nullable
  */
-export type HostResponseNoiseSetting = string | null | null;
+export type HostResponseNoiseSetting = string | null | null
 
-export type HostResponseRandomUserAgent = boolean | null;
-
-/**
- * @nullable
- */
-export type HostResponseFragmentSetting = string | null | null;
-
-export type HostResponseMuxEnable = boolean | null;
-
-export type HostResponseIsDisabled = boolean | null;
-
-export type HostResponseAllowinsecure = boolean | null;
+export type HostResponseRandomUserAgent = boolean | null
 
 /**
  * @nullable
  */
-export type HostResponsePath = string | null | null;
+export type HostResponseFragmentSetting = string | null | null
+
+export type HostResponseMuxEnable = boolean | null
+
+export type HostResponseIsDisabled = boolean | null
+
+export type HostResponseAllowinsecure = boolean | null
 
 /**
  * @nullable
  */
-export type HostResponseHost = string | null | null;
+export type HostResponsePath = string | null | null
 
 /**
  * @nullable
  */
-export type HostResponseSni = string | null | null;
+export type HostResponseHost = string | null | null
 
 /**
  * @nullable
  */
-export type HostResponsePort = number | null | null;
+export type HostResponseSni = string | null | null
+
+/**
+ * @nullable
+ */
+export type HostResponsePort = number | null | null
 
 export interface HostResponse {
-  remark: string;
-  address: string;
-  inbound_tag: string;
+  remark: string
+  address: string
+  inbound_tag: string
   /** @nullable */
-  port?: HostResponsePort;
+  port?: HostResponsePort
   /** @nullable */
-  sni?: HostResponseSni;
+  sni?: HostResponseSni
   /** @nullable */
-  host?: HostResponseHost;
+  host?: HostResponseHost
   /** @nullable */
-  path?: HostResponsePath;
-  security?: ProxyHostSecurity;
-  alpn?: ProxyHostALPN;
-  fingerprint?: ProxyHostFingerprint;
-  allowinsecure?: HostResponseAllowinsecure;
-  is_disabled?: HostResponseIsDisabled;
-  mux_enable?: HostResponseMuxEnable;
+  path?: HostResponsePath
+  security?: ProxyHostSecurity
+  alpn?: ProxyHostALPN
+  fingerprint?: ProxyHostFingerprint
+  allowinsecure?: HostResponseAllowinsecure
+  is_disabled?: HostResponseIsDisabled
+  mux_enable?: HostResponseMuxEnable
   /** @nullable */
-  fragment_setting?: HostResponseFragmentSetting;
-  random_user_agent?: HostResponseRandomUserAgent;
+  fragment_setting?: HostResponseFragmentSetting
+  random_user_agent?: HostResponseRandomUserAgent
   /** @nullable */
-  noise_setting?: HostResponseNoiseSetting;
-  id: number;
+  noise_setting?: HostResponseNoiseSetting
+  id: number
 }
 
 export interface HTTPValidationError {
-  detail?: ValidationError[];
+  detail?: ValidationError[]
 }
 
 export interface HTTPException {
-  detail: string;
+  detail: string
 }
 
 export interface Forbidden {
-  detail?: string;
+  detail?: string
 }
 
 /**
  * @nullable
  */
-export type CreateHostNoiseSetting = string | null | null;
+export type CreateHostNoiseSetting = string | null | null
 
-export type CreateHostRandomUserAgent = boolean | null;
-
-/**
- * @nullable
- */
-export type CreateHostFragmentSetting = string | null | null;
-
-export type CreateHostMuxEnable = boolean | null;
-
-export type CreateHostIsDisabled = boolean | null;
-
-export type CreateHostAllowinsecure = boolean | null;
+export type CreateHostRandomUserAgent = boolean | null
 
 /**
  * @nullable
  */
-export type CreateHostPath = string | null | null;
+export type CreateHostFragmentSetting = string | null | null
+
+export type CreateHostMuxEnable = boolean | null
+
+export type CreateHostIsDisabled = boolean | null
+
+export type CreateHostAllowinsecure = boolean | null
 
 /**
  * @nullable
  */
-export type CreateHostHost = string | null | null;
+export type CreateHostPath = string | null | null
 
 /**
  * @nullable
  */
-export type CreateHostSni = string | null | null;
+export type CreateHostHost = string | null | null
 
 /**
  * @nullable
  */
-export type CreateHostPort = number | null | null;
+export type CreateHostSni = string | null | null
+
+/**
+ * @nullable
+ */
+export type CreateHostPort = number | null | null
 
 export interface CreateHost {
-  remark: string;
-  address: string;
-  inbound_tag: string;
+  remark: string
+  address: string
+  inbound_tag: string
   /** @nullable */
-  port?: CreateHostPort;
+  port?: CreateHostPort
   /** @nullable */
-  sni?: CreateHostSni;
+  sni?: CreateHostSni
   /** @nullable */
-  host?: CreateHostHost;
+  host?: CreateHostHost
   /** @nullable */
-  path?: CreateHostPath;
-  security?: ProxyHostSecurity;
-  alpn?: ProxyHostALPN;
-  fingerprint?: ProxyHostFingerprint;
-  allowinsecure?: CreateHostAllowinsecure;
-  is_disabled?: CreateHostIsDisabled;
-  mux_enable?: CreateHostMuxEnable;
+  path?: CreateHostPath
+  security?: ProxyHostSecurity
+  alpn?: ProxyHostALPN
+  fingerprint?: ProxyHostFingerprint
+  allowinsecure?: CreateHostAllowinsecure
+  is_disabled?: CreateHostIsDisabled
+  mux_enable?: CreateHostMuxEnable
   /** @nullable */
-  fragment_setting?: CreateHostFragmentSetting;
-  random_user_agent?: CreateHostRandomUserAgent;
+  fragment_setting?: CreateHostFragmentSetting
+  random_user_agent?: CreateHostRandomUserAgent
   /** @nullable */
-  noise_setting?: CreateHostNoiseSetting;
+  noise_setting?: CreateHostNoiseSetting
 }
 
 export interface CoreStats {
-  version: string;
-  started: boolean;
-  logs_websocket: string;
+  version: string
+  started: boolean
+  logs_websocket: string
 }
 
 export interface Conflict {
-  detail?: string;
+  detail?: string
 }
 
-export type BodyAdminTokenApiAdminTokenPostClientSecret = string | null;
+export type BodyAdminTokenApiAdminTokenPostClientSecret = string | null
 
-export type BodyAdminTokenApiAdminTokenPostClientId = string | null;
+export type BodyAdminTokenApiAdminTokenPostClientId = string | null
 
-export type BodyAdminTokenApiAdminTokenPostGrantType = string | null;
+export type BodyAdminTokenApiAdminTokenPostGrantType = string | null
 
 export interface BodyAdminTokenApiAdminTokenPost {
-  grant_type?: BodyAdminTokenApiAdminTokenPostGrantType;
-  username: string;
-  password: string;
-  scope?: string;
-  client_id?: BodyAdminTokenApiAdminTokenPostClientId;
-  client_secret?: BodyAdminTokenApiAdminTokenPostClientSecret;
+  grant_type?: BodyAdminTokenApiAdminTokenPostGrantType
+  username: string
+  password: string
+  scope?: string
+  client_id?: BodyAdminTokenApiAdminTokenPostClientId
+  client_secret?: BodyAdminTokenApiAdminTokenPostClientSecret
 }
 
-export type AdminModifyDiscordWebhook = string | null;
+export type AdminModifyDiscordWebhook = string | null
 
-export type AdminModifyTelegramId = number | null;
+export type AdminModifyTelegramId = number | null
 
-export type AdminModifyPassword = string | null;
+export type AdminModifyPassword = string | null
 
 export interface AdminModify {
-  password?: AdminModifyPassword;
-  is_sudo: boolean;
-  telegram_id?: AdminModifyTelegramId;
-  discord_webhook?: AdminModifyDiscordWebhook;
+  password?: AdminModifyPassword
+  is_sudo: boolean
+  telegram_id?: AdminModifyTelegramId
+  discord_webhook?: AdminModifyDiscordWebhook
 }
 
-export type AdminCreateUsersUsage = number | null;
+export type AdminCreateUsersUsage = number | null
 
-export type AdminCreateDiscordWebhook = string | null;
+export type AdminCreateDiscordWebhook = string | null
 
-export type AdminCreateTelegramId = number | null;
+export type AdminCreateTelegramId = number | null
 
 export interface AdminCreate {
-  username: string;
-  is_sudo: boolean;
-  telegram_id?: AdminCreateTelegramId;
-  discord_webhook?: AdminCreateDiscordWebhook;
-  users_usage?: AdminCreateUsersUsage;
-  password: string;
+  username: string
+  is_sudo: boolean
+  telegram_id?: AdminCreateTelegramId
+  discord_webhook?: AdminCreateDiscordWebhook
+  users_usage?: AdminCreateUsersUsage
+  password: string
 }
 
-export type AdminUsersUsage = number | null;
+export type AdminUsersUsage = number | null
 
-export type AdminDiscordWebhook = string | null;
+export type AdminDiscordWebhook = string | null
 
-export type AdminTelegramId = number | null;
+export type AdminTelegramId = number | null
 
 export interface Admin {
-  username: string;
-  is_sudo: boolean;
-  telegram_id?: AdminTelegramId;
-  discord_webhook?: AdminDiscordWebhook;
-  users_usage?: AdminUsersUsage;
+  username: string
+  is_sudo: boolean
+  telegram_id?: AdminTelegramId
+  discord_webhook?: AdminDiscordWebhook
+  users_usage?: AdminUsersUsage
 }
 
 /**
  * @summary Base
  */
 export const base = (signal?: AbortSignal) => {
-  return orvalFetcher<string>({ url: `/`, method: "GET", signal });
-};
+  return orvalFetcher<string>({ url: `/`, method: 'GET', signal })
+}
 
 export const getBaseQueryKey = () => {
-  return [`/`] as const;
-};
+  return [`/`] as const
+}
 
-export const getBaseQueryOptions = <
-  TData = Awaited<ReturnType<typeof base>>,
-  TError = ErrorType<unknown>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof base>>, TError, TData>
-  >;
+export const getBaseQueryOptions = <TData = Awaited<ReturnType<typeof base>>, TError = ErrorType<unknown>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof base>>, TError, TData>>
 }) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getBaseQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getBaseQueryKey()
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof base>>> = ({
-    signal,
-  }) => base(signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof base>>> = ({ signal }) => base(signal)
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof base>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof base>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type BaseQueryResult = NonNullable<Awaited<ReturnType<typeof base>>>;
-export type BaseQueryError = ErrorType<unknown>;
+export type BaseQueryResult = NonNullable<Awaited<ReturnType<typeof base>>>
+export type BaseQueryError = ErrorType<unknown>
 
-export function useBase<
-  TData = Awaited<ReturnType<typeof base>>,
-  TError = ErrorType<unknown>
->(options: {
-  query: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof base>>, TError, TData>
-  > &
-    Pick<
-      DefinedInitialDataOptions<
-        Awaited<ReturnType<typeof base>>,
-        TError,
-        TData
-      >,
-      "initialData"
-    >;
-}): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useBase<
-  TData = Awaited<ReturnType<typeof base>>,
-  TError = ErrorType<unknown>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof base>>, TError, TData>
-  > &
-    Pick<
-      UndefinedInitialDataOptions<
-        Awaited<ReturnType<typeof base>>,
-        TError,
-        TData
-      >,
-      "initialData"
-    >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useBase<
-  TData = Awaited<ReturnType<typeof base>>,
-  TError = ErrorType<unknown>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof base>>, TError, TData>
-  >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+export function useBase<TData = Awaited<ReturnType<typeof base>>, TError = ErrorType<unknown>>(options: {
+  query: Partial<UseQueryOptions<Awaited<ReturnType<typeof base>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof base>>, TError, TData>, 'initialData'>
+}): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBase<TData = Awaited<ReturnType<typeof base>>, TError = ErrorType<unknown>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof base>>, TError, TData>> & Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof base>>, TError, TData>, 'initialData'>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBase<TData = Awaited<ReturnType<typeof base>>, TError = ErrorType<unknown>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof base>>, TError, TData>>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Base
  */
 
-export function useBase<
-  TData = Awaited<ReturnType<typeof base>>,
-  TError = ErrorType<unknown>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof base>>, TError, TData>
-  >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getBaseQueryOptions(options);
+export function useBase<TData = Awaited<ReturnType<typeof base>>, TError = ErrorType<unknown>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof base>>, TError, TData>>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getBaseQueryOptions(options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
  * Authenticate an admin and issue a token.
  * @summary Admin Token
  */
-export const adminToken = (
-  bodyAdminTokenApiAdminTokenPost: BodyType<BodyAdminTokenApiAdminTokenPost>,
-  signal?: AbortSignal
-) => {
-  const formUrlEncoded = new URLSearchParams();
-  if (
-    bodyAdminTokenApiAdminTokenPost.grant_type !== undefined &&
-    bodyAdminTokenApiAdminTokenPost.grant_type !== null
-  ) {
-    formUrlEncoded.append(
-      "grant_type",
-      bodyAdminTokenApiAdminTokenPost.grant_type
-    );
+export const adminToken = (bodyAdminTokenApiAdminTokenPost: BodyType<BodyAdminTokenApiAdminTokenPost>, signal?: AbortSignal) => {
+  const formUrlEncoded = new URLSearchParams()
+  if (bodyAdminTokenApiAdminTokenPost.grant_type !== undefined && bodyAdminTokenApiAdminTokenPost.grant_type !== null) {
+    formUrlEncoded.append('grant_type', bodyAdminTokenApiAdminTokenPost.grant_type)
   }
-  formUrlEncoded.append("username", bodyAdminTokenApiAdminTokenPost.username);
-  formUrlEncoded.append("password", bodyAdminTokenApiAdminTokenPost.password);
+  formUrlEncoded.append('username', bodyAdminTokenApiAdminTokenPost.username)
+  formUrlEncoded.append('password', bodyAdminTokenApiAdminTokenPost.password)
   if (bodyAdminTokenApiAdminTokenPost.scope !== undefined) {
-    formUrlEncoded.append("scope", bodyAdminTokenApiAdminTokenPost.scope);
+    formUrlEncoded.append('scope', bodyAdminTokenApiAdminTokenPost.scope)
   }
-  if (
-    bodyAdminTokenApiAdminTokenPost.client_id !== undefined &&
-    bodyAdminTokenApiAdminTokenPost.client_id !== null
-  ) {
-    formUrlEncoded.append(
-      "client_id",
-      bodyAdminTokenApiAdminTokenPost.client_id
-    );
+  if (bodyAdminTokenApiAdminTokenPost.client_id !== undefined && bodyAdminTokenApiAdminTokenPost.client_id !== null) {
+    formUrlEncoded.append('client_id', bodyAdminTokenApiAdminTokenPost.client_id)
   }
-  if (
-    bodyAdminTokenApiAdminTokenPost.client_secret !== undefined &&
-    bodyAdminTokenApiAdminTokenPost.client_secret !== null
-  ) {
-    formUrlEncoded.append(
-      "client_secret",
-      bodyAdminTokenApiAdminTokenPost.client_secret
-    );
+  if (bodyAdminTokenApiAdminTokenPost.client_secret !== undefined && bodyAdminTokenApiAdminTokenPost.client_secret !== null) {
+    formUrlEncoded.append('client_secret', bodyAdminTokenApiAdminTokenPost.client_secret)
   }
 
-  return orvalFetcher<Token>({
-    url: `/api/admin/token`,
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    data: formUrlEncoded,
-    signal,
-  });
-};
+  return orvalFetcher<Token>({ url: `/api/admin/token`, method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, data: formUrlEncoded, signal })
+}
 
-export const getAdminTokenMutationOptions = <
-  TData = Awaited<ReturnType<typeof adminToken>>,
-  TError = ErrorType<Unauthorized | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<BodyAdminTokenApiAdminTokenPost> },
-    TContext
-  >;
+export const getAdminTokenMutationOptions = <TData = Awaited<ReturnType<typeof adminToken>>, TError = ErrorType<Unauthorized | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<BodyAdminTokenApiAdminTokenPost> }, TContext>
 }) => {
-  const mutationKey = ["adminToken"];
+  const mutationKey = ['adminToken']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof adminToken>>,
-    { data: BodyType<BodyAdminTokenApiAdminTokenPost> }
-  > = (props) => {
-    const { data } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof adminToken>>, { data: BodyType<BodyAdminTokenApiAdminTokenPost> }> = props => {
+    const { data } = props ?? {}
 
-    return adminToken(data);
-  };
+    return adminToken(data)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<BodyAdminTokenApiAdminTokenPost> },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { data: BodyType<BodyAdminTokenApiAdminTokenPost> }, TContext>
+}
 
-export type AdminTokenMutationResult = NonNullable<
-  Awaited<ReturnType<typeof adminToken>>
->;
-export type AdminTokenMutationBody = BodyType<BodyAdminTokenApiAdminTokenPost>;
-export type AdminTokenMutationError = ErrorType<
-  Unauthorized | HTTPValidationError
->;
+export type AdminTokenMutationResult = NonNullable<Awaited<ReturnType<typeof adminToken>>>
+export type AdminTokenMutationBody = BodyType<BodyAdminTokenApiAdminTokenPost>
+export type AdminTokenMutationError = ErrorType<Unauthorized | HTTPValidationError>
 
 /**
  * @summary Admin Token
  */
-export const useAdminToken = <
-  TData = Awaited<ReturnType<typeof adminToken>>,
-  TError = ErrorType<Unauthorized | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<BodyAdminTokenApiAdminTokenPost> },
-    TContext
-  >;
-}): UseMutationResult<
-  TData,
-  TError,
-  { data: BodyType<BodyAdminTokenApiAdminTokenPost> },
-  TContext
-> => {
-  const mutationOptions = getAdminTokenMutationOptions(options);
+export const useAdminToken = <TData = Awaited<ReturnType<typeof adminToken>>, TError = ErrorType<Unauthorized | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<BodyAdminTokenApiAdminTokenPost> }, TContext>
+}): UseMutationResult<TData, TError, { data: BodyType<BodyAdminTokenApiAdminTokenPost> }, TContext> => {
+  const mutationOptions = getAdminTokenMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Retrieve the current authenticated admin.
  * @summary Get Current Admin
  */
 export const getCurrentAdmin = (signal?: AbortSignal) => {
-  return orvalFetcher<Admin>({ url: `/api/admin`, method: "GET", signal });
-};
+  return orvalFetcher<Admin>({ url: `/api/admin`, method: 'GET', signal })
+}
 
 export const getGetCurrentAdminQueryKey = () => {
-  return [`/api/admin`] as const;
-};
+  return [`/api/admin`] as const
+}
 
-export const getGetCurrentAdminQueryOptions = <
-  TData = Awaited<ReturnType<typeof getCurrentAdmin>>,
-  TError = ErrorType<Unauthorized>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getCurrentAdmin>>, TError, TData>
-  >;
+export const getGetCurrentAdminQueryOptions = <TData = Awaited<ReturnType<typeof getCurrentAdmin>>, TError = ErrorType<Unauthorized>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrentAdmin>>, TError, TData>>
 }) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetCurrentAdminQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetCurrentAdminQueryKey()
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentAdmin>>> = ({
-    signal,
-  }) => getCurrentAdmin(signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentAdmin>>> = ({ signal }) => getCurrentAdmin(signal)
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getCurrentAdmin>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getCurrentAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type GetCurrentAdminQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getCurrentAdmin>>
->;
-export type GetCurrentAdminQueryError = ErrorType<Unauthorized>;
+export type GetCurrentAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getCurrentAdmin>>>
+export type GetCurrentAdminQueryError = ErrorType<Unauthorized>
 
-export function useGetCurrentAdmin<
-  TData = Awaited<ReturnType<typeof getCurrentAdmin>>,
-  TError = ErrorType<Unauthorized>
->(options: {
-  query: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getCurrentAdmin>>, TError, TData>
-  > &
-    Pick<
-      DefinedInitialDataOptions<
-        Awaited<ReturnType<typeof getCurrentAdmin>>,
-        TError,
-        TData
-      >,
-      "initialData"
-    >;
-}): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetCurrentAdmin<
-  TData = Awaited<ReturnType<typeof getCurrentAdmin>>,
-  TError = ErrorType<Unauthorized>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getCurrentAdmin>>, TError, TData>
-  > &
-    Pick<
-      UndefinedInitialDataOptions<
-        Awaited<ReturnType<typeof getCurrentAdmin>>,
-        TError,
-        TData
-      >,
-      "initialData"
-    >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetCurrentAdmin<
-  TData = Awaited<ReturnType<typeof getCurrentAdmin>>,
-  TError = ErrorType<Unauthorized>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getCurrentAdmin>>, TError, TData>
-  >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+export function useGetCurrentAdmin<TData = Awaited<ReturnType<typeof getCurrentAdmin>>, TError = ErrorType<Unauthorized>>(options: {
+  query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrentAdmin>>, TError, TData>> &
+    Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getCurrentAdmin>>, TError, TData>, 'initialData'>
+}): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCurrentAdmin<TData = Awaited<ReturnType<typeof getCurrentAdmin>>, TError = ErrorType<Unauthorized>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrentAdmin>>, TError, TData>> &
+    Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getCurrentAdmin>>, TError, TData>, 'initialData'>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCurrentAdmin<TData = Awaited<ReturnType<typeof getCurrentAdmin>>, TError = ErrorType<Unauthorized>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrentAdmin>>, TError, TData>>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get Current Admin
  */
 
-export function useGetCurrentAdmin<
-  TData = Awaited<ReturnType<typeof getCurrentAdmin>>,
-  TError = ErrorType<Unauthorized>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getCurrentAdmin>>, TError, TData>
-  >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetCurrentAdminQueryOptions(options);
+export function useGetCurrentAdmin<TData = Awaited<ReturnType<typeof getCurrentAdmin>>, TError = ErrorType<Unauthorized>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrentAdmin>>, TError, TData>>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetCurrentAdminQueryOptions(options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
  * Create a new admin if the current admin has sudo privileges.
  * @summary Create Admin
  */
-export const createAdmin = (
-  adminCreate: BodyType<AdminCreate>,
-  signal?: AbortSignal
-) => {
-  return orvalFetcher<Admin>({
-    url: `/api/admin`,
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    data: adminCreate,
-    signal,
-  });
-};
+export const createAdmin = (adminCreate: BodyType<AdminCreate>, signal?: AbortSignal) => {
+  return orvalFetcher<Admin>({ url: `/api/admin`, method: 'POST', headers: { 'Content-Type': 'application/json' }, data: adminCreate, signal })
+}
 
 export const getCreateAdminMutationOptions = <
   TData = Awaited<ReturnType<typeof createAdmin>>,
   TError = ErrorType<Unauthorized | Forbidden | Conflict | HTTPValidationError>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<AdminCreate> },
-    TContext
-  >;
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<AdminCreate> }, TContext>
 }) => {
-  const mutationKey = ["createAdmin"];
+  const mutationKey = ['createAdmin']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof createAdmin>>,
-    { data: BodyType<AdminCreate> }
-  > = (props) => {
-    const { data } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdmin>>, { data: BodyType<AdminCreate> }> = props => {
+    const { data } = props ?? {}
 
-    return createAdmin(data);
-  };
+    return createAdmin(data)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<AdminCreate> },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { data: BodyType<AdminCreate> }, TContext>
+}
 
-export type CreateAdminMutationResult = NonNullable<
-  Awaited<ReturnType<typeof createAdmin>>
->;
-export type CreateAdminMutationBody = BodyType<AdminCreate>;
-export type CreateAdminMutationError = ErrorType<
-  Unauthorized | Forbidden | Conflict | HTTPValidationError
->;
+export type CreateAdminMutationResult = NonNullable<Awaited<ReturnType<typeof createAdmin>>>
+export type CreateAdminMutationBody = BodyType<AdminCreate>
+export type CreateAdminMutationError = ErrorType<Unauthorized | Forbidden | Conflict | HTTPValidationError>
 
 /**
  * @summary Create Admin
  */
-export const useCreateAdmin = <
-  TData = Awaited<ReturnType<typeof createAdmin>>,
-  TError = ErrorType<Unauthorized | Forbidden | Conflict | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<AdminCreate> },
-    TContext
-  >;
-}): UseMutationResult<
-  TData,
-  TError,
-  { data: BodyType<AdminCreate> },
-  TContext
-> => {
-  const mutationOptions = getCreateAdminMutationOptions(options);
+export const useCreateAdmin = <TData = Awaited<ReturnType<typeof createAdmin>>, TError = ErrorType<Unauthorized | Forbidden | Conflict | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<AdminCreate> }, TContext>
+}): UseMutationResult<TData, TError, { data: BodyType<AdminCreate> }, TContext> => {
+  const mutationOptions = getCreateAdminMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Modify an existing admin's details.
  * @summary Modify Admin
  */
-export const modifyAdmin = (
-  username: string,
-  adminModify: BodyType<AdminModify>
-) => {
-  return orvalFetcher<Admin>({
-    url: `/api/admin/${username}`,
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    data: adminModify,
-  });
-};
+export const modifyAdmin = (username: string, adminModify: BodyType<AdminModify>) => {
+  return orvalFetcher<Admin>({ url: `/api/admin/${username}`, method: 'PUT', headers: { 'Content-Type': 'application/json' }, data: adminModify })
+}
 
-export const getModifyAdminMutationOptions = <
-  TData = Awaited<ReturnType<typeof modifyAdmin>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { username: string; data: BodyType<AdminModify> },
-    TContext
-  >;
+export const getModifyAdminMutationOptions = <TData = Awaited<ReturnType<typeof modifyAdmin>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { username: string; data: BodyType<AdminModify> }, TContext>
 }) => {
-  const mutationKey = ["modifyAdmin"];
+  const mutationKey = ['modifyAdmin']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof modifyAdmin>>,
-    { username: string; data: BodyType<AdminModify> }
-  > = (props) => {
-    const { username, data } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof modifyAdmin>>, { username: string; data: BodyType<AdminModify> }> = props => {
+    const { username, data } = props ?? {}
 
-    return modifyAdmin(username, data);
-  };
+    return modifyAdmin(username, data)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { username: string; data: BodyType<AdminModify> },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { username: string; data: BodyType<AdminModify> }, TContext>
+}
 
-export type ModifyAdminMutationResult = NonNullable<
-  Awaited<ReturnType<typeof modifyAdmin>>
->;
-export type ModifyAdminMutationBody = BodyType<AdminModify>;
-export type ModifyAdminMutationError = ErrorType<
-  Unauthorized | Forbidden | HTTPValidationError
->;
+export type ModifyAdminMutationResult = NonNullable<Awaited<ReturnType<typeof modifyAdmin>>>
+export type ModifyAdminMutationBody = BodyType<AdminModify>
+export type ModifyAdminMutationError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
 
 /**
  * @summary Modify Admin
  */
-export const useModifyAdmin = <
-  TData = Awaited<ReturnType<typeof modifyAdmin>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { username: string; data: BodyType<AdminModify> },
-    TContext
-  >;
-}): UseMutationResult<
-  TData,
-  TError,
-  { username: string; data: BodyType<AdminModify> },
-  TContext
-> => {
-  const mutationOptions = getModifyAdminMutationOptions(options);
+export const useModifyAdmin = <TData = Awaited<ReturnType<typeof modifyAdmin>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { username: string; data: BodyType<AdminModify> }, TContext>
+}): UseMutationResult<TData, TError, { username: string; data: BodyType<AdminModify> }, TContext> => {
+  const mutationOptions = getModifyAdminMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Remove an admin from the database.
  * @summary Remove Admin
  */
 export const removeAdmin = (username: string) => {
-  return orvalFetcher<unknown>({
-    url: `/api/admin/${username}`,
-    method: "DELETE",
-  });
-};
+  return orvalFetcher<unknown>({ url: `/api/admin/${username}`, method: 'DELETE' })
+}
 
-export const getRemoveAdminMutationOptions = <
-  TData = Awaited<ReturnType<typeof removeAdmin>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>;
+export const getRemoveAdminMutationOptions = <TData = Awaited<ReturnType<typeof removeAdmin>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>
 }) => {
-  const mutationKey = ["removeAdmin"];
+  const mutationKey = ['removeAdmin']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof removeAdmin>>,
-    { username: string }
-  > = (props) => {
-    const { username } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeAdmin>>, { username: string }> = props => {
+    const { username } = props ?? {}
 
-    return removeAdmin(username);
-  };
+    return removeAdmin(username)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { username: string },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { username: string }, TContext>
+}
 
-export type RemoveAdminMutationResult = NonNullable<
-  Awaited<ReturnType<typeof removeAdmin>>
->;
+export type RemoveAdminMutationResult = NonNullable<Awaited<ReturnType<typeof removeAdmin>>>
 
-export type RemoveAdminMutationError = ErrorType<
-  Unauthorized | Forbidden | HTTPValidationError
->;
+export type RemoveAdminMutationError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
 
 /**
  * @summary Remove Admin
  */
-export const useRemoveAdmin = <
-  TData = Awaited<ReturnType<typeof removeAdmin>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>;
+export const useRemoveAdmin = <TData = Awaited<ReturnType<typeof removeAdmin>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>
 }): UseMutationResult<TData, TError, { username: string }, TContext> => {
-  const mutationOptions = getRemoveAdminMutationOptions(options);
+  const mutationOptions = getRemoveAdminMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Fetch a list of admins with optional filters for pagination and username.
  * @summary Get Admins
  */
 export const getAdmins = (params?: GetAdminsParams, signal?: AbortSignal) => {
-  return orvalFetcher<Admin[]>({
-    url: `/api/admins`,
-    method: "GET",
-    params,
-    signal,
-  });
-};
+  return orvalFetcher<Admin[]>({ url: `/api/admins`, method: 'GET', params, signal })
+}
 
 export const getGetAdminsQueryKey = (params?: GetAdminsParams) => {
-  return [`/api/admins`, ...(params ? [params] : [])] as const;
-};
+  return [`/api/admins`, ...(params ? [params] : [])] as const
+}
 
-export const getGetAdminsQueryOptions = <
-  TData = Awaited<ReturnType<typeof getAdmins>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+export const getGetAdminsQueryOptions = <TData = Awaited<ReturnType<typeof getAdmins>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   params?: GetAdminsParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getAdmins>>, TError, TData>
-    >;
-  }
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdmins>>, TError, TData>> },
 ) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetAdminsQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetAdminsQueryKey(params)
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdmins>>> = ({
-    signal,
-  }) => getAdmins(params, signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdmins>>> = ({ signal }) => getAdmins(params, signal)
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getAdmins>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getAdmins>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type GetAdminsQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getAdmins>>
->;
-export type GetAdminsQueryError = ErrorType<
-  Unauthorized | Forbidden | HTTPValidationError
->;
+export type GetAdminsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdmins>>>
+export type GetAdminsQueryError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
 
-export function useGetAdmins<
-  TData = Awaited<ReturnType<typeof getAdmins>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+export function useGetAdmins<TData = Awaited<ReturnType<typeof getAdmins>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   params: undefined | GetAdminsParams,
   options: {
-    query: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getAdmins>>, TError, TData>
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdmins>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetAdmins<
-  TData = Awaited<ReturnType<typeof getAdmins>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdmins>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getAdmins>>, TError, TData>, 'initialData'>
+  },
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdmins<TData = Awaited<ReturnType<typeof getAdmins>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   params?: GetAdminsParams,
   options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getAdmins>>, TError, TData>
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdmins>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetAdmins<
-  TData = Awaited<ReturnType<typeof getAdmins>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdmins>>, TError, TData>> & Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getAdmins>>, TError, TData>, 'initialData'>
+  },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdmins<TData = Awaited<ReturnType<typeof getAdmins>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   params?: GetAdminsParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getAdmins>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdmins>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get Admins
  */
 
-export function useGetAdmins<
-  TData = Awaited<ReturnType<typeof getAdmins>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+export function useGetAdmins<TData = Awaited<ReturnType<typeof getAdmins>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   params?: GetAdminsParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getAdmins>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetAdminsQueryOptions(params, options);
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdmins>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetAdminsQueryOptions(params, options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
  * Disable all active users under a specific admin
  * @summary Disable All Active Users
  */
-export const disableAllActiveUsers = (
-  username: string,
-  signal?: AbortSignal
-) => {
-  return orvalFetcher<unknown>({
-    url: `/api/admin/${username}/users/disable`,
-    method: "POST",
-    signal,
-  });
-};
+export const disableAllActiveUsers = (username: string, signal?: AbortSignal) => {
+  return orvalFetcher<unknown>({ url: `/api/admin/${username}/users/disable`, method: 'POST', signal })
+}
 
 export const getDisableAllActiveUsersMutationOptions = <
   TData = Awaited<ReturnType<typeof disableAllActiveUsers>>,
   TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>;
+  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>
 }) => {
-  const mutationKey = ["disableAllActiveUsers"];
+  const mutationKey = ['disableAllActiveUsers']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof disableAllActiveUsers>>,
-    { username: string }
-  > = (props) => {
-    const { username } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof disableAllActiveUsers>>, { username: string }> = props => {
+    const { username } = props ?? {}
 
-    return disableAllActiveUsers(username);
-  };
+    return disableAllActiveUsers(username)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { username: string },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { username: string }, TContext>
+}
 
-export type DisableAllActiveUsersMutationResult = NonNullable<
-  Awaited<ReturnType<typeof disableAllActiveUsers>>
->;
+export type DisableAllActiveUsersMutationResult = NonNullable<Awaited<ReturnType<typeof disableAllActiveUsers>>>
 
-export type DisableAllActiveUsersMutationError = ErrorType<
-  Unauthorized | Forbidden | NotFound | HTTPValidationError
->;
+export type DisableAllActiveUsersMutationError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
 
 /**
  * @summary Disable All Active Users
@@ -1781,70 +1389,49 @@ export type DisableAllActiveUsersMutationError = ErrorType<
 export const useDisableAllActiveUsers = <
   TData = Awaited<ReturnType<typeof disableAllActiveUsers>>,
   TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>;
+  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>
 }): UseMutationResult<TData, TError, { username: string }, TContext> => {
-  const mutationOptions = getDisableAllActiveUsersMutationOptions(options);
+  const mutationOptions = getDisableAllActiveUsersMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Activate all disabled users under a specific admin
  * @summary Activate All Disabled Users
  */
-export const activateAllDisabledUsers = (
-  username: string,
-  signal?: AbortSignal
-) => {
-  return orvalFetcher<unknown>({
-    url: `/api/admin/${username}/users/activate`,
-    method: "POST",
-    signal,
-  });
-};
+export const activateAllDisabledUsers = (username: string, signal?: AbortSignal) => {
+  return orvalFetcher<unknown>({ url: `/api/admin/${username}/users/activate`, method: 'POST', signal })
+}
 
 export const getActivateAllDisabledUsersMutationOptions = <
   TData = Awaited<ReturnType<typeof activateAllDisabledUsers>>,
   TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>;
+  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>
 }) => {
-  const mutationKey = ["activateAllDisabledUsers"];
+  const mutationKey = ['activateAllDisabledUsers']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof activateAllDisabledUsers>>,
-    { username: string }
-  > = (props) => {
-    const { username } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof activateAllDisabledUsers>>, { username: string }> = props => {
+    const { username } = props ?? {}
 
-    return activateAllDisabledUsers(username);
-  };
+    return activateAllDisabledUsers(username)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { username: string },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { username: string }, TContext>
+}
 
-export type ActivateAllDisabledUsersMutationResult = NonNullable<
-  Awaited<ReturnType<typeof activateAllDisabledUsers>>
->;
+export type ActivateAllDisabledUsersMutationResult = NonNullable<Awaited<ReturnType<typeof activateAllDisabledUsers>>>
 
-export type ActivateAllDisabledUsersMutationError = ErrorType<
-  Unauthorized | Forbidden | NotFound | HTTPValidationError
->;
+export type ActivateAllDisabledUsersMutationError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
 
 /**
  * @summary Activate All Disabled Users
@@ -1852,218 +1439,121 @@ export type ActivateAllDisabledUsersMutationError = ErrorType<
 export const useActivateAllDisabledUsers = <
   TData = Awaited<ReturnType<typeof activateAllDisabledUsers>>,
   TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>;
+  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>
 }): UseMutationResult<TData, TError, { username: string }, TContext> => {
-  const mutationOptions = getActivateAllDisabledUsersMutationOptions(options);
+  const mutationOptions = getActivateAllDisabledUsersMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Resets usage of admin.
  * @summary Reset Admin Usage
  */
 export const resetAdminUsage = (username: string, signal?: AbortSignal) => {
-  return orvalFetcher<Admin>({
-    url: `/api/admin/usage/reset/${username}`,
-    method: "POST",
-    signal,
-  });
-};
+  return orvalFetcher<Admin>({ url: `/api/admin/usage/reset/${username}`, method: 'POST', signal })
+}
 
 export const getResetAdminUsageMutationOptions = <
   TData = Awaited<ReturnType<typeof resetAdminUsage>>,
   TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>;
+  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>
 }) => {
-  const mutationKey = ["resetAdminUsage"];
+  const mutationKey = ['resetAdminUsage']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof resetAdminUsage>>,
-    { username: string }
-  > = (props) => {
-    const { username } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof resetAdminUsage>>, { username: string }> = props => {
+    const { username } = props ?? {}
 
-    return resetAdminUsage(username);
-  };
+    return resetAdminUsage(username)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { username: string },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { username: string }, TContext>
+}
 
-export type ResetAdminUsageMutationResult = NonNullable<
-  Awaited<ReturnType<typeof resetAdminUsage>>
->;
+export type ResetAdminUsageMutationResult = NonNullable<Awaited<ReturnType<typeof resetAdminUsage>>>
 
-export type ResetAdminUsageMutationError = ErrorType<
-  Unauthorized | Forbidden | HTTPValidationError
->;
+export type ResetAdminUsageMutationError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
 
 /**
  * @summary Reset Admin Usage
  */
-export const useResetAdminUsage = <
-  TData = Awaited<ReturnType<typeof resetAdminUsage>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>;
+export const useResetAdminUsage = <TData = Awaited<ReturnType<typeof resetAdminUsage>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>
 }): UseMutationResult<TData, TError, { username: string }, TContext> => {
-  const mutationOptions = getResetAdminUsageMutationOptions(options);
+  const mutationOptions = getResetAdminUsageMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Retrieve the usage of given admin.
  * @summary Get Admin Usage
  */
 export const getAdminUsage = (username: string, signal?: AbortSignal) => {
-  return orvalFetcher<number>({
-    url: `/api/admin/usage/${username}`,
-    method: "GET",
-    signal,
-  });
-};
+  return orvalFetcher<number>({ url: `/api/admin/usage/${username}`, method: 'GET', signal })
+}
 
 export const getGetAdminUsageQueryKey = (username: string) => {
-  return [`/api/admin/usage/${username}`] as const;
-};
+  return [`/api/admin/usage/${username}`] as const
+}
 
-export const getGetAdminUsageQueryOptions = <
-  TData = Awaited<ReturnType<typeof getAdminUsage>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+export const getGetAdminUsageQueryOptions = <TData = Awaited<ReturnType<typeof getAdminUsage>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   username: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getAdminUsage>>, TError, TData>
-    >;
-  }
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUsage>>, TError, TData>> },
 ) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetAdminUsageQueryKey(username);
+  const queryKey = queryOptions?.queryKey ?? getGetAdminUsageQueryKey(username)
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminUsage>>> = ({
-    signal,
-  }) => getAdminUsage(username, signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminUsage>>> = ({ signal }) => getAdminUsage(username, signal)
 
-  return {
-    queryKey,
-    queryFn,
-    enabled: !!username,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof getAdminUsage>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+  return { queryKey, queryFn, enabled: !!username, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getAdminUsage>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type GetAdminUsageQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getAdminUsage>>
->;
-export type GetAdminUsageQueryError = ErrorType<
-  Unauthorized | Forbidden | HTTPValidationError
->;
+export type GetAdminUsageQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminUsage>>>
+export type GetAdminUsageQueryError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
 
-export function useGetAdminUsage<
-  TData = Awaited<ReturnType<typeof getAdminUsage>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+export function useGetAdminUsage<TData = Awaited<ReturnType<typeof getAdminUsage>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   username: string,
   options: {
-    query: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getAdminUsage>>, TError, TData>
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminUsage>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetAdminUsage<
-  TData = Awaited<ReturnType<typeof getAdminUsage>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUsage>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getAdminUsage>>, TError, TData>, 'initialData'>
+  },
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdminUsage<TData = Awaited<ReturnType<typeof getAdminUsage>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   username: string,
   options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getAdminUsage>>, TError, TData>
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminUsage>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetAdminUsage<
-  TData = Awaited<ReturnType<typeof getAdminUsage>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUsage>>, TError, TData>> &
+      Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getAdminUsage>>, TError, TData>, 'initialData'>
+  },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdminUsage<TData = Awaited<ReturnType<typeof getAdminUsage>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   username: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getAdminUsage>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUsage>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get Admin Usage
  */
 
-export function useGetAdminUsage<
-  TData = Awaited<ReturnType<typeof getAdminUsage>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+export function useGetAdminUsage<TData = Awaited<ReturnType<typeof getAdminUsage>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   username: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getAdminUsage>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetAdminUsageQueryOptions(username, options);
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUsage>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetAdminUsageQueryOptions(username, options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
@@ -2071,114 +1561,52 @@ export function useGetAdminUsage<
  * @summary Get System Stats
  */
 export const getSystemStats = (signal?: AbortSignal) => {
-  return orvalFetcher<SystemStats>({
-    url: `/api/system`,
-    method: "GET",
-    signal,
-  });
-};
+  return orvalFetcher<SystemStats>({ url: `/api/system`, method: 'GET', signal })
+}
 
 export const getGetSystemStatsQueryKey = () => {
-  return [`/api/system`] as const;
-};
+  return [`/api/system`] as const
+}
 
-export const getGetSystemStatsQueryOptions = <
-  TData = Awaited<ReturnType<typeof getSystemStats>>,
-  TError = ErrorType<Unauthorized>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getSystemStats>>, TError, TData>
-  >;
+export const getGetSystemStatsQueryOptions = <TData = Awaited<ReturnType<typeof getSystemStats>>, TError = ErrorType<Unauthorized>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemStats>>, TError, TData>>
 }) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetSystemStatsQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetSystemStatsQueryKey()
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSystemStats>>> = ({
-    signal,
-  }) => getSystemStats(signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSystemStats>>> = ({ signal }) => getSystemStats(signal)
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getSystemStats>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getSystemStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type GetSystemStatsQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getSystemStats>>
->;
-export type GetSystemStatsQueryError = ErrorType<Unauthorized>;
+export type GetSystemStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getSystemStats>>>
+export type GetSystemStatsQueryError = ErrorType<Unauthorized>
 
-export function useGetSystemStats<
-  TData = Awaited<ReturnType<typeof getSystemStats>>,
-  TError = ErrorType<Unauthorized>
->(options: {
-  query: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getSystemStats>>, TError, TData>
-  > &
-    Pick<
-      DefinedInitialDataOptions<
-        Awaited<ReturnType<typeof getSystemStats>>,
-        TError,
-        TData
-      >,
-      "initialData"
-    >;
-}): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetSystemStats<
-  TData = Awaited<ReturnType<typeof getSystemStats>>,
-  TError = ErrorType<Unauthorized>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getSystemStats>>, TError, TData>
-  > &
-    Pick<
-      UndefinedInitialDataOptions<
-        Awaited<ReturnType<typeof getSystemStats>>,
-        TError,
-        TData
-      >,
-      "initialData"
-    >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetSystemStats<
-  TData = Awaited<ReturnType<typeof getSystemStats>>,
-  TError = ErrorType<Unauthorized>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getSystemStats>>, TError, TData>
-  >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+export function useGetSystemStats<TData = Awaited<ReturnType<typeof getSystemStats>>, TError = ErrorType<Unauthorized>>(options: {
+  query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemStats>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getSystemStats>>, TError, TData>, 'initialData'>
+}): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetSystemStats<TData = Awaited<ReturnType<typeof getSystemStats>>, TError = ErrorType<Unauthorized>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemStats>>, TError, TData>> &
+    Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getSystemStats>>, TError, TData>, 'initialData'>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetSystemStats<TData = Awaited<ReturnType<typeof getSystemStats>>, TError = ErrorType<Unauthorized>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemStats>>, TError, TData>>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get System Stats
  */
 
-export function useGetSystemStats<
-  TData = Awaited<ReturnType<typeof getSystemStats>>,
-  TError = ErrorType<Unauthorized>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getSystemStats>>, TError, TData>
-  >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetSystemStatsQueryOptions(options);
+export function useGetSystemStats<TData = Awaited<ReturnType<typeof getSystemStats>>, TError = ErrorType<Unauthorized>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemStats>>, TError, TData>>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetSystemStatsQueryOptions(options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
@@ -2186,114 +1614,51 @@ export function useGetSystemStats<
  * @summary Get Inbounds
  */
 export const getInbounds = (signal?: AbortSignal) => {
-  return orvalFetcher<GetInbounds200>({
-    url: `/api/inbounds`,
-    method: "GET",
-    signal,
-  });
-};
+  return orvalFetcher<GetInbounds200>({ url: `/api/inbounds`, method: 'GET', signal })
+}
 
 export const getGetInboundsQueryKey = () => {
-  return [`/api/inbounds`] as const;
-};
+  return [`/api/inbounds`] as const
+}
 
-export const getGetInboundsQueryOptions = <
-  TData = Awaited<ReturnType<typeof getInbounds>>,
-  TError = ErrorType<Unauthorized>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getInbounds>>, TError, TData>
-  >;
+export const getGetInboundsQueryOptions = <TData = Awaited<ReturnType<typeof getInbounds>>, TError = ErrorType<Unauthorized>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getInbounds>>, TError, TData>>
 }) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetInboundsQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetInboundsQueryKey()
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getInbounds>>> = ({
-    signal,
-  }) => getInbounds(signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getInbounds>>> = ({ signal }) => getInbounds(signal)
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getInbounds>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getInbounds>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type GetInboundsQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getInbounds>>
->;
-export type GetInboundsQueryError = ErrorType<Unauthorized>;
+export type GetInboundsQueryResult = NonNullable<Awaited<ReturnType<typeof getInbounds>>>
+export type GetInboundsQueryError = ErrorType<Unauthorized>
 
-export function useGetInbounds<
-  TData = Awaited<ReturnType<typeof getInbounds>>,
-  TError = ErrorType<Unauthorized>
->(options: {
-  query: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getInbounds>>, TError, TData>
-  > &
-    Pick<
-      DefinedInitialDataOptions<
-        Awaited<ReturnType<typeof getInbounds>>,
-        TError,
-        TData
-      >,
-      "initialData"
-    >;
-}): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetInbounds<
-  TData = Awaited<ReturnType<typeof getInbounds>>,
-  TError = ErrorType<Unauthorized>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getInbounds>>, TError, TData>
-  > &
-    Pick<
-      UndefinedInitialDataOptions<
-        Awaited<ReturnType<typeof getInbounds>>,
-        TError,
-        TData
-      >,
-      "initialData"
-    >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetInbounds<
-  TData = Awaited<ReturnType<typeof getInbounds>>,
-  TError = ErrorType<Unauthorized>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getInbounds>>, TError, TData>
-  >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+export function useGetInbounds<TData = Awaited<ReturnType<typeof getInbounds>>, TError = ErrorType<Unauthorized>>(options: {
+  query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getInbounds>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getInbounds>>, TError, TData>, 'initialData'>
+}): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetInbounds<TData = Awaited<ReturnType<typeof getInbounds>>, TError = ErrorType<Unauthorized>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getInbounds>>, TError, TData>> & Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getInbounds>>, TError, TData>, 'initialData'>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetInbounds<TData = Awaited<ReturnType<typeof getInbounds>>, TError = ErrorType<Unauthorized>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getInbounds>>, TError, TData>>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get Inbounds
  */
 
-export function useGetInbounds<
-  TData = Awaited<ReturnType<typeof getInbounds>>,
-  TError = ErrorType<Unauthorized>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getInbounds>>, TError, TData>
-  >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetInboundsQueryOptions(options);
+export function useGetInbounds<TData = Awaited<ReturnType<typeof getInbounds>>, TError = ErrorType<Unauthorized>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getInbounds>>, TError, TData>>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetInboundsQueryOptions(options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
@@ -2301,110 +1666,51 @@ export function useGetInbounds<
  * @summary Get Core Stats
  */
 export const getCoreStats = (signal?: AbortSignal) => {
-  return orvalFetcher<CoreStats>({ url: `/api/core`, method: "GET", signal });
-};
+  return orvalFetcher<CoreStats>({ url: `/api/core`, method: 'GET', signal })
+}
 
 export const getGetCoreStatsQueryKey = () => {
-  return [`/api/core`] as const;
-};
+  return [`/api/core`] as const
+}
 
-export const getGetCoreStatsQueryOptions = <
-  TData = Awaited<ReturnType<typeof getCoreStats>>,
-  TError = ErrorType<Unauthorized>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getCoreStats>>, TError, TData>
-  >;
+export const getGetCoreStatsQueryOptions = <TData = Awaited<ReturnType<typeof getCoreStats>>, TError = ErrorType<Unauthorized>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCoreStats>>, TError, TData>>
 }) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetCoreStatsQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetCoreStatsQueryKey()
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCoreStats>>> = ({
-    signal,
-  }) => getCoreStats(signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCoreStats>>> = ({ signal }) => getCoreStats(signal)
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getCoreStats>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getCoreStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type GetCoreStatsQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getCoreStats>>
->;
-export type GetCoreStatsQueryError = ErrorType<Unauthorized>;
+export type GetCoreStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getCoreStats>>>
+export type GetCoreStatsQueryError = ErrorType<Unauthorized>
 
-export function useGetCoreStats<
-  TData = Awaited<ReturnType<typeof getCoreStats>>,
-  TError = ErrorType<Unauthorized>
->(options: {
-  query: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getCoreStats>>, TError, TData>
-  > &
-    Pick<
-      DefinedInitialDataOptions<
-        Awaited<ReturnType<typeof getCoreStats>>,
-        TError,
-        TData
-      >,
-      "initialData"
-    >;
-}): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetCoreStats<
-  TData = Awaited<ReturnType<typeof getCoreStats>>,
-  TError = ErrorType<Unauthorized>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getCoreStats>>, TError, TData>
-  > &
-    Pick<
-      UndefinedInitialDataOptions<
-        Awaited<ReturnType<typeof getCoreStats>>,
-        TError,
-        TData
-      >,
-      "initialData"
-    >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetCoreStats<
-  TData = Awaited<ReturnType<typeof getCoreStats>>,
-  TError = ErrorType<Unauthorized>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getCoreStats>>, TError, TData>
-  >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+export function useGetCoreStats<TData = Awaited<ReturnType<typeof getCoreStats>>, TError = ErrorType<Unauthorized>>(options: {
+  query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCoreStats>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getCoreStats>>, TError, TData>, 'initialData'>
+}): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCoreStats<TData = Awaited<ReturnType<typeof getCoreStats>>, TError = ErrorType<Unauthorized>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCoreStats>>, TError, TData>> & Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getCoreStats>>, TError, TData>, 'initialData'>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCoreStats<TData = Awaited<ReturnType<typeof getCoreStats>>, TError = ErrorType<Unauthorized>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCoreStats>>, TError, TData>>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get Core Stats
  */
 
-export function useGetCoreStats<
-  TData = Awaited<ReturnType<typeof getCoreStats>>,
-  TError = ErrorType<Unauthorized>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getCoreStats>>, TError, TData>
-  >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetCoreStatsQueryOptions(options);
+export function useGetCoreStats<TData = Awaited<ReturnType<typeof getCoreStats>>, TError = ErrorType<Unauthorized>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCoreStats>>, TError, TData>>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetCoreStatsQueryOptions(options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
@@ -2412,265 +1718,139 @@ export function useGetCoreStats<
  * @summary Restart Core
  */
 export const restartCore = (signal?: AbortSignal) => {
-  return orvalFetcher<unknown>({
-    url: `/api/core/restart`,
-    method: "POST",
-    signal,
-  });
-};
+  return orvalFetcher<unknown>({ url: `/api/core/restart`, method: 'POST', signal })
+}
 
-export const getRestartCoreMutationOptions = <
-  TData = Awaited<ReturnType<typeof restartCore>>,
-  TError = ErrorType<Unauthorized | Forbidden>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<TData, TError, void, TContext>;
+export const getRestartCoreMutationOptions = <TData = Awaited<ReturnType<typeof restartCore>>, TError = ErrorType<Unauthorized | Forbidden>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, void, TContext>
 }) => {
-  const mutationKey = ["restartCore"];
+  const mutationKey = ['restartCore']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof restartCore>>,
-    void
-  > = () => {
-    return restartCore();
-  };
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof restartCore>>, void> = () => {
+    return restartCore()
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    void,
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, void, TContext>
+}
 
-export type RestartCoreMutationResult = NonNullable<
-  Awaited<ReturnType<typeof restartCore>>
->;
+export type RestartCoreMutationResult = NonNullable<Awaited<ReturnType<typeof restartCore>>>
 
-export type RestartCoreMutationError = ErrorType<Unauthorized | Forbidden>;
+export type RestartCoreMutationError = ErrorType<Unauthorized | Forbidden>
 
 /**
  * @summary Restart Core
  */
-export const useRestartCore = <
-  TData = Awaited<ReturnType<typeof restartCore>>,
-  TError = ErrorType<Unauthorized | Forbidden>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<TData, TError, void, TContext>;
+export const useRestartCore = <TData = Awaited<ReturnType<typeof restartCore>>, TError = ErrorType<Unauthorized | Forbidden>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, void, TContext>
 }): UseMutationResult<TData, TError, void, TContext> => {
-  const mutationOptions = getRestartCoreMutationOptions(options);
+  const mutationOptions = getRestartCoreMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Get the current core configuration.
  * @summary Get Core Config
  */
 export const getCoreConfig = (signal?: AbortSignal) => {
-  return orvalFetcher<GetCoreConfig200>({
-    url: `/api/core/config`,
-    method: "GET",
-    signal,
-  });
-};
+  return orvalFetcher<GetCoreConfig200>({ url: `/api/core/config`, method: 'GET', signal })
+}
 
 export const getGetCoreConfigQueryKey = () => {
-  return [`/api/core/config`] as const;
-};
+  return [`/api/core/config`] as const
+}
 
-export const getGetCoreConfigQueryOptions = <
-  TData = Awaited<ReturnType<typeof getCoreConfig>>,
-  TError = ErrorType<Unauthorized | Forbidden>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getCoreConfig>>, TError, TData>
-  >;
+export const getGetCoreConfigQueryOptions = <TData = Awaited<ReturnType<typeof getCoreConfig>>, TError = ErrorType<Unauthorized | Forbidden>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCoreConfig>>, TError, TData>>
 }) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetCoreConfigQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetCoreConfigQueryKey()
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCoreConfig>>> = ({
-    signal,
-  }) => getCoreConfig(signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCoreConfig>>> = ({ signal }) => getCoreConfig(signal)
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getCoreConfig>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getCoreConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type GetCoreConfigQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getCoreConfig>>
->;
-export type GetCoreConfigQueryError = ErrorType<Unauthorized | Forbidden>;
+export type GetCoreConfigQueryResult = NonNullable<Awaited<ReturnType<typeof getCoreConfig>>>
+export type GetCoreConfigQueryError = ErrorType<Unauthorized | Forbidden>
 
-export function useGetCoreConfig<
-  TData = Awaited<ReturnType<typeof getCoreConfig>>,
-  TError = ErrorType<Unauthorized | Forbidden>
->(options: {
-  query: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getCoreConfig>>, TError, TData>
-  > &
-    Pick<
-      DefinedInitialDataOptions<
-        Awaited<ReturnType<typeof getCoreConfig>>,
-        TError,
-        TData
-      >,
-      "initialData"
-    >;
-}): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetCoreConfig<
-  TData = Awaited<ReturnType<typeof getCoreConfig>>,
-  TError = ErrorType<Unauthorized | Forbidden>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getCoreConfig>>, TError, TData>
-  > &
-    Pick<
-      UndefinedInitialDataOptions<
-        Awaited<ReturnType<typeof getCoreConfig>>,
-        TError,
-        TData
-      >,
-      "initialData"
-    >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetCoreConfig<
-  TData = Awaited<ReturnType<typeof getCoreConfig>>,
-  TError = ErrorType<Unauthorized | Forbidden>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getCoreConfig>>, TError, TData>
-  >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+export function useGetCoreConfig<TData = Awaited<ReturnType<typeof getCoreConfig>>, TError = ErrorType<Unauthorized | Forbidden>>(options: {
+  query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCoreConfig>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getCoreConfig>>, TError, TData>, 'initialData'>
+}): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCoreConfig<TData = Awaited<ReturnType<typeof getCoreConfig>>, TError = ErrorType<Unauthorized | Forbidden>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCoreConfig>>, TError, TData>> &
+    Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getCoreConfig>>, TError, TData>, 'initialData'>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCoreConfig<TData = Awaited<ReturnType<typeof getCoreConfig>>, TError = ErrorType<Unauthorized | Forbidden>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCoreConfig>>, TError, TData>>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get Core Config
  */
 
-export function useGetCoreConfig<
-  TData = Awaited<ReturnType<typeof getCoreConfig>>,
-  TError = ErrorType<Unauthorized | Forbidden>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getCoreConfig>>, TError, TData>
-  >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetCoreConfigQueryOptions(options);
+export function useGetCoreConfig<TData = Awaited<ReturnType<typeof getCoreConfig>>, TError = ErrorType<Unauthorized | Forbidden>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCoreConfig>>, TError, TData>>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetCoreConfigQueryOptions(options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
  * Modify the core configuration and restart the core.
  * @summary Modify Core Config
  */
-export const modifyCoreConfig = (
-  modifyCoreConfigBody: BodyType<ModifyCoreConfigBody>
-) => {
-  return orvalFetcher<ModifyCoreConfig200>({
-    url: `/api/core/config`,
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    data: modifyCoreConfigBody,
-  });
-};
+export const modifyCoreConfig = (modifyCoreConfigBody: BodyType<ModifyCoreConfigBody>) => {
+  return orvalFetcher<ModifyCoreConfig200>({ url: `/api/core/config`, method: 'PUT', headers: { 'Content-Type': 'application/json' }, data: modifyCoreConfigBody })
+}
 
 export const getModifyCoreConfigMutationOptions = <
   TData = Awaited<ReturnType<typeof modifyCoreConfig>>,
   TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<ModifyCoreConfigBody> },
-    TContext
-  >;
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<ModifyCoreConfigBody> }, TContext>
 }) => {
-  const mutationKey = ["modifyCoreConfig"];
+  const mutationKey = ['modifyCoreConfig']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof modifyCoreConfig>>,
-    { data: BodyType<ModifyCoreConfigBody> }
-  > = (props) => {
-    const { data } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof modifyCoreConfig>>, { data: BodyType<ModifyCoreConfigBody> }> = props => {
+    const { data } = props ?? {}
 
-    return modifyCoreConfig(data);
-  };
+    return modifyCoreConfig(data)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<ModifyCoreConfigBody> },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { data: BodyType<ModifyCoreConfigBody> }, TContext>
+}
 
-export type ModifyCoreConfigMutationResult = NonNullable<
-  Awaited<ReturnType<typeof modifyCoreConfig>>
->;
-export type ModifyCoreConfigMutationBody = BodyType<ModifyCoreConfigBody>;
-export type ModifyCoreConfigMutationError = ErrorType<
-  Unauthorized | Forbidden | HTTPValidationError
->;
+export type ModifyCoreConfigMutationResult = NonNullable<Awaited<ReturnType<typeof modifyCoreConfig>>>
+export type ModifyCoreConfigMutationBody = BodyType<ModifyCoreConfigBody>
+export type ModifyCoreConfigMutationError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
 
 /**
  * @summary Modify Core Config
  */
-export const useModifyCoreConfig = <
-  TData = Awaited<ReturnType<typeof modifyCoreConfig>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<ModifyCoreConfigBody> },
-    TContext
-  >;
-}): UseMutationResult<
-  TData,
-  TError,
-  { data: BodyType<ModifyCoreConfigBody> },
-  TContext
-> => {
-  const mutationOptions = getModifyCoreConfigMutationOptions(options);
+export const useModifyCoreConfig = <TData = Awaited<ReturnType<typeof modifyCoreConfig>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<ModifyCoreConfigBody> }, TContext>
+}): UseMutationResult<TData, TError, { data: BodyType<ModifyCoreConfigBody> }, TContext> => {
+  const mutationOptions = getModifyCoreConfigMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * add a new host
@@ -2678,89 +1858,43 @@ export const useModifyCoreConfig = <
 **inbound_tag** must be available in one of xray config
  * @summary Add Host
  */
-export const addHost = (
-  createHost: BodyType<CreateHost>,
-  signal?: AbortSignal
-) => {
-  return orvalFetcher<HostResponse>({
-    url: `/api/host/`,
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    data: createHost,
-    signal,
-  });
-};
+export const addHost = (createHost: BodyType<CreateHost>, signal?: AbortSignal) => {
+  return orvalFetcher<HostResponse>({ url: `/api/host/`, method: 'POST', headers: { 'Content-Type': 'application/json' }, data: createHost, signal })
+}
 
-export const getAddHostMutationOptions = <
-  TData = Awaited<ReturnType<typeof addHost>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<CreateHost> },
-    TContext
-  >;
+export const getAddHostMutationOptions = <TData = Awaited<ReturnType<typeof addHost>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<CreateHost> }, TContext>
 }) => {
-  const mutationKey = ["addHost"];
+  const mutationKey = ['addHost']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof addHost>>,
-    { data: BodyType<CreateHost> }
-  > = (props) => {
-    const { data } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof addHost>>, { data: BodyType<CreateHost> }> = props => {
+    const { data } = props ?? {}
 
-    return addHost(data);
-  };
+    return addHost(data)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<CreateHost> },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { data: BodyType<CreateHost> }, TContext>
+}
 
-export type AddHostMutationResult = NonNullable<
-  Awaited<ReturnType<typeof addHost>>
->;
-export type AddHostMutationBody = BodyType<CreateHost>;
-export type AddHostMutationError = ErrorType<
-  Unauthorized | Forbidden | HTTPValidationError
->;
+export type AddHostMutationResult = NonNullable<Awaited<ReturnType<typeof addHost>>>
+export type AddHostMutationBody = BodyType<CreateHost>
+export type AddHostMutationError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
 
 /**
  * @summary Add Host
  */
-export const useAddHost = <
-  TData = Awaited<ReturnType<typeof addHost>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<CreateHost> },
-    TContext
-  >;
-}): UseMutationResult<
-  TData,
-  TError,
-  { data: BodyType<CreateHost> },
-  TContext
-> => {
-  const mutationOptions = getAddHostMutationOptions(options);
+export const useAddHost = <TData = Awaited<ReturnType<typeof addHost>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<CreateHost> }, TContext>
+}): UseMutationResult<TData, TError, { data: BodyType<CreateHost> }, TContext> => {
+  const mutationOptions = getAddHostMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * modify host by **id**
@@ -2768,289 +1902,151 @@ export const useAddHost = <
 **inbound_tag** must be available in one of xray configs
  * @summary Modify Host
  */
-export const modifyHost = (
-  hostId: number,
-  hostResponse: BodyType<HostResponse>
-) => {
-  return orvalFetcher<HostResponse>({
-    url: `/api/host/${hostId}`,
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    data: hostResponse,
-  });
-};
+export const modifyHost = (hostId: number, hostResponse: BodyType<HostResponse>) => {
+  return orvalFetcher<HostResponse>({ url: `/api/host/${hostId}`, method: 'PUT', headers: { 'Content-Type': 'application/json' }, data: hostResponse })
+}
 
 export const getModifyHostMutationOptions = <
   TData = Awaited<ReturnType<typeof modifyHost>>,
   TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { hostId: number; data: BodyType<HostResponse> },
-    TContext
-  >;
+  mutation?: UseMutationOptions<TData, TError, { hostId: number; data: BodyType<HostResponse> }, TContext>
 }) => {
-  const mutationKey = ["modifyHost"];
+  const mutationKey = ['modifyHost']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof modifyHost>>,
-    { hostId: number; data: BodyType<HostResponse> }
-  > = (props) => {
-    const { hostId, data } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof modifyHost>>, { hostId: number; data: BodyType<HostResponse> }> = props => {
+    const { hostId, data } = props ?? {}
 
-    return modifyHost(hostId, data);
-  };
+    return modifyHost(hostId, data)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { hostId: number; data: BodyType<HostResponse> },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { hostId: number; data: BodyType<HostResponse> }, TContext>
+}
 
-export type ModifyHostMutationResult = NonNullable<
-  Awaited<ReturnType<typeof modifyHost>>
->;
-export type ModifyHostMutationBody = BodyType<HostResponse>;
-export type ModifyHostMutationError = ErrorType<
-  Unauthorized | Forbidden | NotFound | HTTPValidationError
->;
+export type ModifyHostMutationResult = NonNullable<Awaited<ReturnType<typeof modifyHost>>>
+export type ModifyHostMutationBody = BodyType<HostResponse>
+export type ModifyHostMutationError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
 
 /**
  * @summary Modify Host
  */
-export const useModifyHost = <
-  TData = Awaited<ReturnType<typeof modifyHost>>,
-  TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { hostId: number; data: BodyType<HostResponse> },
-    TContext
-  >;
-}): UseMutationResult<
-  TData,
-  TError,
-  { hostId: number; data: BodyType<HostResponse> },
-  TContext
-> => {
-  const mutationOptions = getModifyHostMutationOptions(options);
+export const useModifyHost = <TData = Awaited<ReturnType<typeof modifyHost>>, TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { hostId: number; data: BodyType<HostResponse> }, TContext>
+}): UseMutationResult<TData, TError, { hostId: number; data: BodyType<HostResponse> }, TContext> => {
+  const mutationOptions = getModifyHostMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * remove host by **id**
  * @summary Remove Host
  */
 export const removeHost = (hostId: number) => {
-  return orvalFetcher<unknown>({
-    url: `/api/host/${hostId}`,
-    method: "DELETE",
-  });
-};
+  return orvalFetcher<unknown>({ url: `/api/host/${hostId}`, method: 'DELETE' })
+}
 
 export const getRemoveHostMutationOptions = <
   TData = Awaited<ReturnType<typeof removeHost>>,
   TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<TData, TError, { hostId: number }, TContext>;
+  mutation?: UseMutationOptions<TData, TError, { hostId: number }, TContext>
 }) => {
-  const mutationKey = ["removeHost"];
+  const mutationKey = ['removeHost']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof removeHost>>,
-    { hostId: number }
-  > = (props) => {
-    const { hostId } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeHost>>, { hostId: number }> = props => {
+    const { hostId } = props ?? {}
 
-    return removeHost(hostId);
-  };
+    return removeHost(hostId)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { hostId: number },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { hostId: number }, TContext>
+}
 
-export type RemoveHostMutationResult = NonNullable<
-  Awaited<ReturnType<typeof removeHost>>
->;
+export type RemoveHostMutationResult = NonNullable<Awaited<ReturnType<typeof removeHost>>>
 
-export type RemoveHostMutationError = ErrorType<
-  Unauthorized | Forbidden | NotFound | HTTPValidationError
->;
+export type RemoveHostMutationError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
 
 /**
  * @summary Remove Host
  */
-export const useRemoveHost = <
-  TData = Awaited<ReturnType<typeof removeHost>>,
-  TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<TData, TError, { hostId: number }, TContext>;
+export const useRemoveHost = <TData = Awaited<ReturnType<typeof removeHost>>, TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { hostId: number }, TContext>
 }): UseMutationResult<TData, TError, { hostId: number }, TContext> => {
-  const mutationOptions = getRemoveHostMutationOptions(options);
+  const mutationOptions = getRemoveHostMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * get host by **id**
  * @summary Get Host
  */
 export const getHost = (hostId: number, signal?: AbortSignal) => {
-  return orvalFetcher<HostResponse>({
-    url: `/api/host/${hostId}`,
-    method: "GET",
-    signal,
-  });
-};
+  return orvalFetcher<HostResponse>({ url: `/api/host/${hostId}`, method: 'GET', signal })
+}
 
 export const getGetHostQueryKey = (hostId: number) => {
-  return [`/api/host/${hostId}`] as const;
-};
+  return [`/api/host/${hostId}`] as const
+}
 
-export const getGetHostQueryOptions = <
-  TData = Awaited<ReturnType<typeof getHost>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+export const getGetHostQueryOptions = <TData = Awaited<ReturnType<typeof getHost>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   hostId: number,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getHost>>, TError, TData>
-    >;
-  }
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getHost>>, TError, TData>> },
 ) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetHostQueryKey(hostId);
+  const queryKey = queryOptions?.queryKey ?? getGetHostQueryKey(hostId)
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getHost>>> = ({
-    signal,
-  }) => getHost(hostId, signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getHost>>> = ({ signal }) => getHost(hostId, signal)
 
-  return {
-    queryKey,
-    queryFn,
-    enabled: !!hostId,
-    ...queryOptions,
-  } as UseQueryOptions<Awaited<ReturnType<typeof getHost>>, TError, TData> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-};
+  return { queryKey, queryFn, enabled: !!hostId, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getHost>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type GetHostQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getHost>>
->;
-export type GetHostQueryError = ErrorType<
-  Unauthorized | Forbidden | HTTPValidationError
->;
+export type GetHostQueryResult = NonNullable<Awaited<ReturnType<typeof getHost>>>
+export type GetHostQueryError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
 
-export function useGetHost<
-  TData = Awaited<ReturnType<typeof getHost>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+export function useGetHost<TData = Awaited<ReturnType<typeof getHost>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   hostId: number,
-  options: {
-    query: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getHost>>, TError, TData>
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getHost>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetHost<
-  TData = Awaited<ReturnType<typeof getHost>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+  options: { query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getHost>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getHost>>, TError, TData>, 'initialData'> },
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetHost<TData = Awaited<ReturnType<typeof getHost>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   hostId: number,
   options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getHost>>, TError, TData>
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getHost>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetHost<
-  TData = Awaited<ReturnType<typeof getHost>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getHost>>, TError, TData>> & Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getHost>>, TError, TData>, 'initialData'>
+  },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetHost<TData = Awaited<ReturnType<typeof getHost>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   hostId: number,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getHost>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getHost>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get Host
  */
 
-export function useGetHost<
-  TData = Awaited<ReturnType<typeof getHost>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+export function useGetHost<TData = Awaited<ReturnType<typeof getHost>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   hostId: number,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getHost>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetHostQueryOptions(hostId, options);
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getHost>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetHostQueryOptions(hostId, options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
@@ -3058,132 +2054,60 @@ export function useGetHost<
  * @summary Get Hosts
  */
 export const getHosts = (params?: GetHostsParams, signal?: AbortSignal) => {
-  return orvalFetcher<HostResponse[]>({
-    url: `/api/hosts`,
-    method: "GET",
-    params,
-    signal,
-  });
-};
+  return orvalFetcher<HostResponse[]>({ url: `/api/hosts`, method: 'GET', params, signal })
+}
 
 export const getGetHostsQueryKey = (params?: GetHostsParams) => {
-  return [`/api/hosts`, ...(params ? [params] : [])] as const;
-};
+  return [`/api/hosts`, ...(params ? [params] : [])] as const
+}
 
-export const getGetHostsQueryOptions = <
-  TData = Awaited<ReturnType<typeof getHosts>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+export const getGetHostsQueryOptions = <TData = Awaited<ReturnType<typeof getHosts>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   params?: GetHostsParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getHosts>>, TError, TData>
-    >;
-  }
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getHosts>>, TError, TData>> },
 ) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetHostsQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetHostsQueryKey(params)
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getHosts>>> = ({
-    signal,
-  }) => getHosts(params, signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getHosts>>> = ({ signal }) => getHosts(params, signal)
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getHosts>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getHosts>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type GetHostsQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getHosts>>
->;
-export type GetHostsQueryError = ErrorType<
-  Unauthorized | Forbidden | HTTPValidationError
->;
+export type GetHostsQueryResult = NonNullable<Awaited<ReturnType<typeof getHosts>>>
+export type GetHostsQueryError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
 
-export function useGetHosts<
-  TData = Awaited<ReturnType<typeof getHosts>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+export function useGetHosts<TData = Awaited<ReturnType<typeof getHosts>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   params: undefined | GetHostsParams,
   options: {
-    query: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getHosts>>, TError, TData>
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getHosts>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetHosts<
-  TData = Awaited<ReturnType<typeof getHosts>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getHosts>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getHosts>>, TError, TData>, 'initialData'>
+  },
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetHosts<TData = Awaited<ReturnType<typeof getHosts>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   params?: GetHostsParams,
   options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getHosts>>, TError, TData>
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getHosts>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetHosts<
-  TData = Awaited<ReturnType<typeof getHosts>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getHosts>>, TError, TData>> & Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getHosts>>, TError, TData>, 'initialData'>
+  },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetHosts<TData = Awaited<ReturnType<typeof getHosts>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   params?: GetHostsParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getHosts>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getHosts>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get Hosts
  */
 
-export function useGetHosts<
-  TData = Awaited<ReturnType<typeof getHosts>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+export function useGetHosts<TData = Awaited<ReturnType<typeof getHosts>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   params?: GetHostsParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getHosts>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetHostsQueryOptions(params, options);
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getHosts>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetHostsQueryOptions(params, options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
@@ -3193,690 +2117,332 @@ if **host.id** doesn't exist, create new host
  * @summary Modify Hosts
  */
 export const modifyHosts = (hostResponse: BodyType<HostResponse[]>) => {
-  return orvalFetcher<HostResponse[]>({
-    url: `/api/hosts`,
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    data: hostResponse,
-  });
-};
+  return orvalFetcher<HostResponse[]>({ url: `/api/hosts`, method: 'PUT', headers: { 'Content-Type': 'application/json' }, data: hostResponse })
+}
 
-export const getModifyHostsMutationOptions = <
-  TData = Awaited<ReturnType<typeof modifyHosts>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<HostResponse[]> },
-    TContext
-  >;
+export const getModifyHostsMutationOptions = <TData = Awaited<ReturnType<typeof modifyHosts>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<HostResponse[]> }, TContext>
 }) => {
-  const mutationKey = ["modifyHosts"];
+  const mutationKey = ['modifyHosts']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof modifyHosts>>,
-    { data: BodyType<HostResponse[]> }
-  > = (props) => {
-    const { data } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof modifyHosts>>, { data: BodyType<HostResponse[]> }> = props => {
+    const { data } = props ?? {}
 
-    return modifyHosts(data);
-  };
+    return modifyHosts(data)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<HostResponse[]> },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { data: BodyType<HostResponse[]> }, TContext>
+}
 
-export type ModifyHostsMutationResult = NonNullable<
-  Awaited<ReturnType<typeof modifyHosts>>
->;
-export type ModifyHostsMutationBody = BodyType<HostResponse[]>;
-export type ModifyHostsMutationError = ErrorType<
-  Unauthorized | Forbidden | HTTPValidationError
->;
+export type ModifyHostsMutationResult = NonNullable<Awaited<ReturnType<typeof modifyHosts>>>
+export type ModifyHostsMutationBody = BodyType<HostResponse[]>
+export type ModifyHostsMutationError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
 
 /**
  * @summary Modify Hosts
  */
-export const useModifyHosts = <
-  TData = Awaited<ReturnType<typeof modifyHosts>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<HostResponse[]> },
-    TContext
-  >;
-}): UseMutationResult<
-  TData,
-  TError,
-  { data: BodyType<HostResponse[]> },
-  TContext
-> => {
-  const mutationOptions = getModifyHostsMutationOptions(options);
+export const useModifyHosts = <TData = Awaited<ReturnType<typeof modifyHosts>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<HostResponse[]> }, TContext>
+}): UseMutationResult<TData, TError, { data: BodyType<HostResponse[]> }, TContext> => {
+  const mutationOptions = getModifyHostsMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Retrieve the current node settings, including TLS certificate.
  * @summary Get Node Settings
  */
 export const getNodeSettings = (signal?: AbortSignal) => {
-  return orvalFetcher<NodeSettings>({
-    url: `/api/node/settings`,
-    method: "GET",
-    signal,
-  });
-};
+  return orvalFetcher<NodeSettings>({ url: `/api/node/settings`, method: 'GET', signal })
+}
 
 export const getGetNodeSettingsQueryKey = () => {
-  return [`/api/node/settings`] as const;
-};
+  return [`/api/node/settings`] as const
+}
 
-export const getGetNodeSettingsQueryOptions = <
-  TData = Awaited<ReturnType<typeof getNodeSettings>>,
-  TError = ErrorType<Unauthorized | Forbidden>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getNodeSettings>>, TError, TData>
-  >;
+export const getGetNodeSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getNodeSettings>>, TError = ErrorType<Unauthorized | Forbidden>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNodeSettings>>, TError, TData>>
 }) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetNodeSettingsQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetNodeSettingsQueryKey()
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getNodeSettings>>> = ({
-    signal,
-  }) => getNodeSettings(signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getNodeSettings>>> = ({ signal }) => getNodeSettings(signal)
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getNodeSettings>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getNodeSettings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type GetNodeSettingsQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getNodeSettings>>
->;
-export type GetNodeSettingsQueryError = ErrorType<Unauthorized | Forbidden>;
+export type GetNodeSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getNodeSettings>>>
+export type GetNodeSettingsQueryError = ErrorType<Unauthorized | Forbidden>
 
-export function useGetNodeSettings<
-  TData = Awaited<ReturnType<typeof getNodeSettings>>,
-  TError = ErrorType<Unauthorized | Forbidden>
->(options: {
-  query: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getNodeSettings>>, TError, TData>
-  > &
-    Pick<
-      DefinedInitialDataOptions<
-        Awaited<ReturnType<typeof getNodeSettings>>,
-        TError,
-        TData
-      >,
-      "initialData"
-    >;
-}): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetNodeSettings<
-  TData = Awaited<ReturnType<typeof getNodeSettings>>,
-  TError = ErrorType<Unauthorized | Forbidden>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getNodeSettings>>, TError, TData>
-  > &
-    Pick<
-      UndefinedInitialDataOptions<
-        Awaited<ReturnType<typeof getNodeSettings>>,
-        TError,
-        TData
-      >,
-      "initialData"
-    >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetNodeSettings<
-  TData = Awaited<ReturnType<typeof getNodeSettings>>,
-  TError = ErrorType<Unauthorized | Forbidden>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getNodeSettings>>, TError, TData>
-  >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+export function useGetNodeSettings<TData = Awaited<ReturnType<typeof getNodeSettings>>, TError = ErrorType<Unauthorized | Forbidden>>(options: {
+  query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNodeSettings>>, TError, TData>> &
+    Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getNodeSettings>>, TError, TData>, 'initialData'>
+}): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetNodeSettings<TData = Awaited<ReturnType<typeof getNodeSettings>>, TError = ErrorType<Unauthorized | Forbidden>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNodeSettings>>, TError, TData>> &
+    Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getNodeSettings>>, TError, TData>, 'initialData'>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetNodeSettings<TData = Awaited<ReturnType<typeof getNodeSettings>>, TError = ErrorType<Unauthorized | Forbidden>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNodeSettings>>, TError, TData>>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get Node Settings
  */
 
-export function useGetNodeSettings<
-  TData = Awaited<ReturnType<typeof getNodeSettings>>,
-  TError = ErrorType<Unauthorized | Forbidden>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getNodeSettings>>, TError, TData>
-  >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetNodeSettingsQueryOptions(options);
+export function useGetNodeSettings<TData = Awaited<ReturnType<typeof getNodeSettings>>, TError = ErrorType<Unauthorized | Forbidden>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNodeSettings>>, TError, TData>>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetNodeSettingsQueryOptions(options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
  * Add a new node to the database and optionally add it as a host.
  * @summary Add Node
  */
-export const addNode = (
-  nodeCreate: BodyType<NodeCreate>,
-  signal?: AbortSignal
-) => {
-  return orvalFetcher<NodeResponse>({
-    url: `/api/node`,
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    data: nodeCreate,
-    signal,
-  });
-};
+export const addNode = (nodeCreate: BodyType<NodeCreate>, signal?: AbortSignal) => {
+  return orvalFetcher<NodeResponse>({ url: `/api/node`, method: 'POST', headers: { 'Content-Type': 'application/json' }, data: nodeCreate, signal })
+}
 
-export const getAddNodeMutationOptions = <
-  TData = Awaited<ReturnType<typeof addNode>>,
-  TError = ErrorType<Unauthorized | Forbidden | Conflict | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<NodeCreate> },
-    TContext
-  >;
+export const getAddNodeMutationOptions = <TData = Awaited<ReturnType<typeof addNode>>, TError = ErrorType<Unauthorized | Forbidden | Conflict | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<NodeCreate> }, TContext>
 }) => {
-  const mutationKey = ["addNode"];
+  const mutationKey = ['addNode']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof addNode>>,
-    { data: BodyType<NodeCreate> }
-  > = (props) => {
-    const { data } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof addNode>>, { data: BodyType<NodeCreate> }> = props => {
+    const { data } = props ?? {}
 
-    return addNode(data);
-  };
+    return addNode(data)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<NodeCreate> },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { data: BodyType<NodeCreate> }, TContext>
+}
 
-export type AddNodeMutationResult = NonNullable<
-  Awaited<ReturnType<typeof addNode>>
->;
-export type AddNodeMutationBody = BodyType<NodeCreate>;
-export type AddNodeMutationError = ErrorType<
-  Unauthorized | Forbidden | Conflict | HTTPValidationError
->;
+export type AddNodeMutationResult = NonNullable<Awaited<ReturnType<typeof addNode>>>
+export type AddNodeMutationBody = BodyType<NodeCreate>
+export type AddNodeMutationError = ErrorType<Unauthorized | Forbidden | Conflict | HTTPValidationError>
 
 /**
  * @summary Add Node
  */
-export const useAddNode = <
-  TData = Awaited<ReturnType<typeof addNode>>,
-  TError = ErrorType<Unauthorized | Forbidden | Conflict | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<NodeCreate> },
-    TContext
-  >;
-}): UseMutationResult<
-  TData,
-  TError,
-  { data: BodyType<NodeCreate> },
-  TContext
-> => {
-  const mutationOptions = getAddNodeMutationOptions(options);
+export const useAddNode = <TData = Awaited<ReturnType<typeof addNode>>, TError = ErrorType<Unauthorized | Forbidden | Conflict | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<NodeCreate> }, TContext>
+}): UseMutationResult<TData, TError, { data: BodyType<NodeCreate> }, TContext> => {
+  const mutationOptions = getAddNodeMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Retrieve details of a specific node by its ID.
  * @summary Get Node
  */
 export const getNode = (nodeId: number, signal?: AbortSignal) => {
-  return orvalFetcher<NodeResponse>({
-    url: `/api/node/${nodeId}`,
-    method: "GET",
-    signal,
-  });
-};
+  return orvalFetcher<NodeResponse>({ url: `/api/node/${nodeId}`, method: 'GET', signal })
+}
 
 export const getGetNodeQueryKey = (nodeId: number) => {
-  return [`/api/node/${nodeId}`] as const;
-};
+  return [`/api/node/${nodeId}`] as const
+}
 
-export const getGetNodeQueryOptions = <
-  TData = Awaited<ReturnType<typeof getNode>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+export const getGetNodeQueryOptions = <TData = Awaited<ReturnType<typeof getNode>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   nodeId: number,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>
-    >;
-  }
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>> },
 ) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetNodeQueryKey(nodeId);
+  const queryKey = queryOptions?.queryKey ?? getGetNodeQueryKey(nodeId)
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getNode>>> = ({
-    signal,
-  }) => getNode(nodeId, signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getNode>>> = ({ signal }) => getNode(nodeId, signal)
 
-  return {
-    queryKey,
-    queryFn,
-    enabled: !!nodeId,
-    ...queryOptions,
-  } as UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-};
+  return { queryKey, queryFn, enabled: !!nodeId, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type GetNodeQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getNode>>
->;
-export type GetNodeQueryError = ErrorType<
-  Unauthorized | Forbidden | HTTPValidationError
->;
+export type GetNodeQueryResult = NonNullable<Awaited<ReturnType<typeof getNode>>>
+export type GetNodeQueryError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
 
-export function useGetNode<
-  TData = Awaited<ReturnType<typeof getNode>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+export function useGetNode<TData = Awaited<ReturnType<typeof getNode>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   nodeId: number,
-  options: {
-    query: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getNode>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetNode<
-  TData = Awaited<ReturnType<typeof getNode>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+  options: { query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>, 'initialData'> },
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetNode<TData = Awaited<ReturnType<typeof getNode>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   nodeId: number,
   options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getNode>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetNode<
-  TData = Awaited<ReturnType<typeof getNode>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>> & Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>, 'initialData'>
+  },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetNode<TData = Awaited<ReturnType<typeof getNode>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   nodeId: number,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get Node
  */
 
-export function useGetNode<
-  TData = Awaited<ReturnType<typeof getNode>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+export function useGetNode<TData = Awaited<ReturnType<typeof getNode>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   nodeId: number,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetNodeQueryOptions(nodeId, options);
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNode>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetNodeQueryOptions(nodeId, options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
  * Update a node's details. Only accessible to sudo admins.
  * @summary Modify Node
  */
-export const modifyNode = (
-  nodeId: number,
-  nodeModify: BodyType<NodeModify>
-) => {
-  return orvalFetcher<NodeResponse>({
-    url: `/api/node/${nodeId}`,
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    data: nodeModify,
-  });
-};
+export const modifyNode = (nodeId: number, nodeModify: BodyType<NodeModify>) => {
+  return orvalFetcher<NodeResponse>({ url: `/api/node/${nodeId}`, method: 'PUT', headers: { 'Content-Type': 'application/json' }, data: nodeModify })
+}
 
-export const getModifyNodeMutationOptions = <
-  TData = Awaited<ReturnType<typeof modifyNode>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { nodeId: number; data: BodyType<NodeModify> },
-    TContext
-  >;
+export const getModifyNodeMutationOptions = <TData = Awaited<ReturnType<typeof modifyNode>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { nodeId: number; data: BodyType<NodeModify> }, TContext>
 }) => {
-  const mutationKey = ["modifyNode"];
+  const mutationKey = ['modifyNode']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof modifyNode>>,
-    { nodeId: number; data: BodyType<NodeModify> }
-  > = (props) => {
-    const { nodeId, data } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof modifyNode>>, { nodeId: number; data: BodyType<NodeModify> }> = props => {
+    const { nodeId, data } = props ?? {}
 
-    return modifyNode(nodeId, data);
-  };
+    return modifyNode(nodeId, data)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { nodeId: number; data: BodyType<NodeModify> },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { nodeId: number; data: BodyType<NodeModify> }, TContext>
+}
 
-export type ModifyNodeMutationResult = NonNullable<
-  Awaited<ReturnType<typeof modifyNode>>
->;
-export type ModifyNodeMutationBody = BodyType<NodeModify>;
-export type ModifyNodeMutationError = ErrorType<
-  Unauthorized | Forbidden | HTTPValidationError
->;
+export type ModifyNodeMutationResult = NonNullable<Awaited<ReturnType<typeof modifyNode>>>
+export type ModifyNodeMutationBody = BodyType<NodeModify>
+export type ModifyNodeMutationError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
 
 /**
  * @summary Modify Node
  */
-export const useModifyNode = <
-  TData = Awaited<ReturnType<typeof modifyNode>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { nodeId: number; data: BodyType<NodeModify> },
-    TContext
-  >;
-}): UseMutationResult<
-  TData,
-  TError,
-  { nodeId: number; data: BodyType<NodeModify> },
-  TContext
-> => {
-  const mutationOptions = getModifyNodeMutationOptions(options);
+export const useModifyNode = <TData = Awaited<ReturnType<typeof modifyNode>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { nodeId: number; data: BodyType<NodeModify> }, TContext>
+}): UseMutationResult<TData, TError, { nodeId: number; data: BodyType<NodeModify> }, TContext> => {
+  const mutationOptions = getModifyNodeMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Delete a node and remove it from xray in the background.
  * @summary Remove Node
  */
 export const removeNode = (nodeId: number) => {
-  return orvalFetcher<unknown>({
-    url: `/api/node/${nodeId}`,
-    method: "DELETE",
-  });
-};
+  return orvalFetcher<unknown>({ url: `/api/node/${nodeId}`, method: 'DELETE' })
+}
 
-export const getRemoveNodeMutationOptions = <
-  TData = Awaited<ReturnType<typeof removeNode>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<TData, TError, { nodeId: number }, TContext>;
+export const getRemoveNodeMutationOptions = <TData = Awaited<ReturnType<typeof removeNode>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { nodeId: number }, TContext>
 }) => {
-  const mutationKey = ["removeNode"];
+  const mutationKey = ['removeNode']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof removeNode>>,
-    { nodeId: number }
-  > = (props) => {
-    const { nodeId } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeNode>>, { nodeId: number }> = props => {
+    const { nodeId } = props ?? {}
 
-    return removeNode(nodeId);
-  };
+    return removeNode(nodeId)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { nodeId: number },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { nodeId: number }, TContext>
+}
 
-export type RemoveNodeMutationResult = NonNullable<
-  Awaited<ReturnType<typeof removeNode>>
->;
+export type RemoveNodeMutationResult = NonNullable<Awaited<ReturnType<typeof removeNode>>>
 
-export type RemoveNodeMutationError = ErrorType<
-  Unauthorized | Forbidden | HTTPValidationError
->;
+export type RemoveNodeMutationError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
 
 /**
  * @summary Remove Node
  */
-export const useRemoveNode = <
-  TData = Awaited<ReturnType<typeof removeNode>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<TData, TError, { nodeId: number }, TContext>;
+export const useRemoveNode = <TData = Awaited<ReturnType<typeof removeNode>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { nodeId: number }, TContext>
 }): UseMutationResult<TData, TError, { nodeId: number }, TContext> => {
-  const mutationOptions = getRemoveNodeMutationOptions(options);
+  const mutationOptions = getRemoveNodeMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Retrieve a list of all nodes. Accessible only to sudo admins.
  * @summary Get Nodes
  */
 export const getNodes = (signal?: AbortSignal) => {
-  return orvalFetcher<NodeResponse[]>({
-    url: `/api/nodes`,
-    method: "GET",
-    signal,
-  });
-};
+  return orvalFetcher<NodeResponse[]>({ url: `/api/nodes`, method: 'GET', signal })
+}
 
 export const getGetNodesQueryKey = () => {
-  return [`/api/nodes`] as const;
-};
+  return [`/api/nodes`] as const
+}
 
-export const getGetNodesQueryOptions = <
-  TData = Awaited<ReturnType<typeof getNodes>>,
-  TError = ErrorType<Unauthorized | Forbidden>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getNodes>>, TError, TData>
-  >;
+export const getGetNodesQueryOptions = <TData = Awaited<ReturnType<typeof getNodes>>, TError = ErrorType<Unauthorized | Forbidden>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNodes>>, TError, TData>>
 }) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetNodesQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetNodesQueryKey()
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getNodes>>> = ({
-    signal,
-  }) => getNodes(signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getNodes>>> = ({ signal }) => getNodes(signal)
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getNodes>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getNodes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type GetNodesQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getNodes>>
->;
-export type GetNodesQueryError = ErrorType<Unauthorized | Forbidden>;
+export type GetNodesQueryResult = NonNullable<Awaited<ReturnType<typeof getNodes>>>
+export type GetNodesQueryError = ErrorType<Unauthorized | Forbidden>
 
-export function useGetNodes<
-  TData = Awaited<ReturnType<typeof getNodes>>,
-  TError = ErrorType<Unauthorized | Forbidden>
->(options: {
-  query: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getNodes>>, TError, TData>
-  > &
-    Pick<
-      DefinedInitialDataOptions<
-        Awaited<ReturnType<typeof getNodes>>,
-        TError,
-        TData
-      >,
-      "initialData"
-    >;
-}): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetNodes<
-  TData = Awaited<ReturnType<typeof getNodes>>,
-  TError = ErrorType<Unauthorized | Forbidden>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getNodes>>, TError, TData>
-  > &
-    Pick<
-      UndefinedInitialDataOptions<
-        Awaited<ReturnType<typeof getNodes>>,
-        TError,
-        TData
-      >,
-      "initialData"
-    >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetNodes<
-  TData = Awaited<ReturnType<typeof getNodes>>,
-  TError = ErrorType<Unauthorized | Forbidden>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getNodes>>, TError, TData>
-  >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+export function useGetNodes<TData = Awaited<ReturnType<typeof getNodes>>, TError = ErrorType<Unauthorized | Forbidden>>(options: {
+  query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNodes>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getNodes>>, TError, TData>, 'initialData'>
+}): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetNodes<TData = Awaited<ReturnType<typeof getNodes>>, TError = ErrorType<Unauthorized | Forbidden>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNodes>>, TError, TData>> & Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getNodes>>, TError, TData>, 'initialData'>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetNodes<TData = Awaited<ReturnType<typeof getNodes>>, TError = ErrorType<Unauthorized | Forbidden>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNodes>>, TError, TData>>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get Nodes
  */
 
-export function useGetNodes<
-  TData = Awaited<ReturnType<typeof getNodes>>,
-  TError = ErrorType<Unauthorized | Forbidden>
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof getNodes>>, TError, TData>
-  >;
-}): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetNodesQueryOptions(options);
+export function useGetNodes<TData = Awaited<ReturnType<typeof getNodes>>, TError = ErrorType<Unauthorized | Forbidden>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNodes>>, TError, TData>>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetNodesQueryOptions(options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
@@ -3884,200 +2450,102 @@ export function useGetNodes<
  * @summary Reconnect Node
  */
 export const reconnectNode = (nodeId: number, signal?: AbortSignal) => {
-  return orvalFetcher<unknown>({
-    url: `/api/node/${nodeId}/reconnect`,
-    method: "POST",
-    signal,
-  });
-};
+  return orvalFetcher<unknown>({ url: `/api/node/${nodeId}/reconnect`, method: 'POST', signal })
+}
 
-export const getReconnectNodeMutationOptions = <
-  TData = Awaited<ReturnType<typeof reconnectNode>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<TData, TError, { nodeId: number }, TContext>;
+export const getReconnectNodeMutationOptions = <TData = Awaited<ReturnType<typeof reconnectNode>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { nodeId: number }, TContext>
 }) => {
-  const mutationKey = ["reconnectNode"];
+  const mutationKey = ['reconnectNode']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof reconnectNode>>,
-    { nodeId: number }
-  > = (props) => {
-    const { nodeId } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof reconnectNode>>, { nodeId: number }> = props => {
+    const { nodeId } = props ?? {}
 
-    return reconnectNode(nodeId);
-  };
+    return reconnectNode(nodeId)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { nodeId: number },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { nodeId: number }, TContext>
+}
 
-export type ReconnectNodeMutationResult = NonNullable<
-  Awaited<ReturnType<typeof reconnectNode>>
->;
+export type ReconnectNodeMutationResult = NonNullable<Awaited<ReturnType<typeof reconnectNode>>>
 
-export type ReconnectNodeMutationError = ErrorType<
-  Unauthorized | Forbidden | HTTPValidationError
->;
+export type ReconnectNodeMutationError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
 
 /**
  * @summary Reconnect Node
  */
-export const useReconnectNode = <
-  TData = Awaited<ReturnType<typeof reconnectNode>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<TData, TError, { nodeId: number }, TContext>;
+export const useReconnectNode = <TData = Awaited<ReturnType<typeof reconnectNode>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { nodeId: number }, TContext>
 }): UseMutationResult<TData, TError, { nodeId: number }, TContext> => {
-  const mutationOptions = getReconnectNodeMutationOptions(options);
+  const mutationOptions = getReconnectNodeMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Retrieve usage statistics for nodes within a specified date range.
  * @summary Get Usage
  */
 export const getUsage = (params?: GetUsageParams, signal?: AbortSignal) => {
-  return orvalFetcher<NodesUsageResponse>({
-    url: `/api/nodes/usage`,
-    method: "GET",
-    params,
-    signal,
-  });
-};
+  return orvalFetcher<NodesUsageResponse>({ url: `/api/nodes/usage`, method: 'GET', params, signal })
+}
 
 export const getGetUsageQueryKey = (params?: GetUsageParams) => {
-  return [`/api/nodes/usage`, ...(params ? [params] : [])] as const;
-};
+  return [`/api/nodes/usage`, ...(params ? [params] : [])] as const
+}
 
-export const getGetUsageQueryOptions = <
-  TData = Awaited<ReturnType<typeof getUsage>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+export const getGetUsageQueryOptions = <TData = Awaited<ReturnType<typeof getUsage>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   params?: GetUsageParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUsage>>, TError, TData>
-    >;
-  }
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsage>>, TError, TData>> },
 ) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetUsageQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetUsageQueryKey(params)
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsage>>> = ({
-    signal,
-  }) => getUsage(params, signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsage>>> = ({ signal }) => getUsage(params, signal)
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getUsage>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getUsage>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type GetUsageQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getUsage>>
->;
-export type GetUsageQueryError = ErrorType<
-  Unauthorized | Forbidden | HTTPValidationError
->;
+export type GetUsageQueryResult = NonNullable<Awaited<ReturnType<typeof getUsage>>>
+export type GetUsageQueryError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
 
-export function useGetUsage<
-  TData = Awaited<ReturnType<typeof getUsage>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+export function useGetUsage<TData = Awaited<ReturnType<typeof getUsage>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   params: undefined | GetUsageParams,
   options: {
-    query: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUsage>>, TError, TData>
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsage>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetUsage<
-  TData = Awaited<ReturnType<typeof getUsage>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsage>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getUsage>>, TError, TData>, 'initialData'>
+  },
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsage<TData = Awaited<ReturnType<typeof getUsage>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   params?: GetUsageParams,
   options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUsage>>, TError, TData>
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsage>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetUsage<
-  TData = Awaited<ReturnType<typeof getUsage>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsage>>, TError, TData>> & Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getUsage>>, TError, TData>, 'initialData'>
+  },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsage<TData = Awaited<ReturnType<typeof getUsage>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   params?: GetUsageParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUsage>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsage>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get Usage
  */
 
-export function useGetUsage<
-  TData = Awaited<ReturnType<typeof getUsage>>,
-  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
->(
+export function useGetUsage<TData = Awaited<ReturnType<typeof getUsage>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>>(
   params?: GetUsageParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUsage>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetUsageQueryOptions(params, options);
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsage>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetUsageQueryOptions(params, options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
@@ -4096,227 +2564,105 @@ export function useGetUsage<
 - **next_plan**: Next user plan (resets after use).
  * @summary Add User
  */
-export const addUser = (
-  userCreate: BodyType<UserCreate>,
-  signal?: AbortSignal
-) => {
-  return orvalFetcher<UserResponse>({
-    url: `/api/user`,
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    data: userCreate,
-    signal,
-  });
-};
+export const addUser = (userCreate: BodyType<UserCreate>, signal?: AbortSignal) => {
+  return orvalFetcher<UserResponse>({ url: `/api/user`, method: 'POST', headers: { 'Content-Type': 'application/json' }, data: userCreate, signal })
+}
 
 export const getAddUserMutationOptions = <
   TData = Awaited<ReturnType<typeof addUser>>,
-  TError = ErrorType<
-    HTTPException | Unauthorized | Conflict | HTTPValidationError
-  >,
-  TContext = unknown
+  TError = ErrorType<HTTPException | Unauthorized | Conflict | HTTPValidationError>,
+  TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<UserCreate> },
-    TContext
-  >;
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<UserCreate> }, TContext>
 }) => {
-  const mutationKey = ["addUser"];
+  const mutationKey = ['addUser']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof addUser>>,
-    { data: BodyType<UserCreate> }
-  > = (props) => {
-    const { data } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof addUser>>, { data: BodyType<UserCreate> }> = props => {
+    const { data } = props ?? {}
 
-    return addUser(data);
-  };
+    return addUser(data)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<UserCreate> },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { data: BodyType<UserCreate> }, TContext>
+}
 
-export type AddUserMutationResult = NonNullable<
-  Awaited<ReturnType<typeof addUser>>
->;
-export type AddUserMutationBody = BodyType<UserCreate>;
-export type AddUserMutationError = ErrorType<
-  HTTPException | Unauthorized | Conflict | HTTPValidationError
->;
+export type AddUserMutationResult = NonNullable<Awaited<ReturnType<typeof addUser>>>
+export type AddUserMutationBody = BodyType<UserCreate>
+export type AddUserMutationError = ErrorType<HTTPException | Unauthorized | Conflict | HTTPValidationError>
 
 /**
  * @summary Add User
  */
-export const useAddUser = <
-  TData = Awaited<ReturnType<typeof addUser>>,
-  TError = ErrorType<
-    HTTPException | Unauthorized | Conflict | HTTPValidationError
-  >,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<UserCreate> },
-    TContext
-  >;
-}): UseMutationResult<
-  TData,
-  TError,
-  { data: BodyType<UserCreate> },
-  TContext
-> => {
-  const mutationOptions = getAddUserMutationOptions(options);
+export const useAddUser = <TData = Awaited<ReturnType<typeof addUser>>, TError = ErrorType<HTTPException | Unauthorized | Conflict | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<UserCreate> }, TContext>
+}): UseMutationResult<TData, TError, { data: BodyType<UserCreate> }, TContext> => {
+  const mutationOptions = getAddUserMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Get user information
  * @summary Get User
  */
 export const getUser = (username: string, signal?: AbortSignal) => {
-  return orvalFetcher<UserResponse>({
-    url: `/api/user/${username}`,
-    method: "GET",
-    signal,
-  });
-};
+  return orvalFetcher<UserResponse>({ url: `/api/user/${username}`, method: 'GET', signal })
+}
 
 export const getGetUserQueryKey = (username: string) => {
-  return [`/api/user/${username}`] as const;
-};
+  return [`/api/user/${username}`] as const
+}
 
-export const getGetUserQueryOptions = <
-  TData = Awaited<ReturnType<typeof getUser>>,
-  TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
->(
+export const getGetUserQueryOptions = <TData = Awaited<ReturnType<typeof getUser>>, TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>>(
   username: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData>
-    >;
-  }
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData>> },
 ) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetUserQueryKey(username);
+  const queryKey = queryOptions?.queryKey ?? getGetUserQueryKey(username)
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUser>>> = ({
-    signal,
-  }) => getUser(username, signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUser>>> = ({ signal }) => getUser(username, signal)
 
-  return {
-    queryKey,
-    queryFn,
-    enabled: !!username,
-    ...queryOptions,
-  } as UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-};
+  return { queryKey, queryFn, enabled: !!username, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type GetUserQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getUser>>
->;
-export type GetUserQueryError = ErrorType<
-  Unauthorized | Forbidden | NotFound | HTTPValidationError
->;
+export type GetUserQueryResult = NonNullable<Awaited<ReturnType<typeof getUser>>>
+export type GetUserQueryError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
 
-export function useGetUser<
-  TData = Awaited<ReturnType<typeof getUser>>,
-  TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
->(
+export function useGetUser<TData = Awaited<ReturnType<typeof getUser>>, TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>>(
   username: string,
-  options: {
-    query: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData>
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUser>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetUser<
-  TData = Awaited<ReturnType<typeof getUser>>,
-  TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
->(
+  options: { query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getUser>>, TError, TData>, 'initialData'> },
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUser<TData = Awaited<ReturnType<typeof getUser>>, TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>>(
   username: string,
   options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData>
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUser>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetUser<
-  TData = Awaited<ReturnType<typeof getUser>>,
-  TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
->(
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData>> & Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getUser>>, TError, TData>, 'initialData'>
+  },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUser<TData = Awaited<ReturnType<typeof getUser>>, TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>>(
   username: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get User
  */
 
-export function useGetUser<
-  TData = Awaited<ReturnType<typeof getUser>>,
-  TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
->(
+export function useGetUser<TData = Awaited<ReturnType<typeof getUser>>, TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>>(
   username: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetUserQueryOptions(username, options);
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetUserQueryOptions(username, options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
@@ -4337,212 +2683,132 @@ export function useGetUser<
 Note: Fields set to `null` or omitted will not be modified.
  * @summary Modify User
  */
-export const modifyUser = (
-  username: string,
-  userModify: BodyType<UserModify>
-) => {
-  return orvalFetcher<UserResponse>({
-    url: `/api/user/${username}`,
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    data: userModify,
-  });
-};
+export const modifyUser = (username: string, userModify: BodyType<UserModify>) => {
+  return orvalFetcher<UserResponse>({ url: `/api/user/${username}`, method: 'PUT', headers: { 'Content-Type': 'application/json' }, data: userModify })
+}
 
 export const getModifyUserMutationOptions = <
   TData = Awaited<ReturnType<typeof modifyUser>>,
-  TError = ErrorType<
-    HTTPException | Unauthorized | Forbidden | NotFound | HTTPValidationError
-  >,
-  TContext = unknown
+  TError = ErrorType<HTTPException | Unauthorized | Forbidden | NotFound | HTTPValidationError>,
+  TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { username: string; data: BodyType<UserModify> },
-    TContext
-  >;
+  mutation?: UseMutationOptions<TData, TError, { username: string; data: BodyType<UserModify> }, TContext>
 }) => {
-  const mutationKey = ["modifyUser"];
+  const mutationKey = ['modifyUser']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof modifyUser>>,
-    { username: string; data: BodyType<UserModify> }
-  > = (props) => {
-    const { username, data } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof modifyUser>>, { username: string; data: BodyType<UserModify> }> = props => {
+    const { username, data } = props ?? {}
 
-    return modifyUser(username, data);
-  };
+    return modifyUser(username, data)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { username: string; data: BodyType<UserModify> },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { username: string; data: BodyType<UserModify> }, TContext>
+}
 
-export type ModifyUserMutationResult = NonNullable<
-  Awaited<ReturnType<typeof modifyUser>>
->;
-export type ModifyUserMutationBody = BodyType<UserModify>;
-export type ModifyUserMutationError = ErrorType<
-  HTTPException | Unauthorized | Forbidden | NotFound | HTTPValidationError
->;
+export type ModifyUserMutationResult = NonNullable<Awaited<ReturnType<typeof modifyUser>>>
+export type ModifyUserMutationBody = BodyType<UserModify>
+export type ModifyUserMutationError = ErrorType<HTTPException | Unauthorized | Forbidden | NotFound | HTTPValidationError>
 
 /**
  * @summary Modify User
  */
 export const useModifyUser = <
   TData = Awaited<ReturnType<typeof modifyUser>>,
-  TError = ErrorType<
-    HTTPException | Unauthorized | Forbidden | NotFound | HTTPValidationError
-  >,
-  TContext = unknown
+  TError = ErrorType<HTTPException | Unauthorized | Forbidden | NotFound | HTTPValidationError>,
+  TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { username: string; data: BodyType<UserModify> },
-    TContext
-  >;
-}): UseMutationResult<
-  TData,
-  TError,
-  { username: string; data: BodyType<UserModify> },
-  TContext
-> => {
-  const mutationOptions = getModifyUserMutationOptions(options);
+  mutation?: UseMutationOptions<TData, TError, { username: string; data: BodyType<UserModify> }, TContext>
+}): UseMutationResult<TData, TError, { username: string; data: BodyType<UserModify> }, TContext> => {
+  const mutationOptions = getModifyUserMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Remove a user
  * @summary Remove User
  */
 export const removeUser = (username: string) => {
-  return orvalFetcher<unknown>({
-    url: `/api/user/${username}`,
-    method: "DELETE",
-  });
-};
+  return orvalFetcher<unknown>({ url: `/api/user/${username}`, method: 'DELETE' })
+}
 
 export const getRemoveUserMutationOptions = <
   TData = Awaited<ReturnType<typeof removeUser>>,
   TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>;
+  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>
 }) => {
-  const mutationKey = ["removeUser"];
+  const mutationKey = ['removeUser']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof removeUser>>,
-    { username: string }
-  > = (props) => {
-    const { username } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeUser>>, { username: string }> = props => {
+    const { username } = props ?? {}
 
-    return removeUser(username);
-  };
+    return removeUser(username)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { username: string },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { username: string }, TContext>
+}
 
-export type RemoveUserMutationResult = NonNullable<
-  Awaited<ReturnType<typeof removeUser>>
->;
+export type RemoveUserMutationResult = NonNullable<Awaited<ReturnType<typeof removeUser>>>
 
-export type RemoveUserMutationError = ErrorType<
-  Unauthorized | Forbidden | NotFound | HTTPValidationError
->;
+export type RemoveUserMutationError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
 
 /**
  * @summary Remove User
  */
-export const useRemoveUser = <
-  TData = Awaited<ReturnType<typeof removeUser>>,
-  TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>;
+export const useRemoveUser = <TData = Awaited<ReturnType<typeof removeUser>>, TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>
 }): UseMutationResult<TData, TError, { username: string }, TContext> => {
-  const mutationOptions = getRemoveUserMutationOptions(options);
+  const mutationOptions = getRemoveUserMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Reset user data usage
  * @summary Reset User Data Usage
  */
 export const resetUserDataUsage = (username: string, signal?: AbortSignal) => {
-  return orvalFetcher<UserResponse>({
-    url: `/api/user/${username}/reset`,
-    method: "POST",
-    signal,
-  });
-};
+  return orvalFetcher<UserResponse>({ url: `/api/user/${username}/reset`, method: 'POST', signal })
+}
 
 export const getResetUserDataUsageMutationOptions = <
   TData = Awaited<ReturnType<typeof resetUserDataUsage>>,
   TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>;
+  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>
 }) => {
-  const mutationKey = ["resetUserDataUsage"];
+  const mutationKey = ['resetUserDataUsage']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof resetUserDataUsage>>,
-    { username: string }
-  > = (props) => {
-    const { username } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof resetUserDataUsage>>, { username: string }> = props => {
+    const { username } = props ?? {}
 
-    return resetUserDataUsage(username);
-  };
+    return resetUserDataUsage(username)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { username: string },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { username: string }, TContext>
+}
 
-export type ResetUserDataUsageMutationResult = NonNullable<
-  Awaited<ReturnType<typeof resetUserDataUsage>>
->;
+export type ResetUserDataUsageMutationResult = NonNullable<Awaited<ReturnType<typeof resetUserDataUsage>>>
 
-export type ResetUserDataUsageMutationError = ErrorType<
-  Unauthorized | Forbidden | NotFound | HTTPValidationError
->;
+export type ResetUserDataUsageMutationError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
 
 /**
  * @summary Reset User Data Usage
@@ -4550,70 +2816,49 @@ export type ResetUserDataUsageMutationError = ErrorType<
 export const useResetUserDataUsage = <
   TData = Awaited<ReturnType<typeof resetUserDataUsage>>,
   TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>;
+  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>
 }): UseMutationResult<TData, TError, { username: string }, TContext> => {
-  const mutationOptions = getResetUserDataUsageMutationOptions(options);
+  const mutationOptions = getResetUserDataUsageMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Revoke users subscription (Subscription link and proxies)
  * @summary Revoke User Subscription
  */
-export const revokeUserSubscription = (
-  username: string,
-  signal?: AbortSignal
-) => {
-  return orvalFetcher<UserResponse>({
-    url: `/api/user/${username}/revoke_sub`,
-    method: "POST",
-    signal,
-  });
-};
+export const revokeUserSubscription = (username: string, signal?: AbortSignal) => {
+  return orvalFetcher<UserResponse>({ url: `/api/user/${username}/revoke_sub`, method: 'POST', signal })
+}
 
 export const getRevokeUserSubscriptionMutationOptions = <
   TData = Awaited<ReturnType<typeof revokeUserSubscription>>,
   TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>;
+  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>
 }) => {
-  const mutationKey = ["revokeUserSubscription"];
+  const mutationKey = ['revokeUserSubscription']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof revokeUserSubscription>>,
-    { username: string }
-  > = (props) => {
-    const { username } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof revokeUserSubscription>>, { username: string }> = props => {
+    const { username } = props ?? {}
 
-    return revokeUserSubscription(username);
-  };
+    return revokeUserSubscription(username)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { username: string },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { username: string }, TContext>
+}
 
-export type RevokeUserSubscriptionMutationResult = NonNullable<
-  Awaited<ReturnType<typeof revokeUserSubscription>>
->;
+export type RevokeUserSubscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof revokeUserSubscription>>>
 
-export type RevokeUserSubscriptionMutationError = ErrorType<
-  Unauthorized | Forbidden | NotFound | HTTPValidationError
->;
+export type RevokeUserSubscriptionMutationError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
 
 /**
  * @summary Revoke User Subscription
@@ -4621,156 +2866,74 @@ export type RevokeUserSubscriptionMutationError = ErrorType<
 export const useRevokeUserSubscription = <
   TData = Awaited<ReturnType<typeof revokeUserSubscription>>,
   TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>;
+  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>
 }): UseMutationResult<TData, TError, { username: string }, TContext> => {
-  const mutationOptions = getRevokeUserSubscriptionMutationOptions(options);
+  const mutationOptions = getRevokeUserSubscriptionMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Get all users
  * @summary Get Users
  */
 export const getUsers = (params?: GetUsersParams, signal?: AbortSignal) => {
-  return orvalFetcher<UsersResponse>({
-    url: `/api/users`,
-    method: "GET",
-    params,
-    signal,
-  });
-};
+  return orvalFetcher<UsersResponse>({ url: `/api/users`, method: 'GET', params, signal })
+}
 
 export const getGetUsersQueryKey = (params?: GetUsersParams) => {
-  return [`/api/users`, ...(params ? [params] : [])] as const;
-};
+  return [`/api/users`, ...(params ? [params] : [])] as const
+}
 
-export const getGetUsersQueryOptions = <
-  TData = Awaited<ReturnType<typeof getUsers>>,
-  TError = ErrorType<
-    HTTPException | Unauthorized | Forbidden | NotFound | HTTPValidationError
-  >
->(
+export const getGetUsersQueryOptions = <TData = Awaited<ReturnType<typeof getUsers>>, TError = ErrorType<HTTPException | Unauthorized | Forbidden | NotFound | HTTPValidationError>>(
   params?: GetUsersParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>
-    >;
-  }
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>> },
 ) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetUsersQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetUsersQueryKey(params)
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsers>>> = ({
-    signal,
-  }) => getUsers(params, signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsers>>> = ({ signal }) => getUsers(params, signal)
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getUsers>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type GetUsersQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getUsers>>
->;
-export type GetUsersQueryError = ErrorType<
-  HTTPException | Unauthorized | Forbidden | NotFound | HTTPValidationError
->;
+export type GetUsersQueryResult = NonNullable<Awaited<ReturnType<typeof getUsers>>>
+export type GetUsersQueryError = ErrorType<HTTPException | Unauthorized | Forbidden | NotFound | HTTPValidationError>
 
-export function useGetUsers<
-  TData = Awaited<ReturnType<typeof getUsers>>,
-  TError = ErrorType<
-    HTTPException | Unauthorized | Forbidden | NotFound | HTTPValidationError
-  >
->(
+export function useGetUsers<TData = Awaited<ReturnType<typeof getUsers>>, TError = ErrorType<HTTPException | Unauthorized | Forbidden | NotFound | HTTPValidationError>>(
   params: undefined | GetUsersParams,
   options: {
-    query: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsers>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetUsers<
-  TData = Awaited<ReturnType<typeof getUsers>>,
-  TError = ErrorType<
-    HTTPException | Unauthorized | Forbidden | NotFound | HTTPValidationError
-  >
->(
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>, 'initialData'>
+  },
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsers<TData = Awaited<ReturnType<typeof getUsers>>, TError = ErrorType<HTTPException | Unauthorized | Forbidden | NotFound | HTTPValidationError>>(
   params?: GetUsersParams,
   options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsers>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetUsers<
-  TData = Awaited<ReturnType<typeof getUsers>>,
-  TError = ErrorType<
-    HTTPException | Unauthorized | Forbidden | NotFound | HTTPValidationError
-  >
->(
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>> & Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>, 'initialData'>
+  },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsers<TData = Awaited<ReturnType<typeof getUsers>>, TError = ErrorType<HTTPException | Unauthorized | Forbidden | NotFound | HTTPValidationError>>(
   params?: GetUsersParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get Users
  */
 
-export function useGetUsers<
-  TData = Awaited<ReturnType<typeof getUsers>>,
-  TError = ErrorType<
-    HTTPException | Unauthorized | Forbidden | NotFound | HTTPValidationError
-  >
->(
+export function useGetUsers<TData = Awaited<ReturnType<typeof getUsers>>, TError = ErrorType<HTTPException | Unauthorized | Forbidden | NotFound | HTTPValidationError>>(
   params?: GetUsersParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetUsersQueryOptions(params, options);
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetUsersQueryOptions(params, options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
@@ -4778,216 +2941,106 @@ export function useGetUsers<
  * @summary Reset Users Data Usage
  */
 export const resetUsersDataUsage = (signal?: AbortSignal) => {
-  return orvalFetcher<unknown>({
-    url: `/api/users/reset`,
-    method: "POST",
-    signal,
-  });
-};
+  return orvalFetcher<unknown>({ url: `/api/users/reset`, method: 'POST', signal })
+}
 
-export const getResetUsersDataUsageMutationOptions = <
-  TData = Awaited<ReturnType<typeof resetUsersDataUsage>>,
-  TError = ErrorType<Unauthorized | Forbidden | NotFound>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<TData, TError, void, TContext>;
+export const getResetUsersDataUsageMutationOptions = <TData = Awaited<ReturnType<typeof resetUsersDataUsage>>, TError = ErrorType<Unauthorized | Forbidden | NotFound>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, void, TContext>
 }) => {
-  const mutationKey = ["resetUsersDataUsage"];
+  const mutationKey = ['resetUsersDataUsage']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof resetUsersDataUsage>>,
-    void
-  > = () => {
-    return resetUsersDataUsage();
-  };
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof resetUsersDataUsage>>, void> = () => {
+    return resetUsersDataUsage()
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    void,
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, void, TContext>
+}
 
-export type ResetUsersDataUsageMutationResult = NonNullable<
-  Awaited<ReturnType<typeof resetUsersDataUsage>>
->;
+export type ResetUsersDataUsageMutationResult = NonNullable<Awaited<ReturnType<typeof resetUsersDataUsage>>>
 
-export type ResetUsersDataUsageMutationError = ErrorType<
-  Unauthorized | Forbidden | NotFound
->;
+export type ResetUsersDataUsageMutationError = ErrorType<Unauthorized | Forbidden | NotFound>
 
 /**
  * @summary Reset Users Data Usage
  */
-export const useResetUsersDataUsage = <
-  TData = Awaited<ReturnType<typeof resetUsersDataUsage>>,
-  TError = ErrorType<Unauthorized | Forbidden | NotFound>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<TData, TError, void, TContext>;
+export const useResetUsersDataUsage = <TData = Awaited<ReturnType<typeof resetUsersDataUsage>>, TError = ErrorType<Unauthorized | Forbidden | NotFound>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, void, TContext>
 }): UseMutationResult<TData, TError, void, TContext> => {
-  const mutationOptions = getResetUsersDataUsageMutationOptions(options);
+  const mutationOptions = getResetUsersDataUsageMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Get users usage
  * @summary Get User Usage
  */
-export const getUserUsage = (
+export const getUserUsage = (username: string, params?: GetUserUsageParams, signal?: AbortSignal) => {
+  return orvalFetcher<UserUsagesResponse>({ url: `/api/user/${username}/usage`, method: 'GET', params, signal })
+}
+
+export const getGetUserUsageQueryKey = (username: string, params?: GetUserUsageParams) => {
+  return [`/api/user/${username}/usage`, ...(params ? [params] : [])] as const
+}
+
+export const getGetUserUsageQueryOptions = <TData = Awaited<ReturnType<typeof getUserUsage>>, TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>>(
   username: string,
   params?: GetUserUsageParams,
-  signal?: AbortSignal
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserUsage>>, TError, TData>> },
 ) => {
-  return orvalFetcher<UserUsagesResponse>({
-    url: `/api/user/${username}/usage`,
-    method: "GET",
-    params,
-    signal,
-  });
-};
+  const { query: queryOptions } = options ?? {}
 
-export const getGetUserUsageQueryKey = (
-  username: string,
-  params?: GetUserUsageParams
-) => {
-  return [`/api/user/${username}/usage`, ...(params ? [params] : [])] as const;
-};
+  const queryKey = queryOptions?.queryKey ?? getGetUserUsageQueryKey(username, params)
 
-export const getGetUserUsageQueryOptions = <
-  TData = Awaited<ReturnType<typeof getUserUsage>>,
-  TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
->(
-  username: string,
-  params?: GetUserUsageParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUserUsage>>, TError, TData>
-    >;
-  }
-) => {
-  const { query: queryOptions } = options ?? {};
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUserUsage>>> = ({ signal }) => getUserUsage(username, params, signal)
 
-  const queryKey =
-    queryOptions?.queryKey ?? getGetUserUsageQueryKey(username, params);
+  return { queryKey, queryFn, enabled: !!username, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getUserUsage>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUserUsage>>> = ({
-    signal,
-  }) => getUserUsage(username, params, signal);
+export type GetUserUsageQueryResult = NonNullable<Awaited<ReturnType<typeof getUserUsage>>>
+export type GetUserUsageQueryError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
 
-  return {
-    queryKey,
-    queryFn,
-    enabled: !!username,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof getUserUsage>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type GetUserUsageQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getUserUsage>>
->;
-export type GetUserUsageQueryError = ErrorType<
-  Unauthorized | Forbidden | NotFound | HTTPValidationError
->;
-
-export function useGetUserUsage<
-  TData = Awaited<ReturnType<typeof getUserUsage>>,
-  TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
->(
+export function useGetUserUsage<TData = Awaited<ReturnType<typeof getUserUsage>>, TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>>(
   username: string,
   params: undefined | GetUserUsageParams,
   options: {
-    query: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUserUsage>>, TError, TData>
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUserUsage>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetUserUsage<
-  TData = Awaited<ReturnType<typeof getUserUsage>>,
-  TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
->(
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserUsage>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getUserUsage>>, TError, TData>, 'initialData'>
+  },
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUserUsage<TData = Awaited<ReturnType<typeof getUserUsage>>, TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>>(
   username: string,
   params?: GetUserUsageParams,
   options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUserUsage>>, TError, TData>
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUserUsage>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetUserUsage<
-  TData = Awaited<ReturnType<typeof getUserUsage>>,
-  TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
->(
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserUsage>>, TError, TData>> &
+      Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getUserUsage>>, TError, TData>, 'initialData'>
+  },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUserUsage<TData = Awaited<ReturnType<typeof getUserUsage>>, TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>>(
   username: string,
   params?: GetUserUsageParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUserUsage>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserUsage>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get User Usage
  */
 
-export function useGetUserUsage<
-  TData = Awaited<ReturnType<typeof getUserUsage>>,
-  TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
->(
+export function useGetUserUsage<TData = Awaited<ReturnType<typeof getUserUsage>>, TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>>(
   username: string,
   params?: GetUserUsageParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUserUsage>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetUserUsageQueryOptions(username, params, options);
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserUsage>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetUserUsageQueryOptions(username, params, options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
@@ -4995,203 +3048,107 @@ export function useGetUserUsage<
  * @summary Active Next Plan
  */
 export const activeNextPlan = (username: string, signal?: AbortSignal) => {
-  return orvalFetcher<UserResponse>({
-    url: `/api/user/${username}/active-next`,
-    method: "POST",
-    signal,
-  });
-};
+  return orvalFetcher<UserResponse>({ url: `/api/user/${username}/active-next`, method: 'POST', signal })
+}
 
 export const getActiveNextPlanMutationOptions = <
   TData = Awaited<ReturnType<typeof activeNextPlan>>,
   TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>,
-  TContext = unknown
+  TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>;
+  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>
 }) => {
-  const mutationKey = ["activeNextPlan"];
+  const mutationKey = ['activeNextPlan']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof activeNextPlan>>,
-    { username: string }
-  > = (props) => {
-    const { username } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof activeNextPlan>>, { username: string }> = props => {
+    const { username } = props ?? {}
 
-    return activeNextPlan(username);
-  };
+    return activeNextPlan(username)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { username: string },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { username: string }, TContext>
+}
 
-export type ActiveNextPlanMutationResult = NonNullable<
-  Awaited<ReturnType<typeof activeNextPlan>>
->;
+export type ActiveNextPlanMutationResult = NonNullable<Awaited<ReturnType<typeof activeNextPlan>>>
 
-export type ActiveNextPlanMutationError = ErrorType<
-  Unauthorized | Forbidden | NotFound | HTTPValidationError
->;
+export type ActiveNextPlanMutationError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>
 
 /**
  * @summary Active Next Plan
  */
-export const useActiveNextPlan = <
-  TData = Awaited<ReturnType<typeof activeNextPlan>>,
-  TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>;
+export const useActiveNextPlan = <TData = Awaited<ReturnType<typeof activeNextPlan>>, TError = ErrorType<Unauthorized | Forbidden | NotFound | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { username: string }, TContext>
 }): UseMutationResult<TData, TError, { username: string }, TContext> => {
-  const mutationOptions = getActiveNextPlanMutationOptions(options);
+  const mutationOptions = getActiveNextPlanMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Get all users usage
  * @summary Get Users Usage
  */
-export const getUsersUsage = (
-  params?: GetUsersUsageParams,
-  signal?: AbortSignal
-) => {
-  return orvalFetcher<UsersUsagesResponse>({
-    url: `/api/users/usage`,
-    method: "GET",
-    params,
-    signal,
-  });
-};
+export const getUsersUsage = (params?: GetUsersUsageParams, signal?: AbortSignal) => {
+  return orvalFetcher<UsersUsagesResponse>({ url: `/api/users/usage`, method: 'GET', params, signal })
+}
 
 export const getGetUsersUsageQueryKey = (params?: GetUsersUsageParams) => {
-  return [`/api/users/usage`, ...(params ? [params] : [])] as const;
-};
+  return [`/api/users/usage`, ...(params ? [params] : [])] as const
+}
 
-export const getGetUsersUsageQueryOptions = <
-  TData = Awaited<ReturnType<typeof getUsersUsage>>,
-  TError = ErrorType<Unauthorized | HTTPValidationError>
->(
+export const getGetUsersUsageQueryOptions = <TData = Awaited<ReturnType<typeof getUsersUsage>>, TError = ErrorType<Unauthorized | HTTPValidationError>>(
   params?: GetUsersUsageParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUsersUsage>>, TError, TData>
-    >;
-  }
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersUsage>>, TError, TData>> },
 ) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetUsersUsageQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetUsersUsageQueryKey(params)
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersUsage>>> = ({
-    signal,
-  }) => getUsersUsage(params, signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersUsage>>> = ({ signal }) => getUsersUsage(params, signal)
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getUsersUsage>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getUsersUsage>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type GetUsersUsageQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getUsersUsage>>
->;
-export type GetUsersUsageQueryError = ErrorType<
-  Unauthorized | HTTPValidationError
->;
+export type GetUsersUsageQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersUsage>>>
+export type GetUsersUsageQueryError = ErrorType<Unauthorized | HTTPValidationError>
 
-export function useGetUsersUsage<
-  TData = Awaited<ReturnType<typeof getUsersUsage>>,
-  TError = ErrorType<Unauthorized | HTTPValidationError>
->(
+export function useGetUsersUsage<TData = Awaited<ReturnType<typeof getUsersUsage>>, TError = ErrorType<Unauthorized | HTTPValidationError>>(
   params: undefined | GetUsersUsageParams,
   options: {
-    query: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUsersUsage>>, TError, TData>
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersUsage>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetUsersUsage<
-  TData = Awaited<ReturnType<typeof getUsersUsage>>,
-  TError = ErrorType<Unauthorized | HTTPValidationError>
->(
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersUsage>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getUsersUsage>>, TError, TData>, 'initialData'>
+  },
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersUsage<TData = Awaited<ReturnType<typeof getUsersUsage>>, TError = ErrorType<Unauthorized | HTTPValidationError>>(
   params?: GetUsersUsageParams,
   options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUsersUsage>>, TError, TData>
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersUsage>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetUsersUsage<
-  TData = Awaited<ReturnType<typeof getUsersUsage>>,
-  TError = ErrorType<Unauthorized | HTTPValidationError>
->(
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersUsage>>, TError, TData>> &
+      Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getUsersUsage>>, TError, TData>, 'initialData'>
+  },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersUsage<TData = Awaited<ReturnType<typeof getUsersUsage>>, TError = ErrorType<Unauthorized | HTTPValidationError>>(
   params?: GetUsersUsageParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUsersUsage>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersUsage>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get Users Usage
  */
 
-export function useGetUsersUsage<
-  TData = Awaited<ReturnType<typeof getUsersUsage>>,
-  TError = ErrorType<Unauthorized | HTTPValidationError>
->(
+export function useGetUsersUsage<TData = Awaited<ReturnType<typeof getUsersUsage>>, TError = ErrorType<Unauthorized | HTTPValidationError>>(
   params?: GetUsersUsageParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getUsersUsage>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetUsersUsageQueryOptions(params, options);
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersUsage>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetUsersUsageQueryOptions(params, options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
@@ -5199,83 +3156,42 @@ export function useGetUsersUsage<
  * @summary Set Owner
  */
 export const setOwner = (username: string, params: SetOwnerParams) => {
-  return orvalFetcher<UserResponse>({
-    url: `/api/user/${username}/set-owner`,
-    method: "PUT",
-    params,
-  });
-};
+  return orvalFetcher<UserResponse>({ url: `/api/user/${username}/set-owner`, method: 'PUT', params })
+}
 
-export const getSetOwnerMutationOptions = <
-  TData = Awaited<ReturnType<typeof setOwner>>,
-  TError = ErrorType<Unauthorized | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { username: string; params: SetOwnerParams },
-    TContext
-  >;
+export const getSetOwnerMutationOptions = <TData = Awaited<ReturnType<typeof setOwner>>, TError = ErrorType<Unauthorized | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { username: string; params: SetOwnerParams }, TContext>
 }) => {
-  const mutationKey = ["setOwner"];
+  const mutationKey = ['setOwner']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof setOwner>>,
-    { username: string; params: SetOwnerParams }
-  > = (props) => {
-    const { username, params } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof setOwner>>, { username: string; params: SetOwnerParams }> = props => {
+    const { username, params } = props ?? {}
 
-    return setOwner(username, params);
-  };
+    return setOwner(username, params)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { username: string; params: SetOwnerParams },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { username: string; params: SetOwnerParams }, TContext>
+}
 
-export type SetOwnerMutationResult = NonNullable<
-  Awaited<ReturnType<typeof setOwner>>
->;
+export type SetOwnerMutationResult = NonNullable<Awaited<ReturnType<typeof setOwner>>>
 
-export type SetOwnerMutationError = ErrorType<
-  Unauthorized | HTTPValidationError
->;
+export type SetOwnerMutationError = ErrorType<Unauthorized | HTTPValidationError>
 
 /**
  * @summary Set Owner
  */
-export const useSetOwner = <
-  TData = Awaited<ReturnType<typeof setOwner>>,
-  TError = ErrorType<Unauthorized | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { username: string; params: SetOwnerParams },
-    TContext
-  >;
-}): UseMutationResult<
-  TData,
-  TError,
-  { username: string; params: SetOwnerParams },
-  TContext
-> => {
-  const mutationOptions = getSetOwnerMutationOptions(options);
+export const useSetOwner = <TData = Awaited<ReturnType<typeof setOwner>>, TError = ErrorType<Unauthorized | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { username: string; params: SetOwnerParams }, TContext>
+}): UseMutationResult<TData, TError, { username: string; params: SetOwnerParams }, TContext> => {
+  const mutationOptions = getSetOwnerMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Get users who have expired within the specified date range.
@@ -5286,156 +3202,63 @@ export const useSetOwner = <
 - If both are omitted, returns all expired users
  * @summary Get Expired Users
  */
-export const getExpiredUsers = (
-  params?: GetExpiredUsersParams,
-  signal?: AbortSignal
-) => {
-  return orvalFetcher<string[]>({
-    url: `/api/users/expired`,
-    method: "GET",
-    params,
-    signal,
-  });
-};
+export const getExpiredUsers = (params?: GetExpiredUsersParams, signal?: AbortSignal) => {
+  return orvalFetcher<string[]>({ url: `/api/users/expired`, method: 'GET', params, signal })
+}
 
 export const getGetExpiredUsersQueryKey = (params?: GetExpiredUsersParams) => {
-  return [`/api/users/expired`, ...(params ? [params] : [])] as const;
-};
+  return [`/api/users/expired`, ...(params ? [params] : [])] as const
+}
 
-export const getGetExpiredUsersQueryOptions = <
-  TData = Awaited<ReturnType<typeof getExpiredUsers>>,
-  TError = ErrorType<Unauthorized | HTTPValidationError>
->(
+export const getGetExpiredUsersQueryOptions = <TData = Awaited<ReturnType<typeof getExpiredUsers>>, TError = ErrorType<Unauthorized | HTTPValidationError>>(
   params?: GetExpiredUsersParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getExpiredUsers>>,
-        TError,
-        TData
-      >
-    >;
-  }
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getExpiredUsers>>, TError, TData>> },
 ) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetExpiredUsersQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetExpiredUsersQueryKey(params)
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getExpiredUsers>>> = ({
-    signal,
-  }) => getExpiredUsers(params, signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getExpiredUsers>>> = ({ signal }) => getExpiredUsers(params, signal)
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getExpiredUsers>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getExpiredUsers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type GetExpiredUsersQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getExpiredUsers>>
->;
-export type GetExpiredUsersQueryError = ErrorType<
-  Unauthorized | HTTPValidationError
->;
+export type GetExpiredUsersQueryResult = NonNullable<Awaited<ReturnType<typeof getExpiredUsers>>>
+export type GetExpiredUsersQueryError = ErrorType<Unauthorized | HTTPValidationError>
 
-export function useGetExpiredUsers<
-  TData = Awaited<ReturnType<typeof getExpiredUsers>>,
-  TError = ErrorType<Unauthorized | HTTPValidationError>
->(
+export function useGetExpiredUsers<TData = Awaited<ReturnType<typeof getExpiredUsers>>, TError = ErrorType<Unauthorized | HTTPValidationError>>(
   params: undefined | GetExpiredUsersParams,
   options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getExpiredUsers>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getExpiredUsers>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetExpiredUsers<
-  TData = Awaited<ReturnType<typeof getExpiredUsers>>,
-  TError = ErrorType<Unauthorized | HTTPValidationError>
->(
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getExpiredUsers>>, TError, TData>> &
+      Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getExpiredUsers>>, TError, TData>, 'initialData'>
+  },
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetExpiredUsers<TData = Awaited<ReturnType<typeof getExpiredUsers>>, TError = ErrorType<Unauthorized | HTTPValidationError>>(
   params?: GetExpiredUsersParams,
   options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getExpiredUsers>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getExpiredUsers>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetExpiredUsers<
-  TData = Awaited<ReturnType<typeof getExpiredUsers>>,
-  TError = ErrorType<Unauthorized | HTTPValidationError>
->(
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getExpiredUsers>>, TError, TData>> &
+      Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getExpiredUsers>>, TError, TData>, 'initialData'>
+  },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetExpiredUsers<TData = Awaited<ReturnType<typeof getExpiredUsers>>, TError = ErrorType<Unauthorized | HTTPValidationError>>(
   params?: GetExpiredUsersParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getExpiredUsers>>,
-        TError,
-        TData
-      >
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getExpiredUsers>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get Expired Users
  */
 
-export function useGetExpiredUsers<
-  TData = Awaited<ReturnType<typeof getExpiredUsers>>,
-  TError = ErrorType<Unauthorized | HTTPValidationError>
->(
+export function useGetExpiredUsers<TData = Awaited<ReturnType<typeof getExpiredUsers>>, TError = ErrorType<Unauthorized | HTTPValidationError>>(
   params?: GetExpiredUsersParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getExpiredUsers>>,
-        TError,
-        TData
-      >
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetExpiredUsersQueryOptions(params, options);
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getExpiredUsers>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetExpiredUsersQueryOptions(params, options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
@@ -5447,237 +3270,104 @@ export function useGetExpiredUsers<
  * @summary Delete Expired Users
  */
 export const deleteExpiredUsers = (params?: DeleteExpiredUsersParams) => {
-  return orvalFetcher<string[]>({
-    url: `/api/users/expired`,
-    method: "DELETE",
-    params,
-  });
-};
+  return orvalFetcher<string[]>({ url: `/api/users/expired`, method: 'DELETE', params })
+}
 
-export const getDeleteExpiredUsersMutationOptions = <
-  TData = Awaited<ReturnType<typeof deleteExpiredUsers>>,
-  TError = ErrorType<Unauthorized | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { params?: DeleteExpiredUsersParams },
-    TContext
-  >;
+export const getDeleteExpiredUsersMutationOptions = <TData = Awaited<ReturnType<typeof deleteExpiredUsers>>, TError = ErrorType<Unauthorized | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { params?: DeleteExpiredUsersParams }, TContext>
 }) => {
-  const mutationKey = ["deleteExpiredUsers"];
+  const mutationKey = ['deleteExpiredUsers']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof deleteExpiredUsers>>,
-    { params?: DeleteExpiredUsersParams }
-  > = (props) => {
-    const { params } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteExpiredUsers>>, { params?: DeleteExpiredUsersParams }> = props => {
+    const { params } = props ?? {}
 
-    return deleteExpiredUsers(params);
-  };
+    return deleteExpiredUsers(params)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { params?: DeleteExpiredUsersParams },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { params?: DeleteExpiredUsersParams }, TContext>
+}
 
-export type DeleteExpiredUsersMutationResult = NonNullable<
-  Awaited<ReturnType<typeof deleteExpiredUsers>>
->;
+export type DeleteExpiredUsersMutationResult = NonNullable<Awaited<ReturnType<typeof deleteExpiredUsers>>>
 
-export type DeleteExpiredUsersMutationError = ErrorType<
-  Unauthorized | HTTPValidationError
->;
+export type DeleteExpiredUsersMutationError = ErrorType<Unauthorized | HTTPValidationError>
 
 /**
  * @summary Delete Expired Users
  */
-export const useDeleteExpiredUsers = <
-  TData = Awaited<ReturnType<typeof deleteExpiredUsers>>,
-  TError = ErrorType<Unauthorized | HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { params?: DeleteExpiredUsersParams },
-    TContext
-  >;
-}): UseMutationResult<
-  TData,
-  TError,
-  { params?: DeleteExpiredUsersParams },
-  TContext
-> => {
-  const mutationOptions = getDeleteExpiredUsersMutationOptions(options);
+export const useDeleteExpiredUsers = <TData = Awaited<ReturnType<typeof deleteExpiredUsers>>, TError = ErrorType<Unauthorized | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { params?: DeleteExpiredUsersParams }, TContext>
+}): UseMutationResult<TData, TError, { params?: DeleteExpiredUsersParams }, TContext> => {
+  const mutationOptions = getDeleteExpiredUsersMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Provides a subscription link based on the user agent (Clash, V2Ray, etc.).
  * @summary User Subscription
  */
 export const userSubscription = (token: string, signal?: AbortSignal) => {
-  return orvalFetcher<unknown>({
-    url: `/sub/${token}/`,
-    method: "GET",
-    signal,
-  });
-};
+  return orvalFetcher<unknown>({ url: `/sub/${token}/`, method: 'GET', signal })
+}
 
 export const getUserSubscriptionQueryKey = (token: string) => {
-  return [`/sub/${token}/`] as const;
-};
+  return [`/sub/${token}/`] as const
+}
 
-export const getUserSubscriptionQueryOptions = <
-  TData = Awaited<ReturnType<typeof userSubscription>>,
-  TError = ErrorType<HTTPValidationError>
->(
+export const getUserSubscriptionQueryOptions = <TData = Awaited<ReturnType<typeof userSubscription>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof userSubscription>>,
-        TError,
-        TData
-      >
-    >;
-  }
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscription>>, TError, TData>> },
 ) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getUserSubscriptionQueryKey(token);
+  const queryKey = queryOptions?.queryKey ?? getUserSubscriptionQueryKey(token)
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof userSubscription>>
-  > = ({ signal }) => userSubscription(token, signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof userSubscription>>> = ({ signal }) => userSubscription(token, signal)
 
-  return {
-    queryKey,
-    queryFn,
-    enabled: !!token,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof userSubscription>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+  return { queryKey, queryFn, enabled: !!token, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof userSubscription>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type UserSubscriptionQueryResult = NonNullable<
-  Awaited<ReturnType<typeof userSubscription>>
->;
-export type UserSubscriptionQueryError = ErrorType<HTTPValidationError>;
+export type UserSubscriptionQueryResult = NonNullable<Awaited<ReturnType<typeof userSubscription>>>
+export type UserSubscriptionQueryError = ErrorType<HTTPValidationError>
 
-export function useUserSubscription<
-  TData = Awaited<ReturnType<typeof userSubscription>>,
-  TError = ErrorType<HTTPValidationError>
->(
+export function useUserSubscription<TData = Awaited<ReturnType<typeof userSubscription>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
   options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof userSubscription>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof userSubscription>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useUserSubscription<
-  TData = Awaited<ReturnType<typeof userSubscription>>,
-  TError = ErrorType<HTTPValidationError>
->(
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscription>>, TError, TData>> &
+      Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof userSubscription>>, TError, TData>, 'initialData'>
+  },
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useUserSubscription<TData = Awaited<ReturnType<typeof userSubscription>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
   options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof userSubscription>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof userSubscription>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useUserSubscription<
-  TData = Awaited<ReturnType<typeof userSubscription>>,
-  TError = ErrorType<HTTPValidationError>
->(
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscription>>, TError, TData>> &
+      Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof userSubscription>>, TError, TData>, 'initialData'>
+  },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useUserSubscription<TData = Awaited<ReturnType<typeof userSubscription>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof userSubscription>>,
-        TError,
-        TData
-      >
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscription>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary User Subscription
  */
 
-export function useUserSubscription<
-  TData = Awaited<ReturnType<typeof userSubscription>>,
-  TError = ErrorType<HTTPValidationError>
->(
+export function useUserSubscription<TData = Awaited<ReturnType<typeof userSubscription>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof userSubscription>>,
-        TError,
-        TData
-      >
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getUserSubscriptionQueryOptions(token, options);
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscription>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getUserSubscriptionQueryOptions(token, options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
@@ -5685,478 +3375,199 @@ export function useUserSubscription<
  * @summary User Subscription Info
  */
 export const userSubscriptionInfo = (token: string, signal?: AbortSignal) => {
-  return orvalFetcher<SubscriptionUserResponse>({
-    url: `/sub/${token}/info`,
-    method: "GET",
-    signal,
-  });
-};
+  return orvalFetcher<SubscriptionUserResponse>({ url: `/sub/${token}/info`, method: 'GET', signal })
+}
 
 export const getUserSubscriptionInfoQueryKey = (token: string) => {
-  return [`/sub/${token}/info`] as const;
-};
+  return [`/sub/${token}/info`] as const
+}
 
-export const getUserSubscriptionInfoQueryOptions = <
-  TData = Awaited<ReturnType<typeof userSubscriptionInfo>>,
-  TError = ErrorType<HTTPValidationError>
->(
+export const getUserSubscriptionInfoQueryOptions = <TData = Awaited<ReturnType<typeof userSubscriptionInfo>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof userSubscriptionInfo>>,
-        TError,
-        TData
-      >
-    >;
-  }
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscriptionInfo>>, TError, TData>> },
 ) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey =
-    queryOptions?.queryKey ?? getUserSubscriptionInfoQueryKey(token);
+  const queryKey = queryOptions?.queryKey ?? getUserSubscriptionInfoQueryKey(token)
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof userSubscriptionInfo>>
-  > = ({ signal }) => userSubscriptionInfo(token, signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof userSubscriptionInfo>>> = ({ signal }) => userSubscriptionInfo(token, signal)
 
-  return {
-    queryKey,
-    queryFn,
-    enabled: !!token,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof userSubscriptionInfo>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+  return { queryKey, queryFn, enabled: !!token, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof userSubscriptionInfo>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-export type UserSubscriptionInfoQueryResult = NonNullable<
-  Awaited<ReturnType<typeof userSubscriptionInfo>>
->;
-export type UserSubscriptionInfoQueryError = ErrorType<HTTPValidationError>;
+export type UserSubscriptionInfoQueryResult = NonNullable<Awaited<ReturnType<typeof userSubscriptionInfo>>>
+export type UserSubscriptionInfoQueryError = ErrorType<HTTPValidationError>
 
-export function useUserSubscriptionInfo<
-  TData = Awaited<ReturnType<typeof userSubscriptionInfo>>,
-  TError = ErrorType<HTTPValidationError>
->(
+export function useUserSubscriptionInfo<TData = Awaited<ReturnType<typeof userSubscriptionInfo>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
   options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof userSubscriptionInfo>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof userSubscriptionInfo>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useUserSubscriptionInfo<
-  TData = Awaited<ReturnType<typeof userSubscriptionInfo>>,
-  TError = ErrorType<HTTPValidationError>
->(
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscriptionInfo>>, TError, TData>> &
+      Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof userSubscriptionInfo>>, TError, TData>, 'initialData'>
+  },
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useUserSubscriptionInfo<TData = Awaited<ReturnType<typeof userSubscriptionInfo>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
   options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof userSubscriptionInfo>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof userSubscriptionInfo>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useUserSubscriptionInfo<
-  TData = Awaited<ReturnType<typeof userSubscriptionInfo>>,
-  TError = ErrorType<HTTPValidationError>
->(
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscriptionInfo>>, TError, TData>> &
+      Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof userSubscriptionInfo>>, TError, TData>, 'initialData'>
+  },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useUserSubscriptionInfo<TData = Awaited<ReturnType<typeof userSubscriptionInfo>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof userSubscriptionInfo>>,
-        TError,
-        TData
-      >
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscriptionInfo>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary User Subscription Info
  */
 
-export function useUserSubscriptionInfo<
-  TData = Awaited<ReturnType<typeof userSubscriptionInfo>>,
-  TError = ErrorType<HTTPValidationError>
->(
+export function useUserSubscriptionInfo<TData = Awaited<ReturnType<typeof userSubscriptionInfo>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof userSubscriptionInfo>>,
-        TError,
-        TData
-      >
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getUserSubscriptionInfoQueryOptions(token, options);
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscriptionInfo>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getUserSubscriptionInfoQueryOptions(token, options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
  * Fetches the usage statistics for the user within a specified date range.
  * @summary User Get Usage
  */
-export const userGetUsage = (
+export const userGetUsage = (token: string, params?: UserGetUsageParams, signal?: AbortSignal) => {
+  return orvalFetcher<unknown>({ url: `/sub/${token}/usage`, method: 'GET', params, signal })
+}
+
+export const getUserGetUsageQueryKey = (token: string, params?: UserGetUsageParams) => {
+  return [`/sub/${token}/usage`, ...(params ? [params] : [])] as const
+}
+
+export const getUserGetUsageQueryOptions = <TData = Awaited<ReturnType<typeof userGetUsage>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
   params?: UserGetUsageParams,
-  signal?: AbortSignal
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userGetUsage>>, TError, TData>> },
 ) => {
-  return orvalFetcher<unknown>({
-    url: `/sub/${token}/usage`,
-    method: "GET",
-    params,
-    signal,
-  });
-};
+  const { query: queryOptions } = options ?? {}
 
-export const getUserGetUsageQueryKey = (
-  token: string,
-  params?: UserGetUsageParams
-) => {
-  return [`/sub/${token}/usage`, ...(params ? [params] : [])] as const;
-};
+  const queryKey = queryOptions?.queryKey ?? getUserGetUsageQueryKey(token, params)
 
-export const getUserGetUsageQueryOptions = <
-  TData = Awaited<ReturnType<typeof userGetUsage>>,
-  TError = ErrorType<HTTPValidationError>
->(
-  token: string,
-  params?: UserGetUsageParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof userGetUsage>>, TError, TData>
-    >;
-  }
-) => {
-  const { query: queryOptions } = options ?? {};
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof userGetUsage>>> = ({ signal }) => userGetUsage(token, params, signal)
 
-  const queryKey =
-    queryOptions?.queryKey ?? getUserGetUsageQueryKey(token, params);
+  return { queryKey, queryFn, enabled: !!token, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof userGetUsage>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof userGetUsage>>> = ({
-    signal,
-  }) => userGetUsage(token, params, signal);
+export type UserGetUsageQueryResult = NonNullable<Awaited<ReturnType<typeof userGetUsage>>>
+export type UserGetUsageQueryError = ErrorType<HTTPValidationError>
 
-  return {
-    queryKey,
-    queryFn,
-    enabled: !!token,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof userGetUsage>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type UserGetUsageQueryResult = NonNullable<
-  Awaited<ReturnType<typeof userGetUsage>>
->;
-export type UserGetUsageQueryError = ErrorType<HTTPValidationError>;
-
-export function useUserGetUsage<
-  TData = Awaited<ReturnType<typeof userGetUsage>>,
-  TError = ErrorType<HTTPValidationError>
->(
+export function useUserGetUsage<TData = Awaited<ReturnType<typeof userGetUsage>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
   params: undefined | UserGetUsageParams,
   options: {
-    query: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof userGetUsage>>, TError, TData>
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof userGetUsage>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useUserGetUsage<
-  TData = Awaited<ReturnType<typeof userGetUsage>>,
-  TError = ErrorType<HTTPValidationError>
->(
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof userGetUsage>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof userGetUsage>>, TError, TData>, 'initialData'>
+  },
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useUserGetUsage<TData = Awaited<ReturnType<typeof userGetUsage>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
   params?: UserGetUsageParams,
   options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof userGetUsage>>, TError, TData>
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof userGetUsage>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useUserGetUsage<
-  TData = Awaited<ReturnType<typeof userGetUsage>>,
-  TError = ErrorType<HTTPValidationError>
->(
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userGetUsage>>, TError, TData>> &
+      Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof userGetUsage>>, TError, TData>, 'initialData'>
+  },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useUserGetUsage<TData = Awaited<ReturnType<typeof userGetUsage>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
   params?: UserGetUsageParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof userGetUsage>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userGetUsage>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary User Get Usage
  */
 
-export function useUserGetUsage<
-  TData = Awaited<ReturnType<typeof userGetUsage>>,
-  TError = ErrorType<HTTPValidationError>
->(
+export function useUserGetUsage<TData = Awaited<ReturnType<typeof userGetUsage>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
   params?: UserGetUsageParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof userGetUsage>>, TError, TData>
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getUserGetUsageQueryOptions(token, params, options);
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userGetUsage>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getUserGetUsageQueryOptions(token, params, options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
  * Provides a subscription link based on the specified client type (e.g., Clash, V2Ray).
  * @summary User Subscription With Client Type
  */
-export const userSubscriptionWithClientType = (
+export const userSubscriptionWithClientType = (token: string, clientType: string, signal?: AbortSignal) => {
+  return orvalFetcher<unknown>({ url: `/sub/${token}/${clientType}`, method: 'GET', signal })
+}
+
+export const getUserSubscriptionWithClientTypeQueryKey = (token: string, clientType: string) => {
+  return [`/sub/${token}/${clientType}`] as const
+}
+
+export const getUserSubscriptionWithClientTypeQueryOptions = <TData = Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
   clientType: string,
-  signal?: AbortSignal
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError, TData>> },
 ) => {
-  return orvalFetcher<unknown>({
-    url: `/sub/${token}/${clientType}`,
-    method: "GET",
-    signal,
-  });
-};
+  const { query: queryOptions } = options ?? {}
 
-export const getUserSubscriptionWithClientTypeQueryKey = (
-  token: string,
-  clientType: string
-) => {
-  return [`/sub/${token}/${clientType}`] as const;
-};
+  const queryKey = queryOptions?.queryKey ?? getUserSubscriptionWithClientTypeQueryKey(token, clientType)
 
-export const getUserSubscriptionWithClientTypeQueryOptions = <
-  TData = Awaited<ReturnType<typeof userSubscriptionWithClientType>>,
-  TError = ErrorType<HTTPValidationError>
->(
-  token: string,
-  clientType: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof userSubscriptionWithClientType>>,
-        TError,
-        TData
-      >
-    >;
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof userSubscriptionWithClientType>>> = ({ signal }) => userSubscriptionWithClientType(token, clientType, signal)
+
+  return { queryKey, queryFn, enabled: !!(token && clientType), ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>
   }
-) => {
-  const { query: queryOptions } = options ?? {};
+}
 
-  const queryKey =
-    queryOptions?.queryKey ??
-    getUserSubscriptionWithClientTypeQueryKey(token, clientType);
+export type UserSubscriptionWithClientTypeQueryResult = NonNullable<Awaited<ReturnType<typeof userSubscriptionWithClientType>>>
+export type UserSubscriptionWithClientTypeQueryError = ErrorType<HTTPValidationError>
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof userSubscriptionWithClientType>>
-  > = ({ signal }) => userSubscriptionWithClientType(token, clientType, signal);
-
-  return {
-    queryKey,
-    queryFn,
-    enabled: !!(token && clientType),
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof userSubscriptionWithClientType>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type UserSubscriptionWithClientTypeQueryResult = NonNullable<
-  Awaited<ReturnType<typeof userSubscriptionWithClientType>>
->;
-export type UserSubscriptionWithClientTypeQueryError =
-  ErrorType<HTTPValidationError>;
-
-export function useUserSubscriptionWithClientType<
-  TData = Awaited<ReturnType<typeof userSubscriptionWithClientType>>,
-  TError = ErrorType<HTTPValidationError>
->(
+export function useUserSubscriptionWithClientType<TData = Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
   clientType: string,
   options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof userSubscriptionWithClientType>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof userSubscriptionWithClientType>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useUserSubscriptionWithClientType<
-  TData = Awaited<ReturnType<typeof userSubscriptionWithClientType>>,
-  TError = ErrorType<HTTPValidationError>
->(
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError, TData>> &
+      Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError, TData>, 'initialData'>
+  },
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useUserSubscriptionWithClientType<TData = Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
   clientType: string,
   options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof userSubscriptionWithClientType>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof userSubscriptionWithClientType>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useUserSubscriptionWithClientType<
-  TData = Awaited<ReturnType<typeof userSubscriptionWithClientType>>,
-  TError = ErrorType<HTTPValidationError>
->(
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError, TData>> &
+      Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError, TData>, 'initialData'>
+  },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useUserSubscriptionWithClientType<TData = Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
   clientType: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof userSubscriptionWithClientType>>,
-        TError,
-        TData
-      >
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary User Subscription With Client Type
  */
 
-export function useUserSubscriptionWithClientType<
-  TData = Awaited<ReturnType<typeof userSubscriptionWithClientType>>,
-  TError = ErrorType<HTTPValidationError>
->(
+export function useUserSubscriptionWithClientType<TData = Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
   clientType: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof userSubscriptionWithClientType>>,
-        TError,
-        TData
-      >
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getUserSubscriptionWithClientTypeQueryOptions(
-    token,
-    clientType,
-    options
-  );
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getUserSubscriptionWithClientTypeQueryOptions(token, clientType, options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
@@ -6168,405 +3579,170 @@ export function useUserSubscriptionWithClientType<
 - **inbounds** dictionary of protocol:inbound_tags, empty means all inbounds
  * @summary Add User Template
  */
-export const addUserTemplate = (
-  userTemplateCreate: BodyType<UserTemplateCreate>,
-  signal?: AbortSignal
-) => {
-  return orvalFetcher<UserTemplateResponse>({
-    url: `/api/user_template`,
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    data: userTemplateCreate,
-    signal,
-  });
-};
+export const addUserTemplate = (userTemplateCreate: BodyType<UserTemplateCreate>, signal?: AbortSignal) => {
+  return orvalFetcher<UserTemplateResponse>({ url: `/api/user_template`, method: 'POST', headers: { 'Content-Type': 'application/json' }, data: userTemplateCreate, signal })
+}
 
-export const getAddUserTemplateMutationOptions = <
-  TData = Awaited<ReturnType<typeof addUserTemplate>>,
-  TError = ErrorType<HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<UserTemplateCreate> },
-    TContext
-  >;
+export const getAddUserTemplateMutationOptions = <TData = Awaited<ReturnType<typeof addUserTemplate>>, TError = ErrorType<HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<UserTemplateCreate> }, TContext>
 }) => {
-  const mutationKey = ["addUserTemplate"];
+  const mutationKey = ['addUserTemplate']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof addUserTemplate>>,
-    { data: BodyType<UserTemplateCreate> }
-  > = (props) => {
-    const { data } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof addUserTemplate>>, { data: BodyType<UserTemplateCreate> }> = props => {
+    const { data } = props ?? {}
 
-    return addUserTemplate(data);
-  };
+    return addUserTemplate(data)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<UserTemplateCreate> },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { data: BodyType<UserTemplateCreate> }, TContext>
+}
 
-export type AddUserTemplateMutationResult = NonNullable<
-  Awaited<ReturnType<typeof addUserTemplate>>
->;
-export type AddUserTemplateMutationBody = BodyType<UserTemplateCreate>;
-export type AddUserTemplateMutationError = ErrorType<HTTPValidationError>;
+export type AddUserTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof addUserTemplate>>>
+export type AddUserTemplateMutationBody = BodyType<UserTemplateCreate>
+export type AddUserTemplateMutationError = ErrorType<HTTPValidationError>
 
 /**
  * @summary Add User Template
  */
-export const useAddUserTemplate = <
-  TData = Awaited<ReturnType<typeof addUserTemplate>>,
-  TError = ErrorType<HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { data: BodyType<UserTemplateCreate> },
-    TContext
-  >;
-}): UseMutationResult<
-  TData,
-  TError,
-  { data: BodyType<UserTemplateCreate> },
-  TContext
-> => {
-  const mutationOptions = getAddUserTemplateMutationOptions(options);
+export const useAddUserTemplate = <TData = Awaited<ReturnType<typeof addUserTemplate>>, TError = ErrorType<HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<UserTemplateCreate> }, TContext>
+}): UseMutationResult<TData, TError, { data: BodyType<UserTemplateCreate> }, TContext> => {
+  const mutationOptions = getAddUserTemplateMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Get a list of User Templates with optional pagination
  * @summary Get User Templates
  */
-export const getUserTemplates = (
+export const getUserTemplates = (params?: GetUserTemplatesParams, signal?: AbortSignal) => {
+  return orvalFetcher<UserTemplateResponse[]>({ url: `/api/user_template`, method: 'GET', params, signal })
+}
+
+export const getGetUserTemplatesQueryKey = (params?: GetUserTemplatesParams) => {
+  return [`/api/user_template`, ...(params ? [params] : [])] as const
+}
+
+export const getGetUserTemplatesQueryOptions = <TData = Awaited<ReturnType<typeof getUserTemplates>>, TError = ErrorType<HTTPValidationError>>(
   params?: GetUserTemplatesParams,
-  signal?: AbortSignal
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserTemplates>>, TError, TData>> },
 ) => {
-  return orvalFetcher<UserTemplateResponse[]>({
-    url: `/api/user_template`,
-    method: "GET",
-    params,
-    signal,
-  });
-};
+  const { query: queryOptions } = options ?? {}
 
-export const getGetUserTemplatesQueryKey = (
-  params?: GetUserTemplatesParams
-) => {
-  return [`/api/user_template`, ...(params ? [params] : [])] as const;
-};
+  const queryKey = queryOptions?.queryKey ?? getGetUserTemplatesQueryKey(params)
 
-export const getGetUserTemplatesQueryOptions = <
-  TData = Awaited<ReturnType<typeof getUserTemplates>>,
-  TError = ErrorType<HTTPValidationError>
->(
-  params?: GetUserTemplatesParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getUserTemplates>>,
-        TError,
-        TData
-      >
-    >;
-  }
-) => {
-  const { query: queryOptions } = options ?? {};
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUserTemplates>>> = ({ signal }) => getUserTemplates(params, signal)
 
-  const queryKey =
-    queryOptions?.queryKey ?? getGetUserTemplatesQueryKey(params);
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getUserTemplates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getUserTemplates>>
-  > = ({ signal }) => getUserTemplates(params, signal);
+export type GetUserTemplatesQueryResult = NonNullable<Awaited<ReturnType<typeof getUserTemplates>>>
+export type GetUserTemplatesQueryError = ErrorType<HTTPValidationError>
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getUserTemplates>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type GetUserTemplatesQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getUserTemplates>>
->;
-export type GetUserTemplatesQueryError = ErrorType<HTTPValidationError>;
-
-export function useGetUserTemplates<
-  TData = Awaited<ReturnType<typeof getUserTemplates>>,
-  TError = ErrorType<HTTPValidationError>
->(
+export function useGetUserTemplates<TData = Awaited<ReturnType<typeof getUserTemplates>>, TError = ErrorType<HTTPValidationError>>(
   params: undefined | GetUserTemplatesParams,
   options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getUserTemplates>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUserTemplates>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetUserTemplates<
-  TData = Awaited<ReturnType<typeof getUserTemplates>>,
-  TError = ErrorType<HTTPValidationError>
->(
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserTemplates>>, TError, TData>> &
+      Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getUserTemplates>>, TError, TData>, 'initialData'>
+  },
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUserTemplates<TData = Awaited<ReturnType<typeof getUserTemplates>>, TError = ErrorType<HTTPValidationError>>(
   params?: GetUserTemplatesParams,
   options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getUserTemplates>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUserTemplates>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetUserTemplates<
-  TData = Awaited<ReturnType<typeof getUserTemplates>>,
-  TError = ErrorType<HTTPValidationError>
->(
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserTemplates>>, TError, TData>> &
+      Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getUserTemplates>>, TError, TData>, 'initialData'>
+  },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUserTemplates<TData = Awaited<ReturnType<typeof getUserTemplates>>, TError = ErrorType<HTTPValidationError>>(
   params?: GetUserTemplatesParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getUserTemplates>>,
-        TError,
-        TData
-      >
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserTemplates>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get User Templates
  */
 
-export function useGetUserTemplates<
-  TData = Awaited<ReturnType<typeof getUserTemplates>>,
-  TError = ErrorType<HTTPValidationError>
->(
+export function useGetUserTemplates<TData = Awaited<ReturnType<typeof getUserTemplates>>, TError = ErrorType<HTTPValidationError>>(
   params?: GetUserTemplatesParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getUserTemplates>>,
-        TError,
-        TData
-      >
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetUserTemplatesQueryOptions(params, options);
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserTemplates>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetUserTemplatesQueryOptions(params, options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
  * Get User Template information with id
  * @summary Get User Template Endpoint
  */
-export const getUserTemplateEndpoint = (
-  templateId: number,
-  signal?: AbortSignal
-) => {
-  return orvalFetcher<UserTemplateResponse>({
-    url: `/api/user_template/${templateId}`,
-    method: "GET",
-    signal,
-  });
-};
+export const getUserTemplateEndpoint = (templateId: number, signal?: AbortSignal) => {
+  return orvalFetcher<UserTemplateResponse>({ url: `/api/user_template/${templateId}`, method: 'GET', signal })
+}
 
 export const getGetUserTemplateEndpointQueryKey = (templateId: number) => {
-  return [`/api/user_template/${templateId}`] as const;
-};
+  return [`/api/user_template/${templateId}`] as const
+}
 
-export const getGetUserTemplateEndpointQueryOptions = <
-  TData = Awaited<ReturnType<typeof getUserTemplateEndpoint>>,
-  TError = ErrorType<HTTPValidationError>
->(
+export const getGetUserTemplateEndpointQueryOptions = <TData = Awaited<ReturnType<typeof getUserTemplateEndpoint>>, TError = ErrorType<HTTPValidationError>>(
   templateId: number,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getUserTemplateEndpoint>>,
-        TError,
-        TData
-      >
-    >;
-  }
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserTemplateEndpoint>>, TError, TData>> },
 ) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions } = options ?? {}
 
-  const queryKey =
-    queryOptions?.queryKey ?? getGetUserTemplateEndpointQueryKey(templateId);
+  const queryKey = queryOptions?.queryKey ?? getGetUserTemplateEndpointQueryKey(templateId)
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getUserTemplateEndpoint>>
-  > = ({ signal }) => getUserTemplateEndpoint(templateId, signal);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUserTemplateEndpoint>>> = ({ signal }) => getUserTemplateEndpoint(templateId, signal)
 
-  return {
-    queryKey,
-    queryFn,
-    enabled: !!templateId,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof getUserTemplateEndpoint>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+  return { queryKey, queryFn, enabled: !!templateId, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getUserTemplateEndpoint>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+}
 
-export type GetUserTemplateEndpointQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getUserTemplateEndpoint>>
->;
-export type GetUserTemplateEndpointQueryError = ErrorType<HTTPValidationError>;
+export type GetUserTemplateEndpointQueryResult = NonNullable<Awaited<ReturnType<typeof getUserTemplateEndpoint>>>
+export type GetUserTemplateEndpointQueryError = ErrorType<HTTPValidationError>
 
-export function useGetUserTemplateEndpoint<
-  TData = Awaited<ReturnType<typeof getUserTemplateEndpoint>>,
-  TError = ErrorType<HTTPValidationError>
->(
+export function useGetUserTemplateEndpoint<TData = Awaited<ReturnType<typeof getUserTemplateEndpoint>>, TError = ErrorType<HTTPValidationError>>(
   templateId: number,
   options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getUserTemplateEndpoint>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUserTemplateEndpoint>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetUserTemplateEndpoint<
-  TData = Awaited<ReturnType<typeof getUserTemplateEndpoint>>,
-  TError = ErrorType<HTTPValidationError>
->(
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserTemplateEndpoint>>, TError, TData>> &
+      Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getUserTemplateEndpoint>>, TError, TData>, 'initialData'>
+  },
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUserTemplateEndpoint<TData = Awaited<ReturnType<typeof getUserTemplateEndpoint>>, TError = ErrorType<HTTPValidationError>>(
   templateId: number,
   options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getUserTemplateEndpoint>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUserTemplateEndpoint>>,
-          TError,
-          TData
-        >,
-        "initialData"
-      >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetUserTemplateEndpoint<
-  TData = Awaited<ReturnType<typeof getUserTemplateEndpoint>>,
-  TError = ErrorType<HTTPValidationError>
->(
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserTemplateEndpoint>>, TError, TData>> &
+      Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getUserTemplateEndpoint>>, TError, TData>, 'initialData'>
+  },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUserTemplateEndpoint<TData = Awaited<ReturnType<typeof getUserTemplateEndpoint>>, TError = ErrorType<HTTPValidationError>>(
   templateId: number,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getUserTemplateEndpoint>>,
-        TError,
-        TData
-      >
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserTemplateEndpoint>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get User Template Endpoint
  */
 
-export function useGetUserTemplateEndpoint<
-  TData = Awaited<ReturnType<typeof getUserTemplateEndpoint>>,
-  TError = ErrorType<HTTPValidationError>
->(
+export function useGetUserTemplateEndpoint<TData = Awaited<ReturnType<typeof getUserTemplateEndpoint>>, TError = ErrorType<HTTPValidationError>>(
   templateId: number,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getUserTemplateEndpoint>>,
-        TError,
-        TData
-      >
-    >;
-  }
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetUserTemplateEndpointQueryOptions(
-    templateId,
-    options
-  );
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserTemplateEndpoint>>, TError, TData>> },
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetUserTemplateEndpointQueryOptions(templateId, options)
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-  query.queryKey = queryOptions.queryKey;
+  query.queryKey = queryOptions.queryKey
 
-  return query;
+  return query
 }
 
 /**
@@ -6578,158 +3754,82 @@ export function useGetUserTemplateEndpoint<
 - **inbounds** dictionary of protocol:inbound_tags, empty means all inbounds
  * @summary Modify User Template
  */
-export const modifyUserTemplate = (
-  templateId: number,
-  userTemplateModify: BodyType<UserTemplateModify>
-) => {
-  return orvalFetcher<UserTemplateResponse>({
-    url: `/api/user_template/${templateId}`,
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    data: userTemplateModify,
-  });
-};
+export const modifyUserTemplate = (templateId: number, userTemplateModify: BodyType<UserTemplateModify>) => {
+  return orvalFetcher<UserTemplateResponse>({ url: `/api/user_template/${templateId}`, method: 'PUT', headers: { 'Content-Type': 'application/json' }, data: userTemplateModify })
+}
 
-export const getModifyUserTemplateMutationOptions = <
-  TData = Awaited<ReturnType<typeof modifyUserTemplate>>,
-  TError = ErrorType<HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { templateId: number; data: BodyType<UserTemplateModify> },
-    TContext
-  >;
+export const getModifyUserTemplateMutationOptions = <TData = Awaited<ReturnType<typeof modifyUserTemplate>>, TError = ErrorType<HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { templateId: number; data: BodyType<UserTemplateModify> }, TContext>
 }) => {
-  const mutationKey = ["modifyUserTemplate"];
+  const mutationKey = ['modifyUserTemplate']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof modifyUserTemplate>>,
-    { templateId: number; data: BodyType<UserTemplateModify> }
-  > = (props) => {
-    const { templateId, data } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof modifyUserTemplate>>, { templateId: number; data: BodyType<UserTemplateModify> }> = props => {
+    const { templateId, data } = props ?? {}
 
-    return modifyUserTemplate(templateId, data);
-  };
+    return modifyUserTemplate(templateId, data)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { templateId: number; data: BodyType<UserTemplateModify> },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { templateId: number; data: BodyType<UserTemplateModify> }, TContext>
+}
 
-export type ModifyUserTemplateMutationResult = NonNullable<
-  Awaited<ReturnType<typeof modifyUserTemplate>>
->;
-export type ModifyUserTemplateMutationBody = BodyType<UserTemplateModify>;
-export type ModifyUserTemplateMutationError = ErrorType<HTTPValidationError>;
+export type ModifyUserTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof modifyUserTemplate>>>
+export type ModifyUserTemplateMutationBody = BodyType<UserTemplateModify>
+export type ModifyUserTemplateMutationError = ErrorType<HTTPValidationError>
 
 /**
  * @summary Modify User Template
  */
-export const useModifyUserTemplate = <
-  TData = Awaited<ReturnType<typeof modifyUserTemplate>>,
-  TError = ErrorType<HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { templateId: number; data: BodyType<UserTemplateModify> },
-    TContext
-  >;
-}): UseMutationResult<
-  TData,
-  TError,
-  { templateId: number; data: BodyType<UserTemplateModify> },
-  TContext
-> => {
-  const mutationOptions = getModifyUserTemplateMutationOptions(options);
+export const useModifyUserTemplate = <TData = Awaited<ReturnType<typeof modifyUserTemplate>>, TError = ErrorType<HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { templateId: number; data: BodyType<UserTemplateModify> }, TContext>
+}): UseMutationResult<TData, TError, { templateId: number; data: BodyType<UserTemplateModify> }, TContext> => {
+  const mutationOptions = getModifyUserTemplateMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
 
 /**
  * Remove a User Template by its ID
  * @summary Remove User Template
  */
 export const removeUserTemplate = (templateId: number) => {
-  return orvalFetcher<unknown>({
-    url: `/api/user_template/${templateId}`,
-    method: "DELETE",
-  });
-};
+  return orvalFetcher<unknown>({ url: `/api/user_template/${templateId}`, method: 'DELETE' })
+}
 
-export const getRemoveUserTemplateMutationOptions = <
-  TData = Awaited<ReturnType<typeof removeUserTemplate>>,
-  TError = ErrorType<HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { templateId: number },
-    TContext
-  >;
+export const getRemoveUserTemplateMutationOptions = <TData = Awaited<ReturnType<typeof removeUserTemplate>>, TError = ErrorType<HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { templateId: number }, TContext>
 }) => {
-  const mutationKey = ["removeUserTemplate"];
+  const mutationKey = ['removeUserTemplate']
   const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey } }
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof removeUserTemplate>>,
-    { templateId: number }
-  > = (props) => {
-    const { templateId } = props ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeUserTemplate>>, { templateId: number }> = props => {
+    const { templateId } = props ?? {}
 
-    return removeUserTemplate(templateId);
-  };
+    return removeUserTemplate(templateId)
+  }
 
-  return { mutationFn, ...mutationOptions } as UseMutationOptions<
-    TData,
-    TError,
-    { templateId: number },
-    TContext
-  >;
-};
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { templateId: number }, TContext>
+}
 
-export type RemoveUserTemplateMutationResult = NonNullable<
-  Awaited<ReturnType<typeof removeUserTemplate>>
->;
+export type RemoveUserTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof removeUserTemplate>>>
 
-export type RemoveUserTemplateMutationError = ErrorType<HTTPValidationError>;
+export type RemoveUserTemplateMutationError = ErrorType<HTTPValidationError>
 
 /**
  * @summary Remove User Template
  */
-export const useRemoveUserTemplate = <
-  TData = Awaited<ReturnType<typeof removeUserTemplate>>,
-  TError = ErrorType<HTTPValidationError>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    TData,
-    TError,
-    { templateId: number },
-    TContext
-  >;
+export const useRemoveUserTemplate = <TData = Awaited<ReturnType<typeof removeUserTemplate>>, TError = ErrorType<HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { templateId: number }, TContext>
 }): UseMutationResult<TData, TError, { templateId: number }, TContext> => {
-  const mutationOptions = getRemoveUserTemplateMutationOptions(options);
+  const mutationOptions = getRemoveUserTemplateMutationOptions(options)
 
-  return useMutation(mutationOptions);
-};
+  return useMutation(mutationOptions)
+}
