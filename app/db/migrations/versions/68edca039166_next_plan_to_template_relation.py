@@ -1,7 +1,7 @@
 """next plan to template relation
 
 Revision ID: 68edca039166
-Revises: 7a93bcd44713
+Revises: 931ed40d6eec
 Create Date: 2025-01-12 23:58:41.810295
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '68edca039166'
-down_revision = '7a93bcd44713'
+down_revision = '931ed40d6eec'
 branch_labels = None
 depends_on = None
 
