@@ -111,13 +111,13 @@ def modify_user(
                 status_code=400,
                 detail=f"Protocol {proxy_type} is disabled on your server",
             )
+    
+    if (modified_user.next_plan != None and modified_user.next_plan.user_template_id != None):
+        get_user_template(modified_user.next_plan.user_template_id)
 
     old_status = dbuser.status
     dbuser = crud.update_user(db, dbuser, modified_user)
     user = UserResponse.model_validate(dbuser)
-    
-    if (modified_user.next_plan != None and modified_user.next_plan.user_template_id != None):
-        get_user_template(modified_user.next_plan.user_template_id)
 
     if user.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.update_user, dbuser=dbuser)
