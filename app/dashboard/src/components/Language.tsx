@@ -14,12 +14,12 @@ export const Language: React.FC = () => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon">
           <LanguagesIcon className="w-4 h-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="">
+      <DropdownMenuContent align="start" side="top">
         <DropdownMenuItem onClick={() => changeLanguage('en')}>English</DropdownMenuItem>
         <DropdownMenuItem onClick={() => changeLanguage('fa')}>فارسی</DropdownMenuItem>
         <DropdownMenuItem onClick={() => changeLanguage('zh')}>简体中文</DropdownMenuItem>
