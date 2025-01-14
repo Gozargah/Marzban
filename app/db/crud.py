@@ -999,6 +999,8 @@ def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify) -> Ad
     """
     if modified_admin.is_sudo:
         dbadmin.is_sudo = modified_admin.is_sudo
+    if modified_admin.is_disabled is not None:
+        dbadmin.is_disabled = modified_admin.is_disabled
     if modified_admin.password is not None and dbadmin.hashed_password != modified_admin.hashed_password:
         dbadmin.hashed_password = modified_admin.hashed_password
         dbadmin.password_reset_at = datetime.utcnow()
@@ -1026,6 +1028,8 @@ def partial_update_admin(db: Session, dbadmin: Admin, modified_admin: AdminParti
     """
     if modified_admin.is_sudo is not None:
         dbadmin.is_sudo = modified_admin.is_sudo
+    if modified_admin.is_disabled is not None:
+        dbadmin.is_disabled = modified_admin.is_disabled
     if modified_admin.password is not None and dbadmin.hashed_password != modified_admin.hashed_password:
         dbadmin.hashed_password = modified_admin.hashed_password
         dbadmin.password_reset_at = datetime.utcnow()

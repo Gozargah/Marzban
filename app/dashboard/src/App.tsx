@@ -1,13 +1,12 @@
-import { RouterProvider } from "react-router-dom";
-import "./styles/fonts.css";
-import "./index.css";
-import { router } from "@/pages/Router";
-import { ThemeProvider } from "@/components/theme-provider";
-import { QueryClientProvider } from "react-query";
-import { queryClient } from "./utils/react-query";
-import { Toaster } from "./components/ui/toaster";
+import { ThemeProvider } from '@/components/theme-provider'
+import { router } from '@/router'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { RouterProvider } from 'react-router'
+import { Toaster } from './components/ui/toaster'
+import './lib/dayjs'
+import { queryClient } from './utils/query-client'
 
-function App() {
+export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -17,7 +16,5 @@ function App() {
         </main>
       </ThemeProvider>
     </QueryClientProvider>
-  );
+  )
 }
-
-export default App;

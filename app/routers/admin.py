@@ -42,6 +42,13 @@ def admin_token(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    if dbadmin.is_disabled:
+        report.login(form_data.username, form_data.password, client_ip, False)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="your account has been disabled",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     if client_ip not in LOGIN_NOTIFY_WHITE_LIST:
         report.login(form_data.username, "🔒", client_ip, True)

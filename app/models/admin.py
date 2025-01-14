@@ -23,7 +23,8 @@ class Admin(BaseModel):
     is_sudo: bool
     telegram_id: Optional[int] = None
     discord_webhook: Optional[str] = None
-    users_usage: Optional[int] = None
+    users_usage: int = 0
+    is_disabled: bool = False
     model_config = ConfigDict(from_attributes=True)
 
     @field_validator("users_usage",  mode='before')
@@ -68,6 +69,13 @@ class Admin(BaseModel):
                 detail="Could not validate credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+        if admin.is_disabled:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="your account has been disabled",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
         return admin
 
     @classmethod
@@ -79,6 +87,12 @@ class Admin(BaseModel):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        if admin.is_disabled:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="your account has been disabled",
                 headers={"WWW-Authenticate": "Bearer"},
             )
         if not admin.is_sudo:
@@ -111,6 +125,7 @@ class AdminModify(BaseModel):
     is_sudo: bool
     telegram_id: Optional[int] = None
     discord_webhook: Optional[str] = None
+    is_disabled: Optional[bool] = None
 
     @property
     def hashed_password(self):
@@ -140,3 +155,4 @@ class AdminInDB(Admin):
 class AdminValidationResult(BaseModel):
     username: str
     is_sudo: bool
+    is_disabled: bool
