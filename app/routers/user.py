@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app import logger, xray
 from app.db import Session, crud, get_db
-from app.dependencies import get_expired_users_list, get_validated_user, validate_dates
+from app.dependencies import get_expired_users_list, get_validated_user, validate_dates, get_user_template
 from app.models.admin import Admin
 from app.models.user import (
     UserCreate,
@@ -28,6 +28,7 @@ def add_user(
     bg: BackgroundTasks,
     db: Session = Depends(get_db),
     admin: Admin = Depends(Admin.get_current),
+    
 ):
     """
     Add a new user
@@ -53,6 +54,9 @@ def add_user(
                 status_code=400,
                 detail=f"Protocol {proxy_type} is disabled on your server",
             )
+            
+    if new_user.next_plan != None and new_user.next_plan.user_template_id != None:
+        get_user_template(new_user.next_plan.user_template_id)
 
     try:
         dbuser = crud.create_user(
@@ -107,6 +111,9 @@ def modify_user(
                 status_code=400,
                 detail=f"Protocol {proxy_type} is disabled on your server",
             )
+    
+    if modified_user.next_plan != None and modified_user.next_plan.user_template_id != None:
+        get_user_template(modified_user.next_plan.user_template_id)
 
     old_status = dbuser.status
     dbuser = crud.update_user(db, dbuser, modified_user)

@@ -48,6 +48,7 @@ class UserDataLimitResetStrategy(str, Enum):
 
 
 class NextPlanModel(BaseModel):
+    user_template_id: Optional[int] = None
     data_limit: Optional[int] = None
     expire: Optional[int] = None
     add_remaining_traffic: bool = False
