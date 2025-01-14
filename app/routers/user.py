@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Union
 
+from app.db.models import UserTemplate
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy.exc import IntegrityError
 
@@ -53,6 +54,13 @@ def add_user(
                 status_code=400,
                 detail=f"Protocol {proxy_type} is disabled on your server",
             )
+            
+    if (new_user.next_plan != None and new_user.next_plan.user_template_id != None):
+        user_template = crud.get_user_template(
+            db, new_user.next_plan.user_template_id
+        )
+        if (user_template == None):
+            raise HTTPException(status_code=404, detail="User Template not found")
 
     try:
         dbuser = crud.create_user(
@@ -111,6 +119,13 @@ def modify_user(
     old_status = dbuser.status
     dbuser = crud.update_user(db, dbuser, modified_user)
     user = UserResponse.model_validate(dbuser)
+    
+    if (modified_user.next_plan != None and modified_user.next_plan.user_template_id != None):
+        user_template = crud.get_user_template(
+            db, modified_user.next_plan.user_template_id
+        )
+        if (user_template == None):
+            raise HTTPException(status_code=404, detail="User Template not found")
 
     if user.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.update_user, dbuser=dbuser)

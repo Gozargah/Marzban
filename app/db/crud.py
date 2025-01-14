@@ -424,6 +424,7 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None) -> User:
         on_hold_timeout=(user.on_hold_timeout or None),
         auto_delete_in_days=user.auto_delete_in_days,
         next_plan=NextPlan(
+            user_template_id=user.next_plan.user_template_id,
             data_limit=user.next_plan.data_limit,
             expire=user.next_plan.expire,
             add_remaining_traffic=user.next_plan.add_remaining_traffic,
@@ -557,6 +558,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
 
     if modify.next_plan is not None:
         dbuser.next_plan = NextPlan(
+            user_template_id=modify.next_plan.user_template_id,
             data_limit=modify.next_plan.data_limit,
             expire=modify.next_plan.expire,
             add_remaining_traffic=modify.next_plan.add_remaining_traffic,
