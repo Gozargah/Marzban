@@ -55,7 +55,7 @@ def add_user(
                 detail=f"Protocol {proxy_type} is disabled on your server",
             )
             
-    if (new_user.next_plan != None and new_user.next_plan.user_template_id != None):
+    if new_user.next_plan != None and new_user.next_plan.user_template_id != None:
         get_user_template(new_user.next_plan.user_template_id)
 
     try:
@@ -112,7 +112,7 @@ def modify_user(
                 detail=f"Protocol {proxy_type} is disabled on your server",
             )
     
-    if (modified_user.next_plan != None and modified_user.next_plan.user_template_id != None):
+    if modified_user.next_plan != None and modified_user.next_plan.user_template_id != None:
         get_user_template(modified_user.next_plan.user_template_id)
 
     old_status = dbuser.status
