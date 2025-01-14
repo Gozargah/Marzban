@@ -1,13 +1,12 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Union
 
-from app.db.models import UserTemplate
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy.exc import IntegrityError
 
 from app import logger, xray
 from app.db import Session, crud, get_db
-from app.dependencies import get_expired_users_list, get_validated_user, validate_dates
+from app.dependencies import get_expired_users_list, get_validated_user, validate_dates, get_user_template
 from app.models.admin import Admin
 from app.models.user import (
     UserCreate,
@@ -29,6 +28,7 @@ def add_user(
     bg: BackgroundTasks,
     db: Session = Depends(get_db),
     admin: Admin = Depends(Admin.get_current),
+    
 ):
     """
     Add a new user
@@ -56,11 +56,7 @@ def add_user(
             )
             
     if (new_user.next_plan != None and new_user.next_plan.user_template_id != None):
-        user_template = crud.get_user_template(
-            db, new_user.next_plan.user_template_id
-        )
-        if (user_template == None):
-            raise HTTPException(status_code=404, detail="User Template not found")
+        get_user_template(new_user.next_plan.user_template_id)
 
     try:
         dbuser = crud.create_user(
@@ -121,11 +117,7 @@ def modify_user(
     user = UserResponse.model_validate(dbuser)
     
     if (modified_user.next_plan != None and modified_user.next_plan.user_template_id != None):
-        user_template = crud.get_user_template(
-            db, modified_user.next_plan.user_template_id
-        )
-        if (user_template == None):
-            raise HTTPException(status_code=404, detail="User Template not found")
+        get_user_template(modified_user.next_plan.user_template_id)
 
     if user.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.update_user, dbuser=dbuser)
