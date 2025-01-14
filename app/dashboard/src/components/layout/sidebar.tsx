@@ -1,10 +1,10 @@
 import Logo from '@/assets/logo.svg?react'
 import { GithubStar } from '@/components/github-star'
 import { Language } from '@/components/Language'
-import { ModeToggle } from '@/components/mode-toggle'
 import { NavMain } from '@/components/nav-main'
 import { NavSecondary } from '@/components/nav-secondary'
 import { NavUser } from '@/components/nav-user'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger } from '@/components/ui/sidebar'
 import { DONATION_URL, REPO_URL } from '@/constants/Project'
 import useDirDetection from '@/hooks/use-dir-detection'
@@ -85,19 +85,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { t } = useTranslation()
   return (
     <>
-      <div className="flex md:hidden border-b border-sidebar-border py-2 px-4 justify-between items-center">
+      <div className="sticky top-0 bg-sidebar flex md:hidden border-b border-sidebar-border py-3 px-4 justify-between items-center">
         <div className="flex gap-2 items-center">
           <Logo className="!w-4 !h-4 stroke-[2px]" />
-          <span className="text-sm font-normal">Marzban</span>
+          <span className="text-sm font-normal">{t('marzban')}</span>
         </div>
         <SidebarTrigger />
       </div>
-      <Sidebar variant="inset" {...props} className="border-r border-sidebar-border p-0" side={isRTL ? 'right' : 'left'}>
+      <Sidebar variant="sidebar" {...props} className="border-sidebar-border p-0" side={isRTL ? 'right' : 'left'}>
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton size="lg" asChild>
-                <a href={REPO_URL} target="_blank" className="gap-0">
+                <a href={REPO_URL} target="_blank" className="!gap-0">
                   <Logo className="!w-5 !h-5 stroke-[2px]" />
                   <span className="truncate font-semibold text-sm leading-tight ltr:ml-2 rtl:mr-2">{t('marzban')}</span>
                   <span className="text-xs opacity-45 ltr:ml-1 rtl:mr-1">v0.10</span>
@@ -114,7 +114,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <GithubStar />
             <div className="flex gap-2 items-start">
               <Language />
-              <ModeToggle />
+              <ThemeToggle />
             </div>
           </div>
         </SidebarContent>
