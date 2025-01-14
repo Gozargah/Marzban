@@ -8,6 +8,7 @@ from sqlalchemy import (
     Column,
     DateTime,
     Enum,
+    False_,
     Float,
     ForeignKey,
     Integer,
@@ -22,11 +23,10 @@ from sqlalchemy.sql.expression import select, text
 
 from app import xray
 from app.db.base import Base
+from app.models.host import ProxyHostALPN, ProxyHostFingerprint, ProxyHostSecurity
 from app.models.node import NodeStatus
 from app.models.proxy import ProxyTypes
-from app.models.host import ProxyHostSecurity, ProxyHostALPN, ProxyHostFingerprint
-from app.models.user import (ReminderType, UserDataLimitResetStrategy,
-                             UserStatus)
+from app.models.user import ReminderType, UserDataLimitResetStrategy, UserStatus
 
 
 class Admin(Base):
@@ -42,6 +42,7 @@ class Admin(Base):
     telegram_id = Column(BigInteger, nullable=True, default=None)
     discord_webhook = Column(String(1024), nullable=True, default=None)
     users_usage = Column(BigInteger, nullable=False, default=0)
+    is_disabled = Column(Boolean, nullable=False, server_default='0', default=False)
     usage_logs = relationship("AdminUsageLogs", back_populates="admin")
 
 
