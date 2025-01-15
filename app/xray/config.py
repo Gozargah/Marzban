@@ -308,6 +308,7 @@ class XRayConfig(dict):
                     settings['scMinPostsIntervalMs'] = net_settings.get('scMinPostsIntervalMs', 30)
                     settings['xPaddingBytes'] = net_settings.get('xPaddingBytes', "100-1000")
                     settings['xmux'] = net_settings.get('xmux', {})
+                    settings['downloadSettings'] = net_settings.get('downloadSettings',{})
                     settings["mode"] = net_settings.get("mode", "auto")
                     settings["noGRPCHeader"] = net_settings.get("noGRPCHeader", False)
                     settings["keepAlivePeriod"] = net_settings.get("keepAlivePeriod", 0)
