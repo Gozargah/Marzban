@@ -332,7 +332,7 @@ class V2rayShareLink(str):
                 extra["xmux"] = xmux
             if downloadSettings:
                 extra["downloadSettings"] = downloadSettings
-            payload["extra"] = json.dumps(extra)
+            payload["extra"] = extra
 
         elif net == 'kcp':
             payload['seed'] = path
