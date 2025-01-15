@@ -2,7 +2,7 @@
 Functions for managing proxy hosts, users, user templates, nodes, and administrative tasks.
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -54,7 +54,8 @@ def add_default_host(db: Session, inbound: ProxyInbound):
         db (Session): Database session.
         inbound (ProxyInbound): Proxy inbound to add the default host to.
     """
-    host = ProxyHost(remark="🚀 Marz ({USERNAME}) [{PROTOCOL} - {TRANSPORT}]", address="{SERVER_IP}", inbound=inbound)
+    host = ProxyHost(
+        remark="🚀 Marz ({USERNAME}) [{PROTOCOL} - {TRANSPORT}]", address="{SERVER_IP}", inbound=inbound)
     db.add(host)
     db.commit()
 
@@ -70,7 +71,8 @@ def get_or_create_inbound(db: Session, inbound_tag: str) -> ProxyInbound:
     Returns:
         ProxyInbound: The retrieved or newly created proxy inbound.
     """
-    inbound = db.query(ProxyInbound).filter(ProxyInbound.tag == inbound_tag).first()
+    inbound = db.query(ProxyInbound).filter(
+        ProxyInbound.tag == inbound_tag).first()
     if not inbound:
         inbound = ProxyInbound(tag=inbound_tag)
         db.add(inbound)
@@ -209,7 +211,7 @@ def get_user_queryset(db: Session) -> Query:
     Returns:
         Query: Base user query.
     """
-    return db.query(User).options(joinedload(User.admin)).options(joinedload(User.next_plan)).options(joinedload(User.next_plan.user_template))
+    return db.query(User).options(joinedload(User.admin)).options(joinedload(User.next_plan))
 
 
 def get_user(db: Session, username: str) -> Optional[User]:
@@ -287,7 +289,8 @@ def get_users(db: Session,
     query = get_user_queryset(db)
 
     if search:
-        query = query.filter(or_(User.username.ilike(f"%{search}%"), User.note.ilike(f"%{search}%")))
+        query = query.filter(or_(User.username.ilike(
+            f"%{search}%"), User.note.ilike(f"%{search}%")))
 
     if usernames:
         query = query.filter(User.username.in_(usernames))
@@ -300,9 +303,11 @@ def get_users(db: Session,
 
     if reset_strategy:
         if isinstance(reset_strategy, list):
-            query = query.filter(User.data_limit_reset_strategy.in_(reset_strategy))
+            query = query.filter(
+                User.data_limit_reset_strategy.in_(reset_strategy))
         else:
-            query = query.filter(User.data_limit_reset_strategy == reset_strategy)
+            query = query.filter(
+                User.data_limit_reset_strategy == reset_strategy)
 
     if admin:
         query = query.filter(User.admin == admin)
@@ -488,7 +493,8 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
             if dbproxy:
                 dbproxy.settings = settings.dict(no_obj=True)
             else:
-                new_proxy = Proxy(type=proxy_type, settings=settings.dict(no_obj=True))
+                new_proxy = Proxy(
+                    type=proxy_type, settings=settings.dict(no_obj=True))
                 dbuser.proxies.append(new_proxy)
                 added_proxies.update({proxy_type: new_proxy})
         for proxy in dbuser.proxies:
@@ -500,7 +506,8 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
                 .where(Proxy.user == dbuser, Proxy.type == proxy_type) \
                 .first() or added_proxies.get(proxy_type)
             if dbproxy:
-                dbproxy.excluded_inbounds = [get_or_create_inbound(db, tag) for tag in tags]
+                dbproxy.excluded_inbounds = [
+                    get_or_create_inbound(db, tag) for tag in tags]
 
     if modify.status is not None:
         dbuser.status = modify.status
@@ -515,7 +522,8 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
                 for percent in sorted(NOTIFY_REACHED_USAGE_PERCENT, reverse=True):
                     if not dbuser.data_limit or (calculate_usage_percent(
                             dbuser.used_traffic, dbuser.data_limit) < percent):
-                        reminder = get_notification_reminder(db, dbuser.id, ReminderType.data_usage, threshold=percent)
+                        reminder = get_notification_reminder(
+                            db, dbuser.id, ReminderType.data_usage, threshold=percent)
                         if reminder:
                             delete_notification_reminder(db, reminder)
 
@@ -630,16 +638,17 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
     dbuser.node_usages.clear()
     dbuser.status = UserStatus.active.value
 
-    if (dbuser.next_plan.user_template_id == None):
+    if dbuser.next_plan.user_template_id is None:
         dbuser.data_limit = dbuser.next_plan.data_limit + \
             (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit or 0 - dbuser.used_traffic)
-        dbuser.expire = timedelta(seconds=dbuser.next_plan.expire)
-        
+        dbuser.expire = timedelta(
+            seconds=dbuser.next_plan.expire) + datetime.now(UTC)
     else:
         dbuser.inbounds = dbuser.next_plan.user_template.inbounds
         dbuser.data_limit = dbuser.next_plan.user_template.data_limit + \
             (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit or 0 - dbuser.used_traffic)
-        dbuser.expire = timedelta(seconds=dbuser.next_plan.user_template.expire_duration)
+        dbuser.expire = timedelta(
+            seconds=dbuser.next_plan.user_template.expire_duration) + datetime.now(UTC)
 
     dbuser.used_traffic = 0
     db.delete(dbuser.next_plan)
@@ -730,11 +739,13 @@ def disable_all_active_users(db: Session, admin: Optional[Admin] = None):
         db (Session): Database session.
         admin (Optional[Admin]): Admin to filter users by, if any.
     """
-    query = db.query(User).filter(User.status.in_((UserStatus.active, UserStatus.on_hold)))
+    query = db.query(User).filter(User.status.in_(
+        (UserStatus.active, UserStatus.on_hold)))
     if admin:
         query = query.filter(User.admin == admin)
 
-    query.update({User.status: UserStatus.disabled, User.last_status_change: datetime.utcnow()}, synchronize_session=False)
+    query.update({User.status: UserStatus.disabled,
+                 User.last_status_change: datetime.utcnow()}, synchronize_session=False)
 
     db.commit()
 
@@ -747,15 +758,18 @@ def activate_all_disabled_users(db: Session, admin: Optional[Admin] = None):
         db (Session): Database session.
         admin (Optional[Admin]): Admin to filter users by, if any.
     """
-    query_for_active_users = db.query(User).filter(User.status == UserStatus.disabled)
+    query_for_active_users = db.query(User).filter(
+        User.status == UserStatus.disabled)
     query_for_on_hold_users = db.query(User).filter(
         and_(
             User.status == UserStatus.disabled, User.expire.is_(
                 None), User.on_hold_expire_duration.isnot(None), User.online_at.is_(None)
         ))
     if admin:
-        query_for_active_users = query_for_active_users.filter(User.admin == admin)
-        query_for_on_hold_users = query_for_on_hold_users.filter(User.admin == admin)
+        query_for_active_users = query_for_active_users.filter(
+            User.admin == admin)
+        query_for_on_hold_users = query_for_on_hold_users.filter(
+            User.admin == admin)
 
     query_for_on_hold_users.update(
         {User.status: UserStatus.on_hold, User.last_status_change: datetime.utcnow()}, synchronize_session=False)
@@ -902,7 +916,8 @@ def start_user_expire(db: Session, dbuser: User) -> User:
     Returns:
         User: The updated user object.
     """
-    dbuser.expire = datetime.now(timezone.utc) + timedelta(seconds=dbuser.on_hold_expire_duration)
+    dbuser.expire = datetime.now(
+        timezone.utc) + timedelta(seconds=dbuser.on_hold_expire_duration)
     dbuser.on_hold_expire_duration = None
     dbuser.on_hold_timeout = None
     db.commit()
@@ -1159,7 +1174,8 @@ def create_user_template(db: Session, user_template: UserTemplateCreate) -> User
         expire_duration=user_template.expire_duration,
         username_prefix=user_template.username_prefix,
         username_suffix=user_template.username_suffix,
-        inbounds=db.query(ProxyInbound).filter(ProxyInbound.tag.in_(inbound_tags)).all()
+        inbounds=db.query(ProxyInbound).filter(
+            ProxyInbound.tag.in_(inbound_tags)).all()
     )
     db.add(dbuser_template)
     db.commit()
@@ -1195,7 +1211,8 @@ def update_user_template(
         inbound_tags: List[str] = []
         for _, i in modified_user_template.inbounds.items():
             inbound_tags.extend(i)
-        dbuser_template.inbounds = db.query(ProxyInbound).filter(ProxyInbound.tag.in_(inbound_tags)).all()
+        dbuser_template.inbounds = db.query(ProxyInbound).filter(
+            ProxyInbound.tag.in_(inbound_tags)).all()
 
     db.commit()
     db.refresh(dbuser_template)
@@ -1460,7 +1477,8 @@ def create_notification_reminder(
     Returns:
         NotificationReminder: The newly created NotificationReminder object.
     """
-    reminder = NotificationReminder(type=reminder_type, expires_at=expires_at, user_id=user_id)
+    reminder = NotificationReminder(
+        type=reminder_type, expires_at=expires_at, user_id=user_id)
     if threshold is not None:
         reminder.threshold = threshold
     db.add(reminder)
