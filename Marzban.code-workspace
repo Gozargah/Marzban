@@ -1,0 +1,91 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"python.analysis.inlayHints.variableTypes": true,
+		"python.analysis.completeFunctionParens": true,
+		"python.analysis.inlayHints.pytestParameters": true,
+		"python.analysis.inlayHints.callArgumentNames": "all",
+		"python.analysis.inlayHints.functionReturnTypes": true,
+		"[python]": {
+			"editor.defaultFormatter": "ms-python.autopep8",
+			"editor.formatOnSave": true,
+		},
+		"autopep8.args": [
+			"--max-line-length",
+			"120"
+		],
+		"editor.codeActionsOnSave": {
+			"source.organizeImports": "never"
+		},
+		"remote.localPortHost": "allInterfaces",
+		"[javascript]": {
+			"javascript.autoClosingTags": true,
+			"editor.codeActionsOnSave": {
+				"source.fixAll": "never",
+				"source.fixAll.eslint": "explicit",
+				"source.organizeImports": "explicit"
+			},
+			"editor.defaultFormatter": "esbenp.prettier-vscode"
+		},
+		"[javascriptreact]": {
+			"editor.codeActionsOnSave": {
+				"source.fixAll": "never",
+				"source.fixAll.eslint": "explicit",
+				"source.organizeImports": "explicit"
+			},
+			"editor.defaultFormatter": "esbenp.prettier-vscode"
+		},
+		"[typescript]": {
+			"typescript.autoClosingTags": true,
+			"typescript.suggest.enabled": true,
+			"editor.codeActionsOnSave": {
+				"source.fixAll": "never",
+				"source.fixAll.eslint": "explicit",
+				"source.organizeImports": "explicit"
+			},
+			"editor.defaultFormatter": "esbenp.prettier-vscode"
+		},
+		"[typescriptreact]": {
+			"editor.codeActionsOnSave": {
+				"source.fixAll": "never",
+				"source.fixAll.eslint": "explicit",
+				"source.organizeImports": "explicit"
+			},
+			"editor.defaultFormatter": "esbenp.prettier-vscode"
+		},
+		"emmet.includeLanguages": {
+			"javascript": "javascriptreact",
+		},
+		"css.enabledLanguages": [
+			"html",
+			"jsx"
+		],
+		"files.autoSave": "afterDelay"
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "Python Debugger: Current File",
+				"type": "debugpy",
+				"request": "launch",
+				"program": "main.py",
+				"console": "integratedTerminal"
+			}
+		],
+		"compounds": []
+	},
+	"extensions": {
+		"recommendations": [
+			"donjayamanne.python-extension-pack",
+			"ms-vscode.vscode-typescript-next",
+			"yoavbls.pretty-ts-errors",
+			"dbaeumer.vscode-eslint",
+			"esbenp.prettier-vscode"
+		]
+	},
+}
