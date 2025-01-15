@@ -251,7 +251,7 @@ class V2rayShareLink(str):
                 extra["downloadSettings"] = downloadSettings
             payload["type"] = mode
 
-            payload["extra"] = extra
+            payload["extra"] = (json.dumps(extra)).replace(" ","")
 
         elif net == "ws":
             if heartbeatPeriod:
@@ -332,7 +332,7 @@ class V2rayShareLink(str):
                 extra["xmux"] = xmux
             if downloadSettings:
                 extra["downloadSettings"] = downloadSettings
-            payload["extra"] = extra
+            payload["extra"] = (json.dumps(extra)).replace(" ","")
 
         elif net == 'kcp':
             payload['seed'] = path
@@ -437,7 +437,7 @@ class V2rayShareLink(str):
                 extra["xmux"] = xmux
             if downloadSettings:
                 extra["downloadSettings"] = downloadSettings
-            payload["extra"] = json.dumps(extra)
+            payload["extra"] = (json.dumps(extra)).replace(" ","")
 
         elif net == 'quic':
             payload['key'] = path
