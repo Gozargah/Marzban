@@ -250,7 +250,7 @@ class V2rayShareLink(str):
             if downloadSettings:
                 extra["downloadSettings"] = downloadSettings
             payload["type"] = mode
-            
+
             payload["extra"] = extra
 
         elif net == "ws":
@@ -328,8 +328,6 @@ class V2rayShareLink(str):
                 "xPaddingBytes": x_padding_bytes,
                 "noGRPCHeader": noGRPCHeader,
             }
-            if keepAlivePeriod > 0:
-                extra["keepAlivePeriod"] = keepAlivePeriod
             if xmux:
                 extra["xmux"] = xmux
             if downloadSettings:
@@ -435,8 +433,6 @@ class V2rayShareLink(str):
                 "xPaddingBytes": x_padding_bytes,
                 "noGRPCHeader": noGRPCHeader,
             }
-            if keepAlivePeriod > 0:
-                extra["keepAlivePeriod"] = keepAlivePeriod
             if xmux:
                 extra["xmux"] = xmux
             if downloadSettings:
