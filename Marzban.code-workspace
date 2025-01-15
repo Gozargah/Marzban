@@ -5,6 +5,10 @@
 		}
 	],
 	"settings": {
+		"python.analysis.inlayHints.variableTypes": true,
+		"python.analysis.completeFunctionParens": true,
+		"python.analysis.inlayHints.pytestParameters": true,
+		"python.analysis.inlayHints.callArgumentNames": "all",
 		"python.analysis.inlayHints.functionReturnTypes": true,
 		"[python]": {
 			"editor.defaultFormatter": "ms-python.autopep8",
