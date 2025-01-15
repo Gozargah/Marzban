@@ -248,6 +248,7 @@ class V2rayShareLink(str):
             if xmux:
                 extra["xmux"] = xmux
             if downloadSettings:
+                print("DOWNLOAD SETTINGS HAS BEEN SET")
                 extra["downloadSettings"] = downloadSettings
             payload["type"] = mode
             if keepAlivePeriod > 0:
