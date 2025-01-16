@@ -44,7 +44,7 @@ def calculate_admin_usage(admin_id: int) -> str:
 
 def calculate_admin_reseted_usage(admin_id: int) -> str:
     with GetDB() as db:
-        usage = db.query(func.sum(User.reseted_usage)).filter_by(admin_id=admin_id).first()[0]
+        usage = db.query(func.sum(User.reseted_usage)).filter_by(admin_id=admin_id).scalar()
         return readable_size(int(usage or 0))
 
 
@@ -58,12 +58,15 @@ def list_admins(
     with GetDB() as db:
         admins: list[Admin] = crud.get_admins(db, offset=offset, limit=limit, username=username)
         utils.print_table(
-            table=Table("Username", 'Usage', 'Reseted usage', "Is sudo", "Created at", "Telegram ID", "Discord Webhook"),
+            table=Table("Username", 'Usage', 'Reseted usage', "Users Usage", "Is sudo", "Is disabled",
+                        "Created at", "Telegram ID", "Discord Webhook"),
             rows=[
                 (str(admin.username),
                  calculate_admin_usage(admin.id),
                  calculate_admin_reseted_usage(admin.id),
+                 readable_size(admin.users_usage),
                  "✔️" if admin.is_sudo else "✖️",
+                 "✔️" if admin.is_disabled else "✖️",
                  utils.readable_datetime(admin.created_at),
                  str(admin.telegram_id or "✖️"),
                  str(admin.discord_webhook or "✖️"))
@@ -136,6 +139,7 @@ def update_admin(username: str = typer.Option(..., *utils.FLAGS["username"], pro
         )
 
         is_sudo: bool = typer.confirm("Is sudo", default=admin.is_sudo)
+        is_disabled: bool = typer.confirm("Is disabled", default=admin.is_disabled)
         new_password: Union[str, None] = typer.prompt(
             "New password",
             default="",
@@ -156,7 +160,8 @@ def update_admin(username: str = typer.Option(..., *utils.FLAGS["username"], pro
             is_sudo=is_sudo,
             password=new_password,
             telegram_id=telegram_id,
-            discord_webhook=discord_webhook
+            discord_webhook=discord_webhook,
+            is_disabled=is_disabled,
         )
 
     with GetDB() as db:

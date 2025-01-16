@@ -48,6 +48,7 @@ class UserDataLimitResetStrategy(str, Enum):
 
 
 class NextPlanModel(BaseModel):
+    user_template_id: Optional[int] = None
     data_limit: Optional[int] = None
     expire: Optional[int] = None
     add_remaining_traffic: bool = False
@@ -75,6 +76,16 @@ class User(BaseModel):
     auto_delete_in_days: Optional[int] = Field(None, nullable=True)
 
     next_plan: Optional[NextPlanModel] = Field(None, nullable=True)
+
+    @field_validator('data_limit', mode='before')
+    def cast_to_int(cls, v):
+        if v is None:  # Allow None values
+            return v
+        if isinstance(v, float):  # Allow float to int conversion
+            return int(v)
+        if isinstance(v, int):  # Allow integers directly
+            return v
+        raise ValueError("data_limit must be an integer or a float, not a string")  # Reject strings
 
     @field_validator("proxies", mode="before")
     def validate_proxies(cls, v, values, **kwargs):
@@ -315,6 +326,16 @@ class UserResponse(User):
             v = {p.type: p.settings for p in v}
         return super().validate_proxies(v, values, **kwargs)
 
+    @field_validator("used_traffic", "lifetime_used_traffic", mode='before')
+    def cast_to_int(cls, v):
+        if v is None:  # Allow None values
+            return v
+        if isinstance(v, float):  # Allow float to int conversion
+            return int(v)
+        if isinstance(v, int):  # Allow integers directly
+            return v
+        raise ValueError("must be an integer or a float, not a string")  # Reject strings
+
 
 class SubscriptionUserResponse(UserResponse):
     admin: Admin | None = Field(default=None, exclude=True)
@@ -334,6 +355,16 @@ class UserUsageResponse(BaseModel):
     node_id: Union[int, None] = None
     node_name: str
     used_traffic: int
+
+    @field_validator("used_traffic",  mode='before')
+    def cast_to_int(cls, v):
+        if v is None:  # Allow None values
+            return v
+        if isinstance(v, float):  # Allow float to int conversion
+            return int(v)
+        if isinstance(v, int):  # Allow integers directly
+            return v
+        raise ValueError("must be an integer or a float, not a string")  # Reject strings
 
 
 class UserUsagesResponse(BaseModel):

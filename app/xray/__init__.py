@@ -11,10 +11,8 @@ from app.xray.core import XRayCore
 from app.xray.node import XRayNode
 from config import XRAY_ASSETS_PATH, XRAY_EXECUTABLE_PATH, XRAY_JSON
 from xray_api import XRay as XRayAPI
-from xray_api import exceptions
+from xray_api import exceptions, types
 from xray_api import exceptions as exc
-from xray_api import types
-
 
 core = XRayCore(XRAY_EXECUTABLE_PATH, XRAY_ASSETS_PATH)
 
@@ -64,6 +62,7 @@ def hosts(storage: dict):
                 "fragment_setting": host.fragment_setting,
                 "noise_setting": host.noise_setting,
                 "random_user_agent": host.random_user_agent,
+                "use_sni_as_host": host.use_sni_as_host,
             }
 
 

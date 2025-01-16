@@ -56,6 +56,7 @@
   "hostsDialog.addHost": "添加主机",
   "hostsDialog.advancedOptions": "高级选项",
   "hostsDialog.allowinsecure": "允许不安全连接",
+  "hostsDialog.useSniAsHost": "Use sni as host",
   "hostsDialog.alpn": "ALPN",
   "hostsDialog.apply": "保存",
   "hostsDialog.currentServer": "当前服务器的 IP 地址",

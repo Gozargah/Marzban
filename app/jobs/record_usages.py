@@ -15,7 +15,7 @@ from app.db.models import Admin, NodeUsage, NodeUserUsage, System, User
 from config import (
     DISABLE_RECORDING_NODE_USAGE,
     JOB_RECORD_NODE_USAGES_INTERVAL,
-    JOB_RECORD_USER_USAGES_INTERVAL
+    JOB_RECORD_USER_USAGES_INTERVAL,
 )
 from xray_api import XRay as XRayAPI
 from xray_api import exc as xray_exc
@@ -30,7 +30,7 @@ def safe_execute(db: Session, stmt, params=None):
         done = False
         while not done:
             try:
-                db.connection().execute(stmt, params, execution_options={"synchronize_session": None})
+                db.connection().execute(stmt, params)
                 db.commit()
                 done = True
             except OperationalError as err:
@@ -41,7 +41,7 @@ def safe_execute(db: Session, stmt, params=None):
                 raise err
 
     else:
-        db.connection().execute(stmt, params, execution_options={"synchronize_session": None})
+        db.connection().execute(stmt, params)
         db.commit()
 
 
@@ -144,7 +144,7 @@ def record_user_usages():
     for node_id, params in api_params.items():
         coefficient = usage_coefficient.get(node_id, 1)  # get the usage coefficient for the node
         for param in params:
-            users_usage[param['uid']] += param['value'] * coefficient  # apply the usage coefficient
+            users_usage[param['uid']] += int(param['value'] * coefficient)  # apply the usage coefficient
     users_usage = list({"uid": uid, "value": value} for uid, value in users_usage.items())
     if not users_usage:
         return

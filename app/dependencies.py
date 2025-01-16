@@ -15,11 +15,11 @@ from config import SUDOERS
 def validate_admin(db: Session, username: str, password: str) -> Optional[AdminValidationResult]:
     """Validate admin credentials with environment variables or database."""
     if SUDOERS.get(username) == password:
-        return AdminValidationResult(username=username, is_sudo=True)
+        return AdminValidationResult(username=username, is_sudo=True, is_dsabled=False)
 
     dbadmin = crud.get_admin(db, username)
     if dbadmin and AdminInDB.model_validate(dbadmin).verify_password(password):
-        return AdminValidationResult(username=dbadmin.username, is_sudo=dbadmin.is_sudo)
+        return AdminValidationResult(username=dbadmin.username, is_sudo=dbadmin.is_sudo, is_disabled=dbadmin.is_disabled)
 
     return None
 

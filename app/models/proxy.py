@@ -11,7 +11,7 @@ from xray_api.types.account import (
     TrojanAccount,
     VLESSAccount,
     VMessAccount,
-    XTLSFlows
+    XTLSFlows,
 )
 
 

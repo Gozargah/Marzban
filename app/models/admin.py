@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
-from pydantic import ConfigDict, field_validator,  BaseModel
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from app.db import Session, crud, get_db
 from app.utils.jwt import get_admin_payload
@@ -23,8 +23,19 @@ class Admin(BaseModel):
     is_sudo: bool
     telegram_id: Optional[int] = None
     discord_webhook: Optional[str] = None
-    users_usage: Optional[int] = None
+    users_usage: int = 0
+    is_disabled: bool = False
     model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("users_usage",  mode='before')
+    def cast_to_int(cls, v):
+        if v is None:  # Allow None values
+            return v
+        if isinstance(v, float):  # Allow float to int conversion
+            return int(v)
+        if isinstance(v, int):  # Allow integers directly
+            return v
+        raise ValueError("must be an integer or a float, not a string")  # Reject strings
 
     @classmethod
     def get_admin(cls, token: str, db: Session):
@@ -58,6 +69,13 @@ class Admin(BaseModel):
                 detail="Could not validate credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+        if admin.is_disabled:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="your account has been disabled",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
         return admin
 
     @classmethod
@@ -69,6 +87,12 @@ class Admin(BaseModel):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        if admin.is_disabled:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="your account has been disabled",
                 headers={"WWW-Authenticate": "Bearer"},
             )
         if not admin.is_sudo:
@@ -101,6 +125,7 @@ class AdminModify(BaseModel):
     is_sudo: bool
     telegram_id: Optional[int] = None
     discord_webhook: Optional[str] = None
+    is_disabled: Optional[bool] = None
 
     @property
     def hashed_password(self):
@@ -130,3 +155,4 @@ class AdminInDB(Admin):
 class AdminValidationResult(BaseModel):
     username: str
     is_sudo: bool
+    is_disabled: bool

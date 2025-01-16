@@ -6,12 +6,12 @@ from random import choice
 from typing import Union
 from urllib.parse import quote
 from uuid import UUID
-from app.utils.helpers import UUIDEncoder
 
 from jinja2.exceptions import TemplateNotFound
 
 from app.subscription.funcs import get_grpc_gun, get_grpc_multi
 from app.templates import render_template
+from app.utils.helpers import UUIDEncoder
 from config import (
     EXTERNAL_CONFIG,
     GRPC_USER_AGENT_TEMPLATE,
@@ -240,11 +240,12 @@ class V2rayShareLink(str):
                 "scMinPostsIntervalMs": sc_min_posts_interval_ms,
                 "xPaddingBytes": x_padding_bytes,
                 "noGRPCHeader": noGRPCHeader,
-                "keepAlivePeriod": keepAlivePeriod,
             }
             if xmux:
                 extra["xmux"] = xmux
             payload["type"] = mode
+            if keepAlivePeriod > 0:
+                extra["keepAlivePeriod"] = keepAlivePeriod
             payload["extra"] = extra
 
         elif net == "ws":
@@ -320,8 +321,9 @@ class V2rayShareLink(str):
                 "scMinPostsIntervalMs": sc_min_posts_interval_ms,
                 "xPaddingBytes": x_padding_bytes,
                 "noGRPCHeader": noGRPCHeader,
-                "keepAlivePeriod": keepAlivePeriod,
             }
+            if keepAlivePeriod > 0:
+                extra["keepAlivePeriod"] = keepAlivePeriod
             if xmux:
                 extra["xmux"] = xmux
             payload["extra"] = json.dumps(extra)
@@ -423,8 +425,9 @@ class V2rayShareLink(str):
                 "scMinPostsIntervalMs": sc_min_posts_interval_ms,
                 "xPaddingBytes": x_padding_bytes,
                 "noGRPCHeader": noGRPCHeader,
-                "keepAlivePeriod": keepAlivePeriod,
             }
+            if keepAlivePeriod > 0:
+                extra["keepAlivePeriod"] = keepAlivePeriod
             if xmux:
                 extra["xmux"] = xmux
             payload["extra"] = json.dumps(extra)
@@ -518,7 +521,7 @@ class V2rayJsonConfig(str):
     def render(self, reverse=False):
         if reverse:
             self.config.reverse()
-        return json.dumps(self.config, indent=4,cls=UUIDEncoder)
+        return json.dumps(self.config, indent=4, cls=UUIDEncoder)
 
     @staticmethod
     def tls_config(sni=None, fp=None, alpn=None, ais: bool = False) -> dict:
@@ -567,7 +570,7 @@ class V2rayJsonConfig(str):
         if path:
             wsSettings["path"] = path
         if host:
-            wsSettings["headers"]["Host"] = host
+            wsSettings["host"] = host
         if random_user_agent:
             wsSettings["headers"]["User-Agent"] = choice(self.user_agent_list)
         if heartbeatPeriod:
@@ -617,7 +620,8 @@ class V2rayJsonConfig(str):
         config["noGRPCHeader"] = noGRPCHeader
         if xmux:
             config["xmux"] = xmux
-        config["keepAlivePeriod"] = keepAlivePeriod
+        if keepAlivePeriod > 0:
+            config["keepAlivePeriod"] = keepAlivePeriod
         # core will ignore unknown variables
 
         return config
