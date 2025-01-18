@@ -256,7 +256,8 @@ class V2rayShareLink(str):
             if downloadSettings:
                 extra["downloadSettings"] = downloadSettings
             payload["type"] = mode
-            payload["extra"] = (json.dumps(extra)).replace(" ", "")
+            if extra:
+                payload["extra"] = (json.dumps(extra)).replace(" ", "")
 
         elif net == "ws":
             if heartbeatPeriod:
@@ -343,7 +344,8 @@ class V2rayShareLink(str):
                 extra["xmux"] = xmux
             if downloadSettings:
                 extra["downloadSettings"] = downloadSettings
-            payload["extra"] = (json.dumps(extra)).replace(" ", "")
+            if extra:
+                payload["extra"] = (json.dumps(extra)).replace(" ", "")
 
         elif net == 'kcp':
             payload['seed'] = path
@@ -454,7 +456,8 @@ class V2rayShareLink(str):
                 extra["xmux"] = xmux
             if downloadSettings:
                 extra["downloadSettings"] = downloadSettings
-            payload["extra"] = (json.dumps(extra)).replace(" ", "")
+            if extra:
+                payload["extra"] = (json.dumps(extra)).replace(" ", "")
 
         elif net == 'quic':
             payload['key'] = path
@@ -522,7 +525,8 @@ class V2rayJsonConfig(str):
         else:
             self.user_agent_list = []
 
-        grpc_user_agent_data = json.loads(render_template(GRPC_USER_AGENT_TEMPLATE))
+        grpc_user_agent_data = json.loads(
+            render_template(GRPC_USER_AGENT_TEMPLATE))
 
         if 'list' in grpc_user_agent_data and isinstance(grpc_user_agent_data['list'], list):
             self.grpc_user_agent_data = grpc_user_agent_data['list']
@@ -530,7 +534,8 @@ class V2rayJsonConfig(str):
             self.grpc_user_agent_data = []
 
         try:
-            self.settings = json.loads(render_template(V2RAY_SETTINGS_TEMPLATE))
+            self.settings = json.loads(
+                render_template(V2RAY_SETTINGS_TEMPLATE))
         except TemplateNotFound:
             self.settings = {}
 
@@ -603,7 +608,8 @@ class V2rayJsonConfig(str):
         return wsSettings
 
     def httpupgrade_config(self, path: str = "", host: str = "", random_user_agent: bool = False) -> dict:
-        httpupgradeSettings = copy.deepcopy(self.settings.get("httpupgradeSettings", {}))
+        httpupgradeSettings = copy.deepcopy(
+            self.settings.get("httpupgradeSettings", {}))
 
         if "headers" not in httpupgradeSettings:
             httpupgradeSettings["headers"] = {}
@@ -922,7 +928,8 @@ class V2rayJsonConfig(str):
     def make_dialer_outbound(fragment: str = "", noises: str = "") -> Union[dict, None]:
         dialer_settings = {}
         if fragment:
-            dialer_settings["fragment"] = V2rayJsonConfig.make_fragment(fragment)
+            dialer_settings["fragment"] = V2rayJsonConfig.make_fragment(
+                fragment)
         if noises:
             dialer_settings["noises"] = V2rayJsonConfig.make_noises(noises)
 
