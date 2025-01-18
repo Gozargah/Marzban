@@ -303,16 +303,15 @@ class XRayConfig(dict):
                     settings['path'] = net_settings.get('path', '')
                     host = net_settings.get('host', '')
                     settings['host'] = [host]
-                    extra = net_settings.get('extra',{})
-                    settings['scMaxEachPostBytes'] = extra.get('scMaxEachPostBytes', 1000000)
-                    settings['scMaxConcurrentPosts'] = extra.get('scMaxConcurrentPosts', 100)
-                    settings['scMinPostsIntervalMs'] = extra.get('scMinPostsIntervalMs', 30)
-                    settings['xPaddingBytes'] = extra.get('xPaddingBytes', "100-1000")
-                    settings["noGRPCHeader"] = extra.get("noGRPCHeader", False)
-                    settings['xmux'] = extra.get('xmux',{})
-                    settings['downloadSettings'] = extra.get('downloadSettings',{})
+                    settings['scMaxEachPostBytes'] = net_settings.get('scMaxEachPostBytes')
+                    settings['scMaxConcurrentPosts'] = net_settings.get('scMaxConcurrentPosts')
+                    settings['scMinPostsIntervalMs'] = net_settings.get('scMinPostsIntervalMs')
+                    settings['xPaddingBytes'] = net_settings.get('xPaddingBytes')
+                    settings["noGRPCHeader"] = net_settings.get("noGRPCHeader")
+                    settings['xmux'] = net_settings.get('xmux', {})
+                    settings['downloadSettings'] = net_settings.get('downloadSettings', {})
                     settings["mode"] = net_settings.get("mode", "auto")
-                    settings["keepAlivePeriod"] = net_settings.get("keepAlivePeriod", 0) #documentation says it's moved to hKeepAlivePeriod
+                    settings["keepAlivePeriod"] = net_settings.get("keepAlivePeriod", 0)
 
                 elif net == 'kcp':
                     header = net_settings.get('header', {})
