@@ -18,36 +18,36 @@ const data = {
   },
   navMain: [
     {
-      title: 'Users',
+      title: 'users',
       url: '/',
       icon: UsersIcon,
     },
     {
-      title: 'Statistics',
+      title: 'statistics',
       url: '/statistics',
       icon: PieChart,
     },
     {
-      title: 'Hosts',
+      title: 'hosts',
       url: '/hosts',
       icon: ListTodo,
     },
     {
-      title: 'Nodes',
+      title: 'nodes',
       url: '/nodes',
       icon: Share2Icon,
     },
     {
-      title: 'Settings',
+      title: 'settings',
       url: '/settings',
       icon: Settings2,
       items: [
         {
-          title: 'General',
+          title: 'general',
           url: '/settings',
         },
         {
-          title: 'Core',
+          title: 'core',
           url: '/settings/core',
         },
       ],
@@ -85,7 +85,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { t } = useTranslation()
   return (
     <>
-      <div className="sticky top-0 bg-sidebar flex md:hidden border-b border-sidebar-border py-3 px-4 justify-between items-center">
+      <div className="sticky top-0 z-30 bg-sidebar flex lg:hidden border-b border-sidebar-border py-3 px-4 justify-between items-center">
         <div className="flex gap-2 items-center">
           <Logo className="!w-4 !h-4 stroke-[2px]" />
           <span className="text-sm font-normal">{t('marzban')}</span>

@@ -64,7 +64,7 @@ export const useNodes = create<NodeStore>((set, get) => ({
     return fetcher('/node', { method: 'POST', body })
   },
   fetcherNodes() {
-    return fetcher('/nodes')
+    return fetcher('/api/nodes')
   },
   fetcherNodesUsage(query: FilterUsageType) {
     return fetcher('/nodes/usage', { body: query })

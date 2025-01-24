@@ -3,6 +3,7 @@ import { ChevronRight, type LucideIcon } from 'lucide-react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from '@/components/ui/sidebar'
 import { NavLink, useLocation } from 'react-router'
+import { useTranslation } from 'react-i18next'
 
 export function NavMain({
   items,
@@ -19,10 +20,11 @@ export function NavMain({
   }[]
 }) {
   const location = useLocation()
+  const {t} = useTranslation()
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>{t("platform")}</SidebarGroupLabel>
       <SidebarMenu>
         {items.map(item => (
           <Collapsible key={item.title} asChild defaultOpen={item.isActive || location.pathname.startsWith(item.url)}>
@@ -30,9 +32,9 @@ export function NavMain({
               <NavLink to={item.url} className="block">
                 {({ isActive }) => (
                   <CollapsibleTrigger className="w-full">
-                    <SidebarMenuButton tooltip={item.title} isActive={isActive}>
+                    <SidebarMenuButton tooltip={t(item.title)} isActive={isActive}>
                       <item.icon />
-                      <span>{item.title}</span>
+                      <span>{t(item.title)}</span>
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
                 )}
@@ -52,7 +54,7 @@ export function NavMain({
                           <NavLink to={subItem.url} end>
                             {({ isActive }) => (
                               <SidebarMenuSubButton isActive={isActive}>
-                                <span>{subItem.title}</span>
+                                <span>{t(subItem.title)}</span>
                               </SidebarMenuSubButton>
                             )}
                           </NavLink>
