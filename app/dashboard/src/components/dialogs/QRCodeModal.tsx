@@ -17,6 +17,7 @@ import {
 } from "../ui/carousel";
 import { ScanQrCode } from "lucide-react";
 import { SubscribeLink } from "../ActionButtons";
+import useDirDetection from "@/hooks/use-dir-detection";
 
 interface QRCodeModalProps {
   subscribeUrl: string | null;
@@ -31,6 +32,7 @@ const QRCodeModal: FC<QRCodeModalProps> = memo(
     const [api, setApi] = useState<CarouselApi>();
 
     const { t } = useTranslation();
+    const dir = useDirDetection()
 
     const subscribeQrLink = String(subscribeUrl).startsWith("/")
       ? window.location.origin + subscribeUrl
@@ -50,15 +52,15 @@ const QRCodeModal: FC<QRCodeModalProps> = memo(
 
     return (
       <Dialog open={isOpen} onOpenChange={onCloseModal}>
-        <DialogContent className="max-w-[425px] md:max-w-[750px] py-28 md:py-6 overflow-y-auto max-h-screen md:pt-10">
-          <DialogHeader>
+        <DialogContent className="max-w-[425px] md:max-w-[750px] py-8 md:py-6 overflow-y-auto max-h-screen md:pt-10">
+          <DialogHeader dir={dir}>
             <DialogTitle>
               <div className="px-2">
                 <ScanQrCode className="h-8 w-8" />
               </div>
             </DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col md:flex-row md:gap-x-8">
+          <div dir="ltr" className="flex flex-col md:flex-row md:gap-x-8">
             <div className="flex justify-center py-4">
               <div className="flex flex-col justify-center items-center py-4 gap-y-4 m-2">
                 <QRCodeCanvas

@@ -23,7 +23,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
   const [subscribeLinks, setSubscribeLinks] = useState<SubscribeLink[]>([])
 
   const onOpenModal = useCallback(() => {
-    setSubscribeUrl(user.subscription_url)
+    setSubscribeUrl(user.subscription_url ? user.subscription_url : '')
   }, [user.subscription_url])
 
   const onCloseModal = useCallback(() => {
@@ -58,10 +58,10 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
 
   return (
     <div>
-      <div className="flex justify-end space-x-2 items-center">
+      <div className="flex justify-end gap-x-4 items-center">
         <TooltipProvider>
           <CopyButton
-            value={user.subscription_url.startsWith('/') ? window.location.origin + user.subscription_url : user.subscription_url}
+            value={user.subscription_url ? (user.subscription_url.startsWith('/') ? window.location.origin + user.subscription_url : user.subscription_url) : ''}
             copiedMessage="usersTable.copied"
             defaultMessage="usersTable.copyLink"
             icon="link"
@@ -90,8 +90,8 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" aria-label="qr code" size="sm" onClick={onOpenModal}>
-                <QrCode />
+              <Button size="icon" variant="ghost" aria-label="qr code" onClick={onOpenModal}>
+                <QrCode className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>QR Code</TooltipContent>
