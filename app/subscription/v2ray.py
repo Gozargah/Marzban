@@ -80,6 +80,7 @@ class V2rayShareLink(str):
                 noGRPCHeader=inbound.get("noGRPCHeader"),
                 heartbeatPeriod=inbound.get("heartbeatPeriod", 0),
                 keepAlivePeriod=inbound.get("keepAlivePeriod", 0),
+                scStreamUpServerSecs=inbound.get("scStreamUpServerSecs"),
                 xmux=inbound.get("xmux", {}),
                 downloadSettings=inbound.get("downloadSettings", {})
             )
@@ -113,6 +114,7 @@ class V2rayShareLink(str):
                 noGRPCHeader=inbound.get("noGRPCHeader"),
                 heartbeatPeriod=inbound.get("heartbeatPeriod", 0),
                 keepAlivePeriod=inbound.get("keepAlivePeriod", 0),
+                scStreamUpServerSecs=inbound.get("scStreamUpServerSecs"),
                 xmux=inbound.get("xmux", {}),
                 downloadSettings=inbound.get("downloadSettings", {})
             )
@@ -147,6 +149,7 @@ class V2rayShareLink(str):
                 heartbeatPeriod=inbound.get("heartbeatPeriod", 0),
                 keepAlivePeriod=inbound.get("keepAlivePeriod", 0),
                 xmux=inbound.get("xmux", {}),
+                scStreamUpServerSecs=inbound.get("scStreamUpServerSecs"),
                 downloadSettings=inbound.get("downloadSettings", {})
             )
 
@@ -191,6 +194,7 @@ class V2rayShareLink(str):
             mode: str = "",
             noGRPCHeader: bool | None = None,
             heartbeatPeriod: int | None = None,
+            scStreamUpServerSecs: int | None = None,
             keepAlivePeriod: int = 0,
             xmux: dict = {},
             downloadSettings: dict = {},
@@ -249,6 +253,8 @@ class V2rayShareLink(str):
                 extra["xPaddingBytes"] = x_padding_bytes
             if noGRPCHeader is not None:
                 extra["noGRPCHeader"] = noGRPCHeader
+            if scStreamUpServerSecs is not None:
+                extra["scStreamUpServerSecs"] = scStreamUpServerSecs
             if keepAlivePeriod > 0:
                 extra["keepAlivePeriod"] = keepAlivePeriod
             if xmux:
@@ -298,6 +304,7 @@ class V2rayShareLink(str):
               mode: str = "",
               noGRPCHeader: bool | None = None,
               heartbeatPeriod: int | None = None,
+              scStreamUpServerSecs: int | None = None,
               keepAlivePeriod: int = 0,
               xmux: dict = {},
               downloadSettings: dict = {},
@@ -338,6 +345,8 @@ class V2rayShareLink(str):
                 extra["xPaddingBytes"] = x_padding_bytes
             if noGRPCHeader is not None:
                 extra["noGRPCHeader"] = noGRPCHeader
+            if scStreamUpServerSecs is not None:
+                extra["scStreamUpServerSecs"] = scStreamUpServerSecs
             if keepAlivePeriod > 0:
                 extra["keepAlivePeriod"] = keepAlivePeriod
             if xmux:
@@ -414,6 +423,7 @@ class V2rayShareLink(str):
                mode: str = "",
                noGRPCHeader: bool | None = None,
                heartbeatPeriod: int | None = None,
+               scStreamUpServerSecs: int | None = None,
                keepAlivePeriod: int = 0,
                xmux: dict = {},
                downloadSettings: dict = {},
@@ -452,6 +462,8 @@ class V2rayShareLink(str):
                 extra["noGRPCHeader"] = noGRPCHeader
             if keepAlivePeriod > 0:
                 extra["keepAlivePeriod"] = keepAlivePeriod
+            if scStreamUpServerSecs is not None:
+                extra["scStreamUpServerSecs"] = scStreamUpServerSecs
             if xmux:
                 extra["xmux"] = xmux
             if downloadSettings:
@@ -632,6 +644,7 @@ class V2rayJsonConfig(str):
                          downloadSettings: dict = {},
                          mode: str = "",
                          noGRPCHeader: bool | None = None,
+                         scStreamUpServerSecs: int | None = None,
                          keepAlivePeriod: int = 0,
                          ) -> dict:
         config = copy.deepcopy(self.settings.get("splithttpSettings", {}))
@@ -654,6 +667,8 @@ class V2rayJsonConfig(str):
             extra["xPaddingBytes"] = x_padding_bytes
         if noGRPCHeader is not None:
             extra["noGRPCHeader"] = noGRPCHeader
+        if scStreamUpServerSecs is not None:
+            extra["scStreamUpServerSecs"] = scStreamUpServerSecs
         if keepAlivePeriod > 0:
             extra["keepAlivePeriod"] = keepAlivePeriod
         if xmux:
@@ -966,6 +981,7 @@ class V2rayJsonConfig(str):
                             downloadSettings: dict = {},
                             mode: str = "",
                             noGRPCHeader: bool | None = None,
+                            scStreamUpServerSecs: int | None = None,
                             heartbeatPeriod: int = 0,
                             keepAlivePeriod: int = 0,
                             ) -> dict:
@@ -1002,6 +1018,7 @@ class V2rayJsonConfig(str):
                                                     mode=mode,
                                                     noGRPCHeader=noGRPCHeader,
                                                     keepAlivePeriod=keepAlivePeriod,
+                                                    scStreamUpServerSecs=scStreamUpServerSecs,
                                                     )
         else:
             network_setting = {}
@@ -1114,6 +1131,7 @@ class V2rayJsonConfig(str):
             noGRPCHeader=inbound.get("noGRPCHeader"),
             heartbeatPeriod=inbound.get("heartbeatPeriod", 0),
             keepAlivePeriod=inbound.get("keepAlivePeriod", 0),
+            scStreamUpServerSecs=inbound.get("scStreamUpServerSecs"),
         )
 
         mux_json = json.loads(self.mux_template)

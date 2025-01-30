@@ -312,6 +312,7 @@ class XRayConfig(dict):
                     settings['downloadSettings'] = net_settings.get('downloadSettings', {})
                     settings["mode"] = net_settings.get("mode", "auto")
                     settings["keepAlivePeriod"] = net_settings.get("keepAlivePeriod", 0)
+                    settings["scStreamUpServerSecs"] = net_settings.get("scStreamUpServerSecs")
 
                 elif net == 'kcp':
                     header = net_settings.get('header', {})
