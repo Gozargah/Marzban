@@ -1,6 +1,7 @@
 {
   "log": {
-    "level": "warn"
+    "level": "warn",
+    "timestamp": false
   },
   "dns": {
     "servers": [
@@ -21,8 +22,7 @@
         "server": "dns-local"
       }
     ],
-    "final": "dns-remote",
-    "strategy": "prefer_ipv4"
+    "final": "dns-remote"
   },
   "inbounds": [
     {
@@ -36,10 +36,12 @@
       "auto_route": true,
       "route_exclude_address": [
         "192.168.0.0/16",
+        "10.0.0.0/8",
+        "169.254.0.0/16",
+        "172.16.0.0/12",
+        "fe80::/10",
         "fc00::/7"
-      ],
-      "sniff": true,
-      "domain_strategy": "prefer_ipv4"
+      ]
     }
   ],
   "outbounds": [
@@ -57,25 +59,17 @@
     {
       "type": "direct",
       "tag": "direct"
-    },
-    {
-      "type": "block",
-      "tag": "block"
-    },
-    {
-      "type": "dns",
-      "tag": "dns-out"
     }
   ],
   "route": {
     "rules": [
       {
-        "protocol": "dns",
-        "outbound": "dns-out"
+        "inbound": "tun-in",
+        "action": "sniff"
       },
       {
-        "ip_is_private": true,
-        "outbound": "direct"
+        "protocol": "dns",
+        "action": "hijack-dns"
       }
     ],
     "final": "proxy",
