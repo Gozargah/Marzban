@@ -590,7 +590,7 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
 
     dbuser.data_limit = dbuser.next_plan.data_limit + \
         (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit - dbuser.used_traffic)
-    dbuser.expire = dbuser.next_plan.expire
+    dbuser.expire = int((timedelta(seconds=dbuser.next_plan.expire) + datetime.utcnow()).timestamp())
 
     dbuser.used_traffic = 0
     db.delete(dbuser.next_plan)

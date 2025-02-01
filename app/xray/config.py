@@ -303,14 +303,16 @@ class XRayConfig(dict):
                     settings['path'] = net_settings.get('path', '')
                     host = net_settings.get('host', '')
                     settings['host'] = [host]
-                    settings['scMaxEachPostBytes'] = net_settings.get('scMaxEachPostBytes', 1000000)
-                    settings['scMaxConcurrentPosts'] = net_settings.get('scMaxConcurrentPosts', 100)
-                    settings['scMinPostsIntervalMs'] = net_settings.get('scMinPostsIntervalMs', 30)
-                    settings['xPaddingBytes'] = net_settings.get('xPaddingBytes', "100-1000")
+                    settings['scMaxEachPostBytes'] = net_settings.get('scMaxEachPostBytes')
+                    settings['scMaxConcurrentPosts'] = net_settings.get('scMaxConcurrentPosts')
+                    settings['scMinPostsIntervalMs'] = net_settings.get('scMinPostsIntervalMs')
+                    settings['xPaddingBytes'] = net_settings.get('xPaddingBytes')
+                    settings["noGRPCHeader"] = net_settings.get("noGRPCHeader")
                     settings['xmux'] = net_settings.get('xmux', {})
+                    settings['downloadSettings'] = net_settings.get('downloadSettings', {})
                     settings["mode"] = net_settings.get("mode", "auto")
-                    settings["noGRPCHeader"] = net_settings.get("noGRPCHeader", False)
                     settings["keepAlivePeriod"] = net_settings.get("keepAlivePeriod", 0)
+                    settings["scStreamUpServerSecs"] = net_settings.get("scStreamUpServerSecs")
 
                 elif net == 'kcp':
                     header = net_settings.get('header', {})
