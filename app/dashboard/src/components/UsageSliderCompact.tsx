@@ -19,7 +19,7 @@ const UsageSliderCompact: React.FC<UsageSliderProps> = ({ used, total = 0, statu
   const color = statusColors[status]?.sliderColor
   const { t } = useTranslation()
   return (
-    <div className="flex flex-col justify-between text-xs font-medium w-full gap-y-2">
+    <div className="flex flex-col justify-between text-xs text-muted-foreground font-medium w-full gap-y-1">
       <Progress indicatorClassName={color} value={progressValue} className={cn(isMobile ? 'block' : 'hidden md:block')} />
       <div className="flex items-center justify-between">
         <span dir="ltr">

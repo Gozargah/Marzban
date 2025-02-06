@@ -26,23 +26,23 @@ export const StatusBadge: FC<UserStatusProps> = ({ expiryDate = null, status: us
   const dateInfo = relativeExpiryDate(unixTime)
 
   return (
-    <div className='flex items-center gap-x-2'>
+    <div className="flex items-center gap-x-2">
       <Badge
         className={cn(
-          'flex items-center justify-center rounded-full px-0.5 sm:px-2 py-0 sm:py-0.5 w-fit max-w-[150px] gap-x-2 pointer-events-none',
+          'flex items-center justify-center rounded-full px-0.5 sm:px-2 py-0.5 w-fit max-w-[150px] gap-x-2 pointer-events-none',
           statusColors[userStatus]?.statusColor || 'bg-gray-400 text-white',
           isMobile && 'py-0 h-4',
         )}
       >
         <div>
-          <span className={cn('capitalize font-medium text-[10px] sm:text-xs md:text-sm', isMobile && 'text-[11.1px] leading-3')}>
-            {userStatus && t(`status.${userStatus}`)}
-          </span>
+          <span className={cn('capitalize font-medium text-xs', isMobile && 'text-[11.1px] leading-3')}>{userStatus && t(`status.${userStatus}`)}</span>
         </div>
       </Badge>
       <div className={cn(!dateInfo.time && !dateInfo.status && 'hidden')}>
         <div className={cn(isMobile ? 'block' : 'hidden md:block')}>
-          <span className={cn('inline-block text-[10px] sm:text-xs font-medium ml-2 text-gray-600 dark:text-gray-400', dir === 'rtl' && 'ml-0 mr-1')}>{t(dateInfo.status, { time: dateInfo.time })}</span>
+          <span className={cn('inline-block text-xs font-normal ml-2 text-muted-foreground dark:text-muted-foreground', dir === 'rtl' && 'ml-0 mr-1')}>
+            {t(dateInfo.status, { time: dateInfo.time })}
+          </span>
         </div>
       </div>
     </div>

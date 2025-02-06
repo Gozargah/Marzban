@@ -1,13 +1,11 @@
-import { ColumnDef } from '@tanstack/react-table'
 import { User } from '@/types/User'
+import { ColumnDef } from '@tanstack/react-table'
+import { ChevronDown } from 'lucide-react'
+import ActionButtons from '../ActionButtons'
 import { OnlineBadge } from '../OnlineBadge'
 import { StatusBadge } from '../StatusBadge'
-import UsageSliderCompact from '../UsageSliderCompact'
-import { OnlineStatus } from '../OnlineStatus'
-import ActionButtons from '../ActionButtons'
-import { Button } from '../ui/button'
-import { ChevronDown } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '../ui/select'
+import UsageSliderCompact from '../UsageSliderCompact'
 
 export const setupColumns = ({
   t,
@@ -25,13 +23,14 @@ export const setupColumns = ({
   {
     accessorKey: 'username',
     header: () => (
-      <Button variant="ghost" onClick={() => handleSort('username')}>
-        <div className="text-xs font-bold">
+      <button onClick={handleSort.bind(null, 'username')} className="flex gap-1 px-2 py-3 w-full items-center">
+        <div className="text-xs">
           <span className="md:hidden">{t('users')}</span>
           <span className="hidden md:block capitalize">{t('username')}</span>
         </div>
         {filters.sort && (filters.sort === 'username' || filters.sort === '-username') && (
           <ChevronDown
+            size={16}
             className={`
               transition-transform duration-300
               ${filters.sort === 'username' ? 'rotate-180' : ''}
@@ -39,13 +38,13 @@ export const setupColumns = ({
             `}
           />
         )}
-      </Button>
+      </button>
     ),
     cell: ({ row }) => {
       return (
         <div className="font-medium pl-1 md:pl-2 overflow-hidden text-ellipsis whitespace-nowrap">
-          <div className="flex items-center gap-x-3 py-1 px-1">
-            <div className="mb-4">
+          <div className="flex items-start gap-x-3 py-1 px-1">
+            <div className="pt-1">
               <OnlineBadge lastOnline={row.original.online_at} />
             </div>
             <div className="flex flex-col gap-y-0.5 whitespace-nowrap text-ellipsis overflow-hidden">
@@ -58,9 +57,9 @@ export const setupColumns = ({
                 </span>
               )}
             </div>
-            <div className="hidden md:block">
+            {/* <div className="hidden md:block">
               <OnlineStatus lastOnline={row.original.online_at} />
-            </div>
+            </div> */}
           </div>
         </div>
       )
@@ -71,7 +70,7 @@ export const setupColumns = ({
     header: () => (
       <div className="flex items-center">
         <Select dir={dir || ''} onValueChange={handleStatusFilter}>
-          <SelectTrigger className="border-none p-0 ring-none px-0 md:px-2 max-w-28">
+          <SelectTrigger icon={false} className="border-none p-0 ring-none px-1 max-w-28 w-fit">
             <span className="capitalize text-xs px-1">{t('usersTable.status')}</span>
           </SelectTrigger>
           <SelectContent dir="ltr">
@@ -85,13 +84,14 @@ export const setupColumns = ({
         </Select>
         <div className="items-center hidden sm:flex">
           <span>/</span>
-          <Button variant="ghost" onClick={() => handleSort('expire')}>
-            <div className="text-xs capitalize font-bold">
+          <button className="flex gap-1 px-2 py-3 w-full items-center" onClick={handleSort.bind(null, 'expire')}>
+            <div className="text-xs capitalize">
               <span className="md:hidden">{t('expire')}</span>
               <span className="hidden md:block">{t('expire')}</span>
             </div>
             {filters.sort && (filters.sort === 'expire' || filters.sort === '-expire') && (
               <ChevronDown
+                size={16}
                 className={`
               transition-transform duration-300
               ${filters.sort === 'expire' ? 'rotate-180' : ''}
@@ -99,14 +99,13 @@ export const setupColumns = ({
             `}
               />
             )}
-          </Button>
+          </button>
         </div>
       </div>
     ),
     cell: ({ row }) => {
       const status: User['status'] = row.getValue('status')
       const expire = row.original.expire
-
       return (
         <div className="flex flex-col gap-y-2 py-1">
           <StatusBadge expiryDate={expire} status={status} />
@@ -125,13 +124,14 @@ export const setupColumns = ({
   {
     id: 'details',
     header: () => (
-      <Button variant="ghost" onClick={() => handleSort('used_traffic')}>
-        <div className="text-xs capitalize font-bold">
+      <button className="flex gap-1 px-2 py-3 w-full items-center" onClick={handleSort.bind(null, 'used_traffic')}>
+        <div className="text-xs capitalize">
           <span className="md:hidden">{t('dataUsage')}</span>
           <span className="hidden md:block">{t('dataUsage')}</span>
         </div>
         {filters.sort && (filters.sort === 'used_traffic' || filters.sort === '-used_traffic') && (
           <ChevronDown
+            size={16}
             className={`
               transition-transform duration-300
               ${filters.sort === 'used_traffic' ? 'rotate-180' : ''}
@@ -139,7 +139,7 @@ export const setupColumns = ({
             `}
           />
         )}
-      </Button>
+      </button>
     ),
     cell: ({ row }) => (
       <div className="flex items-center gap-2 justify-between">
@@ -150,7 +150,7 @@ export const setupColumns = ({
           dataLimitResetStrategy={row.original.data_limit_reset_strategy}
           status={row.original.status}
         />
-        <div className="hidden md:block w-[200px] px-4 py-4">
+        <div className="hidden md:block w-[200px] px-4 py-1">
           <ActionButtons user={row.original} />
         </div>
       </div>

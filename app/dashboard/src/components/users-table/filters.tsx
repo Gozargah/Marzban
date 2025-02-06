@@ -47,8 +47,8 @@ export const Filters = () => {
   return (
     <div dir={dir} className="flex items-center gap-4 py-4">
       {/* Search Input */}
-      <div className="relative w-full md:w-1/3">
-        <SearchIcon className={cn('absolute', dir === 'rtl' ? 'right-2' : 'left-2 ', 'top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400')} />
+      <div className="relative w-full md:w-[calc(100%/3-10px)]">
+        <SearchIcon className={cn('absolute', dir === 'rtl' ? 'right-2' : 'left-2 ', 'top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 text-input-placeholder')} />
         <Input placeholder={t('search')} value={search} onChange={handleSearchChange} className="pl-8 pr-10" />
         {search && (
           <button onClick={clearSearch} className={cn('absolute', dir === 'rtl' ? 'left-2' : 'right-2', 'top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600')}>
@@ -58,7 +58,7 @@ export const Filters = () => {
       </div>
       {/* Refresh Button */}
       <div className="flex items-center gap-2 h-full">
-        <Button size="sm" onClick={refetchUsers} disabled={loading} variant="ghost" className="flex items-center gap-2 border">
+        <Button size="icon-md" onClick={refetchUsers} disabled={loading} variant="ghost" className="flex items-center gap-2 border">
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
         </Button>
       </div>

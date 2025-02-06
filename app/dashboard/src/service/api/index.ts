@@ -3,7 +3,7 @@
  * Do not edit manually.
  * MarzbanAPI
  * Unified GUI Censorship Resistant Solution Powered by Xray
- * OpenAPI spec version: 0.7.0
+ * OpenAPI spec version: 0.8.2
  */
 import { useMutation, useQuery } from '@tanstack/react-query'
 import type {
@@ -98,10 +98,6 @@ export interface ValidationError {
   type: string
 }
 
-export interface UsersUsagesResponse {
-  usages: UserUsageResponse[]
-}
-
 export interface UsersResponse {
   users: UserResponse[]
   total: number
@@ -113,6 +109,10 @@ export interface UserUsageResponse {
   node_id?: UserUsageResponseNodeId
   node_name: string
   used_traffic: number
+}
+
+export interface UsersUsagesResponse {
+  usages: UserUsageResponse[]
 }
 
 export interface UserUsagesResponse {
@@ -781,12 +781,17 @@ export type NextPlanModelExpire = number | null
 
 export type NextPlanModelDataLimit = number | null
 
+export type NextPlanModelUserTemplateId = number | null
+
 export interface NextPlanModel {
+  user_template_id?: NextPlanModelUserTemplateId
   data_limit?: NextPlanModelDataLimit
   expire?: NextPlanModelExpire
   add_remaining_traffic?: boolean
   fire_on_either?: boolean
 }
+
+export type HostResponseUseSniAsHost = boolean | null
 
 /**
  * @nullable
@@ -849,6 +854,7 @@ export interface HostResponse {
   random_user_agent?: HostResponseRandomUserAgent
   /** @nullable */
   noise_setting?: HostResponseNoiseSetting
+  use_sni_as_host?: HostResponseUseSniAsHost
   id: number
 }
 
@@ -863,6 +869,8 @@ export interface HTTPException {
 export interface Forbidden {
   detail?: string
 }
+
+export type CreateHostUseSniAsHost = boolean | null
 
 /**
  * @nullable
@@ -925,6 +933,7 @@ export interface CreateHost {
   random_user_agent?: CreateHostRandomUserAgent
   /** @nullable */
   noise_setting?: CreateHostNoiseSetting
+  use_sni_as_host?: CreateHostUseSniAsHost
 }
 
 export interface CoreStats {
@@ -952,6 +961,8 @@ export interface BodyAdminTokenApiAdminTokenPost {
   client_secret?: BodyAdminTokenApiAdminTokenPostClientSecret
 }
 
+export type AdminModifyIsDisabled = boolean | null
+
 export type AdminModifyDiscordWebhook = string | null
 
 export type AdminModifyTelegramId = number | null
@@ -963,9 +974,8 @@ export interface AdminModify {
   is_sudo: boolean
   telegram_id?: AdminModifyTelegramId
   discord_webhook?: AdminModifyDiscordWebhook
+  is_disabled?: AdminModifyIsDisabled
 }
-
-export type AdminCreateUsersUsage = number | null
 
 export type AdminCreateDiscordWebhook = string | null
 
@@ -976,11 +986,10 @@ export interface AdminCreate {
   is_sudo: boolean
   telegram_id?: AdminCreateTelegramId
   discord_webhook?: AdminCreateDiscordWebhook
-  users_usage?: AdminCreateUsersUsage
+  users_usage?: number
+  is_disabled?: boolean
   password: string
 }
-
-export type AdminUsersUsage = number | null
 
 export type AdminDiscordWebhook = string | null
 
@@ -991,7 +1000,8 @@ export interface Admin {
   is_sudo: boolean
   telegram_id?: AdminTelegramId
   discord_webhook?: AdminDiscordWebhook
-  users_usage?: AdminUsersUsage
+  users_usage?: number
+  is_disabled?: boolean
 }
 
 /**
