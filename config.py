@@ -21,9 +21,11 @@ DOCS = config("DOCS", default=False, cast=bool)
 
 ALLOWED_ORIGINS = config("ALLOWED_ORIGINS", default="*").split(",")
 
-VITE_BASE_API = f"http://127.0.0.1:{UVICORN_PORT}/api/" \
-    if DEBUG and config("VITE_BASE_API", default="/api/") == "/api/" \
+VITE_BASE_API = (
+    f"{'https' if UVICORN_SSL_CERTFILE and UVICORN_SSL_KEYFILE else 'http'}://127.0.0.1:{UVICORN_PORT}/api/"
+    if DEBUG and config("VITE_BASE_API", default="/api/") == "/api/"
     else config("VITE_BASE_API", default="/api/")
+)
 
 XRAY_JSON = config("XRAY_JSON", default="./xray_config.json")
 XRAY_FALLBACKS_INBOUND_TAG = config("XRAY_FALLBACKS_INBOUND_TAG", cast=str, default="") or config(
