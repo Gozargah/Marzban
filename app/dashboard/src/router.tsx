@@ -7,6 +7,7 @@ import Nodes from './pages/_dashboard.nodes'
 import Settings from './pages/_dashboard.settings'
 import Statistics from './pages/_dashboard.statistics'
 import Login from './pages/login'
+import GeneralSettings from './components/settings/GeneralSettings'
 
 const fetchAdminLoader = async (): Promise<any> => {
   try {
@@ -40,6 +41,10 @@ export const router = createHashRouter([
         path: '/settings',
         element: <Settings />,
         children: [
+          {
+            path: '/settings',
+            element: <GeneralSettings />,
+          },
           {
             path: '/settings/core',
             element: <CoreSettings />,

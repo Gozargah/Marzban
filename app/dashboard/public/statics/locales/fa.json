@@ -117,6 +117,7 @@
   "login.welcomeBack": "خوش آمدید, لطفا اطلاعات خود را وارد کنید",
   "memoryUsage": "مصرف حافظه",
   "next": "بعدی",
+  "manageServers": "کنترل جزئیات سرور شما",
   "nodes.prompt": "افزودن و پیکربندی جزئیات گره",
   "nodes.addHostForEveryInbound": "استفاده از این گره به عنوان میزبان تمام ورودی‌ها",
   "nodes.addNewMarzbanNode": "افزودن گره مرزبان",
