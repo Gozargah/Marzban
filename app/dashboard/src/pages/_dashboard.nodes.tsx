@@ -1,14 +1,17 @@
+import AddNodeModal from '@/components/dialogs/AddNodeModal'
 import NodesSection from '@/components/nodes/NodesSection'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useNodesQuery } from '@/contexts/NodesContext'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { Plus } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 const Nodes = () => {
   const { t } = useTranslation()
   const dir = useDirDetection()
+  const [isAddNodeModalOpen,setIsAddNodeModalOpen] = useState(false)
   const { data: nodes, isLoading } = useNodesQuery()
 
   return (
@@ -19,7 +22,7 @@ const Nodes = () => {
           <span className="text-muted-foreground text-xs sm:text-sm">{t('manageNodes')}</span>
         </div>
         <div>
-          <Button className="flex items-center">
+          <Button onClick={() => setIsAddNodeModalOpen(true)} className="flex items-center">
             <Plus />
             <span>{t('nodes.addNode')}</span>
           </Button>
@@ -28,6 +31,7 @@ const Nodes = () => {
       <Separator />
       <div>
         <NodesSection nodes={nodes} />
+        <AddNodeModal onCloseModal={() => setIsAddNodeModalOpen(false)} isOpen={isAddNodeModalOpen}/>
       </div>
     </div>
   )

@@ -110,6 +110,6 @@
 	}
 
 	::-webkit-scrollbar-thumb {
-		@apply bg-neutral-300 dark:bg-neutral-800 rounded-full;
+		@apply h-0.5 bg-neutral-300 dark:bg-neutral-800 rounded-full;
 	}
 }

@@ -113,6 +113,7 @@
   "next": "Next",
   "nodes.addHostForEveryInbound": "Add this node as a new host for every inbound",
   "nodes.addNewMarzbanNode": "Add New Marzban Node",
+  "nodes.prompt": "Add and configure node details",
   "nodes.addNode": "Add Node",
   "nodes.addNodeSuccess": "Node {{name}} added successfully",
   "nodes.apply": "editNode",

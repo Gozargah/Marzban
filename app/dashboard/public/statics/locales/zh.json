@@ -113,6 +113,7 @@
   "next": "下一页",
   "nodes.addHostForEveryInbound": "为每个入站请求添加此节点作为新主机",
   "nodes.addNewMarzbanNode": "添加新的 Marzban 节点",
+  "nodes.prompt": "添加并配置节点详细信息",
   "nodes.addNode": "添加节点",
   "nodes.addNodeSuccess": "节点 {{name}} 添加成功",
   "nodes.apply": "编辑节点",
