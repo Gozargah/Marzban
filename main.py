@@ -1,3 +1,4 @@
+import ipaddress
 import click
 import logging
 import os
@@ -11,6 +12,15 @@ from app import app, logger
 from config import (DEBUG, UVICORN_HOST, UVICORN_PORT, UVICORN_SSL_CERTFILE,
                     UVICORN_SSL_KEYFILE, UVICORN_SSL_CA_TYPE, UVICORN_UDS)
 
+def is_internal_ip(ip: str) -> bool:
+    ip = ipaddress.ip_address(ip)
+    if (ip in ipaddress.ip_network("127.0.0.1/32") or 
+        ip in ipaddress.ip_network("10.0.0.0/8") or 
+        ip in ipaddress.ip_network("100.64.0.0/10") or 
+        ip in ipaddress.ip_network("172.16.0.0/12") or 
+        ip in ipaddress.ip_network("192.168.0.0/16")):
+        return True
+    return False
 
 def validate_cert_and_key(cert_file_path, key_file_path, ca_type):
     if ca_type == "private":
@@ -67,6 +77,9 @@ if __name__ == "__main__":
     else:
         if UVICORN_UDS:
             bind_args['uds'] = UVICORN_UDS
+        elif is_internal_ip(UVICORN_HOST):
+            bind_args['host'] = UVICORN_HOST
+            bind_args['port'] = UVICORN_PORT
         else:
 
             logger.warning(f"""
