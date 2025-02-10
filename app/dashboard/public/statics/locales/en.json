@@ -111,6 +111,7 @@
   "login.welcomeBack": "Welcome back, please enter your details",
   "memoryUsage": "memory usage",
   "next": "Next",
+  "monitorServers": "Monitor your servers and users",
   "manageServers": "Control your server details",
   "nodes.addHostForEveryInbound": "Add this node as a new host for every inbound",
   "nodes.addNewMarzbanNode": "Add New Marzban Node",

@@ -111,6 +111,7 @@
   "login.welcomeBack": "欢迎回来，请输入您的详细信息",
   "memoryUsage": "内存状态",
   "next": "下一页",
+  "monitorServers": "监控您的服务器和用户",
   "manageServers": "控制您的服务器详细信息",
   "nodes.addHostForEveryInbound": "为每个入站请求添加此节点作为新主机",
   "nodes.addNewMarzbanNode": "添加新的 Marzban 节点",

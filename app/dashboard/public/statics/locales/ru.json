@@ -111,6 +111,7 @@
   "login.welcomeBack": "Пожалуйста, введите свои данные",
   "memoryUsage": "Память",
   "next": "Вперед",
+  "monitorServers": "Следите за своими серверами и пользователями",
   "manageServers": "Управляйте данными вашего сервера",
   "nodes.addHostForEveryInbound": "Добавить этот узел, как новый хост для каждого inbound",
   "nodes.addNewMarzbanNode": "Добавить новый узел Marzban",

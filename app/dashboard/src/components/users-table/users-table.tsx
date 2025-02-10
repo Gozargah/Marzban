@@ -5,7 +5,6 @@ import { useDashboard } from '@/contexts/DashboardContext'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import UsersStatistics from '../UsersStatistics'
 
 const UsersTable = () => {
   const { t } = useTranslation()
@@ -52,7 +51,6 @@ const UsersTable = () => {
 
   return (
     <div>
-      <UsersStatistics />
       <Filters />
       <DataTable columns={columns} data={users} />
     </div>
