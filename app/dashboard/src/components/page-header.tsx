@@ -2,6 +2,7 @@ import { Plus, LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useTranslation } from 'react-i18next'
+import useDirDetection from '@/hooks/use-dir-detection'
 
 interface PageHeaderProps {
     title: string
@@ -9,7 +10,6 @@ interface PageHeaderProps {
     buttonText?: string
     onButtonClick?: () => void
     buttonIcon?: LucideIcon
-    dir?: 'ltr' | 'rtl'
 }
 
 export default function PageHeader({
@@ -18,8 +18,8 @@ export default function PageHeader({
     buttonText,
     onButtonClick,
     buttonIcon: Icon = Plus,
-    dir = 'ltr',
 }: PageHeaderProps) {
+    const dir = useDirDetection()
     const { t } = useTranslation()
 
     return (
