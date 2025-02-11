@@ -54,8 +54,8 @@
     --popover: var(--background);
     --popover-foreground: var(--foreground);
     --border: 0 0% 18%;
-    --input: 240 2% 11.5%;
-    --input-placeholder: 0 0 30%;
+    --input: 240 2% 24.5%;
+    --input-placeholder: 0 0 60%;
     --primary: 216 46% 53%;
     --primary-foreground: 0 0% 5%;
     --secondary: 216 46% 53%;
