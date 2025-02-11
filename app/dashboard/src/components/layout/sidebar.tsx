@@ -8,7 +8,7 @@ import { ThemeToggle } from '@/components/theme-toggle'
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger } from '@/components/ui/sidebar'
 import { DONATION_URL, REPO_URL } from '@/constants/Project'
 import useDirDetection from '@/hooks/use-dir-detection'
-import { BookOpen, GithubIcon, LifeBuoy, ListTodo, PieChart, RssIcon, Settings2, Share2Icon, UsersIcon } from 'lucide-react'
+import { BookOpen, GithubIcon, LayoutTemplate, LifeBuoy, ListTodo, PieChart, RssIcon, Settings2, Share2Icon, UserCog, UsersIcon } from 'lucide-react'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -21,6 +21,11 @@ const data = {
       title: 'users',
       url: '/',
       icon: UsersIcon,
+    },
+    {
+      title: "admins",
+      url: "/admins",
+      icon: UserCog,
     },
     {
       title: 'statistics',
@@ -36,6 +41,21 @@ const data = {
       title: 'nodes',
       url: '/nodes',
       icon: Share2Icon,
+    },
+    {
+      title: 'templates.title',
+      url: '/templates',
+      icon: LayoutTemplate,
+      items: [
+        {
+          title: 'templates.userTemplates',
+          url: '/templates',
+        },
+        {
+          title: 'templates.otherTemplates',
+          url: '/templates/other',
+        },
+      ],
     },
     {
       title: 'settings',
@@ -63,17 +83,17 @@ const data = {
   ],
   community: [
     {
-      title: 'Documentation',
+      title: 'documentation',
       url: '#',
       icon: BookOpen,
     },
     {
-      title: 'Discussion Group',
+      title: 'discussionGroup',
       url: '#',
       icon: RssIcon,
     },
     {
-      title: 'GitHub',
+      title: 'github',
       url: '#',
       icon: GithubIcon,
     },

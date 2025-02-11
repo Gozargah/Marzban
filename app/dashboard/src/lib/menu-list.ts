@@ -6,6 +6,7 @@ import {
   ListTodo,
   Share2,
   Settings2,
+  UserCog,
 } from "lucide-react";
 
 type Submenu = {
