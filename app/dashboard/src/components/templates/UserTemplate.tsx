@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { Card, CardDescription, CardTitle } from "../ui/card";
-import FlagFromIP from "@/utils/flagFromIP";
-import { NodeStatusBadge } from "./NodeStatusBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
-import { EllipsisVertical, Pen, Trash2 } from "lucide-react";
+import { Copy, EllipsisVertical, Pen, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import useDirDetection from "@/hooks/use-dir-detection";
 import { NodeType } from "@/contexts/NodesContext";
@@ -25,6 +23,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { UserTemplateType } from "@/types/User";
+import { formatBytes } from "@/utils/formatByte";
 
 const DeleteAlertDialog = ({
   node,
@@ -62,7 +62,7 @@ const DeleteAlertDialog = ({
   );
 };
 
-const Node = ({ node }: { node: NodeType }) => {
+const UserTemplate = ({ template }: { template: UserTemplateType }) => {
   const { t } = useTranslation();
   const dir = useDirDetection();
   const { toast } = useToast()
@@ -76,35 +76,35 @@ const Node = ({ node }: { node: NodeType }) => {
     setDeleteDialogOpen(false);
   };
 
-  const handleConfirmDelete = () => {
-    toast({
-      dir,
-      description: t("deleteNode.deleteSuccess",{name:node.name}),
-    })
-    setDeleteDialogOpen(false);
-  };
+  //   const handleConfirmDelete = () => {
+  //     toast({
+  //       dir,
+  //       description: t("deleteNode.deleteSuccess",{name:node.name}),
+  //     })
+  //     setDeleteDialogOpen(false);
+  //   };
 
   return (
     <Card className="px-5 py-6 rounded-lg">
       <CardTitle className="flex items-center justify-between">
         <div className="flex items-center gap-x-2">
-          <div className="mr-1.5">
-            <NodeStatusBadge status={node.status} />
-          </div>
-          <FlagFromIP ip={node.address} />
-          <span>{node.name}</span>
+          <span>{template.name}</span>
         </div>
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
               <EllipsisVertical />
-              <span className="sr-only">Nodes Actions</span>
+              <span className="sr-only">Template Actions</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align={dir === "rtl" ? "end" : "start"}>
             <DropdownMenuItem dir={dir} className="flex items-center">
               <Pen className="h-4 w-4" />
               <span>{t("edit")}</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem dir={dir} className="flex items-center">
+              <Copy className="h-4 w-4" />
+              <span>{t("duplicate")}</span>
             </DropdownMenuItem>
             <DropdownMenuItem
               dir={dir}
@@ -120,28 +120,25 @@ const Node = ({ node }: { node: NodeType }) => {
       <CardDescription>
         <div className="flex flex-col gap-y-1 mt-2">
           <p>
-            {t("ip")}: <span>{node.address}</span>
+            {t("userDialog.dataLimit")}: <span>{formatBytes(template.data_limit)}</span>
           </p>
           <p>
-            {t("nodes.nodePort")}: <span>{node.port}</span>
-          </p>
-          <p>
-            {t("nodes.nodeAPIPort")}: <span>{node.api_port}</span>
+            {t("Expire")}: <span>{template.expire_duration}</span>
           </p>
         </div>
       </CardDescription>
 
       {/* Include the Delete AlertDialog component */}
       <div>
-        <DeleteAlertDialog
+        {/* <DeleteAlertDialog
           node={node}
           isOpen={isDeleteDialogOpen}
           onClose={handleCloseDeleteDialog}
           onConfirm={handleConfirmDelete}
-        />
+        /> */}
       </div>
     </Card>
   );
 };
 
-export default Node;
+export default UserTemplate;

@@ -52,8 +52,8 @@ const data = {
           url: '/templates',
         },
         {
-          title: 'templates.otherTemplates',
-          url: '/templates/other',
+          title: 'templates.groupTemplates',
+          url: '/templates/group',
         },
       ],
     },

@@ -8,6 +8,9 @@ import Settings from './pages/_dashboard.settings'
 import Statistics from './pages/_dashboard.statistics'
 import Login from './pages/login'
 import GeneralSettings from './components/settings/GeneralSettings'
+import Templates from './pages/_dashboard.templates'
+import UserTemplates from './components/templates/UserTemplates'
+import GroupTemplates from './components/templates/GroupTemplates'
 
 const fetchAdminLoader = async (): Promise<any> => {
   try {
@@ -36,6 +39,20 @@ export const router = createHashRouter([
       {
         path: '/nodes',
         element: <Nodes />,
+      },
+      {
+        path: '/templates',
+        element: <Templates />,
+        children: [
+          {
+            path: '/templates',
+            element: <UserTemplates />,
+          },
+          {
+            path: '/templates/group',
+            element: <GroupTemplates />,
+          },
+        ],
       },
       {
         path: '/settings',

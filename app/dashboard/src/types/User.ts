@@ -1,3 +1,4 @@
+import { InboundType } from '@/contexts/DashboardContext'
 import { UserResponse } from '@/service/api'
 
 export type Status = 'active' | 'disabled' | 'limited' | 'expired' | 'on_hold' | 'error' | 'connecting' | 'connected'
@@ -32,6 +33,16 @@ export interface AdminType {
   discord_webhook: string | null
 }
 export type User = UserResponse
+
+export interface UserTemplateType {
+  name: string
+  data_limit: number
+  expire_duration: number
+  username_prefix: string | null
+  username_suffix: string | null
+  inbounds: Record<string, InboundType>
+  id: number
+}
 
 export type UserCreate = Pick<User, 'inbounds' | 'proxies' | 'expire' | 'data_limit' | 'data_limit_reset_strategy' | 'on_hold_expire_duration' | 'username' | 'status' | 'note'>
 
