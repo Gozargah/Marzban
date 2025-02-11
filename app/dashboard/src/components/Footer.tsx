@@ -5,7 +5,7 @@ import { FC, HTMLAttributes } from 'react'
 export const Footer: FC<HTMLAttributes<HTMLDivElement>> = props => {
   const { version } = useDashboard()
   return (
-    <div className="flex w-full pt-1 pb-2 relative" {...props}>
+    <div className="flex w-full pt-1 pb-3 relative" {...props}>
       <p className="inline-block flex-grow text-center text-gray-500 text-xs">
         <a className="text-blue-400" href={REPO_URL}>
           Marzban

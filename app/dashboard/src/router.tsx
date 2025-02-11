@@ -1,13 +1,13 @@
-import CoreSettings from '@/components/settings/CoreSettings'
+import CoreSettings from '@/pages/_dashboard.settings.core'
 import { getCurrentAdmin } from '@/service/api'
 import { createHashRouter, RouteObject } from 'react-router'
 import DashboardLayout from './pages/_dashboard'
 import Dashboard from './pages/_dashboard._index'
 import Nodes from './pages/_dashboard.nodes'
 import Settings from './pages/_dashboard.settings'
+import GeneralSettings from './pages/_dashboard.settings._index'
 import Statistics from './pages/_dashboard.statistics'
 import Login from './pages/login'
-import GeneralSettings from './components/settings/GeneralSettings'
 
 const fetchAdminLoader = async (): Promise<any> => {
   try {
