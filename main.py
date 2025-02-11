@@ -39,7 +39,7 @@ def check_and_modify_ip(ip_address: str) -> str:
         # Convert string to IP address object
         ip = ipaddress.ip_address(ip_address)
 
-        if ip == "0.0.0.0":
+        if ip == ipaddress.ip_address("0.0.0.0"):
             return "localhost"
         elif ip.is_private:
             return ip_address
