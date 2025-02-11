@@ -103,10 +103,10 @@ export default function CoreSettings() {
     <div className="flex flex-col gap-y-6 pt-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <div>
+          <CardHeader className="p-0">
             <CardTitle>Xray Config</CardTitle>
             <p className="text-sm">Control your server details</p>
-          </div>
+          </CardHeader>
           <div className="flex items-center gap-4">
             <div className="flex gap-2">
               <Button variant="destructive" size="sm" disabled={!isEditorReady || !validation.isValid}>
@@ -156,10 +156,10 @@ export default function CoreSettings() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <div>
+          <CardHeader className="p-0">
             <CardTitle>Server logs</CardTitle>
             <p className="text-sm">Control your server details</p>
-          </div>
+          </CardHeader>
           <Select defaultValue="main">
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select server" />

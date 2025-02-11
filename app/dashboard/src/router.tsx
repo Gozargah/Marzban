@@ -1,8 +1,6 @@
 import CoreSettings from '@/pages/_dashboard.settings.core'
 import { getCurrentAdmin } from '@/service/api'
 import { createHashRouter, RouteObject } from 'react-router'
-import GroupTemplates from './components/templates/GroupTemplates'
-import UserTemplates from './components/templates/UserTemplates'
 import DashboardLayout from './pages/_dashboard'
 import Dashboard from './pages/_dashboard._index'
 import Nodes from './pages/_dashboard.nodes'
@@ -10,6 +8,8 @@ import Settings from './pages/_dashboard.settings'
 import GeneralSettings from './pages/_dashboard.settings._index'
 import Statistics from './pages/_dashboard.statistics'
 import Templates from './pages/_dashboard.templates'
+import UserTemplates from './pages/_dashboard.templates._index'
+import GroupTemplates from './pages/_dashboard.templates.groups'
 import Login from './pages/login'
 
 const fetchAdminLoader = async (): Promise<any> => {
