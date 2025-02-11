@@ -1,30 +1,30 @@
-import { useCallback, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { AlertCircle, CheckCircle } from "lucide-react"
-import Editor from "@monaco-editor/react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useTheme } from "../theme-provider"
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import Editor from '@monaco-editor/react'
+import { AlertCircle, CheckCircle } from 'lucide-react'
+import { useCallback, useState } from 'react'
+import { useTheme } from '../components/theme-provider'
 
 const defaultConfig = {
   log: {
-    loglevel: "error",
+    loglevel: 'error',
   },
   inbounds: [
     {
-      tag: "inbound Name",
-      listen: "0.0.0.0",
+      tag: 'inbound Name',
+      listen: '0.0.0.0',
       port: 1122,
-      protocol: "vless",
+      protocol: 'vless',
       settings: {
         clients: [],
-        decryption: "none",
+        decryption: 'none',
       },
       streamSettings: {
-        network: "tcp",
+        network: 'tcp',
         tcpSettings: {},
-        security: "none",
+        security: 'none',
       },
       sniffing: {},
     },
@@ -32,9 +32,9 @@ const defaultConfig = {
 }
 
 const sampleLogs = [
-  "2021/09/22 19:36:25 from 77.33.44.11:0 accepted tcp:www.googleapis.com:80 [VLESS_WS_INBOUND >> direct] email: user5322",
-  "2021/09/22 19:36:25 from 22.33.44.55:0 accepted tcp:www.google.com:443 [VLESS_WS_INBOUND >> direct] email: user123",
-  "2021/09/22 19:36:25 from 22.33.44.55:0 accepted tcp:3.3.3.3:80 [VLESS_WS_INBOUND >> direct] email: user123",
+  '2021/09/22 19:36:25 from 77.33.44.11:0 accepted tcp:www.googleapis.com:80 [VLESS_WS_INBOUND >> direct] email: user5322',
+  '2021/09/22 19:36:25 from 22.33.44.55:0 accepted tcp:www.google.com:443 [VLESS_WS_INBOUND >> direct] email: user123',
+  '2021/09/22 19:36:25 from 22.33.44.55:0 accepted tcp:3.3.3.3:80 [VLESS_WS_INBOUND >> direct] email: user123',
 ]
 
 interface ValidationResult {
@@ -47,10 +47,6 @@ export default function CoreSettings() {
   const [validation, setValidation] = useState<ValidationResult>({ isValid: true })
   const [isEditorReady, setIsEditorReady] = useState(false)
   const { resolvedTheme } = useTheme()
-  console.log(resolvedTheme);
-
-
-
 
   const handleEditorValidation = useCallback(
     (markers: any[]) => {
@@ -69,7 +65,7 @@ export default function CoreSettings() {
         } catch (e) {
           setValidation({
             isValid: false,
-            error: e instanceof Error ? e.message : "Invalid JSON",
+            error: e instanceof Error ? e.message : 'Invalid JSON',
           })
         }
       }
@@ -99,12 +95,12 @@ export default function CoreSettings() {
   const handleSave = useCallback(() => {
     if (validation.isValid) {
       // Here you would typically save the config to your backend
-      console.log("Saving config:", JSON.parse(config))
+      console.log('Saving config:', JSON.parse(config))
     }
   }, [config, validation.isValid])
 
   return (
-    <div className="flex flex-col gap-y-6 mt-10">
+    <div className="flex flex-col gap-y-6 pt-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
@@ -130,14 +126,14 @@ export default function CoreSettings() {
               height="400px"
               defaultLanguage="json"
               value={config}
-              theme={resolvedTheme === "dark" ? "vs-dark" : "light"}
+              theme={resolvedTheme === 'dark' ? 'vs-dark' : 'light'}
               onChange={handleEditorChange}
               onValidate={handleEditorValidation}
               onMount={handleEditorDidMount}
               options={{
                 minimap: { enabled: false },
                 fontSize: 14,
-                lineNumbers: "on",
+                lineNumbers: 'on',
                 roundedSelection: true,
                 scrollBeyondLastLine: false,
                 automaticLayout: true,
@@ -148,12 +144,8 @@ export default function CoreSettings() {
           </div>
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-2">
-              {validation.isValid ? (
-                <CheckCircle className="h-5 w-5 text-green-500" />
-              ) : (
-                <AlertCircle className="h-5 w-5 text-red-500" />
-              )}
-              <span className="text-sm">{validation.isValid ? "Valid JSON" : "Invalid JSON"}</span>
+              {validation.isValid ? <CheckCircle className="h-5 w-5 text-green-500" /> : <AlertCircle className="h-5 w-5 text-red-500" />}
+              <span className="text-sm">{validation.isValid ? 'Valid JSON' : 'Invalid JSON'}</span>
             </span>
             <Button size="sm" onClick={handleSave} disabled={!isEditorReady || !validation.isValid}>
               Save Changes
@@ -191,4 +183,3 @@ export default function CoreSettings() {
     </div>
   )
 }
-
