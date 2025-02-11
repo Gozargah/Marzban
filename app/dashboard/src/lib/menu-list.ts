@@ -62,7 +62,7 @@ export function getMenuList(pathname: string): Group[] {
           icon: Settings2,
           submenus: [
             {
-              href: "/settings/general",
+              href: "/settings",
               label: "general"
             },
             {

@@ -116,7 +116,7 @@ const AddNodeModal = ({ isOpen, onCloseModal }: AddNodeModalProps) => {
                                 className="py-5 px-4"
                                 placeholder="Address (e.g. 10.11.12.13)"
                             />
-                            {errors.address && (
+                            {errors.address&& (
                                 <div
                                     dir={dir}
                                     className={`text-red-500 text-xs mt-1 font-bold ${dir === "rtl" && "text-right"}`}

@@ -18,18 +18,6 @@ const UsersStatistics = () => {
   })
   return (
     <div className="flex flex-col gap-y-4">
-      <div dir={dir} className="flex items-start flex-col flex-wrap gap-0 mb-2">
-        <div dir={dir} className="flex gap-y-2 w-full justify-between items-center">
-          <h1 className="font-medium text-xl md:text-xl sm:text-2xl">{t('users')}</h1>
-          <Button size="sm">
-            <Plus />
-            <span>{t('createUser')}</span>
-          </Button>
-        </div>
-        <div>
-          <span className="text-muted-foreground text-xs sm:text-sm">{t('manageAccounts')}</span>
-        </div>
-      </div>
       <div className={cn('flex flex-col lg:flex-row items-center justify-between gap-x-4 gap-y-4', dir === 'rtl' && 'lg:flex-row-reverse')}>
         {/* Online Users */}
         <Card dir={dir} className="py-6 px-4 w-full rounded-md">

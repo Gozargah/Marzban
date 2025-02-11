@@ -1,46 +1,54 @@
-import { useState } from 'react'
+import { Cpu, LucideIcon, Settings } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Outlet, useLocation, useNavigate } from 'react-router'
 
 interface Tab {
   id: string
   label: string
-  content: string
+  icon: LucideIcon
+  url: string
 }
 
 const tabs: Tab[] = [
-  { id: 'tab1', label: 'Tab 1', content: 'Content for Tab 1' },
-  { id: 'tab2', label: 'Tab 2', content: 'Content for Tab 2' },
-  { id: 'tab3', label: 'Tab 3', content: 'Content for Tab 3' },
-  { id: 'tab4', label: 'Tab 4', content: 'Content for Tab 4' },
+  { id: 'general', label: 'general', icon: Settings, url: "/settings" },
+  { id: 'core', label: 'core', icon: Cpu, url: "/settings/core" },
 ]
 
 export default function Tabs() {
-  const [activeTab, setActiveTab] = useState(tabs[0].id)
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { t } = useTranslation()
+  const [activeTab, setActiveTab] = useState<string>(tabs[0].id)
+
+  // Update activeTab when URL changes
+  useEffect(() => {    
+    const currentTab = tabs.find(tab => location.pathname === tab.url)    
+    if (currentTab) {
+      setActiveTab(currentTab.id)
+    }
+  }, [location.pathname])
 
   return (
     <div className="w-full">
-      <div className="flex border-b border-gray-200">
+      <div className="flex border-b">
         {tabs.map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`relative px-4 py-2 text-sm font-medium transition-colors ${activeTab === tab.id ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'}`}
+            onClick={() => navigate(tab.url)}
+            className={`relative px-3 py-2 text-sm font-medium transition-colors ${
+              activeTab === tab.id ? 'text-foreground border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'
+            }`}
           >
-            {tab.label}
-            {activeTab === tab.id && (
-              <div
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"
-                // layoutId="activeTab"
-                // initial={{ opacity: 0 }}
-                // animate={{ opacity: 1 }}
-                // exit={{ opacity: 0 }}
-                // transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              />
-            )}
+            <div className='flex items-center gap-1.5'>
+              <tab.icon className='h-4 w-4' />
+              <span>{t(tab.label)}</span>
+            </div>
           </button>
         ))}
       </div>
       <div className="mt-4">
-        <div> {tabs.find(tab => tab.id === activeTab)?.content}</div>
+        <Outlet />
       </div>
     </div>
   )

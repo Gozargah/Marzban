@@ -49,6 +49,7 @@
     "react-hook-form": "^7.54.2",
     "react-i18next": "^15.4.0",
     "react-router": "^7.1.1",
+    "recharts": "^2.15.1",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "ufo": "^1.5.4",

@@ -64,8 +64,15 @@ export function ThemeProvider({ children, defaultTheme = 'system', storageKey = 
 
 export const useTheme = () => {
   const context = useContext(ThemeProviderContext)
+  if (context === undefined) {
+    throw new Error('useTheme must be used within a ThemeProvider')
+  }
 
-  if (context === undefined) throw new Error('useTheme must be used within a ThemeProvider')
+  // Resolve theme: 'system' should be converted to 'light' or 'dark'
+  const resolvedTheme = context.theme === 'system'
+    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : context.theme
 
-  return context
+  return { ...context, resolvedTheme }
 }
+
