@@ -125,7 +125,7 @@ export default function CoreSettings() {
               <AlertDescription>{validation.error}</AlertDescription>
             </Alert>
           )}
-          <div className="rounded-lg border">
+          <div dir="ltr" className="rounded-lg border">
             <Editor
               height="400px"
               defaultLanguage="json"
