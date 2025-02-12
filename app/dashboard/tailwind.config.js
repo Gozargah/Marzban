@@ -3,9 +3,6 @@ module.exports = {
   darkMode: ['class'],
   content: ['./index.html', './src/**/*.{ts,tsx,js,jsx}'],
   theme: {
-    fontFamily: {
-      body: ['Inter', 'Vazirmatn', 'ui-sans-serif', 'system-ui', 'sans-serif', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'],
-    },
     extend: {
       borderRadius: {
         lg: 'var(--radius)',
@@ -66,7 +63,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        yekan: ['YekanBakh', 'Arial', 'sans-serif'],
+        body: ['Inter', 'Vazirmatn', 'ui-sans-serif', 'system-ui', 'sans-serif', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'],
       },
       keyframes: {
         pulseAnimation: {
@@ -101,12 +98,30 @@ module.exports = {
             boxShadow: '0 0 0 10px #fbd38d00',
           },
         },
+        'accordion-down': {
+          from: {
+            height: '0',
+          },
+          to: {
+            height: 'var(--radix-accordion-content-height)',
+          },
+        },
+        'accordion-up': {
+          from: {
+            height: 'var(--radix-accordion-content-height)',
+          },
+          to: {
+            height: '0',
+          },
+        },
       },
       animation: {
         pulse: 'pulseAnimation 3s infinite',
         greenPulse: 'greenPulseAnimation 3s infinite',
         redPulse: 'redPulseAnimation 3s infinite',
         orangePulse: 'orangePulseAnimation 3s infinite',
+        'accordion-down': 'accordion-down 0.2s ease-out',
+        'accordion-up': 'accordion-up 0.2s ease-out',
       },
     },
   },

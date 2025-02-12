@@ -1,7 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { BarChart, Cpu, Gauge, MemoryStick } from 'lucide-react'
-import StatisticsChart from '../charts/statistics-chart'
+import { CostumeBarChart } from '../charts/CostumeBarChart'
+import { AreaCostumeChart } from '../charts/AreaCostumeChart'
+import PieCostumeChart from '../charts/PieCostumeChart'
 
 export default function Statistics() {
   return (
@@ -52,7 +54,13 @@ export default function Statistics() {
         </Card>
       </div>
 
-      <StatisticsChart />
+      <div className="space-y-8">
+        <CostumeBarChart />
+        <div className="flex gap-4 flex-col sm:flex-row ">
+          <AreaCostumeChart />
+          <PieCostumeChart />
+        </div>
+      </div>
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
