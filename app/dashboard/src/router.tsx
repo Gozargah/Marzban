@@ -11,6 +11,7 @@ import Templates from './pages/_dashboard.templates'
 import UserTemplates from './pages/_dashboard.templates._index'
 import GroupTemplates from './pages/_dashboard.templates.groups'
 import Login from './pages/login'
+import Hosts from './pages/_dashboard.hosts'
 
 const fetchAdminLoader = async (): Promise<any> => {
   try {
@@ -35,6 +36,10 @@ export const router = createHashRouter([
       {
         path: '/statistics',
         element: <Statistics />,
+      },
+      {
+        path: '/hosts',
+        element: <Hosts />
       },
       {
         path: '/nodes',

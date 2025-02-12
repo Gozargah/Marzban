@@ -22,7 +22,7 @@ export default function PageHeader({ title, description, buttonText, onButtonCli
       </div>
       {buttonText && onButtonClick && (
         <div>
-          <Button className="flex items-center" onClick={onButtonClick} size="sm">
+          <Button className="flex items-center text-slate-100" onClick={onButtonClick} size="sm">
             {Icon && <Icon />}
             <span>{t(buttonText)}</span>
           </Button>
