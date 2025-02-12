@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useState } from "react"
 import { Button } from "../ui/button"
 import { HostFormValues } from "../hosts/Hosts"
+import { Cable, ChevronsLeftRightEllipsis, FileKey, GlobeLock, Lock } from "lucide-react"
 
 interface AddHostModalProps {
     isDialogOpen: boolean;
@@ -38,40 +39,14 @@ const AddHostModal: React.FC<AddHostModalProps> = ({
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <FormField
                             control={form.control}
-                            name="remark"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Remark</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="address"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Address</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
                             name="inbound_tag"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Inbound Tag</FormLabel>
+                                    <FormLabel>Inbound</FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value}>
                                         <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select Inbound Tag" />
+                                            <SelectTrigger className="py-5">
+                                                <SelectValue placeholder="Select Inbound" />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
@@ -83,37 +58,75 @@ const AddHostModal: React.FC<AddHostModalProps> = ({
                                 </FormItem>
                             )}
                         />
+                        <FormField
+                            control={form.control}
+                            name="remark"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Remark</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Remark (e.g. Marzban-Node)" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <div className="flex items-center gap-4 justify-between">
+                            <div className="flex-[2]">
+                                <FormField
+                                    control={form.control}
+                                    name="address"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Address</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="10.10.10.10" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <FormField
+                                    control={form.control}
+                                    name="port"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Port</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="443"
+                                                    type="number"
+                                                    {...field}
+                                                    onChange={(e) =>
+                                                        field.onChange(e.target.value ? Number.parseInt(e.target.value, 10) : null)
+                                                    }
+                                                    value={field.value ?? ""}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        </div>
                         <Accordion
                             type="single"
                             collapsible
                             value={openSection}
                             onValueChange={handleAccordionChange}
-                            className="w-full"
+                            className="w-full flex flex-col gap-y-6 mb-6"
                         >
-                            <AccordionItem value="network">
-                                <AccordionTrigger>Network Settings</AccordionTrigger>
+                            <AccordionItem className="border px-4 rounded-sm" value="network">
+                                <AccordionTrigger>
+                                    <div className="flex items-center gap-2">
+                                        <GlobeLock className="h-4 w-4" />
+                                        <span>Network Settings</span>
+                                    </div>
+                                </AccordionTrigger>
                                 <AccordionContent>
                                     <div className="space-y-4">
-                                        <FormField
-                                            control={form.control}
-                                            name="port"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Port</FormLabel>
-                                                    <FormControl>
-                                                        <Input
-                                                            type="number"
-                                                            {...field}
-                                                            onChange={(e) =>
-                                                                field.onChange(e.target.value ? Number.parseInt(e.target.value, 10) : null)
-                                                            }
-                                                            value={field.value ?? ""}
-                                                        />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
                                         <FormField
                                             control={form.control}
                                             name="sni"
@@ -156,8 +169,13 @@ const AddHostModal: React.FC<AddHostModalProps> = ({
                                     </div>
                                 </AccordionContent>
                             </AccordionItem>
-                            <AccordionItem value="security">
-                                <AccordionTrigger>Security Settings</AccordionTrigger>
+                            <AccordionItem className="border px-4 rounded-sm" value="security">
+                                <AccordionTrigger>
+                                    <div className="flex items-center gap-2">
+                                        <Cable className="h-4 w-4" />
+                                        <span>Transport Settings</span>
+                                    </div>
+                                </AccordionTrigger>
                                 <AccordionContent>
                                     <div className="space-y-4">
                                         <FormField
@@ -199,8 +217,13 @@ const AddHostModal: React.FC<AddHostModalProps> = ({
                                     </div>
                                 </AccordionContent>
                             </AccordionItem>
-                            <AccordionItem value="advanced">
-                                <AccordionTrigger>Advanced Settings</AccordionTrigger>
+                            <AccordionItem className="border px-4 rounded-sm" value="advanced">
+                                <AccordionTrigger>
+                                    <div className="flex items-center gap-2">
+                                        <Lock className="h-4 w-4" />
+                                        <span>Security Settings</span>
+                                    </div>
+                                </AccordionTrigger>
                                 <AccordionContent>
                                     <div className="space-y-4">
                                         <FormField
@@ -234,8 +257,88 @@ const AddHostModal: React.FC<AddHostModalProps> = ({
                                     </div>
                                 </AccordionContent>
                             </AccordionItem>
+                            <AccordionItem className="border px-4 rounded-sm" value="camouflag">
+                                <AccordionTrigger>
+                                    <div className="flex items-center gap-2">
+                                        <ChevronsLeftRightEllipsis className="h-4 w-4" />
+                                        <span>Camouflag Settings</span>
+                                    </div>
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                    <div className="space-y-4">
+                                        <FormField
+                                            control={form.control}
+                                            name="mux_enable"
+                                            render={({ field }) => (
+                                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                                    <div className="space-y-0.5">
+                                                        <FormLabel className="text-base">Enable Mux</FormLabel>
+                                                    </div>
+                                                    <FormControl>
+                                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="random_user_agent"
+                                            render={({ field }) => (
+                                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                                    <div className="space-y-0.5">
+                                                        <FormLabel className="text-base">Camouflag Settings</FormLabel>
+                                                    </div>
+                                                    <FormControl>
+                                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                            <AccordionItem className="border px-4 rounded-sm" value="mux">
+                                <AccordionTrigger>
+                                    <div className="flex items-center gap-2">
+                                        <FileKey className="h-4 w-4" />
+                                        <span>Mux Settings</span>
+                                    </div>
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                    <div className="space-y-4">
+                                        <FormField
+                                            control={form.control}
+                                            name="mux_enable"
+                                            render={({ field }) => (
+                                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                                    <div className="space-y-0.5">
+                                                        <FormLabel className="text-base">Enable Mux</FormLabel>
+                                                    </div>
+                                                    <FormControl>
+                                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="random_user_agent"
+                                            render={({ field }) => (
+                                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                                    <div className="space-y-0.5">
+                                                        <FormLabel className="text-base">Camouflag Settings</FormLabel>
+                                                    </div>
+                                                    <FormControl>
+                                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
                         </Accordion>
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end gap-2 mt-6">
                             <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>
                                 Cancel
                             </Button>
