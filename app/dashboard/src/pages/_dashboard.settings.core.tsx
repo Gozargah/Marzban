@@ -6,6 +6,7 @@ import Editor from '@monaco-editor/react'
 import { AlertCircle, CheckCircle } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useTheme } from '../components/theme-provider'
+import Logs from '@/components/settings/Logs'
 
 const defaultConfig = {
   log: {
@@ -172,11 +173,7 @@ export default function CoreSettings() {
         </CardHeader>
         <CardContent>
           <div className="h-[400px] space-y-2 overflow-auto rounded-lg border p-4 font-mono text-sm">
-            {sampleLogs.map((log, index) => (
-              <div key={index} className="whitespace-pre-wrap">
-                {log}
-              </div>
-            ))}
+            <Logs />
           </div>
         </CardContent>
       </Card>
