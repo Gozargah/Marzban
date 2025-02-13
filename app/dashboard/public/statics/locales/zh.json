@@ -221,5 +221,9 @@
   "usersTable.noUserMatched": "没有找到您搜索的用户",
   "usersTable.status": "状态",
   "usersTable.sortByExpire": "按过期时间排序",
-  "usersTable.total": "总共"
+  "usersTable.total": "总共",
+  "statistics.system": "系统",
+  "statistics.realTimeBandwidth": "实时带宽",
+  "statistics.ramUsage": "RAM 使用情况",
+  "statistics.cpuUsage": "CPU 使用情况"
 }
