@@ -56,7 +56,7 @@ export default function CoreSettings() {
   const { resolvedTheme } = useTheme()
   useEffect(() => {
     setConfig(JSON.stringify(data, null, 2))
-  }, [data, config])
+  }, [data])
 
   const handleEditorValidation = useCallback(
     (markers: any[]) => {
@@ -182,9 +182,7 @@ export default function CoreSettings() {
           </Select>
         </CardHeader>
         <CardContent>
-          <div className="h-[400px] space-y-2 overflow-auto rounded-lg border p-4 font-mono text-sm">
-            <Logs />
-          </div>
+          <Logs />
         </CardContent>
       </Card>
     </div>
