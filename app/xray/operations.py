@@ -11,6 +11,7 @@ from app.utils.concurrency import threaded_function
 from app.xray.node import XRayNode
 from xray_api import XRay as XRayAPI
 from xray_api.types.account import Account, XTLSFlows
+from threading import Lock
 
 if TYPE_CHECKING:
     from app.db import User as DBUser
@@ -188,53 +189,59 @@ def _change_node_status(node_id: int, status: NodeStatus, message: str = None, v
             db.rollback()
 
 
-global _connecting_nodes
 _connecting_nodes = {}
-
+_connecting_nodes_lock = Lock()
 
 @threaded_function
 def connect_node(node_id, config=None):
-    global _connecting_nodes
+    global _connecting_nodes, _connecting_nodes_lock
 
-    if _connecting_nodes.get(node_id):
-        return
-
-    with GetDB() as db:
-        dbnode = crud.get_node_by_id(db, node_id)
-
-    if not dbnode:
-        return
+    with _connecting_nodes_lock:
+        if _connecting_nodes.get(node_id):
+            logger.debug(f"Node {node_id} is already connecting. Skipping.")
+            return
+        _connecting_nodes[node_id] = True 
 
     try:
-        node = xray.nodes[dbnode.id]
-        assert node.connected
-    except (KeyError, AssertionError):
-        node = xray.operations.add_node(dbnode)
+        with GetDB() as db:
+            dbnode = crud.get_node_by_id(db, node_id)
+            if not dbnode:
+                logger.error(f"Node {node_id} not found in the database.")
+                return
 
-    try:
-        _connecting_nodes[node_id] = True
+        max_retries = 3
+        retry_delay = 1  
+        for attempt in range(max_retries):
+            try:
+                node = xray.nodes.get(dbnode.id)
+                if not node or not node.connected:
+                    node = xray.operations.add_node(dbnode)
 
-        _change_node_status(node_id, NodeStatus.connecting)
-        logger.info(f"Connecting to \"{dbnode.name}\" node")
+                _change_node_status(node_id, NodeStatus.connecting)
+                logger.info(f"Connecting to node {dbnode.name} (attempt {attempt+1})")
 
-        if config is None:
-            config = xray.config.include_db_users()
+                config = config or xray.config.include_db_users()
+                node.start(config)
+                version = node.get_version()
 
-        node.start(config)
-        version = node.get_version()
-        _change_node_status(node_id, NodeStatus.connected, version=version)
-        logger.info(f"Connected to \"{dbnode.name}\" node, xray run on v{version}")
+                _change_node_status(node_id, NodeStatus.connected, version=version)
+                logger.info(f"Connected to {dbnode.name}, XRay v{version}")
+                break  
+
+            except (xray.exc.ConnectionError, SQLAlchemyError) as e:
+                if attempt == max_retries - 1:
+                    _change_node_status(node_id, NodeStatus.error, message=str(e))
+                    logger.error(f"Failed to connect after {max_retries} attempts: {e}")
+                else:
+                    time.sleep(retry_delay * (2 ** attempt))  
 
     except Exception as e:
         _change_node_status(node_id, NodeStatus.error, message=str(e))
-        logger.info(f"Unable to connect to \"{dbnode.name}\" node")
+        logger.error(f"Unexpected error: {e}", exc_info=True)
 
     finally:
-        try:
-            del _connecting_nodes[node_id]
-        except KeyError:
-            pass
-
+        with _connecting_nodes_lock:
+            _connecting_nodes.pop(node_id, None)
 
 @threaded_function
 def restart_node(node_id, config=None):
