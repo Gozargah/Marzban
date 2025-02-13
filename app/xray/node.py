@@ -80,24 +80,17 @@ class ReSTXRayNode:
         self._started = False
 
     def __del__(self):
-        try:
-            if hasattr(self, "_keyfile"):
-                self._keyfile.close()
-                os.unlink(self._keyfile.name)
-        except Exception:
-            pass
-        try:
-            if hasattr(self, "_certfile"):
-                self._certfile.close()
-                os.unlink(self._certfile.name)
-        except Exception:
-            pass
-        try:
-            if hasattr(self, "_node_certfile"):
-                self._node_certfile.close()
-                os.unlink(self._node_certfile.name)
-        except Exception:
-            pass
+        paths = [
+            getattr(self, "_keyfile", None) and self._keyfile.name,
+            getattr(self, "_certfile", None) and self._certfile.name,
+            getattr(self, "_node_certfile", None) and self._node_certfile.name
+        ]
+        for path in paths:
+            if path and os.path.exists(path):
+                try:
+                    os.unlink(path)
+                except Exception:
+                    pass
 
     def _prepare_config(self, config: XRayConfig):
         for inbound in config.get("inbounds", []):
@@ -177,7 +170,7 @@ class ReSTXRayNode:
                 delay = 2 ** attempt
                 logger.warning(f"Retrying in {delay} sec: {e}")
                 time.sleep(delay)
-    raise ConnectionError("Connection failed after retries.")
+        raise ConnectionError("Connection failed after retries.")
 
     def disconnect(self):
         try:
@@ -207,12 +200,16 @@ class ReSTXRayNode:
 
         self._started = True
 
-        self._api = XRayAPI(
-            address=self.address,
-            port=self.api_port,
-            ssl_cert=self._node_cert.encode(),
-            ssl_target_name="Gozargah"
-        )
+        try:
+            self._api = XRayAPI(
+                address=self.address,
+                port=self.api_port,
+                ssl_cert=self._node_cert.encode(),
+                ssl_target_name="Gozargah"
+            )
+        except Exception as e:
+            self._started = False
+            raise ConnectionError(f"API init failed: {e}")
 
         try:
             grpc.channel_ready_future(self._api._channel).result(timeout=5)
