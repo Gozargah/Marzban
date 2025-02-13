@@ -3,6 +3,7 @@ import logging
 import os
 import ssl
 import ipaddress
+import socket
 
 import uvicorn
 from cryptography import x509
@@ -36,8 +37,11 @@ def check_and_modify_ip(ip_address: str) -> str:
         ValueError: If the provided IP address is invalid, return localhost.
     """
     try:
+        # Attempt to resolve hostname to IP address
+        resolved_ip = socket.gethostbyname(ip_address)
+
         # Convert string to IP address object
-        ip = ipaddress.ip_address(ip_address)
+        ip = ipaddress.ip_address(resolved_ip)
 
         if ip == ipaddress.ip_address("0.0.0.0"):
             return "localhost"
