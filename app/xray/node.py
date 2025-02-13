@@ -164,9 +164,8 @@ class ReSTXRayNode:
         return self._api
 
     def connect(self):
-        attempts = 0
-        max_attempts = 3
-        while attempts < max_attempts:
+        max_retries = 3
+        for attempt in range(max_retries):
             try:
                 self._node_cert = ssl.get_server_certificate((self.address, self.port))
                 self._node_certfile = string_to_temp_file(self._node_cert)
@@ -174,10 +173,11 @@ class ReSTXRayNode:
                 res = self.make_request("/connect", timeout=3)
                 self._session_id = res['session_id']
                 return  
-            except NodeAPIError:
-                attempts += 1
-                time.sleep(1)
-        raise ConnectionError("Unable to connect to node after multiple attempts.")
+            except (NodeAPIError, requests.exceptions.Timeout) as e:
+                delay = 2 ** attempt
+                logger.warning(f"Retrying in {delay} sec: {e}")
+                time.sleep(delay)
+    raise ConnectionError("Connection failed after retries.")
 
     def disconnect(self):
         try:
