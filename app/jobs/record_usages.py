@@ -178,7 +178,8 @@ class DBManager:
                 downlink=NodeUsage.downlink + total_down,
             )
             .where(
-                and_(NodeUsage.node_id == node_id, NodeUsage.created_at == created_at)
+                and_((NodeUsage.node_id.is_(None) if node_id is None else NodeUsage.node_id == node_id),
+                     NodeUsage.created_at == created_at)
             )
             .execution_options(synchronize_session=False)
         )
