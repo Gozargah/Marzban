@@ -547,32 +547,49 @@ class RPyCXRayNode:
 
 
 class XRayNode:
-    def __new__(cls,
-                address: str,
-                port: int,
-                api_port: int,
-                ssl_key: str,
-                ssl_cert: str,
-                usage_coefficient: float = 1):
+    def __new__(
+        cls,
+        address: str,
+        port: int,
+        api_port: int,
+        ssl_key: str,
+        ssl_cert: str,
+        usage_coefficient: float = 1,
+    ):
         try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(3)
+            context = ssl.create_default_context()
+            context.check_hostname = False
+            context.verify_mode = (
+                ssl.CERT_NONE
+            )  # It's bad, but that's pretty much what happened. But now it's more explicit.
+
+            context.load_cert_chain(certfile=ssl_cert, keyfile=ssl_key)
+
+            raw_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s = context.wrap_socket(raw_socket, server_hostname=address)
+            s.settimeout(5)
             s.connect((address, port))
-            s.send(b'HEAD / HTTP/1.0\r\n\r\n')
+            s.send(b"HEAD / HTTP/1.0\r\n\r\n")
             response = s.recv(1024)
             s.close()
-            if response.startswith(b'HTTP'):
-                return ReSTXRayNode(address=address,
-                                     port=port,
-                                     api_port=api_port,
-                                     ssl_key=ssl_key,
-                                     ssl_cert=ssl_cert,
-                                     usage_coefficient=usage_coefficient)
+
+            if response.lstrip().startswith(b"HTTP"):
+                return ReSTXRayNode(
+                    address=address,
+                    port=port,
+                    api_port=api_port,
+                    ssl_key=ssl_key,
+                    ssl_cert=ssl_cert,
+                    usage_coefficient=usage_coefficient,
+                )
         except Exception:
             pass
-        return RPyCXRayNode(address=address,
-                            port=port,
-                            api_port=api_port,
-                            ssl_key=ssl_key,
-                            ssl_cert=ssl_cert,
-                            usage_coefficient=usage_coefficient)
+        return RPyCXRayNode(
+            address=address,
+            port=port,
+            api_port=api_port,
+            ssl_key=ssl_key,
+            ssl_cert=ssl_cert,
+            usage_coefficient=usage_coefficient,
+        )
+
