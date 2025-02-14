@@ -139,6 +139,7 @@ class DBManager:
                     NodeUserUsage.created_at == created_at,
                 )
             )
+            .execution_options(synchronize_session=False)
         )
         DBManager.safe_execute(db, stmt, params)
 
@@ -178,6 +179,7 @@ class DBManager:
             .where(
                 and_(NodeUsage.node_id == node_id, NodeUsage.created_at == created_at)
             )
+            .execution_options(synchronize_session=False)
         )
         DBManager.safe_execute(db, stmt)
 
@@ -304,6 +306,7 @@ def record_user_usages():
                         used_traffic=User.used_traffic + bindparam("value"),
                         online_at=datetime.now(UTC),
                     )
+                    .execution_options(synchronize_session=False)
                 )
                 DBManager.safe_execute(db, stmt, users_batch)
 
@@ -316,6 +319,7 @@ def record_user_usages():
                         update(Admin)
                         .where(Admin.id == bindparam("admin_id"))
                         .values(users_usage=Admin.users_usage + bindparam("value"))
+                        .execution_options(synchronize_session=False)
                     )
                     DBManager.safe_execute(db, stmt, admin_data)
 
@@ -358,7 +362,7 @@ def record_node_usages():
         with GetDB() as db:
             stmt = update(System).values(
                 uplink=System.uplink + total_up, downlink=System.downlink + total_down
-            )
+            ).execution_options(synchronize_session=False)
             DBManager.safe_execute(db, stmt)
 
         if not DISABLE_RECORDING_NODE_USAGE:
