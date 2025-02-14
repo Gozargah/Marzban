@@ -80,11 +80,7 @@ class DBManager:
 
                 for attempt in range(3):
                     try:
-                        if use_raw_connection:
-                            conn.execute(stmt, params)
-                        else:
-                            conn.execute(stmt, params)
-
+                        conn.execute(stmt, params)
                         db.commit()
                         return
                     except OperationalError as err:
@@ -94,11 +90,9 @@ class DBManager:
                             continue
                         raise err
             else:  # sqlite
-                if use_raw_connection:
-                    conn.execute(stmt, params)
-                else:
-                    conn.execute(stmt, params)
+                conn.execute(stmt, params)
                 db.commit()
+                return
         except Exception as e:
             db.rollback()
             logger.error(f"Database error: {e}")
