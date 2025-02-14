@@ -68,15 +68,23 @@ class StatsCollector:
 
 class DBManager:
     @staticmethod
-    def safe_execute(db: Session, stmt, params=None):
+    def safe_execute(db: Session, stmt, params=None, use_raw_connection=False):
         try:
+            if use_raw_connection:
+                conn = db.connection()
+            else:
+                conn = db
             if db.bind.name == "mysql" or db.bind.name == "mariadb":
                 if isinstance(stmt, Insert):
                     stmt = stmt.prefix_with("IGNORE")
 
                 for attempt in range(3):
                     try:
-                        db.execute(stmt, params)
+                        if use_raw_connection:
+                             conn.execute(stmt, params)
+                        else:
+                            conn.execute(stmt, params)
+                            
                         db.commit()
                         return
                     except OperationalError as err:
@@ -86,7 +94,10 @@ class DBManager:
                             continue
                         raise err
             else:  # sqlite
-                db.execute(stmt, params)
+                if use_raw_connection:
+                     conn.execute(stmt, params)
+                else:
+                    conn.execute(stmt, params)
                 db.commit()
         except Exception as e:
             db.rollback()
@@ -124,7 +135,7 @@ class DBManager:
                 node_id=node_id,
                 used_traffic=0,
             )
-            DBManager.safe_execute(db, stmt, new_users)
+            DBManager.safe_execute(db, stmt, new_users, use_raw_connection=True)
 
         stmt = (
             update(NodeUserUsage)
@@ -165,7 +176,7 @@ class DBManager:
             stmt = insert(NodeUsage).values(
                 created_at=created_at, node_id=node_id, uplink=0, downlink=0
             )
-            DBManager.safe_execute(db, stmt)
+            DBManager.safe_execute(db, stmt, use_raw_connection=True)
 
         total_up = sum(p["up"] for p in params)
         total_down = sum(p["down"] for p in params)
