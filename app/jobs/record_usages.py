@@ -24,7 +24,7 @@ from xray_api import exc as xray_exc
 
 BATCH_SIZE = 1000
 
- 
+
 class StatsCollector:
     def __init__(self, timeout: int = 10):
         self.timeout = timeout
@@ -68,7 +68,7 @@ class StatsCollector:
 
 class DBManager:
     @staticmethod
-    def safe_execute(db: Session, stmt, params=None, use_raw_connection=False):
+    def safe_execute(db: Session, stmt, params=None, use_raw_connection=True):
         try:
             if use_raw_connection:
                 conn = db.connection()
@@ -84,7 +84,7 @@ class DBManager:
                             conn.execute(stmt, params)
                         else:
                             conn.execute(stmt, params)
-                            
+
                         db.commit()
                         return
                     except OperationalError as err:
@@ -117,8 +117,12 @@ class DBManager:
 
         select_stmt = select(NodeUserUsage.user_id).where(
             and_(
-                (NodeUserUsage.node_id.is_(None) if node_id is None else NodeUserUsage.node_id == node_id),
-                NodeUserUsage.created_at == created_at
+                (
+                    NodeUserUsage.node_id.is_(None)
+                    if node_id is None
+                    else NodeUserUsage.node_id == node_id
+                ),
+                NodeUserUsage.created_at == created_at,
             )
         )
         existing_users = {r[0] for r in db.execute(select_stmt).fetchall()}
@@ -135,7 +139,7 @@ class DBManager:
                 node_id=node_id,
                 used_traffic=0,
             )
-            DBManager.safe_execute(db, stmt, new_users, use_raw_connection=True)
+            DBManager.safe_execute(db, stmt, new_users)
 
         stmt = (
             update(NodeUserUsage)
@@ -146,7 +150,11 @@ class DBManager:
             .where(
                 and_(
                     NodeUserUsage.user_id == bindparam("uid"),
-                    (NodeUserUsage.node_id.is_(None) if node_id is None else NodeUserUsage.node_id == node_id),
+                    (
+                        NodeUserUsage.node_id.is_(None)
+                        if node_id is None
+                        else NodeUserUsage.node_id == node_id
+                    ),
                     NodeUserUsage.created_at == created_at,
                 )
             )
@@ -176,7 +184,7 @@ class DBManager:
             stmt = insert(NodeUsage).values(
                 created_at=created_at, node_id=node_id, uplink=0, downlink=0
             )
-            DBManager.safe_execute(db, stmt, use_raw_connection=True)
+            DBManager.safe_execute(db, stmt)
 
         total_up = sum(p["up"] for p in params)
         total_down = sum(p["down"] for p in params)
@@ -188,8 +196,14 @@ class DBManager:
                 downlink=NodeUsage.downlink + total_down,
             )
             .where(
-                and_((NodeUsage.node_id.is_(None) if node_id is None else NodeUsage.node_id == node_id),
-                     NodeUsage.created_at == created_at)
+                and_(
+                    (
+                        NodeUsage.node_id.is_(None)
+                        if node_id is None
+                        else NodeUsage.node_id == node_id
+                    ),
+                    NodeUsage.created_at == created_at,
+                )
             )
             .execution_options(synchronize_session=False)
         )
@@ -372,9 +386,14 @@ def record_node_usages():
         )
 
         with GetDB() as db:
-            stmt = update(System).values(
-                uplink=System.uplink + total_up, downlink=System.downlink + total_down
-            ).execution_options(synchronize_session=False)
+            stmt = (
+                update(System)
+                .values(
+                    uplink=System.uplink + total_up,
+                    downlink=System.downlink + total_down,
+                )
+                .execution_options(synchronize_session=False)
+            )
             DBManager.safe_execute(db, stmt)
 
         if not DISABLE_RECORDING_NODE_USAGE:
