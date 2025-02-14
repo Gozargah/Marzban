@@ -81,7 +81,7 @@ class DBManager:
                 for attempt in range(3):
                     try:
                         if use_raw_connection:
-                             conn.execute(stmt, params)
+                            conn.execute(stmt, params)
                         else:
                             conn.execute(stmt, params)
                             
@@ -95,7 +95,7 @@ class DBManager:
                         raise err
             else:  # sqlite
                 if use_raw_connection:
-                     conn.execute(stmt, params)
+                    conn.execute(stmt, params)
                 else:
                     conn.execute(stmt, params)
                 db.commit()
