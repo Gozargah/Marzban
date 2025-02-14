@@ -1,9 +1,8 @@
-from _typeshed import _KT
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from datetime import datetime, UTC
 from operator import attrgetter
-from typing import Dict, List, Optional, Generator, Any
+from typing import Dict, List, Optional, Generator, Any, TypeVar
 
 from pymysql.err import OperationalError
 from sqlalchemy import and_, bindparam, insert, select, update
@@ -25,6 +24,7 @@ from xray_api import exc as xray_exc
 
 BATCH_SIZE = 1000
 
+KT = TypeVar("KT")
 
 class StatsCollector:
     def __init__(self, timeout: int = 10):
@@ -107,7 +107,8 @@ class DBManager:
 
         select_stmt = select(NodeUserUsage.user_id).where(
             and_(
-                NodeUserUsage.node_id == node_id, NodeUserUsage.created_at == created_at
+                (NodeUserUsage.node_id.is_(None) if node_id is None else NodeUserUsage.node_id == node_id),
+                NodeUserUsage.created_at == created_at
             )
         )
         existing_users = {r[0] for r in db.execute(select_stmt).fetchall()}
@@ -135,7 +136,7 @@ class DBManager:
             .where(
                 and_(
                     NodeUserUsage.user_id == bindparam("uid"),
-                    NodeUserUsage.node_id == node_id,
+                    (NodeUserUsage.node_id.is_(None) if node_id is None else NodeUserUsage.node_id == node_id),
                     NodeUserUsage.created_at == created_at,
                 )
             )
