@@ -2,7 +2,7 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from datetime import datetime, UTC
 from operator import attrgetter
-from typing import Dict, List, Optional, Generator, Any, TypeVar
+from typing import Dict, List, Optional, Generator, Any
 
 from pymysql.err import OperationalError
 from sqlalchemy import and_, bindparam, insert, select, update
@@ -24,8 +24,7 @@ from xray_api import exc as xray_exc
 
 BATCH_SIZE = 1000
 
-KT = TypeVar("KT")
-
+ 
 class StatsCollector:
     def __init__(self, timeout: int = 10):
         self.timeout = timeout
@@ -245,7 +244,7 @@ class UsageRecorder:
 
     def process_user_stats(
         self, user_stats: Dict, usage_coefficients: Dict
-    ) -> Generator[tuple[list[dict[str, int | Any]], dict[KT, int]], None, None]:
+    ) -> Generator[tuple[list[dict[str, int | Any]], dict[int, int]], None, None]:
         users_usage = defaultdict(int)
 
         for node_id, stats in user_stats.items():
