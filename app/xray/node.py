@@ -145,6 +145,7 @@ class ReSTXRayNode:
         try:
             res = self.session.post(self._rest_api_url + path, timeout=timeout,
                                     json={"session_id": self._session_id, **params})
+            res.raise_for_status()
             data = res.json()
         except Exception as e:
             raise NodeAPIError(0, str(e))
@@ -216,7 +217,11 @@ class ReSTXRayNode:
     def start(self, config: XRayConfig):
         if not self.connected:
             self.connect()
-        config = self._prepare_config(config)
+        try:
+            config = self._prepare_config(config)
+        except FileNotFoundError as e:
+            raise NodeAPIError(400, f"Configuration error: {str(e)}")
+
         json_config = config.to_json()
         try:
             res = self.make_request("/start", timeout=10, config=json_config)
@@ -406,6 +411,8 @@ class RPyCXRayNode:
         total_timeout = 10
         start_time = time.time()
         while tries < max_attempts:
+            if self._node_certfile:
+                self._node_certfile.close()
             tries += 1
             try:
                 self._node_cert = ssl.get_server_certificate((self.address, self.port))
