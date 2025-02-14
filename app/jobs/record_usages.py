@@ -1,3 +1,4 @@
+from _typeshed import _KT
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from datetime import datetime, UTC
