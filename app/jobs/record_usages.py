@@ -245,7 +245,7 @@ class UsageRecorder:
 
     def process_user_stats(
         self, user_stats: Dict, usage_coefficients: Dict
-    ) -> Generator[tuple[list[dict[str, int | Any]], dict[_KT, int]], None, None]:
+    ) -> Generator[tuple[list[dict[str, int | Any]], dict[KT, int]], None, None]:
         users_usage = defaultdict(int)
 
         for node_id, stats in user_stats.items():
