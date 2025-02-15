@@ -121,6 +121,7 @@ sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/
 ```
 
 Run the following command to install Marzban with MariaDB database:
+
 ```bash
 sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install --database mariadb
 ```
@@ -159,6 +160,7 @@ marzban --help
 ```
 
 If you are eager to run the project using the source code, check the section below
+
 <details markdown="1">
 <summary><h3>Manual install (advanced)</h3></summary>
 
@@ -170,7 +172,7 @@ You can install it using [Xray-install](https://github.com/XTLS/Xray-install)
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
 ```
 
-Clone this project and install the dependencies (you need Python >= 3.8)
+Clone this project and install the dependencies (you need Python >= 3.12.7)
 
 ```bash
 git clone https://github.com/Gozargah/Marzban.git
@@ -280,6 +282,7 @@ server {
 ```
 
 By default the app will be run on `http://localhost:8000/dashboard`. You can configure it using changing the `UVICORN_HOST` and `UVICORN_PORT` environment variables.
+
 </details>
 
 # Configuration
@@ -287,7 +290,7 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 > You can set settings below using environment variables or placing them in `.env` file.
 
 | Variable                                 | Description                                                                                                              |
-| ---------------------------------------- |--------------------------------------------------------------------------------------------------------------------------|
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | SUDO_USERNAME                            | Superuser's username                                                                                                     |
 | SUDO_PASSWORD                            | Superuser's password                                                                                                     |
 | SQLALCHEMY_DATABASE_URL                  | Database URL ([SQLAlchemy's docs](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls))                    |
@@ -307,7 +310,7 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | CLASH_SUBSCRIPTION_TEMPLATE              | The template that will be used for generating clash configs (default: `clash/default.yml`)                               |
 | SUBSCRIPTION_PAGE_TEMPLATE               | The template used for generating subscription info page (default: `subscription/index.html`)                             |
 | HOME_PAGE_TEMPLATE                       | Decoy page template (default: `home/index.html`)                                                                         |
-| TELEGRAM_API_TOKEN                       | Telegram bot API token  (get token from [@botfather](https://t.me/botfather))                                            |
+| TELEGRAM_API_TOKEN                       | Telegram bot API token (get token from [@botfather](https://t.me/botfather))                                             |
 | TELEGRAM_ADMIN_ID                        | Numeric Telegram ID of admin (use [@userinfobot](https://t.me/userinfobot) to found your ID)                             |
 | TELEGRAM_PROXY_URL                       | Run Telegram Bot over proxy                                                                                              |
 | JWT_ACCESS_TOKEN_EXPIRE_MINUTES          | Expire time for the Access Tokens in minutes, `0` considered as infinite (default: `1440`)                               |
@@ -326,16 +329,13 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | USE_CUSTOM_JSON_FOR_STREISAND            | Enable custom JSON config only for Streisand (default: `False`)                                                          |
 | USE_CUSTOM_JSON_FOR_V2RAYN               | Enable custom JSON config only for V2rayN (default: `False`)                                                             |
 
-
 # Documentation
 
 The [Marzban Documentation](https://gozargah.github.io/marzban) provides all the essential guides to get you started, available in three languages: Farsi, English, and Russian. This documentation requires significant effort to cover all aspects of the project comprehensively. We welcome and appreciate your contributions to help us improve it. You can contribute on this [GitHub repository](https://github.com/Gozargah/gozargah.github.io).
 
-
 # API
 
 Marzban provides a REST API that enables developers to interact with Marzban services programmatically. To view the API documentation in Swagger UI or ReDoc, set the configuration variable `DOCS=True` and navigate to the `/docs` and `/redoc`.
-
 
 # Backup
 
@@ -347,16 +347,19 @@ It's always a good idea to backup your Marzban files regularly to prevent data l
 Marzban's backup service efficiently zips all necessary files and sends them to your specified Telegram bot. It supports SQLite, MySQL, and MariaDB databases. One of its key features is automation, allowing you to schedule backups every hour. There are no limitations concerning Telegram's upload limits for bots; if a file exceeds the limit, it will be split and sent in multiple parts. Additionally, you can initiate an immediate backup at any time.
 
 Install the Latest Version of Marzban Command:
+
 ```bash
 sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install-script
 ```
 
 Setup the Backup Service:
+
 ```bash
 marzban backup-service
 ```
 
 Get an Immediate Backup:
+
 ```bash
 marzban backup
 ```
