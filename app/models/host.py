@@ -52,7 +52,7 @@ class FormatVariables(dict):
         return key.join("{}")
 
 
-class CreateHost(BaseModel):
+class BaseHost(BaseModel):
     remark: str
     address: str
     inbound_tag: str
@@ -72,7 +72,9 @@ class CreateHost(BaseModel):
     use_sni_as_host: Union[bool, None] = None
 
     model_config = ConfigDict(from_attributes=True)
+ 
 
+class CreateHost(BaseHost):
     @field_validator("remark", mode="after")
     def validate_remark(cls, v):
         try:
@@ -121,7 +123,7 @@ class CreateHost(BaseModel):
         return v
 
 
-class HostResponse(CreateHost):
+class HostResponse(BaseHost):
     id: int
 
     model_config = ConfigDict(from_attributes=True)
