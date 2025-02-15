@@ -4,9 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import Editor from '@monaco-editor/react'
 import { AlertCircle, CheckCircle } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTheme } from '../components/theme-provider'
 import Logs from '@/components/settings/Logs'
+import { useQuery } from '@tanstack/react-query'
+import { getCoreConfig } from '@/service/api'
 
 const defaultConfig = {
   log: {
@@ -44,10 +46,17 @@ interface ValidationResult {
 }
 
 export default function CoreSettings() {
-  const [config, setConfig] = useState(JSON.stringify(defaultConfig, null, 2))
+  const { data, error, isLoading } = useQuery({
+    queryKey: ["getGetCoreConfigQueryKey"],
+    queryFn: () => getCoreConfig(),
+  });
+  const [config, setConfig] = useState(JSON.stringify(data, null, 2))
   const [validation, setValidation] = useState<ValidationResult>({ isValid: true })
   const [isEditorReady, setIsEditorReady] = useState(false)
   const { resolvedTheme } = useTheme()
+  useEffect(() => {
+    setConfig(JSON.stringify(data, null, 2))
+  }, [data])
 
   const handleEditorValidation = useCallback(
     (markers: any[]) => {
@@ -125,6 +134,7 @@ export default function CoreSettings() {
           <div dir="ltr" className="rounded-lg border">
             <Editor
               height="400px"
+              loading={isLoading}
               defaultLanguage="json"
               value={config}
               theme={resolvedTheme === 'dark' ? 'vs-dark' : 'light'}
@@ -172,9 +182,7 @@ export default function CoreSettings() {
           </Select>
         </CardHeader>
         <CardContent>
-          <div className="h-[400px] space-y-2 overflow-auto rounded-lg border p-4 font-mono text-sm">
-            <Logs />
-          </div>
+          <Logs />
         </CardContent>
       </Card>
     </div>

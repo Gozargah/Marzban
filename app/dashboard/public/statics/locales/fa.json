@@ -226,5 +226,9 @@
   "usersTable.noUser": "کاربری افزوده نشده است",
   "usersTable.noUserMatched": "به‌نظر میرسه کاربری که جستجو کردید، وجود ندارد",
   "usersTable.status": "وضعیت",
-  "usersTable.total": "مجموع"
+  "usersTable.total": "مجموع",
+  "statistics.system": "سیستم",
+  "statistics.realTimeBandwidth": "پهنای باند لحظه‌ای",
+  "statistics.ramUsage": "استفاده از RAM",
+  "statistics.cpuUsage": "استفاده از CPU"
 }
