@@ -208,17 +208,31 @@ class ReSTXRayNode:
                 res = self.make_request("/connect", timeout=3)
                 self._session_id = res["session_id"]
                 return
-            except (NodeAPIError, requests.exceptions.Timeout) as e:
-                logger.error(f"Connection attempt {attempt + 1} failed: {e}")
+
+            except (
+                NodeAPIError,
+                requests.exceptions.Timeout,
+                requests.exceptions.SSLError,
+                requests.exceptions.ConnectionError,
+                ssl.SSLError,
+                socket.timeout,
+            ) as e:
+                logger.error(
+                    f"Connection error (attempt {attempt + 1}): {type(e).__name__} - {str(e)}"
+                )
                 if time.time() - start_time > total_timeout:
-                    logger.error("Connection failed after exceeding total timeout")
-                    raise ConnectionError(
-                        f"Connection failed after {total_timeout} seconds."
-                    )
-                delay = 2**attempt
-                time.sleep(delay)
-        logger.error("Connection failed after retries.")
-        raise ConnectionError("Connection failed after retries.")
+                    logger.error("Total timeout exceeded")
+                    raise ConnectionError(f"Timeout after {total_timeout}s")
+                time.sleep(2**attempt)
+            except Exception as e:
+                logger.error(f"REST attempt: {attempt} connect failed: {str(e)}")
+                raise
+            finally:
+                if not hasattr(self, "_session_id") or not self._session_id:
+                    if hasattr(self, "_node_certfile"):
+                        self._node_certfile.close()
+
+        raise ConnectionError(f"Connection failed after {max_retries} retries")
 
     def disconnect(self):
         try:
@@ -296,14 +310,14 @@ class ReSTXRayNode:
 
     def _bg_fetch_logs(self):
         self._running = True
+        self._ssl_context = ssl.create_default_context()
+        self._ssl_context.load_verify_locations(self.session.verify)
         while not self._logs_stop_event.is_set():
             ws = None
             try:
                 websocket_url = (
                     f"{self._logs_ws_url}?session_id={self._session_id}&interval=0.7"
                 )
-                self._ssl_context = ssl.create_default_context()
-                self._ssl_context.load_verify_locations(self.session.verify)
                 ws = create_connection(
                     websocket_url, sslopt={"context": self._ssl_context}, timeout=5
                 )
@@ -312,8 +326,9 @@ class ReSTXRayNode:
                     try:
                         log_line = ws.recv()
                         with self._logs_lock:
-                            for buf in self._logs_queues:
-                                buf.append(log_line)
+                            buffers = list(self._logs_queues)
+                        for buf in buffers:
+                            buf.append(log_line)
                     except WebSocketTimeoutException:
                         continue
                     except (
@@ -604,31 +619,56 @@ class XRayNode:
         ssl_cert: str,
         usage_coefficient: float = 1,
     ):
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(5)
-            s.connect((address, port))
-            s.send(b"HEAD / HTTP/1.0\r\n\r\n")
-            s.recv(1024)
-            s.close()
-            return ReSTXRayNode(
-                address=address,
-                port=port,
-                api_port=api_port,
-                ssl_key=ssl_key,
-                ssl_cert=ssl_cert,
-                usage_coefficient=usage_coefficient,
-            )
-        except Exception as e:
-            logger.warning(
-                f"ReSTXRayNode connection test failed: {e}. Falling back to RPyCXRayNode."
-            )
-            return RPyCXRayNode(
-                address=address,
-                port=port,
-                api_port=api_port,
-                ssl_key=ssl_key,
-                ssl_cert=ssl_cert,
-                usage_coefficient=usage_coefficient,
-            )
-            
+        with (
+            ManagedTempFile(ssl_key) as key_file,
+            ManagedTempFile(ssl_cert) as cert_file,
+        ):
+
+            with requests.Session() as test_session:
+                test_session.cert = (cert_file.name, key_file.name)
+                test_session.verify = False
+
+                try:
+                    response = test_session.head(
+                        f"https://{address}:{port}/", timeout=5, allow_redirects=False
+                    )
+
+                    if 200 <= response.status_code < 400:
+                        return ReSTXRayNode(
+                            address=address,
+                            port=port,
+                            api_port=api_port,
+                            ssl_key=ssl_key,
+                            ssl_cert=ssl_cert,
+                            usage_coefficient=usage_coefficient,
+                        )
+                    elif response.status_code == 405:
+                        allow = response.headers.get("Allow", "")
+                        if "POST" in allow:
+                            return ReSTXRayNode(
+                                address=address,
+                                port=port,
+                                api_port=api_port,
+                                ssl_key=ssl_key,
+                                ssl_cert=ssl_cert,
+                                usage_coefficient=usage_coefficient,
+                            )
+
+                except requests.exceptions.SSLError as e:
+                    logger.warning("SSL handshake failed: %s", str(e))
+
+                except requests.exceptions.ConnectionError as e:
+                    logger.error("Connection failed: %s", str(e))
+
+                except Exception as e:
+                    logger.error("Unexpected probe error: %s", str(e), exc_info=True)
+
+        logger.warning("Falling back to RPyC connection")
+        return RPyCXRayNode(
+            address=address,
+            port=port,
+            api_port=api_port,
+            ssl_key=ssl_key,
+            ssl_cert=ssl_cert,
+            usage_coefficient=usage_coefficient,
+        )
