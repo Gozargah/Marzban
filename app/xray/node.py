@@ -27,12 +27,12 @@ from app import logger
 
 class ManagedTempFile:
     def __init__(self, content: str):
-        self.closed = False
         try:
-            with tempfile.NamedTemporaryFile(mode="w+t", delete=False) as temp:
-                temp.write(content)
-                temp.flush()
-                self.name = temp.name
+            self.file = tempfile.NamedTemporaryFile(mode="w+t", delete=False)
+            self.file.write(content)
+            self.file.flush()
+            self.name = self.file.name
+            self.closed = False
         except Exception as e:
             logger.error(f"Failed to create temporary file: {e}")
             self.close()
@@ -40,12 +40,15 @@ class ManagedTempFile:
 
     def close(self):
         if not self.closed:
-            if hasattr(self, "name") and self.name and os.path.exists(self.name):
+            try:
+                self.file.close()
+            except Exception as e:
+                logger.error(f"Error closing temporary file {self.name}: {e}")
+            if self.name and os.path.exists(self.name):
                 try:
                     os.unlink(self.name)
                 except Exception as e:
                     logger.error(f"Failed to delete temporary file {self.name}: {e}")
-                self.name = None
             self.closed = True
 
     def __enter__(self):
@@ -56,9 +59,14 @@ class ManagedTempFile:
 
 
 class SANIgnoringAdaptor(HTTPAdapter):
-    def init_poolmanager(self, connections, maxsize, block=False):
+    def __init__(self, ssl_context=None, **kwargs):
+        self.ssl_context = ssl_context
+        super().__init__(**kwargs)
+
+    def init_poolmanager(self, connections, maxsize, block=False, **pool_kwargs):
+        pool_kwargs["ssl_context"] = self.ssl_context
         self.poolmanager = PoolManager(
-            num_pools=connections, maxsize=maxsize, block=block, assert_hostname=False
+            num_pools=connections, maxsize=maxsize, block=block, **pool_kwargs
         )
 
 
@@ -89,7 +97,6 @@ class ReSTXRayNode:
         self._certfile = ManagedTempFile(ssl_cert)
 
         self.session = requests.Session()
-        self.session.mount("https://", SANIgnoringAdaptor())
         self.session.cert = (self._certfile.name, self._keyfile.name)
 
         self._session_id = None
@@ -101,6 +108,10 @@ class ReSTXRayNode:
         self._ssl_context.load_cert_chain(
             certfile=self.session.cert[0], keyfile=self.session.cert[1]
         )
+        self.session.mount(
+            "https://", SANIgnoringAdaptor(ssl_context=self._ssl_context)
+        )
+
         self._logs_ws_url = f"wss://{self.address.strip('/')}:{self.port}/logs"
         self._logs_queues = []
         self._logs_lock = threading.Lock()
@@ -312,6 +323,8 @@ class ReSTXRayNode:
         self._running = True
         self._ssl_context = ssl.create_default_context()
         self._ssl_context.load_verify_locations(self.session.verify)
+        self._ssl_context.check_hostname = False
+        self._ssl_context.verify_mode = ssl.CERT_NONE
         while not self._logs_stop_event.is_set():
             ws = None
             try:
@@ -623,7 +636,6 @@ class XRayNode:
             ManagedTempFile(ssl_key) as key_file,
             ManagedTempFile(ssl_cert) as cert_file,
         ):
-
             with requests.Session() as test_session:
                 test_session.cert = (cert_file.name, key_file.name)
                 test_session.verify = False
@@ -653,15 +665,12 @@ class XRayNode:
                                 ssl_cert=ssl_cert,
                                 usage_coefficient=usage_coefficient,
                             )
-
                 except requests.exceptions.SSLError as e:
-                    logger.warning("SSL handshake failed: %s", str(e))
-
+                    logger.warning(f"SSL handshake failed: {str(e)}")
                 except requests.exceptions.ConnectionError as e:
-                    logger.error("Connection failed: %s", str(e))
-
+                    logger.error(f"Connection failed: {str(e)}")
                 except Exception as e:
-                    logger.error("Unexpected probe error: %s", str(e), exc_info=True)
+                    logger.error(f"Unexpected probe error: {str(e)}", exc_info=True)
 
         logger.warning("Falling back to RPyC connection")
         return RPyCXRayNode(
