@@ -8,21 +8,22 @@ import {Label} from "../ui/label";
 import {AlertCircle, Loader2} from "lucide-react";
 import {Alert} from "../ui/alert";
 import {useToast} from "@/hooks/use-toast";
-import {useNodes} from "@/contexts/NodesContext";
+import {NodeType, useNodes} from "@/contexts/NodesContext";
 import {useForm} from "react-hook-form";
 import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {Textarea} from "@/components/ui/textarea.tsx";
 import {NodeSettings} from "@/service/api";
 
-interface AddNodeModalProps {
+interface EditNodeModalProps {
     isOpen: boolean;
     onCloseModal: () => void;
-    nodeSetting: NodeSettings | undefined
+    node: NodeType,
+    nodeSetting: NodeSettings|undefined,
 }
 
-const AddNodeModal = ({isOpen, onCloseModal, nodeSetting}: AddNodeModalProps) => {
-    const {addNode} = useNodes();
+const AddNodeModal = ({isOpen, onCloseModal,node,nodeSetting}: EditNodeModalProps) => {
+    const {updateNode} = useNodes();
     const [error, setError] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const {t} = useTranslation();
@@ -50,21 +51,21 @@ const AddNodeModal = ({isOpen, onCloseModal, nodeSetting}: AddNodeModalProps) =>
         resolver: zodResolver(schema),
         mode: "onChange",
         defaultValues: {
-            name: "",
-            address: "",
-            port: 62050,
-            usage_coefficient: 1,
+            name: node.name,
+            address: node.address,
+            port: node.port,
+            usage_coefficient: node.usage_coefficient,
         },
     });
 
-    const handleAddNode = async (
+    const handleEditNode = async (
         values: { name: string; address: string; port: number; usage_coefficient: number; api_port: number },
         actions: any
     ) => {
         setError("");
         setLoading(true);
         try {
-            const node = await addNode({
+            const node = await updateNode({
                 name: values.name,
                 address: values.address,
                 port: values.port,
@@ -72,7 +73,7 @@ const AddNodeModal = ({isOpen, onCloseModal, nodeSetting}: AddNodeModalProps) =>
                 api_port: 8080, // Default value or get it from user input
             });
             toast({
-                description: t("nodes.addNodeSuccess", {name: values.name}),
+                description: t("editNode.editSuccess", {name: values.name}),
             });
             setLoading(false);
             actions.setSubmitting(false);
@@ -91,14 +92,15 @@ const AddNodeModal = ({isOpen, onCloseModal, nodeSetting}: AddNodeModalProps) =>
     return (
         <Dialog open={isOpen} onOpenChange={onCloseModal}>
             <DialogContent className="h-full flex flex-col py-10 md:h-[90%]" dir={dir}>
-                <DialogTitle dir={dir}>{t("nodes.addNode")}</DialogTitle>
+                <DialogTitle dir={dir}>{t("nodes.editNode")}</DialogTitle>
                 <DialogDescription className="mb-4">{t("nodes.prompt")}</DialogDescription>
-                <form onSubmit={handleSubmit(handleAddNode)} className="h-full pb-8">
+                <form onSubmit={handleSubmit(handleEditNode)} className="h-full pb-8">
                     <div className="form-control flex flex-col gap-y-4 h-full">
                         <Label>{t("nodes.nodeName")}</Label>
                         <div dir="ltr" className="mb-2">
                             <Input
                                 {...register("name")}
+                                defaultValue={node.name}
                                 className="py-5 px-4"
                                 placeholder="Remark (e.g. Marzban-Node)"
                             />
@@ -115,6 +117,7 @@ const AddNodeModal = ({isOpen, onCloseModal, nodeSetting}: AddNodeModalProps) =>
                         <div dir="ltr" className="mb-2">
                             <Input
                                 {...register("address")}
+                                defaultValue={node.address}
                                 className="py-5 px-4"
                                 placeholder="Address (e.g. 10.11.12.13)"
                             />
@@ -134,6 +137,7 @@ const AddNodeModal = ({isOpen, onCloseModal, nodeSetting}: AddNodeModalProps) =>
                                     <Input
                                         type="number"
                                         {...register("port", {valueAsNumber: true})}
+                                        defaultValue={node.port}
                                         className="py-5 px-4"
                                         placeholder="Port (e.g. 62050)"
                                     />
@@ -152,6 +156,7 @@ const AddNodeModal = ({isOpen, onCloseModal, nodeSetting}: AddNodeModalProps) =>
                                     <Input
                                         type="number"
                                         {...register("usage_coefficient", {valueAsNumber: true})}
+                                        defaultValue={node.usage_coefficient}
                                         className="py-5 px-4"
                                         placeholder="Ratio (e.g. 2)"
                                     />
@@ -167,11 +172,10 @@ const AddNodeModal = ({isOpen, onCloseModal, nodeSetting}: AddNodeModalProps) =>
                         </div>
                         <div>
                             <Label>{t("nodes.certificate")}</Label>
-                            <div dir="ltr" className="mt-2">
-                                    <Textarea defaultValue={nodeSetting?.certificate}
-                                              dir='ltr'
-                                              className="py-5 resize-none px-4 h-[300px] md:h-[230px] text-muted-foreground"
-                                              draggable={false}/>
+                            <div className="mt-2 ">
+                                <Textarea defaultValue={nodeSetting?.certificate}
+                                          dir={"ltr"}
+                                          className="py-5 bg-sidebar-border resize-none px-4 h-[300px] md:h-[230px] text-muted-foreground" draggable={false}/>
                             </div>
                         </div>
                     </div>
@@ -198,7 +202,7 @@ const AddNodeModal = ({isOpen, onCloseModal, nodeSetting}: AddNodeModalProps) =>
                                 {loading || isSubmitting ? (
                                     <Loader2 className="animate-spin h-6 w-6"/>
                                 ) : (
-                                    <span>{t("nodes.addNode")}</span>
+                                    <span>{t("nodes.editNode")}</span>
                                 )}
                             </div>
                         </Button>
