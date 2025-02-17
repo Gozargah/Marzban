@@ -169,13 +169,13 @@ bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release
 
 克隆项目并安装依赖项。
 
-您需要 Python>=3.8 版本。
+您需要 Python>=3.12 版本。
 
 ```bash
 git clone https://github.com/Gozargah/Marzban.git
 cd Marzban
-wget -qO- https://bootstrap.pypa.io/get-pip.py | python3 -
-python3 -m pip install -r requirements.txt
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv sync
 ```
 
 另外，为了拥有一个隔离的环境，您可以使用 [Python Virtualenv](https://pypi.org/project/virtualenv/)。
@@ -183,7 +183,7 @@ python3 -m pip install -r requirements.txt
 然后运行以下命令运行数据库迁移脚本：
 
 ```bash
-alembic upgrade head
+uv run alembic upgrade head
 ```
 
 现在开始配置：
@@ -202,7 +202,7 @@ nano .env
 最终，使用以下命令启动应用程序：
 
 ```bash
-python3 main.py
+uv run main.py
 ```
 
 也可使用 linux systemctl 启动：

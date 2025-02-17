@@ -169,13 +169,13 @@ marzban --help
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
 ```
 
-Клонируйте этот проект и установите зависимости (Вам нужен Python >= 3.8):
+Клонируйте этот проект и установите зависимости (Вам нужен Python >= 3.12):
 
 ```bash
 git clone https://github.com/Gozargah/Marzban.git
 cd Marzban
-wget -qO- https://bootstrap.pypa.io/get-pip.py | python3 -
-python3 -m pip install -r requirements.txt
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv sync
 ```
 
 В качестве альтернативы для создания виртуальной среды можно использовать [Python Virtualenv](https://pypi.org/project/virtualenv/).
@@ -183,7 +183,7 @@ python3 -m pip install -r requirements.txt
 Затем выполните следующую команду для запуска скрипта миграции базы данных:
 
 ```bash
-alembic upgrade head
+uv run alembic upgrade head
 ```
 
 Если Вы хотите использовать `marzban-cli`, необходимо связать его с файлом в `$PATH`, сделать его исполняемым и установить:
@@ -210,7 +210,7 @@ nano .env
 В завершение запустите приложение с помощью следующей команды:
 
 ```bash
-python3 main.py
+uv run main.py
 ```
 
 Для запуска с помощью linux systemctl (скопируйте файл marzban.service в `/var/lib/marzban/marzban.service`):

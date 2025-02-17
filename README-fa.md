@@ -167,13 +167,13 @@ marzban --help
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
 ```
 
-پروژه را clone کنید و dependency ها را نصب کنید. دقت کنید که نسخه پایتون شما Python>=3.8 باشد.
+پروژه را clone کنید و dependency ها را نصب کنید. دقت کنید که نسخه پایتون شما Python>=3.12 باشد.
 
 ```bash
 git clone https://github.com/Gozargah/Marzban.git
 cd Marzban
-wget -qO- https://bootstrap.pypa.io/get-pip.py | python3 -
-python3 -m pip install -r requirements.txt
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv sync
 ```
 
 همچنین میتواند از , [Python Virtualenv](https://pypi.org/project/virtualenv/) هم استفاده کنید.
@@ -181,7 +181,7 @@ python3 -m pip install -r requirements.txt
 سپس کامند زیر را اجرا کنید تا دیتابیس تنظیم شود.
 
 ```bash
-alembic upgrade head
+uv run alembic upgrade head
 ```
 
 اگر می خواهید از `marzban-cli` استفاده کنید، باید آن را به یک فایل در `$PATH` خود لینک و قابل اجرا (executable) کنید. سپس تکمیل خودکار (auto-completion) آن را نصب کنید:
@@ -204,7 +204,7 @@ nano .env
 در انتها, مرزبان را به کمک دستور زیر اجرا کنید.
 
 ```bash
-python3 main.py
+uv run main.py
 ```
 
 اجرا با استفاده از systemctl در لینوکس

@@ -170,13 +170,13 @@ You can install it using [Xray-install](https://github.com/XTLS/Xray-install)
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
 ```
 
-Clone this project and install the dependencies (you need Python >= 3.8)
+Clone this project and install the dependencies (you need Python >= 3.12)
 
 ```bash
 git clone https://github.com/Gozargah/Marzban.git
 cd Marzban
-wget -qO- https://bootstrap.pypa.io/get-pip.py | python3 -
-python3 -m pip install -r requirements.txt
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv sync
 ```
 
 Alternatively, to have an isolated environment you can use [Python Virtualenv](https://pypi.org/project/virtualenv/)
@@ -184,7 +184,7 @@ Alternatively, to have an isolated environment you can use [Python Virtualenv](h
 Then run the following command to run the database migration scripts
 
 ```bash
-alembic upgrade head
+uv run alembic upgrade head
 ```
 
 If you want to use `marzban-cli`, you should link it to a file in your `$PATH`, make it executable, and install the auto-completion:
@@ -211,7 +211,7 @@ nano .env
 Eventually, launch the application using command below
 
 ```bash
-python3 main.py
+uv run main.py
 ```
 
 To launch with linux systemctl (copy marzban.service file to `/var/lib/marzban/marzban.service`)
