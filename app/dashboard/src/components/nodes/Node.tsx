@@ -28,12 +28,7 @@ import {useToast} from "@/hooks/use-toast";
 import EditNodeModal from "@/components/dialogs/EditNodeModal.tsx";
 import {NodeSettings} from "@/service/api";
 
-const DeleteAlertDialog = ({
-                               node,
-                               isOpen,
-                               onClose,
-                               onConfirm,
-                           }: {
+const DeleteAlertDialog = ({node, isOpen, onClose, onConfirm,}: {
     node: NodeType;
     isOpen: boolean;
     onClose: () => void;
@@ -147,7 +142,8 @@ const Node = ({node, nodeSetting}: { node: NodeType, nodeSetting: NodeSettings |
                     />
                 </div>
             </Card>
-            <EditNodeModal nodeSetting={nodeSetting} node={node} isOpen={isEditNodeModalOpen} onCloseModal={() => setIsEditNodeModalOpen(false)}/>
+            <EditNodeModal nodeSetting={nodeSetting} node={node} isOpen={isEditNodeModalOpen}
+                           onCloseModal={() => setIsEditNodeModalOpen(false)}/>
         </div>
     );
 };

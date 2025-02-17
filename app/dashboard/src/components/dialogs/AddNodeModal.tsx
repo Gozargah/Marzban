@@ -168,10 +168,10 @@ const AddNodeModal = ({isOpen, onCloseModal, nodeSetting}: AddNodeModalProps) =>
                         <div>
                             <Label>{t("nodes.certificate")}</Label>
                             <div dir="ltr" className="mt-2">
-                                    <Textarea defaultValue={nodeSetting?.certificate}
-                                              dir='ltr'
-                                              className="py-5 resize-none px-4 h-[300px] md:h-[230px] text-muted-foreground"
-                                              draggable={false}/>
+                                <Textarea defaultValue={nodeSetting?.certificate}
+                                          dir='ltr'
+                                          className="py-5 resize-none px-4 h-[300px] md:h-[230px] text-muted-foreground"
+                                          draggable={false}/>
                             </div>
                         </div>
                     </div>
