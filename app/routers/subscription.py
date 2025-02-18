@@ -17,6 +17,7 @@ from config import (
     USE_CUSTOM_JSON_DEFAULT,
     USE_CUSTOM_JSON_FOR_HAPP,
     USE_CUSTOM_JSON_FOR_STREISAND,
+    USE_CUSTOM_JSON_FOR_NPVTUNNEL,
     USE_CUSTOM_JSON_FOR_V2RAYN,
     USE_CUSTOM_JSON_FOR_V2RAYNG,
     XRAY_SUBSCRIPTION_PATH,
@@ -125,7 +126,15 @@ def user_subscription(
 
     elif (USE_CUSTOM_JSON_DEFAULT or USE_CUSTOM_JSON_FOR_HAPP) and re.match(r'^Happ/(\d+\.\d+\.\d+)', user_agent):
         version_str = re.match(r'^Happ/(\d+\.\d+\.\d+)', user_agent).group(1)
-        if LooseVersion(version_str) >= LooseVersion("1.63.1"):
+        if LooseVersion(version_str) >= LooseVersion("1.11.0"):
+            conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False, reverse=False)
+            return Response(content=conf, media_type="application/json", headers=response_headers)
+        else:
+            conf = generate_subscription(user=user, config_format="v2ray", as_base64=True, reverse=False)
+            return Response(content=conf, media_type="text/plain", headers=response_headers)
+
+    elif USE_CUSTOM_JSON_DEFAULT or USE_CUSTOM_JSON_FOR_NPVTUNNEL:
+        if "ktor-client" in user_agent:
             conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False, reverse=False)
             return Response(content=conf, media_type="application/json", headers=response_headers)
         else:
@@ -133,7 +142,7 @@ def user_subscription(
             return Response(content=conf, media_type="text/plain", headers=response_headers)
 
 
-
+    
     else:
         conf = generate_subscription(user=user, config_format="v2ray", as_base64=True, reverse=False)
         return Response(content=conf, media_type="text/plain", headers=response_headers)
