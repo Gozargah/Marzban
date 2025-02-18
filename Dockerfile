@@ -7,29 +7,37 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /code
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential curl unzip gcc python3-dev libpq-dev \
+    && apt-get install -y --no-install-recommends build-essential curl unzip gcc libpq-dev \
     && curl -L https://github.com/Gozargah/Marzban-scripts/raw/master/install_latest_xray.sh | bash \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY ./requirements.txt /code/
-RUN python3 -m pip install --upgrade pip setuptools \
-    && pip install --no-cache-dir --upgrade -r /code/requirements.txt
+    && rm -rf /var/lib/apt/lists/
 
 FROM python:$PYTHON_VERSION-slim
 
-ENV PYTHON_LIB_PATH=/usr/local/lib/python${PYTHON_VERSION%.*}/site-packages
+# Set up the working directory
+
+RUN mkdir /code
 WORKDIR /code
+COPY . /code
 
-RUN rm -rf $PYTHON_LIB_PATH/*
+RUN sed -i 's/\r$//' /code/marzban-cli.py
 
-COPY --from=build $PYTHON_LIB_PATH $PYTHON_LIB_PATH
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 COPY --from=build /usr/local/bin /usr/local/bin
 COPY --from=build /usr/local/share/xray /usr/local/share/xray
 
-COPY . /code
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project
 
-RUN ln -s /code/marzban-cli.py /usr/bin/marzban-cli \
-    && chmod +x /usr/bin/marzban-cli \
-    && marzban-cli completion install --shell bash
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen
 
-CMD ["bash", "-c", "alembic upgrade head; python main.py"]
+COPY cli-wrapper.sh /usr/bin/marzban-cli
+RUN chmod +x /usr/bin/marzban-cli
+RUN /usr/bin/marzban-cli completion install --shell bash
+
+# Set the entrypoint
+ENTRYPOINT ["bash", "-c", "uv run alembic upgrade head"]
+CMD ["bash", "-c", "uv run main.py"]
