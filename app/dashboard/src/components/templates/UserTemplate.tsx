@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button"
 import { Copy, EllipsisVertical, Pen, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import useDirDetection from "@/hooks/use-dir-detection";

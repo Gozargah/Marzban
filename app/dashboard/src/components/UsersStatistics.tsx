@@ -4,7 +4,7 @@ import { useGetSystemStats } from '@/service/api'
 import { numberWithCommas } from '@/utils/formatByte'
 import { Plus, Users, Wifi } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Button } from './ui/button'
+import { Button } from "@/components/ui/button"
 import { Card, CardTitle } from './ui/card'
 
 const UsersStatistics = () => {

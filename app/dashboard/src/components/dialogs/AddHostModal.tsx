@@ -5,7 +5,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useState } from "react"
-import { Button } from "../ui/button"
+import { Button } from "@/components/ui/button"
 import { HostFormValues } from "../hosts/Hosts"
 import { Cable, ChevronsLeftRightEllipsis, FileKey, GlobeLock, Lock } from "lucide-react"
 
