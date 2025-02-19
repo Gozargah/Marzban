@@ -2,13 +2,16 @@ import useDirDetection from "@/hooks/use-dir-detection.tsx";
 import {useTranslation} from "react-i18next";
 import {Badge} from "@/components/ui/badge.tsx";
 import {Copy, Download} from "lucide-react";
+import {NodeSettings} from "@/service/api";
 
-const NodesCertificate = () => {
+const NodesCertificate = ({certificate}: { certificate: NodeSettings | undefined }) => {
     const dir = useDirDetection();
     const {t} = useTranslation();
 
     const copyCertificate = () => {
-        //method
+        if (certificate) {
+            //method}
+        }
     }
     const downloadCertificate = () => {
         //method
@@ -33,5 +36,6 @@ const NodesCertificate = () => {
         </div>
     );
 };
+
 
 export default NodesCertificate;

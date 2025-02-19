@@ -28,8 +28,7 @@ const Nodes = () => {
             />
             <div>
                 <NodesSection nodeSetting={certificate} nodes={nodes}/>
-                //global certificate
-                <NodesCertificate/>
+                <NodesCertificate certificate={certificate}/>
                 <AddNodeModal nodeSetting={certificate} onCloseModal={() => setIsAddNodeModalOpen(false)}
                               isOpen={isAddNodeModalOpen}/>
             </div>
