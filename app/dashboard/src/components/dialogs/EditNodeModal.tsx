@@ -90,7 +90,7 @@ const AddNodeModal = ({isOpen, onCloseModal,node,nodeSetting}: EditNodeModalProp
 
     return (
         <Dialog open={isOpen} onOpenChange={onCloseModal}>
-            <DialogContent className="h-full flex flex-col p-4 py-10 md:h-[90%]" dir={dir}>
+            <DialogContent className="h-full flex flex-col py-10 md:h-[90%] p-4" dir={dir}>
                 <DialogTitle className={"px-2"} dir={dir}>{t("nodes.editNode")}</DialogTitle>
                 <DialogDescription className="mb-4 px-2">{t("nodes.prompt")}</DialogDescription>
                 <form onSubmit={handleSubmit(handleEditNode)} className="justify-between h-[90%]  flex flex-col">
