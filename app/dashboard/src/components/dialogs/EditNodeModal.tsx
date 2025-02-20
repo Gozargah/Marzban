@@ -90,11 +90,11 @@ const AddNodeModal = ({isOpen, onCloseModal,node,nodeSetting}: EditNodeModalProp
 
     return (
         <Dialog open={isOpen} onOpenChange={onCloseModal}>
-            <DialogContent className="h-full flex flex-col py-10 md:h-[90%]" dir={dir}>
-                <DialogTitle dir={dir}>{t("nodes.editNode")}</DialogTitle>
-                <DialogDescription className="mb-4">{t("nodes.prompt")}</DialogDescription>
-                <form onSubmit={handleSubmit(handleEditNode)} className="h-full pb-8">
-                    <div className="form-control flex flex-col gap-y-4 h-full">
+            <DialogContent className="h-full flex flex-col p-4 py-10 md:h-[90%]" dir={dir}>
+                <DialogTitle className={"px-2"} dir={dir}>{t("nodes.editNode")}</DialogTitle>
+                <DialogDescription className="mb-4 px-2">{t("nodes.prompt")}</DialogDescription>
+                <form onSubmit={handleSubmit(handleEditNode)} className="justify-between h-[90%]  flex flex-col">
+                    <div className="form-control h-[85%] flex flex-col gap-y-4 px-2 overflow-y-auto">
                         <Label>{t("nodes.nodeName")}</Label>
                         <div dir="ltr" className="mb-2">
                             <Input
@@ -174,7 +174,8 @@ const AddNodeModal = ({isOpen, onCloseModal,node,nodeSetting}: EditNodeModalProp
                             <div className="mt-2 ">
                                 <Textarea defaultValue={nodeSetting?.certificate}
                                           dir={"ltr"}
-                                          className="py-5 bg-sidebar-border resize-none px-4 h-[300px] md:h-[230px] text-muted-foreground" draggable={false}/>
+                                          className="py-5 resize-none px-4 h-[300px] text-muted-foreground"
+                                          draggable={false}/>
                             </div>
                         </div>
                     </div>
@@ -187,7 +188,7 @@ const AddNodeModal = ({isOpen, onCloseModal,node,nodeSetting}: EditNodeModalProp
                             <span className="text-white ml-1 font-semibold">{error}</span>
                         </Alert>
                     )}
-                    <div dir={dir} className="flex-1 flex items-center gap-x-4">
+                    <div dir={dir} className="flex-1 flex items-center px-2 gap-x-4">
                         <Button onClick={onCloseModal} variant="outline" className="w-full py-5">
                             <span>{t("cancel")}</span>
                         </Button>
