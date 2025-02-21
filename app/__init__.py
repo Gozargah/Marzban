@@ -16,8 +16,7 @@ app = FastAPI(
     title="MarzbanAPI",
     description="Unified GUI Censorship Resistant Solution Powered by Xray",
     version=__version__,
-    docs_url="/docs" if DOCS else None,
-    redoc_url="/redoc" if DOCS else None,
+    openapi_url="/openapi.json" if DOCS else None,
 )
 
 scheduler = BackgroundScheduler(
