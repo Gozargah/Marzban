@@ -1307,7 +1307,9 @@ def create_node(db: Session, node: NodeCreate) -> Node:
     dbnode = Node(name=node.name,
                   address=node.address,
                   port=node.port,
-                  api_port=node.api_port)
+                  api_port=node.api_port,
+                  usage_coefficient=node.usage_coefficient,
+                  )
 
     db.add(dbnode)
     db.commit()
