@@ -90,9 +90,9 @@ const AddNodeModal = ({isOpen, onCloseModal, nodeSetting}: AddNodeModalProps) =>
     return (
         <Dialog open={isOpen} onOpenChange={onCloseModal}>
             <DialogContent className="h-full flex flex-col py-10 md:h-[90%] p-4" dir={dir}>
-                <DialogTitle className={"px-2"} dir={dir}>{t("nodes.addNode")}</DialogTitle>
-                <DialogDescription className="mb-4 px-2">{t("nodes.prompt")}</DialogDescription>
-                <form onSubmit={handleSubmit(handleAddNode)} className="justify-between h-[90%]  flex flex-col">
+                    <DialogTitle className={"px-2 h-[20px] text-lg"} dir={dir}>{t("nodes.addNode")}</DialogTitle>
+                    <DialogDescription className="mb-4 px-2 h-[20px] text-sm">{t("nodes.prompt")}</DialogDescription>
+                <form onSubmit={handleSubmit(handleAddNode)} className="justify-between h-[calc(100%-80px)]  flex flex-col">
                     <div className="form-control h-[85%] flex flex-col gap-y-4 px-2 overflow-y-auto">
                         <Label>{t("nodes.nodeName")}</Label>
                         <div dir="ltr" className="mb-2">
@@ -167,10 +167,10 @@ const AddNodeModal = ({isOpen, onCloseModal, nodeSetting}: AddNodeModalProps) =>
                         <div>
                             <Label>{t("nodes.certificate")}</Label>
                             <div dir="ltr" className="mt-2">
-                                    <Textarea defaultValue={nodeSetting?.certificate}
-                                              dir='ltr'
-                                              className="py-5 resize-none px-4 h-[300px] text-muted-foreground"
-                                              draggable={false}/>
+                                <Textarea defaultValue={nodeSetting?.certificate}
+                                          dir='ltr'
+                                          className="py-5 resize-none px-4 h-[300px] md:h-[230px] text-muted-foreground"
+                                          draggable={false}/>
                             </div>
                         </div>
                     </div>
@@ -183,15 +183,14 @@ const AddNodeModal = ({isOpen, onCloseModal, nodeSetting}: AddNodeModalProps) =>
                             <span className="text-white ml-1 font-semibold">{error}</span>
                         </Alert>
                     )}
-                    <div dir={dir} className="flex-1 flex items-center px-2 gap-x-4">
-                        <Button onClick={onCloseModal} variant="outline" className="w-full py-5">
+                    <div dir={dir} className="flex justify-end items-center h-[40px] px-2 gap-x-4">
+                        <Button onClick={onCloseModal} variant="outline" className="text-sm font-medium leading-6">
                             <span>{t("cancel")}</span>
                         </Button>
                         <Button
                             disabled={loading || isSubmitting || !isValid}
                             type="submit"
-                            className="w-full py-5"
-                            color="primary"
+                            className={"text-destructive-foreground text-sm font-medium leading-6"}
                         >
                             <div className="flex items-center gap-x-2">
                                 {loading || isSubmitting ? (
