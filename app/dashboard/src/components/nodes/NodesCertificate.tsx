@@ -21,7 +21,7 @@ const NodesCertificate = ({certificate}: { certificate: NodeSettings | undefined
         <div dir={dir}
              className="w-full mx-auto py-4 md:pt-6 gap-4 flex items-start justify-between flex-wrap px-4 align-middle">
             <div className="flex flex-col gap-y-1 sm:max-w-[80%] max-w-[60%] ">
-                <h1 className="font-[600] text-2xl">{t('nodes.certificate')}</h1>
+                <h1 className="font-[600] text-lg sm:text-2xl">{t('nodes.certificate')}</h1>
                 <span
                     className="text-muted-foreground text-sm font-normal leading-5 text-ellipsis whitespace-nowrap overflow-hidden sm:whitespace-pre-wrap sm:overflow-visible">{t("nodes.connection-hint")}</span>
             </div>
