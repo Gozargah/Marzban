@@ -10,18 +10,17 @@
 		"python.analysis.inlayHints.pytestParameters": true,
 		"python.analysis.inlayHints.callArgumentNames": "all",
 		"python.analysis.inlayHints.functionReturnTypes": true,
-		"python.linting.ruffEnabled": true,
-		"python.linting.enabled": true,
+		"ruff.enable": true,
+		"ruff.format.preview": true,
+		"ruff.fixAll": true,
 		"ruff.organizeImports": true,
 		"[python]": {
 			"editor.defaultFormatter": "charliermarsh.ruff",
 			"editor.formatOnSave": true,
 			"editor.codeActionsOnSave": {
 				"source.fixAll.ruff": "explicit",
-				"source.organizeImports.ruff": "explicit"
-			}
+			},
 		},
-		"ruff.configuration": "./pyproject.toml",
 		"editor.codeActionsOnSave": {
 			"source.organizeImports": "never"
 		},
