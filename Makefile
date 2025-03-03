@@ -49,13 +49,18 @@ run:
 # Run marzban with watchfiles
 .PHONY: run-watch
 run-watch:
-	@if ! $(VENV_DIR)/bin/pip show watchfiles >/dev/null 2>&1; then \
-		echo "watchfiles is not installed. Installing..."; \
-		$(VENV_DIR)/bin/pip install watchfiles; \
-	fi
 	@echo "Running application with watchfiles..."
-	@$(VENV_DIR)/bin/watchfiles --filter python "python main.py" .
+	@uv run watchfiles --filter python "uv run main.py" .
 
+# Check code
+.PHONY: check
+check:
+	@uv run ruff check .
+
+# Format code
+.PHONY: format
+format:
+	@uv run ruff format .
 
 # Clean the environment
 .PHONY: clean

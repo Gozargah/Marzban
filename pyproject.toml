@@ -65,4 +65,7 @@ docstring-code-format = false
 docstring-code-line-length = "dynamic"
 
 [dependency-groups]
-dev = ["ruff>=0.9.7"]
+dev = [
+    "ruff>=0.9.7",
+    "watchfiles>=1.0.4",
+]
