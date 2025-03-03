@@ -189,7 +189,7 @@ class V2rayShareLink(BaseSubscription):
                 "scMaxConcurrentPosts": sc_max_concurrent_posts,
                 "scMinPostsIntervalMs": sc_min_posts_interval_ms,
                 "xPaddingBytes": x_padding_bytes,
-                "noGRPCHeader":  noGRPCHeader,
+                "noGRPCHeader": noGRPCHeader,
                 "scStreamUpServerSecs": scStreamUpServerSecs,
                 "xmux": xmux,
                 "downloadSettings": downloadSettings,
@@ -272,7 +272,7 @@ class V2rayShareLink(BaseSubscription):
                 "scMaxConcurrentPosts": sc_max_concurrent_posts,
                 "scMinPostsIntervalMs": sc_min_posts_interval_ms,
                 "xPaddingBytes": x_padding_bytes,
-                "noGRPCHeader":  noGRPCHeader,
+                "noGRPCHeader": noGRPCHeader,
                 "scStreamUpServerSecs": scStreamUpServerSecs,
                 "xmux": xmux,
                 "downloadSettings": downloadSettings,
@@ -378,7 +378,7 @@ class V2rayShareLink(BaseSubscription):
                 "scMaxConcurrentPosts": sc_max_concurrent_posts,
                 "scMinPostsIntervalMs": sc_min_posts_interval_ms,
                 "xPaddingBytes": x_padding_bytes,
-                "noGRPCHeader":  noGRPCHeader,
+                "noGRPCHeader": noGRPCHeader,
                 "scStreamUpServerSecs": scStreamUpServerSecs,
                 "xmux": xmux,
                 "downloadSettings": downloadSettings,
@@ -485,7 +485,12 @@ class V2rayJsonConfig(BaseSubscription):
         return self._remove_none_values(realitySettings)
 
     def ws_config(
-        self, path: str = "", host: str = "", random_user_agent: bool = False, heartbeatPeriod: int | None = None, http_headers: dict | None = None
+        self,
+        path: str = "",
+        host: str = "",
+        random_user_agent: bool = False,
+        heartbeatPeriod: int | None = None,
+        http_headers: dict | None = None,
     ) -> dict:
         wsSettings = {
             "headers": http_headers if http_headers is not None else {},
@@ -497,7 +502,9 @@ class V2rayJsonConfig(BaseSubscription):
             wsSettings["headers"]["User-Agent"] = choice(self.user_agent_list)
         return self._remove_none_values(wsSettings)
 
-    def httpupgrade_config(self, path: str = "", host: str = "", random_user_agent: bool = False, http_headers=None) -> dict:
+    def httpupgrade_config(
+        self, path: str = "", host: str = "", random_user_agent: bool = False, http_headers=None
+    ) -> dict:
         httpupgradeSettings = {
             "headers": http_headers if http_headers is not None else {},
             "path": path,
@@ -522,7 +529,7 @@ class V2rayJsonConfig(BaseSubscription):
         mode: str = "",
         noGRPCHeader: bool | None = None,
         scStreamUpServerSecs: int | None = None,
-        http_headers: dict | None = None
+        http_headers: dict | None = None,
     ) -> dict:
         xhttSettings = {}
 
@@ -537,7 +544,7 @@ class V2rayJsonConfig(BaseSubscription):
             "scMaxConcurrentPosts": sc_max_concurrent_posts,
             "scMinPostsIntervalMs": sc_min_posts_interval_ms,
             "xPaddingBytes": x_padding_bytes,
-            "noGRPCHeader":  noGRPCHeader,
+            "noGRPCHeader": noGRPCHeader,
             "scStreamUpServerSecs": scStreamUpServerSecs,
             "xmux": xmux,
             "downloadSettings": downloadSettings,
@@ -551,7 +558,16 @@ class V2rayJsonConfig(BaseSubscription):
         return self._remove_none_values(xhttSettings)
 
     def grpc_config(
-        self, path: str = "", host: str = "", multiMode: bool = False, random_user_agent: bool = False, idle_timeout=None, health_check_timeout=None, permit_without_stream=False, initial_windows_size=None, http_headers=None
+        self,
+        path: str = "",
+        host: str = "",
+        multiMode: bool = False,
+        random_user_agent: bool = False,
+        idle_timeout=None,
+        health_check_timeout=None,
+        permit_without_stream=False,
+        initial_windows_size=None,
+        http_headers=None,
     ) -> dict:
         grpcSettings = {
             "idle_timeout": idle_timeout if idle_timeout is not None else 60,
@@ -568,31 +584,47 @@ class V2rayJsonConfig(BaseSubscription):
             grpcSettings["user_agent"] = choice(self.grpc_user_agent_data)
         return self._remove_none_values(grpcSettings)
 
-    def tcp_config(self, headers="none", path: str = "", host: str = "", random_user_agent: bool = False, request: dict | None = None, response: dict | None = None) -> dict:
+    def tcp_config(
+        self,
+        headers="none",
+        path: str = "",
+        host: str = "",
+        random_user_agent: bool = False,
+        request: dict | None = None,
+        response: dict | None = None,
+    ) -> dict:
         if headers == "http":
-            tcpSettings = {
-                "header": {
-                    "type": headers,
-                    "request": request if request else
-                    {"version": "1.1",
-                     "method": "GET",
-                     "headers": {
-                         "Accept-Encoding": ["gzip, deflate"],
-                         "Connection": ["keep-alive"],
-                         "Pragma": ["no-cache"]
-                     }},
-                    "response": response if response else
-                    {"version": "1.1",
-                     "status": "200",
-                     "reason": "OK",
-                     "headers": {
-                         "Content-Type": ["application/octet-stream", "video/mpeg"],
-                         "Transfer-Encoding": ["chunked"],
-                         "Connection": ["keep-alive"],
-                         "Pragma": ["no-cache"]
-                     }},
-                }
-            },
+            tcpSettings = (
+                {
+                    "header": {
+                        "type": headers,
+                        "request": request
+                        if request
+                        else {
+                            "version": "1.1",
+                            "method": "GET",
+                            "headers": {
+                                "Accept-Encoding": ["gzip, deflate"],
+                                "Connection": ["keep-alive"],
+                                "Pragma": ["no-cache"],
+                            },
+                        },
+                        "response": response
+                        if response
+                        else {
+                            "version": "1.1",
+                            "status": "200",
+                            "reason": "OK",
+                            "headers": {
+                                "Content-Type": ["application/octet-stream", "video/mpeg"],
+                                "Transfer-Encoding": ["chunked"],
+                                "Connection": ["keep-alive"],
+                                "Pragma": ["no-cache"],
+                            },
+                        },
+                    }
+                },
+            )
         else:
             tcpSettings = {"header": {"type": headers}}
 
@@ -615,7 +647,9 @@ class V2rayJsonConfig(BaseSubscription):
 
         return tcpSettings
 
-    def http_config(self, path: str = "", host: str = "", random_user_agent: bool = False, http_headers: dict | None = None) -> dict:
+    def http_config(
+        self, path: str = "", host: str = "", random_user_agent: bool = False, http_headers: dict | None = None
+    ) -> dict:
         httpSettings = {
             "headers": {k: [v] for k, v in http_headers.items()} if http_headers is not None else {},
             "path": path,
@@ -629,7 +663,19 @@ class V2rayJsonConfig(BaseSubscription):
         quicSettings = {"security": host, "header": {"type": header}, "key": path}
         return self._remove_none_values(quicSettings)
 
-    def kcp_config(self, seed=None, host=None, header="none", mtu=None, tti=None, uplinkCapacity=None, downlinkCapacity=None, congestion=False, readBufferSize=None, writeBufferSize=None) -> dict:
+    def kcp_config(
+        self,
+        seed=None,
+        host=None,
+        header="none",
+        mtu=None,
+        tti=None,
+        uplinkCapacity=None,
+        downlinkCapacity=None,
+        congestion=False,
+        readBufferSize=None,
+        writeBufferSize=None,
+    ) -> dict:
         kcpSettings = {
             "header": {"type": header, "domain": host},
             "mtu": mtu if mtu else 1350,
@@ -668,9 +714,7 @@ class V2rayJsonConfig(BaseSubscription):
                 {
                     "address": address,
                     "port": port,
-                    "users": [
-                        {"id": id, "alterId": 0, "email": "t@t.com", "security": "auto"}
-                    ],
+                    "users": [{"id": id, "alterId": 0, "email": "t@t.com", "security": "auto"}],
                 }
             ]
         }
@@ -726,7 +770,7 @@ class V2rayJsonConfig(BaseSubscription):
 
     def make_dialer_outbound(self, fragment: dict | None = None, noises: dict | None = None) -> Union[dict, None]:
         dialer_settings = {
-            "fragment":  fragment.get("xray") if fragment else None,
+            "fragment": fragment.get("xray") if fragment else None,
             "noises": noises.get("xray") if noises else None,
         }
         dialer_settings = self._remove_none_values(dialer_settings)
@@ -778,16 +822,28 @@ class V2rayJsonConfig(BaseSubscription):
     ) -> dict:
         if net == "ws":
             network_setting = self.ws_config(
-                path=path, host=host, random_user_agent=random_user_agent, heartbeatPeriod=heartbeatPeriod, http_headers=http_headers
+                path=path,
+                host=host,
+                random_user_agent=random_user_agent,
+                heartbeatPeriod=heartbeatPeriod,
+                http_headers=http_headers,
             )
         elif net == "grpc":
             network_setting = self.grpc_config(
-                path=path, host=host, multiMode=multiMode, random_user_agent=random_user_agent, idle_timeout=idle_timeout,
-                health_check_timeout=health_check_timeout, permit_without_stream=permit_without_stream, initial_windows_size=initial_windows_size, http_headers=http_headers,
+                path=path,
+                host=host,
+                multiMode=multiMode,
+                random_user_agent=random_user_agent,
+                idle_timeout=idle_timeout,
+                health_check_timeout=health_check_timeout,
+                permit_without_stream=permit_without_stream,
+                initial_windows_size=initial_windows_size,
+                http_headers=http_headers,
             )
         elif net in ("h3", "h2", "http"):
             network_setting = self.http_config(
-                net=net, path=path, host=host, random_user_agent=random_user_agent, http_headers=http_headers)
+                net=net, path=path, host=host, random_user_agent=random_user_agent, http_headers=http_headers
+            )
         elif net == "kcp":
             network_setting = self.kcp_config(
                 seed=path,
@@ -803,13 +859,19 @@ class V2rayJsonConfig(BaseSubscription):
             )
         elif net in ("tcp", "raw") and tls != "reality":
             network_setting = self.tcp_config(
-                headers=headers, path=path, host=host, random_user_agent=random_user_agent, request=request, response=response
+                headers=headers,
+                path=path,
+                host=host,
+                random_user_agent=random_user_agent,
+                request=request,
+                response=response,
             )
         elif net == "quic":
             network_setting = self.quic_config(path=path, host=host, header=headers)
         elif net == "httpupgrade":
             network_setting = self.httpupgrade_config(
-                path=path, host=host, random_user_agent=random_user_agent, http_headers=http_headers)
+                path=path, host=host, random_user_agent=random_user_agent, http_headers=http_headers
+            )
         elif net in ("splithttp", "xhttp"):
             network_setting = self.xhttp_config(
                 path=path,
@@ -824,7 +886,7 @@ class V2rayJsonConfig(BaseSubscription):
                 mode=mode,
                 noGRPCHeader=noGRPCHeader,
                 scStreamUpServerSecs=scStreamUpServerSecs,
-                http_headers=http_headers
+                http_headers=http_headers,
             )
         else:
             network_setting = {}

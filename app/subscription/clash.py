@@ -82,9 +82,7 @@ class ClashConfiguration(BaseSubscription):
         return self._remove_none_values(config)
 
     def grpc_config(self, path=""):
-        config = {
-            "grpc-service-name": path
-        }
+        config = {"grpc-service-name": path}
         return self._remove_none_values(config)
 
     def h2_config(self, path="", host=""):
@@ -94,7 +92,12 @@ class ClashConfiguration(BaseSubscription):
         }
         return self._remove_none_values(config)
 
-    def tcp_config(self, path="", host="", http_headers: dict | None = None,):
+    def tcp_config(
+        self,
+        path="",
+        host="",
+        http_headers: dict | None = None,
+    ):
         config = {
             "path": [path] if path else None,
             "headers": {**http_headers, "Host": host} if http_headers else {"Host": host},
@@ -186,7 +189,10 @@ class ClashConfiguration(BaseSubscription):
             net_opts = self.h2_config(path=path, host=host)
 
         elif network in ("tcp", "raw"):
-            net_opts = self.tcp_config(path=path, host=host,)
+            net_opts = self.tcp_config(
+                path=path,
+                host=host,
+            )
 
         else:
             net_opts = {}
@@ -207,7 +213,9 @@ class ClashConfiguration(BaseSubscription):
                     "enabled": True,
                     "up": clash_mux["brutal"]["up_mbps"],
                     "down": clash_mux["brutal"]["down_mbps"],
-                } if clash_mux.get("brutal") else None,
+                }
+                if clash_mux.get("brutal")
+                else None,
             }
             node["smux"] = self._remove_none_values(clash_mux)
 
@@ -282,7 +290,6 @@ class ClashMetaConfiguration(ClashConfiguration):
         http_headers: dict | None = None,
         mux_settings: dict | None = None,
         request: dict | None = None,
-
     ):
         node = super().make_node(
             remark=remark,

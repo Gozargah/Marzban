@@ -44,11 +44,21 @@ class SingBoxConfiguration(BaseSubscription):
                 "enabled": tls == "reality",
                 "public_key": pbk,
                 "short_id": sid,
-            } if tls == "reality" else None,
+            }
+            if tls == "reality"
+            else None,
         }
         return self._remove_none_values(config)
 
-    def http_config(self, host="", path="", random_user_agent: bool = False, request: dict | None = None, http_headers: dict | None = None, headers="none"):
+    def http_config(
+        self,
+        host="",
+        path="",
+        random_user_agent: bool = False,
+        request: dict | None = None,
+        http_headers: dict | None = None,
+        headers="none",
+    ):
         config = {
             "idle_timeout": "15s",
             "ping_timeout": "15s",
@@ -66,7 +76,13 @@ class SingBoxConfiguration(BaseSubscription):
         return self._remove_none_values(config)
 
     def ws_config(
-        self, host="", path="", random_user_agent: bool = False, max_early_data=None, early_data_header_name=None, http_headers: dict | None = None
+        self,
+        host="",
+        path="",
+        random_user_agent: bool = False,
+        max_early_data=None,
+        early_data_header_name=None,
+        http_headers: dict | None = None,
     ):
         config = {
             "headers": {k: [v] for k, v in http_headers.items()} if http_headers else {},
@@ -112,7 +128,7 @@ class SingBoxConfiguration(BaseSubscription):
         http_headers: dict | None = None,
         permit_without_stream: bool = False,
         request: dict | None = None,
-        headers="none"
+        headers="none",
     ):
         transport_config = {}
 
@@ -139,7 +155,10 @@ class SingBoxConfiguration(BaseSubscription):
 
             elif transport_type == "grpc":
                 transport_config = self.grpc_config(
-                    path=path, idle_timeout=idle_timeout, ping_timeout=ping_timeout, permit_without_stream=permit_without_stream
+                    path=path,
+                    idle_timeout=idle_timeout,
+                    ping_timeout=ping_timeout,
+                    permit_without_stream=permit_without_stream,
                 )
 
             elif transport_type == "httpupgrade":
@@ -225,7 +244,7 @@ class SingBoxConfiguration(BaseSubscription):
                 permit_without_stream=permit_without_stream,
                 http_headers=http_headers,
                 request=request,
-                headers=headers
+                headers=headers,
             )
 
         if tls in ("tls", "reality"):

@@ -75,15 +75,9 @@ class NoiseSettings(BaseModel):
 
 
 class XMuxSettings(BaseModel):
-    max_concurrency: str | int | None = Field(
-        None, pattern=r"^\d{1,16}(-\d{1,16})?$"
-    )
-    max_connections: str | int | None = Field(
-        None, pattern=r"^\d{1,16}(-\d{1,16})?$"
-    )
-    c_max_reuse_times: str | int | None = Field(
-        None, pattern=r"^\d{1,16}(-\d{1,16})?$"
-    )
+    max_concurrency: str | int | None = Field(None, pattern=r"^\d{1,16}(-\d{1,16})?$")
+    max_connections: str | int | None = Field(None, pattern=r"^\d{1,16}(-\d{1,16})?$")
+    c_max_reuse_times: str | int | None = Field(None, pattern=r"^\d{1,16}(-\d{1,16})?$")
     c_max_lifetime: str | int | None = Field(None, pattern=r"^\d{1,16}(-\d{1,16})?$")
     h_max_request_times: str | int | None = Field(None, pattern=r"^\d{1,16}(-\d{1,16})?$")
     h_keep_alive_period: str | int | None = Field(None, pattern=r"^\d{1,16}(-\d{1,16})?$")
@@ -107,7 +101,10 @@ class HTTPBase(BaseModel):
 
 class HTTPResponse(HTTPBase):
     status: str = Field("200", pattern=r"^[1-5]\d{2}$")
-    reason: str = Field("OK", pattern=r"^(?i)(?:OK|Created|Accepted|Non-Authoritative Information|No Content|Reset Content|Partial Content|Multiple Choices|Moved Permanently|Found|See Other|Not Modified|Use Proxy|Temporary Redirect|Permanent Redirect|Bad Request|Unauthorized|Payment Required|Forbidden|Not Found|Method Not Allowed|Not Acceptable|Proxy Authentication Required|Request Timeout|Conflict|Gone|Length Required|Precondition Failed|Payload Too Large|URI Too Long|Unsupported Media Type|Range Not Satisfiable|Expectation Failed|I'm a teapot|Misdirected Request|Unprocessable Entity|Locked|Failed Dependency|Too Early|Upgrade Required|Precondition Required|Too Many Requests|Request Header Fields Too Large|Unavailable For Legal Reasons|Internal Server Error|Not Implemented|Bad Gateway|Service Unavailable|Gateway Timeout|HTTP Version Not Supported)$")
+    reason: str = Field(
+        "OK",
+        pattern=r"^(?i)(?:OK|Created|Accepted|Non-Authoritative Information|No Content|Reset Content|Partial Content|Multiple Choices|Moved Permanently|Found|See Other|Not Modified|Use Proxy|Temporary Redirect|Permanent Redirect|Bad Request|Unauthorized|Payment Required|Forbidden|Not Found|Method Not Allowed|Not Acceptable|Proxy Authentication Required|Request Timeout|Conflict|Gone|Length Required|Precondition Failed|Payload Too Large|URI Too Long|Unsupported Media Type|Range Not Satisfiable|Expectation Failed|I'm a teapot|Misdirected Request|Unprocessable Entity|Locked|Failed Dependency|Too Early|Upgrade Required|Precondition Required|Too Many Requests|Request Header Fields Too Large|Unavailable For Legal Reasons|Internal Server Error|Not Implemented|Bad Gateway|Service Unavailable|Gateway Timeout|HTTP Version Not Supported)$",
+    )
 
 
 class HTTPRequest(HTTPBase):

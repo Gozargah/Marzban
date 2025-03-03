@@ -54,6 +54,8 @@ dependencies = [
 line-length = 120
 exclude = ["xray_api", "app/db/migrations"]
 fix = true
+
+[tool.ruff.lint]
 fixable = ["ALL"]
 
 [tool.ruff.format]

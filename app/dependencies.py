@@ -42,7 +42,7 @@ def get_dbnode(node_id: int, db: Session = Depends(get_db)):
     return dbnode
 
 
-def validate_dates(start: Optional[Union[str, datetime]], end: Optional[Union[str, datetime]]) -> (datetime, datetime):
+def validate_dates(start: Optional[Union[str, datetime]], end: Optional[Union[str, datetime]]) -> tuple[datetime, datetime]:
     """Validate if start and end dates are correct and if end is after start."""
     try:
         if start:
