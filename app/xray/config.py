@@ -220,7 +220,7 @@ class XRayConfig(dict):
                     try:
                         settings['pbk'] = tls_settings['publicKey']
                     except KeyError:
-                        pvk = tls_settings.get('privateKey') or tls_settings.get('password')
+                        pvk = tls_settings.get('privateKey')
                         if not pvk:
                             raise ValueError(
                                 f"You need to provide privateKey in realitySettings of {inbound['tag']}")
