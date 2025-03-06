@@ -1,4 +1,5 @@
 import base64
+import math
 import random
 import secrets
 from collections import defaultdict
@@ -198,12 +199,15 @@ def setup_format_variables(extra_data: dict) -> dict:
     if extra_data.get("data_limit"):
         data_limit = readable_size(extra_data["data_limit"])
         data_left = extra_data["data_limit"] - extra_data["used_traffic"]
+        usage_Percentage = round((extra_data["used_traffic"] / extra_data["data_limit"]) * 100.0, 2)
+
         if data_left < 0:
             data_left = 0
         data_left = readable_size(data_left)
     else:
         data_limit = "∞"
         data_left = "∞"
+        usage_Percentage = "∞"
 
     status_emoji = STATUS_EMOJIS.get(extra_data.get("status")) or ""
     status_template = STATUS_TEXTS.get(extra_data.get("status")) or ""
@@ -221,6 +225,7 @@ def setup_format_variables(extra_data: dict) -> dict:
         "JALALI_EXPIRE_DATE": jalali_expire_date,
         "TIME_LEFT": time_left,
         "STATUS_EMOJI": status_emoji,
+        "USAGE_PERCENTAGE": usage_Percentage,
     }
 
     # Format the status text using the temporary variables
