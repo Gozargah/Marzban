@@ -21,10 +21,15 @@ class Token(BaseModel):
 class Admin(BaseModel):
     username: str
     is_sudo: bool
-    telegram_id: Optional[int] = None
-    discord_webhook: Optional[str] = None
+    telegram_id: int | None = None
+    discord_webhook: str | None = None
     users_usage: int = 0
     is_disabled: bool = False
+    sub_template: str | None = None
+    sub_domain: str | None = None
+    profile_title: str | None = None
+    support_url: str | None = None
+
     model_config = ConfigDict(from_attributes=True)
 
     @field_validator("users_usage", mode="before")
@@ -98,8 +103,8 @@ class Admin(BaseModel):
 
 class AdminCreate(Admin):
     password: str
-    telegram_id: Optional[int] = None
-    discord_webhook: Optional[str] = None
+    telegram_id: int | None = None
+    discord_webhook: str | None = None
 
     @property
     def hashed_password(self):
@@ -114,11 +119,15 @@ class AdminCreate(Admin):
 
 
 class AdminModify(BaseModel):
-    password: Optional[str] = None
+    password: str | None = None
     is_sudo: bool
-    telegram_id: Optional[int] = None
-    discord_webhook: Optional[str] = None
-    is_disabled: Optional[bool] = None
+    telegram_id: int | None = None
+    discord_webhook: str | None = None
+    is_disabled: bool | None = None
+    sub_template: str | None = None
+    sub_domain: str | None = None
+    profile_title: str | None = None
+    support_url: str | None = None
 
     @property
     def hashed_password(self):

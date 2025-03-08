@@ -43,6 +43,10 @@ class Admin(Base):
     users_usage = Column(BigInteger, nullable=False, default=0)
     is_disabled = Column(Boolean, nullable=False, server_default="0", default=False)
     usage_logs = relationship("AdminUsageLogs", back_populates="admin")
+    sub_template = Column(String(1024), nullable=True, default=None)
+    sub_domain = Column(String(256), nullable=True, default=None)
+    profile_title = Column(String(512), nullable=True, default=None)
+    support_url = Column(String(1024), nullable=True, default=None)
 
 
 class AdminUsageLogs(Base):

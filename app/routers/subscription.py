@@ -64,14 +64,19 @@ def user_subscription(
     accept_header = request.headers.get("Accept", "")
     if "text/html" in accept_header:
         links = generate_subscription(user=user, config_format="v2ray", as_base64=False, reverse=False)
-        return HTMLResponse(render_template(SUBSCRIPTION_PAGE_TEMPLATE, {"user": user, "links": links.split("\n")}))
+        if user.admin and user.admin.sub_template:
+            return HTMLResponse(render_template(user.admin.sub_template, {"user": user, "links": links.split("\n")}))
+        else:
+            return HTMLResponse(render_template(SUBSCRIPTION_PAGE_TEMPLATE, {"user": user, "links": links.split("\n")}))
 
     crud.update_user_sub(db, dbuser, user_agent)
     response_headers = {
         "content-disposition": f'attachment; filename="{user.username}"',
         "profile-web-page-url": str(request.url),
-        "support-url": SUB_SUPPORT_URL,
-        "profile-title": encode_title(SUB_PROFILE_TITLE),
+        "support-url": user.admin.support_url if user.admin and user.admin.support_url else SUB_SUPPORT_URL,
+        "profile-title": encode_title(user.admin.profile_title)
+        if user.admin and user.admin.profile_title
+        else encode_title(SUB_PROFILE_TITLE),
         "profile-update-interval": SUB_UPDATE_INTERVAL,
         "subscription-userinfo": "; ".join(f"{key}={val}" for key, val in get_subscription_user_info(user).items()),
     }

@@ -993,6 +993,10 @@ def create_admin(db: Session, admin: AdminCreate) -> Admin:
         is_sudo=admin.is_sudo,
         telegram_id=admin.telegram_id if admin.telegram_id else None,
         discord_webhook=admin.discord_webhook if admin.discord_webhook else None,
+        sub_template=admin.sub_template,
+        sub_domain=admin.sub_domain,
+        profile_title=admin.profile_title,
+        support_url=admin.support_url,
     )
     db.add(dbadmin)
     db.commit()
@@ -1023,6 +1027,14 @@ def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify) -> Ad
         dbadmin.telegram_id = modified_admin.telegram_id
     if modified_admin.discord_webhook:
         dbadmin.discord_webhook = modified_admin.discord_webhook
+    if modified_admin.sub_template:
+        dbadmin.sub_template = modified_admin.sub_template
+    if modified_admin.sub_domain:
+        dbadmin.sub_domain = modified_admin.sub_domain
+    if modified_admin.support_url:
+        dbadmin.support_url = modified_admin.support_url
+    if modified_admin.profile_title:
+        dbadmin.profile_title = modified_admin.profile_title
 
     db.commit()
     db.refresh(dbadmin)
@@ -1052,6 +1064,14 @@ def partial_update_admin(db: Session, dbadmin: Admin, modified_admin: AdminParti
         dbadmin.telegram_id = modified_admin.telegram_id
     if modified_admin.discord_webhook is not None:
         dbadmin.discord_webhook = modified_admin.discord_webhook
+    if modified_admin.sub_template:
+        dbadmin.sub_template = modified_admin.sub_template
+    if modified_admin.sub_domain:
+        dbadmin.sub_domain = modified_admin.sub_domain
+    if modified_admin.support_url:
+        dbadmin.support_url = modified_admin.support_url
+    if modified_admin.profile_title:
+        dbadmin.profile_title = modified_admin.profile_title
 
     db.commit()
     db.refresh(dbadmin)
