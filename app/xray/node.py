@@ -4,34 +4,70 @@ import ssl
 import tempfile
 import threading
 import time
+import os
 from collections import deque
 from contextlib import contextmanager
-from typing import List
+from typing import List, Callable, Optional
 
 import grpc
 import requests
 import rpyc
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
-from websocket import WebSocketConnectionClosedException, WebSocketTimeoutException, create_connection
+from websocket import (
+    WebSocketConnectionClosedException,
+    WebSocketTimeoutException,
+    create_connection,
+)
 
 from app.xray.config import XRayConfig
 from xray_api import XRay as XRayAPI
+from app import logger
 
 
-def string_to_temp_file(content: str):
-    file = tempfile.NamedTemporaryFile(mode='w+t')
-    file.write(content)
-    file.flush()
-    return file
+class ManagedTempFile:
+    def __init__(self, content: str):
+        try:
+            self.file = tempfile.NamedTemporaryFile(mode="w+t", delete=False)
+            self.file.write(content)
+            self.file.flush()
+            self.name = self.file.name
+            self.closed = False
+        except Exception as e:
+            logger.error(f"Failed to create temporary file: {e}")
+            self.close()
+            raise
+
+    def close(self):
+        if not self.closed:
+            try:
+                self.file.close()
+            except Exception as e:
+                logger.error(f"Error closing temporary file {self.name}: {e}")
+            if self.name and os.path.exists(self.name):
+                try:
+                    os.unlink(self.name)
+                except Exception as e:
+                    logger.error(f"Failed to delete temporary file {self.name}: {e}")
+            self.closed = True
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
 
 
 class SANIgnoringAdaptor(HTTPAdapter):
-    def init_poolmanager(self, connections, maxsize, block=False):
-        self.poolmanager = PoolManager(num_pools=connections,
-                                       maxsize=maxsize,
-                                       block=block,
-                                       assert_hostname=False)
+    def __init__(self, ssl_context=None, **kwargs):
+        self.ssl_context = ssl_context
+        super().__init__(**kwargs)
+
+    def init_poolmanager(self, connections, maxsize, block=False, **pool_kwargs):
+        pool_kwargs["ssl_context"] = self.ssl_context
+        self.poolmanager = PoolManager(
+            num_pools=connections, maxsize=maxsize, block=block, **pool_kwargs
+        )
 
 
 class NodeAPIError(Exception):
@@ -41,14 +77,15 @@ class NodeAPIError(Exception):
 
 
 class ReSTXRayNode:
-    def __init__(self,
-                 address: str,
-                 port: int,
-                 api_port: int,
-                 ssl_key: str,
-                 ssl_cert: str,
-                 usage_coefficient: float = 1):
-
+    def __init__(
+        self,
+        address: str,
+        port: int,
+        api_port: int,
+        ssl_key: str,
+        ssl_cert: str,
+        usage_coefficient: float = 1,
+    ):
         self.address = address
         self.port = port
         self.api_port = api_port
@@ -56,11 +93,10 @@ class ReSTXRayNode:
         self.ssl_cert = ssl_cert
         self.usage_coefficient = usage_coefficient
 
-        self._keyfile = string_to_temp_file(ssl_key)
-        self._certfile = string_to_temp_file(ssl_cert)
+        self._keyfile = ManagedTempFile(ssl_key)
+        self._certfile = ManagedTempFile(ssl_cert)
 
         self.session = requests.Session()
-        self.session.mount('https://', SANIgnoringAdaptor())
         self.session.cert = (self._certfile.name, self._keyfile.name)
 
         self._session_id = None
@@ -69,13 +105,38 @@ class ReSTXRayNode:
         self._ssl_context = ssl.create_default_context()
         self._ssl_context.check_hostname = False
         self._ssl_context.verify_mode = ssl.CERT_NONE
-        self._ssl_context.load_cert_chain(certfile=self.session.cert[0], keyfile=self.session.cert[1])
+        self._ssl_context.load_cert_chain(
+            certfile=self.session.cert[0], keyfile=self.session.cert[1]
+        )
+        self.session.mount(
+            "https://", SANIgnoringAdaptor(ssl_context=self._ssl_context)
+        )
+
         self._logs_ws_url = f"wss://{self.address.strip('/')}:{self.port}/logs"
         self._logs_queues = []
-        self._logs_bg_thread = threading.Thread(target=self._bg_fetch_logs, daemon=True)
+        self._logs_lock = threading.Lock()
+        self._logs_bg_thread = None
+        self._logs_stop_event = threading.Event()
 
         self._api = None
         self._started = False
+
+        self._node_cert = None
+        self._node_certfile = None
+
+        self._running = False
+
+    def shutdown(self):
+        if self._logs_bg_thread and self._logs_bg_thread.is_alive():
+            self._logs_stop_event.set()
+            self._logs_bg_thread.join()
+        if hasattr(self, "_keyfile") and self._keyfile:
+            self._keyfile.close()
+        if hasattr(self, "_certfile") and self._certfile:
+            self._certfile.close()
+        if self._node_certfile:
+            self._node_certfile.close()
+        self._running = False
 
     def _prepare_config(self, config: XRayConfig):
         for inbound in config.get("inbounds", []):
@@ -84,35 +145,36 @@ class ReSTXRayNode:
             certificates = tlsSettings.get("certificates") or []
             for certificate in certificates:
                 if certificate.get("certificateFile"):
-                    with open(certificate['certificateFile']) as file:
-                        certificate['certificate'] = [
+                    with open(certificate["certificateFile"]) as file:
+                        certificate["certificate"] = [
                             line.strip() for line in file.readlines()
                         ]
-                        del certificate['certificateFile']
-
+                        del certificate["certificateFile"]
                 if certificate.get("keyFile"):
-                    with open(certificate['keyFile']) as file:
-                        certificate['key'] = [
-                            line.strip() for line in file.readlines()
-                        ]
-                        del certificate['keyFile']
-
+                    with open(certificate["keyFile"]) as file:
+                        certificate["key"] = [line.strip() for line in file.readlines()]
+                        del certificate["keyFile"]
         return config
 
     def make_request(self, path: str, timeout: int, **params):
         try:
-            res = self.session.post(self._rest_api_url + path, timeout=timeout,
-                                    json={"session_id": self._session_id, **params})
+            res = self.session.post(
+                self._rest_api_url + path,
+                timeout=timeout,
+                json={"session_id": self._session_id, **params},
+            )
+            res.raise_for_status()
             data = res.json()
         except Exception as e:
-            exc = NodeAPIError(0, str(e))
-            raise exc
-
+            logger.error(f"Error making request to {path}: {e}")
+            raise NodeAPIError(0, str(e))
         if res.status_code == 200:
             return data
         else:
-            exc = NodeAPIError(res.status_code, data['detail'])
-            raise exc
+            logger.error(
+                f"Request to {path} returned status {res.status_code}: {data.get('detail')}"
+            )
+            raise NodeAPIError(res.status_code, data.get("detail", "Unknown error"))
 
     @property
     def connected(self):
@@ -122,170 +184,232 @@ class ReSTXRayNode:
             self.make_request("/ping", timeout=3)
             return True
         except NodeAPIError:
+            logger.warning("Ping failed, node not connected.")
             return False
 
     @property
     def started(self):
-        res = self.make_request("/", timeout=3)
-        return res.get('started', False)
+        return self._started
 
     @property
     def api(self):
         if not self._session_id:
             raise ConnectionError("Node is not connected")
-
         if not self._api:
-            if self._started is True:
+            if self._started:
                 self._api = XRayAPI(
                     address=self.address,
                     port=self.api_port,
                     ssl_cert=self._node_cert.encode(),
-                    ssl_target_name="Gozargah"
+                    ssl_target_name="Gozargah",
                 )
             else:
                 raise ConnectionError("Node is not started")
-
         return self._api
 
     def connect(self):
-        self._node_cert = ssl.get_server_certificate((self.address, self.port))
-        self._node_certfile = string_to_temp_file(self._node_cert)
-        self.session.verify = self._node_certfile.name
+        max_retries = 3
+        total_timeout = 30
+        start_time = time.time()
+        for attempt in range(max_retries):
+            try:
+                self._node_cert = ssl.get_server_certificate((self.address, self.port))
+                self._node_certfile = ManagedTempFile(self._node_cert)
+                self.session.verify = self._node_certfile.name
+                res = self.make_request("/connect", timeout=3)
+                self._session_id = res["session_id"]
+                return
 
-        res = self.make_request("/connect", timeout=3)
-        self._session_id = res['session_id']
+            except (
+                NodeAPIError,
+                requests.exceptions.Timeout,
+                requests.exceptions.SSLError,
+                requests.exceptions.ConnectionError,
+                ssl.SSLError,
+                socket.timeout,
+            ) as e:
+                logger.error(
+                    f"Connection error (attempt {attempt + 1}): {type(e).__name__} - {str(e)}"
+                )
+                if time.time() - start_time > total_timeout:
+                    logger.error("Total timeout exceeded")
+                    raise ConnectionError(f"Timeout after {total_timeout}s")
+                time.sleep(2**attempt)
+            except Exception as e:
+                logger.error(f"REST attempt: {attempt} connect failed: {str(e)}")
+                raise
+            finally:
+                if not hasattr(self, "_session_id") or not self._session_id:
+                    if hasattr(self, "_node_certfile"):
+                        self._node_certfile.close()
+
+        raise ConnectionError(f"Connection failed after {max_retries} retries")
 
     def disconnect(self):
-        self.make_request("/disconnect", timeout=3)
+        try:
+            self.make_request("/disconnect", timeout=3)
+        except NodeAPIError:
+            logger.error("Error during disconnect.")
         self._session_id = None
 
     def get_version(self):
         res = self.make_request("/", timeout=3)
-        return res.get('core_version')
+        return res.get("core_version")
 
     def start(self, config: XRayConfig):
         if not self.connected:
             self.connect()
-
-        config = self._prepare_config(config)
+        try:
+            config = self._prepare_config(config)
+        except FileNotFoundError as e:
+            logger.error(f"Configuration file not found: {e}")
+            raise NodeAPIError(400, f"Configuration error: {str(e)}")
         json_config = config.to_json()
-
         try:
             res = self.make_request("/start", timeout=10, config=json_config)
         except NodeAPIError as exc:
-            if exc.detail == 'Xray is started already':
+            logger.error(f"Error during node start: {exc.detail}")
+            if exc.detail == "Xray is started already":
                 return self.restart(config)
             else:
                 raise exc
-
         self._started = True
-
-        self._api = XRayAPI(
-            address=self.address,
-            port=self.api_port,
-            ssl_cert=self._node_cert.encode(),
-            ssl_target_name="Gozargah"
-        )
-
+        try:
+            self._api = XRayAPI(
+                address=self.address,
+                port=self.api_port,
+                ssl_cert=self._node_cert.encode(),
+                ssl_target_name="Gozargah",
+            )
+        except Exception as e:
+            self._started = False
+            logger.error(f"API initialization failed: {e}")
+            raise ConnectionError(f"API init failed: {e}")
         try:
             grpc.channel_ready_future(self._api._channel).result(timeout=5)
         except grpc.FutureTimeoutError:
-            raise ConnectionError('Failed to connect to node\'s API')
-
+            logger.error("gRPC channel not ready in time.")
+            raise ConnectionError("Failed to connect to node's API")
         return res
 
     def stop(self):
         if not self.connected:
             self.connect()
-
-        self.make_request('/stop', timeout=5)
+        self.make_request("/stop", timeout=5)
         self._api = None
         self._started = False
 
     def restart(self, config: XRayConfig):
         if not self.connected:
             self.connect()
-
         config = self._prepare_config(config)
         json_config = config.to_json()
-
         res = self.make_request("/restart", timeout=10, config=json_config)
-
         self._started = True
-
         self._api = XRayAPI(
             address=self.address,
             port=self.api_port,
             ssl_cert=self._node_cert.encode(),
-            ssl_target_name="Gozargah"
+            ssl_target_name="Gozargah",
         )
-
         try:
             grpc.channel_ready_future(self._api._channel).result(timeout=5)
         except grpc.FutureTimeoutError:
-            raise ConnectionError('Failed to connect to node\'s API')
-
+            logger.error("gRPC channel not ready after restart.")
+            raise ConnectionError("Failed to connect to node's API")
         return res
 
     def _bg_fetch_logs(self):
-        while self._logs_queues:
+        self._running = True
+        self._ssl_context = ssl.create_default_context()
+        self._ssl_context.load_verify_locations(self.session.verify)
+        self._ssl_context.check_hostname = False
+        self._ssl_context.verify_mode = ssl.CERT_NONE
+        while not self._logs_stop_event.is_set():
+            ws = None
             try:
-                websocket_url = f"{self._logs_ws_url}?session_id={self._session_id}&interval=0.7"
-                self._ssl_context.load_verify_locations(self.session.verify)
-                ws = create_connection(websocket_url, sslopt={"context": self._ssl_context}, timeout=2)
-                while self._logs_queues:
+                websocket_url = (
+                    f"{self._logs_ws_url}?session_id={self._session_id}&interval=0.7"
+                )
+                ws = create_connection(
+                    websocket_url, sslopt={"context": self._ssl_context}, timeout=5
+                )
+                ws.settimeout(5)
+                while not self._logs_stop_event.is_set():
                     try:
-                        logs = ws.recv()
-                        for buf in self._logs_queues:
-                            buf.append(logs)
-                    except WebSocketConnectionClosedException:
-                        break
+                        log_line = ws.recv()
+                        with self._logs_lock:
+                            buffers = list(self._logs_queues)
+                        for buf in buffers:
+                            buf.append(log_line)
                     except WebSocketTimeoutException:
-                        pass
-                    except Exception:
-                        pass
-            except Exception:
-                pass
-            time.sleep(2)
+                        continue
+                    except (
+                        WebSocketConnectionClosedException,
+                        ConnectionResetError,
+                    ) as e:
+                        logger.warning(f"WebSocket connection closed or reset: {e}")
+                        break
+                    except Exception as e:
+                        logger.error(f"Unexpected error while receiving log: {e}")
+                        break
+            except (socket.timeout, OSError, ssl.SSLError) as e:
+                logger.warning(f"Connection error in log fetching: {e}")
+            except Exception as e:
+                logger.error(f"Unexpected error in log fetching: {e}")
+            finally:
+                if ws:
+                    try:
+                        ws.close()
+                    except Exception as e:
+                        logger.error(f"Error closing WebSocket: {e}")
+            if not self._logs_stop_event.is_set():
+                time.sleep(2)
 
     @contextmanager
     def get_logs(self):
-        try:
-            buf = deque(maxlen=100)
+        buf = deque(maxlen=100)
+        with self._logs_lock:
             self._logs_queues.append(buf)
-
-            if not self._logs_bg_thread.is_alive():
+            if self._logs_bg_thread is None or not self._logs_bg_thread.is_alive():
+                self._logs_stop_event.clear()
+                self._logs_bg_thread = threading.Thread(
+                    target=self._bg_fetch_logs, daemon=True
+                )
                 try:
                     self._logs_bg_thread.start()
                 except RuntimeError:
-                    self._logs_bg_thread = threading.Thread(target=self._bg_fetch_logs, daemon=True)
-                    self._logs_bg_thread.start()
-
+                    logger.error("Failed to start background log fetching thread.")
+        try:
             yield buf
-
         finally:
-            try:
-                self._logs_queues.remove(buf)
-            except ValueError:
-                pass
-            del buf
+            with self._logs_lock:
+                try:
+                    self._logs_queues.remove(buf)
+                except ValueError:
+                    logger.warning("Buffer already removed from logs queue.")
 
 
 class RPyCXRayNode:
-    def __init__(self,
-                 address: str,
-                 port: int,
-                 api_port: int,
-                 ssl_key: str,
-                 ssl_cert: str,
-                 usage_coefficient: float = 1):
-
+    def __init__(
+        self,
+        address: str,
+        port: int,
+        api_port: int,
+        ssl_key: str,
+        ssl_cert: str,
+        usage_coefficient: float = 1,
+    ):
         class Service(rpyc.Service):
-            def __init__(self,
-                         on_start_funcs: List[callable] = [],
-                         on_stop_funcs: List[callable] = []):
-                self.on_start_funcs = on_start_funcs
-                self.on_stop_funcs = on_stop_funcs
+            def __init__(
+                self,
+                on_start_funcs: Optional[List[Callable]] = None,
+                on_stop_funcs: Optional[List[Callable]] = None,
+            ):
+                self.on_start_funcs = (
+                    on_start_funcs if on_start_funcs is not None else []
+                )
+                self.on_stop_funcs = on_stop_funcs if on_stop_funcs is not None else []
 
             def exposed_on_start(self):
                 for func in self.on_start_funcs:
@@ -315,49 +439,82 @@ class RPyCXRayNode:
         self.usage_coefficient = usage_coefficient
 
         self.started = False
+        self.connection = None
 
-        self._keyfile = string_to_temp_file(ssl_key)
-        self._certfile = string_to_temp_file(ssl_cert)
+        self._keyfile = ManagedTempFile(ssl_key)
+        self._certfile = ManagedTempFile(ssl_cert)
 
         self._service = Service()
         self._api = None
 
+        self.__logs_lock = threading.Lock()
+        self.__bgsrv = None
+
+        self._node_cert = None
+        self._node_certfile = None
+
+    def shutdown(self):
+        self._keyfile.close()
+        self._certfile.close()
+        if self._node_certfile:
+            self._node_certfile.close()
+        if self.__bgsrv:
+            self.__bgsrv.stop()
+
     def disconnect(self):
         try:
-            self.connection.close()
-            del self.connection
+            if self.connection:
+                self.connection.close()
+            self.connection = None
         except AttributeError:
-            pass
+            logger.error("Error disconnecting RPyC connection.")
 
     def connect(self):
         self.disconnect()
-
         tries = 0
-        while True:
+        max_attempts = 3
+        total_timeout = 10
+        start_time = time.time()
+        while tries < max_attempts:
+            if self._node_certfile:
+                self._node_certfile.close()
             tries += 1
-            self._node_cert = ssl.get_server_certificate((self.address, self.port))
-            self._node_certfile = string_to_temp_file(self._node_cert)
-            conn = rpyc.ssl_connect(self.address,
-                                    self.port,
-                                    service=self._service,
-                                    keyfile=self._keyfile.name,
-                                    certfile=self._certfile.name,
-                                    ca_certs=self._node_certfile.name,
-                                    keepalive=True)
             try:
+                self._node_cert = ssl.get_server_certificate((self.address, self.port))
+                self._node_certfile = ManagedTempFile(self._node_cert)
+                conn = rpyc.ssl_connect(
+                    self.address,
+                    self.port,
+                    service=self._service,
+                    keyfile=self._keyfile.name,
+                    certfile=self._certfile.name,
+                    ca_certs=self._node_certfile.name,
+                    keepalive=True,
+                )
                 conn.ping()
                 self.connection = conn
                 break
-            except EOFError as exc:
-                if tries <= 3:
-                    continue
-                raise exc
+            except (EOFError, socket.error, TimeoutError) as e:
+                logger.error(f"RPyC connection attempt {tries} failed: {e}")
+                if time.time() - start_time > total_timeout:
+                    logger.error("RPyC connection failed after exceeding total timeout")
+                    raise ConnectionError(
+                        f"Unable to connect to node via RPyC after {total_timeout} seconds: {e}"
+                    ) from e
+                time.sleep(1)
+        if not self.connection:
+            logger.error("RPyC connection failed after multiple attempts.")
+            raise ConnectionError(
+                "Unable to connect to node via RPyC after multiple attempts."
+            )
 
     @property
     def connected(self):
         try:
-            self.connection.ping()
-            return (not self.connection.closed)
+            if self.connection:
+                self.connection.ping()
+                return not self.connection.closed
+            return False
         except (AttributeError, EOFError, TimeoutError):
             self.disconnect()
             return False
@@ -368,18 +525,9 @@ class RPyCXRayNode:
             self.connect()
         return self.connection.root
 
-    @property
-    def api(self):
-        if not self.connected:
-            raise ConnectionError("Node is not connected")
-
-        if not self.started:
-            raise ConnectionError("Node is not started")
-
-        return self._api
-
     def get_version(self):
-        return self.remote.fetch_xray_version()
+        version = self.remote.fetch_xray_version()
+        return version
 
     def _prepare_config(self, config: XRayConfig):
         for inbound in config.get("inbounds", []):
@@ -388,19 +536,15 @@ class RPyCXRayNode:
             certificates = tlsSettings.get("certificates") or []
             for certificate in certificates:
                 if certificate.get("certificateFile"):
-                    with open(certificate['certificateFile']) as file:
-                        certificate['certificate'] = [
+                    with open(certificate["certificateFile"]) as file:
+                        certificate["certificate"] = [
                             line.strip() for line in file.readlines()
                         ]
-                        del certificate['certificateFile']
-
+                        del certificate["certificateFile"]
                 if certificate.get("keyFile"):
-                    with open(certificate['keyFile']) as file:
-                        certificate['key'] = [
-                            line.strip() for line in file.readlines()
-                        ]
-                        del certificate['keyFile']
-
+                    with open(certificate["keyFile"]) as file:
+                        certificate["key"] = [line.strip() for line in file.readlines()]
+                        del certificate["keyFile"]
         return config
 
     def start(self, config: XRayConfig):
@@ -408,33 +552,26 @@ class RPyCXRayNode:
         json_config = config.to_json()
         self.remote.start(json_config)
         self.started = True
-
-        # connect to API
-        self._api = XRayAPI(
-            address=self.address,
-            port=self.api_port,
-            ssl_cert=self._node_cert.encode(),
-            ssl_target_name="Gozargah"
-        )
         try:
-            grpc.channel_ready_future(self._api._channel).result(timeout=5)
-        except grpc.FutureTimeoutError:
-
-            start_time = time.time()
-            end_time = start_time + 3  # check logs for 3 seconds
-            last_log = ''
-            with self.get_logs() as logs:
-                while time.time() < end_time:
-                    if logs:
-                        last_log = logs[-1].strip().split('\n')[-1]
-                    time.sleep(0.1)
-
+            self._api = XRayAPI(
+                address=self.address,
+                port=self.api_port,
+                ssl_cert=self._node_cert.encode(),
+                ssl_target_name="Gozargah",
+            )
+        except Exception as e:
+            self.started = False
+            logger.error(f"Failed to initialize XRay API for RPyC node: {e}")
+            raise ConnectionError(f"API init failed: {e}")
+        api_timeout = 10
+        try:
+            grpc.channel_ready_future(self._api._channel).result(timeout=api_timeout)
+        except grpc.FutureTimeoutError as e:
+            logger.error("Failed to connect to node's API for RPyC node.")
             self.disconnect()
-
-            if re.search(r'[Ff]ailed', last_log):
-                raise RuntimeError(last_log)
-
-            raise ConnectionError('Failed to connect to node\'s API')
+            raise ConnectionError(
+                f"Failed to connect to node's API after {api_timeout} seconds"
+            ) from e
 
     def stop(self):
         self.remote.stop()
@@ -448,84 +585,99 @@ class RPyCXRayNode:
         self.remote.restart(json_config)
         self.started = True
 
+    def _bg_fetch_logs(self, buf: deque, stop_event: threading.Event):
+        while not stop_event.is_set():
+            with self.__logs_lock:
+                new_logs = self.remote.fetch_logs()
+                if new_logs:
+                    for log_line in new_logs:
+                        buf.append(log_line)
+            time.sleep(0.5)
+
     @contextmanager
     def get_logs(self):
         if not self.connected:
             raise ConnectionError("Node is not connected")
-
-        try:
-            self.__curr_logs
-        except AttributeError:
-            self.__curr_logs = 0
-
-        try:
-            buf = deque(maxlen=100)
-
-            if self.__curr_logs <= 0:
-                self.__curr_logs = 1
+        with self.__logs_lock:
+            if self.__bgsrv is None or not self.__bgsrv.is_alive():
                 self.__bgsrv = rpyc.BgServingThread(self.connection)
-            else:
-                if not self.__bgsrv._active:
-                    self.__bgsrv = rpyc.BgServingThread(self.connection)
-                self.__curr_logs += 1
-
-            logs = self.remote.fetch_logs(buf.append)
+        buf = deque(maxlen=100)
+        stop_event = threading.Event()
+        thread = threading.Thread(
+            target=self._bg_fetch_logs, args=(buf, stop_event), daemon=True
+        )
+        thread.start()
+        try:
             yield buf
-
         finally:
-            if self.__curr_logs <= 1:
-                self.__curr_logs = 0
-                self.__bgsrv.stop()
-            else:
-                if not self.__bgsrv._active:
-                    self.__bgsrv = rpyc.BgServingThread(self.connection)
-                self.__curr_logs -= 1
+            stop_event.set()
+            thread.join()
 
-            if logs:
-                logs.stop()
-
-    def on_start(self, func: callable):
+    def on_start(self, func: Callable):
         self._service.add_startup_func(func)
         return func
 
-    def on_stop(self, func: callable):
+    def on_stop(self, func: Callable):
         self._service.add_shutdown_func(func)
         return func
 
 
 class XRayNode:
-    def __new__(self,
-                address: str,
-                port: int,
-                api_port: int,
-                ssl_key: str,
-                ssl_cert: str,
-                usage_coefficient: float = 1):
+    def __new__(
+        cls,
+        address: str,
+        port: int,
+        api_port: int,
+        ssl_key: str,
+        ssl_cert: str,
+        usage_coefficient: float = 1,
+    ):
+        with (
+            ManagedTempFile(ssl_key) as key_file,
+            ManagedTempFile(ssl_cert) as cert_file,
+        ):
+            with requests.Session() as test_session:
+                test_session.cert = (cert_file.name, key_file.name)
+                test_session.verify = False
 
-        # trying to detect what's the server of node
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(1)
-            s.connect((address, port))
-            s.send(b'HEAD / HTTP/1.0\r\n\r\n')
-            s.recv(1024)
-            s.close()
-            # it might be uvicorn
-            return ReSTXRayNode(
-                address=address,
-                port=port,
-                api_port=api_port,
-                ssl_key=ssl_key,
-                ssl_cert=ssl_cert,
-                usage_coefficient=usage_coefficient
-            )
-        except Exception:
-            # if might be rpyc
-            return RPyCXRayNode(
-                address=address,
-                port=port,
-                api_port=api_port,
-                ssl_key=ssl_key,
-                ssl_cert=ssl_cert,
-                usage_coefficient=usage_coefficient
-            )
+                try:
+                    response = test_session.head(
+                        f"https://{address}:{port}/", timeout=5, allow_redirects=False
+                    )
+
+                    if 200 <= response.status_code < 400:
+                        return ReSTXRayNode(
+                            address=address,
+                            port=port,
+                            api_port=api_port,
+                            ssl_key=ssl_key,
+                            ssl_cert=ssl_cert,
+                            usage_coefficient=usage_coefficient,
+                        )
+                    elif response.status_code == 405:
+                        allow = response.headers.get("Allow", "")
+                        if "POST" in allow:
+                            return ReSTXRayNode(
+                                address=address,
+                                port=port,
+                                api_port=api_port,
+                                ssl_key=ssl_key,
+                                ssl_cert=ssl_cert,
+                                usage_coefficient=usage_coefficient,
+                            )
+                except requests.exceptions.SSLError as e:
+                    logger.warning(f"SSL handshake failed: {str(e)}")
+                except requests.exceptions.ConnectionError as e:
+                    logger.error(f"Connection failed: {str(e)}")
+                except Exception as e:
+                    logger.error(f"Unexpected probe error: {str(e)}", exc_info=True)
+
+        logger.warning("Falling back to RPyC connection")
+        return RPyCXRayNode(
+            address=address,
+            port=port,
+            api_port=api_port,
+            ssl_key=ssl_key,
+            ssl_cert=ssl_cert,
+            usage_coefficient=usage_coefficient,
+        )
