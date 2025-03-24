@@ -9,7 +9,7 @@ async def add_group(group: GroupResponse, by: str):
         "embeds": [
             {
                 "title": "Add Group",
-                "description": f"**Name:** {group.name}\n" 
+                "description": f"**Name:** {group.name}\n"
                 + f"**Inbound Tags:** {group.inbound_tags}\n"
                 + f"**Is Disabled:** {group.is_disabled}\n",
                 "color": int("00ff00", 16),
@@ -27,7 +27,7 @@ async def modify_group(group: GroupResponse, by: str):
         "embeds": [
             {
                 "title": "Modify Group",
-                "description": f"**Name:** {group.name}\n" 
+                "description": f"**Name:** {group.name}\n"
                 + f"**Inbound Tags:** {group.inbound_tags}\n"
                 + f"**Is Disabled:** {group.is_disabled}\n",
                 "color": int("ffff00", 16),

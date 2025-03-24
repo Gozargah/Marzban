@@ -83,7 +83,7 @@ async def admin_login(username: str, password: str, client_ip: str, success: boo
                 + f"**Password:** {'🔒' if success else password}\n"
                 + f"**IP:** {client_ip}",
                 "color": int("00ff00", 16) if success else int("ff0000", 16),
-                "footer": "Successful" if success else "Failed"
+                "footer": "Successful" if success else "Failed",
             }
         ],
     }

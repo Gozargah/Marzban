@@ -53,9 +53,6 @@ class GroupModify(Group):
 
 class GroupResponse(Group):
     id: int
-    name: str
-    inbound_tags: list[str] = []
-    is_disabled: bool = False
     total_users: int = 0
 
     model_config = ConfigDict(from_attributes=True)

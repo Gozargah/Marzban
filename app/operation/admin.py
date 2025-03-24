@@ -64,9 +64,9 @@ class AdminOperation(BaseOperator):
             self.raise_error(message="You're not allowed to delete sudo accounts. Use marzban-cli instead.", code=403)
 
         await remove_admin(db, db_admin)
-        
+
         asyncio.create_task(notification.remove_admin(username, current_admin.username))
-        
+
         logger.info(f'Admin "{db_admin.username}" with id "{db_admin.id}" deleted by admin "{current_admin.username}"')
 
     async def get_admins(
@@ -109,6 +109,5 @@ class AdminOperation(BaseOperator):
         reseted_admin = AdminDetails.model_validate(db_admin)
 
         asyncio.create_task(notification.admin_usage_reset(reseted_admin, admin.username))
-
 
         return AdminDetails.model_validate(db_admin)
