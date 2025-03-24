@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
+import asyncio
 
 from app.db import AsyncSession, get_db
 from .authentication import validate_admin, check_sudo_admin, get_current
@@ -8,6 +9,7 @@ from app.utils import responses
 from app.utils.jwt import create_admin_token
 from app.operation import OperatorType
 from app.operation.admin import AdminOperation
+from app import notification
 
 
 router = APIRouter(tags=["Admin"], prefix="/api/admin", responses={401: responses._401, 403: responses._403})
@@ -29,27 +31,24 @@ async def admin_token(
     request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)
 ):
     """Authenticate an admin and issue a token."""
-    # client_ip = get_client_ip(request)
+    client_ip = get_client_ip(request)
 
     db_admin = await validate_admin(db, form_data.username, form_data.password)
     if not db_admin:
-        # report.login(form_data.username, form_data.password, client_ip, False)
+        asyncio.create_task(notification.admin_login(form_data.username, form_data.password, client_ip, False))
         raise HTTPException(
             status_code=401,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     if db_admin.is_disabled:
-        # report.login(form_data.username, form_data.password, client_ip, False)
+        asyncio.create_task(notification.admin_login(form_data.username, form_data.password, client_ip, False))
         raise HTTPException(
             status_code=403,
             detail="your account has been disabled",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
-    # if client_ip not in LOGIN_NOTIFY_WHITE_LIST:
-    #   report.login(form_data.username, "🔒", client_ip, True)
-
+    asyncio.create_task(notification.admin_login(form_data.username, form_data.password, client_ip, True))
     return Token(access_token=await create_admin_token(form_data.username, db_admin.is_sudo))
 
 

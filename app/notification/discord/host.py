@@ -64,7 +64,7 @@ async def update_hosts(by: str):
             {
                 "title": "Update Hosts",
                 "description": f"All hosts has been updated by **{by}**",
-                "color": int("0000ff", 16),
+                "color": int("00ffff", 16),
             }
         ],
     }
