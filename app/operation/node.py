@@ -22,6 +22,7 @@ from app.db.base import GetDB
 from app.backend import config
 from app.node import get_tls, backend_users, manager as node_manager
 from app.utils.logger import get_logger
+from app import notification
 
 
 logger = get_logger("node-operator")
@@ -45,6 +46,8 @@ class NodeOperator(BaseOperator):
 
             if db_node is None:
                 return
+
+            old_status = db_node.status
 
             logger.info(f'Connecting to "{db_node.name}" node')
             update_node_status(db, db_node, NodeStatus.connecting)
@@ -87,7 +90,11 @@ class NodeOperator(BaseOperator):
 
         logger.info(f'New node "{db_node.name}" with id "{db_node.id}" added by admin "{admin.username}"')
 
-        return NodeResponse.model_validate(db_node)
+        node = NodeResponse.model_validate(db_node)
+
+        asyncio.create_task(notification.add_node(node, admin.username))
+
+        return node
 
     async def modify_node(self, db: Session, node_id: Node, modified_node: NodeModify, admin: Admin) -> Node:
         db_node: Node = await self.get_validated_node(db=db, node_id=node_id)
@@ -105,7 +112,11 @@ class NodeOperator(BaseOperator):
 
         logger.info(f'Node "{db_node.name}" with id "{db_node.id}" modified by admin "{admin.username}"')
 
-        return db_node
+        node = NodeResponse.model_validate(db_node)
+
+        asyncio.create_task(notification.modify_node(node, admin.username))
+
+        return node
 
     async def remove_node(self, db: Session, node_id: Node, admin: Admin) -> None:
         db_node: Node = await self.get_validated_node(db=db, node_id=node_id)
@@ -114,6 +125,8 @@ class NodeOperator(BaseOperator):
         remove_node(db=db, db_node=db_node)
 
         logger.info(f'Node "{db_node.name}" with id "{db_node.id}" deleted by admin "{admin.username}"')
+
+        asyncio.create_task(notification.remove_host(db_node, admin.username))
 
     async def restart_node(self, node_id: Node, admin: Admin) -> None:
         asyncio.create_task(self.connect_node(node_id))
