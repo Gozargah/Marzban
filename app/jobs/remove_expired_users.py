@@ -1,20 +1,20 @@
-from app import logger, scheduler
-from app.db import GetDB, crud
-from app.models.admin import AdminDetails
-from app.utils import report
+import asyncio
+
+from app import logger, async_scheduler as scheduler
+from app.db import GetDB
+from app.db.crud import autodelete_expired_users
+from app.models.user import UserResponse
+from app import notification
 from config import USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS
+from .dependencies import SYSTEM_ADMIN
 
-SYSTEM_ADMIN = AdminDetails(username="system", is_sudo=True, telegram_id=None, discord_webhook=None)
 
-
-def remove_expired_users():
-    with GetDB() as db:
-        deleted_users = crud.autodelete_expired_users(db, USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS)
+async def remove_expired_users():
+    async with GetDB() as db:
+        deleted_users = await autodelete_expired_users(db, USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS)
 
         for user in deleted_users:
-            report.user_deleted(
-                user.username, SYSTEM_ADMIN, user_admin=AdminDetails.model_validate(user.admin) if user.admin else None
-            )
+            asyncio.create_task(notification.remove_user(user=UserResponse.model_validate(user), by=SYSTEM_ADMIN))
             logger.info("Expired user %s deleted.", user.username)
 
 
