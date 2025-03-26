@@ -61,8 +61,7 @@ async def reset_user_by_next_report(db: Session, db_user: User):
 
     asyncio.create_task(node_manager.update_user(user))
 
-    notification.user_data_reset_by_next(user, user_admin=user.admin)
-
+    asyncio.create_task(notification.user_data_reset_by_next(user, user.admin))
 
 async def review():
     now = datetime.now(timezone.utc)
@@ -95,9 +94,7 @@ async def review():
             user = UserResponse.model_validate(db_user)
             asyncio.create_task(node_manager.update_user(user))
 
-            notification.user_status_change(
-                username=db_user.username, status=status, user=user, user_admin=db_user.admin
-            )
+            asyncio.create_task(notification.user_status_change(db_user, db_user.admin.username))
 
             logger.info(f'User "{db_user.username}" status changed to {status.value}')
 
@@ -122,9 +119,7 @@ async def review():
             await start_user_expire(db, db_user)
             db_user = UserResponse.model_validate(db_user)
 
-            notification.user_status_change(
-                username=db_user.username, status=status, user=db_user, user_admin=db_user.admin
-            )
+            asyncio.create_task(notification.user_status_change(db_user, db_user.admin.username))
 
             logger.info(f'User "{db_user.username}" status changed to {status.value}')
 
