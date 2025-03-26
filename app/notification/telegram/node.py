@@ -7,10 +7,10 @@ async def create_node(node: NodeResponse, by: str):
     data = (
         "*#Create Node*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**ID:** {node.id}\n"
-        + f"**Name:** {node.name}\n"
-        + f"**Address:** {node.address}\n"
-        + f"**Port:** {node.port}\n"
+        + f"**ID:** `{node.id}`\n"
+        + f"**Name:** `{node.name}`\n"
+        + f"**Address:** `{node.address}`\n"
+        + f"**Port:** `{node.port}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_By: #{by}_"
     )
@@ -22,10 +22,10 @@ async def modify_node(node: NodeResponse, by: str):
     data = (
         "*#Modify Node*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**ID:** {node.id}\n"
-        + f"**Name:** {node.name}\n"
-        + f"**Address:** {node.address}\n"
-        + f"**Port:** {node.port}\n"
+        + f"**ID:** `{node.id}`\n"
+        + f"**Name:** `{node.name}`\n"
+        + f"**Address:** `{node.address}`\n"
+        + f"**Port:** `{node.port}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_By: #{by}_"
     )
@@ -37,8 +37,8 @@ async def remove_node(node: NodeResponse, by: str):
     data = (
         "*#Remove Node*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**ID:** {node.id}\n"
-        + f"**Name:** {node.name}\n"
+        + f"**ID:** `{node.id}`\n"
+        + f"**Name:** `{node.name}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_By: #{by}_"
     )

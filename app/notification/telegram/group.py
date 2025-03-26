@@ -7,11 +7,11 @@ async def create_group(group: GroupResponse, by: str):
     data = (
         "*#Create Group*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Name:** {group.name}\n"
-        + f"**Inbound Tags:** {group.inbound_tags}\n"
-        + f"**Is Disabled:** {group.is_disabled}\n"
+        + f"**Name:** `{group.name}`\n"
+        + f"**Inbound Tags:** `{group.inbound_tags}`\n"
+        + f"**Is Disabled:** `{group.is_disabled}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_ID: {group.id}_\n"
+        + f"_ID: `{group.id}`_\n"
         + f"_By: #{by}_"
     )
     if TELEGRAM_NOTIFY:
@@ -22,11 +22,11 @@ async def modify_group(group: GroupResponse, by: str):
     data = (
         "*#Modify Group*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Name:** {group.name}\n"
-        + f"**Inbound Tags:** {group.inbound_tags}\n"
-        + f"**Is Disabled:** {group.is_disabled}\n"
+        + f"**Name:** `{group.name}`\n"
+        + f"**Inbound Tags:** `{group.inbound_tags}`\n"
+        + f"**Is Disabled:** `{group.is_disabled}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_ID: {group.id}_\n"
+        + f"_ID: `{group.id}`_\n"
         + f"_By: #{by}_"
     )
     if TELEGRAM_NOTIFY:
@@ -35,7 +35,11 @@ async def modify_group(group: GroupResponse, by: str):
 
 async def remove_group(group_id: int, by: str):
     data = (
-        "*#Remove Group*\n" + "➖➖➖➖➖➖➖➖➖\n" + f"**ID:** {group_id}\n" + "➖➖➖➖➖➖➖➖➖\n" + f"_By: #{by}_"
+        "*#Remove Group*\n"
+        + "➖➖➖➖➖➖➖➖➖\n"
+        + f"**ID:** `{group_id}`\n"
+        + "➖➖➖➖➖➖➖➖➖\n"
+        + f"_By: #{by}_"
     )
     if TELEGRAM_NOTIFY:
         await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)

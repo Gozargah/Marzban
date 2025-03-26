@@ -15,9 +15,9 @@ async def user_status_change(user: UserResponse, by: str):
     data = (
         _status[user.status.value]
         + "\n➖➖➖➖➖➖➖➖➖\n"
-        + f"**Username:** {user.username}\n"
+        + f"**Username:** `{user.username}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_Belongs To: {user.admin.username if user.admin else None}_\n"
+        + f"_Belongs To: `{user.admin.username if user.admin else None}`_\n"
         + f"_By: #{by}_"
     )
     if TELEGRAM_NOTIFY:
@@ -30,13 +30,13 @@ async def create_user(user: UserResponse, by: str):
     data = (
         "*🆕 #Create User*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Username:** {user.username}\n"
-        + f"**Data Limit**: {user.data_limit}\n"
-        + f"**Expire Date:** {user.expire}\n"
-        + f"**Data Limit Reset Strategy:** {user.data_limit_reset_strategy.value}\n"
-        + f"**Has Next Plan**: {bool(user.next_plan)}\n"
+        + f"**Username:** `{user.username}`\n"
+        + f"**Data Limit**: `{user.data_limit}`\n"
+        + f"**Expire Date:** `{user.expire}`\n"
+        + f"**Data Limit Reset Strategy:** `{user.data_limit_reset_strategy.value}`\n"
+        + f"**Has Next Plan**: `{bool(user.next_plan)}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_Belongs To: {user.admin.username if user.admin else None}_\n"
+        + f"_Belongs To: `{user.admin.username if user.admin else None}`_\n"
         + f"_By: #{by}_"
     )
     if TELEGRAM_NOTIFY:
@@ -49,13 +49,13 @@ async def modify_user(user: UserResponse, by: str):
     data = (
         "*✏️ #Modify User*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Username:** {user.username}\n"
-        + f"**Data Limit**: {user.data_limit}\n"
-        + f"**Expire Date:** {user.expire}\n"
-        + f"**Data Limit Reset Strategy:** {user.data_limit_reset_strategy.value}\n"
-        + f"**Has Next Plan**: {bool(user.next_plan)}\n"
+        + f"**Username:** `{user.username}`\n"
+        + f"**Data Limit**: `{user.data_limit}`\n"
+        + f"**Expire Date:** `{user.expire}`\n"
+        + f"**Data Limit Reset Strategy:** `{user.data_limit_reset_strategy.value}`\n"
+        + f"**Has Next Plan**: `{bool(user.next_plan)}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_Belongs To: {user.admin.username if user.admin else None}_\n"
+        + f"_Belongs To: `{user.admin.username if user.admin else None}`_\n"
         + f"_By: #{by}_"
     )
     if TELEGRAM_NOTIFY:
@@ -68,9 +68,9 @@ async def remove_user(user: UserResponse, by: str):
     data = (
         "🗑️ #Remove User\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Username:** {user.username}\n"
+        + f"**Username:** `{user.username}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_Belongs To: {user.admin.username if user.admin else None}_\n"
+        + f"_Belongs To: `{user.admin.username if user.admin else None}`_\n"
         + f"_By: #{by}_"
     )
     if TELEGRAM_NOTIFY:
@@ -83,10 +83,10 @@ async def reset_user_data_usage(user: UserResponse, by: str):
     data = (
         "🔁 #Reset User Data Usage\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Username:** {user.username}\n"
-        + f"**Data Limit:** {user.data_limit}\n"
+        + f"**Username:** `{user.username}`\n"
+        + f"**Data Limit:** `{user.data_limit}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_Belongs To: {user.admin.username if user.admin else None}_\n"
+        + f"_Belongs To: `{user.admin.username if user.admin else None}`_\n"
         + f"_By: #{by}_"
     )
     if TELEGRAM_NOTIFY:
@@ -99,11 +99,11 @@ async def user_data_reset_by_next(user: UserResponse, by: str):
     data = (
         "🔁 #Reset User By Next\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Username:** {user.username}\n"
-        + f"**Data Limit:** {user.data_limit}\n"
-        + f"**Expire Date:** {user.expire}\n"
+        + f"**Username:** `{user.username}`\n"
+        + f"**Data Limit:** `{user.data_limit}`\n"
+        + f"**Expire Date:** `{user.expire}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_Belongs To: {user.admin.username if user.admin else None}_\n"
+        + f"_Belongs To: `{user.admin.username if user.admin else None}`_\n"
         + f"_By: #{by}_"
     )
     if TELEGRAM_NOTIFY:
@@ -116,9 +116,9 @@ async def user_subscription_revoked(user: UserResponse, by: str):
     data = (
         "🛑 #Revoke User Subscribtion\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Username:** {user.username}\n"
+        + f"**Username:** `{user.username}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_Belongs To: {user.admin.username if user.admin else None}_\n"
+        + f"_Belongs To: `{user.admin.username if user.admin else None}`_\n"
         + f"_By: #{by}_"
     )
     if TELEGRAM_NOTIFY:
