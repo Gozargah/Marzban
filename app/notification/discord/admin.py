@@ -1,6 +1,7 @@
 from config import DISCORD_WEBHOOK_URL
 from app.notification.client import send_discord_webhook
 from app.models.admin import AdminDetails
+from . import colors
 
 
 async def create_admin(admin: AdminDetails, by: str):
@@ -13,7 +14,7 @@ async def create_admin(admin: AdminDetails, by: str):
                 + f"**Is Sudo:** {admin.is_sudo}\n"
                 + f"**Is Disabled:** {admin.is_disabled}\n"
                 + f"**Users Usage:** {admin.users_usage}\n",
-                "color": 0x00FF00,
+                "color": colors.GREEN,
                 "footer": {"text": f"By: {by}"},
             }
         ],
@@ -32,7 +33,7 @@ async def modify_admin(admin: AdminDetails, by: str):
                 + f"**Is Sudo:** {admin.is_sudo}\n"
                 + f"**Is Disabled:** {admin.is_disabled}\n"
                 + f"**Users Usage:** {admin.users_usage}\n",
-                "color": 0xFFFF00,
+                "color": colors.YELLOW,
                 "footer": {"text": f"By: {by}"},
             }
         ],
@@ -48,7 +49,7 @@ async def remove_admin(username: str, by: str):
             {
                 "title": "Remove Admin",
                 "description": f"**Username:** {username}\n",
-                "color": 0xFF0000,
+                "color": colors.RED,
                 "footer": {"text": f"By: {by}"},
             }
         ],
@@ -64,7 +65,7 @@ async def admin_reset_usage(admin: AdminDetails, by: str):
             {
                 "title": "Admin Reset Usage",
                 "description": f"**Username:** {admin.username}\n",
-                "color": 0x00FFFF,
+                "color": colors.CYAN,
                 "footer": {"text": f"By: {by}"},
             }
         ],
@@ -81,7 +82,7 @@ async def admin_login(username: str, password: str, client_ip: str, success: boo
                 "description": f"**Username:** {username}\n"
                 f"**Password:** {'🔒' if success else password}\n"
                 f"**IP:** {client_ip}",
-                "color": 0x00FF00 if success else 0xFF0000,
+                "color": colors.GREEN if success else colors.RED,
                 "footer": {"text": "Successful" if success else "Failed"},
             }
         ]

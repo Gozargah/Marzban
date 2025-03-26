@@ -1,6 +1,7 @@
 from config import DISCORD_WEBHOOK_URL
 from app.notification.client import send_discord_webhook
 from app.models.group import GroupResponse
+from . import colors
 
 
 async def create_group(group: GroupResponse, by: str):
@@ -12,7 +13,7 @@ async def create_group(group: GroupResponse, by: str):
                 "description": f"**Name:** {group.name}\n"
                 + f"**Inbound Tags:** {group.inbound_tags}\n"
                 + f"**Is Disabled:** {group.is_disabled}\n",
-                "color": 0x00FF00,
+                "color": colors.GREEN,
                 "footer": {"text": f"ID: {group.id}\nBy: {by}"},
             }
         ],
@@ -30,7 +31,7 @@ async def modify_group(group: GroupResponse, by: str):
                 "description": f"**Name:** {group.name}\n"
                 + f"**Inbound Tags:** {group.inbound_tags}\n"
                 + f"**Is Disabled:** {group.is_disabled}\n",
-                "color": 0xFFFF00,
+                "color": colors.YELLOW,
                 "footer": {"text": f"ID: {group.id}\nBy: {by}"},
             }
         ],
@@ -46,7 +47,7 @@ async def remove_group(group_id: int, by: str):
             {
                 "title": "Remove Group",
                 "description": f"**ID:** {group_id}",
-                "color": 0xFF0000,
+                "color": colors.RED,
                 "footer": {"text": f"By: {by}"},
             }
         ],

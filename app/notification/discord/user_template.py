@@ -1,6 +1,7 @@
 from app.notification.client import send_discord_webhook
 from config import DISCORD_WEBHOOK_URL
 from app.models.user_template import UserTemplateResponse
+from . import colors
 
 
 async def create_user_template(user_tempelate: UserTemplateResponse, by: str):
@@ -14,7 +15,7 @@ async def create_user_template(user_tempelate: UserTemplateResponse, by: str):
                 + f"**Expire Duration**: {user_tempelate.expire_duration}\n"
                 + f"**Username Prefix**: {user_tempelate.username_prefix}\n"
                 + f"**Username Suffix**: {user_tempelate.username_suffix}\n",
-                "color": 0x00FF00,
+                "color": colors.GREEN,
                 "footer": {"text": f"By: {by}"},
             }
         ],
@@ -34,7 +35,7 @@ async def modify_user_template(user_template: UserTemplateResponse, by: str):
                 + f"**Expire Duration**: {user_template.expire_duration}\n"
                 + f"**Username Prefix**: {user_template.username_prefix}\n"
                 + f"**Username Suffix**: {user_template.username_suffix}\n",
-                "color": 0xFFFF00,
+                "color": colors.YELLOW,
                 "footer": {"text": f"By: {by}"},
             }
         ],
@@ -50,7 +51,7 @@ async def remove_user_template(name: str, by: str):
             {
                 "title": "Remove User Template",
                 "description": f"**Name:** {name}\n",
-                "color": 0xFF0000,
+                "color": colors.RED,
                 "footer": {"text": f"By: {by}"},
             }
         ],
