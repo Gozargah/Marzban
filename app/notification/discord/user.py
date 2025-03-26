@@ -36,9 +36,9 @@ async def create_user(user: UserResponse, by: str):
             {
                 "title": "🆕 Create User",
                 "description": f"**Username:** {user.username}\n"
-                + f"**Data Limit**: {user.data_limit}"
-                + f"**Expire Date:** {user.expire}"
-                + f"**Data Limit Reset Strategy:** {user.data_limit_reset_strategy.value}"
+                + f"**Data Limit**: {user.data_limit}\n"
+                + f"**Expire Date:** {user.expire}\n"
+                + f"**Data Limit Reset Strategy:** {user.data_limit_reset_strategy.value}\n"
                 + f"**Has Next Plan**: {bool(user.next_plan)}",
                 "color": 0x00FF00,
                 "footer": {"text": f"Belongs To:{user.admin.username if user.admin else None}\nBy: {by}"},
@@ -58,10 +58,10 @@ async def modify_user(user: UserResponse, by: str):
             {
                 "title": "✏️ Modify User",
                 "description": f"**Username:** {user.username}\n"
-                + f"**Data Limit**: {user.data_limit}"
-                + f"**Expire Date:** {user.expire}"
-                + f"**Data Limit Reset Strategy:** {user.data_limit_reset_strategy.value}"
-                + f"**Has Next Plan**: {bool(user.next_plan)}",
+                + f"**Data Limit**: {user.data_limit}\n"
+                + f"**Expire Date:** {user.expire}\n"
+                + f"**Data Limit Reset Strategy:** {user.data_limit_reset_strategy.value}\n"
+                + f"**Has Next Plan**: {bool(user.next_plan)}\n",
                 "color": 0xFFFF00,
                 "footer": {"text": f"Belongs To:{user.admin.username if user.admin else None}\nBy: {by}"},
             }
@@ -120,7 +120,7 @@ async def user_data_reset_by_next(user: UserResponse, by: str):
             {
                 "title": "🔁 Reset User",
                 "description": f"**Username:** {user.username}\n"
-                + f"**Data Limit:** {user.data_limit}"
+                + f"**Data Limit:** {user.data_limit}\n"
                 + f"**Expire Date:** {user.expire}",
                 "color": 0x00FFFF,
                 "footer": {
