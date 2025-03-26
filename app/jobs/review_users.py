@@ -95,7 +95,9 @@ async def review():
             user = UserResponse.model_validate(db_user)
             asyncio.create_task(node_manager.update_user(user))
 
-            notification.user_status_change(username=db_user.username, status=status, user=user, user_admin=db_user.admin)
+            notification.user_status_change(
+                username=db_user.username, status=status, user=user, user_admin=db_user.admin
+            )
 
             logger.info(f'User "{db_user.username}" status changed to {status.value}')
 
@@ -120,7 +122,9 @@ async def review():
             await start_user_expire(db, db_user)
             db_user = UserResponse.model_validate(db_user)
 
-            notification.user_status_change(username=db_user.username, status=status, user=db_user, user_admin=db_user.admin)
+            notification.user_status_change(
+                username=db_user.username, status=status, user=db_user, user_admin=db_user.admin
+            )
 
             logger.info(f'User "{db_user.username}" status changed to {status.value}')
 
