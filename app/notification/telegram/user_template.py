@@ -5,7 +5,7 @@ from config import TELEGRAM_LOGGER_TOPIC_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRA
 
 async def create_user_template(user_template: UserTemplateResponse, by: str):
     data = (
-        "*Create User Template*\n"
+        "*#Create User Template*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"**Name:** {user_template.name}\n"
         + f"**Data Limit:** {user_template.data_limit}\n"
@@ -13,7 +13,7 @@ async def create_user_template(user_template: UserTemplateResponse, by: str):
         + f"**Username Prefix:** {user_template.username_prefix}\n"
         + f"**Username Suffix:** {user_template.username_suffix}\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_By: {by}_"
+        + f"_By: #{by}_"
     )
     if TELEGRAM_NOTIFY:
         await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
@@ -21,7 +21,7 @@ async def create_user_template(user_template: UserTemplateResponse, by: str):
 
 async def modify_user_template(user_template: UserTemplateResponse, by: str):
     data = (
-        "*Modify User Template*\n"
+        "*#Modify User Template*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"**Name:** {user_template.name}\n"
         + f"**Data Limit:** {user_template.data_limit}\n"
@@ -29,13 +29,13 @@ async def modify_user_template(user_template: UserTemplateResponse, by: str):
         + f"**Username Prefix:** {user_template.username_prefix}\n"
         + f"**Username Suffix:** {user_template.username_suffix}\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_By: {by}_"
+        + f"_By: #{by}_"
     )
     if TELEGRAM_NOTIFY:
         await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
 
 
 async def remove_user_template(name: str, by: str):
-    data = "*Remove User Template*\n" + f"**Name:** {name}\n" + "➖➖➖➖➖➖➖➖➖\n" + f"_By: {by}_"
+    data = "*#Remove User Template*\n" + f"**Name:** {name}\n" + "➖➖➖➖➖➖➖➖➖\n" + f"_By: #{by}_"
     if TELEGRAM_NOTIFY:
         await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)

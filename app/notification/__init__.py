@@ -7,6 +7,7 @@ from app.models.user_template import UserTemplateResponse
 from app.models.node import NodeResponse
 from app.models.group import GroupResponse
 from app.models.admin import AdminDetails
+from app.models.user import UserResponse
 
 
 async def create_host(host: BaseHost, by: str):
@@ -81,3 +82,31 @@ async def admin_login(username: str, password: str, client_ip: str, success: boo
     asyncio.gather(
         ds.admin_login(username, password, client_ip, success), tg.admin_login(username, password, client_ip, success)
     )
+
+
+async def user_status_change(user: UserResponse, by: str):
+    asyncio.gather(ds.user_status_change(user, by), tg.user_status_change(user, by))
+
+
+async def create_user(user: UserResponse, by: str):
+    asyncio.gather(ds.create_user(user, by), tg.create_user(user, by))
+
+
+async def modify_user(user: UserResponse, by: str):
+    asyncio.gather(ds.modify_user(user, by), tg.modify_user(user, by))
+
+
+async def remove_user(user: UserResponse, by: str):
+    asyncio.gather(ds.remove_user(user, by), tg.remove_user(user, by))
+
+
+async def reset_user_data_usage(user: UserResponse, by: str):
+    asyncio.gather(ds.reset_user_data_usage(user, by), tg.reset_user_data_usage(user, by))
+
+
+async def user_data_reset_by_next(user: UserResponse, by: str):
+    asyncio.gather(ds.user_data_reset_by_next(user, by), tg.user_data_reset_by_next(user, by))
+
+
+async def user_subscription_revoked(user: UserResponse, by: str):
+    asyncio.gather(ds.user_subscription_revoked(user, by), tg.user_subscription_revoked(user, by))

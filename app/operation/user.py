@@ -39,6 +39,7 @@ from app.operation import BaseOperator
 from app.utils.logger import get_logger
 from app.utils.jwt import create_subscription_token
 from config import XRAY_SUBSCRIPTION_PATH, XRAY_SUBSCRIPTION_URL_PREFIX
+from app import notification
 
 
 logger = get_logger("user-operator")
@@ -77,6 +78,7 @@ class UserOperator(BaseOperator):
         user = await self.validate_user(db_user)
 
         asyncio.create_task(node_manager.update_user(user, inbounds=config.inbounds))
+        asyncio.create_task(notification.create_user(user, admin.username))
 
         logger.info(f'New user "{db_user.username}" with id "{db_user.id}" added by admin "{admin.username}"')
 
@@ -104,7 +106,11 @@ class UserOperator(BaseOperator):
 
         logger.info(f'User "{user.username}" with id "{db_user.id}" modified by admin "{admin.username}"')
 
+        asyncio.create_task(notification.modify_user(user, admin.username))
+
         if user.status != old_status:
+            asyncio.create_task(notification.user_status_change(user, admin.username))
+
             logger.info(f'User "{db_user.username}" status changed from "{old_status.value}" to "{user.status.value}"')
 
         return user
@@ -116,16 +122,25 @@ class UserOperator(BaseOperator):
         user = await self.validate_user(db_user)
         asyncio.create_task(node_manager.remove_user(user))
 
+        asyncio.create_task(notification.remove_user(user, admin.username))
+
         logger.info(f'User "{db_user.username}" with id "{db_user.id}" deleted by admin "{admin.username}"')
         return {}
 
     async def reset_user_data_usage(self, db: AsyncSession, username: str, admin: AdminDetails):
         db_user = await self.get_validated_user(db, username, admin)
 
+        old_status = db_user.status
+
         db_user = await reset_user_data_usage(db=db, db_user=db_user)
         user = await self.validate_user(db_user)
         if db_user.status in (UserStatus.active, UserStatus.on_hold):
             asyncio.create_task(node_manager.update_user(user, inbounds=config.inbounds))
+
+        if user.status != old_status:
+            asyncio.create_task(notification.user_status_change(user, admin.username))
+
+        asyncio.create_task(notification.reset_user_data_usage(user, admin.username))
 
         logger.info(f'User "{db_user.username}" usage was reset by admin "{admin.username}"')
 
@@ -138,6 +153,8 @@ class UserOperator(BaseOperator):
         user = await self.validate_user(db_user)
         if db_user.status in (UserStatus.active, UserStatus.on_hold):
             asyncio.create_task(node_manager.update_user(user, inbounds=config.inbounds))
+
+        asyncio.create_task(notification.user_subscription_revoked(user, admin.username))
 
         logger.info(f'User "{db_user.username}" subscription was revoked by admin "{admin.username}"')
 
@@ -155,11 +172,18 @@ class UserOperator(BaseOperator):
         if db_user is None or db_user.next_plan is None:
             self.raise_error(message="User doesn't have next plan", code=404)
 
+        old_status = db_user.status
+
         db_user = reset_user_by_next(db=db, db_user=db_user)
 
         user = await self.validate_user(db_user)
         if user.status in (UserStatus.active, UserStatus.on_hold):
             asyncio.create_task(node_manager.update_user(user, inbounds=config.inbounds))
+
+        if user.status != old_status:
+            asyncio.create_task(notification.user_status_change(user, admin.username))
+
+        asyncio.create_task(notification.user_data_reset_by_next(user, admin.username))
 
         logger.info(f'User "{db_user.username}"\'s usage was reset by next plan by admin "{admin.username}"')
 

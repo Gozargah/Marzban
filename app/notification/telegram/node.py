@@ -5,14 +5,14 @@ from config import TELEGRAM_LOGGER_TOPIC_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRA
 
 async def create_node(node: NodeResponse, by: str):
     data = (
-        "*Create Node*\n"
+        "*#Create Node*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"**ID:** {node.id}\n"
         + f"**Name:** {node.name}\n"
         + f"**Address:** {node.address}\n"
         + f"**Port:** {node.port}\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_By: {by}_"
+        + f"_By: #{by}_"
     )
     if TELEGRAM_NOTIFY:
         await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
@@ -20,14 +20,14 @@ async def create_node(node: NodeResponse, by: str):
 
 async def modify_node(node: NodeResponse, by: str):
     data = (
-        "*Modify Node*\n"
+        "*#Modify Node*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"**ID:** {node.id}\n"
         + f"**Name:** {node.name}\n"
         + f"**Address:** {node.address}\n"
         + f"**Port:** {node.port}\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_By: {by}_"
+        + f"_By: #{by}_"
     )
     if TELEGRAM_NOTIFY:
         await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
@@ -35,12 +35,12 @@ async def modify_node(node: NodeResponse, by: str):
 
 async def remove_node(node: NodeResponse, by: str):
     data = (
-        "*Remove Node*\n"
+        "*#Remove Node*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"**ID:** {node.id}\n"
         + f"**Name:** {node.name}\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_By: {by}_"
+        + f"_By: #{by}_"
     )
     if TELEGRAM_NOTIFY:
         await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
