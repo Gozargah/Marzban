@@ -6,7 +6,7 @@ from app.db.crud import autodelete_expired_users
 from app.models.user import UserResponse
 from app import notification
 from config import USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS
-from .dependencies import SYSTEM_ADMIN
+from app.jobs.dependencies import SYSTEM_ADMIN
 
 
 async def remove_expired_users():

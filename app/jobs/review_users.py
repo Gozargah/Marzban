@@ -19,7 +19,7 @@ from app.utils.logger import get_logger
 from app.utils import report
 from app.utils.helpers import calculate_expiration_days, calculate_usage_percent
 from app import notification
-from .dependencies import SYSTEM_ADMIN
+from app.jobs.dependencies import SYSTEM_ADMIN
 from config import (
     JOB_REVIEW_USERS_INTERVAL,
     NOTIFY_DAYS_LEFT,

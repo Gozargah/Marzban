@@ -700,11 +700,11 @@ async def revoke_user_sub(db: AsyncSession, db_user: User) -> User:
     """
     db_user.sub_revoked_at = datetime.now(timezone.utc)
 
-    db_user.proxy_settings = ProxyTable()
-    db_user = await update_user(db, db_user, db_user)
+    db_user.proxy_settings = ProxyTable().dict()
 
     await db.commit()
-    return await get_user(db, db_user.username)
+    await db.refresh(db_user)
+    return db_user
 
 
 async def update_user_sub(db: AsyncSession, dbuser: User, user_agent: str) -> User:
