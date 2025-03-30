@@ -5,14 +5,14 @@ from config import TELEGRAM_LOGGER_TOPIC_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRA
 
 async def create_host(host: BaseHost, by: str):
     data = (
-        "*Create Host*\n"
+        "*#Create_Host*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"**Remark:** `{host.remark}`\n"
         + f"**Address:** `{host.address}`\n"
         + f"**Inbound Tag:** `{host.inbound_tag}`\n"
         + f"**Port:** `{host.port}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_ID: `{host.id}`_\n"
+        + f"_ID_: `{host.id}`\n"
         + f"_By: #{by}_"
     )
     if TELEGRAM_NOTIFY:
@@ -21,7 +21,7 @@ async def create_host(host: BaseHost, by: str):
 
 async def modify_host(host: BaseHost, by: str):
     data = (
-        "*#Modify Host*\n"
+        "*#Modify_Host*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"**Remark:** `{host.remark}`\n"
         + f"**Address:** `{host.address}`\n"
@@ -37,11 +37,11 @@ async def modify_host(host: BaseHost, by: str):
 
 async def remove_host(host: BaseHost, by: str):
     data = (
-        "*#Remove Host*\n"
+        "*#Remove_Host*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"**Remark:** `{host.remark}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_ID: {host.id}_\n"
+        + f"_ID_: {host.id}\n"
         + f"_By: #{by}_"
     )
     if TELEGRAM_NOTIFY:
@@ -49,6 +49,6 @@ async def remove_host(host: BaseHost, by: str):
 
 
 async def update_hosts(by: str):
-    data = f"*#Add Host*\n➖➖➖➖➖➖➖➖➖\nAll hosts has been updated by **#{by}**"
+    data = f"*#Add_Host*\n➖➖➖➖➖➖➖➖➖\nAll hosts has been updated by **#{by}**"
     if TELEGRAM_NOTIFY:
         await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)

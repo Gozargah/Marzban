@@ -5,7 +5,7 @@ from config import TELEGRAM_LOGGER_TOPIC_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRA
 
 async def create_node(node: NodeResponse, by: str):
     data = (
-        "*#Create Node*\n"
+        "*#Create_Node*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"**ID:** `{node.id}`\n"
         + f"**Name:** `{node.name}`\n"
@@ -20,7 +20,7 @@ async def create_node(node: NodeResponse, by: str):
 
 async def modify_node(node: NodeResponse, by: str):
     data = (
-        "*#Modify Node*\n"
+        "*#Modify_Node*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"**ID:** `{node.id}`\n"
         + f"**Name:** `{node.name}`\n"
@@ -35,7 +35,7 @@ async def modify_node(node: NodeResponse, by: str):
 
 async def remove_node(node: NodeResponse, by: str):
     data = (
-        "*#Remove Node*\n"
+        "*#Remove_Node*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"**ID:** `{node.id}`\n"
         + f"**Name:** `{node.name}`\n"
