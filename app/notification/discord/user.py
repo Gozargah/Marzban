@@ -45,8 +45,8 @@ async def create_user(user: UserResponse, by: str):
             {
                 "title": "🆕 Create User",
                 "description": f"**Username:** {user.username}\n"
-                + f"**Data Limit**: {readable_size(user.data_limit)}\n"
-                + f"**Expire Date:** {user.expire}\n"
+                + f"**Data Limit**: {readable_size(user.data_limit) if user.data_limit else 'Unlimited'}\n"
+                + f"**Expire Date:** {user.expire if user.expire else "Never"}\n"
                 + f"**Data Limit Reset Strategy:** {user.data_limit_reset_strategy.value}\n"
                 + f"**Has Next Plan**: {bool(user.next_plan)}",
                 "color": colors.GREEN,
@@ -67,8 +67,8 @@ async def modify_user(user: UserResponse, by: str):
             {
                 "title": "✏️ Modify User",
                 "description": f"**Username:** {user.username}\n"
-                + f"**Data Limit**: {readable_size(user.data_limit)}\n"
-                + f"**Expire Date:** {user.expire}\n"
+                + f"**Data Limit**: {readable_size(user.data_limit) if user.data_limit else 'Unlimited'}\n"
+                + f"**Expire Date:** {user.expire if user.expire else "Never"}\n"
                 + f"**Data Limit Reset Strategy:** {user.data_limit_reset_strategy.value}\n"
                 + f"**Has Next Plan**: {bool(user.next_plan)}",
                 "color": colors.YELLOW,
@@ -109,7 +109,7 @@ async def reset_user_data_usage(user: UserResponse, by: str):
             {
                 "title": "🔁 Reset User Data Usage",
                 "description": f"**Username:** {user.username}\n"
-                + f"**Data Limit**: {readable_size(user.data_limit)}\n",
+                + f"**Data Limit**: {readable_size(user.data_limit) if user.data_limit else 'Unlimited'}\n",
                 "color": colors.CYAN,
                 "footer": {
                     "text": f"ID: {user.id}\nBelongs To:{user.admin.username if user.admin else None}\nBy: {by}"
@@ -130,8 +130,8 @@ async def user_data_reset_by_next(user: UserResponse, by: str):
             {
                 "title": "🔁 Reset User",
                 "description": f"**Username:** {user.username}\n"
-                + f"**Data Limit**: {readable_size(user.data_limit)}\n"
-                + f"**Expire Date:** {user.expire}",
+                + f"**Data Limit**: {readable_size(user.data_limit) if user.data_limit else 'Unlimited'}\n"
+                + f"**Expire Date:** {user.expire if user.expire else "Never"}",
                 "color": colors.CYAN,
                 "footer": {
                     "text": f"ID: {user.id}\nBelongs To:{user.admin.username if user.admin else None}\nBy: {by}"
