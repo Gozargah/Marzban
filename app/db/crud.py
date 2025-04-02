@@ -35,16 +35,13 @@ from app.db.models import (
     UserDataLimitResetStrategy,
 )
 from app.db.base import DATABASE_DIALECT
-from app.models.stats import Period, UserUsageStats
+from app.models.stats import Period, UserUsageStats, NodeUsageStats
 from app.models.proxy import ProxyTable
 from app.models.host import CreateHost
 from app.models.admin import AdminCreate, AdminModify
 from app.models.group import GroupCreate, GroupModify
-from app.models.node import NodeUsageResponse, NodeCreate, NodeModify
-from app.models.user import (
-    UserModify,
-    UserCreate,
-)
+from app.models.node import NodeCreate, NodeModify
+from app.models.user import UserModify, UserCreate
 from app.models.user_template import UserTemplateCreate, UserTemplateModify
 from app.utils.helpers import calculate_expiration_days, calculate_usage_percent
 from config import NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT, USERS_AUTODELETE_DAYS
@@ -458,12 +455,7 @@ async def get_days_left_reached_users(db: AsyncSession, days: int) -> list[User]
 
 
 async def get_user_usages(
-    db: AsyncSession,
-    user_id: int,
-    start: datetime,
-    end: datetime,
-    period: Period = Period.hour,
-    node_id: int | None = None,
+    db: AsyncSession, user_id: int, start: datetime, end: datetime, period: Period, node_id: int | None = None
 ) -> list[UserUsageStats]:
     """
     Retrieves user usages within a specified date range.
@@ -1470,7 +1462,9 @@ async def get_nodes(
     return (await db.execute(query)).scalars().all()
 
 
-async def get_nodes_usage(db: AsyncSession, start: datetime, end: datetime) -> list[NodeUsageResponse]:
+async def get_nodes_usage(
+    db: AsyncSession, start: datetime, end: datetime, period: Period, node_id: int | None = None
+) -> list[NodeUsageStats]:
     """
     Retrieves usage data for all nodes within a specified time range.
 
@@ -1482,25 +1476,29 @@ async def get_nodes_usage(db: AsyncSession, start: datetime, end: datetime) -> l
     Returns:
         List[NodeUsageResponse]: A list of NodeUsageResponse objects containing usage data.
     """
-    usages = {
-        0: NodeUsageResponse(  # Main Core
-            node_id=None, node_name="Master", uplink=0, downlink=0
+    trunc_expr = _build_trunc_expression(period, NodeUsage.created_at)
+
+    conditions = [NodeUsage.created_at >= start, NodeUsage.created_at <= end]
+
+    if node_id is not None:
+        conditions.append(NodeUsage.node_id == node_id)
+
+    stmt = (
+        select(
+            trunc_expr.label("period_start"),
+            func.sum(NodeUsage.downlink).label("downlink"),
+            func.sum(NodeUsage.uplink).label("uplink"),
         )
-    }
+        .where(and_(*conditions))
+        .group_by(trunc_expr)
+        .order_by(trunc_expr)
+    )
 
-    for node in (await db.execute(get_node_queryset())).scalars().all():
-        usages[node.id] = NodeUsageResponse(node_id=node.id, node_name=node.name, uplink=0, downlink=0)
-
-    cond = and_(NodeUsage.created_at >= start, NodeUsage.created_at <= end)
-
-    for v in (await db.execute(select(NodeUsage).where(cond))).scalars().all():
-        try:
-            usages[v.node_id or 0].uplink += v.uplink
-            usages[v.node_id or 0].downlink += v.downlink
-        except KeyError:
-            pass
-
-    return list(usages.values())
+    result = await db.execute(stmt)
+    return [
+        NodeUsageStats(downlink=row.downlink, uplink=row.uplink, period=period, period_start=row.period_start)
+        for row in result
+    ]
 
 
 async def create_node(db: AsyncSession, node: NodeCreate) -> Node:

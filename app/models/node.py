@@ -118,23 +118,3 @@ class NodeResponse(Node):
     status: NodeStatus
     message: str | None = None
     model_config = ConfigDict(from_attributes=True)
-
-
-class NodeUsageResponse(BaseModel):
-    node_id: int | None = None
-    node_name: str
-    uplink: int
-    downlink: int
-
-
-class NodesUsageResponse(BaseModel):
-    usages: list[NodeUsageResponse]
-
-
-class NodeStats(BaseModel):
-    mem_total: int
-    mem_used: int
-    cpu_cores: int
-    cpu_usage: float
-    incoming_bandwidth_speed: int
-    outgoing_bandwidth_speed: int

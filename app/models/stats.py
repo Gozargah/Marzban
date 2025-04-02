@@ -21,3 +21,23 @@ class UserUsageStats(BaseModel):
     @field_validator("total_traffic", mode="before")
     def cast_to_int(cls, v):
         return NumericValidatorMixin.cast_to_int(v)
+
+
+class NodeUsageStats(BaseModel):
+    uplink: int
+    downlink: int
+    period: Period
+    period_start: dt
+
+    @field_validator("downlink", "uplink", mode="before")
+    def cast_to_int(cls, v):
+        return NumericValidatorMixin.cast_to_int(v)
+
+
+class NodeStats(BaseModel):
+    mem_total: int
+    mem_used: int
+    cpu_cores: int
+    cpu_usage: float
+    incoming_bandwidth_speed: int
+    outgoing_bandwidth_speed: int

@@ -4,7 +4,8 @@ from sqlalchemy.exc import IntegrityError
 from GozargahNodeBridge import GozargahNode, NodeAPIError
 
 from app.operation import BaseOperator
-from app.models.node import NodeCreate, NodeResponse, NodeSettings, NodesUsageResponse, NodeModify, NodeStats
+from app.models.stats import NodeStats, NodeUsageStats, Period
+from app.models.node import NodeCreate, NodeResponse, NodeSettings, NodeModify
 from app.models.admin import AdminDetails
 from app.db.models import Node, NodeStatus
 from app.db import AsyncSession
@@ -171,11 +172,11 @@ class NodeOperator(BaseOperator):
             await asyncio.create_task(self.connect_node(db_node.id))
         logger.info(f'All Node\'s restarted by admin "{admin.username}"')
 
-    async def get_usage(self, db: AsyncSession, start: str = "", end: str = "") -> NodesUsageResponse:
+    async def get_usage(
+        self, db: AsyncSession, start: str = "", end: str = "", period: Period = Period.hour, node_id: int | None = None
+    ) -> list[NodeUsageStats]:
         start, end = self.validate_dates(start, end)
-        usages = await get_nodes_usage(db, start, end)
-
-        return {"usages": usages}
+        return await get_nodes_usage(db, start, end, period=period, node_id=node_id)
 
     async def get_logs(self, node_id: Node) -> asyncio.Queue:
         node = await node_manager.get_node(node_id)

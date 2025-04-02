@@ -7,14 +7,8 @@ from sse_starlette.sse import EventSourceResponse
 from app.db import AsyncSession, get_db
 from app.models.admin import AdminDetails
 from .authentication import check_sudo_admin
-from app.models.node import (
-    NodeCreate,
-    NodeModify,
-    NodeResponse,
-    NodeSettings,
-    NodesUsageResponse,
-    NodeStats,
-)
+from app.models.stats import NodeStats, NodeUsageStats, Period
+from app.models.node import NodeCreate, NodeModify, NodeResponse, NodeSettings
 from app.operation.node import NodeOperator
 from app.operation import OperatorType
 from app.utils import responses
@@ -98,11 +92,7 @@ async def remove_node(
 
 
 @router.get("/{node_id}/logs")
-async def node_logs(
-    node_id: int,
-    request: Request,
-    _: AdminDetails = Depends(check_sudo_admin),
-):
+async def node_logs(node_id: int, request: Request, _: AdminDetails = Depends(check_sudo_admin)):
     """
     Stream logs for a specific node as Server-Sent Events.
     """
@@ -130,40 +120,34 @@ async def node_logs(
     return EventSourceResponse(event_generator())
 
 
-@router.get("s/usage", response_model=NodesUsageResponse)
+@router.get("/usage", response_model=list[NodeUsageStats])
 async def get_usage(
     db: AsyncSession = Depends(get_db),
     start: str = "",
     end: str = "",
+    period: Period = Period.hour,
+    node_id: int | None = None,
     _: AdminDetails = Depends(check_sudo_admin),
 ):
     """Retrieve usage statistics for nodes within a specified date range."""
-    return await node_operator.get_usage(db=db, start=start, end=end)
+    return await node_operator.get_usage(db=db, start=start, end=end, period=period, node_id=node_id)
 
 
 @router.get("/{node_id}/stats", response_model=NodeStats)
-async def node_stats(
-    node_id: int,
-    _: AdminDetails = Depends(check_sudo_admin),
-):
+async def node_stats(node_id: int, _: AdminDetails = Depends(check_sudo_admin)):
     """Retrieve node real-time statistics."""
     return await node_operator.get_node_system_stats(node_id=node_id)
 
 
 @router.get("s/stats", response_model=dict[int, NodeStats | None])
-async def nodes_stats(
-    _: AdminDetails = Depends(check_sudo_admin),
-):
+async def nodes_stats(_: AdminDetails = Depends(check_sudo_admin)):
     """Retrieve nodes real-time statistics."""
     return await node_operator.get_nodes_system_stats()
 
 
 @router.get("/{node_id}/stats/{username}", response_model=dict[int, int])
 async def user_online_stats(
-    node_id: int,
-    username: str,
-    db: AsyncSession = Depends(get_db),
-    _: AdminDetails = Depends(check_sudo_admin),
+    node_id: int, username: str, db: AsyncSession = Depends(get_db), _: AdminDetails = Depends(check_sudo_admin)
 ):
     """Retrieve user online stats by node."""
     return await node_operator.get_user_online_stats_by_node(db=db, node_id=node_id, username=username)
@@ -171,10 +155,7 @@ async def user_online_stats(
 
 @router.get("/{node_id}/stats/{username}/ip", response_model=dict[int, dict[str, int]])
 async def user_online_ip_list(
-    node_id: int,
-    username: str,
-    db: AsyncSession = Depends(get_db),
-    _: AdminDetails = Depends(check_sudo_admin),
+    node_id: int, username: str, db: AsyncSession = Depends(get_db), _: AdminDetails = Depends(check_sudo_admin)
 ):
     """Retrieve user ips by node."""
     return await node_operator.get_user_ip_list_by_node(db=db, node_id=node_id, username=username)
