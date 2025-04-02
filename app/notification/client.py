@@ -30,7 +30,6 @@ async def send_discord_webhook(json_data, webhook):
                 logger.error(f"Discord webhook failed: {response.status_code} - {response_text}")
         except Exception as err:
             logger.error(f"Discord webhook failed Exception: {str(err)}")
-        
 
 
 async def send_telegram_message(message, chat_id=0, channel_id=0, topic_id=0):
