@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { HostResponse, modifyHosts, CreateHost, addHost, modifyHost, XHttpModes, GRPCSettings, KCPSettings, TcpSettings, WebSocketSettings, XHttpSettingsOutput } from "@/service/api"
+import { BaseHost, modifyHosts, CreateHost, addHost } from "@/service/api"
 import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core"
 import { arrayMove, rectSortingStrategy, SortableContext, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
 import SortableHost from "./SortableHost"
@@ -13,11 +13,6 @@ import { toast } from "@/hooks/use-toast"
 import useDirDetection from "@/hooks/use-dir-detection"
 import { useTranslation } from "react-i18next"
 
-const MultiplexProtocol = {
-    smux: 'smux',
-    yamux: 'yamux',
-    h2mux: 'h2mux',
-} as const;
 interface Brutal {
     up_mbps: number;
     down_mbps: number;
@@ -56,6 +51,7 @@ interface MuxSettings {
 }
 
 export interface HostFormValues {
+    id?: number;
     remark: string;
     address: string;
     port: number;
@@ -194,15 +190,15 @@ export const HostFormSchema = z.object({
     remark: z.string().min(1, "Remark is required"),
     address: z.string().min(1, "Address is required"),
     port: z.number().min(1, "Port must be at least 1").max(65535, "Port must be at most 65535"),
-    inbound_tag: z.string().min(1, "Inbound tag is required"),
+    inbound_tag: z.string().optional(),
     status: z.array(z.string()).default([]),
     host: z.string().default(""),
     sni: z.string().default(""),
     path: z.string().default(""),
     http_headers: z.record(z.string()).default({}),
     security: z.enum(["inbound_default", "tls", "reality"]).default("inbound_default"),
-    alpn: z.string().default("default"),
-    fingerprint: z.string().default("default"),
+    alpn: z.string().default(""),
+    fingerprint: z.string().default(""),
     allowinsecure: z.boolean().default(false),
     random_user_agent: z.boolean().default(false),
     use_sni_as_host: z.boolean().default(false),
@@ -210,17 +206,17 @@ export const HostFormSchema = z.object({
     is_disabled: z.boolean().default(false),
     fragment_settings: z.object({
         xray: z.object({
-            fragments: z.array(z.object({
-                interval: z.string(),
-                length: z.string(),
-                times: z.string()
-            }))
+            packets: z.string().optional(),
+            length: z.string().optional(),
+            interval: z.string().optional()
         }).optional()
     }).optional(),
     noise_settings: z.object({
-        xray: z.object({
-            type: z.string()
-        }).optional()
+        xray: z.array(z.object({
+            type: z.string().regex(/^(?:rand|str|base64|hex)$/),
+            packet: z.string(),
+            delay: z.string().regex(/^\d{1,16}(-\d{1,16})?$/)
+        })).optional()
     }).optional(),
     mux_settings: z.object({
         xray: z.object({
@@ -229,7 +225,7 @@ export const HostFormSchema = z.object({
             xudp_proxy_443: z.string()
         }).optional(),
         sing_box: z.object({
-            protocol: z.string().nullable(),
+            protocol: z.enum(["null", "h2mux", "smux", "yamux"]).nullable(),
             max_connections: z.number().nullable(),
             max_streams: z.number().nullable(),
             min_streams: z.number().nullable(),
@@ -240,7 +236,7 @@ export const HostFormSchema = z.object({
             }).nullable()
         }).optional(),
         clash: z.object({
-            protocol: z.string().nullable(),
+            protocol: z.enum(["null", "h2", "smux", "yamux", "h2mux"]).nullable(),
             max_connections: z.number().nullable(),
             max_streams: z.number().nullable(),
             min_streams: z.number().nullable(),
@@ -268,26 +264,16 @@ const initialDefaultValues: HostFormValues = {
     path: "",
     http_headers: {},
     security: "inbound_default",
-    alpn: "default",
-    fingerprint: "default",
+    alpn: "",
+    fingerprint: "",
     allowinsecure: false,
     is_disabled: false,
     random_user_agent: false,
     use_sni_as_host: false,
     priority: 0,
-    fragment_settings: {
-        xray: {
-            packets: "",
-            length: "",
-            interval: ""
-        }
-    },
+    fragment_settings: undefined,
     noise_settings: {
-        xray: [{
-            type: "",
-            packet: "",
-            delay: ""
-        }]
+        xray: []
     },
     mux_settings: {
         xray: {
@@ -370,16 +356,17 @@ const initialDefaultValues: HostFormValues = {
 };
 
 export interface HostsProps {
-    data: HostResponse[];
+    data: BaseHost[];
     isDialogOpen: boolean;
     onDialogOpenChange: (open: boolean) => void;
     onAddHost: (open: boolean) => void;
+    onSubmit: (data: HostFormValues) => Promise<{ status: number }>;
 }
 
-export default function Hosts({ data, onAddHost, isDialogOpen }: HostsProps) {
-    const [hosts, setHosts] = useState<HostResponse[] | undefined>();
-    const [editingHost, setEditingHost] = useState<HostResponse | null>(null);
-    const [debouncedHosts, setDebouncedHosts] = useState<HostResponse[] | undefined>([]);
+export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit }: HostsProps) {
+    const [hosts, setHosts] = useState<BaseHost[] | undefined>();
+    const [editingHost, setEditingHost] = useState<BaseHost | null>(null);
+    const [debouncedHosts, setDebouncedHosts] = useState<BaseHost[] | undefined>([]);
     const dir = useDirDetection();
     const { t } = useTranslation();
 
@@ -391,14 +378,14 @@ export default function Hosts({ data, onAddHost, isDialogOpen }: HostsProps) {
 
     useEffect(() => {
         setHosts(data ?? [])
-    }, [data])    
+    }, [data])
 
     const form = useForm<HostFormValues>({
         resolver: zodResolver(HostFormSchema),
         defaultValues: initialDefaultValues,
     });
 
-    const handleEdit = (host: HostResponse) => {
+    const handleEdit = (host: BaseHost) => {
         const formData: HostFormValues = {
             remark: host.remark || "",
             address: host.address || "",
@@ -410,8 +397,8 @@ export default function Hosts({ data, onAddHost, isDialogOpen }: HostsProps) {
             path: host.path || "",
             http_headers: host.http_headers || {},
             security: host.security || "inbound_default",
-            alpn: host.alpn || "default",
-            fingerprint: host.fingerprint || "default",
+            alpn: host.alpn || "",
+            fingerprint: host.fingerprint || "",
             allowinsecure: host.allowinsecure || false,
             random_user_agent: host.random_user_agent || false,
             use_sni_as_host: host.use_sni_as_host || false,
@@ -499,17 +486,17 @@ export default function Hosts({ data, onAddHost, isDialogOpen }: HostsProps) {
         onAddHost(true);
     };
 
-    const handleDuplicate = async (host: HostResponse) => {
+    const handleDuplicate = async (host: BaseHost) => {
         if (!host) return;
-        
+
         try {
             // Find all hosts with priorities equal to or less than the host being duplicated
             // Get the host's index in the sorted array
             const sortedHosts = [...(hosts ?? [])].sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0));
             const hostIndex = sortedHosts.findIndex(h => h.id === host.id);
-            
+
             if (hostIndex === -1) return;
-            
+
             // Find the next host's priority
             let newPriority: number;
             if (hostIndex === sortedHosts.length - 1) {
@@ -520,30 +507,30 @@ export default function Hosts({ data, onAddHost, isDialogOpen }: HostsProps) {
                 // Always use an integer value
                 const nextHostPriority = sortedHosts[hostIndex + 1].priority ?? hostIndex + 1;
                 const currentPriority = host.priority ?? 0;
-                
+
                 if (nextHostPriority > currentPriority + 1) {
                     // If there's space between priorities, simply add 1
                     newPriority = currentPriority + 1;
                 } else {
                     // Otherwise increment all priorities after this host
                     newPriority = currentPriority + 1;
-                    
+
                     // Update all hosts after this one to have higher priorities
                     const hostsToUpdate = sortedHosts.slice(hostIndex + 1).map(h => ({
-                        ...h, 
+                        ...h,
                         priority: (h.priority ?? 0) + 1
                     }));
-                    
+
                     if (hostsToUpdate.length > 0) {
                         // Update priorities in batch
                         modifyHosts(hostsToUpdate);
                     }
                 }
             }
-            
+
             // Create duplicate with new priority and slightly modified name
             const newHost: CreateHost = {
-            ...host, 
+                ...host,
                 id: undefined, // Remove ID so a new one is generated
                 remark: `${host.remark || ""} (copy)`,
                 priority: newPriority,
@@ -551,24 +538,22 @@ export default function Hosts({ data, onAddHost, isDialogOpen }: HostsProps) {
                 alpn: host.alpn === "" ? undefined : host.alpn,
                 fingerprint: host.fingerprint === "" ? undefined : host.fingerprint,
             };
-            
+
             await addHost(newHost);
-            
+
             // Show success toast
             toast({
                 dir,
                 description: t("host.duplicateSuccess", { name: host.remark || "" }),
                 defaultValue: `Host "${host.remark || ""}" duplicated successfully`
             });
-            
+
             // Refresh the hosts data
             queryClient.invalidateQueries({
                 queryKey: ["getGetHostsQueryKey"],
             });
-            
+
         } catch (error) {
-            console.error('Error duplicating host:', error);
-            
             // Show error toast
             toast({
                 dir,
@@ -579,146 +564,62 @@ export default function Hosts({ data, onAddHost, isDialogOpen }: HostsProps) {
         }
     };
 
-    const onSubmit = async (data: HostFormValues) => {
-        try {
-            // Helper function to recursively remove empty objects, arrays, or default values
-            const cleanEmptyValues = (obj: any, preserveZeroValues: boolean = false): any => {
-                if (obj === null || obj === undefined) return undefined;
-                
-                // If it's an array, filter out empty items
-                if (Array.isArray(obj)) {
-                    const filteredArray = obj.map(item => cleanEmptyValues(item, preserveZeroValues)).filter(item => item !== undefined);
-                    return filteredArray.length > 0 ? filteredArray : undefined;
-                }
-                
-                // If it's an object, recursively clean it
-                if (typeof obj === 'object') {
-                    const cleaned: Record<string, any> = {};
-                    let hasValues = false;
-                    
-                    for (const key in obj) {
-                        const value = cleanEmptyValues(obj[key], preserveZeroValues);
-                        if (value !== undefined) {
-                            cleaned[key] = value;
-                            hasValues = true;
-                        }
-                    }
-                    
-                    return hasValues ? cleaned : undefined;
-                }
-                
-                // For strings, return undefined if empty or just whitespace
-                if (typeof obj === 'string' && obj.trim() === '') return undefined;
-                
-                // For numbers, return undefined if 0 (default), unless preserveZeroValues is true
-                if (typeof obj === 'number' && obj === 0 && !preserveZeroValues) return undefined;
-                
-                // For booleans, return undefined if false (default)
-                if (typeof obj === 'boolean' && obj === false) return undefined;
-                
-                // Otherwise return the value
-                return obj;
-            };
-            
-            // Special cleaner for transport settings to only include sections that have values
-            const cleanTransportSettings = (settings: any) => {
-                if (!settings) return undefined;
-                
-                const cleaned: Record<string, any> = {};
-                let hasTransportSettings = false;
-                
-                // Clean xhttp_settings
-                if (settings.xhttp_settings) {
-                    const cleanedXhttp = cleanEmptyValues(settings.xhttp_settings);
-                    if (cleanedXhttp) {
-                        cleaned.xhttp_settings = cleanedXhttp;
-                        hasTransportSettings = true;
-                    }
-                }
-                
-                // Clean grpc_settings
-                if (settings.grpc_settings) {
-                    const cleanedGrpc = cleanEmptyValues(settings.grpc_settings);
-                    if (cleanedGrpc) {
-                        cleaned.grpc_settings = cleanedGrpc;
-                        hasTransportSettings = true;
-                    }
-                }
-                
-                // Clean kcp_settings
-                if (settings.kcp_settings) {
-                    const cleanedKcp = cleanEmptyValues(settings.kcp_settings);
-                    if (cleanedKcp) {
-                        cleaned.kcp_settings = cleanedKcp;
-                        hasTransportSettings = true;
-                    }
-                }
-                
-                // Clean tcp_settings
-                if (settings.tcp_settings) {
-                    const cleanedTcp = cleanEmptyValues(settings.tcp_settings);
-                    if (cleanedTcp) {
-                        cleaned.tcp_settings = cleanedTcp;
-                        hasTransportSettings = true;
-                    }
-                }
-                
-                // Clean websocket_settings
-                if (settings.websocket_settings) {
-                    const cleanedWebsocket = cleanEmptyValues(settings.websocket_settings);
-                    if (cleanedWebsocket) {
-                        cleaned.websocket_settings = cleanedWebsocket;
-                        hasTransportSettings = true;
-                    }
-                }
-                
-                return hasTransportSettings ? cleaned : undefined;
-            };
-            
-            // Clean the entire form data
-            const cleanedData = { 
-                ...data,
-                // Always include required fields even if they would be cleaned
-                remark: data.remark,
-                address: data.address,
-                port: data.port, // Always include port
-                inbound_tag: data.inbound_tag,
-                priority: data.priority, // Always include priority
-                
-                // Clean nested objects
-                http_headers: Object.keys(data.http_headers || {}).length > 0 ? data.http_headers : undefined,
-                fragment_settings: cleanEmptyValues(data.fragment_settings),
-                noise_settings: cleanEmptyValues(data.noise_settings),
-                mux_settings: cleanEmptyValues(data.mux_settings),
-                
-                // Apply special cleaning to transport settings
-                transport_settings: cleanTransportSettings(data.transport_settings),
-            };
-            
-            if (editingHost?.id) {
-                // Edit existing host
-                await modifyHost(editingHost.id, {
-                    ...cleanedData,
-                    alpn: cleanedData.alpn === 'default' ? undefined : cleanedData.alpn,
-                    fingerprint: cleanedData.fingerprint === 'default' ? undefined : cleanedData.fingerprint,
-                } as CreateHost);
-            } else {
-                // Add new host
-                const maxPriority = Math.min(...(hosts?.map((h) => h.priority ?? 0) ?? [0]), 0);
-                const newHost = {
-                    ...cleanedData,
-                    priority: maxPriority - 1,
-                    alpn: cleanedData.alpn === 'default' ? undefined : cleanedData.alpn,
-                    fingerprint: cleanedData.fingerprint === 'default' ? undefined : cleanedData.fingerprint,
-                };
-            await addHost(newHost as CreateHost);
+    const cleanEmptyValues = (obj: any) => {
+        if (!obj) return undefined;
+        const cleaned: any = {};
+        for (const [key, value] of Object.entries(obj)) {
+            if (value === null || value === undefined || value === "" || (Array.isArray(value) && value.length === 0) || (typeof value === "object" && Object.keys(value).length === 0)) {
+                continue;
             }
-            setEditingHost(null);
-            form.reset(initialDefaultValues); // Reset to initial values after submit
-            return { status: 200 };
+            if (typeof value === "object") {
+                const cleanedValue = cleanEmptyValues(value);
+                if (cleanedValue !== undefined) {
+                    cleaned[key] = cleanedValue;
+                }
+            } else {
+                cleaned[key] = value;
+            }
+        }
+        return Object.keys(cleaned).length > 0 ? cleaned : undefined;
+    };
+
+    const handleSubmit = async (data: HostFormValues) => {
+        try {
+            // Clean up the data before submission
+            const cleanedData = {
+                ...data,
+                mux_settings: data.mux_settings ? {
+                    xray: data.mux_settings.xray ? {
+                        concurrency: data.mux_settings.xray.concurrency ?? null,
+                        xudp_concurrency: data.mux_settings.xray.xudp_concurrency ?? null,
+                        xudp_proxy_443: data.mux_settings.xray.xudp_proxy_443 ?? "reject"
+                    } : undefined,
+                    sing_box: data.mux_settings.sing_box ? {
+                        protocol: data.mux_settings.sing_box.protocol === "null" ? null : data.mux_settings.sing_box.protocol,
+                        max_connections: data.mux_settings.sing_box.max_connections ?? null,
+                        max_streams: data.mux_settings.sing_box.max_streams ?? null,
+                        min_streams: data.mux_settings.sing_box.min_streams ?? null,
+                        padding: data.mux_settings.sing_box.padding ?? null,
+                        brutal: data.mux_settings.sing_box.brutal ?? null
+                    } : undefined,
+                    clash: data.mux_settings.clash ? {
+                        protocol: data.mux_settings.clash.protocol === "null" ? null : data.mux_settings.clash.protocol,
+                        max_connections: data.mux_settings.clash.max_connections ?? null,
+                        max_streams: data.mux_settings.clash.max_streams ?? null,
+                        min_streams: data.mux_settings.clash.min_streams ?? null,
+                        padding: data.mux_settings.clash.padding ?? null,
+                        brutal: data.mux_settings.clash.brutal ?? null,
+                        statistic: data.mux_settings.clash.statistic ?? null,
+                        only_tcp: data.mux_settings.clash.only_tcp ?? null
+                    } : undefined
+                } : undefined
+            };
+
+            const response = await onSubmit(cleanedData);
+            return response;
         } catch (error) {
-            console.error('Error managing host:', error);
-            return { status: 500 };
+            console.error("Error submitting form:", error);
+            throw error;
         }
     };
 
@@ -738,7 +639,7 @@ export default function Hosts({ data, onAddHost, isDialogOpen }: HostsProps) {
                 const oldIndex = hosts.findIndex((item) => item.id === active.id)
                 const newIndex = hosts.findIndex((item) => item.id === over.id)
                 const reorderedHosts = arrayMove(hosts, oldIndex, newIndex)
-                
+
                 // Update priorities based on new order (lower number = higher priority)
                 return reorderedHosts.map((host, index) => ({
                     ...host,
@@ -759,7 +660,7 @@ export default function Hosts({ data, onAddHost, isDialogOpen }: HostsProps) {
     }, [hosts]);
 
     useEffect(() => {
-        if (debouncedHosts) {            
+        if (debouncedHosts) {
             modifyHosts(debouncedHosts)
         }
     }, [debouncedHosts]);
@@ -780,8 +681,8 @@ export default function Hosts({ data, onAddHost, isDialogOpen }: HostsProps) {
                         <div className="max-w-screen-[2000px] min-h-screen overflow-hidden">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {sortedHosts.map((host) => (
-                                    <SortableHost 
-                                        key={host.id ?? 'new'} 
+                                    <SortableHost
+                                        key={host.id ?? 'new'}
                                         host={host}
                                         onEdit={handleEdit}
                                         onDuplicate={handleDuplicate}
@@ -795,7 +696,7 @@ export default function Hosts({ data, onAddHost, isDialogOpen }: HostsProps) {
 
             <HostModal
                 isDialogOpen={isDialogOpen}
-                onSubmit={onSubmit}
+                onSubmit={handleSubmit}
                 onOpenChange={(open) => {
                     if (!open) {
                         setEditingHost(null);

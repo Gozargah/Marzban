@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { toast } from "@/components/ui/use-toast"
+import { useTranslation } from "react-i18next"
+import { useQueryClient } from "react-query"
 
 const hostFormSchema = z.object({
     inbound_tag: z.string().min(1, "Inbound is required"),
@@ -42,6 +45,8 @@ interface HostFormProps {
 
 export function HostForm({ host }: HostFormProps) {
     const [openSection, setOpenSection] = useState<string | undefined>(undefined)
+    const { t } = useTranslation()
+    const queryClient = useQueryClient()
 
     const form = useForm<HostFormValues>({
         resolver: zodResolver(hostFormSchema),
@@ -70,10 +75,42 @@ export function HostForm({ host }: HostFormProps) {
         setOpenSection((prevSection) => (prevSection === value ? undefined : value))
     }
 
-    async function onSubmit(data: HostFormValues) {
-        // TODO: Connect to API
-        console.log(data)
-    }
+    const onSubmit = async (data: HostFormValues) => {
+        try {
+            const response = await onSubmit(data);
+            if (response.status >= 400) {
+                throw new Error(`Operation failed with status: ${response.status}`);
+            }
+            // Only show success toast and close modal if the operation was successful
+            toast({
+                dir,
+                description: t(editingHost
+                    ? "hostsDialog.editSuccess"
+                    : "hostsDialog.createSuccess",
+                    { name: data.remark }
+                ),
+            });
+            // Close the modal
+            handleModalOpenChange(false);
+            // The form reset is handled by the parent component
+            // Invalidate hosts query to refresh the list
+            queryClient.invalidateQueries({
+                queryKey: ["getGetHostsQueryKey"],
+            });
+        } catch (error) {
+            // Show error toast if the operation failed
+            toast({
+                dir,
+                variant: "destructive",
+                description: t(editingHost
+                    ? "hostsDialog.editFailed"
+                    : "hostsDialog.createFailed",
+                    { name: data.remark }
+                ),
+            });
+            // Don't close the modal or reset the form on error
+        }
+    };
 
     return (
         <Form {...form}>

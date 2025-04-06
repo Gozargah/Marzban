@@ -4,7 +4,7 @@ import {
 import { CSS } from "@dnd-kit/utilities"
 import { UniqueIdentifier } from "@dnd-kit/core"
 
-import { HostResponse, removeHost, modifyHost } from "@/service/api"
+import { BaseHost, removeHost, modifyHost } from "@/service/api"
 import { Card } from "../ui/card"
 import { Copy, GripVertical, MoreVertical, Pencil, Power, Trash2 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu"
@@ -18,9 +18,9 @@ import { useState } from "react"
 import { queryClient } from "@/utils/query-client"
 
 interface SortableHostProps {
-    host: HostResponse;
-    onEdit: (host: HostResponse) => void;
-    onDuplicate: (host: HostResponse) => Promise<void>;
+    host: BaseHost;
+    onEdit: (host: BaseHost) => void;
+    onDuplicate: (host: BaseHost) => Promise<void>;
 }
 
 const DeleteAlertDialog = ({
@@ -29,7 +29,7 @@ const DeleteAlertDialog = ({
     onClose,
     onConfirm,
 }: {
-    host: HostResponse;
+    host: BaseHost;
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void;
