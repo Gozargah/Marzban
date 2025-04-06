@@ -69,7 +69,7 @@ const HostModal: React.FC<HostModalProps> = ({
         try {
             const response = await onSubmit(data);
             if (response.status >= 400) {
-                throw new Error('Operation failed');
+                throw new Error(`Operation failed with status: ${response.status}`);
             }
             // Only show success toast and close modal if the operation was successful
             toast({
@@ -707,7 +707,7 @@ const HostModal: React.FC<HostModalProps> = ({
                                                             </SelectTrigger>
                                                         </FormControl>
                                                         <SelectContent>
-                                                            <SelectItem value="default">{t("default")}</SelectItem>
+                                                            <SelectItem value="">{t("default")}</SelectItem>
                                                             <SelectItem value="h3">h3</SelectItem>
                                                             <SelectItem value="h2">h2</SelectItem>
                                                             <SelectItem value="http/1.1">http/1.1</SelectItem>
@@ -734,7 +734,7 @@ const HostModal: React.FC<HostModalProps> = ({
                                                             </SelectTrigger>
                                                         </FormControl>
                                                         <SelectContent>
-                                                            <SelectItem value="default">{t("default")}</SelectItem>
+                                                            <SelectItem value="">{t("default")}</SelectItem>
                                                             <SelectItem value="chrome">{t("chrome")}</SelectItem>
                                                             <SelectItem value="firefox">{t("firefox")}</SelectItem>
                                                             <SelectItem value="safari">{t("safari")}</SelectItem>
@@ -825,6 +825,7 @@ const HostModal: React.FC<HostModalProps> = ({
                                                                 <Input
                                                                     placeholder={t("hostsDialog.fragment.packetsPlaceholder")}
                                                                     {...field}
+                                                                    value={field.value || ""}
                                                                 />
                                                             </FormControl>
                                                             <FormMessage />
@@ -841,6 +842,7 @@ const HostModal: React.FC<HostModalProps> = ({
                                                                 <Input
                                                                     placeholder={t("hostsDialog.fragment.lengthPlaceholder")}
                                                                     {...field}
+                                                                    value={field.value || ""}
                                                                 />
                                                             </FormControl>
                                                             <FormMessage />
@@ -857,6 +859,7 @@ const HostModal: React.FC<HostModalProps> = ({
                                                                 <Input
                                                                     placeholder={t("hostsDialog.fragment.intervalPlaceholder")}
                                                                     {...field}
+                                                                    value={field.value || ""}
                                                                 />
                                                             </FormControl>
                                                             <FormMessage />
@@ -1695,7 +1698,7 @@ const HostModal: React.FC<HostModalProps> = ({
                                                                 <FormLabel>{t("hostsDialog.protocol")}</FormLabel>
                                                                 <Select
                                                                     onValueChange={field.onChange}
-                                                                    value={field.value ?? ""}
+                                                                    value={field.value ?? "null"}
                                                                 >
                                                                     <FormControl>
                                                                         <SelectTrigger>
@@ -1799,7 +1802,7 @@ const HostModal: React.FC<HostModalProps> = ({
                                                                 <FormLabel>{t("hostsDialog.protocol")}</FormLabel>
                                                                 <Select
                                                                     onValueChange={field.onChange}
-                                                                    value={field.value ?? ""}
+                                                                    value={field.value ?? "null"}
                                                                 >
                                                                     <FormControl>
                                                                         <SelectTrigger>
@@ -1809,6 +1812,9 @@ const HostModal: React.FC<HostModalProps> = ({
                                                                     <SelectContent>
                                                                         <SelectItem value="null">{t("none")}</SelectItem>
                                                                         <SelectItem value="h2">h2</SelectItem>
+                                                                        <SelectItem value="smux">smux</SelectItem>
+                                                                        <SelectItem value="yamux">yamux</SelectItem>
+                                                                        <SelectItem value="h2mux">h2mux</SelectItem>
                                                                     </SelectContent>
                                                                 </Select>
                                                                 <FormMessage />

@@ -8,7 +8,9 @@ import { useCallback, useEffect, useState } from 'react'
 import { useTheme } from '../components/theme-provider'
 import Logs from '@/components/settings/Logs'
 import { useQuery } from '@tanstack/react-query'
-import { getCoreConfig } from '@/service/api'
+import { getCoreConfig, modifyCoreConfig } from '@/service/api'
+import { toast } from '@/hooks/use-toast'
+import { useTranslation } from 'react-i18next'
 
 const defaultConfig = {
   log: {
@@ -54,6 +56,8 @@ export default function CoreSettings() {
   const [validation, setValidation] = useState<ValidationResult>({ isValid: true })
   const [isEditorReady, setIsEditorReady] = useState(false)
   const { resolvedTheme } = useTheme()
+  const { t } = useTranslation()
+
   useEffect(() => {
     setConfig(JSON.stringify(data, null, 2))
   }, [data])
@@ -102,12 +106,23 @@ export default function CoreSettings() {
   //   }
   // }, [config])
 
-  const handleSave = useCallback(() => {
-    if (validation.isValid) {
-      // Here you would typically save the config to your backend
-      console.log('Saving config:', JSON.parse(config))
+  const handleSave = async () => {
+    try {
+      const response = await modifyCoreConfig({ data: JSON.parse(config) });
+      if (response.status === 200) {
+        toast({
+          description: t("settings.core.saveSuccess"),
+        });
+      } else {
+        throw new Error(`Failed to save config: ${response.status}`);
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        description: t("settings.core.saveFailed"),
+      });
     }
-  }, [config, validation.isValid])
+  };
 
   return (
     <div className="flex flex-col gap-y-6 pt-4">
