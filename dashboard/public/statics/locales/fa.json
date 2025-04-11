@@ -487,12 +487,16 @@
   "enable": "فعالسازی",
   "editHost.title": "ویرایش هاست",
   "host": {
-    "enableSuccess": "هاست «{{name}}» با موفقیت فعال شد",
-    "enableFailed": "فعال‌سازی هاست «{{name}}» با خطا مواجه شد",
-    "disableSuccess": "هاست «{{name}}» با موفقیت غیرفعال شد",
-    "disableFailed": "غیرفعال‌سازی هاست «{{name}}» با خطا مواجه شد",
-    "duplicateSuccess": "هاست «{{name}}» با موفقیت کپی شد",
-    "duplicateFailed": "کپی‌سازی هاست «{{name}}» با خطا مواجه شد"
+    "enableSuccess": "میزبان «{{name}}» با موفقیت فعال شد",
+    "enableFailed": "فعال کردن میزبان «{{name}}» با شکست مواجه شد",
+    "disableSuccess": "میزبان «{{name}}» با موفقیت غیرفعال شد",
+    "disableFailed": "غیرفعال کردن میزبان «{{name}}» با شکست مواجه شد",
+    "duplicateSuccess": "میزبان «{{name}}» با موفقیت کپی شد",
+    "duplicateFailed": "کپی کردن میزبان «{{name}}» با شکست مواجه شد",
+    "xudp_proxy_443": "پراکسی XUDP 443",
+    "reject": "رد کردن",
+    "allow": "اجازه دادن",
+    "skip": "رد شدن"
   },
   "usersTable.sortByExpire": "مرتب‌سازی بر اساس زمان انقضا",
   "group": {

@@ -553,8 +553,12 @@
     "enableFailed": "Не удалось включить хост «{{name}}»",
     "disableSuccess": "Хост «{{name}}» успешно отключен",
     "disableFailed": "Не удалось отключить хост «{{name}}»",
-    "duplicateSuccess": "Хост «{{name}}» успешно скопирован",
-    "duplicateFailed": "Не удалось скопировать хост «{{name}}»"
+    "duplicateSuccess": "Хост «{{name}}» успешно дублирован",
+    "duplicateFailed": "Не удалось дублировать хост «{{name}}»",
+    "xudp_proxy_443": "XUDP Прокси 443",
+    "reject": "Отклонить",
+    "allow": "Разрешить",
+    "skip": "Пропустить"
   },
   "marzban": "Marzban",
   "group": {

@@ -61,7 +61,7 @@ export default function HostsPage() {
                     xray: formData.mux_settings.xray ? {
                         concurrency: formData.mux_settings.xray.concurrency || undefined,
                         xudp_concurrency: formData.mux_settings.xray.xudp_concurrency || undefined,
-                        xudp_proxy_443: formData.mux_settings.xray.xudp_proxy_443 as Xudp || undefined
+                        xudp_proxy_443: formData.mux_settings.xray.xudp_proxy_443 === 'none' ? undefined : formData.mux_settings.xray.xudp_proxy_443 as Xudp
                     } : undefined
                 } : undefined),
                 fragment_settings: formData.fragment_settings ? {

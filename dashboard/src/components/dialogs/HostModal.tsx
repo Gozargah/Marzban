@@ -2082,21 +2082,22 @@ const HostModal: React.FC<HostModalProps> = ({
                                                         <FormField
                                                             control={form.control}
                                                             name="mux_settings.xray.xudp_proxy_443"
-                                                            render={({ field }) => (
+                                                            render={() => (
                                                                 <FormItem>
                                                                     <FormLabel>{t("hostsDialog.xudpProxy443")}</FormLabel>
                                                                     <Select
-                                                                        onValueChange={field.onChange}
-                                                                        value={field.value ?? ""}
+                                                                        value={form.watch("mux_settings.xray.xudp_proxy_443") ?? "reject"}
+                                                                        onValueChange={(value) => {
+                                                                            form.setValue("mux_settings.xray.xudp_proxy_443", value);
+                                                                        }}
                                                                     >
-                                                                        <FormControl>
-                                                                            <SelectTrigger>
-                                                                                <SelectValue placeholder={t("hostsDialog.selectXudpProxy443")} />
-                                                                            </SelectTrigger>
-                                                                        </FormControl>
+                                                                        <SelectTrigger>
+                                                                            <SelectValue placeholder={t("host.xudp_proxy_443")} />
+                                                                        </SelectTrigger>
                                                                         <SelectContent>
-                                                                            <SelectItem value="reject">Reject</SelectItem>
-                                                                            <SelectItem value="accept">Accept</SelectItem>
+                                                                            <SelectItem value="reject">{t("host.reject")}</SelectItem>
+                                                                            <SelectItem value="allow">{t("host.allow")}</SelectItem>
+                                                                            <SelectItem value="skip">{t("host.skip")}</SelectItem>
                                                                         </SelectContent>
                                                                     </Select>
                                                                     <FormMessage />

@@ -252,7 +252,7 @@ export const HostFormSchema = z.object({
         xray: z.object({
             concurrency: z.number().nullable().optional(),
             xudp_concurrency: z.number().nullable().optional(),
-            xudp_proxy_443: z.enum(["reject", "proxy"]).nullable().optional()
+            xudp_proxy_443: z.enum(["reject", "allow", "skip"]).nullable().optional()
         }).optional(),
         sing_box: z.object({
             protocol: z.enum(["none", "smux", "yamux", "h2mux"]).optional(),
@@ -351,7 +351,7 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit }: Hosts
             allowinsecure: host.allowinsecure || false,
             random_user_agent: host.random_user_agent || false,
             use_sni_as_host: host.use_sni_as_host || false,
-            priority: host.priority ? Number(host.priority) : (hosts?.length ?? 0),
+            priority: host.priority || 0,
             is_disabled: host.is_disabled || false,
             fragment_settings: host.fragment_settings ? {
                 xray: host.fragment_settings.xray ?? undefined

@@ -548,6 +548,9 @@
   },
   "enable": "启用",
   "host": {
+    "xudp_proxy_443": "XUDP 代理 443",
+    "reject": "拒绝",
+    "allow": "允许",
     "enableSuccess": "主机「{{name}}」已成功启用",
     "enableFailed": "启用主机「{{name}}」失败",
     "disableSuccess": "主机「{{name}}」已成功禁用",

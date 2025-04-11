@@ -529,7 +529,11 @@
     "disableSuccess": "Host «{{name}}» has been disabled successfully",
     "disableFailed": "Failed to disable host «{{name}}»",
     "duplicateSuccess": "Host «{{name}}» has been duplicated successfully",
-    "duplicateFailed": "Failed to duplicate host «{{name}}»"
+    "duplicateFailed": "Failed to duplicate host «{{name}}»",
+    "xudp_proxy_443": "XUDP Proxy 443",
+    "reject": "Reject",
+    "allow": "Allow",
+    "skip": "Skip"
   },
   "usersTable.sortByExpire": "Sort by expiry time",
   "dateInfo.day": " day",
