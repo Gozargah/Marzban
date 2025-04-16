@@ -7,7 +7,7 @@ from datetime import UTC, datetime, timedelta, timezone
 from enum import Enum
 from typing import List, Optional, Union
 
-from sqlalchemy import and_, delete, func, select, update, not_
+from sqlalchemy import and_, delete, func, select, update, not_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Query, joinedload, selectinload
 from sqlalchemy.sql.functions import coalesce
@@ -312,7 +312,8 @@ async def get_users(
     if usernames:
         filters.append(User.username.in_(usernames))
     if search:
-        filters.append(User.username.ilike(f"%{search}%"))
+        filters.append(or_(User.username.ilike(f"%{search}%"), User.note.ilike(f"%{search}%")))
+
     if status:
         if isinstance(status, list):
             filters.append(User.status.in_(status))
