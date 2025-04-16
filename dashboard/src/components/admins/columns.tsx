@@ -21,8 +21,8 @@ export const setupColumns = (
     {
         accessorKey: 'username',
         header: () => (
-            <button onClick={handleSort.bind(null, 'username')} className="flex gap-1 px-2 py-3 w-full items-center">
-                <div className="text-xs capitalize">
+            <button onClick={handleSort.bind(null, 'username')} className="flex gap-1  py-3 w-full items-center">
+                <div className="text-xs">
                     {t('username')}
                 </div>
                 {filters.sort && (filters.sort === 'username' || filters.sort === '-username') && (
@@ -38,15 +38,16 @@ export const setupColumns = (
             </button>
         ),
         cell: ({row}) => (
-            <div className="font-medium">{row.getValue('username')}</div>
+            <div
+                className="whitespace-nowrap text-ellipsis overflow-hidden text-sm font-medium">{row.getValue('username')}</div>
         ),
     },
     {
         accessorKey: 'is_disabled',
         header: () => (
-            <button onClick={handleSort.bind(null, 'is_disabled')} className="flex gap-1 px-2 py-3 w-full items-center">
-                <div className="text-xs capitalize">
-                    {t('status')}
+            <button onClick={handleSort.bind(null, 'is_disabled')} className="flex gap-1 py-3 w-full items-center">
+                <div className="text-xs">
+                    {t('admins.status')}
                 </div>
                 {filters.sort && (filters.sort === 'is_disabled' || filters.sort === '-is_disabled') && (
                     <ChevronDown
@@ -63,30 +64,33 @@ export const setupColumns = (
         cell: ({row}) => {
             const isDisabled = row.getValue('is_disabled')
             return (
-                <Badge variant={isDisabled ? 'secondary' : 'default'} className={!isDisabled ? 'bg-green-600' : ''}>
-                    {isDisabled ? t('disabled') : t('active')}
+                <Badge variant={'secondary'}
+                       className={`${!isDisabled ? 'bg-[#065F46]' : 'bg-[#404040]'} text-white px-2.5 py-0.5 rounded-full`}>
+                    {isDisabled ? t('status.disabled') : t('status.active')}
                 </Badge>
             )
         },
     },
     {
-        accessorKey: 'role',
-        header: () => <div className="text-xs capitalize">{t('role')}</div>,
+        accessorKey: 'is_sudo',
+        header: () => <div className="text-xs flex items-center capitalize">{t('admins.role')}</div>,
         cell: ({row}) => {
             const isSudo = row.getValue('is_sudo')
-            return isSudo ? (
-                t('sudo')
-            ) : (
-                t('admin')
-            )
+            return <div className="flex items-center gap-2">
+                {isSudo ? (
+                    <span>{t('admin')}</span>
+                ) : (
+                    <span>{t('sudo')}</span>
+                )}
+            </div>
         },
     },
     {
         accessorKey: 'users_count',
         header: () => (
-            <button onClick={handleSort.bind(null, 'users_count')} className="flex gap-1 px-2 py-3 w-full items-center">
-                <div className="text-xs capitalize">
-                    {t('users.count')}
+            <button onClick={handleSort.bind(null, 'users_count')} className="flex gap-1 py-3 w-full items-center">
+                <div className="text-xs">
+                    {t('admins.users.count')}
                 </div>
                 {filters.sort && (filters.sort === 'users_count' || filters.sort === '-users_count') && (
                     <ChevronDown
@@ -109,10 +113,9 @@ export const setupColumns = (
     {
         accessorKey: 'users_usage',
         header: () => (
-            <button onClick={handleSort.bind(null, 'users_usage')}
-                    className="flex gap-1 px-2 py-3 w-full items-center">
-                <div className="text-xs capitalize">
-                    {t('users.usage')}
+            <button onClick={handleSort.bind(null, 'users_usage')} className="flex gap-1     py-3 w-full items-center">
+                <div className="text-xs">
+                    {t('admins.users.usage')}
                 </div>
                 {filters.sort && (filters.sort === 'users_usage' || filters.sort === '-users_usage') && (
                     <ChevronDown

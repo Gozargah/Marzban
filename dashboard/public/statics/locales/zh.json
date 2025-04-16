@@ -55,6 +55,8 @@
   "created": "已创建",
   "by": "由",
   "ip": "IP",
+  "admin": "管理员",
+  "sudo": "超级用户",
   "admins": {
     "title": "管理员",
     "description": "管理系统管理员",
@@ -76,7 +78,14 @@
     "enterPassword": "请输入密码",
     "sudo": "超级管理员权限",
     "edit": "保存更改",
-    "create": "创建管理员"
+    "create": "创建管理员",
+    "status": "状态",
+    "role": "角色",
+    "users.count": "用户数量",
+    "users.usage": "用户使用情况",
+    "total": "管理员总数",
+    "active": "活跃管理员",
+    "disable": "禁用的管理员"
   },
   "manageAccounts": "控制、更新和排列用户账户",
   "manageGroups": "控制、更新和排列用户组",

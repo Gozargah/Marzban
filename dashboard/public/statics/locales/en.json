@@ -56,6 +56,8 @@
   "created": "Created",
   "by": "by",
   "ip": "IP",
+  "admin": "Admin",
+  "sudo": "Sudo",
   "admins": {
     "title": "Admins",
     "description": "Manage system administrators",
@@ -77,7 +79,15 @@
     "enterPassword": "Enter password",
     "sudo": "Super Admin Privileges",
     "edit": "Save Changes",
-    "create": "Create Admin"
+    "create": "Create Admin",
+    "status": "Status",
+    "role": "Role",
+    "users.count": "Users Count",
+    "users.usage": "Users Usage",
+    "total": "Total Admins",
+    "active": "Active Admins",
+    "disable": "Disabled Admins"
+
   },
   "manageAccounts": "Control, Update, and Arrange User Accounts",
   "manageGroups": "Control, Update, and Arrange User Groups",
