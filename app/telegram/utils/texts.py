@@ -101,5 +101,5 @@ class Message:
 
     @staticmethod
     def confirm_activate_next_plan(username: str) -> str:
-        return f"⚠ Are you sure you want to {f.bold('Activate Next Plan')} of {f.code(username)}?"
+        return f"⚠ Are you sure you want to {f.bold('Activate Next Plan')} for {f.code(username)}?"
 

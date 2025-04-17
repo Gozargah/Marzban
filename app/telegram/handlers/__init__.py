@@ -1,10 +1,11 @@
 from aiogram import Dispatcher
 
-from . import admin, base
+from . import admin, base, error_handler
 
 handlers = (
     admin,
     base,
+    error_handler
 )
 
 
