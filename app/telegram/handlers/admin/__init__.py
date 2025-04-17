@@ -7,7 +7,7 @@ router = Router(name="admin")
 handlers = (
     "admin",
     "confirm_action",
-    "user",
+    "user",  # keep this as last one
 )
 
 
