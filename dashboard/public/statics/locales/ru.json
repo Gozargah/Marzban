@@ -36,10 +36,7 @@
     "enableFailed": "Не удалось включить узел «{{name}}»",
     "disableSuccess": "Узел «{{name}}» успешно отключен",
     "disableFailed": "Не удалось отключить узел «{{name}}»",
-    "certificate": "Сертификат",
-    "certificateCopied": "Сертификат скопирован в буфер обмена",
-    "certificateDownloaded": "Сертификат успешно загружен",
-    "certificateDescription": "Для настройки узла вам необходимо настроить этот сертификат для установки безопасного соединения между основным сервером и узлом"
+    "certificate": "Сертификат"
   },
   "groups": "Группы",
   "documentation": "Документация",
@@ -596,17 +593,16 @@
     "seconds": "Секунды",
     "certificate": "Сертификат",
     "certificatePlaceholder": "Введите сертификат",
-    "status": "Статус узла",
-    "statusCheck": "Проверка состояния подключения",
-    "statusCheckSuccess": "Узел успешно подключен",
-    "statusCheckFailed": "Не удалось подключиться к узлу",
-    "statusChecking": "Проверка подключения...",
-    "errorDetails": "Детали ошибки",
-    "connectionError": "Ошибка подключения",
-    "retryConnection": "Повторить подключение",
-    "configurationError": "Ошибка конфигурации",
-    "validateConfig": "Проверить конфигурацию",
-    "fillRequiredFields": "Пожалуйста, заполните все обязательные поля перед проверкой состояния"
+    "status": {
+      "connected": "Подключено",
+      "error": "Ошибка",
+      "connecting": "Подключение...",
+      "disabled": "Отключено"
+    },
+    "hideDetails": "Скрыть детали",
+    "showDetails": "Показать детали",
+    "statusCheck": "Проверить статус",
+    "statusChecking": "Проверка..."
   },
   "theme": {
     "toggle": "Переключить тему",

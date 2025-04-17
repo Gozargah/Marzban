@@ -532,17 +532,16 @@
     "seconds": "ثانیه",
     "certificate": "گواهینامه",
     "certificatePlaceholder": "گواهینامه را وارد کنید",
-    "status": "وضعیت گره",
-    "statusCheck": "بررسی وضعیت اتصال",
-    "statusCheckSuccess": "گره با موفقیت متصل شد",
-    "statusCheckFailed": "اتصال به گره ناموفق بود",
-    "statusChecking": "در حال بررسی اتصال...",
-    "errorDetails": "جزئیات خطا",
-    "connectionError": "خطای اتصال",
-    "retryConnection": "تلاش مجدد برای اتصال",
-    "configurationError": "خطای پیکربندی",
-    "validateConfig": "اعتبارسنجی پیکربندی",
-    "fillRequiredFields": "لطفاً تمام فیلدهای ضروری را قبل از بررسی وضعیت پر کنید"
+    "status": {
+      "connected": "متصل",
+      "error": "خطا",
+      "connecting": "در حال اتصال...",
+      "disabled": "غیرفعال"
+    },
+    "hideDetails": "مخفی کردن جزئیات",
+    "showDetails": "نمایش جزئیات",
+    "statusCheck": "بررسی وضعیت",
+    "statusChecking": "در حال بررسی..."
   },
   "nodes": {
     "title": "گره‌ها",
@@ -575,10 +574,7 @@
     "enableFailed": "فعال کردن گره «{{name}}» ناموفق بود",
     "disableSuccess": "گره «{{name}}» با موفقیت غیرفعال شد",
     "disableFailed": "غیرفعال کردن گره «{{name}}» ناموفق بود",
-    "certificate": "گواهی",
-    "certificateCopied": "گواهی در کلیپ‌بورد کپی شد",
-    "certificateDownloaded": "گواهی با موفقیت دانلود شد",
-    "certificateDescription": "برای راه‌اندازی گره، شما نیاز به پیکربندی این گواهی برای برقراری اتصال امن بین سرور اصلی و گره دارید"
+    "certificate": "گواهی"
   },
   "success": "موفق",
   "error": "خطا",

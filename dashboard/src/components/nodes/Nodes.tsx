@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Copy, Download } from 'lucide-react'
+import { Plus, Copy } from 'lucide-react'
 import PageHeader from '@/components/page-header'
 import { Separator } from '@/components/ui/separator'
 import Node from '@/components/nodes/Node'
@@ -102,43 +102,6 @@ export default function Nodes() {
         }
     }
 
-    const handleCopyCertificate = () => {
-        if (nodeSettings?.certificate) {
-            navigator.clipboard.writeText(nodeSettings.certificate)
-            toast({
-                title: t('success', { defaultValue: 'Success' }),
-                description: t('nodes.certificateCopied', { defaultValue: 'Certificate copied to clipboard' })
-            })
-            // Invalidate queries to refresh data
-            queryClient.invalidateQueries({
-                queryKey: ["getNodeSettingsQueryKey"],
-            })
-        }
-    }
-
-    const handleDownloadCertificate = () => {
-        if (nodeSettings?.certificate) {
-            const blob = new Blob([nodeSettings.certificate], { type: 'text/plain' })
-            const url = window.URL.createObjectURL(blob)
-            const a = document.createElement('a')
-            a.href = url
-            a.download = 'marzban-node-certificate.crt'
-            document.body.appendChild(a)
-            a.click()
-            window.URL.revokeObjectURL(url)
-            document.body.removeChild(a)
-            
-            toast({
-                title: t('success', { defaultValue: 'Success' }),
-                description: t('nodes.certificateDownloaded', { defaultValue: 'Certificate downloaded successfully' })
-            })
-            // Invalidate queries to refresh data
-            queryClient.invalidateQueries({
-                queryKey: ["getNodeSettingsQueryKey"],
-            })
-        }
-    }
-
     return (
         <div className="flex flex-col gap-2 w-full items-start">
             <PageHeader
@@ -159,32 +122,6 @@ export default function Nodes() {
                             onToggleStatus={handleToggleStatus}
                         />
                     ))}
-                </div>
-
-                <div className="mt-8">
-                    <div className="flex items-center justify-between mb-2">
-                        <div>
-                            <h2 className="text-lg font-semibold">{t('nodes.certificate')}</h2>
-                            <p className="text-sm text-muted-foreground">{t('nodes.certificateDescription')}</p>
-                        </div>
-                        <div className="flex items-center justify-center gap-2">
-                            <Button
-                                size="icon"
-                                variant="outline"
-                                onClick={handleCopyCertificate}
-                            >
-                                <Copy className="h-8 w-8" />
-                            </Button>
-                            <Button
-                                size="icon"
-                                variant="default"
-                                onClick={handleDownloadCertificate}
-                            >
-                                <Download className="h-8 w-8" />
-                            </Button>
-
-                        </div>
-                    </div>
                 </div>
 
                 <NodeModal

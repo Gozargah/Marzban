@@ -36,10 +36,7 @@
     "enableFailed": "启用节点 «{{name}}» 失败",
     "disableSuccess": "节点 «{{name}}» 禁用成功",
     "disableFailed": "禁用节点 «{{name}}» 失败",
-    "certificate": "证书",
-    "certificateCopied": "证书已复制到剪贴板",
-    "certificateDownloaded": "证书下载成功",
-    "certificateDescription": "要设置节点，您需要配置此证书以建立主服务器和节点之间的安全连接"
+    "certificate": "证书"
   },
   "groups": "群组",
   "documentation": "文档",
@@ -594,17 +591,28 @@
     "seconds": "秒",
     "certificate": "证书",
     "certificatePlaceholder": "输入证书",
-    "status": "节点状态",
-    "statusCheck": "检查连接状态",
-    "statusCheckSuccess": "节点连接成功",
-    "statusCheckFailed": "节点连接失败",
-    "statusChecking": "正在检查连接...",
+    "status": {
+      "connected": "已连接",
+      "error": "错误",
+      "connecting": "连接中...",
+      "disabled": "已禁用"
+    },
+    "statusCheck": "检查状态",
+    "statusChecking": "检查中...",
+    "hideDetails": "隐藏详情",
+    "showDetails": "显示详情",
     "errorDetails": "错误详情",
     "connectionError": "连接错误",
     "retryConnection": "重试连接",
     "configurationError": "配置错误",
     "validateConfig": "验证配置",
-    "fillRequiredFields": "请在检查状态之前填写所有必填字段"
+    "fillRequiredFields": "请在检查状态之前填写所有必填字段",
+    "apiKey": "API 密钥",
+    "apiKeyPlaceholder": "请输入节点的 API 密钥",
+    "generateUUID": "生成 UUID",
+    "coreConfig": "核心配置",
+    "selectCoreConfig": "选择核心配置",
+    "noCoreConfig": "无核心配置"
   },
   "theme": {
     "toggle": "切换主题",
