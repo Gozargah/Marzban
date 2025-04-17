@@ -13,7 +13,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { queryClient } from '@/utils/query-client'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { useState, useEffect } from 'react'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react'
 import { v4 as uuidv4 } from 'uuid'
 
