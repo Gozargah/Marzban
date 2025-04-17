@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { queryClient } from '@/utils/query-client'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { useState, useEffect } from 'react'
-import { AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { v4 as uuidv4 } from 'uuid'
 
 export const nodeFormSchema = z.object({
@@ -69,12 +69,12 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
     if (editingNode && isDialogOpen && editingNodeId) {
       // Start polling immediately
       checkNodeStatus();
-      
+
       // Set up interval for polling
       const interval = setInterval(() => {
         checkNodeStatus();
       }, 5000); // Check every 5 seconds
-      
+
       setPollingInterval(interval);
 
       // Cleanup interval when component unmounts or modal closes
@@ -106,7 +106,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
       const fetchNodeData = async () => {
         try {
           const nodeData = await getNode(editingNodeId);
-          
+
           // Set form values with the fetched node data
           form.reset({
             name: nodeData.name,
@@ -186,7 +186,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
           api_key: values.api_key,
           core_config_id: values.core_config_id,
         };
-        
+
         try {
           const result = await addNode(tempNode);
           if (result && result.status === 'connected') {
@@ -211,10 +211,10 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
   const onSubmit = async (values: NodeFormValues) => {
     try {
       // Convert keep_alive to seconds based on unit
-      const keepAliveInSeconds = values.keep_alive_unit === 'minutes' 
-        ? values.keep_alive * 60 
-        : values.keep_alive_unit === 'hours' 
-          ? values.keep_alive * 3600 
+      const keepAliveInSeconds = values.keep_alive_unit === 'minutes'
+        ? values.keep_alive * 60
+        : values.keep_alive_unit === 'hours'
+          ? values.keep_alive * 3600
           : values.keep_alive;
 
       const nodeData = {
@@ -283,17 +283,16 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${
-                  connectionStatus === 'success' ? 'bg-green-500 dark:bg-green-400' :
+                <div className={`w-2 h-2 rounded-full ${connectionStatus === 'success' ? 'bg-green-500 dark:bg-green-400' :
                   connectionStatus === 'error' ? 'bg-red-500 dark:bg-red-400' :
-                  connectionStatus === 'checking' ? 'bg-yellow-500 dark:bg-yellow-400' :
-                  'bg-gray-500 dark:bg-gray-400'
-                }`} />
+                    connectionStatus === 'checking' ? 'bg-yellow-500 dark:bg-yellow-400' :
+                      'bg-gray-500 dark:bg-gray-400'
+                  }`} />
                 <span className="text-sm font-medium text-foreground">
                   {connectionStatus === 'success' ? t('nodeModal.status.connected') :
-                   connectionStatus === 'error' ? t('nodeModal.status.error') :
-                   connectionStatus === 'checking' ? t('nodeModal.status.connecting') :
-                   t('nodeModal.status.disabled')}
+                    connectionStatus === 'error' ? t('nodeModal.status.error') :
+                      connectionStatus === 'checking' ? t('nodeModal.status.connecting') :
+                        t('nodeModal.status.disabled')}
                 </span>
               </div>
               {connectionStatus === 'error' && (
