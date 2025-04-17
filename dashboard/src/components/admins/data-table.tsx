@@ -10,26 +10,40 @@ import {
 import {cn} from "@/lib/utils.ts";
 import useDirDetection from "@/hooks/use-dir-detection.tsx";
 import React, {useState} from "react";
-import {ChevronDown} from "lucide-react";
+import {ChartPie, ChevronDown, Edit2, Trash2, User} from "lucide-react";
+import {Button} from "@/components/ui/button.tsx";
+import {AdminDetails} from "@/service/api";
+import {useTranslation} from "react-i18next";
 
-interface DataTableProps<TData> {
+interface DataTableProps<TData extends AdminDetails> {
     columns: ColumnDef<TData, any>[]
     data: TData[]
+    onEdit: (admin: AdminDetails) => void
+    onDelete: (admin: AdminDetails) => void
 }
 
-export function DataTable<TData>({columns, data}: DataTableProps<TData>) {
+export function DataTable<TData extends AdminDetails>({columns, data, onEdit, onDelete}: DataTableProps<TData>) {
     const [expandedRow, setExpandedRow] = useState<string | null>(null)
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
     })
+    const {t} = useTranslation()
     const handleRowToggle = (rowId: string) => {
         setExpandedRow(expandedRow === rowId ? null : rowId)
     }
     const dir = useDirDetection()
 
     const isRTL = useDirDetection() === 'rtl'
+    const handleEditModal = (cellId: string, rowData: AdminDetails) => {
+        const isChevron = cellId === 'chevron';
+        const isSmallScreen = window.innerWidth < 768;
+        if (!isSmallScreen && !isChevron) {
+            onEdit(rowData);
+        }
+    }
+
     return (
         <div className="rounded-md border">
             <Table dir={cn(isRTL && 'rtl')}>
@@ -44,8 +58,8 @@ export function DataTable<TData>({columns, data}: DataTableProps<TData>) {
                                                    isRTL && 'text-right',
                                                    index === 0 && 'w-[270px] md:w-auto',
                                                    index === 1 && 'max-w-[70px] md:w-auto ',
-                                                   index === 2 && 'min-w-[100px] md:w-auto',
-                                                   index >= 3 && 'hidden md:table-cell',
+                                                   index === 2 && 'min-w-[70px] md:w-auto',
+                                                   index >= 2 && 'hidden md:table-cell',
                                                    header.id === 'chevron' && 'table-cell md:hidden',
                                                )}>
                                         {header.isPlaceholder
@@ -72,11 +86,12 @@ export function DataTable<TData>({columns, data}: DataTableProps<TData>) {
                                 >
                                     {row.getVisibleCells().map((cell, index) => (
                                         <TableCell
+                                            onClick={() => handleEditModal(cell.column.id, row.original)}
                                             key={cell.id}
                                             className={cn(
-                                                'py-2 text-sm',
-                                                index===5 && 'hidden md:w-[85px]',
-                                                index >= 3 && 'hidden md:table-cell',
+                                                'py-4 text-sm',
+                                                index === 5 && 'hidden md:w-[85px]',
+                                                index >= 2 && 'hidden md:table-cell',
                                                 cell.column.id === 'chevron' && 'table-cell md:hidden',
                                                 dir === 'rtl' ? 'pl-3' : 'pr-3',
                                             )}
@@ -98,8 +113,37 @@ export function DataTable<TData>({columns, data}: DataTableProps<TData>) {
                                     <TableRow className=" md:hidden border-b hover:!bg-inherit">
                                         {/* Expanded content only visible on small screens */}
                                         <TableCell colSpan={columns.length} className="p-4 text-sm">
-                                            <div className="flex flex-col gap-y-4">
-                                                <div className="flex flex-col">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex gap-1 ">
+                                                    <span>{row.original.is_sudo ? t("sudo") : t("admin")}</span>
+                                                    <span>|</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span><User className="w-4 h-4"/></span>
+                                                        <span>{row.original.users_count ? row.original.users_count : 0}</span>
+                                                    </div>
+                                                    <span>|</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span><ChartPie className="w-4 h-4"/></span>
+                                                        <span>{row.original.users_usage ? `${(row.original.users_usage / (1024 * 1024 * 1024 * 1024)).toFixed(2)} TB` : '0 TB'}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex justify-end gap-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => onEdit(row.original)}
+                                                        title={t('edit')}
+                                                    >
+                                                        <Edit2 className="h-4 w-4"/>
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => onDelete(row.original)}
+                                                        title={t('delete')}
+                                                    >
+                                                        <Trash2 className="h-4 w-4 text-destructive"/>
+                                                    </Button>
                                                 </div>
                                             </div>
                                         </TableCell>

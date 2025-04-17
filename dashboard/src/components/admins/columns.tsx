@@ -1,6 +1,6 @@
 import {AdminDetails} from '@/service/api'
 import {ColumnDef} from '@tanstack/react-table'
-import {ChevronDown, Edit2, Trash2} from 'lucide-react'
+import {ChartPie, ChevronDown, Trash2, User} from 'lucide-react'
 import {Badge} from '@/components/ui/badge'
 import {Button} from '@/components/ui/button'
 
@@ -9,13 +9,11 @@ export const setupColumns = (
         t,
         handleSort,
         filters,
-        onEdit,
         onDelete,
     }: {
         t: (key: string) => string
         handleSort: (column: string) => void
         filters: { sort: string }
-        onEdit: (admin: AdminDetails) => void
         onDelete: (admin: AdminDetails) => void
     }): ColumnDef<AdminDetails>[] => [
     {
@@ -66,7 +64,7 @@ export const setupColumns = (
             return (
                 <Badge variant={'secondary'}
                        className={`${!isDisabled ? 'bg-[#065F46]' : 'bg-[#404040]'} text-white px-2.5 py-0.5 rounded-full`}>
-                    {isDisabled ? t('status.disabled') : t('status.active')}
+                    {isDisabled ? t('status.disabled') : t('status.enable')}
                 </Badge>
             )
         },
@@ -106,6 +104,7 @@ export const setupColumns = (
         ),
         cell: ({row}) => (
             <div className="flex items-center gap-2">
+                <span><User className="h-4 w-4"/></span>
                 <span>{row.getValue('users_count') || 0}</span>
             </div>
         ),
@@ -113,7 +112,7 @@ export const setupColumns = (
     {
         accessorKey: 'users_usage',
         header: () => (
-            <button onClick={handleSort.bind(null, 'users_usage')} className="flex gap-1     py-3 w-full items-center">
+            <button onClick={handleSort.bind(null, 'users_usage')} className="flex gap-1 py-3 w-full items-center">
                 <div className="text-xs">
                     {t('admins.users.usage')}
                 </div>
@@ -131,21 +130,17 @@ export const setupColumns = (
         ),
         cell: ({row}) => {
             const traffic = row.getValue('users_usage') as number | null
-            return traffic ? `${(traffic / (1024 * 1024 * 1024 * 1024)).toFixed(2)} TB` : '0 TB'
+            return (
+                <div className="flex gap-2 items-center">
+                    <span><ChartPie className="h-4 w-4"/></span>
+                    <span>{traffic ? `${(traffic / (1024 * 1024 * 1024 * 1024)).toFixed(2)} TB` : '0 TB'}</span>
+                </div>)
         },
     },
     {
         id: 'actions',
         cell: ({row}) => (
             <div className="flex justify-end gap-2">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onEdit(row.original)}
-                    title={t('edit')}
-                >
-                    <Edit2 className="h-4 w-4"/>
-                </Button>
                 <Button
                     variant="ghost"
                     size="icon"
@@ -156,5 +151,9 @@ export const setupColumns = (
                 </Button>
             </div>
         ),
+    },
+    {
+        id: 'chevron',
+        cell: () => <div className="flex flex-wrap justify-between"></div>,
     },
 ]

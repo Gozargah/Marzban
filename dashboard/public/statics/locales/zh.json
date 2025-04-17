@@ -260,6 +260,7 @@
   "revokeUserSub.title": "撤销用户订阅",
   "search": "搜索",
   "status.active": "活跃",
+  "status.enable": "启用",
   "status.disabled": "禁用",
   "status.expired": "过期",
   "status.limited": "受限",

@@ -58,7 +58,7 @@ export function Filters<T extends BaseFilters>({ filters, onFilterChange }: Filt
 
 
     return (
-        <div dir={dir} className="flex items-center gap-4 py-4">
+        <div dir={dir} className="flex items-center gap-4 pb-4">
             {/* Search Input */}
             <div className="relative w-full md:w-[calc(100%/3-10px)]">
                 <SearchIcon className={cn('absolute', dir === 'rtl' ? 'right-2' : 'left-2 ', 'top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 text-input-placeholder')} />

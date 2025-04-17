@@ -344,6 +344,7 @@
   "revokeUserSub.title": "بازنشانی اشتراک کاربر",
   "search": "جستجو",
   "status.active": "فعال",
+  "status.enable": "فعال",
   "status.disabled": "غیرفعال",
   "status.expired": "منقضی شده",
   "status.limited": "اتمام حد مصرف",
