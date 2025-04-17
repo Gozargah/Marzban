@@ -34,9 +34,11 @@ async def initial_telegram_bot():
     logger.info(webhook_address)
     try:
         await bot.set_webhook(
-            webhook_address, secret_token=TELEGRAM_WEBHOOK_SECRET_KEY, allowed_updates=("message", "callback_query")
+            webhook_address,
+            secret_token=TELEGRAM_WEBHOOK_SECRET_KEY,
+            allowed_updates=["message", "callback_query", "inline_query"],
         )
-        logger.info("temegran bot started successfully")
+        logger.info("telegram bot started successfully.")
     except TelegramNetworkError as err:
         logger.error(err.message)
 

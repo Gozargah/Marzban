@@ -7,7 +7,7 @@ class CancelAction(StrEnum):
     cancel = "cancel"
 
 
-class Cancelkeyboard(InlineKeyboardBuilder):
+class CancelKeyboard(InlineKeyboardBuilder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.button(text="❌ cancel", callback_data=self.Callback(action=CancelAction.cancel))
