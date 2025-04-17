@@ -2,6 +2,7 @@ from datetime import datetime as dt
 from datetime import timedelta, timezone
 from enum import IntEnum
 
+from aiogram.exceptions import AiogramError
 from fastapi import HTTPException
 
 from app.db import AsyncSession
@@ -33,6 +34,8 @@ class BaseOperator:
             code = 408
         if self.operator_type in (OperatorType.API, OperatorType.WEB):
             raise HTTPException(status_code=code, detail=message)
+        elif self.operator_type == OperatorType.TELEGRAM:
+            raise AiogramError(message)
         else:
             raise ValueError(message)
 
