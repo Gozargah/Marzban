@@ -35,7 +35,7 @@ export default function AdminsTable({data, onEdit, onDelete}: AdminsTableProps) 
     if (filters.sort === column) {
       newSort = '-' + column
     } else if (filters.sort === '-' + column) {
-      newSort = '-created_at'
+      newSort = '-username'
     } else {
       newSort = column
     }
@@ -51,14 +51,13 @@ export default function AdminsTable({data, onEdit, onDelete}: AdminsTableProps) 
     t,
     handleSort,
     filters,
-    onEdit,
     onDelete,
   })
 
   return (
       <div>
         <Filters filters={filters} onFilterChange={handleFilterChange}/>
-        <DataTable columns={columns} data={data}/>
+        <DataTable columns={columns} data={data} onEdit={onEdit} onDelete={onDelete}/>
         <PaginationControls/>
       </div>
   )

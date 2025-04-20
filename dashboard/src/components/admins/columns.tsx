@@ -37,7 +37,7 @@ export const setupColumns = (
         ),
         cell: ({row}) => (
             <div
-                className="whitespace-nowrap text-ellipsis overflow-hidden text-sm font-medium">{row.getValue('username')}</div>
+                className="whitespace-nowrap text-ellipsis px-2 overflow-hidden text-sm font-medium">{row.getValue('username')}</div>
         ),
     },
     {
