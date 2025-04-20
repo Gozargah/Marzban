@@ -86,8 +86,12 @@ export function DataTable<TData extends AdminDetails>({columns, data, onEdit, on
                                 >
                                     {row.getVisibleCells().map((cell, index) => (
                                         <TableCell
-                                            onClick={() => handleEditModal(cell.column.id, row.original)}
                                             key={cell.id}
+                                            onClick={(e: any) => {
+                                                const target = e.target as HTMLElement;
+                                                if (target.closest('button')) return;
+                                                handleEditModal(cell.column.id, row.original)
+                                            }}
                                             className={cn(
                                                 'py-4 text-sm',
                                                 index === 5 && 'hidden md:w-[85px]',
@@ -119,7 +123,7 @@ export function DataTable<TData extends AdminDetails>({columns, data, onEdit, on
                                                     <span>|</span>
                                                     <div className="flex items-center gap-2">
                                                         <span><User className="w-4 h-4"/></span>
-                                                        <span>{row.original.users_count ? row.original.users_count : 0}</span>
+                                                        {/*<span>{row.original.users_count ? row.original.users_count : 0}</span>*/}
                                                     </div>
                                                     <span>|</span>
                                                     <div className="flex items-center gap-2">
