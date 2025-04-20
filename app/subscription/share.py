@@ -2,23 +2,15 @@ import base64
 import random
 import secrets
 from collections import defaultdict
-from datetime import timezone, timedelta, datetime as dt
+from datetime import datetime as dt
+from datetime import timedelta, timezone
+
 from jdatetime import date as jd
 
 from app.core.hosts import hosts as hosts_storage
 from app.core.manager import core_manager
 from app.db.models import User, UserStatus
 from app.utils.system import get_public_ip, get_public_ipv6, readable_size
-
-from . import (
-    StandardLinks,
-    XrayConfig,
-    SingBoxConfiguration,
-    ClashConfiguration,
-    ClashMetaConfiguration,
-    OutlineConfiguration,
-)
-
 from config import (
     ACTIVE_STATUS_TEXT,
     DISABLED_STATUS_TEXT,
@@ -27,6 +19,15 @@ from config import (
     LIMITED_STATUS_TEXT,
     ONHOLD_STATUS_TEXT,
     REMOVE_HOSTS_WITH_NO_STATUS,
+)
+
+from . import (
+    ClashConfiguration,
+    ClashMetaConfiguration,
+    OutlineConfiguration,
+    SingBoxConfiguration,
+    StandardLinks,
+    XrayConfig,
 )
 
 SERVER_IP = get_public_ip()
@@ -170,13 +171,14 @@ def setup_format_variables(extra_data: dict) -> dict:
 
     if user_status != UserStatus.on_hold:
         if expire is not None:
+            expire = expire.astimezone(timezone.utc)
             seconds_left = (expire - now).total_seconds()
             expire_date = expire.date()
             jalali_expire_date = jd.fromgregorian(
                 year=expire_date.year, month=expire_date.month, day=expire_date.day
             ).strftime("%Y-%m-%d")
             if now < expire:
-                days_left = (expire - dt.utcnow()).days + 1
+                days_left = (expire - now).days + 1
                 time_left = format_time_left(seconds_left)
             else:
                 days_left = "0"
@@ -328,16 +330,14 @@ async def process_host(
                 host_inbound.update(v)
 
     if host.get("downloadSettings"):
-        download_settings, _, download_address = process_host(
-            host["downloadSettings"], format_variables, inbounds, proxies, conf
-        )
-        if download_settings:
-            download_settings["address"] = download_address.format_map(format_variables)
+        ds_data = await process_host(host["downloadSettings"], format_variables, inbounds, proxies, conf)
+        if ds_data and ds_data[0]:
+            ds_data[0]["address"] = ds_data[2].format_map(format_variables)
             if isinstance(conf, StandardLinks):
                 xc = XrayConfig()
-                host_inbound["downloadSettings"] = xc.download_config(download_settings, True)
+                host_inbound["downloadSettings"] = xc.download_config(ds_data[0], True)
             else:
-                host_inbound["downloadSettings"] = download_settings
+                host_inbound["downloadSettings"] = ds_data[0]
 
     return host_inbound, settings, address
 
@@ -356,7 +356,11 @@ async def process_inbounds_and_tags(
     user_status: UserStatus = UserStatus.active,
 ) -> list | str:
     for host in filter_hosts(hosts_storage.values(), user_status):
-        host_inbound, settings, address = await process_host(host, format_variables, inbounds, proxies, conf)
+        host_data = await process_host(host, format_variables, inbounds, proxies, conf)
+        if not host_data:
+            continue
+        host_inbound, settings, address = host_data
+
         if host_inbound:
             conf.add(
                 remark=host["remark"].format_map(format_variables),

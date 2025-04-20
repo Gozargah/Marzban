@@ -13,9 +13,14 @@ class Period(str, Enum):
     month = "month"
 
 
-class UserUsageStats(BaseModel):
+class StatList(BaseModel):
+    period: Period | None = None
+    start: dt
+    end: dt
+
+
+class UserUsageStat(BaseModel):
     total_traffic: int
-    period: Period
     period_start: dt
 
     @field_validator("total_traffic", mode="before")
@@ -23,10 +28,13 @@ class UserUsageStats(BaseModel):
         return NumericValidatorMixin.cast_to_int(v)
 
 
-class NodeUsageStats(BaseModel):
+class UserUsageStatsList(StatList):
+    stats: list[UserUsageStat]
+
+
+class NodeUsageStat(BaseModel):
     uplink: int
     downlink: int
-    period: Period
     period_start: dt
 
     @field_validator("downlink", "uplink", mode="before")
@@ -34,7 +42,11 @@ class NodeUsageStats(BaseModel):
         return NumericValidatorMixin.cast_to_int(v)
 
 
-class RealtimeNodeStats(BaseModel):
+class NodeUsageStatsList(StatList):
+    stats: list[NodeUsageStat]
+
+
+class NodeRealtimeStats(BaseModel):
     mem_total: int
     mem_used: int
     cpu_cores: int
@@ -45,7 +57,6 @@ class RealtimeNodeStats(BaseModel):
 
 class NodeStats(BaseModel):
     period_start: dt
-    period: Period
     mem_usage_percentage: float
     cpu_usage_percentage: float
     incoming_bandwidth_speed: float
@@ -60,3 +71,7 @@ class NodeStats(BaseModel):
     )
     def cast_to_float(cls, v):
         return NumericValidatorMixin.cast_to_float(v)
+
+
+class NodeStatsList(StatList):
+    stats: list[NodeStats]

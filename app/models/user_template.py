@@ -1,13 +1,19 @@
+from datetime import datetime
+import json
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-
 from app.models.proxy import XTLSFlows, ShadowsocksMethods
-
-from .validators import ListValidator
+from app.db.models import UserDataLimitResetStrategy, UserStatusCreate
+from .validators import ListValidator, UserValidator
 
 
 class ExtraSettings(BaseModel):
     flow: XTLSFlows = XTLSFlows.NONE
     method: ShadowsocksMethods | None = None
+
+    def dict(self, *, no_obj=True, **kwargs):
+        if no_obj:
+            return json.loads(self.model_dump_json())
+        return super().model_dump(**kwargs)
 
 
 class UserTemplate(BaseModel):
@@ -20,9 +26,24 @@ class UserTemplate(BaseModel):
     username_suffix: str | None = Field(max_length=20, min_length=1, default=None)
     group_ids: list[int] = []
     extra_settings: ExtraSettings | None = None
+    status: UserStatusCreate | None = None
+    reset_usages: bool | None = None
+    on_hold_timeout: datetime | int | None = None
+    data_limit_reset_strategy: UserDataLimitResetStrategy | None = None
 
 
-class UserTemplateCreate(UserTemplate):
+class UserTemplateWithValidator(UserTemplate):
+    @field_validator("on_hold_timeout", check_fields=False)
+    @classmethod
+    def validator_on_hold_timeout(cls, value):
+        return UserValidator.validator_on_hold_timeout(value)
+
+    @field_validator("status", mode="before", check_fields=False)
+    def validate_status(cls, status, values):
+        return UserValidator.validate_status(status, values)
+
+
+class UserTemplateCreate(UserTemplateWithValidator):
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
@@ -32,7 +53,11 @@ class UserTemplateCreate(UserTemplate):
                 "group_ids": [1, 3, 5],
                 "data_limit": 0,
                 "expire_duration": 0,
-                "extra_settings": {"flow": "none", "method": None},
+                "extra_settings": {"flow": "", "method": None},
+                "status": "active",
+                "reset_usages": True,
+                "on_hold_timeout": "2028-11-03T20:30:00",
+                "data_limit_reset_strategy": "no_reset",
             }
         }
     )
@@ -43,7 +68,7 @@ class UserTemplateCreate(UserTemplate):
         return ListValidator.not_null_list(v, "group")
 
 
-class UserTemplateModify(UserTemplate):
+class UserTemplateModify(UserTemplateWithValidator):
     group_ids: list[int] | None = None
     model_config = ConfigDict(
         json_schema_extra={
@@ -54,7 +79,11 @@ class UserTemplateModify(UserTemplate):
                 "group_ids": [1, 3, 5],
                 "data_limit": 0,
                 "expire_duration": 0,
-                "extra_settings": {"flow": "none", "method": None},
+                "extra_settings": {"flow": "", "method": None},
+                "status": "active",
+                "reset_usages": True,
+                "on_hold_timeout": "2028-11-03T20:30:00",
+                "data_limit_reset_strategy": "no_reset",
             }
         }
     )

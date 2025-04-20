@@ -1,15 +1,12 @@
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import Editor from '@monaco-editor/react'
-import { AlertCircle, CheckCircle } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useTheme } from '../components/theme-provider'
-import Logs from '@/components/settings/Logs'
-import { useGetBackendConfig, useModifyBackendConfig } from '@/service/api'
+import Cores from '@/components/settings/Cores'
+import { useGetCoreConfig, useModifyCoreConfig, useGetAllCores, useDeleteCoreConfig } from '@/service/api'
 import { toast } from '@/hooks/use-toast'
 import { useTranslation } from 'react-i18next'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import CoreConfigModal, { coreConfigFormSchema, CoreConfigFormValues } from '@/components/dialogs/CoreConfigModal'
 
 const defaultConfig = {
   log: {
@@ -35,25 +32,32 @@ const defaultConfig = {
   ],
 }
 
-const sampleLogs = [
-  '2021/09/22 19:36:25 from 77.33.44.11:0 accepted tcp:www.googleapis.com:80 [VLESS_WS_INBOUND >> direct] email: user5322',
-  '2021/09/22 19:36:25 from 22.33.44.55:0 accepted tcp:www.google.com:443 [VLESS_WS_INBOUND >> direct] email: user123',
-  '2021/09/22 19:36:25 from 22.33.44.55:0 accepted tcp:3.3.3.3:80 [VLESS_WS_INBOUND >> direct] email: user123',
-]
-
 interface ValidationResult {
   isValid: boolean
   error?: string
 }
 
 export default function CoreSettings() {
-  const { data, error, isLoading } = useGetBackendConfig(1)
-  const { mutate: modifyConfig } = useModifyBackendConfig()
+  const { data, error, isLoading } = useGetCoreConfig(1)
+  const { mutate: modifyConfig } = useModifyCoreConfig()
+  const { data: coresData, isLoading: isCoresLoading } = useGetAllCores({})
+  const deleteCoreConfig = useDeleteCoreConfig()
   const [config, setConfig] = useState(JSON.stringify(data, null, 2))
   const [validation, setValidation] = useState<ValidationResult>({ isValid: true })
   const [isEditorReady, setIsEditorReady] = useState(false)
   const { resolvedTheme } = useTheme()
   const { t } = useTranslation()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingCoreId, setEditingCoreId] = useState<number | undefined>(undefined)
+
+  const coreConfigForm = useForm<CoreConfigFormValues>({
+    resolver: zodResolver(coreConfigFormSchema),
+    defaultValues: {
+      name: '',
+      config: JSON.stringify(defaultConfig, null, 2),
+      excluded_inbound_ids: [],
+    },
+  })
 
   useEffect(() => {
     setConfig(JSON.stringify(data, null, 2))
@@ -94,19 +98,10 @@ export default function CoreSettings() {
     setIsEditorReady(true)
   }, [])
 
-  // const handleFormat = useCallback(() => {
-  //   try {
-  //     const formatted = JSON.stringify(JSON.parse(config), null, 2)
-  //     setConfig(formatted)
-  //   } catch (e) {
-  //     // If JSON is invalid, formatting will fail silently
-  //   }
-  // }, [config])
-
   const handleSave = async () => {
     try {
       modifyConfig({
-        backendId: 1,
+        coreId: 1,
         data: JSON.parse(config),
         params: { restart_nodes: true }
       }, {
@@ -130,82 +125,134 @@ export default function CoreSettings() {
     }
   }
 
+  const handleAddCore = () => {
+    setEditingCoreId(undefined)
+    coreConfigForm.reset({
+      name: '',
+      config: JSON.stringify(defaultConfig, null, 2),
+      excluded_inbound_ids: [],
+    })
+    setIsModalOpen(true)
+  }
+
+  const handleEditCore = (coreId: string | number) => {
+    const numericCoreId = Number(coreId);
+    setEditingCoreId(numericCoreId);
+    
+    // Find the core in the fetched data
+    const coreToEdit = coresData?.cores?.find(core => core.id === numericCoreId);
+    
+    if (coreToEdit) {
+      // Convert exclude_inbound_tags string to array of numbers if needed
+      const excludedInboundIds = coreToEdit.exclude_inbound_tags ? 
+        coreToEdit.exclude_inbound_tags.split(',')
+          .map(id => Number(id.trim()))
+          .filter(id => !isNaN(id)) : 
+        [];
+          
+      coreConfigForm.reset({
+        name: coreToEdit.name,
+        config: JSON.stringify(coreToEdit.config, null, 2),
+        excluded_inbound_ids: excludedInboundIds,
+      });
+    } else {
+      // Fallback if core not found
+      coreConfigForm.reset({
+        name: 'Core Name',
+        config: JSON.stringify(defaultConfig, null, 2),
+        excluded_inbound_ids: [],
+      });
+    }
+    
+    setIsModalOpen(true);
+  }
+
+  const handleDuplicateCore = (coreId: string | number) => {
+    const numericCoreId = Number(coreId);
+    const coreToDuplicate = coresData?.cores?.find(core => core.id === numericCoreId);
+    
+    if (!coreToDuplicate) {
+      toast({
+        title: t('error', { defaultValue: 'Error' }),
+        description: t('settings.cores.coreNotFound', {
+          defaultValue: 'Core not found',
+        }),
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Prepare for creating a new core based on the existing one
+    coreConfigForm.reset({
+      name: `${coreToDuplicate.name} (Copy)`,
+      config: JSON.stringify(coreToDuplicate.config, null, 2),
+      excluded_inbound_ids: coreToDuplicate.exclude_inbound_tags ? 
+        coreToDuplicate.exclude_inbound_tags.split(',')
+          .map(id => Number(id.trim()))
+          .filter(id => !isNaN(id)) : 
+        [],
+    });
+    
+    setEditingCoreId(undefined); // Mark as new core
+    setIsModalOpen(true);
+    
+    toast({
+      title: t('info', { defaultValue: 'Info' }),
+      description: t('settings.cores.duplicateInfo', {
+        name: coreToDuplicate.name,
+        defaultValue: `Prepare to create a copy of "${coreToDuplicate.name}". Make changes if needed and click Save.`
+      })
+    });
+  }
+
+  const handleDeleteCore = (coreId: string | number) => {
+    const numericCoreId = Number(coreId);
+    
+    deleteCoreConfig.mutate({ 
+      coreId: numericCoreId,
+      params: { restart_nodes: true }
+    }, {
+      onSuccess: () => {
+        toast({
+          title: t('success', { defaultValue: 'Success' }),
+          description: t('settings.cores.deleteSuccess', {
+            name: `Core ${coreId}`,
+            defaultValue: `Core has been deleted successfully`
+          })
+        });
+      },
+      onError: (error) => {
+        toast({
+          title: t('error', { defaultValue: 'Error' }),
+          description: t('settings.cores.deleteFailed', {
+            name: `Core ${coreId}`,
+            defaultValue: `Failed to delete core`
+          }),
+          variant: "destructive"
+        });
+      }
+    });
+  }
+
   return (
     <div className="flex flex-col gap-y-6 pt-4">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardHeader className="p-0">
-            <CardTitle>Xray Config</CardTitle>
-            <p className="text-sm">Control your server details</p>
-          </CardHeader>
-          <div className="flex items-center gap-4">
-            <div className="flex gap-2">
-              <Button variant="destructive" size="sm" disabled={!isEditorReady || !validation.isValid}>
-                Restart core
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {validation.error && !validation.isValid && (
-            <Alert variant="destructive">
-              <AlertDescription>{validation.error}</AlertDescription>
-            </Alert>
-          )}
-          <div dir="ltr" className="rounded-lg border">
-            <Editor
-              height="400px"
-              loading={isLoading}
-              defaultLanguage="json"
-              value={config}
-              theme={resolvedTheme === 'dark' ? 'vs-dark' : 'light'}
-              onChange={handleEditorChange}
-              onValidate={handleEditorValidation}
-              onMount={handleEditorDidMount}
-              options={{
-                minimap: { enabled: false },
-                fontSize: 14,
-                lineNumbers: 'on',
-                roundedSelection: true,
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                formatOnPaste: true,
-                formatOnType: true,
-              }}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              {validation.isValid ? <CheckCircle className="h-5 w-5 text-green-500" /> : <AlertCircle className="h-5 w-5 text-red-500" />}
-              <span className="text-sm">{validation.isValid ? 'Valid JSON' : 'Invalid JSON'}</span>
-            </span>
-            <Button size="sm" onClick={handleSave} disabled={!isEditorReady || !validation.isValid}>
-              Save Changes
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <Cores 
+        cores={coresData?.cores}
+        onAddCore={handleAddCore}
+        onEditCore={handleEditCore}
+        onDuplicateCore={handleDuplicateCore}
+        onDeleteCore={handleDeleteCore}
+        isDialogOpen={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardHeader className="p-0">
-            <CardTitle>Server logs</CardTitle>
-            <p className="text-sm">Control your server details</p>
-          </CardHeader>
-          <Select defaultValue="main">
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select server" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="main">Main server</SelectItem>
-              <SelectItem value="backup">Backup server</SelectItem>
-            </SelectContent>
-          </Select>
-        </CardHeader>
-        <CardContent>
-          <Logs />
-        </CardContent>
-      </Card>
+      <CoreConfigModal
+        isDialogOpen={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        form={coreConfigForm}
+        editingCore={!!editingCoreId}
+        editingCoreId={editingCoreId}
+      />
     </div>
   )
 }

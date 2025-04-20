@@ -27,8 +27,10 @@ class AdminDetails(AdminBaseInfo):
     """Complete admin model with all fields for database representation and API responses."""
 
     is_sudo: bool
+    total_users: int = 0
     users_usage: int = 0
     is_disabled: bool = False
+    discord_id: int | None = None
     sub_template: str | None = None
     profile_title: str | None = None
     support_url: str | None = None
@@ -46,6 +48,7 @@ class AdminModify(BaseModel):
     is_sudo: bool
     telegram_id: int | None = None
     discord_webhook: str | None = None
+    discord_id: int | None = None
     is_disabled: bool | None = None
     sub_template: str | None = None
     sub_domain: str | None = None

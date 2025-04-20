@@ -1,15 +1,15 @@
 from fastapi import APIRouter, Depends, Header, Path, Request
 
 from app.db import AsyncSession, get_db
-from app.models.stats import Period, UserUsageStats
+from app.models.stats import Period, UserUsageStatsList
 from app.models.user import SubscriptionUserResponse
 from app.operation import OperatorType
-from app.operation.subscription import SubscriptionOperator
+from app.operation.subscription import SubscriptionOperation
 from config import XRAY_SUBSCRIPTION_PATH
 
 
 router = APIRouter(tags=["Subscription"], prefix=f"/{XRAY_SUBSCRIPTION_PATH}")
-subscription_operator = SubscriptionOperator(operator_type=OperatorType.API)
+subscription_operator = SubscriptionOperation(operator_type=OperatorType.API)
 
 
 @router.get("/{token}/")
@@ -36,7 +36,7 @@ async def user_subscription_info(token: str, db: AsyncSession = Depends(get_db))
     return await subscription_operator.user_subscription_info(db, token=token)
 
 
-@router.get("/{token}/usage", response_model=list[UserUsageStats])
+@router.get("/{token}/usage", response_model=UserUsageStatsList)
 async def get_sub_user_usage(
     token: str, start: str = "", end: str = "", period: Period = Period.hour, db: AsyncSession = Depends(get_db)
 ):

@@ -16,20 +16,20 @@ template_operator = UserTemplateOperation(OperatorType.API)
 @router.post(
     "", response_model=UserTemplateResponse, status_code=status.HTTP_201_CREATED, responses={403: responses._403}
 )
-async def add_user_template(
+async def create_user_template(
     new_user_template: UserTemplateCreate,
     db: AsyncSession = Depends(get_db),
     admin: AdminDetails = Depends(check_sudo_admin),
 ):
     """
-    Add a new user template
+    Create a new user template
 
     - **name** can be up to 64 characters
     - **data_limit** must be in bytes and larger or equal to 0
     - **expire_duration** must be in seconds and larger or equat to 0
     - **group_ids** list of group ids
     """
-    return await template_operator.add_user_template(db, new_user_template, admin)
+    return await template_operator.create_user_template(db, new_user_template, admin)
 
 
 @router.get("/{template_id}", response_model=UserTemplateResponse)

@@ -4,18 +4,26 @@ from fastapi import APIRouter, Depends, Query, status
 
 from app.db import AsyncSession, get_db
 from .authentication import check_sudo_admin, get_current
-from app.models.stats import Period, UserUsageStats
+from app.models.stats import Period, UserUsageStatsList
 from app.models.admin import AdminDetails
-from app.models.user import UserCreate, UserModify, UserResponse, UsersResponse, RemoveUsersResponse
+from app.models.user import (
+    CreateUserFromTemplate,
+    ModifyUserByTemplate,
+    UserCreate,
+    UserModify,
+    UserResponse,
+    UsersResponse,
+    RemoveUsersResponse,
+)
 from app.db.models import UserStatus
 from app.utils import responses
 from app.operation import OperatorType
-from app.operation.user import UserOperator
-from app.operation.node import NodeOperator
+from app.operation.user import UserOperation
+from app.operation.node import NodeOperation
 
 
-user_operator = UserOperator(operator_type=OperatorType.API)
-node_operator = NodeOperator(operator_type=OperatorType.API)
+user_operator = UserOperation(operator_type=OperatorType.API)
+node_operator = NodeOperation(operator_type=OperatorType.API)
 router = APIRouter(tags=["User"], prefix="/api/user", responses={401: responses._401})
 
 
@@ -25,11 +33,11 @@ router = APIRouter(tags=["User"], prefix="/api/user", responses={401: responses.
     responses={400: responses._400, 409: responses._409},
     status_code=status.HTTP_201_CREATED,
 )
-async def add_user(
+async def create_user(
     new_user: UserCreate, db: AsyncSession = Depends(get_db), admin: AdminDetails = Depends(get_current)
 ):
     """
-    Add a new user
+    Create a new user
 
     - **username**: 3 to 32 characters, can include a-z, 0-9, and underscores.
     - **status**: User's status, defaults to `active`. Special rules if `on_hold`.
@@ -44,7 +52,7 @@ async def add_user(
     - **next_plan**: Next user plan (resets after use).
     """
 
-    return await user_operator.add_user(db, new_user=new_user, admin=admin)
+    return await user_operator.create_user(db, new_user=new_user, admin=admin)
 
 
 @router.put(
@@ -130,8 +138,7 @@ async def active_next_plan(
     username: str, db: AsyncSession = Depends(get_db), admin: AdminDetails = Depends(get_current)
 ):
     """Reset user by next plan"""
-
-    return user_operator.active_next_plan(db, username=username, admin=admin)
+    return await user_operator.active_next_plan(db, username=username, admin=admin)
 
 
 @router.get("/{username}", response_model=UserResponse, responses={403: responses._403, 404: responses._404})
@@ -171,7 +178,7 @@ async def get_users(
 
 
 @router.get(
-    "/{username}/usage", response_model=list[UserUsageStats], responses={403: responses._403, 404: responses._404}
+    "/{username}/usage", response_model=UserUsageStatsList, responses={403: responses._403, 404: responses._404}
 )
 async def get_user_usage(
     username: str,
@@ -188,7 +195,7 @@ async def get_user_usage(
     )
 
 
-@router.get("s/usage", response_model=list[UserUsageStats])
+@router.get("s/usage", response_model=UserUsageStatsList)
 async def get_users_usage(
     period: Period,
     node_id: int | None = None,
@@ -238,3 +245,22 @@ async def delete_expired_users(
     - At least one of expired_after or expired_before must be provided
     """
     return await user_operator.delete_expired_users(db, admin, expired_after, expired_before)
+
+
+@router.post("/from-template", response_model=UserResponse)
+async def create_user_from_template(
+    new_template_user: CreateUserFromTemplate,
+    db: AsyncSession = Depends(get_db),
+    admin: AdminDetails = Depends(get_current),
+):
+    return await user_operator.create_user_from_template(db, new_template_user, admin)
+
+
+@router.put("/from-template/{username}", response_model=UserResponse)
+async def modify_user_with_template(
+    username: str,
+    modify_template_user: ModifyUserByTemplate,
+    db: AsyncSession = Depends(get_db),
+    admin: AdminDetails = Depends(get_current),
+):
+    return await user_operator.modify_user_by_user_template(db, username, modify_template_user, admin)

@@ -101,7 +101,7 @@
   }
 
   ::-webkit-scrollbar {
-    @apply w-2;
+    @apply sm:w-2;
   }
 
   ::-webkit-scrollbar-track {

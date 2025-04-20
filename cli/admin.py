@@ -1,22 +1,23 @@
 import asyncio
+
 from decouple import UndefinedValueError, config
+from pydantic import ValidationError
+from rich.text import Text
 from sqlalchemy import func, select
+from textual.app import ComposeResult
+from textual.containers import Container, Horizontal, Vertical
+from textual.coordinate import Coordinate
+from textual.widgets import Button, DataTable, Input, Static, Switch
+
 from app.db import AsyncSession
 from app.db.base import get_db
 from app.db.models import Admin, User
 from app.models.admin import AdminCreate, AdminDetails, AdminModify
 from app.operation import OperatorType
 from app.operation.admin import AdminOperation
+from app.utils.helpers import readable_datetime
 from app.utils.system import readable_size
-from textual.app import ComposeResult
-from textual.widgets import DataTable, Button, Static, Input, Switch
-from textual.coordinate import Coordinate
-from textual.containers import Horizontal, Container, Vertical
-from rich.text import Text
-from pydantic import ValidationError
 from cli import BaseModal
-from . import utils
-
 
 SYSTEM_ADMIN = AdminDetails(username="cli", is_sudo=True, telegram_id=None, discord_webhook=None)
 
@@ -336,7 +337,7 @@ class AdminContent(Static):
                 readable_size(admin.users_usage),
                 "✔️" if admin.is_sudo else "✖️",
                 "✔️" if admin.is_disabled else "✖️",
-                utils.readable_datetime(admin.created_at),
+                readable_datetime(admin.created_at),
                 str(admin.telegram_id or "✖️"),
                 str(admin.discord_webhook or "✖️"),
             )
@@ -429,3 +430,7 @@ class AdminContent(Static):
     async def key_enter(self) -> None:
         if self.table.columns:
             await self.action_modify_admin()
+
+    async def on_prune(self, event):
+        await self.db.close()
+        return await super().on_prune(event)

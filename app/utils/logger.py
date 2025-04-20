@@ -1,6 +1,6 @@
 import logging
 from copy import copy
-
+from urllib.parse import unquote
 import click
 from uvicorn.config import LOGGING_CONFIG
 from uvicorn.logging import DefaultFormatter
@@ -35,3 +35,14 @@ def get_logger(name: str = "uvicorn.error") -> logging.Logger:
 
     logger = logging.getLogger(name)
     return logger
+
+
+class EndpointFilter(logging.Filter):
+    def __init__(self, excluded_endpoints: list[str]):
+        self.excluded_endpoints = excluded_endpoints
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        if record.args and len(record.args) >= 2:
+            path = unquote(record.args[2])
+            return path not in self.excluded_endpoints
+        return True

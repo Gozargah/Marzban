@@ -103,7 +103,7 @@ export const PaginationControls = () => {
   const paginationRange = getPaginationRange(currentPage, totalPages)
 
   return (
-    <div className="mt-4 flex items-center justify-between">
+    <div className="mt-4 flex flex-col-reverse md:flex-row gap-4 items-center justify-between">
       <div className="flex items-center gap-2">
         <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
           <SelectTrigger className="w-[70px]">
@@ -122,8 +122,8 @@ export const PaginationControls = () => {
         <span className="text-sm text-gray-600">{t('itemsPerPage')}</span>
       </div>
 
-      <Pagination>
-        <PaginationContent>
+      <Pagination className='md:justify-end'>
+        <PaginationContent className='max-w-[300px] overflow-x-auto sm:max-w-full'>
           <PaginationItem>
             <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 0} />
           </PaginationItem>

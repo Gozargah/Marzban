@@ -1,7 +1,7 @@
 from datetime import timedelta
 import asyncio
 
-from . import BaseOperator
+from . import BaseOperation
 from app import __version__
 from app.db import AsyncSession, crud
 from app.models.admin import AdminDetails
@@ -11,7 +11,7 @@ from app.utils.system import cpu_usage, memory_usage, realtime_bandwidth
 from app.core.manager import core_manager
 
 
-class SystemOperator(BaseOperator):
+class SystemOperation(BaseOperation):
     @staticmethod
     async def get_system_stats(db: AsyncSession, admin: AdminDetails) -> SystemStats:
         """Fetch system stats including memory, CPU, and user metrics."""

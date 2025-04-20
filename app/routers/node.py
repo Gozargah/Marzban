@@ -8,24 +8,24 @@ from sse_starlette.sse import EventSourceResponse
 from app.db import AsyncSession, get_db
 from app.models.admin import AdminDetails
 from .authentication import check_sudo_admin
-from app.models.stats import RealtimeNodeStats, NodeUsageStats, Period, NodeStats
+from app.models.stats import NodeRealtimeStats, NodeStatsList, NodeUsageStatsList, Period
 from app.models.node import NodeCreate, NodeModify, NodeResponse, NodeSettings
-from app.operation.node import NodeOperator
+from app.operation.node import NodeOperation
 from app.operation import OperatorType
 from app.utils import responses
 
 
-node_operator = NodeOperator(operator_type=OperatorType.API)
+node_operator = NodeOperation(operator_type=OperatorType.API)
 router = APIRouter(tags=["Node"], prefix="/api/node", responses={401: responses._401, 403: responses._403})
 
 
 @router.get("/settings", response_model=NodeSettings)
 async def get_node_settings(_: AdminDetails = Depends(check_sudo_admin)):
-    """Retrieve the current node settings, including TLS certificate."""
-    return await node_operator.get_node_settings()
+    """Retrieve the current node settings."""
+    return NodeSettings()
 
 
-@router.get("/usage", response_model=list[NodeUsageStats])
+@router.get("/usage", response_model=NodeUsageStatsList)
 async def get_usage(
     db: AsyncSession = Depends(get_db),
     start: dt | None = Query(None, example="2024-01-01T00:00:00"),
@@ -56,11 +56,11 @@ async def get_nodes(
     responses={409: responses._409},
     status_code=status.HTTP_201_CREATED,
 )
-async def add_node(
+async def create_node(
     new_node: NodeCreate, db: AsyncSession = Depends(get_db), admin: AdminDetails = Depends(check_sudo_admin)
 ):
-    """Add a new node to the database."""
-    return await node_operator.add_node(db, new_node, admin)
+    """Create a new node to the database."""
+    return await node_operator.create_node(db, new_node, admin)
 
 
 @router.get("/{node_id}", response_model=NodeResponse)
@@ -76,7 +76,7 @@ async def modify_node(
     db: AsyncSession = Depends(get_db),
     admin: AdminDetails = Depends(check_sudo_admin),
 ):
-    """Update a node's details. Only accessible to sudo admins."""
+    """Modify a node's details. Only accessible to sudo admins."""
     return await node_operator.modify_node(db, node_id=node_id, modified_node=modified_node, admin=admin)
 
 
@@ -101,7 +101,7 @@ async def sync_node(
 async def remove_node(
     node_id: int, db: AsyncSession = Depends(get_db), admin: AdminDetails = Depends(check_sudo_admin)
 ):
-    """Delete a node and remove it from xray in the background."""
+    """Remove a node and remove it from xray in the background."""
     await node_operator.remove_node(db=db, node_id=node_id, admin=admin)
     return {}
 
@@ -135,7 +135,7 @@ async def node_logs(node_id: int, request: Request, _: AdminDetails = Depends(ch
     return EventSourceResponse(event_generator())
 
 
-@router.get("/{node_id}/stats", response_model=list[NodeStats])
+@router.get("/{node_id}/stats", response_model=NodeStatsList)
 async def get_node_stats_periodic(
     node_id: int,
     start: dt | None = Query(None, example="2024-01-01T00:00:00"),
@@ -147,13 +147,13 @@ async def get_node_stats_periodic(
     return await node_operator.get_node_stats_periodic(db, node_id=node_id, start=start, end=end, period=period)
 
 
-@router.get("/{node_id}/realtime_stats", response_model=RealtimeNodeStats)
+@router.get("/{node_id}/realtime_stats", response_model=NodeRealtimeStats)
 async def realtime_node_stats(node_id: int, _: AdminDetails = Depends(check_sudo_admin)):
     """Retrieve node real-time statistics."""
     return await node_operator.get_node_system_stats(node_id=node_id)
 
 
-@router.get("s/realtime_stats", response_model=dict[int, RealtimeNodeStats | None])
+@router.get("s/realtime_stats", response_model=dict[int, NodeRealtimeStats | None])
 async def realtime_nodes_stats(_: AdminDetails = Depends(check_sudo_admin)):
     """Retrieve nodes real-time statistics."""
     return await node_operator.get_nodes_system_stats()

@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useTranslation } from 'react-i18next'
 import { UseFormReturn } from 'react-hook-form'
-import { useAddNode, useModifyNode, NodeConnectionType } from '@/service/api'
+import { useAddNode, useModifyNode, NodeConnectionType, useGetAllCores, CoreResponse, getNode, addNode } from '@/service/api'
 import { toast } from '@/hooks/use-toast'
 import { z } from 'zod'
 import { cn } from '@/lib/utils'
@@ -13,8 +13,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { queryClient } from '@/utils/query-client'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { useState, useEffect } from 'react'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
+import { v4 as uuidv4 } from 'uuid'
 
 export const nodeFormSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -24,7 +24,10 @@ export const nodeFormSchema = z.object({
   connection_type: z.enum([NodeConnectionType.grpc, NodeConnectionType.rest]),
   server_ca: z.string().min(1, 'Server CA is required'),
   keep_alive: z.number().min(1, 'Keep alive is required'),
+  keep_alive_unit: z.enum(['seconds', 'minutes', 'hours']).default('seconds'),
   max_logs: z.number().min(1, 'Max logs is required'),
+  api_key: z.string().min(1, 'API key is required'),
+  core_config_id: z.number().min(1, 'Core configuration is required'),
 })
 
 export type NodeFormValues = z.infer<typeof nodeFormSchema>
@@ -37,15 +40,21 @@ interface NodeModalProps {
   editingNodeId?: number
 }
 
+type ConnectionStatus = 'idle' | 'success' | 'error' | 'checking';
+
 export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNode, editingNodeId }: NodeModalProps) {
   const { t } = useTranslation()
   const dir = useDirDetection()
   const addNodeMutation = useAddNode()
   const modifyNodeMutation = useModifyNode()
+  const { data: cores } = useGetAllCores()
   const [statusChecking, setStatusChecking] = useState(false)
-  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('idle')
   const [errorDetails, setErrorDetails] = useState<string | null>(null)
   const [autoCheck, setAutoCheck] = useState(false)
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
+  const [showErrorDetails, setShowErrorDetails] = useState(false)
+  const [debouncedValues, setDebouncedValues] = useState<NodeFormValues | null>(null)
 
   // Reset status when modal opens/closes
   useEffect(() => {
@@ -56,15 +65,100 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
     }
   }, [isDialogOpen])
 
-  // Auto-check connection when form values change and are valid
+  // Debounce form values changes
   useEffect(() => {
-    if (!isDialogOpen || !autoCheck) return
-
     const values = form.getValues()
-    if (values.name && values.address && values.port) {
+    const timer = setTimeout(() => {
+      setDebouncedValues(values)
+    }, 1000) // Wait 1 second after typing stops
+
+    return () => clearTimeout(timer)
+  }, [form.watch('name'), form.watch('address'), form.watch('port'), form.watch('api_key')])
+
+  // Auto-check connection when debounced values change and are valid
+  useEffect(() => {
+    if (!isDialogOpen || !autoCheck || editingNode || !debouncedValues) return
+
+    const { name, address, port, api_key } = debouncedValues
+    if (name && address && port && api_key) {
       checkNodeStatus()
     }
-  }, [form.watch('name'), form.watch('address'), form.watch('port')])
+  }, [debouncedValues])
+
+  // Start/stop polling when editing a node
+  useEffect(() => {
+    if (editingNode && isDialogOpen && editingNodeId) {
+      // Start polling immediately
+      checkNodeStatus();
+
+      // Set up interval for polling
+      const interval = setInterval(() => {
+        checkNodeStatus();
+      }, 5000); // Check every 5 seconds
+
+      setPollingInterval(interval);
+
+      // Cleanup interval when component unmounts or modal closes
+      return () => {
+        if (interval) {
+          clearInterval(interval);
+        }
+      };
+    } else if (pollingInterval) {
+      // Clear interval if not in edit mode
+      clearInterval(pollingInterval);
+      setPollingInterval(null);
+    }
+  }, [editingNode, isDialogOpen, editingNodeId]);
+
+  // Initialize form with node data when editing
+  useEffect(() => {
+    if (editingNode && editingNodeId) {
+      const fetchNodeData = async () => {
+        try {
+          const nodeData = await getNode(editingNodeId);
+
+          // Set form values with the fetched node data
+          form.reset({
+            name: nodeData.name,
+            address: nodeData.address,
+            port: nodeData.port,
+            usage_coefficient: nodeData.usage_coefficient,
+            connection_type: nodeData.connection_type,
+            server_ca: nodeData.server_ca,
+            keep_alive: nodeData.keep_alive,
+            max_logs: nodeData.max_logs,
+            api_key: nodeData.api_key,
+            core_config_id: nodeData.core_config_id || cores?.cores?.[0]?.id,
+          });
+        } catch (error) {
+          console.error('Error fetching node data:', error);
+          toast({
+            title: t('error'),
+            description: t('nodes.fetchFailed'),
+            variant: 'destructive',
+          });
+        }
+      };
+
+      fetchNodeData();
+    } else {
+      // For new nodes, set default values
+      form.reset({
+        name: '',
+        address: '',
+        port: 8080,
+        usage_coefficient: 1,
+        connection_type: NodeConnectionType.grpc,
+        server_ca: '',
+        keep_alive: 30,
+        keep_alive_unit: 'seconds',
+        max_logs: 100,
+        api_key: '',
+        core_config_id: cores?.cores?.[0]?.id,
+      });
+    }
+  }, [editingNode, editingNodeId, isDialogOpen]);
 
   const checkNodeStatus = async () => {
     // Get current form values
@@ -80,29 +174,46 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
     setErrorDetails(null);
 
     try {
-      // In a real implementation, you would make an API call to check the node status
-      // For now, we're simulating with a timeout
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // This is where you would make the actual API call to check the connection
-      // const response = await fetch(`/api/nodes/check-connection`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(values)
-      // });
-
-      // Mock success (you'd check the actual response in a real implementation)
-      const success = Math.random() > 0.3; // 70% chance of success for demo purposes
-
-      if (success) {
-        setConnectionStatus('success');
+      if (editingNode && editingNodeId) {
+        // For editing mode, use the node's endpoint directly
+        const node = await getNode(editingNodeId);
+        if (node && node.status === 'connected') {
+          setConnectionStatus('success');
+        } else {
+          setConnectionStatus('error');
+          setErrorDetails(node?.status || 'Failed to get node information');
+        }
       } else {
-        setConnectionStatus('error');
-        setErrorDetails('Connection timed out. Make sure the node address and port are correct and the node is running.');
+        // For new nodes, try to add the node temporarily to check its status
+        const tempNode = {
+          name: values.name,
+          address: values.address,
+          port: values.port,
+          usage_coefficient: values.usage_coefficient,
+          connection_type: values.connection_type,
+          server_ca: values.server_ca,
+          keep_alive: values.keep_alive,
+          max_logs: values.max_logs,
+          api_key: values.api_key,
+          core_config_id: values.core_config_id,
+        };
+
+        try {
+          const result = await addNode(tempNode);
+          if (result && result.status === 'connected') {
+            setConnectionStatus('success');
+          } else {
+            setConnectionStatus('error');
+            setErrorDetails(result?.status || 'Failed to connect to node');
+          }
+        } catch (error: any) {
+          setConnectionStatus('error');
+          setErrorDetails(error?.message || 'Failed to connect to node');
+        }
       }
     } catch (error: any) {
       setConnectionStatus('error');
-      setErrorDetails(error?.message || 'Unknown error occurred');
+      setErrorDetails(error?.message || 'Failed to connect to node');
     } finally {
       setStatusChecking(false);
     }
@@ -110,11 +221,28 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
 
   const onSubmit = async (values: NodeFormValues) => {
     try {
+      // Convert keep_alive to seconds based on unit
+      const keepAliveInSeconds = values.keep_alive_unit === 'minutes'
+        ? values.keep_alive * 60
+        : values.keep_alive_unit === 'hours'
+          ? values.keep_alive * 3600
+          : values.keep_alive;
+
+      const nodeData = {
+        ...values,
+        keep_alive: keepAliveInSeconds,
+        // Remove the unit since backend doesn't need it
+        keep_alive_unit: undefined
+      };
+
+      let nodeId: number | undefined;
+
       if (editingNode && editingNodeId) {
         await modifyNodeMutation.mutateAsync({
           nodeId: editingNodeId,
-          data: values
+          data: nodeData
         })
+        nodeId = editingNodeId;
         toast({
           title: t('success', { defaultValue: 'Success' }),
           description: t('nodes.editSuccess', {
@@ -123,9 +251,10 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
           })
         })
       } else {
-        await addNodeMutation.mutateAsync({
-          data: values
+        const result = await addNodeMutation.mutateAsync({
+          data: nodeData
         })
+        nodeId = result?.id;
         toast({
           title: t('success', { defaultValue: 'Success' }),
           description: t('nodes.createSuccess', {
@@ -134,6 +263,26 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
           })
         })
       }
+
+      // Check status after successful creation/editing
+      if (nodeId) {
+        setStatusChecking(true);
+        try {
+          const node = await getNode(nodeId);
+          if (node && node.status === 'connected') {
+            setConnectionStatus('success');
+          } else {
+            setConnectionStatus('error');
+            setErrorDetails(node?.status || 'Failed to get node information');
+          }
+        } catch (error: any) {
+          setConnectionStatus('error');
+          setErrorDetails(error?.message || 'Failed to check node status');
+        } finally {
+          setStatusChecking(false);
+        }
+      }
+
       // Invalidate nodes queries after successful operation
       queryClient.invalidateQueries({ queryKey: ['/api/nodes'] })
       onOpenChange(false)
@@ -156,52 +305,65 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
     <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[1000px] h-full sm:h-auto overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className={cn("text-xl font-semibold", dir === "rtl" && "sm:text-right")}>
+          <DialogTitle className={cn("text-xl text-start font-semibold", dir === "rtl" && "sm:text-right")}>
             {editingNode ? t('editNode.title') : t('nodeModal.title')}
           </DialogTitle>
-          <p className={cn("text-sm text-muted-foreground", dir === "rtl" && "sm:text-right")}>
+          <p className={cn("text-sm text-muted-foreground text-start", dir === "rtl" && "sm:text-right")}>
             {editingNode ? t('nodes.prompt') : t('nodeModal.description')}
           </p>
         </DialogHeader>
 
         {/* Status Check Results - Positioned at the top of the modal */}
-        {connectionStatus !== 'idle' && (
-          <div className="mb-4">
-            {connectionStatus === 'success' ? (
-              <Alert variant="default" className="bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800">
-                <CheckCircle2 className="h-4 w-4" />
-                <AlertTitle>{t('nodeModal.status')}</AlertTitle>
-                <AlertDescription>
-                  {t('nodeModal.statusCheckSuccess')}
-                </AlertDescription>
-              </Alert>
-            ) : connectionStatus === 'error' ? (
-              <Alert variant="destructive" className="bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>{t('nodeModal.connectionError')}</AlertTitle>
-                <AlertDescription>
-                  {errorDetails && (
-                    <div className="mt-2">
-                      <p className="font-semibold">{t('nodeModal.errorDetails')}:</p>
-                      <p className="text-sm">{errorDetails}</p>
-                    </div>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setAutoCheck(true);
-                      checkNodeStatus();
-                    }}
-                    className="mt-2"
-                  >
-                    {t('nodeModal.retryConnection')}
-                  </Button>
-                </AlertDescription>
-              </Alert>
-            ) : null}
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${connectionStatus === 'success' ? 'bg-green-500 dark:bg-green-400' :
+                  connectionStatus === 'error' ? 'bg-red-500 dark:bg-red-400' :
+                    connectionStatus === 'checking' ? 'bg-yellow-500 dark:bg-yellow-400' :
+                      'bg-gray-500 dark:bg-gray-400'
+                  }`} />
+                <span className="text-sm font-medium text-foreground">
+                  {connectionStatus === 'success' ? t('nodeModal.status.connected') :
+                    connectionStatus === 'error' ? t('nodeModal.status.error') :
+                      connectionStatus === 'checking' ? t('nodeModal.status.connecting') :
+                        t('nodeModal.status.disabled')}
+                </span>
+              </div>
+              {connectionStatus === 'error' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowErrorDetails(!showErrorDetails)}
+                  className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  {showErrorDetails ? t('nodeModal.hideDetails') : t('nodeModal.showDetails')}
+                </Button>
+              )}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={checkNodeStatus}
+              disabled={statusChecking || !form.formState.isValid}
+              className="h-6 px-2 text-xs"
+            >
+              {statusChecking ? (
+                <div className="flex items-center gap-1">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  {t('nodeModal.statusChecking')}
+                </div>
+              ) : (
+                t('nodeModal.statusCheck')
+              )}
+            </Button>
           </div>
-        )}
+          {showErrorDetails && connectionStatus === 'error' && (
+            <div className="text-xs text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">
+              {errorDetails}
+            </div>
+          )}
+        </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
@@ -255,6 +417,35 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="core_config_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('nodeModal.coreConfig')}</FormLabel>
+                      <Select
+                        onValueChange={(value) => field.onChange(parseInt(value))}
+                        value={field.value?.toString()}
+                        defaultValue={cores?.cores?.[0]?.id.toString()}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={t('nodeModal.selectCoreConfig')} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {cores?.cores?.map((core: CoreResponse) => (
+                            <SelectItem key={core.id} value={core.id.toString()}>
+                              {core.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <div className="flex flex-col gap-4 w-full md">
                   <div className='flex items-center gap-4'>
@@ -327,45 +518,108 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
 
                     <FormField
                       control={form.control}
-                      name="keep_alive"
+                      name="api_key"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t('nodeModal.keepAlive')}</FormLabel>
-                          <div className="flex flex-col gap-1.5">
-                            <p className="text-xs text-muted-foreground">{t('nodeModal.keepAliveDescription')}</p>
+                          <FormLabel>{t('nodeModal.apiKey')}</FormLabel>
+                          <FormControl>
                             <div className="flex gap-2">
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  {...field}
-                                  onChange={(e) => field.onChange(parseInt(e.target.value))}
-                                />
-                              </FormControl>
-                              <Select defaultValue="days">
-                                <SelectTrigger className="w-[100px]">
-                                  <SelectValue placeholder={t('nodeModal.days')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="days">{t('nodeModal.days')}</SelectItem>
-                                  <SelectItem value="seconds">{t('nodeModal.seconds')}</SelectItem>
-                                </SelectContent>
-                              </Select>
+                              <Input
+                                type="text"
+                                placeholder={t('nodeModal.apiKeyPlaceholder')}
+                                autoComplete="off"
+                                {...field}
+                                onChange={(e) => field.onChange(e.target.value)}
+                              />
+                              <Button
+                                className='flex-1'
+                                type="button"
+                                variant="outline"
+                                onClick={() => field.onChange(uuidv4())}
+                              >
+                                {t('nodeModal.generateUUID')}
+                              </Button>
                             </div>
-                          </div>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    {/* Connection Status Indicator */}
-                    {statusChecking && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>{t('nodeModal.statusChecking')}</span>
-                      </div>
-                    )}
+
+                    <FormField
+                      control={form.control}
+                      name="keep_alive"
+                      render={({ field }) => {
+                        const [displayValue, setDisplayValue] = useState<string>(field.value?.toString() || '');
+                        const [unit, setUnit] = useState<'seconds' | 'minutes' | 'hours'>('seconds');
+
+                        const convertToSeconds = (value: number, fromUnit: 'seconds' | 'minutes' | 'hours') => {
+                          switch (fromUnit) {
+                            case 'minutes':
+                              return value * 60;
+                            case 'hours':
+                              return value * 3600;
+                            default:
+                              return value;
+                          }
+                        };
+
+                        const convertFromSeconds = (seconds: number, toUnit: 'seconds' | 'minutes' | 'hours') => {
+                          switch (toUnit) {
+                            case 'minutes':
+                              return Math.floor(seconds / 60);
+                            case 'hours':
+                              return Math.floor(seconds / 3600);
+                            default:
+                              return seconds;
+                          }
+                        };
+
+                        return (
+                          <FormItem>
+                            <FormLabel>{t('nodeModal.keepAlive')}</FormLabel>
+                            <div className="flex flex-col gap-1.5">
+                              <p className="text-xs text-muted-foreground">{t('nodeModal.keepAliveDescription')}</p>
+                              <div className="flex gap-2">
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    value={displayValue}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setDisplayValue(value);
+                                      const numValue = parseInt(value) || 0;
+                                      field.onChange(convertToSeconds(numValue, unit));
+                                    }}
+                                  />
+                                </FormControl>
+                                <Select
+                                  value={unit}
+                                  onValueChange={(value: 'seconds' | 'minutes' | 'hours') => {
+                                    setUnit(value);
+                                    const currentSeconds = field.value || 0;
+                                    const newDisplayValue = convertFromSeconds(currentSeconds, value);
+                                    setDisplayValue(newDisplayValue.toString());
+                                  }}
+                                >
+                                  <SelectTrigger className="flex-1">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="seconds">{t('nodeModal.seconds')}</SelectItem>
+                                    <SelectItem value="minutes">{t('nodeModal.minutes')}</SelectItem>
+                                    <SelectItem value="hours">{t('nodeModal.hours')}</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
                   </div>
                 </div>
-
 
               </div>
 
@@ -379,7 +633,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                       <Textarea
                         dir='ltr'
                         placeholder={t('nodeModal.certificatePlaceholder')}
-                        className="font-mono text-xs h-[200px] md:h-3/4"
+                        className="font-mono text-xs h-[200px] md:h-5/6"
                         {...field}
                       />
                     </FormControl>
@@ -394,7 +648,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
               </Button>
               <Button
                 type="submit"
-                disabled={addNodeMutation.isPending || modifyNodeMutation.isPending || statusChecking}
+                disabled={addNodeMutation.isPending || modifyNodeMutation.isPending}
                 className="bg-primary hover:bg-primary/90"
               >
                 {editingNode ? t('edit') : t('create')}
@@ -405,4 +659,4 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
       </DialogContent>
     </Dialog>
   )
-} 
+}

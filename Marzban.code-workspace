@@ -14,11 +14,13 @@
 		"ruff.format.preview": true,
 		"ruff.fixAll": true,
 		"ruff.organizeImports": true,
+		"ruff.showSyntaxErrors": true,
 		"[python]": {
 			"editor.defaultFormatter": "charliermarsh.ruff",
 			"editor.formatOnSave": true,
 			"editor.codeActionsOnSave": {
 				"source.fixAll.ruff": "explicit",
+				"source.organizeImports.ruff": "always",
 			},
 		},
 		"editor.codeActionsOnSave": {

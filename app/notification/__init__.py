@@ -7,6 +7,7 @@ from app.models.host import BaseHost
 from app.models.user_template import UserTemplateResponse
 from app.models.node import NodeResponse
 from app.models.group import GroupResponse
+from app.models.core import CoreResponse
 from app.models.admin import AdminDetails
 from app.models.user import UserResponse
 from app.db import AsyncSession
@@ -173,3 +174,15 @@ async def expire_days_reached(db: AsyncSession, days: int, user: UserResponse, t
                 db, ReminderType.expiration_date, expires_at=user.expire, user_id=user.id, threshold=threshold
             ),
         )
+
+
+async def create_core(core: CoreResponse, by: str):
+    await asyncio.gather(ds.create_core(core, by), tg.create_core(core, by))
+
+
+async def modify_core(core: CoreResponse, by: str):
+    await asyncio.gather(ds.modify_core(core, by), tg.modify_core(core, by))
+
+
+async def remove_core(core_id: int, by: str):
+    await asyncio.gather(ds.remove_core(core_id, by), tg.remove_core(core_id, by))

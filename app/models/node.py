@@ -1,5 +1,6 @@
-from cryptography.x509 import load_pem_x509_certificate
 import re
+from uuid import UUID
+from cryptography.x509 import load_pem_x509_certificate
 
 from pydantic import ConfigDict, BaseModel, Field, field_validator
 
@@ -13,7 +14,6 @@ KEY_PATTERN = r"-----BEGIN (?:RSA )?PRIVATE KEY-----"
 
 class NodeSettings(BaseModel):
     min_node_version: str = "v1.0.0"
-    certificate: str
 
 
 class Node(BaseModel):
@@ -26,6 +26,7 @@ class Node(BaseModel):
     keep_alive: int
     max_logs: int
     core_config_id: int | None = None
+    api_key: str
 
 
 class NodeCreate(Node):
@@ -41,6 +42,7 @@ class NodeCreate(Node):
                 "keep_alive": 60,
                 "max_logs": 1000,
                 "core_config_id": 1,
+                "api_key": "valid uuid",
             }
         }
     )
@@ -83,6 +85,17 @@ class NodeCreate(Node):
 
         return v
 
+    @field_validator("api_key", mode="before")
+    @classmethod
+    def validate_api_key(cls, v) -> str:
+        if not v:
+            return
+        try:
+            UUID(v)
+        except ValueError:
+            raise ValueError("Invalid UUID format for api_key")
+        return v
+
 
 class NodeModify(NodeCreate):
     name: str | None = None
@@ -95,6 +108,7 @@ class NodeModify(NodeCreate):
     connection_type: NodeConnectionType | None = None
     keep_alive: int | None = None
     max_logs: int | None = None
+    api_key: str | None = None
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -109,6 +123,7 @@ class NodeModify(NodeCreate):
                 "keep_alive": 60,
                 "max_logs": 1000,
                 "core_config_id": 1,
+                "api_key": "valid uuid",
             }
         }
     )

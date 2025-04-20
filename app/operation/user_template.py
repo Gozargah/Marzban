@@ -4,17 +4,17 @@ from app.db import AsyncSession
 import asyncio
 
 from app.db.models import Admin
-from app.db.crud import create_user_template, update_user_template, remove_user_template, get_user_templates
-from app.operation import BaseOperator
+from app.db.crud import create_user_template, modify_user_template, remove_user_template, get_user_templates
+from app.operation import BaseOperation
 from app.models.user_template import UserTemplateCreate, UserTemplateModify, UserTemplateResponse
 from app.utils.logger import get_logger
 from app import notification
 
-logger = get_logger("user-template-operator")
+logger = get_logger("user-template-operation")
 
 
-class UserTemplateOperation(BaseOperator):
-    async def add_user_template(
+class UserTemplateOperation(BaseOperation):
+    async def create_user_template(
         self, db: AsyncSession, new_user_template: UserTemplateCreate, admin: Admin
     ) -> UserTemplateResponse:
         for group_id in new_user_template.group_ids:
@@ -32,14 +32,14 @@ class UserTemplateOperation(BaseOperator):
         return db_user_template
 
     async def modify_user_template(
-        self, db: AsyncSession, template_id: int, modify_user_template: UserTemplateModify, admin: Admin
+        self, db: AsyncSession, template_id: int, modified_user_template: UserTemplateModify, admin: Admin
     ) -> UserTemplateResponse:
         db_user_template = await self.get_validated_user_template(db, template_id)
-        if modify_user_template.group_ids:
-            for group_id in modify_user_template.group_ids:
+        if modified_user_template.group_ids:
+            for group_id in modified_user_template.group_ids:
                 await self.get_validated_group(db, group_id)
         try:
-            db_user_template = await update_user_template(db, db_user_template, modify_user_template)
+            db_user_template = await modify_user_template(db, db_user_template, modified_user_template)
         except IntegrityError:
             await self.raise_error("Template by this name already exists", 409, db=db)
 

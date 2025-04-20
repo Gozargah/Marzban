@@ -2,20 +2,10 @@ import asyncio
 
 from GozargahNodeBridge import GozargahNode, create_node, Health, NodeType
 from asyncio import Lock
-from aiocache import cached
 
-from app.db import GetDB
-from app.db.crud import get_tls_certificate
 from app.db.models import Node, NodeConnectionType
 from app.node.user import serialize_user_for_node, core_users
 from app.models.user import UserResponse
-
-
-@cached()
-async def get_tls():
-    async with GetDB() as db:
-        tls = await get_tls_certificate(db)
-        return tls
 
 
 type_map = {
@@ -41,14 +31,12 @@ class NodeManager:
                 finally:
                     del self._nodes[node.id]
 
-            tls = await get_tls()
             new_node = create_node(
                 connection=type_map[node.connection_type],
                 address=node.address,
                 port=node.port,
-                client_cert=tls.certificate,
-                client_key=tls.key,
                 server_ca=node.server_ca,
+                api_key=node.api_key,
                 max_logs=node.max_logs,
                 extra={"id": node.id, "usage_coefficient": node.usage_coefficient},
             )

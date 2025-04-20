@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react'
 import MainSection from '@/components/hosts/Hosts'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { getHosts, addHost, modifyHost, CreateHost, ProxyHostALPN, ProxyHostFingerprint, MultiplexProtocol } from '@/service/api'
+import { getHosts, addHost, modifyHost, CreateHost, ProxyHostALPN, ProxyHostFingerprint, MultiplexProtocol, Xudp } from '@/service/api'
 import { HostFormValues } from '@/components/hosts/Hosts'
 
 export default function HostsPage() {
@@ -27,15 +27,21 @@ export default function HostsPage() {
 
     const handleSubmit = async (formData: HostFormValues) => {
         try {
+            // Check if all protocols are set to none
+            const allProtocolsNone = formData.mux_settings && 
+                (!formData.mux_settings.sing_box?.protocol || formData.mux_settings.sing_box.protocol === 'none') &&
+                (!formData.mux_settings.clash?.protocol || formData.mux_settings.clash.protocol === 'none') &&
+                (!formData.mux_settings.xray?.concurrency);
+
             // Convert HostFormValues to CreateHost type
             const hostData: CreateHost = {
                 ...formData,
                 alpn: formData.alpn as ProxyHostALPN | undefined,
                 fingerprint: formData.fingerprint as ProxyHostFingerprint | undefined,
-                mux_settings: formData.mux_settings ? {
+                mux_settings: allProtocolsNone ? undefined : (formData.mux_settings ? {
                     ...formData.mux_settings,
                     sing_box: formData.mux_settings.sing_box ? {
-                        protocol: formData.mux_settings.sing_box.protocol === 'null' ? undefined : formData.mux_settings.sing_box.protocol as MultiplexProtocol,
+                        protocol: formData.mux_settings.sing_box.protocol === 'none' ? undefined : formData.mux_settings.sing_box.protocol as MultiplexProtocol,
                         max_connections: formData.mux_settings.sing_box.max_connections || undefined,
                         max_streams: formData.mux_settings.sing_box.max_streams || undefined,
                         min_streams: formData.mux_settings.sing_box.min_streams || undefined,
@@ -43,15 +49,21 @@ export default function HostsPage() {
                         brutal: formData.mux_settings.sing_box.brutal || undefined
                     } : undefined,
                     clash: formData.mux_settings.clash ? {
-                        protocol: formData.mux_settings.clash.protocol === 'null' ? undefined : formData.mux_settings.clash.protocol as MultiplexProtocol,
+                        protocol: formData.mux_settings.clash.protocol === 'none' ? undefined : formData.mux_settings.clash.protocol as MultiplexProtocol,
                         max_connections: formData.mux_settings.clash.max_connections || undefined,
                         max_streams: formData.mux_settings.clash.max_streams || undefined,
                         min_streams: formData.mux_settings.clash.min_streams || undefined,
                         padding: formData.mux_settings.clash.padding || undefined,
-                        brutal: formData.mux_settings.clash.brutal || undefined
+                        brutal: formData.mux_settings.clash.brutal || undefined,
+                        statistic: formData.mux_settings.clash.statistic || undefined,
+                        only_tcp: formData.mux_settings.clash.only_tcp || undefined
                     } : undefined,
-                    xray: formData.mux_settings.xray || undefined
-                } : undefined,
+                    xray: formData.mux_settings.xray ? {
+                        concurrency: formData.mux_settings.xray.concurrency || undefined,
+                        xudp_concurrency: formData.mux_settings.xray.xudp_concurrency || undefined,
+                        xudp_proxy_443: formData.mux_settings.xray.xudp_proxy_443 === 'none' ? undefined : formData.mux_settings.xray.xudp_proxy_443 as Xudp
+                    } : undefined
+                } : undefined),
                 fragment_settings: formData.fragment_settings ? {
                     xray: formData.fragment_settings.xray ? {
                         packets: formData.fragment_settings.xray.packets || '',
@@ -69,11 +81,6 @@ export default function HostsPage() {
             
             if (existingHost?.id) {
                 // This is an edit operation
-                // Preserve existing mux settings if not provided in the form
-                if (!hostData.mux_settings && existingHost.mux_settings) {
-                    hostData.mux_settings = existingHost.mux_settings;
-                }
-                
                 const response = await modifyHost(existingHost.id, hostData);
                 return { status: 200 };
             } else {

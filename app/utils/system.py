@@ -5,8 +5,8 @@ import socket
 import time
 from dataclasses import dataclass
 
+import httpx
 import psutil
-import requests
 
 from app import scheduler
 
@@ -115,28 +115,28 @@ def check_port(port: int) -> bool:
 
 def get_public_ip():
     try:
-        resp = requests.get("http://api4.ipify.org/", timeout=5).text.strip()
+        resp = httpx.get("http://api4.ipify.org/", timeout=5).text.strip()
         if ipaddress.IPv4Address(resp).is_global:
             return resp
     except Exception:
         pass
 
     try:
-        resp = requests.get("http://ipv4.icanhazip.com/", timeout=5).text.strip()
+        resp = httpx.get("http://ipv4.icanhazip.com/", timeout=5).text.strip()
         if ipaddress.IPv4Address(resp).is_global:
             return resp
     except Exception:
         pass
 
-    try:
-        requests.packages.urllib3.util.connection.HAS_IPV6 = False
-        resp = requests.get("https://ifconfig.io/ip", timeout=5).text.strip()
-        if ipaddress.IPv4Address(resp).is_global:
-            return resp
-    except requests.exceptions.RequestException:
-        pass
-    finally:
-        requests.packages.urllib3.util.connection.HAS_IPV6 = True
+    # Disable IPv6 for this request
+    transport = httpx.HTTPTransport(local_address="0.0.0.0")
+    with httpx.Client(transport=transport) as client:
+        try:
+            resp = client.get("https://ifconfig.io/ip", timeout=5).text.strip()
+            if ipaddress.IPv4Address(resp).is_global:
+                return resp
+        except httpx.RequestError:
+            pass
 
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -154,14 +154,14 @@ def get_public_ip():
 
 def get_public_ipv6():
     try:
-        resp = requests.get("http://api6.ipify.org/", timeout=5).text.strip()
+        resp = httpx.get("http://api6.ipify.org/", timeout=5).text.strip()
         if ipaddress.IPv6Address(resp).is_global:
             return "[%s]" % resp
     except Exception:
         pass
 
     try:
-        resp = requests.get("http://ipv6.icanhazip.com/", timeout=5).text.strip()
+        resp = httpx.get("http://ipv6.icanhazip.com/", timeout=5).text.strip()
         if ipaddress.IPv6Address(resp).is_global:
             return "[%s]" % resp
     except Exception:

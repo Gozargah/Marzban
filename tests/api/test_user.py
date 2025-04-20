@@ -94,6 +94,15 @@ def test_user_get(access_token):
     assert response.json()["users"][0]["username"] == "test_user_active"
 
 
+def test_reset_user_usage(access_token):
+    """Test that the user usage can be reset."""
+    response = client.post(
+        "/api/user/test_user_active/reset",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+
 def test_user_update(access_token):
     """Test that the user update route is accessible."""
     response = client.put(
@@ -102,12 +111,35 @@ def test_user_update(access_token):
         json={
             "group_ids": [3],
             "data_limit": (1024 * 1024 * 1024 * 10),
+            "next_plan": {"data_limit": 10000, "expire": 10000, "add_remaining_traffic": False, "fire_on_either": True},
         },
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["username"] == "test_user_active"
     assert response.json()["group_ids"] == [3]
     assert response.json()["data_limit"] == (1024 * 1024 * 1024 * 10)
+    assert response.json()["next_plan"]["data_limit"] == 10000
+    assert response.json()["next_plan"]["expire"] == 10000
+    assert response.json()["next_plan"]["add_remaining_traffic"] is False
+    assert response.json()["next_plan"]["fire_on_either"] is True
+
+
+def test_reset_by_next_user_usage(access_token):
+    """Test that the user next plan is available."""
+    response = client.post(
+        "/api/user/test_user_active/active-next",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_revoke_user_subscription(access_token):
+    """Test revoke user subscription info."""
+    response = client.post(
+        "/api/user/test_user_active/revoke_sub",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
 
 
 def test_user_delete(access_token):

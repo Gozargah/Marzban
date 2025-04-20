@@ -1,13 +1,15 @@
-name: Build
+name: Build-Docker
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
+  release:
+    types: [created]
 
 jobs:
   build-docker-image:
     runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: gozargah/marzban
+      GHCR_IMAGE_NAME: ghcr.io/gozargah/marzban
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -19,23 +21,25 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           run_install: false
+          version: 10
 
       - name: Setup nodejs
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'pnpm'
+          cache-dependency-path: ./dashboard/pnpm-lock.yaml
 
       - name: Install dependencies
-        working-directory: ./app/dashboard
+        working-directory: ./dashboard
         run: pnpm i
 
       - name: Build project
-        working-directory: ./app/dashboard
-        run: VITE_BASE_API=/api/ pnpm build --if-present -- --outDir build --assetsDir statics
+        working-directory: ./dashboard
+        run: VITE_BASE_API=/api/ pnpm run build -- --outDir build --assetsDir statics
 
       - name: Create 404.html
-        working-directory: ./app/dashboard
+        working-directory: ./dashboard
         run: cp ./build/index.html ./build/404.html
 
       - name: Set up QEMU
@@ -56,15 +60,21 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set Docker tags
+        id: tags
+        run: |
+          if [ "${{ github.event.release.prerelease }}" = "true" ]; then
+            TAGS="${IMAGE_NAME}:${{ github.ref_name }},${GHCR_IMAGE_NAME}:${{ github.ref_name }}"
+          else
+            TAGS="${IMAGE_NAME}:${{ github.ref_name }},${IMAGE_NAME}:latest,${GHCR_IMAGE_NAME}:${{ github.ref_name }},${GHCR_IMAGE_NAME}:latest"
+          fi
+          echo "DOCKER_TAGS=$TAGS" >> $GITHUB_ENV
 
-      - name: Build and push
-        uses: docker/build-push-action@v3
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: |
-            gozargah/marzban:latest
-            gozargah/marzban:${{github.ref_name}}
-            ghcr.io/gozargah/marzban:latest
-            ghcr.io/gozargah/marzban:${{github.ref_name}}
+          tags: ${{ env.DOCKER_TAGS }}

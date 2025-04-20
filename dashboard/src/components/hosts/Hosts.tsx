@@ -25,7 +25,7 @@ interface XrayMuxSettings {
 }
 
 interface SingBoxMuxSettings {
-    protocol: string | null;
+    protocol: string | null | undefined;
     max_connections: number | null;
     max_streams: number | null;
     min_streams: number | null;
@@ -34,7 +34,7 @@ interface SingBoxMuxSettings {
 }
 
 interface ClashMuxSettings {
-    protocol: string | null;
+    protocol: string | null | undefined;
     max_connections: number | null;
     max_streams: number | null;
     min_streams: number | null;
@@ -93,6 +93,7 @@ export interface HostFormValues {
             sc_min_posts_interval_ms?: string;
             sc_max_buffered_posts?: string;
             sc_stream_up_server_secs?: string;
+            download_settings?: number;
             xmux?: {
                 max_concurrency?: string;
                 max_connections?: string;
@@ -142,61 +143,90 @@ export interface HostFormValues {
 // Update the transport settings schema
 const transportSettingsSchema = z.object({
     xhttp_settings: z.object({
-        mode: z.enum(["auto", "packet-up", "stream-up", "stream-one"]).nullish(),
-        no_grpc_header: z.boolean().nullish(),
-        x_padding_bytes: z.string().nullish(),
-        sc_max_each_post_bytes: z.string().nullish(),
-        sc_min_posts_interval_ms: z.string().nullish(),
-        sc_max_buffered_posts: z.string().nullish(),
-        sc_stream_up_server_secs: z.string().nullish()
-    }).nullish(),
+        mode: z.enum(["auto", "packet-up", "stream-up", "stream-one"]).nullish().optional(),
+        no_grpc_header: z.boolean().nullish().optional(),
+        x_padding_bytes: z.string().nullish().optional(),
+        sc_max_each_post_bytes: z.string().nullish().optional(),
+        sc_min_posts_interval_ms: z.string().nullish().optional(),
+        sc_max_buffered_posts: z.string().nullish().optional(),
+        sc_stream_up_server_secs: z.string().nullish().optional(),
+        download_settings: z.number().nullish().optional(),
+        xmux: z.object({
+            max_concurrency: z.string().nullish().optional(),
+            max_connections: z.string().nullish().optional(),
+            c_max_reuse_times: z.string().nullish().optional(),
+            c_max_lifetime: z.string().nullish().optional(),
+            h_max_request_times: z.string().nullish().optional(),
+            h_keep_alive_period: z.string().nullish().optional()
+        }).nullish().optional()
+    }).nullish().optional(),
     grpc_settings: z.object({
-        multi_mode: z.boolean().nullish(),
-        idle_timeout: z.number().nullish(),
-        health_check_timeout: z.number().nullish(),
-        permit_without_stream: z.number().nullish(),
-        initial_windows_size: z.number().nullish()
-    }).nullish(),
+        multi_mode: z.boolean().nullish().optional(),
+        idle_timeout: z.number().nullish().optional(),
+        health_check_timeout: z.number().nullish().optional(),
+        permit_without_stream: z.number().nullish().optional(),
+        initial_windows_size: z.number().nullish().optional()
+    }).nullish().optional(),
     kcp_settings: z.object({
-        header: z.string().nullish(),
-        mtu: z.number().nullish(),
-        tti: z.number().nullish(),
-        uplink_capacity: z.number().nullish(),
-        downlink_capacity: z.number().nullish(),
-        congestion: z.number().nullish(),
-        read_buffer_size: z.number().nullish(),
-        write_buffer_size: z.number().nullish()
-    }).nullish(),
+        header: z.string().nullish().optional(),
+        mtu: z.number().nullish().optional(),
+        tti: z.number().nullish().optional(),
+        uplink_capacity: z.number().nullish().optional(),
+        downlink_capacity: z.number().nullish().optional(),
+        congestion: z.number().nullish().optional(),
+        read_buffer_size: z.number().nullish().optional(),
+        write_buffer_size: z.number().nullish().optional()
+    }).nullish().optional(),
     tcp_settings: z.object({
-        header: z.string().nullish(),
+        header: z.enum(['none', 'http']).nullish().optional(),
         request: z.object({
-            version: z.string().nullish(),
-            method: z.string().nullish(),
-            headers: z.record(z.array(z.string())).nullish()
-        }).nullish(),
+            version: z.enum(['1.0', '1.1', '2.0', '3.0']).nullish().optional(),
+            method: z.enum([
+                'GET', 'POST', 'PUT', 'DELETE', 'HEAD', 
+                'OPTIONS', 'PATCH', 'TRACE', 'CONNECT'
+            ]).nullish().optional(),
+            headers: z.record(z.array(z.string())).nullish().optional()
+        }).nullish().optional(),
         response: z.object({
-            version: z.string().nullish(),
-            status: z.string().nullish(),
-            reason: z.string().nullish(),
-            headers: z.record(z.array(z.string())).nullish()
-        }).nullish()
-    }).nullish(),
+            version: z.enum(['1.0', '1.1', '2.0', '3.0']).nullish().optional(),
+            status: z.string().regex(/^[1-5]\d{2}$/).nullish().optional(),
+            reason: z.enum([
+                'Continue', 'Switching Protocols', 'OK', 'Created', 'Accepted',
+                'Non-Authoritative Information', 'No Content', 'Reset Content',
+                'Partial Content', 'Multiple Choices', 'Moved Permanently',
+                'Found', 'See Other', 'Not Modified', 'Use Proxy',
+                'Temporary Redirect', 'Permanent Redirect', 'Bad Request',
+                'Unauthorized', 'Payment Required', 'Forbidden', 'Not Found',
+                'Method Not Allowed', 'Not Acceptable', 'Proxy Authentication Required',
+                'Request Timeout', 'Conflict', 'Gone', 'Length Required',
+                'Precondition Failed', 'Payload Too Large', 'URI Too Long',
+                'Unsupported Media Type', 'Range Not Satisfiable', 'Expectation Failed',
+                'I\'m a teapot', 'Misdirected Request', 'Unprocessable Entity',
+                'Locked', 'Failed Dependency', 'Too Early', 'Upgrade Required',
+                'Precondition Required', 'Too Many Requests',
+                'Request Header Fields Too Large', 'Unavailable For Legal Reasons',
+                'Internal Server Error', 'Not Implemented', 'Bad Gateway',
+                'Service Unavailable', 'Gateway Timeout', 'HTTP Version Not Supported'
+            ]).nullish().optional(),
+            headers: z.record(z.array(z.string())).nullish().optional()
+        }).nullish().optional(),
+    }).nullish().optional(),
     websocket_settings: z.object({
-        heartbeatPeriod: z.number().nullish()
-    }).nullish()
-}).nullish();
+        heartbeatPeriod: z.number().nullish().optional()
+    }).nullish().optional()
+}).nullish().optional();
 
 export const HostFormSchema = z.object({
     remark: z.string().min(1, "Remark is required"),
     address: z.string().min(1, "Address is required"),
     port: z.number().min(1, "Port must be at least 1").max(65535, "Port must be at most 65535"),
-    inbound_tag: z.string().optional(),
+    inbound_tag: z.string().min(1, "Inbound tag is required"),
     status: z.array(z.string()).default([]),
     host: z.string().default(""),
     sni: z.string().default(""),
     path: z.string().default(""),
     http_headers: z.record(z.string()).default({}),
-    security: z.enum(["inbound_default", "tls", "reality"]).default("inbound_default"),
+    security: z.enum(["inbound_default", "tls", "none"]).default("inbound_default"),
     alpn: z.string().default(""),
     fingerprint: z.string().default(""),
     allowinsecure: z.boolean().default(false),
@@ -213,40 +243,40 @@ export const HostFormSchema = z.object({
     }).optional(),
     noise_settings: z.object({
         xray: z.array(z.object({
-            type: z.string().regex(/^(?:rand|str|base64|hex)$/),
-            packet: z.string(),
-            delay: z.string().regex(/^\d{1,16}(-\d{1,16})?$/)
+            type: z.string().regex(/^(?:rand|str|base64|hex)$/).optional(),
+            packet: z.string().optional(),
+            delay: z.string().regex(/^\d{1,16}(-\d{1,16})?$/).optional()
         })).optional()
     }).optional(),
     mux_settings: z.object({
         xray: z.object({
-            concurrency: z.number().nullable(),
-            xudp_concurrency: z.number().nullable(),
-            xudp_proxy_443: z.string()
+            concurrency: z.number().nullable().optional(),
+            xudp_concurrency: z.number().nullable().optional(),
+            xudp_proxy_443: z.enum(["reject", "allow", "skip"]).nullable().optional()
         }).optional(),
         sing_box: z.object({
-            protocol: z.enum(["null", "h2mux", "smux", "yamux"]).nullable(),
-            max_connections: z.number().nullable(),
-            max_streams: z.number().nullable(),
-            min_streams: z.number().nullable(),
-            padding: z.boolean().nullable(),
+            protocol: z.enum(["none", "smux", "yamux", "h2mux"]).optional(),
+            max_connections: z.number().nullable().optional(),
+            max_streams: z.number().nullable().optional(),
+            min_streams: z.number().nullable().optional(),
+            padding: z.boolean().nullable().optional(),
             brutal: z.object({
-                up_mbps: z.number(),
-                down_mbps: z.number()
-            }).nullable()
+                up_mbps: z.number().nullable().optional(),
+                down_mbps: z.number().nullable().optional()
+            }).nullable().optional()
         }).optional(),
         clash: z.object({
-            protocol: z.enum(["null", "h2", "smux", "yamux", "h2mux"]).nullable(),
-            max_connections: z.number().nullable(),
-            max_streams: z.number().nullable(),
-            min_streams: z.number().nullable(),
-            padding: z.boolean().nullable(),
+            protocol: z.enum(["none", "smux", "yamux", "h2mux"]).optional(),
+            max_connections: z.number().nullable().optional(),
+            max_streams: z.number().nullable().optional(),
+            min_streams: z.number().nullable().optional(),
+            padding: z.boolean().nullable().optional(),
             brutal: z.object({
-                up_mbps: z.number(),
-                down_mbps: z.number()
-            }).nullable(),
-            statistic: z.boolean().nullable(),
-            only_tcp: z.boolean().nullable()
+                up_mbps: z.number().nullable().optional(),
+                down_mbps: z.number().nullable().optional()
+            }).nullable().optional(),
+            statistic: z.boolean().nullable().optional(),
+            only_tcp: z.boolean().nullable().optional()
         }).optional()
     }).optional(),
     transport_settings: transportSettingsSchema
@@ -271,88 +301,7 @@ const initialDefaultValues: HostFormValues = {
     random_user_agent: false,
     use_sni_as_host: false,
     priority: 0,
-    fragment_settings: undefined,
-    noise_settings: {
-        xray: []
-    },
-    mux_settings: {
-        xray: {
-            concurrency: null,
-            xudp_concurrency: null,
-            xudp_proxy_443: "reject"
-        },
-        sing_box: {
-            protocol: null,
-            max_connections: 0,
-            max_streams: 0,
-            min_streams: 0,
-            padding: false,
-            brutal: null
-        },
-        clash: {
-            protocol: null,
-            max_connections: 0,
-            max_streams: 0,
-            min_streams: 0,
-            padding: false,
-            brutal: null,
-            statistic: false,
-            only_tcp: false
-        }
-    },
-    transport_settings: {
-        xhttp_settings: {
-            mode: "auto",
-            no_grpc_header: false,
-            x_padding_bytes: "",
-            sc_max_each_post_bytes: "",
-            sc_min_posts_interval_ms: "",
-            sc_max_buffered_posts: "",
-            sc_stream_up_server_secs: "",
-            xmux: {
-                max_concurrency: "",
-                max_connections: "",
-                c_max_reuse_times: "",
-                c_max_lifetime: "",
-                h_max_request_times: "",
-                h_keep_alive_period: ""
-            }
-        },
-        grpc_settings: {
-            multi_mode: false,
-            idle_timeout: 0,
-            health_check_timeout: 0,
-            permit_without_stream: 0,
-            initial_windows_size: 0
-        },
-        kcp_settings: {
-            header: "none",
-            mtu: 0,
-            tti: 0,
-            uplink_capacity: 0,
-            downlink_capacity: 0,
-            congestion: 0,
-            read_buffer_size: 0,
-            write_buffer_size: 0
-        },
-        tcp_settings: {
-            header: "",
-            request: {
-                version: "",
-                headers: {},
-                method: ""
-            },
-            response: {
-                version: "",
-                headers: {},
-                status: "",
-                reason: ""
-            }
-        },
-        websocket_settings: {
-            heartbeatPeriod: 0
-        }
-    }
+    fragment_settings: undefined
 };
 
 export interface HostsProps {
@@ -402,7 +351,7 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit }: Hosts
             allowinsecure: host.allowinsecure || false,
             random_user_agent: host.random_user_agent || false,
             use_sni_as_host: host.use_sni_as_host || false,
-            priority: host.priority ? Number(host.priority) : (hosts?.length ?? 0),
+            priority: host.priority || 0,
             is_disabled: host.is_disabled || false,
             fragment_settings: host.fragment_settings ? {
                 xray: host.fragment_settings.xray ?? undefined
@@ -443,7 +392,8 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit }: Hosts
                     sc_max_each_post_bytes: host.transport_settings.xhttp_settings.sc_max_each_post_bytes ?? undefined,
                     sc_min_posts_interval_ms: host.transport_settings.xhttp_settings.sc_min_posts_interval_ms ?? undefined,
                     sc_max_buffered_posts: host.transport_settings.xhttp_settings.sc_max_buffered_posts ?? undefined,
-                    sc_stream_up_server_secs: host.transport_settings.xhttp_settings.sc_stream_up_server_secs ?? undefined
+                    sc_stream_up_server_secs: host.transport_settings.xhttp_settings.sc_stream_up_server_secs ?? undefined,
+                    download_settings: host.transport_settings.xhttp_settings.download_settings ?? undefined
                 } : undefined,
                 grpc_settings: host.transport_settings.grpc_settings ? {
                     multi_mode: host.transport_settings.grpc_settings.multi_mode === null ? undefined : !!host.transport_settings.grpc_settings.multi_mode,
@@ -594,26 +544,18 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit }: Hosts
                         xudp_concurrency: data.mux_settings.xray.xudp_concurrency ?? null,
                         xudp_proxy_443: data.mux_settings.xray.xudp_proxy_443 ?? "reject"
                     } : undefined,
-                    sing_box: data.mux_settings.sing_box ? {
-                        protocol: data.mux_settings.sing_box.protocol === "null" ? null : data.mux_settings.sing_box.protocol,
-                        max_connections: data.mux_settings.sing_box.max_connections ?? null,
-                        max_streams: data.mux_settings.sing_box.max_streams ?? null,
-                        min_streams: data.mux_settings.sing_box.min_streams ?? null,
-                        padding: data.mux_settings.sing_box.padding ?? null,
-                        brutal: data.mux_settings.sing_box.brutal ?? null
-                    } : undefined,
-                    clash: data.mux_settings.clash ? {
-                        protocol: data.mux_settings.clash.protocol === "null" ? null : data.mux_settings.clash.protocol,
-                        max_connections: data.mux_settings.clash.max_connections ?? null,
-                        max_streams: data.mux_settings.clash.max_streams ?? null,
-                        min_streams: data.mux_settings.clash.min_streams ?? null,
-                        padding: data.mux_settings.clash.padding ?? null,
-                        brutal: data.mux_settings.clash.brutal ?? null,
-                        statistic: data.mux_settings.clash.statistic ?? null,
-                        only_tcp: data.mux_settings.clash.only_tcp ?? null
-                    } : undefined
+                    sing_box: data.mux_settings.sing_box && data.mux_settings.sing_box.protocol !== "none" ? data.mux_settings.sing_box : undefined,
+                    clash: data.mux_settings.clash && data.mux_settings.clash.protocol !== "none" ? data.mux_settings.clash : undefined
                 } : undefined
             };
+
+            // Remove mux_settings if it's empty
+            if (cleanedData.mux_settings && 
+                !cleanedData.mux_settings.xray && 
+                !cleanedData.mux_settings.sing_box && 
+                !cleanedData.mux_settings.clash) {
+                delete cleanedData.mux_settings;
+            }
 
             const response = await onSubmit(cleanedData);
             return response;

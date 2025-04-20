@@ -5,8 +5,8 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from .validators import NumericValidatorMixin, ListValidator
-from app.db.models import UserStatus, UserDataLimitResetStrategy
+from .validators import NumericValidatorMixin, ListValidator, UserValidator
+from app.db.models import UserStatus, UserDataLimitResetStrategy, UserStatusCreate
 from app.models.admin import AdminBaseInfo
 from app.models.proxy import ProxyTable
 
@@ -14,11 +14,6 @@ from app.models.proxy import ProxyTable
 class UserStatusModify(str, Enum):
     active = "active"
     disabled = "disabled"
-    on_hold = "on_hold"
-
-
-class UserStatusCreate(str, Enum):
-    active = "active"
     on_hold = "on_hold"
 
 
@@ -33,19 +28,16 @@ class NextPlanModel(BaseModel):
 
 class User(BaseModel):
     proxy_settings: ProxyTable = Field(default_factory=ProxyTable)
-    expire: datetime | int | None = Field(None, nullable=True)
+    expire: datetime | int | None = None
     data_limit: int | None = Field(ge=0, default=None, description="data_limit can be 0 or greater")
     data_limit_reset_strategy: UserDataLimitResetStrategy | None = None
     note: str | None = Field(max_length=500, default=None)
-    sub_updated_at: datetime | None = Field(None, nullable=True)
-    sub_last_user_agent: str | None = Field(None, nullable=True)
-    online_at: datetime | None = Field(None, nullable=True)
-    on_hold_expire_duration: int | None = Field(None, nullable=True)
-    on_hold_timeout: datetime | int | None = Field(None, nullable=True)
+    on_hold_expire_duration: int | None = None
+    on_hold_timeout: datetime | int | None = None
     group_ids: list[int] | None = Field(default_factory=list)
-    auto_delete_in_days: int | None = Field(None, nullable=True)
+    auto_delete_in_days: int | None = None
 
-    next_plan: NextPlanModel | None = Field(None, nullable=True)
+    next_plan: NextPlanModel | None = None
 
 
 class UserWithValidator(User):
@@ -60,10 +52,7 @@ class UserWithValidator(User):
     @field_validator("on_hold_timeout", check_fields=False)
     @classmethod
     def validator_on_hold_timeout(cls, value):
-        if value == 0 or isinstance(value, datetime) or value is None:
-            return value
-        else:
-            raise ValueError("on_hold_timeout can be datetime or 0")
+        return UserValidator.validator_on_hold_timeout(value)
 
     @field_validator("expire", check_fields=False)
     @classmethod
@@ -77,18 +66,11 @@ class UserWithValidator(User):
 
     @field_validator("status", mode="before", check_fields=False)
     def validate_status(cls, status, values):
-        on_hold_expire = values.data.get("on_hold_expire_duration")
-        expire = values.data.get("expire")
-        if status == UserStatusCreate.on_hold:
-            if on_hold_expire == 0 or on_hold_expire is None:
-                raise ValueError("User cannot be on hold without a valid on_hold_expire_duration.")
-            if expire:
-                raise ValueError("User cannot be on hold with specified expire.")
-        return status
+        return UserValidator.validate_status(status, values)
 
 
 class UserCreate(UserWithValidator):
-    username: str = Field(min_length=3, max_length=32)
+    username: str = Field(min_length=3, max_length=128)
     status: UserStatusCreate | None = None
     model_config = ConfigDict(
         json_schema_extra={
@@ -105,7 +87,7 @@ class UserCreate(UserWithValidator):
                 "data_limit_reset_strategy": "no_reset",
                 "status": "active",
                 "note": "",
-                "on_hold_timeout": "2023-11-03T20:30:00",
+                "on_hold_timeout": "2028-11-03T20:30:00",
                 "on_hold_expire_duration": 0,
             }
         }
@@ -164,6 +146,9 @@ class UserResponse(User):
     used_traffic: int
     lifetime_used_traffic: int = 0
     created_at: datetime
+    sub_updated_at: datetime | None = None
+    sub_last_user_agent: str | None = None
+    online_at: datetime | None = None
     subscription_url: str = ""
     admin: AdminBaseInfo | None = None
     model_config = ConfigDict(from_attributes=True)
@@ -196,3 +181,16 @@ class UsersResponse(BaseModel):
 class RemoveUsersResponse(BaseModel):
     users: list[str]
     count: int
+
+
+class ModifyUserByTemplate(BaseModel):
+    user_template_id: int
+
+
+class CreateUserFromTemplate(ModifyUserByTemplate):
+    username: str = Field(min_length=3, max_length=128)
+
+    @field_validator("username", check_fields=False)
+    @classmethod
+    def validate_username(cls, v):
+        return UserValidator.validate_username(v)
