@@ -123,7 +123,7 @@ export function DataTable<TData extends AdminDetails>({columns, data, onEdit, on
                                                     <span>|</span>
                                                     <div className="flex items-center gap-2">
                                                         <span><User className="w-4 h-4"/></span>
-                                                        {/*<span>{row.original.users_count ? row.original.users_count : 0}</span>*/}
+                                                        <span>{row.original.total_users ? row.original.total_users : 0}</span>
                                                     </div>
                                                     <span>|</span>
                                                     <div className="flex items-center gap-2">

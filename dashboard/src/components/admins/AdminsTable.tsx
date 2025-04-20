@@ -22,7 +22,7 @@ interface AdminsTableProps {
 export default function AdminsTable({data, onEdit, onDelete}: AdminsTableProps) {
   const {t} = useTranslation()
   const [filters, setFilters] = useState<AdminFilters>({
-    sort: '-created_at',
+    sort: '-username',
     search: '',
     limit: 10,
     offset: 0,

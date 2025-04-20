@@ -76,6 +76,7 @@ export default function AdminsPage() {
             support_url: admin.support_url || "",
             profile_title: admin.profile_title || "",
             sub_domain: admin.sub_domain || "",
+            password: ""
 
         })
         setIsDialogOpen(true)
