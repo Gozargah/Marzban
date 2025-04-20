@@ -611,6 +611,7 @@
     "apiKeyPlaceholder": "请输入节点的 API 密钥",
     "generateUUID": "生成 UUID",
     "coreConfig": "核心配置",
+    "hours": "小时",
     "selectCoreConfig": "选择核心配置",
     "noCoreConfig": "无核心配置"
   },

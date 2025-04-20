@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useTranslation } from 'react-i18next'
 import { UseFormReturn } from 'react-hook-form'
-import { useAddNode, useModifyNode, NodeConnectionType, useGetAllCores, CoreResponse, CoreResponseList, getNode, addNode, modifyNode } from '@/service/api'
+import { useAddNode, useModifyNode, NodeConnectionType, useGetAllCores, CoreResponse, getNode, addNode } from '@/service/api'
 import { toast } from '@/hooks/use-toast'
 import { z } from 'zod'
 import { cn } from '@/lib/utils'
@@ -54,6 +54,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
   const [autoCheck, setAutoCheck] = useState(false)
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
   const [showErrorDetails, setShowErrorDetails] = useState(false)
+  const [debouncedValues, setDebouncedValues] = useState<NodeFormValues | null>(null)
 
   // Reset status when modal opens/closes
   useEffect(() => {
@@ -63,6 +64,26 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
       setAutoCheck(true)
     }
   }, [isDialogOpen])
+
+  // Debounce form values changes
+  useEffect(() => {
+    const values = form.getValues()
+    const timer = setTimeout(() => {
+      setDebouncedValues(values)
+    }, 1000) // Wait 1 second after typing stops
+
+    return () => clearTimeout(timer)
+  }, [form.watch('name'), form.watch('address'), form.watch('port'), form.watch('api_key')])
+
+  // Auto-check connection when debounced values change and are valid
+  useEffect(() => {
+    if (!isDialogOpen || !autoCheck || editingNode || !debouncedValues) return
+
+    const { name, address, port, api_key } = debouncedValues
+    if (name && address && port && api_key) {
+      checkNodeStatus()
+    }
+  }, [debouncedValues])
 
   // Start/stop polling when editing a node
   useEffect(() => {
@@ -89,16 +110,6 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
       setPollingInterval(null);
     }
   }, [editingNode, isDialogOpen, editingNodeId]);
-
-  // Auto-check connection when form values change and are valid
-  useEffect(() => {
-    if (!isDialogOpen || !autoCheck || editingNode) return;
-
-    const values = form.getValues();
-    if (values.name && values.address && values.port && values.api_key) {
-      checkNodeStatus();
-    }
-  }, [form.watch('name'), form.watch('address'), form.watch('port'), form.watch('api_key')]);
 
   // Initialize form with node data when editing
   useEffect(() => {
@@ -224,11 +235,14 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
         keep_alive_unit: undefined
       };
 
+      let nodeId: number | undefined;
+
       if (editingNode && editingNodeId) {
         await modifyNodeMutation.mutateAsync({
           nodeId: editingNodeId,
           data: nodeData
         })
+        nodeId = editingNodeId;
         toast({
           title: t('success', { defaultValue: 'Success' }),
           description: t('nodes.editSuccess', {
@@ -237,9 +251,10 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
           })
         })
       } else {
-        await addNodeMutation.mutateAsync({
+        const result = await addNodeMutation.mutateAsync({
           data: nodeData
         })
+        nodeId = result?.id;
         toast({
           title: t('success', { defaultValue: 'Success' }),
           description: t('nodes.createSuccess', {
@@ -248,6 +263,26 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
           })
         })
       }
+
+      // Check status after successful creation/editing
+      if (nodeId) {
+        setStatusChecking(true);
+        try {
+          const node = await getNode(nodeId);
+          if (node && node.status === 'connected') {
+            setConnectionStatus('success');
+          } else {
+            setConnectionStatus('error');
+            setErrorDetails(node?.status || 'Failed to get node information');
+          }
+        } catch (error: any) {
+          setConnectionStatus('error');
+          setErrorDetails(error?.message || 'Failed to check node status');
+        } finally {
+          setStatusChecking(false);
+        }
+      }
+
       // Invalidate nodes queries after successful operation
       queryClient.invalidateQueries({ queryKey: ['/api/nodes'] })
       onOpenChange(false)
