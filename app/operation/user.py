@@ -1,6 +1,6 @@
 import asyncio
 import secrets
-from datetime import UTC, datetime, timedelta
+from datetime import datetime as dt, timezone as tz, timedelta as td
 
 from sqlalchemy.exc import IntegrityError
 from pydantic import ValidationError
@@ -24,7 +24,7 @@ from app.db.crud import (
     remove_users,
     UsersSortingOptions,
 )
-from app.db.models import User, UserStatus
+from app.db.models import User, UserStatus, UserTemplate
 from app.models.stats import UserUsageStatsList, Period
 from app.models.admin import AdminDetails
 from app.models.user import (
@@ -36,7 +36,6 @@ from app.models.user import (
     UsersResponse,
     RemoveUsersResponse,
 )
-from app.models.user_template import UserTemplateResponse
 from app.node import node_manager as node_manager
 from app.operation import BaseOperation
 from app.utils.logger import get_logger
@@ -136,6 +135,7 @@ class UserOperation(BaseOperation):
 
         db_user = await reset_user_data_usage(db=db, db_user=db_user)
         user = await self.validate_user(db_user)
+
         if db_user.status in (UserStatus.active, UserStatus.on_hold):
             asyncio.create_task(node_manager.update_user(user, inbounds=await core_manager.get_inbounds()))
 
@@ -293,11 +293,7 @@ class UserOperation(BaseOperation):
             logger.info(f'User "{user}" deleted by admin "{by}"')
 
     async def get_expired_users(
-        self,
-        db: AsyncSession,
-        admin: AdminDetails,
-        expired_after: datetime | None = None,
-        expired_before: datetime | None = None,
+        self, db: AsyncSession, admin: AdminDetails, expired_after: dt | None = None, expired_before: dt | None = None
     ) -> list[str]:
         """
         Get users who have expired within the specified date range.
@@ -317,11 +313,7 @@ class UserOperation(BaseOperation):
         return [row.username for row in users]
 
     async def delete_expired_users(
-        self,
-        db: AsyncSession,
-        admin: AdminDetails,
-        expired_after: datetime | None = None,
-        expired_before: datetime | None = None,
+        self, db: AsyncSession, admin: AdminDetails, expired_after: dt | None = None, expired_before: dt | None = None
     ) -> RemoveUsersResponse:
         """
         Delete users who have expired within the specified date range.
@@ -344,68 +336,78 @@ class UserOperation(BaseOperation):
 
         return RemoveUsersResponse(users=username_list, count=len(username_list))
 
+    @staticmethod
+    def load_base_user_args(template: UserTemplate) -> dict:
+        user_args = {
+            "data_limit": template.data_limit,
+            "group_ids": template.group_ids,
+            "data_limit_reset_strategy": template.data_limit_reset_strategy,
+        }
+
+        if template.status == UserStatus.active:
+            if template.expire_duration:
+                user_args["expire"] = dt.now(tz.utc) + td(seconds=template.expire_duration)
+            else:
+                user_args["expire"] = None
+        else:
+            user_args["on_hold_expire_duration"] = template.expire_duration
+            if template.on_hold_timeout:
+                user_args["on_hold_timeout"] = dt.now(tz.utc) + td(seconds=template.on_hold_timeout)
+            else:
+                user_args["on_hold_timeout"] = None
+
+        return user_args
+
+    @staticmethod
+    def apply_settings(user_args: UserCreate | UserModify, template: UserTemplate) -> dict:
+        if template.extra_settings:
+            flow = template.extra_settings.get("flow", None)
+            method = template.extra_settings.get("method", None)
+
+            if flow is not None:
+                user_args.proxy_settings.vless.flow = flow
+
+            if method is not None:
+                user_args.proxy_settings.shadowsocks.method = method
+
+        return user_args
+
     async def create_user_from_template(
         self, db: AsyncSession, new_template_user: CreateUserFromTemplate, admin: AdminDetails
     ) -> UserResponse:
-        db_user_template = await self.get_validated_user_template(db, new_template_user.user_template_id)
+        user_template = await self.get_validated_user_template(db, new_template_user.user_template_id)
 
-        user_template = UserTemplateResponse.model_validate(db_user_template)
+        new_user_args = self.load_base_user_args(user_template)
+        new_user_args["username"] = (
+            f"{user_template.username_prefix if user_template.username_prefix else ''}{new_template_user.username}{user_template.username_suffix if user_template.username_suffix else ''}"
+        )
 
-        new_user_args = {
-            "username": f"{user_template.username_prefix if user_template.username_prefix else ''}{new_template_user.username}{user_template.username_suffix if user_template.username_suffix else ''}",
-            **user_template.model_dump(
-                exclude={
-                    "extra_settings",
-                    "next_plan",
-                }
-            ),
-        }
-        if user_template.status == UserStatus.active:
-            new_user_args["expire"] = (
-                (datetime.now(UTC) + timedelta(seconds=user_template.expire_duration))
-                if user_template.expire_duration
-                else None
-            )
-        else:
-            new_user_args["on_hold_expire_duration"] = user_template.expire_duration
         try:
             new_user = UserCreate(**new_user_args)
         except ValidationError as e:
             error_messages = "; ".join([f"{err['loc'][0]}: {err['msg']}" for err in e.errors()])
             await self.raise_error(message=error_messages, code=400)
 
+        new_user = self.apply_settings(new_user, user_template)
+
         return await self.create_user(db, new_user, admin)
 
     async def modify_user_by_user_template(
         self, db: AsyncSession, username: str, modified_template: ModifyUserByTemplate, admin: AdminDetails
     ) -> UserResponse:
-        db_user_template = await self.get_validated_user_template(db, modified_template.user_template_id)
-        user_template = UserTemplateResponse.model_validate(db_user_template)
+        user_template = await self.get_validated_user_template(db, modified_template.user_template_id)
 
-        modify_user_args = {
-            **user_template.model_dump(
-                exclude={
-                    "extra_settings",
-                    "next_plan",
-                }
-            ),
-        }
-        if user_template.status == UserStatus.active:
-            modify_user_args["expire"] = (
-                (datetime.now(UTC) + timedelta(seconds=user_template.expire_duration))
-                if user_template.expire_duration
-                else None
-            )
-        else:
-            modify_user_args["on_hold_expire_duration"] = user_template.expire_duration
+        modify_user_args = self.load_base_user_args(user_template)
 
         try:
-            modify_user_model = UserModify(**modify_user_args)
+            modify_user = UserModify(**modify_user_args)
         except ValidationError as e:
             error_messages = "; ".join([f"{err['loc'][0]}: {err['msg']}" for err in e.errors()])
             await self.raise_error(message=error_messages, code=400)
 
-        user = await self.modify_user(db, username, modify_user_model, admin)
+        modify_user = self.apply_settings(modify_user, user_template)
+
         if user_template.reset_usages:
-            return await self.reset_user_data_usage(db, username, admin)
-        return user
+            await self.reset_user_data_usage(db, username, admin)
+
+        return await self.modify_user(db, username, modify_user, admin)

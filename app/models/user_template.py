@@ -1,4 +1,3 @@
-from datetime import datetime
 import json
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.models.proxy import XTLSFlows, ShadowsocksMethods
@@ -7,7 +6,7 @@ from .validators import ListValidator, UserValidator
 
 
 class ExtraSettings(BaseModel):
-    flow: XTLSFlows = XTLSFlows.NONE
+    flow: XTLSFlows | None = None
     method: ShadowsocksMethods | None = None
 
     def dict(self, *, no_obj=True, **kwargs):
@@ -28,16 +27,11 @@ class UserTemplate(BaseModel):
     extra_settings: ExtraSettings | None = None
     status: UserStatusCreate | None = None
     reset_usages: bool | None = None
-    on_hold_timeout: datetime | int | None = None
+    on_hold_timeout: int | None = None
     data_limit_reset_strategy: UserDataLimitResetStrategy | None = None
 
 
 class UserTemplateWithValidator(UserTemplate):
-    @field_validator("on_hold_timeout", check_fields=False)
-    @classmethod
-    def validator_on_hold_timeout(cls, value):
-        return UserValidator.validator_on_hold_timeout(value)
-
     @field_validator("status", mode="before", check_fields=False)
     def validate_status(cls, status, values):
         return UserValidator.validate_status(status, values)
@@ -56,7 +50,7 @@ class UserTemplateCreate(UserTemplateWithValidator):
                 "extra_settings": {"flow": "", "method": None},
                 "status": "active",
                 "reset_usages": True,
-                "on_hold_timeout": "2028-11-03T20:30:00",
+                "on_hold_timeout": 3600,
                 "data_limit_reset_strategy": "no_reset",
             }
         }
@@ -82,7 +76,7 @@ class UserTemplateModify(UserTemplateWithValidator):
                 "extra_settings": {"flow": "", "method": None},
                 "status": "active",
                 "reset_usages": True,
-                "on_hold_timeout": "2028-11-03T20:30:00",
+                "on_hold_timeout": 3600,
                 "data_limit_reset_strategy": "no_reset",
             }
         }
