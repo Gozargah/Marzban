@@ -187,7 +187,7 @@ export default function AdminsTable({data, onEdit, onDelete, onToggleStatus}: Ad
                 columns={columns}
                 data={data}
                 onEdit={onEdit}
-                onDelete={onDelete}
+                onDelete={handleDeleteClick}
                 onToggleStatus={handleStatusToggleClick}
                 setStatusToggleDialogOpen={setStatusToggleDialogOpen}
             />
