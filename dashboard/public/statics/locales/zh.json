@@ -56,6 +56,7 @@
   "admin": "管理员",
   "sudo": "超级用户",
   "save": "保存",
+  "confirm": "确认",
   "admins": {
     "title": "管理员",
     "description": "管理系统管理员",
@@ -92,8 +93,17 @@
     "profile": "个人资料标题",
     "subTemplate": "订阅模板路径",
     "passwordConfirm": "确认密码",
-    "enterPasswordConfirm": "请输入确认密码"
+    "enterPasswordConfirm": "请输入确认密码",
+    "disableSuccess": "管理员「{{name}}」已成功禁用",
+    "enableSuccess": "管理员「{{name}}」已成功启用",
+    "disableFailed": "禁用管理员「{{name}}」失败",
+    "enableFailed": "启用管理员「{{name}}」失败"
   },
+  "admin.disable": "管理员已禁用",
+  "admin.enable": "管理员已启用",
+  "deleteAdmin.prompt": "您确定要删除管理员<b>{{name}}</b>吗？",
+  "activeUsers.prompt": "您是否要激活此 {{name}} 下的所有用户？",
+  "disableUsers.prompt": "您是否要禁用此 {{name}} 下的所有用户？",
   "manageAccounts": "控制、更新和排列用户账户",
   "manageGroups": "控制、更新和排列用户组",
   "manageNodes": "监控、控制、添加、编辑和删除节点",

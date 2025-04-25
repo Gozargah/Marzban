@@ -96,15 +96,7 @@ export default function AdminModal({
         <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <div className="flex items-center gap-4">
-                        <DialogTitle>{editingAdmin ? t('admins.editAdmin') : t('admins.createAdmin')}</DialogTitle>
-                        {editingAdmin ? (
-                            <Switch
-                                checked={!form.watch('is_disabled')}
-                                onCheckedChange={(checked) => form.setValue('is_disabled', !checked)}
-                            />
-                        ) : null}
-                    </div>
+                    <DialogTitle>{editingAdmin ? t('admins.editAdmin') : t('admins.createAdmin')}</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

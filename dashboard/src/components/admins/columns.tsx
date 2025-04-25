@@ -1,8 +1,13 @@
 import {AdminDetails} from '@/service/api'
 import {ColumnDef} from '@tanstack/react-table'
-import {ChartPie, ChevronDown, Trash2, User} from 'lucide-react'
-import {Badge} from '@/components/ui/badge'
+import {ChartPie, ChevronDown, MoreVertical, Power, PowerOff, Trash2, User} from 'lucide-react'
 import {Button} from '@/components/ui/button'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem, DropdownMenuSeparator,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu.tsx";
 
 export const setupColumns = (
     {
@@ -10,11 +15,13 @@ export const setupColumns = (
         handleSort,
         filters,
         onDelete,
+        toggleStatus
     }: {
         t: (key: string) => string
         handleSort: (column: string) => void
         filters: { sort: string }
         onDelete: (admin: AdminDetails) => void
+        toggleStatus: (admin: AdminDetails) => void
     }): ColumnDef<AdminDetails>[] => [
     {
         accessorKey: 'username',
@@ -36,38 +43,17 @@ export const setupColumns = (
             </button>
         ),
         cell: ({row}) => (
-            <div
-                className="whitespace-nowrap text-ellipsis px-2 overflow-hidden text-sm font-medium">{row.getValue('username')}</div>
-        ),
-    },
-    {
-        accessorKey: 'is_disabled',
-        header: () => (
-            <button onClick={handleSort.bind(null, 'is_disabled')} className="flex gap-1 py-3 w-full items-center">
-                <div className="text-xs">
-                    {t('admins.status')}
+            <div className="flex items-start gap-x-3 py-1 px-1">
+                <div className="pt-1">
+                    {row.original.is_disabled ? <div
+                            className="min-h-[10px] min-w-[10px] rounded-full border border-gray-400 dark:border-gray-600 shadow-sm"/> :
+                        <div
+                            className="min-h-[10px] min-w-[10px] rounded-full bg-green-300 dark:bg-green-500 shadow-sm animate-greenPulse"/>}
                 </div>
-                {filters.sort && (filters.sort === 'is_disabled' || filters.sort === '-is_disabled') && (
-                    <ChevronDown
-                        size={16}
-                        className={`
-              transition-transform duration-300
-              ${filters.sort === 'is_disabled' ? 'rotate-180' : ''}
-              ${filters.sort === '-is_disabled' ? 'rotate-0' : ''}
-            `}
-                    />
-                )}
-            </button>
+                <div
+                    className="whitespace-nowrap text-ellipsis px-2 overflow-hidden text-sm font-medium">{row.getValue('username')}</div>
+            </div>
         ),
-        cell: ({row}) => {
-            const isDisabled = row.getValue('is_disabled')
-            return (
-                <Badge variant={'secondary'}
-                       className={`${!isDisabled ? 'bg-[#065F46]' : 'bg-[#404040]'} text-white px-2.5 py-0.5 rounded-full`}>
-                    {isDisabled ? t('status.disabled') : t('status.enable')}
-                </Badge>
-            )
-        },
     },
     {
         accessorKey: 'is_sudo',
@@ -76,9 +62,9 @@ export const setupColumns = (
             const isSudo = row.getValue('is_sudo')
             return <div className="flex items-center gap-2">
                 {isSudo ? (
-                    <span>{t('admin')}</span>
-                ) : (
                     <span>{t('sudo')}</span>
+                ) : (
+                    <span>{t('admin')}</span>
                 )}
             </div>
         },
@@ -140,15 +126,37 @@ export const setupColumns = (
     {
         id: 'actions',
         cell: ({row}) => (
-            <div className="flex justify-end gap-2">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onDelete(row.original)}
-                    title={t('delete')}
-                >
-                    <Trash2 className="h-4 w-4 text-destructive"/>
-                </Button>
+            <div className="flex justify-end gap-2 items-center">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <MoreVertical className="h-4 w-4"/>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onSelect={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleStatus(row.original)
+                        }}>
+                            {row.original.is_disabled ? <Power className="h-4 w-4 mr-2"/> :
+                                <PowerOff className="h-4 w-4 mr-2"/>}
+                            {row.original.is_disabled ? t("enable") : t("disable")}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator/>
+                        <DropdownMenuItem
+                            className="text-destructive"
+                            onSelect={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onDelete(row.original);
+                            }}
+                        >
+                            <Trash2 className="h-4 w-4 mr-2"/>
+                            {t("delete")}
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         ),
     },

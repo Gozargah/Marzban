@@ -2,13 +2,17 @@ import {useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {Plus} from 'lucide-react'
 import {useForm} from 'react-hook-form'
-
 import PageHeader from '@/components/page-header'
 import {Separator} from '@/components/ui/separator'
 import {useToast} from '@/hooks/use-toast'
 import AdminsTable from '@/components/admins/AdminsTable'
 import AdminModal, {adminFormSchema, AdminFormValues} from '@/components/dialogs/AdminModal'
-import {useGetAdmins, useRemoveAdmin} from '@/service/api'
+import {
+    useActivateAllDisabledUsers, useDisableAllActiveUsers,
+    useGetAdmins,
+    useModifyAdmin,
+    useRemoveAdmin
+} from '@/service/api'
 import type {AdminDetails} from '@/service/api'
 import AdminsStatistics from "@/components/AdminStatistics.tsx";
 import {zodResolver} from "@hookform/resolvers/zod";
@@ -38,6 +42,9 @@ export default function AdminsPage() {
 
     const {data: admins = []} = useGetAdmins({})
     const removeAdminMutation = useRemoveAdmin();
+    const modifyAdminMutation = useModifyAdmin()
+    const modifyDisableAllAdminUsers = useDisableAllActiveUsers()
+    const modifyActivateAllAdminUsers = useActivateAllDisabledUsers()
     const handleDelete = async (admin: AdminDetails) => {
         try {
             await removeAdminMutation.mutateAsync({
@@ -63,6 +70,60 @@ export default function AdminsPage() {
             });
         }
     };
+
+    const handleToggleStatus = async (admin: AdminDetails, checked: boolean) => {
+        try {
+            if (!admin.is_disabled && checked) {
+                await modifyDisableAllAdminUsers.mutateAsync({
+                    username: admin.username
+                })
+            }
+
+            if (admin.is_disabled && checked) {
+                console.log(admin)
+                await modifyActivateAllAdminUsers.mutateAsync({
+                    username: admin.username
+                })
+            }
+            await modifyAdminMutation.mutateAsync({
+                username: admin.username,
+                data: {
+                    is_sudo: admin.is_sudo,
+                    is_disabled: !admin.is_disabled,
+                    discord_webhook: admin.discord_webhook,
+                    sub_template: admin.sub_template,
+                    telegram_id: admin.telegram_id,
+                    support_url: admin.support_url,
+                    profile_title: admin.profile_title,
+                    sub_domain: admin.sub_domain,
+                    password: ""
+                }
+            })
+
+            toast({
+                title: t('success', {defaultValue: 'Success'}),
+                description: t(admin.is_disabled ? 'admins.enableSuccess' : 'admins.disableSuccess', {
+                    name: admin.username,
+                    defaultValue: `Admin "{name}" has been ${admin.is_disabled ? 'enabled' : 'disabled'} successfully`
+                })
+            })
+
+            // Invalidate nodes queries
+            queryClient.invalidateQueries({
+                queryKey: ["/api/admins"],
+            })
+
+        } catch (error) {
+            toast({
+                title: t('error', {defaultValue: 'Error'}),
+                description: t(admin.is_disabled ? 'admins.enableFailed' : 'admins.disableFailed', {
+                    name: admin.username,
+                    defaultValue: `Failed to ${admin.is_disabled ? 'enable' : 'disable'} admin "{name}"`
+                }),
+                variant: "destructive"
+            })
+        }
+    }
 
     const handleEdit = (admin: AdminDetails) => {
         setEditingAdmin(admin)
@@ -99,6 +160,7 @@ export default function AdminsPage() {
                     data={admins}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    onToggleStatus={handleToggleStatus}
                 />
                 <AdminModal
                     isDialogOpen={isDialogOpen}

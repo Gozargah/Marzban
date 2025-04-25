@@ -59,6 +59,7 @@
   "admin": "Admin",
   "sudo": "Sudo",
   "save": "Save",
+  "confirm": "Confirm",
   "admins": {
     "title": "Admins",
     "description": "Manage system administrators",
@@ -95,8 +96,17 @@
     "profile": "Profile Title",
     "subTemplate": "Subscription Template Path",
     "passwordConfirm": "Confirm Password",
-    "enterPasswordConfirm": "Enter Confirm Password"
+    "enterPasswordConfirm": "Enter Confirm Password",
+    "disableSuccess": "Admin «{{name}}» has been disabled successfully",
+    "enableSuccess": "Admin «{{name}}» has been enabled successfully",
+    "disableFailed": "Failed to disable admin «{{name}}»",
+    "enableFailed": "Failed to enable admin «{{name}}»"
   },
+  "admin.disable": "Disabled Admin",
+  "admin.enable": "Enabled Admin",
+  "deleteAdmin.prompt":"Are you sure you want to delete the <b>{{name}}</b> admin?",
+  "activeUsers.prompt": "Do you want to activate all users under this {{name}}?",
+  "disableUsers.prompt": "Do you want to disable all users under this {{name}}?",
   "manageAccounts": "Control, Update, and Arrange User Accounts",
   "manageGroups": "Control, Update, and Arrange User Groups",
   "manageNodes": "Monitor, control, add, edit, delete nodes",

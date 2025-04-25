@@ -10,7 +10,7 @@ import {
 import {cn} from "@/lib/utils.ts";
 import useDirDetection from "@/hooks/use-dir-detection.tsx";
 import React, {useState} from "react";
-import {ChartPie, ChevronDown, Edit2, Trash2, User} from "lucide-react";
+import {ChartPie, ChevronDown, Edit2, Power, PowerOff, Trash2, User} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
 import {AdminDetails} from "@/service/api";
 import {useTranslation} from "react-i18next";
@@ -20,9 +20,18 @@ interface DataTableProps<TData extends AdminDetails> {
     data: TData[]
     onEdit: (admin: AdminDetails) => void
     onDelete: (admin: AdminDetails) => void
+    onToggleStatus: (admin: AdminDetails) => void
+    setStatusToggleDialogOpen: (isOpen: boolean) => void
 }
 
-export function DataTable<TData extends AdminDetails>({columns, data, onEdit, onDelete}: DataTableProps<TData>) {
+export function DataTable<TData extends AdminDetails>({
+                                                          columns,
+                                                          data,
+                                                          onEdit,
+                                                          onDelete,
+                                                          onToggleStatus,
+                                                          setStatusToggleDialogOpen
+                                                      }: DataTableProps<TData>) {
     const [expandedRow, setExpandedRow] = useState<string | null>(null)
     const table = useReactTable({
         data,
@@ -43,6 +52,12 @@ export function DataTable<TData extends AdminDetails>({columns, data, onEdit, on
             onEdit(rowData);
         }
     }
+    const handleStatusToggle = (admin: AdminDetails) => {
+        if(admin){
+            onToggleStatus(admin)
+            setStatusToggleDialogOpen(true)
+        }
+    }
 
     return (
         <div className="rounded-md border">
@@ -59,6 +74,7 @@ export function DataTable<TData extends AdminDetails>({columns, data, onEdit, on
                                                    index === 0 && 'w-[270px] md:w-auto',
                                                    index === 1 && 'max-w-[70px] md:w-auto ',
                                                    index === 2 && 'min-w-[70px] md:w-auto',
+                                                   index === 3 && 'min-w-[70px] md:w-[120px]',
                                                    index >= 2 && 'hidden md:table-cell',
                                                    header.id === 'chevron' && 'table-cell md:hidden',
                                                )}>
@@ -89,7 +105,7 @@ export function DataTable<TData extends AdminDetails>({columns, data, onEdit, on
                                             key={cell.id}
                                             onClick={(e: any) => {
                                                 const target = e.target as HTMLElement;
-                                                if (target.closest('button')) return;
+                                                if (target.closest('button') || target.closest('[role="menuitem"]')) return;
                                                 handleEditModal(cell.column.id, row.original)
                                             }}
                                             className={cn(
@@ -119,19 +135,25 @@ export function DataTable<TData extends AdminDetails>({columns, data, onEdit, on
                                         <TableCell colSpan={columns.length} className="p-4 text-sm">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex gap-1 ">
-                                                    <span>{row.original.is_sudo ? t("sudo") : t("admin")}</span>
-                                                    <span>|</span>
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-1">
                                                         <span><User className="w-4 h-4"/></span>
                                                         <span>{row.original.total_users ? row.original.total_users : 0}</span>
                                                     </div>
                                                     <span>|</span>
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-1">
                                                         <span><ChartPie className="w-4 h-4"/></span>
                                                         <span>{row.original.users_usage ? `${(row.original.users_usage / (1024 * 1024 * 1024 * 1024)).toFixed(2)} TB` : '0 TB'}</span>
                                                     </div>
                                                 </div>
-                                                <div className="flex justify-end gap-2">
+                                                <div className="flex justify-end gap-1">
+                                                    <Button
+                                                        onClick={() => handleStatusToggle(row.original)}
+                                                        variant="ghost"
+                                                        size="icon">
+                                                        {row.original.is_disabled ? <Power className="h-4 w-4"/> :
+                                                            <PowerOff className="h-4 w-4"/>}
+
+                                                    </Button>
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
