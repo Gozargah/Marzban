@@ -106,7 +106,6 @@ const ToggleAdminStatusModal = ({
                 <AlertDialogFooter className={cn(dir === "rtl" && "sm:gap-x-2 sm:flex-row-reverse")}>
                     <AlertDialogCancel onClick={onClose}>{t("cancel")}</AlertDialogCancel>
                     <AlertDialogAction
-                        variant={admin.is_disabled ? "default" : "destructive"}
                         onClick={() => onConfirm(adminUsersToggle)}
                     >
                         {t("confirm")}
