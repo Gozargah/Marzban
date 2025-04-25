@@ -1,9 +1,11 @@
+from aiogram import Router
 from aiogram.types import CallbackQuery
 
 from app.telegram.keyboards.confim_action import ConfirmAction
 from app.telegram.keyboards.user import UserPanel, UserPanelAction
 from app.telegram.utils.texts import Message as Texts
-from . import router
+
+router = Router(name="confirm_action")
 
 
 @router.callback_query(ConfirmAction.Callback.filter())
