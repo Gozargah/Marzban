@@ -1,5 +1,4 @@
 from datetime import datetime as dt, timedelta as td
-from pyexpat.errors import messages
 
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, Message, InlineQuery, InlineQueryResultArticle, InputTextMessageContent

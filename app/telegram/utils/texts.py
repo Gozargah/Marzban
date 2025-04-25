@@ -13,7 +13,7 @@ b = html_decoration.bold
 c = html_decoration.code
 i = html_decoration.italic
 u = html_decoration.underline
-l = html_decoration.link
+ln = html_decoration.link
 p = html_decoration.pre
 pl = html_decoration.pre_language
 sp = html_decoration.spoiler
@@ -95,7 +95,7 @@ class Message:
         online_at = bl(user.online_at.strftime("%Y-%m-%d %H:%M:%S")) if user.online_at else "-"
         sub_update_at = c(user.sub_updated_at.strftime("%Y-%m-%d %H:%M:%S")) if user.sub_updated_at else "-"
         user_agent = bl(escape(user.sub_last_user_agent)) if user.sub_last_user_agent else "-"
-        admin = l(user.admin.username, f"tg://user?id={user.admin.telegram_id}")
+        admin = ln(user.admin.username, f"tg://user?id={user.admin.telegram_id}")
         note = bl(escape(user.note)) if user.note else "-"
         emojy_status = Message.status_emoji(user.status)
 
