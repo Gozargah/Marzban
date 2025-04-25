@@ -80,7 +80,6 @@ export default function AdminsPage() {
             }
 
             if (admin.is_disabled && checked) {
-                console.log(admin)
                 await modifyActivateAllAdminUsers.mutateAsync({
                     username: admin.username
                 })

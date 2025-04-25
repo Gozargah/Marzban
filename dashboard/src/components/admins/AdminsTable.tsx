@@ -3,7 +3,7 @@ import type {AdminDetails} from '@/service/api'
 import {DataTable} from './data-table'
 import {setupColumns} from './columns'
 import {Filters} from './filters'
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import {PaginationControls} from "./filters.tsx";
 import {
     AlertDialog,
@@ -81,24 +81,34 @@ const ToggleAdminStatusModal = ({
 }) => {
     const {t} = useTranslation();
     const dir = useDirDetection();
-    const [adminUsersToggle, setAdminUsersToggle] = useState(false)
+    const [adminUsersToggle, setAdminUsersToggle] = useState(false);
+
+    useEffect(() => {
+        if (!isOpen) {
+            setAdminUsersToggle(false);
+        }
+    }, [isOpen]);
+
     return (
         <AlertDialog open={isOpen} onOpenChange={onClose}>
             <AlertDialogContent>
                 <AlertDialogHeader className={cn(dir === "rtl" && "sm:text-right")}>
                     <AlertDialogTitle>{t(admin.is_disabled ? "admin.enable" : "admin.disable")}</AlertDialogTitle>
                     <AlertDialogDescription className="flex items-center gap-2">
-                        <Checkbox checked={adminUsersToggle}
-                                  onCheckedChange={() => setAdminUsersToggle(!adminUsersToggle)}/>
+                        <Checkbox
+                            checked={adminUsersToggle}
+                            onCheckedChange={() => setAdminUsersToggle(!adminUsersToggle)}
+                        />
                         <span dir={dir}
                               dangerouslySetInnerHTML={{__html: t(admin.is_disabled ? "activeUsers.prompt" : "disableUsers.prompt", {name: admin.username})}}/>
-
                     </AlertDialogDescription>
                 </AlertDialogHeader>
-
                 <AlertDialogFooter className={cn(dir === "rtl" && "sm:gap-x-2 sm:flex-row-reverse")}>
                     <AlertDialogCancel onClick={onClose}>{t("cancel")}</AlertDialogCancel>
-                    <AlertDialogAction variant="default" onClick={() => onConfirm(adminUsersToggle)}>
+                    <AlertDialogAction
+                        variant={admin.is_disabled ? "default" : "destructive"}
+                        onClick={() => onConfirm(adminUsersToggle)}
+                    >
                         {t("confirm")}
                     </AlertDialogAction>
                 </AlertDialogFooter>
@@ -107,15 +117,14 @@ const ToggleAdminStatusModal = ({
     );
 };
 
-
 export default function AdminsTable({data, onEdit, onDelete, onToggleStatus}: AdminsTableProps) {
-    const {t} = useTranslation()
+    const {t} = useTranslation();
     const [filters, setFilters] = useState<AdminFilters>({
         sort: '-username',
         search: '',
         limit: 10,
         offset: 0,
-    })
+    });
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [statusToggleDialogOpen, setStatusToggleDialogOpen] = useState(false);
     const [adminToDelete, setAdminToDelete] = useState<AdminDetails | null>(null);
@@ -127,10 +136,9 @@ export default function AdminsTable({data, onEdit, onDelete, onToggleStatus}: Ad
     };
 
     const handleStatusToggleClick = (admin: AdminDetails) => {
-        setAdminToToggleStatus(admin)
-        setStatusToggleDialogOpen(true)
-    }
-
+        setAdminToToggleStatus(admin);
+        setStatusToggleDialogOpen(true);
+    };
 
     const handleConfirmDelete = async () => {
         if (adminToDelete) {
@@ -142,28 +150,27 @@ export default function AdminsTable({data, onEdit, onDelete, onToggleStatus}: Ad
 
     const handleConfirmStatusToggle = async (clicked: boolean) => {
         if (adminToToggleStatus) {
-            onToggleStatus(adminToToggleStatus, clicked)
+            onToggleStatus(adminToToggleStatus, clicked);
+            setStatusToggleDialogOpen(false);
+            setAdminToToggleStatus(null);
         }
-    }
-
+    };
 
     const handleSort = (column: string) => {
-        let newSort: string
-
+        let newSort: string;
         if (filters.sort === column) {
-            newSort = '-' + column
+            newSort = '-' + column;
         } else if (filters.sort === '-' + column) {
-            newSort = '-username'
+            newSort = '-username';
         } else {
-            newSort = column
+            newSort = column;
         }
-
-        setFilters(prev => ({...prev, sort: newSort}))
-    }
+        setFilters(prev => ({...prev, sort: newSort}));
+    };
 
     const handleFilterChange = (newFilters: Partial<AdminFilters>) => {
-        setFilters(prev => ({...prev, ...newFilters}))
-    }
+        setFilters(prev => ({...prev, ...newFilters}));
+    };
 
     const columns = setupColumns({
         t,
@@ -171,13 +178,19 @@ export default function AdminsTable({data, onEdit, onDelete, onToggleStatus}: Ad
         filters,
         onDelete: handleDeleteClick,
         toggleStatus: handleStatusToggleClick
-    })
+    });
 
     return (
         <div>
             <Filters filters={filters} onFilterChange={handleFilterChange}/>
-            <DataTable columns={columns} data={data} onEdit={onEdit} onDelete={onDelete}
-                       onToggleStatus={setAdminToToggleStatus} setStatusToggleDialogOpen={setStatusToggleDialogOpen}/>
+            <DataTable
+                columns={columns}
+                data={data}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onToggleStatus={handleStatusToggleClick}
+                setStatusToggleDialogOpen={setStatusToggleDialogOpen}
+            />
             <PaginationControls/>
             {adminToDelete && (
                 <DeleteAlertDialog
@@ -188,10 +201,13 @@ export default function AdminsTable({data, onEdit, onDelete, onToggleStatus}: Ad
                 />
             )}
             {adminToToggleStatus && (
-                <ToggleAdminStatusModal admin={adminToToggleStatus} isOpen={statusToggleDialogOpen}
-                                        onClose={() => setStatusToggleDialogOpen(false)}
-                                        onConfirm={handleConfirmStatusToggle}/>
+                <ToggleAdminStatusModal
+                    admin={adminToToggleStatus}
+                    isOpen={statusToggleDialogOpen}
+                    onClose={() => setStatusToggleDialogOpen(false)}
+                    onConfirm={handleConfirmStatusToggle}
+                />
             )}
         </div>
-    )
+    );
 } 
