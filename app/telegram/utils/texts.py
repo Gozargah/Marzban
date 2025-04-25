@@ -9,17 +9,17 @@ from datetime import datetime as dt, timedelta as td
 from html import escape
 
 
-B = html_decoration.bold
-C = html_decoration.code
-I = html_decoration.italic
-U = html_decoration.underline
-L = html_decoration.link
-P = html_decoration.pre
-PL = html_decoration.pre_language
-SP = html_decoration.spoiler
-ST = html_decoration.strikethrough
-BL = html_decoration.blockquote
-EBL = html_decoration.expandable_blockquote
+b = html_decoration.bold
+c = html_decoration.code
+i = html_decoration.italic
+u = html_decoration.underline
+l = html_decoration.link
+p = html_decoration.pre
+pl = html_decoration.pre_language
+sp = html_decoration.spoiler
+st = html_decoration.strikethrough
+bl = html_decoration.blockquote
+ebl = html_decoration.expandable_blockquote
 
 
 class Button:
@@ -64,20 +64,20 @@ class Message:
     def start(stats: SystemStats):
         memory_percentage = int(stats.mem_used / stats.mem_total * 100)
         return f"""\
-⚙ {B("Marzban Version")}: {C(stats.version)}
+⚙ {b("Marzban Version")}: {c(stats.version)}
 
-📊 {B("CPU Usage")}: {C(stats.cpu_usage)} %
-🎛 {B("CPU Cores")}: {C(stats.cpu_cores)}
-📈 {B("Memory")}: {C(readable_size(stats.mem_used))} / {C(readable_size(stats.mem_total))} ({C(memory_percentage)} %)
-🌐 {B("Total Data Usage")}: {C(readable_size(stats.outgoing_bandwidth + stats.incoming_bandwidth))}
+📊 {b("CPU Usage")}: {c(stats.cpu_usage)} %
+🎛 {b("CPU Cores")}: {c(stats.cpu_cores)}
+📈 {b("Memory")}: {c(readable_size(stats.mem_used))} / {c(readable_size(stats.mem_total))} ({c(memory_percentage)} %)
+🌐 {b("Total Data Usage")}: {c(readable_size(stats.outgoing_bandwidth + stats.incoming_bandwidth))}
 
-👥 {B("Total Users")}: {C(stats.total_user)}
-🟢 {B("Online Users")}: {C(stats.online_users)}
-🔘 {B("Active Users")}: {C(stats.users_active)}
-🔌 {B("On-Hold Users")}: {C(stats.users_on_hold)}
-⌛ {B("Expired Users")}: {C(stats.users_expired)}
-🪫 {B("Limited Users")}: {C(stats.users_limited)}
-🔴 {B("Disabled Users")}: {C(stats.users_disabled)}
+👥 {b("Total Users")}: {c(stats.total_user)}
+🟢 {b("Online Users")}: {c(stats.online_users)}
+🔘 {b("Active Users")}: {c(stats.users_active)}
+🔌 {b("On-Hold Users")}: {c(stats.users_on_hold)}
+⌛ {b("Expired Users")}: {c(stats.users_expired)}
+🪫 {b("Limited Users")}: {c(stats.users_limited)}
+🔴 {b("Disabled Users")}: {c(stats.users_disabled)}
 """
 
     @staticmethod
@@ -86,43 +86,43 @@ class Message:
 
     @staticmethod
     def user_details(user: UserResponse) -> str:
-        data_limit = C(readable_size(user.data_limit)) if user.data_limit else "∞"
-        used_traffic = C(readable_size(user.used_traffic))
+        data_limit = c(readable_size(user.data_limit)) if user.data_limit else "∞"
+        used_traffic = c(readable_size(user.used_traffic))
         expire = user.expire.strftime("%Y-%m-%d %H:%M") if user.expire else "∞"
         days_left = (user.expire - dt.now()).days if user.expire else "∞"
         on_hold_timeout = user.on_hold_timeout.strftime("%Y-%m-%d %H:%M") if user.on_hold_timeout else "-"
         on_hold_expire_duration = td(seconds=user.on_hold_expire_duration).days if user.on_hold_expire_duration else "0"
-        online_at = BL(user.online_at.strftime("%Y-%m-%d %H:%M:%S")) if user.online_at else "-"
-        sub_update_at = C(user.sub_updated_at.strftime("%Y-%m-%d %H:%M:%S")) if user.sub_updated_at else "-"
-        user_agent = BL(escape(user.sub_last_user_agent)) if user.sub_last_user_agent else "-"
-        admin = L(user.admin.username, f"tg://user?id={user.admin.telegram_id}")
-        note = BL(escape(user.note)) if user.note else "-"
+        online_at = bl(user.online_at.strftime("%Y-%m-%d %H:%M:%S")) if user.online_at else "-"
+        sub_update_at = c(user.sub_updated_at.strftime("%Y-%m-%d %H:%M:%S")) if user.sub_updated_at else "-"
+        user_agent = bl(escape(user.sub_last_user_agent)) if user.sub_last_user_agent else "-"
+        admin = l(user.admin.username, f"tg://user?id={user.admin.telegram_id}")
+        note = bl(escape(user.note)) if user.note else "-"
         emojy_status = Message.status_emoji(user.status)
 
         if user.status == UserStatus.on_hold:
-            expire_text = f"{B('On Hold Duration: ')} {C(on_hold_expire_duration)} days\n"
-            expire_text += f"{B('On Hold Timeout:')} {C(on_hold_timeout)}"
+            expire_text = f"{b('On Hold Duration: ')} {c(on_hold_expire_duration)} days\n"
+            expire_text += f"{b('On Hold Timeout:')} {c(on_hold_timeout)}"
         else:
-            expire_text = f"{B('Expire: ')} {C(expire)}\n"
-            expire_text += f"{B('Days left: ')} {C(days_left)}"
+            expire_text = f"{b('Expire: ')} {c(expire)}\n"
+            expire_text += f"{b('Days left: ')} {c(days_left)}"
 
         return f"""\
-👤 {B("User Information")}
+👤 {b("User Information")}
 
-{B("Status:")} {emojy_status} {user.status.value.replace("_", " ").title()}
-{B("Username:")} {C(user.username)}
+{b("Status:")} {emojy_status} {user.status.value.replace("_", " ").title()}
+{b("Username:")} {c(user.username)}
 
-{B("Data Limit:")} {data_limit}
-{B("Used Traffic:")} {used_traffic}
-{B("Data Limit Strategy:")} {user.data_limit_reset_strategy.value.replace("_", " ").title()}
+{b("Data Limit:")} {data_limit}
+{b("Used Traffic:")} {used_traffic}
+{b("Data Limit Strategy:")} {user.data_limit_reset_strategy.value.replace("_", " ").title()}
 {expire_text}
-{B("Online At:")} {online_at}
-{B("Subscription Updated At:")} {sub_update_at}
-{B("Last Update User Agent:")} {user_agent}
-{B("Admin:")} {admin}
-{B("Note:")} {note}
-{B("Subscription URL:")}
-{P(user.subscription_url)}"""
+{b("Online At:")} {online_at}
+{b("Subscription Updated At:")} {sub_update_at}
+{b("Last Update User Agent:")} {user_agent}
+{b("Admin:")} {admin}
+{b("Note:")} {note}
+{b("Subscription URL:")}
+{p(user.subscription_url)}"""
 
     @staticmethod
     def user_short_detail(user: UserResponse) -> str:
@@ -136,24 +136,27 @@ class Message:
 
     @staticmethod
     def confirm_disable_user(username: str) -> str:
-        return f"⚠ Are you sure you want to {B('Disable')} {C(username)}?"
+        return f"⚠ Are you sure you want to {b('Disable')} {c(username)}?"
 
     @staticmethod
     def confirm_enable_user(username: str) -> str:
-        return f"⚠ Are you sure you want to {B('Enable')} {C(username)}?"
+        return f"⚠ Are you sure you want to {b('Enable')} {c(username)}?"
 
     @staticmethod
     def confirm_delete_user(username: str) -> str:
-        return f"⚠ Are you sure you want to {B('Delete')} {C(username)}?"
+        return f"⚠ Are you sure you want to {b('Delete')} {c(username)}?"
 
     @staticmethod
     def confirm_revoke_sub(username: str) -> str:
-        return f"⚠ Are you sure you want to {B('Revoke Subscription')} of {C(username)}?"
+        return f"⚠ Are you sure you want to {b('Revoke Subscription')} of {c(username)}?"
 
     @staticmethod
     def confirm_reset_usage(username: str) -> str:
-        return f"⚠ Are you sure you want to {B('Reset Usage')} of {C(username)}?"
+        return f"⚠ Are you sure you want to {b('Reset Usage')} of {c(username)}?"
 
     @staticmethod
     def confirm_activate_next_plan(username: str) -> str:
-        return f"⚠ Are you sure you want to {B('Activate Next Plan')} for {C(username)}?"
+        return f"⚠ Are you sure you want to {b('Activate Next Plan')} for {c(username)}?"
+
+
+__all__ = ["Button", "Message"]
