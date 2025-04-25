@@ -148,7 +148,9 @@ class User(Base):
     on_hold_timeout: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), default=None)
     auto_delete_in_days: Mapped[Optional[int]] = mapped_column(default=None)
     edit_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), default=None)
-    last_status_change: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    last_status_change: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
 
     next_plan: Mapped[Optional["NextPlan"]] = relationship(
         uselist=False, back_populates="user", cascade="all, delete-orphan"
@@ -298,7 +300,7 @@ class UserTemplate(Base):
     name: Mapped[str] = mapped_column(String(64), unique=True)
     data_limit: Mapped[int] = mapped_column(BigInteger, default=0)
     expire_duration: Mapped[int] = mapped_column(BigInteger, default=0)  # in seconds
-    on_hold_timeout: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), default=None)
+    on_hold_timeout: Mapped[Optional[int]] = mapped_column(default=None)
     username_prefix: Mapped[Optional[str]] = mapped_column(String(20))
     username_suffix: Mapped[Optional[str]] = mapped_column(String(20))
     extra_settings: Mapped[Optional[Dict]] = mapped_column(JSON(True))
@@ -469,7 +471,9 @@ class Node(Base):
     port: Mapped[int] = mapped_column(unique=False, nullable=False)
     xray_version: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
     status: Mapped[NodeStatus] = mapped_column(SQLEnum(NodeStatus), default=NodeStatus.connecting)
-    last_status_change: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    last_status_change: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
     message: Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     uplink: Mapped[int] = mapped_column(BigInteger, default=0)

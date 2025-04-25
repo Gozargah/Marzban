@@ -67,7 +67,7 @@ async def remove_user_template(
     return {}
 
 
-@router.get("", response_model=list[UserTemplateResponse])
+@router.get("s", response_model=list[UserTemplateResponse])
 async def get_user_templates(
     offset: int = None, limit: int = None, db: AsyncSession = Depends(get_db), _: AdminDetails = Depends(get_current)
 ):

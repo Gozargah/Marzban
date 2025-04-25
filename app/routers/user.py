@@ -247,7 +247,7 @@ async def delete_expired_users(
     return await user_operator.delete_expired_users(db, admin, expired_after, expired_before)
 
 
-@router.post("/from-template", response_model=UserResponse)
+@router.post("/from-template", status_code=status.HTTP_201_CREATED, response_model=UserResponse)
 async def create_user_from_template(
     new_template_user: CreateUserFromTemplate,
     db: AsyncSession = Depends(get_db),

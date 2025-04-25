@@ -1402,6 +1402,7 @@ async def create_user_template(db: AsyncSession, user_template: UserTemplateCrea
         extra_settings=user_template.extra_settings.dict(),
         status=user_template.status,
         reset_usages=user_template.reset_usages,
+        on_hold_timeout=user_template.on_hold_timeout,
     )
 
     db.add(db_user_template)
@@ -1443,6 +1444,8 @@ async def modify_user_template(
         db_user_template.status = modified_user_template.status
     if modified_user_template.reset_usages is not None:
         db_user_template.reset_usages = modified_user_template.reset_usages
+    if modified_user_template.on_hold_timeout is not None:
+        db_user_template.on_hold_timeout = modified_user_template.on_hold_timeout
 
     await db.commit()
     await db.refresh(db_user_template)
@@ -1478,7 +1481,8 @@ async def get_user_template(db: AsyncSession, user_template_id: int) -> UserTemp
         .unique()
         .scalar_one_or_none()
     )
-    await load_user_template_attrs(user_template)
+    if user_template:
+        await load_user_template_attrs(user_template)
     return user_template
 
 
