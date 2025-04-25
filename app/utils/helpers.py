@@ -1,15 +1,7 @@
 import json
-from datetime import datetime as dt, timezone as tz
+from datetime import datetime as dt
 from typing import Union
 from uuid import UUID
-
-
-def calculate_usage_percent(used_traffic: int, data_limit: int) -> float:
-    return (used_traffic * 100) / data_limit
-
-
-def calculate_expiration_days(expire: dt) -> int:
-    return (expire - dt.now(tz.utc)).days
 
 
 def yml_uuid_representer(dumper, data):

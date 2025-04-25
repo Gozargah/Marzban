@@ -54,7 +54,6 @@ from app.models.stats import (
 )
 from app.models.user import UserCreate, UserModify
 from app.models.user_template import UserTemplateCreate, UserTemplateModify
-from app.utils.helpers import calculate_expiration_days, calculate_usage_percent
 from config import NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT, USERS_AUTODELETE_DAYS
 
 MYSQL_FORMATS = {
@@ -651,10 +650,9 @@ async def modify_user(db: AsyncSession, db_user: User, modify: UserModify) -> Us
                 if db_user.status != UserStatus.on_hold:
                     db_user.status = UserStatus.active
 
+                user_percent = db_user.usage_percentage
                 for percent in sorted(NOTIFY_REACHED_USAGE_PERCENT, reverse=True):
-                    if not db_user.data_limit or (
-                        calculate_usage_percent(db_user.used_traffic, db_user.data_limit) < percent
-                    ):
+                    if not db_user.data_limit or (user_percent < percent):
                         reminder = await get_notification_reminder(
                             db, db_user.id, ReminderType.data_usage, threshold=percent
                         )
@@ -674,8 +672,10 @@ async def modify_user(db: AsyncSession, db_user: User, modify: UserModify) -> Us
         if db_user.status in [UserStatus.active, UserStatus.expired]:
             if not db_user.expire or db_user.expire.replace(tzinfo=timezone.utc) > datetime.now(timezone.utc):
                 db_user.status = UserStatus.active
+
+                user_days_left = db_user.days_left
                 for days_left in sorted(NOTIFY_DAYS_LEFT):
-                    if not db_user.expire or (calculate_expiration_days(db_user.expire) > days_left):
+                    if not db_user.expire or (user_days_left > days_left):
                         reminder = await get_notification_reminder(
                             db, db_user.id, ReminderType.expiration_date, threshold=days_left
                         )

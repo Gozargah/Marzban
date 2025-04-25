@@ -1,7 +1,7 @@
 from datetime import timedelta, datetime, timezone
 from tests.api import client
 from fastapi import status
-from .test_user_template import test_user_template_create #noqa 
+from .test_user_template import test_user_template_create  # noqa
 
 
 def test_user_create_active(access_token):
@@ -156,10 +156,7 @@ def test_create_user_with_template(access_token):
     response = client.post(
         "/api/user/from-template",
         headers={"Authorization": f"Bearer {access_token}"},
-        json={
-            "username": "test_user_template",
-            "user_template_id": 1
-        },
+        json={"username": "test_user_template", "user_template_id": 1},
     )
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -172,9 +169,7 @@ def test_modify_user_with_template(access_token):
     response = client.put(
         "/api/user/from-template/test_user_template",
         headers={"Authorization": f"Bearer {access_token}"},
-        json={
-            "user_template_id": 1
-        },
+        json={"user_template_id": 1},
     )
 
     assert response.status_code == status.HTTP_200_OK

@@ -14,7 +14,6 @@ def test_user_template_delete(access_token):
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
 
-
 def test_user_template_create(access_token):
     """Test that the user template create route is accessible."""
     response = client.post(

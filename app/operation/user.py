@@ -85,10 +85,9 @@ class UserOperation(BaseOperation):
 
         return user
 
-    async def modify_user(
-        self, db: AsyncSession, username: str, modified_user: UserModify, admin: AdminDetails
+    async def _modify_user(
+        self, db: AsyncSession, db_user: User, modified_user: UserModify, admin: AdminDetails
     ) -> UserResponse:
-        db_user = await self.get_validated_user(db, username, admin)
         if modified_user.group_ids:
             await self.validate_all_groups(db, modified_user)
 
@@ -116,6 +115,13 @@ class UserOperation(BaseOperation):
 
         return user
 
+    async def modify_user(
+        self, db: AsyncSession, username: str, modified_user: UserModify, admin: AdminDetails
+    ) -> UserResponse:
+        db_user = await self.get_validated_user(db, username, admin)
+
+        return await self._modify_user(db, db_user, modified_user, admin)
+
     async def remove_user(self, db: AsyncSession, username: str, admin: AdminDetails):
         db_user = await self.get_validated_user(db, username, admin)
 
@@ -128,9 +134,7 @@ class UserOperation(BaseOperation):
         logger.info(f'User "{db_user.username}" with id "{db_user.id}" deleted by admin "{admin.username}"')
         return {}
 
-    async def reset_user_data_usage(self, db: AsyncSession, username: str, admin: AdminDetails):
-        db_user = await self.get_validated_user(db, username, admin)
-
+    async def _reset_user_data_usage(self, db: AsyncSession, db_user: User, admin: AdminDetails):
         old_status = db_user.status
 
         db_user = await reset_user_data_usage(db=db, db_user=db_user)
@@ -147,6 +151,11 @@ class UserOperation(BaseOperation):
         logger.info(f'User "{db_user.username}" usage was reset by admin "{admin.username}"')
 
         return user
+
+    async def reset_user_data_usage(self, db: AsyncSession, username: str, admin: AdminDetails):
+        db_user = await self.get_validated_user(db, username, admin)
+
+        return await self._reset_user_data_usage(db, db_user, admin)
 
     async def revoke_user_sub(self, db: AsyncSession, username: str, admin: AdminDetails) -> UserResponse:
         db_user = await self.get_validated_user(db, username, admin)
@@ -350,6 +359,7 @@ class UserOperation(BaseOperation):
             else:
                 user_args["expire"] = None
         else:
+            user_args["expire"] = 0
             user_args["on_hold_expire_duration"] = template.expire_duration
             if template.on_hold_timeout:
                 user_args["on_hold_timeout"] = dt.now(tz.utc) + td(seconds=template.on_hold_timeout)
@@ -392,15 +402,17 @@ class UserOperation(BaseOperation):
 
         return await self.create_user(db, new_user, admin)
 
-    async def modify_user_by_user_template(
+    async def modify_user_with_template(
         self, db: AsyncSession, username: str, modified_template: ModifyUserByTemplate, admin: AdminDetails
     ) -> UserResponse:
+        db_user = await self.get_validated_user(db, username, admin)
         user_template = await self.get_validated_user_template(db, modified_template.user_template_id)
 
-        modify_user_args = self.load_base_user_args(user_template)
+        user_args = self.load_base_user_args(user_template)
+        user_args["proxy_settings"] = db_user.proxy_settings
 
         try:
-            modify_user = UserModify(**modify_user_args)
+            modify_user = UserModify(**user_args)
         except ValidationError as e:
             error_messages = "; ".join([f"{err['loc'][0]}: {err['msg']}" for err in e.errors()])
             await self.raise_error(message=error_messages, code=400)
@@ -408,6 +420,6 @@ class UserOperation(BaseOperation):
         modify_user = self.apply_settings(modify_user, user_template)
 
         if user_template.reset_usages:
-            await self.reset_user_data_usage(db, username, admin)
+            await self._reset_user_data_usage(db, db_user, admin)
 
-        return await self.modify_user(db, username, modify_user, admin)
+        return await self._modify_user(db, db_user, modify_user, admin)

@@ -263,4 +263,4 @@ async def modify_user_with_template(
     db: AsyncSession = Depends(get_db),
     admin: AdminDetails = Depends(get_current),
 ):
-    return await user_operator.modify_user_by_user_template(db, username, modify_template_user, admin)
+    return await user_operator.modify_user_with_template(db, username, modify_template_user, admin)
