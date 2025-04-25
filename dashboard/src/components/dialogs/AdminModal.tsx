@@ -9,6 +9,8 @@ import {z} from "zod";
 import {useCreateAdmin, useModifyAdmin} from "@/service/api";
 import {toast} from "@/hooks/use-toast.ts";
 import {queryClient} from "@/utils/query-client.ts";
+import {Eye, EyeOff} from "lucide-react";
+import {useState} from "react";
 
 interface AdminModalProps {
     isDialogOpen: boolean
@@ -18,24 +20,66 @@ interface AdminModalProps {
     form: UseFormReturn<AdminFormValues>
 }
 
-export const adminFormSchema = z
-    .object({
-        username: z.string().min(1, 'Username is required'),
-        telegram_id: z.coerce.number().optional(),
-        discord_webhook: z.string().optional(),
-        sub_domain: z.string().optional(),
-        is_sudo: z.boolean().default(false),
-        is_disabled: z.boolean().default(false),
-        password: z.string().min(1, 'Password is required'),
-        passwordConfirm: z.string().min(1, 'Password confirmation is required'),
-        sub_template: z.string().optional(),
-        profile_title: z.string().optional(),
-        support_url: z.string().optional(),
-    })
-    .refine((data) => data.password === data.passwordConfirm, {
-        path: ['passwordConfirm'],
-        message: 'Passwords do not match',
-    })
+const passwordValidation = z.string().refine((value) => {
+    if (!value) return false; // Don't allow empty passwords
+
+    // Check in priority order
+    if (value.length < 12) {
+        return false;
+    }
+    if ((value.match(/\d/g) || []).length < 2) {
+        return false;
+    }
+    if ((value.match(/[A-Z]/g) || []).length < 2) {
+        return false;
+    }
+    if ((value.match(/[a-z]/g) || []).length < 2) {
+        return false;
+    }
+    return /[!@#$%^&*()\-_=+\[\]{}|;:,.<>?/~`]/.test(value);
+
+}, (value) => {
+    // Return specific error message based on the first validation that fails
+    if (!value) {
+        return {message: "Password is required"};
+    }
+    if (value.length < 12) {
+        return {message: "Password must be at least 12 characters long"};
+    }
+    if ((value.match(/\d/g) || []).length < 2) {
+        return {message: "Password must contain at least 2 digits"};
+    }
+    if ((value.match(/[A-Z]/g) || []).length < 2) {
+        return {message: "Password must contain at least 2 uppercase letters"};
+    }
+    if ((value.match(/[a-z]/g) || []).length < 2) {
+        return {message: "Password must contain at least 2 lowercase letters"};
+    }
+    if (!/[!@#$%^&*()\-_=+\[\]{}|;:,.<>?/~`]/.test(value)) {
+        return {message: "Password must contain at least one special character"};
+    }
+    return {message: "Invalid password"};
+});
+
+export const adminFormSchema = z.object({
+    username: z.string().min(1, "Username is required"),
+    password: passwordValidation,
+    passwordConfirm: z.string(),
+    is_sudo: z.boolean().default(false),
+    is_disabled: z.boolean().optional(),
+    discord_webhook: z.string().optional(),
+    sub_domain: z.string().optional(),
+    sub_template: z.string().optional(),
+    support_url: z.string().optional(),
+    telegram_id: z.number().optional(),
+    profile_title: z.string().optional(),
+}).refine((data) => {
+    if (!data.password) return true; // Skip validation if password is empty
+    return data.password === data.passwordConfirm;
+}, {
+    message: "Passwords do not match",
+    path: ["passwordConfirm"],
+});
 
 export type AdminFormValues = z.infer<typeof adminFormSchema>
 export default function AdminModal({
@@ -48,6 +92,8 @@ export default function AdminModal({
     const {t} = useTranslation()
     const addAdminMutation = useCreateAdmin()
     const modifyAdminMutation = useModifyAdmin()
+    const [showPassword, setShowPassword] = useState(false);
+    const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
     const onSubmit = async (values: AdminFormValues) => {
         try {
@@ -113,72 +159,111 @@ export default function AdminModal({
                                 </FormItem>
                             )}
                         />
-                        <div className="flex flex-row gap-7 w-full items-center">
-                            <FormField
-                                control={form.control}
-                                name="password"
-                                render={({field}) => (
-                                    <FormItem>
-                                        <FormLabel>{t('admins.password')}</FormLabel>
-                                        <FormControl>
-                                            <Input type="password" placeholder={t('admins.enterPassword')} {...field} />
-                                        </FormControl>
-                                        <FormMessage/>
-                                    </FormItem>
-                                )}
-                            />
 
-                            <FormField
-                                control={form.control}
-                                name="passwordConfirm"
-                                render={({field}) => (
-                                    <FormItem>
-                                        <FormLabel>{t('admins.passwordConfirm')}</FormLabel>
-                                        <FormControl>
-                                            <Input type="password"
-                                                   placeholder={t('admins.enterPasswordConfirm')} {...field} />
-                                        </FormControl>
-                                        <FormMessage/>
-                                    </FormItem>
-                                )}
-                            />
+                        <FormField
+                            control={form.control}
+                            name="password"
+                            render={({field}) => (
+                                <FormItem>
+                                    <FormLabel>{t('admins.password')}</FormLabel>
+                                    <FormControl>
+                                        <div className="relative">
+                                            <Input
+                                                type={showPassword ? "text" : "password"}
+                                                placeholder={t('admins.enterPassword')}
+                                                {...field}
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                            >
+                                                {showPassword ? (
+                                                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                                ) : (
+                                                    <Eye className="h-4 w-4 text-muted-foreground" />
+                                                )}
+                                            </Button>
+                                        </div>
+                                    </FormControl>
+
+                                    <FormMessage/>
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="passwordConfirm"
+                            render={({field}) => (
+                                <FormItem>
+                                    <FormLabel>{t('admins.passwordConfirm')}</FormLabel>
+                                    <FormControl>
+                                        <div className="relative">
+                                            <Input
+                                                type={showPasswordConfirm ? "text" : "password"}
+                                                placeholder={t('admins.enterPasswordConfirm')}
+                                                {...field}
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                                onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                                            >
+                                                {showPasswordConfirm ? (
+                                                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                                ) : (
+                                                    <Eye className="h-4 w-4 text-muted-foreground" />
+                                                )}
+                                            </Button>
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage/>
+                                </FormItem>
+                            )}
+                        />
+                            <FormField control={form.control} name={"telegram_id"} render={({field}) => (
+                                <FormItem>
+                                    <FormLabel>{t('admins.telegramId')}</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder={"Telegram ID (e.g. 36548974)"} {...field} />
+                                    </FormControl>
+                                    <FormMessage/>
+                                </FormItem>
+                            )}/>
+                            <FormField control={form.control} name={"discord_webhook"} render={({field}) => (
+                                <FormItem>
+                                    <FormLabel>{t('admins.discord')}</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder={t('admins.discord')} {...field} />
+                                    </FormControl>
+                                    <FormMessage/>
+                                </FormItem>
+                            )}/>
+                        <div className="flex flex-row justify-between gap-1 w-full items-center">
+                            <FormField control={form.control} name={"support_url"} render={({field}) => (
+                                <FormItem>
+                                    <FormLabel>{t('admins.supportUrl')}</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder={t('admins.supportUrl')} {...field} className="min-w-28 sm:w-56"/>
+                                    </FormControl>
+                                    <FormMessage/>
+                                </FormItem>
+                            )}/>
+                            <FormField control={form.control} name={"profile_title"} render={({field}) => (
+                                <FormItem>
+                                    <FormLabel>{t('admins.profile')}</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder={t('admins.profile')} {...field} className="min-w-24 sm:w-56"/>
+                                    </FormControl>
+                                    <FormMessage/>
+                                </FormItem>
+                            )}/>
                         </div>
-                        <FormField control={form.control} name={"telegram_id"} render={({field}) => (
-                            <FormItem>
-                                <FormLabel>{t('admins.telegramId')}</FormLabel>
-                                <FormControl>
-                                    <Input placeholder={"Telegram ID (e.g. 36548974)"} {...field} />
-                                </FormControl>
-                                <FormMessage/>
-                            </FormItem>
-                        )}/>
-                        <FormField control={form.control} name={"discord_webhook"} render={({field}) => (
-                            <FormItem>
-                                <FormLabel>{t('admins.discord')}</FormLabel>
-                                <FormControl>
-                                    <Input placeholder={t('admins.discord')} {...field} />
-                                </FormControl>
-                                <FormMessage/>
-                            </FormItem>
-                        )}/>
-                        <FormField control={form.control} name={"support_url"} render={({field}) => (
-                            <FormItem>
-                                <FormLabel>{t('admins.supportUrl')}</FormLabel>
-                                <FormControl>
-                                    <Input placeholder={t('admins.supportUrl')} {...field} />
-                                </FormControl>
-                                <FormMessage/>
-                            </FormItem>
-                        )}/>
-                        <FormField control={form.control} name={"profile_title"} render={({field}) => (
-                            <FormItem>
-                                <FormLabel>{t('admins.profile')}</FormLabel>
-                                <FormControl>
-                                    <Input placeholder={t('admins.profile')} {...field} />
-                                </FormControl>
-                                <FormMessage/>
-                            </FormItem>
-                        )}/>
                         <FormField control={form.control} name={"sub_domain"} render={({field}) => (
                             <FormItem>
                                 <FormLabel>{t('admins.subDomain')}</FormLabel>
