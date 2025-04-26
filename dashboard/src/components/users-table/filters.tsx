@@ -9,6 +9,7 @@ import { RefreshCw, SearchIcon, X } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGetUsers, UserStatus } from '@/service/api'
+import { getUsersPerPageLimitSize } from '@/utils/userPreferenceStorage'
 
 interface FiltersProps {
   filters: {
@@ -78,7 +79,7 @@ export const Filters = ({ filters, onFilterChange }: FiltersProps) => {
 
 export const PaginationControls = () => {
   const { t } = useTranslation()
-  const [itemsPerPage, setItemsPerPage] = useState(20)
+  const [itemsPerPage, setItemsPerPage] = useState(getUsersPerPageLimitSize())
   const [currentPage, setCurrentPage] = useState(0)
   const { data: usersData } = useGetUsers({
     limit: itemsPerPage,
