@@ -116,6 +116,9 @@ class UserValidator:
 
     @staticmethod
     def validate_username(username):
+        if not (3 <= len(username) <= 128):
+            raise ValueError("Username only can be 3 to 128 characters.")
+
         if not re.match(r"^[a-zA-Z0-9-_@.]+$", username):
             raise ValueError("Username can only contain alphanumeric characters, -, _, @, and .")
 

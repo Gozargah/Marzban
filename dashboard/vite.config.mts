@@ -16,5 +16,9 @@ export default defineConfig({
       plugins: [tailwindcss, autoprefixer],
     },
   },
+  build: {
+    outDir: 'build',
+    assetsDir: 'statics',
+  },
   plugins: [react(), svgr(), tsconfigPaths()],
 })

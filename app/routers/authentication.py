@@ -1,11 +1,11 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-
+from aiogram.utils.web_app import WebAppInitData, safe_parse_webapp_init_data
 from app.db import AsyncSession, get_db
-from app.db.crud import get_admin as get_admin_by_username
+from app.db.crud import get_admin as get_admin_by_username, get_admin_by_telegram_id
 from app.models.admin import AdminDetails, AdminValidationResult, AdminInDB
 from app.utils.jwt import get_admin_payload
-from config import SUDOERS
+from config import SUDOERS, TELEGRAM_API_TOKEN
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/admin/token")
@@ -48,20 +48,7 @@ async def get_current(db: AsyncSession = Depends(get_db), token: str = Depends(o
     return admin
 
 
-async def check_sudo_admin(db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme)):
-    admin: AdminDetails | None = await get_admin(db, token)
-    if not admin:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    if admin.is_disabled:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="your account has been disabled",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+async def check_sudo_admin(admin: AdminDetails = Depends(get_current)):
     if not admin.is_sudo:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You're not allowed")
     return admin
@@ -78,3 +65,22 @@ async def validate_admin(db: AsyncSession, username: str, password: str) -> Admi
 
     if not db_admin and SUDOERS.get(username) == password:
         return AdminValidationResult(username=username, is_sudo=True, is_disabled=False)
+
+
+async def validate_mini_app_admin(db: AsyncSession, token: str) -> AdminValidationResult | None:
+    """Validate raw MiniApp init data and return it as AdminValidationResult object"""
+
+    try:
+        data: WebAppInitData = safe_parse_webapp_init_data(token=TELEGRAM_API_TOKEN, init_data=token)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="invalid token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    db_admin = await get_admin_by_telegram_id(db, data.user.id)
+    if db_admin:
+        return AdminValidationResult(
+            username=db_admin.username, is_sudo=db_admin.is_sudo, is_disabled=db_admin.is_disabled
+        )

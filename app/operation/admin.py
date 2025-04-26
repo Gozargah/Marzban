@@ -2,7 +2,7 @@ from sqlalchemy.exc import IntegrityError
 import asyncio
 
 from app.utils.logger import get_logger
-from app.operation import BaseOperator, OperatorType
+from app.operation import BaseOperation, OperatorType
 from app.models.user import UserResponse
 from app.models.admin import AdminDetails, AdminCreate, AdminModify
 from app.db import AsyncSession
@@ -21,10 +21,10 @@ from app.node import node_manager
 from app.core.manager import core_manager
 from app import notification
 
-logger = get_logger("admin-operator")
+logger = get_logger("admin-operation")
 
 
-class AdminOperation(BaseOperator):
+class AdminOperation(BaseOperation):
     async def create_admin(self, db: AsyncSession, new_admin: AdminCreate, admin: AdminDetails) -> AdminDetails:
         """Create a new admin if the current admin has sudo privileges."""
         try:

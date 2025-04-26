@@ -19,7 +19,7 @@ group_operator = GroupOperation(OperatorType.API)
     summary="Create a new group",
     description="Creates a new group in the system. Only sudo administrators can create groups.",
 )
-async def add_group(
+async def create_group(
     new_group: GroupCreate, db: AsyncSession = Depends(get_db), admin: AdminDetails = Depends(check_sudo_admin)
 ):
     """
@@ -39,7 +39,7 @@ async def add_group(
         401: Unauthorized - If not authenticated
         403: Forbidden - If not sudo admin
     """
-    return await group_operator.add_group(db, new_group, admin)
+    return await group_operator.create_group(db, new_group, admin)
 
 
 @router.get(
@@ -102,7 +102,7 @@ async def get_group(group_id: int, db: AsyncSession = Depends(get_db), _: AdminD
 @router.put(
     "/{group_id}",
     response_model=GroupResponse,
-    summary="Update group",
+    summary="Modify group",
     description="Updates an existing group's information. Only sudo administrators can modify groups.",
     responses={404: responses._404},
 )
@@ -113,7 +113,7 @@ async def modify_group(
     admin: AdminDetails = Depends(check_sudo_admin),
 ):
     """
-    Update an existing group's information.
+    Modify an existing group's information.
 
     The group model can be modified with:
     - **name**: String (3-64 chars) containing only a-z and 0-9
@@ -121,7 +121,7 @@ async def modify_group(
     - **is_disabled**: Boolean flag to disable/enable the group
 
     Returns:
-        GroupResponse: The updated group data with additional fields:
+        GroupResponse: The modified group data with additional fields:
             - **id**: Unique identifier for the group
             - **total_users**: Number of users in this group
 
@@ -136,15 +136,15 @@ async def modify_group(
 @router.delete(
     "/{group_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete group",
+    summary="Remove group",
     description="Deletes a group from the system. Only sudo administrators can delete groups.",
     responses={404: responses._404},
 )
-async def delete_group(
+async def remove_group(
     group_id: int, db: AsyncSession = Depends(get_db), admin: AdminDetails = Depends(check_sudo_admin)
 ):
     """
-    Delete a group by its **ID**.
+    Remove a group by its **ID**.
 
     Returns:
         dict: Empty dictionary on successful deletion
@@ -154,5 +154,5 @@ async def delete_group(
         403: Forbidden - If not sudo admin
         404: Not Found - If group doesn't exist
     """
-    await group_operator.delete_group(db, group_id, admin)
+    await group_operator.remove_group(db, group_id, admin)
     return {}

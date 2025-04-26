@@ -8,11 +8,11 @@ from app.utils import responses
 from .authentication import check_sudo_admin
 from app.operation import OperatorType
 from app.operation.core import CoreOperation
-from app.operation.node import NodeOperator
+from app.operation.node import NodeOperation
 
 
 core_operator = CoreOperation(operator_type=OperatorType.API)
-node_operator = NodeOperator(operator_type=OperatorType.API)
+node_operator = NodeOperation(operator_type=OperatorType.API)
 router = APIRouter(tags=["Core"], prefix="/api/core", responses={401: responses._401, 403: responses._403})
 
 

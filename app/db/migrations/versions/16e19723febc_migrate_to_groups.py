@@ -12,16 +12,69 @@ import commentjson
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy import Column, ForeignKey, MetaData, Table
-from sqlalchemy.orm import Session, joinedload
-
+from sqlalchemy.orm import Session, joinedload,contains_eager
 from app.db.models import (
-    Group,
     User,
     ProxyInbound,
-    UserTemplate,
 )
 from app.models.proxy import ProxyTypes
 from config import XRAY_JSON
+
+group_table = Table(
+    "groups",
+    MetaData(),
+    Column('id', sa.Integer, primary_key=True),
+    Column("name",sa.String(64),unique=True),
+    Column("is_disabled",sa.Boolean(),default=False)
+)
+proxy_table = Table(
+        'proxies',
+        MetaData(),
+        Column('id', sa.Integer, primary_key=True),
+        Column('user_id', ForeignKey("users.id")),
+        Column('type', sa.Enum(ProxyTypes)),
+        Column('settings', sa.JSON)
+    )
+user_template_table = Table(
+        "user_templates",
+        MetaData(),
+        Column('id', sa.Integer, primary_key=True),
+        Column("name",sa.String(64),unique=True),
+        Column("data_limit", sa.BigInteger, default=0),
+        Column("expire_duration", sa.BigInteger, default=0),  
+        Column("username_prefix", sa.String(20)),
+        Column("username_suffix", sa.String(20)),
+    )
+template_group_association = Table(
+        "template_group_association",
+        MetaData(),
+        Column("user_template_id", ForeignKey("user_templates.id")),
+        Column("group_id", ForeignKey("groups.id")),
+    )
+template_inbounds_association = Table(
+        "template_inbounds_association",
+        MetaData(),
+        Column("user_template_id", ForeignKey("user_templates.id")),
+        Column("inbound_tag", ForeignKey("inbounds.tag")),
+    )
+excluded_inbounds_association = Table(
+        "exclude_inbounds_association",
+        MetaData(),
+        Column("proxy_id", ForeignKey("proxies.id")),
+        Column("inbound_tag", ForeignKey("inbounds.tag")),
+    )
+inbounds_groups_association = Table(
+    "inbounds_groups_association",
+    MetaData(),
+    Column("inbound_id", ForeignKey("inbounds.id") ),
+    Column("group_id", ForeignKey("groups.id") ),
+)
+users_groups_association = Table(
+    "users_groups_association",
+    MetaData(),
+    Column("user_id", ForeignKey("users.id")),
+    Column("groups_id", ForeignKey("groups.id")),
+)
 
 
 # revision identifiers, used by Alembic.
@@ -31,26 +84,7 @@ branch_labels = None
 depends_on = None
 
 def upgrade() -> None:
-    proxy_table = Table(
-        'proxies',
-        MetaData(),
-        Column('id', sa.Integer, primary_key=True),
-        Column('user_id', ForeignKey("users.id")),
-        Column('type', sa.Enum(ProxyTypes)),
-        Column('settings', sa.JSON)
-    )
-    template_inbounds_association = Table(
-        "template_inbounds_association",
-        MetaData(),
-        Column("user_template_id", ForeignKey("user_templates.id")),
-        Column("inbound_tag", ForeignKey("inbounds.tag")),
-    )
-    excluded_inbounds_association = Table(
-        "exclude_inbounds_association",
-        MetaData(),
-        Column("proxy_id", ForeignKey("proxies.id")),
-        Column("inbound_tag", ForeignKey("inbounds.tag")),
-    )
+    
     try:
         connection = op.get_bind()
         session = Session(bind=connection)
@@ -69,16 +103,16 @@ def upgrade() -> None:
             .order_by(User.id, proxy_table.c.type)
             .all()
         )
-        template_count = session.query(UserTemplate).count()
+        template_count = session.query(user_template_table).count()
         if template_count > 0:
             templates = (
                 session.query(
-                    UserTemplate.id.label("tid"),
+                    user_template_table.c.id.label("tid"),
                     template_inbounds_association.c.inbound_tag.label("inbounds"),
                 )
                 .outerjoin(ProxyInbound, template_inbounds_association.c.inbound_tag == ProxyInbound.tag)
-                .group_by(UserTemplate.id, template_inbounds_association.c.inbound_tag)
-                .order_by(UserTemplate.id)
+                .group_by(user_template_table.c.id, template_inbounds_association.c.inbound_tag)
+                .order_by(user_template_table.c.id)
                 .all()
             )
             template_dict = defaultdict(lambda: {"id": 0, "inbounds": []})
@@ -140,46 +174,81 @@ def upgrade() -> None:
             group_name = f"group{counter}"
             group_data = json.loads(group_key)
             dbinbounds = session.query(ProxyInbound).filter(ProxyInbound.tag.in_(group_data["inbounds"])).all()
-            dbgroup = Group(
+            session.execute(
+            group_table.insert().values(
                 name=group_name,
+            ))
+            group_id = session.execute(sa.select(group_table).where(group_table.c.name == group_name)).scalar()
+            inbound_data = [
+                {"inbound_id":i.id,"group_id":group_id} for i in dbinbounds
+            ]
+            session.execute(
+                inbounds_groups_association.insert(),
+                inbound_data
             )
-            dbgroup.inbounds.extend(dbinbounds)
-            session.add(dbgroup)
-            session.commit()
-            session.refresh(dbgroup)
-            users_id = [user["id"] for user in users]
-            dbusers = session.query(User).filter(User.id.in_(users_id)).all()
-            for dbuser in dbusers:
-                dbuser.groups.append(dbgroup)
-            session.add_all(dbusers)
+            users_data = [{"user_id": user["id"],"groups_id": group_id} for user in users]
+            session.execute(
+                users_groups_association.insert(),
+                users_data,
+            )
+            counter += 1
             if template_count <= 0:
                 continue
+            session.commit()
             for k, val in template_dict.items():
                 if val["inbounds"] == group_data["inbounds"]:
-                    template = session.query(UserTemplate).filter(UserTemplate.id == k).first()
-                    template.groups.append(dbgroup)
-                    session.add(template)
-            counter += 1
+                    # Check if association already exists
+                    exists = session.execute(
+                        sa.select(template_group_association).where(
+                            (template_group_association.c.user_template_id == int(k)) &
+                            (template_group_association.c.group_id == group_id)
+                        )
+                    ).scalar()
+                    
+                    if not exists:
+                        # Insert new association
+                        session.execute(
+                            template_group_association.insert().values(
+                                user_template_id=int(k),
+                                group_id=group_id
+                            )
+                        )
 
         if template_count > 0:
-            dbtemplates = session.query(UserTemplate).options(joinedload(UserTemplate.groups)).all()
-            for dbtemplate in dbtemplates:
+            dbtemplates_assin = session.execute(template_inbounds_association.select()).all()
+            grouped_data = defaultdict(list)
+            for number, text in dbtemplates_assin:
+                grouped_data[number].append(text)
+
+            for k,inbounds in grouped_data.items():
                 group_name = f"group{counter}"
-                if len(dbtemplate.groups) <= 0:
-                    t_inbounds = template_dict.get(int(dbtemplate.id))["inbounds"]
-                    dbinbounds = session.query(ProxyInbound).filter(ProxyInbound.tag.in_(t_inbounds)).all()
-                    group = Group(
-                        name=group_name,
+                user_template = session.execute(user_template_table.select().where(user_template_table.c.id == int(k))).first()
+
+                template_groups = session.execute(template_group_association.select().where(template_group_association.c.user_template_id == k)).first()
+                if not template_groups:
+                    session.execute(group_table.insert().values(
+                        name=group_name
+                    ))
+                    group_id = session.execute(sa.select(group_table).where(group_table.c.name == group_name)).scalar()
+
+                    dbinbounds = session.query(ProxyInbound).filter(ProxyInbound.tag.in_(inbounds)).all()
+                    inbound_data = [
+                        {"inbound_id":i.id,"group_id":group_id} for i in dbinbounds
+                    ]
+                    session.execute(
+                        inbounds_groups_association.insert(),
+                        inbound_data
                     )
-                    group.inbounds.extend(dbinbounds)
-                    session.add(group)
-                    session.commit()
-                    session.refresh(group)
-                    dbtemplate.groups = [group]
-                    session.add(dbtemplate)
+                    session.execute(
+                       template_group_association.insert().values(
+                                user_template_id=int(k),
+                                group_id=group_id,
+                           )
+                    )
                     counter += 1
-        session.commit()
+
     finally:
+        # session.commit()
         session.close()
 
 def downgrade() -> None:

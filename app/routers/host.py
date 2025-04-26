@@ -4,12 +4,12 @@ from app.db import AsyncSession, get_db
 from app.models.admin import AdminDetails
 from app.models.host import BaseHost, CreateHost
 from app.operation import OperatorType
-from app.operation.host import HostOperator
+from app.operation.host import HostOperation
 from app.utils import responses
 
 from .authentication import check_sudo_admin
 
-host_operator = HostOperator(operator_type=OperatorType.API)
+host_operator = HostOperation(operator_type=OperatorType.API)
 router = APIRouter(tags=["Host"], prefix="/api/host", responses={401: responses._401, 403: responses._403})
 
 
@@ -32,15 +32,15 @@ async def get_hosts(
 
 
 @router.post("/", response_model=BaseHost, status_code=status.HTTP_201_CREATED)
-async def add_host(
+async def create_host(
     new_host: CreateHost, db: AsyncSession = Depends(get_db), admin: AdminDetails = Depends(check_sudo_admin)
 ):
     """
-    add a new host
+    create a new host
 
     **inbound_tag** must be available in one of xray config
     """
-    return await host_operator.add_host(db, new_host=new_host, admin=admin)
+    return await host_operator.create_host(db, new_host=new_host, admin=admin)
 
 
 @router.put("/{host_id}", response_model=BaseHost, responses={404: responses._404})
@@ -82,4 +82,4 @@ async def modify_hosts(
     """
     Modify proxy hosts and update the configuration.
     """
-    return await host_operator.update_hosts(db=db, modified_hosts=modified_hosts, admin=admin)
+    return await host_operator.modify_hosts(db=db, modified_hosts=modified_hosts, admin=admin)

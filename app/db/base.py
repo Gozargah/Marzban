@@ -1,6 +1,6 @@
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase
 
 from config import (
     SQLALCHEMY_DATABASE_URL,
@@ -17,8 +17,9 @@ else:
         SQLALCHEMY_DATABASE_URL,
         pool_size=SQLALCHEMY_POOL_SIZE,
         max_overflow=SQLIALCHEMY_MAX_OVERFLOW,
-        pool_recycle=3600,
-        pool_timeout=10,
+        pool_recycle=300,
+        pool_timeout=5,
+        pool_pre_ping=True,
     )
 
 SessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -34,7 +35,7 @@ else:
     raise ValueError("Unsupported database URL")
 
 
-class Base(DeclarativeBase):
+class Base(DeclarativeBase, AsyncAttrs):
     pass
 
 

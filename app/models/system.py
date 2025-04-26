@@ -9,12 +9,10 @@ class SystemStats(BaseModel):
     cpu_usage: float
     total_user: int
     online_users: int
-    users_active: int
-    users_on_hold: int
-    users_disabled: int
-    users_expired: int
-    users_limited: int
+    active_users: int
+    on_hold_users: int
+    disabled_users: int
+    expired_users: int
+    limited_users: int
     incoming_bandwidth: int
     outgoing_bandwidth: int
-    incoming_bandwidth_speed: int
-    outgoing_bandwidth_speed: int

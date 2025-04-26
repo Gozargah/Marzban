@@ -4,18 +4,18 @@ from app.db import AsyncSession
 from app.db.models import ProxyHost
 from app.models.host import CreateHost, BaseHost
 from app.models.admin import AdminDetails
-from app.operation import BaseOperator
-from app.db.crud import add_host, get_host_by_id, remove_host, get_hosts, modify_host
+from app.operation import BaseOperation
+from app.db.crud import create_host, get_host_by_id, remove_host, get_hosts, modify_host
 from app.core.hosts import hosts as hosts_storage
 from app.utils.logger import get_logger
 
 from app import notification
 
 
-logger = get_logger("Host-Operator")
+logger = get_logger("host-operation")
 
 
-class HostOperator(BaseOperator):
+class HostOperation(BaseOperation):
     async def get_hosts(self, db: AsyncSession, offset: int = 0, limit: int = 0) -> list[BaseHost]:
         return await get_hosts(db=db, offset=offset, limit=limit)
 
@@ -37,12 +37,12 @@ class HostOperator(BaseOperator):
             ):
                 return await self.raise_error("download host cannot have a download host", 400, db=db)
 
-    async def add_host(self, db: AsyncSession, new_host: CreateHost, admin: AdminDetails) -> BaseHost:
+    async def create_host(self, db: AsyncSession, new_host: CreateHost, admin: AdminDetails) -> BaseHost:
         await self.validate_ds_host(db, new_host)
 
         await self.check_inbound_tags([new_host.inbound_tag])
 
-        db_host = await add_host(db, new_host)
+        db_host = await create_host(db, new_host)
 
         logger.info(f'Host "{db_host.id}" added by admin "{admin.username}"')
 
@@ -85,7 +85,7 @@ class HostOperator(BaseOperator):
 
         await hosts_storage.update(db)
 
-    async def update_hosts(
+    async def modify_hosts(
         self, db: AsyncSession, modified_hosts: list[CreateHost], admin: AdminDetails
     ) -> list[BaseHost]:
         for host in modified_hosts:
@@ -96,7 +96,7 @@ class HostOperator(BaseOperator):
                 old_host = await get_host_by_id(db, host.id)
 
             if old_host is None:
-                await add_host(db, host)
+                await create_host(db, host)
             else:
                 await modify_host(db, old_host, host)
 
@@ -104,6 +104,6 @@ class HostOperator(BaseOperator):
 
         logger.info(f'Host\'s has been modified by admin "{admin.username}"')
 
-        asyncio.create_task(notification.update_hosts(admin.username))
+        asyncio.create_task(notification.modify_hosts(admin.username))
 
         return await get_hosts(db=db)

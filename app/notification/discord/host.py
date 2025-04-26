@@ -58,12 +58,12 @@ async def remove_host(host: BaseHost, by: str):
         await send_discord_webhook(data, DISCORD_WEBHOOK_URL)
 
 
-async def update_hosts(by: str):
+async def modify_hosts(by: str):
     data = {
         "content": "",
         "embeds": [
             {
-                "title": "Update Hosts",
+                "title": "Modify Hosts",
                 "description": f"All hosts has been updated by **{by}**",
                 "color": colors.CYAN,
             }

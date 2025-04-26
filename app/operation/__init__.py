@@ -1,5 +1,4 @@
-from datetime import datetime as dt
-from datetime import timedelta, timezone
+from datetime import datetime as dt, timedelta as td, timezone as tz
 from enum import IntEnum
 
 from fastapi import HTTPException
@@ -31,7 +30,7 @@ class OperatorType(IntEnum):
     DISCORD = 5
 
 
-class BaseOperator:
+class BaseOperation:
     def __init__(self, operator_type: OperatorType):
         self.operator_type = operator_type
 
@@ -50,15 +49,24 @@ class BaseOperator:
         """Validate if start and end dates are correct and if end is after start."""
         try:
             if start:
-                start_date = start if isinstance(start, dt) else dt.fromisoformat(start).astimezone(timezone.utc)
+                start_date = (
+                    start.replace(tzinfo=tz.utc)
+                    if isinstance(start, dt)
+                    else dt.fromisoformat(start).astimezone(tz.utc)
+                )
             else:
-                start_date = dt.now(timezone.utc) - timedelta(days=30)
+                start_date = dt.now(tz.utc) - td(days=30)
+
             if end:
-                end_date = end if isinstance(end, dt) else dt.fromisoformat(end).astimezone(timezone.utc)
-                if start_date and end_date < start_date:
-                    await self.raise_error(message="Start date must be before end date", code=400)
+                end_date = (
+                    end.replace(tzinfo=tz.utc) if isinstance(end, dt) else dt.fromisoformat(end).astimezone(tz.utc)
+                )
             else:
-                end_date = dt.now(timezone.utc)
+                end_date = dt.now(tz.utc)
+
+            # Compare dates only after both are set
+            if end_date < start_date:
+                await self.raise_error(message="Start date must be before end date", code=400)
 
             return start_date, end_date
         except ValueError:
@@ -76,10 +84,10 @@ class BaseOperator:
             await self.raise_error(message="Not Found", code=404)
 
         db_user = await get_user(db, sub["username"])
-        if not db_user or db_user.created_at.astimezone(timezone.utc) > sub["created_at"]:
+        if not db_user or db_user.created_at.astimezone(tz.utc) > sub["created_at"]:
             await self.raise_error(message="Not Found", code=404)
 
-        if db_user.sub_revoked_at and db_user.sub_revoked_at.astimezone(timezone.utc) > sub["created_at"]:
+        if db_user.sub_revoked_at and db_user.sub_revoked_at.astimezone(tz.utc) > sub["created_at"]:
             await self.raise_error(message="Not Found", code=404)
 
         return db_user

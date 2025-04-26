@@ -1,3 +1,4 @@
-cd `dirname $0`/app/dashboard
-VITE_BASE_API=/ pnpm run build --if-present -- --outDir build --assetsDir statics
+cd "$(dirname "$0")/dashboard"
+VITE_BASE_API=/ pnpm run build
 cp ./build/index.html ./build/404.html
+ 

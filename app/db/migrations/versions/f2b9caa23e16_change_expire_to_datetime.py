@@ -32,7 +32,7 @@ def upgrade():
             )
 
     # Add temporary columns with the DateTime data type
-    op.add_column('users', sa.Column('expire_temp', sa.DateTime, nullable=True))
+    op.add_column('users', sa.Column('expire_temp', sa.DateTime(timezone=True), nullable=True))
     try:
         with op.batch_alter_table('users') as batch_op:
             users_table = sa.Table('users', sa.MetaData(), autoload_with=bind)

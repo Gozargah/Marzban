@@ -1,4 +1,3 @@
-import re
 import asyncio
 from datetime import datetime, timezone
 from enum import Enum
@@ -32,9 +31,6 @@ class User(BaseModel):
     data_limit: int | None = Field(ge=0, default=None, description="data_limit can be 0 or greater")
     data_limit_reset_strategy: UserDataLimitResetStrategy | None = None
     note: str | None = Field(max_length=500, default=None)
-    sub_updated_at: datetime | None = None
-    sub_last_user_agent: str | None = None
-    online_at: datetime | None = None
     on_hold_expire_duration: int | None = None
     on_hold_timeout: datetime | int | None = None
     group_ids: list[int] | None = Field(default_factory=list)
@@ -73,7 +69,7 @@ class UserWithValidator(User):
 
 
 class UserCreate(UserWithValidator):
-    username: str = Field(min_length=3, max_length=32)
+    username: str
     status: UserStatusCreate | None = None
     model_config = ConfigDict(
         json_schema_extra={
@@ -99,14 +95,7 @@ class UserCreate(UserWithValidator):
     @field_validator("username", check_fields=False)
     @classmethod
     def validate_username(cls, v):
-        if not re.match(r"^[a-zA-Z0-9-_@.]+$", v):
-            raise ValueError("Username can only contain alphanumeric characters, -, _, @, and .")
-
-        # Additional check to prevent consecutive special characters
-        if re.search(r"[-_@.]{2,}", v):
-            raise ValueError("Username cannot have consecutive special characters")
-
-        return v
+        return UserValidator.validate_username(v)
 
     @field_validator("group_ids", mode="after")
     @classmethod
@@ -149,6 +138,9 @@ class UserResponse(User):
     used_traffic: int
     lifetime_used_traffic: int = 0
     created_at: datetime
+    sub_updated_at: datetime | None = None
+    sub_last_user_agent: str | None = None
+    online_at: datetime | None = None
     subscription_url: str = ""
     admin: AdminBaseInfo | None = None
     model_config = ConfigDict(from_attributes=True)

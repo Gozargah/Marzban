@@ -8,7 +8,6 @@
 .env*
 .git*
 .idea
-.venv
 .vscode
 Dockerfile*
 __pycache__
@@ -16,6 +15,12 @@ db.sqlite3
 db.sqlite3-journal
 docker-compose*.yml
 v2ray-core
-venv
 xray-core
 tests
+venv*
+.venv*
+LICENSE
+install_service.sh
+Marzban.code-workspace
+pyproject.toml
+uv.lock

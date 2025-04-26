@@ -2,6 +2,18 @@ from tests.api import client
 from fastapi import status
 
 
+id = 1
+
+
+def test_user_template_delete(access_token):
+    """Test that the user template delete route is accessible."""
+    response = client.delete(
+        f"/api/user_template/{id}",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+
+
 def test_user_template_create(access_token):
     """Test that the user template create route is accessible."""
     response = client.post(
@@ -27,11 +39,14 @@ def test_user_template_create(access_token):
     assert response.json()["extra_settings"]["flow"] == ""
     assert response.json()["extra_settings"]["method"] is None
 
+    global id
+    id = response.json()["id"]
 
-def test_user_template_get(access_token):
+
+def test_user_templates_get(access_token):
     """Test that the user template get route is accessible."""
     response = client.get(
-        "/api/user_template",
+        "/api/user_templates",
         headers={"Authorization": f"Bearer {access_token}"},
     )
     assert response.status_code == status.HTTP_200_OK
@@ -41,7 +56,7 @@ def test_user_template_get(access_token):
 def test_user_template_update(access_token):
     """Test that the user template update route is accessible."""
     response = client.put(
-        "/api/user_template/1",
+        f"/api/user_template/{id}",
         headers={"Authorization": f"Bearer {access_token}"},
         json={
             "name": "test_user_template_updated",
@@ -65,20 +80,10 @@ def test_user_template_update(access_token):
 def test_user_template_get_by_id(access_token):
     """Test that the user template get by id route is accessible."""
     response = client.get(
-        "/api/user_template/1",
+        f"/api/user_template/{id}",
         headers={"Authorization": f"Bearer {access_token}"},
     )
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()["id"] == 1
     assert response.json()["name"] == "test_user_template_updated"
     assert response.json()["group_ids"] == [2, 3]
     assert response.json()["expire_duration"] == (86400 * 30)
-
-
-def test_user_template_delete(access_token):
-    """Test that the user template delete route is accessible."""
-    response = client.delete(
-        "/api/user_template/1",
-        headers={"Authorization": f"Bearer {access_token}"},
-    )
-    assert response.status_code == status.HTTP_204_NO_CONTENT

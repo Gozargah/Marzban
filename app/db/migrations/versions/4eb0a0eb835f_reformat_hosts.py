@@ -20,12 +20,28 @@ branch_labels = None
 depends_on = None
 
 
+base_xray = {
+    "log": {"loglevel": "warning"},
+    "routing": {"rules": [{"ip": ["geoip:private"], "outboundTag": "BLOCK", "type": "field"}]},
+    "inbounds": [
+        {
+            "tag": "Shadowsocks TCP",
+            "listen": "0.0.0.0",
+            "port": 1080,
+            "protocol": "shadowsocks",
+            "settings": {"clients": [], "network": "tcp,udp"},
+        }
+    ],
+    "outbounds": [{"protocol": "freedom", "tag": "DIRECT"}, {"protocol": "blackhole", "tag": "BLOCK"}],
+}
+
+
 def upgrade() -> None:
     try:
-        config = commentjson.loads(XRAY_JSON)
-    except (json.JSONDecodeError, ValueError):
         with open(XRAY_JSON, 'r') as file:
             config = commentjson.loads(file.read())
+    except (json.JSONDecodeError, ValueError):
+        config = base_xray
 
     # find current inbound tags
     inbounds = [inbound['tag'] for inbound in config['inbounds'] if 'tag' in inbound]

@@ -8,13 +8,13 @@ from app.db.models import Node, NodeStatus
 from app.db.crud import get_nodes
 from app.node import node_manager
 from app.utils.logger import get_logger
-from app.operation.node import NodeOperator
+from app.operation.node import NodeOperation
 from app.operation import OperatorType
 
 from config import JOB_CORE_HEALTH_CHECK_INTERVAL
 
 
-node_operator = NodeOperator(operator_type=OperatorType.SYSTEM)
+node_operator = NodeOperation(operator_type=OperatorType.SYSTEM)
 logger = get_logger("node-checker")
 
 

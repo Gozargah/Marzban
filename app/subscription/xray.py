@@ -2,11 +2,12 @@ import json
 from random import choice
 from typing import Union
 
-from . import BaseSubscription
-from app.subscription.funcs import get_grpc_gun, get_grpc_multi, detect_shadowsocks_2022
+from app.subscription.funcs import detect_shadowsocks_2022, get_grpc_gun, get_grpc_multi
 from app.templates import render_template
 from app.utils.helpers import UUIDEncoder
 from config import V2RAY_SUBSCRIPTION_TEMPLATE
+
+from . import BaseSubscription
 
 
 class XrayConfig(BaseSubscription):
@@ -482,7 +483,7 @@ class XrayConfig(BaseSubscription):
             )
         elif net in ("h3", "h2", "http"):
             network_setting = self.http_config(
-                net=net, path=path, host=host, random_user_agent=random_user_agent, http_headers=http_headers
+                path=path, host=host, random_user_agent=random_user_agent, http_headers=http_headers
             )
         elif net == "kcp":
             network_setting = self.kcp_config(

@@ -1,17 +1,19 @@
-name: Build
+name: Build-Docker
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
+  release:
+    types: [created]
+
+env:
+  IMAGE: gozargah/marzban:${{ github.ref_name }}
+  GHCR_IMAGE: ghcr.io/gozargah/marzban:${{ github.ref_name }}
+  IMAGE_LATEST: gozargah/marzban:latest
+  GHCR_IMAGE_LATEST: ghcr.io/gozargah/marzban:latest
 
 jobs:
-  build-docker-image:
+  build-dashboard:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -19,52 +21,127 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           run_install: false
+          version: 10
 
       - name: Setup nodejs
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'pnpm'
+          cache-dependency-path: ./dashboard/pnpm-lock.yaml
 
       - name: Install dependencies
-        working-directory: ./app/dashboard
+        working-directory: ./dashboard
         run: pnpm i
 
-      - name: Build project
-        working-directory: ./app/dashboard
-        run: VITE_BASE_API=/api/ pnpm build --if-present -- --outDir build --assetsDir statics
+      - name: Build dashboard
+        run: ./build_dashboard.sh
+        
+      - name: Upload dashboard build
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-build
+          path: ./dashboard/build/
+          retention-days: 1
 
-      - name: Create 404.html
-        working-directory: ./app/dashboard
-        run: cp ./build/index.html ./build/404.html
+  build-images:
+    needs: build-dashboard
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+      - name: Download dashboard build
+        uses: actions/download-artifact@v4
+        with:
+          name: dashboard-build
+          path: ./dashboard/build/
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
-        uses: docker/build-push-action@v3
+      - name: Build and push ${{ matrix.arch }} image
+        uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ matrix.platform }}
           push: true
+          file: ./Dockerfile
           tags: |
-            gozargah/marzban:latest
-            gozargah/marzban:${{github.ref_name}}
-            ghcr.io/gozargah/marzban:latest
-            ghcr.io/gozargah/marzban:${{github.ref_name}}
+            ${{ env.IMAGE }}-${{ matrix.arch }}
+            ${{ env.GHCR_IMAGE }}-${{ matrix.arch }}
+
+  push-manifest:
+    needs: [build-images]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create tagged manifest
+        uses: int128/docker-manifest-create-action@v2
+        with:
+          tags: ${{ env.IMAGE }}
+          sources: |
+            ${{ env.IMAGE }}-amd64
+            ${{ env.IMAGE }}-arm64
+
+      - name: Create tagged manifest for GitHub
+        uses: int128/docker-manifest-create-action@v2
+        with:
+          tags: ${{ env.GHCR_IMAGE }}
+          sources: |
+            ${{ env.GHCR_IMAGE }}-amd64
+            ${{ env.GHCR_IMAGE }}-arm64
+
+      # Check if it's pre release or latest
+      - name: Create latest manifest if not prerelease
+        if: ${{ github.event.release.prerelease != true }}
+        uses: int128/docker-manifest-create-action@v2
+        with:
+          tags: ${{ env.IMAGE_LATEST }}
+          sources: |
+            ${{ env.IMAGE }}-amd64
+            ${{ env.IMAGE }}-arm64
+
+      - name: Create latest manifest for GitHub if not prerelease
+        if: ${{ github.event.release.prerelease != true }}
+        uses: int128/docker-manifest-create-action@v2
+        with:
+          tags: ${{ env.GHCR_IMAGE_LATEST }}
+          sources: |
+            ${{ env.GHCR_IMAGE }}-amd64
+            ${{ env.GHCR_IMAGE }}-arm64
