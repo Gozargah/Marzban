@@ -115,8 +115,12 @@
   "edit": "Edit",
   "editGroup": "Edit Group",
   "disable": "Disable",
-  "templates.title": "Templates",
   "templates.userTemplates": "Templates",
+  "templates": {
+    "title": "Templates",
+    "description": "Manage your Templates.",
+    "addTemplate": "Add Templates"
+  },
   "core.configuration": "Configuration",
   "core.generalErrorMessage": "Something went wrong, please check the configuration",
   "core.logs": "Logs",

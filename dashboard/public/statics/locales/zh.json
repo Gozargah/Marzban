@@ -112,8 +112,12 @@
   "edit": "编辑",
   "editGroup": "编辑群组",
   "disable": "禁用",
-  "templates.title": "模板",
   "templates.userTemplates": "模板",
+  "templates": {
+    "title": "模板",
+    "description": "管理您的模板。",
+    "addTemplate": "添加模板"
+  },
   "core.configuration": "配置",
   "core.generalErrorMessage": "配置有误, 请检查",
   "core.logs": "日志",

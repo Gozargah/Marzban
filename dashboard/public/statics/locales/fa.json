@@ -77,8 +77,12 @@
   "edit": "ویرایش",
   "editGroup": "ویرایش گروه",
   "disable": "غیرفعال کردن",
-  "templates.title": "قالب‌ها",
   "templates.userTemplates": "قالب‌ها",
+  "templates": {
+    "title": "قالب‌ها",
+    "description": "قالب‌های خود را مدیریت کنید.",
+    "addTemplate": "افزودن قالب"
+  },
   "core.configuration": "پیکربندی",
   "core.generalErrorMessage": "مشکلی پیش آمده، لطفا پیکربندی را بررسی کنید",
   "core.logs": "گزارش",
