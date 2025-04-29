@@ -4,12 +4,13 @@ import { BarChart, Cpu, Gauge, MemoryStick } from 'lucide-react'
 import { CostumeBarChart } from '../charts/CostumeBarChart'
 import { AreaCostumeChart } from '../charts/AreaCostumeChart'
 import PieCostumeChart from '../charts/PieCostumeChart'
-import { SystemStats } from '@/service/api'
+import { SystemStats, useGetNodes, NodeResponse } from '@/service/api'
 import { formatBytes } from '@/utils/formatByte'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useState } from 'react'
 
 interface StatisticsProps {
   data?: SystemStats;
@@ -21,12 +22,18 @@ export default function Statistics({ data, isLoading, error }: StatisticsProps) 
   const { t } = useTranslation()
   const dir = useDirDetection()
 
-  if (isLoading) {
+  const [selectedServer, setSelectedServer] = useState<string>("master")
+  const { data: nodesData, isLoading: isLoadingNodes, error: nodesError } = useGetNodes()
+
+  const selectedNodeId = selectedServer === "master" ? undefined : parseInt(selectedServer, 10)
+
+  if (isLoading || isLoadingNodes) {
     return <StatisticsSkeletons />
   }
 
-  if (error) {
-    return <div className="text-destructive">Error loading statistics: {error.message}</div>
+  if (error || nodesError) {
+    const errorMessage = error?.message || nodesError?.message || "Unknown error"
+    return <div className="text-destructive">Error loading statistics: {errorMessage}</div>
   }
 
   return (
@@ -36,13 +43,17 @@ export default function Statistics({ data, isLoading, error }: StatisticsProps) 
           <h2 className="text-lg font-semibold">{t("statistics.system")}</h2>
           <p className="text-sm">{t("monitorServers")}</p>
         </div>
-        <Select defaultValue="main">
+        <Select value={selectedServer} onValueChange={setSelectedServer}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select server" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="main">Main Server</SelectItem>
-            <SelectItem value="backup">Backup Server</SelectItem>
+            <SelectItem value="master">Master Server</SelectItem>
+            {nodesData?.map((node: NodeResponse) => (
+              <SelectItem key={node.id} value={String(node.id)}>
+                {node.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -54,7 +65,9 @@ export default function Statistics({ data, isLoading, error }: StatisticsProps) 
             <Cpu className="h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div dir='ltr' className={cn("text-2xl font-bold", dir === "rtl" && 'text-right')}>{data?.cpu_usage}%</div>
+            <div dir='ltr' className={cn("text-2xl font-bold", dir === "rtl" && 'text-right')}>
+              {data?.cpu_usage.toFixed(1)}%
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -63,7 +76,9 @@ export default function Statistics({ data, isLoading, error }: StatisticsProps) 
             <MemoryStick className="h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div dir='ltr' className={cn("text-2xl font-bold", dir === "rtl" && 'text-right')}>{formatBytes(Number(data?.mem_used), 1, false)} / {formatBytes(Number(data?.mem_total))}</div>
+            <div dir='ltr' className={cn("text-2xl font-bold", dir === "rtl" && 'text-right')}>
+              {formatBytes(Number(data?.mem_used), 1)} / {formatBytes(Number(data?.mem_total), 1)}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -72,15 +87,17 @@ export default function Statistics({ data, isLoading, error }: StatisticsProps) 
             <Gauge className="h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div dir='ltr' className={cn("text-2xl font-bold", dir === "rtl" && 'text-right')}>{formatBytes(Number(data?.incoming_bandwidth_speed) + Number(data?.outgoing_bandwidth_speed))}</div>
+            <div dir='ltr' className={cn("text-2xl font-bold", dir === "rtl" && 'text-right')}>
+              {formatBytes(Number(data?.incoming_bandwidth_speed) + Number(data?.outgoing_bandwidth_speed), 1)}
+            </div>
           </CardContent>
         </Card>
       </div>
 
       <div className="space-y-8">
-        <CostumeBarChart />
+        <CostumeBarChart nodeId={selectedNodeId} />
         <div className="flex gap-4 flex-col sm:flex-row ">
-          <AreaCostumeChart />
+          <AreaCostumeChart nodeId={selectedNodeId} />
           <PieCostumeChart />
         </div>
       </div>

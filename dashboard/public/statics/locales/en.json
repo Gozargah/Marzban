@@ -3,6 +3,8 @@
   "active": "active",
   "platform": "Platform",
   "statistics": "Statistics",
+  "statistics.realTimeStats": "Real-time Statistics",
+  "statistics.serverPerformance": "Server Performance",
   "hosts": "Hosts",
   "success": "Success",
   "error": "Error",

@@ -2,6 +2,8 @@
   "active": "激活",
   "platform": "平台",
   "statistics": "统计",
+  "statistics.realTimeStats": "实时统计",
+  "statistics.serverPerformance": "服务器性能",
   "hosts": "主机",
   "success": "成功",
   "error": "错误",

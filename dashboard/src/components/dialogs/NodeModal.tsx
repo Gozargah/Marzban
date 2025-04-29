@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useTranslation } from 'react-i18next'
 import { UseFormReturn } from 'react-hook-form'
-import { useAddNode, useModifyNode, NodeConnectionType, useGetAllCores, CoreResponse, getNode, addNode } from '@/service/api'
+import { useCreateNode, useModifyNode, NodeConnectionType, useGetAllCores, CoreResponse, getNode } from '@/service/api'
 import { toast } from '@/hooks/use-toast'
 import { z } from 'zod'
 import { cn } from '@/lib/utils'
@@ -45,7 +45,7 @@ type ConnectionStatus = 'idle' | 'success' | 'error' | 'checking';
 export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNode, editingNodeId }: NodeModalProps) {
   const { t } = useTranslation()
   const dir = useDirDetection()
-  const addNodeMutation = useAddNode()
+  const addNodeMutation = useCreateNode()
   const modifyNodeMutation = useModifyNode()
   const { data: cores } = useGetAllCores()
   const [statusChecking, setStatusChecking] = useState(false)
@@ -90,24 +90,6 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
     if (editingNode && isDialogOpen && editingNodeId) {
       // Start polling immediately
       checkNodeStatus();
-
-      // Set up interval for polling
-      const interval = setInterval(() => {
-        checkNodeStatus();
-      }, 5000); // Check every 5 seconds
-
-      setPollingInterval(interval);
-
-      // Cleanup interval when component unmounts or modal closes
-      return () => {
-        if (interval) {
-          clearInterval(interval);
-        }
-      };
-    } else if (pollingInterval) {
-      // Clear interval if not in edit mode
-      clearInterval(pollingInterval);
-      setPollingInterval(null);
     }
   }, [editingNode, isDialogOpen, editingNodeId]);
 
@@ -181,35 +163,15 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
           setConnectionStatus('success');
         } else {
           setConnectionStatus('error');
-          setErrorDetails(node?.status || 'Failed to get node information');
+          setErrorDetails(node?.message || 'Failed to get node information');
         }
       } else {
-        // For new nodes, try to add the node temporarily to check its status
-        const tempNode = {
-          name: values.name,
-          address: values.address,
-          port: values.port,
-          usage_coefficient: values.usage_coefficient,
-          connection_type: values.connection_type,
-          server_ca: values.server_ca,
-          keep_alive: values.keep_alive,
-          max_logs: values.max_logs,
-          api_key: values.api_key,
-          core_config_id: values.core_config_id,
-        };
-
-        try {
-          const result = await addNode(tempNode);
-          if (result && result.status === 'connected') {
-            setConnectionStatus('success');
-          } else {
-            setConnectionStatus('error');
-            setErrorDetails(result?.status || 'Failed to connect to node');
-          }
-        } catch (error: any) {
-          setConnectionStatus('error');
-          setErrorDetails(error?.message || 'Failed to connect to node');
-        }
+        // For new nodes, status cannot be checked before creation without a dedicated endpoint.
+        // Avoid calling addNode here to prevent premature creation.
+        // Set status to idle or disabled, as the check cannot be performed yet.
+        setConnectionStatus('idle'); // Or 'disabled', depending on desired UX
+        // Optional: provide feedback that status check is unavailable for new nodes yet.
+        // setErrorDetails(t('nodeModal.status.checkUnavailableForNew'));
       }
     } catch (error: any) {
       setConnectionStatus('error');
@@ -273,7 +235,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
             setConnectionStatus('success');
           } else {
             setConnectionStatus('error');
-            setErrorDetails(node?.status || 'Failed to get node information');
+            setErrorDetails(node?.message || 'Failed to get node information');
           }
         } catch (error: any) {
           setConnectionStatus('error');

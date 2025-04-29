@@ -2,6 +2,8 @@
   "active": "active",
   "platform": "Платформа",
   "statistics": "Статистика",
+  "statistics.realTimeStats": "Статистика в реальном времени",
+  "statistics.serverPerformance": "Производительность сервера",
   "hosts": "Хосты",
   "success": "Успешно",
   "error": "Ошибка",

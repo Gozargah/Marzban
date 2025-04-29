@@ -1,14 +1,14 @@
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState } from "react"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
-import TimeSelector, { type TimePeriod } from "./TimeSelector"
-
+import { DateRange } from "react-day-picker"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { useTranslation } from "react-i18next"
 import useDirDetection from "@/hooks/use-dir-detection"
-import { getUsage, Period } from "@/service/api"
+import { getUsage, Period, type NodeUsageStats } from "@/service/api"
 import { formatBytes } from "@/utils/formatByte"
 import { Skeleton } from "@/components/ui/skeleton"
+import { TimeRangeSelector } from "@/components/common/TimeRangeSelector"
 
 type DataPoint = {
     time: string
@@ -17,21 +17,32 @@ type DataPoint = {
 
 const chartConfig = {
     usage: {
-        label: "Traffic Usage",
+        label: "Traffic Usage (GB)",
         color: "hsl(var(--chart-1))",
     },
 } satisfies ChartConfig
 
-const periodMap: Record<TimePeriod, Period> = {
-    "12h": "hour",
-    "24h": "hour",
-    "3d": "day",
-    "1w": "day",
-    "30d": "day"
+// Define props interface
+interface CostumeBarChartProps {
+    nodeId?: number;
+}
+
+// Helper function to determine period (copied from AreaCostumeChart)
+const getPeriodFromDateRange = (range?: DateRange): Period => {
+    if (!range?.from || !range?.to) {
+        return Period.hour; // Default to hour if no range
+    }
+    const diffTime = Math.abs(range.to.getTime() - range.from.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 2) { // Up to 2 days, use hourly data
+        return Period.hour;
+    }
+    return Period.day; // More than 2 days, use daily data
 };
 
-export function CostumeBarChart() {
-    const [selectedTime, setSelectedTime] = useState<TimePeriod>("24h")
+export function CostumeBarChart({ nodeId }: CostumeBarChartProps) {
+    const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
     const [chartData, setChartData] = useState<DataPoint[] | null>(null)
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error | null>(null)
@@ -42,77 +53,74 @@ export function CostumeBarChart() {
 
     useEffect(() => {
         const fetchUsageData = async () => {
-            setIsLoading(true);
-            setError(null);
-            
+            if (!dateRange?.from || !dateRange?.to) {
+                setChartData(null)
+                setTotalUsage("0")
+                return
+            }
+
+            setIsLoading(true)
+            setError(null)
+
             try {
-                const now = new Date();
-                let startDate = new Date(now);
-                
-                // Set the start date based on the selected time period
-                switch(selectedTime) {
-                    case "12h":
-                        startDate.setHours(now.getHours() - 12);
-                        break;
-                    case "24h":
-                        startDate.setHours(now.getHours() - 24);
-                        break;
-                    case "3d":
-                        startDate.setDate(now.getDate() - 3);
-                        break;
-                    case "1w":
-                        startDate.setDate(now.getDate() - 7);
-                        break;
-                    case "30d":
-                        startDate.setDate(now.getDate() - 30);
-                        break;
-                }
-                
-                const response = await getUsage({
-                    period: periodMap[selectedTime],
+                const startDate = dateRange.from
+                const endDate = dateRange.to
+                // Determine period based on range
+                const period = getPeriodFromDateRange(dateRange);
+
+                // Prepare API parameters
+                const params: Parameters<typeof getUsage>[0] = {
+                    period: period,
                     start: startDate.toISOString(),
-                    end: now.toISOString()
-                });
-                
-                if (response && response.datapoints) {
-                    // Transform data into the format expected by the chart
-                    const formattedData = response.datapoints.map(point => {
-                        // For hourly data, format as HH:MM
-                        // For daily data, format as MM/DD
-                        const date = new Date(point.timestamp);
-                        
+                    end: endDate.toISOString(),
+                    // Add nodeId if it exists
+                    ...(nodeId !== undefined && { node_id: nodeId })
+                };
+
+                const response = await getUsage(params);
+
+                if (response && response.length > 0) {
+                    const formattedData = response.map((point: NodeUsageStats) => {
+                        const date = new Date(point.period_start)
                         let timeFormat;
-                        if (periodMap[selectedTime] === "hour") {
+                        // Format time based on determined period
+                        if (period === Period.hour) {
                             timeFormat = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-                        } else {
+                        } else { // Period.day
                             timeFormat = `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`;
                         }
-                        
-                        // Convert bytes to GB for display
-                        const usageInGB = (point.uplink + point.downlink) / (1024 * 1024 * 1024);
-                        
+
+                        const usageInGB = (point.uplink + point.downlink) / (1024 * 1024 * 1024)
+
                         return {
                             time: timeFormat,
                             usage: parseFloat(usageInGB.toFixed(2))
-                        };
-                    });
-                    
-                    setChartData(formattedData);
-                    
-                    // Calculate total usage
-                    const total = response.datapoints.reduce((sum, point) => sum + point.uplink + point.downlink, 0);
-                    setTotalUsage(formatBytes(total, 2));
+                        }
+                    })
+
+                    setChartData(formattedData)
+
+                    const total = response.reduce((sum: number, point: NodeUsageStats) => sum + point.uplink + point.downlink, 0)
+                    const formattedTotal = formatBytes(total, 2)
+                    if (typeof formattedTotal === 'string') {
+                        setTotalUsage(formattedTotal)
+                    }
+                } else {
+                    setChartData(null)
+                    setTotalUsage("0")
                 }
             } catch (err) {
-                setError(err as Error);
-                console.error("Error fetching usage data:", err);
+                setError(err as Error)
+                setChartData(null)
+                setTotalUsage("0")
+                console.error("Error fetching usage data:", err)
             } finally {
-                setIsLoading(false);
+                setIsLoading(false)
             }
-        };
-        
-        fetchUsageData();
-    }, [selectedTime]);
+        }
+
+        fetchUsageData()
+    }, [dateRange, nodeId])
 
     return (
         <Card>
@@ -123,7 +131,7 @@ export function CostumeBarChart() {
                         <CardDescription>{t("statistics.trafficUsageDescription")}</CardDescription>
                     </div>
                     <div className="px-1 py-1 flex justify-center align-middle flex-col">
-                        <TimeSelector selectedTime={selectedTime} setSelectedTime={setSelectedTime} />
+                        <TimeRangeSelector onRangeChange={setDateRange} />
                     </div>
                 </div>
                 <div className="sm:border-l p-6 m-0 flex flex-col justify-center px-4 ">
@@ -148,12 +156,17 @@ export function CostumeBarChart() {
                             <BarChart accessibilityLayer data={chartData}>
                                 <CartesianGrid direction={dir} vertical={false} />
                                 <XAxis direction={dir} dataKey="time" tickLine={false} tickMargin={10} axisLine={false} />
-                                <YAxis direction={dir} tickLine={false} axisLine={false} />
+                                <YAxis 
+                                    direction={dir} 
+                                    tickLine={false} 
+                                    axisLine={false}
+                                    tickFormatter={(value) => `${value.toFixed(2)} GB`}
+                                />
                                 <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
                                 <Bar dataKey="usage" fill="var(--color-usage)" radius={8} />
                             </BarChart>
                         ) : (
-                            <div className="flex items-center justify-center h-full">
+                            <div className="flex items-center justify-center h-full text-muted-foreground">
                                 {t("statistics.noDataAvailable")}
                             </div>
                         )}

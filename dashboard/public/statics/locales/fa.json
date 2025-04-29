@@ -3,6 +3,8 @@
   "active": "فعال",
   "platform": "پلتفرم",
   "statistics": "آمار",
+  "statistics.realTimeStats": "آمار لحظه‌ای",
+  "statistics.serverPerformance": "عملکرد سرور",
   "hosts": "هاست‌ها",
   "groups": "گروه‌ها",
   "documentation": "مستندات",

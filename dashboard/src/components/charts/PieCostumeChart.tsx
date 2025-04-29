@@ -135,14 +135,14 @@ export default function PieCostumeChart() {
                         <PieChart>
                             <ChartTooltip
                                 cursor={false}
-                                content={<ChartTooltipContent formatter={(value) => formatBytes(Number(value))} />}
+                                content={<ChartTooltipContent formatter={(value) => formatBytes(Number(value), 1)} />}
                             />
                             <Pie 
                                 data={nodesData} 
                                 dataKey="usage" 
                                 nameKey="node" 
                                 outerRadius={80}
-                                label={({ node }) => node}
+                                label={({ node, value }) => `${node}: ${formatBytes(value, 1)}`}
                             />
                         </PieChart>
                     </ChartContainer>

@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useTranslation } from 'react-i18next'
 import { UseFormReturn } from 'react-hook-form'
-import { useAddGroup, useModifyGroup, useGetInbounds } from '@/service/api'
+import { useCreateGroup, useModifyGroup, useGetInbounds } from '@/service/api'
 import { toast } from '@/hooks/use-toast'
 import { z } from 'zod'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command'
@@ -31,7 +31,7 @@ interface GroupModalProps {
 
 export default function GroupModal({ isDialogOpen, onOpenChange, form, editingGroup, editingGroupId }: GroupModalProps) {
   const { t } = useTranslation()
-  const addGroupMutation = useAddGroup()
+  const addGroupMutation = useCreateGroup()
   const modifyGroupMutation = useModifyGroup()
   const { data: inbounds } = useGetInbounds()
 
