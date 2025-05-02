@@ -4,7 +4,30 @@ import PageHeader from "@/components/page-header.tsx";
 import {Plus} from "lucide-react";
 import {Separator} from "@/components/ui/separator.tsx";
 
+import UserTemplateModal, {
+    userTemplateFormSchema,
+    UserTemplatesFromValue
+} from "@/components/dialogs/UserTemplateModal.tsx";
+import {useState} from "react";
+import {useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
+
+const initialDefaultValues: Partial<UserTemplatesFromValue> = {
+    name: '',
+    status: 'active',
+    username_prefix: '',
+    username_suffix: '',
+    data_limit: 0,
+    expire_duration: 0,
+    method: undefined,
+    flow: undefined,
+    on_hold_timeout: undefined,
+    groups: [1]
+}
+
 export default function UserTemplates() {
+    const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const [editingUserTemplate, setEditingUserTemplate] = useState<UserTemplateResponse | null>(null)
     const {data: userTemplates} = useGetUserTemplates(
         undefined,
         {
@@ -14,6 +37,9 @@ export default function UserTemplates() {
             }
         }
     )
+    const form = useForm<UserTemplatesFromValue>({
+        resolver: zodResolver(userTemplateFormSchema),
+    })
 
     return (
         <div className="flex flex-col gap-2 w-full items-start">
@@ -23,6 +49,7 @@ export default function UserTemplates() {
                 buttonIcon={Plus}
                 buttonText="templates.addTemplate"
                 onButtonClick={() => {
+                    setIsDialogOpen(true)
                 }}
             />
             <Separator/>
@@ -33,6 +60,20 @@ export default function UserTemplates() {
                     ))}
                 </div>
             </div>
+
+            <UserTemplateModal
+                isDialogOpen={isDialogOpen}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setEditingUserTemplate(null)
+                        form.reset(initialDefaultValues)
+                    }
+                    setIsDialogOpen(open)
+                }}
+                form={form}
+                editingUserTemplate={!!editingUserTemplate}
+                editingUserTemplateId={editingUserTemplate?.id}
+            />
         </div>
     )
 }
