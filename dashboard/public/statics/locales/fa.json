@@ -77,6 +77,7 @@
   "edit": "ویرایش",
   "editGroup": "ویرایش گروه",
   "disable": "غیرفعال کردن",
+  "warning": "هشدار",
   "templates.userTemplates": "قالب‌ها",
   "editUserTemplateModal.title": "ویرایش قالب کاربر",
   "userTemplateModal.title": "ایجاد قالب کاربر",
@@ -97,7 +98,10 @@
     "onHoldTimeout": "زمان انتظار توقف",
     "method": "روش",
     "flow": "جریان",
-    "groups": "گروه‌ها"
+    "groups": "گروه‌ها",
+    "userDataLimitStrategy": "استراتژی بازنشانی محدودیت داده‌ها",
+    "resetUsage": "بازنشانی استفاده",
+    "groupsExistingWarning": "شما هنوز هیچ <a>گروهی</a> اضافه نکرده‌اید."
   },
   "core.configuration": "پیکربندی",
   "core.generalErrorMessage": "مشکلی پیش آمده، لطفا پیکربندی را بررسی کنید",

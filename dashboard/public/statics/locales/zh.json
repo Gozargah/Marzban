@@ -112,6 +112,7 @@
   "edit": "编辑",
   "editGroup": "编辑群组",
   "disable": "禁用",
+  "warning": "警告",
   "templates.userTemplates": "模板",
   "editUserTemplateModal.title": "编辑用户模板",
   "userTemplateModal.title": "创建用户模板",
@@ -132,7 +133,10 @@
     "onHoldTimeout": "挂起超时",
     "method": "方法",
     "flow": "流程",
-    "groups": "分组"
+    "groups": "分组",
+    "userDataLimitStrategy": "数据限制重置策略",
+    "resetUsage": "重置使用量",
+    "groupsExistingWarning": "您尚未添加任何<a>分组</a>。"
   },
   "core.configuration": "配置",
   "core.generalErrorMessage": "配置有误, 请检查",

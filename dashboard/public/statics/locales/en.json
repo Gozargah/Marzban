@@ -115,6 +115,7 @@
   "edit": "Edit",
   "editGroup": "Edit Group",
   "disable": "Disable",
+  "warning": "Warning",
   "templates.userTemplates": "Templates",
   "editUserTemplateModal.title": "Edit User Template",
   "userTemplateModal.title": "Create User Template",
@@ -135,7 +136,10 @@
     "onHoldTimeout": "OnHold Timeout",
     "method": "Method",
     "flow": "Flow",
-    "groups": "Groups"
+    "groups": "Groups",
+    "userDataLimitStrategy": "Data Limit Reset Strategy",
+    "resetUsage": "Reset Usage",
+    "groupsExistingWarning": "You dont add any <a>Groups</a> yet."
   },
   "core.configuration": "Configuration",
   "core.generalErrorMessage": "Something went wrong, please check the configuration",

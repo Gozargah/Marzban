@@ -111,6 +111,7 @@
   "edit": "Редактировать",
   "editGroup": "Редактировать группу",
   "disable": "Отключить",
+  "warning": "Предупреждение",
   "templates.userTemplates": "Шаблоны",
   "editUserTemplateModal.title": "Редактировать шаблон пользователя",
   "userTemplateModal.title": "Создать шаблон пользователя",
@@ -131,7 +132,10 @@
     "onHoldTimeout": "Тайм-аут при ожидании",
     "method": "Метод",
     "flow": "Поток",
-    "groups": "Группы"
+    "groups": "Группы",
+    "userDataLimitStrategy": "Стратегия сброса лимита данных",
+    "resetUsage": "Сброс использования",
+    "groupsExistingWarning": "Вы еще не добавили ни одной <a>группы</a>."
   },
   "core.configuration": "Конфигурация",
   "core.generalErrorMessage": "Что-то пошло не так, пожалуйста, проверьте конфигурацию",

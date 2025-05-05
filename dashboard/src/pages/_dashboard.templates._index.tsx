@@ -1,5 +1,8 @@
 import UserTemplate from '../components/templates/UserTemplate'
-import {useGetUserTemplates, UserTemplateResponse} from "@/service/api";
+import {
+    useGetUserTemplates,
+    UserTemplateResponse,
+} from "@/service/api";
 import PageHeader from "@/components/page-header.tsx";
 import {Plus} from "lucide-react";
 import {Separator} from "@/components/ui/separator.tsx";
@@ -40,7 +43,23 @@ export default function UserTemplates() {
     const form = useForm<UserTemplatesFromValue>({
         resolver: zodResolver(userTemplateFormSchema),
     })
-
+    const handleEdit = (userTemplate: UserTemplateResponse) => {
+        setEditingUserTemplate(userTemplate)
+        form.reset({
+            name: userTemplate.name || undefined,
+            status: userTemplate.status || undefined,
+            data_limit: userTemplate.data_limit || undefined,
+            expire_duration: userTemplate.expire_duration || undefined,
+            method: userTemplate.extra_settings?.method || undefined,
+            flow: userTemplate.extra_settings?.flow || undefined,
+            groups: userTemplate.group_ids || undefined,
+            username_prefix: userTemplate.username_prefix || undefined,
+            username_suffix: userTemplate.username_suffix || undefined,
+            resetUsages: userTemplate.reset_usages || undefined,
+            data_limit_reset_strategy: userTemplate.data_limit_reset_strategy || undefined,
+        })
+        setIsDialogOpen(true)
+    }
     return (
         <div className="flex flex-col gap-2 w-full items-start">
             <PageHeader
@@ -56,7 +75,7 @@ export default function UserTemplates() {
             <div className="flex-1 space-y-4 p-4 pt-6 w-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
                     {userTemplates?.map((template: UserTemplateResponse) => (
-                        <UserTemplate template={template} key={template.id}/>
+                        <UserTemplate onEdit={handleEdit} template={template} key={template.id}/>
                     ))}
                 </div>
             </div>
