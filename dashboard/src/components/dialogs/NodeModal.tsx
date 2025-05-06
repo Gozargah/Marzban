@@ -265,7 +265,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[1000px] h-full sm:h-auto overflow-y-auto">
+      <DialogContent className="max-w-[1000px] max-h-[90vh] h-full lg:h-auto overflow-y-auto">
         <DialogHeader>
           <DialogTitle className={cn("text-xl text-start font-semibold", dir === "rtl" && "sm:text-right")}>
             {editingNode ? t('editNode.title') : t('nodeModal.title')}

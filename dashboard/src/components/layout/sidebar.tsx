@@ -105,10 +105,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { t } = useTranslation()
   return (
     <>
-      <div className="sticky top-0 z-30 bg-sidebar flex lg:hidden border-b border-sidebar-border py-3 px-4 justify-between items-center">
+      <div className="sticky top-0 z-30 bg-neutral-200/75 dark:bg-neutral-900/75 backdrop-blur flex lg:hidden border-b border-sidebar-border py-3 px-4 justify-between items-center">
         <div className="flex gap-2 items-center">
           <Logo className="!w-4 !h-4 stroke-[2px]" />
-          <span className="text-sm font-normal">{t('marzban')}</span>
+          <span className="text-sm font-bold">{t('marzban')}</span>
         </div>
         <SidebarTrigger />
       </div>

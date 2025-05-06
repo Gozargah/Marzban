@@ -395,7 +395,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="lg:max-h-[90vh] lg:min-w-[900px] overflow-y-auto lg:overflow-y-visible">
+      <DialogContent className="lg:max-h-[90vh] lg:min-w-[900px] h-full md:h-auto overflow-y-auto lg:overflow-y-visible">
         <DialogHeader>
           <DialogTitle className={`${dir === 'rtl' ? 'text-right' : ''}`}>{editingUser ? t('userDialog.editUser', { defaultValue: 'Edit User' }) : t('createUser', { defaultValue: 'Create User' })}</DialogTitle>
         </DialogHeader>

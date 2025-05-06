@@ -85,6 +85,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 // Define props interface
 interface AreaCostumeChartProps {
     nodeId?: number;
+    currentStats?: SystemStats | NodeRealtimeStats | null;
 }
 
 // Helper function to determine period
@@ -101,12 +102,10 @@ const getPeriodFromDateRange = (range?: DateRange): Period => {
     return Period.day; // More than 2 days, use daily data
 };
 
-export function AreaCostumeChart({ nodeId }: AreaCostumeChartProps) {
+export function AreaCostumeChart({ nodeId, currentStats }: AreaCostumeChartProps) {
     const { t } = useTranslation();
     const dir = useDirDetection();
     const [statsHistory, setStatsHistory] = useState<DataPoint[]>([]);
-    // Type can be SystemStats (master) or RealtimeNodeStats (node)
-    const [currentStats, setCurrentStats] = useState<SystemStats | RealtimeNodeStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
     const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
@@ -117,8 +116,7 @@ export function AreaCostumeChart({ nodeId }: AreaCostumeChartProps) {
 
         const fetchMasterSystemStats = async () => {
             try {
-                const data = await getSystemStats();
-                setCurrentStats(data);
+                if (!currentStats) return;
                 
                 const now = new Date();
                 const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
@@ -126,8 +124,8 @@ export function AreaCostumeChart({ nodeId }: AreaCostumeChartProps) {
                 setStatsHistory(prev => {
                     const newHistory = [...prev, {
                         time: timeStr,
-                        cpu: data.cpu_usage,
-                        ram: parseFloat(((Number(data.mem_used) / Number(data.mem_total)) * 100).toFixed(1))
+                        cpu: currentStats.cpu_usage,
+                        ram: parseFloat(((Number(currentStats.mem_used) / Number(currentStats.mem_total)) * 100).toFixed(1))
                     }];
                     
                     // Limit history length (e.g., last 60 points for 5-second interval = 5 minutes)
@@ -142,15 +140,13 @@ export function AreaCostumeChart({ nodeId }: AreaCostumeChartProps) {
             } catch (err) {
                 setError(err as Error);
                 setIsLoading(false);
-                console.error("Error fetching master system stats:", err);
+                console.error("Error processing master system stats:", err);
             }
         };
 
         fetchMasterSystemStats();
-        const intervalId = setInterval(fetchMasterSystemStats, 5000);
-        return () => clearInterval(intervalId);
 
-    }, [nodeId]); // Rerun if nodeId changes (to stop interval when switching to node)
+    }, [nodeId, currentStats]); // Rerun if nodeId or currentStats changes
 
     // Effect for Node Historical Stats (nodeId is defined)
     useEffect(() => {
@@ -158,9 +154,7 @@ export function AreaCostumeChart({ nodeId }: AreaCostumeChartProps) {
 
         const fetchNodeHistoricalStats = async () => {
             if (!dateRange?.from || !dateRange?.to) {
-                // Optionally set a default range or wait for user selection
                 setStatsHistory([]); // Clear history if no range selected
-                // setIsLoading(false); // Consider if loading should stop here
                 return; 
             }
 
@@ -174,13 +168,8 @@ export function AreaCostumeChart({ nodeId }: AreaCostumeChartProps) {
                     period: period
                 });
                 
-                // Log the raw data received from the API
-                console.log('Raw node historical stats:', data);
-
-                // Access the .stats property which is the array
                 const statsArray = data?.stats;
 
-                // Check if statsArray is actually an array before mapping
                 if (Array.isArray(statsArray)) {
                     const formattedData = statsArray.map((point: NodeStats) => {
                         const date = new Date(point.period_start);
@@ -216,35 +205,6 @@ export function AreaCostumeChart({ nodeId }: AreaCostumeChartProps) {
 
     }, [nodeId, dateRange]); // Rerun when nodeId or dateRange changes
 
-    // Effect for Node Real-time Stats (nodeId is defined)
-    useEffect(() => {
-        if (nodeId === undefined) {
-            setCurrentStats(null); // Clear current stats if switching back to master
-            return;
-        }
-
-        let intervalId: NodeJS.Timeout | undefined;
-
-        const fetchNodeRealtimeStats = async () => {
-            try {
-                // Don't set loading here, it's handled by historical fetch
-                const data = await realtimeNodeStats(nodeId);
-                setCurrentStats(data);
-                // No need to set error here ideally, header can show loading/error state briefly
-            } catch (err) {
-                console.error(`Error fetching real-time stats for node ${nodeId}:`, err);
-                // Optionally set currentStats to null or show specific error in header
-                setCurrentStats(null);
-            }
-        };
-
-        fetchNodeRealtimeStats(); // Initial fetch
-        intervalId = setInterval(fetchNodeRealtimeStats, 5000); // Refresh every 5 seconds
-
-        return () => clearInterval(intervalId); // Cleanup on unmount or nodeId change
-
-    }, [nodeId]);
-
     // --- Header Display Logic --- 
     let displayCpuUsage: string | JSX.Element = <Skeleton className="h-5 w-16" />;
     let displayRamUsage: string | JSX.Element = <Skeleton className="h-5 w-16" />;
@@ -255,13 +215,9 @@ export function AreaCostumeChart({ nodeId }: AreaCostumeChartProps) {
         if ('mem_total' in currentStats && currentStats.mem_total) { 
              displayRamUsage = `${formatBytes(currentStats.mem_used, 1)} / ${formatBytes(currentStats.mem_total, 1)}`;
         } else if ('mem_used' in currentStats) { // It's RealtimeNodeStats
-            // RealtimeNodeStats only provides used and total, calculate percentage for display consistency if needed
-            // or just show used memory if total isn't available/needed for header
-            // displayRamUsage = `${formatBytes(currentStats.mem_used, 1)}`; // Option 1: Just show used
-            // Option 2 (if total is needed but maybe 0): 
             const totalMem = 'mem_total' in currentStats ? currentStats.mem_total : 0;
             const ramPercent = totalMem > 0 ? ((currentStats.mem_used / totalMem) * 100).toFixed(1) : 'N/A';
-            displayRamUsage = `${ramPercent}% (${formatBytes(currentStats.mem_used, 1)})`; // Show percentage and absolute
+            displayRamUsage = `${ramPercent}% (${formatBytes(currentStats.mem_used, 1)})`;
         }
     } else if (!isLoading && error) {
         displayCpuUsage = t("common.error");

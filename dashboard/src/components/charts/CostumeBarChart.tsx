@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { useTranslation } from "react-i18next"
 import useDirDetection from "@/hooks/use-dir-detection"
-import { getUsage, Period, type NodeUsageStats } from "@/service/api"
+import { getUsage, Period, type NodeUsageStat, getNode } from "@/service/api"
 import { formatBytes } from "@/utils/formatByte"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TimeRangeSelector } from "@/components/common/TimeRangeSelector"
@@ -18,7 +18,7 @@ type DataPoint = {
 const chartConfig = {
     usage: {
         label: "Traffic Usage (GB)",
-        color: "hsl(var(--chart-1))",
+        color: "hsl(var(--primary))",
     },
 } satisfies ChartConfig
 
@@ -47,7 +47,7 @@ export function CostumeBarChart({ nodeId }: CostumeBarChartProps) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error | null>(null)
     const [totalUsage, setTotalUsage] = useState("0")
-    
+
     const { t } = useTranslation()
     const dir = useDirDetection()
 
@@ -79,8 +79,8 @@ export function CostumeBarChart({ nodeId }: CostumeBarChartProps) {
 
                 const response = await getUsage(params);
 
-                if (response && response.length > 0) {
-                    const formattedData = response.map((point: NodeUsageStats) => {
+                if (response && response.stats && response.stats.length > 0) {
+                    const formattedData = response.stats.map((point: NodeUsageStat) => {
                         const date = new Date(point.period_start)
                         let timeFormat;
                         // Format time based on determined period
@@ -100,7 +100,7 @@ export function CostumeBarChart({ nodeId }: CostumeBarChartProps) {
 
                     setChartData(formattedData)
 
-                    const total = response.reduce((sum: number, point: NodeUsageStats) => sum + point.uplink + point.downlink, 0)
+                    const total = response.stats.reduce((sum: number, point: NodeUsageStat) => sum + point.uplink + point.downlink, 0)
                     const formattedTotal = formatBytes(total, 2)
                     if (typeof formattedTotal === 'string') {
                         setTotalUsage(formattedTotal)

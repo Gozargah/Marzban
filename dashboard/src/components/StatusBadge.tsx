@@ -24,6 +24,7 @@ export const StatusBadge: FC<UserStatusProps> = ({ expiryDate = null, status: us
   const unixTime = convertDateFormat(expiryDate)
 
   const dateInfo = relativeExpiryDate(unixTime)
+  const StatusIcon = statusColors[userStatus]?.icon
 
   return (
     <div className="flex items-center gap-x-2">
@@ -31,14 +32,18 @@ export const StatusBadge: FC<UserStatusProps> = ({ expiryDate = null, status: us
         className={cn(
           'flex items-center justify-center rounded-full px-0.5 sm:px-2 py-0.5 w-fit max-w-[150px] gap-x-2 pointer-events-none',
           statusColors[userStatus]?.statusColor || 'bg-gray-400 text-white',
-          isMobile && 'py-0 h-4',
+          isMobile && 'py-2.5 h-6 px-1.5',
         )}
       >
         <div>
-          <span className={cn('capitalize text-nowrap font-medium text-xs', isMobile && 'text-[11.1px] leading-3')}>{userStatus && t(`status.${userStatus}`)}</span>
+          {isMobile ? (
+            StatusIcon && <StatusIcon className="w-4 h-4" />
+          ) : (
+            <span className="capitalize text-nowrap font-medium text-xs">{userStatus && t(`status.${userStatus}`)}</span>
+          )}
         </div>
       </Badge>
-      <div className={cn(!dateInfo.time && !dateInfo.status && 'hidden')}>
+      <div className={cn(!dateInfo.time && !dateInfo.status && 'hidden','hidden lg:block')}>
         <div className={cn(isMobile ? 'block' : 'hidden md:block')}>
           <span className={cn('inline-block text-xs font-normal ml-2 text-muted-foreground dark:text-muted-foreground', dir === 'rtl' && 'ml-0 mr-1')}>
             {t(dateInfo.status, { time: dateInfo.time })}
