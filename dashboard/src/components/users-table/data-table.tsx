@@ -10,6 +10,7 @@ import ActionButtons from '../ActionButtons'
 import { OnlineStatus } from '../OnlineStatus'
 import { StatusBadge } from '../StatusBadge'
 import UsageSliderCompact from '../UsageSliderCompact'
+import { useTranslation } from 'react-i18next'
 
 interface DataTableProps<TData extends UserResponse, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -24,6 +25,7 @@ export function DataTable<TData extends UserResponse, TValue>({
   isLoading = false, 
   isFetching = false 
 }: DataTableProps<TData, TValue>) {
+  const { t } = useTranslation()
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
   const table = useReactTable({
     data,
@@ -69,9 +71,9 @@ export function DataTable<TData extends UserResponse, TValue>({
           {isLoadingData ? (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24">
-                <div className="flex justify-center items-center">
-                  <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />
-                  <span className="ml-2">Loading...</span>
+                <div dir={dir} className="flex flex-col items-center justify-center gap-2">
+                  <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
+                  <span className="text-sm text-white">{t('loading')}</span>
                 </div>
               </TableCell>
             </TableRow>
@@ -79,7 +81,10 @@ export function DataTable<TData extends UserResponse, TValue>({
             table.getRowModel().rows.map(row => (
               <React.Fragment key={row.id}>
                 <TableRow
-                  className={expandedRow === row.id ? 'bg-accent/30' : 'hover:bg-accent/30'}
+                  className={cn(
+                    expandedRow === row.id ? 'bg-accent/30' : 'hover:bg-accent/30',
+                    'transition-colors duration-200'
+                  )}
                   data-state={row.getIsSelected() && 'selected'}
                 >
                   {row.getVisibleCells().map((cell, index) => (
@@ -112,8 +117,7 @@ export function DataTable<TData extends UserResponse, TValue>({
                   ))}
                 </TableRow>
                 {expandedRow === row.id && (
-                  <TableRow className=" md:hidden border-b hover:!bg-inherit">
-                    {/* Expanded content only visible on small screens */}
+                  <TableRow className="md:hidden border-b hover:!bg-inherit">
                     <TableCell colSpan={columns.length} className="p-4 text-sm">
                       <div className="flex flex-col gap-y-4">
                         <UsageSliderCompact
@@ -144,7 +148,7 @@ export function DataTable<TData extends UserResponse, TValue>({
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
+                <span className="text-muted-foreground">{t('noResults')}</span>
               </TableCell>
             </TableRow>
           )}

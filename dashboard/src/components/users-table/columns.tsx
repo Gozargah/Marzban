@@ -16,7 +16,7 @@ export const setupColumns = ({
 }: {
   t: (key: string) => string
   handleSort: (column: string) => void
-  filters: { sort: string }
+  filters: { sort: string; status?: string }
   handleStatusFilter: (value: any) => void
   dir: any
 }): ColumnDef<UserResponse>[] => [
@@ -57,9 +57,6 @@ export const setupColumns = ({
                 </span>
               )}
             </div>
-            {/* <div className="hidden md:block">
-              <OnlineStatus lastOnline={row.original.online_at} />
-            </div> */}
           </div>
         </div>
       )
@@ -69,7 +66,7 @@ export const setupColumns = ({
     accessorKey: 'status',
     header: () => (
       <div className="flex items-center">
-        <Select dir={dir || ''} onValueChange={handleStatusFilter}>
+        <Select dir={dir || ''} onValueChange={handleStatusFilter} value={filters.status || '0'}>
           <SelectTrigger icon={false} className="border-none p-0 ring-none px-1 max-w-28 w-fit">
             <span className="capitalize text-xs px-1">{t('usersTable.status')}</span>
           </SelectTrigger>
@@ -108,7 +105,11 @@ export const setupColumns = ({
       const expire = row.original.expire
       return (
         <div className="flex flex-col gap-y-2 py-1">
-          <StatusBadge expiryDate={expire} status={status} />
+          <StatusBadge 
+            expiryDate={expire} 
+            status={status} 
+            isSelected={filters.status === status}
+          />
         </div>
       )
     },

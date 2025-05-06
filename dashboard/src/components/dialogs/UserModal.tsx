@@ -200,12 +200,14 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
         data_limit: typeof values.data_limit === 'string' 
           ? parseFloat(values.data_limit) 
           : values.data_limit,
-        // Ensure on_hold_expire_duration is a number
-        on_hold_expire_duration: typeof values.on_hold_expire_duration === 'string' && values.on_hold_expire_duration !== ''
-          ? parseInt(values.on_hold_expire_duration, 10)
-          : values.on_hold_expire_duration,
-        // Ensure expire is properly formatted
-        expire: normalizeExpire(values.expire),
+        // Ensure on_hold_expire_duration is a number and valid for on_hold status
+        on_hold_expire_duration: status === 'on_hold' 
+          ? (typeof values.on_hold_expire_duration === 'string' && values.on_hold_expire_duration !== ''
+            ? parseInt(values.on_hold_expire_duration, 10)
+            : values.on_hold_expire_duration)
+          : undefined,
+        // Ensure expire is properly formatted and not set when on_hold
+        expire: status === 'on_hold' ? undefined : normalizeExpire(values.expire),
         // Ensure group_ids is an array
         group_ids: Array.isArray(values.group_ids) ? values.group_ids : [],
       };
@@ -380,13 +382,20 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
   useEffect(() => {
     // Log form state when dialog opens
     if (isDialogOpen) {
-      // Empty block - debugging code removed
+      // Initialize on_hold_expire_duration if status is on_hold
+      if (status === 'on_hold' && editingUser) {
+        const currentDuration = form.getValues('on_hold_expire_duration');
+        if (currentDuration === undefined || currentDuration === null || Number(currentDuration) === 0) {
+          // Only set default if there's no value at all
+          form.setValue('on_hold_expire_duration', 7);
+        }
+      }
     }
-  }, [isDialogOpen, form, editingUser, editingUserId]);
+  }, [isDialogOpen, form, editingUser, status]);
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-full overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <DialogHeader>
           <DialogTitle className={`${dir === 'rtl' ? 'text-right' : ''}`}>{editingUser ? t('userDialog.editUser', { defaultValue: 'Edit User' }) : t('createUser', { defaultValue: 'Create User' })}</DialogTitle>
         </DialogHeader>
