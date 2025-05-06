@@ -387,7 +387,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
         const currentDuration = form.getValues('on_hold_expire_duration');
         if (currentDuration === undefined || currentDuration === null || Number(currentDuration) === 0) {
           // Only set default if there's no value at all
-          form.setValue('on_hold_expire_duration', 7);
+          form.setValue('on_hold_expire_duration', 0);
         }
       }
     }

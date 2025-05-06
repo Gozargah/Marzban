@@ -6,6 +6,7 @@ import { OnlineBadge } from '../OnlineBadge'
 import { StatusBadge } from '../StatusBadge'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '../ui/select'
 import UsageSliderCompact from '../UsageSliderCompact'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 export const setupColumns = ({
   t,
@@ -103,11 +104,13 @@ export const setupColumns = ({
     cell: ({ row }) => {
       const status: UserResponse['status'] = row.getValue('status')
       const expire = row.original.expire
+      const isMobile = useIsMobile()
       return (
         <div className="flex flex-col gap-y-2 py-1">
           <StatusBadge 
-            expiryDate={expire} 
-            status={status} 
+            expiryDate={expire}
+            status={status}
+            isMobile={isMobile}
           />
         </div>
       )

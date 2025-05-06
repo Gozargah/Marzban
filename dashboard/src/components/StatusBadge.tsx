@@ -2,14 +2,14 @@ import { Badge } from '@/components/ui/badge'
 import { statusColors } from '@/constants/UserSettings'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { cn } from '@/lib/utils'
-import { Status as UserStatusType } from '@/types/User'
+import { UserStatus } from '@/service/api'
 import { relativeExpiryDate } from '@/utils/dateFormatter'
 import { FC } from 'react'
 import { useTranslation } from 'react-i18next'
 
 type UserStatusProps = {
   expiryDate?: string | number | null | undefined
-  status: UserStatusType
+  status: UserStatus
   extraText?: string | null
   isMobile?: boolean
 }
@@ -35,7 +35,7 @@ export const StatusBadge: FC<UserStatusProps> = ({ expiryDate = null, status: us
         )}
       >
         <div>
-          <span className={cn('capitalize font-medium text-xs', isMobile && 'text-[11.1px] leading-3')}>{userStatus && t(`status.${userStatus}`)}</span>
+          <span className={cn('capitalize text-nowrap font-medium text-xs', isMobile && 'text-[11.1px] leading-3')}>{userStatus && t(`status.${userStatus}`)}</span>
         </div>
       </Badge>
       <div className={cn(!dateInfo.time && !dateInfo.status && 'hidden')}>
