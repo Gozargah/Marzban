@@ -16,7 +16,17 @@ import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { relativeExpiryDate } from '@/utils/dateFormatter';
 import { Textarea } from '@/components/ui/textarea';
-import { useGetUserTemplates, useGetAllGroups, useRemoveUser, useResetUserDataUsage, useRevokeUserSubscription, useActiveNextPlan, useGetUsers } from '@/service/api';
+import { 
+  useGetUserTemplates, 
+  useGetAllGroups, 
+  useRemoveUser, 
+  useResetUserDataUsage, 
+  useRevokeUserSubscription, 
+  useActiveNextPlan, 
+  useGetUsers,
+  useCreateUser,
+  useModifyUser
+} from '@/service/api';
 import { Layers, Users } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Search } from 'lucide-react';
@@ -51,7 +61,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [nextPlanEnabled, setNextPlanEnabled] = useState(!!form.watch('next_plan'));
   
-  // Add query client for manual invalidation
+  // Query client for data refetching
   const queryClient = useQueryClient();
 
   // Get refetch function for users
@@ -61,10 +71,14 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
 
   // Function to refresh all user-related data
   const refreshUserData = () => {
-    // Invalidate all user queries to trigger a fresh fetch
-    queryClient.invalidateQueries({ queryKey: ['getUsers'] });
+    // Invalidate relevant queries to trigger fresh fetches
+    queryClient.invalidateQueries({ queryKey: ['/api/users'] });
     queryClient.invalidateQueries({ queryKey: ['getUsersUsage'] });
-    // Manually trigger a refetch as well
+    queryClient.invalidateQueries({ queryKey: ['getUserStats'] });
+    queryClient.invalidateQueries({ queryKey: ['getInboundStats'] });
+    queryClient.invalidateQueries({ queryKey: ['getUserOnlineStats'] });
+    
+    // Force immediate refetch
     refetchUsers();
     
     // Call the success callback if provided
@@ -73,11 +87,28 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
     }
   };
 
-  // Hooks for backend actions
+  // Hooks for backend actions with success handlers
   const removeUserMutation = useRemoveUser();
   const resetUsageMutation = useResetUserDataUsage();
   const revokeSubMutation = useRevokeUserSubscription();
   const activeNextPlanMutation = useActiveNextPlan();
+  const createUserMutation = useCreateUser({
+    mutation: {
+      onSuccess: () => refreshUserData()
+    }
+  });
+  const modifyUserMutation = useModifyUser({
+    mutation: {
+      onSuccess: () => refreshUserData()
+    }
+  });
+
+  useEffect(() => {
+    // When the dialog closes, reset errors
+    if (!isDialogOpen) {
+      form.clearErrors();
+    }
+  }, [isDialogOpen, form]);
 
   useEffect(() => {
     // Set form validation schema
@@ -129,102 +160,159 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
   // Helper to convert expire field to needed schema
   function normalizeExpire(expire: Date | string | number | null | undefined): string | number | null | undefined {
     if (expire === undefined || expire === null || expire === '') return undefined;
+    
+    // For number values, return directly (already a timestamp)
     if (typeof expire === 'number') return expire;
-    if (expire instanceof Date) return expire.toISOString();
-    if (typeof expire === 'string') {
-      const asNum = Number(expire);
-      if (!isNaN(asNum) && expire.trim() !== '') return asNum;
-      const asDate = new Date(expire);
-      if (!isNaN(asDate.getTime())) return asDate.toISOString();
-      return expire;
+    
+    // For Date objects, convert to Unix timestamp (seconds)
+    if (expire instanceof Date) {
+      return Math.floor(expire.getTime() / 1000);
     }
+    
+    // For strings
+    if (typeof expire === 'string') {
+      // Try as number first
+      const asNum = Number(expire);
+      if (!isNaN(asNum) && expire.trim() !== '') {
+        return asNum; // Return as number if it's a valid numeric string
+      }
+      
+      // Try as date string
+      const asDate = new Date(expire);
+      if (!isNaN(asDate.getTime())) {
+        return Math.floor(asDate.getTime() / 1000);
+      }
+    }
+    
+    // Return as is for any other case
     return expire;
   }
 
   const onSubmit = async (values: UseFormValues) => {
     try {
-      // Validate against schema before submitting
-      const validatedData = userCreateSchema.parse(values);
+      // Reset previous errors
+      form.clearErrors();
+      
+      // Convert data to the right format before validation
+      const preparedValues = {
+        ...values,
+        // Ensure data_limit is a number
+        data_limit: typeof values.data_limit === 'string' 
+          ? parseFloat(values.data_limit) 
+          : values.data_limit,
+        // Ensure on_hold_expire_duration is a number
+        on_hold_expire_duration: typeof values.on_hold_expire_duration === 'string' && values.on_hold_expire_duration !== ''
+          ? parseInt(values.on_hold_expire_duration, 10)
+          : values.on_hold_expire_duration,
+        // Ensure expire is properly formatted
+        expire: normalizeExpire(values.expire),
+        // Ensure group_ids is an array
+        group_ids: Array.isArray(values.group_ids) ? values.group_ids : [],
+      };
+      
+      // Validate against schema
+      const validatedData = userCreateSchema.parse(preparedValues);
 
       setLoading(true);
-      // Convert data_limit from GB to bytes and normalize expire
+      // Convert data_limit from GB to bytes
       const sendValues = {
         ...validatedData,
         data_limit: gbToBytes(validatedData.data_limit as any),
         expire: normalizeExpire(validatedData.expire),
       };
 
+      // Make API calls to the backend
       if (editingUser && editingUserId) {
+        await modifyUserMutation.mutateAsync({ 
+          username: sendValues.username,
+          data: sendValues
+        });
         toast({
           title: t('success', { defaultValue: 'Success' }),
           description: t('users.editSuccess', { name: values.username, defaultValue: 'User «{{name}}» has been updated successfully' })
         });
       } else {
+        await createUserMutation.mutateAsync({ 
+          data: sendValues
+        });
         toast({
           title: t('success', { defaultValue: 'Success' }),
           description: t('users.createSuccess', { name: values.username, defaultValue: 'User «{{name}}» has been created successfully' })
         });
       }
+      
       onOpenChange(false);
       form.reset();
-      // Refresh data after successful submission
-      refreshUserData();
     } catch (error: any) {
+      console.error('Form submission error:', error);
+      
+      // Reset all previous errors first
+      form.clearErrors();
+      
+      // Handle validation errors
       if (error?.errors) {
-        const errorMessages: string[] = [];
-        error.errors.forEach((err: any) => {
-          // Try to get a user-friendly field name
-          const fieldKey = `fields.${err.path[0]}`;
-          const fieldName = t(fieldKey, { defaultValue: t(`userDialog.${err.path[0]}`, { defaultValue: err.path[0] }) });
-
-          // Try to get a specific translation for the error code, fallback to generic
-          let message = t(`validation.${err.code}`, {
-            field: fieldName,
-            min: err.minimum,
-            max: err.maximum,
-            defaultValue: ''
-          });
-          if (!message || message === `validation.${err.code}`) {
-            // fallback to a generic error
-            message = t('validation.generic', { field: fieldName, defaultValue: `${fieldName} is invalid` });
+        // For zod validation errors
+        const fields = ['username', 'status', 'data_limit', 'expire', 'note', 
+                       'data_limit_reset_strategy', 'on_hold_expire_duration', 
+                       'on_hold_timeout', 'group_ids'];
+                       
+        // Show first error in a toast
+        if (error.errors.length > 0) {
+          const firstError = error.errors[0];
+          const fieldName = firstError.path[0] ? 
+            t(`userDialog.${firstError.path[0]}`, { defaultValue: firstError.path[0] }) : 
+            'field';
+            
+          // Set error on form if it's a recognized field
+          if (firstError.path[0] && fields.includes(firstError.path[0])) {
+            form.setError(firstError.path[0] as any, {
+              type: 'manual',
+              message: t(`validation.${firstError.code}`, {
+                field: fieldName,
+                defaultValue: `${fieldName} is invalid`
+              })
+            });
           }
-
-          form.setError(err.path[0], {
-            type: 'manual',
-            message
-          });
-          errorMessages.push(message);
-        });
-
-        // Show a toast with the first error message
-        if (errorMessages.length > 0) {
+          
           toast({
             title: t('error', { defaultValue: 'Validation Error' }),
-            description: errorMessages[0],
+            description: t(`validation.${firstError.code}`, {
+              field: fieldName,
+              defaultValue: `${fieldName} is invalid`
+            }),
             variant: 'destructive',
           });
         }
-      } else {
-        // Handle API or other errors
-        let errorMessage = error?.message || t('users.genericError', { defaultValue: 'An error occurred' });
-
-        // If error is an array (like from FastAPI), extract the first message
-        if (Array.isArray(error)) {
-          errorMessage = error[0]?.msg || error[0]?.message || JSON.stringify(error[0]) || errorMessage;
-        } else if (typeof error === 'object' && error !== null && error.detail) {
-          // FastAPI sometimes returns { detail: [...] }
-          if (Array.isArray(error.detail)) {
-            errorMessage = error.detail[0]?.msg || error.detail[0]?.message || JSON.stringify(error.detail[0]);
-          } else {
-            errorMessage = error.detail;
-          }
+      } else if (error?.response?.data) {
+        // Handle API errors
+        const apiError = error.response?.data;
+        let errorMessage = '';
+        
+        if (typeof apiError === 'string') {
+          errorMessage = apiError;
+        } else if (apiError?.detail) {
+          errorMessage = typeof apiError.detail === 'string' ? 
+            apiError.detail : 
+            (Array.isArray(apiError.detail) && apiError.detail.length > 0 ? 
+              apiError.detail[0].msg : 'Validation error');
+        } else if (apiError?.message) {
+          errorMessage = apiError.message;
+        } else {
+          errorMessage = 'An unexpected error occurred';
         }
-
-      toast({
-        title: t('error', { defaultValue: 'Error' }),
+        
+        toast({
+          title: t('error', { defaultValue: 'Error' }),
           description: errorMessage,
-        variant: 'destructive',
-      });
+          variant: 'destructive',
+        });
+      } else {
+        // Generic error handling
+        toast({
+          title: t('error', { defaultValue: 'Error' }),
+          description: error?.message || t('users.genericError', { defaultValue: 'An error occurred' }),
+          variant: 'destructive',
+        });
       }
     } finally {
       setLoading(false);
@@ -288,6 +376,13 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
       toast({ title: t('error'), description: error?.message || t('users.genericError'), variant: 'destructive' });
     }
   };
+
+  useEffect(() => {
+    // Log form state when dialog opens
+    if (isDialogOpen) {
+      // Empty block - debugging code removed
+    }
+  }, [isDialogOpen, form, editingUser, editingUserId]);
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
@@ -400,17 +495,49 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                   name="expire"
                   render={({ field }) => {
                     let expireUnix: number | null = null;
+                    let displayDate: Date | null = null;
+                    
+                    // Handle various formats of expire value
                     if (isDate(field.value)) {
                       expireUnix = Math.floor(field.value.getTime() / 1000);
-                    } else if (typeof field.value === 'string' || typeof field.value === 'number') {
+                      displayDate = field.value;
+                    } else if (typeof field.value === 'string') {
+                      // Try parsing as date string first
+                      if (field.value === '') {
+                        // Empty string - no date set
+                        expireUnix = null;
+                        displayDate = null;
+                      } else {
+                        const asNum = Number(field.value);
+                        if (!isNaN(asNum)) {
+                          // It's a numeric string (timestamp), convert to date
+                          const timestamp = asNum * 1000; // Convert seconds to ms
+                          const date = new Date(timestamp);
+                          if (date.getFullYear() > 1970) {
+                            displayDate = date;
+                            expireUnix = asNum;
+                          }
+                        } else {
+                          // Try as date string
                       const date = new Date(field.value);
-                      if (!isNaN(date.getTime())) {
+                          if (!isNaN(date.getTime()) && date.getFullYear() > 1970) {
                         expireUnix = Math.floor(date.getTime() / 1000);
-                      } else if (!isNaN(Number(field.value))) {
-                        expireUnix = Math.floor(Date.now() / 1000) + Number(field.value);
+                            displayDate = date;
+                          }
+                        }
+                      }
+                    } else if (typeof field.value === 'number') {
+                      // Direct timestamp in seconds
+                      const date = new Date(field.value * 1000);
+                      // Validate the date is reasonable (after 1970)
+                      if (date.getFullYear() > 1970) {
+                        displayDate = date;
+                        expireUnix = field.value;
                       }
                     }
+                  
                     const expireInfo = expireUnix ? relativeExpiryDate(expireUnix) : null;
+                    
                     return (
                       <FormItem className="flex flex-col flex-1">
                         <FormLabel>{t('userDialog.expiryDate', { defaultValue: 'Expire date' })}</FormLabel>
@@ -425,12 +552,10 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                 )}
                                 type="button"
                               >
-                                {field.value
-                                  ? isDate(field.value)
-                                    ? format(field.value, "yyyy/MM/dd")
-                                    : !isNaN(Number(field.value))
-                                      ? field.value
-                                      : format(new Date(field.value), "yyyy/MM/dd")
+                                {displayDate
+                                  ? format(displayDate, "yyyy/MM/dd")
+                                  : field.value && !isNaN(Number(field.value))
+                                    ? String(field.value)
                                   : <span>{t('users.expirePlaceholder', { defaultValue: 'Pick a date' })}</span>
                                 }
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -440,8 +565,16 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                           <PopoverContent className="w-auto p-0" align="start">
                             <Calendar
                               mode="single"
-                              selected={isDate(field.value) ? field.value : undefined}
-                              onSelect={date => field.onChange(date)}
+                              selected={displayDate || undefined}
+                              onSelect={date => {
+                                if (date) {
+                                  // Convert to seconds timestamp when saving to form
+                                  const timestamp = Math.floor(date.getTime() / 1000);
+                                  field.onChange(timestamp);
+                                } else {
+                                  field.onChange('');
+                                }
+                              }}
                               fromDate={new Date()}
                               initialFocus
                             />
@@ -680,34 +813,6 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                 </div>
               )}
             </div>
-            {/* Action buttons row above Cancel/Save */}
-            {editingUser && (
-              <div className="flex flex-wrap gap-2 justify-between items-center w-full mb-2">
-                <div className='flex gap-2 items-center'>
-                  <div className="flex gap-2">
-                    <Button type="button" variant="outline" onClick={handleResetUsage} disabled={resetUsageMutation.status === 'pending'}>
-                      {t('userDialog.resetUsage', { defaultValue: 'Reset Usage' })}
-                    </Button>
-                    <Button type="button" variant="outline" onClick={handleRevokeSub} disabled={revokeSubMutation.status === 'pending'}>
-                      {t('userDialog.revokeSubscription', { defaultValue: 'Revoke Subscription' })}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-            {/* Split the action buttons and Cancel/Create buttons */}
-            {editingUser && (
-              <div className='flex gap-2 items-center'>
-                <div className="flex gap-2">
-                  <Button type="button" className="px-2 py-0" variant="outline" title={t('delete', { defaultValue: 'Delete' })} onClick={() => setConfirmDeleteOpen(true)} disabled={removeUserMutation.status === 'pending'}>
-                    <Trash2 className="w-5 h-5" />
-                  </Button>
-                  <Button type="button" className="px-2 py-0" variant="outline" title={t('expiry', { defaultValue: 'Expiry' })} onClick={handleActiveNextPlan} disabled={activeNextPlanMutation.status === 'pending'}>
-                    <PieChart className="w-5 h-5" />
-                  </Button>
-                </div>
-              </div>
-            )}
             {/* Cancel/Create buttons - always visible */}
             <div className="flex justify-end gap-2 mt-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

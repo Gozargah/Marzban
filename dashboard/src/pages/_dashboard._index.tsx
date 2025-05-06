@@ -90,6 +90,7 @@ const Dashboard = () => {
       data_limit: undefined,
       expire: '',
       note: '',
+      group_ids: [],
     },
   })
 
