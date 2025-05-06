@@ -74,12 +74,12 @@ export const setupColumns = ({
             <span className="capitalize text-xs px-1">{t('usersTable.status')}</span>
           </SelectTrigger>
           <SelectContent dir="ltr">
-            <SelectItem className="py-4" value="0"></SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="on_hold">On Hold</SelectItem>
-            <SelectItem value="disabled">Disabled</SelectItem>
-            <SelectItem value="limited">Limited</SelectItem>
-            <SelectItem value="expired">Expired</SelectItem>
+            <SelectItem className="py-4" value="0">{t("allStatuses")}</SelectItem>
+            <SelectItem value="active">{t("hostsDialog.status.active")}</SelectItem>
+            <SelectItem value="on_hold">{t("hostsDialog.status.onHold")}</SelectItem>
+            <SelectItem value="disabled">{t("hostsDialog.status.disabled")}</SelectItem>
+            <SelectItem value="limited">{t("hostsDialog.status.limited")}</SelectItem>
+            <SelectItem value="expired">{t("hostsDialog.status.expired")}</SelectItem>
           </SelectContent>
         </Select>
         <div className="items-center hidden sm:flex">

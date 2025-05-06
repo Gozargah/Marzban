@@ -2,7 +2,10 @@
   "marzban": "مـرزبان",
   "active": "فعال",
   "platform": "پلتفرم",
+  "allStatuses": "همه وضعیت‌ها",
+  "status": "وضعیت",
   "statistics": "آمار",
+  "selectAll": "انتخاب همه",
   "statistics.realTimeStats": "آمار لحظه‌ای",
   "statistics.serverPerformance": "عملکرد سرور",
   "hosts": "هاست‌ها",
@@ -477,6 +480,7 @@
   "userDialog.note": "توضیحات",
   "userDialog.onHold": "در انتظار",
   "userDialog.onHoldExpireDuration": "مدت انقضا",
+  "userDialog.onHoldExpireDurationPlaceholder": "به عنوان مثال: 7",
   "userDialog.optional": "اختیاری",
   "userDialog.periodicUsageReset": "بازنشانی دوره‌ای مصرف",
   "userDialog.protocols": "پروتکل‌ها",
@@ -673,5 +677,36 @@
   "core.deleteFailed": "حذف هسته «{{name}}» با خطا مواجه شد",
   "core.deleteConfirm": "آیا مطمئن هستید که می‌خواهید هسته «{{name}}» را حذف کنید؟",
   "close": "بستن",
-  "copy": "کپی"
+  "copy": "کپی",
+  "validation": {
+    "generic": "{{field}} نامعتبر است",
+    "min": "{{field}} باید حداقل {{min}} باشد",
+    "max": "{{field}} باید حداکثر {{max}} باشد",
+    "required": "وارد کردن {{field}} الزامی است",
+    "invalid_type": "وارد کردن {{field}} الزامی است",
+    "too_small": "{{field}} خیلی کوتاه است",
+    "too_big": "{{field}} خیلی بلند است"
+  },
+  "fields": {
+    "username": "نام کاربری",
+    "data_limit": "سقف مصرف داده",
+    "expire": "تاریخ پایان",
+    "note": "توضیحات",
+    "on_hold_expire_duration": "مدت تعلیق",
+    "group_ids": "گروه‌ها"
+  },
+  "userDialog": {
+    "deleteSuccess": "کاربر «{{name}}» با موفقیت حذف شد.",
+    "resetUsageSuccess": "مصرف کاربر «{{name}}» بازنشانی شد.",
+    "revokeSubSuccess": "اشتراک کاربر «{{name}}» لغو شد.",
+    "activeNextPlanSuccess": "پلن بعدی برای کاربر «{{name}}» فعال شد.",
+    "deleteConfirmTitle": "حذف کاربر",
+    "deleteConfirm": "آیا مطمئن هستید که می‌خواهید کاربر «{{name}}» را حذف کنید؟",
+    "nextPlanTitle": "پلن بعدی",
+    "nextPlanTemplateId": "شناسه قالب",
+    "nextPlanDataLimit": "حجم داده (گیگابایت)",
+    "nextPlanExpire": "انقضا (روز)",
+    "nextPlanAddRemainingTraffic": "افزودن ترافیک باقی‌مانده",
+    "nextPlanFireOnEither": "فعال‌سازی با هرکدام"
+  }
 }

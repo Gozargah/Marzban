@@ -1,7 +1,10 @@
 {
   "active": "active",
   "platform": "Платформа",
+  "allStatuses": "Все статусы",
+  "status": "Статус",
   "statistics": "Статистика",
+  "selectAll": "Выбрать все",
   "statistics.realTimeStats": "Статистика в реальном времени",
   "statistics.serverPerformance": "Производительность сервера",
   "hosts": "Хосты",
@@ -303,6 +306,7 @@
   "userDialog.note": "Примечание",
   "userDialog.onHold": "В режиме ожидания",
   "userDialog.onHoldExpireDuration": "Продолжительность срока действия",
+  "userDialog.onHoldExpireDurationPlaceholder": "например, 7",
   "userDialog.optional": "необязательно",
   "userDialog.periodicUsageReset": "Период сброса трафика",
   "userDialog.protocols": "Протоколы",
@@ -573,7 +577,13 @@
       "504": "Тайм-аут шлюза",
       "505": "Версия HTTP не поддерживается"
     },
-    "selectReason": "Выбрать причину"
+    "selectReason": "Выбрать причину",
+    "nextPlanTitle": "Следующий план",
+    "nextPlanTemplateId": "ID шаблона",
+    "nextPlanDataLimit": "Лимит данных (ГБ)",
+    "nextPlanExpire": "Срок действия (дней)",
+    "nextPlanAddRemainingTraffic": "Добавить оставшийся трафик",
+    "nextPlanFireOnEither": "Сработать по любому условию"
   },
   "enable": "Включить",
   "host": {
@@ -694,5 +704,13 @@
   "createdAt": "Дата создания",
   "toggle": "Переключить статус",
   "close": "Закрыть",
-  "copy": "Копировать"
+  "copy": "Копировать",
+  "userDialog": {
+    "deleteSuccess": "Пользователь «{{name}}» был успешно удалён.",
+    "resetUsageSuccess": "Использование пользователя «{{name}}» было сброшено.",
+    "revokeSubSuccess": "Подписка пользователя «{{name}}» была отозвана.",
+    "activeNextPlanSuccess": "Следующий план для пользователя «{{name}}» был активирован.",
+    "deleteConfirmTitle": "Удалить пользователя",
+    "deleteConfirm": "Вы уверены, что хотите удалить пользователя «{{name}}»?"
+  }
 }

@@ -1,7 +1,10 @@
 {
   "active": "激活",
   "platform": "平台",
+  "allStatuses": "所有状态",
+  "status": "状态",
   "statistics": "统计",
+  "selectAll": "选择所有",
   "statistics.realTimeStats": "实时统计",
   "statistics.serverPerformance": "服务器性能",
   "hosts": "主机",
@@ -308,6 +311,7 @@
   "userDialog.note": "备注",
   "userDialog.onHold": "保持",
   "userDialog.onHoldExpireDuration": "过期时间",
+  "userDialog.onHoldExpireDurationPlaceholder": "例如：7",
   "userDialog.optional": "可以为空",
   "userDialog.periodicUsageReset": "定期重置流量",
   "userDialog.protocols": "协议",
@@ -701,5 +705,19 @@
   },
   "toggle": "切换状态",
   "close": "关闭",
-  "copy": "复制"
+  "copy": "复制",
+  "userDialog": {
+    "deleteSuccess": "用户「{{name}}」已成功删除。",
+    "resetUsageSuccess": "用户「{{name}}」的用量已重置。",
+    "revokeSubSuccess": "用户「{{name}}」的订阅已撤销。",
+    "activeNextPlanSuccess": "用户「{{name}}」的下一个套餐已激活。",
+    "deleteConfirmTitle": "删除用户",
+    "deleteConfirm": "您确定要删除用户「{{name}}」吗？",
+    "nextPlanTitle": "下一个套餐",
+    "nextPlanTemplateId": "模板ID",
+    "nextPlanDataLimit": "流量限制 (GB)",
+    "nextPlanExpire": "到期（天）",
+    "nextPlanAddRemainingTraffic": "添加剩余流量",
+    "nextPlanFireOnEither": "任一条件触发"
+  }
 }
