@@ -624,10 +624,20 @@
   "success": "موفق",
   "error": "خطا",
   "theme": {
-    "toggle": "تغییر تم",
-    "dark": "تاریک",
+    "title": "تم",
+    "description": "سفارشی‌سازی تم برنامه",
     "light": "روشن",
-    "system": "سیستم"
+    "dark": "تیره",
+    "system": "سیستم",
+    "selectTheme": "انتخاب تم",
+    "themeSaved": "تم با موفقیت ذخیره شد",
+    "mode": "حالت",
+    "color": "رنگ",
+    "radius": "گردی لبه‌ها",
+    "zinc": "خاکستری",
+    "rose": "صورتی",
+    "blue": "آبی",
+    "green": "سبز"
   },
   "coreConfigModal": {
     "addConfig": "افزودن پیکربندی هسته",

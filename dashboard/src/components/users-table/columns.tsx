@@ -108,7 +108,6 @@ export const setupColumns = ({
           <StatusBadge 
             expiryDate={expire} 
             status={status} 
-            isSelected={filters.status === status}
           />
         </div>
       )
@@ -159,6 +158,7 @@ export const setupColumns = ({
   },
   {
     id: 'chevron',
+    header: () => <div className="w-10" />,
     cell: () => <div className="flex flex-wrap justify-between"></div>,
   },
 ]

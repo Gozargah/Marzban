@@ -657,10 +657,20 @@
     "noCoreConfig": "无核心配置"
   },
   "theme": {
-    "toggle": "切换主题",
-    "dark": "暗色",
-    "light": "亮色",
-    "system": "系统"
+    "title": "主题",
+    "description": "自定义应用程序主题",
+    "light": "浅色",
+    "dark": "深色",
+    "system": "系统",
+    "selectTheme": "选择主题",
+    "themeSaved": "主题保存成功",
+    "mode": "模式",
+    "color": "颜色",
+    "radius": "圆角",
+    "zinc": "锌灰",
+    "rose": "玫瑰",
+    "blue": "蓝色",
+    "green": "绿色"
   },
   "coreConfigModal": {
     "addConfig": "添加核心配置",

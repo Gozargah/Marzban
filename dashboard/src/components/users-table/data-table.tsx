@@ -19,11 +19,11 @@ interface DataTableProps<TData extends UserResponse, TValue> {
   isFetching?: boolean
 }
 
-export function DataTable<TData extends UserResponse, TValue>({ 
-  columns, 
-  data, 
-  isLoading = false, 
-  isFetching = false 
+export function DataTable<TData extends UserResponse, TValue>({
+  columns,
+  data,
+  isLoading = false,
+  isFetching = false
 }: DataTableProps<TData, TValue>) {
   const { t } = useTranslation()
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
@@ -39,9 +39,9 @@ export function DataTable<TData extends UserResponse, TValue>({
   }
 
   const dir = useDirDetection()
-  
+
   const isLoadingData = isLoading || isFetching
-  
+
   return (
     <div className="rounded-md border">
       <Table dir={cn(isRTL && 'rtl')}>
@@ -81,34 +81,27 @@ export function DataTable<TData extends UserResponse, TValue>({
             table.getRowModel().rows.map(row => (
               <React.Fragment key={row.id}>
                 <TableRow
-                  className={cn(
-                    expandedRow === row.id ? 'bg-accent/30' : 'hover:bg-accent/30',
-                    'transition-colors duration-200'
-                  )}
+                  className={cn('cursor-pointer md:cursor-default border-b hover:!bg-inherit md:hover:!bg-muted/50', expandedRow === row.id && 'border-transparent')}
+                  onClick={() => window.innerWidth < 768 && handleRowToggle(row.id)} // Only toggle on small screens
                   data-state={row.getIsSelected() && 'selected'}
                 >
                   {row.getVisibleCells().map((cell, index) => (
                     <TableCell
                       key={cell.id}
                       className={cn(
-                        index === row.getVisibleCells().length - 1 && 'relative p-0 md:p-0',
-                        index === 1 && 'max-w-[70px]',
-                        index === 2 && 'hidden sm:table-cell',
-                        index === 3 && 'hidden md:table-cell',
+                        'py-2 text-sm',
+                        index <= 1 && 'md:py-2 max-w-[calc(100vw-50px-32px-100px-48px)]',
+                        index === 2 && 'w-[120px]',
+                        index === 3 && 'w-8',
+                        index === 3 && dir === 'rtl' ? 'pr-0' : index === 3 && dir === 'ltr' && 'pl-0',
+                        index >= 4 && 'hidden md:table-cell',
+                        cell.column.id === 'chevron' && 'table-cell md:hidden',
+                        dir === 'rtl' ? 'pl-3' : 'pr-3',
                       )}
                     >
                       {cell.column.id === 'chevron' ? (
-                        <div
-                          className={`absolute inset-0 flex items-center justify-center cursor-pointer`}
-                          onClick={() => handleRowToggle(row.id)}
-                        >
-                          <ChevronDown
-                            className={`
-                            w-5 h-5 text-muted-foreground
-                            transition-transform duration-300
-                            ${expandedRow === row.id ? 'rotate-180' : ''}
-                          `}
-                          />
+                        <div className="flex items-center justify-center cursor-pointer" onClick={() => handleRowToggle(row.id)}>
+                          <ChevronDown className={cn('h-4 w-4 transition-transform duration-300', expandedRow === row.id && 'rotate-180')} />
                         </div>
                       ) : (
                         flexRender(cell.column.columnDef.cell, cell.getContext())

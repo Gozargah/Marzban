@@ -653,10 +653,20 @@
     "statusChecking": "Checking..."
   },
   "theme": {
-    "toggle": "Toggle theme",
-    "dark": "Dark",
+    "title": "Theme",
+    "description": "Customize your application theme",
     "light": "Light",
-    "system": "System"
+    "dark": "Dark",
+    "system": "System",
+    "selectTheme": "Select theme",
+    "themeSaved": "Theme saved successfully",
+    "mode": "Mode",
+    "color": "Color",
+    "radius": "Border Radius",
+    "zinc": "Zinc",
+    "rose": "Rose",
+    "blue": "Blue",
+    "green": "Green"
   },
   "coreConfigModal": {
     "addConfig": "Add Core Configuration",
