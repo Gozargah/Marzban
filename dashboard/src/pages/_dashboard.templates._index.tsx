@@ -32,21 +32,27 @@ export default function UserTemplates() {
     })
     const handleEdit = (userTemplate: UserTemplateResponse) => {
         setEditingUserTemplate(userTemplate)
-        form.reset({
-            name: userTemplate.name || undefined,
-            status: userTemplate.status || undefined,
-            data_limit: userTemplate.data_limit || undefined,
-            expire_duration: userTemplate.expire_duration || undefined,
-            method: userTemplate.extra_settings?.method || undefined,
-            flow: userTemplate.extra_settings?.flow || undefined,
-            groups: userTemplate.group_ids || undefined,
-            username_prefix: userTemplate.username_prefix || undefined,
-            username_suffix: userTemplate.username_suffix || undefined,
-            resetUsages: userTemplate.reset_usages || undefined,
-            data_limit_reset_strategy: userTemplate.data_limit_reset_strategy || undefined,
-        })
+            form.reset({
+                name: userTemplate.name || undefined,
+                status: userTemplate.status || undefined,
+                data_limit: userTemplate.data_limit || undefined,
+                expire_duration: userTemplate.expire_duration || undefined,
+                method: userTemplate.extra_settings?.method || undefined,
+                flow: userTemplate.extra_settings?.flow || undefined,
+                groups: userTemplate.group_ids || undefined,
+                username_prefix: userTemplate.username_prefix || undefined,
+                username_suffix: userTemplate.username_suffix || undefined,
+                resetUsages: userTemplate.reset_usages || undefined,
+                on_hold_timeout:
+                    typeof userTemplate.on_hold_timeout === "number"
+                        ? userTemplate.on_hold_timeout
+                        : undefined,
+                data_limit_reset_strategy: userTemplate.data_limit_reset_strategy || undefined,
+            })
+
         setIsDialogOpen(true)
     }
+
     return (
         <div className="flex flex-col gap-2 w-full items-start">
             <PageHeader

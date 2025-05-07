@@ -37,7 +37,7 @@ export const userTemplateFormSchema = z.object({
     flow: z.enum([XTLSFlows[""], XTLSFlows["xtls-rprx-vision"]]).optional(),
     groups: z.array(z.number()).min(1, 'At least one group is required'),
     resetUsages: z.boolean().optional().default(false),
-    data_limit_reset_strategy: z.enum([UserDataLimitResetStrategy["month"], UserDataLimitResetStrategy["day"], UserDataLimitResetStrategy["week"], UserDataLimitResetStrategy["no_reset"], UserDataLimitResetStrategy["week"],UserDataLimitResetStrategy["year"]]).optional(),
+    data_limit_reset_strategy: z.enum([UserDataLimitResetStrategy["month"], UserDataLimitResetStrategy["day"], UserDataLimitResetStrategy["week"], UserDataLimitResetStrategy["no_reset"], UserDataLimitResetStrategy["week"], UserDataLimitResetStrategy["year"]]).optional(),
 })
 
 export type UserTemplatesFromValue = z.infer<typeof userTemplateFormSchema>
@@ -64,6 +64,7 @@ export default function UserTemplateModal({
     const [filteredGroups, setFilteredGroups] = useState<GroupResponse[]>();
     const {data} = useGetAllGroups({})
     const [checkGroups, setCheckGroups] = useState(false)
+    const [timeType, setTimeType] = useState<"seconds" | "hours" | "days">("seconds")
     const navigate = useNavigate()
 
     const checkGroupsExist = useCallback(() => {
@@ -237,7 +238,7 @@ export default function UserTemplateModal({
                                                         onChange={(e) => {
                                                             const value = parseInt(e.target.value);
                                                             // Convert GB to bytes (1 GB = 1024 * 1024 * 1024 bytes)
-                                                            field.onChange(value ? value * 1024 * 1024 * 1024 : undefined);
+                                                            field.onChange(value ? value * 1024 * 1024 * 1024 : 0);
                                                         }}
                                                         value={field.value ? Math.round(field.value / (1024 * 1024 * 1024)) : ''}
                                                         className="pr-10"
@@ -314,8 +315,7 @@ export default function UserTemplateModal({
                                                         {...field}
                                                         onChange={(e) => {
                                                             const value = parseInt(e.target.value);
-                                                            // Convert days to seconds (1 day = 24 * 60 * 60 seconds)
-                                                            field.onChange(value ? value * 24 * 60 * 60 : undefined);
+                                                            field.onChange(value ? value * 24 * 60 * 60 : 0);
                                                         }}
                                                         value={field.value ? Math.round(field.value / (24 * 60 * 60)) : ''}
                                                         className="pr-14"
@@ -331,39 +331,56 @@ export default function UserTemplateModal({
                                 <FormField
                                     control={form.control}
                                     name="on_hold_timeout"
-                                    render={({field}) => (
-                                        <FormItem className='flex-1'>
-                                            <FormLabel>{t('templates.onHoldTimeout')}</FormLabel>
-                                            <FormControl>
-                                                <div
-                                                    className="rounded-md border border-border flex flex-row overflow-hidden">
-                                                    <div className="flex-[3]">
-                                                        <Input
-                                                            type="number"
-                                                            placeholder={t('templates.onHoldTimeout')}
-                                                            {...field}
-                                                            onChange={(e) => field.onChange(parseInt(e.target.value))}
-                                                            className="flex-[3] rounded-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                                                        />
+                                    render={({field}) => {
+                                        const changeValue = (value: number | undefined) => {
+                                            if (!value)
+                                                return value
+                                            switch (timeType) {
+                                                case "seconds":
+                                                    return value;
+                                                case "hours":
+                                                    return Math.round(value / 60 / 60)
+                                                case "days":
+                                                    return Math.round(value / 60 / 60 / 24)
+                                                default:
+                                                    return value;
+                                            }
+                                        }
+                                        return (
+                                            <FormItem className='flex-1'>
+                                                <FormLabel>{t('templates.onHoldTimeout')}</FormLabel>
+                                                <FormControl>
+                                                    <div
+                                                        className="rounded-md border border-border flex flex-row overflow-hidden">
+                                                        <div className="flex-[3]">
+                                                            <Input
+                                                                type="number"
+                                                                placeholder={t('templates.onHoldTimeout')}
+                                                                {...field}
+                                                                onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                                                value={changeValue(field.value)}
+                                                                className="flex-[3] rounded-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                                                            />
+                                                        </div>
+                                                        <div className="flex-[2]">
+                                                            <Select  value={"seconds"} onValueChange={(v) => setTimeType(v as any)}>
+                                                                <SelectTrigger
+                                                                    className="w-full rounded-none border-0 focus:ring-0 focus:ring-offset-0">
+                                                                    <SelectValue placeholder="Second"/>
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value="days">Days</SelectItem>
+                                                                    <SelectItem value="hours">Hours</SelectItem>
+                                                                    <SelectItem value="seconds">Seconds</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex-[2]">
-                                                        <Select>
-                                                            <SelectTrigger
-                                                                className="w-full rounded-none border-0 focus:ring-0 focus:ring-offset-0">
-                                                                <SelectValue placeholder="Second"/>
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                <SelectItem value="days">Days</SelectItem>
-                                                                <SelectItem value="hours">Hours</SelectItem>
-                                                                <SelectItem value="seconds">Seconds</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-                                                </div>
-                                            </FormControl>
-                                            <FormMessage/>
-                                        </FormItem>
-                                    )}
+                                                </FormControl>
+                                                <FormMessage/>
+                                            </FormItem>
+                                        )
+                                    }}
                                 />
                             </div>
                             <div className="flex-1 space-y-4 w-full">

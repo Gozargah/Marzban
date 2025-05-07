@@ -7,7 +7,7 @@ import {
     DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import {Button} from "../ui/button";
-import {Copy, EllipsisVertical, Pen, Trash2} from "lucide-react";
+import {Copy, EllipsisVertical, Infinity, Pen, Trash2} from "lucide-react";
 import {useTranslation} from "react-i18next";
 import useDirDetection from "@/hooks/use-dir-detection";
 import {
@@ -144,16 +144,15 @@ const UserTemplate = ({template, onEdit}: {
             </CardTitle>
             <CardDescription>
                 <div className="flex flex-col gap-y-1 mt-2">
-                    <p>
-                        {t("userDialog.dataLimit")}: <span>{formatBytes(template.data_limit ? template.data_limit : 0)}</span>
+                    <p className={"flex items-center gap-x-1"}>
+                        {t("userDialog.dataLimit")}: <span>{(!template.data_limit || template.data_limit === 0) ?<Infinity className="w-4 h-4"></Infinity> : formatBytes(template.data_limit ? template.data_limit : 0) }</span>
                     </p>
-                    <p>
-                        {t("Expire")}: <span>{template.expire_duration}</span>
+                    <p className={"flex items-center gap-x-1"}>
+                        {t("Expire")}: <span>{(!template.expire_duration || template.expire_duration===0 ? <Infinity className="w-4 h-4"></Infinity> : template.expire_duration)}</span>
                     </p>
                 </div>
             </CardDescription>
 
-            {/* Include the Delete AlertDialog component */}
             <div>
                 <DeleteAlertDialog
                     userTemplate={template}
