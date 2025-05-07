@@ -135,7 +135,11 @@
     "groups": "Группы",
     "userDataLimitStrategy": "Стратегия сброса лимита данных",
     "resetUsage": "Сброс использования",
-    "groupsExistingWarning": "Вы еще не добавили ни одной <a>группы</a>."
+    "groupsExistingWarning": "Вы еще не добавили ни одной <a>группы</a>.",
+    "deleteSuccess": "Шаблон {{name}} успешно удалён",
+    "deleteFailed": "Не удалось удалить шаблон {{name}}",
+    "deleteUserTemplateTitle": "Удалить пользовательский шаблон",
+    "deleteUserTemplatePrompt": "Вы уверены, что хотите удалить шаблон <b>{{name}}</b>?"
   },
   "core.configuration": "Конфигурация",
   "core.generalErrorMessage": "Что-то пошло не так, пожалуйста, проверьте конфигурацию",

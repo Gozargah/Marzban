@@ -101,7 +101,11 @@
     "groups": "گروه‌ها",
     "userDataLimitStrategy": "استراتژی بازنشانی محدودیت داده‌ها",
     "resetUsage": "بازنشانی استفاده",
-    "groupsExistingWarning": "شما هنوز هیچ <a>گروهی</a> اضافه نکرده‌اید."
+    "groupsExistingWarning": "شما هنوز هیچ <a>گروهی</a> اضافه نکرده‌اید.",
+    "deleteSuccess": "قالب {{name}} با موفقیت حذف شد",
+    "deleteFailed": "حذف قالب {{name}} ناموفق بود",
+    "deleteUserTemplateTitle": "حذف قالب کاربر",
+    "deleteUserTemplatePrompt": "آیا مطمئن هستید که می‌خواهید قالب <b>{{name}}</b> را حذف کنید؟"
   },
   "core.configuration": "پیکربندی",
   "core.generalErrorMessage": "مشکلی پیش آمده، لطفا پیکربندی را بررسی کنید",

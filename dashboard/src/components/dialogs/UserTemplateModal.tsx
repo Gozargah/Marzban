@@ -50,7 +50,6 @@ interface UserTemplatesModalprops {
     editingUserTemplateId?: number
 }
 
-
 export default function UserTemplateModal({
                                               isDialogOpen,
                                               onOpenChange,

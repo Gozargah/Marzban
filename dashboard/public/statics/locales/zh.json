@@ -136,7 +136,11 @@
     "groups": "分组",
     "userDataLimitStrategy": "数据限制重置策略",
     "resetUsage": "重置使用量",
-    "groupsExistingWarning": "您尚未添加任何<a>分组</a>。"
+    "groupsExistingWarning": "您尚未添加任何<a>分组</a>。",
+    "deleteSuccess": "模板 {{name}} 已成功删除",
+    "deleteFailed": "删除模板 {{name}} 失败",
+    "deleteUserTemplateTitle": "删除用户模板",
+    "deleteUserTemplatePrompt": "您确定要删除模板 <b>{{name}}</b> 吗？"
   },
   "core.configuration": "配置",
   "core.generalErrorMessage": "配置有误, 请检查",

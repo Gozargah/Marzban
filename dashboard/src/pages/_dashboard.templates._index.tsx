@@ -15,19 +15,6 @@ import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 
-const initialDefaultValues: Partial<UserTemplatesFromValue> = {
-    name: '',
-    status: 'active',
-    username_prefix: '',
-    username_suffix: '',
-    data_limit: 0,
-    expire_duration: 0,
-    method: undefined,
-    flow: undefined,
-    on_hold_timeout: undefined,
-    groups: [1]
-}
-
 export default function UserTemplates() {
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [editingUserTemplate, setEditingUserTemplate] = useState<UserTemplateResponse | null>(null)
@@ -85,7 +72,7 @@ export default function UserTemplates() {
                 onOpenChange={(open) => {
                     if (!open) {
                         setEditingUserTemplate(null)
-                        form.reset(initialDefaultValues)
+                        form.reset(undefined)
                     }
                     setIsDialogOpen(open)
                 }}

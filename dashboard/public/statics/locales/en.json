@@ -139,7 +139,11 @@
     "groups": "Groups",
     "userDataLimitStrategy": "Data Limit Reset Strategy",
     "resetUsage": "Reset Usage",
-    "groupsExistingWarning": "You dont add any <a>Groups</a> yet."
+    "groupsExistingWarning": "You dont add any <a>Groups</a> yet.",
+    "deleteSuccess": "Template {{name}} removed successfully",
+    "deleteFailed": "Failed to delete template {{name}}",
+    "deleteUserTemplateTitle": "Delete User Template",
+    "deleteUserTemplatePrompt": "Are you sure you want to delete the <b>{{name}}</b> template?"
   },
   "core.configuration": "Configuration",
   "core.generalErrorMessage": "Something went wrong, please check the configuration",
