@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import useDirDetection from '@/hooks/use-dir-detection'
+import { useTranslation } from 'react-i18next'
 
 const SIDEBAR_COOKIE_NAME = 'sidebar:state'
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -238,27 +239,39 @@ const SidebarTrigger = React.forwardRef<React.ElementRef<typeof Button>, React.C
 SidebarTrigger.displayName = 'SidebarTrigger'
 
 const SidebarRail = React.forwardRef<HTMLButtonElement, React.ComponentProps<'button'>>(({ className, ...props }, ref) => {
-  const { toggleSidebar } = useSidebar()
-
+  const { toggleSidebar, state } = useSidebar()
+  const { t } = useTranslation()
   return (
-    <button
-      ref={ref}
-      data-sidebar="rail"
-      aria-label="Toggle Sidebar"
-      tabIndex={-1}
-      onClick={toggleSidebar}
-      title="Toggle Sidebar"
-      className={cn(
-        'absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex',
-        '[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize',
-        '[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize',
-        'group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full group-data-[collapsible=offcanvas]:hover:bg-sidebar',
-        '[[data-side=left][data-collapsible=offcanvas]_&]:-right-2',
-        '[[data-side=right][data-collapsible=offcanvas]_&]:-left-2',
-        className,
-      )}
-      {...props}
-    />
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          ref={ref}
+          data-sidebar="rail"
+          aria-label="Toggle Sidebar"
+          tabIndex={0}
+          onClick={toggleSidebar}
+          title="Toggle Sidebar"
+          className={cn(
+            'absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex',
+            '[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize',
+            '[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize',
+            'group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full group-data-[collapsible=offcanvas]:hover:bg-sidebar',
+            '[[data-side=left][data-collapsible=offcanvas]_&]:-right-2',
+            '[[data-side=right][data-collapsible=offcanvas]_&]:-left-2',
+            'hover:after:w-[4px] hover:after:bg-sidebar-accent',
+            'after:transition-all after:duration-200',
+            'hover:bg-sidebar/5',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring',
+            'active:bg-sidebar/10',
+            className,
+          )}
+          {...props}
+        />
+      </TooltipTrigger>
+      <TooltipContent className='font-semibold' side={state === 'collapsed' ? 'right' : 'left'} align="center">
+        {state === 'collapsed' ? t("sidebar.expand") : t("sidebar.collapse")}
+      </TooltipContent>
+    </Tooltip>
   )
 })
 SidebarRail.displayName = 'SidebarRail'
@@ -402,13 +415,16 @@ const SidebarMenuButton = React.forwardRef<
   if (typeof tooltip === 'string') {
     tooltip = {
       children: tooltip,
+      side: state === 'collapsed' ? 'right' : 'left',
+      align: 'center',
+      sideOffset: 5,
     }
   }
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>{button}</TooltipTrigger>
-      <TooltipContent side="right" align="center" hidden={state !== 'collapsed' || isMobile} {...tooltip} />
+      <TooltipContent hidden={state !== 'collapsed' || isMobile} {...tooltip} />
     </Tooltip>
   )
 })

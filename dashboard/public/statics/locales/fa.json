@@ -719,5 +719,7 @@
     "nextPlanExpire": "انقضا (روز)",
     "nextPlanAddRemainingTraffic": "افزودن ترافیک باقی‌مانده",
     "nextPlanFireOnEither": "فعال‌سازی با هرکدام"
-  }
+  },
+  "sidebar.expand": "باز کردن منو",
+  "sidebar.collapse": "بستن منو"
 }

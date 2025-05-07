@@ -722,5 +722,7 @@
     "activeNextPlanSuccess": "Следующий план для пользователя «{{name}}» был активирован.",
     "deleteConfirmTitle": "Удалить пользователя",
     "deleteConfirm": "Вы уверены, что хотите удалить пользователя «{{name}}»?"
-  }
+  },
+  "sidebar.expand": "Развернуть меню",
+  "sidebar.collapse": "Свернуть меню"
 }

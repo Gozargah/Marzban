@@ -15,10 +15,11 @@ import {
 } from "@/components/ui/chart"
 import { useTranslation } from "react-i18next";
 import useDirDetection from "@/hooks/use-dir-detection";
-import { getSystemStats, SystemStats, Period, getNodeStatsPeriodic, NodeStats, realtimeNodeStats, RealtimeNodeStats } from "@/service/api"
+import { getSystemStats, SystemStats, Period, getNodeStatsPeriodic, NodeStats, NodeRealtimeStats } from "@/service/api"
 import { formatBytes } from "@/utils/formatByte"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TimeRangeSelector } from "@/components/common/TimeRangeSelector";
+import { cn } from "@/lib/utils";
 
 type DataPoint = {
     time: string
@@ -64,9 +65,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                 <div className="mt-1 space-y-1">
                     {payload.map((entry: any, index: number) => (
                         <div key={index} className="flex items-center gap-2">
-                            <div 
-                                className="w-3 h-3 rounded-full" 
-                                style={{ 
+                            <div
+                                className="w-3 h-3 rounded-full"
+                                style={{
                                     backgroundColor: entry.color,
                                     boxShadow: `0 0 8px ${entry.color}`,
                                 }}
@@ -82,10 +83,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return null;
 };
 
-// Define props interface
 interface AreaCostumeChartProps {
     nodeId?: number;
     currentStats?: SystemStats | NodeRealtimeStats | null;
+    realtimeStats?: SystemStats | NodeRealtimeStats;
 }
 
 // Helper function to determine period
@@ -102,72 +103,81 @@ const getPeriodFromDateRange = (range?: DateRange): Period => {
     return Period.day; // More than 2 days, use daily data
 };
 
-export function AreaCostumeChart({ nodeId, currentStats }: AreaCostumeChartProps) {
+export function AreaCostumeChart({ nodeId, currentStats, realtimeStats }: AreaCostumeChartProps) {
     const { t } = useTranslation();
     const dir = useDirDetection();
     const [statsHistory, setStatsHistory] = useState<DataPoint[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
     const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
-    
-    // Effect for Master Real-time Stats (nodeId is undefined)
-    useEffect(() => {
-        if (nodeId !== undefined) return; // Only run for master
 
-        const fetchMasterSystemStats = async () => {
-            try {
-                if (!currentStats) return;
-                
-                const now = new Date();
-                const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-                
-                setStatsHistory(prev => {
-                    const newHistory = [...prev, {
-                        time: timeStr,
-                        cpu: currentStats.cpu_usage,
-                        ram: parseFloat(((Number(currentStats.mem_used) / Number(currentStats.mem_total)) * 100).toFixed(1))
-                    }];
-                    
-                    // Limit history length (e.g., last 60 points for 5-second interval = 5 minutes)
-                    const MAX_HISTORY = 60;
-                    if (newHistory.length > MAX_HISTORY) {
-                        return newHistory.slice(newHistory.length - MAX_HISTORY);
-                    }
-                    return newHistory;
-                });
-                
-                setIsLoading(false);
-            } catch (err) {
-                setError(err as Error);
-                setIsLoading(false);
-                console.error("Error processing master system stats:", err);
+    // Clear stats when node changes
+    useEffect(() => {
+        setStatsHistory([]);
+        setDateRange(undefined);
+        console.log("nodeId", nodeId);
+    }, [nodeId]);
+
+    // Effect for Real-time Stats
+    useEffect(() => {
+        if (!realtimeStats) return;
+
+        try {
+            const now = new Date();
+            const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+
+            let cpuUsage = 0;
+            let ramUsage = 0;
+
+            if ('cpu_usage' in realtimeStats) {
+                // Master server stats
+                cpuUsage = realtimeStats.cpu_usage;
+                ramUsage = parseFloat(((Number(realtimeStats.mem_used) / Number(realtimeStats.mem_total)) * 100).toFixed(1));
+            } else {
+                // Node stats
+                const nodeStats = realtimeStats as NodeRealtimeStats;
+                cpuUsage = nodeStats.cpu_usage;
+                ramUsage = parseFloat(((Number(nodeStats.mem_used) / Number(nodeStats.mem_total)) * 100).toFixed(1));
             }
-        };
 
-        fetchMasterSystemStats();
+            setStatsHistory(prev => {
+                const newHistory = [...prev, {
+                    time: timeStr,
+                    cpu: cpuUsage,
+                    ram: ramUsage
+                }];
 
-    }, [nodeId, currentStats]); // Rerun if nodeId or currentStats changes
+                // Keep last 60 points (5 minutes with 5-second interval)
+                const MAX_HISTORY = 60;
+                if (newHistory.length > MAX_HISTORY) {
+                    return newHistory.slice(newHistory.length - MAX_HISTORY);
+                }
+                return newHistory;
+            });
 
-    // Effect for Node Historical Stats (nodeId is defined)
+            setIsLoading(false);
+        } catch (err) {
+            setError(err as Error);
+            setIsLoading(false);
+            console.error("Error processing real-time stats:", err);
+        }
+    }, [realtimeStats]);
+
+    // Effect for Historical Stats
     useEffect(() => {
-        if (nodeId === undefined) return; // Only run for nodes
+        if (nodeId === undefined || !dateRange?.from || !dateRange?.to) return;
 
         const fetchNodeHistoricalStats = async () => {
-            if (!dateRange?.from || !dateRange?.to) {
-                setStatsHistory([]); // Clear history if no range selected
-                return; 
-            }
-
             setIsLoading(true);
             setError(null);
             try {
                 const period = getPeriodFromDateRange(dateRange);
                 const data = await getNodeStatsPeriodic(nodeId, {
-                    start: dateRange.from.toISOString(),
-                    end: dateRange.to.toISOString(),
+                    start: dateRange.from!.toISOString(),
+                    end: dateRange.to!.toISOString(),
                     period: period
                 });
-                
+
                 const statsArray = data?.stats;
 
                 if (Array.isArray(statsArray)) {
@@ -176,7 +186,7 @@ export function AreaCostumeChart({ nodeId, currentStats }: AreaCostumeChartProps
                         let timeFormat;
                         if (period === Period.hour) {
                             timeFormat = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-                        } else { // Period.day
+                        } else {
                             timeFormat = `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`;
                         }
                         return {
@@ -188,36 +198,36 @@ export function AreaCostumeChart({ nodeId, currentStats }: AreaCostumeChartProps
                     setStatsHistory(formattedData);
                 } else {
                     console.error("Invalid historical stats format received:", data);
-                    setStatsHistory([]); // Clear history if format is wrong
+                    setStatsHistory([]);
                     setError(new Error("Invalid data format received"));
                 }
-                
+
             } catch (err) {
                 setError(err as Error);
                 console.error(`Error fetching historical stats for node ${nodeId}:`, err);
-                setStatsHistory([]); // Clear history on error
+                setStatsHistory([]);
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchNodeHistoricalStats();
-
-    }, [nodeId, dateRange]); // Rerun when nodeId or dateRange changes
+    }, [nodeId, dateRange]);
 
     // --- Header Display Logic --- 
     let displayCpuUsage: string | JSX.Element = <Skeleton className="h-5 w-16" />;
     let displayRamUsage: string | JSX.Element = <Skeleton className="h-5 w-16" />;
 
-    if (!isLoading && currentStats) {
-        displayCpuUsage = `${currentStats.cpu_usage.toFixed(1)}%`;
-        // Check if it's SystemStats (master) which has mem_total
-        if ('mem_total' in currentStats && currentStats.mem_total) { 
-             displayRamUsage = `${formatBytes(currentStats.mem_used, 1)} / ${formatBytes(currentStats.mem_total, 1)}`;
-        } else if ('mem_used' in currentStats) { // It's RealtimeNodeStats
-            const totalMem = 'mem_total' in currentStats ? currentStats.mem_total : 0;
-            const ramPercent = totalMem > 0 ? ((currentStats.mem_used / totalMem) * 100).toFixed(1) : 'N/A';
-            displayRamUsage = `${ramPercent}% (${formatBytes(currentStats.mem_used, 1)})`;
+    if (currentStats) {
+        if ('cpu_usage' in currentStats) {
+            // Master server stats
+            displayCpuUsage = `${currentStats.cpu_usage.toFixed(1)}%`;
+            displayRamUsage = `${((Number(currentStats.mem_used) / Number(currentStats.mem_total)) * 100).toFixed(1)}%`;
+        } else {
+            // Node stats
+            const nodeStats = currentStats as NodeRealtimeStats;
+            displayCpuUsage = `${nodeStats.cpu_usage.toFixed(1)}%`;
+            displayRamUsage = `${((Number(nodeStats.mem_used) / Number(nodeStats.mem_total)) * 100).toFixed(1)}%`;
         }
     } else if (!isLoading && error) {
         displayCpuUsage = t("common.error");
@@ -229,8 +239,10 @@ export function AreaCostumeChart({ nodeId, currentStats }: AreaCostumeChartProps
             <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
                 <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6 border-b">
                     <div className="flex items-center justify-between">
-                    <CardTitle>{t("statistics.realTimeStats")}</CardTitle>
-                        <TimeRangeSelector onRangeChange={setDateRange} />
+                        <CardTitle>{t("statistics.realTimeStats")}</CardTitle>
+                        <div className={cn(nodeId === undefined && "hidden")}>
+                            <TimeRangeSelector onRangeChange={setDateRange} />
+                        </div>
                     </div>
                     <CardDescription>
                         {t("statistics.serverPerformance")}
@@ -259,116 +271,109 @@ export function AreaCostumeChart({ nodeId, currentStats }: AreaCostumeChartProps
                         {t("errors.failedToLoad")}
                     </div>
                 ) : (
-                    <ChartContainer dir={dir} config={chartConfig} className={"max-h-[360px] min-h-[200px] w-full"}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart
-                                accessibilityLayer
-                                data={statsHistory}
-                                margin={{
-                                    left: 24,
-                                    right: 24,
-                                    top: 24,
-                                    bottom: 24,
+                    <ChartContainer dir={"ltr"} config={chartConfig} className={"max-h-[360px] min-h-[200px] w-full"}>
+                        <AreaChart
+                            accessibilityLayer
+                            data={statsHistory}
+                            
+                        >
+                            <defs>
+                                <linearGradient id={gradientDefs.cpu.id} x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor={gradientDefs.cpu.color1} stopOpacity={0.9} />
+                                    <stop offset="30%" stopColor={gradientDefs.cpu.color2} stopOpacity={0.4} />
+                                    <stop offset="70%" stopColor={gradientDefs.cpu.color3} stopOpacity={0.1} />
+                                    <stop offset="100%" stopColor={gradientDefs.cpu.color4} stopOpacity={0} />
+                                </linearGradient>
+                                <linearGradient id={gradientDefs.ram.id} x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor={gradientDefs.ram.color1} stopOpacity={0.9} />
+                                    <stop offset="30%" stopColor={gradientDefs.ram.color2} stopOpacity={0.4} />
+                                    <stop offset="70%" stopColor={gradientDefs.ram.color3} stopOpacity={0.1} />
+                                    <stop offset="100%" stopColor={gradientDefs.ram.color4} stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid
+                                vertical={false}
+                                strokeDasharray="4 4"
+                                stroke="hsl(var(--border))"
+                                opacity={0.1}
+                            />
+                            <XAxis
+                                dataKey="time"
+                                tickLine={false}
+                                axisLine={false}
+                                tickMargin={12}
+                                tick={{
+                                    fill: 'hsl(var(--muted-foreground))',
+                                    fontSize: 11,
+                                    fontWeight: 500,
                                 }}
-                            >
-                                <defs>
-                                    <linearGradient id={gradientDefs.cpu.id} x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor={gradientDefs.cpu.color1} stopOpacity={0.9}/>
-                                        <stop offset="30%" stopColor={gradientDefs.cpu.color2} stopOpacity={0.4}/>
-                                        <stop offset="70%" stopColor={gradientDefs.cpu.color3} stopOpacity={0.1}/>
-                                        <stop offset="100%" stopColor={gradientDefs.cpu.color4} stopOpacity={0}/>
-                                    </linearGradient>
-                                    <linearGradient id={gradientDefs.ram.id} x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor={gradientDefs.ram.color1} stopOpacity={0.9}/>
-                                        <stop offset="30%" stopColor={gradientDefs.ram.color2} stopOpacity={0.4}/>
-                                        <stop offset="70%" stopColor={gradientDefs.ram.color3} stopOpacity={0.1}/>
-                                        <stop offset="100%" stopColor={gradientDefs.ram.color4} stopOpacity={0}/>
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid 
-                                    vertical={false} 
-                                    strokeDasharray="4 4"
-                                    stroke="hsl(var(--border))"
-                                    opacity={0.1}
-                                />
-                                <XAxis
-                                    dataKey="time"
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickMargin={16}
-                                    tick={{ 
-                                        fill: 'hsl(var(--muted-foreground))', 
-                                        fontSize: 11,
-                                        fontWeight: 500,
-                                    }}
-                                    padding={{ left: 20, right: 20 }}
-                                />
-                                <YAxis 
-                                    tickLine={false} 
-                                    tickFormatter={(value) => `${value.toFixed(1)}%`} 
-                                    axisLine={false} 
-                                    tickMargin={16} 
-                                    domain={[0, 100]}
-                                    tick={{ 
-                                        fill: 'hsl(var(--muted-foreground))', 
-                                        fontSize: 11,
-                                        fontWeight: 500,
-                                    }}
-                                    padding={{ top: 20, bottom: 20 }}
-                                />
-                                <Tooltip
-                                    content={<CustomTooltip />}
-                                    cursor={{
-                                        stroke: 'hsl(var(--border))',
-                                        strokeWidth: 1,
-                                        strokeDasharray: '4 4',
-                                        opacity: 0.3,
-                                    }}
-                                />
-                                <Area
-                                    dataKey="cpu"
-                                    type="monotone"
-                                    fill={`url(#${gradientDefs.cpu.id})`}
-                                    stroke={gradientDefs.cpu.color1}
-                                    strokeWidth={3}
-                                    dot={{
-                                        fill: "white",
-                                        stroke: gradientDefs.cpu.color1,
-                                        strokeWidth: 2,
-                                        r: 4,
-                                    }}
-                                    activeDot={{
-                                        r: 8,
-                                        fill: "white",
-                                        stroke: gradientDefs.cpu.color1,
-                                        strokeWidth: 3,
-                                    }}
-                                    animationDuration={2000}
-                                    animationEasing="ease-in-out"
-                                />
-                                <Area
-                                    dataKey="ram"
-                                    type="monotone"
-                                    fill={`url(#${gradientDefs.ram.id})`}
-                                    stroke={gradientDefs.ram.color1}
-                                    strokeWidth={3}
-                                    dot={{
-                                        fill: "white",
-                                        stroke: gradientDefs.ram.color1,
-                                        strokeWidth: 2,
-                                        r: 4,
-                                    }}
-                                    activeDot={{
-                                        r: 8,
-                                        fill: "white",
-                                        stroke: gradientDefs.ram.color1,
-                                        strokeWidth: 3,
-                                    }}
-                                    animationDuration={2000}
-                                    animationEasing="ease-in-out"
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
+                                padding={{ left: 20, right: 20 }}
+                            />
+                            <YAxis
+                                tickLine={false}
+                                tickFormatter={(value) => `${value.toFixed(1)}%`}
+                                axisLine={false}
+                                tickMargin={16}
+                                domain={[0, 100]}
+                                tick={{
+                                    fill: 'hsl(var(--muted-foreground))',
+                                    fontSize: 11,
+                                    fontWeight: 500,
+                                }}
+                                padding={{ top: 20, bottom: 20 }}
+                            />
+                            <Tooltip
+                                content={<CustomTooltip />}
+                                cursor={{
+                                    stroke: 'hsl(var(--border))',
+                                    strokeWidth: 1,
+                                    strokeDasharray: '4 4',
+                                    opacity: 0.3,
+                                }}
+                            />
+                            <Area
+                                dataKey="cpu"
+                                type="monotone"
+                                fill={`url(#${gradientDefs.cpu.id})`}
+                                stroke={gradientDefs.cpu.color1}
+                                strokeWidth={3}
+                                dot={{
+                                    fill: "white",
+                                    stroke: gradientDefs.cpu.color1,
+                                    strokeWidth: 2,
+                                    r: 4,
+                                }}
+                                activeDot={{
+                                    r: 8,
+                                    fill: "white",
+                                    stroke: gradientDefs.cpu.color1,
+                                    strokeWidth: 3,
+                                }}
+                                animationDuration={2000}
+                                animationEasing="ease-in-out"
+                            />
+                            <Area
+                                dataKey="ram"
+                                type="monotone"
+                                fill={`url(#${gradientDefs.ram.id})`}
+                                stroke={gradientDefs.ram.color1}
+                                strokeWidth={3}
+                                dot={{
+                                    fill: "white",
+                                    stroke: gradientDefs.ram.color1,
+                                    strokeWidth: 2,
+                                    r: 4,
+                                }}
+                                activeDot={{
+                                    r: 8,
+                                    fill: "white",
+                                    stroke: gradientDefs.ram.color1,
+                                    strokeWidth: 3,
+                                }}
+                                animationDuration={2000}
+                                animationEasing="ease-in-out"
+                            />
+                        </AreaChart>
                     </ChartContainer>
                 )}
             </CardContent>

@@ -729,5 +729,7 @@
     "nextPlanExpire": "到期（天）",
     "nextPlanAddRemainingTraffic": "添加剩余流量",
     "nextPlanFireOnEither": "任一条件触发"
-  }
+  },
+  "sidebar.expand": "展开侧边栏",
+  "sidebar.collapse": "折叠侧边栏"
 }

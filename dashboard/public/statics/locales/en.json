@@ -729,5 +729,7 @@
     "note": "Note",
     "on_hold_expire_duration": "On Hold Expire Duration",
     "group_ids": "Groups"
-  }
+  },
+  "sidebar.expand": "Expand sidebar",
+  "sidebar.collapse": "Collapse sidebar"
 }

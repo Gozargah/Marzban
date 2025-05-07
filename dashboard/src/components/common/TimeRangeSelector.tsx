@@ -83,6 +83,7 @@ export function TimeRangeSelector({
             selected={date}
             onSelect={handleSelect}
             numberOfMonths={2}
+            disabled={{ after: new Date() }}
           />
         </PopoverContent>
       </Popover>

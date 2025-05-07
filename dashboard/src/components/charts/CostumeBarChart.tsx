@@ -151,13 +151,13 @@ export function CostumeBarChart({ nodeId }: CostumeBarChartProps) {
                         {t("errors.failedToLoad")}
                     </div>
                 ) : (
-                    <ChartContainer dir={dir} config={chartConfig} className="max-h-[400px] min-h-[200px] w-full">
+                    <ChartContainer dir={"ltr"} config={chartConfig} className="max-h-[400px] min-h-[200px] w-full">
                         {chartData && chartData.length > 0 ? (
                             <BarChart accessibilityLayer data={chartData}>
-                                <CartesianGrid direction={dir} vertical={false} />
-                                <XAxis direction={dir} dataKey="time" tickLine={false} tickMargin={10} axisLine={false} />
+                                <CartesianGrid direction={"ltr"} vertical={false} />
+                                <XAxis direction={"ltr"} dataKey="time" tickLine={false} tickMargin={10} axisLine={false} />
                                 <YAxis 
-                                    direction={dir} 
+                                    direction={"ltr"} 
                                     tickLine={false} 
                                     axisLine={false}
                                     tickFormatter={(value) => `${value.toFixed(2)} GB`}

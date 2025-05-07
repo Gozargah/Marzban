@@ -124,9 +124,15 @@ export default function Statistics({ data, isLoading, error, selectedServer, onS
       </div>
 
       <div className="space-y-8">
-        <CostumeBarChart nodeId={selectedNodeId} />
+        <CostumeBarChart 
+          nodeId={selectedNodeId} 
+        />
         <div className="flex gap-4 flex-col sm:flex-row ">
-          <AreaCostumeChart nodeId={selectedNodeId} currentStats={currentStats} />
+          <AreaCostumeChart 
+            nodeId={selectedNodeId} 
+            currentStats={currentStats}
+            realtimeStats={selectedServer === "master" ? data : nodeStats || undefined}
+          />
         </div>
       </div>
 
