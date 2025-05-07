@@ -112,6 +112,8 @@
   "editGroup": "Редактировать группу",
   "disable": "Отключить",
   "warning": "Предупреждение",
+  "remove": "Удалить",
+  "modify": "Изменить",
   "templates.userTemplates": "Шаблоны",
   "editUserTemplateModal.title": "Редактировать шаблон пользователя",
   "userTemplateModal.title": "Создать шаблон пользователя",

@@ -54,7 +54,7 @@ const DeleteAlertDialog = ({
                     <AlertDialogFooter className={cn(dir === "rtl" && "sm:gap-x-2 sm:flex-row-reverse")}>
                         <AlertDialogCancel onClick={onClose}>{t("cancel")}</AlertDialogCancel>
                         <AlertDialogAction variant="destructive" onClick={onConfirm}>
-                            {t("delete")}
+                            {t("remove")}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -153,7 +153,7 @@ const UserTemplate = ({template, onEdit}: {
                     <DropdownMenuContent align={dir === "rtl" ? "end" : "start"}>
                         <DropdownMenuItem dir={dir} className="flex items-center" onSelect={() => onEdit(template)}>
                             <Pen className="h-4 w-4"/>
-                            <span>{t("edit")}</span>
+                            <span>{t("modify")}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem dir={dir} className="flex items-center" onClick={handleDuplicate}>
                             <Copy className="h-4 w-4"/>
@@ -165,7 +165,7 @@ const UserTemplate = ({template, onEdit}: {
                             onClick={handleDeleteClick}
                         >
                             <Trash2 className="h-4 w-4 text-red-500"/>
-                            <span>{t("delete")}</span>
+                            <span>{t("remove")}</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

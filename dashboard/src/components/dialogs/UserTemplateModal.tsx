@@ -363,7 +363,7 @@ export default function UserTemplateModal({
                                                             />
                                                         </div>
                                                         <div className="flex-[2]">
-                                                            <Select  value={"seconds"} onValueChange={(v) => setTimeType(v as any)}>
+                                                            <Select  value={timeType} onValueChange={(v) => setTimeType(v as any)}>
                                                                 <SelectTrigger
                                                                     className="w-full rounded-none border-0 focus:ring-0 focus:ring-offset-0">
                                                                     <SelectValue placeholder="Second"/>

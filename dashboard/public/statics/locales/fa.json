@@ -78,6 +78,8 @@
   "editGroup": "ویرایش گروه",
   "disable": "غیرفعال کردن",
   "warning": "هشدار",
+  "remove": "حذف",
+  "modify": "ویرایش",
   "templates.userTemplates": "قالب‌ها",
   "editUserTemplateModal.title": "ویرایش قالب کاربر",
   "userTemplateModal.title": "ایجاد قالب کاربر",

@@ -113,6 +113,8 @@
   "editGroup": "编辑群组",
   "disable": "禁用",
   "warning": "警告",
+  "remove": "删除",
+  "modify": "修改",
   "templates.userTemplates": "模板",
   "editUserTemplateModal.title": "编辑用户模板",
   "userTemplateModal.title": "创建用户模板",
