@@ -105,7 +105,9 @@
     "deleteSuccess": "قالب {{name}} با موفقیت حذف شد",
     "deleteFailed": "حذف قالب {{name}} ناموفق بود",
     "deleteUserTemplateTitle": "حذف قالب کاربر",
-    "deleteUserTemplatePrompt": "آیا مطمئن هستید که می‌خواهید قالب <b>{{name}}</b> را حذف کنید؟"
+    "deleteUserTemplatePrompt": "آیا مطمئن هستید که می‌خواهید قالب <b>{{name}}</b> را حذف کنید؟",
+    "duplicateSuccess": "قالب «{{name}}» با موفقیت کپی شد",
+    "duplicateFailed": "کپی کردن قالب «{{name}}» ناموفق بود"
   },
   "core.configuration": "پیکربندی",
   "core.generalErrorMessage": "مشکلی پیش آمده، لطفا پیکربندی را بررسی کنید",

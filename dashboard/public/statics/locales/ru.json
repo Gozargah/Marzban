@@ -139,7 +139,9 @@
     "deleteSuccess": "Шаблон {{name}} успешно удалён",
     "deleteFailed": "Не удалось удалить шаблон {{name}}",
     "deleteUserTemplateTitle": "Удалить пользовательский шаблон",
-    "deleteUserTemplatePrompt": "Вы уверены, что хотите удалить шаблон <b>{{name}}</b>?"
+    "deleteUserTemplatePrompt": "Вы уверены, что хотите удалить шаблон <b>{{name}}</b>?",
+    "duplicateSuccess": "Шаблон «{{name}}» успешно дублирован",
+    "duplicateFailed": "Не удалось дублировать шаблон «{{name}}»"
   },
   "core.configuration": "Конфигурация",
   "core.generalErrorMessage": "Что-то пошло не так, пожалуйста, проверьте конфигурацию",

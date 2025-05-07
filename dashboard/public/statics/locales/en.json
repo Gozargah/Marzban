@@ -143,7 +143,9 @@
     "deleteSuccess": "Template {{name}} removed successfully",
     "deleteFailed": "Failed to delete template {{name}}",
     "deleteUserTemplateTitle": "Delete User Template",
-    "deleteUserTemplatePrompt": "Are you sure you want to delete the <b>{{name}}</b> template?"
+    "deleteUserTemplatePrompt": "Are you sure you want to delete the <b>{{name}}</b> template?",
+    "duplicateSuccess": "Template «{{name}}» duplicated successfully",
+    "duplicateFailed": "Failed to duplicate template «{{name}}»"
   },
   "core.configuration": "Configuration",
   "core.generalErrorMessage": "Something went wrong, please check the configuration",

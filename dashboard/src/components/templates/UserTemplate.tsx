@@ -23,7 +23,7 @@ import {
 import {cn} from "@/lib/utils";
 import {useToast} from "@/hooks/use-toast";
 import {formatBytes} from "@/utils/formatByte";
-import {useRemoveUserTemplate, UserTemplateResponse} from "@/service/api";
+import {addUserTemplate, useRemoveUserTemplate, UserTemplateCreate, UserTemplateResponse} from "@/service/api";
 import {queryClient} from "@/utils/query-client.ts";
 
 const DeleteAlertDialog = ({
@@ -109,6 +109,34 @@ const UserTemplate = ({template, onEdit}: {
         }
     };
 
+    const handleDuplicate = async () => {
+        try {
+            const newTemplate: UserTemplateCreate = {
+                ...template,
+                name: `${template.name} (copy)`,
+            }
+            await addUserTemplate(newTemplate)
+            toast({
+                title: t("success", {defaultValue: "Success"}),
+                description: t("templates.duplicateSuccess", {
+                    name: template.name,
+                    defaultValue: "Template «{name}» has been duplicated successfully"
+                })
+            });
+            queryClient.invalidateQueries({queryKey: ['/api/user_template']});
+
+        } catch (error) {
+            toast({
+                title: t("error", {defaultValue: "Error"}),
+                description: t("templates.duplicateFailed", {
+                    name: template.name,
+                    defaultValue: "Failed to duplicate template «{name}»"
+                }),
+                variant: "destructive"
+            });
+        }
+    }
+
     return (
         <Card className="px-5 py-6 rounded-lg">
             <CardTitle className="flex items-center justify-between">
@@ -127,7 +155,7 @@ const UserTemplate = ({template, onEdit}: {
                             <Pen className="h-4 w-4"/>
                             <span>{t("edit")}</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem dir={dir} className="flex items-center">
+                        <DropdownMenuItem dir={dir} className="flex items-center" onClick={handleDuplicate}>
                             <Copy className="h-4 w-4"/>
                             <span>{t("duplicate")}</span>
                         </DropdownMenuItem>
@@ -145,10 +173,13 @@ const UserTemplate = ({template, onEdit}: {
             <CardDescription>
                 <div className="flex flex-col gap-y-1 mt-2">
                     <p className={"flex items-center gap-x-1"}>
-                        {t("userDialog.dataLimit")}: <span>{(!template.data_limit || template.data_limit === 0) ?<Infinity className="w-4 h-4"></Infinity> : formatBytes(template.data_limit ? template.data_limit : 0) }</span>
+                        {t("userDialog.dataLimit")}: <span>{(!template.data_limit || template.data_limit === 0) ?
+                        <Infinity
+                            className="w-4 h-4"></Infinity> : formatBytes(template.data_limit ? template.data_limit : 0)}</span>
                     </p>
                     <p className={"flex items-center gap-x-1"}>
-                        {t("Expire")}: <span>{(!template.expire_duration || template.expire_duration===0 ? <Infinity className="w-4 h-4"></Infinity> : template.expire_duration)}</span>
+                        {t("Expire")}: <span>{(!template.expire_duration || template.expire_duration === 0 ?
+                        <Infinity className="w-4 h-4"></Infinity> : template.expire_duration)}</span>
                     </p>
                 </div>
             </CardDescription>
