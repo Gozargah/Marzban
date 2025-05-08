@@ -11,15 +11,7 @@ from app.core.hosts import hosts as hosts_storage
 from app.core.manager import core_manager
 from app.db.models import User, UserStatus
 from app.utils.system import get_public_ip, get_public_ipv6, readable_size
-from config import (
-    ACTIVE_STATUS_TEXT,
-    DISABLED_STATUS_TEXT,
-    EXPIRED_STATUS_TEXT,
-    HOST_STATUS_FILTER,
-    LIMITED_STATUS_TEXT,
-    ONHOLD_STATUS_TEXT,
-    REMOVE_HOSTS_WITH_NO_STATUS,
-)
+from config import HOST_STATUS_FILTER
 
 from . import (
     ClashConfiguration,
@@ -39,14 +31,6 @@ STATUS_EMOJIS = {
     "limited": "🪫",
     "disabled": "❌",
     "on_hold": "🔌",
-}
-
-STATUS_TEXTS = {
-    "active": ACTIVE_STATUS_TEXT,
-    "expired": EXPIRED_STATUS_TEXT,
-    "limited": LIMITED_STATUS_TEXT,
-    "disabled": DISABLED_STATUS_TEXT,
-    "on_hold": ONHOLD_STATUS_TEXT,
 }
 
 
@@ -215,33 +199,22 @@ def setup_format_variables(extra_data: dict) -> dict:
         usage_Percentage = "∞"
 
     status_emoji = STATUS_EMOJIS.get(extra_data.get("status")) or ""
-    status_template = STATUS_TEXTS.get(extra_data.get("status")) or ""
 
-    # Create a temporary dictionary with variables excluding STATUS_TEXT
-    temp_vars = {
-        "SERVER_IP": SERVER_IP,
-        "SERVER_IPV6": SERVER_IPV6,
-        "USERNAME": extra_data.get("username", "{USERNAME}"),
-        "DATA_USAGE": readable_size(extra_data.get("used_traffic")),
-        "DATA_LIMIT": data_limit,
-        "DATA_LEFT": data_left,
-        "DAYS_LEFT": days_left,
-        "EXPIRE_DATE": expire_date,
-        "JALALI_EXPIRE_DATE": jalali_expire_date,
-        "TIME_LEFT": time_left,
-        "STATUS_EMOJI": status_emoji,
-        "USAGE_PERCENTAGE": usage_Percentage,
-    }
-
-    # Format the status text using the temporary variables
-    status_text = status_template.format_map(defaultdict(lambda: "<missing>", temp_vars))
-
-    # Create the final format_variables including the formatted STATUS_TEXT
     format_variables = defaultdict(
         lambda: "<missing>",
         {
-            **temp_vars,
-            "STATUS_TEXT": status_text,
+            "SERVER_IP": SERVER_IP,
+            "SERVER_IPV6": SERVER_IPV6,
+            "USERNAME": extra_data.get("username", "{USERNAME}"),
+            "DATA_USAGE": readable_size(extra_data.get("used_traffic")),
+            "DATA_LIMIT": data_limit,
+            "DATA_LEFT": data_left,
+            "DAYS_LEFT": days_left,
+            "EXPIRE_DATE": expire_date,
+            "JALALI_EXPIRE_DATE": jalali_expire_date,
+            "TIME_LEFT": time_left,
+            "STATUS_EMOJI": status_emoji,
+            "USAGE_PERCENTAGE": usage_Percentage,
         },
     )
 
@@ -251,12 +224,6 @@ def setup_format_variables(extra_data: dict) -> dict:
 def filter_hosts(hosts: list, user_status: UserStatus) -> list:
     if not HOST_STATUS_FILTER:
         return hosts
-
-    if user_status in (UserStatus.active, UserStatus.on_hold):
-        return [host for host in hosts if not host["status"] or user_status in host["status"]]
-
-    if REMOVE_HOSTS_WITH_NO_STATUS:
-        return [host for host in hosts if host["status"] and user_status in host["status"]]
 
     return [host for host in hosts if not host["status"] or user_status in host["status"]]
 

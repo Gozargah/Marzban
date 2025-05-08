@@ -13,7 +13,6 @@ from app.models.user import UserResponse
 from app.db import AsyncSession
 from app.db.models import ReminderType
 from app.db.crud import create_notification_reminder
-from config import NOTIFY_IF_DATA_USAGE_PERCENT_REACHED, NOTIFY_IF_DAYS_LEFT_REACHED
 
 
 async def create_host(host: BaseHost, by: str):
@@ -153,27 +152,25 @@ async def user_subscription_revoked(user: UserResponse, by: AdminDetails):
 
 
 async def data_usage_percent_reached(db: AsyncSession, percent: float, user: UserResponse, threshold: int) -> None:
-    if NOTIFY_IF_DATA_USAGE_PERCENT_REACHED:
-        await asyncio.gather(
-            wh.notify(wh.ReachedUsagePercent(username=user.username, user=user, used_percent=percent)),
-            create_notification_reminder(
-                db,
-                ReminderType.data_usage,
-                expires_at=user.expire if user.expire else None,
-                user_id=user.id,
-                threshold=threshold,
-            ),
-        )
+    await asyncio.gather(
+        wh.notify(wh.ReachedUsagePercent(username=user.username, user=user, used_percent=percent)),
+        create_notification_reminder(
+            db,
+            ReminderType.data_usage,
+            expires_at=user.expire if user.expire else None,
+            user_id=user.id,
+            threshold=threshold,
+        ),
+    )
 
 
 async def expire_days_reached(db: AsyncSession, days: int, user: UserResponse, threshold: int) -> None:
-    if NOTIFY_IF_DAYS_LEFT_REACHED:
-        await asyncio.gather(
-            wh.notify(wh.ReachedDaysLeft(username=user.username, user=user, days_left=days)),
-            create_notification_reminder(
-                db, ReminderType.expiration_date, expires_at=user.expire, user_id=user.id, threshold=threshold
-            ),
-        )
+    await asyncio.gather(
+        wh.notify(wh.ReachedDaysLeft(username=user.username, user=user, days_left=days)),
+        create_notification_reminder(
+            db, ReminderType.expiration_date, expires_at=user.expire, user_id=user.id, threshold=threshold
+        ),
+    )
 
 
 async def create_core(core: CoreResponse, by: str):

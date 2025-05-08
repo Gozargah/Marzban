@@ -498,6 +498,7 @@ class Node(Base):
     core_config: Mapped[Optional["CoreConfig"]] = relationship("CoreConfig")
     stats: Mapped[List["NodeStat"]] = relationship(back_populates="node", cascade="all, delete-orphan")
     api_key: Mapped[str | None] = mapped_column(String(36))
+    gather_logs: Mapped[bool] = mapped_column(default=True, server_default="1")
 
 
 class NodeUserUsage(Base):

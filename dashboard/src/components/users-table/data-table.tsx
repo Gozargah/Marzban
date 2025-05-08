@@ -5,18 +5,27 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import useDirDetection from '@/hooks/use-dir-detection'
 import { cn } from '@/lib/utils'
 import { UserResponse } from '@/service/api'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, LoaderCircle } from 'lucide-react'
 import ActionButtons from '../ActionButtons'
 import { OnlineStatus } from '../OnlineStatus'
 import { StatusBadge } from '../StatusBadge'
 import UsageSliderCompact from '../UsageSliderCompact'
+import { useTranslation } from 'react-i18next'
 
 interface DataTableProps<TData extends UserResponse, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  isLoading?: boolean
+  isFetching?: boolean
 }
 
-export function DataTable<TData extends UserResponse, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
+export function DataTable<TData extends UserResponse, TValue>({
+  columns,
+  data,
+  isLoading = false,
+  isFetching = false
+}: DataTableProps<TData, TValue>) {
+  const { t } = useTranslation()
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
   const table = useReactTable({
     data,
@@ -30,6 +39,8 @@ export function DataTable<TData extends UserResponse, TValue>({ columns, data }:
   }
 
   const dir = useDirDetection()
+
+  const isLoadingData = isLoading || isFetching
 
   return (
     <div className="rounded-md border">
@@ -57,10 +68,18 @@ export function DataTable<TData extends UserResponse, TValue>({ columns, data }:
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows?.length ? (
+          {isLoadingData ? (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24">
+                <div dir={dir} className="flex flex-col items-center justify-center gap-2">
+                  <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
+                  <span className="text-sm text-white">{t('loading')}</span>
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map(row => (
               <React.Fragment key={row.id}>
-                {/* Collapsible Row */}
                 <TableRow
                   className={cn('cursor-pointer md:cursor-default border-b hover:!bg-inherit md:hover:!bg-muted/50', expandedRow === row.id && 'border-transparent')}
                   onClick={() => window.innerWidth < 768 && handleRowToggle(row.id)} // Only toggle on small screens
@@ -90,10 +109,8 @@ export function DataTable<TData extends UserResponse, TValue>({ columns, data }:
                     </TableCell>
                   ))}
                 </TableRow>
-                {/* Expanded Content */}
                 {expandedRow === row.id && (
-                  <TableRow className=" md:hidden border-b hover:!bg-inherit">
-                    {/* Expanded content only visible on small screens */}
+                  <TableRow className="md:hidden border-b hover:!bg-inherit">
                     <TableCell colSpan={columns.length} className="p-4 text-sm">
                       <div className="flex flex-col gap-y-4">
                         <UsageSliderCompact
@@ -124,7 +141,7 @@ export function DataTable<TData extends UserResponse, TValue>({ columns, data }:
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
+                <span className="text-muted-foreground">{t('noResults')}</span>
               </TableCell>
             </TableRow>
           )}

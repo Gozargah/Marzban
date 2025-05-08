@@ -1,13 +1,16 @@
 from random import choice
 from uuid import UUID
+
 import yaml
-from . import BaseSubscription
-from app.subscription.funcs import get_grpc_gun, detect_shadowsocks_2022
+
+from app.subscription.funcs import detect_shadowsocks_2022, get_grpc_gun
 from app.templates import render_template
 from app.utils.helpers import yml_uuid_representer
 from config import (
     CLASH_SUBSCRIPTION_TEMPLATE,
 )
+
+from . import BaseSubscription
 
 
 class ClashConfiguration(BaseSubscription):
@@ -48,10 +51,11 @@ class ClashConfiguration(BaseSubscription):
         request: dict | None = None,
     ):
         config = {
-            **request,
             "path": [path] if path else None,
             "Host": host,
         }
+        if request:
+            config.update(request)
 
         if random_user_agent:
             config["header"]["User-Agent"] = choice(self.user_agent_list)
@@ -327,7 +331,6 @@ class ClashMetaConfiguration(ClashConfiguration):
         proxy_remark = self._remark_validation(remark)
 
         node = self.make_node(
-            name=remark,
             remark=proxy_remark,
             type=inbound["protocol"],
             server=address,

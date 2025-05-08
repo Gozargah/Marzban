@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { BaseHost, modifyHosts, CreateHost, addHost } from "@/service/api"
+import { BaseHost, modifyHosts, CreateHost, createHost } from "@/service/api"
 import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core"
 import { arrayMove, rectSortingStrategy, SortableContext, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
 import SortableHost from "./SortableHost"
@@ -489,7 +489,7 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit }: Hosts
                 fingerprint: host.fingerprint === "" ? undefined : host.fingerprint,
             };
 
-            await addHost(newHost);
+            await createHost(newHost);
 
             // Show success toast
             toast({

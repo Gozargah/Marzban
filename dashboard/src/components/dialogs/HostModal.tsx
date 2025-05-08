@@ -288,7 +288,6 @@ const HostModal: React.FC<HostModalProps> = ({
                                                 className="w-[320px] p-3"
                                                 side="right"
                                                 align="start"
-                                                sideOffset={5}
                                             >
                                                 <div className="space-y-1.5">
                                                     <h4 className="font-medium text-[12px] mb-2">{t("hostsDialog.variables.title")}</h4>
@@ -490,10 +489,11 @@ const HostModal: React.FC<HostModalProps> = ({
                                                     placeholder="443"
                                                     type="number"
                                                     {...field}
-                                                    onChange={(e) =>
-                                                        field.onChange(e.target.value ? Number.parseInt(e.target.value, 10) : undefined)
-                                                    }
-                                                    value={field.value ?? ""}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        field.onChange(val === "" ? "" : Number.parseInt(val, 10));
+                                                    }}
+                                                    value={field.value === undefined ? "" : field.value}
                                                 />
                                             </FormControl>
                                             <FormMessage />

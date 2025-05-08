@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react'
 import MainSection from '@/components/hosts/Hosts'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { getHosts, addHost, modifyHost, CreateHost, ProxyHostALPN, ProxyHostFingerprint, MultiplexProtocol, Xudp } from '@/service/api'
+import { getHosts, createHost, modifyHost, CreateHost, ProxyHostALPN, ProxyHostFingerprint, MultiplexProtocol, Xudp } from '@/service/api'
 import { HostFormValues } from '@/components/hosts/Hosts'
 
 export default function HostsPage() {
@@ -85,7 +85,7 @@ export default function HostsPage() {
                 return { status: 200 };
             } else {
                 // This is a new host
-                const response = await addHost(hostData);
+                const response = await createHost(hostData);
                 return { status: 200 };
             }
         } catch (error) {

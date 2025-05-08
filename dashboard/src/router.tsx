@@ -12,6 +12,7 @@ import UserTemplates from './pages/_dashboard.templates._index'
 import Login from './pages/login'
 import Hosts from './pages/_dashboard.hosts'
 import AdminsPage from './pages/_dashboard.admins'
+import ThemePage from '@/pages/_dashboard.theme'
 
 const fetchAdminLoader = async (): Promise<any> => {
   try {
@@ -70,6 +71,10 @@ export const router = createHashRouter([
             element: <CoreSettings />,
           },
         ],
+      },
+      {
+        path: 'theme',
+        element: <ThemePage />,
       },
     ],
   },

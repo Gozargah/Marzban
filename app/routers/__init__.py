@@ -10,6 +10,7 @@ from . import (
     home,
     host,
     group,
+    dev
 )
 
 api_router = APIRouter()
@@ -25,6 +26,7 @@ routers = [
     user.router,
     subscription.router,
     user_template.router,
+    dev.router
 ]
 
 for router in routers:

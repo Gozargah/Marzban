@@ -1,115 +1,177 @@
-import { useState, useMemo } from "react"
+import { useEffect, useState } from "react"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
-import TimeSelector, { type TimePeriod } from "./TimeSelector"
-
+import { DateRange } from "react-day-picker"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { useTranslation } from "react-i18next"
 import useDirDetection from "@/hooks/use-dir-detection"
-
+import { getUsage, Period, type NodeUsageStats } from "@/service/api"
+import { formatBytes } from "@/utils/formatByte"
+import { Skeleton } from "@/components/ui/skeleton"
+import { TimeRangeSelector } from "@/components/common/TimeRangeSelector"
 
 type DataPoint = {
     time: string
     usage: number
 }
 
-
-type ChartDataByPeriod = {
-    [key: string]: DataPoint[]
-}
-
-
-const chartDataByPeriod: ChartDataByPeriod = {
-    "12h": [
-        { time: "00:00", usage: 3 },
-        { time: "02:00", usage: 4 },
-        { time: "04:00", usage: 2.5 },
-        { time: "06:00", usage: 2 },
-        { time: "08:00", usage: 1 },
-        { time: "10:00", usage: 0.5 },
-        { time: "12:00", usage: 4 },
-        { time: "14:00", usage: 7 },
-        { time: "16:00", usage: 1 },
-        { time: "18:00", usage: 3.5 },
-        { time: "20:00", usage: 2 },
-        { time: "22:00", usage: 5.8 },
-        { time: "00:00", usage: 2.7 },
-        { time: "02:00", usage: 9 },
-    ],
-    "24h": [
-        { time: "00:00", usage: 3 },
-        { time: "04:00", usage: 4 },
-        { time: "08:00", usage: 2.5 },
-        { time: "12:00", usage: 2 },
-        { time: "16:00", usage: 1 },
-        { time: "20:00", usage: 0.5 },
-    ],
-    "3d": [
-        { time: "Day 1", usage: 10 },
-        { time: "Day 2", usage: 15 },
-        { time: "Day 3", usage: 8 },
-        { time: "Day 4", usage: 13 },
-        { time: "Day 5", usage: 7 },
-        { time: "Day 6", usage: 16 },
-    ],
-    "1w": [
-        { time: "Mon", usage: 20 },
-        { time: "Tue", usage: 15 },
-        { time: "Wed", usage: 18 },
-        { time: "Thu", usage: 12 },
-        { time: "Fri", usage: 22 },
-        { time: "Sat", usage: 10 },
-        { time: "Sun", usage: 5 },
-    ],
-}
-
 const chartConfig = {
     usage: {
-        label: "Traffic Usage",
+        label: "Traffic Usage (GB)",
         color: "hsl(var(--chart-1))",
     },
 } satisfies ChartConfig
 
-export function CostumeBarChart() {
-    const [selectedTime, setSelectedTime] = useState<TimePeriod>("12h")
+// Define props interface
+interface CostumeBarChartProps {
+    nodeId?: number;
+}
+
+// Helper function to determine period (copied from AreaCostumeChart)
+const getPeriodFromDateRange = (range?: DateRange): Period => {
+    if (!range?.from || !range?.to) {
+        return Period.hour; // Default to hour if no range
+    }
+    const diffTime = Math.abs(range.to.getTime() - range.from.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 2) { // Up to 2 days, use hourly data
+        return Period.hour;
+    }
+    return Period.day; // More than 2 days, use daily data
+};
+
+export function CostumeBarChart({ nodeId }: CostumeBarChartProps) {
+    const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
+    const [chartData, setChartData] = useState<DataPoint[] | null>(null)
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<Error | null>(null)
+    const [totalUsage, setTotalUsage] = useState("0")
+    
     const { t } = useTranslation()
     const dir = useDirDetection()
 
-    const chartData = useMemo(() => chartDataByPeriod[selectedTime.toString()], [selectedTime])
+    useEffect(() => {
+        const fetchUsageData = async () => {
+            if (!dateRange?.from || !dateRange?.to) {
+                setChartData(null)
+                setTotalUsage("0")
+                return
+            }
 
-    const totalUsage = useMemo(() => {
-        return chartData ? chartData.reduce((sum, item) => sum + item.usage, 0).toFixed(2) : "0"
-    }, [chartData])
+            setIsLoading(true)
+            setError(null)
+
+            try {
+                const startDate = dateRange.from
+                const endDate = dateRange.to
+                // Determine period based on range
+                const period = getPeriodFromDateRange(dateRange);
+
+                // Prepare API parameters
+                const params: Parameters<typeof getUsage>[0] = {
+                    period: period,
+                    start: startDate.toISOString(),
+                    end: endDate.toISOString(),
+                    // Add nodeId if it exists
+                    ...(nodeId !== undefined && { node_id: nodeId })
+                };
+
+                const response = await getUsage(params);
+
+                if (response && response.length > 0) {
+                    const formattedData = response.map((point: NodeUsageStats) => {
+                        const date = new Date(point.period_start)
+                        let timeFormat;
+                        // Format time based on determined period
+                        if (period === Period.hour) {
+                            timeFormat = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                        } else { // Period.day
+                            timeFormat = `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`;
+                        }
+
+                        const usageInGB = (point.uplink + point.downlink) / (1024 * 1024 * 1024)
+
+                        return {
+                            time: timeFormat,
+                            usage: parseFloat(usageInGB.toFixed(2))
+                        }
+                    })
+
+                    setChartData(formattedData)
+
+                    const total = response.reduce((sum: number, point: NodeUsageStats) => sum + point.uplink + point.downlink, 0)
+                    const formattedTotal = formatBytes(total, 2)
+                    if (typeof formattedTotal === 'string') {
+                        setTotalUsage(formattedTotal)
+                    }
+                } else {
+                    setChartData(null)
+                    setTotalUsage("0")
+                }
+            } catch (err) {
+                setError(err as Error)
+                setChartData(null)
+                setTotalUsage("0")
+                console.error("Error fetching usage data:", err)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        fetchUsageData()
+    }, [dateRange, nodeId])
 
     return (
         <Card>
             <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
                 <div className="flex flex-1 flex-col sm:flex-row gap-1 px-6 py-6 sm:py-6 border-b">
                     <div className="flex flex-1 flex-col justify-center align-middle gap-1 px-1 py-1">
-                        <CardTitle>{t("Traffic Usage")}</CardTitle>
-                        <CardDescription>{t("Deploy your new project in one-click.")}</CardDescription>
+                        <CardTitle>{t("statistics.trafficUsage")}</CardTitle>
+                        <CardDescription>{t("statistics.trafficUsageDescription")}</CardDescription>
                     </div>
                     <div className="px-1 py-1 flex justify-center align-middle flex-col">
-                        <TimeSelector selectedTime={selectedTime} setSelectedTime={setSelectedTime} />
+                        <TimeRangeSelector onRangeChange={setDateRange} />
                     </div>
                 </div>
                 <div className="sm:border-l p-6 m-0 flex flex-col justify-center px-4 ">
-                    <span className="text-muted-foreground text-xs sm:text-sm">{t("Usage during selected period")}</span>
-                    <span className="text-foreground text-lg flex justify-center">{totalUsage} GB</span>
+                    <span className="text-muted-foreground text-xs sm:text-sm">{t("statistics.usageDuringPeriod")}</span>
+                    <span className="text-foreground text-lg flex justify-center">
+                        {isLoading ? <Skeleton className="h-5 w-20" /> : totalUsage}
+                    </span>
                 </div>
             </CardHeader>
             <CardContent dir={dir} className="pt-8">
-                <ChartContainer dir={dir} config={chartConfig} className="max-h-[400px] min-h-[200px] w-full">
-                    {chartData && (
-                        <BarChart accessibilityLayer data={chartData}>
-                            <CartesianGrid direction={dir} vertical={false} />
-                            <XAxis direction={dir} dataKey="time" tickLine={false} tickMargin={10} axisLine={false} />
-                            <YAxis direction={dir} tickLine={false} axisLine={false} />
-                            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                            <Bar dataKey="usage" fill="var(--color-usage)" radius={8} />
-                        </BarChart>
-                    )}
-                </ChartContainer>
+                {isLoading ? (
+                    <div className="max-h-[400px] min-h-[200px] w-full flex items-center justify-center">
+                        <Skeleton className="h-[300px] w-full" />
+                    </div>
+                ) : error ? (
+                    <div className="max-h-[400px] min-h-[200px] w-full flex items-center justify-center text-destructive">
+                        {t("errors.failedToLoad")}
+                    </div>
+                ) : (
+                    <ChartContainer dir={dir} config={chartConfig} className="max-h-[400px] min-h-[200px] w-full">
+                        {chartData && chartData.length > 0 ? (
+                            <BarChart accessibilityLayer data={chartData}>
+                                <CartesianGrid direction={dir} vertical={false} />
+                                <XAxis direction={dir} dataKey="time" tickLine={false} tickMargin={10} axisLine={false} />
+                                <YAxis 
+                                    direction={dir} 
+                                    tickLine={false} 
+                                    axisLine={false}
+                                    tickFormatter={(value) => `${value.toFixed(2)} GB`}
+                                />
+                                <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                                <Bar dataKey="usage" fill="var(--color-usage)" radius={8} />
+                            </BarChart>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-muted-foreground">
+                                {t("statistics.noDataAvailable")}
+                            </div>
+                        )}
+                    </ChartContainer>
+                )}
             </CardContent>
         </Card>
     )
