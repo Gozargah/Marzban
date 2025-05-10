@@ -1,5 +1,5 @@
 import PageHeader from '@/components/page-header'
-import { Cpu, LucideIcon, Settings as SettingsIcon } from 'lucide-react'
+import { LucideIcon, Settings as SettingsIcon, Palette } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Outlet, useLocation, useNavigate } from 'react-router'
@@ -13,7 +13,7 @@ interface Tab {
 
 const tabs: Tab[] = [
   { id: 'general', label: 'general', icon: SettingsIcon, url: '/settings' },
-  { id: 'core', label: 'core', icon: Cpu, url: '/settings/core' },
+  { id: 'theme', label: 'theme.title', icon: Palette, url: '/settings/theme' },
 ]
 
 const Settings = () => {
@@ -31,7 +31,7 @@ const Settings = () => {
 
   return (
     <div className="flex flex-col gap-0 w-full items-start">
-      <PageHeader title="settings" description="manageNodes" />
+      <PageHeader title="settings" description="manageSettings" />
       <div className="w-full">
         <div className="flex border-b px-4">
           {tabs.map(tab => (

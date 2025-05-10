@@ -1,4 +1,4 @@
-import CoreSettings from '@/pages/_dashboard.settings.core'
+import CoreSettings from '@/pages/_dashboard.nodes.core'
 import { getCurrentAdmin } from '@/service/api'
 import { createHashRouter, RouteObject } from 'react-router'
 import DashboardLayout from './pages/_dashboard'
@@ -12,7 +12,8 @@ import UserTemplates from './pages/_dashboard.templates._index'
 import Login from './pages/login'
 import Hosts from './pages/_dashboard.hosts'
 import AdminsPage from './pages/_dashboard.admins'
-import ThemePage from '@/pages/_dashboard.theme'
+import ThemePage from '@/pages/_dashboard.settings.theme'
+import NodesPage from './pages/_dashboard.nodes._index'
 
 const fetchAdminLoader = async (): Promise<any> => {
   try {
@@ -45,6 +46,16 @@ export const router = createHashRouter([
       {
         path: '/nodes',
         element: <Nodes />,
+        children: [
+          {
+            path: '/nodes',
+            element: <NodesPage />,
+          },
+          {
+            path: '/nodes/cores',
+            element: <CoreSettings />,
+          },
+        ],
       },
       {
         path: '/groups',
@@ -67,8 +78,8 @@ export const router = createHashRouter([
             element: <GeneralSettings />,
           },
           {
-            path: '/settings/core',
-            element: <CoreSettings />,
+            path: '/settings/theme',
+            element: <ThemePage />,
           },
         ],
       },

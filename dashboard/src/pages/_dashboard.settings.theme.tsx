@@ -94,11 +94,6 @@ export const colorThemes = [
         '--input': '0 0% 89.8%',
         '--ring': '0 72.2% 50.6%',
         '--radius': '0.5rem',
-        '--chart-1': '12 76% 61%',
-        '--chart-2': '173 58% 39%',
-        '--chart-3': '197 37% 24%',
-        '--chart-4': '43 74% 66%',
-        '--chart-5': '27 87% 67%',
       },
       dark: {
         '--background': '240 2% 11%',
@@ -120,11 +115,7 @@ export const colorThemes = [
         '--border': '0 0% 18%',
         '--input': '0 0% 14.9%',
         '--ring': '0 72.2% 50.6%',
-        '--chart-1': '220 70% 50%',
-        '--chart-2': '160 60% 45%',
-        '--chart-3': '30 80% 55%',
-        '--chart-4': '280 65% 60%',
-        '--chart-5': '340 75% 55%',
+        '--radius': '0.5rem',
       },
     },
   },
@@ -154,11 +145,6 @@ export const colorThemes = [
         '--input': '240 5.9% 90%',
         '--ring': '346.8 77.2% 49.8%',
         '--radius': '0.5rem',
-        '--chart-1': '12 76% 61%',
-        '--chart-2': '173 58% 39%',
-        '--chart-3': '197 37% 24%',
-        '--chart-4': '43 74% 66%',
-        '--chart-5': '27 87% 67%',
       },
       dark: {
         '--background': '240 2% 11%',
@@ -180,11 +166,7 @@ export const colorThemes = [
         '--border': '0 0% 18%',
         '--input': '0 0% 14.9%',
         '--ring': '346.8 77.2% 49.8%',
-        '--chart-1': '220 70% 50%',
-        '--chart-2': '160 60% 45%',
-        '--chart-3': '30 80% 55%',
-        '--chart-4': '280 65% 60%',
-        '--chart-5': '340 75% 55%',
+        '--radius': '0.5rem',
       },
     },
   },
@@ -214,11 +196,6 @@ export const colorThemes = [
         '--input': '20 5.9% 90%',
         '--ring': '24.6 95% 53.1%',
         '--radius': '0.5rem',
-        '--chart-1': '12 76% 61%',
-        '--chart-2': '173 58% 39%',
-        '--chart-3': '197 37% 24%',
-        '--chart-4': '43 74% 66%',
-        '--chart-5': '27 87% 67%',
       },
       dark: {
         '--background': '240 2% 11%',
@@ -240,11 +217,7 @@ export const colorThemes = [
         '--border': '0 0% 18%',
         '--input': '0 0% 14.9%',
         '--ring': '20.5 90.2% 48.2%',
-        '--chart-1': '220 70% 50%',
-        '--chart-2': '160 60% 45%',
-        '--chart-3': '30 80% 55%',
-        '--chart-4': '280 65% 60%',
-        '--chart-5': '340 75% 55%',
+        '--radius': '0.5rem',
       },
     },
   },
@@ -274,11 +247,6 @@ export const colorThemes = [
         '--input': '240 5.9% 90%',
         '--ring': '142.1 76.2% 36.3%',
         '--radius': '0.5rem',
-        '--chart-1': '12 76% 61%',
-        '--chart-2': '173 58% 39%',
-        '--chart-3': '197 37% 24%',
-        '--chart-4': '43 74% 66%',
-        '--chart-5': '27 87% 67%',
       },
       dark: {
         '--background': '240 2% 11%',
@@ -300,11 +268,7 @@ export const colorThemes = [
         '--border': '0 0% 18%',
         '--input': '0 0% 14.9%',
         '--ring': '142.4 71.8% 29.2%',
-        '--chart-1': '220 70% 50%',
-        '--chart-2': '160 60% 45%',
-        '--chart-3': '30 80% 55%',
-        '--chart-4': '280 65% 60%',
-        '--chart-5': '340 75% 55%',
+        '--radius': '0.5rem',
       },
     },
   },
@@ -334,11 +298,6 @@ export const colorThemes = [
         '--input': '214.3 31.8% 91.4%',
         '--ring': '221.2 83.2% 53.3%',
         '--radius': '0.5rem',
-        '--chart-1': '12 76% 61%',
-        '--chart-2': '173 58% 39%',
-        '--chart-3': '197 37% 24%',
-        '--chart-4': '43 74% 66%',
-        '--chart-5': '27 87% 67%',
       },
       dark: {
         '--background': '240 2% 11%',
@@ -360,11 +319,7 @@ export const colorThemes = [
         '--border': '0 0% 18%',
         '--input': '0 0% 14.9%',
         '--ring': '224.3 76.3% 48%',
-        '--chart-1': '220 70% 50%',
-        '--chart-2': '160 60% 45%',
-        '--chart-3': '30 80% 55%',
-        '--chart-4': '280 65% 60%',
-        '--chart-5': '340 75% 55%',
+        '--radius': '0.5rem',
       },
     },
   },
@@ -394,11 +349,6 @@ export const colorThemes = [
         '--input': '20 5.9% 90%',
         '--ring': '20 14.3% 4.1%',
         '--radius': '0.5rem',
-        '--chart-1': '12 76% 61%',
-        '--chart-2': '173 58% 39%',
-        '--chart-3': '197 37% 24%',
-        '--chart-4': '43 74% 66%',
-        '--chart-5': '27 87% 67%',
       },
       dark: {
         '--background': '240 2% 11%',
@@ -420,11 +370,7 @@ export const colorThemes = [
         '--border': '0 0% 18%',
         '--input': '0 0% 14.9%',
         '--ring': '35.5 91.7% 32.9%',
-        '--chart-1': '220 70% 50%',
-        '--chart-2': '160 60% 45%',
-        '--chart-3': '30 80% 55%',
-        '--chart-4': '280 65% 60%',
-        '--chart-5': '340 75% 55%',
+        '--radius': '0.5rem',
       },
     },
   },
@@ -454,11 +400,6 @@ export const colorThemes = [
         '--input': '220 13% 91%',
         '--ring': '262.1 83.3% 57.8%',
         '--radius': '0.5rem',
-        '--chart-1': '12 76% 61%',
-        '--chart-2': '173 58% 39%',
-        '--chart-3': '197 37% 24%',
-        '--chart-4': '43 74% 66%',
-        '--chart-5': '27 87% 67%',
       },
       dark: {
         '--background': '240 2% 11%',
@@ -480,22 +421,17 @@ export const colorThemes = [
         '--border': '0 0% 18%',
         '--input': '0 0% 14.9%',
         '--ring': '263.4 70% 50.4%',
-        '--chart-1': '220 70% 50%',
-        '--chart-2': '160 60% 45%',
-        '--chart-3': '30 80% 55%',
-        '--chart-4': '280 65% 60%',
-        '--chart-5': '340 75% 55%',
+        '--radius': '0.5rem',
       },
     },
   },
 ]
 
-export default function ThemePage() {
+export default function ThemeSettings() {
   const { t } = useTranslation();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [selectedColor, setSelectedColor] = useState(() => {
-    // Initialize with saved color theme
     return localStorage.getItem('color-theme') || 'default';
   });
   const [radius, setRadius] = useState(() => {
@@ -504,7 +440,6 @@ export default function ThemePage() {
 
   useEffect(() => {
     setMounted(true);
-    // Apply the current color theme and radius
     const color = colorThemes.find(c => c.name === selectedColor) || colorThemes[0];
     const mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
     applyThemeVars({
@@ -515,7 +450,6 @@ export default function ThemePage() {
 
   useEffect(() => {
     if (!mounted) return;
-    // Apply theme vars on color, radius or mode change
     const color = colorThemes.find(c => c.name === selectedColor) || colorThemes[0];
     const mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
     applyThemeVars({
@@ -536,7 +470,6 @@ export default function ThemePage() {
 
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
     setTheme(newTheme);
-    // Show toast to inform user to visit theme page
     toast({
       title: t('theme.themeChanged'),
       description: t('theme.visitThemePage'),
@@ -552,7 +485,7 @@ export default function ThemePage() {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-8">
+    <div className="flex flex-col gap-y-6 mt-10">
       <Card>
         <CardHeader>
           <CardTitle>{t('theme.title')}</CardTitle>

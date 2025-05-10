@@ -8,7 +8,7 @@ import { ThemeToggle } from '@/components/theme-toggle'
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail, SidebarTrigger } from '@/components/ui/sidebar'
 import { DONATION_URL, REPO_URL } from '@/constants/Project'
 import useDirDetection from '@/hooks/use-dir-detection'
-import { BookOpen, GithubIcon, LayoutTemplate, LifeBuoy, ListTodo, PieChart, RssIcon, Settings2, Share2Icon, UserCog, UsersIcon, Users2, Palette } from 'lucide-react'
+import { BookOpen, GithubIcon, LayoutTemplate, LifeBuoy, ListTodo, PieChart, RssIcon, Settings2, Share2Icon, UserCog, UsersIcon, Users2, Palette, Cpu } from 'lucide-react'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -46,16 +46,23 @@ const data = {
       title: 'nodes.title',
       url: '/nodes',
       icon: Share2Icon,
+      items: [
+        {
+          title: 'nodes.title',
+          url: '/nodes',
+          icon: Share2Icon,
+        },
+        {
+          title: 'settings.cores.title',
+          url: '/nodes/cores',
+          icon: Cpu,
+        },
+      ],
     },
     {
       title: 'templates.title',
       url: '/templates',
       icon: LayoutTemplate,
-    },
-    {
-      title: 'theme.title',
-      url: '/theme',
-      icon: Palette,
     },
     {
       title: 'settings',
@@ -65,10 +72,12 @@ const data = {
         {
           title: 'general',
           url: '/settings',
+          icon: Settings2,
         },
         {
-          title: 'core',
-          url: '/settings/core',
+          title: 'theme.title',
+          url: '/settings/theme',
+          icon: Palette,
         },
       ],
     },

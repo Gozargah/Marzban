@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { colorThemes } from '@/pages/_dashboard.theme';
+import { colorThemes } from '@/pages/_dashboard.settings.theme';
 import { useTheme } from './theme-provider';
 
 function clearThemeVars() {
