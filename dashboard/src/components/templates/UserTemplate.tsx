@@ -1,14 +1,14 @@
-import { useState } from "react";
-import { Card, CardDescription, CardTitle } from "../ui/card";
+import {useState} from "react";
+import {Card, CardDescription, CardTitle} from "../ui/card";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { Button } from "../ui/button";
-import { Copy, EllipsisVertical, Infinity, Pen, Trash2 } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import {Button} from "../ui/button";
+import {Copy, EllipsisVertical, Infinity, Pen, Trash2} from "lucide-react";
+import {useTranslation} from "react-i18next";
 import useDirDetection from "@/hooks/use-dir-detection";
 import {
     AlertDialog,
@@ -20,24 +20,24 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
-import { formatBytes } from "@/utils/formatByte";
-import { createUserTemplate, useRemoveUserTemplate, UserTemplateCreate, UserTemplateResponse } from "@/service/api";
-import { queryClient } from "@/utils/query-client.ts";
+import {cn} from "@/lib/utils";
+import {useToast} from "@/hooks/use-toast";
+import {formatBytes} from "@/utils/formatByte";
+import {createUserTemplate, useRemoveUserTemplate, UserTemplateCreate, UserTemplateResponse} from "@/service/api";
+import {queryClient} from "@/utils/query-client.ts";
 
 const DeleteAlertDialog = ({
-    userTemplate,
-    isOpen,
-    onClose,
-    onConfirm,
-}: {
+                               userTemplate,
+                               isOpen,
+                               onClose,
+                               onConfirm,
+                           }: {
     userTemplate: UserTemplateResponse;
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void;
 }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const dir = useDirDetection();
 
     return (
@@ -48,7 +48,7 @@ const DeleteAlertDialog = ({
                         <AlertDialogTitle>{t("templates.deleteUserTemplateTitle")}</AlertDialogTitle>
                         <AlertDialogDescription>
                             <span dir={dir}
-                                dangerouslySetInnerHTML={{ __html: t("templates.deleteUserTemplatePrompt", { name: userTemplate.name }) }} />
+                                  dangerouslySetInnerHTML={{__html: t("templates.deleteUserTemplatePrompt", {name: userTemplate.name})}}/>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className={cn(dir === "rtl" && "sm:gap-x-2 sm:flex-row-reverse")}>
@@ -63,13 +63,13 @@ const DeleteAlertDialog = ({
     );
 };
 
-const UserTemplate = ({ template, onEdit }: {
+const UserTemplate = ({template, onEdit}: {
     template: UserTemplateResponse,
     onEdit: (userTemplate: UserTemplateResponse) => void
 }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const dir = useDirDetection();
-    const { toast } = useToast();
+    const {toast} = useToast();
     const removeUserTemplateMutation = useRemoveUserTemplate()
     const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -90,7 +90,7 @@ const UserTemplate = ({ template, onEdit }: {
                 templateId: template.id
             });
             toast({
-                title: t("success", { defaultValue: "Success" }),
+                title: t("success", {defaultValue: "Success"}),
                 description: t("templates.deleteSuccess", {
                     name: template.name,
                     defaultValue: "Template «{name}» has been deleted successfully"
@@ -98,10 +98,10 @@ const UserTemplate = ({ template, onEdit }: {
             });
             setDeleteDialogOpen(false);
             // Invalidate nodes queries
-            queryClient.invalidateQueries({ queryKey: ['/api/user_templates'] });
+            queryClient.invalidateQueries({queryKey: ['/api/user_templates']});
         } catch (error) {
             toast({
-                title: t("error", { defaultValue: "Error" }),
+                title: t("error", {defaultValue: "Error"}),
                 description: t("templates.deleteFailed", {
                     name: template.name,
                     defaultValue: "Failed to delete template «{name}»"
@@ -119,17 +119,17 @@ const UserTemplate = ({ template, onEdit }: {
             }
             await createUserTemplate(newTemplate)
             toast({
-                title: t("success", { defaultValue: "Success" }),
+                title: t("success", {defaultValue: "Success"}),
                 description: t("templates.duplicateSuccess", {
                     name: template.name,
                     defaultValue: "Template «{name}» has been duplicated successfully"
                 })
             });
-            queryClient.invalidateQueries({ queryKey: ['/api/user_templates'] });
+            queryClient.invalidateQueries({queryKey: ['/api/user_templates']});
 
         } catch (error) {
             toast({
-                title: t("error", { defaultValue: "Error" }),
+                title: t("error", {defaultValue: "Error"}),
                 description: t("templates.duplicateFailed", {
                     name: template.name,
                     defaultValue: "Failed to duplicate template «{name}»"
@@ -142,8 +142,8 @@ const UserTemplate = ({ template, onEdit }: {
     return (
         <Card className="px-5 py-6 rounded-lg group hover:bg-accent transition-colors">
             <div className="flex items-center justify-between">
-                <div 
-                    className="flex-1 cursor-pointer" 
+                <div
+                    className="flex-1 cursor-pointer"
                     onClick={() => onEdit(template)}
                 >
                     <CardTitle className="flex items-center gap-x-2">
@@ -153,12 +153,13 @@ const UserTemplate = ({ template, onEdit }: {
                         <div className="flex flex-col gap-y-1 mt-2">
                             <p className={"flex items-center gap-x-1"}>
                                 {t("userDialog.dataLimit")}: <span>{(!template.data_limit || template.data_limit === 0) ?
-                                    <Infinity
-                                        className="w-4 h-4"></Infinity> : formatBytes(template.data_limit ? template.data_limit : 0)}</span>
+                                <Infinity
+                                    className="w-4 h-4"></Infinity> : formatBytes(template.data_limit ? template.data_limit : 0)}</span>
                             </p>
                             <p className={"flex items-center gap-x-1"}>
                                 {t("Expire")}: <span>{(!template.expire_duration || template.expire_duration === 0 ?
-                                    <Infinity className="w-4 h-4"></Infinity> : template.expire_duration)}</span>
+                                <Infinity
+                                    className="w-4 h-4"></Infinity> : `${template.expire_duration / 60 / 60 / 24} Days`)}</span>
                             </p>
                         </div>
                     </CardDescription>
@@ -170,7 +171,7 @@ const UserTemplate = ({ template, onEdit }: {
                             size="icon"
                             className="template-dropdown-menu"
                         >
-                            <EllipsisVertical />
+                            <EllipsisVertical/>
                             <span className="sr-only">Template Actions</span>
                         </Button>
                     </DropdownMenuTrigger>
@@ -183,7 +184,7 @@ const UserTemplate = ({ template, onEdit }: {
                                 onEdit(template);
                             }}
                         >
-                            <Pen className="h-4 w-4" />
+                            <Pen className="h-4 w-4"/>
                             <span>{t("edit")}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
@@ -194,7 +195,7 @@ const UserTemplate = ({ template, onEdit }: {
                                 handleDuplicate();
                             }}
                         >
-                            <Copy className="w-4 h-4" />
+                            <Copy className="w-4 h-4"/>
                             <span>{t("duplicate")}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
@@ -205,7 +206,7 @@ const UserTemplate = ({ template, onEdit }: {
                                 handleDeleteClick(e);
                             }}
                         >
-                            <Trash2 className="h-4 w-4 text-red-500" />
+                            <Trash2 className="h-4 w-4 text-red-500"/>
                             <span>{t("delete")}</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
