@@ -44,7 +44,7 @@ const ExpandedRowContent = ({row, onEdit, onDelete, onToggleStatus, onResetUsage
                 <span>|</span>
                 <div className="flex items-center gap-1">
                     <ChartPie className="w-4 h-4"/>
-                    <span>{row.users_usage ? `${(row.users_usage / (1024 * 1024 * 1024 * 1024)).toFixed(2)} TB` : '0 TB'}</span>
+                    <span>{row.used_traffic ? `${(row.used_traffic / (1024 * 1024 * 1024 * 1024)).toFixed(2)} TB` : '0 TB'}</span>
                 </div>
             </div>
             <div className="flex justify-end gap-1">

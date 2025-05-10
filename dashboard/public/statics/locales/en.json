@@ -92,7 +92,7 @@
     "status": "Status",
     "role": "Role",
     "users.count": "Users Count",
-    "users.usage": "Users Usage",
+    "used.traffic": "Used Traffic",
     "total": "Total Admins",
     "active": "Active Admins",
     "disable": "Disabled Admins",

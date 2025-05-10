@@ -88,7 +88,7 @@
     "status": "状态",
     "role": "角色",
     "users.count": "用户数量",
-    "users.usage": "用户使用情况",
+    "used.traffic": "已用流量",
     "total": "管理员总数",
     "active": "活跃管理员",
     "disable": "禁用的管理员",

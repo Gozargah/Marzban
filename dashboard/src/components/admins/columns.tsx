@@ -88,10 +88,10 @@ export const setupColumns = ({
         ),
     },
     {
-        accessorKey: 'users_usage',
-        header: () => createSortButton('users_usage', 'admins.users.usage', t, handleSort, filters),
+        accessorKey: 'used_traffic',
+        header: () => createSortButton('used_traffic', 'admins.used.traffic', t, handleSort, filters),
         cell: ({row}) => {
-            const traffic = row.getValue('users_usage') as number | null;
+            const traffic = row.getValue('used_traffic') as number | null;
             return (
                 <div className="flex gap-2 items-center">
                     <ChartPie className="h-4 w-4"/>
