@@ -43,7 +43,7 @@ class GroupOperation(BaseOperation):
         await asyncio.gather(
             *[
                 node_manager.update_user(
-                    UserResponse.model_validate(user), user.inbounds(await core_manager.get_inbounds())
+                    UserResponse.model_validate(user), await user.inbounds(await core_manager.get_inbounds())
                 )
                 for user in users
             ]
@@ -68,7 +68,7 @@ class GroupOperation(BaseOperation):
         await asyncio.gather(
             *[
                 node_manager.update_user(
-                    UserResponse.model_validate(user), user.inbounds(await core_manager.get_inbounds())
+                    UserResponse.model_validate(user), await user.inbounds(await core_manager.get_inbounds())
                 )
                 for user in users
             ]

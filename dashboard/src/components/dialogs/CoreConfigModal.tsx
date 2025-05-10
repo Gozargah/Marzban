@@ -258,7 +258,7 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[1000px] h-full sm:h-auto overflow-y-auto">
+      <DialogContent className="max-w-full sm:max-w-[1000px] h-full sm:h-auto overflow-y-auto px-4 py-6">
         <DialogHeader>
           <DialogTitle className={cn("text-xl text-start font-semibold", dir === "rtl" && "sm:text-right")}>
             {editingCore ? t('coreConfigModal.editCore') : t('coreConfigModal.addConfig')}
@@ -281,7 +281,7 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <div dir="ltr" className="rounded-lg border h-[450px]">
+                          <div dir="ltr" className="rounded-lg border h-[450px] sm:h-[500px] md:h-[550px]">
                             <Editor
                               height="100%"
                               defaultLanguage="json"

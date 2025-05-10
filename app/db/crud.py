@@ -5,9 +5,10 @@ Functions for managing proxy hosts, users, user templates, nodes, and administra
 import asyncio
 from datetime import UTC, datetime, timedelta, timezone
 from enum import Enum
+from random import randint
 from typing import List, Optional, Union
 
-from sqlalchemy import and_, delete, func, not_, or_, select, update
+from sqlalchemy import String, and_, delete, func, not_, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Query, joinedload, selectinload
 from sqlalchemy.sql.functions import coalesce
@@ -31,6 +32,7 @@ from app.db.models import (
     ProxyInbound,
     ReminderType,
     System,
+    Settings,
     User,
     UserDataLimitResetStrategy,
     UserStatus,
@@ -43,6 +45,7 @@ from app.models.group import GroupCreate, GroupModify
 from app.models.host import CreateHost
 from app.models.node import NodeCreate, NodeModify
 from app.models.proxy import ProxyTable
+from app.models.settings import SettingsSchema
 from app.models.stats import (
     NodeStats,
     NodeStatsList,
@@ -54,7 +57,7 @@ from app.models.stats import (
 )
 from app.models.user import UserCreate, UserModify
 from app.models.user_template import UserTemplateCreate, UserTemplateModify
-from config import NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT, USERS_AUTODELETE_DAYS
+from config import USERS_AUTODELETE_DAYS
 
 MYSQL_FORMATS = {
     Period.minute: "%Y-%m-%d %H:%i:00",
@@ -81,6 +84,35 @@ def _build_trunc_expression(period: Period, column):
         return func.strftime(SQLITE_FORMATS[period.value], column)
 
     raise ValueError(f"Unsupported dialect: {DATABASE_DIALECT}")
+
+
+def json_extract(column, path: str):
+    """
+    Args:
+        column: The JSON column in your model
+        dialect_name: The database name
+        path: JSON path (e.g., '$.theme')
+    """
+    match DATABASE_DIALECT:
+        case "postgresql":
+            return func.jsonb_path_query(column, path).cast(String)
+        case "mysql":
+            return func.json_unquote(func.json_extract(column, path)).cast(String)
+        case "sqlite":
+            return func.json_extract(column, path).cast(String)
+
+
+def build_json_proxy_settings_search_condition(column, value: str):
+    """
+    Builds a condition to search JSON column for UUIDs or passwords.
+    Supports PostgreSQL, MySQL, SQLite.
+    """
+    return or_(
+        *[
+            json_extract(column, field) == value
+            for field in ("$.vmess.id", "$.vless.id", "$.trojan.password", "$.shadowsocks.password")
+        ]
+    )
 
 
 async def add_default_host(db: AsyncSession, inbound: ProxyInbound):
@@ -321,6 +353,7 @@ async def get_users(
     limit: int | None = None,
     usernames: list[str] | None = None,
     search: str | None = None,
+    proxy_id: str | None = None,
     status: UserStatus | list[UserStatus] | None = None,
     sort: list[UsersSortingOptions] | None = None,
     admin: Admin | None = None,
@@ -374,6 +407,8 @@ async def get_users(
 
     if group_ids:
         filters.append(User.groups.any(Group.id.in_(group_ids)))
+    if proxy_id:
+        filters.append(build_json_proxy_settings_search_condition(User.proxy_settings, proxy_id))
 
     if filters:
         stmt = stmt.where(and_(*filters))
@@ -650,15 +685,9 @@ async def modify_user(db: AsyncSession, db_user: User, modify: UserModify) -> Us
                 if db_user.status != UserStatus.on_hold:
                     db_user.status = UserStatus.active
 
-                user_percent = db_user.usage_percentage
-                for percent in sorted(NOTIFY_REACHED_USAGE_PERCENT, reverse=True):
-                    if not db_user.data_limit or (user_percent < percent):
-                        reminder = await get_notification_reminder(
-                            db, db_user.id, ReminderType.data_usage, threshold=percent
-                        )
-                        if reminder:
-                            await delete_notification_reminder(db, reminder)
-
+                delete_user_passed_notification_reminders(
+                    db, db_user.id, ReminderType.data_usage, db_user.usage_percentage
+                )
             else:
                 db_user.status = UserStatus.limited
 
@@ -673,14 +702,9 @@ async def modify_user(db: AsyncSession, db_user: User, modify: UserModify) -> Us
             if not db_user.expire or db_user.expire.replace(tzinfo=timezone.utc) > datetime.now(timezone.utc):
                 db_user.status = UserStatus.active
 
-                user_days_left = db_user.days_left
-                for days_left in sorted(NOTIFY_DAYS_LEFT):
-                    if not db_user.expire or (user_days_left > days_left):
-                        reminder = await get_notification_reminder(
-                            db, db_user.id, ReminderType.expiration_date, threshold=days_left
-                        )
-                        if reminder:
-                            await delete_notification_reminder(db, reminder)
+                delete_user_passed_notification_reminders(
+                    db, db_user.id, ReminderType.expiration_date, db_user.days_left
+                )
             else:
                 db_user.status = UserStatus.expired
 
@@ -1365,12 +1389,12 @@ async def reset_admin_usage(db: AsyncSession, db_admin: Admin) -> int:
     Returns:
         Admin: The updated admin.
     """
-    if db_admin.users_usage == 0:
+    if db_admin.used_traffic == 0:
         return db_admin
 
-    usage_log = AdminUsageLogs(admin=db_admin, used_traffic_at_reset=db_admin.users_usage)
+    usage_log = AdminUsageLogs(admin=db_admin, used_traffic_at_reset=db_admin.used_traffic)
     db.add(usage_log)
-    db_admin.users_usage = 0
+    db_admin.used_traffic = 0
 
     await db.commit()
     await db.refresh(db_admin)
@@ -1392,6 +1416,7 @@ async def create_user_template(db: AsyncSession, user_template: UserTemplateCrea
     Returns:
         UserTemplate: The created user template object.
     """
+
     db_user_template = UserTemplate(
         name=user_template.name,
         data_limit=user_template.data_limit,
@@ -1399,7 +1424,7 @@ async def create_user_template(db: AsyncSession, user_template: UserTemplateCrea
         username_prefix=user_template.username_prefix,
         username_suffix=user_template.username_suffix,
         groups=await get_groups_by_ids(db, user_template.group_ids) if user_template.group_ids else None,
-        extra_settings=user_template.extra_settings.dict(),
+        extra_settings=user_template.extra_settings.dict() if user_template.extra_settings else None,
         status=user_template.status,
         reset_usages=user_template.reset_usages,
         on_hold_timeout=user_template.on_hold_timeout,
@@ -1832,6 +1857,30 @@ async def delete_notification_reminder_by_type(
     await db.commit()
 
 
+async def delete_user_passed_notification_reminders(
+    db: AsyncSession, user_id: int, type: ReminderType, threshold: int
+) -> None:
+    """
+    Deletes user reminders passed.
+
+    Args:
+        db (AsyncSession): The database session.
+        user_id (int): The ID of the user.
+        reminder_type (ReminderType): The type of reminder to delete.
+        threshold (int): The threshold to delete (e.g., days left or usage percent).
+    """
+    conditions = [NotificationReminder.user_id == user_id, NotificationReminder.type == type]
+
+    if type == ReminderType.data_usage:
+        conditions.append(NotificationReminder.threshold > threshold)
+    if type == ReminderType.expiration_date:
+        conditions.append(NotificationReminder.threshold < threshold)
+
+    stmt = delete(NotificationReminder).where(and_(*conditions))
+    await db.execute(stmt)
+    await db.commit()
+
+
 async def delete_notification_reminder(db: AsyncSession, dbreminder: NotificationReminder) -> None:
     """
     Deletes a specific notification reminder.
@@ -2096,3 +2145,102 @@ async def get_core_configs(db: AsyncSession, offset: int = None, limit: int = No
 
     all_core_configs = (await db.execute(query)).scalars().all()
     return all_core_configs, len(all_core_configs)
+
+
+## for develpers
+
+
+def get_last_hour(dt: datetime) -> datetime:
+    return dt.replace(minute=0, second=0, microsecond=0)
+
+
+async def generate_node_user_usage(session: AsyncSession, fake, hours_back=24):
+    records = []
+    existing_combinations = set()
+    user_ids = (await session.execute(select(User.id))).scalars().all()
+    node_ids = (await session.execute(select(Node.id))).scalars().all()
+    result = await session.execute(select(NodeUserUsage.created_at, NodeUserUsage.user_id, NodeUserUsage.node_id))
+    existing_combinations.update(result.all())
+    for _ in range(500):  # Try to generate up to 100 valid records
+        attempts = 0
+        while attempts < 100:  # Avoid infinite loop
+            user_id = fake.random_element(elements=user_ids)
+            node_id = fake.random_element(elements=node_ids)
+            created_at = get_last_hour(
+                fake.date_time_between(start_date=f"-{hours_back}h", end_date="now", tzinfo=timezone.utc)
+            )
+
+            key = (created_at, user_id, node_id)
+            if key not in existing_combinations:
+                break
+            attempts += 1
+        else:
+            # Failed to find a unique combination after many tries
+            print("⚠️ Could not generate more unique NodeUserUsage entries.")
+            continue
+
+        used_traffic = randint(1_000_000, 1_000_000_000)  # 1MB to 1GB
+        record = NodeUserUsage(created_at=created_at, user_id=user_id, node_id=node_id, used_traffic=used_traffic)
+        records.append(record)
+        existing_combinations.add(key)
+
+    session.add_all(records)
+    await session.commit()
+
+
+async def generate_node_usage(session: AsyncSession, fake, hours_back=24):
+    records = []
+    existing_combinations = set()
+    node_ids = (await session.execute(select(Node.id))).scalars().all()
+    result = await session.execute(select(NodeUsage.created_at, NodeUsage.node_id))
+    existing_combinations.update(result.all())
+
+    for _ in range(150):  # Try to generate up to 50 valid records
+        attempts = 0
+        while attempts < 20:  # Limit retries to prevent infinite loop
+            node_id = fake.random_element(elements=node_ids)
+            created_at = get_last_hour(
+                fake.date_time_between(start_date=f"-{hours_back}h", end_date="now", tzinfo=timezone.utc)
+            )
+
+            key = (created_at, node_id)
+            if key not in existing_combinations:
+                break
+            attempts += 1
+        else:
+            print("⚠️ Could not generate more unique NodeUsage entries.")
+            continue
+
+        uplink = randint(1_000_000, 1_000_000_000)
+        downlink = randint(1_000_000, 1_000_000_000)
+
+        record = NodeUsage(created_at=created_at, node_id=node_id, uplink=uplink, downlink=downlink)
+        records.append(record)
+        existing_combinations.add(key)
+
+    session.add_all(records)
+    await session.commit()
+
+
+async def get_settings(db: AsyncSession) -> Settings:
+    """
+    Retrieves the Settings.
+
+    Args:
+        db (AsyncSession): Database session.
+
+    Returns:
+        Settings: Settings information.
+    """
+    return (await db.execute(select(Settings))).scalar_one_or_none()
+
+
+async def modify_settings(db: AsyncSession, db_setting: Settings, modify: SettingsSchema) -> Settings:
+    settings_data = modify.model_dump()
+
+    for key, value in settings_data.items():
+        setattr(db_setting, key, value)
+
+    await db.commit()
+    await db.refresh(db_setting)
+    return settings_data

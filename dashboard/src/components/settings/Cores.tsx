@@ -1,7 +1,7 @@
 import { useGetAllCores, useModifyCoreConfig } from '@/service/api'
 import { CoreResponse } from '@/service/api'
 import Core from './Core'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import CoreConfigModal, { coreConfigFormSchema, CoreConfigFormValues } from '@/components/dialogs/CoreConfigModal'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -10,6 +10,7 @@ import { toast } from '@/hooks/use-toast'
 import { useTranslation } from 'react-i18next'
 import { queryClient } from '@/utils/query-client'
 import { Button } from '@/components/ui/button'
+import useDirDetection from '@/hooks/use-dir-detection'
 
 const initialDefaultValues: Partial<CoreConfigFormValues> = {
   name: '',
@@ -21,17 +22,15 @@ interface CoresProps {
   isDialogOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   cores?: CoreResponse[];
-  onAddCore?: () => void;
   onEditCore?: (coreId: number | string) => void;
   onDuplicateCore?: (coreId: number | string) => void;
-  onDeleteCore?: (coreId: number | string) => void;
+  onDeleteCore?: (coreName: string, coreId: number) => void;
 }
 
 export default function Cores({ 
   isDialogOpen, 
   onOpenChange,
   cores,
-  onAddCore,
   onEditCore,
   onDuplicateCore,
   onDeleteCore 
@@ -39,8 +38,15 @@ export default function Cores({
   const [editingCore, setEditingCore] = useState<CoreResponse | null>(null)
   const { t } = useTranslation()
   const modifyCoreMutation = useModifyCoreConfig()
+  const dir = useDirDetection()
   
   const { data: coresData, isLoading } = useGetAllCores({})
+
+  useEffect(() => {
+    const handleOpenDialog = () => onOpenChange?.(true)
+    window.addEventListener('openCoreDialog', handleOpenDialog)
+    return () => window.removeEventListener('openCoreDialog', handleOpenDialog)
+  }, [onOpenChange])
 
   const form = useForm<CoreConfigFormValues>({
     resolver: zodResolver(coreConfigFormSchema),
@@ -100,25 +106,9 @@ export default function Cores({
   }
 
   return (
-    <div className="flex-1 w-full space-y-4 p-4 pt-6">
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">{t('settings.cores.title', 'Cores')}</h2>
-          <p className="text-muted-foreground">{t('settings.cores.description', 'Manage Your Cores')}</p>
-        </div>
-        <Button 
-          onClick={onAddCore ? onAddCore : () => onOpenChange?.(true)} 
-          className="flex items-center gap-1"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-          {t('settings.cores.addCore', 'Add Core')}
-        </Button>
-      </div>
-      
-      <ScrollArea className="h-[calc(100vh-8rem)]">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="flex-1 w-full">
+      <ScrollArea dir={dir} className="h-[calc(100vh-8rem)]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 pt-6 w-full">
           {(cores || coresData?.cores)?.map((core: CoreResponse) => (
             <Core
               key={core.id}
@@ -126,7 +116,7 @@ export default function Cores({
               onEdit={onEditCore ? () => onEditCore(core.id) : () => handleEdit(core)}
               onToggleStatus={handleToggleStatus}
               onDuplicate={onDuplicateCore ? () => onDuplicateCore(core.id) : undefined}
-              onDelete={onDeleteCore ? () => onDeleteCore(core.id) : undefined}
+              onDelete={onDeleteCore ? () => onDeleteCore(core.name, core.id) : undefined}
             />
           ))}
         </div>

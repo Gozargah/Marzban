@@ -16,6 +16,7 @@ export function NavMain({
     items?: {
       title: string
       url: string
+      icon: LucideIcon
     }[]
   }[]
 }) {
@@ -53,7 +54,8 @@ export function NavMain({
                         <SidebarMenuSubItem key={subItem.title}>
                           <NavLink to={subItem.url} end>
                             {({ isActive }) => (
-                              <SidebarMenuSubButton isActive={isActive}>
+                              <SidebarMenuSubButton className="flex items-center gap-2" isActive={isActive}>
+                                <subItem.icon />
                                 <span>{t(subItem.title)}</span>
                               </SidebarMenuSubButton>
                             )}

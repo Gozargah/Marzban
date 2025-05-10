@@ -1,10 +1,12 @@
 import json
 from random import choice
-from . import BaseSubscription
-from app.utils.helpers import UUIDEncoder
-from app.subscription.funcs import get_grpc_gun, detect_shadowsocks_2022
+
+from app.subscription.funcs import detect_shadowsocks_2022, get_grpc_gun
 from app.templates import render_template
+from app.utils.helpers import UUIDEncoder
 from config import SINGBOX_SUBSCRIPTION_TEMPLATE
+
+from . import BaseSubscription
 
 
 class SingBoxConfiguration(BaseSubscription):
@@ -65,7 +67,7 @@ class SingBoxConfiguration(BaseSubscription):
             "path": path,
         }
 
-        if headers == "http":
+        if headers == "http" and request:
             config.update(request)
         else:
             config["headers"] = {k: [v] for k, v in http_headers.items()} if http_headers else {}

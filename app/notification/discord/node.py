@@ -1,6 +1,7 @@
 from app.notification.client import send_discord_webhook
-from config import DISCORD_WEBHOOK_URL
 from app.models.node import NodeResponse
+from app.models.settings import NotficationSettings
+from app.settings import notfication_settings
 from . import colors
 
 
@@ -16,8 +17,9 @@ async def create_node(node: NodeResponse, by: str):
             }
         ],
     }
-    if DISCORD_WEBHOOK_URL:
-        await send_discord_webhook(data, DISCORD_WEBHOOK_URL)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_discord:
+        await send_discord_webhook(data, settings.discord_webhook_url)
 
 
 async def modify_node(node: NodeResponse, by: str):
@@ -32,8 +34,9 @@ async def modify_node(node: NodeResponse, by: str):
             }
         ],
     }
-    if DISCORD_WEBHOOK_URL:
-        await send_discord_webhook(data, DISCORD_WEBHOOK_URL)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_discord:
+        await send_discord_webhook(data, settings.discord_webhook_url)
 
 
 async def remove_node(node: NodeResponse, by: str):
@@ -48,8 +51,9 @@ async def remove_node(node: NodeResponse, by: str):
             }
         ],
     }
-    if DISCORD_WEBHOOK_URL:
-        await send_discord_webhook(data, DISCORD_WEBHOOK_URL)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_discord:
+        await send_discord_webhook(data, settings.discord_webhook_url)
 
 
 async def connect_node(node: NodeResponse):
@@ -66,8 +70,9 @@ async def connect_node(node: NodeResponse):
             }
         ],
     }
-    if DISCORD_WEBHOOK_URL:
-        await send_discord_webhook(data, DISCORD_WEBHOOK_URL)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_discord:
+        await send_discord_webhook(data, settings.discord_webhook_url)
 
 
 async def error_node(node: NodeResponse):
@@ -82,5 +87,6 @@ async def error_node(node: NodeResponse):
             }
         ],
     }
-    if DISCORD_WEBHOOK_URL:
-        await send_discord_webhook(data, DISCORD_WEBHOOK_URL)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_discord:
+        await send_discord_webhook(data, settings.discord_webhook_url)

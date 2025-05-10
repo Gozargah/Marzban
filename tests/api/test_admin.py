@@ -1,5 +1,6 @@
-from tests.api import client
 from fastapi import status
+
+from tests.api import client
 
 
 def test_admin_login():
@@ -17,6 +18,7 @@ def test_admin_login():
 def test_get_admin(access_token):
     """Test that the admin get route is accessible."""
 
+    # mock_settings(monkeypatch)
     username = "testadmin"
     response = client.get(
         url="/api/admin",

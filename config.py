@@ -42,7 +42,6 @@ XRAY_SUBSCRIPTION_PATH = config("XRAY_SUBSCRIPTION_PATH", default="sub").strip("
 
 # Filter hosts based on user status
 HOST_STATUS_FILTER = config("HOST_STATUS_FILTER", default=False, cast=bool)
-REMOVE_HOSTS_WITH_NO_STATUS = config("REMOVE_HOSTS_WITH_NO_STATUS", default=False, cast=bool)
 
 # Telegram
 TELEGRAM_API_TOKEN = config("TELEGRAM_API_TOKEN", default="")
@@ -54,7 +53,6 @@ TELEGRAM_ADMIN_ID = config(
 TELEGRAM_PROXY_URL = config("TELEGRAM_PROXY_URL", default=None)
 TELEGRAM_LOGGER_CHANNEL_ID = config("TELEGRAM_LOGGER_CHANNEL_ID", cast=int, default=0)
 TELEGRAM_LOGGER_TOPIC_ID = config("TELEGRAM_LOGGER_TOPIC_ID", cast=int, default=0)
-TELEGRAM_DEFAULT_VLESS_FLOW = config("TELEGRAM_DEFAULT_VLESS_FLOW", default="")
 TELEGRAM_NOTIFY = config("TELEGRAM_NOTIFY", cast=bool, default=False)
 
 NOTIFICATION_PROXY_URL = config("NOTIFICATION_PROXY_URL", default=None)
@@ -85,22 +83,6 @@ USE_CUSTOM_JSON_FOR_V2RAYNG = config("USE_CUSTOM_JSON_FOR_V2RAYNG", default=Fals
 USE_CUSTOM_JSON_FOR_STREISAND = config("USE_CUSTOM_JSON_FOR_STREISAND", default=False, cast=bool)
 USE_CUSTOM_JSON_FOR_HAPP = config("USE_CUSTOM_JSON_FOR_HAPP", default=False, cast=bool)
 USE_CUSTOM_JSON_FOR_NPVTUNNEL = config("USE_CUSTOM_JSON_FOR_NPVTUNNEL", default=False, cast=bool)
-
-NOTIFY_STATUS_CHANGE = config("NOTIFY_STATUS_CHANGE", default=True, cast=bool)
-NOTIFY_USER_CREATED = config("NOTIFY_USER_CREATED", default=True, cast=bool)
-NOTIFY_USER_UPDATED = config("NOTIFY_USER_UPDATED", default=True, cast=bool)
-NOTIFY_USER_DELETED = config("NOTIFY_USER_DELETED", default=True, cast=bool)
-NOTIFY_USER_DATA_USED_RESET = config("NOTIFY_USER_DATA_USED_RESET", default=True, cast=bool)
-NOTIFY_USER_SUB_REVOKED = config("NOTIFY_USER_SUB_REVOKED", default=True, cast=bool)
-NOTIFY_IF_DATA_USAGE_PERCENT_REACHED = config("NOTIFY_IF_DATA_USAGE_PERCENT_REACHED", default=True, cast=bool)
-NOTIFY_IF_DAYS_LEFT_REACHED = config("NOTIFY_IF_DAYS_LEFT_REACHED", default=True, cast=bool)
-NOTIFY_LOGIN = config("NOTIFY_LOGIN", default=True, cast=bool)
-
-ACTIVE_STATUS_TEXT = config("ACTIVE_STATUS_TEXT", default="Active")
-EXPIRED_STATUS_TEXT = config("EXPIRED_STATUS_TEXT", default="Expired")
-LIMITED_STATUS_TEXT = config("LIMITED_STATUS_TEXT", default="Limited")
-DISABLED_STATUS_TEXT = config("DISABLED_STATUS_TEXT", default="Disabled")
-ONHOLD_STATUS_TEXT = config("ONHOLD_STATUS_TEXT", default="On-Hold")
 
 USERS_AUTODELETE_DAYS = config("USERS_AUTODELETE_DAYS", default=-1, cast=int)
 USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS = config("USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS", default=False, cast=bool)

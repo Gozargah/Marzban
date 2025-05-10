@@ -57,7 +57,7 @@ class Admin(Base):
     telegram_id: Mapped[Optional[int]] = mapped_column(BigInteger, default=None)
     discord_webhook: Mapped[Optional[str]] = mapped_column(String(1024), default=None)
     discord_id: Mapped[Optional[int]] = mapped_column(BigInteger, default=None)
-    users_usage: Mapped[int] = mapped_column(BigInteger, default=0)
+    used_traffic: Mapped[int] = mapped_column(BigInteger, default=0)
     is_disabled: Mapped[bool] = mapped_column(server_default="0", default=False)
     usage_logs: Mapped[List["AdminUsageLogs"]] = relationship(back_populates="admin")
     sub_template: Mapped[Optional[str]] = mapped_column(String(1024), default=None)
@@ -79,7 +79,7 @@ class Admin(Base):
 
     @property
     def lifetime_used_traffic(self) -> int:
-        return self.reseted_usage + self.users_usage
+        return self.reseted_usage + self.used_traffic
 
     @property
     def total_users(self) -> int:
@@ -177,15 +177,16 @@ class User(Base):
     def last_traffic_reset_time(self):
         return self.usage_logs[-1].reset_at if self.usage_logs else self.created_at
 
-    def inbounds(self, active_inbounds: list[str]) -> list[str]:
+    async def inbounds(self, active_inbounds: list[str]) -> list[str]:
         """Returns a flat list of all included inbound tags across all proxies"""
         included_tags = set()
         for group in self.groups:
             if group.is_disabled:
                 continue
-            tags = group.inbound_tags
+
+            await group.awaitable_attrs.inbounds
             for inbound in active_inbounds:
-                if inbound in tags:
+                if inbound in group.inbound_tags:
                     included_tags.add(inbound)
         return list(included_tags)
 
@@ -497,6 +498,7 @@ class Node(Base):
     core_config: Mapped[Optional["CoreConfig"]] = relationship("CoreConfig")
     stats: Mapped[List["NodeStat"]] = relationship(back_populates="node", cascade="all, delete-orphan")
     api_key: Mapped[str | None] = mapped_column(String(36))
+    gather_logs: Mapped[bool] = mapped_column(default=True, server_default="1")
 
 
 class NodeUserUsage(Base):
@@ -592,3 +594,15 @@ class NodeStat(Base):
     cpu_usage: Mapped[float] = mapped_column(unique=False, nullable=False)
     incoming_bandwidth_speed: Mapped[int] = mapped_column(BigInteger, unique=False, nullable=False)
     outgoing_bandwidth_speed: Mapped[int] = mapped_column(BigInteger, unique=False, nullable=False)
+
+
+class Settings(Base):
+    __tablename__ = "settings"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    telegram: Mapped[Optional[dict]] = mapped_column(JSON(True))
+    discord: Mapped[Optional[dict]] = mapped_column(JSON(True))
+    webhook: Mapped[Optional[dict]] = mapped_column(JSON(True))
+    notfication_settings: Mapped[dict] = mapped_column(JSON())
+    notfication_enable: Mapped[dict] = mapped_column(JSON())
+    subscription: Mapped[dict] = mapped_column(JSON())

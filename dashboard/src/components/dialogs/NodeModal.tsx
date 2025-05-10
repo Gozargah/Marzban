@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useTranslation } from 'react-i18next'
 import { UseFormReturn } from 'react-hook-form'
-import { useAddNode, useModifyNode, NodeConnectionType, useGetAllCores, CoreResponse, getNode, addNode } from '@/service/api'
+import { useCreateNode, useModifyNode, NodeConnectionType, useGetAllCores, CoreResponse, getNode, reconnectNode } from '@/service/api'
 import { toast } from '@/hooks/use-toast'
 import { z } from 'zod'
 import { cn } from '@/lib/utils'
@@ -45,7 +45,7 @@ type ConnectionStatus = 'idle' | 'success' | 'error' | 'checking';
 export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNode, editingNodeId }: NodeModalProps) {
   const { t } = useTranslation()
   const dir = useDirDetection()
-  const addNodeMutation = useAddNode()
+  const addNodeMutation = useCreateNode()
   const modifyNodeMutation = useModifyNode()
   const { data: cores } = useGetAllCores()
   const [statusChecking, setStatusChecking] = useState(false)
@@ -55,6 +55,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
   const [showErrorDetails, setShowErrorDetails] = useState(false)
   const [debouncedValues, setDebouncedValues] = useState<NodeFormValues | null>(null)
+  const [reconnecting, setReconnecting] = useState(false)
 
   // Reset status when modal opens/closes
   useEffect(() => {
@@ -90,24 +91,6 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
     if (editingNode && isDialogOpen && editingNodeId) {
       // Start polling immediately
       checkNodeStatus();
-
-      // Set up interval for polling
-      const interval = setInterval(() => {
-        checkNodeStatus();
-      }, 5000); // Check every 5 seconds
-
-      setPollingInterval(interval);
-
-      // Cleanup interval when component unmounts or modal closes
-      return () => {
-        if (interval) {
-          clearInterval(interval);
-        }
-      };
-    } else if (pollingInterval) {
-      // Clear interval if not in edit mode
-      clearInterval(pollingInterval);
-      setPollingInterval(null);
     }
   }, [editingNode, isDialogOpen, editingNodeId]);
 
@@ -181,35 +164,15 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
           setConnectionStatus('success');
         } else {
           setConnectionStatus('error');
-          setErrorDetails(node?.status || 'Failed to get node information');
+          setErrorDetails(node?.message || 'Failed to get node information');
         }
       } else {
-        // For new nodes, try to add the node temporarily to check its status
-        const tempNode = {
-          name: values.name,
-          address: values.address,
-          port: values.port,
-          usage_coefficient: values.usage_coefficient,
-          connection_type: values.connection_type,
-          server_ca: values.server_ca,
-          keep_alive: values.keep_alive,
-          max_logs: values.max_logs,
-          api_key: values.api_key,
-          core_config_id: values.core_config_id,
-        };
-
-        try {
-          const result = await addNode(tempNode);
-          if (result && result.status === 'connected') {
-            setConnectionStatus('success');
-          } else {
-            setConnectionStatus('error');
-            setErrorDetails(result?.status || 'Failed to connect to node');
-          }
-        } catch (error: any) {
-          setConnectionStatus('error');
-          setErrorDetails(error?.message || 'Failed to connect to node');
-        }
+        // For new nodes, status cannot be checked before creation without a dedicated endpoint.
+        // Avoid calling addNode here to prevent premature creation.
+        // Set status to idle or disabled, as the check cannot be performed yet.
+        setConnectionStatus('idle'); // Or 'disabled', depending on desired UX
+        // Optional: provide feedback that status check is unavailable for new nodes yet.
+        // setErrorDetails(t('nodeModal.status.checkUnavailableForNew'));
       }
     } catch (error: any) {
       setConnectionStatus('error');
@@ -273,7 +236,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
             setConnectionStatus('success');
           } else {
             setConnectionStatus('error');
-            setErrorDetails(node?.status || 'Failed to get node information');
+            setErrorDetails(node?.message || 'Failed to get node information');
           }
         } catch (error: any) {
           setConnectionStatus('error');
@@ -303,7 +266,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[1000px] h-full sm:h-auto overflow-y-auto">
+      <DialogContent className="max-w-[1000px] max-h-[90vh] h-full lg:h-auto overflow-y-auto">
         <DialogHeader>
           <DialogTitle className={cn("text-xl text-start font-semibold", dir === "rtl" && "sm:text-right")}>
             {editingNode ? t('editNode.title') : t('nodeModal.title')}
@@ -341,22 +304,52 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                 </Button>
               )}
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={checkNodeStatus}
-              disabled={statusChecking || !form.formState.isValid}
-              className="h-6 px-2 text-xs"
-            >
-              {statusChecking ? (
-                <div className="flex items-center gap-1">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  {t('nodeModal.statusChecking')}
-                </div>
-              ) : (
-                t('nodeModal.statusCheck')
+            <div className="flex items-center gap-2">
+              {editingNode && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    if (!editingNodeId) return;
+                    setReconnecting(true);
+                    try {
+                      await reconnectNode(editingNodeId);
+                      await checkNodeStatus();
+                    } catch (error) {
+                    } finally {
+                      setReconnecting(false);
+                    }
+                  }}
+                  disabled={reconnecting}
+                  className="h-6 px-2 text-xs"
+                >
+                  {reconnecting ? (
+                    <div className="flex items-center gap-1">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      {t('nodeModal.reconnecting')}
+                    </div>
+                  ) : (
+                    t('nodeModal.reconnect')
+                  )}
+                </Button>
               )}
-            </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={checkNodeStatus}
+                disabled={statusChecking || !form.formState.isValid}
+                className="h-6 px-2 text-xs"
+              >
+                {statusChecking ? (
+                  <div className="flex items-center gap-1">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    {t('nodeModal.statusChecking')}
+                  </div>
+                ) : (
+                  t('nodeModal.statusCheck')
+                )}
+              </Button>
+            </div>
           </div>
           {showErrorDetails && connectionStatus === 'error' && (
             <div className="text-xs text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">

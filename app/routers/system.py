@@ -1,6 +1,7 @@
 from aiogram.types import Update
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
+
 from app.db import AsyncSession, get_db
 from app.models.admin import AdminDetails
 from app.models.system import SystemStats
@@ -9,15 +10,16 @@ from app.operation.system import SystemOperation
 from app.telegram import bot, dp
 from app.utils import responses
 from app.utils.logger import EndpointFilter, get_logger
-from config import TELEGRAM_API_TOKEN, TELEGRAM_WEBHOOK_SECRET_KEY
+from config import TELEGRAM_WEBHOOK_SECRET_KEY
+
 from .authentication import get_current
 
 system_operator = SystemOperation(operator_type=OperatorType.API)
 router = APIRouter(tags=["System"], prefix="/api", responses={401: responses._401})
 
-TELEGRAN_WEBHOOK_PATH = f"/tghook/{TELEGRAM_API_TOKEN}"
+TELEGRAN_WEBHOOK_PATH = "/tghook"
 uvicorn_access_logger = get_logger("uvicorn.access")
-uvicorn_access_logger.addFilter(EndpointFilter([f"/api{TELEGRAN_WEBHOOK_PATH}"]))
+uvicorn_access_logger.addFilter(EndpointFilter([f"{router.prefix}{TELEGRAN_WEBHOOK_PATH}"]))
 
 
 @router.get("/system", response_model=SystemStats)

@@ -1,6 +1,9 @@
-from datetime import timedelta, datetime, timezone
-from tests.api import client
+from datetime import datetime, timedelta, timezone
+
 from fastapi import status
+
+from tests.api import client
+
 from .test_user_template import test_user_template_create  # noqa
 
 
@@ -75,13 +78,27 @@ def test_user_create_on_hold(access_token):
 
 
 def test_users_get(access_token):
-    """Test that the user get route is accessible."""
+    """Test that the users get route is accessible."""
     response = client.get(
-        "/api/users",
+        "/api/users?load_sub=true",
         headers={"Authorization": f"Bearer {access_token}"},
     )
     assert response.status_code == status.HTTP_200_OK
     assert len(response.json()["users"]) > 0
+    return response.json()["users"]
+
+
+def test_user_subscriptions(access_token):
+    """Test that the user subscriptions route is accessible."""
+    user_subscription_formats = ["info", "sing_box", "clash_meta", "clash", "outline", "links", "links_base64", "xray"]
+
+    users = test_users_get(access_token)
+
+    for user in users:
+        for usf in user_subscription_formats:
+            url = f"{user['subscription_url']}/{usf}"
+            response = client.get(url)
+            assert response.status_code == status.HTTP_200_OK
 
 
 def test_user_get(access_token):

@@ -17,7 +17,8 @@ export function formatBytes(
   return size ? `${value} ${sizes[i]}` : `${value}`;
 }
 
-export const numberWithCommas = (x: number) => {
-if (x !== null) return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+export const numberWithCommas = (x: number | undefined | null) => {
+  if (x === undefined || x === null) return '0';
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 

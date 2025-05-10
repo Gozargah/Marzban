@@ -1,6 +1,7 @@
 from app.notification.client import send_telegram_message
 from app.models.admin import AdminDetails
-from config import TELEGRAM_LOGGER_TOPIC_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_ADMIN_ID, TELEGRAM_NOTIFY
+from app.models.settings import NotficationSettings
+from app.settings import notfication_settings
 
 
 async def create_admin(admin: AdminDetails, by: str):
@@ -10,12 +11,15 @@ async def create_admin(admin: AdminDetails, by: str):
         + f"**Username:** `{admin.username}`\n"
         + f"**Is Sudo:** `{admin.is_sudo}`\n"
         + f"**Is Disabled:** `{admin.is_disabled}`\n"
-        + f"**User Usage:** `{admin.users_usage}`\n"
+        + f"**Used Traffic:** `{admin.used_traffic}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_By: #{by}_"
     )
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )
 
 
 async def modify_admin(admin: AdminDetails, by: str):
@@ -25,24 +29,33 @@ async def modify_admin(admin: AdminDetails, by: str):
         + f"**Username:** `{admin.username}`\n"
         + f"**Is Sudo:** `{admin.is_sudo}`\n"
         + f"**Is Disabled:** {admin.is_disabled}\n"
-        + f"**User Usage:** {admin.users_usage}\n"
+        + f"**Used Traffic:** {admin.used_traffic}\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_By: #{by}_"
     )
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )
 
 
 async def remove_admin(username: str, by: str):
     data = "*#Remove_Admin*\n" + f"**Username:** `{username}`\n" + "➖➖➖➖➖➖➖➖➖\n" + f"_By: #{by}_"
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )
 
 
 async def admin_reset_usage(admin: AdminDetails, by: str):
     data = "*#Admin_Usage_Reset*\n" + f"**Username:** `{admin.username}`\n" + "➖➖➖➖➖➖➖➖➖\n" + f"_By: #{by}_"
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )
 
 
 async def admin_login(username: str, password: str, client_ip: str, success: bool):
@@ -55,5 +68,8 @@ async def admin_login(username: str, password: str, client_ip: str, success: boo
         + f"**Password:** {'🔒' if success else password}\n"
         + f"**IP:** `{client_ip}`\n"
     )
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )

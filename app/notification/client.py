@@ -1,24 +1,39 @@
 import httpx
 import asyncio
 
+from app.models.settings import NotficationSettings
+from app.settings import notfication_settings
 from app.utils.logger import get_logger
-from config import TELEGRAM_API_TOKEN, NOTIFICATION_PROXY_URL
+from app import on_startup
 
 
-client = httpx.AsyncClient(
-    http2=True,
-    timeout=httpx.Timeout(10),
-    proxy=NOTIFICATION_PROXY_URL,
-)
+client = None
+
+
+async def define_client():
+    """
+    Re-create the global httpx.AsyncClient.
+    Call this function after changing the proxy setting.
+    """
+    global client
+    if client and not client.is_closed:
+        asyncio.create_task(client.aclose())
+    client = httpx.AsyncClient(
+        http2=True,
+        timeout=httpx.Timeout(10),
+        proxy=(await notfication_settings()).proxy_url,
+    )
+
+
+on_startup(define_client)
 
 logger = get_logger("Notification")
 
-MAX_RETRIES = 3
-
 
 async def send_discord_webhook(json_data, webhook):
+    max_retries = (await notfication_settings()).max_retries
     retries = 0
-    while retries < MAX_RETRIES:
+    while retries < max_retries:
         try:
             response = await client.post(webhook, json=json_data)
             if response.status_code in [200, 204]:
@@ -26,7 +41,7 @@ async def send_discord_webhook(json_data, webhook):
                 return
             elif response.status_code == 429:
                 retries += 1
-                if retries < MAX_RETRIES:
+                if retries < max_retries:
                     await asyncio.sleep(0.5)
                     continue
             else:
@@ -37,7 +52,7 @@ async def send_discord_webhook(json_data, webhook):
             logger.error(f"Discord webhook failed Exception: {str(err)}")
             return
 
-    logger.error(f"Discord webhook failed after {MAX_RETRIES} retries")
+    logger.error(f"Discord webhook failed after {max_retries} retries")
 
 
 async def send_telegram_message(message, chat_id=0, channel_id=0, topic_id=0):
@@ -52,13 +67,12 @@ async def send_telegram_message(message, chat_id=0, channel_id=0, topic_id=0):
         bool: True if message was sent successfully, False otherwise
     """
     # Ensure TELEGRAM_API_TOKEN is available
-    try:
-        TELEGRAM_API_TOKEN
-    except NameError:
+    settings: NotficationSettings = await notfication_settings()
+    if not settings.telegram_api_token:
         logger.error("TELEGRAM_API_TOKEN is not defined")
         return
 
-    base_url = f"https://api.telegram.org/bot{TELEGRAM_API_TOKEN}/sendMessage"
+    base_url = f"https://api.telegram.org/bot{settings.telegram_api_token}/sendMessage"
     payload = {"parse_mode": "Markdown", "text": message}
 
     # Determine the target chat/channel/topic
@@ -73,8 +87,9 @@ async def send_telegram_message(message, chat_id=0, channel_id=0, topic_id=0):
         logger.error("At least one of chat_id, channel_id must be provided")
         return
 
+    max_retries = settings.max_retries
     retries = 0
-    while retries < MAX_RETRIES:
+    while retries < max_retries:
         try:
             response = await client.post(base_url, data=payload)
             if response.status_code == 200:
@@ -82,7 +97,7 @@ async def send_telegram_message(message, chat_id=0, channel_id=0, topic_id=0):
                 return
             elif response.status_code == 429:
                 retries += 1
-                if retries < MAX_RETRIES:
+                if retries < max_retries:
                     await asyncio.sleep(0.5)
                     continue
             else:
@@ -93,4 +108,4 @@ async def send_telegram_message(message, chat_id=0, channel_id=0, topic_id=0):
             logger.error(f"Telegram message failed: {str(err)}")
             return
 
-    logger.error(f"Telegram message failed after {MAX_RETRIES} retries")
+    logger.error(f"Telegram message failed after {max_retries} retries")

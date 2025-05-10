@@ -24,9 +24,10 @@ class Node(BaseModel):
     connection_type: NodeConnectionType
     server_ca: str
     keep_alive: int
-    max_logs: int
+    max_logs: int = Field(gt=0, default=1000)
     core_config_id: int | None = None
     api_key: str
+    gather_logs: bool = True
 
 
 class NodeCreate(Node):
@@ -43,6 +44,7 @@ class NodeCreate(Node):
                 "max_logs": 1000,
                 "core_config_id": 1,
                 "api_key": "valid uuid",
+                "gather_logs": True,
             }
         }
     )
@@ -74,17 +76,6 @@ class NodeCreate(Node):
 
         return v
 
-    @field_validator("max_logs")
-    @classmethod
-    def validate_max_logs(cls, v: int | None) -> int | None:
-        if v is None:
-            return None
-
-        if v < 1:
-            raise ValueError("Max logs cant be lower than 1")
-
-        return v
-
     @field_validator("api_key", mode="before")
     @classmethod
     def validate_api_key(cls, v) -> str:
@@ -109,6 +100,7 @@ class NodeModify(NodeCreate):
     keep_alive: int | None = None
     max_logs: int | None = None
     api_key: str | None = None
+    gather_logs: bool | None = None
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -124,6 +116,7 @@ class NodeModify(NodeCreate):
                 "max_logs": 1000,
                 "core_config_id": 1,
                 "api_key": "valid uuid",
+                "gather_logs": True,
             }
         }
     )

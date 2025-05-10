@@ -1,48 +1,48 @@
 import asyncio
 import secrets
-from datetime import datetime as dt, timezone as tz, timedelta as td
+from datetime import datetime as dt, timedelta as td, timezone as tz
 
-from sqlalchemy.exc import IntegrityError
 from pydantic import ValidationError
+from sqlalchemy.exc import IntegrityError
 
+from app import notification
 from app.core.manager import core_manager
 from app.db import AsyncSession
 from app.db.crud import (
+    UsersSortingOptions,
     create_user,
     get_admin,
-    remove_user,
-    reset_user_data_usage,
-    revoke_user_sub,
-    modify_user,
-    get_users,
-    reset_all_users_data_usage,
-    get_user_usages,
-    reset_user_by_next,
-    set_owner,
     get_all_users_usages,
     get_expired_users,
+    get_user_usages,
+    get_users,
+    modify_user,
+    remove_user,
     remove_users,
-    UsersSortingOptions,
+    reset_all_users_data_usage,
+    reset_user_by_next,
+    reset_user_data_usage,
+    revoke_user_sub,
+    set_owner,
 )
 from app.db.models import User, UserStatus, UserTemplate
-from app.models.stats import UserUsageStatsList, Period
 from app.models.admin import AdminDetails
+from app.models.stats import Period, UserUsageStatsList
 from app.models.user import (
     CreateUserFromTemplate,
     ModifyUserByTemplate,
+    RemoveUsersResponse,
     UserCreate,
     UserModify,
     UserResponse,
     UsersResponse,
-    RemoveUsersResponse,
 )
+from app.settings import subscription_settings
 from app.node import node_manager as node_manager
 from app.operation import BaseOperation
-from app.utils.logger import get_logger
 from app.utils.jwt import create_subscription_token
-from config import XRAY_SUBSCRIPTION_PATH, XRAY_SUBSCRIPTION_URL_PREFIX
-from app import notification
-
+from app.utils.logger import get_logger
+from config import XRAY_SUBSCRIPTION_PATH
 
 logger = get_logger("user-operation")
 
@@ -51,10 +51,11 @@ class UserOperation(BaseOperation):
     @staticmethod
     async def generate_subscription_url(user: UserResponse):
         salt = secrets.token_hex(8)
+        settings = await subscription_settings()
         url_prefix = (
             user.admin.sub_domain.replace("*", salt)
             if user.admin and user.admin.sub_domain
-            else (XRAY_SUBSCRIPTION_URL_PREFIX).replace("*", salt)
+            else (settings.url_prefix).replace("*", salt)
         )
         token = await create_subscription_token(user.username)
         return f"{url_prefix}/{XRAY_SUBSCRIPTION_PATH}/{token}"
@@ -243,6 +244,7 @@ class UserOperation(BaseOperation):
         owner: list[str] | None = None,
         status: UserStatus | None = None,
         sort: str | None = None,
+        proxy_id: str | None = None,
         load_sub: bool = False,
     ) -> UsersResponse:
         """Get all users"""
@@ -264,6 +266,7 @@ class UserOperation(BaseOperation):
             usernames=username,
             status=status,
             sort=sort_list,
+            proxy_id=proxy_id,
             admins=owner if admin.is_sudo else [admin.username],
             return_with_count=True,
         )
@@ -393,7 +396,7 @@ class UserOperation(BaseOperation):
         )
 
         try:
-            new_user = UserCreate(**new_user_args)
+            new_user = UserCreate(**new_user_args, note=new_template_user.note)
         except ValidationError as e:
             error_messages = "; ".join([f"{err['loc'][0]}: {err['msg']}" for err in e.errors()])
             await self.raise_error(message=error_messages, code=400)
@@ -412,7 +415,7 @@ class UserOperation(BaseOperation):
         user_args["proxy_settings"] = db_user.proxy_settings
 
         try:
-            modify_user = UserModify(**user_args)
+            modify_user = UserModify(**user_args, note=modified_template.note)
         except ValidationError as e:
             error_messages = "; ".join([f"{err['loc'][0]}: {err['msg']}" for err in e.errors()])
             await self.raise_error(message=error_messages, code=400)

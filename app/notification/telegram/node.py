@@ -1,6 +1,7 @@
 from app.notification.client import send_telegram_message
 from app.models.node import NodeResponse
-from config import TELEGRAM_LOGGER_TOPIC_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_ADMIN_ID, TELEGRAM_NOTIFY
+from app.models.settings import NotficationSettings
+from app.settings import notfication_settings
 
 
 async def create_node(node: NodeResponse, by: str):
@@ -14,8 +15,11 @@ async def create_node(node: NodeResponse, by: str):
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_By: #{by}_"
     )
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )
 
 
 async def modify_node(node: NodeResponse, by: str):
@@ -29,8 +33,11 @@ async def modify_node(node: NodeResponse, by: str):
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_By: #{by}_"
     )
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )
 
 
 async def remove_node(node: NodeResponse, by: str):
@@ -42,8 +49,11 @@ async def remove_node(node: NodeResponse, by: str):
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_By: #{by}_"
     )
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )
 
 
 async def connect_node(node: NodeResponse):
@@ -56,8 +66,11 @@ async def connect_node(node: NodeResponse):
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_ID_: `{node.id}`"
     )
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )
 
 
 async def error_node(node: NodeResponse):
@@ -69,5 +82,8 @@ async def error_node(node: NodeResponse):
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_ID_: `{node.id}`"
     )
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )

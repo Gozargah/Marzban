@@ -159,37 +159,35 @@ class XrayConfig(BaseSubscription):
         response: dict | None = None,
     ) -> dict:
         if headers == "http":
-            tcpSettings = (
-                {
-                    "header": {
-                        "type": headers,
-                        "request": request
-                        if request
-                        else {
-                            "version": "1.1",
-                            "method": "GET",
-                            "headers": {
-                                "Accept-Encoding": ["gzip, deflate"],
-                                "Connection": ["keep-alive"],
-                                "Pragma": ["no-cache"],
-                            },
+            tcpSettings = {
+                "header": {
+                    "type": headers,
+                    "request": request
+                    if request
+                    else {
+                        "version": "1.1",
+                        "method": "GET",
+                        "headers": {
+                            "Accept-Encoding": ["gzip, deflate"],
+                            "Connection": ["keep-alive"],
+                            "Pragma": ["no-cache"],
                         },
-                        "response": response
-                        if response
-                        else {
-                            "version": "1.1",
-                            "status": "200",
-                            "reason": "OK",
-                            "headers": {
-                                "Content-Type": ["application/octet-stream", "video/mpeg"],
-                                "Transfer-Encoding": ["chunked"],
-                                "Connection": ["keep-alive"],
-                                "Pragma": ["no-cache"],
-                            },
+                    },
+                    "response": response
+                    if response
+                    else {
+                        "version": "1.1",
+                        "status": "200",
+                        "reason": "OK",
+                        "headers": {
+                            "Content-Type": ["application/octet-stream", "video/mpeg"],
+                            "Transfer-Encoding": ["chunked"],
+                            "Connection": ["keep-alive"],
+                            "Pragma": ["no-cache"],
                         },
-                    }
-                },
-            )
+                    },
+                }
+            }
         else:
             tcpSettings = {"header": {"type": headers}}
 

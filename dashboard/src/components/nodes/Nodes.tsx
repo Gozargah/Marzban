@@ -1,17 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Copy } from 'lucide-react'
-import PageHeader from '@/components/page-header'
-import { Separator } from '@/components/ui/separator'
 import Node from '@/components/nodes/Node'
-import { useGetNodes, useModifyNode, NodeResponse, NodeConnectionType, useGetNodeSettings } from '@/service/api'
+import { useGetNodes, useModifyNode, NodeResponse, NodeConnectionType } from '@/service/api'
 import { toast } from '@/hooks/use-toast'
 import { queryClient } from '@/utils/query-client'
 import NodeModal from '@/components/dialogs/NodeModal'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { nodeFormSchema, NodeFormValues } from '@/components/dialogs/NodeModal'
-import { Button } from '@/components/ui/button'
 
 const initialDefaultValues: Partial<NodeFormValues> = {
     name: '',
@@ -39,12 +35,17 @@ export default function Nodes() {
             }
         }   
     )
-    const { data: nodeSettings } = useGetNodeSettings()
 
     const form = useForm<NodeFormValues>({
         resolver: zodResolver(nodeFormSchema),
         defaultValues: initialDefaultValues
     })
+
+    useEffect(() => {
+        const handleOpenDialog = () => setIsDialogOpen(true)
+        window.addEventListener('openNodeDialog', handleOpenDialog)
+        return () => window.removeEventListener('openNodeDialog', handleOpenDialog)
+    }, [])
 
     const handleEdit = (node: NodeResponse) => {
         setEditingNode(node)
@@ -104,14 +105,6 @@ export default function Nodes() {
 
     return (
         <div className="flex flex-col gap-2 w-full items-start">
-            <PageHeader
-                title="nodes.title"
-                description="manageNodes"
-                buttonIcon={Plus}
-                buttonText="nodes.addNode"
-                onButtonClick={() => setIsDialogOpen(true)}
-            />
-            <Separator />
             <div className="flex-1 space-y-4 p-4 pt-6 w-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
                     {nodesData?.map((node) => (

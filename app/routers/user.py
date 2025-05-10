@@ -3,24 +3,24 @@ from datetime import datetime as dt
 from fastapi import APIRouter, Depends, Query, status
 
 from app.db import AsyncSession, get_db
-from .authentication import check_sudo_admin, get_current
-from app.models.stats import Period, UserUsageStatsList
+from app.db.models import UserStatus
 from app.models.admin import AdminDetails
+from app.models.stats import Period, UserUsageStatsList
 from app.models.user import (
     CreateUserFromTemplate,
     ModifyUserByTemplate,
+    RemoveUsersResponse,
     UserCreate,
     UserModify,
     UserResponse,
     UsersResponse,
-    RemoveUsersResponse,
 )
-from app.db.models import UserStatus
-from app.utils import responses
 from app.operation import OperatorType
-from app.operation.user import UserOperation
 from app.operation.node import NodeOperation
+from app.operation.user import UserOperation
+from app.utils import responses
 
+from .authentication import check_sudo_admin, get_current
 
 user_operator = UserOperation(operator_type=OperatorType.API)
 node_operator = NodeOperation(operator_type=OperatorType.API)
@@ -158,6 +158,7 @@ async def get_users(
     owner: list[str] | None = Query(None, alias="admin"),
     status: UserStatus | None = None,
     sort: str | None = None,
+    proxy_id: str | None = None,
     load_sub: bool = False,
     db: AsyncSession = Depends(get_db),
     admin: AdminDetails = Depends(get_current),
@@ -174,6 +175,7 @@ async def get_users(
         status=status,
         sort=sort,
         load_sub=load_sub,
+        proxy_id=proxy_id,
     )
 
 

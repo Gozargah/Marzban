@@ -7,6 +7,10 @@ import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import CoreConfigModal, { coreConfigFormSchema, CoreConfigFormValues } from '@/components/dialogs/CoreConfigModal'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
+import useDirDetection from '@/hooks/use-dir-detection'
+import { cn } from '@/lib/utils'
+import { useQueryClient } from '@tanstack/react-query'
 
 const defaultConfig = {
   log: {
@@ -39,6 +43,7 @@ interface ValidationResult {
 
 export default function CoreSettings() {
   const { data, error, isLoading } = useGetCoreConfig(1)
+  const queryClient = useQueryClient()
   const { mutate: modifyConfig } = useModifyCoreConfig()
   const { data: coresData, isLoading: isCoresLoading } = useGetAllCores({})
   const deleteCoreConfig = useDeleteCoreConfig()
@@ -47,9 +52,12 @@ export default function CoreSettings() {
   const [isEditorReady, setIsEditorReady] = useState(false)
   const { resolvedTheme } = useTheme()
   const { t } = useTranslation()
+  const dir = useDirDetection()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingCoreId, setEditingCoreId] = useState<number | undefined>(undefined)
-
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [coreToDelete, setCoreToDelete] = useState<string | null>(null)
+  const [coreIdToDelete, setCoreIdToDelete] = useState<number | null>(null)
   const coreConfigForm = useForm<CoreConfigFormValues>({
     resolver: zodResolver(coreConfigFormSchema),
     defaultValues: {
@@ -98,58 +106,21 @@ export default function CoreSettings() {
     setIsEditorReady(true)
   }, [])
 
-  const handleSave = async () => {
-    try {
-      modifyConfig({
-        coreId: 1,
-        data: JSON.parse(config),
-        params: { restart_nodes: true }
-      }, {
-        onSuccess: () => {
-          toast({
-            description: t("settings.core.saveSuccess"),
-          })
-        },
-        onError: () => {
-          toast({
-            variant: "destructive",
-            description: t("settings.core.saveFailed"),
-          })
-        }
-      })
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        description: t("settings.core.saveFailed"),
-      })
-    }
-  }
-
-  const handleAddCore = () => {
-    setEditingCoreId(undefined)
-    coreConfigForm.reset({
-      name: '',
-      config: JSON.stringify(defaultConfig, null, 2),
-      excluded_inbound_ids: [],
-    })
-    setIsModalOpen(true)
-  }
-
   const handleEditCore = (coreId: string | number) => {
     const numericCoreId = Number(coreId);
     setEditingCoreId(numericCoreId);
-    
+
     // Find the core in the fetched data
     const coreToEdit = coresData?.cores?.find(core => core.id === numericCoreId);
-    
+
     if (coreToEdit) {
       // Convert exclude_inbound_tags string to array of numbers if needed
-      const excludedInboundIds = coreToEdit.exclude_inbound_tags ? 
+      const excludedInboundIds = coreToEdit.exclude_inbound_tags ?
         coreToEdit.exclude_inbound_tags.split(',')
           .map(id => Number(id.trim()))
-          .filter(id => !isNaN(id)) : 
+          .filter(id => !isNaN(id)) :
         [];
-          
+
       coreConfigForm.reset({
         name: coreToEdit.name,
         config: JSON.stringify(coreToEdit.config, null, 2),
@@ -163,14 +134,14 @@ export default function CoreSettings() {
         excluded_inbound_ids: [],
       });
     }
-    
+
     setIsModalOpen(true);
   }
 
   const handleDuplicateCore = (coreId: string | number) => {
     const numericCoreId = Number(coreId);
     const coreToDuplicate = coresData?.cores?.find(core => core.id === numericCoreId);
-    
+
     if (!coreToDuplicate) {
       toast({
         title: t('error', { defaultValue: 'Error' }),
@@ -181,21 +152,21 @@ export default function CoreSettings() {
       });
       return;
     }
-    
+
     // Prepare for creating a new core based on the existing one
     coreConfigForm.reset({
       name: `${coreToDuplicate.name} (Copy)`,
       config: JSON.stringify(coreToDuplicate.config, null, 2),
-      excluded_inbound_ids: coreToDuplicate.exclude_inbound_tags ? 
+      excluded_inbound_ids: coreToDuplicate.exclude_inbound_tags ?
         coreToDuplicate.exclude_inbound_tags.split(',')
           .map(id => Number(id.trim()))
-          .filter(id => !isNaN(id)) : 
+          .filter(id => !isNaN(id)) :
         [],
     });
-    
+
     setEditingCoreId(undefined); // Mark as new core
     setIsModalOpen(true);
-    
+
     toast({
       title: t('info', { defaultValue: 'Info' }),
       description: t('settings.cores.duplicateInfo', {
@@ -205,40 +176,49 @@ export default function CoreSettings() {
     });
   }
 
-  const handleDeleteCore = (coreId: string | number) => {
-    const numericCoreId = Number(coreId);
-    
-    deleteCoreConfig.mutate({ 
-      coreId: numericCoreId,
+  const handleDeleteCore = (coreName: string, coreId: number) => {
+    setCoreToDelete(coreName);
+    setCoreIdToDelete(Number(coreId));
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteCore = () => {
+    if (coreToDelete == null) return;
+    deleteCoreConfig.mutate({
+      coreId: Number(coreIdToDelete),
       params: { restart_nodes: true }
     }, {
       onSuccess: () => {
         toast({
           title: t('success', { defaultValue: 'Success' }),
           description: t('settings.cores.deleteSuccess', {
-            name: `Core ${coreId}`,
+            name: `Core ${coreToDelete}`,
             defaultValue: `Core has been deleted successfully`
           })
         });
+        setDeleteDialogOpen(false);
+        setCoreToDelete(null);
+        queryClient.invalidateQueries({ queryKey: ['/api/cores'] });
       },
       onError: (error) => {
         toast({
           title: t('error', { defaultValue: 'Error' }),
           description: t('settings.cores.deleteFailed', {
-            name: `Core ${coreId}`,
+            name: `Core ${coreToDelete}`,
             defaultValue: `Failed to delete core`
           }),
           variant: "destructive"
         });
+        setDeleteDialogOpen(false);
+        setCoreToDelete(null);
       }
     });
-  }
+  };
 
   return (
-    <div className="flex flex-col gap-y-6 pt-4">
-      <Cores 
+    <div className="flex flex-col">
+      <Cores
         cores={coresData?.cores}
-        onAddCore={handleAddCore}
         onEditCore={handleEditCore}
         onDuplicateCore={handleDuplicateCore}
         onDeleteCore={handleDeleteCore}
@@ -253,6 +233,23 @@ export default function CoreSettings() {
         editingCore={!!editingCoreId}
         editingCoreId={editingCoreId}
       />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader className={cn(dir === "rtl" && "sm:text-right")}>
+            <AlertDialogTitle>{t("settings.cores.delete")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              <span dir={dir} dangerouslySetInnerHTML={{ __html: t("core.deleteConfirm", { name: coreToDelete }) }} />
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className={cn("flex items-center gap-2", dir === "rtl" && "sm:gap-x-2")}>
+            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={confirmDeleteCore}>
+              {t("delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 from app.notification.client import send_telegram_message
 from app.models.host import BaseHost
-from config import TELEGRAM_LOGGER_TOPIC_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_ADMIN_ID, TELEGRAM_NOTIFY
+from app.models.settings import NotficationSettings
+from app.settings import notfication_settings
 
 
 async def create_host(host: BaseHost, by: str):
@@ -15,8 +16,11 @@ async def create_host(host: BaseHost, by: str):
         + f"_ID_: `{host.id}`\n"
         + f"_By: #{by}_"
     )
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )
 
 
 async def modify_host(host: BaseHost, by: str):
@@ -31,8 +35,11 @@ async def modify_host(host: BaseHost, by: str):
         + f"_ID_: `{host.id}`\n"
         + f"_By: #{by}_"
     )
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )
 
 
 async def remove_host(host: BaseHost, by: str):
@@ -44,11 +51,17 @@ async def remove_host(host: BaseHost, by: str):
         + f"_ID_: {host.id}\n"
         + f"_By: #{by}_"
     )
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )
 
 
 async def modify_hosts(by: str):
     data = f"*#Modify_Hosts*\n➖➖➖➖➖➖➖➖➖\nAll hosts has been updated by **#{by}**"
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )

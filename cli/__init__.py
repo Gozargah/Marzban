@@ -1,4 +1,5 @@
 from textual.screen import ModalScreen
+from textual.widgets import Input
 
 
 class BaseModal(ModalScreen):
@@ -7,11 +8,13 @@ class BaseModal(ModalScreen):
 
     async def key_left(self) -> None:
         """Move focus left on arrow key press."""
-        self.app.action_focus_previous()
+        if not self.query_one(Input).has_focus:
+            self.app.action_focus_previous()
 
     async def key_right(self) -> None:
         """Move focus right on arrow key press."""
-        self.app.action_focus_next()
+        if not self.query_one(Input).has_focus:
+            self.app.action_focus_next()
 
     async def key_down(self) -> None:
         """Move focus down on arrow key press."""

@@ -2,7 +2,7 @@ import { Card } from '@/components/ui/card'
 import { GroupResponse } from '@/service/api'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
-import { useDeleteGroup } from '@/service/api'
+import { useRemoveGroup } from '@/service/api'
 import { toast } from '@/hooks/use-toast'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { useState } from 'react'
@@ -55,7 +55,7 @@ const DeleteAlertDialog = ({
 export default function Group({ group, onEdit, onToggleStatus }: GroupProps) {
   const { t } = useTranslation()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const deleteGroupMutation = useDeleteGroup()
+  const deleteGroupMutation = useRemoveGroup()
 
   const handleDeleteClick = (event: Event) => {
     event.stopPropagation()

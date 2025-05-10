@@ -40,7 +40,7 @@ async def core_users(db: AsyncSession, inbounds: list[str]):
     bridge_users: list = []
 
     for user in users:
-        inbounds_list = user.inbounds(active_inbounds=inbounds)
+        inbounds_list = await user.inbounds(active_inbounds=inbounds)
         if len(inbounds_list) > 0:
             bridge_users.append(serialize_user_for_node(user.id, user.username, user.proxy_settings, inbounds_list))
 

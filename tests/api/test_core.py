@@ -1,6 +1,6 @@
 from fastapi import status
-from tests.api import client
 
+from tests.api import client
 
 xray_config = {
     "log": {"loglevel": "info"},

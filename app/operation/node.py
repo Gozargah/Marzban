@@ -94,6 +94,7 @@ class NodeOperation(BaseOperation):
                     backend_type=0,
                     users=await core_users(db=db, inbounds=core.inbounds),
                     keep_alive=db_node.keep_alive,
+                    ghather_logs=db_node.gather_logs,
                     timeout=10,
                 )
                 await NodeOperation.update_node_status(

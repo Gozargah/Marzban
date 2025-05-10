@@ -1,6 +1,7 @@
-from config import DISCORD_WEBHOOK_URL
 from app.notification.client import send_discord_webhook
 from app.models.group import GroupResponse
+from app.models.settings import NotficationSettings
+from app.settings import notfication_settings
 from . import colors
 
 
@@ -18,8 +19,9 @@ async def create_group(group: GroupResponse, by: str):
             }
         ],
     }
-    if DISCORD_WEBHOOK_URL:
-        await send_discord_webhook(data, DISCORD_WEBHOOK_URL)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_discord:
+        await send_discord_webhook(data, settings.discord_webhook_url)
 
 
 async def modify_group(group: GroupResponse, by: str):
@@ -36,8 +38,9 @@ async def modify_group(group: GroupResponse, by: str):
             }
         ],
     }
-    if DISCORD_WEBHOOK_URL:
-        await send_discord_webhook(data, DISCORD_WEBHOOK_URL)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_discord:
+        await send_discord_webhook(data, settings.discord_webhook_url)
 
 
 async def remove_group(group_id: int, by: str):
@@ -52,5 +55,6 @@ async def remove_group(group_id: int, by: str):
             }
         ],
     }
-    if DISCORD_WEBHOOK_URL:
-        await send_discord_webhook(data, DISCORD_WEBHOOK_URL)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_discord:
+        await send_discord_webhook(data, settings.discord_webhook_url)

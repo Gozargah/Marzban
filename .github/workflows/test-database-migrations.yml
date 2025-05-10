@@ -65,7 +65,22 @@ jobs:
 
     strategy:
       matrix:
-        db: [sqlite, postgres, mysql, mariadb, timescaledb]
+        db: [sqlite, postgres, timescaledb, mysql, mariadb]
+        include:
+          - db: sqlite
+            url: sqlite+aiosqlite:///./test.db
+
+          - db: postgres
+            url: postgresql+asyncpg://postgres:postgres@localhost:5432/testdb
+
+          - db: timescaledb
+            url: postgresql+asyncpg://postgres:timescale@localhost:5433/testdb
+
+          - db: mysql
+            url: mysql+asyncmy://root:root@localhost:3306/testdb
+
+          - db: mariadb
+            url: mysql+asyncmy://testuser:testpassword@localhost:3307/testdb
 
     steps:
       - uses: actions/checkout@v4
@@ -76,23 +91,7 @@ jobs:
       - name: Set DATABASE_URL
         run: |
           echo "TEST_FROM=github" >> $GITHUB_ENV
-          case "${{ matrix.db }}" in
-            sqlite)
-              echo "SQLALCHEMY_DATABASE_URL=sqlite+aiosqlite:///./test.db" >> $GITHUB_ENV
-              ;;
-            postgres)
-              echo "SQLALCHEMY_DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/testdb" >> $GITHUB_ENV
-              ;;
-            mysql)
-              echo "SQLALCHEMY_DATABASE_URL=mysql+asyncmy://root:root@localhost:3306/testdb" >> $GITHUB_ENV
-              ;;
-            mariadb)
-              echo "SQLALCHEMY_DATABASE_URL=mysql+asyncmy://testuser:testpassword@localhost:3307/testdb" >> $GITHUB_ENV
-              ;;
-            timescaledb)
-              echo "SQLALCHEMY_DATABASE_URL=postgresql+asyncpg://postgres:timescale@localhost:5433/testdb" >> $GITHUB_ENV
-              ;;
-            esac
+          echo "SQLALCHEMY_DATABASE_URL=${{ matrix.url }}" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: make setup

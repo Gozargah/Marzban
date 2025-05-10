@@ -1,8 +1,8 @@
 from app.notification.client import send_telegram_message
 from app.models.user import UserResponse
 from app.utils.system import readable_size
-from config import TELEGRAM_LOGGER_TOPIC_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_ADMIN_ID, TELEGRAM_NOTIFY
-
+from app.models.settings import NotficationSettings
+from app.settings import notfication_settings
 
 _status = {
     "active": "**✅ #Activated**",
@@ -22,8 +22,11 @@ async def user_status_change(user: UserResponse, by: str):
         + f"_Belongs To_: `{user.admin.username if user.admin else None}`\n"
         + f"_By: #{by}_"
     )
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )
     if user.admin and user.admin.telegram_id:
         await send_telegram_message(data, chat_id=user.admin.telegram_id)
 
@@ -41,8 +44,11 @@ async def create_user(user: UserResponse, by: str):
         + f"_Belongs To_: `{user.admin.username if user.admin else None}`\n"
         + f"_By: #{by}_"
     )
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )
     if user.admin and user.admin.telegram_id:
         await send_telegram_message(data, chat_id=user.admin.telegram_id)
 
@@ -60,8 +66,11 @@ async def modify_user(user: UserResponse, by: str):
         + f"_Belongs To_: `{user.admin.username if user.admin else None}`\n"
         + f"_By: #{by}_"
     )
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )
     if user.admin and user.admin.telegram_id:
         await send_telegram_message(data, chat_id=user.admin.telegram_id)
 
@@ -75,8 +84,11 @@ async def remove_user(user: UserResponse, by: str):
         + f"_Belongs To_: `{user.admin.username if user.admin else None}`\n"
         + f"_By: #{by}_"
     )
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )
     if user.admin and user.admin.telegram_id:
         await send_telegram_message(data, chat_id=user.admin.telegram_id)
 
@@ -91,8 +103,11 @@ async def reset_user_data_usage(user: UserResponse, by: str):
         + f"_Belongs To_: `{user.admin.username if user.admin else None}`\n"
         + f"_By: #{by}_"
     )
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )
     if user.admin and user.admin.telegram_id:
         await send_telegram_message(data, chat_id=user.admin.telegram_id)
 
@@ -108,8 +123,11 @@ async def user_data_reset_by_next(user: UserResponse, by: str):
         + f"_Belongs To_: `{user.admin.username if user.admin else None}`\n"
         + f"_By: #{by}_"
     )
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )
     if user.admin and user.admin.telegram_id:
         await send_telegram_message(data, chat_id=user.admin.telegram_id)
 
@@ -123,7 +141,10 @@ async def user_subscription_revoked(user: UserResponse, by: str):
         + f"_Belongs To_: `{user.admin.username if user.admin else None}`\n"
         + f"_By: #{by}_"
     )
-    if TELEGRAM_NOTIFY:
-        await send_telegram_message(data, TELEGRAM_ADMIN_ID, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_TOPIC_ID)
+    settings: NotficationSettings = await notfication_settings()
+    if settings.notify_telegram:
+        await send_telegram_message(
+            data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
+        )
     if user.admin and user.admin.telegram_id:
         await send_telegram_message(data, chat_id=user.admin.telegram_id)

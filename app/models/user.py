@@ -4,10 +4,11 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from .validators import NumericValidatorMixin, ListValidator, UserValidator
-from app.db.models import UserStatus, UserDataLimitResetStrategy, UserStatusCreate
+from app.db.models import UserDataLimitResetStrategy, UserStatus, UserStatusCreate
 from app.models.admin import AdminBaseInfo
 from app.models.proxy import ProxyTable
+
+from .validators import ListValidator, NumericValidatorMixin, UserValidator
 
 
 class UserStatusModify(str, Enum):
@@ -155,6 +156,7 @@ class SubscriptionUserResponse(UserResponse):
     admin: AdminBaseInfo | None = Field(default=None, exclude=True)
     note: str | None = Field(None, exclude=True)
     auto_delete_in_days: int | None = Field(None, exclude=True)
+    subscription_url: str | None = Field(None, exclude=True)
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -177,6 +179,7 @@ class RemoveUsersResponse(BaseModel):
 
 class ModifyUserByTemplate(BaseModel):
     user_template_id: int
+    note: str | None = Field(max_length=500, default=None)
 
 
 class CreateUserFromTemplate(ModifyUserByTemplate):
