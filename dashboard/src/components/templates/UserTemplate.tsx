@@ -23,7 +23,7 @@ import {
 import {cn} from "@/lib/utils";
 import {useToast} from "@/hooks/use-toast";
 import {formatBytes} from "@/utils/formatByte";
-import {addUserTemplate, useRemoveUserTemplate, UserTemplateCreate, UserTemplateResponse} from "@/service/api";
+import {createUserTemplate, useRemoveUserTemplate, UserTemplateCreate, UserTemplateResponse} from "@/service/api";
 import {queryClient} from "@/utils/query-client.ts";
 
 const DeleteAlertDialog = ({
@@ -115,7 +115,7 @@ const UserTemplate = ({template, onEdit}: {
                 ...template,
                 name: `${template.name} (copy)`,
             }
-            await addUserTemplate(newTemplate)
+            await createUserTemplate(newTemplate)
             toast({
                 title: t("success", {defaultValue: "Success"}),
                 description: t("templates.duplicateSuccess", {

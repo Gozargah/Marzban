@@ -1,32 +1,32 @@
-import {z} from "zod";
+import { z } from "zod";
 import {
     ShadowsocksMethods,
-    useAddUserTemplate,
+    useCreateUserTemplate,
     useModifyUserTemplate,
     UserStatusCreate,
     XTLSFlows,
     GroupResponse,
     UserDataLimitResetStrategy, useGetAllGroups
 } from '@/service/api'
-import {UseFormReturn} from "react-hook-form";
-import {Trans, useTranslation} from "react-i18next";
+import { UseFormReturn } from "react-hook-form";
+import { Trans, useTranslation } from "react-i18next";
 import useDirDetection from "@/hooks/use-dir-detection.tsx";
-import {toast} from "@/hooks/use-toast.ts";
-import {queryClient} from "@/utils/query-client.ts";
-import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog.tsx";
-import {cn} from "@/lib/utils.ts";
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form.tsx";
-import {Input} from "@/components/ui/input.tsx";
-import {Button} from "@/components/ui/button.tsx";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
-import {Check} from "lucide-react";
-import {useEffect, useState, useCallback} from "react";
+import { toast } from "@/hooks/use-toast.ts";
+import { queryClient } from "@/utils/query-client.ts";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog.tsx";
+import { cn } from "@/lib/utils.ts";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import { Check } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
 import GroupFilterBar from "@/components/templates/GroupsFilter.tsx";
-import {Switch} from "@/components/ui/switch.tsx";
-import {useNavigate} from "react-router";
+import { Switch } from "@/components/ui/switch.tsx";
+import { useNavigate } from "react-router";
 
 export const userTemplateFormSchema = z.object({
-    name: z.string().min(1, 'Name is required'),
+    name: z.string().min(1, { message: 'validation.required' }),
     status: z.enum([UserStatusCreate.active, UserStatusCreate.on_hold]).default(UserStatusCreate.active),
     username_prefix: z.string().optional(),
     username_suffix: z.string().optional(),
@@ -35,7 +35,7 @@ export const userTemplateFormSchema = z.object({
     on_hold_timeout: z.number().optional(),
     method: z.enum([ShadowsocksMethods["aes-128-gcm"], ShadowsocksMethods["aes-256-gcm"], ShadowsocksMethods["chacha20-ietf-poly1305"], ShadowsocksMethods["xchacha20-poly1305"]]).optional(),
     flow: z.enum([XTLSFlows[""], XTLSFlows["xtls-rprx-vision"]]).optional(),
-    groups: z.array(z.number()).min(1, 'At least one group is required'),
+    groups: z.array(z.number()).min(1, { message: 'validation.required' }),
     resetUsages: z.boolean().optional().default(false),
     data_limit_reset_strategy: z.enum([UserDataLimitResetStrategy["month"], UserDataLimitResetStrategy["day"], UserDataLimitResetStrategy["week"], UserDataLimitResetStrategy["no_reset"], UserDataLimitResetStrategy["week"], UserDataLimitResetStrategy["year"]]).optional(),
 })
@@ -51,21 +51,28 @@ interface UserTemplatesModalprops {
 }
 
 export default function UserTemplateModal({
-                                              isDialogOpen,
-                                              onOpenChange,
-                                              form,
-                                              editingUserTemplate,
-                                              editingUserTemplateId
-                                          }: UserTemplatesModalprops) {
-    const {t} = useTranslation()
+    isDialogOpen,
+    onOpenChange,
+    form,
+    editingUserTemplate,
+    editingUserTemplateId
+}: UserTemplatesModalprops) {
+    const { t } = useTranslation()
     const dir = useDirDetection()
-    const addUserTemplateMutation = useAddUserTemplate()
+    const addUserTemplateMutation = useCreateUserTemplate()
     const modifyUserTemplateMutation = useModifyUserTemplate()
     const [filteredGroups, setFilteredGroups] = useState<GroupResponse[]>();
-    const {data} = useGetAllGroups({})
+    const { data } = useGetAllGroups({})
     const [checkGroups, setCheckGroups] = useState(false)
     const [timeType, setTimeType] = useState<"seconds" | "hours" | "days">("seconds")
     const navigate = useNavigate()
+
+    // Initialize filteredGroups when data is available
+    useEffect(() => {
+        if (data?.groups) {
+            setFilteredGroups(data.groups);
+        }
+    }, [data]);
 
     const checkGroupsExist = useCallback(() => {
         if (!data?.groups || data.groups.length === 0) {
@@ -83,15 +90,22 @@ export default function UserTemplateModal({
 
     const onSubmit = async (values: UserTemplatesFromValue) => {
         try {
-            // Convert keep_alive to seconds based on unit
+            // Only include on_hold_timeout if status is on_hold and data_limit_reset_strategy if resetUsages is true
+            const submitData = {
+                ...values,
+                on_hold_timeout: values.status === UserStatusCreate.on_hold ? values.on_hold_timeout : undefined,
+                data_limit_reset_strategy: values.resetUsages ? values.data_limit_reset_strategy : undefined,
+                method: values.method || undefined,
+                flow: values.flow || undefined
+            };
 
             if (editingUserTemplate && editingUserTemplateId) {
                 await modifyUserTemplateMutation.mutateAsync({
                     templateId: editingUserTemplateId,
-                    data: values
+                    data: submitData
                 })
                 toast({
-                    title: t('success', {defaultValue: 'Success'}),
+                    title: t('success', { defaultValue: 'Success' }),
                     description: t('templates.editSuccess', {
                         name: values.name,
                         defaultValue: 'User Templates «{name}» has been updated successfully'
@@ -99,10 +113,10 @@ export default function UserTemplateModal({
                 })
             } else {
                 await addUserTemplateMutation.mutateAsync({
-                    data: values
+                    data: submitData
                 })
                 toast({
-                    title: t('success', {defaultValue: 'Success'}),
+                    title: t('success', { defaultValue: 'Success' }),
                     description: t('templates.createSuccess', {
                         name: values.name,
                         defaultValue: 'User Templates «{name}» has been created successfully'
@@ -111,13 +125,13 @@ export default function UserTemplateModal({
             }
 
             // Invalidate nodes queries after successful operation
-            queryClient.invalidateQueries({queryKey: ['/api/user_template']})
+            queryClient.invalidateQueries({ queryKey: ['/api/user_template'] })
             onOpenChange(false)
             form.reset()
         } catch (error: any) {
             console.error('User Templates operation failed:', error)
             toast({
-                title: t('error', {defaultValue: 'Error'}),
+                title: t('error', { defaultValue: 'Error' }),
                 description: t(editingUserTemplate ? 'templates.editFailed' : 'templates.createFailed', {
                     name: values.name,
                     error: error?.message || '',
@@ -146,14 +160,14 @@ export default function UserTemplateModal({
                                     <FormField
                                         control={form.control}
                                         name="name"
-                                        render={({field}) => (
+                                        render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>{t('templates.name')}</FormLabel>
                                                 <FormControl>
                                                     <Input placeholder={t('templates.name')} {...field}
-                                                           className="min-w-40 sm:w-72"/>
+                                                        className="min-w-40 sm:w-72" />
                                                 </FormControl>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -161,7 +175,7 @@ export default function UserTemplateModal({
                                     <FormField
                                         control={form.control}
                                         name="status"
-                                        render={({field}) => (
+                                        render={({ field }) => (
                                             <FormItem className='w-full'>
                                                 <FormLabel>{t('templates.status')}</FormLabel>
                                                 <Select
@@ -170,7 +184,7 @@ export default function UserTemplateModal({
                                                 >
                                                     <FormControl>
                                                         <SelectTrigger>
-                                                            <SelectValue placeholder="Active"/>
+                                                            <SelectValue placeholder="Active" />
                                                         </SelectTrigger>
                                                     </FormControl>
                                                     <SelectContent>
@@ -188,7 +202,7 @@ export default function UserTemplateModal({
                                 <FormField
                                     control={form.control}
                                     name="username_prefix"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>{t('templates.prefix')}</FormLabel>
                                             <FormControl>
@@ -199,7 +213,7 @@ export default function UserTemplateModal({
                                                     onChange={(e) => field.onChange(e.target.value)}
                                                 />
                                             </FormControl>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
@@ -207,7 +221,7 @@ export default function UserTemplateModal({
                                 <FormField
                                     control={form.control}
                                     name="username_suffix"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>{t('templates.suffix')}</FormLabel>
                                             <FormControl>
@@ -218,7 +232,7 @@ export default function UserTemplateModal({
                                                     onChange={(e) => field.onChange(e.target.value)}
                                                 />
                                             </FormControl>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
@@ -226,7 +240,7 @@ export default function UserTemplateModal({
                                 <FormField
                                     control={form.control}
                                     name="data_limit"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem className='flex-1'>
                                             <FormLabel>{t('templates.dataLimit')}</FormLabel>
                                             <FormControl>
@@ -247,14 +261,14 @@ export default function UserTemplateModal({
                                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium pointer-events-none">GB</span>
                                                 </div>
                                             </FormControl>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                                 <FormField
                                     control={form.control}
                                     name="resetUsages"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem className='flex-1'>
                                             <div className="flex-row justify-between items-center flex">
                                                 <FormLabel>{t('templates.resetUsage')}</FormLabel>
@@ -264,7 +278,7 @@ export default function UserTemplateModal({
                                                         onCheckedChange={field.onChange}
                                                     />
                                                 </FormControl>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </div>
                                         </FormItem>
                                     )}
@@ -272,39 +286,46 @@ export default function UserTemplateModal({
                                 <FormField
                                     control={form.control}
                                     name="data_limit_reset_strategy"
-                                    render={({field}) => (
-                                        <FormItem className='flex-1'>
-                                            <FormLabel>{t('templates.userDataLimitStrategy')}</FormLabel>
-                                            <Select
-                                                onValueChange={field.onChange}
-                                                defaultValue={field.value}
-                                            >
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder=""/>
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value={UserDataLimitResetStrategy["no_reset"]}>No
-                                                        Reset</SelectItem>
-                                                    <SelectItem
-                                                        value={UserDataLimitResetStrategy["day"]}>Day</SelectItem>
-                                                    <SelectItem
-                                                        value={UserDataLimitResetStrategy["week"]}>Week</SelectItem>
-                                                    <SelectItem
-                                                        value={UserDataLimitResetStrategy["month"]}>Month</SelectItem>
-                                                    <SelectItem
-                                                        value={UserDataLimitResetStrategy["year"]}>Year</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage/>
-                                        </FormItem>
-                                    )}
+                                    render={({ field }) => {
+                                        // Only show if resetUsages is enabled
+                                        const resetUsages = form.watch("resetUsages");
+                                        if (!resetUsages) {
+                                            return <></>;
+                                        }
+                                        return (
+                                            <FormItem className='flex-1'>
+                                                <FormLabel>{t('templates.userDataLimitStrategy')}</FormLabel>
+                                                <Select
+                                                    onValueChange={field.onChange}
+                                                    defaultValue={field.value}
+                                                >
+                                                    <FormControl>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        <SelectItem value={UserDataLimitResetStrategy["no_reset"]}>No
+                                                            Reset</SelectItem>
+                                                        <SelectItem
+                                                            value={UserDataLimitResetStrategy["day"]}>Day</SelectItem>
+                                                        <SelectItem
+                                                            value={UserDataLimitResetStrategy["week"]}>Week</SelectItem>
+                                                        <SelectItem
+                                                            value={UserDataLimitResetStrategy["month"]}>Month</SelectItem>
+                                                        <SelectItem
+                                                            value={UserDataLimitResetStrategy["year"]}>Year</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        );
+                                    }}
                                 />
                                 <FormField
                                     control={form.control}
                                     name="expire_duration"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem className='flex-1'>
                                             <FormLabel>{t('templates.expire')}</FormLabel>
                                             <FormControl>
@@ -324,14 +345,14 @@ export default function UserTemplateModal({
                                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium pointer-events-none">Days</span>
                                                 </div>
                                             </FormControl>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                                 <FormField
                                     control={form.control}
                                     name="on_hold_timeout"
-                                    render={({field}) => {
+                                    render={({ field }) => {
                                         const changeValue = (value: number | undefined) => {
                                             if (!value)
                                                 return value
@@ -345,6 +366,11 @@ export default function UserTemplateModal({
                                                 default:
                                                     return value;
                                             }
+                                        }
+                                        // Only show if status is on_hold
+                                        const status = form.watch("status");
+                                        if (status !== UserStatusCreate.on_hold) {
+                                            return <></>;
                                         }
                                         return (
                                             <FormItem className='flex-1'>
@@ -363,10 +389,10 @@ export default function UserTemplateModal({
                                                             />
                                                         </div>
                                                         <div className="flex-[2]">
-                                                            <Select  value={timeType} onValueChange={(v) => setTimeType(v as any)}>
+                                                            <Select value={timeType} onValueChange={(v) => setTimeType(v as any)}>
                                                                 <SelectTrigger
                                                                     className="w-full rounded-none border-0 focus:ring-0 focus:ring-offset-0">
-                                                                    <SelectValue placeholder="Second"/>
+                                                                    <SelectValue placeholder="Second" />
                                                                 </SelectTrigger>
                                                                 <SelectContent>
                                                                     <SelectItem value="days">Days</SelectItem>
@@ -377,7 +403,7 @@ export default function UserTemplateModal({
                                                         </div>
                                                     </div>
                                                 </FormControl>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )
                                     }}
@@ -388,19 +414,20 @@ export default function UserTemplateModal({
                                 <FormField
                                     control={form.control}
                                     name="method"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>{t('templates.method')}</FormLabel>
                                             <Select
-                                                onValueChange={field.onChange}
-                                                defaultValue={field.value}
+                                                onValueChange={(value) => field.onChange(value === "null" ? undefined : value)}
+                                                value={field.value ?? "null"}
                                             >
                                                 <FormControl>
                                                     <SelectTrigger>
-                                                        <SelectValue placeholder="Select Method"/>
+                                                        <SelectValue placeholder="Select Method" />
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
+                                                    <SelectItem value="null">None</SelectItem>
                                                     <SelectItem
                                                         value={ShadowsocksMethods["aes-128-gcm"]}>aes-128-gcm</SelectItem>
                                                     <SelectItem
@@ -411,7 +438,7 @@ export default function UserTemplateModal({
                                                         value={ShadowsocksMethods["xchacha20-poly1305"]}>xchacha20-poly1305</SelectItem>
                                                 </SelectContent>
                                             </Select>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
@@ -419,34 +446,34 @@ export default function UserTemplateModal({
                                 <FormField
                                     control={form.control}
                                     name="flow"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>{t('templates.flow')}</FormLabel>
                                             <Select
-                                                onValueChange={field.onChange}
-                                                defaultValue={field.value}
+                                                onValueChange={(value) => field.onChange(value === "null" ? undefined : value)}
+                                                value={field.value ?? "null"}
                                             >
                                                 <FormControl>
                                                     <SelectTrigger>
-                                                        <SelectValue placeholder=""/>
+                                                        <SelectValue placeholder="" />
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
-                                                    <SelectItem value={"0"} className="py-4"></SelectItem>
+                                                    <SelectItem value="null">None</SelectItem>
                                                     <SelectItem
                                                         value={XTLSFlows["xtls-rprx-vision"]}>xtls-rprx-vision</SelectItem>
                                                 </SelectContent>
                                             </Select>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
-                                    )}/>
+                                    )} />
                                 <FormField
                                     control={form.control}
                                     name="groups"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem className="flex-1 w-full mb-6 md:mb-0">
                                             <FormLabel>{t('templates.groups')}</FormLabel>
-                                            <GroupFilterBar onFilteredGroups={setFilteredGroups} data={data}/>
+                                            <GroupFilterBar onFilteredGroups={setFilteredGroups} data={data} />
                                             <FormControl>
                                                 {checkGroups ? (
                                                     <div className="flex flex-col space-y-4 pb-2">
@@ -473,7 +500,7 @@ export default function UserTemplateModal({
                                                                         field.value?.includes(group.id) ? "bg-foreground border-foreground" : ""
                                                                     )}>
                                                                         {field.value?.includes(group.id) && <Check
-                                                                            className="h-3 w-3 text-primary-foreground"/>}
+                                                                            className="h-3 w-3 text-primary-foreground" />}
                                                                     </div>
                                                                     <span className="text-sm">{group.name}</span>
                                                                 </div>
@@ -489,25 +516,25 @@ export default function UserTemplateModal({
                                                         </span>
                                                         <span className="text-sm font-medium text-foreground">
                                                             <Trans i18nKey={'templates.groupsExistingWarning'}
-                                                                   components={{
-                                                                       a: (
-                                                                           <a
-                                                                               href="/groups"
-                                                                               className="font-bold text-primary hover:underline"
-                                                                               onClick={(e) => {
-                                                                                   e.preventDefault();
-                                                                                   navigate('/groups');
-                                                                               }}
-                                                                           />
-                                                                       )
-                                                                   }}
+                                                                components={{
+                                                                    a: (
+                                                                        <a
+                                                                            href="/groups"
+                                                                            className="font-bold text-primary hover:underline"
+                                                                            onClick={(e) => {
+                                                                                e.preventDefault();
+                                                                                navigate('/groups');
+                                                                            }}
+                                                                        />
+                                                                    )
+                                                                }}
                                                             >
-                                                                </Trans>
+                                                            </Trans>
                                                         </span>
                                                     </div>
                                                 )}
                                             </FormControl>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
