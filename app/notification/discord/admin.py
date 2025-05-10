@@ -14,7 +14,7 @@ async def create_admin(admin: AdminDetails, by: str):
                 "description": f"**Username:** {admin.username}\n"
                 + f"**Is Sudo:** {admin.is_sudo}\n"
                 + f"**Is Disabled:** {admin.is_disabled}\n"
-                + f"**Users Usage:** {admin.users_usage}\n",
+                + f"**Used Traffic:** {admin.used_traffic}\n",
                 "color": colors.GREEN,
                 "footer": {"text": f"By: {by}"},
             }
@@ -34,7 +34,7 @@ async def modify_admin(admin: AdminDetails, by: str):
                 "description": f"**Username:** {admin.username}\n"
                 + f"**Is Sudo:** {admin.is_sudo}\n"
                 + f"**Is Disabled:** {admin.is_disabled}\n"
-                + f"**Users Usage:** {admin.users_usage}\n",
+                + f"**Used Traffic:** {admin.used_traffic}\n",
                 "color": colors.YELLOW,
                 "footer": {"text": f"By: {by}"},
             }

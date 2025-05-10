@@ -1389,12 +1389,12 @@ async def reset_admin_usage(db: AsyncSession, db_admin: Admin) -> int:
     Returns:
         Admin: The updated admin.
     """
-    if db_admin.users_usage == 0:
+    if db_admin.used_traffic == 0:
         return db_admin
 
-    usage_log = AdminUsageLogs(admin=db_admin, used_traffic_at_reset=db_admin.users_usage)
+    usage_log = AdminUsageLogs(admin=db_admin, used_traffic_at_reset=db_admin.used_traffic)
     db.add(usage_log)
-    db_admin.users_usage = 0
+    db_admin.used_traffic = 0
 
     await db.commit()
     await db.refresh(db_admin)

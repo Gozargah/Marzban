@@ -28,7 +28,7 @@ class AdminDetails(AdminBaseInfo):
 
     is_sudo: bool
     total_users: int = 0
-    users_usage: int = 0
+    used_traffic: int = 0
     is_disabled: bool = False
     discord_id: int | None = None
     sub_template: str | None = None
@@ -38,7 +38,7 @@ class AdminDetails(AdminBaseInfo):
 
     model_config = ConfigDict(from_attributes=True)
 
-    @field_validator("users_usage", mode="before")
+    @field_validator("used_traffic", mode="before")
     def cast_to_int(cls, v):
         return NumericValidatorMixin.cast_to_int(v)
 
