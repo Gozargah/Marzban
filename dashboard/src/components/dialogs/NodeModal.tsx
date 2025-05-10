@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useTranslation } from 'react-i18next'
 import { UseFormReturn } from 'react-hook-form'
-import { useCreateNode, useModifyNode, NodeConnectionType, useGetAllCores, CoreResponse, getNode } from '@/service/api'
+import { useCreateNode, useModifyNode, NodeConnectionType, useGetAllCores, CoreResponse, getNode, reconnectNode } from '@/service/api'
 import { toast } from '@/hooks/use-toast'
 import { z } from 'zod'
 import { cn } from '@/lib/utils'
@@ -55,6 +55,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
   const [showErrorDetails, setShowErrorDetails] = useState(false)
   const [debouncedValues, setDebouncedValues] = useState<NodeFormValues | null>(null)
+  const [reconnecting, setReconnecting] = useState(false)
 
   // Reset status when modal opens/closes
   useEffect(() => {
@@ -303,22 +304,52 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                 </Button>
               )}
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={checkNodeStatus}
-              disabled={statusChecking || !form.formState.isValid}
-              className="h-6 px-2 text-xs"
-            >
-              {statusChecking ? (
-                <div className="flex items-center gap-1">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  {t('nodeModal.statusChecking')}
-                </div>
-              ) : (
-                t('nodeModal.statusCheck')
+            <div className="flex items-center gap-2">
+              {editingNode && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    if (!editingNodeId) return;
+                    setReconnecting(true);
+                    try {
+                      await reconnectNode(editingNodeId);
+                      await checkNodeStatus();
+                    } catch (error) {
+                    } finally {
+                      setReconnecting(false);
+                    }
+                  }}
+                  disabled={reconnecting}
+                  className="h-6 px-2 text-xs"
+                >
+                  {reconnecting ? (
+                    <div className="flex items-center gap-1">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      {t('nodeModal.reconnecting')}
+                    </div>
+                  ) : (
+                    t('nodeModal.reconnect')
+                  )}
+                </Button>
               )}
-            </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={checkNodeStatus}
+                disabled={statusChecking || !form.formState.isValid}
+                className="h-6 px-2 text-xs"
+              >
+                {statusChecking ? (
+                  <div className="flex items-center gap-1">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    {t('nodeModal.statusChecking')}
+                  </div>
+                ) : (
+                  t('nodeModal.statusCheck')
+                )}
+              </Button>
+            </div>
           </div>
           {showErrorDetails && connectionStatus === 'error' && (
             <div className="text-xs text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">

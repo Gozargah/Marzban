@@ -619,7 +619,9 @@
     "hideDetails": "مخفی کردن جزئیات",
     "showDetails": "نمایش جزئیات",
     "statusCheck": "بررسی وضعیت",
-    "statusChecking": "در حال بررسی..."
+    "statusChecking": "در حال بررسی...",
+    "reconnect": "دوباره متصل کن",
+    "reconnecting": "در حال دوباره متصل کردن..."
   },
   "nodes": {
     "title": "گره‌ها",
@@ -710,6 +712,7 @@
     "duplicateFailed": "خطا در کپی پیکربندی هسته «{{name}}»",
     "deleteSuccess": "هسته با موفقیت حذف شد",
     "deleteFailed": "حذف هسته با خطا مواجه شد",
+    "delete": "حذف هسته",
     "duplicateInfo": "آماده ایجاد کپی از «{{name}}». در صورت نیاز تغییرات را اعمال کرده و ذخیره کنید.",
     "coreNotFound": "هسته یافت نشد"
   },

@@ -22,17 +22,15 @@ interface CoresProps {
   isDialogOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   cores?: CoreResponse[];
-  onAddCore?: () => void;
   onEditCore?: (coreId: number | string) => void;
   onDuplicateCore?: (coreId: number | string) => void;
-  onDeleteCore?: (coreId: number | string) => void;
+  onDeleteCore?: (coreName: string, coreId: number) => void;
 }
 
 export default function Cores({ 
   isDialogOpen, 
   onOpenChange,
   cores,
-  onAddCore,
   onEditCore,
   onDuplicateCore,
   onDeleteCore 
@@ -118,7 +116,7 @@ export default function Cores({
               onEdit={onEditCore ? () => onEditCore(core.id) : () => handleEdit(core)}
               onToggleStatus={handleToggleStatus}
               onDuplicate={onDuplicateCore ? () => onDuplicateCore(core.id) : undefined}
-              onDelete={onDeleteCore ? () => onDeleteCore(core.id) : undefined}
+              onDelete={onDeleteCore ? () => onDeleteCore(core.name, core.id) : undefined}
             />
           ))}
         </div>

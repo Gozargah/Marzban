@@ -11,6 +11,7 @@
   "hosts": "Hosts",
   "success": "Success",
   "error": "Error",
+  "username": "Username",
   "nodes": {
     "title": "Nodes",
     "description": "Manage your nodes",
@@ -683,7 +684,9 @@
     "hideDetails": "Hide Details",
     "showDetails": "Show Details",
     "statusCheck": "Check Status",
-    "statusChecking": "Checking..."
+    "statusChecking": "Checking...",
+    "reconnect": "Reconnect",
+    "reconnecting": "Reconnecting..."
   },
   "theme": {
     "title": "Theme",
@@ -739,6 +742,7 @@
     "duplicateFailed": "Failed to duplicate core config «{{name}}»",
     "deleteSuccess": "Core has been deleted successfully",
     "deleteFailed": "Failed to delete core",
+    "delete":"Delete Core Config",
     "duplicateInfo": "Prepare to create a copy of «{{name}}». Make changes if needed and click Save.",
     "coreNotFound": "Core not found"
   },

@@ -65,6 +65,7 @@ export type GetUsersParams = {
   admin?: string[] | null
   status?: UserStatus | null
   sort?: string | null
+  proxy_id?: string | null
   load_sub?: boolean
 }
 
@@ -142,13 +143,6 @@ export type XrayMuxSettingsXudpConcurrency = number | null
 
 export type XrayMuxSettingsConcurrency = number | null
 
-export interface XrayMuxSettings {
-  enable?: boolean
-  concurrency?: XrayMuxSettingsConcurrency
-  xudp_concurrency?: XrayMuxSettingsXudpConcurrency
-  xudp_proxy_443?: Xudp
-}
-
 export interface XrayFragmentSettings {
   /** @pattern ^(:?tlshello|[\d-]{1,16})$ */
   packets: string
@@ -166,6 +160,13 @@ export const Xudp = {
   allow: 'allow',
   skip: 'skip',
 } as const
+
+export interface XrayMuxSettings {
+  enable?: boolean
+  concurrency?: XrayMuxSettingsConcurrency
+  xudp_concurrency?: XrayMuxSettingsXudpConcurrency
+  xudp_proxy_443?: Xudp
+}
 
 export type XTLSFlows = (typeof XTLSFlows)[keyof typeof XTLSFlows]
 
@@ -436,6 +437,22 @@ export type UserTemplateCreateDataLimit = number | null
 
 export type UserTemplateCreateName = string | null
 
+export interface UserTemplateCreate {
+  name?: UserTemplateCreateName
+  /** data_limit can be 0 or greater */
+  data_limit?: UserTemplateCreateDataLimit
+  /** expire_duration can be 0 or greater in seconds */
+  expire_duration?: UserTemplateCreateExpireDuration
+  username_prefix?: UserTemplateCreateUsernamePrefix
+  username_suffix?: UserTemplateCreateUsernameSuffix
+  group_ids?: number[]
+  extra_settings?: UserTemplateCreateExtraSettings
+  status?: UserTemplateCreateStatus
+  reset_usages?: UserTemplateCreateResetUsages
+  on_hold_timeout?: UserTemplateCreateOnHoldTimeout
+  data_limit_reset_strategy?: UserTemplateCreateDataLimitResetStrategy
+}
+
 export type UserStatusModify = (typeof UserStatusModify)[keyof typeof UserStatusModify]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -454,22 +471,6 @@ export const UserStatusCreate = {
 } as const
 
 export type UserTemplateCreateStatus = UserStatusCreate | null
-
-export interface UserTemplateCreate {
-  name?: UserTemplateCreateName
-  /** data_limit can be 0 or greater */
-  data_limit?: UserTemplateCreateDataLimit
-  /** expire_duration can be 0 or greater in seconds */
-  expire_duration?: UserTemplateCreateExpireDuration
-  username_prefix?: UserTemplateCreateUsernamePrefix
-  username_suffix?: UserTemplateCreateUsernameSuffix
-  group_ids?: number[]
-  extra_settings?: UserTemplateCreateExtraSettings
-  status?: UserTemplateCreateStatus
-  reset_usages?: UserTemplateCreateResetUsages
-  on_hold_timeout?: UserTemplateCreateOnHoldTimeout
-  data_limit_reset_strategy?: UserTemplateCreateDataLimitResetStrategy
-}
 
 export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus]
 
@@ -634,6 +635,8 @@ export interface TrojanSettings {
 
 export type TransportSettingsOutputWebsocketSettings = WebSocketSettings | null
 
+export type TransportSettingsOutputTcpSettings = TcpSettings | null
+
 export type TransportSettingsOutputKcpSettings = KCPSettings | null
 
 export type TransportSettingsOutputGrpcSettings = GRPCSettings | null
@@ -681,8 +684,6 @@ export interface TcpSettings {
   request?: TcpSettingsRequest
   response?: TcpSettingsResponse
 }
-
-export type TransportSettingsOutputTcpSettings = TcpSettings | null
 
 export interface SystemStats {
   version: string
@@ -743,7 +744,6 @@ export interface SubscriptionUserResponse {
   sub_updated_at?: SubscriptionUserResponseSubUpdatedAt
   sub_last_user_agent?: SubscriptionUserResponseSubLastUserAgent
   online_at?: SubscriptionUserResponseOnlineAt
-  subscription_url?: string
 }
 
 export type SingBoxMuxSettingsBrutal = Brutal | null
@@ -920,9 +920,11 @@ export interface NodeResponse {
   connection_type: NodeConnectionType
   server_ca: string
   keep_alive: number
-  max_logs: number
+  /** */
+  max_logs?: number
   core_config_id?: NodeResponseCoreConfigId
   api_key: string
+  gather_logs?: boolean
   id: number
   xray_version?: NodeResponseXrayVersion
   node_version?: NodeResponseNodeVersion
@@ -942,6 +944,8 @@ export interface NodeRealtimeStats {
 export type NodeModifyStatus = NodeStatus | null
 
 export type NodeModifyApiPort = number | null
+
+export type NodeModifyGatherLogs = boolean | null
 
 export type NodeModifyApiKey = string | null
 
@@ -974,6 +978,7 @@ export interface NodeModify {
   max_logs?: NodeModifyMaxLogs
   core_config_id?: NodeModifyCoreConfigId
   api_key?: NodeModifyApiKey
+  gather_logs?: NodeModifyGatherLogs
   api_port?: NodeModifyApiPort
   status?: NodeModifyStatus
 }
@@ -997,9 +1002,11 @@ export interface NodeCreate {
   connection_type: NodeConnectionType
   server_ca: string
   keep_alive: number
-  max_logs: number
+  /** */
+  max_logs?: number
   core_config_id?: NodeCreateCoreConfigId
   api_key: string
+  gather_logs?: boolean
 }
 
 export type NextPlanModelExpire = number | null
@@ -1049,8 +1056,11 @@ export const MultiplexProtocol = {
   h2mux: 'h2mux',
 } as const
 
+export type ModifyUserByTemplateNote = string | null
+
 export interface ModifyUserByTemplate {
   user_template_id: number
+  note?: ModifyUserByTemplateNote
 }
 
 export type KCPSettingsWriteBufferSize = number | null
@@ -1179,8 +1189,11 @@ export interface ExtraSettings {
   method?: ExtraSettingsMethod
 }
 
+export type CreateUserFromTemplateNote = string | null
+
 export interface CreateUserFromTemplate {
   user_template_id: number
+  note?: CreateUserFromTemplateNote
   username: string
 }
 
@@ -1322,24 +1335,6 @@ export type BaseHostMuxSettings = MuxSettingsOutput | null
 
 export type BaseHostTransportSettings = TransportSettingsOutput | null
 
-export type BaseHostHttpHeadersAnyOf = { [key: string]: string }
-
-export type BaseHostHttpHeaders = BaseHostHttpHeadersAnyOf | null
-
-export type BaseHostAllowinsecure = boolean | null
-
-export type BaseHostPath = string | null
-
-export type BaseHostHost = string | null
-
-export type BaseHostSni = string | null
-
-export type BaseHostPort = number | null
-
-export type BaseHostInboundTag = string | null
-
-export type BaseHostId = number | null
-
 export interface BaseHost {
   id?: BaseHostId
   remark: string
@@ -1364,6 +1359,24 @@ export interface BaseHost {
   priority: number
   status?: UserStatus[]
 }
+
+export type BaseHostHttpHeadersAnyOf = { [key: string]: string }
+
+export type BaseHostHttpHeaders = BaseHostHttpHeadersAnyOf | null
+
+export type BaseHostAllowinsecure = boolean | null
+
+export type BaseHostPath = string | null
+
+export type BaseHostHost = string | null
+
+export type BaseHostSni = string | null
+
+export type BaseHostPort = number | null
+
+export type BaseHostInboundTag = string | null
+
+export type BaseHostId = number | null
 
 export type AdminModifySupportUrl = string | null
 
@@ -5157,4 +5170,84 @@ export function useGetUserTemplates<TData = Awaited<ReturnType<typeof getUserTem
   query.queryKey = queryOptions.queryKey
 
   return query
+}
+
+/**
+ * generate node logs for developers
+ * @summary Nodes Logs
+ */
+export const nodesLogs = (signal?: AbortSignal) => {
+  return orvalFetcher<unknown>({ url: `/api/dev/generate/nodes-logs`, method: 'POST', signal })
+}
+
+export const getNodesLogsMutationOptions = <TData = Awaited<ReturnType<typeof nodesLogs>>, TError = ErrorType<Unauthorized | Forbidden>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, void, TContext>
+}) => {
+  const mutationKey = ['nodesLogs']
+  const { mutation: mutationOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } }
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof nodesLogs>>, void> = () => {
+    return nodesLogs()
+  }
+
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, void, TContext>
+}
+
+export type NodesLogsMutationResult = NonNullable<Awaited<ReturnType<typeof nodesLogs>>>
+
+export type NodesLogsMutationError = ErrorType<Unauthorized | Forbidden>
+
+/**
+ * @summary Nodes Logs
+ */
+export const useNodesLogs = <TData = Awaited<ReturnType<typeof nodesLogs>>, TError = ErrorType<Unauthorized | Forbidden>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, void, TContext>
+}): UseMutationResult<TData, TError, void, TContext> => {
+  const mutationOptions = getNodesLogsMutationOptions(options)
+
+  return useMutation(mutationOptions)
+}
+
+/**
+ * generate user logs for developers
+ * @summary Node Users Usage Logs
+ */
+export const nodeUsersUsageLogs = (signal?: AbortSignal) => {
+  return orvalFetcher<unknown>({ url: `/api/dev/generate/users-logs`, method: 'POST', signal })
+}
+
+export const getNodeUsersUsageLogsMutationOptions = <TData = Awaited<ReturnType<typeof nodeUsersUsageLogs>>, TError = ErrorType<Unauthorized | Forbidden>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, void, TContext>
+}) => {
+  const mutationKey = ['nodeUsersUsageLogs']
+  const { mutation: mutationOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } }
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof nodeUsersUsageLogs>>, void> = () => {
+    return nodeUsersUsageLogs()
+  }
+
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, void, TContext>
+}
+
+export type NodeUsersUsageLogsMutationResult = NonNullable<Awaited<ReturnType<typeof nodeUsersUsageLogs>>>
+
+export type NodeUsersUsageLogsMutationError = ErrorType<Unauthorized | Forbidden>
+
+/**
+ * @summary Node Users Usage Logs
+ */
+export const useNodeUsersUsageLogs = <TData = Awaited<ReturnType<typeof nodeUsersUsageLogs>>, TError = ErrorType<Unauthorized | Forbidden>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, void, TContext>
+}): UseMutationResult<TData, TError, void, TContext> => {
+  const mutationOptions = getNodeUsersUsageLogsMutationOptions(options)
+
+  return useMutation(mutationOptions)
 }

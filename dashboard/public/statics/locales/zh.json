@@ -673,6 +673,8 @@
     },
     "statusCheck": "检查状态",
     "statusChecking": "检查中...",
+    "reconnect": "重新连接",
+    "reconnecting": "重新连接中...",
     "hideDetails": "隐藏详情",
     "showDetails": "显示详情",
     "errorDetails": "错误详情",
@@ -743,6 +745,7 @@
     "duplicateFailed": "核心配置 «{{name}}» 复制失败",
     "deleteSuccess": "核心删除成功",
     "deleteFailed": "核心删除失败",
+    "delete": "删除核心配置",
     "duplicateInfo": "准备创建 \"{name}\" 的副本。如有需要，请进行更改并点击保存。",
     "coreNotFound": "未找到核心"
   },

@@ -1,15 +1,10 @@
 import { Card } from '@/components/ui/card'
-import { CoreResponse, useDeleteCoreConfig } from '@/service/api'
+import { CoreResponse } from '@/service/api'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
-import { toast } from '@/hooks/use-toast'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { useState } from 'react'
 import { MoreVertical, Pencil, Trash2, Copy } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
-import useDirDetection from '@/hooks/use-dir-detection'
-import { queryClient } from '@/utils/query-client'
 
 interface CoreProps {
   core: CoreResponse
@@ -19,75 +14,13 @@ interface CoreProps {
   onDelete?: () => void
 }
 
-const DeleteAlertDialog = ({
-  core,
-  isOpen,
-  onClose,
-  onConfirm,
-}: {
-  core: CoreResponse
-  isOpen: boolean
-  onClose: () => void
-  onConfirm: () => void
-}) => {
-  const { t } = useTranslation()
-  const dir = useDirDetection()
-
-  return (
-    <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent>
-        <AlertDialogHeader className={cn(dir === "rtl" && "sm:text-right")}>
-          <AlertDialogTitle>{t('deleteConfirmation')}</AlertDialogTitle>
-          <AlertDialogDescription>
-            <span dir={dir} dangerouslySetInnerHTML={{ __html: t('core.deleteConfirm', { name: core.name }) }} />
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter className={cn(dir === "rtl" && "sm:gap-x-2 sm:flex-row-reverse")}>
-          <AlertDialogCancel onClick={onClose}>{t('cancel')}</AlertDialogCancel>
-          <AlertDialogAction variant="destructive" onClick={onConfirm}>
-            {t('delete')}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  )
-}
-
 export default function Core({ core, onEdit, onToggleStatus, onDuplicate, onDelete }: CoreProps) {
   const { t } = useTranslation()
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const deleteCoreMutation = useDeleteCoreConfig()
 
   const handleDeleteClick = (event: Event) => {
     event.stopPropagation()
     if (onDelete) {
       onDelete()
-    } else {
-      setShowDeleteDialog(true)
-    }
-  }
-
-  const handleConfirmDelete = async () => {
-    try {
-      await deleteCoreMutation.mutateAsync({ coreId: core.id })
-      toast({
-        title: t('success', { defaultValue: 'Success' }),
-        description: t('settings.cores.deleteSuccess', {
-          name: core.name,
-          defaultValue: 'Core configuration has been deleted successfully'
-        })
-      })
-      setShowDeleteDialog(false)
-      queryClient.invalidateQueries({ queryKey: ['/api/cores'] })
-    } catch (error) {
-      toast({
-        title: t('error', { defaultValue: 'Error' }),
-        description: t('settings.cores.deleteFailed', {
-          name: core.name,
-          defaultValue: 'Failed to delete core configuration'
-        }),
-        variant: "destructive"
-      })
     }
   }
 
@@ -149,13 +82,6 @@ export default function Core({ core, onEdit, onToggleStatus, onDuplicate, onDele
           </DropdownMenu>
         </div>
       </Card>
-
-      <DeleteAlertDialog
-        core={core}
-        isOpen={showDeleteDialog}
-        onClose={() => setShowDeleteDialog(false)}
-        onConfirm={handleConfirmDelete}
-      />
     </>
   )
 } 

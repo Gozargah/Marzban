@@ -90,13 +90,24 @@ export default function UserTemplateModal({
 
     const onSubmit = async (values: UserTemplatesFromValue) => {
         try {
-            // Only include on_hold_timeout if status is on_hold and data_limit_reset_strategy if resetUsages is true
+            // Build payload according to UserTemplateCreate interface
             const submitData = {
-                ...values,
+                name: values.name,
+                data_limit: values.data_limit,
+                expire_duration: values.expire_duration,
+                username_prefix: values.username_prefix,
+                username_suffix: values.username_suffix,
+                group_ids: values.groups, // map groups to group_ids
+                status: values.status,
+                reset_usages: values.resetUsages,
                 on_hold_timeout: values.status === UserStatusCreate.on_hold ? values.on_hold_timeout : undefined,
                 data_limit_reset_strategy: values.resetUsages ? values.data_limit_reset_strategy : undefined,
-                method: values.method || undefined,
-                flow: values.flow || undefined
+                extra_settings: (values.method || values.flow)
+                  ? {
+                      method: values.method,
+                      flow: values.flow,
+                    }
+                  : undefined,
             };
 
             if (editingUserTemplate && editingUserTemplateId) {
@@ -125,7 +136,7 @@ export default function UserTemplateModal({
             }
 
             // Invalidate nodes queries after successful operation
-            queryClient.invalidateQueries({ queryKey: ['/api/user_template'] })
+            queryClient.invalidateQueries({ queryKey: ['/api/user_templates'] });
             onOpenChange(false)
             form.reset()
         } catch (error: any) {
@@ -154,7 +165,7 @@ export default function UserTemplateModal({
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
                         <div
-                            className="max-h-[85vh] overflow-y-auto pr-4 -mr-4 sm:max-h-[75vh] flex flex-col sm:flex-row items-start gap-4">
+                            className="max-h-[85vh] overflow-y-auto pr-4 -mr-4 sm:max-h-[75vh] flex flex-col sm:flex-row items-start gap-4 px-2">
                             <div className="flex-1 space-y-4 w-full">
                                 <div className="flex flex-row justify-between gap-1 w-full items-center">
                                     <FormField
@@ -511,7 +522,7 @@ export default function UserTemplateModal({
                                                     <div
                                                         className="flex flex-col gap-4 w-full border-yellow-500 border p-4 rounded-md">
                                                         <span
-                                                            className="text-sm font-medium text-foreground font-bold text-yellow-500">
+                                                            className="text-sm ftext-foreground font-bold text-yellow-500">
                                                             {t('warning')}
                                                         </span>
                                                         <span className="text-sm font-medium text-foreground">
