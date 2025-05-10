@@ -103,8 +103,13 @@
     "disableSuccess": "管理员「{{name}}」已成功禁用",
     "enableSuccess": "管理员「{{name}}」已成功启用",
     "disableFailed": "禁用管理员「{{name}}」失败",
-    "enableFailed": "启用管理员「{{name}}」失败"
+    "enableFailed": "启用管理员「{{name}}」失败",
+    "resetUsersUsage": "管理员重置用户使用情况",
+    "resetUsageSuccess": "管理员已成功重置用户「{{name}}」的使用情况",
+    "resetUsageFailed": "管理员重置用户「{{name}}」的使用情况失败",
+    "reset": "重置使用情况"
   },
+  "resetUsersUsage.prompt": "你确定要重置管理员用户<b>{{name}}</b>的使用情况吗？",
   "admin.disable": "管理员已禁用",
   "admin.enable": "管理员已启用",
   "deleteAdmin.prompt": "您确定要删除管理员<b>{{name}}</b>吗？",

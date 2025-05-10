@@ -69,8 +69,13 @@
     "disableSuccess": "مدیر «{{name}}» با موفقیت غیرفعال شد",
     "enableSuccess": "مدیر «{{name}}» با موفقیت فعال شد",
     "disableFailed": "غیرفعال‌سازی مدیر «{{name}}» با شکست مواجه شد",
-    "enableFailed": "فعال‌سازی مدیر «{{name}}» با شکست مواجه شد"
+    "enableFailed": "فعال‌سازی مدیر «{{name}}» با شکست مواجه شد",
+    "resetUsersUsage": "ریست مصرف کاربران توسط ادمین",
+    "resetUsageSuccess": "مصرف کاربر «{{name}}» با موفقیت توسط ادمین ریست شد",
+    "resetUsageFailed": "ریست مصرف کاربر «{{name}}» توسط ادمین ناموفق بود",
+    "reset": "ریست مصرف"
   },
+  "resetUsersUsage.prompt": "آیا مطمئن هستید که می‌خواهید مصرف کاربر ادمین <b>{{name}}</b> را ریست کنید؟",
   "admin.disable": "غیر فعالسازی مدیر",
   "admin.enable": "فعالسازی مدیر",
   "deleteAdmin.prompt": "آیا مطمئن هستید که می‌خواهید مدیر <b>{{name}}</b> را حذف کنید؟",

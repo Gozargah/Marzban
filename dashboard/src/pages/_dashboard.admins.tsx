@@ -11,7 +11,7 @@ import {
     useActivateAllDisabledUsers, useDisableAllActiveUsers,
     useGetAdmins,
     useModifyAdmin,
-    useRemoveAdmin
+    useRemoveAdmin, useResetAdminUsage
 } from '@/service/api'
 import type {AdminDetails} from '@/service/api'
 import AdminsStatistics from "@/components/AdminStatistics.tsx";
@@ -45,6 +45,7 @@ export default function AdminsPage() {
     const modifyAdminMutation = useModifyAdmin()
     const modifyDisableAllAdminUsers = useDisableAllActiveUsers()
     const modifyActivateAllAdminUsers = useActivateAllDisabledUsers()
+    const resetUsageMutation = useResetAdminUsage()
     const handleDelete = async (admin: AdminDetails) => {
         try {
             await removeAdminMutation.mutateAsync({
@@ -142,6 +143,36 @@ export default function AdminsPage() {
         setIsDialogOpen(true)
     }
 
+    const resetUsage = async (adminUsername: string) => {
+        try {
+            await resetUsageMutation.mutateAsync({
+                username: adminUsername
+            })
+
+            toast({
+                title: t('success', {defaultValue: 'Success'}),
+                description: t('admins.resetUsageSuccess', {
+                    name: adminUsername,
+                    defaultValue: `Admin "{name}" user usage has been reset successfully`
+                })
+            })
+
+            // Invalidate nodes queries
+            queryClient.invalidateQueries({
+                queryKey: ["/api/admins"],
+            })
+        } catch (error) {
+            toast({
+                title: t('error', {defaultValue: 'Error'}),
+                description: t('admins.resetUsageFailed', {
+                    name: adminUsername,
+                    defaultValue: `Failed to reset admin "{name}" user usage`
+                }),
+                variant: "destructive"
+            })
+        }
+    }
+
 
     return (
         <div className="flex flex-col gap-2 w-full items-start">
@@ -160,6 +191,7 @@ export default function AdminsPage() {
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onToggleStatus={handleToggleStatus}
+                    onResetUsage={resetUsage}
                 />
                 <AdminModal
                     isDialogOpen={isDialogOpen}

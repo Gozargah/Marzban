@@ -107,8 +107,13 @@
     "disableSuccess": "Admin «{{name}}» has been disabled successfully",
     "enableSuccess": "Admin «{{name}}» has been enabled successfully",
     "disableFailed": "Failed to disable admin «{{name}}»",
-    "enableFailed": "Failed to enable admin «{{name}}»"
+    "enableFailed": "Failed to enable admin «{{name}}»",
+    "resetUsersUsage": "Admin Reset Users Usage",
+    "resetUsageSuccess": "Admin «{{name}}» user usage has been reset successfully",
+    "resetUsageFailed":"Failed to reset admin «{{name}}» user usage",
+    "reset": "Reset usage"
   },
+  "resetUsersUsage.prompt": "Are you sure you want to reset the <b>{{name}}</b> admin users usage?",
   "admin.disable": "Disabled Admin",
   "admin.enable": "Enabled Admin",
   "deleteAdmin.prompt": "Are you sure you want to remove the <b>{{name}}</b> admin?",

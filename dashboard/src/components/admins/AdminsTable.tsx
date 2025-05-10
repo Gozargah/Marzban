@@ -31,6 +31,7 @@ interface AdminsTableProps {
     onEdit: (admin: AdminDetails) => void
     onDelete: (admin: AdminDetails) => void
     onToggleStatus: (admin: AdminDetails, checked: boolean) => void
+    onResetUsage: (adminUsername: string) => void
 }
 
 const DeleteAlertDialog = ({
@@ -116,7 +117,44 @@ const ToggleAdminStatusModal = ({
     );
 };
 
-export default function AdminsTable({data, onEdit, onDelete, onToggleStatus}: AdminsTableProps) {
+const ResetUsersUsageConfirmationDialog = ({
+                                               adminUsername,
+                                               isOpen,
+                                               onClose,
+                                               onConfirm,
+                                           }: {
+    adminUsername: string;
+    isOpen: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+}) => {
+    const {t} = useTranslation();
+    const dir = useDirDetection();
+
+    return (
+        <AlertDialog open={isOpen} onOpenChange={onClose}>
+            <AlertDialogContent>
+                <AlertDialogHeader className={cn(dir === "rtl" && "sm:text-right")}>
+                    <AlertDialogTitle>{t("admins.resetUsersUsage")}</AlertDialogTitle>
+                    <AlertDialogDescription className="flex items-center gap-2">
+                        <span dir={dir}
+                              dangerouslySetInnerHTML={{__html: t("resetUsersUsage.prompt", {name: adminUsername})}}/>
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className={cn(dir === "rtl" && "sm:gap-x-2 sm:flex-row-reverse")}>
+                    <AlertDialogCancel onClick={onClose}>{t("cancel")}</AlertDialogCancel>
+                    <AlertDialogAction
+                        onClick={onConfirm}
+                    >
+                        {t("confirm")}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
+};
+
+export default function AdminsTable({data, onEdit, onDelete, onToggleStatus, onResetUsage}: AdminsTableProps) {
     const {t} = useTranslation();
     const [filters, setFilters] = useState<AdminFilters>({
         sort: '-username',
@@ -126,7 +164,9 @@ export default function AdminsTable({data, onEdit, onDelete, onToggleStatus}: Ad
     });
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [statusToggleDialogOpen, setStatusToggleDialogOpen] = useState(false);
+    const [resetUsersUsageDialogOpen, setResetUsersUsageDialogOpen] = useState(false);
     const [adminToDelete, setAdminToDelete] = useState<AdminDetails | null>(null);
+    const [adminToReset, setAdminToReset] = useState<string | null>(null);
     const [adminToToggleStatus, setAdminToToggleStatus] = useState<AdminDetails | null>(null);
 
     const handleDeleteClick = (admin: AdminDetails) => {
@@ -139,6 +179,17 @@ export default function AdminsTable({data, onEdit, onDelete, onToggleStatus}: Ad
         setStatusToggleDialogOpen(true);
     };
 
+    const handleResetUsersUsageClick = (adminUsername: string) => {
+        setAdminToReset(adminUsername);
+        setResetUsersUsageDialogOpen(true);
+    }
+    const handleConfirmResetUsersUsage = async () => {
+        if (adminToReset) {
+            onResetUsage(adminToReset)
+            setResetUsersUsageDialogOpen(false);
+            setAdminToReset(null)
+        }
+    }
     const handleConfirmDelete = async () => {
         if (adminToDelete) {
             onDelete(adminToDelete);
@@ -176,7 +227,8 @@ export default function AdminsTable({data, onEdit, onDelete, onToggleStatus}: Ad
         handleSort,
         filters,
         onDelete: handleDeleteClick,
-        toggleStatus: handleStatusToggleClick
+        toggleStatus: handleStatusToggleClick,
+        onResetUsage: handleResetUsersUsageClick
     });
 
     return (
@@ -188,6 +240,7 @@ export default function AdminsTable({data, onEdit, onDelete, onToggleStatus}: Ad
                 onEdit={onEdit}
                 onDelete={handleDeleteClick}
                 onToggleStatus={handleStatusToggleClick}
+                onResetUsage={handleResetUsersUsageClick}
                 setStatusToggleDialogOpen={setStatusToggleDialogOpen}
             />
             <PaginationControls/>
@@ -205,6 +258,14 @@ export default function AdminsTable({data, onEdit, onDelete, onToggleStatus}: Ad
                     isOpen={statusToggleDialogOpen}
                     onClose={() => setStatusToggleDialogOpen(false)}
                     onConfirm={handleConfirmStatusToggle}
+                />
+            )}
+            {adminToReset && (
+                <ResetUsersUsageConfirmationDialog
+                    adminUsername={adminToReset}
+                    onConfirm={handleConfirmResetUsersUsage}
+                    isOpen={resetUsersUsageDialogOpen}
+                    onClose={() => setResetUsersUsageDialogOpen(false)}
                 />
             )}
         </div>

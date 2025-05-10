@@ -1,6 +1,6 @@
 import {AdminDetails} from '@/service/api'
 import {ColumnDef} from '@tanstack/react-table'
-import {ChartPie, ChevronDown, MoreVertical, Power, PowerOff, Trash2, User} from 'lucide-react'
+import {ChartPie, ChevronDown, MoreVertical, Power, PowerOff, RefreshCw, Trash2, User} from 'lucide-react'
 import {Button} from '@/components/ui/button'
 import {
     DropdownMenu,
@@ -16,9 +16,12 @@ interface ColumnSetupProps {
     filters: { sort: string };
     onDelete: (admin: AdminDetails) => void;
     toggleStatus: (admin: AdminDetails) => void;
+    onResetUsage: (adminUsername: string) => void;
 }
 
-const createSortButton = (column: string, label: string, t: (key: string) => string, handleSort: (column: string) => void, filters: { sort: string }) => (
+const createSortButton = (column: string, label: string, t: (key: string) => string, handleSort: (column: string) => void, filters: {
+    sort: string
+}) => (
     <button onClick={handleSort.bind(null, column)} className="flex gap-1 py-3 w-full items-center">
         <div className="text-xs">{t(label)}</div>
         {filters.sort && (filters.sort === column || filters.sort === '-' + column) && (
@@ -39,7 +42,8 @@ export const setupColumns = ({
                                  handleSort,
                                  filters,
                                  onDelete,
-                                 toggleStatus
+                                 toggleStatus,
+                                 onResetUsage
                              }: ColumnSetupProps): ColumnDef<AdminDetails>[] => [
     {
         accessorKey: 'username',
@@ -48,9 +52,11 @@ export const setupColumns = ({
             <div className="flex items-start gap-x-3 py-1 px-1">
                 <div className="pt-1">
                     {row.original.is_disabled ? (
-                        <div className="min-h-[10px] min-w-[10px] rounded-full border border-gray-400 dark:border-gray-600 shadow-sm"/>
+                        <div
+                            className="min-h-[10px] min-w-[10px] rounded-full border border-gray-400 dark:border-gray-600 shadow-sm"/>
                     ) : (
-                        <div className="min-h-[10px] min-w-[10px] rounded-full bg-green-300 dark:bg-green-500 shadow-sm animate-greenPulse"/>
+                        <div
+                            className="min-h-[10px] min-w-[10px] rounded-full bg-green-300 dark:bg-green-500 shadow-sm animate-greenPulse"/>
                     )}
                 </div>
                 <div className="whitespace-nowrap text-ellipsis px-2 overflow-hidden text-sm font-medium">
@@ -120,6 +126,14 @@ export const setupColumns = ({
                             {row.original.is_disabled ? t("enable") : t("disable")}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator/>
+                        <DropdownMenuItem onSelect={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onResetUsage(row.original.username);
+                        }}>
+                            <RefreshCw className="h-4 w-4 mr-2"/>
+                            {t("admins.reset")}
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                             className="text-destructive"
                             onSelect={(e) => {

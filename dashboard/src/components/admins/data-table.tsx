@@ -10,7 +10,7 @@ import {
 import {cn} from "@/lib/utils.ts";
 import useDirDetection from "@/hooks/use-dir-detection.tsx";
 import React, {useState} from "react";
-import {ChartPie, ChevronDown, Edit2, Power, PowerOff, Trash2, User} from "lucide-react";
+import {ChartPie, ChevronDown, Edit2, Power, PowerOff, RefreshCw, Trash2, User} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
 import {AdminDetails} from "@/service/api";
 import {useTranslation} from "react-i18next";
@@ -22,13 +22,15 @@ interface DataTableProps<TData extends AdminDetails> {
     onDelete: (admin: AdminDetails) => void
     onToggleStatus: (admin: AdminDetails) => void
     setStatusToggleDialogOpen: (isOpen: boolean) => void
+    onResetUsage: (adminUsername: string) => void;
 }
 
-const ExpandedRowContent = ({row, onEdit, onDelete, onToggleStatus}: {
+const ExpandedRowContent = ({row, onEdit, onDelete, onToggleStatus, onResetUsage}: {
     row: AdminDetails;
     onEdit: (admin: AdminDetails) => void;
     onDelete: (admin: AdminDetails) => void;
     onToggleStatus: (admin: AdminDetails) => void;
+    onResetUsage: (adminUsername: string) => void;
 }) => {
     const {t} = useTranslation();
 
@@ -64,6 +66,14 @@ const ExpandedRowContent = ({row, onEdit, onDelete, onToggleStatus}: {
                 <Button
                     variant="ghost"
                     size="icon"
+                    onClick={() => onResetUsage(row.username)}
+                    title={t('admins.resetUsersUsage')}
+                >
+                    <RefreshCw className="h-4 w-4"/>
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => onDelete(row)}
                     title={t('delete')}
                 >
@@ -80,7 +90,8 @@ export function DataTable<TData extends AdminDetails>({
                                                           onEdit,
                                                           onDelete,
                                                           onToggleStatus,
-                                                          setStatusToggleDialogOpen
+                                                          setStatusToggleDialogOpen,
+                                                          onResetUsage
                                                       }: DataTableProps<TData>) {
     const [expandedRow, setExpandedRow] = useState<string | null>(null);
     const table = useReactTable({
@@ -194,6 +205,7 @@ export function DataTable<TData extends AdminDetails>({
                                                 row={row.original}
                                                 onEdit={onEdit}
                                                 onDelete={onDelete}
+                                                onResetUsage={onResetUsage}
                                                 onToggleStatus={handleStatusToggle}
                                             />
                                         </TableCell>
