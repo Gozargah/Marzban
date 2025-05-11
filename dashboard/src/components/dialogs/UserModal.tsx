@@ -694,10 +694,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                   }}
                                 >
                                   <SelectTrigger>
-                                    <SelectValue
-                                      placeholder={t('userDialog.selectTemplatePlaceholder', { defaultValue: 'Choose a template' })}
-                                      {...(selectedTemplateId === undefined ? { children: t('userDialog.selectTemplatePlaceholder', { defaultValue: 'Choose a template' }) } : {})}
-                                    />
+                                    <SelectValue placeholder={t('userDialog.selectTemplatePlaceholder', { defaultValue: 'Choose a template' })} />
                                   </SelectTrigger>
                                   <SelectContent>
                                     <SelectItem value="none">---</SelectItem>
@@ -811,10 +808,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                             }}
                           >
                             <SelectTrigger>
-                              <SelectValue
-                                placeholder={t('userDialog.selectTemplatePlaceholder', { defaultValue: 'Choose a template' })}
-                                {...(selectedTemplateId === undefined ? { children: t('userDialog.selectTemplatePlaceholder', { defaultValue: 'Choose a template' }) } : {})}
-                              />
+                              <SelectValue placeholder={t('userDialog.selectTemplatePlaceholder', { defaultValue: 'Choose a template' })} />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="none">---</SelectItem>

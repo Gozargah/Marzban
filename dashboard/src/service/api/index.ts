@@ -143,6 +143,13 @@ export type XrayMuxSettingsXudpConcurrency = number | null
 
 export type XrayMuxSettingsConcurrency = number | null
 
+export interface XrayMuxSettings {
+  enable?: boolean
+  concurrency?: XrayMuxSettingsConcurrency
+  xudp_concurrency?: XrayMuxSettingsXudpConcurrency
+  xudp_proxy_443?: Xudp
+}
+
 export interface XrayFragmentSettings {
   /** @pattern ^(:?tlshello|[\d-]{1,16})$ */
   packets: string
@@ -160,13 +167,6 @@ export const Xudp = {
   allow: 'allow',
   skip: 'skip',
 } as const
-
-export interface XrayMuxSettings {
-  enable?: boolean
-  concurrency?: XrayMuxSettingsConcurrency
-  xudp_concurrency?: XrayMuxSettingsXudpConcurrency
-  xudp_proxy_443?: Xudp
-}
 
 export type XTLSFlows = (typeof XTLSFlows)[keyof typeof XTLSFlows]
 
@@ -490,9 +490,6 @@ export const UserStatusCreate = {
   active: 'active',
   on_hold: 'on_hold',
 } as const
-
-
-export type UserTemplateCreateStatus = UserStatusCreate | null
 
 export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus]
 
@@ -818,40 +815,6 @@ export interface SubscriptionInput {
   rules: SubRule[]
   manual_sub_request?: SubFormatEnable
 }
-
-export interface SubRule {
-  pattern: string
-  target: ConfigFormat
-}
-
-export interface SubFormatEnable {
-  links?: boolean
-  links_base64?: boolean
-  xray?: boolean
-  sing_box?: boolean
-  clash?: boolean
-  clash_meta?: boolean
-  outline?: boolean
-}
-
-export interface SubscriptionOutput {
-  url_prefix?: string
-  update_interval?: number
-  support_url?: string
-  profile_title?: string
-  host_status_filter: boolean
-  rules: SubRule[]
-  manual_sub_request?: SubFormatEnable
-}
-
-export interface SubscriptionInput {
-  url_prefix?: string
-  update_interval?: number
-  support_url?: string
-  profile_title?: string
-  host_status_filter: boolean
-  rules: SubRule[]
-  manual_sub_request?: SubFormatEnable
 
 export type SingBoxMuxSettingsBrutal = Brutal | null
 
@@ -1534,6 +1497,24 @@ export type BaseHostMuxSettings = MuxSettingsOutput | null
 
 export type BaseHostTransportSettings = TransportSettingsOutput | null
 
+export type BaseHostHttpHeadersAnyOf = { [key: string]: string }
+
+export type BaseHostHttpHeaders = BaseHostHttpHeadersAnyOf | null
+
+export type BaseHostAllowinsecure = boolean | null
+
+export type BaseHostPath = string | null
+
+export type BaseHostHost = string | null
+
+export type BaseHostSni = string | null
+
+export type BaseHostPort = number | null
+
+export type BaseHostInboundTag = string | null
+
+export type BaseHostId = number | null
+
 export interface BaseHost {
   id?: BaseHostId
   remark: string
@@ -1558,24 +1539,6 @@ export interface BaseHost {
   priority: number
   status?: UserStatus[]
 }
-
-export type BaseHostHttpHeadersAnyOf = { [key: string]: string }
-
-export type BaseHostHttpHeaders = BaseHostHttpHeadersAnyOf | null
-
-export type BaseHostAllowinsecure = boolean | null
-
-export type BaseHostPath = string | null
-
-export type BaseHostHost = string | null
-
-export type BaseHostSni = string | null
-
-export type BaseHostPort = number | null
-
-export type BaseHostInboundTag = string | null
-
-export type BaseHostId = number | null
 
 export type AdminModifySupportUrl = string | null
 

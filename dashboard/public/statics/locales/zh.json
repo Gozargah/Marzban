@@ -747,7 +747,6 @@
     "copyPublicKey": "复制公钥",
     "copyPrivateKey": "复制私钥",
     "copyShortId": "复制短 ID"
-    "clearAllExcluded": "清除所有排除的入站"
   },
   "settings.cores": {
     "title": "核心",
@@ -799,5 +798,4 @@
   "statistics.disabledUsers": "已禁用用户",
   "statistics.expiredUsers": "已过期用户",
   "statistics.onHoldUsers": "暂停用户"
-  "usersTable.cancel": "取消"
 }

@@ -748,7 +748,6 @@
     "copyPublicKey": "Копировать публичный ключ",
     "copyPrivateKey": "Копировать приватный ключ",
     "copyShortId": "Копировать короткий ID"
-    "clearAllExcluded": "Очистить все исключённые входящие"
   },
   "settings.cores": {
     "title": "Ядра",
@@ -795,5 +794,4 @@
   "statistics.disabledUsers": "Отключенные пользователи",
   "statistics.expiredUsers": "Истекшие пользователи",
   "statistics.onHoldUsers": "Пользователи на удержании"
-  "usersTable.cancel": "Отмена"
 }

@@ -746,7 +746,6 @@
     "copyPublicKey": "Copy Public Key",
     "copyPrivateKey": "Copy Private Key",
     "copyShortId": "Copy Short ID"
-    "clearAllExcluded": "Clear all excluded inbounds"
   },
   "settings.cores": {
     "title": "Cores",
@@ -800,5 +799,4 @@
   "statistics.disabledUsers": "Disabled Users",
   "statistics.expiredUsers": "Expired Users",
   "statistics.onHoldUsers": "On Hold Users"
-  "usersTable.cancel": "Cancel"
 }
