@@ -3,14 +3,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BarChart, Cpu, Gauge, MemoryStick } from 'lucide-react'
 import { CostumeBarChart } from '../charts/CostumeBarChart'
 import { AreaCostumeChart } from '../charts/AreaCostumeChart'
-import PieCostumeChart from '../charts/PieCostumeChart'
 import { SystemStats, useGetNodes, NodeResponse, useRealtimeNodeStats, NodeRealtimeStats } from '@/service/api'
 import { formatBytes } from '@/utils/formatByte'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 
 interface StatisticsProps {
   data?: SystemStats;
@@ -78,7 +77,7 @@ export default function Statistics({ data, isLoading, error, selectedServer, onS
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="master">Master Server</SelectItem>
-            {nodesData?.map((node: NodeResponse) => (
+            {nodesData?.filter((node: NodeResponse) => node.status === 'connected').map((node: NodeResponse) => (
               <SelectItem key={node.id} value={String(node.id)}>
                 {node.name}
               </SelectItem>
