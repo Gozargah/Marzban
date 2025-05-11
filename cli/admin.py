@@ -312,8 +312,8 @@ class AdminContent(Static):
         columns = (
             # "Id",
             "Username",
-            "Usage",
-            "Reseted usage",
+            "Used Traffic",
+            "Lifetime Used Traffic",
             "Users Usage",
             "Is sudo",
             "Is disabled",
@@ -329,19 +329,15 @@ class AdminContent(Static):
         else:
             self.no_admins.styles.display = "none"
             self.table.styles.display = "block"
-        usage_data = await asyncio.gather(
-            *[self.calculate_admin_usage(admin.id) for admin in admins],
-            *[self.calculate_admin_reseted_usage(admin.id) for admin in admins],
-        )
-        usages = usage_data[: len(admins)]
-        reseted_usages = usage_data[len(admins) :]
+        users_usages = await asyncio.gather(*[self.calculate_admin_usage(admin.id) for admin in admins])
+
         admins_data = [
             (
                 # i + 1,
                 admin.username,
-                usages[i],
-                reseted_usages[i],
-                readable_size(admin.users_usage),
+                readable_size(admin.used_traffic),
+                readable_size(admin.lifetime_used_traffic),
+                users_usages[i],
                 "✔️" if admin.is_sudo else "✖️",
                 "✔️" if admin.is_disabled else "✖️",
                 readable_datetime(admin.created_at),
@@ -429,10 +425,6 @@ class AdminContent(Static):
 
     async def calculate_admin_usage(self, admin_id: int) -> str:
         usage = await self.db.execute(select(func.sum(User.used_traffic)).filter_by(admin_id=admin_id))
-        return readable_size(int(usage.scalar() or 0))
-
-    async def calculate_admin_reseted_usage(self, admin_id: int) -> str:
-        usage = await self.db.execute(select(func.sum(User.reseted_usage)).filter_by(admin_id=admin_id))
         return readable_size(int(usage.scalar() or 0))
 
     async def key_enter(self) -> None:

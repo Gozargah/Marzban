@@ -1,7 +1,7 @@
 from passlib.context import CryptContext
 from pydantic import BaseModel, ConfigDict, field_validator
 
-from .validators import NumericValidatorMixin, PasswordValidator
+from .validators import NumericValidatorMixin, PasswordValidator, DiscordValidator
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -28,7 +28,7 @@ class AdminDetails(AdminBaseInfo):
 
     is_sudo: bool
     total_users: int = 0
-    users_usage: int = 0
+    used_traffic: int = 0
     is_disabled: bool = False
     discord_id: int | None = None
     sub_template: str | None = None
@@ -38,7 +38,7 @@ class AdminDetails(AdminBaseInfo):
 
     model_config = ConfigDict(from_attributes=True)
 
-    @field_validator("users_usage", mode="before")
+    @field_validator("used_traffic", mode="before")
     def cast_to_int(cls, v):
         return NumericValidatorMixin.cast_to_int(v)
 
@@ -63,9 +63,7 @@ class AdminModify(BaseModel):
     @field_validator("discord_webhook")
     @classmethod
     def validate_discord_webhook(cls, value):
-        if value and not value.startswith("https://discord.com"):
-            raise ValueError("Discord webhook must start with 'https://discord.com'")
-        return value
+        return DiscordValidator.validate_webhook(value)
 
     @field_validator("password")
     @classmethod

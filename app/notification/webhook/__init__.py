@@ -5,7 +5,7 @@ import asyncio
 
 from pydantic import BaseModel
 
-from config import WEBHOOK_ADDRESS
+from app.settings import webhook_settings
 from app.models.admin import AdminDetails
 from app.models.user import UserResponse, UserStatus
 
@@ -120,5 +120,5 @@ async def status_change(user: UserResponse):
 
 
 async def notify(message: Type[Notification]) -> None:
-    if WEBHOOK_ADDRESS:
+    if (await webhook_settings()).enable:
         await queue.put(message)

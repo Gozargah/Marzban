@@ -134,3 +134,38 @@ class UserValidator:
             return value
         else:
             raise ValueError("on_hold_timeout can be datetime or 0")
+
+
+class ProxyValidator:
+    @staticmethod
+    def validate_proxy_url(value: str | None) -> str | None:
+        """
+        Validates a proxy URL. Accepts HTTP, HTTPS, SOCKS4, SOCKS5, with or without authentication.
+        Examples:
+            http://host:port
+            https://host:port
+            socks5://host:port
+            http://user:pass@host:port
+            socks5://user:pass@host:port
+        """
+        if value is None:
+            return value
+        pattern = (
+            r"^(?P<scheme>http|https|socks4|socks5)://"
+            r"((?P<user>[^\s:@]+):(?P<pass>[^\s:@]+)@)?"
+            r"(?P<host>[a-zA-Z0-9\.-]+)"
+            r":(?P<port>\d{1,5})$"
+        )
+        if not re.match(pattern, value):
+            raise ValueError(
+                "proxy_url must be a valid proxy address (e.g., http://host:port, socks5://user:pass@host:port)"
+            )
+        return value
+
+
+class DiscordValidator:
+    @staticmethod
+    def validate_webhook(value: str | None):
+        if value and not value.startswith("https://discord.com"):
+            raise ValueError("Discord webhook must start with 'https://discord.com'")
+        return value
