@@ -42,7 +42,14 @@
     "disableSuccess": "节点 «{{name}}» 禁用成功",
     "disableFailed": "禁用节点 «{{name}}» 失败",
     "certificate": "证书",
-    "createdAt": "创建时间"
+    "createdAt": "创建时间",
+    "selectNode": "选择节点",
+    "logs": {
+      "title": "日志",
+      "description": "查看和监控节点日志",
+      "noLogs": "暂无日志",
+      "loading": "正在加载日志..."
+    }
   },
   "groups": "群组",
   "documentation": "文档",

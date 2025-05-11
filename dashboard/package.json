@@ -53,6 +53,7 @@
     "dayjs": "^1.11.13",
     "embla-carousel-react": "^8.5.2",
     "es-toolkit": "^1.31.0",
+    "eventsource": "^3.0.7",
     "i18next": "^24.2.1",
     "i18next-browser-languagedetector": "^8.0.2",
     "i18next-http-backend": "^3.0.1",

@@ -46,7 +46,14 @@
     "certificate": "Certificate",
     "certificateCopied": "Certificate copied to clipboard",
     "certificateDownloaded": "Certificate downloaded successfully",
-    "certificateDescription": "To set up the node, you need to configure this certificate to establish a secure connection between the main server and the node"
+    "certificateDescription": "To set up the node, you need to configure this certificate to establish a secure connection between the main server and the node",
+    "selectNode": "Select a node",
+    "logs": {
+      "title": "Logs",
+      "description": "View and monitor node logs",
+      "noLogs": "No logs available",
+      "loading": "Loading logs..."
+    }
   },
   "groups": "Groups",
   "documentation": "Documentation",

@@ -14,6 +14,7 @@ import Hosts from './pages/_dashboard.hosts'
 import AdminsPage from './pages/_dashboard.admins'
 import ThemePage from '@/pages/_dashboard.settings.theme'
 import NodesPage from './pages/_dashboard.nodes._index'
+import NodeLogs from './pages/_dashboard.nodes.logs'
 
 const fetchAdminLoader = async (): Promise<any> => {
   try {
@@ -54,6 +55,10 @@ export const router = createHashRouter([
           {
             path: '/nodes/cores',
             element: <CoreSettings />,
+          },
+          {
+            path: '/nodes/logs',
+            element: <NodeLogs />,
           },
         ],
       },
