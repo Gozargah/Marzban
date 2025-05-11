@@ -14,7 +14,7 @@ import { queryClient } from '@/utils/query-client'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { useState, useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
-import { v4 as uuidv4 } from 'uuid'
+import { v4 as uuidv4, v5 as uuidv5, v6 as uuidv6, v7 as uuidv7 } from 'uuid'
 
 export const nodeFormSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -52,7 +52,6 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('idle')
   const [errorDetails, setErrorDetails] = useState<string | null>(null)
   const [autoCheck, setAutoCheck] = useState(false)
-  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
   const [showErrorDetails, setShowErrorDetails] = useState(false)
   const [debouncedValues, setDebouncedValues] = useState<NodeFormValues | null>(null)
   const [reconnecting, setReconnecting] = useState(false)
@@ -512,31 +511,70 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                     <FormField
                       control={form.control}
                       name="api_key"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('nodeModal.apiKey')}</FormLabel>
-                          <FormControl>
-                            <div className="flex gap-2">
-                              <Input
-                                type="text"
-                                placeholder={t('nodeModal.apiKeyPlaceholder')}
-                                autoComplete="off"
-                                {...field}
-                                onChange={(e) => field.onChange(e.target.value)}
-                              />
-                              <Button
-                                className='flex-1'
-                                type="button"
-                                variant="outline"
-                                onClick={() => field.onChange(uuidv4())}
-                              >
-                                {t('nodeModal.generateUUID')}
-                              </Button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                      render={({ field }) => {
+                        const [uuidVersion, setUuidVersion] = useState<'v4' | 'v5' | 'v6' | 'v7'>('v4');
+
+                        const generateUUID = () => {
+                          switch (uuidVersion) {
+                            case 'v4':
+                              field.onChange(uuidv4());
+                              break;
+                            case 'v5':
+                              // Using a fixed namespace for v5 UUIDs
+                              const namespace = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+                              field.onChange(uuidv5(field.value || 'default', namespace));
+                              break;
+                            case 'v6':
+                              field.onChange(uuidv6());
+                              break;
+                            case 'v7':
+                              field.onChange(uuidv7());
+                              break;
+                          }
+                        };
+
+                        return (
+                          <FormItem>
+                            <FormLabel>{t('nodeModal.apiKey')}</FormLabel>
+                            <FormControl>
+                              <div className="flex gap-2">
+                                <Input
+                                  type="text"
+                                  placeholder={t('nodeModal.apiKeyPlaceholder')}
+                                  autoComplete="off"
+                                  {...field}
+                                  onChange={(e) => field.onChange(e.target.value)}
+                                />
+                                <div className={cn("flex items-center flex-1", dir === "rtl" && "flex-row-reverse")}>
+                                  <Select
+                                    value={uuidVersion}
+                                    onValueChange={(value: 'v4' | 'v5' | 'v6' | 'v7') => setUuidVersion(value)}
+                                  >
+                                    <SelectTrigger className="w-[60px] h-full rounded-r-none border-r-0">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="v4">v4</SelectItem>
+                                      <SelectItem value="v5">v5</SelectItem>
+                                      <SelectItem value="v6">v6</SelectItem>
+                                      <SelectItem value="v7">v7</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={generateUUID}
+                                    className="rounded-l-none flex-1"
+                                  >
+                                    {t('nodeModal.generateUUID')}
+                                  </Button>
+                                </div>
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
                     />
 
                     <FormField
