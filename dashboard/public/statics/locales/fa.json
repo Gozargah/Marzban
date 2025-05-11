@@ -701,7 +701,9 @@
     "generateKeyPair": "تولید جفت کلید",
     "generateShortId": "تولید شناسه کوتاه",
     "publicKey": "کلید عمومی",
-    "privateKey": "کلید خصوصی"
+    "privateKey": "کلید خصوصی",
+    "clearAllFallbacks": "پاک‌کردن همه فال‌بک‌ها",
+    "clearAllExcluded": "پاک‌کردن همه ورودی‌های مستثنی‌شده"
   },
   "settings.cores": {
     "title": "هسته‌ها",

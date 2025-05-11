@@ -731,7 +731,9 @@
     "generateKeyPair": "Generate Key Pair",
     "generateShortId": "Generate Short ID",
     "publicKey": "Public Key",
-    "privateKey": "Private Key"
+    "privateKey": "Private Key",
+    "clearAllFallbacks": "Clear all fallbacks",
+    "clearAllExcluded": "Clear all excluded inbounds"
   },
   "settings.cores": {
     "title": "Cores",

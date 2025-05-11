@@ -12,15 +12,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import Editor from '@monaco-editor/react'
 import { useTheme } from '../../components/theme-provider'
 import { useCallback, useState, useEffect } from 'react'
-import { Copy, X } from 'lucide-react'
-import { useCreateCoreConfig, useModifyCoreConfig, useGetInbounds } from '@/service/api'
+import { Copy, X, Maximize2, Minimize2 } from 'lucide-react'
+import { useCreateCoreConfig, useModifyCoreConfig } from '@/service/api'
 import { queryClient } from '@/utils/query-client'
 
 export const coreConfigFormSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   config: z.string().min(1, 'Configuration is required'),
-  fallback_id: z.number().optional(),
-  excluded_inbound_ids: z.array(z.number()).optional(),
+  fallback_id: z.array(z.string()).optional(),
+  excluded_inbound_ids: z.array(z.string()).optional(),
   public_key: z.string().optional(),
   private_key: z.string().optional(),
 })
@@ -50,13 +50,9 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
   const [keyPair, setKeyPair] = useState<{ publicKey: string, privateKey: string } | null>(null)
   const createCoreMutation = useCreateCoreConfig()
   const modifyCoreMutation = useModifyCoreConfig()
+  const [isEditorFullscreen, setIsEditorFullscreen] = useState(false)
+  const [inboundTags, setInboundTags] = useState<string[]>([])
 
-  // Get all inbounds for the select dropdown - Only fetch when modal is open
-  const { data: inboundsData } = useGetInbounds({
-    query: {
-      enabled: isDialogOpen // Only fetch data when the modal is open
-    }
-  })
 
   const handleEditorValidation = useCallback(
     (markers: any[]) => {
@@ -164,6 +160,11 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
         return
       }
 
+      // Convert fallback_id array to comma-separated string
+      const fallbackTags = values.fallback_id && values.fallback_id.length > 0
+        ? values.fallback_id.join(',')
+        : null;
+
       // Convert excluded_inbound_ids array to comma-separated string
       const excludeInboundTags = values.excluded_inbound_ids && values.excluded_inbound_ids.length > 0
         ? values.excluded_inbound_ids.join(',')
@@ -176,6 +177,7 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
           data: {
             name: values.name,
             config: configObj,
+            fallbacks_inbound_tags: fallbackTags,
             exclude_inbound_tags: excludeInboundTags
           },
           params: {
@@ -188,6 +190,7 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
           data: {
             name: values.name,
             config: configObj,
+            fallbacks_inbound_tags: fallbackTags,
             exclude_inbound_tags: excludeInboundTags
           }
         });
@@ -224,27 +227,25 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
     }
   }
 
-  // Get available inbounds from the config when form loads
+  // Extract inbound tags from config JSON whenever config changes
   useEffect(() => {
-    if (isDialogOpen && isEditorReady) {
-      try {
-        const configValue = form.getValues().config;
-        if (configValue) {
-          const parsedConfig = JSON.parse(configValue);
-          if (parsedConfig.inbounds && Array.isArray(parsedConfig.inbounds)) {
-            // Extract the inbound tags
-            const inboundTags = parsedConfig.inbounds
-              .filter((inbound: any) => inbound.tag)
-              .map((inbound: any) => inbound.tag);
-
-            console.log("Available inbound tags:", inboundTags);
-          }
+    try {
+      const configValue = form.getValues().config;
+      if (configValue) {
+        const parsedConfig = JSON.parse(configValue);
+        if (parsedConfig.inbounds && Array.isArray(parsedConfig.inbounds)) {
+          const tags = parsedConfig.inbounds
+            .filter((inbound: any) => typeof inbound.tag === 'string')
+            .map((inbound: any) => inbound.tag);
+          setInboundTags(tags);
+        } else {
+          setInboundTags([]);
         }
-      } catch (error) {
-        console.error("Failed to parse config for inbounds:", error);
       }
+    } catch {
+      setInboundTags([]);
     }
-  }, [isDialogOpen, isEditorReady, form]);
+  }, [form.watch('config')]);
 
   // Initialize form fields when modal opens
   useEffect(() => {
@@ -252,7 +253,7 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
       if (!editingCore) {
         // Set default values for new core
         form.setValue("excluded_inbound_ids", []);
-        form.setValue("fallback_id", undefined);
+        form.setValue("fallback_id", []);
         
         if (!form.getValues().config) {
           form.setValue("config", defaultConfig);
@@ -260,6 +261,12 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
       }
     }
   }, [isDialogOpen, editingCore, form, defaultConfig]);
+
+  useEffect(() => {
+    if (!isDialogOpen) {
+      setIsEditorFullscreen(false);
+    }
+  }, [isDialogOpen]);
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
@@ -286,11 +293,34 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <div dir="ltr" className="rounded-lg border h-[450px] sm:h-[500px] md:h-[550px]">
+                          <div className={cn(
+                            "relative rounded-lg border h-[450px] sm:h-[500px] md:h-[550px]",
+                            isEditorFullscreen &&
+                              "fixed inset-0 z-50 bg-background flex flex-col h-full w-full max-w-none max-h-none p-0 m-0"
+                          )} dir="ltr">
+                            {!isEditorReady && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-50">
+                                <span className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></span>
+                              </div>
+                            )}
+                            {/* Fullscreen Toggle Button */}
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              className={cn(
+                                "absolute top-2 right-2 z-50",
+                                isEditorFullscreen ? "bg-muted" : ""
+                              )}
+                              onClick={() => setIsEditorFullscreen((v) => !v)}
+                              aria-label={isEditorFullscreen ? t('exitFullscreen', { defaultValue: 'Exit Fullscreen' }) : t('fullscreen', { defaultValue: 'Fullscreen' })}
+                            >
+                              {isEditorFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+                            </Button>
                             <Editor
-                              height="100%"
+                              height={isEditorFullscreen ? "100vh" : "100%"}
                               defaultLanguage="json"
-                              value={field.value} // Use value instead of defaultValue to support editing
+                              value={field.value}
                               theme={resolvedTheme === 'dark' ? 'vs-dark' : 'light'}
                               onChange={field.onChange}
                               onValidate={handleEditorValidation}
@@ -338,30 +368,69 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('coreConfigModal.fallback')}</FormLabel>
-                      <Select
-                        onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)}
-                        value={field.value !== undefined && field.value !== null ? String(field.value) : undefined}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t('coreConfigModal.selectFallback')} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {inboundsData && inboundsData.length > 0 ? (
-                            inboundsData.map((inbound: any) => (
-                              <SelectItem key={`fallback-${inbound.id}`} value={String(inbound.id)}>
-                                {inbound.tag || inbound.id}
-                              </SelectItem>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex flex-wrap gap-2">
+                          {field.value && field.value.length > 0 ? (
+                            field.value.map((tag: string) => (
+                              <span key={tag} className="bg-muted/80 px-2 py-1 rounded-md text-sm flex items-center gap-2">
+                                {tag}
+                                <button
+                                  type="button"
+                                  className="hover:text-destructive"
+                                  onClick={() => field.onChange((field.value || []).filter((t: string) => t !== tag))}
+                                >
+                                  ×
+                                </button>
+                              </span>
                             ))
                           ) : (
-                            <>
-                              <SelectItem key="fallback-default-1" value="1">{t('coreConfigModal.fallback')} 1</SelectItem>
-                              <SelectItem key="fallback-default-2" value="2">{t('coreConfigModal.fallback')} 2</SelectItem>
-                            </>
+                            <span className="text-muted-foreground text-sm">{t('coreConfigModal.selectFallback')}</span>
                           )}
-                        </SelectContent>
-                      </Select>
+                        </div>
+                        <Select
+                          value=""
+                          onValueChange={(value: string) => {
+                            if (!value) return;
+                            const currentValue = field.value || [];
+                            if (!currentValue.includes(value)) {
+                              field.onChange([...currentValue, value]);
+                            }
+                          }}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder={t('coreConfigModal.selectFallback')} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {inboundTags.length > 0 ? (
+                              inboundTags.map((tag) => (
+                                <SelectItem
+                                  key={tag}
+                                  value={tag}
+                                  disabled={field.value?.includes(tag)}
+                                  className="cursor-pointer"
+                                >
+                                  {tag}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem key="fallback-none" value="none">No inbounds found</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                        {field.value && field.value.length > 0 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => field.onChange([])}
+                            className="w-full"
+                          >
+                            {t('coreConfigModal.clearAllFallbacks')}
+                          </Button>
+                        )}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -373,35 +442,69 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('coreConfigModal.excludedInbound')}</FormLabel>
-                      <Select
-                        onValueChange={(value) => {
-                          const parsedValue = value ? parseInt(value) : undefined;
-                          field.onChange(parsedValue ? [parsedValue] : []);
-                        }}
-                        value={field.value && Array.isArray(field.value) && field.value.length > 0 
-                          ? String(field.value[0]) 
-                          : undefined}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t('coreConfigModal.selectInbound')} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {inboundsData && inboundsData.length > 0 ? (
-                            inboundsData.map((inbound: any) => (
-                              <SelectItem key={`inbound-${inbound.id}`} value={String(inbound.id)}>
-                                {inbound.tag || inbound.id}
-                              </SelectItem>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex flex-wrap gap-2">
+                          {field.value && field.value.length > 0 ? (
+                            field.value.map((tag: string) => (
+                              <span key={tag} className="bg-muted/80 px-2 py-1 rounded-md text-sm flex items-center gap-2">
+                                {tag}
+                                <button
+                                  type="button"
+                                  className="hover:text-destructive"
+                                  onClick={() => field.onChange((field.value || []).filter((t: string) => t !== tag))}
+                                >
+                                  ×
+                                </button>
+                              </span>
                             ))
                           ) : (
-                            <>
-                              <SelectItem key="inbound-default-1" value="1">{t('coreConfigModal.inbound')} 1</SelectItem>
-                              <SelectItem key="inbound-default-2" value="2">{t('coreConfigModal.inbound')} 2</SelectItem>
-                            </>
+                            <span className="text-muted-foreground text-sm">{t('coreConfigModal.selectInbound')}</span>
                           )}
-                        </SelectContent>
-                      </Select>
+                        </div>
+                        <Select
+                          value=""
+                          onValueChange={(value: string) => {
+                            if (!value) return;
+                            const currentValue = field.value || [];
+                            if (!currentValue.includes(value)) {
+                              field.onChange([...currentValue, value]);
+                            }
+                          }}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder={t('coreConfigModal.selectInbound')} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {inboundTags.length > 0 ? (
+                              inboundTags.map((tag) => (
+                                <SelectItem
+                                  key={tag}
+                                  value={tag}
+                                  disabled={field.value?.includes(tag)}
+                                  className="cursor-pointer"
+                                >
+                                  {tag}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem key="inbound-none" value="none">No inbounds found</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                        {field.value && field.value.length > 0 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => field.onChange([])}
+                            className="w-full"
+                          >
+                            {t('coreConfigModal.clearAllExcluded')}
+                          </Button>
+                        )}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -508,14 +611,16 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
               </div>
             </div>
 
-            <div className="flex justify-end gap-x-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                {t('cancel')}
-              </Button>
-              <Button type="submit" disabled={!validation.isValid}>
-                {editingCore ? t('save') : t('create')}
-              </Button>
-            </div>
+            {!isEditorFullscreen && (
+              <div className="flex justify-end gap-x-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                  {t('cancel')}
+                </Button>
+                <Button type="submit" disabled={!validation.isValid}>
+                  {editingCore ? t('save') : t('create')}
+                </Button>
+              </div>
+            )}
           </form>
         </Form>
       </DialogContent>

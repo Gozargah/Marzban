@@ -734,7 +734,9 @@
     "generateKeyPair": "生成密钥对",
     "generateShortId": "生成短 ID",
     "publicKey": "公钥",
-    "privateKey": "私钥"
+    "privateKey": "私钥",
+    "clearAllFallbacks": "清除所有回退",
+    "clearAllExcluded": "清除所有排除的入站"
   },
   "settings.cores": {
     "title": "核心",

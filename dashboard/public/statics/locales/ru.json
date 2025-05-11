@@ -732,7 +732,9 @@
     "generateKeyPair": "Сгенерировать пару ключей",
     "generateShortId": "Сгенерировать короткий ID",
     "publicKey": "Публичный ключ",
-    "privateKey": "Приватный ключ"
+    "privateKey": "Приватный ключ",
+    "clearAllFallbacks": "Очистить все fallback",
+    "clearAllExcluded": "Очистить все исключённые входящие"
   },
   "settings.cores": {
     "title": "Ядра",
