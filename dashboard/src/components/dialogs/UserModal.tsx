@@ -502,128 +502,154 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                         </FormItem>
                       )}
                     />
-                    {status === 'on_hold' ? (
-                      <FormField
-                        control={form.control}
-                        name="on_hold_expire_duration"
-                        render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormLabel>{t('userDialog.onHoldExpireDuration', { defaultValue: 'On Hold Expire Duration (days)' })}</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name="data_limit_reset_strategy"
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormLabel>{t('userDialog.periodicUsageReset', { defaultValue: 'Periodic Usage Reset' })}</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value || ''}>
                             <FormControl>
-                              <Input
-                                type="number"
-                                min="1"
-                                placeholder={t('userDialog.onHoldExpireDurationPlaceholder', { defaultValue: 'e.g. 7' })}
-                                {...field}
-                                value={field.value === null || field.value === undefined ? '' : field.value}
-                              />
+                              <SelectTrigger>
+                                <SelectValue placeholder={t('userDialog.resetStrategyNo', { defaultValue: 'No' })} />
+                              </SelectTrigger>
                             </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    ) : (
-                      <FormField
-                        control={form.control}
-                        name="expire"
-                        render={({ field }) => {
-                          let expireUnix: number | null = null;
-                          let displayDate: Date | null = null;
-
-                          // Handle various formats of expire value
-                          if (isDate(field.value)) {
-                            expireUnix = Math.floor(field.value.getTime() / 1000);
-                            displayDate = field.value;
-                          } else if (typeof field.value === 'string') {
-                            // Try parsing as date string first
-                            if (field.value === '') {
-                              // Empty string - no date set
-                              expireUnix = null;
-                              displayDate = null;
-                            } else {
-                              const asNum = Number(field.value);
-                              if (!isNaN(asNum)) {
-                                // It's a numeric string (timestamp), convert to date
-                                const timestamp = asNum * 1000; // Convert seconds to ms
-                                const date = new Date(timestamp);
-                                if (date.getFullYear() > 1970) {
-                                  displayDate = date;
-                                  expireUnix = asNum;
-                                }
-                              } else {
-                                // Try as date string
-                                const date = new Date(field.value);
-                                if (!isNaN(date.getTime()) && date.getFullYear() > 1970) {
-                                  expireUnix = Math.floor(date.getTime() / 1000);
-                                  displayDate = date;
-                                }
-                              }
-                            }
-                          } else if (typeof field.value === 'number') {
-                            // Direct timestamp in seconds
-                            const date = new Date(field.value * 1000);
-                            // Validate the date is reasonable (after 1970)
-                            if (date.getFullYear() > 1970) {
-                              displayDate = date;
-                              expireUnix = field.value;
-                            }
-                          }
-
-                          const expireInfo = expireUnix ? relativeExpiryDate(expireUnix) : null;
-
-                          return (
-                            <FormItem className="flex flex-col flex-1">
-                              <FormLabel>{t('userDialog.expiryDate', { defaultValue: 'Expire date' })}</FormLabel>
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <FormControl>
-                                    <Button
-                                      variant={"outline"}
-                                      className={cn(
-                                        "w-full h-fit !mt-3.5 text-left font-normal",
-                                        !field.value && "text-muted-foreground"
-                                      )}
-                                      type="button"
-                                    >
-                                      {displayDate
-                                        ? format(displayDate, "yyyy/MM/dd")
-                                        : field.value && !isNaN(Number(field.value))
-                                          ? String(field.value)
-                                          : <span>{t('users.expirePlaceholder', { defaultValue: 'Pick a date' })}</span>
-                                      }
-                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                    </Button>
-                                  </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                  <Calendar
-                                    mode="single"
-                                    selected={displayDate || undefined}
-                                    onSelect={date => {
-                                      if (date) {
-                                        // Convert to seconds timestamp when saving to form
-                                        const timestamp = Math.floor(date.getTime() / 1000);
-                                        field.onChange(timestamp);
-                                      } else {
-                                        field.onChange('');
-                                      }
-                                    }}
-                                    fromDate={new Date()}
-                                    initialFocus
-                                  />
-                                </PopoverContent>
-                              </Popover>
-                              {expireInfo?.time && (
-                                <p dir="ltr" className="text-xs text-muted-foreground mt-1">{expireInfo.time} later</p>
-                              )}
-                              <FormMessage />
-                            </FormItem>
-                          );
-                        }}
-                      />
-                    )}
+                            <SelectContent>
+                              <SelectItem value="no_reset">{t('userDialog.resetStrategyNo', { defaultValue: 'No' })}</SelectItem>
+                              <SelectItem value="day">{t('userDialog.resetStrategyDaily', { defaultValue: 'Daily' })}</SelectItem>
+                              <SelectItem value="week">{t('userDialog.resetStrategyWeekly', { defaultValue: 'Weekly' })}</SelectItem>
+                              <SelectItem value="month">{t('userDialog.resetStrategyMonthly', { defaultValue: 'Monthly' })}</SelectItem>
+                              <SelectItem value="year">{t('userDialog.resetStrategyAnnually', { defaultValue: 'Annually' })}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 )}
+                <div className="flex items-start md:w-52 gap-4">
+                  {status === 'on_hold' ? (
+                    <FormField
+                      control={form.control}
+                      name="on_hold_expire_duration"
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormLabel>{t('userDialog.onHoldExpireDuration', { defaultValue: 'On Hold Expire Duration (days)' })}</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min="1"
+                              placeholder={t('userDialog.onHoldExpireDurationPlaceholder', { defaultValue: 'e.g. 7' })}
+                              {...field}
+                              value={field.value === null || field.value === undefined ? '' : field.value}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ) : (
+                    <FormField
+                      control={form.control}
+                      name="expire"
+                      render={({ field }) => {
+                        let expireUnix: number | null = null;
+                        let displayDate: Date | null = null;
+
+                        // Handle various formats of expire value
+                        if (isDate(field.value)) {
+                          expireUnix = Math.floor(field.value.getTime() / 1000);
+                          displayDate = field.value;
+                        } else if (typeof field.value === 'string') {
+                          // Try parsing as date string first
+                          if (field.value === '') {
+                            // Empty string - no date set
+                            expireUnix = null;
+                            displayDate = null;
+                          } else {
+                            const asNum = Number(field.value);
+                            if (!isNaN(asNum)) {
+                              // It's a numeric string (timestamp), convert to date
+                              const timestamp = asNum * 1000; // Convert seconds to ms
+                              const date = new Date(timestamp);
+                              if (date.getFullYear() > 1970) {
+                                displayDate = date;
+                                expireUnix = asNum;
+                              }
+                            } else {
+                              // Try as date string
+                              const date = new Date(field.value);
+                              if (!isNaN(date.getTime()) && date.getFullYear() > 1970) {
+                                expireUnix = Math.floor(date.getTime() / 1000);
+                                displayDate = date;
+                              }
+                            }
+                          }
+                        } else if (typeof field.value === 'number') {
+                          // Direct timestamp in seconds
+                          const date = new Date(field.value * 1000);
+                          // Validate the date is reasonable (after 1970)
+                          if (date.getFullYear() > 1970) {
+                            displayDate = date;
+                            expireUnix = field.value;
+                          }
+                        }
+
+                        const expireInfo = expireUnix ? relativeExpiryDate(expireUnix) : null;
+
+                        return (
+                          <FormItem className="flex flex-col flex-1">
+                            <FormLabel>{t('userDialog.expiryDate', { defaultValue: 'Expire date' })}</FormLabel>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                      "w-full h-fit !mt-3.5 text-left font-normal",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                    type="button"
+                                  >
+                                    {displayDate
+                                      ? format(displayDate, "yyyy/MM/dd")
+                                      : field.value && !isNaN(Number(field.value))
+                                        ? String(field.value)
+                                        : <span>{t('users.expirePlaceholder', { defaultValue: 'Pick a date' })}</span>
+                                    }
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={displayDate || undefined}
+                                  onSelect={date => {
+                                    if (date) {
+                                      // Convert to seconds timestamp when saving to form
+                                      const timestamp = Math.floor(date.getTime() / 1000);
+                                      field.onChange(timestamp);
+                                    } else {
+                                      field.onChange('');
+                                    }
+                                  }}
+                                  fromDate={new Date()}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            {expireInfo?.time && (
+                              <p dir="ltr" className="text-xs text-muted-foreground mt-1">{expireInfo.time} later</p>
+                            )}
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
+                  )}
+                </div>
                 <FormField
                   control={form.control}
                   name="note"
