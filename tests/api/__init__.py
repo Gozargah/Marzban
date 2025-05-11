@@ -1,13 +1,13 @@
 import asyncio
 import json
-from fastapi.testclient import TestClient
+
 from decouple import config
-from sqlalchemy.pool import StaticPool, NullPool
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from fastapi.testclient import TestClient
 from sqlalchemy.exc import SQLAlchemyError
-from app import app
-from app.db import get_db
-from app.db.base import Base
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool, StaticPool
+
+from app.db import base
 from config import SQLALCHEMY_DATABASE_URL
 
 XRAY_JSON_TEST_FILE = "tests/api/xray_config-test.json"
@@ -37,7 +37,7 @@ TestSession = async_sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 async def create_tables():
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(base.Base.metadata.create_all)
 
 
 if TEST_FROM == "local":
@@ -63,7 +63,10 @@ async def get_test_db():
         yield db
 
 
-app.dependency_overrides[get_db] = get_test_db
+from app import app  # noqa
+
+
+app.dependency_overrides[base.get_db] = get_test_db
 
 
 with open(XRAY_JSON_TEST_FILE, "w") as f:

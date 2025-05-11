@@ -3,9 +3,11 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramNetworkError
+
 from app import on_shutdown, on_startup
 from app.utils.logger import get_logger
 from config import TELEGRAM_API_TOKEN, TELEGRAM_PROXY_URL, TELEGRAM_WEBHOOK_SECRET_KEY, TELEGRAM_WEBHOOK_URL
+
 from .handlers import include_routers
 from .middlewares import setup_middlewares
 
@@ -30,7 +32,7 @@ async def initial_telegram_bot():
     # register middlewares
     setup_middlewares(dp)
     # register webhook
-    webhook_address = f"{TELEGRAM_WEBHOOK_URL}/api/tghook/{TELEGRAM_API_TOKEN}"
+    webhook_address = f"{TELEGRAM_WEBHOOK_URL}/api/tghook"
     logger.info(webhook_address)
     try:
         await bot.set_webhook(

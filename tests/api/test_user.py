@@ -90,17 +90,7 @@ def test_users_get(access_token):
 
 def test_user_subscriptions(access_token):
     """Test that the user subscriptions route is accessible."""
-    user_subscription_formats = [
-        "info",
-        "usage",
-        "sing-box",
-        "clash-meta",
-        "clash",
-        "outline",
-        "links",
-        "links-base64",
-        "xray",
-    ]
+    user_subscription_formats = ["info", "sing_box", "clash_meta", "clash", "outline", "links", "links_base64", "xray"]
 
     users = test_users_get(access_token)
 

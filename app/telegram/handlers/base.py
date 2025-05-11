@@ -1,9 +1,17 @@
 from aiogram import Router, types, F
 from aiogram.filters import CommandStart
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models.admin import AdminDetails
 from app.telegram.keyboards.admin import AdminPanel
 from app.telegram.keyboards.base import CancelAction, CancelKeyboard
 from aiogram.fsm.context import FSMContext
+from app.operation import OperatorType
+from app.operation.system import SystemOperation
+from app.telegram.utils.texts import Message as Texts
+from app.telegram.utils.shared import delete_messages
+
+system_operator = SystemOperation(OperatorType.TELEGRAM)
 
 router = Router(name="base")
 
@@ -14,17 +22,22 @@ async def command_start_handler(
     event: types.Message | types.CallbackQuery,
     admin: AdminDetails | None,
     state: FSMContext | None = None,
-) -> None:
+    db: AsyncSession | None = None,
+):
     """
     This handler receives messages with `/start` command
     """
-    if (state is not None) and (await state.get_state() is not None):
+    message = (event.message if isinstance(event, types.CallbackQuery) else event)
+
+    if state is not None and (await state.get_state() is not None):
+        await delete_messages(event, state)
         await state.clear()
+
     if admin:
-        await (event.message if isinstance(event, types.CallbackQuery) else event).reply(
-            text="Hello, admin!", reply_markup=AdminPanel().as_markup()
-        )
+        stats = await system_operator.get_system_stats(db, admin)
+        if isinstance(event, types.CallbackQuery):
+            return await message.edit_text(text=Texts.start(stats), reply_markup=AdminPanel().as_markup())
+        await message.answer(text=Texts.start(stats), reply_markup=AdminPanel().as_markup())
     else:
-        await (event.message if isinstance(event, types.CallbackQuery) else event).reply(
-            f"Hello, {event.from_user.full_name}!"
-        )
+        await message.answer(f"Hello, {event.from_user.full_name}!")
+

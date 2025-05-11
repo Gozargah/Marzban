@@ -11,7 +11,7 @@ from app.core.hosts import hosts as hosts_storage
 from app.core.manager import core_manager
 from app.db.models import User, UserStatus
 from app.utils.system import get_public_ip, get_public_ipv6, readable_size
-from config import HOST_STATUS_FILTER
+from app.settings import subscription_settings
 
 from . import (
     ClashConfiguration,
@@ -221,8 +221,8 @@ def setup_format_variables(extra_data: dict) -> dict:
     return format_variables
 
 
-def filter_hosts(hosts: list, user_status: UserStatus) -> list:
-    if not HOST_STATUS_FILTER:
+async def filter_hosts(hosts: list, user_status: UserStatus) -> list:
+    if not (await subscription_settings()).host_status_filter:
         return hosts
 
     return [host for host in hosts if not host["status"] or user_status in host["status"]]
@@ -322,7 +322,7 @@ async def process_inbounds_and_tags(
     reverse=False,
     user_status: UserStatus = UserStatus.active,
 ) -> list | str:
-    for host in filter_hosts(hosts_storage.values(), user_status):
+    for host in await filter_hosts(hosts_storage.values(), user_status):
         host_data = await process_host(host, format_variables, inbounds, proxies, conf)
         if not host_data:
             continue

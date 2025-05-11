@@ -17,10 +17,12 @@ from app.db.crud import (
 from app.db.models import User, UserStatus
 from app.node import node_manager as node_manager
 from app.models.user import UserResponse
+from app.models.settings import Webhook
+from app.settings import webhook_settings
 from app.utils.logger import get_logger
 from app import notification
 from app.jobs.dependencies import SYSTEM_ADMIN
-from config import JOB_REVIEW_USERS_INTERVAL, NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT, WEBHOOK_ADDRESS
+from config import JOB_REVIEW_USERS_INTERVAL
 
 
 logger = get_logger("review-users")
@@ -69,15 +71,16 @@ async def review():
             for user in updated_users:
                 await change_status(user, UserStatus.active)
 
-        if WEBHOOK_ADDRESS:
-            for percent in NOTIFY_REACHED_USAGE_PERCENT:
+        settings: Webhook = await webhook_settings()
+        if settings.enable:
+            for percent in settings.usage_percent:
                 users = await get_usage_percentage_reached_users(db, percent)
                 for user in users:
                     await notification.data_usage_percent_reached(
                         db, user.usage_percentage, UserResponse.model_validate(user), percent
                     )
 
-            for days in NOTIFY_DAYS_LEFT:
+            for days in settings.days_left:
                 users = await get_days_left_reached_users(db, days)
                 for user in users:
                     await notification.expire_days_reached(db, user.days_left, UserResponse.model_validate(user), days)

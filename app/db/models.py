@@ -57,7 +57,7 @@ class Admin(Base):
     telegram_id: Mapped[Optional[int]] = mapped_column(BigInteger, default=None)
     discord_webhook: Mapped[Optional[str]] = mapped_column(String(1024), default=None)
     discord_id: Mapped[Optional[int]] = mapped_column(BigInteger, default=None)
-    users_usage: Mapped[int] = mapped_column(BigInteger, default=0)
+    used_traffic: Mapped[int] = mapped_column(BigInteger, default=0)
     is_disabled: Mapped[bool] = mapped_column(server_default="0", default=False)
     usage_logs: Mapped[List["AdminUsageLogs"]] = relationship(back_populates="admin")
     sub_template: Mapped[Optional[str]] = mapped_column(String(1024), default=None)
@@ -79,7 +79,7 @@ class Admin(Base):
 
     @property
     def lifetime_used_traffic(self) -> int:
-        return self.reseted_usage + self.users_usage
+        return self.reseted_usage + self.used_traffic
 
     @property
     def total_users(self) -> int:
@@ -594,3 +594,15 @@ class NodeStat(Base):
     cpu_usage: Mapped[float] = mapped_column(unique=False, nullable=False)
     incoming_bandwidth_speed: Mapped[int] = mapped_column(BigInteger, unique=False, nullable=False)
     outgoing_bandwidth_speed: Mapped[int] = mapped_column(BigInteger, unique=False, nullable=False)
+
+
+class Settings(Base):
+    __tablename__ = "settings"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    telegram: Mapped[dict] = mapped_column(JSON())
+    discord: Mapped[dict] = mapped_column(JSON())
+    webhook: Mapped[dict] = mapped_column(JSON())
+    notification_settings: Mapped[dict] = mapped_column(JSON())
+    notification_enable: Mapped[dict] = mapped_column(JSON())
+    subscription: Mapped[dict] = mapped_column(JSON())

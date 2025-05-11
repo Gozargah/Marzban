@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, Header, Path, Request
+from fastapi import APIRouter, Depends, Header, Request
 
 from app.db import AsyncSession, get_db
 from app.models.stats import Period, UserUsageStatsList
 from app.models.user import SubscriptionUserResponse
+from app.models.settings import ConfigFormat
 from app.operation import OperatorType
 from app.operation.subscription import SubscriptionOperation
 from config import XRAY_SUBSCRIPTION_PATH
@@ -48,7 +49,7 @@ async def get_sub_user_usage(
 async def user_subscription_with_client_type(
     request: Request,
     token: str,
-    client_type: str = Path(..., regex="sing-box|clash-meta|clash|outline|links|links-base64|xray"),
+    client_type: ConfigFormat,
     db: AsyncSession = Depends(get_db),
 ):
     """Provides a subscription link based on the specified client type (e.g., Clash, V2Ray)."""

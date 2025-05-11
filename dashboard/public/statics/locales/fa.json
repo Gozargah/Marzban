@@ -717,6 +717,7 @@
     "copyPublicKey": "کپی کلید عمومی",
     "copyPrivateKey": "کپی کلید خصوصی",
     "copyShortId": "کپی شناسه کوتاه"
+    "clearAllExcluded": "پاک‌کردن همه ورودی‌های مستثنی‌شده"
   },
   "settings.cores": {
     "title": "هسته‌ها",
@@ -791,4 +792,5 @@
   "statistics.disabledUsers": "کاربران غیرفعال",
   "statistics.expiredUsers": "کاربران منقضی شده",
   "statistics.onHoldUsers": "کاربران در انتظار"
+  "usersTable.cancel": "لغو"
 }

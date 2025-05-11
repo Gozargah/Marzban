@@ -1,7 +1,8 @@
 import random
-from fastapi import status
-from tests.api import client
 
+from fastapi import status
+
+from tests.api import client
 
 group_names = ["testgroup", "testgroup2", "testgroup3"]
 
