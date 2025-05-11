@@ -787,5 +787,15 @@
   "usersTable.deleteSuccess": "用户「{{name}}」已成功删除。",
   "usersTable.deleteFailed": "无法删除用户「{{name}}」。{{error}}",
   "usersTable.delete": "删除",
-  "usersTable.cancel": "取消"
+  "usersTable.cancel": "取消",
+  "statistics.trafficUsage": "流量使用",
+  "statistics.trafficUsageDescription": "所有服务器的总流量使用情况",
+  "statistics.usageDuringPeriod": "期间使用量",
+  "statistics.users": "用户",
+  "statistics.onlineUsers": "在线用户",
+  "statistics.limitedUsers": "受限用户",
+  "statistics.activeUsers": "活跃用户",
+  "statistics.disabledUsers": "已禁用用户",
+  "statistics.expiredUsers": "已过期用户",
+  "statistics.onHoldUsers": "暂停用户"
 }

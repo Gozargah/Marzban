@@ -783,5 +783,15 @@
   "usersTable.deleteSuccess": "Пользователь «{{name}}» был успешно удалён.",
   "usersTable.deleteFailed": "Не удалось удалить пользователя «{{name}}». {{error}}",
   "usersTable.delete": "Удалить",
-  "usersTable.cancel": "Отмена"
+  "usersTable.cancel": "Отмена",
+  "statistics.trafficUsage": "Использование трафика",
+  "statistics.trafficUsageDescription": "Общее использование трафика на всех серверах",
+  "statistics.usageDuringPeriod": "Использование за период",
+  "statistics.users": "Пользователи",
+  "statistics.onlineUsers": "Онлайн пользователи",
+  "statistics.limitedUsers": "Ограниченные пользователи",
+  "statistics.activeUsers": "Активные пользователи",
+  "statistics.disabledUsers": "Отключенные пользователи",
+  "statistics.expiredUsers": "Истекшие пользователи",
+  "statistics.onHoldUsers": "Пользователи на удержании"
 }

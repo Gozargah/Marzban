@@ -788,5 +788,15 @@
   "usersTable.deleteSuccess": "User «{{name}}» has been deleted successfully.",
   "usersTable.deleteFailed": "Failed to delete user «{{name}}». {{error}}",
   "usersTable.delete": "Delete",
-  "usersTable.cancel": "Cancel"
+  "usersTable.cancel": "Cancel",
+  "statistics.trafficUsage": "Traffic Usage",
+  "statistics.trafficUsageDescription": "Total traffic usage across all servers",
+  "statistics.usageDuringPeriod": "Usage During Period",
+  "statistics.users": "Users",
+  "statistics.onlineUsers": "Online Users",
+  "statistics.limitedUsers": "Limited Users",
+  "statistics.activeUsers": "Active Users",
+  "statistics.disabledUsers": "Disabled Users",
+  "statistics.expiredUsers": "Expired Users",
+  "statistics.onHoldUsers": "On Hold Users"
 }

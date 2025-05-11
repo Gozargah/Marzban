@@ -780,5 +780,15 @@
   "usersTable.deleteSuccess": "کاربر «{{name}}» با موفقیت حذف شد.",
   "usersTable.deleteFailed": "حذف کاربر «{{name}}» با خطا مواجه شد. {{error}}",
   "usersTable.delete": "حذف",
-  "usersTable.cancel": "لغو"
+  "usersTable.cancel": "لغو",
+  "statistics.trafficUsage": "میزان مصرف ترافیک",
+  "statistics.trafficUsageDescription": "کل مصرف ترافیک در تمام سرورها",
+  "statistics.usageDuringPeriod": "مصرف در دوره زمانی",
+  "statistics.users": "کاربران",
+  "statistics.onlineUsers": "کاربران آنلاین",
+  "statistics.limitedUsers": "کاربران محدود شده",
+  "statistics.activeUsers": "کاربران فعال",
+  "statistics.disabledUsers": "کاربران غیرفعال",
+  "statistics.expiredUsers": "کاربران منقضی شده",
+  "statistics.onHoldUsers": "کاربران در انتظار"
 }
