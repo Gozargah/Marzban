@@ -735,7 +735,10 @@
     "publicKey": "Public Key",
     "privateKey": "Private Key",
     "clearAllFallbacks": "Clear all fallbacks",
-    "clearAllExcluded": "Clear all excluded inbounds"
+    "clearAllExcluded": "Clear all excluded inbounds",
+    "copyPublicKey": "Copy Public Key",
+    "copyPrivateKey": "Copy Private Key",
+    "copyShortId": "Copy Short ID"
   },
   "settings.cores": {
     "title": "Cores",

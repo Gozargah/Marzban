@@ -12,9 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import Editor from '@monaco-editor/react'
 import { useTheme } from '../../components/theme-provider'
 import { useCallback, useState, useEffect } from 'react'
-import { Copy, X, Maximize2, Minimize2 } from 'lucide-react'
+import { X, Maximize2, Minimize2 } from 'lucide-react'
 import { useCreateCoreConfig, useModifyCoreConfig } from '@/service/api'
 import { queryClient } from '@/utils/query-client'
+import { CopyButton } from '@/components/CopyButton'
+import { generateKeyPair } from '@stablelib/x25519'
+import { encodeURLSafe } from '@stablelib/base64'
 
 export const coreConfigFormSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -83,13 +86,13 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
     setIsEditorReady(true)
   }, [])
 
-  const generateKeyPair = () => {
-    // This would normally call an API to generate keys
-    // Mock implementation for now
-    const publicKey = `HKKshhooop${Math.random().toString(36).substring(2, 10)}wjldbsnbJHKLS`
-    const privateKey = `kjhsdhsgPHHJVJS${Math.random().toString(36).substring(2, 10)}nkmsbdk`
-
-    setKeyPair({ publicKey, privateKey });
+  const generatePrivateAndPublicKey = () => {
+    const keyPair = generateKeyPair()
+    const formattedKeyPair = {
+      privateKey: encodeURLSafe(keyPair.secretKey).replace(/=/g, '').replace(/\n/g, ''),
+      publicKey: encodeURLSafe(keyPair.publicKey).replace(/=/g, '').replace(/\n/g, '')
+    }
+    setKeyPair(formattedKeyPair)
     
     toast({
       description: t('coreConfigModal.keyPairGenerated'),
@@ -97,7 +100,7 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
   }
 
   const generateShortId = () => {
-    // Generate 8 random bytes and convert to hex string
+    // Generate 8 random bytes and convert to hex string (equivalent to openssl rand -hex 8)
     const randomBytes = new Uint8Array(8);
     crypto.getRandomValues(randomBytes);
     const shortId = Array.from(randomBytes)
@@ -108,13 +111,6 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
     
     toast({
       description: t('coreConfigModal.shortIdGenerated'),
-    })
-  }
-
-  const copyToClipboard = (text: string, messageKey: string) => {
-    navigator.clipboard.writeText(text)
-    toast({
-      description: t(messageKey),
     })
   }
 
@@ -511,7 +507,7 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
                 />
 
                 <div className="pt-4 space-y-4">
-                  <Button type="button" onClick={generateKeyPair} className="w-full">
+                  <Button type="button" onClick={generatePrivateAndPublicKey} className="w-full">
                     {t('coreConfigModal.generateKeyPair')}
                   </Button>
 
@@ -537,15 +533,11 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
                             <code className="bg-muted p-2 rounded text-sm flex-1 overflow-x-auto whitespace-nowrap">
                               {keyPair.publicKey}
                             </code>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => copyToClipboard(keyPair.publicKey, 'coreConfigModal.publicKeyCopied')}
-                              aria-label={t('copy')}
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
+                            <CopyButton 
+                              value={keyPair.publicKey}
+                              copiedMessage="coreConfigModal.publicKeyCopied"
+                              defaultMessage="coreConfigModal.copyPublicKey"
+                            />
                           </div>
                         </div>
                         
@@ -555,15 +547,11 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
                             <code className="bg-muted p-2 rounded text-sm flex-1 overflow-x-auto whitespace-nowrap">
                               {keyPair.privateKey}
                             </code>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => copyToClipboard(keyPair.privateKey, 'coreConfigModal.privateKeyCopied')}
-                              aria-label={t('copy')}
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
+                            <CopyButton 
+                              value={keyPair.privateKey}
+                              copiedMessage="coreConfigModal.privateKeyCopied"
+                              defaultMessage="coreConfigModal.copyPrivateKey"
+                            />
                           </div>
                         </div>
                       </div>
@@ -596,15 +584,11 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
                       <code className="bg-muted p-2 rounded text-sm flex-1 overflow-x-auto whitespace-nowrap">
                         {generatedShortId}
                       </code>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => copyToClipboard(generatedShortId, 'coreConfigModal.shortIdCopied')}
-                        aria-label={t('copy')}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
+                      <CopyButton 
+                        value={generatedShortId}
+                        copiedMessage="coreConfigModal.shortIdCopied"
+                        defaultMessage="coreConfigModal.copyShortId"
+                      />
                     </div>
                   </div>
                 )}

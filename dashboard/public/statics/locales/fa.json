@@ -703,7 +703,10 @@
     "publicKey": "کلید عمومی",
     "privateKey": "کلید خصوصی",
     "clearAllFallbacks": "پاک‌کردن همه فال‌بک‌ها",
-    "clearAllExcluded": "پاک‌کردن همه ورودی‌های مستثنی‌شده"
+    "clearAllExcluded": "پاک‌کردن همه ورودی‌های مستثنی‌شده",
+    "copyPublicKey": "کپی کلید عمومی",
+    "copyPrivateKey": "کپی کلید خصوصی",
+    "copyShortId": "کپی شناسه کوتاه"
   },
   "settings.cores": {
     "title": "هسته‌ها",

@@ -734,7 +734,10 @@
     "publicKey": "Публичный ключ",
     "privateKey": "Приватный ключ",
     "clearAllFallbacks": "Очистить все fallback",
-    "clearAllExcluded": "Очистить все исключённые входящие"
+    "clearAllExcluded": "Очистить все исключённые входящие",
+    "copyPublicKey": "Копировать публичный ключ",
+    "copyPrivateKey": "Копировать приватный ключ",
+    "copyShortId": "Копировать короткий ID"
   },
   "settings.cores": {
     "title": "Ядра",

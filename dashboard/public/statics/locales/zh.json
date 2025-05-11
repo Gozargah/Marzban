@@ -736,7 +736,10 @@
     "publicKey": "公钥",
     "privateKey": "私钥",
     "clearAllFallbacks": "清除所有回退",
-    "clearAllExcluded": "清除所有排除的入站"
+    "clearAllExcluded": "清除所有排除的入站",
+    "copyPublicKey": "复制公钥",
+    "copyPrivateKey": "复制私钥",
+    "copyShortId": "复制短 ID"
   },
   "settings.cores": {
     "title": "核心",
