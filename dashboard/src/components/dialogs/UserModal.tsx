@@ -16,6 +16,7 @@ import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { relativeExpiryDate } from '@/utils/dateFormatter';
 import { Textarea } from '@/components/ui/textarea';
+import { formatBytes } from '@/utils/formatByte';
 import {
   useGetUserTemplates,
   useGetAllGroups,
@@ -492,6 +493,11 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">GB</span>
                             </div>
                           </FormControl>
+                          {field.value && field.value < 1 && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {formatBytes(Math.round(field.value * 1024 * 1024 * 1024))}
+                            </p>
+                          )}
                           <FormMessage />
                         </FormItem>
                       )}
