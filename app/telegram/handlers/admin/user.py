@@ -20,6 +20,7 @@ from app.telegram.keyboards.base import CancelKeyboard
 from app.telegram.utils.filters import IsAdminFilter
 from app.telegram.utils.texts import Message as Texts
 from app.telegram.keyboards.user import UserPanel, UserPanelAction, ChooseStatus
+from app.telegram.utils.shared import add_to_messages_to_delete, delete_messages
 
 user_operations = UserOperation(OperatorType.TELEGRAM)
 group_operations = GroupOperation(OperatorType.TELEGRAM)
@@ -39,45 +40,37 @@ async def create_user(event: CallbackQuery, state: FSMContext):
 
 @router.message(CreateUser.username)
 async def process_username(event: Message, state: FSMContext, db: AsyncSession, admin: AdminDetails):
+    await delete_messages(event, state)
+    await add_to_messages_to_delete(state, event)
+
     username = event.text
-    messages_to_delete = await state.get_value("messages_to_delete", [])
-    try:
-        await event.bot.delete_messages(event.chat.id, messages_to_delete)
-    finally:
-        messages_to_delete = [event.message_id]
     try:
         UserValidator.validate_username(username)
     except ValueError as e:
         msg = await event.reply(f"❌ {e}", reply_markup=CancelKeyboard().as_markup())
-        messages_to_delete.append(msg.message_id)
-        await state.update_data(messages_to_delete=messages_to_delete)
+        await add_to_messages_to_delete(state, msg)
         return
 
     try:
         await user_operations.get_validated_user(db, username, admin)
         msg = await event.reply(Texts.username_already_exist, reply_markup=CancelKeyboard().as_markup())
-        messages_to_delete.append(msg.message_id)
-        await state.update_data(messages_to_delete=messages_to_delete)
+        await add_to_messages_to_delete(state, msg)
         return
     except ValueError:
-        try:
-            await event.bot.delete_messages(event.chat.id, messages_to_delete)
-        finally:
-            await state.update_data(username=username)
-            await state.set_state(CreateUser.data_limit)
-            msg =  await event.answer(Texts.enter_data_limit, reply_markup=CancelKeyboard().as_markup())
-            messages_to_delete.append(msg.message_id)
-            await state.update_data(messages_to_delete=messages_to_delete)
-            return
+        pass
+
+    await delete_messages(event, state)
+    await state.update_data(username=username)
+    await state.set_state(CreateUser.data_limit)
+    msg = await event.answer(Texts.enter_data_limit, reply_markup=CancelKeyboard().as_markup())
+    await add_to_messages_to_delete(state, msg)
 
 
 @router.message(CreateUser.data_limit)
 async def process_data_limit(event: Message, state: FSMContext):
-    messages_to_delete = await state.get_value("messages_to_delete", [])
-    try:
-        await event.bot.delete_messages(event.chat.id, messages_to_delete)
-    finally:
-        messages_to_delete = [event.message_id]
+    await delete_messages(event, state)
+    await add_to_messages_to_delete(state, event)
+
     try:
         data_limit = float(event.text)
         if data_limit < 0:
@@ -85,92 +78,85 @@ async def process_data_limit(event: Message, state: FSMContext):
         await state.update_data(data_limit=data_limit)
 
         await state.set_state(CreateUser.expire)
-        try:
-            await event.delete()
-        finally:
-            msg = await event.answer(Texts.enter_duration, reply_markup=CancelKeyboard().as_markup())
-            messages_to_delete.append(msg.message_id)
-            await state.update_data(messages_to_delete=messages_to_delete)
-            return
+
+        await add_to_messages_to_delete(state, event)
+        await delete_messages(event, state)
+
+        msg = await event.answer(Texts.enter_duration, reply_markup=CancelKeyboard().as_markup())
+        await add_to_messages_to_delete(state, msg)
+        return
+
     except ValueError:
         msg = await event.reply(Texts.data_limit_not_valid, reply_markup=CancelKeyboard().as_markup())
-        messages_to_delete.append(msg.message_id)
-        await state.update_data(messages_to_delete=messages_to_delete)
+        await add_to_messages_to_delete(state, msg)
         return
 
 
 @router.message(CreateUser.expire)
 async def process_expire(event: Message, state: FSMContext, db: AsyncSession):
-    messages_to_delete = await state.get_value("messages_to_delete", [])
-    try:
-        await event.bot.delete_messages(event.chat.id, messages_to_delete)
-    finally:
-        messages_to_delete = [event.message_id]
+    await delete_messages(event, state)
+    await add_to_messages_to_delete(state, event)
+
     try:
         duration = int(event.text)
         if duration < 0:
             raise ValueError
     except ValueError:
         msg = await event.reply(text=Texts.duration_not_valid, reply_markup=CancelKeyboard().as_markup())
-        messages_to_delete.append(msg.message_id)
-        await state.update_data(messages_to_delete=messages_to_delete)
+        await add_to_messages_to_delete(state, msg)
         return
 
     await state.update_data(duration=duration)
-    try:
-        await event.bot.delete_messages(event.chat.id, messages_to_delete)
-    finally:
-        if duration:
-            await state.set_state(CreateUser.status)
-            return await event.answer(Texts.choose_status, reply_markup=ChooseStatus().as_markup())
-        else:
-            await state.update_data(status=UserStatus.active.value)
-            await state.set_state(CreateUser.group_ids)
-            groups = await group_operations.get_all_groups(db)
-            return await event.answer(Texts.select_groups, reply_markup=GroupsSelector(groups).as_markup())
+    await delete_messages(event, state)
+    if duration:
+        await state.set_state(CreateUser.status)
+        return await event.answer(Texts.choose_status, reply_markup=ChooseStatus().as_markup())
+    else:
+        await state.update_data(status=UserStatus.active.value)
+        await state.set_state(CreateUser.group_ids)
+        groups = await group_operations.get_all_groups(db)
+        return await event.answer(Texts.select_groups, reply_markup=GroupsSelector(groups).as_markup())
 
 
 @router.callback_query(ChooseStatus.Callback.filter())
 async def process_status(event: CallbackQuery, db: AsyncSession, state: FSMContext, callback_data: ChooseStatus.Callback):
     await state.update_data(status=callback_data.status)
-    try:
-        await event.message.delete()
-    finally:
-        if callback_data.status == UserStatus.on_hold.value:
-            await state.set_state(CreateUser.on_hold_timeout)
-            msg = await event.message.answer(Texts.enter_on_hold_timeout, reply_markup=CancelKeyboard().as_markup())
-            await state.update_data(messages_to_delete=[msg.message_id])
-            return
-        else:
-            await state.set_state(CreateUser.group_ids)
-            groups = await group_operations.get_all_groups(db)
-            await event.message.answer(Texts.select_groups, reply_markup=GroupsSelector(groups).as_markup())
+
+    await add_to_messages_to_delete(state, event.message)
+    await delete_messages(event, state)
+
+    if callback_data.status == UserStatus.on_hold.value:
+        await state.set_state(CreateUser.on_hold_timeout)
+        msg = await event.message.answer(Texts.enter_on_hold_timeout, reply_markup=CancelKeyboard().as_markup())
+        await add_to_messages_to_delete(state, msg)
+    else:
+        await state.set_state(CreateUser.group_ids)
+        groups = await group_operations.get_all_groups(db)
+        await event.message.answer(Texts.select_groups, reply_markup=GroupsSelector(groups).as_markup())
 
 
 @router.message(CreateUser.on_hold_timeout)
 async def process_on_hold_timeout(event: Message, state: FSMContext, db: AsyncSession):
-    messages_to_delete = await state.get_value("messages_to_delete", [])
-    try:
-        await event.bot.delete_messages(event.chat.id, messages_to_delete)
-    finally:
-        messages_to_delete = [event.message_id]
+    await delete_messages(event, state)
+    await add_to_messages_to_delete(state, event)
+
     try:
         timeout = int(event.text)
         if timeout < 0:
             raise ValueError
     except ValueError:
         msg = await event.reply(text=Texts.duration_not_valid, reply_markup=CancelKeyboard().as_markup())
-        messages_to_delete.append(msg.message_id)
-        await state.update_data(messages_to_delete=messages_to_delete)
+        await add_to_messages_to_delete(state, msg)
         return
 
     await state.update_data(on_hold_timeout=timeout)
     await state.set_state(CreateUser.group_ids)
     groups = await group_operations.get_all_groups(db)
-    try:
-        await event.delete()
-    finally:
-        await event.answer(Texts.select_groups, reply_markup=GroupsSelector(groups).as_markup())
+
+    await add_to_messages_to_delete(state, event)
+    await delete_messages(event, state)
+
+    await event.answer(Texts.select_groups, reply_markup=GroupsSelector(groups).as_markup())
 
 
 @router.callback_query(GroupsSelector.SelectorCallback.filter(), CreateUser.group_ids)
@@ -203,7 +189,6 @@ async def process_done(event: CallbackQuery, db: AsyncSession, admin: AdminDetai
     if not data.get("group_ids", []):
         return await event.answer(Texts.select_a_group, show_alert=True)
 
-    await state.clear()
 
     duration = data.get("duration")
     if data.get("status") == UserStatus.on_hold.value:
@@ -217,33 +202,24 @@ async def process_done(event: CallbackQuery, db: AsyncSession, admin: AdminDetai
 
     data["data_limit"] *= 1024**3
 
-    messages_to_delete = data.get("messages_to_delete", [])
+    await delete_messages(event, state)
+    await state.clear()
+
     del data["messages_to_delete"]
     del data["duration"]
 
     new_user = UserCreate(**data)
-    try:
-        user = await user_operations.create_user(db, new_user, admin)
-        try:
-            await event.bot.delete_messages(event.message.chat.id, messages_to_delete)
-        finally:
-            await event.answer(Texts.user_created)
-            return await event.message.edit_text(Texts.user_details(user), reply_markup=UserPanel(user).as_markup())
-    except ValueError as e:
-        await event.answer(f"❌ {e}", show_alert=True)
-    finally:
-        await state.clear()
+    user = await user_operations.create_user(db, new_user, admin)
+    await event.answer(Texts.user_created)
+    return await event.message.edit_text(Texts.user_details(user), reply_markup=UserPanel(user).as_markup())
 
 
 @router.callback_query(GroupsSelector.DoneCallback.filter(DoneAction.cancel == F.action))
 async def process_cancel(event: CallbackQuery, state: FSMContext):
-    messages_to_delete = await state.get_value("messages_to_delete", [])
+    await delete_messages(event, state)
     await state.clear()
     await event.answer(Texts.canceled)
-    try:
-        await event.bot.delete_messages(event.message.chat.id, messages_to_delete)
-    finally:
-        await event.message.edit_text(Texts.canceled, reply_markup=ReplyKeyboardRemove())
+    await event.message.edit_text(Texts.canceled, reply_markup=ReplyKeyboardRemove())
 
 
 @router.callback_query(UserPanel.Callback.filter(UserPanelAction.disable == F.action))

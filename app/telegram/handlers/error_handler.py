@@ -1,32 +1,40 @@
 from aiogram import Router, F
 from aiogram.filters import ExceptionTypeFilter
-from aiogram.types import ErrorEvent, Message, CallbackQuery
+from aiogram.fsm.context import FSMContext
+from aiogram.types import ErrorEvent
+from aiogram.exceptions import TelegramAPIError
 from pydantic import ValidationError
+
+from app.utils.helpers import format_validation_error
 
 router = Router(name="error_handler")
 
 
-@router.error(ExceptionTypeFilter(ValueError, ValidationError), F.update.message.as_("message"))
-async def handle_message_exception(event: ErrorEvent, message: Message):
+@router.error(ExceptionTypeFilter(ValueError, ValidationError), F.update.message | F.update.callback_query)
+async def handle_exception(event: ErrorEvent, state: FSMContext = None):
+    update = event.update
+
+    if state:
+        chat_id = update.callback_query.message.chat.id if update.callback_query else update.message.chat.id
+        messages_to_delete = await state.get_value("messages_to_delete", [])
+        try:
+            await update.bot.delete_messages(chat_id, messages_to_delete)
+        except TelegramAPIError:
+            pass
+        await state.clear()
+
     error = "❌ Error: "
     if isinstance(event.exception, ValidationError):
-        error += "\n".join(
-            [e["loc"][0].replace("_", " ").capitalize() + ": " + e["msg"] for e in event.exception.errors()]
-        )
+        error += format_validation_error(event.exception)
     else:
         error += str(event.exception)
-    await message.answer(error)
 
+    if update.message:
+        msg = await update.message.answer(error)
+        if state:
+            await state.update_data(messages_to_delete=[msg.message_id])
 
-@router.error(ExceptionTypeFilter(ValueError, ValidationError), F.update.callback_query.as_("query"))
-async def handle_query_exception(event: ErrorEvent, query: CallbackQuery):
-    error = "❌ Error: "
-    if isinstance(event.exception, ValidationError):
-        error += "\n".join(
-            [e["loc"][0].replace("_", " ").capitalize() + ": " + e["msg"] for e in event.exception.errors()]
-        )
-    else:
-        error += str(event.exception)
-    if len(error) > 200:
-        error = error[:197] + "..."
-    await query.answer(error, show_alert=True)
+    if update.callback_query:
+        if len(error) > 200:
+            error = error[:197] + "..."
+        await update.callback_query.answer(error, show_alert=True)

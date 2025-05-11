@@ -73,11 +73,11 @@ class Message:
 
 👥 {b("Total Users")}: {c(stats.total_user)}
 🟢 {b("Online Users")}: {c(stats.online_users)}
-🔘 {b("Active Users")}: {c(stats.users_active)}
-🔌 {b("On-Hold Users")}: {c(stats.users_on_hold)}
-⌛ {b("Expired Users")}: {c(stats.users_expired)}
-🪫 {b("Limited Users")}: {c(stats.users_limited)}
-🔴 {b("Disabled Users")}: {c(stats.users_disabled)}
+🔘 {b("Active Users")}: {c(stats.active_users)}
+🔌 {b("On-Hold Users")}: {c(stats.on_hold_users)}
+⌛ {b("Expired Users")}: {c(stats.expired_users)}
+🪫 {b("Limited Users")}: {c(stats.limited_users)}
+🔴 {b("Disabled Users")}: {c(stats.disabled_users)}
 """
 
     @staticmethod

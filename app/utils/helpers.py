@@ -3,6 +3,8 @@ from datetime import datetime as dt
 from typing import Union
 from uuid import UUID
 
+from pydantic import ValidationError
+
 
 def yml_uuid_representer(dumper, data):
     return dumper.represent_scalar("tag:yaml.org,2002:str", str(data))
@@ -32,3 +34,12 @@ class UUIDEncoder(json.JSONEncoder):
             # if the obj is uuid, we simply return the value of uuid
             return str(obj)
         return super().default(self, obj)
+
+
+def format_validation_error(error: ValidationError) -> str:
+    return "\n".join(
+        [
+            e["loc"][0].replace("_", " ").capitalize() + ": " + e["msg"]
+            for e in error.errors()
+        ]
+    )
