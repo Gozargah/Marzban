@@ -594,7 +594,9 @@
     "nextPlanDataLimit": "Data Limit (GB)",
     "nextPlanExpire": "Expire (days)",
     "nextPlanAddRemainingTraffic": "Add Remaining Traffic",
-    "nextPlanFireOnEither": "Fire On Either"
+    "nextPlanFireOnEither": "Fire On Either",
+    "selectTemplate": "Select Template",
+    "selectTemplatePlaceholder": "Choose a template"
   },
   "users": "Users",
   "usersTable.copied": "Copied",
@@ -770,5 +772,11 @@
     "group_ids": "Groups"
   },
   "sidebar.expand": "Expand sidebar",
-  "sidebar.collapse": "Collapse sidebar"
+  "sidebar.collapse": "Collapse sidebar",
+  "usersTable.deleteUserTitle": "Delete User",
+  "usersTable.deleteUserPrompt": "Are you sure you want to delete user «{{name}}»? This action cannot be undone.",
+  "usersTable.deleteSuccess": "User «{{name}}» has been deleted successfully.",
+  "usersTable.deleteFailed": "Failed to delete user «{{name}}». {{error}}",
+  "usersTable.delete": "Delete",
+  "usersTable.cancel": "Cancel"
 }

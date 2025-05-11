@@ -756,8 +756,16 @@
     "nextPlanDataLimit": "حجم داده (گیگابایت)",
     "nextPlanExpire": "انقضا (روز)",
     "nextPlanAddRemainingTraffic": "افزودن ترافیک باقی‌مانده",
-    "nextPlanFireOnEither": "فعال‌سازی با هرکدام"
+    "nextPlanFireOnEither": "فعال‌سازی با هرکدام",
+    "selectTemplate": "انتخاب قالب",
+    "selectTemplatePlaceholder": "یک قالب را انتخاب کنید"
   },
   "sidebar.expand": "باز کردن منو",
-  "sidebar.collapse": "بستن منو"
+  "sidebar.collapse": "بستن منو",
+  "usersTable.deleteUserTitle": "حذف کاربر",
+  "usersTable.deleteUserPrompt": "آیا مطمئن هستید که می‌خواهید کاربر «{{name}}» را حذف کنید؟ این عملیات غیرقابل بازگشت است.",
+  "usersTable.deleteSuccess": "کاربر «{{name}}» با موفقیت حذف شد.",
+  "usersTable.deleteFailed": "حذف کاربر «{{name}}» با خطا مواجه شد. {{error}}",
+  "usersTable.delete": "حذف",
+  "usersTable.cancel": "لغو"
 }

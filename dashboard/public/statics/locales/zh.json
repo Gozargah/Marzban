@@ -766,8 +766,16 @@
     "nextPlanDataLimit": "流量限制 (GB)",
     "nextPlanExpire": "到期（天）",
     "nextPlanAddRemainingTraffic": "添加剩余流量",
-    "nextPlanFireOnEither": "任一条件触发"
+    "nextPlanFireOnEither": "任一条件触发",
+    "selectTemplate": "选择模板",
+    "selectTemplatePlaceholder": "选择模板"
   },
   "sidebar.expand": "展开侧边栏",
-  "sidebar.collapse": "折叠侧边栏"
+  "sidebar.collapse": "折叠侧边栏",
+  "usersTable.deleteUserTitle": "删除用户",
+  "usersTable.deleteUserPrompt": "您确定要删除用户「{{name}}」吗？此操作无法撤销。",
+  "usersTable.deleteSuccess": "用户「{{name}}」已成功删除。",
+  "usersTable.deleteFailed": "无法删除用户「{{name}}」。{{error}}",
+  "usersTable.delete": "删除",
+  "usersTable.cancel": "取消"
 }

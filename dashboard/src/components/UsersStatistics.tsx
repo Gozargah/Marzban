@@ -2,9 +2,8 @@ import useDirDetection from '@/hooks/use-dir-detection'
 import { cn } from '@/lib/utils'
 import { useGetSystemStats } from '@/service/api'
 import { numberWithCommas } from '@/utils/formatByte'
-import { Plus, Users, Wifi } from 'lucide-react'
+import { Users, Wifi } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Button } from './ui/button'
 import { Card, CardTitle } from './ui/card'
 
 const UsersStatistics = () => {
@@ -36,7 +35,7 @@ const UsersStatistics = () => {
               <Wifi className="h-5 w-5" />
               <span className="">{t('activeUsers')}</span>
             </div>
-            <span className="text-3xl mx-2">{data && numberWithCommas(data?.users_active)}</span>
+            <span className="text-3xl mx-2">{data && numberWithCommas(data?.active_users)}</span>
           </CardTitle>
         </Card>
         <Card dir={dir} className="py-6 px-4 w-full rounded-md">

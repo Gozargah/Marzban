@@ -759,8 +759,16 @@
     "revokeSubSuccess": "Подписка пользователя «{{name}}» была отозвана.",
     "activeNextPlanSuccess": "Следующий план для пользователя «{{name}}» был активирован.",
     "deleteConfirmTitle": "Удалить пользователя",
-    "deleteConfirm": "Вы уверены, что хотите удалить пользователя «{{name}}»?"
+    "deleteConfirm": "Вы уверены, что хотите удалить пользователя «{{name}}»?",
+    "selectTemplate": "Выберите шаблон",
+    "selectTemplatePlaceholder": "Выберите шаблон"
   },
   "sidebar.expand": "Развернуть меню",
-  "sidebar.collapse": "Свернуть меню"
+  "sidebar.collapse": "Свернуть меню",
+  "usersTable.deleteUserTitle": "Удалить пользователя",
+  "usersTable.deleteUserPrompt": "Вы уверены, что хотите удалить пользователя «{{name}}»? Это действие необратимо.",
+  "usersTable.deleteSuccess": "Пользователь «{{name}}» был успешно удалён.",
+  "usersTable.deleteFailed": "Не удалось удалить пользователя «{{name}}». {{error}}",
+  "usersTable.delete": "Удалить",
+  "usersTable.cancel": "Отмена"
 }

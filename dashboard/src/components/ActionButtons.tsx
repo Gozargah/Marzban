@@ -22,6 +22,19 @@ import { useQueryClient } from '@tanstack/react-query'
 import { toast } from '@/hooks/use-toast'
 import { useForm } from 'react-hook-form'
 import { UseFormValues } from '@/pages/_dashboard._index'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { useRemoveUser } from '@/service/api'
+import { cn } from '@/lib/utils'
+import useDirDetection from '@/hooks/use-dir-detection'
 
 type ActionButtonsProps = {
   user: UserResponse
@@ -37,24 +50,11 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
   const [subscribeLinks, setSubscribeLinks] = useState<SubscribeLink[]>([])
   const [showQRModal, setShowQRModal] = useState(false)
   const [isEditModalOpen, setEditModalOpen] = useState(false)
+  const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const queryClient = useQueryClient()
   const { t } = useTranslation()
-  
-  // Helper function to safely convert expire timestamp to ISO string or format for the form
-  const formatExpireForForm = (expireTimestamp: any) => {
-    if (!expireTimestamp) return '';
-    
-    try {
-      // Convert to number and ensure it's a valid timestamp
-      const timestamp = Number(expireTimestamp);
-      if (isNaN(timestamp) || timestamp <= 0) return '';
-      
-      // Return as number (timestamp in seconds)
-      return timestamp;
-    } catch (e) {
-      return '';
-    }
-  };
+  const dir = useDirDetection()
+  const removeUserMutation = useRemoveUser()
 
   // Create form for user editing
   const userForm = useForm<UseFormValues>({
@@ -138,8 +138,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
 
   // Refresh user data function
   const refreshUserData = () => {
-    queryClient.invalidateQueries({ queryKey: ['getUsers'] })
-    queryClient.invalidateQueries({ queryKey: ['getUsersUsage'] })
+    queryClient.invalidateQueries({ queryKey: ['/api/users'] })
   }
 
   // Handlers for menu items
@@ -181,12 +180,25 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
   }
 
   const handleDelete = () => {
-    // Implement delete functionality
-    toast({
-      title: t('warning'),
-      description: t('deleteUserAction', { username: user.username }),
-      variant: 'destructive',
-    })
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    try {
+      await removeUserMutation.mutateAsync({ username: user.username })
+      toast({
+        title: t('success', { defaultValue: 'Success' }),
+        description: t('usersTable.deleteSuccess', { name: user.username }),
+      })
+      setDeleteDialogOpen(false)
+      refreshUserData()
+    } catch (error: any) {
+      toast({
+        title: t('error', { defaultValue: 'Error' }),
+        description: t('usersTable.deleteFailed', { name: user.username, error: error?.message || '' }),
+        variant: 'destructive',
+      })
+    }
   }
 
   return (
@@ -234,16 +246,16 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
               <span>{t('edit')}</span>
             </DropdownMenuItem>
 
+            {/* QR Code */}
+            <DropdownMenuItem onClick={onOpenQRModal}>
+              <QrCode className="h-4 w-4 mr-2" />
+              <span>Qr Code</span>
+            </DropdownMenuItem>
+
             {/* Set Owner */}
             <DropdownMenuItem onClick={handleSetOwner}>
               <User className="h-4 w-4 mr-2" />
               <span>{t('setOwner')}</span>
-            </DropdownMenuItem>
-
-            {/* QR Code */}
-            <DropdownMenuItem onClick={onOpenQRModal}>
-              <QrCode className="h-4 w-4 mr-2" />
-              <span>{t('qrCode')}</span>
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
@@ -271,7 +283,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
             {/* Trash */}
             <DropdownMenuItem onClick={handleDelete} className="text-red-600">
               <Trash2 className="h-4 w-4 mr-2" />
-              <span>{t('trash')}</span>
+              <span>{t('remove')}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -285,6 +297,24 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
           onCloseModal={onCloseQRModal}
         />
       }
+      
+      {/* Delete User Confirm Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent dir={dir}>
+          <AlertDialogHeader>
+            <AlertDialogTitle className={cn(dir === 'rtl' && 'text-right')}>{t('usersTable.deleteUserTitle')}</AlertDialogTitle>
+            <AlertDialogDescription className={cn(dir === 'rtl' && 'text-right')}>
+              {t('usersTable.deleteUserPrompt', { name: user.username })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className='flex items-center gap-2'>
+            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>{t('usersTable.cancel')}</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={confirmDelete} disabled={removeUserMutation.isPending}>
+              {t('usersTable.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       
       {/* Edit User Modal */}
       <UserModal
