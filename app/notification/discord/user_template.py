@@ -1,7 +1,7 @@
 from app.notification.client import send_discord_webhook
 from app.models.user_template import UserTemplateResponse
-from app.models.settings import NotficationSettings
-from app.settings import notfication_settings
+from app.models.settings import NotificationSettings
+from app.settings import notification_settings
 from . import colors
 
 
@@ -21,7 +21,7 @@ async def create_user_template(user_tempelate: UserTemplateResponse, by: str):
             }
         ],
     }
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_discord:
         await send_discord_webhook(data, settings.discord_webhook_url)
 
@@ -42,7 +42,7 @@ async def modify_user_template(user_template: UserTemplateResponse, by: str):
             }
         ],
     }
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_discord:
         await send_discord_webhook(data, settings.discord_webhook_url)
 
@@ -59,6 +59,6 @@ async def remove_user_template(name: str, by: str):
             }
         ],
     }
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_discord:
         await send_discord_webhook(data, settings.discord_webhook_url)

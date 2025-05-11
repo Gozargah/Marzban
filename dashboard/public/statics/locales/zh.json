@@ -42,7 +42,14 @@
     "disableSuccess": "节点 «{{name}}» 禁用成功",
     "disableFailed": "禁用节点 «{{name}}» 失败",
     "certificate": "证书",
-    "createdAt": "创建时间"
+    "createdAt": "创建时间",
+    "selectNode": "选择节点",
+    "logs": {
+      "title": "日志",
+      "description": "查看和监控节点日志",
+      "noLogs": "暂无日志",
+      "loading": "正在加载日志..."
+    }
   },
   "groups": "群组",
   "documentation": "文档",
@@ -739,7 +746,12 @@
     "generateKeyPair": "生成密钥对",
     "generateShortId": "生成短 ID",
     "publicKey": "公钥",
-    "privateKey": "私钥"
+    "privateKey": "私钥",
+    "clearAllFallbacks": "清除所有回退",
+    "clearAllExcluded": "清除所有排除的入站",
+    "copyPublicKey": "复制公钥",
+    "copyPrivateKey": "复制私钥",
+    "copyShortId": "复制短 ID"
   },
   "settings.cores": {
     "title": "核心",
@@ -769,8 +781,26 @@
     "nextPlanDataLimit": "流量限制 (GB)",
     "nextPlanExpire": "到期（天）",
     "nextPlanAddRemainingTraffic": "添加剩余流量",
-    "nextPlanFireOnEither": "任一条件触发"
+    "nextPlanFireOnEither": "任一条件触发",
+    "selectTemplate": "选择模板",
+    "selectTemplatePlaceholder": "选择模板"
   },
   "sidebar.expand": "展开侧边栏",
-  "sidebar.collapse": "折叠侧边栏"
+  "sidebar.collapse": "折叠侧边栏",
+  "usersTable.deleteUserTitle": "删除用户",
+  "usersTable.deleteUserPrompt": "您确定要删除用户「{{name}}」吗？此操作无法撤销。",
+  "usersTable.deleteSuccess": "用户「{{name}}」已成功删除。",
+  "usersTable.deleteFailed": "无法删除用户「{{name}}」。{{error}}",
+  "usersTable.delete": "删除",
+  "usersTable.cancel": "取消",
+  "statistics.trafficUsage": "流量使用",
+  "statistics.trafficUsageDescription": "所有服务器的总流量使用情况",
+  "statistics.usageDuringPeriod": "期间使用量",
+  "statistics.users": "用户",
+  "statistics.onlineUsers": "在线用户",
+  "statistics.limitedUsers": "受限用户",
+  "statistics.activeUsers": "活跃用户",
+  "statistics.disabledUsers": "已禁用用户",
+  "statistics.expiredUsers": "已过期用户",
+  "statistics.onHoldUsers": "暂停用户"
 }

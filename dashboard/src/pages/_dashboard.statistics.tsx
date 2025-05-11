@@ -3,11 +3,9 @@ import MainContent from '@/components/statistics/Statistics'
 import { Separator } from '@/components/ui/separator'
 import { getGetSystemStatsQueryKey, getSystemStats } from '@/service/api'
 import { useQuery } from '@tanstack/react-query'
-import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 
 const Statistics = () => {
-  const { t } = useTranslation();
   const [selectedServer, setSelectedServer] = useState<string>("master");
   
   // Use the getSystemStats API with proper query key and refetch interval

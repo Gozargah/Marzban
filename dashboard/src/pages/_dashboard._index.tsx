@@ -6,9 +6,7 @@ import { Plus } from 'lucide-react'
 
 import UserModal from '@/components/dialogs/UserModal'
 import { useForm } from 'react-hook-form'
-import { useState, useEffect } from 'react'
-import { useCreateUser, useGetUsers } from '@/service/api/index'
-import { toast } from '@/hooks/use-toast'
+import { useState } from 'react'
 import { z } from 'zod'
 import { useQueryClient } from '@tanstack/react-query'
 
@@ -75,6 +73,7 @@ export const userCreateSchema = z.object({
   on_hold_timeout: z.union([z.string(), z.number(), z.null()]).optional(),
   auto_delete_in_days: z.number().optional(),
   next_plan: nextPlanModelSchema.optional(),
+  template_id: z.number().optional(),
 });
 
 export type UseFormValues = z.infer<typeof userCreateSchema>;
@@ -101,34 +100,10 @@ const Dashboard = () => {
     queryClient.invalidateQueries({ queryKey: ['getUsersUsage'] })
   }
 
-  const addUserMutation = useCreateUser({
-    mutation: {
-      onSuccess: (data) => {
-        toast({
-          title: 'Success',
-          description: `User «${data.username}» has been created successfully`,
-        })
-        setUserModalOpen(false)
-        userForm.reset()
-        refreshAllUserData() // Refresh the users list after creating a new user
-      },
-      onError: (error) => {
-        toast({
-          title: 'Error',
-          description: error?.message || 'Failed to create user',
-          variant: 'destructive',
-        })
-      },
-    },
-  })
 
   const handleCreateUser = () => {
     userForm.reset()
     setUserModalOpen(true)
-  }
-
-  const handleSubmit = (values: UseFormValues) => {
-    addUserMutation.mutateAsync({ data: values })
   }
 
   return (

@@ -1,7 +1,7 @@
 from app.notification.client import send_telegram_message
 from app.models.group import GroupResponse
-from app.models.settings import NotficationSettings
-from app.settings import notfication_settings
+from app.models.settings import NotificationSettings
+from app.settings import notification_settings
 
 
 async def create_group(group: GroupResponse, by: str):
@@ -15,7 +15,7 @@ async def create_group(group: GroupResponse, by: str):
         + f"_ID_: `{group.id}`\n"
         + f"_By: #{by}_"
     )
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(
             data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
@@ -33,7 +33,7 @@ async def modify_group(group: GroupResponse, by: str):
         + f"_ID_: `{group.id}`\n"
         + f"_By: #{by}_"
     )
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(
             data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
@@ -48,7 +48,7 @@ async def remove_group(group_id: int, by: str):
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_By: #{by}_"
     )
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(
             data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id

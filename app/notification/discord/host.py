@@ -1,7 +1,7 @@
 from app.notification.client import send_discord_webhook
 from app.models.host import BaseHost
-from app.models.settings import NotficationSettings
-from app.settings import notfication_settings
+from app.models.settings import NotificationSettings
+from app.settings import notification_settings
 from . import colors
 
 
@@ -20,7 +20,7 @@ async def create_host(host: BaseHost, by: str):
             }
         ],
     }
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_discord:
         await send_discord_webhook(data, settings.discord_webhook_url)
 
@@ -40,7 +40,7 @@ async def modify_host(host: BaseHost, by: str):
             }
         ],
     }
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_discord:
         await send_discord_webhook(data, settings.discord_webhook_url)
 
@@ -57,7 +57,7 @@ async def remove_host(host: BaseHost, by: str):
             }
         ],
     }
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_discord:
         await send_discord_webhook(data, settings.discord_webhook_url)
 
@@ -73,6 +73,6 @@ async def modify_hosts(by: str):
             }
         ],
     }
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_discord:
         await send_discord_webhook(data, settings.discord_webhook_url)

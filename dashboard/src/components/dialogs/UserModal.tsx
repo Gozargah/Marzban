@@ -7,8 +7,8 @@ import { useTranslation } from 'react-i18next';
 import { UseFormReturn } from 'react-hook-form';
 import { toast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
-import { UseFormValues, userCreateSchema, nextPlanModelSchema } from '@/pages/_dashboard._index';
-import { PieChart, RefreshCcw, Trash2 } from 'lucide-react';
+import { UseFormValues, userCreateSchema } from '@/pages/_dashboard._index';
+import { RefreshCcw } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
@@ -16,22 +16,19 @@ import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { relativeExpiryDate } from '@/utils/dateFormatter';
 import { Textarea } from '@/components/ui/textarea';
+import { formatBytes } from '@/utils/formatByte';
 import {
   useGetUserTemplates,
   useGetAllGroups,
-  useRemoveUser,
-  useResetUserDataUsage,
-  useRevokeUserSubscription,
-  useActiveNextPlan,
   useGetUsers,
   useCreateUser,
-  useModifyUser
+  useModifyUser,
+  useCreateUserFromTemplate
 } from '@/service/api';
 import { Layers, Users } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Search } from 'lucide-react';
 import useDirDetection from '@/hooks/use-dir-detection';
-import { Dialog as ConfirmDialog, DialogContent as ConfirmDialogContent, DialogHeader as ConfirmDialogHeader, DialogTitle as ConfirmDialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -57,9 +54,8 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
     { id: 'groups', label: 'groups', icon: Users },
     { id: 'templates', label: 'templates.title', icon: Layers },
   ];
-  const username = form.watch('username');
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [nextPlanEnabled, setNextPlanEnabled] = useState(!!form.watch('next_plan'));
+  const [selectedTemplateId, setSelectedTemplateId] = useState<number | undefined>(undefined);
 
   // Query client for data refetching
   const queryClient = useQueryClient();
@@ -87,17 +83,17 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
     }
   };
 
-  // Hooks for backend actions with success handlers
-  const removeUserMutation = useRemoveUser();
-  const resetUsageMutation = useResetUserDataUsage();
-  const revokeSubMutation = useRevokeUserSubscription();
-  const activeNextPlanMutation = useActiveNextPlan();
   const createUserMutation = useCreateUser({
     mutation: {
       onSuccess: () => refreshUserData()
     }
   });
   const modifyUserMutation = useModifyUser({
+    mutation: {
+      onSuccess: () => refreshUserData()
+    }
+  });
+  const createUserFromTemplateMutation = useCreateUserFromTemplate({
     mutation: {
       onSuccess: () => refreshUserData()
     }
@@ -188,11 +184,36 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
     return expire;
   }
 
+  // Helper to clear group selection
+  const clearGroups = () => form.setValue('group_ids', []);
+  // Helper to clear template selection
+  const clearTemplate = () => setSelectedTemplateId(undefined);
+
+  // Helper to check if a template is selected in next plan
+  const nextPlanTemplateSelected = !!form.watch('next_plan.user_template_id');
+
   const onSubmit = async (values: UseFormValues) => {
     try {
-      // Reset previous errors
       form.clearErrors();
-
+      // If a template is selected, use createUserFromTemplate
+      if (selectedTemplateId) {
+        setLoading(true);
+        await createUserFromTemplateMutation.mutateAsync({
+          data: {
+            user_template_id: selectedTemplateId,
+            username: values.username,
+            note: values.note || undefined
+          }
+        });
+        toast({
+          title: t('success', { defaultValue: 'Success' }),
+          description: t('users.createSuccess', { name: values.username, defaultValue: 'User «{{name}}» has been created successfully' })
+        });
+        onOpenChange(false);
+        form.reset();
+        setSelectedTemplateId(undefined);
+        return;
+      }
       // Convert data to the right format before validation
       const preparedValues = {
         ...values,
@@ -211,6 +232,12 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
         // Ensure group_ids is an array
         group_ids: Array.isArray(values.group_ids) ? values.group_ids : [],
       };
+
+      // Remove next_plan.data_limit and next_plan.expire if next_plan.user_template_id is set
+      if (preparedValues.next_plan && preparedValues.next_plan.user_template_id) {
+        delete preparedValues.next_plan.data_limit;
+        delete preparedValues.next_plan.expire;
+      }
 
       // Validate against schema
       const validatedData = userCreateSchema.parse(preparedValues);
@@ -330,54 +357,6 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
   const { data: templatesData, isLoading: templatesLoading } = useGetUserTemplates();
   const { data: groupsData, isLoading: groupsLoading } = useGetAllGroups();
 
-  // Handlers
-  const handleDelete = async () => {
-    if (!username) return;
-    try {
-      await removeUserMutation.mutateAsync({ username });
-      toast({ title: t('success'), description: t('users.deleteSuccess', { name: username }), variant: 'default' });
-      setConfirmDeleteOpen(false);
-      onOpenChange(false);
-      form.reset();
-      // Refresh data after deletion
-      refreshUserData();
-    } catch (error: any) {
-      toast({ title: t('error'), description: error?.message || t('users.genericError'), variant: 'destructive' });
-    }
-  };
-  const handleResetUsage = async () => {
-    if (!username) return;
-    try {
-      await resetUsageMutation.mutateAsync({ username });
-      toast({ title: t('success'), description: t('users.resetUsageSuccess', { name: username }), variant: 'default' });
-      // Refresh data after reset
-      refreshUserData();
-    } catch (error: any) {
-      toast({ title: t('error'), description: error?.message || t('users.genericError'), variant: 'destructive' });
-    }
-  };
-  const handleRevokeSub = async () => {
-    if (!username) return;
-    try {
-      await revokeSubMutation.mutateAsync({ username });
-      toast({ title: t('success'), description: t('users.revokeSubSuccess', { name: username }), variant: 'default' });
-      // Refresh data after revoking subscription
-      refreshUserData();
-    } catch (error: any) {
-      toast({ title: t('error'), description: error?.message || t('users.genericError'), variant: 'destructive' });
-    }
-  };
-  const handleActiveNextPlan = async () => {
-    if (!username) return;
-    try {
-      await activeNextPlanMutation.mutateAsync({ username });
-      toast({ title: t('success'), description: t('users.activateNextPlanSuccess', { name: username }), variant: 'default' });
-      // Refresh data after activating next plan
-      refreshUserData();
-    } catch (error: any) {
-      toast({ title: t('error'), description: error?.message || t('users.genericError'), variant: 'destructive' });
-    }
-  };
 
   useEffect(() => {
     // Log form state when dialog opens
@@ -404,82 +383,152 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
             <div className='flex flex-col gap-6 lg:flex-row items-center lg:items-start justify-between w-full lg:pb-8'>
               <div className='space-y-6 flex-[2] w-full'>
                 <div className='flex items-center justify-center w-full gap-4'>
-                  <FormField
-                    control={form.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem className='flex-1'>
-                        <FormLabel>{t('username', { defaultValue: 'Username' })}</FormLabel>
-                        <FormControl>
-                          <div className="flex gap-2 items-center">
-                            <Input
-                              placeholder={t('admins.enterUsername', { defaultValue: 'Enter username' })}
-                              {...field}
-                              value={field.value ?? ''}
-                            />
-                            <Button
-                              size="icon"
-                              type="button"
-                              variant="ghost"
-                              onClick={() => field.onChange(generateUsername())}
-                              title="Generate username"
-                            >
-                              <RefreshCcw className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem className='flex-1'>
-                        <FormLabel>{t('status', { defaultValue: 'Status' })}</FormLabel>
-                        <FormControl>
+                  {/* Hide these fields if a template is selected */}
+                  {!selectedTemplateId && (
+                    <>
+                      <FormField
+                        control={form.control}
+                        name="username"
+                        render={({ field }) => (
+                          <FormItem className='flex-1'>
+                            <FormLabel>{t('username', { defaultValue: 'Username' })}</FormLabel>
+                            <FormControl>
+                              <div className="flex gap-2 items-center">
+                                <Input
+                                  placeholder={t('admins.enterUsername', { defaultValue: 'Enter username' })}
+                                  {...field}
+                                  value={field.value ?? ''}
+                                />
+                                <Button
+                                  size="icon"
+                                  type="button"
+                                  variant="ghost"
+                                  onClick={() => field.onChange(generateUsername())}
+                                  title="Generate username"
+                                >
+                                  <RefreshCcw className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                          <FormItem className='flex-1'>
+                            <FormLabel>{t('status', { defaultValue: 'Status' })}</FormLabel>
+                            <FormControl>
+                              <Select onValueChange={field.onChange} value={field.value || ''}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder={t('users.selectStatus', { defaultValue: 'Select status' })} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="active">{t('status.active', { defaultValue: 'Active' })}</SelectItem>
+                                  {editingUser && <SelectItem value="disabled">{t('status.disabled', { defaultValue: 'Disabled' })}</SelectItem>}
+                                  <SelectItem value="on_hold">{t('status.on_hold', { defaultValue: 'On Hold' })}</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </>
+                  )}
+                  {/* If template is selected, only show username field */}
+                  {selectedTemplateId && (
+                    <FormField
+                      control={form.control}
+                      name="username"
+                      render={({ field }) => (
+                        <FormItem className='flex-1'>
+                          <FormLabel>{t('username', { defaultValue: 'Username' })}</FormLabel>
+                          <FormControl>
+                            <div className="flex gap-2 items-center">
+                              <Input
+                                placeholder={t('admins.enterUsername', { defaultValue: 'Enter username' })}
+                                {...field}
+                                value={field.value ?? ''}
+                              />
+                              <Button
+                                size="icon"
+                                type="button"
+                                variant="ghost"
+                                onClick={() => field.onChange(generateUsername())}
+                                title="Generate username"
+                              >
+                                <RefreshCcw className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </div>
+                {/* Hide data_limit and expire if template is selected */}
+                {!selectedTemplateId && (
+                  <div className='flex items-start w-full gap-4'>
+                    <FormField
+                      control={form.control}
+                      name="data_limit"
+                      render={({ field }) => (
+                        <FormItem className='flex-1'>
+                          <FormLabel>{t('userDialog.dataLimit', { defaultValue: 'Data Limit (GB)' })}</FormLabel>
+                          <FormControl>
+                            <div className="relative w-full">
+                              <Input
+                                type="number"
+                                step="any"
+                                min="0"
+                                placeholder={t('userDialog.dataLimit', { defaultValue: 'e.g. 1' })}
+                                {...field}
+                                value={field.value === null || field.value === undefined ? '' : field.value}
+                                className="pr-12"
+                              />
+                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">GB</span>
+                            </div>
+                          </FormControl>
+                          {field.value && field.value < 1 && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {formatBytes(Math.round(field.value * 1024 * 1024 * 1024))}
+                            </p>
+                          )}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="data_limit_reset_strategy"
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormLabel>{t('userDialog.periodicUsageReset', { defaultValue: 'Periodic Usage Reset' })}</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value || ''}>
-                            <SelectTrigger>
-                              <SelectValue placeholder={t('users.selectStatus', { defaultValue: 'Select status' })} />
-                            </SelectTrigger>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder={t('userDialog.resetStrategyNo', { defaultValue: 'No' })} />
+                              </SelectTrigger>
+                            </FormControl>
                             <SelectContent>
-                              <SelectItem value="active">{t('status.active', { defaultValue: 'Active' })}</SelectItem>
-                              <SelectItem value="disabled">{t('status.disabled', { defaultValue: 'Disabled' })}</SelectItem>
-                              <SelectItem value="on_hold">{t('status.on_hold', { defaultValue: 'On Hold' })}</SelectItem>
+                              <SelectItem value="no_reset">{t('userDialog.resetStrategyNo', { defaultValue: 'No' })}</SelectItem>
+                              <SelectItem value="day">{t('userDialog.resetStrategyDaily', { defaultValue: 'Daily' })}</SelectItem>
+                              <SelectItem value="week">{t('userDialog.resetStrategyWeekly', { defaultValue: 'Weekly' })}</SelectItem>
+                              <SelectItem value="month">{t('userDialog.resetStrategyMonthly', { defaultValue: 'Monthly' })}</SelectItem>
+                              <SelectItem value="year">{t('userDialog.resetStrategyAnnually', { defaultValue: 'Annually' })}</SelectItem>
                             </SelectContent>
                           </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className='flex items-start w-full gap-4'>
-                  <FormField
-                    control={form.control}
-                    name="data_limit"
-                    render={({ field }) => (
-                      <FormItem className='flex-1'>
-                        <FormLabel>{t('userDialog.dataLimit', { defaultValue: 'Data Limit (GB)' })}</FormLabel>
-                        <FormControl>
-                          <div className="relative w-full">
-                            <Input
-                              type="number"
-                              step="any"
-                              min="0"
-                              placeholder={t('userDialog.dataLimit', { defaultValue: 'e.g. 1' })}
-                              {...field}
-                              value={field.value === null || field.value === undefined ? '' : field.value}
-                              className="pr-12"
-                            />
-                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">GB</span>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+                <div className="flex items-start md:w-52 gap-4">
                   {status === 'on_hold' ? (
                     <FormField
                       control={form.control}
@@ -618,6 +667,108 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                     </FormItem>
                   )}
                 />
+                {/* Next Plan Section (toggleable) */}
+                {editingUser && (
+                  <>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="font-semibold">{t('userDialog.nextPlanTitle', { defaultValue: 'Next Plan' })}</div>
+                      <Switch checked={nextPlanEnabled} onCheckedChange={setNextPlanEnabled} />
+                    </div>
+                    {nextPlanEnabled && (
+                      <div className="flex flex-col gap-4">
+                        <FormField
+                          control={form.control}
+                          name="next_plan.user_template_id"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t('userDialog.nextPlanTemplateId', { defaultValue: 'Template' })}</FormLabel>
+                              <FormControl>
+                                <Select
+                                  value={field.value ? String(field.value) : "none"}
+                                  onValueChange={val => {
+                                    if (val === "none" || (field.value && String(field.value) === val)) {
+                                      field.onChange(undefined);
+                                    } else {
+                                      field.onChange(Number(val));
+                                    }
+                                  }}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder={t('userDialog.selectTemplatePlaceholder', { defaultValue: 'Choose a template' })} />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="none">---</SelectItem>
+                                    {(templatesData || []).map((tpl: any) => (
+                                      <SelectItem key={tpl.id} value={String(tpl.id)}>{tpl.name}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        {/* Only show expire and data_limit if no template is selected */}
+                        {!nextPlanTemplateSelected && (
+                          <div className="flex gap-4">
+                            <FormField
+                              control={form.control}
+                              name="next_plan.expire"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>{t('userDialog.nextPlanExpire', { defaultValue: 'Expire' })}</FormLabel>
+                                  <FormControl>
+                                    <Input type="number" min="0" {...field} value={field.value ?? ''} />
+                                  </FormControl>
+                                  <span className="text-xs text-muted-foreground">{t('userDialog.days', { defaultValue: 'Days' })}</span>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="next_plan.data_limit"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>{t('userDialog.nextPlanDataLimit', { defaultValue: 'Data Limit' })}</FormLabel>
+                                  <FormControl>
+                                    <Input type="number" min="0" step="any" {...field} value={field.value ?? ''} />
+                                  </FormControl>
+                                  <span className="text-xs text-muted-foreground">GB</span>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        )}
+                        <div className="flex gap-8">
+                          <FormField
+                            control={form.control}
+                            name="next_plan.add_remaining_traffic"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-center gap-2">
+                                <Switch checked={!!field.value} onCheckedChange={field.onChange} />
+                                <FormLabel>{t('userDialog.nextPlanAddRemainingTraffic', { defaultValue: 'Add Remaining Traffic' })}</FormLabel>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="next_plan.fire_on_either"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-center gap-2">
+                                <Switch checked={!!field.value} onCheckedChange={field.onChange} />
+                                <FormLabel>{t('userDialog.nextPlanFireOnEither', { defaultValue: 'Fire On Either' })}</FormLabel>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
               <div className='space-y-6 w-full h-full flex-1'>
                 <div className="w-full">
@@ -642,11 +793,39 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                   <div className="py-2">
                     {activeTab === 'templates' && (
                       templatesLoading ? <div>{t('Loading...', { defaultValue: 'Loading...' })}</div> :
-                        <ul className="list-disc pl-5">
-                          {(templatesData || []).map((template: any) => (
-                            <li key={template.id}>{template.name}</li>
-                          ))}
-                        </ul>
+                        <div className="space-y-4 pt-4">
+                          <FormLabel>{t('userDialog.selectTemplate', { defaultValue: 'Select Template' })}</FormLabel>
+                          <Select
+                            value={selectedTemplateId ? String(selectedTemplateId) : 'none'}
+                            onValueChange={val => {
+                              if (val === 'none' || (selectedTemplateId && String(selectedTemplateId) === val)) {
+                                setSelectedTemplateId(undefined);
+                                clearGroups();
+                              } else {
+                                setSelectedTemplateId(Number(val));
+                                clearGroups();
+                              }
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder={t('userDialog.selectTemplatePlaceholder', { defaultValue: 'Choose a template' })} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">---</SelectItem>
+                              {(templatesData || []).map((template: any) => (
+                                <SelectItem key={template.id} value={String(template.id)}>{template.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {selectedTemplateId && (
+                            <div className="text-sm text-muted-foreground">
+                              {t('users.selectedTemplates', {
+                                count: 1,
+                                defaultValue: '1 template selected'
+                              })}
+                            </div>
+                          )}
+                        </div>
                     )}
                     {activeTab === 'groups' && (
                       groupsLoading ? <div>{t('Loading...', { defaultValue: 'Loading...' })}</div> :
@@ -670,6 +849,16 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
 
                             const allSelected = filteredGroups.length > 0 &&
                               filteredGroups.every((group: any) => selectedGroups.includes(group.id));
+
+                            // If a group is selected, clear template selection
+                            const handleGroupChange = (checked: boolean, groupId: number) => {
+                              if (checked) {
+                                clearTemplate();
+                                field.onChange([...selectedGroups, groupId]);
+                              } else {
+                                field.onChange(selectedGroups.filter((id: number) => id !== groupId));
+                              }
+                            };
 
                             return (
                               <FormItem>
@@ -705,13 +894,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                         >
                                           <Checkbox
                                             checked={selectedGroups.includes(group.id)}
-                                            onCheckedChange={checked => {
-                                              if (checked) {
-                                                field.onChange([...selectedGroups, group.id]);
-                                              } else {
-                                                field.onChange(selectedGroups.filter((id: number) => id !== group.id));
-                                              }
-                                            }}
+                                            onCheckedChange={checked => handleGroupChange(!!checked, group.id)}
                                           />
                                           <span className="text-sm">{group.name}</span>
                                         </label>
@@ -735,97 +918,6 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                     )}
                   </div>
                 </div>
-                {/* Next Plan Section (toggleable) */}
-                <div className="border rounded-md p-4 mb-2">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="font-semibold">{t('userDialog.nextPlanTitle', { defaultValue: 'Next Plan' })}</div>
-                    <Switch checked={nextPlanEnabled} onCheckedChange={setNextPlanEnabled} />
-                  </div>
-                  {nextPlanEnabled && (
-                    <div className="flex flex-col gap-4">
-                      <FormField
-                        control={form.control}
-                        name="next_plan.user_template_id"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t('userDialog.nextPlanTemplateId', { defaultValue: 'Template' })}</FormLabel>
-                            <FormControl>
-                              <Select
-                                value={field.value ? String(field.value) : "none"}
-                                onValueChange={val => field.onChange(val === "none" ? undefined : Number(val))}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="---" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="none">---</SelectItem>
-                                  {(templatesData || []).map((tpl: any) => (
-                                    <SelectItem key={tpl.id} value={String(tpl.id)}>{tpl.name}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <div className="flex gap-4">
-                        <FormField
-                          control={form.control}
-                          name="next_plan.expire"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t('userDialog.nextPlanExpire', { defaultValue: 'Expire' })}</FormLabel>
-                              <FormControl>
-                                <Input type="number" min="0" {...field} value={field.value ?? ''} />
-                              </FormControl>
-                              <span className="text-xs text-muted-foreground">{t('userDialog.days', { defaultValue: 'Days' })}</span>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="next_plan.data_limit"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t('userDialog.nextPlanDataLimit', { defaultValue: 'Data Limit' })}</FormLabel>
-                              <FormControl>
-                                <Input type="number" min="0" step="any" {...field} value={field.value ?? ''} />
-                              </FormControl>
-                              <span className="text-xs text-muted-foreground">GB</span>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      <div className="flex gap-8">
-                        <FormField
-                          control={form.control}
-                          name="next_plan.add_remaining_traffic"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-center gap-2">
-                              <Switch checked={!!field.value} onCheckedChange={field.onChange} />
-                              <FormLabel>{t('userDialog.nextPlanAddRemainingTraffic', { defaultValue: 'Add Remaining Traffic' })}</FormLabel>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="next_plan.fire_on_either"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-center gap-2">
-                              <Switch checked={!!field.value} onCheckedChange={field.onChange} />
-                              <FormLabel>{t('userDialog.nextPlanFireOnEither', { defaultValue: 'Fire On Either' })}</FormLabel>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
             {/* Cancel/Create buttons - always visible */}
@@ -837,19 +929,6 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                 {editingUser ? t('save', { defaultValue: 'Save' }) : t('create', { defaultValue: 'Create' })}
               </Button>
             </div>
-            {/* Confirm Delete Modal */}
-            <ConfirmDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
-              <ConfirmDialogContent>
-                <ConfirmDialogHeader>
-                  <ConfirmDialogTitle>{t('users.deleteConfirmTitle', { defaultValue: 'Delete User' })}</ConfirmDialogTitle>
-                </ConfirmDialogHeader>
-                <div className="py-4">{t('users.deleteConfirm', { name: username, defaultValue: 'Are you sure you want to delete user «{{name}}»?' })}</div>
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setConfirmDeleteOpen(false)}>{t('cancel')}</Button>
-                  <Button variant="destructive" onClick={handleDelete} disabled={removeUserMutation.status === 'pending'}>{t('delete')}</Button>
-                </div>
-              </ConfirmDialogContent>
-            </ConfirmDialog>
           </form>
         </Form>
       </DialogContent>

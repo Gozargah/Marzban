@@ -1,7 +1,7 @@
 from app.notification.client import send_discord_webhook
 from app.models.admin import AdminDetails
-from app.models.settings import NotficationSettings
-from app.settings import notfication_settings
+from app.models.settings import NotificationSettings
+from app.settings import notification_settings
 from . import colors
 
 
@@ -20,7 +20,7 @@ async def create_admin(admin: AdminDetails, by: str):
             }
         ],
     }
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_discord:
         await send_discord_webhook(data, settings.discord_webhook_url)
 
@@ -40,7 +40,7 @@ async def modify_admin(admin: AdminDetails, by: str):
             }
         ],
     }
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_discord:
         await send_discord_webhook(data, settings.discord_webhook_url)
 
@@ -57,7 +57,7 @@ async def remove_admin(username: str, by: str):
             }
         ],
     }
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_discord:
         await send_discord_webhook(data, settings.discord_webhook_url)
 
@@ -74,7 +74,7 @@ async def admin_reset_usage(admin: AdminDetails, by: str):
             }
         ],
     }
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_discord:
         await send_discord_webhook(data, settings.discord_webhook_url)
 
@@ -92,6 +92,6 @@ async def admin_login(username: str, password: str, client_ip: str, success: boo
             }
         ]
     }
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_discord:
         await send_discord_webhook(data, settings.discord_webhook_url)

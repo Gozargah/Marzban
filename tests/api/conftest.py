@@ -28,7 +28,7 @@ def mock_settings(monkeypatch: pytest.MonkeyPatch):
             "recurrent": 3,
             "proxy_url": None,
         },
-        "notfication_settings": {
+        "notification_settings": {
             "notify_telegram": False,
             "notify_discord": False,
             "telegram_api_token": "",
@@ -39,7 +39,7 @@ def mock_settings(monkeypatch: pytest.MonkeyPatch):
             "proxy_url": None,
             "max_retries": 3,
         },
-        "notfication_enable": {
+        "notification_enable": {
             "admin": True,
             "core": True,
             "group": True,

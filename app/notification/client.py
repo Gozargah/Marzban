@@ -1,8 +1,8 @@
 import httpx
 import asyncio
 
-from app.models.settings import NotficationSettings
-from app.settings import notfication_settings
+from app.models.settings import NotificationSettings
+from app.settings import notification_settings
 from app.utils.logger import get_logger
 from app import on_startup
 
@@ -21,7 +21,7 @@ async def define_client():
     client = httpx.AsyncClient(
         http2=True,
         timeout=httpx.Timeout(10),
-        proxy=(await notfication_settings()).proxy_url,
+        proxy=(await notification_settings()).proxy_url,
     )
 
 
@@ -31,7 +31,7 @@ logger = get_logger("Notification")
 
 
 async def send_discord_webhook(json_data, webhook):
-    max_retries = (await notfication_settings()).max_retries
+    max_retries = (await notification_settings()).max_retries
     retries = 0
     while retries < max_retries:
         try:
@@ -67,7 +67,7 @@ async def send_telegram_message(message, chat_id=0, channel_id=0, topic_id=0):
         bool: True if message was sent successfully, False otherwise
     """
     # Ensure TELEGRAM_API_TOKEN is available
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if not settings.telegram_api_token:
         logger.error("TELEGRAM_API_TOKEN is not defined")
         return

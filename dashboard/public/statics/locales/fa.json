@@ -630,7 +630,7 @@
   },
   "nodes": {
     "title": "گره‌ها",
-    "description": "مدیریت گره‌ها",
+    "description": "مدیریت گره‌های شما",
     "addNode": "افزودن گره",
     "editNode": "ویرایش گره",
     "deleteNode": "حذف گره",
@@ -642,7 +642,7 @@
     "serverCA": "گواهی سرور",
     "keepAlive": "حفظ اتصال",
     "maxLogs": "حداکثر لاگ‌ها",
-    "maxLogsPlaceHolder": "حداکثر تعداد لاگ‌ها را وارد کنید (به ثانیه)",
+    "maxLogsPlaceHolder": "حداکثر لاگ‌ها را وارد کنید (ثانیه)",
     "status": "وضعیت",
     "actions": "عملیات",
     "connected": "متصل",
@@ -651,15 +651,25 @@
     "enabled": "فعال",
     "createSuccess": "گره «{{name}}» با موفقیت ایجاد شد",
     "createFailed": "ایجاد گره «{{name}}» ناموفق بود",
-    "editSuccess": "گره «{{name}}» با موفقیت بروزرسانی شد",
-    "editFailed": "بروزرسانی گره «{{name}}» ناموفق بود",
+    "editSuccess": "گره «{{name}}» با موفقیت به‌روزرسانی شد",
+    "editFailed": "به‌روزرسانی گره «{{name}}» ناموفق بود",
     "deleteSuccess": "گره «{{name}}» با موفقیت حذف شد",
     "deleteFailed": "حذف گره «{{name}}» ناموفق بود",
     "enableSuccess": "گره «{{name}}» با موفقیت فعال شد",
-    "enableFailed": "فعال کردن گره «{{name}}» ناموفق بود",
+    "enableFailed": "فعال‌سازی گره «{{name}}» ناموفق بود",
     "disableSuccess": "گره «{{name}}» با موفقیت غیرفعال شد",
-    "disableFailed": "غیرفعال کردن گره «{{name}}» ناموفق بود",
-    "certificate": "گواهی"
+    "disableFailed": "غیرفعال‌سازی گره «{{name}}» ناموفق بود",
+    "certificate": "گواهی",
+    "certificateCopied": "گواهی در کلیپ‌بورد کپی شد",
+    "certificateDownloaded": "گواهی با موفقیت دانلود شد",
+    "certificateDescription": "برای راه‌اندازی گره، باید این گواهی را برای ایجاد اتصال امن بین سرور اصلی و گره پیکربندی کنید",
+    "selectNode": "یک گره را انتخاب کنید",
+    "logs": {
+      "title": "لاگ‌ها",
+      "description": "مشاهده و نظارت بر لاگ‌های گره",
+      "noLogs": "لاگی موجود نیست",
+      "loading": "در حال بارگذاری لاگ‌ها..."
+    }
   },
   "success": "موفق",
   "error": "خطا",
@@ -706,7 +716,12 @@
     "generateKeyPair": "تولید جفت کلید",
     "generateShortId": "تولید شناسه کوتاه",
     "publicKey": "کلید عمومی",
-    "privateKey": "کلید خصوصی"
+    "privateKey": "کلید خصوصی",
+    "clearAllFallbacks": "پاک‌کردن همه فال‌بک‌ها",
+    "clearAllExcluded": "پاک‌کردن همه ورودی‌های مستثنی‌شده",
+    "copyPublicKey": "کپی کلید عمومی",
+    "copyPrivateKey": "کپی کلید خصوصی",
+    "copyShortId": "کپی شناسه کوتاه"
   },
   "settings.cores": {
     "title": "هسته‌ها",
@@ -759,8 +774,26 @@
     "nextPlanDataLimit": "حجم داده (گیگابایت)",
     "nextPlanExpire": "انقضا (روز)",
     "nextPlanAddRemainingTraffic": "افزودن ترافیک باقی‌مانده",
-    "nextPlanFireOnEither": "فعال‌سازی با هرکدام"
+    "nextPlanFireOnEither": "فعال‌سازی با هرکدام",
+    "selectTemplate": "انتخاب قالب",
+    "selectTemplatePlaceholder": "یک قالب را انتخاب کنید"
   },
   "sidebar.expand": "باز کردن منو",
-  "sidebar.collapse": "بستن منو"
+  "sidebar.collapse": "بستن منو",
+  "usersTable.deleteUserTitle": "حذف کاربر",
+  "usersTable.deleteUserPrompt": "آیا مطمئن هستید که می‌خواهید کاربر «{{name}}» را حذف کنید؟ این عملیات غیرقابل بازگشت است.",
+  "usersTable.deleteSuccess": "کاربر «{{name}}» با موفقیت حذف شد.",
+  "usersTable.deleteFailed": "حذف کاربر «{{name}}» با خطا مواجه شد. {{error}}",
+  "usersTable.delete": "حذف",
+  "usersTable.cancel": "لغو",
+  "statistics.trafficUsage": "میزان مصرف ترافیک",
+  "statistics.trafficUsageDescription": "کل مصرف ترافیک در تمام سرورها",
+  "statistics.usageDuringPeriod": "مصرف در دوره زمانی",
+  "statistics.users": "کاربران",
+  "statistics.onlineUsers": "کاربران آنلاین",
+  "statistics.limitedUsers": "کاربران محدود شده",
+  "statistics.activeUsers": "کاربران فعال",
+  "statistics.disabledUsers": "کاربران غیرفعال",
+  "statistics.expiredUsers": "کاربران منقضی شده",
+  "statistics.onHoldUsers": "کاربران در انتظار"
 }

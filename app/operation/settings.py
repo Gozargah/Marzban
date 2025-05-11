@@ -20,7 +20,7 @@ class SettingsOperation(BaseOperation):
             pass
         if old_settings.webhook and new_settings.webhook is None or not new_settings.webhook.enable:
             webhook_queue.empty()
-        if old_settings.notfication_settings.proxy_url != new_settings.notfication_settings.proxy_url:
+        if old_settings.notification_settings.proxy_url != new_settings.notification_settings.proxy_url:
             await define_client()
 
     async def get_settings(self, db: AsyncSession) -> Settings:
@@ -33,8 +33,8 @@ class SettingsOperation(BaseOperation):
             "telegram": db_settings.telegram,
             "discord": db_settings.discord,
             "webhook": db_settings.webhook,
-            "notfication_settings": db_settings.notfication_settings,
-            "notfication_enable": db_settings.notfication_enable,
+            "notification_settings": db_settings.notification_settings,
+            "notification_enable": db_settings.notification_enable,
             "subscription": db_settings.subscription,
         }
         old_settings = SettingsSchema.model_validate(old_settings_dict)

@@ -1,8 +1,8 @@
 from app.notification.client import send_discord_webhook
 from app.models.user import UserResponse
 from app.utils.system import readable_size
-from app.models.settings import NotficationSettings
-from app.settings import notfication_settings
+from app.models.settings import NotificationSettings
+from app.settings import notification_settings
 from . import colors
 
 _status = {
@@ -33,7 +33,7 @@ async def user_status_change(user: UserResponse, by: str):
             }
         ],
     }
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_discord:
         await send_discord_webhook(data, settings.discord_webhook_url)
     if user.admin and user.admin.discord_webhook:
@@ -56,7 +56,7 @@ async def create_user(user: UserResponse, by: str):
             }
         ],
     }
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_discord:
         await send_discord_webhook(data, settings.discord_webhook_url)
     if user.admin and user.admin.discord_webhook:
@@ -79,7 +79,7 @@ async def modify_user(user: UserResponse, by: str):
             }
         ],
     }
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_discord:
         await send_discord_webhook(data, settings.discord_webhook_url)
     if user.admin and user.admin.discord_webhook:
@@ -100,7 +100,7 @@ async def remove_user(user: UserResponse, by: str):
             }
         ],
     }
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_discord:
         await send_discord_webhook(data, settings.discord_webhook_url)
     if user.admin and user.admin.discord_webhook:
@@ -122,7 +122,7 @@ async def reset_user_data_usage(user: UserResponse, by: str):
             }
         ],
     }
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_discord:
         await send_discord_webhook(data, settings.discord_webhook_url)
     if user.admin and user.admin.discord_webhook:
@@ -145,7 +145,7 @@ async def user_data_reset_by_next(user: UserResponse, by: str):
             }
         ],
     }
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_discord:
         await send_discord_webhook(data, settings.discord_webhook_url)
     if user.admin and user.admin.discord_webhook:
@@ -166,7 +166,7 @@ async def user_subscription_revoked(user: UserResponse, by: str):
             }
         ],
     }
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_discord:
         await send_discord_webhook(data, settings.discord_webhook_url)
     if user.admin and user.admin.discord_webhook:

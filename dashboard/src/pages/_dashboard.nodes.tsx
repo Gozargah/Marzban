@@ -1,5 +1,5 @@
 import PageHeader from '@/components/page-header'
-import { Cpu, LucideIcon, Settings as SettingsIcon, Share2, Plus } from 'lucide-react'
+import { Cpu, LucideIcon, Share2, Plus, FileText } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Outlet, useLocation, useNavigate } from 'react-router'
@@ -14,6 +14,7 @@ interface Tab {
 const tabs: Tab[] = [
   { id: 'nodes.title', label: 'nodes.title', icon: Share2, url: '/nodes' },
   { id: 'core', label: 'core', icon: Cpu, url: '/nodes/cores' },
+  { id: 'nodes.logs.title', label: 'nodes.logs.title', icon: FileText, url: '/nodes/logs' },
 ]
 
 const Settings = () => {
@@ -41,6 +42,15 @@ const Settings = () => {
           const event = new CustomEvent('openCoreDialog')
           window.dispatchEvent(event)
         }
+      }
+    }
+    if (location.pathname === '/nodes/logs') {
+      return {
+        title: 'nodes.logs.title',
+        description: 'nodes.logs.description',
+        buttonIcon: undefined,
+        buttonText: undefined,
+        onButtonClick: undefined
       }
     }
     return {

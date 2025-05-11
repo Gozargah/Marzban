@@ -1,16 +1,10 @@
 from aiogram import Router
-import importlib
+from . import main_menu, user, confirm_action
 
 
 router = Router(name="admin")
 
-handlers = (
-    "admin",
-    "confirm_action",
-    "user",  # keep this as last one
-)
+router.include_router(main_menu.router)
+router.include_router(confirm_action.router)
 
-
-def init_handler() -> None:
-    for name in handlers:
-        importlib.import_module(f".{name}", "app.telegram.handlers.admin")
+router.include_router(user.router)  # keep this as last one

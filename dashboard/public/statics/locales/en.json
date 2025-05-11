@@ -46,7 +46,14 @@
     "certificate": "Certificate",
     "certificateCopied": "Certificate copied to clipboard",
     "certificateDownloaded": "Certificate downloaded successfully",
-    "certificateDescription": "To set up the node, you need to configure this certificate to establish a secure connection between the main server and the node"
+    "certificateDescription": "To set up the node, you need to configure this certificate to establish a secure connection between the main server and the node",
+    "selectNode": "Select a node",
+    "logs": {
+      "title": "Logs",
+      "description": "View and monitor node logs",
+      "noLogs": "No logs available",
+      "loading": "Loading logs..."
+    }
   },
   "groups": "Groups",
   "documentation": "Documentation",
@@ -599,7 +606,9 @@
     "nextPlanDataLimit": "Data Limit (GB)",
     "nextPlanExpire": "Expire (days)",
     "nextPlanAddRemainingTraffic": "Add Remaining Traffic",
-    "nextPlanFireOnEither": "Fire On Either"
+    "nextPlanFireOnEither": "Fire On Either",
+    "selectTemplate": "Select Template",
+    "selectTemplatePlaceholder": "Choose a template"
   },
   "users": "Users",
   "usersTable.copied": "Copied",
@@ -736,7 +745,12 @@
     "generateKeyPair": "Generate Key Pair",
     "generateShortId": "Generate Short ID",
     "publicKey": "Public Key",
-    "privateKey": "Private Key"
+    "privateKey": "Private Key",
+    "clearAllFallbacks": "Clear all fallbacks",
+    "clearAllExcluded": "Clear all excluded inbounds",
+    "copyPublicKey": "Copy Public Key",
+    "copyPrivateKey": "Copy Private Key",
+    "copyShortId": "Copy Short ID"
   },
   "settings.cores": {
     "title": "Cores",
@@ -773,5 +787,21 @@
     "group_ids": "Groups"
   },
   "sidebar.expand": "Expand sidebar",
-  "sidebar.collapse": "Collapse sidebar"
+  "sidebar.collapse": "Collapse sidebar",
+  "usersTable.deleteUserTitle": "Delete User",
+  "usersTable.deleteUserPrompt": "Are you sure you want to delete user «{{name}}»? This action cannot be undone.",
+  "usersTable.deleteSuccess": "User «{{name}}» has been deleted successfully.",
+  "usersTable.deleteFailed": "Failed to delete user «{{name}}». {{error}}",
+  "usersTable.delete": "Delete",
+  "usersTable.cancel": "Cancel",
+  "statistics.trafficUsage": "Traffic Usage",
+  "statistics.trafficUsageDescription": "Total traffic usage across all servers",
+  "statistics.usageDuringPeriod": "Usage During Period",
+  "statistics.users": "Users",
+  "statistics.onlineUsers": "Online Users",
+  "statistics.limitedUsers": "Limited Users",
+  "statistics.activeUsers": "Active Users",
+  "statistics.disabledUsers": "Disabled Users",
+  "statistics.expiredUsers": "Expired Users",
+  "statistics.onHoldUsers": "On Hold Users"
 }

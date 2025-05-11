@@ -19,8 +19,8 @@ class Telegram(BaseModel):
 
     @model_validator(mode="after")
     def check_enable_requires_token_and_url(self):
-        if self.enable and (not self.token or not self.webhook_url):
-            raise ValueError("Telegram cannot be enabled without both token and webhook_url.")
+        if self.enable and (not self.token or not self.webhook_url or not self.webhook_secret):
+            raise ValueError("Telegram bot cannot be enabled without token, webhook_url and webhook_secret.")
         return self
 
 
@@ -37,7 +37,7 @@ class Discord(BaseModel):
     @model_validator(mode="after")
     def check_enable_requires_token(self):
         if self.enable and not self.token:
-            raise ValueError("Discord cannot be enabled without token.")
+            raise ValueError("Discord bot cannot be enabled without token.")
         return self
 
 
@@ -72,7 +72,7 @@ class Webhook(BaseModel):
         return self
 
 
-class NotficationSettings(BaseModel):
+class NotificationSettings(BaseModel):
     # Define Which Notfication System Work's
     notify_telegram: bool = Field(default=False)
     notify_discord: bool = Field(default=False)
@@ -101,8 +101,24 @@ class NotficationSettings(BaseModel):
     def validate_discord_webhook(cls, value):
         return DiscordValidator.validate_webhook(value)
 
+    @model_validator(mode="after")
+    def check_notify_discord_requires_url(self):
+        if self.notify_discord and not self.discord_webhook_url:
+            raise ValueError("Discord notification cannot be enabled without webhook url.")
+        return self
 
-class NotficationEnable(BaseModel):
+    @model_validator(mode="after")
+    def check_notify_telegram_requires_token_and_id(self):
+        if (
+            self.notify_telegram
+            and not self.telegram_api_token
+            and (not self.telegram_admin_id and not self.telegram_channel_id)
+        ):
+            raise ValueError("Telegram notification cannot be enabled without token, admin_id and channel_id.")
+        return self
+
+
+class NotificationEnable(BaseModel):
     admin: bool = Field(default=True)
     core: bool = Field(default=True)
     group: bool = Field(default=True)
@@ -158,6 +174,6 @@ class SettingsSchema(BaseModel):
     telegram: Telegram | None = Field(default=None)
     discord: Discord | None = Field(default=None)
     webhook: Webhook | None = Field(default=None)
-    notfication_settings: NotficationSettings = Field(default_factory=NotficationSettings)
-    notfication_enable: NotficationEnable = Field(default_factory=NotficationEnable)
-    subscription: Subscription = Field(default_factory=Subscription)
+    notification_settings: NotificationSettings | None = Field(default=None)
+    notification_enable: NotificationEnable | None = Field(default=None)
+    subscription: Subscription | None = Field(default=None)

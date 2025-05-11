@@ -33,20 +33,20 @@ async def webhook_settings() -> settings.Webhook:
 
 
 @cached()
-async def notfication_settings() -> settings.NotficationSettings:
+async def notification_settings() -> settings.NotificationSettings:
     async with GetDB() as db:
         db_settings = await get_settings(db)
 
-    validated_settings = settings.NotficationSettings.model_validate(db_settings.notfication_settings)
+    validated_settings = settings.NotificationSettings.model_validate(db_settings.notification_settings)
     return validated_settings
 
 
 @cached()
-async def notfication_enable() -> settings.NotficationEnable:
+async def notification_enable() -> settings.NotificationEnable:
     async with GetDB() as db:
         db_settings = await get_settings(db)
 
-    validated_settings = settings.NotficationEnable.model_validate(db_settings.notfication_enable)
+    validated_settings = settings.NotificationEnable.model_validate(db_settings.notification_enable)
     return validated_settings
 
 
@@ -63,6 +63,6 @@ async def refresh_caches():
     await telegram_settings.cache.clear()
     await discord_settings.cache.clear()
     await webhook_settings.cache.clear()
-    await notfication_settings.cache.clear()
-    await notfication_enable.cache.clear()
+    await notification_settings.cache.clear()
+    await notification_enable.cache.clear()
     await subscription_settings.cache.clear()

@@ -4,6 +4,7 @@ from aiogram.filters.callback_data import CallbackData
 
 from app.models.user import UserResponse, UserStatus
 from app.telegram.utils.texts import Button as Texts
+from .base import CancelAction, CancelKeyboard
 
 from .confim_action import ConfirmAction
 
@@ -71,4 +72,20 @@ class UserPanel(InlineKeyboardBuilder):
                 ),
             )
 
+        self.button(
+            text=Texts.back,
+            callback_data=CancelKeyboard.Callback(action=CancelAction.cancel),
+        )
+
+        self.adjust(2, 2, 1, 1)
+
+
+class ChooseStatus(InlineKeyboardBuilder):
+    class Callback(CallbackData, prefix="user"):
+        status: str
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.button(text=Texts.on_hold, callback_data=self.Callback(status=UserStatus.on_hold.value))
+        self.button(text=Texts.enable, callback_data=self.Callback(status=UserStatus.active.value))
         self.adjust(2, repeat=True)

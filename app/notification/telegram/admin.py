@@ -1,7 +1,7 @@
 from app.notification.client import send_telegram_message
 from app.models.admin import AdminDetails
-from app.models.settings import NotficationSettings
-from app.settings import notfication_settings
+from app.models.settings import NotificationSettings
+from app.settings import notification_settings
 
 
 async def create_admin(admin: AdminDetails, by: str):
@@ -15,7 +15,7 @@ async def create_admin(admin: AdminDetails, by: str):
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_By: #{by}_"
     )
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(
             data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
@@ -33,7 +33,7 @@ async def modify_admin(admin: AdminDetails, by: str):
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_By: #{by}_"
     )
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(
             data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
@@ -42,7 +42,7 @@ async def modify_admin(admin: AdminDetails, by: str):
 
 async def remove_admin(username: str, by: str):
     data = "*#Remove_Admin*\n" + f"**Username:** `{username}`\n" + "➖➖➖➖➖➖➖➖➖\n" + f"_By: #{by}_"
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(
             data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
@@ -51,7 +51,7 @@ async def remove_admin(username: str, by: str):
 
 async def admin_reset_usage(admin: AdminDetails, by: str):
     data = "*#Admin_Usage_Reset*\n" + f"**Username:** `{admin.username}`\n" + "➖➖➖➖➖➖➖➖➖\n" + f"_By: #{by}_"
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(
             data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id
@@ -68,7 +68,7 @@ async def admin_login(username: str, password: str, client_ip: str, success: boo
         + f"**Password:** {'🔒' if success else password}\n"
         + f"**IP:** `{client_ip}`\n"
     )
-    settings: NotficationSettings = await notfication_settings()
+    settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(
             data, settings.telegram_admin_id, settings.telegram_channel_id, settings.telegram_topic_id

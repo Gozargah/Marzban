@@ -2236,7 +2236,7 @@ async def get_settings(db: AsyncSession) -> Settings:
 
 
 async def modify_settings(db: AsyncSession, db_setting: Settings, modify: SettingsSchema) -> Settings:
-    settings_data = modify.model_dump()
+    settings_data = modify.model_dump(exclude_none=True)
 
     for key, value in settings_data.items():
         setattr(db_setting, key, value)

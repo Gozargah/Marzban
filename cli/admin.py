@@ -15,7 +15,7 @@ from app.db.models import Admin, User
 from app.models.admin import AdminCreate, AdminDetails, AdminModify
 from app.operation import OperatorType
 from app.operation.admin import AdminOperation
-from app.utils.helpers import readable_datetime
+from app.utils.helpers import format_cli_validation_error, readable_datetime
 from app.utils.system import readable_size
 from cli import BaseModal
 
@@ -160,13 +160,7 @@ class AdminCreateModale(BaseModal):
                 await self.key_escape()
                 self.on_close()
             except ValidationError as e:
-                for error in e.errors():
-                    for err in error["msg"].split(";"):
-                        self.notify(
-                            err.strip(),
-                            severity="error",
-                            title=f"Error: {error['loc'][0].replace('_', ' ').capitalize()}",
-                        )
+                format_cli_validation_error(e, self.notify)
             except ValueError as e:
                 self.notify(str(e), severity="error", title="Error")
         elif event.button.id == "cancel":
@@ -253,13 +247,7 @@ class AdminModifyModale(BaseModal):
                 await self.key_escape()
                 self.on_close()
             except ValidationError as e:
-                for error in e.errors():
-                    for err in error["msg"].split(";"):
-                        self.notify(
-                            err.strip(),
-                            severity="error",
-                            title=f"Error: {error['loc'][0].replace('_', ' ').capitalize()}",
-                        )
+                format_cli_validation_error(e, self.notify)
             except ValueError as e:
                 self.notify(str(e), severity="error", title="Error")
         elif event.button.id == "cancel":
@@ -329,9 +317,7 @@ class AdminContent(Static):
         else:
             self.no_admins.styles.display = "none"
             self.table.styles.display = "block"
-        users_usages = await asyncio.gather(
-            *[self.calculate_admin_usage(admin.id) for admin in admins]
-        )
+        users_usages = await asyncio.gather(*[self.calculate_admin_usage(admin.id) for admin in admins])
 
         admins_data = [
             (
@@ -410,13 +396,7 @@ class AdminContent(Static):
             self.notify("Admin created successfully", severity="success", title="Success")
             self._refresh_table()
         except ValidationError as e:
-            for error in e.errors():
-                for err in error["msg"].split(";"):
-                    self.notify(
-                        err.strip(),
-                        severity="error",
-                        title=f"Error: {error['loc'][0].replace('_', ' ').capitalize()}",
-                    )
+            format_cli_validation_error(e, self.notify)
         except ValueError as e:
             self.notify(str(e), severity="error", title="Error")
 

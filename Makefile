@@ -31,9 +31,39 @@ install_uv:
 requirements:
 	@uv sync
 
+# Check if nvm is installed, if not, install it
+.PHONY: check-nvm
+check-nvm:
+	@if ! command -v nvm > /dev/null 2>&1; then \
+		echo "nvm not found. Installing..."; \
+		curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash || { \
+			echo "Failed to install nvm. Please install it manually."; \
+			exit 1; \
+		}; \
+		export NVM_DIR="$$HOME/.nvm"; \
+		[ -s "$$NVM_DIR/nvm.sh" ] && . "$$NVM_DIR/nvm.sh"; \
+		[ -s "$$NVM_DIR/bash_completion" ] && . "$$NVM_DIR/bash_completion"; \
+		echo "nvm installed. Version: `nvm --version`"; \
+	else \
+		echo "nvm is already installed. Version: `nvm --version`"; \
+	fi
+
+# Check if nodejs is installed, if not, install it
+.PHONY: check-nodejs
+check-nodejs: check-nvm
+	@if ! node -v > /dev/null 2>&1; then \
+		echo "nodejs not found. Installing..."; \
+		nvm install 22 || { \
+			echo "Failed to install nodejs. Please install it manually."; \
+			exit 1; \
+		}; \
+	else \
+		echo "nodejs is already installed."; \
+	fi
+
 # Check if pnpm is installed, if not, install it
 .PHONY: check-pnpm
-check-pnpm:
+check-pnpm: check-nodejs
 	@if ! pnpm --version > /dev/null 2>&1; then \
 		echo "pnpm not found. Installing..."; \
 		npm install -g pnpm@latest-10 || { \

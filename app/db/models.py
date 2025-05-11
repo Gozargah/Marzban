@@ -600,9 +600,9 @@ class Settings(Base):
     __tablename__ = "settings"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    telegram: Mapped[Optional[dict]] = mapped_column(JSON(True))
-    discord: Mapped[Optional[dict]] = mapped_column(JSON(True))
-    webhook: Mapped[Optional[dict]] = mapped_column(JSON(True))
-    notfication_settings: Mapped[dict] = mapped_column(JSON())
-    notfication_enable: Mapped[dict] = mapped_column(JSON())
+    telegram: Mapped[dict] = mapped_column(JSON())
+    discord: Mapped[dict] = mapped_column(JSON())
+    webhook: Mapped[dict] = mapped_column(JSON())
+    notification_settings: Mapped[dict] = mapped_column(JSON())
+    notification_enable: Mapped[dict] = mapped_column(JSON())
     subscription: Mapped[dict] = mapped_column(JSON())
