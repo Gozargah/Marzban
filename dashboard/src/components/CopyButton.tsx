@@ -11,24 +11,35 @@ interface CopyButtonProps {
   copiedMessage?: string
   defaultMessage?: string
   icon?: 'copy' | 'link'
+  onClick?: (e: React.MouseEvent) => void
 }
 
-export function CopyButton({ value, className, copiedMessage = 'Copied!', defaultMessage = 'Click to copy', icon = 'copy' }: CopyButtonProps) {
+export function CopyButton({ value, className, copiedMessage = 'Copied!', defaultMessage = 'Click to copy', icon = 'copy', onClick }: CopyButtonProps) {
   const { t } = useTranslation()
 
   const { copy, copied } = useClipboard({ timeout: 1500 })
   const handleCopy = useCallback(
-    (text: string) => {
-      return copy.bind(null, text)
+    (e: React.MouseEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      copy(value)
+      onClick?.(e)
     },
-    [copy],
+    [copy, value, onClick],
   )
 
   return (
     <Tooltip open={copied ? true : undefined}>
       <TooltipTrigger asChild>
         <div>
-          <Button size="icon" variant="ghost" className={className} aria-label="Copy to clipboard" onClick={handleCopy(value)}>
+          <Button 
+            type="button"
+            size="icon" 
+            variant="ghost" 
+            className={className} 
+            aria-label="Copy to clipboard" 
+            onClick={handleCopy}
+          >
             {copied ? <Check className="h-4 w-4" /> : icon === 'copy' ? <Copy className="h-4 w-4" /> : <Link className="h-4 w-4" />}
           </Button>
         </div>

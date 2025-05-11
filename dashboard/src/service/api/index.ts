@@ -143,6 +143,13 @@ export type XrayMuxSettingsXudpConcurrency = number | null
 
 export type XrayMuxSettingsConcurrency = number | null
 
+export interface XrayMuxSettings {
+  enable?: boolean
+  concurrency?: XrayMuxSettingsConcurrency
+  xudp_concurrency?: XrayMuxSettingsXudpConcurrency
+  xudp_proxy_443?: Xudp
+}
+
 export interface XrayFragmentSettings {
   /** @pattern ^(:?tlshello|[\d-]{1,16})$ */
   packets: string
@@ -160,13 +167,6 @@ export const Xudp = {
   allow: 'allow',
   skip: 'skip',
 } as const
-
-export interface XrayMuxSettings {
-  enable?: boolean
-  concurrency?: XrayMuxSettingsConcurrency
-  xudp_concurrency?: XrayMuxSettingsXudpConcurrency
-  xudp_proxy_443?: Xudp
-}
 
 export type XTLSFlows = (typeof XTLSFlows)[keyof typeof XTLSFlows]
 
@@ -282,6 +282,25 @@ export interface XHttpSettingsInput {
   sc_stream_up_server_secs?: XHttpSettingsInputScStreamUpServerSecs
   xmux?: XHttpSettingsInputXmux
   download_settings?: XHttpSettingsInputDownloadSettings
+}
+
+export interface WebhookInfo {
+  url: string
+  secret: string
+}
+
+export type WebhookProxyUrl = string | null
+
+export interface Webhook {
+  enable?: boolean
+  webhooks?: WebhookInfo[]
+  days_left?: number[]
+  usage_percent?: number[]
+  /** */
+  timeout: number
+  /** */
+  recurrent: number
+  proxy_url?: WebhookProxyUrl
 }
 
 export type WebSocketSettingsHeartbeatPeriod = number | null
@@ -419,6 +438,8 @@ export type UserTemplateCreateOnHoldTimeout = number | null
 
 export type UserTemplateCreateResetUsages = boolean | null
 
+export type UserTemplateCreateStatus = UserStatusCreate | null
+
 export type UserTemplateCreateExtraSettings = ExtraSettings | null
 
 export type UserTemplateCreateUsernameSuffix = string | null
@@ -469,8 +490,6 @@ export const UserStatusCreate = {
   active: 'active',
   on_hold: 'on_hold',
 } as const
-
-export type UserTemplateCreateStatus = UserStatusCreate | null
 
 export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus]
 
@@ -551,6 +570,8 @@ export type UserModifyOnHoldExpireDuration = number | null
 
 export type UserModifyNote = string | null
 
+export type UserModifyDataLimitResetStrategy = UserDataLimitResetStrategy | null
+
 /**
  * data_limit can be 0 or greater
  */
@@ -583,8 +604,6 @@ export const UserDataLimitResetStrategy = {
   month: 'month',
   year: 'year',
 } as const
-
-export type UserModifyDataLimitResetStrategy = UserDataLimitResetStrategy | null
 
 export type UserCreateStatus = UserStatusCreate | null
 
@@ -674,6 +693,22 @@ export interface Token {
   token_type?: string
 }
 
+export type TelegramProxyUrl = string | null
+
+export type TelegramWebhookSecret = string | null
+
+export type TelegramWebhookUrl = string | null
+
+export type TelegramToken = string | null
+
+export interface Telegram {
+  enable?: boolean
+  token?: TelegramToken
+  webhook_url?: TelegramWebhookUrl
+  webhook_secret?: TelegramWebhookSecret
+  proxy_url?: TelegramProxyUrl
+}
+
 export type TcpSettingsResponse = HTTPResponse | null
 
 export type TcpSettingsRequest = HTTPRequest | null
@@ -746,6 +781,41 @@ export interface SubscriptionUserResponse {
   online_at?: SubscriptionUserResponseOnlineAt
 }
 
+export interface SubRule {
+  pattern: string
+  target: ConfigFormat
+}
+
+export interface SubFormatEnable {
+  links?: boolean
+  links_base64?: boolean
+  xray?: boolean
+  sing_box?: boolean
+  clash?: boolean
+  clash_meta?: boolean
+  outline?: boolean
+}
+
+export interface SubscriptionOutput {
+  url_prefix?: string
+  update_interval?: number
+  support_url?: string
+  profile_title?: string
+  host_status_filter: boolean
+  rules: SubRule[]
+  manual_sub_request?: SubFormatEnable
+}
+
+export interface SubscriptionInput {
+  url_prefix?: string
+  update_interval?: number
+  support_url?: string
+  profile_title?: string
+  host_status_filter: boolean
+  rules: SubRule[]
+  manual_sub_request?: SubFormatEnable
+}
+
 export type SingBoxMuxSettingsBrutal = Brutal | null
 
 export type SingBoxMuxSettingsMinStreams = number | null
@@ -777,6 +847,27 @@ export const ShadowsocksMethods = {
 export interface ShadowsocksSettings {
   password?: string
   method?: ShadowsocksMethods
+}
+
+export type SettingsSchemaOutputWebhook = Webhook | null
+
+export type SettingsSchemaOutputDiscord = Discord | null
+
+export type SettingsSchemaOutputTelegram = Telegram | null
+
+export type SettingsSchemaInputWebhook = Webhook | null
+
+export type SettingsSchemaInputDiscord = Discord | null
+
+export type SettingsSchemaInputTelegram = Telegram | null
+
+export interface SettingsSchemaInput {
+  telegram?: SettingsSchemaInputTelegram
+  discord?: SettingsSchemaInputDiscord
+  webhook?: SettingsSchemaInputWebhook
+  notfication_settings?: NotficationSettings
+  notfication_enable?: NotficationEnable
+  subscription?: SubscriptionInput
 }
 
 export interface RemoveUsersResponse {
@@ -846,6 +937,53 @@ export const Period = {
   day: 'day',
   month: 'month',
 } as const
+
+export type NotficationSettingsProxyUrl = string | null
+
+export type NotficationSettingsDiscordWebhookUrl = string | null
+
+export type NotficationSettingsTelegramTopicId = number | null
+
+export type NotficationSettingsTelegramChannelId = number | null
+
+export type NotficationSettingsTelegramAdminId = number | null
+
+export type NotficationSettingsTelegramApiToken = string | null
+
+export interface NotficationSettings {
+  notify_telegram?: boolean
+  notify_discord?: boolean
+  telegram_api_token?: NotficationSettingsTelegramApiToken
+  telegram_admin_id?: NotficationSettingsTelegramAdminId
+  telegram_channel_id?: NotficationSettingsTelegramChannelId
+  telegram_topic_id?: NotficationSettingsTelegramTopicId
+  discord_webhook_url?: NotficationSettingsDiscordWebhookUrl
+  proxy_url?: NotficationSettingsProxyUrl
+  /** */
+  max_retries: number
+}
+
+export interface NotficationEnable {
+  admin?: boolean
+  core?: boolean
+  group?: boolean
+  host?: boolean
+  login?: boolean
+  node?: boolean
+  user?: boolean
+  user_template?: boolean
+  days_left?: boolean
+  percentage_reached?: boolean
+}
+
+export interface SettingsSchemaOutput {
+  telegram?: SettingsSchemaOutputTelegram
+  discord?: SettingsSchemaOutputDiscord
+  webhook?: SettingsSchemaOutputWebhook
+  notfication_settings?: NotficationSettings
+  notfication_enable?: NotficationEnable
+  subscription?: SubscriptionOutput
+}
 
 export interface NotFound {
   detail?: string
@@ -957,8 +1095,6 @@ export type NodeModifyKeepAlive = number | null
 
 export type NodeModifyServerCa = string | null
 
-export type NodeModifyConnectionType = NodeConnectionType | null
-
 export type NodeModifyUsageCoefficient = number | null
 
 export type NodeModifyPort = number | null
@@ -992,6 +1128,8 @@ export const NodeConnectionType = {
   grpc: 'grpc',
   rest: 'rest',
 } as const
+
+export type NodeModifyConnectionType = NodeConnectionType | null
 
 export interface NodeCreate {
   name: string
@@ -1189,6 +1327,16 @@ export interface ExtraSettings {
   method?: ExtraSettingsMethod
 }
 
+export type DiscordProxyUrl = string | null
+
+export type DiscordToken = string | null
+
+export interface Discord {
+  enable?: boolean
+  token: DiscordToken
+  proxy_url: DiscordProxyUrl
+}
+
 export type CreateUserFromTemplateNote = string | null
 
 export interface CreateUserFromTemplate {
@@ -1286,6 +1434,20 @@ export interface Conflict {
   detail?: string
 }
 
+export type ConfigFormat = (typeof ConfigFormat)[keyof typeof ConfigFormat]
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ConfigFormat = {
+  links: 'links',
+  links_base64: 'links_base64',
+  xray: 'xray',
+  sing_box: 'sing_box',
+  clash: 'clash',
+  clash_meta: 'clash_meta',
+  outline: 'outline',
+  block: 'block',
+} as const
+
 export type ClashMuxSettingsBrutal = Brutal | null
 
 export type ClashMuxSettingsMinStreams = number | null
@@ -1335,6 +1497,24 @@ export type BaseHostMuxSettings = MuxSettingsOutput | null
 
 export type BaseHostTransportSettings = TransportSettingsOutput | null
 
+export type BaseHostHttpHeadersAnyOf = { [key: string]: string }
+
+export type BaseHostHttpHeaders = BaseHostHttpHeadersAnyOf | null
+
+export type BaseHostAllowinsecure = boolean | null
+
+export type BaseHostPath = string | null
+
+export type BaseHostHost = string | null
+
+export type BaseHostSni = string | null
+
+export type BaseHostPort = number | null
+
+export type BaseHostInboundTag = string | null
+
+export type BaseHostId = number | null
+
 export interface BaseHost {
   id?: BaseHostId
   remark: string
@@ -1359,24 +1539,6 @@ export interface BaseHost {
   priority: number
   status?: UserStatus[]
 }
-
-export type BaseHostHttpHeadersAnyOf = { [key: string]: string }
-
-export type BaseHostHttpHeaders = BaseHostHttpHeadersAnyOf | null
-
-export type BaseHostAllowinsecure = boolean | null
-
-export type BaseHostPath = string | null
-
-export type BaseHostHost = string | null
-
-export type BaseHostSni = string | null
-
-export type BaseHostPort = number | null
-
-export type BaseHostInboundTag = string | null
-
-export type BaseHostId = number | null
 
 export type AdminModifySupportUrl = string | null
 
@@ -2144,6 +2306,98 @@ export function useGetInbounds<TData = Awaited<ReturnType<typeof getInbounds>>, 
   query.queryKey = queryOptions.queryKey
 
   return query
+}
+
+/**
+ * @summary Get Settings
+ */
+export const getSettings = (signal?: AbortSignal) => {
+  return orvalFetcher<SettingsSchemaOutput>({ url: `/api/settings`, method: 'GET', signal })
+}
+
+export const getGetSettingsQueryKey = () => {
+  return [`/api/settings`] as const
+}
+
+export const getGetSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getSettings>>, TError = ErrorType<Unauthorized | Forbidden>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>>
+}) => {
+  const { query: queryOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetSettingsQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSettings>>> = ({ signal }) => getSettings(signal)
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getSettings>>>
+export type GetSettingsQueryError = ErrorType<Unauthorized | Forbidden>
+
+export function useGetSettings<TData = Awaited<ReturnType<typeof getSettings>>, TError = ErrorType<Unauthorized | Forbidden>>(options: {
+  query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>, 'initialData'>
+}): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetSettings<TData = Awaited<ReturnType<typeof getSettings>>, TError = ErrorType<Unauthorized | Forbidden>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>> & Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>, 'initialData'>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetSettings<TData = Awaited<ReturnType<typeof getSettings>>, TError = ErrorType<Unauthorized | Forbidden>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get Settings
+ */
+
+export function useGetSettings<TData = Awaited<ReturnType<typeof getSettings>>, TError = ErrorType<Unauthorized | Forbidden>>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>>
+}): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetSettingsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+  query.queryKey = queryOptions.queryKey
+
+  return query
+}
+
+/**
+ * @summary Modify Settings
+ */
+export const modifySettings = (settingsSchemaInput: BodyType<SettingsSchemaInput>) => {
+  return orvalFetcher<SettingsSchemaOutput>({ url: `/api/settings`, method: 'PUT', headers: { 'Content-Type': 'application/json' }, data: settingsSchemaInput })
+}
+
+export const getModifySettingsMutationOptions = <TData = Awaited<ReturnType<typeof modifySettings>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<SettingsSchemaInput> }, TContext>
+}) => {
+  const mutationKey = ['modifySettings']
+  const { mutation: mutationOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } }
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof modifySettings>>, { data: BodyType<SettingsSchemaInput> }> = props => {
+    const { data } = props ?? {}
+
+    return modifySettings(data)
+  }
+
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { data: BodyType<SettingsSchemaInput> }, TContext>
+}
+
+export type ModifySettingsMutationResult = NonNullable<Awaited<ReturnType<typeof modifySettings>>>
+export type ModifySettingsMutationBody = BodyType<SettingsSchemaInput>
+export type ModifySettingsMutationError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
+
+/**
+ * @summary Modify Settings
+ */
+export const useModifySettings = <TData = Awaited<ReturnType<typeof modifySettings>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<SettingsSchemaInput> }, TContext>
+}): UseMutationResult<TData, TError, { data: BodyType<SettingsSchemaInput> }, TContext> => {
+  const mutationOptions = getModifySettingsMutationOptions(options)
+
+  return useMutation(mutationOptions)
 }
 
 /**
@@ -4844,17 +5098,17 @@ export function useGetSubUserUsage<TData = Awaited<ReturnType<typeof getSubUserU
  * Provides a subscription link based on the specified client type (e.g., Clash, V2Ray).
  * @summary User Subscription With Client Type
  */
-export const userSubscriptionWithClientType = (token: string, clientType: string, signal?: AbortSignal) => {
+export const userSubscriptionWithClientType = (token: string, clientType: ConfigFormat, signal?: AbortSignal) => {
   return orvalFetcher<unknown>({ url: `/sub/${token}/${clientType}`, method: 'GET', signal })
 }
 
-export const getUserSubscriptionWithClientTypeQueryKey = (token: string, clientType: string) => {
+export const getUserSubscriptionWithClientTypeQueryKey = (token: string, clientType: ConfigFormat) => {
   return [`/sub/${token}/${clientType}`] as const
 }
 
 export const getUserSubscriptionWithClientTypeQueryOptions = <TData = Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
-  clientType: string,
+  clientType: ConfigFormat,
   options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError, TData>> },
 ) => {
   const { query: queryOptions } = options ?? {}
@@ -4873,7 +5127,7 @@ export type UserSubscriptionWithClientTypeQueryError = ErrorType<HTTPValidationE
 
 export function useUserSubscriptionWithClientType<TData = Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
-  clientType: string,
+  clientType: ConfigFormat,
   options: {
     query: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError, TData>> &
       Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError, TData>, 'initialData'>
@@ -4881,7 +5135,7 @@ export function useUserSubscriptionWithClientType<TData = Awaited<ReturnType<typ
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useUserSubscriptionWithClientType<TData = Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
-  clientType: string,
+  clientType: ConfigFormat,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError, TData>> &
       Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError, TData>, 'initialData'>
@@ -4889,7 +5143,7 @@ export function useUserSubscriptionWithClientType<TData = Awaited<ReturnType<typ
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useUserSubscriptionWithClientType<TData = Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
-  clientType: string,
+  clientType: ConfigFormat,
   options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError, TData>> },
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -4898,7 +5152,7 @@ export function useUserSubscriptionWithClientType<TData = Awaited<ReturnType<typ
 
 export function useUserSubscriptionWithClientType<TData = Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError = ErrorType<HTTPValidationError>>(
   token: string,
-  clientType: string,
+  clientType: ConfigFormat,
   options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof userSubscriptionWithClientType>>, TError, TData>> },
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getUserSubscriptionWithClientTypeQueryOptions(token, clientType, options)

@@ -1,4 +1,4 @@
-import CoreSettings from '@/pages/_dashboard.nodes.core'
+import CoreSettings from '@/pages/_dashboard.nodes.cores'
 import { getCurrentAdmin } from '@/service/api'
 import { createHashRouter, RouteObject } from 'react-router'
 import DashboardLayout from './pages/_dashboard'

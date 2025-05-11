@@ -101,8 +101,13 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
   }
 
   const generateShortId = () => {
-    // Mock implementation
-    const shortId = Math.random().toString(36).substring(2, 10)
+    // Generate 8 random bytes and convert to hex string
+    const randomBytes = new Uint8Array(8);
+    crypto.getRandomValues(randomBytes);
+    const shortId = Array.from(randomBytes)
+      .map(byte => byte.toString(16).padStart(2, '0'))
+      .join('');
+    
     setGeneratedShortId(shortId)
     
     toast({

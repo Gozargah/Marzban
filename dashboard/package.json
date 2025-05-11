@@ -38,6 +38,8 @@
     "@radix-ui/react-toggle": "^1.1.2",
     "@radix-ui/react-toggle-group": "^1.1.2",
     "@radix-ui/react-tooltip": "^1.1.6",
+    "@stablelib/base64": "^2.0.1",
+    "@stablelib/x25519": "^2.0.1",
     "@tanstack/react-query": "^5.63.0",
     "@tanstack/react-table": "^8.20.6",
     "@vitejs/plugin-react": "^4.3.4",
