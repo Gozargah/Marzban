@@ -10,7 +10,6 @@ class AdminPanelAction(str, Enum):
     create_user = "create_user"
 
 
-
 class AdminPanel(InlineKeyboardBuilder):
     class Callback(CallbackData, prefix="panel"):
         action: AdminPanelAction

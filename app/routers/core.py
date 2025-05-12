@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, status
 
-from app.core.hosts import hosts as hosts_storage
 from app.db import AsyncSession, get_db
 from app.models.admin import AdminDetails
 from app.models.core import CoreCreate, CoreResponse, CoreResponseList
@@ -21,9 +20,7 @@ async def create_core_config(
     new_core: CoreCreate, admin: AdminDetails = Depends(check_sudo_admin), db: AsyncSession = Depends(get_db)
 ):
     """Create a new core configuration."""
-    response = await core_operator.create_core(db, new_core, admin)
-    await hosts_storage.update(db)
-    return response
+    return await core_operator.create_core(db, new_core, admin)
 
 
 @router.get("/{core_id}", response_model=CoreResponse)
@@ -44,7 +41,6 @@ async def modify_core_config(
 ):
     """Update an existing core configuration."""
     response = await core_operator.modify_core(db, core_id, modified_core, admin)
-    await hosts_storage.update(db)
 
     if restart_nodes:
         await node_operator.restart_all_node(db=db, core_id=core_id, admin=admin)
@@ -61,7 +57,6 @@ async def delete_core_config(
 ):
     """Delete a core configuration."""
     await core_operator.delete_core(db, core_id, admin)
-    await hosts_storage.update(db)
 
     if restart_nodes:
         await node_operator.restart_all_node(db=db, core_id=core_id, admin=admin)

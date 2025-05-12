@@ -140,9 +140,9 @@ class BaseOperation:
             if tag not in await core_manager.get_inbounds():
                 await self.raise_error(f"{tag} not found", 400)
 
-    async def get_validated_core_config(self, db: AsyncSession, backend_id) -> CoreConfig:
-        """Dependency: Fetch backend config or return not found error."""
-        db_backend_config = await get_core_config_by_id(db, backend_id)
-        if not db_backend_config:
-            await self.raise_error(message="Backend config not found", code=404)
-        return db_backend_config
+    async def get_validated_core_config(self, db: AsyncSession, core_id) -> CoreConfig:
+        """Dependency: Fetch core config or return not found error."""
+        db_core_config = await get_core_config_by_id(db, core_id)
+        if not db_core_config:
+            await self.raise_error(message="Core config not found", code=404)
+        return db_core_config

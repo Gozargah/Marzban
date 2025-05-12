@@ -25,7 +25,7 @@ class Node(BaseModel):
     server_ca: str
     keep_alive: int
     max_logs: int = Field(gt=0, default=1000)
-    core_config_id: int | None = None
+    core_config_id: int
     api_key: str
     gather_logs: bool = True
 
@@ -99,6 +99,7 @@ class NodeModify(NodeCreate):
     connection_type: NodeConnectionType | None = None
     keep_alive: int | None = None
     max_logs: int | None = None
+    core_config_id: int | None = None
     api_key: str | None = None
     gather_logs: bool | None = None
 
