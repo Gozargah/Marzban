@@ -374,564 +374,590 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="lg:max-h-[90vh] lg:min-w-[900px] h-full md:h-auto overflow-y-auto lg:overflow-y-visible">
+      <DialogContent className="max-w-full sm:max-w-[900px] h-full sm:h-auto lg:overflow-y-visible">
         <DialogHeader>
           <DialogTitle className={`${dir === 'rtl' ? 'text-right' : ''}`}>{editingUser ? t('userDialog.editUser', { defaultValue: 'Edit User' }) : t('createUser', { defaultValue: 'Create User' })}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className='flex flex-col gap-6 lg:flex-row items-center lg:items-start justify-between w-full lg:pb-8'>
-              <div className='space-y-6 flex-[2] w-full'>
-                <div className='flex items-center justify-center w-full gap-4'>
-                  {/* Hide these fields if a template is selected */}
-                  {!selectedTemplateId && (
-                    <>
-                      <FormField
-                        control={form.control}
-                        name="username"
-                        render={({ field }) => (
-                          <FormItem className='flex-1'>
-                            <FormLabel>{t('username', { defaultValue: 'Username' })}</FormLabel>
-                            <FormControl>
-                              <div className="flex gap-2 items-center">
-                                <Input
-                                  placeholder={t('admins.enterUsername', { defaultValue: 'Enter username' })}
-                                  {...field}
-                                  value={field.value ?? ''}
-                                />
-                                <Button
-                                  size="icon"
-                                  type="button"
-                                  variant="ghost"
-                                  onClick={() => field.onChange(generateUsername())}
-                                  title="Generate username"
-                                >
-                                  <RefreshCcw className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="status"
-                        render={({ field }) => (
-                          <FormItem className='flex-1'>
-                            <FormLabel>{t('status', { defaultValue: 'Status' })}</FormLabel>
-                            <FormControl>
-                              <Select onValueChange={field.onChange} value={field.value || ''}>
-                                <SelectTrigger>
-                                  <SelectValue placeholder={t('users.selectStatus', { defaultValue: 'Select status' })} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="active">{t('status.active', { defaultValue: 'Active' })}</SelectItem>
-                                  {editingUser && <SelectItem value="disabled">{t('status.disabled', { defaultValue: 'Disabled' })}</SelectItem>}
-                                  <SelectItem value="on_hold">{t('status.on_hold', { defaultValue: 'On Hold' })}</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </>
-                  )}
-                  {/* If template is selected, only show username field */}
-                  {selectedTemplateId && (
-                    <FormField
-                      control={form.control}
-                      name="username"
-                      render={({ field }) => (
-                        <FormItem className='flex-1'>
-                          <FormLabel>{t('username', { defaultValue: 'Username' })}</FormLabel>
-                          <FormControl>
-                            <div className="flex gap-2 items-center">
-                              <Input
-                                placeholder={t('admins.enterUsername', { defaultValue: 'Enter username' })}
-                                {...field}
-                                value={field.value ?? ''}
-                              />
-                              <Button
-                                size="icon"
-                                type="button"
-                                variant="ghost"
-                                onClick={() => field.onChange(generateUsername())}
-                                title="Generate username"
-                              >
-                                <RefreshCcw className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                </div>
-                {/* Hide data_limit and expire if template is selected */}
-                {!selectedTemplateId && (
-                  <div className='flex items-start w-full gap-4'>
-                    <FormField
-                      control={form.control}
-                      name="data_limit"
-                      render={({ field }) => (
-                        <FormItem className='flex-1'>
-                          <FormLabel>{t('userDialog.dataLimit', { defaultValue: 'Data Limit (GB)' })}</FormLabel>
-                          <FormControl>
-                            <div className="relative w-full">
-                              <Input
-                                type="number"
-                                step="any"
-                                min="0"
-                                placeholder={t('userDialog.dataLimit', { defaultValue: 'e.g. 1' })}
-                                {...field}
-                                value={field.value === null || field.value === undefined ? '' : field.value}
-                                className="pr-12"
-                              />
-                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">GB</span>
-                            </div>
-                          </FormControl>
-                          {field.value && field.value < 1 && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {formatBytes(Math.round(field.value * 1024 * 1024 * 1024))}
-                            </p>
-                          )}
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="data_limit_reset_strategy"
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel>{t('userDialog.periodicUsageReset', { defaultValue: 'Periodic Usage Reset' })}</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value || ''}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder={t('userDialog.resetStrategyNo', { defaultValue: 'No' })} />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="no_reset">{t('userDialog.resetStrategyNo', { defaultValue: 'No' })}</SelectItem>
-                              <SelectItem value="day">{t('userDialog.resetStrategyDaily', { defaultValue: 'Daily' })}</SelectItem>
-                              <SelectItem value="week">{t('userDialog.resetStrategyWeekly', { defaultValue: 'Weekly' })}</SelectItem>
-                              <SelectItem value="month">{t('userDialog.resetStrategyMonthly', { defaultValue: 'Monthly' })}</SelectItem>
-                              <SelectItem value="year">{t('userDialog.resetStrategyAnnually', { defaultValue: 'Annually' })}</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                )}
-                <div className="flex items-start md:w-52 gap-4">
-                  {status === 'on_hold' ? (
-                    <FormField
-                      control={form.control}
-                      name="on_hold_expire_duration"
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel>{t('userDialog.onHoldExpireDuration', { defaultValue: 'On Hold Expire Duration (days)' })}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              min="1"
-                              placeholder={t('userDialog.onHoldExpireDurationPlaceholder', { defaultValue: 'e.g. 7' })}
-                              {...field}
-                              value={field.value === null || field.value === undefined ? '' : field.value}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  ) : (
-                    <FormField
-                      control={form.control}
-                      name="expire"
-                      render={({ field }) => {
-                        let expireUnix: number | null = null;
-                        let displayDate: Date | null = null;
-
-                        // Handle various formats of expire value
-                        if (isDate(field.value)) {
-                          expireUnix = Math.floor(field.value.getTime() / 1000);
-                          displayDate = field.value;
-                        } else if (typeof field.value === 'string') {
-                          // Try parsing as date string first
-                          if (field.value === '') {
-                            // Empty string - no date set
-                            expireUnix = null;
-                            displayDate = null;
-                          } else {
-                            const asNum = Number(field.value);
-                            if (!isNaN(asNum)) {
-                              // It's a numeric string (timestamp), convert to date
-                              const timestamp = asNum * 1000; // Convert seconds to ms
-                              const date = new Date(timestamp);
-                              if (date.getFullYear() > 1970) {
-                                displayDate = date;
-                                expireUnix = asNum;
-                              }
-                            } else {
-                              // Try as date string
-                              const date = new Date(field.value);
-                              if (!isNaN(date.getTime()) && date.getFullYear() > 1970) {
-                                expireUnix = Math.floor(date.getTime() / 1000);
-                                displayDate = date;
-                              }
-                            }
-                          }
-                        } else if (typeof field.value === 'number') {
-                          // Direct timestamp in seconds
-                          const date = new Date(field.value * 1000);
-                          // Validate the date is reasonable (after 1970)
-                          if (date.getFullYear() > 1970) {
-                            displayDate = date;
-                            expireUnix = field.value;
-                          }
-                        }
-
-                        const expireInfo = expireUnix ? relativeExpiryDate(expireUnix) : null;
-
-                        return (
-                          <FormItem className="flex flex-col flex-1">
-                            <FormLabel>{t('userDialog.expiryDate', { defaultValue: 'Expire date' })}</FormLabel>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                      "w-full h-fit !mt-3.5 text-left font-normal",
-                                      !field.value && "text-muted-foreground"
-                                    )}
-                                    type="button"
-                                  >
-                                    {displayDate
-                                      ? format(displayDate, "yyyy/MM/dd")
-                                      : field.value && !isNaN(Number(field.value))
-                                        ? String(field.value)
-                                        : <span>{t('users.expirePlaceholder', { defaultValue: 'Pick a date' })}</span>
-                                    }
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={displayDate || undefined}
-                                  onSelect={date => {
-                                    if (date) {
-                                      // Convert to seconds timestamp when saving to form
-                                      const timestamp = Math.floor(date.getTime() / 1000);
-                                      field.onChange(timestamp);
-                                    } else {
-                                      field.onChange('');
-                                    }
-                                  }}
-                                  fromDate={new Date()}
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
-                            {expireInfo?.time && (
-                              <p dir="ltr" className="text-xs text-muted-foreground mt-1">{expireInfo.time} later</p>
-                            )}
-                            <FormMessage />
-                          </FormItem>
-                        );
-                      }}
-                    />
-                  )}
-                </div>
-                <FormField
-                  control={form.control}
-                  name="note"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('userDialog.note', { defaultValue: 'Note' })}</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder={t('userDialog.note', { defaultValue: 'Optional note' }) + "..."}
-                          {...field}
-                          rows={3}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                {/* Next Plan Section (toggleable) */}
-                {editingUser && (
-                  <>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="font-semibold">{t('userDialog.nextPlanTitle', { defaultValue: 'Next Plan' })}</div>
-                      <Switch checked={nextPlanEnabled} onCheckedChange={setNextPlanEnabled} />
-                    </div>
-                    {nextPlanEnabled && (
-                      <div className="flex flex-col gap-4">
+            <div
+                className="max-h-[80vh] overflow-y-auto pr-4 -mr-4 sm:max-h-[75vh] px-2">
+              <div
+                  className='flex flex-col gap-6 lg:flex-row items-center lg:items-start justify-between w-full lg:pb-8'>
+                <div className='space-y-6 flex-[2] w-full'>
+                  <div className='flex items-center justify-center w-full gap-4'>
+                    {/* Hide these fields if a template is selected */}
+                    {!selectedTemplateId && (
+                        <>
+                          <FormField
+                              control={form.control}
+                              name="username"
+                              render={({field}) => (
+                                  <FormItem className='flex-1'>
+                                    <FormLabel>{t('username', {defaultValue: 'Username'})}</FormLabel>
+                                    <FormControl>
+                                      <div className="flex gap-2 items-center">
+                                        <Input
+                                            placeholder={t('admins.enterUsername', {defaultValue: 'Enter username'})}
+                                            {...field}
+                                            value={field.value ?? ''}
+                                        />
+                                        <Button
+                                            size="icon"
+                                            type="button"
+                                            variant="ghost"
+                                            onClick={() => field.onChange(generateUsername())}
+                                            title="Generate username"
+                                        >
+                                          <RefreshCcw className="w-3 h-3"/>
+                                        </Button>
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage/>
+                                  </FormItem>
+                              )}
+                          />
+                          <FormField
+                              control={form.control}
+                              name="status"
+                              render={({field}) => (
+                                  <FormItem className='flex-1'>
+                                    <FormLabel>{t('status', {defaultValue: 'Status'})}</FormLabel>
+                                    <FormControl>
+                                      <Select onValueChange={field.onChange} value={field.value || ''}>
+                                        <SelectTrigger>
+                                          <SelectValue
+                                              placeholder={t('users.selectStatus', {defaultValue: 'Select status'})}/>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem
+                                              value="active">{t('status.active', {defaultValue: 'Active'})}</SelectItem>
+                                          {editingUser && <SelectItem
+                                              value="disabled">{t('status.disabled', {defaultValue: 'Disabled'})}</SelectItem>}
+                                          <SelectItem
+                                              value="on_hold">{t('status.on_hold', {defaultValue: 'On Hold'})}</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </FormControl>
+                                    <FormMessage/>
+                                  </FormItem>
+                              )}
+                          />
+                        </>
+                    )}
+                    {/* If template is selected, only show username field */}
+                    {selectedTemplateId && (
                         <FormField
-                          control={form.control}
-                          name="next_plan.user_template_id"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t('userDialog.nextPlanTemplateId', { defaultValue: 'Template' })}</FormLabel>
-                              <FormControl>
-                                <Select
-                                  value={field.value ? String(field.value) : "none"}
-                                  onValueChange={val => {
-                                    if (val === "none" || (field.value && String(field.value) === val)) {
-                                      field.onChange(undefined);
-                                    } else {
-                                      field.onChange(Number(val));
+                            control={form.control}
+                            name="username"
+                            render={({field}) => (
+                                <FormItem className='flex-1'>
+                                  <FormLabel>{t('username', {defaultValue: 'Username'})}</FormLabel>
+                                  <FormControl>
+                                    <div className="flex gap-2 items-center">
+                                      <Input
+                                          placeholder={t('admins.enterUsername', {defaultValue: 'Enter username'})}
+                                          {...field}
+                                          value={field.value ?? ''}
+                                      />
+                                      <Button
+                                          size="icon"
+                                          type="button"
+                                          variant="ghost"
+                                          onClick={() => field.onChange(generateUsername())}
+                                          title="Generate username"
+                                      >
+                                        <RefreshCcw className="w-3 h-3"/>
+                                      </Button>
+                                    </div>
+                                  </FormControl>
+                                  <FormMessage/>
+                                </FormItem>
+                            )}
+                        />
+                    )}
+                  </div>
+                  {/* Hide data_limit and expire if template is selected */}
+                  {!selectedTemplateId && (
+                      <div className='flex items-start w-full gap-4'>
+                        <FormField
+                            control={form.control}
+                            name="data_limit"
+                            render={({field}) => (
+                                <FormItem className='flex-1'>
+                                  <FormLabel>{t('userDialog.dataLimit', {defaultValue: 'Data Limit (GB)'})}</FormLabel>
+                                  <FormControl>
+                                    <div className="relative w-full">
+                                      <Input
+                                          type="number"
+                                          step="any"
+                                          min="0"
+                                          placeholder={t('userDialog.dataLimit', {defaultValue: 'e.g. 1'})}
+                                          {...field}
+                                          value={field.value === null || field.value === undefined ? '' : field.value}
+                                          className="pr-12"
+                                      />
+                                      <span
+                                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">GB</span>
+                                    </div>
+                                  </FormControl>
+                                  {field.value && field.value < 1 && (
+                                      <p className="text-xs text-muted-foreground mt-1">
+                                        {formatBytes(Math.round(field.value * 1024 * 1024 * 1024))}
+                                      </p>
+                                  )}
+                                  <FormMessage/>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="data_limit_reset_strategy"
+                            render={({field}) => (
+                                <FormItem className="flex-1">
+                                  <FormLabel>{t('userDialog.periodicUsageReset', {defaultValue: 'Periodic Usage Reset'})}</FormLabel>
+                                  <Select onValueChange={field.onChange} value={field.value || ''}>
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue
+                                            placeholder={t('userDialog.resetStrategyNo', {defaultValue: 'No'})}/>
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem
+                                          value="no_reset">{t('userDialog.resetStrategyNo', {defaultValue: 'No'})}</SelectItem>
+                                      <SelectItem
+                                          value="day">{t('userDialog.resetStrategyDaily', {defaultValue: 'Daily'})}</SelectItem>
+                                      <SelectItem
+                                          value="week">{t('userDialog.resetStrategyWeekly', {defaultValue: 'Weekly'})}</SelectItem>
+                                      <SelectItem
+                                          value="month">{t('userDialog.resetStrategyMonthly', {defaultValue: 'Monthly'})}</SelectItem>
+                                      <SelectItem
+                                          value="year">{t('userDialog.resetStrategyAnnually', {defaultValue: 'Annually'})}</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage/>
+                                </FormItem>
+                            )}
+                        />
+                      </div>
+                  )}
+                  <div className="flex items-start md:w-52 gap-4">
+                    {status === 'on_hold' ? (
+                        <FormField
+                            control={form.control}
+                            name="on_hold_expire_duration"
+                            render={({field}) => (
+                                <FormItem className="flex-1">
+                                  <FormLabel>{t('userDialog.onHoldExpireDuration', {defaultValue: 'On Hold Expire Duration (days)'})}</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                        type="number"
+                                        min="1"
+                                        placeholder={t('userDialog.onHoldExpireDurationPlaceholder', {defaultValue: 'e.g. 7'})}
+                                        {...field}
+                                        value={field.value === null || field.value === undefined ? '' : field.value}
+                                    />
+                                  </FormControl>
+                                  <FormMessage/>
+                                </FormItem>
+                            )}
+                        />
+                    ) : (
+                        <FormField
+                            control={form.control}
+                            name="expire"
+                            render={({field}) => {
+                              let expireUnix: number | null = null;
+                              let displayDate: Date | null = null;
+
+                              // Handle various formats of expire value
+                              if (isDate(field.value)) {
+                                expireUnix = Math.floor(field.value.getTime() / 1000);
+                                displayDate = field.value;
+                              } else if (typeof field.value === 'string') {
+                                // Try parsing as date string first
+                                if (field.value === '') {
+                                  // Empty string - no date set
+                                  expireUnix = null;
+                                  displayDate = null;
+                                } else {
+                                  const asNum = Number(field.value);
+                                  if (!isNaN(asNum)) {
+                                    // It's a numeric string (timestamp), convert to date
+                                    const timestamp = asNum * 1000; // Convert seconds to ms
+                                    const date = new Date(timestamp);
+                                    if (date.getFullYear() > 1970) {
+                                      displayDate = date;
+                                      expireUnix = asNum;
                                     }
-                                  }}
+                                  } else {
+                                    // Try as date string
+                                    const date = new Date(field.value);
+                                    if (!isNaN(date.getTime()) && date.getFullYear() > 1970) {
+                                      expireUnix = Math.floor(date.getTime() / 1000);
+                                      displayDate = date;
+                                    }
+                                  }
+                                }
+                              } else if (typeof field.value === 'number') {
+                                // Direct timestamp in seconds
+                                const date = new Date(field.value * 1000);
+                                // Validate the date is reasonable (after 1970)
+                                if (date.getFullYear() > 1970) {
+                                  displayDate = date;
+                                  expireUnix = field.value;
+                                }
+                              }
+
+                              const expireInfo = expireUnix ? relativeExpiryDate(expireUnix) : null;
+
+                              return (
+                                  <FormItem className="flex flex-col flex-1">
+                                    <FormLabel>{t('userDialog.expiryDate', {defaultValue: 'Expire date'})}</FormLabel>
+                                    <Popover>
+                                      <PopoverTrigger asChild>
+                                        <FormControl>
+                                          <Button
+                                              variant={"outline"}
+                                              className={cn(
+                                                  "w-full h-fit !mt-3.5 text-left font-normal",
+                                                  !field.value && "text-muted-foreground"
+                                              )}
+                                              type="button"
+                                          >
+                                            {displayDate
+                                                ? format(displayDate, "yyyy/MM/dd")
+                                                : field.value && !isNaN(Number(field.value))
+                                                    ? String(field.value)
+                                                    :
+                                                    <span>{t('users.expirePlaceholder', {defaultValue: 'Pick a date'})}</span>
+                                            }
+                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50"/>
+                                          </Button>
+                                        </FormControl>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={displayDate || undefined}
+                                            onSelect={date => {
+                                              if (date) {
+                                                // Convert to seconds timestamp when saving to form
+                                                const timestamp = Math.floor(date.getTime() / 1000);
+                                                field.onChange(timestamp);
+                                              } else {
+                                                field.onChange('');
+                                              }
+                                            }}
+                                            fromDate={new Date()}
+                                            initialFocus
+                                        />
+                                      </PopoverContent>
+                                    </Popover>
+                                    {expireInfo?.time && (
+                                        <p dir="ltr"
+                                           className="text-xs text-muted-foreground mt-1">{expireInfo.time} later</p>
+                                    )}
+                                    <FormMessage/>
+                                  </FormItem>
+                              );
+                            }}
+                        />
+                    )}
+                  </div>
+                  <FormField
+                      control={form.control}
+                      name="note"
+                      render={({field}) => (
+                          <FormItem>
+                            <FormLabel>{t('userDialog.note', {defaultValue: 'Note'})}</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                  placeholder={t('userDialog.note', {defaultValue: 'Optional note'}) + "..."}
+                                  {...field}
+                                  rows={3}
+                              />
+                            </FormControl>
+                            <FormMessage/>
+                          </FormItem>
+                      )}
+                  />
+                  {/* Next Plan Section (toggleable) */}
+                  {editingUser && (
+                      <>
+                        <div className="flex items-center justify-between mb-2">
+                          <div
+                              className="font-semibold">{t('userDialog.nextPlanTitle', {defaultValue: 'Next Plan'})}</div>
+                          <Switch checked={nextPlanEnabled} onCheckedChange={setNextPlanEnabled}/>
+                        </div>
+                        {nextPlanEnabled && (
+                            <div className="flex flex-col gap-4">
+                              <FormField
+                                  control={form.control}
+                                  name="next_plan.user_template_id"
+                                  render={({field}) => (
+                                      <FormItem>
+                                        <FormLabel>{t('userDialog.nextPlanTemplateId', {defaultValue: 'Template'})}</FormLabel>
+                                        <FormControl>
+                                          <Select
+                                              value={field.value ? String(field.value) : "none"}
+                                              onValueChange={val => {
+                                                if (val === "none" || (field.value && String(field.value) === val)) {
+                                                  field.onChange(undefined);
+                                                } else {
+                                                  field.onChange(Number(val));
+                                                }
+                                              }}
+                                          >
+                                            <SelectTrigger>
+                                              <SelectValue
+                                                  placeholder={t('userDialog.selectTemplatePlaceholder', {defaultValue: 'Choose a template'})}/>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="none">---</SelectItem>
+                                              {(templatesData || []).map((tpl: any) => (
+                                                  <SelectItem key={tpl.id}
+                                                              value={String(tpl.id)}>{tpl.name}</SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                        </FormControl>
+                                        <FormMessage/>
+                                      </FormItem>
+                                  )}
+                              />
+                              {/* Only show expire and data_limit if no template is selected */}
+                              {!nextPlanTemplateSelected && (
+                                  <div className="flex gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="next_plan.expire"
+                                        render={({field}) => (
+                                            <FormItem>
+                                              <FormLabel>{t('userDialog.nextPlanExpire', {defaultValue: 'Expire'})}</FormLabel>
+                                              <FormControl>
+                                                <Input type="number" min="0" {...field} value={field.value ?? ''}/>
+                                              </FormControl>
+                                              <span
+                                                  className="text-xs text-muted-foreground">{t('userDialog.days', {defaultValue: 'Days'})}</span>
+                                              <FormMessage/>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="next_plan.data_limit"
+                                        render={({field}) => (
+                                            <FormItem>
+                                              <FormLabel>{t('userDialog.nextPlanDataLimit', {defaultValue: 'Data Limit'})}</FormLabel>
+                                              <FormControl>
+                                                <Input type="number" min="0" step="any" {...field}
+                                                       value={field.value ?? ''}/>
+                                              </FormControl>
+                                              <span className="text-xs text-muted-foreground">GB</span>
+                                              <FormMessage/>
+                                            </FormItem>
+                                        )}
+                                    />
+                                  </div>
+                              )}
+                              <div className="flex gap-8">
+                                <FormField
+                                    control={form.control}
+                                    name="next_plan.add_remaining_traffic"
+                                    render={({field}) => (
+                                        <FormItem className="flex flex-row items-center gap-2">
+                                          <Switch checked={!!field.value} onCheckedChange={field.onChange}/>
+                                          <FormLabel>{t('userDialog.nextPlanAddRemainingTraffic', {defaultValue: 'Add Remaining Traffic'})}</FormLabel>
+                                          <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="next_plan.fire_on_either"
+                                    render={({field}) => (
+                                        <FormItem className="flex flex-row items-center gap-2">
+                                          <Switch checked={!!field.value} onCheckedChange={field.onChange}/>
+                                          <FormLabel>{t('userDialog.nextPlanFireOnEither', {defaultValue: 'Fire On Either'})}</FormLabel>
+                                          <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+                              </div>
+                            </div>
+                        )}
+                      </>
+                  )}
+                </div>
+                <div className='space-y-6 w-full h-full flex-1'>
+                  <div className="w-full">
+                    <div className="flex border-b">
+                      {tabs.map(tab => (
+                          <button
+                              key={tab.id}
+                              onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                              className={`relative px-3 py-2 text-sm font-medium transition-colors ${activeTab === tab.id
+                                  ? 'text-foreground border-b-2 border-primary'
+                                  : 'text-muted-foreground hover:text-foreground'
+                              }`}
+                              type="button"
+                          >
+                            <div className="flex items-center gap-1.5">
+                              <tab.icon className="h-4 w-4"/>
+                              <span>{t(tab.label)}</span>
+                            </div>
+                          </button>
+                      ))}
+                    </div>
+                    <div className="py-2">
+                      {activeTab === 'templates' && (
+                          templatesLoading ? <div>{t('Loading...', {defaultValue: 'Loading...'})}</div> :
+                              <div className="space-y-4 pt-4">
+                                <FormLabel>{t('userDialog.selectTemplate', {defaultValue: 'Select Template'})}</FormLabel>
+                                <Select
+                                    value={selectedTemplateId ? String(selectedTemplateId) : 'none'}
+                                    onValueChange={val => {
+                                      if (val === 'none' || (selectedTemplateId && String(selectedTemplateId) === val)) {
+                                        setSelectedTemplateId(undefined);
+                                        clearGroups();
+                                      } else {
+                                        setSelectedTemplateId(Number(val));
+                                        clearGroups();
+                                      }
+                                    }}
                                 >
                                   <SelectTrigger>
-                                    <SelectValue placeholder={t('userDialog.selectTemplatePlaceholder', { defaultValue: 'Choose a template' })} />
+                                    <SelectValue
+                                        placeholder={t('userDialog.selectTemplatePlaceholder', {defaultValue: 'Choose a template'})}/>
                                   </SelectTrigger>
                                   <SelectContent>
                                     <SelectItem value="none">---</SelectItem>
-                                    {(templatesData || []).map((tpl: any) => (
-                                      <SelectItem key={tpl.id} value={String(tpl.id)}>{tpl.name}</SelectItem>
+                                    {(templatesData || []).map((template: any) => (
+                                        <SelectItem key={template.id}
+                                                    value={String(template.id)}>{template.name}</SelectItem>
                                     ))}
                                   </SelectContent>
                                 </Select>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        {/* Only show expire and data_limit if no template is selected */}
-                        {!nextPlanTemplateSelected && (
-                          <div className="flex gap-4">
-                            <FormField
-                              control={form.control}
-                              name="next_plan.expire"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>{t('userDialog.nextPlanExpire', { defaultValue: 'Expire' })}</FormLabel>
-                                  <FormControl>
-                                    <Input type="number" min="0" {...field} value={field.value ?? ''} />
-                                  </FormControl>
-                                  <span className="text-xs text-muted-foreground">{t('userDialog.days', { defaultValue: 'Days' })}</span>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="next_plan.data_limit"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>{t('userDialog.nextPlanDataLimit', { defaultValue: 'Data Limit' })}</FormLabel>
-                                  <FormControl>
-                                    <Input type="number" min="0" step="any" {...field} value={field.value ?? ''} />
-                                  </FormControl>
-                                  <span className="text-xs text-muted-foreground">GB</span>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        )}
-                        <div className="flex gap-8">
-                          <FormField
-                            control={form.control}
-                            name="next_plan.add_remaining_traffic"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-center gap-2">
-                                <Switch checked={!!field.value} onCheckedChange={field.onChange} />
-                                <FormLabel>{t('userDialog.nextPlanAddRemainingTraffic', { defaultValue: 'Add Remaining Traffic' })}</FormLabel>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="next_plan.fire_on_either"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-center gap-2">
-                                <Switch checked={!!field.value} onCheckedChange={field.onChange} />
-                                <FormLabel>{t('userDialog.nextPlanFireOnEither', { defaultValue: 'Fire On Either' })}</FormLabel>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-              <div className='space-y-6 w-full h-full flex-1'>
-                <div className="w-full">
-                  <div className="flex border-b">
-                    {tabs.map(tab => (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                        className={`relative px-3 py-2 text-sm font-medium transition-colors ${activeTab === tab.id
-                          ? 'text-foreground border-b-2 border-primary'
-                          : 'text-muted-foreground hover:text-foreground'
-                          }`}
-                        type="button"
-                      >
-                        <div className="flex items-center gap-1.5">
-                          <tab.icon className="h-4 w-4" />
-                          <span>{t(tab.label)}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                  <div className="py-2">
-                    {activeTab === 'templates' && (
-                      templatesLoading ? <div>{t('Loading...', { defaultValue: 'Loading...' })}</div> :
-                        <div className="space-y-4 pt-4">
-                          <FormLabel>{t('userDialog.selectTemplate', { defaultValue: 'Select Template' })}</FormLabel>
-                          <Select
-                            value={selectedTemplateId ? String(selectedTemplateId) : 'none'}
-                            onValueChange={val => {
-                              if (val === 'none' || (selectedTemplateId && String(selectedTemplateId) === val)) {
-                                setSelectedTemplateId(undefined);
-                                clearGroups();
-                              } else {
-                                setSelectedTemplateId(Number(val));
-                                clearGroups();
-                              }
-                            }}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder={t('userDialog.selectTemplatePlaceholder', { defaultValue: 'Choose a template' })} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">---</SelectItem>
-                              {(templatesData || []).map((template: any) => (
-                                <SelectItem key={template.id} value={String(template.id)}>{template.name}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          {selectedTemplateId && (
-                            <div className="text-sm text-muted-foreground">
-                              {t('users.selectedTemplates', {
-                                count: 1,
-                                defaultValue: '1 template selected'
-                              })}
-                            </div>
-                          )}
-                        </div>
-                    )}
-                    {activeTab === 'groups' && (
-                      groupsLoading ? <div>{t('Loading...', { defaultValue: 'Loading...' })}</div> :
-                        <FormField
-                          control={form.control}
-                          name="group_ids"
-                          render={({ field }) => {
-                            const [searchQuery, setSearchQuery] = useState('');
-                            const selectedGroups = field.value || [];
-                            const filteredGroups = (groupsData?.groups || []).filter((group: any) =>
-                              group.name.toLowerCase().includes(searchQuery.toLowerCase())
-                            );
-
-                            const handleSelectAll = (checked: boolean) => {
-                              if (checked) {
-                                field.onChange(filteredGroups.map((group: any) => group.id));
-                              } else {
-                                field.onChange([]);
-                              }
-                            };
-
-                            const allSelected = filteredGroups.length > 0 &&
-                              filteredGroups.every((group: any) => selectedGroups.includes(group.id));
-
-                            // If a group is selected, clear template selection
-                            const handleGroupChange = (checked: boolean, groupId: number) => {
-                              if (checked) {
-                                clearTemplate();
-                                field.onChange([...selectedGroups, groupId]);
-                              } else {
-                                field.onChange(selectedGroups.filter((id: number) => id !== groupId));
-                              }
-                            };
-
-                            return (
-                              <FormItem>
-                                <div className="space-y-4 pt-4">
-                                  <div className="relative">
-                                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                      placeholder={t('search', { defaultValue: 'Search' }) + " " + t("groups", { defaultValue: "groups" })}
-                                      value={searchQuery}
-                                      onChange={(e) => setSearchQuery(e.target.value)}
-                                      className="pl-8"
-                                    />
-                                  </div>
-                                  <div className="flex items-center gap-2 p-2 border rounded-md">
-                                    <Checkbox
-                                      checked={allSelected}
-                                      onCheckedChange={handleSelectAll}
-                                    />
-                                    <span className="text-sm font-medium">
-                                      {t('selectAll', { defaultValue: 'Select All' })}
-                                    </span>
-                                  </div>
-                                  <div className="max-h-[200px] overflow-y-auto space-y-2 p-2 border rounded-md">
-                                    {filteredGroups.length === 0 ? (
-                                      <div className="text-sm text-muted-foreground text-center py-4">
-                                        {t('users.noGroupsFound', { defaultValue: 'No groups found' })}
-                                      </div>
-                                    ) : (
-                                      filteredGroups.map((group: any) => (
-                                        <label
-                                          key={group.id}
-                                          className="flex items-center gap-2 p-2 rounded-md hover:bg-accent cursor-pointer"
-                                        >
-                                          <Checkbox
-                                            checked={selectedGroups.includes(group.id)}
-                                            onCheckedChange={checked => handleGroupChange(!!checked, group.id)}
-                                          />
-                                          <span className="text-sm">{group.name}</span>
-                                        </label>
-                                      ))
-                                    )}
-                                  </div>
-                                  {selectedGroups.length > 0 && (
+                                {selectedTemplateId && (
                                     <div className="text-sm text-muted-foreground">
-                                      {t('users.selectedGroups', {
-                                        count: selectedGroups.length,
-                                        defaultValue: '{{count}} groups selected'
+                                      {t('users.selectedTemplates', {
+                                        count: 1,
+                                        defaultValue: '1 template selected'
                                       })}
                                     </div>
-                                  )}
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            );
-                          }}
-                        />
-                    )}
+                                )}
+                              </div>
+                      )}
+                      {activeTab === 'groups' && (
+                          groupsLoading ? <div>{t('Loading...', {defaultValue: 'Loading...'})}</div> :
+                              <FormField
+                                  control={form.control}
+                                  name="group_ids"
+                                  render={({field}) => {
+                                    const [searchQuery, setSearchQuery] = useState('');
+                                    const selectedGroups = field.value || [];
+                                    const filteredGroups = (groupsData?.groups || []).filter((group: any) =>
+                                        group.name.toLowerCase().includes(searchQuery.toLowerCase())
+                                    );
+
+                                    const handleSelectAll = (checked: boolean) => {
+                                      if (checked) {
+                                        field.onChange(filteredGroups.map((group: any) => group.id));
+                                      } else {
+                                        field.onChange([]);
+                                      }
+                                    };
+
+                                    const allSelected = filteredGroups.length > 0 &&
+                                        filteredGroups.every((group: any) => selectedGroups.includes(group.id));
+
+                                    // If a group is selected, clear template selection
+                                    const handleGroupChange = (checked: boolean, groupId: number) => {
+                                      if (checked) {
+                                        clearTemplate();
+                                        field.onChange([...selectedGroups, groupId]);
+                                      } else {
+                                        field.onChange(selectedGroups.filter((id: number) => id !== groupId));
+                                      }
+                                    };
+
+                                    return (
+                                        <FormItem>
+                                          <div className="space-y-4 pt-4">
+                                            <div className="relative">
+                                              <Search
+                                                  className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground"/>
+                                              <Input
+                                                  placeholder={t('search', {defaultValue: 'Search'}) + " " + t("groups", {defaultValue: "groups"})}
+                                                  value={searchQuery}
+                                                  onChange={(e) => setSearchQuery(e.target.value)}
+                                                  className="pl-8"
+                                              />
+                                            </div>
+                                            <div className="flex items-center gap-2 p-2 border rounded-md">
+                                              <Checkbox
+                                                  checked={allSelected}
+                                                  onCheckedChange={handleSelectAll}
+                                              />
+                                              <span className="text-sm font-medium">
+                                      {t('selectAll', {defaultValue: 'Select All'})}
+                                    </span>
+                                            </div>
+                                            <div
+                                                className="max-h-[200px] overflow-y-auto space-y-2 p-2 border rounded-md">
+                                              {filteredGroups.length === 0 ? (
+                                                  <div className="text-sm text-muted-foreground text-center py-4">
+                                                    {t('users.noGroupsFound', {defaultValue: 'No groups found'})}
+                                                  </div>
+                                              ) : (
+                                                  filteredGroups.map((group: any) => (
+                                                      <label
+                                                          key={group.id}
+                                                          className="flex items-center gap-2 p-2 rounded-md hover:bg-accent cursor-pointer"
+                                                      >
+                                                        <Checkbox
+                                                            checked={selectedGroups.includes(group.id)}
+                                                            onCheckedChange={checked => handleGroupChange(!!checked, group.id)}
+                                                        />
+                                                        <span className="text-sm">{group.name}</span>
+                                                      </label>
+                                                  ))
+                                              )}
+                                            </div>
+                                            {selectedGroups.length > 0 && (
+                                                <div className="text-sm text-muted-foreground">
+                                                  {t('users.selectedGroups', {
+                                                    count: selectedGroups.length,
+                                                    defaultValue: '{{count}} groups selected'
+                                                  })}
+                                                </div>
+                                            )}
+                                          </div>
+                                          <FormMessage/>
+                                        </FormItem>
+                                    );
+                                  }}
+                              />
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-            {/* Cancel/Create buttons - always visible */}
-            <div className="flex justify-end gap-2 mt-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                {t('cancel', { defaultValue: 'Cancel' })}
-              </Button>
-              <Button type="submit" disabled={loading}>
-                {editingUser ? t('save', { defaultValue: 'Save' }) : t('create', { defaultValue: 'Create' })}
-              </Button>
-            </div>
+              {/* Cancel/Create buttons - always visible */}
+              <div className="flex justify-end gap-2 mt-4">
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                  {t('cancel', {defaultValue: 'Cancel'})}
+                </Button>
+                <Button type="submit" disabled={loading}>
+                  {editingUser ? t('save', {defaultValue: 'Save'}) : t('create', {defaultValue: 'Create'})}
+                </Button>
+              </div>
           </form>
         </Form>
       </DialogContent>
     </Dialog>
-  );
+);
 }
