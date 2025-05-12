@@ -538,8 +538,6 @@ export const NodeConnectionType = {
   rest: 'rest',
 } as const
 
-export type NodeCreateCoreConfigId = number | null
-
 export interface NodeCreate {
   name: string
   address: string
@@ -551,7 +549,7 @@ export interface NodeCreate {
   keep_alive: number
   /** */
   max_logs?: number
-  core_config_id?: NodeCreateCoreConfigId
+  core_config_id: number
   api_key: string
   gather_logs?: boolean
 }
@@ -607,8 +605,6 @@ export interface NodeRealtimeStats {
   outgoing_bandwidth_speed: number
 }
 
-export type NodeResponseCoreConfigId = number | null
-
 export type NodeResponseXrayVersion = string | null
 
 export type NodeResponseNodeVersion = string | null
@@ -626,7 +622,7 @@ export interface NodeResponse {
   keep_alive: number
   /** */
   max_logs?: number
-  core_config_id?: NodeResponseCoreConfigId
+  core_config_id: number
   api_key: string
   gather_logs?: boolean
   id: number

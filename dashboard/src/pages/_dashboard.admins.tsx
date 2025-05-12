@@ -21,13 +21,14 @@ import {queryClient} from "@/utils/query-client.ts";
 const initialDefaultValues: Partial<AdminFormValues> = {
     username: '',
     is_sudo: false,
-    password: undefined,
+    password: "",
     is_disabled: false,
     discord_webhook: '',
     sub_domain: '',
     sub_template: '',
     support_url: '',
-    telegram_id: undefined
+    telegram_id: 0,
+    discord_id: 0
 }
 
 export default function AdminsPage() {
@@ -95,7 +96,8 @@ export default function AdminsPage() {
                     telegram_id: admin.telegram_id,
                     support_url: admin.support_url,
                     profile_title: admin.profile_title,
-                    sub_domain: admin.sub_domain
+                    sub_domain: admin.sub_domain,
+                    discord_id: admin.discord_id,
                 }
             })
 
@@ -136,6 +138,7 @@ export default function AdminsPage() {
             support_url: admin.support_url || "",
             profile_title: admin.profile_title || "",
             sub_domain: admin.sub_domain || "",
+            discord_id: admin.discord_id || undefined,
             password: undefined
 
         })
