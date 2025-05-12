@@ -119,7 +119,8 @@
     "resetUsageSuccess": "Admin «{{name}}» user usage has been reset successfully",
     "resetUsageFailed":"Failed to reset admin «{{name}}» user usage",
     "reset": "Reset usage",
-    "discordId": "Discord ID"
+    "discordId": "Discord ID",
+    "lifetime.used.traffic": "Total"
   },
   "resetUsersUsage.prompt": "Are you sure you want to reset the <b>{{name}}</b> admin users usage?",
   "admin.disable": "Disabled Admin",

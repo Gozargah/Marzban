@@ -117,7 +117,8 @@
     "resetUsageSuccess": "Использование пользователя «{{name}}» успешно сброшено администратором",
     "resetUsageFailed": "Не удалось сбросить использование пользователя «{{name}}» администратором",
     "reset": "Сброс использования",
-    "discordId": "Discord ID"
+    "discordId": "Discord ID",
+    "lifetime.used.traffic": "Всего"
   },
   "resetUsersUsage.prompt": "Вы уверены, что хотите сбросить использование пользователя-админа <b>{{name}}</b>?",
   "admin.disable": "Администратор отключён",

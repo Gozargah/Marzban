@@ -115,7 +115,8 @@
     "resetUsageSuccess": "管理员已成功重置用户「{{name}}」的使用情况",
     "resetUsageFailed": "管理员重置用户「{{name}}」的使用情况失败",
     "reset": "重置使用情况",
-    "discordId": "Discord ID"
+    "discordId": "Discord ID",
+    "lifetime.used.traffic": "总计"
   },
   "resetUsersUsage.prompt": "你确定要重置管理员用户<b>{{name}}</b>的使用情况吗？",
   "admin.disable": "管理员已禁用",

@@ -74,7 +74,8 @@
     "resetUsageSuccess": "مصرف کاربر «{{name}}» با موفقیت توسط ادمین ریست شد",
     "resetUsageFailed": "ریست مصرف کاربر «{{name}}» توسط ادمین ناموفق بود",
     "reset": "ریست مصرف",
-    "discordId": "شناسه دیسکورد"
+    "discordId": "شناسه دیسکورد",
+    "lifetime.used.traffic": "مجموع کل"
   },
   "resetUsersUsage.prompt": "آیا مطمئن هستید که می‌خواهید مصرف کاربر ادمین <b>{{name}}</b> را ریست کنید؟",
   "admin.disable": "غیر فعالسازی مدیر",

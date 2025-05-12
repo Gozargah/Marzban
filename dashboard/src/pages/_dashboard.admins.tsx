@@ -27,8 +27,8 @@ const initialDefaultValues: Partial<AdminFormValues> = {
     sub_domain: '',
     sub_template: '',
     support_url: '',
-    telegram_id: 0,
-    discord_id: 0
+    telegram_id: undefined,
+    discord_id: undefined
 }
 
 export default function AdminsPage() {

@@ -1,6 +1,6 @@
 import {AdminDetails} from '@/service/api'
 import {ColumnDef} from '@tanstack/react-table'
-import {ChartPie, ChevronDown, MoreVertical, Power, PowerOff, RefreshCw, Trash2, User} from 'lucide-react'
+import {ChartPie, ChevronDown, MoreVertical, Power, PowerOff, RefreshCw, Trash2, User, UserRound} from 'lucide-react'
 import {Button} from '@/components/ui/button'
 import {
     DropdownMenu,
@@ -9,6 +9,11 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu.tsx";
+import {formatBytes} from "@/utils/formatByte.ts";
+import {useIsMobile} from "@/hooks/use-mobile.tsx";
+import {Badge} from "@/components/ui/badge.tsx";
+import {cn} from "@/lib/utils.ts";
+import {statusColors} from "@/constants/UserSettings.ts";
 
 interface ColumnSetupProps {
     t: (key: string) => string;
@@ -59,20 +64,61 @@ export const setupColumns = ({
                             className="min-h-[10px] min-w-[10px] rounded-full bg-green-300 dark:bg-green-500 shadow-sm animate-greenPulse"/>
                     )}
                 </div>
-                <div className="whitespace-nowrap text-ellipsis px-2 overflow-hidden text-sm font-medium">
+                <div className="whitespace-nowrap  text-ellipsis px-2 overflow-hidden text-sm font-medium">
                     {row.getValue('username')}
                 </div>
             </div>
         ),
     },
     {
+        accessorKey: 'used_traffic',
+        header: () => createSortButton('used_traffic', 'admins.used.traffic', t, handleSort, filters),
+        cell: ({row}) => {
+            const traffic = row.getValue('used_traffic') as number | null;
+            return (
+                <div className="flex gap-2 items-center">
+                    <ChartPie className="h-4 w-4 sm:block hidden"/>
+                    <span>{traffic ? `${(traffic / (1024 * 1024 * 1024 * 1024)).toFixed(2)} TB` : '0 TB'}</span>
+                </div>
+            );
+        },
+    },
+    {
+        accessorKey: "lifetime_used_traffic",
+        header: () => createSortButton('lifetime_used_traffic', 'admins.lifetime.used.traffic', t, handleSort, filters),
+        cell: ({row}) => {
+            const total = row.getValue('lifetime_used_traffic') as number | null;
+            return (
+                <div className="flex gap-2 items-center">
+                    <span>{formatBytes(total || 0)}</span>
+                </div>
+            )
+        }
+    },
+    {
         accessorKey: 'is_sudo',
         header: () => <div className="text-xs flex items-center capitalize">{t('admins.role')}</div>,
         cell: ({row}) => {
+            const isMobile = useIsMobile()
             const isSudo = row.getValue('is_sudo');
             return (
                 <div className="flex items-center gap-2">
-                    {isSudo ? t('sudo') : t('admin')}
+                    <Badge
+                        className={cn(
+                            'flex items-center justify-center rounded-full px-0.5 sm:px-2 py-0.5 w-fit max-w-[150px] gap-x-2 pointer-events-none',
+                            isSudo ? statusColors["active"].statusColor : statusColors["disabled"].statusColor|| 'bg-gray-400 text-white',
+                            isMobile && 'py-2.5 h-6 px-1.5',
+                        )}
+                    >
+                        <div>
+                            {isMobile ? (
+                                <UserRound className="w-4 h-4"/>
+                            ) : (
+                                <span
+                                    className="capitalize text-nowrap font-medium text-xs">{isSudo ? t(`sudo`):t('admin')}</span>
+                            )}
+                        </div>
+                    </Badge>
                 </div>
             );
         },
@@ -86,19 +132,6 @@ export const setupColumns = ({
                 <span>{row.getValue('users_count') || 0}</span>
             </div>
         ),
-    },
-    {
-        accessorKey: 'used_traffic',
-        header: () => createSortButton('used_traffic', 'admins.used.traffic', t, handleSort, filters),
-        cell: ({row}) => {
-            const traffic = row.getValue('used_traffic') as number | null;
-            return (
-                <div className="flex gap-2 items-center">
-                    <ChartPie className="h-4 w-4"/>
-                    <span>{traffic ? `${(traffic / (1024 * 1024 * 1024 * 1024)).toFixed(2)} TB` : '0 TB'}</span>
-                </div>
-            );
-        },
     },
     {
         id: 'actions',
