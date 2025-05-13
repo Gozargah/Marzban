@@ -146,7 +146,8 @@ class NodeOperation(BaseOperation):
         self, db: AsyncSession, node_id: Node, modified_node: NodeModify, admin: AdminDetails
     ) -> Node:
         db_node = await self.get_validated_node(db=db, node_id=node_id)
-        await self.get_validated_core_config(db, modified_node.core_config_id)
+        if modified_node.core_config_id is not None:
+            await self.get_validated_core_config(db, modified_node.core_config_id)
 
         try:
             db_node = await modify_node(db, db_node, modified_node)

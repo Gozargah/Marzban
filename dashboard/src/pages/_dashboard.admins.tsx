@@ -11,7 +11,7 @@ import {
     useActivateAllDisabledUsers, useDisableAllActiveUsers,
     useGetAdmins,
     useModifyAdmin,
-    useRemoveAdmin
+    useRemoveAdmin, useResetAdminUsage
 } from '@/service/api'
 import type {AdminDetails} from '@/service/api'
 import AdminsStatistics from "@/components/AdminStatistics.tsx";
@@ -21,13 +21,14 @@ import {queryClient} from "@/utils/query-client.ts";
 const initialDefaultValues: Partial<AdminFormValues> = {
     username: '',
     is_sudo: false,
-    password: '',
+    password: "",
     is_disabled: false,
     discord_webhook: '',
     sub_domain: '',
     sub_template: '',
     support_url: '',
-    telegram_id: undefined
+    telegram_id: undefined,
+    discord_id: undefined
 }
 
 export default function AdminsPage() {
@@ -45,6 +46,7 @@ export default function AdminsPage() {
     const modifyAdminMutation = useModifyAdmin()
     const modifyDisableAllAdminUsers = useDisableAllActiveUsers()
     const modifyActivateAllAdminUsers = useActivateAllDisabledUsers()
+    const resetUsageMutation = useResetAdminUsage()
     const handleDelete = async (admin: AdminDetails) => {
         try {
             await removeAdminMutation.mutateAsync({
@@ -95,7 +97,7 @@ export default function AdminsPage() {
                     support_url: admin.support_url,
                     profile_title: admin.profile_title,
                     sub_domain: admin.sub_domain,
-                    password: ""
+                    discord_id: admin.discord_id,
                 }
             })
 
@@ -136,10 +138,41 @@ export default function AdminsPage() {
             support_url: admin.support_url || "",
             profile_title: admin.profile_title || "",
             sub_domain: admin.sub_domain || "",
-            password: ""
+            discord_id: admin.discord_id || undefined,
+            password: undefined
 
         })
         setIsDialogOpen(true)
+    }
+
+    const resetUsage = async (adminUsername: string) => {
+        try {
+            await resetUsageMutation.mutateAsync({
+                username: adminUsername
+            })
+
+            toast({
+                title: t('success', {defaultValue: 'Success'}),
+                description: t('admins.resetUsageSuccess', {
+                    name: adminUsername,
+                    defaultValue: `Admin "{name}" user usage has been reset successfully`
+                })
+            })
+
+            // Invalidate nodes queries
+            queryClient.invalidateQueries({
+                queryKey: ["/api/admins"],
+            })
+        } catch (error) {
+            toast({
+                title: t('error', {defaultValue: 'Error'}),
+                description: t('admins.resetUsageFailed', {
+                    name: adminUsername,
+                    defaultValue: `Failed to reset admin "{name}" user usage`
+                }),
+                variant: "destructive"
+            })
+        }
     }
 
 
@@ -160,6 +193,7 @@ export default function AdminsPage() {
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onToggleStatus={handleToggleStatus}
+                    onResetUsage={resetUsage}
                 />
                 <AdminModal
                     isDialogOpen={isDialogOpen}

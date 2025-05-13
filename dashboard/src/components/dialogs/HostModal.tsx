@@ -155,7 +155,7 @@ const HostModal: React.FC<HostModalProps> = ({
 
     return (
         <Dialog open={isDialogOpen} onOpenChange={handleModalOpenChange}>
-            <DialogContent className="w-full h-full max-w-2xl md:max-h-[90vh] overflow-y-auto">
+            <DialogContent className="w-full h-full max-w-2xl md:max-h-[90vh] sm:overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className={cn(dir === "rtl" ? "text-right" : "text-left")}>{editingHost ? t("editHost.title") : t("hostsDialog.addHost")}</DialogTitle>
                 </DialogHeader>

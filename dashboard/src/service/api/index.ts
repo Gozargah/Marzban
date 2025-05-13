@@ -143,13 +143,6 @@ export type XrayMuxSettingsXudpConcurrency = number | null
 
 export type XrayMuxSettingsConcurrency = number | null
 
-export interface XrayMuxSettings {
-  enable?: boolean
-  concurrency?: XrayMuxSettingsConcurrency
-  xudp_concurrency?: XrayMuxSettingsXudpConcurrency
-  xudp_proxy_443?: Xudp
-}
-
 export interface XrayFragmentSettings {
   /** @pattern ^(:?tlshello|[\d-]{1,16})$ */
   packets: string
@@ -167,6 +160,13 @@ export const Xudp = {
   allow: 'allow',
   skip: 'skip',
 } as const
+
+export interface XrayMuxSettings {
+  enable?: boolean
+  concurrency?: XrayMuxSettingsConcurrency
+  xudp_concurrency?: XrayMuxSettingsXudpConcurrency
+  xudp_proxy_443?: Xudp
+}
 
 export type XTLSFlows = (typeof XTLSFlows)[keyof typeof XTLSFlows]
 
@@ -849,11 +849,30 @@ export interface ShadowsocksSettings {
   method?: ShadowsocksMethods
 }
 
+export type SettingsSchemaOutputSubscription = SubscriptionOutput | null
+
+export type SettingsSchemaOutputNotificationEnable = NotificationEnable | null
+
 export type SettingsSchemaOutputWebhook = Webhook | null
 
 export type SettingsSchemaOutputDiscord = Discord | null
 
 export type SettingsSchemaOutputTelegram = Telegram | null
+
+export interface SettingsSchemaOutput {
+  telegram?: SettingsSchemaOutputTelegram
+  discord?: SettingsSchemaOutputDiscord
+  webhook?: SettingsSchemaOutputWebhook
+  notification_settings?: SettingsSchemaOutputNotificationSettings
+  notification_enable?: SettingsSchemaOutputNotificationEnable
+  subscription?: SettingsSchemaOutputSubscription
+}
+
+export type SettingsSchemaInputSubscription = SubscriptionInput | null
+
+export type SettingsSchemaInputNotificationEnable = NotificationEnable | null
+
+export type SettingsSchemaInputNotificationSettings = NotificationSettings | null
 
 export type SettingsSchemaInputWebhook = Webhook | null
 
@@ -865,9 +884,9 @@ export interface SettingsSchemaInput {
   telegram?: SettingsSchemaInputTelegram
   discord?: SettingsSchemaInputDiscord
   webhook?: SettingsSchemaInputWebhook
-  notfication_settings?: NotficationSettings
-  notfication_enable?: NotficationEnable
-  subscription?: SubscriptionInput
+  notification_settings?: SettingsSchemaInputNotificationSettings
+  notification_enable?: SettingsSchemaInputNotificationEnable
+  subscription?: SettingsSchemaInputSubscription
 }
 
 export interface RemoveUsersResponse {
@@ -938,32 +957,34 @@ export const Period = {
   month: 'month',
 } as const
 
-export type NotficationSettingsProxyUrl = string | null
+export type NotificationSettingsProxyUrl = string | null
 
-export type NotficationSettingsDiscordWebhookUrl = string | null
+export type NotificationSettingsDiscordWebhookUrl = string | null
 
-export type NotficationSettingsTelegramTopicId = number | null
+export type NotificationSettingsTelegramTopicId = number | null
 
-export type NotficationSettingsTelegramChannelId = number | null
+export type NotificationSettingsTelegramChannelId = number | null
 
-export type NotficationSettingsTelegramAdminId = number | null
+export type NotificationSettingsTelegramAdminId = number | null
 
-export type NotficationSettingsTelegramApiToken = string | null
+export type NotificationSettingsTelegramApiToken = string | null
 
-export interface NotficationSettings {
+export interface NotificationSettings {
   notify_telegram?: boolean
   notify_discord?: boolean
-  telegram_api_token?: NotficationSettingsTelegramApiToken
-  telegram_admin_id?: NotficationSettingsTelegramAdminId
-  telegram_channel_id?: NotficationSettingsTelegramChannelId
-  telegram_topic_id?: NotficationSettingsTelegramTopicId
-  discord_webhook_url?: NotficationSettingsDiscordWebhookUrl
-  proxy_url?: NotficationSettingsProxyUrl
+  telegram_api_token?: NotificationSettingsTelegramApiToken
+  telegram_admin_id?: NotificationSettingsTelegramAdminId
+  telegram_channel_id?: NotificationSettingsTelegramChannelId
+  telegram_topic_id?: NotificationSettingsTelegramTopicId
+  discord_webhook_url?: NotificationSettingsDiscordWebhookUrl
+  proxy_url?: NotificationSettingsProxyUrl
   /** */
   max_retries: number
 }
 
-export interface NotficationEnable {
+export type SettingsSchemaOutputNotificationSettings = NotificationSettings | null
+
+export interface NotificationEnable {
   admin?: boolean
   core?: boolean
   group?: boolean
@@ -974,15 +995,6 @@ export interface NotficationEnable {
   user_template?: boolean
   days_left?: boolean
   percentage_reached?: boolean
-}
-
-export interface SettingsSchemaOutput {
-  telegram?: SettingsSchemaOutputTelegram
-  discord?: SettingsSchemaOutputDiscord
-  webhook?: SettingsSchemaOutputWebhook
-  notfication_settings?: NotficationSettings
-  notfication_enable?: NotficationEnable
-  subscription?: SubscriptionOutput
 }
 
 export interface NotFound {
@@ -1597,7 +1609,7 @@ export interface AdminDetails {
   sub_domain?: AdminDetailsSubDomain
   is_sudo: boolean
   total_users?: number
-  users_usage?: number
+  used_traffic?: number
   is_disabled?: boolean
   discord_id?: AdminDetailsDiscordId
   sub_template?: AdminDetailsSubTemplate

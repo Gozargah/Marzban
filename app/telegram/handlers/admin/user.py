@@ -119,7 +119,9 @@ async def process_expire(event: Message, state: FSMContext, db: AsyncSession):
 
 
 @router.callback_query(ChooseStatus.Callback.filter())
-async def process_status(event: CallbackQuery, db: AsyncSession, state: FSMContext, callback_data: ChooseStatus.Callback):
+async def process_status(
+    event: CallbackQuery, db: AsyncSession, state: FSMContext, callback_data: ChooseStatus.Callback
+):
     await state.update_data(status=callback_data.status)
 
     await add_to_messages_to_delete(state, event.message)
@@ -161,10 +163,7 @@ async def process_on_hold_timeout(event: Message, state: FSMContext, db: AsyncSe
 
 @router.callback_query(GroupsSelector.SelectorCallback.filter(), CreateUser.group_ids)
 async def process_groups(
-        event: CallbackQuery,
-        db: AsyncSession,
-        state: FSMContext,
-        callback_data: GroupsSelector.SelectorCallback
+    event: CallbackQuery, db: AsyncSession, state: FSMContext, callback_data: GroupsSelector.SelectorCallback
 ):
     group_ids = await state.get_value("group_ids")
     if isinstance(group_ids, list):
@@ -188,7 +187,6 @@ async def process_done(event: CallbackQuery, db: AsyncSession, admin: AdminDetai
     data = await state.get_data()
     if not data.get("group_ids", []):
         return await event.answer(Texts.select_a_group, show_alert=True)
-
 
     duration = data.get("duration")
     if data.get("status") == UserStatus.on_hold.value:

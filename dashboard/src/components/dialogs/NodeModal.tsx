@@ -265,7 +265,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[1000px] max-h-[90vh] h-full lg:h-auto overflow-y-auto">
+      <DialogContent className="max-w-full sm:max-w-[1000px]  h-full lg:h-auto">
         <DialogHeader>
           <DialogTitle className={cn("text-xl text-start font-semibold", dir === "rtl" && "sm:text-right")}>
             {editingNode ? t('editNode.title') : t('nodeModal.title')}
@@ -359,335 +359,339 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
-            <div className="flex flex-col sm:flex-row items-start gap-4">
-              <div className="flex-1 space-y-4 w-full">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('nodeModal.name')}</FormLabel>
-                      <FormControl>
-                        <Input placeholder={t('nodeModal.namePlaceholder')} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
+            <div
+                className="max-h-[65vh] overflow-y-auto pr-4 -mr-4 sm:max-h-[65vh] px-2">
+              <div className="flex flex-col sm:flex-row items-start gap-4">
+                <div className="flex-1 space-y-4 w-full">
                   <FormField
-                    control={form.control}
-                    name="address"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('nodeModal.address')}</FormLabel>
-                        <FormControl>
-                          <Input placeholder={t('nodeModal.addressPlaceholder')} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="port"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('nodeModal.port')}</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            placeholder={t('nodeModal.portPlaceholder')}
-                            {...field}
-                            onChange={(e) => field.onChange(parseInt(e.target.value))}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="core_config_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('nodeModal.coreConfig')}</FormLabel>
-                      <Select
-                        onValueChange={(value) => field.onChange(parseInt(value))}
-                        value={field.value?.toString()}
-                        defaultValue={cores?.cores?.[0]?.id.toString()}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t('nodeModal.selectCoreConfig')} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {cores?.cores?.map((core: CoreResponse) => (
-                            <SelectItem key={core.id} value={core.id.toString()}>
-                              {core.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="flex flex-col gap-4 w-full md">
-                  <div className='flex items-center gap-4'>
-                    <FormField
                       control={form.control}
-                      name="usage_coefficient"
-                      render={({ field }) => (
-                        <FormItem className='flex-1'>
-                          <FormLabel>{t('nodeModal.usageRatio')}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="0.1"
-                              placeholder={t('nodeModal.usageRatioPlaceholder')}
-                              {...field}
-                              onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
+                      name="name"
+                      render={({field}) => (
+                          <FormItem>
+                            <FormLabel>{t('nodeModal.name')}</FormLabel>
+                            <FormControl>
+                              <Input placeholder={t('nodeModal.namePlaceholder')} {...field} />
+                            </FormControl>
+                            <FormMessage/>
+                          </FormItem>
                       )}
+                  />
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="address"
+                        render={({field}) => (
+                            <FormItem>
+                              <FormLabel>{t('nodeModal.address')}</FormLabel>
+                              <FormControl>
+                                <Input placeholder={t('nodeModal.addressPlaceholder')} {...field} />
+                              </FormControl>
+                              <FormMessage/>
+                            </FormItem>
+                        )}
                     />
 
                     <FormField
-                      control={form.control}
-                      name="max_logs"
-                      render={({ field }) => (
-                        <FormItem className='flex-1'>
-                          <FormLabel>{t('nodes.maxLogs')}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder={t('nodes.maxLogsPlaceholder')}
-                              {...field}
-                              onChange={(e) => field.onChange(parseInt(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                        control={form.control}
+                        name="port"
+                        render={({field}) => (
+                            <FormItem>
+                              <FormLabel>{t('nodeModal.port')}</FormLabel>
+                              <FormControl>
+                                <Input
+                                    type="number"
+                                    placeholder={t('nodeModal.portPlaceholder')}
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                />
+                              </FormControl>
+                              <FormMessage/>
+                            </FormItem>
+                        )}
                     />
                   </div>
 
-                  <div className='flex flex-col gap-4 w-full'>
-
-                    <FormField
+                  <FormField
                       control={form.control}
-                      name="connection_type"
-                      render={({ field }) => (
-                        <FormItem className='w-full'>
-                          <FormLabel>{t('nodeModal.connectionType')}</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Rest" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value={NodeConnectionType.grpc}>gRPC</SelectItem>
-                              <SelectItem value={NodeConnectionType.rest}>Rest</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="api_key"
-                      render={({ field }) => {
-                        const [uuidVersion, setUuidVersion] = useState<'v4' | 'v5' | 'v6' | 'v7'>('v4');
-
-                        const generateUUID = () => {
-                          switch (uuidVersion) {
-                            case 'v4':
-                              field.onChange(uuidv4());
-                              break;
-                            case 'v5':
-                              // Using a fixed namespace for v5 UUIDs
-                              const namespace = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
-                              field.onChange(uuidv5(field.value || 'default', namespace));
-                              break;
-                            case 'v6':
-                              field.onChange(uuidv6());
-                              break;
-                            case 'v7':
-                              field.onChange(uuidv7());
-                              break;
-                          }
-                        };
-
-                        return (
+                      name="core_config_id"
+                      render={({field}) => (
                           <FormItem>
-                            <FormLabel>{t('nodeModal.apiKey')}</FormLabel>
-                            <FormControl>
-                              <div className="flex gap-2">
-                                <Input
-                                  type="text"
-                                  placeholder={t('nodeModal.apiKeyPlaceholder')}
-                                  autoComplete="off"
-                                  {...field}
-                                  onChange={(e) => field.onChange(e.target.value)}
-                                />
-                                <div className={cn("flex items-center flex-1", dir === "rtl" && "flex-row-reverse")}>
-                                  <Select
-                                    value={uuidVersion}
-                                    onValueChange={(value: 'v4' | 'v5' | 'v6' | 'v7') => setUuidVersion(value)}
-                                  >
-                                    <SelectTrigger className="w-[60px] h-full rounded-r-none border-r-0">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="v4">v4</SelectItem>
-                                      <SelectItem value="v5">v5</SelectItem>
-                                      <SelectItem value="v6">v6</SelectItem>
-                                      <SelectItem value="v7">v7</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={generateUUID}
-                                    className="rounded-l-none flex-1"
-                                  >
-                                    {t('nodeModal.generateUUID')}
-                                  </Button>
-                                </div>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
+                            <FormLabel>{t('nodeModal.coreConfig')}</FormLabel>
+                            <Select
+                                onValueChange={(value) => field.onChange(parseInt(value))}
+                                value={field.value?.toString()}
+                                defaultValue={cores?.cores?.[0]?.id.toString()}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder={t('nodeModal.selectCoreConfig')}/>
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {cores?.cores?.map((core: CoreResponse) => (
+                                    <SelectItem key={core.id} value={core.id.toString()}>
+                                      {core.name}
+                                    </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage/>
                           </FormItem>
-                        );
-                      }}
-                    />
+                      )}
+                  />
 
-                    <FormField
-                      control={form.control}
-                      name="keep_alive"
-                      render={({ field }) => {
-                        const [displayValue, setDisplayValue] = useState<string>(field.value?.toString() || '');
-                        const [unit, setUnit] = useState<'seconds' | 'minutes' | 'hours'>('seconds');
-
-                        const convertToSeconds = (value: number, fromUnit: 'seconds' | 'minutes' | 'hours') => {
-                          switch (fromUnit) {
-                            case 'minutes':
-                              return value * 60;
-                            case 'hours':
-                              return value * 3600;
-                            default:
-                              return value;
-                          }
-                        };
-
-                        const convertFromSeconds = (seconds: number, toUnit: 'seconds' | 'minutes' | 'hours') => {
-                          switch (toUnit) {
-                            case 'minutes':
-                              return Math.floor(seconds / 60);
-                            case 'hours':
-                              return Math.floor(seconds / 3600);
-                            default:
-                              return seconds;
-                          }
-                        };
-
-                        return (
-                          <FormItem>
-                            <FormLabel>{t('nodeModal.keepAlive')}</FormLabel>
-                            <div className="flex flex-col gap-1.5">
-                              <p className="text-xs text-muted-foreground">{t('nodeModal.keepAliveDescription')}</p>
-                              <div className="flex gap-2">
+                  <div className="flex flex-col gap-4 w-full md">
+                    <div className='flex items-center gap-4'>
+                      <FormField
+                          control={form.control}
+                          name="usage_coefficient"
+                          render={({field}) => (
+                              <FormItem className='flex-1'>
+                                <FormLabel>{t('nodeModal.usageRatio')}</FormLabel>
                                 <FormControl>
                                   <Input
-                                    type="number"
-                                    value={displayValue}
-                                    onChange={(e) => {
-                                      const value = e.target.value;
-                                      setDisplayValue(value);
-                                      const numValue = parseInt(value) || 0;
-                                      field.onChange(convertToSeconds(numValue, unit));
-                                    }}
+                                      type="number"
+                                      step="0.1"
+                                      placeholder={t('nodeModal.usageRatioPlaceholder')}
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                   />
                                 </FormControl>
+                                <FormMessage/>
+                              </FormItem>
+                          )}
+                      />
+
+                      <FormField
+                          control={form.control}
+                          name="max_logs"
+                          render={({field}) => (
+                              <FormItem className='flex-1'>
+                                <FormLabel>{t('nodes.maxLogs')}</FormLabel>
+                                <FormControl>
+                                  <Input
+                                      type="number"
+                                      placeholder={t('nodes.maxLogsPlaceholder')}
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage/>
+                              </FormItem>
+                          )}
+                      />
+                    </div>
+
+                    <div className='flex flex-col gap-4 w-full'>
+
+                      <FormField
+                          control={form.control}
+                          name="connection_type"
+                          render={({field}) => (
+                              <FormItem className='w-full'>
+                                <FormLabel>{t('nodeModal.connectionType')}</FormLabel>
                                 <Select
-                                  value={unit}
-                                  onValueChange={(value: 'seconds' | 'minutes' | 'hours') => {
-                                    setUnit(value);
-                                    const currentSeconds = field.value || 0;
-                                    const newDisplayValue = convertFromSeconds(currentSeconds, value);
-                                    setDisplayValue(newDisplayValue.toString());
-                                  }}
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
                                 >
-                                  <SelectTrigger className="flex-1">
-                                    <SelectValue />
-                                  </SelectTrigger>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Rest"/>
+                                    </SelectTrigger>
+                                  </FormControl>
                                   <SelectContent>
-                                    <SelectItem value="seconds">{t('nodeModal.seconds')}</SelectItem>
-                                    <SelectItem value="minutes">{t('nodeModal.minutes')}</SelectItem>
-                                    <SelectItem value="hours">{t('nodeModal.hours')}</SelectItem>
+                                    <SelectItem value={NodeConnectionType.grpc}>gRPC</SelectItem>
+                                    <SelectItem value={NodeConnectionType.rest}>Rest</SelectItem>
                                   </SelectContent>
                                 </Select>
-                              </div>
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        );
-                      }}
-                    />
+                                <FormMessage/>
+                              </FormItem>
+                          )}
+                      />
+
+                      <FormField
+                          control={form.control}
+                          name="api_key"
+                          render={({field}) => {
+                            const [uuidVersion, setUuidVersion] = useState<'v4' | 'v5' | 'v6' | 'v7'>('v4');
+
+                            const generateUUID = () => {
+                              switch (uuidVersion) {
+                                case 'v4':
+                                  field.onChange(uuidv4());
+                                  break;
+                                case 'v5':
+                                  // Using a fixed namespace for v5 UUIDs
+                                  const namespace = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+                                  field.onChange(uuidv5(field.value || 'default', namespace));
+                                  break;
+                                case 'v6':
+                                  field.onChange(uuidv6());
+                                  break;
+                                case 'v7':
+                                  field.onChange(uuidv7());
+                                  break;
+                              }
+                            };
+
+                            return (
+                                <FormItem>
+                                  <FormLabel>{t('nodeModal.apiKey')}</FormLabel>
+                                  <FormControl>
+                                    <div className="flex gap-2">
+                                      <Input
+                                          type="text"
+                                          placeholder={t('nodeModal.apiKeyPlaceholder')}
+                                          autoComplete="off"
+                                          {...field}
+                                          onChange={(e) => field.onChange(e.target.value)}
+                                      />
+                                      <div
+                                          className={cn("flex items-center flex-1", dir === "rtl" && "flex-row-reverse")}>
+                                        <Select
+                                            value={uuidVersion}
+                                            onValueChange={(value: 'v4' | 'v5' | 'v6' | 'v7') => setUuidVersion(value)}
+                                        >
+                                          <SelectTrigger className="w-[60px] h-full rounded-r-none border-r-0">
+                                            <SelectValue/>
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="v4">v4</SelectItem>
+                                            <SelectItem value="v5">v5</SelectItem>
+                                            <SelectItem value="v6">v6</SelectItem>
+                                            <SelectItem value="v7">v7</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={generateUUID}
+                                            className="rounded-l-none flex-1"
+                                        >
+                                          {t('nodeModal.generateUUID')}
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </FormControl>
+                                  <FormMessage/>
+                                </FormItem>
+                            );
+                          }}
+                      />
+
+                      <FormField
+                          control={form.control}
+                          name="keep_alive"
+                          render={({field}) => {
+                            const [displayValue, setDisplayValue] = useState<string>(field.value?.toString() || '');
+                            const [unit, setUnit] = useState<'seconds' | 'minutes' | 'hours'>('seconds');
+
+                            const convertToSeconds = (value: number, fromUnit: 'seconds' | 'minutes' | 'hours') => {
+                              switch (fromUnit) {
+                                case 'minutes':
+                                  return value * 60;
+                                case 'hours':
+                                  return value * 3600;
+                                default:
+                                  return value;
+                              }
+                            };
+
+                            const convertFromSeconds = (seconds: number, toUnit: 'seconds' | 'minutes' | 'hours') => {
+                              switch (toUnit) {
+                                case 'minutes':
+                                  return Math.floor(seconds / 60);
+                                case 'hours':
+                                  return Math.floor(seconds / 3600);
+                                default:
+                                  return seconds;
+                              }
+                            };
+
+                            return (
+                                <FormItem>
+                                  <FormLabel>{t('nodeModal.keepAlive')}</FormLabel>
+                                  <div className="flex flex-col gap-1.5">
+                                    <p className="text-xs text-muted-foreground">{t('nodeModal.keepAliveDescription')}</p>
+                                    <div className="flex gap-2">
+                                      <FormControl>
+                                        <Input
+                                            type="number"
+                                            value={displayValue}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setDisplayValue(value);
+                                              const numValue = parseInt(value) || 0;
+                                              field.onChange(convertToSeconds(numValue, unit));
+                                            }}
+                                        />
+                                      </FormControl>
+                                      <Select
+                                          value={unit}
+                                          onValueChange={(value: 'seconds' | 'minutes' | 'hours') => {
+                                            setUnit(value);
+                                            const currentSeconds = field.value || 0;
+                                            const newDisplayValue = convertFromSeconds(currentSeconds, value);
+                                            setDisplayValue(newDisplayValue.toString());
+                                          }}
+                                      >
+                                        <SelectTrigger className="flex-1">
+                                          <SelectValue/>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="seconds">{t('nodeModal.seconds')}</SelectItem>
+                                          <SelectItem value="minutes">{t('nodeModal.minutes')}</SelectItem>
+                                          <SelectItem value="hours">{t('nodeModal.hours')}</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                  </div>
+                                  <FormMessage/>
+                                </FormItem>
+                            );
+                          }}
+                      />
+                    </div>
                   </div>
+
                 </div>
 
+                <FormField
+                    control={form.control}
+                    name="server_ca"
+                    render={({field}) => (
+                        <FormItem className="flex-1 w-full mb-6 md:mb-0 h-full">
+                          <FormLabel>{t('nodeModal.certificate')}</FormLabel>
+                          <FormControl>
+                            <Textarea
+                                dir='ltr'
+                                placeholder={t('nodeModal.certificatePlaceholder')}
+                                className="font-mono text-xs h-[200px] md:h-5/6"
+                                {...field}
+                            />
+                          </FormControl>
+                          <FormMessage/>
+                        </FormItem>
+                    )}
+                />
               </div>
-
-              <FormField
-                control={form.control}
-                name="server_ca"
-                render={({ field }) => (
-                  <FormItem className="flex-1 w-full mb-6 md:mb-0 h-full">
-                    <FormLabel>{t('nodeModal.certificate')}</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        dir='ltr'
-                        placeholder={t('nodeModal.certificatePlaceholder')}
-                        className="font-mono text-xs h-[200px] md:h-5/6"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => onOpenChange(false)}>
-                {t('cancel')}
-              </Button>
-              <Button
-                type="submit"
-                disabled={addNodeMutation.isPending || modifyNodeMutation.isPending}
-                className="bg-primary hover:bg-primary/90"
-              >
-                {editingNode ? t('edit') : t('create')}
-              </Button>
-            </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => onOpenChange(false)}>
+                  {t('cancel')}
+                </Button>
+                <Button
+                    type="submit"
+                    disabled={addNodeMutation.isPending || modifyNodeMutation.isPending}
+                    className="bg-primary hover:bg-primary/90"
+                >
+                  {editingNode ? t('edit') : t('create')}
+                </Button>
+              </div>
           </form>
         </Form>
       </DialogContent>
     </Dialog>
-  )
+)
 }

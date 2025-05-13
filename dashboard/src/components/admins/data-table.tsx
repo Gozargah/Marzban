@@ -10,10 +10,13 @@ import {
 import {cn} from "@/lib/utils.ts";
 import useDirDetection from "@/hooks/use-dir-detection.tsx";
 import React, {useState} from "react";
-import {ChartPie, ChevronDown, Edit2, Power, PowerOff, Trash2, User} from "lucide-react";
+import {ChevronDown, Edit2, Power, PowerOff, RefreshCw, Trash2, User, UserRound} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
 import {AdminDetails} from "@/service/api";
 import {useTranslation} from "react-i18next";
+import {Badge} from "@/components/ui/badge.tsx";
+import {statusColors} from "@/constants/UserSettings.ts";
+import {useIsMobile} from "@/hooks/use-mobile.tsx";
 
 interface DataTableProps<TData extends AdminDetails> {
     columns: ColumnDef<TData, any>[]
@@ -22,27 +25,45 @@ interface DataTableProps<TData extends AdminDetails> {
     onDelete: (admin: AdminDetails) => void
     onToggleStatus: (admin: AdminDetails) => void
     setStatusToggleDialogOpen: (isOpen: boolean) => void
+    onResetUsage: (adminUsername: string) => void;
 }
 
-const ExpandedRowContent = ({row, onEdit, onDelete, onToggleStatus}: {
+const ExpandedRowContent = ({row, onEdit, onDelete, onToggleStatus, onResetUsage}: {
     row: AdminDetails;
     onEdit: (admin: AdminDetails) => void;
     onDelete: (admin: AdminDetails) => void;
     onToggleStatus: (admin: AdminDetails) => void;
+    onResetUsage: (adminUsername: string) => void;
 }) => {
     const {t} = useTranslation();
+    const isMobile = useIsMobile()
+    const isSudo = row.is_sudo;
 
     return (
         <div className="flex items-center justify-between">
             <div className="flex gap-1">
-                <div className="flex items-center gap-1">
-                    <User className="w-4 h-4"/>
-                    <span>{row.total_users ? row.total_users : 0}</span>
+                <div className="flex items-center gap-2">
+                    <Badge
+                        className={cn(
+                            'flex items-center justify-center rounded-full px-0.5 sm:px-1 py-0.5 w-fit max-w-[150px] gap-x-2 pointer-events-none',
+                            isSudo ? statusColors["active"].statusColor : statusColors["disabled"].statusColor || 'bg-gray-400 text-white',
+                            isMobile && 'py-2.5 h-6 px-1',
+                        )}
+                    >
+                        <div>
+                            {isMobile ? (
+                                <UserRound className="w-4 h-4"/>
+                            ) : (
+                                <span
+                                    className="capitalize text-nowrap font-medium text-xs">{isSudo ? t(`sudo`) : t('admin')}</span>
+                            )}
+                        </div>
+                    </Badge>
                 </div>
                 <span>|</span>
                 <div className="flex items-center gap-1">
-                    <ChartPie className="w-4 h-4"/>
-                    <span>{row.users_usage ? `${(row.users_usage / (1024 * 1024 * 1024 * 1024)).toFixed(2)} TB` : '0 TB'}</span>
+                    <User className="w-4 h-4"/>
+                    <span>{row.total_users ? row.total_users : 0}</span>
                 </div>
             </div>
             <div className="flex justify-end gap-1">
@@ -64,6 +85,14 @@ const ExpandedRowContent = ({row, onEdit, onDelete, onToggleStatus}: {
                 <Button
                     variant="ghost"
                     size="icon"
+                    onClick={() => onResetUsage(row.username)}
+                    title={t('admins.resetUsersUsage')}
+                >
+                    <RefreshCw className="h-4 w-4"/>
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => onDelete(row)}
                     title={t('delete')}
                 >
@@ -80,7 +109,8 @@ export function DataTable<TData extends AdminDetails>({
                                                           onEdit,
                                                           onDelete,
                                                           onToggleStatus,
-                                                          setStatusToggleDialogOpen
+                                                          setStatusToggleDialogOpen,
+                                                          onResetUsage
                                                       }: DataTableProps<TData>) {
     const [expandedRow, setExpandedRow] = useState<string | null>(null);
     const table = useReactTable({
@@ -123,10 +153,11 @@ export function DataTable<TData extends AdminDetails>({
                                         'text-xs sticky z-10 overflow-visible',
                                         isRTL && 'text-right',
                                         index === 0 && 'w-[270px] md:w-auto',
-                                        index === 1 && 'max-w-[70px] md:w-auto',
+                                        index === 1 && 'min-w-[70px] md:w-auto',
                                         index === 2 && 'min-w-[70px] md:w-auto',
-                                        index === 3 && 'min-w-[70px] md:w-[120px]',
-                                        index >= 2 && 'hidden md:table-cell',
+                                        index === 3 && 'min-w-[70px] md:w-auto',
+                                        index === 4 && 'min-w-[70px] md:w-[120px]',
+                                        index >= 3 && 'hidden md:table-cell',
                                         header.id === 'chevron' && 'table-cell md:hidden',
                                     )}
                                 >
@@ -164,7 +195,7 @@ export function DataTable<TData extends AdminDetails>({
                                             className={cn(
                                                 'py-4 text-sm',
                                                 index === 5 && 'hidden md:w-[85px]',
-                                                index >= 2 && 'hidden md:table-cell',
+                                                index >= 3 && 'hidden md:table-cell',
                                                 cell.column.id === 'chevron' && 'table-cell md:hidden',
                                                 dir === 'rtl' ? 'pl-3' : 'pr-3',
                                             )}
@@ -194,6 +225,7 @@ export function DataTable<TData extends AdminDetails>({
                                                 row={row.original}
                                                 onEdit={onEdit}
                                                 onDelete={onDelete}
+                                                onResetUsage={onResetUsage}
                                                 onToggleStatus={handleStatusToggle}
                                             />
                                         </TableCell>

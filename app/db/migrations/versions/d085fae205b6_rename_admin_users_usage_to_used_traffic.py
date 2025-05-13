@@ -21,4 +21,4 @@ def upgrade():
 
 def downgrade():
     with op.batch_alter_table('admins') as batch_op:
-        batch_op.alter_column('used_traffic', new_column_name='users_usage')
+        batch_op.alter_column('used_traffic', new_column_name='users_usage', existing_type=sa.BigInteger)

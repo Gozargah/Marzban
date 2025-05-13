@@ -155,7 +155,7 @@ export default function UserTemplateModal({
 
     return (
         <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[1000px] h-full sm:h-auto overflow-y-auto">
+            <DialogContent className="max-w-[1000px] h-full sm:h-auto">
                 <DialogHeader>
                     <DialogTitle className={cn("text-xl text-start font-semibold", dir === "rtl" && "sm:text-right")}>
                         {editingUserTemplate ? t('editUserTemplateModal.title') : t('userTemplateModal.title')}
@@ -165,7 +165,7 @@ export default function UserTemplateModal({
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
                         <div
-                            className="max-h-[85vh] overflow-y-auto pr-4 -mr-4 sm:max-h-[75vh] flex flex-col sm:flex-row items-start gap-4 px-2">
+                            className="max-h-[80vh] overflow-y-auto pr-4 -mr-4 sm:max-h-[75vh] flex flex-col sm:flex-row items-start gap-4 px-2">
                             <div className="flex-1 space-y-4 w-full">
                                 <div className="flex flex-row justify-between gap-1 w-full items-center">
                                     <FormField
