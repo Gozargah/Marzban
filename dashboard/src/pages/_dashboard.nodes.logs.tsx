@@ -127,7 +127,6 @@ export default function NodeLogs() {
                     }
                     return (
                       <div key={`${log.timestamp}-${index}`} className="text-sm font-mono flex items-center gap-2">
-                        <span className="text-muted-foreground min-w-[160px]">{new Date(log.timestamp).toLocaleString()}</span>
                         {match ? (
                           <>
                             <span className={color}>{match[1]}</span>

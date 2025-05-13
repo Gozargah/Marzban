@@ -207,6 +207,7 @@
   "header.logout": "Log out",
   "header.nodeSettings": "Node Settings",
   "header.nodesUsage": "Nodes Usage",
+  "loading": "Loading...",
   "hostsDialog": {
     "addHost": "Add Host",
     "selectInbound": "Select an inbound",
@@ -223,7 +224,6 @@
       "expired": "Expired",
       "onHold": "On Hold"
     },
-    "loading": "Loading...",
     "port": "Port",
     "sni": "SNI",
     "sniPlaceholder": "SNI (e.g. example.com)",

@@ -73,7 +73,7 @@ export function DataTable<TData extends UserResponse, TValue>({
               <TableCell colSpan={columns.length} className="h-24">
                 <div dir={dir} className="flex flex-col items-center justify-center gap-2">
                   <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
-                  <span className="text-sm text-white">{t('loading')}</span>
+                  <span className="text-sm">{t('loading')}</span>
                 </div>
               </TableCell>
             </TableRow>
