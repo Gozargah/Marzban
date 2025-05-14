@@ -529,37 +529,38 @@ export default function UserModal({
                                                     </FormItem>
                                                 )}
                                             />
-                                            <FormField
-                                                control={form.control}
-                                                name="data_limit_reset_strategy"
-                                                render={({field}) => (
-                                                    <FormItem className="flex-1">
-                                                        <FormLabel>{t('userDialog.periodicUsageReset', {defaultValue: 'Periodic Usage Reset'})}</FormLabel>
-                                                        <Select onValueChange={field.onChange}
-                                                                value={field.value || ''}>
-                                                            <FormControl>
-                                                                <SelectTrigger>
-                                                                    <SelectValue
-                                                                        placeholder={t('userDialog.resetStrategyNo', {defaultValue: 'No'})}/>
-                                                                </SelectTrigger>
-                                                            </FormControl>
-                                                            <SelectContent>
-                                                                <SelectItem
-                                                                    value="no_reset">{t('userDialog.resetStrategyNo', {defaultValue: 'No'})}</SelectItem>
-                                                                <SelectItem
-                                                                    value="day">{t('userDialog.resetStrategyDaily', {defaultValue: 'Daily'})}</SelectItem>
-                                                                <SelectItem
-                                                                    value="week">{t('userDialog.resetStrategyWeekly', {defaultValue: 'Weekly'})}</SelectItem>
-                                                                <SelectItem
-                                                                    value="month">{t('userDialog.resetStrategyMonthly', {defaultValue: 'Monthly'})}</SelectItem>
-                                                                <SelectItem
-                                                                    value="year">{t('userDialog.resetStrategyAnnually', {defaultValue: 'Annually'})}</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                        <FormMessage/>
-                                                    </FormItem>
-                                                )}
-                                            />
+                                            {form.getValues("data_limit") > 0 && (
+                                                <FormField
+                                                    control={form.control}
+                                                    name="data_limit_reset_strategy"
+                                                    render={({field}) => (
+                                                        <FormItem className="flex-1">
+                                                            <FormLabel>{t('userDialog.periodicUsageReset', {defaultValue: 'Periodic Usage Reset'})}</FormLabel>
+                                                            <Select onValueChange={field.onChange}
+                                                                    value={field.value || ''}>
+                                                                <FormControl>
+                                                                    <SelectTrigger>
+                                                                        <SelectValue
+                                                                            placeholder={t('userDialog.resetStrategyNo', {defaultValue: 'No'})}/>
+                                                                    </SelectTrigger>
+                                                                </FormControl>
+                                                                <SelectContent>
+                                                                    <SelectItem
+                                                                        value="no_reset">{t('userDialog.resetStrategyNo', {defaultValue: 'No'})}</SelectItem>
+                                                                    <SelectItem
+                                                                        value="day">{t('userDialog.resetStrategyDaily', {defaultValue: 'Daily'})}</SelectItem>
+                                                                    <SelectItem
+                                                                        value="week">{t('userDialog.resetStrategyWeekly', {defaultValue: 'Weekly'})}</SelectItem>
+                                                                    <SelectItem
+                                                                        value="month">{t('userDialog.resetStrategyMonthly', {defaultValue: 'Monthly'})}</SelectItem>
+                                                                    <SelectItem
+                                                                        value="year">{t('userDialog.resetStrategyAnnually', {defaultValue: 'Annually'})}</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                            <FormMessage/>
+                                                        </FormItem>
+                                                    )}
+                                                />)}
                                             <div className="flex items-start md:w-52 gap-4">
                                                 {status === 'on_hold' ? (
                                                     <FormField
