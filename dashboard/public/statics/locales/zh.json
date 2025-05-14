@@ -10,6 +10,8 @@
   "hosts": "主机",
   "success": "成功",
   "error": "错误",
+  "underDevelopment.title": "开发中",
+  "underDevelopment.description": "此页面正在建设中，很快就会开放。",
   "nodes": {
     "title": "节点",
     "description": "管理您的节点",

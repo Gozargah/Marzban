@@ -10,6 +10,8 @@
   "hosts": "Хосты",
   "success": "Успешно",
   "error": "Ошибка",
+  "underDevelopment.title": "В разработке",
+  "underDevelopment.description": "Эта страница находится в разработке и скоро будет доступна.",
   "nodes": {
     "title": "Узлы",
     "description": "Управление узлами",

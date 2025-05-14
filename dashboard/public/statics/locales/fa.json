@@ -29,6 +29,8 @@
   "sudo": "کاربر ریشه (سوپردار)",
   "save": "ذخیره",
   "confirm": "تأیید",
+  "underDevelopment.title": "در حال توسعه",
+  "underDevelopment.description": "این صفحه در حال ساخت است و به‌زودی در دسترس قرار خواهد گرفت.",
   "admins": {
     "title": "مدیران",
     "description": "مدیریت مدیران سیستم",

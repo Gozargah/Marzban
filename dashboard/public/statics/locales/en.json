@@ -12,6 +12,8 @@
   "success": "Success",
   "error": "Error",
   "username": "Username",
+  "underDevelopment.title": "Under Development",
+  "underDevelopment.description": "This page is currently being built and will be available soon.",
   "nodes": {
     "title": "Nodes",
     "description": "Manage your nodes",
