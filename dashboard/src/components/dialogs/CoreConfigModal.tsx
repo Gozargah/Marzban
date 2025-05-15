@@ -253,14 +253,22 @@ export default function CoreConfigModal({
     useEffect(() => {
         if (isDialogOpen) {
             if (!editingCore) {
-                // Set default values for new core
-                form.setValue("excluded_inbound_ids", []);
-                form.setValue("fallback_id", []);
-
-                if (!form.getValues().config) {
-                    form.setValue("config", defaultConfig);
-                }
+                // Reset form for new core
+                form.reset({
+                    name: '',
+                    config: defaultConfig,
+                    excluded_inbound_ids: [],
+                    fallback_id: []
+                });
             }
+        } else {
+            // Reset form when modal closes
+            form.reset({
+                name: '',
+                config: defaultConfig,
+                excluded_inbound_ids: [],
+                fallback_id: []
+            });
         }
     }, [isDialogOpen, editingCore, form, defaultConfig]);
 
