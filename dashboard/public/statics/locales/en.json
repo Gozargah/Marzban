@@ -543,7 +543,7 @@
   "resetUserUsage.title": "Reset User Usage",
   "revoke": "Revoke",
   "revokeUserSub.error": "Subscription revoke failed, please try again.",
-  "revokeUserSub.prompt": "Are you sure you want to revoke <b>{{username}}</b>'s subscription?",
+  "revokeUserSub.prompt": "Are you sure you want to revoke «{{username}}»'s subscription?",
   "revokeUserSub.success": "{{username}}'s subscription has revoked successfully.",
   "revokeUserSub.title": "Revoke User Subscription",
   "search": "Search",
@@ -807,5 +807,10 @@
   "statistics.activeUsers": "Active Users",
   "statistics.disabledUsers": "Disabled Users",
   "statistics.expiredUsers": "Expired Users",
-  "statistics.onHoldUsers": "On Hold Users"
+  "statistics.onHoldUsers": "On Hold Users",
+  "usersTable.resetUsageTitle": "Reset User Usage",
+  "usersTable.resetUsagePrompt": "Are you sure you want to reset the usage for «{{name}}»?",
+  "usersTable.resetUsageSubmit": "Reset Usage",
+  "usersTable.resetUsageSuccess": "User «{{name}}» usage has been reset successfully",
+  "usersTable.resetUsageFailed": "Failed to reset usage for user «{{name}}»"
 }

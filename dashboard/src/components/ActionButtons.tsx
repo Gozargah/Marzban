@@ -32,7 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { useRemoveUser } from '@/service/api'
+import { useRemoveUser, useResetUserDataUsage, useRevokeUserSubscription } from '@/service/api'
 import { cn } from '@/lib/utils'
 import useDirDetection from '@/hooks/use-dir-detection'
 
@@ -51,10 +51,14 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
   const [showQRModal, setShowQRModal] = useState(false)
   const [isEditModalOpen, setEditModalOpen] = useState(false)
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [isResetUsageDialogOpen, setResetUsageDialogOpen] = useState(false)
+  const [isRevokeSubDialogOpen, setRevokeSubDialogOpen] = useState(false)
   const queryClient = useQueryClient()
   const { t } = useTranslation()
   const dir = useDirDetection()
   const removeUserMutation = useRemoveUser()
+  const resetUserDataUsageMutation = useResetUserDataUsage()
+  const revokeUserSubscriptionMutation = useRevokeUserSubscription()
 
   // Create form for user editing
   const userForm = useForm<UseFormValues>({
@@ -150,19 +154,47 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
   }
 
   const handleRevokeSubscription = () => {
-    // Implement revoke subscription functionality
-    toast({
-      title: t('info'),
-      description: t('revokeSubscriptionAction', { username: user.username }),
-    })
+    setRevokeSubDialogOpen(true)
+  }
+
+  const confirmRevokeSubscription = async () => {
+    try {
+      await revokeUserSubscriptionMutation.mutateAsync({ username: user.username })
+      toast({
+        title: t('success', { defaultValue: 'Success' }),
+        description: t('userDialog.revokeSubSuccess', { name: user.username }),
+      })
+      setRevokeSubDialogOpen(false)
+      refreshUserData()
+    } catch (error: any) {
+      toast({
+        title: t('error', { defaultValue: 'Error' }),
+        description: t('revokeUserSub.error', { name: user.username, error: error?.message || '' }),
+        variant: 'destructive',
+      })
+    }
   }
 
   const handleResetUsage = () => {
-    // Implement reset usage functionality
-    toast({
-      title: t('info'),
-      description: t('resetUsageAction', { username: user.username }),
-    })
+    setResetUsageDialogOpen(true)
+  }
+
+  const confirmResetUsage = async () => {
+    try {
+      await resetUserDataUsageMutation.mutateAsync({ username: user.username })
+      toast({
+        title: t('success', { defaultValue: 'Success' }),
+        description: t('usersTable.resetUsageSuccess', { name: user.username }),
+      })
+      setResetUsageDialogOpen(false)
+      refreshUserData()
+    } catch (error: any) {
+      toast({
+        title: t('error', { defaultValue: 'Error' }),
+        description: t('usersTable.resetUsageFailed', { name: user.username, error: error?.message || '' }),
+        variant: 'destructive',
+      })
+    }
   }
 
   const handleUsageState = () => {
@@ -257,19 +289,19 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
             {/* Revoke Sub */}
             <DropdownMenuItem onClick={handleRevokeSubscription}>
               <RefreshCcw className="h-4 w-4 mr-2" />
-              <span>{t('revokeSub')}</span>
+              <span>{t('userDialog.revokeSubscription')}</span>
             </DropdownMenuItem>
 
             {/* Reset Usage */}
             <DropdownMenuItem onClick={handleResetUsage}>
               <RefreshCcw className="h-4 w-4 mr-2" />
-              <span>{t('resetUsage')}</span>
+              <span>{t('userDialog.resetUsage')}</span>
             </DropdownMenuItem>
 
             {/* Usage State */}
             <DropdownMenuItem onClick={handleUsageState}>
               <PieChart className="h-4 w-4 mr-2" />
-              <span>{t('usageState')}</span>
+              <span>{t('userDialog.usage')}</span>
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
@@ -305,6 +337,42 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
             <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>{t('usersTable.cancel')}</AlertDialogCancel>
             <AlertDialogAction variant="destructive" onClick={confirmDelete} disabled={removeUserMutation.isPending}>
               {t('usersTable.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* Reset Usage Confirm Dialog */}
+      <AlertDialog open={isResetUsageDialogOpen} onOpenChange={setResetUsageDialogOpen}>
+        <AlertDialogContent dir={dir}>
+          <AlertDialogHeader>
+            <AlertDialogTitle className={cn(dir === 'rtl' && 'text-right')}>{t('usersTable.resetUsageTitle')}</AlertDialogTitle>
+            <AlertDialogDescription className={cn(dir === 'rtl' && 'text-right')}>
+              {t('usersTable.resetUsagePrompt', { name: user.username })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className='flex items-center gap-2'>
+            <AlertDialogCancel onClick={() => setResetUsageDialogOpen(false)}>{t('usersTable.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmResetUsage} disabled={resetUserDataUsageMutation.isPending}>
+              {t('usersTable.resetUsageSubmit')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* Revoke Subscription Confirm Dialog */}
+      <AlertDialog open={isRevokeSubDialogOpen} onOpenChange={setRevokeSubDialogOpen}>
+        <AlertDialogContent dir={dir}>
+          <AlertDialogHeader>
+            <AlertDialogTitle className={cn(dir === 'rtl' && 'text-right')}>{t('revokeUserSub.title')}</AlertDialogTitle>
+            <AlertDialogDescription className={cn(dir === 'rtl' && 'text-right')}>
+              {t('revokeUserSub.prompt', { username: user.username })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className='flex items-center gap-2'>
+            <AlertDialogCancel onClick={() => setRevokeSubDialogOpen(false)}>{t('usersTable.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRevokeSubscription} disabled={revokeUserSubscriptionMutation.isPending}>
+              {t('revokeUserSub.title')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

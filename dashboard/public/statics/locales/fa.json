@@ -494,7 +494,7 @@
   "resetUserUsage.title": "بازنشانی مصرف کاربر",
   "revoke": "بازنشانی",
   "revokeUserSub.error": "بازنشانی اشتراک انجام نشد، لطفاً دوباره امتحان کنید.",
-  "revokeUserSub.prompt": "آیا مطمئن هستید که می خواهید اشتراک <b>{{username}}</b> را بازنشانی کنید؟",
+  "revokeUserSub.prompt": "آیا مطمئن هستید که می خواهید اشتراک «{{username}}» را بازنشانی کنید؟",
   "revokeUserSub.success": "اشتراک {{username}} با موفقیت بازنشانی شد.",
   "revokeUserSub.title": "بازنشانی اشتراک کاربر",
   "search": "جستجو",
@@ -799,5 +799,10 @@
   "statistics.activeUsers": "کاربران فعال",
   "statistics.disabledUsers": "کاربران غیرفعال",
   "statistics.expiredUsers": "کاربران منقضی شده",
-  "statistics.onHoldUsers": "کاربران در انتظار"
+  "statistics.onHoldUsers": "کاربران در انتظار",
+  "usersTable.resetUsageTitle": "ریست مصرف کاربر",
+  "usersTable.resetUsagePrompt": "آیا مطمئن هستید که می‌خواهید مصرف «{{name}}» را ریست کنید؟",
+  "usersTable.resetUsageSubmit": "ریست مصرف",
+  "usersTable.resetUsageSuccess": "مصرف کاربر «{{name}}» با موفقیت ریست شد",
+  "usersTable.resetUsageFailed": "ریست مصرف کاربر «{{name}}» ناموفق بود"
 }

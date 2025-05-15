@@ -329,7 +329,7 @@
   "resetUserUsage.title": "Сбросить расход трафика пользователя",
   "revoke": "Отозвать",
   "revokeUserSub.error": "Отзыв подписки не удался, пожалуйста, попробуйте ещё раз.",
-  "revokeUserSub.prompt": "Вы уверены, что хотите отозвать подписку для пользователя <b>{{username}}</b>?",
+  "revokeUserSub.prompt": "Вы уверены, что хотите отозвать подписку для пользователя «{{username}}»?",
   "revokeUserSub.success": "Подписка пользователя {{username}} успешно отозвана.",
   "revokeUserSub.title": "Отозвать подписку пользователя",
   "search": "Поиск",
@@ -802,5 +802,10 @@
   "statistics.activeUsers": "Активные пользователи",
   "statistics.disabledUsers": "Отключенные пользователи",
   "statistics.expiredUsers": "Истекшие пользователи",
-  "statistics.onHoldUsers": "Пользователи на удержании"
+  "statistics.onHoldUsers": "Пользователи на удержании",
+  "usersTable.resetUsageTitle": "Сбросить использование пользователя",
+  "usersTable.resetUsagePrompt": "Вы уверены, что хотите сбросить использование для «{{name}}»?",
+  "usersTable.resetUsageSubmit": "Сбросить использование",
+  "usersTable.resetUsageSuccess": "Использование пользователя «{{name}}» успешно сброшено",
+  "usersTable.resetUsageFailed": "Не удалось сбросить использование пользователя «{{name}}»"
 }
