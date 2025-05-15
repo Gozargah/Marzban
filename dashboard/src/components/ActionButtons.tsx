@@ -129,12 +129,6 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
   }, [user.subscription_url])
 
   const { copy, copied } = useClipboard({ timeout: 1500 })
-  const handleCopy = useCallback(
-    (text: string) => {
-      return copy.bind(null, text)
-    },
-    [copy],
-  )
 
   // Refresh user data function
   const refreshUserData = () => {
@@ -223,7 +217,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
               <DropdownMenuContent>
                 {subscribeLinks.map(subLink => (
                   <DropdownMenuItem className="p-0 justify-start" key={subLink.link}>
-                    <Button variant="ghost" className="w-full h-full px-2 justify-start" aria-label="Copy" onClick={handleCopy(subLink.link)}>
+                    <Button variant="ghost" className="w-full h-full px-2 justify-start" aria-label="Copy" onClick={() => copy(subLink.link)}>
                       <span>{subLink.protocol}</span>
                     </Button>
                   </DropdownMenuItem>

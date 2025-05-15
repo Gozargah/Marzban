@@ -180,7 +180,7 @@ export default function GeneralSettings() {
     return (
         <div>
             {/* Under Development Overlay */}
-            <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px] flex flex-col items-center z-10">
+            <div className="absolute inset-0 top-12 bg-black/20 backdrop-blur-[2px] flex flex-col items-center z-10">
                 <div className="bg-background/90 border-2 border-amber-400 dark:border-amber-600 shadow-md rounded-md p-4 max-w-md sm:max-w-lg md:max-w-xl mt-6 mx-auto flex flex-col items-center gap-3">
                     <Construction className="h-16 w-16 sm:h-20 sm:w-20 text-amber-500" />
                     <div>
