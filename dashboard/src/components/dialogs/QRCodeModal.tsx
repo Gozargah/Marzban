@@ -95,7 +95,7 @@ const QRCodeModal: FC<QRCodeModalProps> = memo(
                 <CarouselNext className="mr-6" />
               </Carousel>
               <span>
-                <span className="mx-2">{subscribeLinks[index-1]?.protocol}</span> {index} / {subscribeLinks?.length}
+                <span className="mx-2">{subscribeLinks[index - 1]?.protocol}</span> {index} / {subscribeLinks?.length}
               </span>
             </div>
           </div>

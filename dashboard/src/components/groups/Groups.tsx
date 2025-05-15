@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { toast } from '@/hooks/use-toast'
 import { useTranslation } from 'react-i18next'
 import { queryClient } from '@/utils/query-client'
+import useDirDetection from '@/hooks/use-dir-detection'
 
 const initialDefaultValues: Partial<GroupFormValues> = {
   name: '',
@@ -25,7 +26,7 @@ export default function Groups({ isDialogOpen, onOpenChange }: GroupsProps) {
   const [editingGroup, setEditingGroup] = useState<GroupResponse | null>(null)
   const { t } = useTranslation()
   const modifyGroupMutation = useModifyGroup()
-  
+  const dir = useDirDetection()
   const { data: groupsData, isLoading } = useGetAllGroups({})
 
   const form = useForm<GroupFormValues>({
@@ -81,7 +82,7 @@ export default function Groups({ isDialogOpen, onOpenChange }: GroupsProps) {
   return (
     <div className="flex-1 w-full space-y-4 p-4 pt-6">
       <ScrollArea className="h-[calc(100vh-8rem)]">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div dir={dir} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {groupsData?.groups.map((group) => (
             <Group
               key={group.id}

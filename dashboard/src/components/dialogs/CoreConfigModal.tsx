@@ -1,23 +1,23 @@
-import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/dialog'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/components/ui/form'
-import {Input} from '@/components/ui/input'
-import {Button} from '@/components/ui/button'
-import {useTranslation} from 'react-i18next'
-import {UseFormReturn} from 'react-hook-form'
-import {toast} from '@/hooks/use-toast'
-import {z} from 'zod'
-import {cn} from '@/lib/utils'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { useTranslation } from 'react-i18next'
+import { UseFormReturn } from 'react-hook-form'
+import { toast } from '@/hooks/use-toast'
+import { z } from 'zod'
+import { cn } from '@/lib/utils'
 import useDirDetection from '@/hooks/use-dir-detection'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import Editor from '@monaco-editor/react'
-import {useTheme} from '../../components/theme-provider'
-import {useCallback, useState, useEffect} from 'react'
-import {X, Maximize2, Minimize2} from 'lucide-react'
-import {useCreateCoreConfig, useModifyCoreConfig} from '@/service/api'
-import {queryClient} from '@/utils/query-client'
-import {CopyButton} from '@/components/CopyButton'
-import {generateKeyPair} from '@stablelib/x25519'
-import {encodeURLSafe} from '@stablelib/base64'
+import { useTheme } from '../../components/theme-provider'
+import { useCallback, useState, useEffect } from 'react'
+import { X, Maximize2, Minimize2 } from 'lucide-react'
+import { useCreateCoreConfig, useModifyCoreConfig } from '@/service/api'
+import { queryClient } from '@/utils/query-client'
+import { CopyButton } from '@/components/CopyButton'
+import { generateKeyPair } from '@stablelib/x25519'
+import { encodeURLSafe } from '@stablelib/base64'
 
 export const coreConfigFormSchema = z.object({
     name: z.string().min(1, 'Name is required'),
@@ -44,16 +44,16 @@ interface ValidationResult {
 }
 
 export default function CoreConfigModal({
-                                            isDialogOpen,
-                                            onOpenChange,
-                                            form,
-                                            editingCore,
-                                            editingCoreId
-                                        }: CoreConfigModalProps) {
-    const {t} = useTranslation()
+    isDialogOpen,
+    onOpenChange,
+    form,
+    editingCore,
+    editingCoreId
+}: CoreConfigModalProps) {
+    const { t } = useTranslation()
     const dir = useDirDetection()
-    const {resolvedTheme} = useTheme()
-    const [validation, setValidation] = useState<ValidationResult>({isValid: true})
+    const { resolvedTheme } = useTheme()
+    const [validation, setValidation] = useState<ValidationResult>({ isValid: true })
     const [isEditorReady, setIsEditorReady] = useState(false)
     const [generatedShortId, setGeneratedShortId] = useState<string | null>(null)
     const [keyPair, setKeyPair] = useState<{ publicKey: string, privateKey: string } | null>(null)
@@ -76,7 +76,7 @@ export default function CoreConfigModal({
                 try {
                     // Additional validation - try parsing the JSON
                     JSON.parse(form.getValues().config)
-                    setValidation({isValid: true})
+                    setValidation({ isValid: true })
                 } catch (e) {
                     setValidation({
                         isValid: false,
@@ -155,7 +155,7 @@ export default function CoreConfigModal({
                 configObj = JSON.parse(values.config)
             } catch (e) {
                 toast({
-                    title: t('error', {defaultValue: 'Error'}),
+                    title: t('error', { defaultValue: 'Error' }),
                     description: t('coreConfigModal.invalidJson'),
                     variant: "destructive"
                 })
@@ -199,7 +199,7 @@ export default function CoreConfigModal({
             }
 
             toast({
-                title: t('success', {defaultValue: 'Success'}),
+                title: t('success', { defaultValue: 'Success' }),
                 description: t(editingCore ? 'coreConfigModal.editSuccess' : 'coreConfigModal.createSuccess', {
                     name: values.name,
                     defaultValue: editingCore
@@ -209,14 +209,14 @@ export default function CoreConfigModal({
             })
 
             // Invalidate cores query to refresh list
-            queryClient.invalidateQueries({queryKey: ['/api/cores']})
+            queryClient.invalidateQueries({ queryKey: ['/api/cores'] })
 
             onOpenChange(false)
             form.reset()
         } catch (error: any) {
             console.error('Core config operation failed:', error)
             toast({
-                title: t('error', {defaultValue: 'Error'}),
+                title: t('error', { defaultValue: 'Error' }),
                 description: t(editingCore ? 'coreConfigModal.editFailed' : 'coreConfigModal.createFailed', {
                     name: values.name,
                     error: error?.message || '',
@@ -293,7 +293,7 @@ export default function CoreConfigModal({
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <div
-                            className="max-h-[75vh] overflow-y-auto pr-4 -mr-4 sm:max-h-[75vh] px-2">
+                            className="max-h-[75vh] overflow-y-auto pr-4 -mr-4 px-2">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <h3 className="text-lg font-semibold mb-4">{t('coreConfigModal.jsonConfig')}</h3>
@@ -302,7 +302,7 @@ export default function CoreConfigModal({
                                         <FormField
                                             control={form.control}
                                             name="config"
-                                            render={({field}) => (
+                                            render={({ field }) => (
                                                 <FormItem>
                                                     <FormControl>
                                                         <div className={cn(
@@ -313,8 +313,8 @@ export default function CoreConfigModal({
                                                             {!isEditorReady && (
                                                                 <div
                                                                     className="absolute inset-0 flex items-center justify-center bg-background/80 z-50">
-                                        <span
-                                            className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></span>
+                                                                    <span
+                                                                        className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></span>
                                                                 </div>
                                                             )}
                                                             {/* Fullscreen Toggle Button */}
@@ -327,10 +327,10 @@ export default function CoreConfigModal({
                                                                     isEditorFullscreen ? "bg-muted" : ""
                                                                 )}
                                                                 onClick={() => setIsEditorFullscreen((v) => !v)}
-                                                                aria-label={isEditorFullscreen ? t('exitFullscreen', {defaultValue: 'Exit Fullscreen'}) : t('fullscreen', {defaultValue: 'Fullscreen'})}
+                                                                aria-label={isEditorFullscreen ? t('exitFullscreen', { defaultValue: 'Exit Fullscreen' }) : t('fullscreen', { defaultValue: 'Fullscreen' })}
                                                             >
-                                                                {isEditorFullscreen ? <Minimize2 className="h-5 w-5"/> :
-                                                                    <Maximize2 className="h-5 w-5"/>}
+                                                                {isEditorFullscreen ? <Minimize2 className="h-5 w-5" /> :
+                                                                    <Maximize2 className="h-5 w-5" />}
                                                             </Button>
                                                             <Editor
                                                                 height={isEditorFullscreen ? "100vh" : "100%"}
@@ -341,7 +341,7 @@ export default function CoreConfigModal({
                                                                 onValidate={handleEditorValidation}
                                                                 onMount={handleEditorDidMount}
                                                                 options={{
-                                                                    minimap: {enabled: false},
+                                                                    minimap: { enabled: false },
                                                                     fontSize: 14,
                                                                     lineNumbers: 'on',
                                                                     roundedSelection: true,
@@ -366,14 +366,14 @@ export default function CoreConfigModal({
                                     <FormField
                                         control={form.control}
                                         name="name"
-                                        render={({field}) => (
+                                        render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>{t('coreConfigModal.name')}</FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         placeholder={t('coreConfigModal.namePlaceholder')} {...field} />
                                                 </FormControl>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -381,7 +381,7 @@ export default function CoreConfigModal({
                                     <FormField
                                         control={form.control}
                                         name="fallback_id"
-                                        render={({field}) => (
+                                        render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>{t('coreConfigModal.fallback')}</FormLabel>
                                                 <div className="flex flex-col gap-2">
@@ -389,16 +389,16 @@ export default function CoreConfigModal({
                                                         {field.value && field.value.length > 0 ? (
                                                             field.value.map((tag: string) => (
                                                                 <span key={tag}
-                                                                      className="bg-muted/80 px-2 py-1 rounded-md text-sm flex items-center gap-2">
-                                {tag}
+                                                                    className="bg-muted/80 px-2 py-1 rounded-md text-sm flex items-center gap-2">
+                                                                    {tag}
                                                                     <button
                                                                         type="button"
                                                                         className="hover:text-destructive"
                                                                         onClick={() => field.onChange((field.value || []).filter((t: string) => t !== tag))}
                                                                     >
-                                  ×
-                                </button>
-                              </span>
+                                                                        ×
+                                                                    </button>
+                                                                </span>
                                                             ))
                                                         ) : (
                                                             <span
@@ -418,7 +418,7 @@ export default function CoreConfigModal({
                                                         <FormControl>
                                                             <SelectTrigger>
                                                                 <SelectValue
-                                                                    placeholder={t('coreConfigModal.selectFallback')}/>
+                                                                    placeholder={t('coreConfigModal.selectFallback')} />
                                                             </SelectTrigger>
                                                         </FormControl>
                                                         <SelectContent>
@@ -451,7 +451,7 @@ export default function CoreConfigModal({
                                                         </Button>
                                                     )}
                                                 </div>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -459,7 +459,7 @@ export default function CoreConfigModal({
                                     <FormField
                                         control={form.control}
                                         name="excluded_inbound_ids"
-                                        render={({field}) => (
+                                        render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>{t('coreConfigModal.excludedInbound')}</FormLabel>
                                                 <div className="flex flex-col gap-2">
@@ -467,16 +467,16 @@ export default function CoreConfigModal({
                                                         {field.value && field.value.length > 0 ? (
                                                             field.value.map((tag: string) => (
                                                                 <span key={tag}
-                                                                      className="bg-muted/80 px-2 py-1 rounded-md text-sm flex items-center gap-2">
-                                {tag}
+                                                                    className="bg-muted/80 px-2 py-1 rounded-md text-sm flex items-center gap-2">
+                                                                    {tag}
                                                                     <button
                                                                         type="button"
                                                                         className="hover:text-destructive"
                                                                         onClick={() => field.onChange((field.value || []).filter((t: string) => t !== tag))}
                                                                     >
-                                  ×
-                                </button>
-                              </span>
+                                                                        ×
+                                                                    </button>
+                                                                </span>
                                                             ))
                                                         ) : (
                                                             <span
@@ -496,7 +496,7 @@ export default function CoreConfigModal({
                                                         <FormControl>
                                                             <SelectTrigger>
                                                                 <SelectValue
-                                                                    placeholder={t('coreConfigModal.selectInbound')}/>
+                                                                    placeholder={t('coreConfigModal.selectInbound')} />
                                                             </SelectTrigger>
                                                         </FormControl>
                                                         <SelectContent>
@@ -529,7 +529,7 @@ export default function CoreConfigModal({
                                                         </Button>
                                                     )}
                                                 </div>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -551,7 +551,7 @@ export default function CoreConfigModal({
                                                     onClick={() => setKeyPair(null)}
                                                     aria-label={t('close')}
                                                 >
-                                                    <X className="h-4 w-4"/>
+                                                    <X className="h-4 w-4" />
                                                 </Button>
 
                                                 <div className="space-y-3">
@@ -607,7 +607,7 @@ export default function CoreConfigModal({
                                                 onClick={() => setGeneratedShortId(null)}
                                                 aria-label={t('close')}
                                             >
-                                                <X className="h-4 w-4"/>
+                                                <X className="h-4 w-4" />
                                             </Button>
                                             <p className="text-sm font-medium mb-1">{t('coreConfigModal.shortId')}</p>
                                             <div className="flex items-center gap-2">
@@ -627,7 +627,7 @@ export default function CoreConfigModal({
                             </div>
                         </div>
                         {!isEditorFullscreen && (
-                            <div className="flex justify-end gap-x-2 pt-4">
+                            <div className="flex justify-end gap-2">
                                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                                     {t('cancel')}
                                 </Button>

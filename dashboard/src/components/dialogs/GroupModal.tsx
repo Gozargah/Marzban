@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { queryClient } from '@/utils/query-client'
-
+import useDirDetection from '@/hooks/use-dir-detection'
 export const groupFormSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   inbound_tags: z.array(z.string()),
@@ -31,6 +31,7 @@ interface GroupModalProps {
 
 export default function GroupModal({ isDialogOpen, onOpenChange, form, editingGroup, editingGroupId }: GroupModalProps) {
   const { t } = useTranslation()
+  const dir = useDirDetection()
   const addGroupMutation = useCreateGroup()
   const modifyGroupMutation = useModifyGroup()
   const { data: inbounds } = useGetInbounds()
@@ -44,7 +45,7 @@ export default function GroupModal({ isDialogOpen, onOpenChange, form, editingGr
         })
         toast({
           title: t('success', { defaultValue: 'Success' }),
-          description: t('group.editSuccess', { 
+          description: t('group.editSuccess', {
             name: values.name,
             defaultValue: 'Group "{name}" has been updated successfully'
           })
@@ -55,7 +56,7 @@ export default function GroupModal({ isDialogOpen, onOpenChange, form, editingGr
         })
         toast({
           title: t('success', { defaultValue: 'Success' }),
-          description: t('group.createSuccess', { 
+          description: t('group.createSuccess', {
             name: values.name,
             defaultValue: 'Group "{name}" has been created successfully'
           })
@@ -69,7 +70,7 @@ export default function GroupModal({ isDialogOpen, onOpenChange, form, editingGr
       console.error('Group operation failed:', error)
       toast({
         title: t('error', { defaultValue: 'Error' }),
-        description: t(editingGroup ? 'group.editFailed' : 'group.createFailed', { 
+        description: t(editingGroup ? 'group.editFailed' : 'group.createFailed', {
           name: values.name,
           error: error?.message || '',
           defaultValue: `Failed to ${editingGroup ? 'update' : 'create'} group "{name}". {error}`
@@ -83,7 +84,7 @@ export default function GroupModal({ isDialogOpen, onOpenChange, form, editingGr
     <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{editingGroup ? t('editGroup', { defaultValue: 'Edit Group' }) : t('createGroup')}</DialogTitle>
+          <DialogTitle className={cn(dir === 'rtl' && 'text-right')}>{editingGroup ? t('editGroup', { defaultValue: 'Edit Group' }) : t('createGroup')}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -159,8 +160,8 @@ export default function GroupModal({ isDialogOpen, onOpenChange, form, editingGr
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 {t('cancel')}
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={addGroupMutation.isPending || modifyGroupMutation.isPending}
                 className="bg-primary hover:bg-primary/90"
               >

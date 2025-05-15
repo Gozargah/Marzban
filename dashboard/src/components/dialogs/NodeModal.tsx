@@ -1,9 +1,9 @@
-import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/dialog'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/components/ui/form'
-import {Input} from '@/components/ui/input'
-import {Button} from '@/components/ui/button'
-import {useTranslation} from 'react-i18next'
-import {UseFormReturn} from 'react-hook-form'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { useTranslation } from 'react-i18next'
+import { UseFormReturn } from 'react-hook-form'
 import {
     useCreateNode,
     useModifyNode,
@@ -13,16 +13,16 @@ import {
     getNode,
     reconnectNode
 } from '@/service/api'
-import {toast} from '@/hooks/use-toast'
-import {z} from 'zod'
-import {cn} from '@/lib/utils'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select'
-import {Textarea} from '@/components/ui/textarea'
-import {queryClient} from '@/utils/query-client'
+import { toast } from '@/hooks/use-toast'
+import { z } from 'zod'
+import { cn } from '@/lib/utils'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { queryClient } from '@/utils/query-client'
 import useDirDetection from '@/hooks/use-dir-detection'
-import {useState, useEffect} from 'react'
-import {Loader2} from 'lucide-react'
-import {v4 as uuidv4, v5 as uuidv5, v6 as uuidv6, v7 as uuidv7} from 'uuid'
+import { useState, useEffect } from 'react'
+import { Loader2 } from 'lucide-react'
+import { v4 as uuidv4, v5 as uuidv5, v6 as uuidv6, v7 as uuidv7 } from 'uuid'
 
 export const nodeFormSchema = z.object({
     name: z.string().min(1, 'Name is required'),
@@ -50,12 +50,12 @@ interface NodeModalProps {
 
 type ConnectionStatus = 'idle' | 'success' | 'error' | 'checking';
 
-export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode, editingNodeId}: NodeModalProps) {
-    const {t} = useTranslation()
+export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNode, editingNodeId }: NodeModalProps) {
+    const { t } = useTranslation()
     const dir = useDirDetection()
     const addNodeMutation = useCreateNode()
     const modifyNodeMutation = useModifyNode()
-    const {data: cores} = useGetAllCores()
+    const { data: cores } = useGetAllCores()
     const [statusChecking, setStatusChecking] = useState(false)
     const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('idle')
     const [errorDetails, setErrorDetails] = useState<string | null>(null)
@@ -87,7 +87,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
     useEffect(() => {
         if (!isDialogOpen || !autoCheck || editingNode || !debouncedValues) return
 
-        const {name, address, port, api_key} = debouncedValues
+        const { name, address, port, api_key } = debouncedValues
         if (name && address && port && api_key) {
             checkNodeStatus()
         }
@@ -214,7 +214,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                 })
                 nodeId = editingNodeId;
                 toast({
-                    title: t('success', {defaultValue: 'Success'}),
+                    title: t('success', { defaultValue: 'Success' }),
                     description: t('nodes.editSuccess', {
                         name: values.name,
                         defaultValue: 'Node «{name}» has been updated successfully'
@@ -226,7 +226,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                 })
                 nodeId = result?.id;
                 toast({
-                    title: t('success', {defaultValue: 'Success'}),
+                    title: t('success', { defaultValue: 'Success' }),
                     description: t('nodes.createSuccess', {
                         name: values.name,
                         defaultValue: 'Node «{name}» has been created successfully'
@@ -254,13 +254,13 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
             }
 
             // Invalidate nodes queries after successful operation
-            queryClient.invalidateQueries({queryKey: ['/api/nodes']})
+            queryClient.invalidateQueries({ queryKey: ['/api/nodes'] })
             onOpenChange(false)
             form.reset()
         } catch (error: any) {
             console.error('Node operation failed:', error)
             toast({
-                title: t('error', {defaultValue: 'Error'}),
+                title: t('error', { defaultValue: 'Error' }),
                 description: t(editingNode ? 'nodes.editFailed' : 'nodes.createFailed', {
                     name: values.name,
                     error: error?.message || '',
@@ -293,13 +293,13 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                         connectionStatus === 'error' ? 'bg-red-500 dark:bg-red-400' :
                                             connectionStatus === 'checking' ? 'bg-yellow-500 dark:bg-yellow-400' :
                                                 'bg-gray-500 dark:bg-gray-400'
-                                    }`}/>
+                                        }`} />
                                 <span className="text-sm font-medium text-foreground">
-                  {connectionStatus === 'success' ? t('nodeModal.status.connected') :
-                      connectionStatus === 'error' ? t('nodeModal.status.error') :
-                          connectionStatus === 'checking' ? t('nodeModal.status.connecting') :
-                              t('nodeModal.status.disabled')}
-                </span>
+                                    {connectionStatus === 'success' ? t('nodeModal.status.connected') :
+                                        connectionStatus === 'error' ? t('nodeModal.status.error') :
+                                            connectionStatus === 'checking' ? t('nodeModal.status.connecting') :
+                                                t('nodeModal.status.disabled')}
+                                </span>
                             </div>
                             {connectionStatus === 'error' && (
                                 <Button
@@ -333,7 +333,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                 >
                                     {reconnecting ? (
                                         <div className="flex items-center gap-1">
-                                            <Loader2 className="h-3 w-3 animate-spin"/>
+                                            <Loader2 className="h-3 w-3 animate-spin" />
                                             {t('nodeModal.reconnecting')}
                                         </div>
                                     ) : (
@@ -350,7 +350,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                             >
                                 {statusChecking ? (
                                     <div className="flex items-center gap-1">
-                                        <Loader2 className="h-3 w-3 animate-spin"/>
+                                        <Loader2 className="h-3 w-3 animate-spin" />
                                         {t('nodeModal.statusChecking')}
                                     </div>
                                 ) : (
@@ -376,13 +376,13 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                     <FormField
                                         control={form.control}
                                         name="name"
-                                        render={({field}) => (
+                                        render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>{t('nodeModal.name')}</FormLabel>
                                                 <FormControl>
                                                     <Input placeholder={t('nodeModal.namePlaceholder')} {...field} />
                                                 </FormControl>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -391,14 +391,14 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                         <FormField
                                             control={form.control}
                                             name="address"
-                                            render={({field}) => (
+                                            render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>{t('nodeModal.address')}</FormLabel>
                                                     <FormControl>
                                                         <Input
                                                             placeholder={t('nodeModal.addressPlaceholder')} {...field} />
                                                     </FormControl>
-                                                    <FormMessage/>
+                                                    <FormMessage />
                                                 </FormItem>
                                             )}
                                         />
@@ -406,7 +406,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                         <FormField
                                             control={form.control}
                                             name="port"
-                                            render={({field}) => (
+                                            render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>{t('nodeModal.port')}</FormLabel>
                                                     <FormControl>
@@ -417,7 +417,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                                             onChange={(e) => field.onChange(parseInt(e.target.value))}
                                                         />
                                                     </FormControl>
-                                                    <FormMessage/>
+                                                    <FormMessage />
                                                 </FormItem>
                                             )}
                                         />
@@ -426,7 +426,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                     <FormField
                                         control={form.control}
                                         name="core_config_id"
-                                        render={({field}) => (
+                                        render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>{t('nodeModal.coreConfig')}</FormLabel>
                                                 <Select
@@ -436,7 +436,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                                 >
                                                     <FormControl>
                                                         <SelectTrigger>
-                                                            <SelectValue placeholder={t('nodeModal.selectCoreConfig')}/>
+                                                            <SelectValue placeholder={t('nodeModal.selectCoreConfig')} />
                                                         </SelectTrigger>
                                                     </FormControl>
                                                     <SelectContent>
@@ -447,7 +447,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                                         ))}
                                                     </SelectContent>
                                                 </Select>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -457,7 +457,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                             <FormField
                                                 control={form.control}
                                                 name="usage_coefficient"
-                                                render={({field}) => (
+                                                render={({ field }) => (
                                                     <FormItem className='flex-1'>
                                                         <FormLabel>{t('nodeModal.usageRatio')}</FormLabel>
                                                         <FormControl>
@@ -469,7 +469,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                                                 onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                                             />
                                                         </FormControl>
-                                                        <FormMessage/>
+                                                        <FormMessage />
                                                     </FormItem>
                                                 )}
                                             />
@@ -477,7 +477,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                             <FormField
                                                 control={form.control}
                                                 name="max_logs"
-                                                render={({field}) => (
+                                                render={({ field }) => (
                                                     <FormItem className='flex-1'>
                                                         <FormLabel>{t('nodes.maxLogs')}</FormLabel>
                                                         <FormControl>
@@ -488,7 +488,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                                                 onChange={(e) => field.onChange(parseInt(e.target.value))}
                                                             />
                                                         </FormControl>
-                                                        <FormMessage/>
+                                                        <FormMessage />
                                                     </FormItem>
                                                 )}
                                             />
@@ -499,7 +499,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                             <FormField
                                                 control={form.control}
                                                 name="connection_type"
-                                                render={({field}) => (
+                                                render={({ field }) => (
                                                     <FormItem className='w-full'>
                                                         <FormLabel>{t('nodeModal.connectionType')}</FormLabel>
                                                         <Select
@@ -508,7 +508,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                                         >
                                                             <FormControl>
                                                                 <SelectTrigger>
-                                                                    <SelectValue placeholder="Rest"/>
+                                                                    <SelectValue placeholder="Rest" />
                                                                 </SelectTrigger>
                                                             </FormControl>
                                                             <SelectContent>
@@ -518,7 +518,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                                                     value={NodeConnectionType.rest}>Rest</SelectItem>
                                                             </SelectContent>
                                                         </Select>
-                                                        <FormMessage/>
+                                                        <FormMessage />
                                                     </FormItem>
                                                 )}
                                             />
@@ -526,7 +526,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                             <FormField
                                                 control={form.control}
                                                 name="api_key"
-                                                render={({field}) => {
+                                                render={({ field }) => {
                                                     const [uuidVersion, setUuidVersion] = useState<'v4' | 'v5' | 'v6' | 'v7'>('v4');
 
                                                     const generateUUID = () => {
@@ -568,7 +568,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                                                         >
                                                                             <SelectTrigger
                                                                                 className="w-[60px] h-full rounded-r-none border-r-0">
-                                                                                <SelectValue/>
+                                                                                <SelectValue />
                                                                             </SelectTrigger>
                                                                             <SelectContent>
                                                                                 <SelectItem value="v4">v4</SelectItem>
@@ -588,7 +588,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                                                     </div>
                                                                 </div>
                                                             </FormControl>
-                                                            <FormMessage/>
+                                                            <FormMessage />
                                                         </FormItem>
                                                     );
                                                 }}
@@ -597,7 +597,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                             <FormField
                                                 control={form.control}
                                                 name="keep_alive"
-                                                render={({field}) => {
+                                                render={({ field }) => {
                                                     const [displayValue, setDisplayValue] = useState<string>(field.value?.toString() || '');
                                                     const [unit, setUnit] = useState<'seconds' | 'minutes' | 'hours'>('seconds');
 
@@ -651,7 +651,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                                                         }}
                                                                     >
                                                                         <SelectTrigger className="flex-1">
-                                                                            <SelectValue/>
+                                                                            <SelectValue />
                                                                         </SelectTrigger>
                                                                         <SelectContent>
                                                                             <SelectItem
@@ -664,7 +664,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                                                     </Select>
                                                                 </div>
                                                             </div>
-                                                            <FormMessage/>
+                                                            <FormMessage />
                                                         </FormItem>
                                                     );
                                                 }}
@@ -676,7 +676,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                 <FormField
                                     control={form.control}
                                     name="server_ca"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem className="flex-1 w-full mb-6 md:mb-0 h-full">
                                             <FormLabel>{t('nodeModal.certificate')}</FormLabel>
                                             <FormControl>
@@ -687,7 +687,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                                     {...field}
                                                 />
                                             </FormControl>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />

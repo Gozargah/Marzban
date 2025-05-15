@@ -86,7 +86,7 @@ const Dashboard = () => {
     defaultValues: {
       username: '',
       status: 'active',
-      data_limit: undefined,
+      data_limit: 0,
       expire: '',
       note: '',
       group_ids: [],
@@ -98,6 +98,7 @@ const Dashboard = () => {
     // Invalidate all relevant queries 
     queryClient.invalidateQueries({ queryKey: ['getUsers'] })
     queryClient.invalidateQueries({ queryKey: ['getUsersUsage'] })
+    queryClient.invalidateQueries({ queryKey: ['/api/users/'] })
   }
 
 
