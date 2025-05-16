@@ -1,7 +1,7 @@
 import { ChevronRight, type LucideIcon } from 'lucide-react'
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from '@/components/ui/sidebar'
+import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubItem } from '@/components/ui/sidebar'
 import { NavLink, useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
 
@@ -54,10 +54,10 @@ export function NavMain({
                         <SidebarMenuSubItem key={subItem.title}>
                           <NavLink to={subItem.url} end>
                             {({ isActive }) => (
-                              <SidebarMenuSubButton className="flex items-center gap-2" isActive={isActive}>
+                              <SidebarMenuButton className="flex items-center gap-2" isActive={isActive}>
                                 <subItem.icon />
                                 <span>{t(subItem.title)}</span>
-                              </SidebarMenuSubButton>
+                              </SidebarMenuButton>
                             )}
                           </NavLink>
                         </SidebarMenuSubItem>

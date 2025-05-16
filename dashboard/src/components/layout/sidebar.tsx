@@ -11,6 +11,8 @@ import useDirDetection from '@/hooks/use-dir-detection'
 import { BookOpen, GithubIcon, LayoutTemplate, LifeBuoy, ListTodo, PieChart, RssIcon, Settings2, Share2Icon, UserCog, UsersIcon, Users2, Palette, Cpu, Settings, FileText } from 'lucide-react'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
+import {useEffect, useState} from "react";
+import {getSystemStats} from "@/service/api";
 
 const data = {
   user: {
@@ -117,6 +119,21 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const isRTL = useDirDetection() === 'rtl'
   const { t } = useTranslation()
+  const [version, setVersion] = useState<string>('')
+
+  useEffect(() => {
+    const fetchVersion = async () => {
+      try {
+        const data = await getSystemStats()
+        if (data?.version) {
+          setVersion(` (v${data.version})`)
+        }
+      } catch (error) {
+        console.error('Failed to fetch version:', error)
+      }
+    }
+    fetchVersion()
+  }, [])
   return (
     <>
       <div className="sticky top-0 z-30 bg-neutral-200/75 dark:bg-neutral-900/75 backdrop-blur flex lg:hidden border-b border-sidebar-border py-3 px-4 justify-between items-center">
@@ -135,7 +152,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <a href={REPO_URL} target="_blank" className="!gap-0">
                   <Logo className="!w-5 !h-5 stroke-[2px]" />
                   <span className="truncate font-semibold text-sm leading-tight ltr:ml-2 rtl:mr-2">{t('marzban')}</span>
-                  <span className="text-xs opacity-45 ltr:ml-1 rtl:mr-1">v0.10</span>
+                  <span className="text-xs opacity-45 ltr:ml-1 rtl:mr-1">{version}</span>
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
