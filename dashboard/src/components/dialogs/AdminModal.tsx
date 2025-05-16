@@ -282,7 +282,15 @@ export default function AdminModal({
                                         <FormItem>
                                             <FormLabel>{t('admins.telegramId')}</FormLabel>
                                             <FormControl>
-                                                <Input placeholder={"Telegram ID (e.g. 36548974)"} {...field}/>
+                                                <Input
+                                                    type="number"
+                                                    placeholder={t('Telegram ID (e.g. 36548974)')}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value;
+                                                        field.onChange(value ? parseInt(value) : 0);
+                                                    }}
+                                                    value={field.value ? field.value : ''}
+                                                />
                                             </FormControl>
                                             <FormMessage/>
                                         </FormItem>
