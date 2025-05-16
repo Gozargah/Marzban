@@ -155,14 +155,14 @@ const HostModal: React.FC<HostModalProps> = ({
 
     return (
         <Dialog open={isDialogOpen} onOpenChange={handleModalOpenChange}>
-            <DialogContent className="w-full h-full max-w-2xl md:max-h-[90vh] sm:overflow-y-auto">
+            <DialogContent className="w-full h-full max-w-2xl md:max-h-[90dvh] sm:overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className={cn(dir === "rtl" ? "text-right" : "text-left")}>{editingHost ? t("editHost.title") : t("hostsDialog.addHost")}</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
                         <div
-                            className="max-h-[80vh] sm:max-h-[75vh] overflow-y-auto pr-4 -mr-4 px-2 space-y-4">
+                            className="max-h-[80dvh] sm:max-h-[75dvh] overflow-y-auto pr-4 -mr-4 px-2 space-y-4">
                             <FormField
                                 control={form.control}
                                 name="inbound_tag"

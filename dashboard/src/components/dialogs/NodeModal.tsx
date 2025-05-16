@@ -370,7 +370,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
                         <div
-                            className="max-h-[65vh] overflow-y-auto pr-4 -mr-4 sm:max-h-[65vh] px-2">
+                            className="max-h-[65dvh] overflow-y-auto pr-4 -mr-4 sm:max-h-[65dvh] px-2">
                             <div className="flex h-full flex-col sm:flex-row items-start gap-4">
                                 <div className="flex-1 space-y-4 w-full">
                                     <FormField

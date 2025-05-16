@@ -402,7 +402,7 @@ export default function UserModal({
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <div
-                            className="max-h-[80vh] overflow-y-auto pr-4 -mr-4 sm:max-h-[75vh] px-2">
+                            className="max-h-[80dvh] overflow-y-auto pr-4 -mr-4 sm:max-h-[75dvh] px-2">
                             <div
                                 className='flex flex-col gap-6 lg:flex-row items-center lg:items-start justify-between w-full lg:pb-8'>
                                 <div className='space-y-6 flex-[2] w-full'>
