@@ -100,7 +100,7 @@
     "create": "Create Admin",
     "status": "Status",
     "role": "Role",
-    "users.count": "Users Count",
+    "total.users": "Total Users",
     "used.traffic": "Used Traffic",
     "total": "Total Admins",
     "active": "Active Admins",

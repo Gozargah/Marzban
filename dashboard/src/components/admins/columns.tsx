@@ -124,12 +124,12 @@ export const setupColumns = ({
         },
     },
     {
-        accessorKey: 'users_count',
-        header: () => createSortButton('users_count', 'admins.users.count', t, handleSort, filters),
+        accessorKey: 'total_users',
+        header: () => createSortButton('total_users', 'admins.total.users', t, handleSort, filters),
         cell: ({row}) => (
             <div className="flex items-center gap-2">
                 <User className="h-4 w-4"/>
-                <span>{row.getValue('users_count') || 0}</span>
+                <span>{row.getValue('total_users') || 0}</span>
             </div>
         ),
     },
