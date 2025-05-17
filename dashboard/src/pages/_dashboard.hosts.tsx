@@ -3,39 +3,56 @@ import { Plus } from 'lucide-react'
 import MainSection from '@/components/hosts/Hosts'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { getHosts, createHost, modifyHost, CreateHost, ProxyHostALPN, ProxyHostFingerprint, MultiplexProtocol, Xudp } from '@/service/api'
+import { getHosts, createHost, modifyHost, CreateHost, ProxyHostALPN, ProxyHostFingerprint, MultiplexProtocol, Xudp, BaseHost } from '@/service/api'
 import { HostFormValues } from '@/components/hosts/Hosts'
+import { toast } from "sonner"
+import { useTranslation } from "react-i18next"
+import { Separator } from '@/components/ui/separator'
 
 export default function HostsPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [editingHost, setEditingHost] = useState<BaseHost | null>(null);
     const { data, isLoading } = useQuery({
         queryKey: ["getGetHostsQueryKey"],
         queryFn: () => getHosts(),
     });
+    const { t } = useTranslation();
 
     const handleDialogOpen = (open: boolean) => {
         setIsDialogOpen(open);
+        if (!open) {
+            setEditingHost(null);
+        }
     };
 
     const handleCreateClick = () => {
+        setEditingHost(null);
         setIsDialogOpen(true);
     };
 
-    const onAddHost = async (open: boolean) => {
+    const onAddHost = (open: boolean) => {
         setIsDialogOpen(open);
     };
 
     const handleSubmit = async (formData: HostFormValues) => {
         try {
             // Check if all protocols are set to none
-            const allProtocolsNone = formData.mux_settings && 
+            const allProtocolsNone = formData.mux_settings &&
                 (!formData.mux_settings.sing_box?.protocol || formData.mux_settings.sing_box.protocol === 'none') &&
                 (!formData.mux_settings.clash?.protocol || formData.mux_settings.clash.protocol === 'none') &&
                 (!formData.mux_settings.xray?.concurrency);
 
+            // If creating a new host, set priority to max+1
+            let priority = formData.priority;
+            if (!editingHost?.id && data && data.length > 0) {
+                const maxPriority = Math.max(...data.map(h => h.priority ?? 0));
+                priority = maxPriority + 1;
+            }
+
             // Convert HostFormValues to CreateHost type
             const hostData: CreateHost = {
                 ...formData,
+                priority,
                 alpn: formData.alpn as ProxyHostALPN | undefined,
                 fingerprint: formData.fingerprint as ProxyHostFingerprint | undefined,
                 mux_settings: allProtocolsNone ? undefined : (formData.mux_settings ? {
@@ -72,24 +89,51 @@ export default function HostsPage() {
                     } : undefined
                 } : undefined
             };
-            
-            // Check if this host already exists by comparing address and port
-            const existingHost = data?.find(host => 
-                host.address === formData.address && 
-                host.port === formData.port
-            );
-            
-            if (existingHost?.id) {
+
+            if (editingHost?.id) {
                 // This is an edit operation
-                const response = await modifyHost(existingHost.id, hostData);
+                await modifyHost(editingHost.id, hostData);
+                toast.success(t("hostsDialog.editSuccess", { name: formData.remark }));
                 return { status: 200 };
             } else {
                 // This is a new host
-                const response = await createHost(hostData);
+                await createHost(hostData);
+                toast.success(t("hostsDialog.createSuccess", { name: formData.remark }));
                 return { status: 200 };
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error submitting host:", error);
+
+            // Improved error extraction for backend schema
+            let errorMessage = "";
+
+            // 1. FastAPI/DRF style: error.response.data.detail (could be string or array)
+            if (error?.response?.data?.detail) {
+                if (Array.isArray(error.response.data.detail)) {
+                    // Join all error messages
+                    errorMessage = error.response.data.detail.map((d: any) => d.msg || d.message || JSON.stringify(d)).join('\n');
+                } else if (typeof error.response.data.detail === "string") {
+                    errorMessage = error.response.data.detail;
+                } else {
+                    errorMessage = JSON.stringify(error.response.data.detail);
+                }
+            }
+            // 2. Common: error.response.data.message
+            else if (error?.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            }
+            // 3. Fallback: error.message
+            else if (error?.message) {
+                errorMessage = error.message;
+            }
+            // 4. Last resort: translation fallback
+            else {
+                errorMessage = editingHost?.id
+                    ? t("hostsDialog.editFailed", { name: formData.remark })
+                    : t("hostsDialog.createFailed", { name: formData.remark });
+            }
+
+            toast.error(errorMessage);
             return { status: 500 };
         }
     };
@@ -107,13 +151,16 @@ export default function HostsPage() {
                 buttonText='hostsDialog.addHost'
                 onButtonClick={handleCreateClick}
             />
+            <Separator />
             <div>
-                <MainSection 
-                    data={data || []} 
-                    isDialogOpen={isDialogOpen} 
+                <MainSection
+                    data={data || []}
+                    isDialogOpen={isDialogOpen}
                     onDialogOpenChange={handleDialogOpen}
                     onAddHost={onAddHost}
                     onSubmit={handleSubmit}
+                    editingHost={editingHost}
+                    setEditingHost={setEditingHost}
                 />
             </div>
         </div>

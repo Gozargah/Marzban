@@ -6,7 +6,7 @@ import CoreConfigModal, { coreConfigFormSchema, CoreConfigFormValues } from '@/c
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { queryClient } from '@/utils/query-client'
 import { Button } from '@/components/ui/button'
@@ -60,8 +60,8 @@ export default function Cores({
       config: JSON.stringify(core.config, null, 2),
       excluded_inbound_ids: core.exclude_inbound_tags ? 
         core.exclude_inbound_tags.split(',')
-          .map(id => Number(id.trim()))
-          .filter(id => !isNaN(id)) : 
+          .map(id => id.trim())
+          .filter(Boolean) : 
         []
     })
     onOpenChange?.(true)
@@ -81,27 +81,17 @@ export default function Cores({
         }
       })
       
-      toast({
-        title: t('success', { defaultValue: 'Success' }),
-        description: t('core.toggleSuccess', { 
-          name: core.name,
-          defaultValue: `Core "{name}" has been toggled successfully`
-        })
-      })
+      toast.success(t('core.toggleSuccess', { 
+        name: core.name,
+      }))
       
-      // Invalidate the groups query to refresh the list
       queryClient.invalidateQueries({
         queryKey: ['/api/cores']
       })
     } catch (error) {
-      toast({
-        title: t('error', { defaultValue: 'Error' }),
-        description: t('core.toggleFailed', { 
-          name: core.name,
-          defaultValue: `Failed to toggle core "{name}"`
-        }),
-        variant: "destructive"
-      })
+      toast.error(t('core.toggleFailed', { 
+        name: core.name,
+      }))
     }
   }
 

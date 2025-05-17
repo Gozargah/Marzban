@@ -25,63 +25,61 @@ export default function Core({ core, onEdit, onToggleStatus, onDuplicate, onDele
   }
 
   return (
-    <>
-      <Card className="px-4 py-5 relative group h-full hover:bg-accent transition-colors">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex-1 min-w-0 cursor-pointer"
-            onClick={() => onEdit(core)}
-          >
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <div className={cn(
-                  "min-h-2 min-w-2 rounded-full",
-                  "bg-green-500"
-                )} />
-                <div className="font-medium">{core.name}</div>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Core ID: {core.id}
-              </div>
+    <Card className="px-4 py-5 relative group h-full hover:bg-accent transition-colors">
+      <div className="flex items-center gap-3">
+        <div
+          className="flex-1 min-w-0 cursor-pointer"
+          onClick={() => onEdit(core)}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className={cn(
+                "min-h-2 min-w-2 rounded-full",
+                "bg-green-500"
+              )} />
+              <div className="font-medium">{core.name}</div>
             </div>
-            <div className="text-sm text-muted-foreground mt-1">
-              {t('createdAt')}: {new Date(core.created_at).toLocaleDateString()}
+            <div className="text-xs text-muted-foreground">
+              Core ID: {core.id}
             </div>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+          <div className="text-sm text-muted-foreground mt-1">
+            {t('createdAt')}: {new Date(core.created_at).toLocaleDateString()}
+          </div>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={(e) => {
+              e.stopPropagation()
+              onEdit(core)
+            }}>
+              <Pencil className="h-4 w-4 mr-2" />
+              {t('edit')}
+            </DropdownMenuItem>
+            {onDuplicate && (
               <DropdownMenuItem onSelect={(e) => {
                 e.stopPropagation()
-                onEdit(core)
+                onDuplicate()
               }}>
-                <Pencil className="h-4 w-4 mr-2" />
-                {t('edit')}
+                <Copy className="h-4 w-4 mr-2" />
+                {t('duplicate')}
               </DropdownMenuItem>
-              {onDuplicate && (
-                <DropdownMenuItem onSelect={(e) => {
-                  e.stopPropagation()
-                  onDuplicate()
-                }}>
-                  <Copy className="h-4 w-4 mr-2" />
-                  {t('duplicate')}
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem
-                onSelect={handleDeleteClick}
-                className="text-destructive"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                {t('delete')}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </Card>
-    </>
+            )}
+            <DropdownMenuItem
+              onSelect={handleDeleteClick}
+              className="text-destructive"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {t('delete')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </Card>
   )
 } 

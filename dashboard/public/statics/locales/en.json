@@ -14,6 +14,8 @@
   "username": "Username",
   "underDevelopment.title": "Under Development",
   "underDevelopment.description": "This page is currently being built and will be available soon.",
+  "modifying": "Modifying...",
+  "removing": "Removing...",
   "nodes": {
     "title": "Nodes",
     "description": "Manage your nodes",
@@ -188,11 +190,11 @@
   "core.socket.not_connected": "Not Connected",
   "core.successMessage": "Core settings updated successfully",
   "core.title": "Core Configs Settings",
-  "core.toggleSuccess": "Core \"{name}\" has been toggled successfully",
-  "core.toggleFailed": "Failed to toggle core \"{name}\"",
-  "core.deleteSuccess": "Core \"{name}\" has been removed successfully",
-  "core.deleteFailed": "Failed to remove core \"{name}\"",
-  "core.deleteConfirm": "Are you sure you want to remove <b>{name}</b>?",
+  "core.toggleSuccess": "Core «{name}» has been toggled successfully",
+  "core.toggleFailed": "Failed to toggle core «{name}»",
+  "core.deleteSuccess": "Core «{name}» has been removed successfully",
+  "core.deleteFailed": "Failed to remove core «{name}»",
+  "core.deleteConfirm": "Are you sure you want to remove {name}?",
   "createNewUser": "Create new user",
   "createUser": "Create User",
   "createGroup": "Create Group",
@@ -758,7 +760,8 @@
     "clearAllExcluded": "Clear all excluded inbounds",
     "copyPublicKey": "Copy Public Key",
     "copyPrivateKey": "Copy Private Key",
-    "copyShortId": "Copy Short ID"
+    "copyShortId": "Copy Short ID",
+    "restartNodes": "Restart Nodes"
   },
   "settings.cores": {
     "title": "Cores",
@@ -770,7 +773,6 @@
     "deleteSuccess": "Core has been removed successfully",
     "deleteFailed": "Failed to remove core",
     "delete":"Remove Core Config",
-    "duplicateInfo": "Prepare to create a copy of «{{name}}». Make changes if needed and click Save.",
     "coreNotFound": "Core not found"
   },
   "createdAt": "Created at",

@@ -8,6 +8,8 @@
   "selectAll": "انتخاب همه",
   "statistics.realTimeStats": "آمار لحظه‌ای",
   "statistics.serverPerformance": "عملکرد سرور",
+  "modifying": "در حال ویرایش...",
+  "removing": "در حال حذف...",
   "hosts": "هاست‌ها",
   "groups": "گروه‌ها",
   "documentation": "مستندات",
@@ -729,7 +731,8 @@
     "clearAllExcluded": "پاک‌کردن همه ورودی‌های مستثنی‌شده",
     "copyPublicKey": "کپی کلید عمومی",
     "copyPrivateKey": "کپی کلید خصوصی",
-    "copyShortId": "کپی شناسه کوتاه"
+    "copyShortId": "کپی شناسه کوتاه",
+    "restartNodes": "راه‌اندازی مجدد گره‌ها"
   },
   "settings.cores": {
     "title": "هسته‌ها",
@@ -741,7 +744,6 @@
     "deleteSuccess": "هسته با موفقیت حذف شد",
     "deleteFailed": "حذف هسته با خطا مواجه شد",
     "delete": "حذف هسته",
-    "duplicateInfo": "آماده ایجاد کپی از «{{name}}». در صورت نیاز تغییرات را اعمال کرده و ذخیره کنید.",
     "coreNotFound": "هسته یافت نشد"
   },
   "createdAt": "تاریخ ایجاد",

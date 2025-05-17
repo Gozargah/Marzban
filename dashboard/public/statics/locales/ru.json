@@ -12,6 +12,8 @@
   "error": "Ошибка",
   "underDevelopment.title": "В разработке",
   "underDevelopment.description": "Эта страница находится в разработке и скоро будет доступна.",
+  "modifying": "Изменение...",
+  "removing": "Удаление...",
   "nodes": {
     "title": "Узлы",
     "description": "Управление узлами",
@@ -186,6 +188,11 @@
   "core.socket.not_connected": "Не подключено",
   "core.successMessage": "Основные настройки успешно обновлены",
   "core.title": "Основные настройки",
+  "core.toggleSuccess": "Ядро «{{name}}» успешно переключено",
+  "core.toggleFailed": "Не удалось переключить ядро «{{name}}»",
+  "core.deleteSuccess": "Ядро «{{name}}» успешно удалено",
+  "core.deleteFailed": "Не удалось удалить ядро «{{name}}»",
+  "core.deleteConfirm": "Вы уверены, что хотите удалить «{{name}}»?",
   "createNewUser": "Создать нового пользователя",
   "createUser": "Создать",
   "createGroup": "Создать группу",
@@ -760,7 +767,8 @@
     "clearAllExcluded": "Очистить все исключённые входящие",
     "copyPublicKey": "Копировать публичный ключ",
     "copyPrivateKey": "Копировать приватный ключ",
-    "copyShortId": "Копировать короткий ID"
+    "copyShortId": "Копировать короткий ID",
+    "restartNodes": "Перезапустить узлы"
   },
   "settings.cores": {
     "title": "Ядра",
@@ -772,7 +780,6 @@
     "deleteSuccess": "Ядро успешно удалено",
     "deleteFailed": "Не удалось удалить ядро",
     "delete": "Удалить ядро",
-    "duplicateInfo": "Подготовка к созданию копии «{{name}}». При необходимости внесите изменения и нажмите Сохранить.",
     "coreNotFound": "Ядро не найдено"
   },
   "createdAt": "Дата создания",

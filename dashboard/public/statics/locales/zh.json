@@ -12,6 +12,8 @@
   "error": "错误",
   "underDevelopment.title": "开发中",
   "underDevelopment.description": "此页面正在建设中，很快就会开放。",
+  "modifying": "修改中...",
+  "removing": "删除中...",
   "nodes": {
     "title": "节点",
     "description": "管理您的节点",
@@ -184,11 +186,11 @@
   "core.socket.not_connected": "未连接",
   "core.successMessage": "核心设置更新成功",
   "core.title": "核心设置",
-  "core.toggleSuccess": "核心 \"{name}\" 状态切换成功",
-  "core.toggleFailed": "核心 \"{name}\" 状态切换失败",
-  "core.deleteSuccess": "核心 \"{name}\" 删除成功",
-  "core.deleteFailed": "核心 \"{name}\" 删除失败",
-  "core.deleteConfirm": "您确定要删除核心 <b>{name}</b> 吗？",
+  "core.toggleSuccess": "核心 «{{name}}» 状态切换成功",
+  "core.toggleFailed": "核心 «{{name}}» 状态切换失败",
+  "core.deleteSuccess": "核心 «{{name}}» 删除成功",
+  "core.deleteFailed": "核心 «{{name}}» 删除失败",
+  "core.deleteConfirm": "您确定要删除核心 «{{name}}» 吗？",
   "createNewUser": "创建新用户",
   "createUser": "创建用户",
   "createGroup": "创建群组",
@@ -759,7 +761,8 @@
     "clearAllExcluded": "清除所有排除的入站",
     "copyPublicKey": "复制公钥",
     "copyPrivateKey": "复制私钥",
-    "copyShortId": "复制短 ID"
+    "copyShortId": "复制短 ID",
+    "restartNodes": "重启节点"
   },
   "settings.cores": {
     "title": "核心",
@@ -771,7 +774,6 @@
     "deleteSuccess": "核心删除成功",
     "deleteFailed": "核心删除失败",
     "delete": "删除核心配置",
-    "duplicateInfo": "准备创建 \"{name}\" 的副本。如有需要，请进行更改并点击保存。",
     "coreNotFound": "未找到核心"
   },
   "toggle": "切换状态",

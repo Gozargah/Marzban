@@ -9,7 +9,7 @@ import SortableHost from "./SortableHost"
 import { UniqueIdentifier } from "@dnd-kit/core"
 import HostModal from "../dialogs/HostModal"
 import { queryClient } from "@/utils/query-client"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import useDirDetection from "@/hooks/use-dir-detection"
 import { useTranslation } from "react-i18next"
 
@@ -310,11 +310,12 @@ export interface HostsProps {
     onDialogOpenChange: (open: boolean) => void;
     onAddHost: (open: boolean) => void;
     onSubmit: (data: HostFormValues) => Promise<{ status: number }>;
+    editingHost: BaseHost | null;
+    setEditingHost: (host: BaseHost | null) => void;
 }
 
-export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit }: HostsProps) {
+export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit, editingHost, setEditingHost }: HostsProps) {
     const [hosts, setHosts] = useState<BaseHost[] | undefined>();
-    const [editingHost, setEditingHost] = useState<BaseHost | null>(null);
     const [debouncedHosts, setDebouncedHosts] = useState<BaseHost[] | undefined>([]);
     const dir = useDirDetection();
     const { t } = useTranslation();
@@ -492,11 +493,7 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit }: Hosts
             await createHost(newHost);
 
             // Show success toast
-            toast({
-                dir,
-                description: t("host.duplicateSuccess", { name: host.remark || "" }),
-                defaultValue: `Host "${host.remark || ""}" duplicated successfully`
-            });
+            toast.success(t("host.duplicateSuccess", { name: host.remark || "" }));
 
             // Refresh the hosts data
             queryClient.invalidateQueries({
@@ -505,12 +502,7 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit }: Hosts
 
         } catch (error) {
             // Show error toast
-            toast({
-                dir,
-                variant: "destructive",
-                description: t("host.duplicateFailed", { name: host.remark || "" }),
-                defaultValue: `Failed to duplicate host "${host.remark || ""}"`
-            });
+            toast.error(t("host.duplicateFailed", { name: host.remark || "" }));
         }
     };
 
@@ -558,9 +550,21 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit }: Hosts
             }
 
             const response = await onSubmit(cleanedData);
+            if (response.status !== 200) {
+                if (editingHost?.id) {
+                    toast.error(t("hostsDialog.editFailed", { name: data.remark }));
+                } else {
+                    toast.error(t("hostsDialog.createFailed", { name: data.remark }));
+                }
+            }
             return response;
         } catch (error) {
             console.error("Error submitting form:", error);
+            if (editingHost?.id) {
+                toast.error(t("hostsDialog.editFailed", { name: data.remark }));
+            } else {
+                toast.error(t("hostsDialog.createFailed", { name: data.remark }));
+            }
             throw error;
         }
     };
