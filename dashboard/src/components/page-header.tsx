@@ -15,10 +15,10 @@ export default function PageHeader({ title, description, buttonText, onButtonCli
   const { t } = useTranslation()
   const dir = useDirDetection()
   return (
-    <div dir={dir} className="w-full mx-auto py-4 md:pt-6 gap-4 flex items-start justify-between flex-wrap px-4">
+    <div dir={dir} className="w-full mx-auto py-4 md:pt-6 gap-4 flex items-start justify-between flex-row px-4">
       <div className="flex flex-col gap-y-1">
         <h1 className="font-medium text-lg sm:text-xl">{t(title)}</h1>
-        {description && <span className="text-muted-foreground text-xs sm:text-sm">{t(description)}</span>}
+        {description && <span className="whitespace-normal text-muted-foreground text-xs sm:text-sm">{t(description)}</span>}
       </div>
       {buttonText && onButtonClick && (
         <div>
