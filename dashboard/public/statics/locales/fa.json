@@ -125,7 +125,11 @@
     "deleteUserTemplateTitle": "حذف قالب کاربر",
     "deleteUserTemplatePrompt": "آیا مطمئن هستید که می‌خواهید قالب <b>{{name}}</b> را حذف کنید؟",
     "duplicateSuccess": "قالب «{{name}}» با موفقیت کپی شد",
-    "duplicateFailed": "کپی کردن قالب «{{name}}» ناموفق بود"
+    "duplicateFailed": "کپی کردن قالب «{{name}}» ناموفق بود",
+    "enableSuccess": "قالب «{{name}}» با موفقیت فعال شد",
+    "disableSuccess": "قالب «{{name}}» با موفقیت غیرفعال شد",
+    "enableFailed": "فعال‌سازی مدیر «{{name}}» ناموفق بود",
+    "disableFailed": "غیرفعال‌سازی مدیر «{{name}}» ناموفق بود"
   },
   "core.configuration": "پیکربندی",
   "core.generalErrorMessage": "مشکلی پیش آمده، لطفا پیکربندی را بررسی کنید",

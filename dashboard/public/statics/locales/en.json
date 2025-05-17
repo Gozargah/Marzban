@@ -170,7 +170,11 @@
     "deleteUserTemplateTitle": "Remove User Template",
     "deleteUserTemplatePrompt": "Are you sure you want to remove the <b>{{name}}</b> template?",
     "duplicateSuccess": "Template «{{name}}» duplicated successfully",
-    "duplicateFailed": "Failed to duplicate template «{{name}}»"
+    "duplicateFailed": "Failed to duplicate template «{{name}}»",
+    "enableSuccess": "Template «{{name}}» has been enabled successfully",
+    "disableSuccess":  "Template «{{name}}» has been disabled successfully",
+    "enableFailed": "Failed to enable admin «{{name}}»",
+    "disableFailed": "Failed to disable admin «{{name}}»"
   },
   "core.configuration": "Configuration",
   "core.generalErrorMessage": "Something went wrong, please check the configuration",

@@ -168,7 +168,11 @@
     "deleteUserTemplateTitle": "Удалить пользовательский шаблон",
     "deleteUserTemplatePrompt": "Вы уверены, что хотите удалить шаблон <b>{{name}}</b>?",
     "duplicateSuccess": "Шаблон «{{name}}» успешно дублирован",
-    "duplicateFailed": "Не удалось дублировать шаблон «{{name}}»"
+    "duplicateFailed": "Не удалось дублировать шаблон «{{name}}»",
+    "enableSuccess": "Шаблон «{{name}}» был успешно включён",
+    "disableSuccess": "Шаблон «{{name}}» был успешно отключён",
+    "enableFailed": "Не удалось включить администратора «{{name}}»",
+    "disableFailed": "Не удалось отключить администратора «{{name}}»"
   },
   "core.configuration": "Конфигурация",
   "core.generalErrorMessage": "Что-то пошло не так, пожалуйста, проверьте конфигурацию",
