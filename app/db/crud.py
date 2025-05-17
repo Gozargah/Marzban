@@ -31,8 +31,8 @@ from app.db.models import (
     ProxyHost,
     ProxyInbound,
     ReminderType,
-    System,
     Settings,
+    System,
     User,
     UserDataLimitResetStrategy,
     UserStatus,
@@ -670,6 +670,9 @@ async def modify_user(db: AsyncSession, db_user: User, modify: UserModify) -> Us
     Returns:
         User: Updated user object.
     """
+    remove_usage_reminder = False
+    remove_expiration_reminder = False
+
     if modify.proxy_settings:
         db_user.proxy_settings = modify.proxy_settings.dict()
     if modify.group_ids:
@@ -685,9 +688,7 @@ async def modify_user(db: AsyncSession, db_user: User, modify: UserModify) -> Us
                 if db_user.status != UserStatus.on_hold:
                     db_user.status = UserStatus.active
 
-                delete_user_passed_notification_reminders(
-                    db, db_user.id, ReminderType.data_usage, db_user.usage_percentage
-                )
+                remove_usage_reminder = True
             else:
                 db_user.status = UserStatus.limited
 
@@ -702,9 +703,7 @@ async def modify_user(db: AsyncSession, db_user: User, modify: UserModify) -> Us
             if not db_user.expire or db_user.expire.replace(tzinfo=timezone.utc) > datetime.now(timezone.utc):
                 db_user.status = UserStatus.active
 
-                delete_user_passed_notification_reminders(
-                    db, db_user.id, ReminderType.expiration_date, db_user.days_left
-                )
+                remove_expiration_reminder = True
             else:
                 db_user.status = UserStatus.expired
 
@@ -734,6 +733,16 @@ async def modify_user(db: AsyncSession, db_user: User, modify: UserModify) -> Us
         await db.delete(db_user.next_plan)
 
     db_user.edit_at = datetime.now(timezone.utc)
+
+    if remove_usage_reminder or remove_expiration_reminder:
+        id = db_user.id
+        usage_percentage = db_user.usage_percentage
+        days_left = db_user.days_left
+
+    if remove_usage_reminder:
+        await delete_user_passed_notification_reminders(db, id, ReminderType.data_usage, usage_percentage)
+    if remove_expiration_reminder:
+        await delete_user_passed_notification_reminders(db, id, ReminderType.expiration_date, days_left)
 
     await db.commit()
     await db.refresh(db_user)
@@ -1424,6 +1433,7 @@ async def create_user_template(db: AsyncSession, user_template: UserTemplateCrea
         status=user_template.status,
         reset_usages=user_template.reset_usages,
         on_hold_timeout=user_template.on_hold_timeout,
+        is_disabled=user_template.is_disabled,
     )
 
     db.add(db_user_template)
@@ -1467,6 +1477,8 @@ async def modify_user_template(
         db_user_template.reset_usages = modified_user_template.reset_usages
     if modified_user_template.on_hold_timeout is not None:
         db_user_template.on_hold_timeout = modified_user_template.on_hold_timeout
+    if modified_user_template.is_disabled is not None:
+        db_user_template.is_disabled = modified_user_template.is_disabled
 
     await db.commit()
     await db.refresh(db_user_template)

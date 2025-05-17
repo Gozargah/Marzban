@@ -22,7 +22,9 @@ async def node_health_check():
     async def check_node(id: int, node: GozargahNode):
         try:
             await node.get_backend_stats(timeout=10)
-            await node_operator.update_node_status(id, NodeStatus.connected, node.core_version, node.node_version)
+            await node_operator.update_node_status(
+                id, NodeStatus.connected, await node.core_version(), await node.node_version()
+            )
         except NodeAPIError as e:
             if e.code > -3:
                 await node_operator.update_node_status(id, NodeStatus.error, err=e.detail)

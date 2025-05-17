@@ -55,6 +55,9 @@ class NodeOperation(BaseOperation):
 
             old_status = db_node.status
 
+            if status == NodeStatus.error:
+                logger.error(f"Failed to connect node {db_node.name} with id {db_node.id}, Error: {err}")
+
             db_node = await update_node_status(
                 db=db,
                 db_node=db_node,
@@ -116,8 +119,6 @@ class NodeOperation(BaseOperation):
                     detail = detail[: MAX_MESSAGE_LENGTH - 3] + "..."
                 else:
                     detail = detail
-
-                logger.error(f"Failed to connect node {db_node.name} with id {db_node.id}, Error: {detail}")
 
                 await NodeOperation.update_node_status(
                     node_id=db_node.id, status=NodeStatus.error, err=detail, notify_err=notify_err

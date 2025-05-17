@@ -1,7 +1,10 @@
 import json
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from app.models.proxy import XTLSFlows, ShadowsocksMethods
+
 from app.db.models import UserDataLimitResetStrategy, UserStatusCreate
+from app.models.proxy import ShadowsocksMethods, XTLSFlows
+
 from .validators import ListValidator, UserValidator
 
 
@@ -29,6 +32,7 @@ class UserTemplate(BaseModel):
     reset_usages: bool | None = None
     on_hold_timeout: int | None = None
     data_limit_reset_strategy: UserDataLimitResetStrategy | None = None
+    is_disabled: bool | None = None
 
 
 class UserTemplateWithValidator(UserTemplate):

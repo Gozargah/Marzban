@@ -8,6 +8,7 @@ from sqlalchemy import (
     BigInteger,
     Column,
     DateTime,
+    Enum as SQLEnum,
     Float,
     ForeignKey,
     String,
@@ -18,9 +19,6 @@ from sqlalchemy import (
     event,
     func,
     or_,
-)
-from sqlalchemy import (
-    Enum as SQLEnum,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -312,6 +310,7 @@ class UserTemplate(Base):
         default=UserDataLimitResetStrategy.no_reset,
         server_default="no_reset",
     )
+    is_disabled: Mapped[bool] = mapped_column(server_default="0", default=False)
 
     next_plans: Mapped[List["NextPlan"]] = relationship(back_populates="user_template", cascade="all, delete-orphan")
     groups: Mapped[List["Group"]] = relationship(secondary=template_group_association, back_populates="templates")

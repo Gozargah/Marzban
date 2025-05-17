@@ -450,7 +450,7 @@ wheels = [
 
 [[package]]
 name = "gozargah-node-bridge"
-version = "0.0.35"
+version = "0.0.36"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiorwlock" },
@@ -459,9 +459,9 @@ dependencies = [
     { name = "httpx" },
     { name = "protobuf" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/cb/47/6211349911616a661b52607925252734817525ba513c80eb5813a510b55d/gozargah_node_bridge-0.0.35.tar.gz", hash = "sha256:de32a92f522fb46ca5630d6a04de501344b0d77663aaa1802757d2e2a9cfff37", size = 40370 }
+sdist = { url = "https://files.pythonhosted.org/packages/4f/c4/a0689ae0e843a9a2b82f71a1d1710ec2d07c4ec6ea732a7a03e7f93fea51/gozargah_node_bridge-0.0.36.tar.gz", hash = "sha256:227832b1487c0394eb3fefdc96a706044794a70e6c12578c4650ade71883ab46", size = 40359 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a1/61/8e0444f1d0d5875689779d63253c3deef2e7df255ee0ab26e7f96bb90ea8/gozargah_node_bridge-0.0.35-py3-none-any.whl", hash = "sha256:a13df3988ada27f5419fd2a6b21fb285eec3cd2ee8812b87f3933d07bd901de5", size = 30206 },
+    { url = "https://files.pythonhosted.org/packages/74/35/e5fb6b1bcf5a96b414c5e2e6d1a9e5884bd19810cb5f581ec6bf2d8fe12f/gozargah_node_bridge-0.0.36-py3-none-any.whl", hash = "sha256:fc21493790f6bc3bc1d3ab04b6d8370905f5590627c80a2f7b6ce072db3ec2a4", size = 30201 },
 ]
 
 [[package]]
@@ -754,7 +754,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/1d/97/2288fe498044284f3
 
 [[package]]
 name = "marzban"
-version = "0.8.4"
+version = "1.0.0a3"
 source = { virtual = "." }
 dependencies = [
     { name = "aiocache" },
@@ -825,7 +825,7 @@ requires-dist = [
     { name = "cryptography", specifier = "==43.0.1" },
     { name = "deprecated", specifier = "==1.2.13" },
     { name = "fastapi", specifier = ">=0.115.12" },
-    { name = "gozargah-node-bridge", specifier = "==0.0.35" },
+    { name = "gozargah-node-bridge", specifier = "==0.0.36" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "jdatetime", specifier = ">=5.2.0" },
     { name = "jinja2", specifier = ">=3.1.6" },

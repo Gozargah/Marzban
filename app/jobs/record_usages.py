@@ -249,7 +249,7 @@ async def record_user_usages():
             admin_stmt = (
                 update(Admin)
                 .where(Admin.id == bindparam("admin_id"))
-                .values(users_usage=Admin.used_traffic + bindparam("value"))
+                .values(used_traffic=Admin.used_traffic + bindparam("value"))
                 .execution_options(synchronize_session=False)
             )
             await safe_execute(db, admin_stmt, admin_data)

@@ -37,9 +37,9 @@ from app.models.user import (
     UserResponse,
     UsersResponse,
 )
-from app.settings import subscription_settings
 from app.node import node_manager as node_manager
 from app.operation import BaseOperation
+from app.settings import subscription_settings
 from app.utils.jwt import create_subscription_token
 from app.utils.logger import get_logger
 from config import XRAY_SUBSCRIPTION_PATH
@@ -354,6 +354,7 @@ class UserOperation(BaseOperation):
             "data_limit": template.data_limit,
             "group_ids": template.group_ids,
             "data_limit_reset_strategy": template.data_limit_reset_strategy,
+            "status": template.status,
         }
 
         if template.status == UserStatus.active:
@@ -390,6 +391,9 @@ class UserOperation(BaseOperation):
     ) -> UserResponse:
         user_template = await self.get_validated_user_template(db, new_template_user.user_template_id)
 
+        if user_template.is_disabled:
+            await self.raise_error("this template is disabled", 403)
+
         new_user_args = self.load_base_user_args(user_template)
         new_user_args["username"] = (
             f"{user_template.username_prefix if user_template.username_prefix else ''}{new_template_user.username}{user_template.username_suffix if user_template.username_suffix else ''}"
@@ -410,6 +414,9 @@ class UserOperation(BaseOperation):
     ) -> UserResponse:
         db_user = await self.get_validated_user(db, username, admin)
         user_template = await self.get_validated_user_template(db, modified_template.user_template_id)
+
+        if user_template.is_disabled:
+            await self.raise_error("this template is disabled", 403)
 
         user_args = self.load_base_user_args(user_template)
         user_args["proxy_settings"] = db_user.proxy_settings

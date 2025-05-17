@@ -5,6 +5,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramNetworkError
+from python_socks._errors import ProxyConnectionError
 
 from app import on_shutdown, on_startup
 from app.models.settings import Telegram
@@ -60,8 +61,11 @@ async def startup_telegram_bot():
                 allowed_updates=["message", "callback_query", "inline_query"],
             )
             logger.info("telegram bot started successfully.")
-        except TelegramNetworkError as err:
-            logger.error(err.message)
+        except (TelegramNetworkError, ProxyConnectionError) as err:
+            if hasattr(err, "message"):
+                logger.error(err.message)
+            else:
+                logger.error(err)
 
 
 async def shutdown_telegram_bot():
@@ -73,15 +77,24 @@ async def shutdown_telegram_bot():
             return
         try:
             await _bot.delete_webhook(drop_pending_updates=True)
-        except TelegramNetworkError as err:
-            logger.error(err.message)
+        except (TelegramNetworkError, ProxyConnectionError) as err:
+            if hasattr(err, "message"):
+                logger.error(err.message)
+            else:
+                logger.error(err)
 
         await _dp.storage.close()
 
         if _bot.session:
             await _bot.session.close()
 
-        await _bot.close()
+        try:
+            await _bot.close()
+        except (TelegramNetworkError, ProxyConnectionError) as err:
+            if hasattr(err, "message"):
+                logger.error(err.message)
+            else:
+                logger.error(err)
 
         _bot = None
         _dp = None
