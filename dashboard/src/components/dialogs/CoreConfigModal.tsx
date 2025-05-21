@@ -467,6 +467,7 @@ export default function CoreConfigModal({
                                                 <FormLabel>{t('coreConfigModal.name')}</FormLabel>
                                                 <FormControl>
                                                     <Input
+                                                        isError={!!form.formState.errors.name}
                                                         placeholder={t('coreConfigModal.namePlaceholder')} {...field} />
                                                 </FormControl>
                                                 <FormMessage />
