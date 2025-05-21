@@ -195,62 +195,70 @@ export default function AdminModal({
                         <div
                             className="max-h-[80dvh] overflow-y-auto pr-4 -mr-4 sm:max-h-[75dvh] px-2">
                             <div className="flex flex-col sm:flex-row items-start gap-4 pb-4">
-                                <div className="flex-1 space-y-4 w-full">
-                                    {!editingAdmin &&
+                                <div className="flex-1  w-full">
                                         <FormField
                                             control={form.control}
                                             name="username"
-                                            render={({field}) => (
-                                                <FormItem>
-                                                    <FormLabel>{t('admins.username')}</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder={t('admins.enterUsername')} {...field} />
-                                                    </FormControl>
-                                                    <FormMessage/>
-                                                </FormItem>
-                                            )}
-                                        />
-                                    }
+                                            render={({field}) => {
+                                                const hasError = !!form.formState.errors.username;
+                                                return (
 
+                                                    <FormItem className="min-h-[100px]">
+                                                        <FormLabel>{t('admins.username')}</FormLabel>
+                                                        <FormControl>
+                                                            <Input placeholder={t('admins.enterUsername')}
+                                                                   disabled={editingAdmin}
+                                                                   isError={hasError} {...field} />
+                                                        </FormControl>
+                                                        <FormMessage/>
+                                                    </FormItem>
+                                                )
+                                            }}
+                                        />
                                     <FormField
                                         control={form.control}
                                         name="password"
-                                        render={({field}) => (
-                                            <FormItem>
-                                                <FormLabel>{t('admins.password')}</FormLabel>
-                                                <FormControl>
-                                                    <div className="relative">
-                                                        <Input
-                                                            type={showPassword ? "text" : "password"}
-                                                            placeholder={t('admins.enterPassword')}
-                                                            {...field}
-                                                        />
-                                                        <Button
-                                                            type="button"
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                                            onClick={() => setShowPassword(!showPassword)}
-                                                        >
-                                                            {showPassword ? (
-                                                                <EyeOff className="h-4 w-4 text-muted-foreground"/>
-                                                            ) : (
-                                                                <Eye className="h-4 w-4 text-muted-foreground"/>
-                                                            )}
-                                                        </Button>
-                                                    </div>
-                                                </FormControl>
+                                        render={({field}) => {
+                                            const hasError = !!form.formState.errors.password;
+                                            return (
+                                                <FormItem className="min-h-[100px]">
+                                                    <FormLabel>{t('admins.password')}</FormLabel>
+                                                    <FormControl>
+                                                        <div className="relative">
+                                                            <Input
+                                                                type={showPassword ? "text" : "password"}
+                                                                placeholder={t('admins.enterPassword')}
+                                                                isError={hasError}
+                                                                {...field}
+                                                            />
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                                                onClick={() => setShowPassword(!showPassword)}
+                                                            >
+                                                                {showPassword ? (
+                                                                    <EyeOff className="h-4 w-4 text-muted-foreground"/>
+                                                                ) : (
+                                                                    <Eye className="h-4 w-4 text-muted-foreground"/>
+                                                                )}
+                                                            </Button>
+                                                        </div>
+                                                    </FormControl>
 
-                                                <FormMessage/>
-                                            </FormItem>
-                                        )}
+                                                    <FormMessage/>
+                                                </FormItem>
+                                            )
+                                        }
+                                        }
                                     />
 
                                     <FormField
                                         control={form.control}
                                         name="passwordConfirm"
                                         render={({field}) => (
-                                            <FormItem>
+                                            <FormItem className="min-h-[100px]">
                                                 <FormLabel>{t('admins.passwordConfirm')}</FormLabel>
                                                 <FormControl>
                                                     <div className="relative">
@@ -279,7 +287,7 @@ export default function AdminModal({
                                         )}
                                     />
                                     <FormField control={form.control} name={"telegram_id"} render={({field}) => (
-                                        <FormItem>
+                                        <FormItem className="min-h-[100px]">
                                             <FormLabel>{t('admins.telegramId')}</FormLabel>
                                             <FormControl>
                                                 <Input
@@ -296,7 +304,7 @@ export default function AdminModal({
                                         </FormItem>
                                     )}/>
                                     <FormField control={form.control} name={"discord_id"} render={({field}) => (
-                                        <FormItem>
+                                        <FormItem className="min-h-[100px]">
                                             <FormLabel>{t('admins.discordId')}</FormLabel>
                                             <FormControl>
                                                 <Input
@@ -313,9 +321,9 @@ export default function AdminModal({
                                         </FormItem>
                                     )}/>
                                 </div>
-                                <div className="flex-1 space-y-4 w-full">
+                                <div className="flex-1  w-full">
                                     <FormField control={form.control} name={"discord_webhook"} render={({field}) => (
-                                        <FormItem>
+                                        <FormItem className="min-h-[100px]">
                                             <FormLabel>{t('admins.discord')}</FormLabel>
                                             <FormControl>
                                                 <Input placeholder={t('admins.discord')} {...field}/>
@@ -324,7 +332,7 @@ export default function AdminModal({
                                         </FormItem>
                                     )}/>
                                     <FormField control={form.control} name={"support_url"} render={({field}) => (
-                                        <FormItem>
+                                        <FormItem className="min-h-[100px]">
                                             <FormLabel>{t('admins.supportUrl')}</FormLabel>
                                             <FormControl>
                                                 <Input placeholder={t('admins.supportUrl')} {...field}/>
@@ -333,7 +341,7 @@ export default function AdminModal({
                                         </FormItem>
                                     )}/>
                                     <FormField control={form.control} name={"profile_title"} render={({field}) => (
-                                        <FormItem>
+                                        <FormItem className="min-h-[100px]">
                                             <FormLabel>{t('admins.profile')}</FormLabel>
                                             <FormControl>
                                                 <Input placeholder={t('admins.profile')} {...field}/>
@@ -342,7 +350,7 @@ export default function AdminModal({
                                         </FormItem>
                                     )}/>
                                     <FormField control={form.control} name={"sub_domain"} render={({field}) => (
-                                        <FormItem>
+                                        <FormItem className="min-h-[100px]">
                                             <FormLabel>{t('admins.subDomain')}</FormLabel>
                                             <FormControl>
                                                 <Input placeholder={t('admins.subDomain')} {...field}/>
@@ -351,7 +359,7 @@ export default function AdminModal({
                                         </FormItem>
                                     )}/>
                                     <FormField control={form.control} name={"sub_template"} render={({field}) => (
-                                        <FormItem>
+                                        <FormItem className="min-h-[100px]">
                                             <FormLabel>{t('admins.subTemplate')}</FormLabel>
                                             <FormControl>
                                                 <Input placeholder={t('admins.subTemplate')} {...field}/>
