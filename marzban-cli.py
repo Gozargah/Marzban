@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 from textual.app import App, ComposeResult
 from textual.widgets import Footer, Header
+
 from cli.help import HelpModal
 
 
@@ -14,6 +15,7 @@ class MarzbanCLI(App):
         self.theme = "textual-dark"
 
     BINDINGS = [
+        ("ctrl+c", "quit", "Quit"),
         ("q", "quit", "Quit"),
         ("?", "help", "Help"),
     ]

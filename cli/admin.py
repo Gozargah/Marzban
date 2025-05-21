@@ -128,7 +128,7 @@ class AdminCreateModale(BaseModal):
 
     async def key_enter(self) -> None:
         """Create admin when Enter is pressed."""
-        if not self.query_one("#is_sudo").has_focus:
+        if not self.query_one("#is_sudo").has_focus and not self.query_one("#cancel").has_focus:
             await self.on_button_pressed(Button.Pressed(self.query_one("#create")))
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -181,6 +181,7 @@ class AdminModifyModale(BaseModal):
         with Container(classes="modal-box-form"):
             yield Static("Modify admin", classes="title")
             yield Vertical(
+                Input(placeholder="Username", id="username", disabled=True),
                 Input(placeholder="Password", password=True, id="password"),
                 Input(placeholder="Confirm Password", password=True, id="confirm_password"),
                 Input(placeholder="Telegram ID", id="telegram_id", type="integer"),
@@ -202,6 +203,7 @@ class AdminModifyModale(BaseModal):
             )
 
     async def on_mount(self) -> None:
+        self.query_one("#username").value = self.admin.username
         if self.admin.telegram_id:
             self.query_one("#telegram_id").value = str(self.admin.telegram_id)
         if self.admin.discord_webhook:
@@ -213,7 +215,11 @@ class AdminModifyModale(BaseModal):
 
     async def key_enter(self) -> None:
         """Save admin when Enter is pressed."""
-        if not self.query_one("#is_disabled").has_focus and not self.query_one("#is_sudo").has_focus:
+        if (
+            not self.query_one("#is_disabled").has_focus
+            and not self.query_one("#is_sudo").has_focus
+            and not self.query_one("#cancel").has_focus
+        ):
             await self.on_button_pressed(Button.Pressed(self.query_one("#save")))
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:

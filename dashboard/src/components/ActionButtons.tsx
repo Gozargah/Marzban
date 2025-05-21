@@ -122,12 +122,12 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
 
       const links = [
         { protocol: 'links', link: `${subURL}/links` },
-        { protocol: 'links (base64)', link: `${subURL}/links-base64` },
+        { protocol: 'links (base64)', link: `${subURL}/links_base64` },
         { protocol: 'xray', link: `${subURL}/xray` },
         { protocol: 'clash', link: `${subURL}/clash` },
-        { protocol: 'clash-meta', link: `${subURL}/clash-meta` },
+        { protocol: 'clash-meta', link: `${subURL}/clash_meta` },
         { protocol: 'outline', link: `${subURL}/outline` },
-        { protocol: 'sing-box', link: `${subURL}/sing-box` },
+        { protocol: 'sing-box', link: `${subURL}/sing_box` },
       ]
       setSubscribeLinks(links)
     }

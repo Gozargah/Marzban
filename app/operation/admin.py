@@ -1,25 +1,26 @@
-from sqlalchemy.exc import IntegrityError
 import asyncio
 
-from app.utils.logger import get_logger
-from app.operation import BaseOperation, OperatorType
-from app.models.user import UserResponse
-from app.models.admin import AdminDetails, AdminCreate, AdminModify
-from app.db import AsyncSession
-from app.db.models import Admin as DBAdmin
-from app.db.crud import (
-    create_admin,
-    update_admin,
-    remove_admin,
-    get_admins,
-    disable_all_active_users,
-    activate_all_disabled_users,
-    reset_admin_usage,
-    get_users,
-)
-from app.node import node_manager
-from app.core.manager import core_manager
+from sqlalchemy.exc import IntegrityError
+
 from app import notification
+from app.core.manager import core_manager
+from app.db import AsyncSession
+from app.db.crud import (
+    activate_all_disabled_users,
+    create_admin,
+    disable_all_active_users,
+    get_admins,
+    get_users,
+    remove_admin,
+    reset_admin_usage,
+    update_admin,
+)
+from app.db.models import Admin as DBAdmin
+from app.models.admin import AdminCreate, AdminDetails, AdminModify
+from app.models.user import UserResponse
+from app.node import node_manager
+from app.operation import BaseOperation, OperatorType
+from app.utils.logger import get_logger
 
 logger = get_logger("admin-operation")
 
@@ -91,7 +92,7 @@ class AdminOperation(BaseOperation):
         if db_admin.is_sudo:
             await self.raise_error(message="You're not allowed to disable sudo admin users.", code=403)
 
-        await disable_all_active_users(db=db, admin_id=db_admin.id)
+        await disable_all_active_users(db=db, admin=db_admin)
 
         users = await get_users(db, admin=db_admin)
         await asyncio.gather(*[node_manager.remove_user(UserResponse.model_validate(user)) for user in users])
@@ -105,7 +106,7 @@ class AdminOperation(BaseOperation):
         if db_admin.is_sudo:
             await self.raise_error(message="You're not allowed to enable sudo admin users.", code=403)
 
-        await activate_all_disabled_users(db=db, admin_id=db_admin.id)
+        await activate_all_disabled_users(db=db, admin=db_admin)
 
         users = await get_users(db, admin=db_admin)
         await asyncio.gather(

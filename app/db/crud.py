@@ -10,7 +10,7 @@ from typing import List, Optional, Union
 
 from sqlalchemy import String, and_, delete, func, not_, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Query, joinedload, selectinload
+from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.sql.functions import coalesce
 
 from app.db.base import DATABASE_DIALECT
@@ -894,7 +894,7 @@ async def reset_all_users_data_usage(db: AsyncSession, admin: Optional[Admin] = 
     await db.commit()
 
 
-async def disable_all_active_users(db: AsyncSession, admin_id: int | None = None):
+async def disable_all_active_users(db: AsyncSession, admin: Admin | None = None):
     """
     Disable all active users or users under a specific admin.
 
@@ -903,8 +903,8 @@ async def disable_all_active_users(db: AsyncSession, admin_id: int | None = None
         admin (Optional[Admin]): Admin to filter users by, if any.
     """
     query = update(User).where(User.status.in_((UserStatus.active, UserStatus.on_hold)))
-    if admin_id:
-        query = query.filter(User.admin_id == admin_id)
+    if admin:
+        query = query.filter(User.admin_id == admin.id)
 
     await db.execute(
         query.values(
@@ -913,9 +913,10 @@ async def disable_all_active_users(db: AsyncSession, admin_id: int | None = None
     )
 
     await db.commit()
+    await db.refresh(admin)
 
 
-async def activate_all_disabled_users(db: AsyncSession, admin_id: int | None = None):
+async def activate_all_disabled_users(db: AsyncSession, admin: Admin | None = None):
     """
     Activate all disabled users or users under a specific admin.
 
@@ -931,9 +932,9 @@ async def activate_all_disabled_users(db: AsyncSession, admin_id: int | None = N
             User.on_hold_expire_duration.isnot(None),
         )
     )
-    if admin_id:
-        query_for_active_users = query_for_active_users.where(User.admin_id == admin_id)
-        query_for_on_hold_users = query_for_on_hold_users.where(User.admin_id == admin_id)
+    if admin:
+        query_for_active_users = query_for_active_users.where(User.admin_id == admin.id)
+        query_for_on_hold_users = query_for_on_hold_users.where(User.admin_id == admin.id)
 
     await db.execute(
         query_for_on_hold_users.values(
@@ -947,6 +948,7 @@ async def activate_all_disabled_users(db: AsyncSession, admin_id: int | None = N
     )
 
     await db.commit()
+    await db.refresh(admin)
 
 
 async def autodelete_expired_users(db: AsyncSession, include_limited_users: bool = False) -> List[User]:
@@ -980,7 +982,8 @@ async def autodelete_expired_users(db: AsyncSession, include_limited_users: bool
     expired_users = [
         user
         for (user, auto_delete) in (await db.execute(query)).unique()
-        if user.last_status_change + timedelta(days=auto_delete) <= datetime.now(timezone.utc)
+        if user.last_status_change.replace(tzinfo=timezone.utc) + timedelta(days=auto_delete)
+        <= datetime.now(timezone.utc)
     ]
 
     if expired_users:
@@ -1402,6 +1405,7 @@ async def reset_admin_usage(db: AsyncSession, db_admin: Admin) -> int:
 
     await db.commit()
     await db.refresh(db_admin)
+    await load_admin_attrs(db_admin)
     return db_admin
 
 
