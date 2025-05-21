@@ -87,7 +87,7 @@ export default function GroupModal({ isDialogOpen, onOpenChange, form, editingGr
                 <FormItem>
                   <FormLabel>{t('name')}</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input isError={!!form.formState.errors.name} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
