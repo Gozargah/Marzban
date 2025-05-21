@@ -148,7 +148,7 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
                   <FormItem>
                     <FormLabel>{t('inbound')}</FormLabel>
                     <Select dir={dir} onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
+                      <FormControl className={cn(!!form.formState.errors.inbound_tag && "border-destructive")}>
                         <SelectTrigger className="py-5">
                           <SelectValue placeholder={t('hostsDialog.selectInbound')} />
                         </SelectTrigger>
@@ -242,7 +242,7 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
               <FormField
                 control={form.control}
                 name="remark"
-                render={({ field }) => (
+                render={({ field }) =>(
                   <FormItem>
                     <div className="flex items-center gap-2">
                       <FormLabel>{t('remark')}</FormLabel>
@@ -318,19 +318,21 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
                       </Popover>
                     </div>
                     <FormControl>
-                      <Input placeholder="Remark (e.g. Marzban-Host)" {...field} />
+                      <Input placeholder="Remark (e.g. Marzban-Host)" isError={!!form.formState.errors.remark} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <div className="flex items-center gap-4 justify-between">
-                <div className="flex-[2]">
+              <div className="flex  gap-4 justify-between">
+                <div className="flex-[2] min-h-[100px]">
                   <FormField
                     control={form.control}
                     name="address"
-                    render={({ field }) => (
+                    render={({ field }) => {
+                      const hasError = !!form.formState.errors.address;
+                        return(
                       <FormItem>
                         <div className="flex items-center gap-2">
                           <FormLabel>{t('hostsDialog.address')}</FormLabel>
@@ -406,14 +408,14 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
                           </Popover>
                         </div>
                         <FormControl>
-                          <Input placeholder="example.com" {...field} />
+                          <Input placeholder="example.com" isError={hasError} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
-                    )}
+                    )}}
                   />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-h-[110px]">
                   <FormField
                     control={form.control}
                     name="port"
@@ -435,6 +437,7 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
                         <FormControl>
                           <Input
                             placeholder="443"
+                            isError={!!form.formState.errors.port}
                             type="number"
                             {...field}
                             onChange={e => {
