@@ -25,7 +25,7 @@ import { useNavigate } from "react-router";
 import { Checkbox } from "@/components/ui/checkbox.tsx";
 
 export const userTemplateFormSchema = z.object({
-    name: z.string().min(1, { message: 'validation.required' }),
+    name: z.string().min(1, 'Name is required'),
     status: z.enum([UserStatusCreate.active, UserStatusCreate.on_hold]).default(UserStatusCreate.active),
     username_prefix: z.string().optional(),
     username_suffix: z.string().optional(),
@@ -34,7 +34,7 @@ export const userTemplateFormSchema = z.object({
     on_hold_timeout: z.number().optional(),
     method: z.enum([ShadowsocksMethods["aes-128-gcm"], ShadowsocksMethods["aes-256-gcm"], ShadowsocksMethods["chacha20-ietf-poly1305"], ShadowsocksMethods["xchacha20-poly1305"]]).optional(),
     flow: z.enum([XTLSFlows[""], XTLSFlows["xtls-rprx-vision"]]).optional(),
-    groups: z.array(z.number()).min(1, { message: 'validation.required' }),
+    groups: z.array(z.number()).min(1,'Groups is required'),
     resetUsages: z.boolean().optional().default(false),
     data_limit_reset_strategy: z.enum([UserDataLimitResetStrategy["month"], UserDataLimitResetStrategy["day"], UserDataLimitResetStrategy["week"], UserDataLimitResetStrategy["no_reset"], UserDataLimitResetStrategy["week"], UserDataLimitResetStrategy["year"]]).optional(),
 })
@@ -159,7 +159,7 @@ export default function UserTemplateModal({
                         <div
                             className="max-h-[80dvh] overflow-y-auto pr-4 -mr-4 sm:max-h-[75dvh] flex flex-col sm:flex-row items-start gap-4 px-2">
                             <div className="flex-1 space-y-4 w-full">
-                                <div className="flex flex-row justify-between gap-1 w-full items-center">
+                                <div className="flex flex-row gap-2 w-full ">
                                     <FormField
                                         control={form.control}
                                         name="name"
@@ -167,7 +167,7 @@ export default function UserTemplateModal({
                                             <FormItem>
                                                 <FormLabel>{t('templates.name')}</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder={t('templates.name')} {...field}
+                                                    <Input placeholder={t('templates.name')} isError={!!form.formState.errors.name} {...field}
                                                         className="min-w-40 sm:w-72" />
                                                 </FormControl>
                                                 <FormMessage />
