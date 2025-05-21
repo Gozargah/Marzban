@@ -372,7 +372,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                                             <FormItem>
                                                 <FormLabel>{t('nodeModal.name')}</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder={t('nodeModal.namePlaceholder')} {...field} />
+                                                    <Input isError={!!form.formState.errors.name} placeholder={t('nodeModal.namePlaceholder')} {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -388,7 +388,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                                                     <FormLabel>{t('nodeModal.address')}</FormLabel>
                                                     <FormControl>
                                                         <Input
-                                                            placeholder={t('nodeModal.addressPlaceholder')} {...field} />
+                                                            isError={!!form.formState.errors.address} placeholder={t('nodeModal.addressPlaceholder')} {...field} />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>
@@ -403,6 +403,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                                                     <FormLabel>{t('nodeModal.port')}</FormLabel>
                                                     <FormControl>
                                                         <Input
+                                                            isError={!!form.formState.errors.port}
                                                             type="number"
                                                             placeholder={t('nodeModal.portPlaceholder')}
                                                             {...field}
@@ -445,7 +446,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                                     />
 
                                     <div className="flex flex-col gap-4 w-full md">
-                                        <div className='flex items-center gap-4'>
+                                        <div className='flex  gap-4'>
                                             <FormField
                                                 control={form.control}
                                                 name="usage_coefficient"
@@ -454,6 +455,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                                                         <FormLabel>{t('nodeModal.usageRatio')}</FormLabel>
                                                         <FormControl>
                                                             <Input
+                                                                isError={!!form.formState.errors.usage_coefficient}
                                                                 type="number"
                                                                 step="0.1"
                                                                 placeholder={t('nodeModal.usageRatioPlaceholder')}
@@ -474,6 +476,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                                                         <FormLabel>{t('nodes.maxLogs')}</FormLabel>
                                                         <FormControl>
                                                             <Input
+                                                                isError={!!form.formState.errors.max_logs}
                                                                 type="number"
                                                                 placeholder={t('nodes.maxLogsPlaceholder')}
                                                                 {...field}
@@ -541,11 +544,12 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                                                     };
 
                                                     return (
-                                                        <FormItem>
+                                                        <FormItem className={"min-h-[100px]"}>
                                                             <FormLabel>{t('nodeModal.apiKey')}</FormLabel>
                                                             <FormControl>
-                                                                <div className="flex gap-2">
+                                                                <div className="flex items-center gap-2">
                                                                     <Input
+                                                                        isError={!!form.formState.errors.api_key}
                                                                         type="text"
                                                                         placeholder={t('nodeModal.apiKeyPlaceholder')}
                                                                         autoComplete="off"
@@ -623,6 +627,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                                                                 <div className="flex gap-2">
                                                                     <FormControl>
                                                                         <Input
+                                                                            isError={!!form.formState.errors.keep_alive}
                                                                             type="number"
                                                                             value={displayValue}
                                                                             onChange={(e) => {
@@ -675,7 +680,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                                                 <Textarea
                                                     dir='ltr'
                                                     placeholder={t('nodeModal.certificatePlaceholder')}
-                                                    className="font-mono text-xs h-[200px] md:h-5/6"
+                                                    className={cn("font-mono text-xs h-[200px] md:h-5/6",!!form.formState.errors.server_ca && "border-destructive")}
                                                     {...field}
                                                 />
                                             </FormControl>
