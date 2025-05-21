@@ -11,7 +11,7 @@ import { UseEditFormValues, UseFormValues, userCreateSchema, userEditSchema } fr
 import { ListStart, RefreshCcw } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { relativeExpiryDate } from '@/utils/dateFormatter';
@@ -499,7 +499,7 @@ export default function UserModal({
             // Handle validation errors
             if (error?.response?._data && !isEmptyObject(error?.response?._data)) {
                 // For zod validation errors
-                const fields = ['username', 'status', 'data_limit', 'expire', 'note',
+                const fields = ['username', 'data_limit', 'expire', 'note',
                     'data_limit_reset_strategy', 'on_hold_expire_duration',
                     'on_hold_timeout', 'group_ids'];
 
@@ -717,11 +717,13 @@ export default function UserModal({
                                     <div className='flex items-center justify-center w-full gap-4'>
                                         {/* Hide these fields if a template is selected */}
                                         {!selectedTemplateId && (
-                                            <>
+                                            <div className={"flex w-full gap-4"}>
                                                 <FormField
                                                     control={form.control}
                                                     name="username"
-                                                    render={({ field }) => (
+                                                    render={({ field }) => {
+                                                        const hasError = !!form.formState.errors.username;
+                                                        return(
                                                         <FormItem className='flex-1'>
                                                             <FormLabel>{t('username', { defaultValue: 'Username' })}</FormLabel>
                                                             <FormControl>
@@ -732,6 +734,7 @@ export default function UserModal({
                                                                             {...field}
                                                                             value={field.value ?? ''}
                                                                             disabled={editingUser}
+                                                                            isError={hasError}
                                                                             onChange={(e) => {
                                                                                 field.onChange(e);
                                                                                 handleFieldChange('username', e.target.value);
@@ -757,7 +760,7 @@ export default function UserModal({
                                                             </FormControl>
                                                             <FormMessage />
                                                         </FormItem>
-                                                    )}
+                                                    )}}
                                                 />
                                                 <FormField
                                                     control={form.control}
@@ -790,14 +793,16 @@ export default function UserModal({
                                                         </FormItem>
                                                     )}
                                                 />
-                                            </>
+                                            </div>
                                         )}
                                         {/* If template is selected, only show username field */}
                                         {selectedTemplateId && (
                                             <FormField
                                                 control={form.control}
                                                 name="username"
-                                                render={({ field }) => (
+                                                render={({ field }) => {
+                                                    const hasError = !!form.formState.errors.username;
+                                                    return(
                                                     <FormItem className='flex-1 w-full'>
                                                         <FormLabel>{t('username', { defaultValue: 'Username' })}</FormLabel>
                                                         <FormControl>
@@ -808,6 +813,7 @@ export default function UserModal({
                                                                         {...field}
                                                                         value={field.value ?? ''}
                                                                         disabled={editingUser}
+                                                                        isError={hasError}
                                                                         onChange={(e) => {
                                                                             field.onChange(e);
                                                                             handleFieldChange('username', e.target.value);
@@ -830,13 +836,13 @@ export default function UserModal({
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
-                                                )}
+                                                )}}
                                             />
                                         )}
                                     </div>
                                     {/* Hide data_limit and expire if template is selected */}
                                     {!selectedTemplateId && (
-                                        <div className='flex-col w-full gap-4 flex sm:flex-row sm:items-start'>
+                                        <div className='flex flex-col w-full gap-4 lg:flex-row lg:items-start'>
                                             <FormField
                                                 control={form.control}
                                                 name="data_limit"
@@ -991,18 +997,21 @@ export default function UserModal({
                                                         </FormItem>
                                                     )}
                                                 />)}
-                                            <div className="flex items-start md:w-52 gap-4">
+                                            <div className="flex items-start lg:w-52 gap-4">
                                                 {status === 'on_hold' ? (
                                                     <FormField
                                                         control={form.control}
                                                         name="on_hold_expire_duration"
-                                                        render={({ field }) => (
+                                                        render={({ field }) => {
+                                                            const hasError = !!form.formState.errors.on_hold_expire_duration;
+                                                            return(
                                                             <FormItem className="flex-1">
                                                                 <FormLabel>{t('userDialog.onHoldExpireDuration', { defaultValue: 'On Hold Expire Duration (days)' })}</FormLabel>
                                                                 <FormControl>
                                                                     <Input
                                                                         type="number"
                                                                         min="1"
+                                                                        isError={hasError}
                                                                         placeholder={t('userDialog.onHoldExpireDurationPlaceholder', { defaultValue: 'e.g. 7' })}
                                                                         {...field}
                                                                         value={field.value === null || field.value === undefined ? '' : field.value}
@@ -1016,7 +1025,7 @@ export default function UserModal({
                                                                 </FormControl>
                                                                 <FormMessage />
                                                             </FormItem>
-                                                        )}
+                                                        )}}
                                                     />
 
                                                 ) : (
@@ -1069,7 +1078,7 @@ export default function UserModal({
                                                             const expireInfo = expireUnix ? relativeExpiryDate(expireUnix) : null;
 
                                                             return (
-                                                                <FormItem className="flex flex-col flex-1">
+                                                                <FormItem className="flex-1 flex flex-col">
                                                                     <FormLabel>{t('userDialog.expiryDate', { defaultValue: 'Expire date' })}</FormLabel>
                                                                     <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                                                                         <PopoverTrigger asChild>
@@ -1122,7 +1131,7 @@ export default function UserModal({
                                                                     </Popover>
                                                                     {expireInfo?.time && (
                                                                         <p dir="ltr"
-                                                                            className="text-xs text-muted-foreground ">{expireInfo.time} later</p>
+                                                                            className="text-xs text-muted-foreground ">Expire in {expireInfo.time}</p>
                                                                     )}
                                                                     <FormMessage />
                                                                 </FormItem>
