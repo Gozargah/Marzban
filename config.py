@@ -8,6 +8,10 @@ SQLALCHEMY_DATABASE_URL = config("SQLALCHEMY_DATABASE_URL", default="sqlite:///d
 SQLALCHEMY_POOL_SIZE = config("SQLALCHEMY_POOL_SIZE", cast=int, default=10)
 SQLIALCHEMY_MAX_OVERFLOW = config("SQLIALCHEMY_MAX_OVERFLOW", cast=int, default=30)
 
+# Database encryption settings (SQLite only)
+DATABASE_ENCRYPTION_ENABLED = config("DATABASE_ENCRYPTION_ENABLED", cast=bool, default=False)
+DATABASE_ENCRYPTION_KEY = config("DATABASE_ENCRYPTION_KEY", default="")  # Must be set if encryption is enabled
+
 UVICORN_HOST = config("UVICORN_HOST", default="0.0.0.0")
 UVICORN_PORT = config("UVICORN_PORT", cast=int, default=8000)
 UVICORN_UDS = config("UVICORN_UDS", default=None)
@@ -15,6 +19,12 @@ UVICORN_SSL_CERTFILE = config("UVICORN_SSL_CERTFILE", default=None)
 UVICORN_SSL_KEYFILE = config("UVICORN_SSL_KEYFILE", default=None)
 UVICORN_SSL_CA_TYPE = config("UVICORN_SSL_CA_TYPE", default="public").lower()
 DASHBOARD_PATH = config("DASHBOARD_PATH", default="/dashboard/")
+
+# Dashboard UI customization
+DASHBOARD_TITLE = config("DASHBOARD_TITLE", default="Marzban")
+DASHBOARD_LOGO = config("DASHBOARD_LOGO", default="")  # URL to logo image
+DASHBOARD_THEME_COLOR = config("DASHBOARD_THEME_COLOR", default="#1677ff")  # Primary color
+DASHBOARD_DARK_MODE = config("DASHBOARD_DARK_MODE", default="auto")  # auto, light, dark
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 DOCS = config("DOCS", default=False, cast=bool)
@@ -46,6 +56,9 @@ TELEGRAM_LOGGER_CHANNEL_ID = config("TELEGRAM_LOGGER_CHANNEL_ID", cast=int, defa
 TELEGRAM_DEFAULT_VLESS_FLOW = config("TELEGRAM_DEFAULT_VLESS_FLOW", default="")
 
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = config("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=1440)
+
+MAX_LOGIN_ATTEMPTS = config("MAX_LOGIN_ATTEMPTS", cast=int, default=5)
+LOGIN_LOCKOUT_TIME = config("LOGIN_LOCKOUT_TIME", cast=int, default=30)  # minutes
 
 CUSTOM_TEMPLATES_DIRECTORY = config("CUSTOM_TEMPLATES_DIRECTORY", default=None)
 SUBSCRIPTION_PAGE_TEMPLATE = config("SUBSCRIPTION_PAGE_TEMPLATE", default="subscription/index.html")
@@ -146,3 +159,11 @@ JOB_RECORD_NODE_USAGES_INTERVAL = config("JOB_RECORD_NODE_USAGES_INTERVAL", cast
 JOB_RECORD_USER_USAGES_INTERVAL = config("JOB_RECORD_USER_USAGES_INTERVAL", cast=int, default=10)
 JOB_REVIEW_USERS_INTERVAL = config("JOB_REVIEW_USERS_INTERVAL", cast=int, default=10)
 JOB_SEND_NOTIFICATIONS_INTERVAL = config("JOB_SEND_NOTIFICATIONS_INTERVAL", cast=int, default=30)
+JOB_ROTATE_JWT_KEY_INTERVAL = config("JOB_ROTATE_JWT_KEY_INTERVAL", cast=int, default=86400)  # 1 day
+JOB_CLEANUP_TOKEN_BLACKLIST_INTERVAL = config("JOB_CLEANUP_TOKEN_BLACKLIST_INTERVAL", cast=int, default=6)  # 6 hours
+
+# Auto backup settings
+AUTO_BACKUP_ENABLED = config("AUTO_BACKUP_ENABLED", cast=bool, default=False)
+AUTO_BACKUP_INTERVAL = config("AUTO_BACKUP_INTERVAL", cast=int, default=86400)  # 1 day in seconds
+AUTO_BACKUP_PATH = config("AUTO_BACKUP_PATH", default="./backups")
+AUTO_BACKUP_MAX_COUNT = config("AUTO_BACKUP_MAX_COUNT", cast=int, default=7)  # Keep last 7 backups
