@@ -6,5 +6,5 @@ interface Window {
     DASHBOARD_TITLE?: string;
     DASHBOARD_LOGO?: string;
     DASHBOARD_THEME_COLOR?: string;
-    DASHBOARD_DARK_MODE?: string;
+    DASHBOARD_DARK_MODE?: "auto" | "light" | "dark";
 }
