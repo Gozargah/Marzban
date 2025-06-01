@@ -29,6 +29,11 @@ interface GroupModalProps {
   editingGroupId?: number
 }
 
+const isEmptyObject = (obj: Record<string, any> | null | undefined): boolean => {
+  if (!obj) return false
+  return Object.keys(obj).length === 0 && obj.constructor === Object
+}
+
 export default function GroupModal({ isDialogOpen, onOpenChange, form, editingGroup, editingGroupId }: GroupModalProps) {
   const { t } = useTranslation()
   const dir = useDirDetection()
@@ -44,18 +49,18 @@ export default function GroupModal({ isDialogOpen, onOpenChange, form, editingGr
           data: values,
         })
         toast.success(
-          t('group.editSuccess', {
-            name: values.name,
-          }),
+            t('group.editSuccess', {
+              name: values.name,
+            }),
         )
       } else {
         await addGroupMutation.mutateAsync({
           data: values,
         })
         toast.success(
-          t('group.createSuccess', {
-            name: values.name,
-          }),
+            t('group.createSuccess', {
+              name: values.name,
+            }),
         )
       }
       // Invalidate groups queries after successful action
@@ -64,13 +69,87 @@ export default function GroupModal({ isDialogOpen, onOpenChange, form, editingGr
       form.reset()
     } catch (error: any) {
       console.error('Group operation failed:', error)
-      toast.error(
-        t(editingGroup ? 'group.editFailed' : 'group.createFailed', {
-          name: values.name,
-          error: error?.message || '',
-          defaultValue: `Failed to ${editingGroup ? 'update' : 'create'} group "{name}". {error}`,
-        }),
-      )
+      console.error('Error response:', error?.response)
+      console.log('Error data:', error?.response?._data?.detail)
+
+      // Reset all previous errors first
+      form.clearErrors()
+
+      // Handle validation errors
+      if (error?.response?._data && !isEmptyObject(error?.response?._data)) {
+        // For zod validation errors
+        const fields = ['name', 'inbound_tags']
+
+        // Show first error in a toast
+        if (error?.response?._data?.detail) {
+          const detail = error?.response?._data?.detail
+
+          // If detail is an object with field errors (e.g., { status: "some error" })
+          if (typeof detail === 'object' && detail !== null && !Array.isArray(detail)) {
+            // Set errors for all fields in the object
+            const firstField = Object.keys(detail)[0]
+            const firstMessage = detail[firstField]
+
+            Object.entries(detail).forEach(([field, message]) => {
+              if (fields.includes(field)) {
+                form.setError(field as any, {
+                  type: 'manual',
+                  message:
+                      typeof message === 'string'
+                          ? message
+                          : t('validation.invalid', {
+                            field: t(`groupDialog.${field}`, { defaultValue: field }),
+                            defaultValue: `${field} is invalid`,
+                          }),
+                })
+              }
+            })
+
+            toast.error(
+                firstMessage ||
+                t('validation.invalid', {
+                  field: t(`groupDialog.${firstField}`, { defaultValue: firstField }),
+                  defaultValue: `${firstField} is invalid`,
+                }),
+            )
+          }
+        }
+      } else if (error?.response?.data) {
+        // Handle API errors
+        const apiError = error.response?.data
+        let errorMessage = ''
+
+        if (typeof apiError === 'string') {
+          errorMessage = apiError
+        } else if (apiError?.detail) {
+          if (Array.isArray(apiError.detail)) {
+            // Handle array of field errors
+            apiError.detail.forEach((err: any) => {
+              if (err.loc && err.loc[1]) {
+                const fieldName = err.loc[1]
+                form.setError(fieldName as any, {
+                  type: 'manual',
+                  message: err.msg,
+                })
+              }
+            })
+            errorMessage = apiError.detail[0]?.msg || 'Validation error'
+          } else if (typeof apiError.detail === 'string') {
+            errorMessage = apiError.detail
+          } else {
+            errorMessage = 'Validation error'
+          }
+        } else if (apiError?.message) {
+          errorMessage = apiError.message
+        } else {
+          errorMessage = 'An unexpected error occurred'
+        }
+
+        toast.error(errorMessage)
+      } else {
+        // Generic error handling
+        toast.error(error?.message || t('groups.genericError', { defaultValue: 'An error occurred' }))
+      }
     }
   }
 
