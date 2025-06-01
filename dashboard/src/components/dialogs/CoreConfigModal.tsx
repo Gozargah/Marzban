@@ -62,6 +62,11 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
   const [isGeneratingKeyPair, setIsGeneratingKeyPair] = useState(false)
   const [isGeneratingShortId, setIsGeneratingShortId] = useState(false)
 
+    const isEmptyObject = (obj: Record<string, any> | null | undefined): boolean => {
+        if (!obj) return false
+        return Object.keys(obj).length === 0 && obj.constructor === Object
+    }
+
   const handleEditorValidation = useCallback(
     (markers: any[]) => {
       // Monaco editor provides validation markers
@@ -201,72 +206,153 @@ export default function CoreConfigModal({ isDialogOpen, onOpenChange, form, edit
     2,
   )
 
-  const onSubmit = async (values: CoreConfigFormValues) => {
-    try {
-      // Validate JSON
-      let configObj
-      try {
-        configObj = JSON.parse(values.config)
-      } catch (e) {
-        toast.error(t('coreConfigModal.invalidJson'))
-        return
-      }
+    const onSubmit = async (values: CoreConfigFormValues) => {
+        try {
+            // Validate JSON first
+            let configObj
+            try {
+                configObj = JSON.parse(values.config)
+            } catch (e) {
+                const errorMessage = e instanceof Error ? e.message : 'Invalid JSON'
+                form.setError('config', {
+                    type: 'manual',
+                    message: errorMessage,
+                })
+                toast.error(errorMessage)
+                return
+            }
 
-      // Convert fallback_id array to comma-separated string
-      const fallbackTags = values.fallback_id && values.fallback_id.length > 0 ? values.fallback_id.join(',') : ''
+            // Convert fallback_id array to comma-separated string
+            const fallbackTags = values.fallback_id && values.fallback_id.length > 0 ? values.fallback_id.join(',') : ''
 
-      // Convert excluded_inbound_ids array to comma-separated string
-      const excludeInboundTags = values.excluded_inbound_ids && values.excluded_inbound_ids.length > 0 ? values.excluded_inbound_ids.join(',') : ''
+            // Convert excluded_inbound_ids array to comma-separated string
+            const excludeInboundTags = values.excluded_inbound_ids && values.excluded_inbound_ids.length > 0 ? values.excluded_inbound_ids.join(',') : ''
 
-      if (editingCore && editingCoreId) {
-        // Update existing core
-        await modifyCoreMutation.mutateAsync({
-          coreId: editingCoreId,
-          data: {
-            name: values.name,
-            config: configObj,
-            fallbacks_inbound_tags: fallbackTags,
-            exclude_inbound_tags: excludeInboundTags,
-          },
-          params: {
-            restart_nodes: values.restart_nodes,
-          },
-        })
-      } else {
-        // Create new core
-        await createCoreMutation.mutateAsync({
-          data: {
-            name: values.name,
-            config: configObj,
-            fallbacks_inbound_tags: fallbackTags,
-            exclude_inbound_tags: excludeInboundTags,
-          },
-        })
-      }
+            if (editingCore && editingCoreId) {
+                // Update existing core
+                await modifyCoreMutation.mutateAsync({
+                    coreId: editingCoreId,
+                    data: {
+                        name: values.name,
+                        config: configObj,
+                        fallbacks_inbound_tags: fallbackTags,
+                        exclude_inbound_tags: excludeInboundTags,
+                    },
+                    params: {
+                        restart_nodes: values.restart_nodes,
+                    },
+                })
+            } else {
+                // Create new core
+                await createCoreMutation.mutateAsync({
+                    data: {
+                        name: values.name,
+                        config: configObj,
+                        fallbacks_inbound_tags: fallbackTags,
+                        exclude_inbound_tags: excludeInboundTags,
+                    },
+                })
+            }
 
-      toast.success(
-        t(editingCore ? 'coreConfigModal.editSuccess' : 'coreConfigModal.createSuccess', {
-          name: values.name,
-        }),
-      )
+            toast.success(
+                t(editingCore ? 'coreConfigModal.editSuccess' : 'coreConfigModal.createSuccess', {
+                    name: values.name,
+                }),
+            )
 
-      // Invalidate cores query to refresh list
-      queryClient.invalidateQueries({ queryKey: ['/api/cores'] })
+            // Invalidate core config queries after successful action
+            queryClient.invalidateQueries({queryKey: ['/api/core/configs']})
+            onOpenChange(false)
+            form.reset()
+        } catch (error: any) {
+            console.error('Core config operation failed:', error)
+            console.error('Error response:', error?.response)
+            console.log('Error data:', error?.response?._data?.detail)
 
-      onOpenChange(false)
-      form.reset()
-    } catch (error: any) {
-      console.error('Core config operation failed:', error)
-      toast.error(
-        t(editingCore ? 'coreConfigModal.editFailed' : 'coreConfigModal.createFailed', {
-          name: values.name,
-          error: error?.message || '',
-        }),
-      )
+            // Reset all previous errors first
+            form.clearErrors()
+
+            // Handle validation errors
+            if (error?.response?._data && !isEmptyObject(error?.response?._data)) {
+                // For zod validation errors
+                const fields = ['name', 'config', 'fallback_id', 'excluded_inbound_ids']
+
+                // Show first error in a toast
+                if (error?.response?._data?.detail) {
+                    const detail = error?.response?._data?.detail
+                    // If detail is an object with field errors (e.g., { status: "some error" })
+                    if (typeof detail === 'object' && detail !== null && !Array.isArray(detail)) {
+                        // Set errors for all fields in the object
+                        const firstField = Object.keys(detail)[0]
+                        const firstMessage = detail[firstField]
+
+                        Object.entries(detail).forEach(([field, message]) => {
+                            if (fields.includes(field)) {
+                                form.setError(field as any, {
+                                    type: 'manual',
+                                    message:
+                                        typeof message === 'string'
+                                            ? message
+                                            : t('validation.invalid', {
+                                                field: t(`coreConfigModal.${field}`, {defaultValue: field}),
+                                                defaultValue: `${field} is invalid`,
+                                            }),
+                                })
+                            }
+                        })
+
+                        toast.error(
+                            firstMessage ||
+                            t('validation.invalid', {
+                                field: t(`coreConfigModal.${firstField}`, {defaultValue: firstField}),
+                                defaultValue: `${firstField} is invalid`,
+                            }),
+                        )
+                    } else if (typeof detail === 'string' && !Array.isArray(detail)) {
+                        toast.error(detail)
+                    }
+                }
+            } else if (error?.response?.data) {
+                // Handle API errors
+                const apiError = error.response?.data
+                let errorMessage = ''
+
+                if (typeof apiError === 'string') {
+                    errorMessage = apiError
+                } else if (apiError?.detail) {
+                    if (Array.isArray(apiError.detail)) {
+                        // Handle array of field errors
+                        apiError.detail.forEach((err: any) => {
+                            if (err.loc && err.loc[1]) {
+                                const fieldName = err.loc[1]
+                                form.setError(fieldName as any, {
+                                    type: 'manual',
+                                    message: err.msg,
+                                })
+                            }
+                        })
+                        errorMessage = apiError.detail[0]?.msg || 'Validation error'
+                    } else if (typeof apiError.detail === 'string') {
+                        errorMessage = apiError.detail
+                    } else {
+                        errorMessage = 'Validation error'
+                    }
+                } else if (apiError?.message) {
+                    errorMessage = apiError.message
+                } else {
+                    errorMessage = 'An unexpected error occurred'
+                }
+
+                toast.error(errorMessage)
+            } else {
+                // Generic error handling
+                toast.error(error?.message || t('coreConfigModal.genericError', {defaultValue: 'An error occurred'}))
+            }
+        }
     }
-  }
 
-  // Initialize form fields when modal opens
+
+    // Initialize form fields when modal opens
   useEffect(() => {
     if (isDialogOpen) {
       if (!editingCore) {
