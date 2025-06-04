@@ -107,10 +107,12 @@ def build_json_proxy_settings_search_condition(column, value: str):
     Builds a condition to search JSON column for UUIDs or passwords.
     Supports PostgreSQL, MySQL, SQLite.
     """
-    return or_(*[
-        json_extract(column, field) == value
-        for field in ("$.vmess.id", "$.vless.id", "$.trojan.password", "$.shadowsocks.password")
-    ])
+    return or_(
+        *[
+            json_extract(column, field) == value
+            for field in ("$.vmess.id", "$.vless.id", "$.trojan.password", "$.shadowsocks.password")
+        ]
+    )
 
 
 async def add_default_host(db: AsyncSession, inbound: ProxyInbound):

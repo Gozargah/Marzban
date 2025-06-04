@@ -2,943 +2,359 @@ import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
-import { useTheme } from '@/components/theme-provider'
-import { useEffect, useState } from 'react'
+import { useTheme, colorThemes, type ColorTheme, type Radius } from '@/components/theme-provider'
+import { useState } from 'react'
 import { toast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
+import { Palette, CheckCircle2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
-export function applyThemeVars(vars: Record<string, string | undefined>) {
-  const root = document.documentElement
-  Object.entries(vars).forEach(([key, value]) => {
-    if (typeof value === 'string') {
-      root.style.setProperty(key, value)
-    }
-  })
-}
+const colorThemeData = [
+  { name: 'default', label: 'theme.default', dot: '#2563eb' },
+  { name: 'red', label: 'theme.red', dot: '#ef4444' },
+  { name: 'rose', label: 'theme.rose', dot: '#e11d48' },
+  { name: 'orange', label: 'theme.orange', dot: '#f97316' },
+  { name: 'green', label: 'theme.green', dot: '#22c55e' },
+  { name: 'blue', label: 'theme.blue', dot: '#3b82f6' },
+  { name: 'yellow', label: 'theme.yellow', dot: '#eab308' },
+  { name: 'violet', label: 'theme.violet', dot: '#8b5cf6' },
+] as const
 
-export const colorThemes = [
-  {
-    name: 'default',
-    label: 'Default',
-    dot: '#2563eb',
-    css: {
-      light: {
-        '--background': '240 5% 96%',
-        '--foreground': '240 5% 10%',
-        '--muted': '240 5% 90%',
-        '--muted-foreground': '240 5% 40%',
-        '--card': '240 5% 98%',
-        '--card-foreground': 'var(--foreground)',
-        '--popover': 'var(--background)',
-        '--popover-foreground': 'var(--foreground)',
-        '--border': '240 5% 80%',
-        '--input': '240 6% 91%',
-        '--input-placeholder': '240 5% 70%',
-        '--primary': '216 46% 40%',
-        '--primary-foreground': '240 5% 98%',
-        '--secondary': '240 5% 90%',
-        '--secondary-foreground': '240 5% 20%',
-        '--accent': '240 5% 90%',
-        '--accent-foreground': '240 5% 20%',
-        '--destructive': '0 72% 51%',
-        '--destructive-foreground': '0 0% 98%',
-        '--ring': '216 46% 40%',
-        '--radius': '0.5rem',
-        '--hover-primary': '216 46% 30%',
-        '--hover-secondary': '240 5% 85%',
-        '--hover-destructive': '0 84% 60%',
-        '--success': '142 76% 36%',
-        '--hover-success': '142 72% 29%',
-        '--border-destructive-50': '0 72% 51%',
-        '--bg-destructive-10': '0 72% 51%',
-        '--hover-destructive-20': '0 72% 51%',
-        '--bg-muted-50': '210 40% 96%',
-        '--bg-accent-50': '210 40% 96%',
-        '--bg-muted-40': '210 40% 96%',
-        '--border-muted-40': '210 40% 96%',
-        '--sidebar-background': '240 5% 90%',
-        '--sidebar-foreground': '240 5% 20%',
-        '--sidebar-primary': '216 46% 40%',
-        '--sidebar-primary-foreground': '240 5% 98%',
-        '--sidebar-accent': '240 5% 85%',
-        '--sidebar-accent-foreground': '240 5% 10%',
-        '--sidebar-border': '240 5% 80%',
-        '--sidebar-ring': '216 46% 40%',
-        '--sidebar-foreground-70': '240 5% 30%',
-        '--neon-green': '81 96% 55%',
-        '--background-custom': '240 5% 96%',
-        '--chart-1': '221.2 83.2% 53.3%',
-        '--chart-2': '212 95% 68%',
-        '--chart-3': '216 92% 60%',
-        '--chart-4': '210 98% 78%',
-        '--chart-5': '212 97% 87%',
-      },
-      dark: {
-        '--background': '240 2% 11%',
-        '--foreground': '0 0% 98%',
-        '--muted': '0 0% 14.9%',
-        '--muted-foreground': '0 0% 63.9%',
-        '--card': '240 2% 11.5%',
-        '--card-foreground': 'var(--foreground)',
-        '--popover': 'var(--background)',
-        '--popover-foreground': 'var(--foreground)',
-        '--border': '0 0% 18%',
-        '--input': '240 2% 16.5%',
-        '--input-placeholder': '0 0 30%',
-        '--primary': '216 46% 53%',
-        '--primary-foreground': '0 0% 5%',
-        '--secondary': '216 46% 53%',
-        '--secondary-foreground': '0 0% 5%',
-        '--accent': '240 4% 16%',
-        '--accent-foreground': '0 0% 98%',
-        '--destructive': '0 72% 51%',
-        '--destructive-foreground': '210 40% 98%',
-        '--ring': '215 16% 47%',
-        '--radius': '0.5rem',
-        '--hover-primary': '216 41% 49%',
-        '--hover-secondary': '216 41% 49%',
-        '--hover-destructive': '0 84% 60%',
-        '--success': '142 76% 36%',
-        '--hover-success': '142 72% 29%',
-        '--border-destructive-50': '0 72% 51%',
-        '--bg-destructive-10': '0 72% 51%',
-        '--hover-destructive-20': '0 72% 51%',
-        '--bg-muted-50': '210 40% 96%',
-        '--bg-accent-50': '210 40% 96%',
-        '--bg-muted-40': '210 40% 96%',
-        '--border-muted-40': '210 40% 96%',
-        '--sidebar-background': '240 2% 11%',
-        '--sidebar-foreground': '0 0 71%',
-        '--sidebar-primary': '0 100% 81%',
-        '--sidebar-primary-foreground': '0 0% 98%',
-        '--sidebar-accent': 'var(--accent)',
-        '--sidebar-accent-foreground': 'var(--accent-foreground)',
-        '--sidebar-border': '0 0% 20% / 0.8',
-        '--sidebar-ring': '0 0% 64%',
-        '--sidebar-foreground-70': '0 0% 98%',
-        '--neon-green': '81 96% 55%',
-        '--background-custom': '240 4% 8%',
-        '--chart-1': '221.2 83.2% 53.3%',
-        '--chart-2': '212 95% 68%',
-        '--chart-3': '216 92% 60%',
-        '--chart-4': '210 98% 78%',
-        '--chart-5': '212 97% 87%',
-      },
-    },
-  },
-  {
-    name: 'red',
-    label: 'Red',
-    dot: '#ef4444',
-    css: {
-      light: {
-        '--background': '240 5% 96%',
-        '--foreground': '240 5% 10%',
-        '--card-foreground': 'var(--foreground)',
-        '--popover': 'var(--background)',
-        '--popover-foreground': 'var(--foreground)',
-        '--primary': '0 72.2% 50.6%',
-        '--primary-foreground': '0 85.7% 97.3%',
-        '--secondary': '0 0% 96.1%',
-        '--secondary-foreground': '0 0% 9%',
-        '--muted': '240 5% 90%',
-        '--muted-foreground': '240 5% 40%',
-        '--accent': '240 5% 90%',
-        '--accent-foreground': '0 0% 9%',
-        '--destructive': '0 84.2% 60.2%',
-        '--destructive-foreground': '0 0% 98%',
-        '--border': '240 5% 80%',
-        '--input': '240 6% 91%',
-        '--input-placeholder': '240 5% 70%',
-        '--ring': '0 72.2% 50.6%',
-        '--radius': '0.5rem',
-        '--hover-primary': '0 72.2% 40%',
-        '--hover-secondary': '0 0% 90%',
-        '--hover-destructive': '0 84.2% 70%',
-        '--success': '142 76% 36%',
-        '--hover-success': '142 72% 29%',
-        '--border-destructive-50': '0 72% 51%',
-        '--bg-destructive-10': '0 72% 51%',
-        '--hover-destructive-20': '0 72% 51%',
-        '--bg-muted-50': '210 40% 96%',
-        '--bg-accent-50': '210 40% 96%',
-        '--bg-muted-40': '210 40% 96%',
-        '--border-muted-40': '210 40% 96%',
-        '--sidebar-background': '240 5% 90%',
-        '--sidebar-foreground': '240 5% 20%',
-        '--sidebar-primary': '0 72.2% 50.6%',
-        '--sidebar-primary-foreground': '240 5% 98%',
-        '--sidebar-accent': '240 5% 85%',
-        '--sidebar-accent-foreground': '240 5% 10%',
-        '--sidebar-border': '240 5% 80%',
-        '--sidebar-ring': '0 72.2% 50.6%',
-        '--sidebar-foreground-70': '240 5% 30%',
-        '--neon-green': '81 96% 55%',
-        '--background-custom': '240 5% 96%',
-        '--chart-1': '221.2 83.2% 53.3%',
-        '--chart-2': '212 95% 68%',
-        '--chart-3': '216 92% 60%',
-        '--chart-4': '210 98% 78%',
-        '--chart-5': '212 97% 87%',
-      },
-      dark: {
-        '--background': '240 2% 11%',
-        '--foreground': '0 0% 98%',
-        '--card': '240 2% 11.5%',
-        '--card-foreground': '0 0% 98%',
-        '--popover': '240 2% 11.5%',
-        '--popover-foreground': '0 0% 98%',
-        '--primary': '0 72.2% 50.6%',
-        '--primary-foreground': '0 85.7% 97.3%',
-        '--secondary': '0 0% 14.9%',
-        '--secondary-foreground': '0 0% 98%',
-        '--muted': '0 0% 14.9%',
-        '--muted-foreground': '0 0% 63.9%',
-        '--accent': '0 0% 14.9%',
-        '--accent-foreground': '0 0% 98%',
-        '--destructive': '0 62.8% 30.6%',
-        '--destructive-foreground': '0 0% 98%',
-        '--border': '0 0% 18%',
-        '--input': '240 2% 16.5%',
-        '--ring': '215 16% 47%',
-        '--radius': '0.5rem',
-        '--background-custom': '240 4% 8%',
-        '--sidebar-background': '240 2% 11%',
-        '--sidebar-foreground': '0 0 71%',
-        '--sidebar-primary': '0 100% 81%',
-        '--sidebar-primary-foreground': '0 0% 98%',
-        '--sidebar-accent': 'var(--accent)',
-        '--sidebar-accent-foreground': 'var(--accent-foreground)',
-        '--sidebar-border': '0 0% 20% / 0.8',
-        '--sidebar-ring': '0 0% 64%',
-        '--sidebar-foreground-70': '0 0% 98%',
-        '--chart-1': '221.2 83.2% 53.3%',
-        '--chart-2': '212 95% 68%',
-        '--chart-3': '216 92% 60%',
-        '--chart-4': '210 98% 78%',
-        '--chart-5': '212 97% 87%',
-      },
-    },
-  },
-  {
-    name: 'rose',
-    label: 'Rose',
-    dot: '#e11d48',
-    css: {
-      light: {
-        '--background': '240 5% 96%',
-        '--foreground': '240 5% 10%',
-        '--card': '240 5% 98%',
-        '--card-foreground': 'var(--foreground)',
-        '--popover': 'var(--background)',
-        '--popover-foreground': 'var(--foreground)',
-        '--border': '240 5% 80%',
-        '--primary': '346.8 77.2% 49.8%',
-        '--primary-foreground': '355.7 100% 97.3%',
-        '--secondary': '240 4.8% 95.9%',
-        '--secondary-foreground': '240 5.9% 10%',
-        '--muted': '240 5% 90%',
-        '--muted-foreground': '240 5% 40%',
-        '--accent': '240 5% 90%',
-        '--accent-foreground': '240 5.9% 10%',
-        '--destructive': '0 84.2% 60.2%',
-        '--destructive-foreground': '0 0% 98%',
-        '--input': '240 6% 91%',
-        '--input-placeholder': '240 5% 70%',
-        '--ring': '346.8 77.2% 49.8%',
-        '--radius': '0.5rem',
-        '--hover-primary': '346.8 77.2% 40%',
-        '--hover-secondary': '240 4.8% 90%',
-        '--hover-destructive': '0 84.2% 70%',
-        '--success': '142 76% 36%',
-        '--hover-success': '142 72% 29%',
-        '--border-destructive-50': '0 72% 51%',
-        '--bg-destructive-10': '0 72% 51%',
-        '--hover-destructive-20': '0 72% 51%',
-        '--bg-muted-50': '210 40% 96%',
-        '--bg-accent-50': '210 40% 96%',
-        '--bg-muted-40': '210 40% 96%',
-        '--border-muted-40': '210 40% 96%',
-        '--sidebar-background': '240 5% 90%',
-        '--sidebar-foreground': '240 5% 20%',
-        '--sidebar-primary': '346.8 77.2% 49.8%',
-        '--sidebar-primary-foreground': '240 5% 98%',
-        '--sidebar-accent': '240 5% 85%',
-        '--sidebar-accent-foreground': '240 5% 10%',
-        '--sidebar-border': '240 5% 80%',
-        '--sidebar-ring': '346.8 77.2% 49.8%',
-        '--sidebar-foreground-70': '240 5% 30%',
-        '--neon-green': '81 96% 55%',
-        '--background-custom': '240 5% 96%',
-        '--chart-1': '221.2 83.2% 53.3%',
-        '--chart-2': '212 95% 68%',
-        '--chart-3': '216 92% 60%',
-        '--chart-4': '210 98% 78%',
-        '--chart-5': '212 97% 87%',
-      },
-      dark: {
-        '--background': '240 2% 11%',
-        '--foreground': '0 0% 95%',
-        '--card': '240 2% 11.5%',
-        '--card-foreground': '0 0% 95%',
-        '--popover': '240 2% 11.5%',
-        '--popover-foreground': '0 0% 95%',
-        '--primary': '346.8 77.2% 49.8%',
-        '--primary-foreground': '355.7 100% 97.3%',
-        '--secondary': '240 3.7% 15.9%',
-        '--secondary-foreground': '0 0% 98%',
-        '--muted': '0 0% 15%',
-        '--muted-foreground': '240 5% 64.9%',
-        '--accent': '12 6.5% 15.1%',
-        '--accent-foreground': '0 0% 98%',
-        '--destructive': '0 62.8% 30.6%',
-        '--destructive-foreground': '0 85.7% 97.3%',
-        '--border': '0 0% 18%',
-        '--input': '240 2% 16.5%',
-        '--ring': '215 16% 47%',
-        '--radius': '0.5rem',
-        '--background-custom': '240 4% 8%',
-        '--sidebar-background': '240 2% 11%',
-        '--sidebar-foreground': '0 0 71%',
-        '--sidebar-primary': '0 100% 81%',
-        '--sidebar-primary-foreground': '0 0% 98%',
-        '--sidebar-accent': 'var(--accent)',
-        '--sidebar-accent-foreground': 'var(--accent-foreground)',
-        '--sidebar-border': '0 0% 20% / 0.8',
-        '--sidebar-ring': '0 0% 64%',
-        '--sidebar-foreground-70': '0 0% 98%',
-        '--chart-1': '221.2 83.2% 53.3%',
-        '--chart-2': '212 95% 68%',
-        '--chart-3': '216 92% 60%',
-        '--chart-4': '210 98% 78%',
-        '--chart-5': '212 97% 87%',
-      },
-    },
-  },
-  {
-    name: 'orange',
-    label: 'Orange',
-    dot: '#f97316',
-    css: {
-      light: {
-        '--background': '240 5% 96%',
-        '--foreground': '240 5% 10%',
-        '--card': '240 5% 98%',
-        '--card-foreground': 'var(--foreground)',
-        '--popover': 'var(--background)',
-        '--popover-foreground': 'var(--foreground)',
-        '--border': '240 5% 80%',
-        '--primary': '24.6 95% 53.1%',
-        '--primary-foreground': '60 9.1% 97.8%',
-        '--secondary': '60 4.8% 95.9%',
-        '--secondary-foreground': '24 9.8% 10%',
-        '--muted': '240 5% 90%',
-        '--muted-foreground': '240 5% 40%',
-        '--accent': '240 5% 90%',
-        '--accent-foreground': '24 9.8% 10%',
-        '--destructive': '0 84.2% 60.2%',
-        '--destructive-foreground': '60 9.1% 97.8%',
-        '--input': '240 6% 91%',
-        '--input-placeholder': '240 5% 70%',
-        '--ring': '24.6 95% 53.1%',
-        '--radius': '0.5rem',
-        '--hover-primary': '24.6 95% 40%',
-        '--hover-secondary': '60 4.8% 90%',
-        '--hover-destructive': '0 84.2% 70%',
-        '--success': '142 76% 36%',
-        '--hover-success': '142 72% 29%',
-        '--border-destructive-50': '0 72% 51%',
-        '--bg-destructive-10': '0 72% 51%',
-        '--hover-destructive-20': '0 72% 51%',
-        '--bg-muted-50': '210 40% 96%',
-        '--bg-accent-50': '210 40% 96%',
-        '--bg-muted-40': '210 40% 96%',
-        '--border-muted-40': '210 40% 96%',
-        '--sidebar-background': '240 5% 90%',
-        '--sidebar-foreground': '240 5% 20%',
-        '--sidebar-primary': '24.6 95% 53.1%',
-        '--sidebar-primary-foreground': '240 5% 98%',
-        '--sidebar-accent': '240 5% 85%',
-        '--sidebar-accent-foreground': '240 5% 10%',
-        '--sidebar-border': '240 5% 80%',
-        '--sidebar-ring': '24.6 95% 53.1%',
-        '--sidebar-foreground-70': '240 5% 30%',
-        '--neon-green': '81 96% 55%',
-        '--background-custom': '240 5% 96%',
-        '--chart-1': '221.2 83.2% 53.3%',
-        '--chart-2': '212 95% 68%',
-        '--chart-3': '216 92% 60%',
-        '--chart-4': '210 98% 78%',
-        '--chart-5': '212 97% 87%',
-      },
-      dark: {
-        '--background': '240 2% 11%',
-        '--foreground': '60 9.1% 97.8%',
-        '--card': '240 2% 11.5%',
-        '--card-foreground': '60 9.1% 97.8%',
-        '--popover': '240 2% 11.5%',
-        '--popover-foreground': '60 9.1% 97.8%',
-        '--primary': '20.5 90.2% 48.2%',
-        '--primary-foreground': '60 9.1% 97.8%',
-        '--secondary': '12 6.5% 15.1%',
-        '--secondary-foreground': '60 9.1% 97.8%',
-        '--muted': '12 6.5% 15.1%',
-        '--muted-foreground': '24 5.4% 63.9%',
-        '--accent': '12 6.5% 15.1%',
-        '--accent-foreground': '60 9.1% 97.8%',
-        '--destructive': '0 72.2% 50.6%',
-        '--destructive-foreground': '60 9.1% 97.8%',
-        '--border': '0 0% 18%',
-        '--input': '240 2% 16.5%',
-        '--ring': '215 16% 47%',
-        '--radius': '0.5rem',
-        '--background-custom': '240 4% 8%',
-        '--sidebar-background': '240 2% 11%',
-        '--sidebar-foreground': '0 0 71%',
-        '--sidebar-primary': '0 100% 81%',
-        '--sidebar-primary-foreground': '0 0% 98%',
-        '--sidebar-accent': 'var(--accent)',
-        '--sidebar-accent-foreground': 'var(--accent-foreground)',
-        '--sidebar-border': '0 0% 20% / 0.8',
-        '--sidebar-ring': '0 0% 64%',
-        '--sidebar-foreground-70': '0 0% 98%',
-        '--chart-1': '221.2 83.2% 53.3%',
-        '--chart-2': '212 95% 68%',
-        '--chart-3': '216 92% 60%',
-        '--chart-4': '210 98% 78%',
-        '--chart-5': '212 97% 87%',
-      },
-    },
-  },
-  {
-    name: 'green',
-    label: 'Green',
-    dot: '#22c55e',
-    css: {
-      light: {
-        '--background': '240 5% 96%',
-        '--foreground': '240 5% 10%',
-        '--card': '240 5% 98%',
-        '--card-foreground': 'var(--foreground)',
-        '--popover': 'var(--background)',
-        '--popover-foreground': 'var(--foreground)',
-        '--border': '240 5% 80%',
-        '--primary': '142.1 76.2% 36.3%',
-        '--primary-foreground': '355.7 100% 97.3%',
-        '--secondary': '240 4.8% 95.9%',
-        '--secondary-foreground': '240 5.9% 10%',
-        '--muted': '240 5% 90%',
-        '--muted-foreground': '240 5% 40%',
-        '--accent': '240 5% 90%',
-        '--accent-foreground': '240 5.9% 10%',
-        '--destructive': '0 84.2% 60.2%',
-        '--destructive-foreground': '0 0% 98%',
-        '--input': '240 6% 91%',
-        '--input-placeholder': '240 5% 70%',
-        '--ring': '142.1 76.2% 36.3%',
-        '--radius': '0.5rem',
-        '--hover-primary': '142.1 76.2% 30%',
-        '--hover-secondary': '240 4.8% 90%',
-        '--hover-destructive': '0 84.2% 70%',
-        '--success': '142 76% 36%',
-        '--hover-success': '142 72% 29%',
-        '--border-destructive-50': '0 72% 51%',
-        '--bg-destructive-10': '0 72% 51%',
-        '--hover-destructive-20': '0 72% 51%',
-        '--bg-muted-50': '210 40% 96%',
-        '--bg-accent-50': '210 40% 96%',
-        '--bg-muted-40': '210 40% 96%',
-        '--border-muted-40': '210 40% 96%',
-        '--sidebar-background': '240 5% 90%',
-        '--sidebar-foreground': '240 5% 20%',
-        '--sidebar-primary': '142.1 76.2% 36.3%',
-        '--sidebar-primary-foreground': '240 5% 98%',
-        '--sidebar-accent': '240 5% 85%',
-        '--sidebar-accent-foreground': '240 5% 10%',
-        '--sidebar-border': '240 5% 80%',
-        '--sidebar-ring': '142.1 76.2% 36.3%',
-        '--sidebar-foreground-70': '240 5% 30%',
-        '--neon-green': '81 96% 55%',
-        '--background-custom': '240 5% 96%',
-        '--chart-1': '221.2 83.2% 53.3%',
-        '--chart-2': '212 95% 68%',
-        '--chart-3': '216 92% 60%',
-        '--chart-4': '210 98% 78%',
-        '--chart-5': '212 97% 87%',
-      },
-      dark: {
-        '--background': '240 2% 11%',
-        '--foreground': '0 0% 95%',
-        '--card': '240 2% 11.5%',
-        '--card-foreground': '0 0% 95%',
-        '--popover': '240 2% 11.5%',
-        '--popover-foreground': '0 0% 95%',
-        '--primary': '142.1 70.6% 45.3%',
-        '--primary-foreground': '144.9 80.4% 10%',
-        '--secondary': '240 3.7% 15.9%',
-        '--secondary-foreground': '0 0% 98%',
-        '--muted': '0 0% 15%',
-        '--muted-foreground': '240 5% 40%',
-        '--accent': '12 6.5% 15.1%',
-        '--accent-foreground': '0 0% 98%',
-        '--destructive': '0 62.8% 30.6%',
-        '--destructive-foreground': '0 85.7% 97.3%',
-        '--border': '0 0% 18%',
-        '--input': '240 2% 16.5%',
-        '--input-placeholder': '240 5% 70%',
-        '--ring': '215 16% 47%',
-        '--radius': '0.5rem',
-        '--background-custom': '240 4% 8%',
-        '--sidebar-background': '240 2% 11%',
-        '--sidebar-foreground': '0 0 71%',
-        '--sidebar-primary': '0 100% 81%',
-        '--sidebar-primary-foreground': '0 0% 98%',
-        '--sidebar-accent': 'var(--accent)',
-        '--sidebar-accent-foreground': 'var(--accent-foreground)',
-        '--sidebar-border': '0 0% 20% / 0.8',
-        '--sidebar-ring': '0 0% 64%',
-        '--sidebar-foreground-70': '0 0% 98%',
-        '--chart-1': '221.2 83.2% 53.3%',
-        '--chart-2': '212 95% 68%',
-        '--chart-3': '216 92% 60%',
-        '--chart-4': '210 98% 78%',
-        '--chart-5': '212 97% 87%',
-      },
-    },
-  },
-  {
-    name: 'blue',
-    label: 'Blue',
-    dot: '#3b82f6',
-    css: {
-      light: {
-        '--background': '240 5% 96%',
-        '--foreground': '240 5% 10%',
-        '--muted': '240 5% 90%',
-        '--muted-foreground': '240 5% 40%',
-        '--card': '240 5% 98%',
-        '--card-foreground': 'var(--foreground)',
-        '--popover': 'var(--background)',
-        '--popover-foreground': 'var(--foreground)',
-        '--border': '240 5% 80%',
-        '--primary': '221.2 83.2% 53.3%',
-        '--primary-foreground': '210 40% 98%',
-        '--secondary': '210 40% 96.1%',
-        '--secondary-foreground': '222.2 47.4% 11.2%',
-        '--accent': '240 5% 90%',
-        '--accent-foreground': '222.2 47.4% 11.2%',
-        '--destructive': '0 84.2% 60.2%',
-        '--destructive-foreground': '210 40% 98%',
-        '--input': '240 6% 91%',
-        '--ring': '221.2 83.2% 53.3%',
-        '--radius': '0.5rem',
-        '--hover-primary': '221.2 83.2% 40%',
-        '--hover-secondary': '210 40% 90%',
-        '--hover-destructive': '0 84.2% 70%',
-        '--success': '142 76% 36%',
-        '--hover-success': '142 72% 29%',
-        '--border-destructive-50': '0 72% 51%',
-        '--bg-destructive-10': '0 72% 51%',
-        '--hover-destructive-20': '0 72% 51%',
-        '--bg-muted-50': '210 40% 96%',
-        '--bg-accent-50': '210 40% 96%',
-        '--bg-muted-40': '210 40% 96%',
-        '--border-muted-40': '210 40% 96%',
-        '--sidebar-background': '240 5% 90%',
-        '--sidebar-foreground': '240 5% 20%',
-        '--sidebar-primary': '221.2 83.2% 53.3%',
-        '--sidebar-primary-foreground': '240 5% 98%',
-        '--sidebar-accent': '240 5% 85%',
-        '--sidebar-accent-foreground': '240 5% 10%',
-        '--sidebar-border': '240 5% 80%',
-        '--sidebar-ring': '221.2 83.2% 53.3%',
-        '--sidebar-foreground-70': '240 5% 30%',
-        '--neon-green': '81 96% 55%',
-        '--background-custom': '240 5% 96%',
-        '--chart-1': '221.2 83.2% 53.3%',
-        '--chart-2': '212 95% 68%',
-        '--chart-3': '216 92% 60%',
-        '--chart-4': '210 98% 78%',
-        '--chart-5': '212 97% 87%',
-      },
-      dark: {
-        '--background': '240 2% 11%',
-        '--foreground': '0 0% 98%',
-        '--card': '240 2% 11.5%',
-        '--card-foreground': '210 40% 98%',
-        '--popover': '240 2% 11.5%',
-        '--popover-foreground': '210 40% 98%',
-        '--primary': '217.2 91.2% 59.8%',
-        '--primary-foreground': '222.2 47.4% 11.2%',
-        '--secondary': '217.2 32.6% 17.5%',
-        '--secondary-foreground': '210 40% 98%',
-        '--muted': '217.2 32.6% 17.5%',
-        '--muted-foreground': '215 20.2% 65.1%',
-        '--accent': '217.2 32.6% 17.5%',
-        '--accent-foreground': '210 40% 98%',
-        '--destructive': '0 62.8% 30.6%',
-        '--destructive-foreground': '210 40% 98%',
-        '--border': '0 0% 18%',
-        '--input': '240 2% 16.5%',
-        '--ring': '215 16% 47%',
-        '--radius': '0.5rem',
-        '--background-custom': '240 4% 8%',
-        '--sidebar-background': '240 2% 11%',
-        '--sidebar-foreground': '0 0 71%',
-        '--sidebar-primary': '0 100% 81%',
-        '--sidebar-primary-foreground': '0 0% 98%',
-        '--sidebar-accent': 'var(--accent)',
-        '--sidebar-accent-foreground': 'var(--accent-foreground)',
-        '--sidebar-border': '0 0% 20% / 0.8',
-        '--sidebar-ring': '0 0% 64%',
-        '--sidebar-foreground-70': '0 0% 98%',
-        '--chart-1': '221.2 83.2% 53.3%',
-        '--chart-2': '212 95% 68%',
-        '--chart-3': '216 92% 60%',
-        '--chart-4': '210 98% 78%',
-        '--chart-5': '212 97% 87%',
-      },
-    },
-  },
-  {
-    name: 'yellow',
-    label: 'Yellow',
-    dot: '#eab308',
-    css: {
-      light: {
-        '--background': '240 5% 96%',
-        '--foreground': '240 5% 10%',
-        '--card': '240 5% 98%',
-        '--card-foreground': 'var(--foreground)',
-        '--popover': 'var(--background)',
-        '--popover-foreground': 'var(--foreground)',
-        '--border': '240 5% 80%',
-        '--primary': '47.9 95.8% 53.1%',
-        '--primary-foreground': '26 83.3% 14.1%',
-        '--secondary': '60 4.8% 95.9%',
-        '--secondary-foreground': '24 9.8% 10%',
-        '--muted': '240 5% 90%',
-        '--muted-foreground': '240 5% 40%',
-        '--accent': '240 5% 90%',
-        '--accent-foreground': '24 9.8% 10%',
-        '--destructive': '0 84.2% 60.2%',
-        '--destructive-foreground': '60 9.1% 97.8%',
-        '--input': '240 6% 91%',
-        '--input-placeholder': '240 5% 70%',
-        '--ring': '20 14.3% 4.1%',
-        '--radius': '0.5rem',
-        '--hover-primary': '47.9 95.8% 40%',
-        '--hover-secondary': '60 4.8% 90%',
-        '--hover-destructive': '0 84.2% 70%',
-        '--success': '142 76% 36%',
-        '--hover-success': '142 72% 29%',
-        '--border-destructive-50': '0 72% 51%',
-        '--bg-destructive-10': '0 72% 51%',
-        '--hover-destructive-20': '0 72% 51%',
-        '--bg-muted-50': '210 40% 96%',
-        '--bg-accent-50': '210 40% 96%',
-        '--bg-muted-40': '210 40% 96%',
-        '--border-muted-40': '210 40% 96%',
-        '--sidebar-background': '240 5% 90%',
-        '--sidebar-foreground': '240 5% 20%',
-        '--sidebar-primary': '20 14.3% 4.1%',
-        '--sidebar-primary-foreground': '240 5% 98%',
-        '--sidebar-accent': '240 5% 85%',
-        '--sidebar-accent-foreground': '240 5% 10%',
-        '--sidebar-border': '240 5% 80%',
-        '--sidebar-ring': '20 14.3% 4.1%',
-        '--sidebar-foreground-70': '240 5% 30%',
-        '--neon-green': '81 96% 55%',
-        '--background-custom': '240 5% 96%',
-        '--chart-1': '221.2 83.2% 53.3%',
-        '--chart-2': '212 95% 68%',
-        '--chart-3': '216 92% 60%',
-        '--chart-4': '210 98% 78%',
-        '--chart-5': '212 97% 87%',
-      },
-      dark: {
-        '--background': '240 2% 11%',
-        '--foreground': '0 0% 98%',
-        '--card': '240 2% 11.5%',
-        '--card-foreground': '60 9.1% 97.8%',
-        '--popover': '240 2% 11.5%',
-        '--popover-foreground': '60 9.1% 97.8%',
-        '--primary': '47.9 95.8% 53.1%',
-        '--primary-foreground': '26 83.3% 14.1%',
-        '--secondary': '12 6.5% 15.1%',
-        '--secondary-foreground': '60 9.1% 97.8%',
-        '--muted': '12 6.5% 15.1%',
-        '--muted-foreground': '24 5.4% 63.9%',
-        '--accent': '12 6.5% 15.1%',
-        '--accent-foreground': '60 9.1% 97.8%',
-        '--destructive': '0 62.8% 30.6%',
-        '--destructive-foreground': '60 9.1% 97.8%',
-        '--border': '0 0% 18%',
-        '--input': '240 2% 16.5%',
-        '--ring': '215 16% 47%',
-        '--radius': '0.5rem',
-        '--background-custom': '240 4% 8%',
-        '--sidebar-background': '240 2% 11%',
-        '--sidebar-foreground': '0 0 71%',
-        '--sidebar-primary': '0 100% 81%',
-        '--sidebar-primary-foreground': '0 0% 98%',
-        '--sidebar-accent': 'var(--accent)',
-        '--sidebar-accent-foreground': 'var(--accent-foreground)',
-        '--sidebar-border': '0 0% 20% / 0.8',
-        '--sidebar-ring': '0 0% 64%',
-        '--sidebar-foreground-70': '0 0% 98%',
-        '--chart-1': '221.2 83.2% 53.3%',
-        '--chart-2': '212 95% 68%',
-        '--chart-3': '216 92% 60%',
-        '--chart-4': '210 98% 78%',
-        '--chart-5': '212 97% 87%',
-      },
-    },
-  },
-  {
-    name: 'violet',
-    label: 'Violet',
-    dot: '#8b5cf6',
-    css: {
-      light: {
-        '--background': '240 5% 96%',
-        '--foreground': '240 5% 10%',
-        '--card': '240 5% 98%',
-        '--card-foreground': 'var(--foreground)',
-        '--popover': 'var(--background)',
-        '--popover-foreground': 'var(--foreground)',
-        '--border': '240 5% 80%',
-        '--primary': '262.1 83.3% 57.8%',
-        '--primary-foreground': '210 20% 98%',
-        '--secondary': '220 14.3% 95.9%',
-        '--secondary-foreground': '220.9 39.3% 11%',
-        '--muted': '240 5% 90%',
-        '--muted-foreground': '240 5% 40%',
-        '--accent': '240 5% 90%',
-        '--accent-foreground': '220.9 39.3% 11%',
-        '--destructive': '0 84.2% 60.2%',
-        '--destructive-foreground': '210 20% 98%',
-        '--input': '240 6% 91%',
-        '--input-placeholder': '240 5% 70%',
-        '--ring': '262.1 83.3% 57.8%',
-        '--radius': '0.5rem',
-        '--hover-primary': '262.1 83.3% 40%',
-        '--hover-secondary': '220 14.3% 90%',
-        '--hover-destructive': '0 84.2% 70%',
-        '--success': '142 76% 36%',
-        '--hover-success': '142 72% 29%',
-        '--border-destructive-50': '0 72% 51%',
-        '--bg-destructive-10': '0 72% 51%',
-        '--hover-destructive-20': '0 72% 51%',
-        '--bg-muted-50': '210 40% 96%',
-        '--bg-accent-50': '210 40% 96%',
-        '--bg-muted-40': '210 40% 96%',
-        '--border-muted-40': '210 40% 96%',
-        '--sidebar-background': '240 5% 90%',
-        '--sidebar-foreground': '240 5% 20%',
-        '--sidebar-primary': '262.1 83.3% 57.8%',
-        '--sidebar-primary-foreground': '240 5% 98%',
-        '--sidebar-accent': '240 5% 85%',
-        '--sidebar-accent-foreground': '240 5% 10%',
-        '--sidebar-border': '240 5% 80%',
-        '--sidebar-ring': '262.1 83.3% 57.8%',
-        '--sidebar-foreground-70': '240 5% 30%',
-        '--neon-green': '81 96% 55%',
-        '--background-custom': '240 5% 96%',
-        '--chart-1': '221.2 83.2% 53.3%',
-        '--chart-2': '212 95% 68%',
-        '--chart-3': '216 92% 60%',
-        '--chart-4': '210 98% 78%',
-        '--chart-5': '212 97% 87%',
-      },
-      dark: {
-        '--background': '240 2% 11%',
-        '--foreground': '0 0% 98%',
-        '--card': '240 2% 11.5%',
-        '--card-foreground': '210 20% 98%',
-        '--popover': '240 2% 11.5%',
-        '--popover-foreground': '210 20% 98%',
-        '--primary': '263.4 70% 50.4%',
-        '--primary-foreground': '210 20% 98%',
-        '--secondary': '215 27.9% 16.9%',
-        '--secondary-foreground': '210 20% 98%',
-        '--muted': '215 27.9% 16.9%',
-        '--muted-foreground': '217.9 10.6% 64.9%',
-        '--accent': '215 27.9% 16.9%',
-        '--accent-foreground': '210 20% 98%',
-        '--destructive': '0 62.8% 30.6%',
-        '--destructive-foreground': '210 20% 98%',
-        '--border': '0 0% 18%',
-        '--input': '240 2% 16.5%',
-        '--ring': '215 16% 47%',
-        '--radius': '0.5rem',
-        '--background-custom': '240 4% 8%',
-        '--sidebar-background': '240 2% 11%',
-        '--sidebar-foreground': '0 0 71%',
-        '--sidebar-primary': '0 100% 81%',
-        '--sidebar-primary-foreground': '0 0% 98%',
-        '--sidebar-accent': 'var(--accent)',
-        '--sidebar-accent-foreground': 'var(--accent-foreground)',
-        '--sidebar-border': '0 0% 20% / 0.8',
-        '--sidebar-ring': '0 0% 64%',
-        '--sidebar-foreground-70': '0 0% 98%',
-        '--chart-1': '221.2 83.2% 53.3%',
-        '--chart-2': '212 95% 68%',
-        '--chart-3': '216 92% 60%',
-        '--chart-4': '210 98% 78%',
-        '--chart-5': '212 97% 87%',
-      },
-    },
-  },
-]
+const radiusOptions = [
+  { value: '0', label: 'theme.radiusNone', description: '0px' },
+  { value: '0.3rem', label: 'theme.radiusSmall', description: '0.3rem' },
+  { value: '0.5rem', label: 'theme.radiusMedium', description: '0.5rem' },
+  { value: '0.75rem', label: 'theme.radiusLarge', description: '0.75rem' },
+] as const
 
 export default function ThemeSettings() {
   const { t } = useTranslation()
-  const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-  const [selectedColor, setSelectedColor] = useState(() => {
-    return localStorage.getItem('color-theme') || 'default'
-  })
-  const [radius, setRadius] = useState(() => {
-    return localStorage.getItem('radius') || '0.5rem'
-  })
-
-  useEffect(() => {
-    setMounted(true)
-    const color = colorThemes.find(c => c.name === selectedColor) || colorThemes[0]
-    const mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light'
-    applyThemeVars({
-      ...color.css[mode],
-      '--radius': radius,
-    })
-  }, [])
-
-  useEffect(() => {
-    if (!mounted) return
-    const color = colorThemes.find(c => c.name === selectedColor) || colorThemes[0]
-    const mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light'
-    applyThemeVars({
-      ...color.css[mode],
-      '--radius': radius,
-    })
-    localStorage.setItem('color-theme', selectedColor)
-    localStorage.setItem('radius', radius)
-  }, [selectedColor, mounted, theme, radius])
-
-  const handleColorChange = (name: string) => {
-    setSelectedColor(name)
-    toast({
-      title: t('success'),
-      description: t('theme.themeSaved'),
-    })
-  }
+  const { 
+    theme, 
+    colorTheme, 
+    radius, 
+    resolvedTheme,
+    setTheme, 
+    setColorTheme, 
+    setRadius,
+    resetToDefaults,
+    isSystemTheme 
+  } = useTheme()
+  
+  const [isResetting, setIsResetting] = useState(false)
 
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
     setTheme(newTheme)
     toast({
-      title: t('theme.themeChanged'),
-      description: t('theme.visitThemePage'),
+      title: t('success'),
+      description: t('theme.themeChanged'),
     })
   }
 
-  const handleRadiusChange = (value: string) => {
-    setRadius(value)
+  const handleColorChange = (colorName: string) => {
+    if (Object.keys(colorThemes).includes(colorName)) {
+      setColorTheme(colorName as ColorTheme)
+      toast({
+        title: t('success'),
+        description: t('theme.themeSaved'),
+      })
+    }
+  }
+
+  const handleRadiusChange = (radiusValue: string) => {
+    if (['0', '0.3rem', '0.5rem', '0.75rem'].includes(radiusValue)) {
+      setRadius(radiusValue as Radius)
     toast({
       title: t('success'),
       description: t('theme.radiusSaved'),
     })
+    }
+  }
+
+  const handleResetToDefaults = async () => {
+    setIsResetting(true)
+    try {
+      resetToDefaults()
+      toast({
+        title: t('success'),
+        description: t('theme.resetSuccess'),
+      })
+    } catch (error) {
+      toast({
+        title: t('error'),
+        description: t('theme.resetFailed'),
+        variant: 'destructive',
+      })
+    } finally {
+      setIsResetting(false)
+    }
   }
 
   return (
-    <div className="flex flex-col gap-y-6 mt-10">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('theme.title')}</CardTitle>
-          <CardDescription>{t('theme.description')}</CardDescription>
+    <div className="flex flex-col gap-6 mt-6 pb-8">
+      {/* Header Section */}
+      <div className="space-y-1 px-4">
+        <h2 className="text-2xl font-semibold tracking-tight">{t('theme.title')}</h2>
+        <p className="text-sm text-muted-foreground">{t('theme.description')}</p>
+      </div>
+
+      {/* Theme Mode Section */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-2">
+            <div className="h-5 w-5 rounded bg-primary/20 flex items-center justify-center">
+              <Palette className="h-3 w-3 text-primary" />
+            </div>
+            <CardTitle className="text-lg">{t('theme.mode')}</CardTitle>
+          </div>
+          <CardDescription className="text-sm">
+            {t('theme.modeDescription')}
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex flex-wrap gap-2 items-center">
-            {colorThemes.map(color => (
+        <CardContent className="pt-0">
+          <RadioGroup 
+            value={theme} 
+            onValueChange={handleThemeChange} 
+            className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+          >
+            <div className="relative">
+              <RadioGroupItem value="light" id="light" className="peer sr-only" />
+              <Label
+                htmlFor="light"
+                className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-background p-6 hover:bg-accent/50 hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 [&:has([data-state=checked])]:border-primary transition-all cursor-pointer group"
+              >
+                <div className="mb-3 p-2 rounded-md bg-gradient-to-br from-orange-400 to-orange-600 text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="4"/>
+                    <path d="M12 2v2"/>
+                    <path d="M12 20v2"/>
+                    <path d="m4.93 4.93 1.41 1.41"/>
+                    <path d="m17.66 17.66 1.41 1.41"/>
+                    <path d="M2 12h2"/>
+                    <path d="M20 12h2"/>
+                    <path d="m6.34 17.66-1.41 1.41"/>
+                    <path d="m19.07 4.93-1.41 1.41"/>
+                  </svg>
+                </div>
+                <span className="font-medium">{t('theme.light')}</span>
+                <span className="text-xs text-muted-foreground mt-1">{t('theme.lightDescription')}</span>
+                {theme === 'light' && (
+                  <CheckCircle2 className="absolute top-2 right-2 h-4 w-4 text-primary" />
+                )}
+              </Label>
+            </div>
+            
+            <div className="relative">
+              <RadioGroupItem value="dark" id="dark" className="peer sr-only" />
+              <Label
+                htmlFor="dark"
+                className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-background p-6 hover:bg-accent/50 hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 [&:has([data-state=checked])]:border-primary transition-all cursor-pointer group"
+              >
+                <div className="mb-3 p-2 rounded-md bg-gradient-to-br from-slate-700 to-slate-900 text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                  </svg>
+                </div>
+                <span className="font-medium">{t('theme.dark')}</span>
+                <span className="text-xs text-muted-foreground mt-1">{t('theme.darkDescription')}</span>
+                {theme === 'dark' && (
+                  <CheckCircle2 className="absolute top-2 right-2 h-4 w-4 text-primary" />
+                )}
+              </Label>
+            </div>
+            
+            <div className="relative">
+              <RadioGroupItem value="system" id="system" className="peer sr-only" />
+              <Label
+                htmlFor="system"
+                className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-background p-6 hover:bg-accent/50 hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 [&:has([data-state=checked])]:border-primary transition-all cursor-pointer group"
+              >
+                <div className="mb-3 p-2 rounded-md bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="14" height="8" x="5" y="2" rx="2"/>
+                    <rect width="20" height="8" x="2" y="14" rx="2"/>
+                    <path d="M6 18h2"/>
+                    <path d="M12 18h6"/>
+                  </svg>
+                </div>
+                <span className="font-medium">{t('theme.system')}</span>
+                <span className="text-xs text-muted-foreground mt-1">
+                  {isSystemTheme ? `${t('theme.systemDescription')} (${resolvedTheme === 'dark' ? t('theme.dark') : t('theme.light')})` : t('theme.systemDescription')}
+                </span>
+                {theme === 'system' && (
+                  <CheckCircle2 className="absolute top-2 right-2 h-4 w-4 text-primary" />
+                )}
+              </Label>
+            </div>
+          </RadioGroup>
+        </CardContent>
+      </Card>
+
+      {/* Color Theme Section */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-2">
+            <div className="h-5 w-5 rounded bg-primary/20 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+                <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+                <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+                <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+              </svg>
+            </div>
+            <CardTitle className="text-lg">{t('theme.color')}</CardTitle>
+          </div>
+          <CardDescription className="text-sm">
+            {t('theme.colorDescription')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {colorThemeData.map(color => (
               <button
                 key={color.name}
                 onClick={() => handleColorChange(color.name)}
-                className={cn('flex items-center gap-2 px-3 py-1 rounded-full border transition', selectedColor === color.name ? 'border-primary bg-primary/10' : 'border-border bg-background')}
+                className={cn(
+                  'relative flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all duration-200 hover:scale-[1.02] group',
+                  colorTheme === color.name 
+                    ? 'border-primary bg-primary/5 shadow-sm' 
+                    : 'border-border bg-background hover:border-primary/50 hover:bg-accent/50'
+                )}
                 aria-label={color.label}
               >
-                <span className="inline-block w-4 h-4 rounded-full border" style={{ background: color.dot }} />
-                <span className="text-sm font-medium">{color.label}</span>
+                <div className="flex items-center gap-2">
+                  <div 
+                    className={cn(
+                      "w-6 h-6 rounded-full border-2 shadow-sm transition-transform group-hover:scale-110",
+                      colorTheme === color.name ? "border-white shadow-md" : "border-border"
+                    )} 
+                    style={{ background: color.dot }} 
+                  />
+                  {colorTheme === color.name && (
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                  )}
+                </div>
+                <span className="text-sm font-medium">{t(color.label)}</span>
+                {colorTheme === color.name && (
+                  <CheckCircle2 className="absolute top-2 right-2 h-4 w-4 text-primary" />
+                )}
               </button>
             ))}
           </div>
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">{t('theme.mode')}</h3>
-            <RadioGroup defaultValue={theme} onValueChange={handleThemeChange} className="grid grid-cols-1 gap-4">
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="light" id="light" />
-                <Label htmlFor="light">{t('theme.light')}</Label>
+        </CardContent>
+      </Card>
+
+      {/* Border Radius Section */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-2">
+            <div className="h-5 w-5 rounded bg-primary/20 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                <rect width="18" height="18" x="3" y="3" rx="6"/>
+              </svg>
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="dark" id="dark" />
-                <Label htmlFor="dark">{t('theme.dark')}</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="system" id="system" />
-                <Label htmlFor="system">{t('theme.system')}</Label>
-              </div>
-            </RadioGroup>
+            <CardTitle className="text-lg">{t('theme.radius')}</CardTitle>
           </div>
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">{t('theme.radius')}</h3>
-            <RadioGroup defaultValue={radius} onValueChange={handleRadiusChange} className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <div>
-                <RadioGroupItem value="0" id="radius-none" className="peer sr-only" />
+          <CardDescription className="text-sm">
+            {t('theme.radiusDescription')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <RadioGroup 
+            value={radius} 
+            onValueChange={handleRadiusChange} 
+            className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+          >
+            {radiusOptions.map((option) => (
+              <div key={option.value} className="relative">
+                <RadioGroupItem value={option.value} id={`radius-${option.value}`} className="peer sr-only" />
                 <Label
-                  htmlFor="radius-none"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                  htmlFor={`radius-${option.value}`}
+                  className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-background p-4 hover:bg-accent/50 hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 [&:has([data-state=checked])]:border-primary transition-all cursor-pointer"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-3 h-6 w-6">
-                    <rect width="18" height="18" x="3" y="3" rx="0" />
-                  </svg>
-                  None
+                  <div className="mb-3 p-3 bg-muted border" style={{ borderRadius: option.value }}>
+                    <div className="w-4 h-4 bg-primary/20" style={{ borderRadius: option.value }} />
+                  </div>
+                  <span className="text-sm font-medium">{t(option.label)}</span>
+                  <span className="text-xs text-muted-foreground">{option.description}</span>
+                  {radius === option.value && (
+                    <CheckCircle2 className="absolute top-2 right-2 h-4 w-4 text-primary" />
+                  )}
                 </Label>
               </div>
+            ))}
+          </RadioGroup>
+        </CardContent>
+      </Card>
+
+      {/* Preview Section */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-2">
+            <div className="h-5 w-5 rounded bg-primary/20 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-3-7-10-7Z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </div>
+            <CardTitle className="text-lg">{t('theme.preview')}</CardTitle>
+          </div>
+          <CardDescription className="text-sm">
+            {t('theme.previewDescription')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="p-6 rounded-lg border bg-card space-y-4" style={{ borderRadius: radius }}>
+            <div className="flex items-center justify-between">
               <div>
-                <RadioGroupItem value="0.3rem" id="radius-sm" className="peer sr-only" />
-                <Label
-                  htmlFor="radius-sm"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-3 h-6 w-6">
-                    <rect width="18" height="18" x="3" y="3" rx="2" />
-                  </svg>
-                  Small
-                </Label>
+                <h4 className="text-lg font-semibold">{t('theme.dashboardPreview')}</h4>
+                <p className="text-sm text-muted-foreground">
+                  {t('theme.currentTheme')}: {t(colorThemeData.find(c => c.name === colorTheme)?.label || '')} • {resolvedTheme === 'dark' ? t('theme.dark') : t('theme.light')}
+                </p>
               </div>
-              <div>
-                <RadioGroupItem value="0.5rem" id="radius-md" className="peer sr-only" />
-                <Label
-                  htmlFor="radius-md"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-3 h-6 w-6">
-                    <rect width="18" height="18" x="3" y="3" rx="6" />
-                  </svg>
-                  Medium
-                </Label>
+              <div className="flex gap-2">
+                <div className="h-3 w-3 rounded-full bg-primary" />
+                <div className="h-3 w-3 rounded-full bg-muted" />
+                <div className="h-3 w-3 rounded-full bg-accent" />
               </div>
-              <div>
-                <RadioGroupItem value="0.75rem" id="radius-lg" className="peer sr-only" />
-                <Label
-                  htmlFor="radius-lg"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-3 h-6 w-6">
-                    <rect width="18" height="18" x="3" y="3" rx="12" />
-                  </svg>
-                  Large
-                </Label>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <div className="h-4 bg-primary rounded" style={{ borderRadius: radius }} />
+                <div className="h-4 bg-muted rounded" style={{ borderRadius: radius }} />
+                <div className="h-4 bg-accent rounded" style={{ borderRadius: radius }} />
               </div>
-            </RadioGroup>
+              <div className="space-y-2">
+                <div className="h-8 bg-background border rounded flex items-center px-3" style={{ borderRadius: radius }}>
+                  <span className="text-sm text-muted-foreground">{t('theme.sampleInput')}</span>
+                </div>
+                <div className="h-8 bg-primary text-primary-foreground rounded flex items-center justify-center" style={{ borderRadius: radius }}>
+                  <span className="text-sm font-medium">{t('theme.primaryButton')}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Reset Section */}
+      <Card className="border-0 shadow-sm">
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-sm font-medium">{t('theme.resetToDefaults')}</h4>
+              <p className="text-sm text-muted-foreground">
+                {t('theme.resetDescription')}
+              </p>
+            </div>
+            <Button 
+              variant="outline" 
+              onClick={handleResetToDefaults}
+              disabled={isResetting}
+            >
+              {isResetting ? t('theme.resetting') : t('theme.reset')}
+            </Button>
           </div>
         </CardContent>
       </Card>

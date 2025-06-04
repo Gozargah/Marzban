@@ -7,6 +7,7 @@ from sqlalchemy.exc import OperationalError, DatabaseError
 from sqlalchemy import and_, bindparam, insert, select, update
 from sqlalchemy.sql.expression import Insert
 from GozargahNodeBridge import GozargahNode, NodeAPIError
+from GozargahNodeBridge.common.service_pb2 import StatType
 
 from app import scheduler
 from app.node import node_manager as node_manager
@@ -150,7 +151,7 @@ async def record_node_stats(params: dict, node_id: int):
 
 async def get_users_stats(node: GozargahNode):
     try:
-        stats_respons = await node.get_users_stats(reset=True, timeout=30)
+        stats_respons = await node.get_stats(stat_type=StatType.UsersStat, reset=True, timeout=30)
         params = defaultdict(int)
         for stat in filter(attrgetter("value"), stats_respons.stats):
             params[stat.name.split(".", 1)[0]] += stat.value
@@ -166,7 +167,7 @@ async def get_users_stats(node: GozargahNode):
 
 async def get_outbounds_stats(node: GozargahNode):
     try:
-        stats_respons = await node.get_outbounds_stats(reset=True, timeout=10)
+        stats_respons = await node.get_stats(stat_type=StatType.Outbounds, reset=True, timeout=10)
         params = [
             {"up": stat.value, "down": 0} if stat.link == "uplink" else {"up": 0, "down": stat.value}
             for stat in filter(attrgetter("value"), stats_respons.stats)

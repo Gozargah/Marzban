@@ -5,14 +5,14 @@ from pydantic import BaseModel, ConfigDict, field_validator, Field
 
 
 class CoreBase(BaseModel):
-    name: str = Field(max_length=256)
+    name: str
     config: dict[str, Any]
     exclude_inbound_tags: str = Field(max_length=2048)
     fallbacks_inbound_tags: str = Field(max_length=2048)
 
 
 class CoreCreate(CoreBase):
-    name: str | None = None
+    name: str | None = Field(max_length=256, default=None)
     exclude_inbound_tags: str | None = None
     fallbacks_inbound_tags: str | None = None
 

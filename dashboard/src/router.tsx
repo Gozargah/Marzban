@@ -6,7 +6,11 @@ import Dashboard from './pages/_dashboard._index'
 import Groups from './pages/_dashboard.groups'
 import Nodes from './pages/_dashboard.nodes'
 import Settings from './pages/_dashboard.settings'
-import GeneralSettings from './pages/_dashboard.settings._index'
+import NotificationSettings from './pages/_dashboard.settings.notifications'
+import SubscriptionSettings from './pages/_dashboard.settings.subscriptions'
+import TelegramSettings from './pages/_dashboard.settings.telegram'
+import DiscordSettings from './pages/_dashboard.settings.discord'
+import WebhookSettings from './pages/_dashboard.settings.webhook'
 import Statistics from './pages/_dashboard.statistics'
 import UserTemplates from './pages/_dashboard.templates'
 import Login from './pages/login'
@@ -80,7 +84,28 @@ export const router = createHashRouter([
         children: [
           {
             path: '/settings',
-            element: <GeneralSettings />,
+            index: true,
+            element: <NotificationSettings />,
+          },
+          {
+            path: '/settings/notifications',
+            element: <NotificationSettings />,
+          },
+          {
+            path: '/settings/subscriptions',
+            element: <SubscriptionSettings />,
+          },
+          {
+            path: '/settings/telegram',
+            element: <TelegramSettings />,
+          },
+          {
+            path: '/settings/discord',
+            element: <DiscordSettings />,
+          },
+          {
+            path: '/settings/webhook',
+            element: <WebhookSettings />,
           },
           {
             path: '/settings/theme',
