@@ -17,7 +17,6 @@ import { Cable, ChevronsLeftRightEllipsis, GlobeLock, Info, Lock, Network, Plus,
 import { useEffect, useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
 import { HostFormValues } from '../hosts/Hosts'
 
 interface HostModalProps {
@@ -134,9 +133,7 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
         queryKey: ['getHostsQueryKey'],
       })
     } catch (error) {
-      // Show error toast if the operation failed
-      toast.error(t(editingHost ? 'hostsDialog.editFailed' : 'hostsDialog.createFailed', { name: data.remark }))
-      // Don't close the modal or reset the form on error
+      console.error(error)
     }
   }
 
@@ -2240,3 +2237,4 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
 }
 
 export default HostModal
+
