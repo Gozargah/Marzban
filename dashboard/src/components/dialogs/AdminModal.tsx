@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { queryClient } from '@/utils/query-client.ts'
 import { Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
+import {isEmptyObject} from "@/utils/isEmptyObject.ts";
 
 interface AdminModalProps {
   isDialogOpen: boolean
@@ -119,11 +120,6 @@ export default function AdminModal({ isDialogOpen, onOpenChange, editingAdminUse
   const modifyAdminMutation = useModifyAdmin()
   const [showPassword, setShowPassword] = useState(false)
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
-
-    const isEmptyObject = (obj: Record<string, any> | null | undefined): boolean => {
-        if (!obj) return false
-        return Object.keys(obj).length === 0 && obj.constructor === Object
-    }
 
   const onSubmit = async (values: AdminFormValues) => {
     try {

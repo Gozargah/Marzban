@@ -13,6 +13,7 @@ import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { queryClient } from '@/utils/query-client'
 import useDirDetection from '@/hooks/use-dir-detection'
+import { isEmptyObject } from '@/utils/isEmptyObject'
 export const groupFormSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   inbound_tags: z.array(z.string()),
@@ -27,11 +28,6 @@ interface GroupModalProps {
   form: UseFormReturn<GroupFormValues>
   editingGroup: boolean
   editingGroupId?: number
-}
-
-const isEmptyObject = (obj: Record<string, any> | null | undefined): boolean => {
-  if (!obj) return false
-  return Object.keys(obj).length === 0 && obj.constructor === Object
 }
 
 export default function GroupModal({ isDialogOpen, onOpenChange, form, editingGroup, editingGroupId }: GroupModalProps) {

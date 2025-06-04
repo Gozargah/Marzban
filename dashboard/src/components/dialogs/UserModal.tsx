@@ -26,6 +26,7 @@ import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { v4 as uuidv4, v5 as uuidv5, v7 as uuidv7 } from 'uuid'
 import { z } from 'zod'
+import {isEmptyObject} from "@/utils/isEmptyObject.ts";
 
 interface UserModalProps {
   isDialogOpen: boolean
@@ -99,10 +100,6 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
     },
   })
 
-  const isEmptyObject = (obj: Record<string, any> | null | undefined): boolean => {
-    if (!obj) return false
-    return Object.keys(obj).length === 0 && obj.constructor === Object
-  }
 
   // Function to refresh all user-related data
   const refreshUserData = () => {

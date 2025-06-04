@@ -16,6 +16,7 @@ import { useState, useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 import { v4 as uuidv4, v5 as uuidv5, v6 as uuidv6, v7 as uuidv7 } from 'uuid'
 import { LoaderButton } from '../ui/loader-button'
+import {isEmptyObject} from "@/utils/isEmptyObject.ts";
 
 export const nodeFormSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -180,10 +181,6 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
     }
   }
 
-  const isEmptyObject = (obj: Record<string, any> | null | undefined): boolean => {
-    if (!obj) return false
-    return Object.keys(obj).length === 0 && obj.constructor === Object
-  }
 
   const onSubmit = async (values: NodeFormValues) => {
     try {

@@ -16,6 +16,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import {isEmptyObject} from "@/utils/isEmptyObject.ts";
 
 export const userTemplateFormSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -75,11 +76,6 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
       checkGroupsExist()
     }
   }, [isDialogOpen, checkGroupsExist])
-
-    const isEmptyObject = (obj: Record<string, any> | null | undefined): boolean => {
-        if (!obj) return false
-        return Object.keys(obj).length === 0 && obj.constructor === Object
-    }
 
   const onSubmit = async (values: UserTemplatesFromValue) => {
     try {
