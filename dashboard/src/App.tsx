@@ -1,4 +1,3 @@
-import { ColorThemeProvider } from '@/components/color-theme-provider'
 import { ThemeProvider } from '@/components/theme-provider'
 import { router } from '@/router'
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -10,14 +9,12 @@ import { queryClient } from './utils/query-client'
 export default function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="theme">
-      <ColorThemeProvider>
         <QueryClientProvider client={queryClient}>
           <main>
             <Toaster />
             <RouterProvider router={router} />
           </main>
         </QueryClientProvider>
-      </ColorThemeProvider>
     </ThemeProvider>
   )
 }

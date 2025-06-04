@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, field_validator, Field
 
 
 class CoreBase(BaseModel):
-    name: str = Field(max_length=256)
+    name: str
     config: dict[str, Any]
     exclude_inbound_tags: str = Field(max_length=2048)
     fallbacks_inbound_tags: str = Field(max_length=2048)
