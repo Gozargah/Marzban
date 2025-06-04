@@ -113,6 +113,9 @@ export default function GroupModal({ isDialogOpen, onOpenChange, form, editingGr
                 }),
             )
           }
+          else if (typeof detail === 'string' && !Array.isArray(detail)) {
+            toast.error(detail)
+          }
         }
       } else if (error?.response?.data) {
         // Handle API errors

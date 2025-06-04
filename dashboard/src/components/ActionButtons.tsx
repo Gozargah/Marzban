@@ -25,6 +25,7 @@ type ActionButtonsProps = {
 export interface SubscribeLink {
   protocol: string
   link: string
+  icon: string
 }
 
 const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
@@ -105,13 +106,13 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
       const subURL = user.subscription_url.startsWith('/') ? window.location.origin + user.subscription_url : user.subscription_url
 
       const links = [
-        { protocol: 'links', link: `${subURL}/links` },
-        { protocol: 'links (base64)', link: `${subURL}/links_base64` },
-        { protocol: 'xray', link: `${subURL}/xray` },
-        { protocol: 'clash', link: `${subURL}/clash` },
-        { protocol: 'clash-meta', link: `${subURL}/clash_meta` },
-        { protocol: 'outline', link: `${subURL}/outline` },
-        { protocol: 'sing-box', link: `${subURL}/sing_box` },
+        { protocol: 'links', link: `${subURL}/links`, icon: '🔗' },
+        { protocol: 'links (base64)', link: `${subURL}/links_base64`, icon: '📝' },
+        { protocol: 'xray', link: `${subURL}/xray`, icon: '⚡' },
+        { protocol: 'clash', link: `${subURL}/clash`, icon: '⚔️' },
+        { protocol: 'clash-meta', link: `${subURL}/clash_meta`, icon: '🛡️' },
+        { protocol: 'outline', link: `${subURL}/outline`, icon: '🔒' },
+        { protocol: 'sing-box', link: `${subURL}/sing_box`, icon: '📦' },
       ]
       setSubscribeLinks(links)
     }
@@ -213,27 +214,43 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
   }
 
   const handleCopyOrDownload = async (subLink: SubscribeLink) => {
-    if (subLink.protocol === 'links') {
+    if (subLink.protocol === 'links' || subLink.protocol === 'links (base64)') {
       // For links protocols, fetch content and copy to clipboard
       try {
         const response = await fetch(subLink.link)
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
         const content = await response.text()
-        copy(content)
+        await copy(content)
         toast({
           title: t('success', { defaultValue: 'Success' }),
           description: t('usersTable.copied', { defaultValue: 'Copied to clipboard' }),
         })
       } catch (error) {
-        toast({
-          title: t('error', { defaultValue: 'Error' }),
-          description: t('copyFailed', { defaultValue: 'Failed to copy content' }),
-          variant: 'destructive',
-        })
+        console.error('Failed to fetch and copy content:', error)
+        // Fallback: copy the URL instead
+        try {
+          await copy(subLink.link)
+          toast({
+            title: t('success', { defaultValue: 'Success' }),
+            description: t('usersTable.copied', { defaultValue: 'URL copied to clipboard' }),
+          })
+        } catch (copyError) {
+          toast({
+            title: t('error', { defaultValue: 'Error' }),
+            description: t('copyFailed', { defaultValue: 'Failed to copy content' }),
+            variant: 'destructive',
+          })
+        }
       }
     } else {
       // For other protocols, trigger download
       try {
         const response = await fetch(subLink.link)
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
         const blob = await response.blob()
         const url = window.URL.createObjectURL(blob)
         const a = document.createElement('a')
@@ -243,7 +260,12 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
         a.click()
         window.URL.revokeObjectURL(url)
         document.body.removeChild(a)
+        toast({
+          title: t('success', { defaultValue: 'Success' }),
+          description: t('downloadSuccess', { defaultValue: 'Configuration downloaded successfully' }),
+        })
       } catch (error) {
+        console.error('Failed to download configuration:', error)
         toast({
           title: t('error', { defaultValue: 'Error' }),
           description: t('downloadFailed', { defaultValue: 'Failed to download configuration' }),
@@ -284,7 +306,10 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
                       aria-label={subLink.protocol.includes('links') ? 'Copy' : 'Download'}
                       onClick={() => handleCopyOrDownload(subLink)}
                     >
-                      <span>{subLink.protocol}</span>
+                      <span className="flex items-center gap-2">
+                        <span className="text-sm">{subLink.icon}</span>
+                        <span>{subLink.protocol}</span>
+                      </span>
                     </Button>
                   </DropdownMenuItem>
                 ))}

@@ -10,7 +10,7 @@ import { DISCUSSION_GROUP, DOCUMENTATION, DONATION_URL, REPO_URL } from '@/const
 import { useAdmin } from '@/hooks/use-admin'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { getSystemStats } from '@/service/api'
-import { BookOpen, Cpu, FileText, GithubIcon, LayoutTemplate, LifeBuoy, ListTodo, Palette, PieChart, RssIcon, Settings, Settings2, Share2Icon, UserCog, Users2, UsersIcon } from 'lucide-react'
+import { BookOpen, Cpu, FileText, GithubIcon, LayoutTemplate, LifeBuoy, ListTodo, Palette, PieChart, RssIcon, Settings2, Share2Icon, UserCog, Users2, UsersIcon, Bell, MessageCircle, Webhook, Send } from 'lucide-react'
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -41,14 +41,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
     navMain: [
       {
-        title: 'statistics',
-        url: '/statistics',
-        icon: PieChart,
-      },
-      {
         title: 'users',
         url: '/',
         icon: UsersIcon,
+      },
+      {
+        title: 'statistics',
+        url: '/statistics',
+        icon: PieChart,
       },
       ...(admin?.is_sudo
         ? [
@@ -95,14 +95,34 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               icon: UserCog,
             },
             {
-              title: 'settings',
+              title: 'settings.title',
               url: '/settings',
               icon: Settings2,
               items: [
                 {
-                  title: 'general',
-                  url: '/settings',
-                  icon: Settings,
+                  title: 'settings.notifications.title',
+                  url: '/settings/notifications',
+                  icon: Bell,
+                },
+                {
+                  title: 'settings.subscriptions.title',
+                  url: '/settings/subscriptions',
+                  icon: ListTodo,
+                },
+                {
+                  title: 'settings.telegram.title',
+                  url: '/settings/telegram',
+                  icon: Send,
+                },
+                {
+                  title: 'settings.discord.title',
+                  url: '/settings/discord',
+                  icon: MessageCircle,
+                },
+                {
+                  title: 'settings.webhook.title',
+                  url: '/settings/webhook',
+                  icon: Webhook,
                 },
                 {
                   title: 'theme.title',

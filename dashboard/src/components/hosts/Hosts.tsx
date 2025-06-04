@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { BaseHost, modifyHosts, CreateHost, createHost, getHosts } from '@/service/api'
+import { BaseHost, modifyHosts, CreateHost, createHost } from '@/service/api'
 import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { arrayMove, rectSortingStrategy, SortableContext, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import SortableHost from './SortableHost'
@@ -10,7 +10,6 @@ import { UniqueIdentifier } from '@dnd-kit/core'
 import HostModal from '../dialogs/HostModal'
 import { queryClient } from '@/utils/query-client'
 import { toast } from 'sonner'
-import useDirDetection from '@/hooks/use-dir-detection'
 import { useTranslation } from 'react-i18next'
 
 interface Brutal {
@@ -414,7 +413,6 @@ export interface HostsProps {
 export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit, editingHost, setEditingHost }: HostsProps) {
   const [hosts, setHosts] = useState<BaseHost[] | undefined>()
   const [debouncedHosts, setDebouncedHosts] = useState<BaseHost[] | undefined>([])
-  const dir = useDirDetection()
   const { t } = useTranslation()
 
   // Set up hosts data from props
@@ -677,14 +675,8 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit, editing
       }
 
       const response = await onSubmit(cleanedData)
-      if (response.status !== 200) {
-        if (editingHost?.id) {
-          toast.error(t('hostsDialog.editFailed', { name: data.remark }))
-        } else {
-          toast.error(t('hostsDialog.createFailed', { name: data.remark }))
-        }
-      } else {
-        // Show success message
+      if (response.status === 200) {
+
         if (editingHost?.id) {
           toast.success(t('hostsDialog.editSuccess', { name: data.remark }))
         } else {
@@ -697,11 +689,6 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit, editing
       return response
     } catch (error) {
       console.error('Error submitting form:', error)
-      if (editingHost?.id) {
-        toast.error(t('hostsDialog.editFailed', { name: data.remark }))
-      } else {
-        toast.error(t('hostsDialog.createFailed', { name: data.remark }))
-      }
       throw error
     }
   }
