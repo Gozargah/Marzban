@@ -7,7 +7,7 @@ import { UseFormReturn } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { z } from 'zod'
 import { useCreateAdmin, useModifyAdmin } from '@/service/api'
-import { toast } from '@/hooks/use-toast.ts'
+import { toast } from 'sonner'
 import { queryClient } from '@/utils/query-client.ts'
 import { Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
@@ -120,6 +120,11 @@ export default function AdminModal({ isDialogOpen, onOpenChange, editingAdminUse
   const [showPassword, setShowPassword] = useState(false)
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
 
+    const isEmptyObject = (obj: Record<string, any> | null | undefined): boolean => {
+        if (!obj) return false
+        return Object.keys(obj).length === 0 && obj.constructor === Object
+    }
+
   const onSubmit = async (values: AdminFormValues) => {
     try {
       const editData = {
@@ -140,13 +145,10 @@ export default function AdminModal({ isDialogOpen, onOpenChange, editingAdminUse
           username: editingAdminUserName,
           data: editData,
         })
-        toast({
-          title: t('success', { defaultValue: 'Success' }),
-          description: t('admins.editSuccess', {
+        toast(t('admins.editSuccess', {
             name: values.username,
             defaultValue: 'Admin «{{name}}» has been updated successfully',
-          }),
-        })
+        }))
       } else {
         if (!values.password) return
         const createData = {
@@ -156,28 +158,99 @@ export default function AdminModal({ isDialogOpen, onOpenChange, editingAdminUse
         await addAdminMutation.mutateAsync({
           data: createData,
         })
-        toast({
-          title: t('success', { defaultValue: 'Success' }),
-          description: t('admins.createSuccess', {
+        toast(t('admins.createSuccess', {
             name: values.username,
             defaultValue: 'Admin «{{name}}» has been created successfully',
-          }),
-        })
+        }))
       }
       queryClient.invalidateQueries({ queryKey: ['/api/admins'] })
       onOpenChange(false)
       form.reset()
     } catch (error: any) {
-      console.error('Admin operation failed:', error)
-      toast({
-        title: t('error', { defaultValue: 'Error' }),
-        description: t(editingAdmin ? 'admins.editFailed' : 'admins.createFailed', {
-          name: values.username,
-          error: error?.message || '',
-          defaultValue: `Failed to ${editingAdmin ? 'update' : 'create'} admin «{{name}}». {{error}}`,
-        }),
-        variant: 'destructive',
-      })
+        console.error('Admin operation failed:', error)
+        console.error('Error response:', error?.response)
+        console.log('Error data:', error?.response?._data?.detail)
+
+        // Reset all previous errors first
+        form.clearErrors()
+
+        // Handle validation errors
+        if (error?.response?._data && !isEmptyObject(error?.response?._data)) {
+            // For zod validation errors
+            const fields = ['username', 'password', 'passwordConfirm', 'is_sudo', 'is_disabled', 'discord_webhook', 'sub_domain', 'sub_template', 'support_url', 'telegram_id', 'profile_title', 'discord_id']
+
+            // Show first error in a toast
+            if (error?.response?._data?.detail) {
+                const detail = error?.response?._data?.detail
+
+                // If detail is an object with field errors (e.g., { status: "some error" })
+                if (typeof detail === 'object' && detail !== null && !Array.isArray(detail)) {
+                    // Set errors for all fields in the object
+                    const firstField = Object.keys(detail)[0]
+                    const firstMessage = detail[firstField]
+
+                    Object.entries(detail).forEach(([field, message]) => {
+                        if (fields.includes(field)) {
+                            form.setError(field as any, {
+                                type: 'manual',
+                                message:
+                                    typeof message === 'string'
+                                        ? message
+                                        : t('validation.invalid', {
+                                            field: t(`adminDialog.${field}`, { defaultValue: field }),
+                                            defaultValue: `${field} is invalid`,
+                                        }),
+                            })
+                        }
+                    })
+
+                    toast.error(
+                        firstMessage ||
+                        t('validation.invalid', {
+                            field: t(`adminDialog.${firstField}`, { defaultValue: firstField }),
+                            defaultValue: `${firstField} is invalid`,
+                        })
+                    )
+                } else if (typeof detail === 'string' && !Array.isArray(detail)) {
+                    toast.error(detail)
+                }
+            }
+        } else if (error?.response?.data) {
+            // Handle API errors
+            const apiError = error.response?.data
+            let errorMessage = ''
+
+            if (typeof apiError === 'string') {
+                errorMessage = apiError
+            } else if (apiError?.detail) {
+                if (Array.isArray(apiError.detail)) {
+                    // Handle array of field errors
+                    apiError.detail.forEach((err: any) => {
+                        if (err.loc && err.loc[1]) {
+                            const fieldName = err.loc[1]
+                            form.setError(fieldName as any, {
+                                type: 'manual',
+                                message: err.msg,
+                            })
+                        }
+                    })
+                    errorMessage = apiError.detail[0]?.msg || 'Validation error'
+                } else if (typeof apiError.detail === 'string') {
+                    errorMessage = apiError.detail
+                } else {
+                    errorMessage = 'Validation error'
+                }
+            } else if (apiError?.message) {
+                errorMessage = apiError.message
+            } else {
+                errorMessage = 'An unexpected error occurred'
+            }
+
+            toast.error(errorMessage)
+        } else {
+            // Generic error handling
+            toast.error(error?.message || t('admins.genericError', { defaultValue: 'An error occurred' }))
+        }
     }
   }
 
