@@ -171,7 +171,7 @@
     "description": "Manage your Templates.",
     "addTemplate": "Create Template",
     "editSuccess": "User Template «{{name}}» has been modified successfully",
-    "createSuccess": "User Templates «{name}» has been created successfully",
+    "createSuccess": "User Templates «{{name}}» has been created successfully",
     "editFailed": "Failed to modify User Template «{{name}}»",
     "createFailed": "Failed to create User Template «{{name}}»",
     "name": "Name",
