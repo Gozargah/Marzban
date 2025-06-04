@@ -147,14 +147,17 @@ export default function HostsPage() {
                         errorMessage = firstError?.msg || 'Validation error'
                     } else if (typeof apiError.detail === 'string') {
                         errorMessage = apiError.detail
-                    } else if (typeof apiError.detail === 'object' && apiError.detail !== null) {
+                    } else if (typeof apiError.detail === 'object') {
                         // Get first error message from object
                         const firstError = Object.entries(apiError.detail)[0]
                         errorField = firstError[0]
                         errorMessage = typeof firstError[1] === 'string' 
                             ? firstError[1] 
                             : t('validation.invalid', { field: firstError[0] })
-                    } else {
+                    }
+                    else if (typeof apiError.detail === 'string' && !Array.isArray(apiError.detail)) {
+                        toast.error(apiError.detail)
+                    }else {
                         errorMessage = 'Validation error'
                     }
                 } else if (apiError?.message) {

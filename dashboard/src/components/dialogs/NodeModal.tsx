@@ -289,6 +289,8 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                   defaultValue: `${firstField} is invalid`,
                 }),
             )
+          } else if (typeof detail === 'string' && !Array.isArray(detail)) {
+            toast.error(detail)
           }
         }
       } else if (error?.response?.data) {
