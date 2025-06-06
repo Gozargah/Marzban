@@ -26,7 +26,7 @@ import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { v4 as uuidv4, v5 as uuidv5, v7 as uuidv7 } from 'uuid'
 import { z } from 'zod'
-import {isEmptyObject} from "@/utils/isEmptyObject.ts";
+import useDynamicErrorHandler from "@/hooks/use-dynamic-errors.ts";
 
 interface UserModalProps {
   isDialogOpen: boolean
@@ -57,6 +57,7 @@ const UUID_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'
 export default function UserModal({ isDialogOpen, onOpenChange, form, editingUser, editingUserId, onSuccessCallback }: UserModalProps) {
   const { t } = useTranslation()
   const dir = useDirDetection()
+  const handleError = useDynamicErrorHandler();
   const [loading, setLoading] = useState(false)
   const status = form.watch('status')
   const [activeTab, setActiveTab] = useState<'groups' | 'templates'>('groups')
@@ -511,88 +512,8 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
       form.reset()
       setTouchedFields({})
     } catch (error: any) {
-      console.error('Form submission error:', error)
-      console.error('Error response:', error?.response)
-      console.log('Error data:', error?.response?._data?.detail)
-
-      // Reset all previous errors first
-      form.clearErrors()
-
-      // Handle validation errors
-      if (error?.response?._data && !isEmptyObject(error?.response?._data)) {
-        // For zod validation errors
-        const fields = ['username', 'data_limit', 'expire', 'note', 'data_limit_reset_strategy', 'on_hold_expire_duration', 'on_hold_timeout', 'group_ids']
-
-        // Show first error in a toast
-        if (error?.response?._data?.detail) {
-          const detail = error?.response?._data?.detail
-
-          // If detail is an object with field errors (e.g., { status: "some error" })
-          if (typeof detail === 'object' && detail !== null && !Array.isArray(detail)) {
-            // Set errors for all fields in the object
-            const firstField = Object.keys(detail)[0]
-            const firstMessage = detail[firstField]
-
-            Object.entries(detail).forEach(([field, message]) => {
-              if (fields.includes(field)) {
-                form.setError(field as any, {
-                  type: 'manual',
-                  message:
-                    typeof message === 'string'
-                      ? message
-                      : t('validation.invalid', {
-                          field: t(`userDialog.${field}`, { defaultValue: field }),
-                          defaultValue: `${field} is invalid`,
-                        }),
-                })
-              }
-            })
-
-            toast.error(
-              firstMessage ||
-                t('validation.invalid', {
-                  field: t(`userDialog.${firstField}`, { defaultValue: firstField }),
-                  defaultValue: `${firstField} is invalid`,
-                }),
-            )
-          }
-        }
-      } else if (error?.response?.data) {
-        // Handle API errors
-        const apiError = error.response?.data
-        let errorMessage = ''
-
-        if (typeof apiError === 'string') {
-          errorMessage = apiError
-        } else if (apiError?.detail) {
-          if (Array.isArray(apiError.detail)) {
-            // Handle array of field errors
-            apiError.detail.forEach((err: any) => {
-              if (err.loc && err.loc[1]) {
-                const fieldName = err.loc[1]
-                form.setError(fieldName as any, {
-                  type: 'manual',
-                  message: err.msg,
-                })
-              }
-            })
-            errorMessage = apiError.detail[0]?.msg || 'Validation error'
-          } else if (typeof apiError.detail === 'string') {
-            errorMessage = apiError.detail
-          } else {
-            errorMessage = 'Validation error'
-          }
-        } else if (apiError?.message) {
-          errorMessage = apiError.message
-        } else {
-          errorMessage = 'An unexpected error occurred'
-        }
-
-        toast.error(errorMessage)
-      } else {
-        // Generic error handling
-        toast.error(error?.message || t('users.genericError', { defaultValue: 'An error occurred' }))
-      }
+      const fields = ['username', 'data_limit', 'expire', 'note', 'data_limit_reset_strategy', 'on_hold_expire_duration', 'on_hold_timeout', 'group_ids']
+      handleError({error, fields, form, contextKey: "users"})
     } finally {
       setLoading(false)
     }
