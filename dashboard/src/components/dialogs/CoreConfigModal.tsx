@@ -21,6 +21,7 @@ import {useTranslation} from 'react-i18next'
 import {toast} from 'sonner'
 import {z} from 'zod'
 import {useTheme} from '../../components/theme-provider'
+import {isEmptyObject} from "@/utils/isEmptyObject.ts";
 
 export const coreConfigFormSchema = z.object({
     name: z.string().min(1, 'Name is required'),
@@ -67,11 +68,6 @@ export default function CoreConfigModal({
     const [inboundTags, setInboundTags] = useState<string[]>([])
     const [isGeneratingKeyPair, setIsGeneratingKeyPair] = useState(false)
     const [isGeneratingShortId, setIsGeneratingShortId] = useState(false)
-
-    const isEmptyObject = (obj: Record<string, any> | null | undefined): boolean => {
-        if (!obj) return false
-        return Object.keys(obj).length === 0 && obj.constructor === Object
-    }
 
     const handleEditorValidation = useCallback(
         (markers: any[]) => {

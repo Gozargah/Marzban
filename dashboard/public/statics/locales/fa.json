@@ -383,8 +383,8 @@
   "deleteUser.title": "حذف کاربر",
   "disabled": "غیر فعال",
   "expire": "انقضا",
-  "expired": "{{time}} پیش به پایان رسیده",
-  "expires": "پایان در {{time}}",
+  "expired": "منقضی شده در {{time}}",
+  "expires": "منقضی می‌شود در {{time}}",
   "header.donation": "کمک مالی",
   "header.hostSettings": "تنظیمات هاست",
   "header.logout": "خروج",
@@ -777,6 +777,7 @@
   "userDialog.proxySettings.method": "روش رمزنگاری",
   "userDialog.proxySettings.flow": "جریان (Flow)",
   "userDialog.proxySettings.desc": "تنظیمات اختصاصی پروتکل برای این کاربر را پیکربندی کنید.",
+  "userDialog.expireDate": "تاریخ انقضا",
   "username": "نام کاربری",
   "users": "کاربران",
   "usersTable.copied": "کپی شد",
@@ -1086,5 +1087,23 @@
   "usersTable.resetUsagePrompt": "آیا مطمئن هستید که می‌خواهید مصرف «{{name}}» را ریست کنید؟",
   "usersTable.resetUsageSubmit": "ریست مصرف",
   "usersTable.resetUsageSuccess": "مصرف کاربر «{{name}}» با موفقیت ریست شد",
-  "usersTable.resetUsageFailed": "ریست مصرف کاربر «{{name}}» ناموفق بود"
+  "usersTable.resetUsageFailed": "ریست مصرف کاربر «{{name}}» ناموفق بود",
+  "time": {
+    "expires": "منقضی می‌شود",
+    "expired": "منقضی شده",
+    "year": "سال",
+    "years": "سال",
+    "month": "ماه",
+    "months": "ماه",
+    "day": "روز",
+    "days": "روز",
+    "hour": "ساعت",
+    "hours": "ساعت",
+    "min": "دقیقه",
+    "mins": "دقیقه",
+    "ago": "پیش"
+  },
+  "notConnectedYet": "هنوز متصل نشده",
+  "node.xrayVersion": "نسخه Xray",
+  "node.coreVersion": "نسخه هسته"
 }

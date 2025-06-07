@@ -383,7 +383,7 @@
     "description": "Manage your Templates.",
     "addTemplate": "Create Template",
     "editSuccess": "User Template «{{name}}» has been modified successfully",
-    "createSuccess": "User Templates «{name}» has been created successfully",
+    "createSuccess": "User Templates «{{name}}» has been created successfully",
     "editFailed": "Failed to modify User Template «{{name}}»",
     "createFailed": "Failed to create User Template «{{name}}»",
     "name": "Name",
@@ -447,8 +447,8 @@
   "deleteUser.prompt": "Are you sure you want to remove <b>{{username}}</b>?",
   "deleteUser.title": "Remove User",
   "disabled": "disabled",
-  "expired": "Expired {{time}} ago",
   "expires": "Expires in {{time}}",
+  "expired": "Expired in {{time}}",
   "header.donation": "Donation",
   "header.hostSettings": "Host Settings",
   "header.logout": "Log out",
@@ -1093,5 +1093,23 @@
   "usersTable.resetUsagePrompt": "Are you sure you want to reset the usage for «{{name}}»?",
   "usersTable.resetUsageSubmit": "Reset Usage",
   "usersTable.resetUsageSuccess": "User «{{name}}» usage has been reset successfully",
-  "usersTable.resetUsageFailed": "Failed to reset usage for user «{{name}}»"
+  "usersTable.resetUsageFailed": "Failed to reset usage for user «{{name}}»",
+  "time": {
+    "expires": "expires",
+    "expired": "expired",
+    "year": "year",
+    "years": "years",
+    "month": "month",
+    "months": "months",
+    "day": "day",
+    "days": "days",
+    "hour": "hour",
+    "hours": "hours",
+    "min": "min",
+    "mins": "mins",
+    "ago": "ago"
+  },
+  "notConnectedYet": "Not connected yet",
+  "node.xrayVersion": "Xray Version",
+  "node.coreVersion": "Core Version"
 }

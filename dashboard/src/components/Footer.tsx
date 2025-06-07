@@ -3,13 +3,12 @@ import { useGetSystemStats } from '@/service/api'
 import { FC, HTMLAttributes } from 'react'
 
 const FooterContent = () => {
-  const { data: systemStats } = useGetSystemStats({
+  const { data: systemStats } = useGetSystemStats(undefined, {
     query: {
-      // Only fetch once when component mounts
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
-    },
+      staleTime: Infinity
+    }
   })
 
   const version = systemStats?.version ? ` (v${systemStats.version})` : ''

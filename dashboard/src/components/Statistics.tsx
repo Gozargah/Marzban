@@ -34,10 +34,10 @@ export const StatisticsQueryKey = ['systemStats']
 
 export const Statistics = () => {
   const { t } = useTranslation()
-  const { data: systemData } = useGetSystemStats({
+  const { data: systemData } = useGetSystemStats(undefined, {
     query: {
-      refetchInterval: 5000,
-    },
+      refetchInterval: 5000
+    }
   })
 
   return (

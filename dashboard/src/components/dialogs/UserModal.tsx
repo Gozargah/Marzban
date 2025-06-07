@@ -14,11 +14,11 @@ import useDirDetection from '@/hooks/use-dir-detection'
 import { cn } from '@/lib/utils'
 import { UseEditFormValues, UseFormValues, userCreateSchema, userEditSchema } from '@/pages/_dashboard._index'
 import { useCreateUser, useCreateUserFromTemplate, useGetAllGroups, useGetUsers, useGetUserTemplates, useModifyUser, useModifyUserWithTemplate } from '@/service/api'
-import { relativeExpiryDate } from '@/utils/dateFormatter'
+import { useRelativeExpiryDate } from '@/utils/dateFormatter'
 import { formatBytes } from '@/utils/formatByte'
 import { useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
-import { CalendarIcon, Layers, ListStart, Lock, RefreshCcw, Search, Users } from 'lucide-react'
+import { CalendarIcon, Layers, ListStart, Lock, RefreshCcw, Search, Users, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { Trans, useTranslation } from 'react-i18next'
@@ -26,6 +26,8 @@ import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { v4 as uuidv4, v5 as uuidv5, v7 as uuidv7 } from 'uuid'
 import { z } from 'zod'
+import useDynamicErrorHandler from "@/hooks/use-dynamic-errors.ts";
+import { Calendar as PersianCalendar } from '@/components/ui/persian-calendar'
 
 interface UserModalProps {
   isDialogOpen: boolean
@@ -53,9 +55,199 @@ const templateModifySchema = z.object({
 // Helper for UUID namespace (for v5)
 const UUID_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'
 
+// Add this new component before the UserModal component
+const ExpiryDateField = ({ field, displayDate, usePersianCalendar, calendarOpen, setCalendarOpen, handleFieldChange }: {
+  field: any
+  displayDate: Date | null
+  usePersianCalendar: boolean
+  calendarOpen: boolean
+  setCalendarOpen: (open: boolean) => void
+  handleFieldChange: (field: string, value: any) => void
+}) => {
+  const { t } = useTranslation()
+  const expireInfo = useRelativeExpiryDate(displayDate ? Math.floor(displayDate.getTime() / 1000) : null)
+
+  return (
+    <FormItem className="flex-1 flex flex-col">
+      <FormLabel>{t('userDialog.expiryDate', { defaultValue: 'Expire date' })}</FormLabel>
+      <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+        <PopoverTrigger asChild>
+          <FormControl>
+            <div className="relative w-full">
+              <Button 
+                dir={"ltr"}
+                variant={'outline'} 
+                className={cn(
+                  'w-full h-fit !mt-3.5 text-left font-normal',
+                  !field.value && 'text-muted-foreground'
+                )} 
+                type="button"
+              >
+                {displayDate ? (
+                  usePersianCalendar ? (
+                    // Persian format
+                    new Intl.DateTimeFormat('fa-IR', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false
+                    }).format(displayDate)
+                  ) : (
+                    // Gregorian format
+                    format(displayDate, 'yyyy/MM/dd HH:mm')
+                  )
+                ) : field.value && !isNaN(Number(field.value)) ? (
+                  String(field.value)
+                ) : (
+                  <span>{t('userDialog.expireDate', { defaultValue: 'Expire date' })}</span>
+                )}
+                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+              </Button>
+            </div>
+          </FormControl>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          {usePersianCalendar ? (
+            <PersianCalendar
+              mode="single"
+              selected={displayDate || undefined}
+              onSelect={(date: Date | undefined) => {
+                if (date) {
+                  const now = new Date()
+                  if (date < now) {
+                    date = now
+                  } else {
+                    date.setHours(now.getHours(), now.getMinutes())
+                  }
+                  const timestamp = Math.floor(date.getTime() / 1000)
+                  field.onChange(timestamp)
+                  handleFieldChange('expire', timestamp)
+                  setCalendarOpen(false)
+                } else {
+                  field.onChange('')
+                  handleFieldChange('expire', undefined)
+                  setCalendarOpen(false)
+                }
+              }}
+              disabled={(date: Date) => date < new Date()}
+              captionLayout="dropdown"
+              fromDate={new Date()}
+              formatters={{
+                formatMonthDropdown: (date) => {
+                  const persianDate = new Intl.DateTimeFormat('fa-IR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    calendar: 'persian'
+                  }).format(date)
+                  return persianDate.split(' ')[1]
+                },
+                formatYearDropdown: (date) => {
+                  const persianYear = new Intl.DateTimeFormat('fa-IR', {
+                    year: 'numeric',
+                    calendar: 'persian'
+                  }).format(date)
+                  return persianYear
+                }
+              }}
+              fromMonth={new Date()}
+              toMonth={new Date(new Date().getFullYear() + 10, 11, 31)}
+            />
+          ) : (
+            <Calendar
+              mode="single"
+              selected={displayDate || undefined}
+              onSelect={(date: Date | undefined) => {
+                if (date) {
+                  const now = new Date()
+                  if (date < now) {
+                    date = now
+                  } else {
+                    date.setHours(now.getHours(), now.getMinutes())
+                  }
+                  const timestamp = Math.floor(date.getTime() / 1000)
+                  field.onChange(timestamp)
+                  handleFieldChange('expire', timestamp)
+                  setCalendarOpen(false)
+                } else {
+                  field.onChange('')
+                  handleFieldChange('expire', undefined)
+                  setCalendarOpen(false)
+                }
+              }}
+              disabled={(date: Date) => date < new Date()}
+              captionLayout="dropdown"
+              fromDate={new Date()}
+              fromMonth={new Date()}
+              toMonth={new Date(new Date().getFullYear() + 10, 11, 31)}
+            />
+          )}
+          <div className="p-3 border-t">
+            <div className="flex items-center gap-4">
+              <FormControl>
+                <Input
+                  type="time"
+                  value={displayDate ? format(displayDate, 'HH:mm') : format(new Date(), 'HH:mm')}
+                  min={displayDate && displayDate.toDateString() === new Date().toDateString() ? format(new Date(), 'HH:mm') : undefined}
+                  onChange={(e) => {
+                    if (displayDate && e.target.value) {
+                      const [hours, minutes] = e.target.value.split(':')
+                      const newDate = new Date(displayDate)
+                      
+                      // Set hours and minutes
+                      newDate.setHours(parseInt(hours), parseInt(minutes))
+                      
+                      const now = new Date()
+                      
+                      // If same day, ensure time is not before current time
+                      if (newDate.toDateString() === now.toDateString() && newDate < now) {
+                        newDate.setTime(now.getTime())
+                      }
+                      
+                      const timestamp = Math.floor(newDate.getTime() / 1000)
+                      field.onChange(timestamp)
+                      handleFieldChange('expire', timestamp)
+                    }
+                  }}
+                />
+              </FormControl>
+              {displayDate && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => {
+                    field.onChange('')
+                    handleFieldChange('expire', undefined)
+                    setCalendarOpen(false)
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+      {expireInfo && (
+        <p className={cn(!expireInfo.time && "hidden","text-xs text-muted-foreground")}>
+          {expireInfo.time !== '0' && expireInfo.time !== '0s'
+            ? t('expires', { time: expireInfo.time, defaultValue: 'Expires in {{time}}' })
+            : t('expired', { time: expireInfo.time, defaultValue: 'Expired in {{time}}' })}
+        </p>
+      )}
+      <FormMessage />
+    </FormItem>
+  )
+}
+
 export default function UserModal({ isDialogOpen, onOpenChange, form, editingUser, editingUserId, onSuccessCallback }: UserModalProps) {
   const { t } = useTranslation()
   const dir = useDirDetection()
+  const handleError = useDynamicErrorHandler();
   const [loading, setLoading] = useState(false)
   const status = form.watch('status')
   const [activeTab, setActiveTab] = useState<'groups' | 'templates'>('groups')
@@ -66,6 +258,71 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
   const [nextPlanEnabled, setNextPlanEnabled] = useState(!!form.watch('next_plan'))
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | undefined>(undefined)
   const navigate = useNavigate()
+  const [calendarOpen, setCalendarOpen] = useState(false)
+  const { i18n } = useTranslation()
+  const isPersianLocale = i18n.language === 'fa'
+  const [usePersianCalendar, setUsePersianCalendar] = useState(isPersianLocale)
+  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({})
+  const [isFormValid, setIsFormValid] = useState(false)
+
+  // Update field handlers to track touched state and validate immediately
+  const handleFieldChange = (fieldName: string, value: any) => {
+    setTouchedFields(prev => ({ ...prev, [fieldName]: true }))
+    const currentValues = {
+      ...form.getValues(),
+      [fieldName]: value,
+    }
+    const isValid = validateAllFields(currentValues, { ...touchedFields, [fieldName]: true })
+    setIsFormValid(isValid)
+  }
+
+  // Add validation on field blur
+  const handleFieldBlur = (fieldName: string) => {
+    if (!touchedFields[fieldName]) {
+      setTouchedFields(prev => ({ ...prev, [fieldName]: true }))
+      const currentValues = form.getValues()
+      const isValid = validateAllFields(currentValues, { ...touchedFields, [fieldName]: true })
+      setIsFormValid(isValid)
+    }
+  }
+
+  // Get the expire value from the form
+  const expireValue = form.watch('expire')
+  let expireUnix: number | null = null
+  let displayDate: Date | null = null
+
+  // Handle various formats of expire value
+  if (isDate(expireValue)) {
+    expireUnix = Math.floor(expireValue.getTime() / 1000)
+    displayDate = expireValue
+  } else if (typeof expireValue === 'string') {
+    if (expireValue === '') {
+      expireUnix = null
+      displayDate = null
+    } else {
+      const asNum = Number(expireValue)
+      if (!isNaN(asNum)) {
+        const timestamp = asNum * 1000
+        const date = new Date(timestamp)
+        if (date.getFullYear() > 1970) {
+          displayDate = date
+          expireUnix = asNum
+        }
+      } else {
+        const date = new Date(expireValue)
+        if (!isNaN(date.getTime()) && date.getFullYear() > 1970) {
+          expireUnix = Math.floor(date.getTime() / 1000)
+          displayDate = date
+        }
+      }
+    }
+  } else if (typeof expireValue === 'number') {
+    const date = new Date(expireValue * 1000)
+    if (date.getFullYear() > 1970) {
+      displayDate = date
+      expireUnix = expireValue
+    }
+  }
 
   // Query client for data refetching
   const queryClient = useQueryClient()
@@ -98,11 +355,6 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
       refetchOnReconnect: true,
     },
   })
-
-  const isEmptyObject = (obj: Record<string, any> | null | undefined): boolean => {
-    if (!obj) return false
-    return Object.keys(obj).length === 0 && obj.constructor === Object
-  }
 
   // Function to refresh all user-related data
   const refreshUserData = () => {
@@ -187,22 +439,23 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
 
   useEffect(() => {
     if (status === 'on_hold') {
+      // Clear expire field and its errors
       form.setValue('expire', undefined)
       form.clearErrors('expire')
 
-      // Validate on_hold_expire_duration
+      // Set default on_hold_expire_duration if not set
       const duration = form.getValues('on_hold_expire_duration')
       if (!duration || duration < 1) {
-        form.setError('on_hold_expire_duration', {
-          type: 'manual',
-          message: t('validation.required', { field: t('userDialog.onHoldExpireDuration') }),
-        })
+        const defaultDuration = 7 * 24 * 60 * 60 // 7 days in seconds
+        form.setValue('on_hold_expire_duration', defaultDuration)
+        handleFieldChange('on_hold_expire_duration', defaultDuration)
       }
     } else {
+      // Clear on_hold_expire_duration field and its errors
       form.setValue('on_hold_expire_duration', undefined)
       form.clearErrors('on_hold_expire_duration')
     }
-  }, [status, form, t])
+  }, [status, form, t, handleFieldChange])
 
   useEffect(() => {
     if (!nextPlanEnabled) {
@@ -332,31 +585,6 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
     }
   }
 
-  // Add state to track touched fields and form validity
-  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({})
-  const [isFormValid, setIsFormValid] = useState(false)
-
-  // Update field handlers to track touched state and validate immediately
-  const handleFieldChange = (fieldName: string, value: any) => {
-    setTouchedFields(prev => ({ ...prev, [fieldName]: true }))
-    const currentValues = {
-      ...form.getValues(),
-      [fieldName]: value,
-    }
-    const isValid = validateAllFields(currentValues, { ...touchedFields, [fieldName]: true })
-    setIsFormValid(isValid)
-  }
-
-  // Add validation on field blur
-  const handleFieldBlur = (fieldName: string) => {
-    if (!touchedFields[fieldName]) {
-      setTouchedFields(prev => ({ ...prev, [fieldName]: true }))
-      const currentValues = form.getValues()
-      const isValid = validateAllFields(currentValues, { ...touchedFields, [fieldName]: true })
-      setIsFormValid(isValid)
-    }
-  }
-
   const onSubmit = async (values: UseFormValues | UseEditFormValues) => {
     try {
       form.clearErrors()
@@ -385,10 +613,10 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
         } catch (error: any) {
           toast.error(
             error?.response?._data?.detail ||
-              t('users.editError', {
-                name: values.username,
-                defaultValue: 'Failed to update user «{{name}}»',
-              }),
+            t('users.editError', {
+              name: values.username,
+              defaultValue: 'Failed to update user «{{name}}»',
+            }),
           )
           setLoading(false)
           return
@@ -419,10 +647,10 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
         } catch (error: any) {
           toast.error(
             error?.response?._data?.detail ||
-              t('users.createError', {
-                name: values.username,
-                defaultValue: 'Failed to create user «{{name}}»',
-              }),
+            t('users.createError', {
+              name: values.username,
+              defaultValue: 'Failed to create user «{{name}}»',
+            }),
           )
           setLoading(false)
           return
@@ -514,88 +742,8 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
       form.reset()
       setTouchedFields({})
     } catch (error: any) {
-      console.error('Form submission error:', error)
-      console.error('Error response:', error?.response)
-      console.log('Error data:', error?.response?._data?.detail)
-
-      // Reset all previous errors first
-      form.clearErrors()
-
-      // Handle validation errors
-      if (error?.response?._data && !isEmptyObject(error?.response?._data)) {
-        // For zod validation errors
-        const fields = ['username', 'data_limit', 'expire', 'note', 'data_limit_reset_strategy', 'on_hold_expire_duration', 'on_hold_timeout', 'group_ids']
-
-        // Show first error in a toast
-        if (error?.response?._data?.detail) {
-          const detail = error?.response?._data?.detail
-
-          // If detail is an object with field errors (e.g., { status: "some error" })
-          if (typeof detail === 'object' && detail !== null && !Array.isArray(detail)) {
-            // Set errors for all fields in the object
-            const firstField = Object.keys(detail)[0]
-            const firstMessage = detail[firstField]
-
-            Object.entries(detail).forEach(([field, message]) => {
-              if (fields.includes(field)) {
-                form.setError(field as any, {
-                  type: 'manual',
-                  message:
-                    typeof message === 'string'
-                      ? message
-                      : t('validation.invalid', {
-                          field: t(`userDialog.${field}`, { defaultValue: field }),
-                          defaultValue: `${field} is invalid`,
-                        }),
-                })
-              }
-            })
-
-            toast.error(
-              firstMessage ||
-                t('validation.invalid', {
-                  field: t(`userDialog.${firstField}`, { defaultValue: firstField }),
-                  defaultValue: `${firstField} is invalid`,
-                }),
-            )
-          }
-        }
-      } else if (error?.response?.data) {
-        // Handle API errors
-        const apiError = error.response?.data
-        let errorMessage = ''
-
-        if (typeof apiError === 'string') {
-          errorMessage = apiError
-        } else if (apiError?.detail) {
-          if (Array.isArray(apiError.detail)) {
-            // Handle array of field errors
-            apiError.detail.forEach((err: any) => {
-              if (err.loc && err.loc[1]) {
-                const fieldName = err.loc[1]
-                form.setError(fieldName as any, {
-                  type: 'manual',
-                  message: err.msg,
-                })
-              }
-            })
-            errorMessage = apiError.detail[0]?.msg || 'Validation error'
-          } else if (typeof apiError.detail === 'string') {
-            errorMessage = apiError.detail
-          } else {
-            errorMessage = 'Validation error'
-          }
-        } else if (apiError?.message) {
-          errorMessage = apiError.message
-        } else {
-          errorMessage = 'An unexpected error occurred'
-        }
-
-        toast.error(errorMessage)
-      } else {
-        // Generic error handling
-        toast.error(error?.message || t('users.genericError', { defaultValue: 'An error occurred' }))
-      }
+      const fields = ['username', 'data_limit', 'expire', 'note', 'data_limit_reset_strategy', 'on_hold_expire_duration', 'on_hold_timeout', 'group_ids']
+      handleError({ error, fields, form, contextKey: "users" })
     } finally {
       setLoading(false)
     }
@@ -688,12 +836,12 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
       const allFieldsTouched = editingUser
         ? {}
         : Object.keys(currentValues).reduce(
-            (acc, key) => {
-              acc[key] = true
-              return acc
-            },
-            {} as Record<string, boolean>,
-          )
+          (acc, key) => {
+            acc[key] = true
+            return acc
+          },
+          {} as Record<string, boolean>,
+        )
       const isValid = validateAllFields(currentValues, allFieldsTouched)
       setIsFormValid(isValid)
       setTouchedFields(allFieldsTouched)
@@ -731,7 +879,10 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
     // eslint-disable-next-line
   }, [isDialogOpen, editingUser])
 
-  const [calendarOpen, setCalendarOpen] = useState(false)
+  // Add effect to handle locale changes
+  useEffect(() => {
+    setUsePersianCalendar(i18n.language === 'fa')
+  }, [i18n.language])
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
@@ -1064,103 +1215,16 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                           <FormField
                             control={form.control}
                             name="expire"
-                            render={({ field }) => {
-                              let expireUnix: number | null = null
-                              let displayDate: Date | null = null
-
-                              // Handle various formats of expire value
-                              if (isDate(field.value)) {
-                                expireUnix = Math.floor(field.value.getTime() / 1000)
-                                displayDate = field.value
-                              } else if (typeof field.value === 'string') {
-                                // Try parsing as date string first
-                                if (field.value === '') {
-                                  // Empty string - no date set
-                                  expireUnix = null
-                                  displayDate = null
-                                } else {
-                                  const asNum = Number(field.value)
-                                  if (!isNaN(asNum)) {
-                                    // It's a numeric string (timestamp), convert to date
-                                    const timestamp = asNum * 1000 // Convert seconds to ms
-                                    const date = new Date(timestamp)
-                                    if (date.getFullYear() > 1970) {
-                                      displayDate = date
-                                      expireUnix = asNum
-                                    }
-                                  } else {
-                                    // Try as date string
-                                    const date = new Date(field.value)
-                                    if (!isNaN(date.getTime()) && date.getFullYear() > 1970) {
-                                      expireUnix = Math.floor(date.getTime() / 1000)
-                                      displayDate = date
-                                    }
-                                  }
-                                }
-                              } else if (typeof field.value === 'number') {
-                                // Direct timestamp in seconds
-                                const date = new Date(field.value * 1000)
-                                // Validate the date is reasonable (after 1970)
-                                if (date.getFullYear() > 1970) {
-                                  displayDate = date
-                                  expireUnix = field.value
-                                }
-                              }
-
-                              const expireInfo = expireUnix ? relativeExpiryDate(expireUnix) : null
-
-                              return (
-                                <FormItem className="flex-1 flex flex-col">
-                                  <FormLabel>{t('userDialog.expiryDate', { defaultValue: 'Expire date' })}</FormLabel>
-                                  <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-                                    <PopoverTrigger asChild>
-                                      <FormControl>
-                                        <Button variant={'outline'} className={cn('w-full h-fit !mt-3.5 text-left font-normal', !field.value && 'text-muted-foreground')} type="button">
-                                          {displayDate ? (
-                                            format(displayDate, 'yyyy/MM/dd')
-                                          ) : field.value && !isNaN(Number(field.value)) ? (
-                                            String(field.value)
-                                          ) : (
-                                            <span>{t('users.expirePlaceholder', { defaultValue: 'Pick a date' })}</span>
-                                          )}
-                                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                        </Button>
-                                      </FormControl>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="start">
-                                      <Calendar
-                                        mode="single"
-                                        selected={displayDate || undefined}
-                                        onSelect={date => {
-                                          if (date) {
-                                            const today = new Date()
-                                            if (date.toDateString() === today.toDateString()) {
-                                              date.setHours(23, 59, 59)
-                                            }
-                                            const timestamp = Math.floor(date.getTime() / 1000)
-                                            field.onChange(timestamp)
-                                            handleFieldChange('expire', timestamp)
-                                            setCalendarOpen(false)
-                                          } else {
-                                            field.onChange('')
-                                            handleFieldChange('expire', undefined)
-                                            setCalendarOpen(false)
-                                          }
-                                        }}
-                                        fromDate={new Date()}
-                                        initialFocus
-                                      />
-                                    </PopoverContent>
-                                  </Popover>
-                                  {expireInfo?.time && (
-                                    <p dir="ltr" className="text-xs text-muted-foreground ">
-                                      Expire in {expireInfo.time}
-                                    </p>
-                                  )}
-                                  <FormMessage />
-                                </FormItem>
-                              )
-                            }}
+                            render={({ field }) => (
+                              <ExpiryDateField
+                                field={field}
+                                displayDate={displayDate}
+                                usePersianCalendar={usePersianCalendar}
+                                calendarOpen={calendarOpen}
+                                setCalendarOpen={setCalendarOpen}
+                                handleFieldChange={handleFieldChange}
+                              />
+                            )}
                           />
                         )}
                       </div>
@@ -1554,9 +1618,8 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                         <button
                           key={tab.id}
                           onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                          className={`relative flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                            activeTab === tab.id ? 'text-foreground border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'
-                          }`}
+                          className={`relative flex-1 px-3 py-2 text-sm font-medium transition-colors ${activeTab === tab.id ? 'text-foreground border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'
+                            }`}
                           type="button"
                         >
                           <div className="flex items-center gap-1.5 justify-center">
@@ -1673,7 +1736,10 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                       />
                                     </div>
                                     <label className="flex items-center border border-border gap-2 p-3 rounded-md hover:bg-accent cursor-pointer">
-                                      <Checkbox checked={selectedGroups.length > 0 && selectedGroups.every(id => filteredGroups.some(group => group.id === id))} onCheckedChange={handleSelectAll} />
+                                      <Checkbox 
+                                        checked={filteredGroups.length > 0 && selectedGroups.length === filteredGroups.length}
+                                        onCheckedChange={handleSelectAll} 
+                                      />
                                       <span className="text-sm font-medium">{t('selectAll', { defaultValue: 'Select All' })}</span>
                                     </label>
                                     <div className="max-h-[200px] overflow-y-auto space-y-2 p-2 border rounded-md">

@@ -3,7 +3,6 @@ import asyncio
 from sqlalchemy.exc import IntegrityError
 
 from app import notification
-from app.core.manager import core_manager
 from app.db import AsyncSession
 from app.db.crud import (
     activate_all_disabled_users,
@@ -110,12 +109,7 @@ class AdminOperation(BaseOperation):
 
         users = await get_users(db, admin=db_admin)
         await asyncio.gather(
-            *[
-                node_manager.update_user(
-                    UserResponse.model_validate(user), await user.inbounds(await core_manager.get_inbounds())
-                )
-                for user in users
-            ]
+            *[node_manager.update_user(UserResponse.model_validate(user), await user.inbounds()) for user in users]
         )
 
         logger.info(f'Admin "{username}" users has been activated by admin "{admin.username}"')

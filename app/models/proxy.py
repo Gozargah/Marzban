@@ -33,7 +33,7 @@ class ShadowsocksMethods(str, Enum):  # Already a str, Enum which is good
 
 
 class ShadowsocksSettings(BaseModel):
-    password: str = Field(default_factory=random_password)
+    password: str = Field(default_factory=random_password, min_length=22)
     method: ShadowsocksMethods = ShadowsocksMethods.CHACHA20_POLY1305
 
 

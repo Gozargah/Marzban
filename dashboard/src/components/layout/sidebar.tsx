@@ -5,14 +5,14 @@ import { NavMain } from '@/components/nav-main'
 import { NavSecondary } from '@/components/nav-secondary'
 import { NavUser } from '@/components/nav-user'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail, SidebarTrigger } from '@/components/ui/sidebar'
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail, SidebarTrigger, useSidebar } from '@/components/ui/sidebar'
 import { DISCUSSION_GROUP, DOCUMENTATION, DONATION_URL, REPO_URL } from '@/constants/Project'
 import { useAdmin } from '@/hooks/use-admin'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { getSystemStats } from '@/service/api'
 import { BookOpen, Cpu, FileText, GithubIcon, LayoutTemplate, LifeBuoy, ListTodo, Palette, PieChart, RssIcon, Settings2, Share2Icon, UserCog, Users2, UsersIcon, Bell, MessageCircle, Webhook, Send } from 'lucide-react'
 import * as React from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -20,6 +20,56 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { t } = useTranslation()
   const [version, setVersion] = useState<string>('')
   const { admin } = useAdmin()
+  const { setOpenMobile, openMobile } = useSidebar()
+  const touchStartX = useRef<number | null>(null)
+  const touchEndX = useRef<number | null>(null)
+  const minSwipeDistance = 50
+  const edgeThreshold = 50 // Distance from edge to detect edge swipe
+
+  const handleTouchStart = (e: TouchEvent) => {
+    touchEndX.current = null
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchMove = (e: TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = useCallback(() => {
+    if (!touchStartX.current || !touchEndX.current) return
+
+    const distance = touchStartX.current - touchEndX.current
+    const isLeftSwipe = distance > minSwipeDistance
+    const isRightSwipe = distance < -minSwipeDistance
+    const isFromRightEdge = touchStartX.current > window.innerWidth - edgeThreshold
+
+    // Only handle swipes that start from the right edge
+    if (isFromRightEdge) {
+      if (isLeftSwipe && !openMobile) {
+        setOpenMobile(true)
+      } else if (isRightSwipe && openMobile) {
+        setOpenMobile(false)
+      }
+    }
+
+    // Reset touch positions
+    touchStartX.current = null
+    touchEndX.current = null
+  }, [openMobile, setOpenMobile])
+
+  useEffect(() => {
+    // Add touch event listeners to the document
+    document.addEventListener('touchstart', handleTouchStart, { passive: true })
+    document.addEventListener('touchmove', handleTouchMove, { passive: true })
+    document.addEventListener('touchend', handleTouchEnd)
+
+    // Cleanup
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart)
+      document.removeEventListener('touchmove', handleTouchMove)
+      document.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [handleTouchEnd])
 
   useEffect(() => {
     const fetchVersion = async () => {
@@ -173,7 +223,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </div>
         <SidebarTrigger />
       </div>
-      <Sidebar variant="sidebar" {...props} className="border-sidebar-border p-0" side={isRTL ? 'right' : 'left'}>
+      <Sidebar 
+        variant="sidebar" 
+        {...props} 
+        className="border-sidebar-border p-0" 
+        side={isRTL ? 'right' : 'left'}
+      >
         <SidebarRail />
         <SidebarHeader>
           <SidebarMenu>
@@ -190,7 +245,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarHeader>
         <SidebarContent>
           <NavMain items={data.navMain} />
-          <NavSecondary items={data.community} label="Community" />
+          {admin?.is_sudo && <NavSecondary items={data.community} label="Community" />}
           <NavSecondary items={data.navSecondary} className="mt-auto" />
           <div className="flex justify-between px-4 [&>:first-child]:[direction:ltr]">
             <GithubStar />

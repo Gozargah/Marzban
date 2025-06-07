@@ -29,21 +29,12 @@ class SettingsOperation(BaseOperation):
 
     async def modify_settings(self, db: AsyncSession, modify: SettingsSchema) -> SettingsSchema:
         db_settings = await get_settings(db)
-
-        old_settings_dict = {
-            "telegram": db_settings.telegram,
-            "discord": db_settings.discord,
-            "webhook": db_settings.webhook,
-            "notification_settings": db_settings.notification_settings,
-            "notification_enable": db_settings.notification_enable,
-            "subscription": db_settings.subscription,
-        }
-        old_settings = SettingsSchema.model_validate(old_settings_dict)
+        old_settings = SettingsSchema.model_validate(db_settings)
 
         db_settings = await modify_settings(db, db_settings, modify)
         new_settings = SettingsSchema.model_validate(db_settings)
-        await refresh_caches()
 
+        await refresh_caches()
         asyncio.create_task(self.reset_services(old_settings, new_settings))
 
         return new_settings

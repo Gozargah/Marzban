@@ -6,7 +6,6 @@ from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from app import notification
-from app.core.manager import core_manager
 from app.db import AsyncSession
 from app.db.crud import (
     UsersSortingOptions,
@@ -66,6 +65,17 @@ class UserOperation(BaseOperation):
         user.subscription_url = await self.generate_subscription_url(user)
         return user
 
+    async def update_user(self, db_user: User) -> UserNotificationResponse:
+        user = await self.validate_user(db_user)
+
+        if db_user.status in (UserStatus.active, UserStatus.on_hold):
+            user_inbounds = await db_user.inbounds()
+            asyncio.create_task(node_manager.update_user(user, inbounds=user_inbounds))
+        else:
+            asyncio.create_task(node_manager.remove_user(user))
+
+        return user
+
     async def create_user(self, db: AsyncSession, new_user: UserCreate, admin: AdminDetails) -> UserResponse:
         if new_user.next_plan is not None and new_user.next_plan.user_template_id is not None:
             await self.get_validated_user_template(db, new_user.next_plan.user_template_id)
@@ -78,10 +88,7 @@ class UserOperation(BaseOperation):
         except IntegrityError:
             await self.raise_error(message="User already exists", code=409, db=db)
 
-        user = await self.validate_user(db_user)
-
-        asyncio.create_task(node_manager.update_user(user, inbounds=await core_manager.get_inbounds()))
-        asyncio.create_task(notification.create_user(user, admin))
+        user = await self.update_user(db_user)
 
         logger.info(f'New user "{db_user.username}" with id "{db_user.id}" added by admin "{admin.username}"')
 
@@ -99,12 +106,7 @@ class UserOperation(BaseOperation):
         old_status = db_user.status
 
         db_user = await modify_user(db, db_user, modified_user)
-        user = await self.validate_user(db_user)
-
-        if db_user.status in (UserStatus.active, UserStatus.on_hold):
-            asyncio.create_task(node_manager.update_user(user, inbounds=await core_manager.get_inbounds()))
-        else:
-            asyncio.create_task(node_manager.remove_user(user))
+        user = await self.update_user(db_user)
 
         logger.info(f'User "{user.username}" with id "{db_user.id}" modified by admin "{admin.username}"')
 
@@ -140,10 +142,7 @@ class UserOperation(BaseOperation):
         old_status = db_user.status
 
         db_user = await reset_user_data_usage(db=db, db_user=db_user)
-        user = await self.validate_user(db_user)
-
-        if db_user.status in (UserStatus.active, UserStatus.on_hold):
-            asyncio.create_task(node_manager.update_user(user, inbounds=await core_manager.get_inbounds()))
+        user = await self.update_user(db_user)
 
         if user.status != old_status:
             asyncio.create_task(notification.user_status_change(user, admin))
@@ -163,9 +162,7 @@ class UserOperation(BaseOperation):
         db_user = await self.get_validated_user(db, username, admin)
 
         db_user = await revoke_user_sub(db=db, db_user=db_user)
-        user = await self.validate_user(db_user)
-        if db_user.status in (UserStatus.active, UserStatus.on_hold):
-            asyncio.create_task(node_manager.update_user(user, inbounds=await core_manager.get_inbounds()))
+        user = await self.update_user(db_user)
 
         asyncio.create_task(notification.user_subscription_revoked(user, admin))
 
@@ -189,9 +186,7 @@ class UserOperation(BaseOperation):
 
         db_user = await reset_user_by_next(db=db, db_user=db_user)
 
-        user = await self.validate_user(db_user)
-        if user.status in (UserStatus.active, UserStatus.on_hold):
-            asyncio.create_task(node_manager.update_user(user, inbounds=await core_manager.get_inbounds()))
+        user = await self.update_user(db_user)
 
         if user.status != old_status:
             asyncio.create_task(notification.user_status_change(user, admin))

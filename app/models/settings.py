@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict
 
 from .validators import ProxyValidator, DiscordValidator, ListValidator
 
@@ -111,8 +111,10 @@ class NotificationSettings(BaseModel):
 
     @model_validator(mode="after")
     def check_notify_telegram_requires_token_and_id(self):
-        if self.notify_telegram and not self.telegram_api_token:
-            raise ValueError("Telegram notification cannot be enabled without token.")
+        if self.notify_telegram and (
+            not self.telegram_api_token or not (self.telegram_channel_id, self.telegram_admin_id)
+        ):
+            raise ValueError("Telegram notification cannot be enabled without token or admin/channel id.")
         return self
 
 
@@ -175,3 +177,5 @@ class SettingsSchema(BaseModel):
     notification_settings: NotificationSettings | None = Field(default=None)
     notification_enable: NotificationEnable | None = Field(default=None)
     subscription: Subscription | None = Field(default=None)
+
+    model_config = ConfigDict(from_attributes=True)

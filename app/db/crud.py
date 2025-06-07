@@ -2255,4 +2255,4 @@ async def modify_settings(db: AsyncSession, db_setting: Settings, modify: Settin
 
     await db.commit()
     await db.refresh(db_setting)
-    return settings_data
+    return db_setting

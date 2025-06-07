@@ -98,7 +98,7 @@ async def generate_subscription(user: User, config_format: str, as_base64: bool,
     kwargs = {
         "proxies": user.proxy_settings,
         "user_status": user.status,
-        "inbounds": await user.inbounds(await core_manager.get_inbounds()),
+        "inbounds": await user.inbounds(),
         "extra_data": user.__dict__,
         "reverse": reverse,
     }

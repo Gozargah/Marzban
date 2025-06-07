@@ -1,7 +1,6 @@
 import asyncio
 
 from app import notification
-from app.core.manager import core_manager
 from app.db import AsyncSession
 from app.db.crud import create_group, get_group, get_users, modify_group, remove_group
 from app.db.models import Admin
@@ -41,12 +40,7 @@ class GroupOperation(BaseOperation):
 
         users = await get_users(db, group_ids=[db_group.id])
         await asyncio.gather(
-            *[
-                node_manager.update_user(
-                    UserResponse.model_validate(user), await user.inbounds(await core_manager.get_inbounds())
-                )
-                for user in users
-            ]
+            *[node_manager.update_user(UserResponse.model_validate(user), await user.inbounds()) for user in users]
         )
 
         group = GroupResponse.model_validate(db_group)
@@ -66,12 +60,7 @@ class GroupOperation(BaseOperation):
         users = await get_users(db, usernames=username_list)
 
         await asyncio.gather(
-            *[
-                node_manager.update_user(
-                    UserResponse.model_validate(user), await user.inbounds(await core_manager.get_inbounds())
-                )
-                for user in users
-            ]
+            *[node_manager.update_user(UserResponse.model_validate(user), await user.inbounds()) for user in users]
         )
 
         logger.info(f'Group "{db_group.name}" deleted by admin "{admin.username}"')

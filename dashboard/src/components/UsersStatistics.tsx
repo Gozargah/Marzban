@@ -43,10 +43,10 @@ const UsersStatistics = () => {
   const [prevData, setPrevData] = useState<any>(null)
   const [isIncreased, setIsIncreased] = useState<Record<string, boolean>>({})
 
-  const { data } = useGetSystemStats({
+  const { data } = useGetSystemStats(undefined, {
     query: {
-      refetchInterval: 5000,
-    },
+      refetchInterval: 5000
+    }
   })
 
   useEffect(() => {

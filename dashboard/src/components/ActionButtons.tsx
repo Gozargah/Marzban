@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { useClipboard } from '@/hooks/use-clipboard'
-import { Check, Copy, Edit, User, QrCode, RefreshCcw, PieChart, Trash2, EllipsisVertical } from 'lucide-react'
+import { Check, Copy, Pencil, User, QrCode, RefreshCcw, PieChart, Trash2, EllipsisVertical } from 'lucide-react'
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CopyButton } from './CopyButton'
@@ -279,7 +279,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
     <div onClick={e => e.stopPropagation()}>
       <div className="flex justify-end items-center">
         <Button size="icon" variant="ghost" onClick={handleEdit} className="md:hidden">
-          <Edit className="h-4 w-4" />
+          <Pencil className="h-4 w-4" />
         </Button>
         <TooltipProvider>
           <CopyButton
@@ -327,7 +327,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
           <DropdownMenuContent align="end">
             {/* Edit */}
             <DropdownMenuItem className="hidden md:flex" onClick={handleEdit}>
-              <Edit className="h-4 w-4 mr-2" />
+              <Pencil className="h-4 w-4 mr-2" />
               <span>{t('edit')}</span>
             </DropdownMenuItem>
 

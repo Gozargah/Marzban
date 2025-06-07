@@ -627,6 +627,7 @@
   "userDialog.vmessDesc": "Быстрый и безопасный",
   "userDialog.warningNoProtocol": "Пожалуйста, выберите хотя бы один протокол",
   "userDialog.weeks": "Недели",
+  "userDialog.expireDate": "Дата истечения срока",
   "username": "Имя пользователя",
   "users": "Пользователи",
   "usersTable.copied": "Скопировано",
@@ -1095,5 +1096,23 @@
   "usersTable.resetUsagePrompt": "Вы уверены, что хотите сбросить использование для «{{name}}»?",
   "usersTable.resetUsageSubmit": "Сбросить использование",
   "usersTable.resetUsageSuccess": "Использование пользователя «{{name}}» успешно сброшено",
-  "usersTable.resetUsageFailed": "Не удалось сбросить использование пользователя «{{name}}»"
+  "usersTable.resetUsageFailed": "Не удалось сбросить использование пользователя «{{name}}»",
+  "time": {
+    "expires": "истекает",
+    "expired": "истек",
+    "year": "год",
+    "years": "года",
+    "month": "месяц",
+    "months": "месяца",
+    "day": "день",
+    "days": "дня",
+    "hour": "час",
+    "hours": "часа",
+    "min": "мин",
+    "mins": "мин",
+    "ago": "назад"
+  },
+  "notConnectedYet": "Еще не подключен",
+  "node.xrayVersion": "Версия Xray",
+  "node.coreVersion": "Версия ядра"
 }

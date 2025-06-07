@@ -675,14 +675,8 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit, editing
       }
 
       const response = await onSubmit(cleanedData)
-      if (response.status !== 200) {
-        if (editingHost?.id) {
-          toast.error(t('hostsDialog.editFailed', { name: data.remark }))
-        } else {
-          toast.error(t('hostsDialog.createFailed', { name: data.remark }))
-        }
-      } else {
-        // Show success message
+      if (response.status === 200) {
+
         if (editingHost?.id) {
           toast.success(t('hostsDialog.editSuccess', { name: data.remark }))
         } else {
@@ -695,11 +689,6 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit, editing
       return response
     } catch (error) {
       console.error('Error submitting form:', error)
-      if (editingHost?.id) {
-        toast.error(t('hostsDialog.editFailed', { name: data.remark }))
-      } else {
-        toast.error(t('hostsDialog.createFailed', { name: data.remark }))
-      }
       throw error
     }
   }

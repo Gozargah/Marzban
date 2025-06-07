@@ -31,7 +31,7 @@ def memory_usage() -> MemoryStat:
 
 
 def random_password() -> str:
-    return secrets.token_urlsafe(16)
+    return secrets.token_urlsafe(24)
 
 
 def check_port(port: int) -> bool:

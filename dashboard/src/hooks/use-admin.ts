@@ -40,6 +40,12 @@ export const useAdmin = () => {
       // Otherwise fetch fresh data
       fetchAdmin()
     }
+
+    // Poll every 30 seconds
+    const interval = setInterval(() => {
+      fetchAdmin()
+    }, 30000)
+    return () => clearInterval(interval)
   }, [initialAdminData, toast])
 
   const clearAdmin = () => {
