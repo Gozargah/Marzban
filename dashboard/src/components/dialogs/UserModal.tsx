@@ -1519,19 +1519,24 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                     <div className="border border-border rounded-[--radius] p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <ListStart className="w-4 h-4" />
-                          <div>{t('userDialog.nextPlanTitle', { defaultValue: 'Next Plan' })}</div>
+                          <ListStart className="w-4 h-4"/>
+                          <div
+                              onClick={() => setNextPlanEnabled(!nextPlanEnabled)}
+                              className="cursor-pointer"
+                          >
+                            {t('userDialog.nextPlanTitle', {defaultValue: 'Next Plan'})}
+                          </div>
                         </div>
-                        <Switch checked={nextPlanEnabled} onCheckedChange={setNextPlanEnabled} />
+                        <Switch checked={nextPlanEnabled} onCheckedChange={setNextPlanEnabled}/>
                       </div>
                       {nextPlanEnabled && (
-                        <div className="flex flex-col gap-4 py-4">
-                          <FormField
-                            control={form.control}
-                            name="next_plan.user_template_id"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>{t('userDialog.nextPlanTemplateId', { defaultValue: 'Template ID' })}</FormLabel>
+                          <div className="flex flex-col gap-4 py-4">
+                            <FormField
+                                control={form.control}
+                                name="next_plan.user_template_id"
+                                render={({field}) => (
+                                    <FormItem>
+                                      <FormLabel>{t('userDialog.nextPlanTemplateId', {defaultValue: 'Template ID' })}</FormLabel>
                                 <FormControl>
                                   <Select
                                     value={field.value ? String(field.value) : 'none'}
@@ -1595,15 +1600,18 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                           )}
                           <div className="flex gap-8">
                             <FormField
-                              control={form.control}
-                              name="next_plan.add_remaining_traffic"
-                              render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between w-full gap-2">
-                                  <FormLabel>{t('userDialog.nextPlanAddRemainingTraffic', { defaultValue: 'Add Remaining Traffic' })}</FormLabel>
-                                  <Switch checked={!!field.value} onCheckedChange={field.onChange} />
-                                  <FormMessage />
-                                </FormItem>
-                              )}
+                                control={form.control}
+                                name="next_plan.add_remaining_traffic"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between w-full gap-2">
+                                      <div className="space-y-0.5">
+                                        <FormLabel className={"cursor-pointer"}>{t('userDialog.nextPlanAddRemainingTraffic', { defaultValue: 'Add Remaining Traffic' })}</FormLabel>
+                                      </div>
+                                      <FormControl>
+                                        <Switch checked={!!field.value} onCheckedChange={field.onChange} />
+                                      </FormControl>
+                                    </FormItem>
+                                )}
                             />
                           </div>
                         </div>
