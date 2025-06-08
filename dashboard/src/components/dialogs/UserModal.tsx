@@ -1598,7 +1598,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                               control={form.control}
                               name="next_plan.add_remaining_traffic"
                               render={({ field }) => (
-                                <FormItem className="flex flex-row items-center gap-2">
+                                <FormItem className="flex flex-row items-center justify-between w-full gap-2">
                                   <FormLabel>{t('userDialog.nextPlanAddRemainingTraffic', { defaultValue: 'Add Remaining Traffic' })}</FormLabel>
                                   <Switch checked={!!field.value} onCheckedChange={field.onChange} />
                                   <FormMessage />
