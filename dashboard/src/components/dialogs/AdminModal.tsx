@@ -375,12 +375,15 @@ export default function AdminModal({
                                 name="is_sudo"
                                 render={({field}) => (
                                     <FormItem
-                                        className="flex flex-row items-center justify-between rounded-lg border p-4 w-full">
+                                        className="flex flex-row items-center justify-between rounded-lg border p-4 w-full cursor-pointer"
+                                        onClick={() => field.onChange(!field.value)}>
                                         <div className="space-y-0.5">
                                             <FormLabel className="text-base">{t('admins.sudo')}</FormLabel>
                                         </div>
                                         <FormControl>
-                                            <Switch checked={field.value} onCheckedChange={field.onChange}/>
+                                            <div onClick={e => e.stopPropagation()}>
+                                                <Switch checked={field.value} onCheckedChange={field.onChange}/>
+                                            </div>
                                         </FormControl>
                                     </FormItem>
                                 )}

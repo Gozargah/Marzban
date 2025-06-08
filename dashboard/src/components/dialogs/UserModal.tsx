@@ -1517,17 +1517,16 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                   {/* Next Plan Section (toggleable) */}
                   {editingUser && (
                     <div className="border border-border rounded-[--radius] p-4">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between cursor-pointer" onClick={() => setNextPlanEnabled(!nextPlanEnabled)}>
                         <div className="flex items-center gap-2">
                           <ListStart className="w-4 h-4"/>
-                          <div
-                              onClick={() => setNextPlanEnabled(!nextPlanEnabled)}
-                              className="cursor-pointer"
-                          >
+                          <div>
                             {t('userDialog.nextPlanTitle', {defaultValue: 'Next Plan'})}
                           </div>
                         </div>
+                        <div onClick={e => e.stopPropagation()}>
                         <Switch checked={nextPlanEnabled} onCheckedChange={setNextPlanEnabled}/>
+                        </div>
                       </div>
                       {nextPlanEnabled && (
                           <div className="flex flex-col gap-4 py-4">

@@ -276,9 +276,15 @@ export default function UserTemplateModal({
                                     render={({field}) => (
                                         <FormItem className="flex-1">
                                             <div className="flex-row justify-between items-center flex">
-                                                <FormLabel>{t('templates.resetUsage')}</FormLabel>
+                                                <FormLabel>
+                                                    <div className={"cursor-pointer"} onClick={() => field.onChange(!field.value)}>
+                                                    {t('templates.resetUsage')}
+                                                    </div>
+                                                </FormLabel>
                                                 <FormControl>
-                                                    <Switch checked={field.value} onCheckedChange={field.onChange}/>
+                                                    <div onClick={e => e.stopPropagation()}>
+                                                        <Switch checked={field.value} onCheckedChange={field.onChange}/>
+                                                    </div>
                                                 </FormControl>
                                                 <FormMessage/>
                                             </div>
