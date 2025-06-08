@@ -536,6 +536,7 @@
       "info.examples": "مثال‌ها:"
     },
     "muxSettings": "تنظیمات Mux",
+    "enableMux": "فعال‌سازی Mux",
     "xraySettings": "تنظیمات Xray",
     "singBoxSettings": "تنظیمات Sing-box",
     "clashSettings": "تنظیمات Clash",
@@ -556,6 +557,7 @@
     "statistic": "فعال‌سازی آمار",
     "onlyTcp": "فقط TCP",
     "brutal": {
+      "enable": "فعال‌سازی Brutal",
       "title": "تنظیمات Brutal",
       "upMbps": "سرعت آپلود (مگابیت بر ثانیه)",
       "downMbps": "سرعت دانلود (مگابیت بر ثانیه)"

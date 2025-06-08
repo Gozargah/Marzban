@@ -767,6 +767,7 @@
       "heartbeatPeriod": "心跳周期"
     },
     "muxSettings": "多路复用设置",
+    "enableMux": "启用 Mux",
     "xraySettings": "Xray 设置",
     "singBoxSettings": "Sing-box 设置",
     "clashSettings": "Clash 设置",
@@ -787,6 +788,7 @@
     "statistic": "启用统计",
     "onlyTcp": "仅 TCP",
     "brutal": {
+      "enable": "启用 Brutal",
       "title": "Brutal 设置",
       "upMbps": "上传速度 (Mbps)",
       "downMbps": "下载速度 (Mbps)"

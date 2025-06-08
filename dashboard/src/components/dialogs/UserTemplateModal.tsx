@@ -148,7 +148,7 @@ export default function UserTemplateModal({
             form.reset()
         } catch (error: any) {
             const fields = ['name', 'data_limit', 'expire_duration', 'username_prefix', 'username_suffix', 'groups', 'status', 'resetUsages', 'on_hold_timeout', 'data_limit_reset_strategy', 'method', 'flow']
-            handleError({error, fields, form, contextKey: "groups"})
+            handleError({error, fields, form, contextKey: "templates"})
         }
     }
 

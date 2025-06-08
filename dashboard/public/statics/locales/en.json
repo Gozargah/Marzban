@@ -599,6 +599,7 @@
       "info.examples": "Examples:"
     },
     "muxSettings": "Mux Settings",
+    "enableMux": "Enable Mux",
     "xraySettings": "Xray Settings",
     "singBoxSettings": "Sing-box Settings",
     "clashSettings": "Clash Settings",
@@ -619,6 +620,7 @@
     "statistic": "Enable Statistics",
     "onlyTcp": "Only TCP",
     "brutal": {
+      "enable": "Enable Brutal",
       "title": "Brutal Settings",
       "upMbps": "Upload Speed (Mbps)",
       "downMbps": "Download Speed (Mbps)"

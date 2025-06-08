@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { cn } from '@/lib/utils'
-import { getHosts, getInbounds, UserStatus } from '@/service/api'
+import {getHosts, getInbounds, UserStatus} from '@/service/api'
 import { queryClient } from '@/utils/query-client'
 import { useQuery } from '@tanstack/react-query'
 import { Cable, ChevronsLeftRightEllipsis, GlobeLock, Info, Lock, Network, Plus, Trash2 } from 'lucide-react'
@@ -1888,6 +1888,21 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
                         {/* Xray Settings */}
                         <TabsContent dir={dir} value="xray">
                           <div className="space-y-4">
+                            <FormField
+                                control={form.control}
+                                name="mux_settings.xray.enable"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                      <div className="space-y-0.5">
+                                        <FormLabel className="text-base">{t('hostsDialog.enableMux')}</FormLabel>
+                                      </div>
+                                      <FormControl>
+                                        <Switch checked={field.value || false} onCheckedChange={field.onChange} />
+                                      </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+                            {form.watch('mux_settings.xray.enable') === true ?
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <FormField
                                 control={form.control}
@@ -1942,13 +1957,29 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
                                   </FormItem>
                                 )}
                               />
-                            </div>
+                            </div> :null}
                           </div>
                         </TabsContent>
 
                         {/* Sing-box Settings */}
                         <TabsContent dir={dir} value="sing_box">
                           <div className="space-y-4">
+                            <FormField
+                                control={form.control}
+                                name="mux_settings.sing_box.enable"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                      <div className="space-y-0.5">
+                                        <FormLabel className="text-base">{t('hostsDialog.enableMux')}</FormLabel>
+                                      </div>
+                                      <FormControl>
+                                        <Switch checked={field.value || false} onCheckedChange={field.onChange} />
+                                      </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+                            {form.watch('mux_settings.sing_box.enable') === true ?
+                                <>
                             <FormField
                               control={form.control}
                               name="mux_settings.sing_box.protocol"
@@ -2019,6 +2050,21 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
 
                             <div className="space-y-4">
                               <h4 className="text-sm font-medium">{t('hostsDialog.brutal.title')}</h4>
+                              <FormField
+                                  control={form.control}
+                                  name="mux_settings.sing_box.brutal.enable"
+                                  render={({ field }) => (
+                                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                        <div className="space-y-0.5">
+                                          <FormLabel className="text-base">{t("hostsDialog.brutal.enable")}</FormLabel>
+                                        </div>
+                                        <FormControl>
+                                          <Switch checked={field.value || false} onCheckedChange={field.onChange} />
+                                        </FormControl>
+                                      </FormItem>
+                                  )}
+                              />
+                              {form.watch('mux_settings.sing_box.brutal.enable') === true ?
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <FormField
                                   control={form.control}
@@ -2047,7 +2093,7 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
                                     </FormItem>
                                   )}
                                 />
-                              </div>
+                              </div>:null}
                             </div>
 
                             <FormField
@@ -2064,12 +2110,30 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
                                 </FormItem>
                               )}
                             />
+                                </>
+                                :null}
                           </div>
                         </TabsContent>
 
                         {/* Clash Settings */}
                         <TabsContent dir={dir} value="clash">
                           <div className="space-y-4">
+                            <FormField
+                                control={form.control}
+                                name="mux_settings.clash.enable"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                      <div className="space-y-0.5">
+                                        <FormLabel className="text-base">{t('hostsDialog.enableMux')}</FormLabel>
+                                      </div>
+                                      <FormControl>
+                                        <Switch checked={field.value || false} onCheckedChange={field.onChange} />
+                                      </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+                            {form.watch('mux_settings.clash.enable') === true ?
+                            <>
                             <FormField
                               control={form.control}
                               name="mux_settings.clash.protocol"
@@ -2140,6 +2204,21 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
 
                             <div className="space-y-4">
                               <h4 className="text-sm font-medium">{t('hostsDialog.brutal.title')}</h4>
+                              <FormField
+                                  control={form.control}
+                                  name="mux_settings.clash.brutal.enable"
+                                  render={({ field }) => (
+                                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                        <div className="space-y-0.5">
+                                          <FormLabel className="text-base">{t("hostsDialog.brutal.enable")}</FormLabel>
+                                        </div>
+                                        <FormControl>
+                                          <Switch checked={field.value || false} onCheckedChange={field.onChange} />
+                                        </FormControl>
+                                      </FormItem>
+                                  )}
+                              />
+                              {form.watch('mux_settings.clash.brutal.enable') === true ?
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <FormField
                                   control={form.control}
@@ -2168,7 +2247,7 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
                                     </FormItem>
                                   )}
                                 />
-                              </div>
+                              </div>:null}
                             </div>
 
                             <FormField
@@ -2215,6 +2294,7 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
                                 </FormItem>
                               )}
                             />
+                          </>:null}
                           </div>
                         </TabsContent>
                       </Tabs>
