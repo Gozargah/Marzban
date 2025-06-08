@@ -37,7 +37,7 @@ const QRCodeModal: FC<QRCodeModalProps> = memo(({ subscribeLinks, subscribeUrl, 
 
   return (
     <Dialog open={isOpen} onOpenChange={onCloseModal}>
-      <DialogContent className="max-w-[425px] md:max-w-[750px] py-8 md:py-6 overflow-y-auto max-h-screen md:pt-10">
+      <DialogContent className="max-w-[425px] md:max-w-[750px] max-h-[100dvh] overflow-y-auto">
         <DialogHeader dir={dir}>
           <DialogTitle>
             <div className="px-2">

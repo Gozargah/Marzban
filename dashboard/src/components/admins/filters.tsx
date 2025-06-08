@@ -120,7 +120,7 @@ export const PaginationControls = () => {
             </SelectGroup>
           </SelectContent>
         </Select>
-        <span className="text-sm text-gray-600">{t('itemsPerPage')}</span>
+        <span className="text-sm text-muted-foreground whitespace-nowrap">{t('itemsPerPage')}</span>
       </div>
 
       <Pagination>

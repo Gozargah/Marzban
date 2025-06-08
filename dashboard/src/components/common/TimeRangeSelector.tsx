@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useTranslation } from 'react-i18next'
+import { Calendar as PersianCalendar } from '@/components/ui/persian-calendar'
 
 interface TimeRangeSelectorProps extends React.HTMLAttributes<HTMLDivElement> {
   onRangeChange: (range: DateRange | undefined) => void
@@ -17,7 +18,8 @@ interface TimeRangeSelectorProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function TimeRangeSelector({ className, onRangeChange, initialRange }: TimeRangeSelectorProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const isPersianLocale = i18n.language === 'fa'
   const [date, setDate] = React.useState<DateRange | undefined>(
     initialRange ?? {
       from: addDays(new Date(), -7), // Default to last 7 days
@@ -40,6 +42,17 @@ export function TimeRangeSelector({ className, onRangeChange, initialRange }: Ti
     onRangeChange(selectedRange) // Call the callback prop
   }
 
+  const formatDate = (date: Date) => {
+    if (isPersianLocale) {
+      return new Intl.DateTimeFormat('fa-IR', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      }).format(date)
+    }
+    return format(date, 'LLL dd, y')
+  }
+
   return (
     <div className={cn('grid gap-2', className)}>
       <Popover>
@@ -49,10 +62,10 @@ export function TimeRangeSelector({ className, onRangeChange, initialRange }: Ti
             {date?.from ? (
               date.to ? (
                 <>
-                  {format(date.from, 'LLL dd, y')} - {format(date.to, 'LLL dd, y')}
+                  {formatDate(date.from)} - {formatDate(date.to)}
                 </>
               ) : (
-                format(date.from, 'LLL dd, y')
+                formatDate(date.from)
               )
             ) : (
               <span>{t('timeSelector.pickDate')}</span>
@@ -60,7 +73,25 @@ export function TimeRangeSelector({ className, onRangeChange, initialRange }: Ti
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="end">
-          <Calendar initialFocus mode="range" defaultMonth={date?.from} selected={date} onSelect={handleSelect} numberOfMonths={2} disabled={{ after: new Date() }} />
+          {isPersianLocale ? (
+            <PersianCalendar
+              mode="range"
+              defaultMonth={date?.from}
+              selected={date}
+              onSelect={handleSelect}
+              numberOfMonths={2}
+              disabled={{ after: new Date() }}
+            />
+          ) : (
+            <Calendar
+              mode="range"
+              defaultMonth={date?.from}
+              selected={date}
+              onSelect={handleSelect}
+              numberOfMonths={2}
+              disabled={{ after: new Date() }}
+            />
+          )}
         </PopoverContent>
       </Popover>
     </div>

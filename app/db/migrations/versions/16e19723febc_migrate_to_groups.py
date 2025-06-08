@@ -7,7 +7,7 @@ Create Date: 2025-03-17 08:45:33.514529
 """
 import json
 from enum import Enum
-from collections import defaultdict
+from collections import defaultdict, Counter
 from decouple import config as decouple_config
 
 import commentjson
@@ -222,7 +222,7 @@ def upgrade() -> None:
                 continue
             session.commit()
             for k, val in template_dict.items():
-                if val["inbounds"] == group_data["inbounds"]:
+                if Counter(val["inbounds"]) == Counter(group_data["inbounds"]):
                     # Check if association already exists
                     exists = session.execute(
                         sa.select(template_group_association).where(
@@ -281,8 +281,7 @@ def upgrade() -> None:
                     counter += 1
 
     finally:
-        # Uncomment this for production
-        # session.commit()
+        session.commit()
         session.close()
 
 def downgrade() -> None:

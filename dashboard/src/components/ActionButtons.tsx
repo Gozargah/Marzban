@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { useClipboard } from '@/hooks/use-clipboard'
-import { Check, Copy, Pencil, User, QrCode, RefreshCcw, PieChart, Trash2, EllipsisVertical } from 'lucide-react'
+import { Check, Copy, Pencil, User, QrCode, RefreshCcw, PieChart, Trash2, EllipsisVertical, TrendingUp } from 'lucide-react'
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CopyButton } from './CopyButton'
@@ -14,9 +14,11 @@ import { toast } from '@/hooks/use-toast'
 import { useForm } from 'react-hook-form'
 import { UseEditFormValues, UseFormValues } from '@/pages/_dashboard._index'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { useRemoveUser, useResetUserDataUsage, useRevokeUserSubscription } from '@/service/api'
+import { useRemoveUser, useResetUserDataUsage, useRevokeUserSubscription, useGetCurrentAdmin } from '@/service/api'
 import { cn } from '@/lib/utils'
 import useDirDetection from '@/hooks/use-dir-detection'
+import UsageModal from './dialogs/UsageModal'
+import SetOwnerModal from './dialogs/SetOwnerModal'
 
 type ActionButtonsProps = {
   user: UserResponse
@@ -36,12 +38,15 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [isResetUsageDialogOpen, setResetUsageDialogOpen] = useState(false)
   const [isRevokeSubDialogOpen, setRevokeSubDialogOpen] = useState(false)
+  const [isUsageModalOpen, setUsageModalOpen] = useState(false)
+  const [isSetOwnerModalOpen, setSetOwnerModalOpen] = useState(false)
   const queryClient = useQueryClient()
   const { t } = useTranslation()
   const dir = useDirDetection()
   const removeUserMutation = useRemoveUser()
   const resetUserDataUsageMutation = useResetUserDataUsage()
   const revokeUserSubscriptionMutation = useRevokeUserSubscription()
+  const { data: currentAdmin } = useGetCurrentAdmin()
 
   // Create form for user editing
   const userForm = useForm<UseEditFormValues>({
@@ -56,11 +61,11 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
       on_hold_expire_duration: user.on_hold_expire_duration || undefined,
       next_plan: user.next_plan
         ? {
-            user_template_id: user.next_plan.user_template_id ? Number(user.next_plan.user_template_id) : undefined,
-            data_limit: user.next_plan.data_limit ? Number(user.next_plan.data_limit) : undefined,
-            expire: user.next_plan.expire ? Number(user.next_plan.expire) : undefined,
-            add_remaining_traffic: user.next_plan.add_remaining_traffic || false,
-          }
+          user_template_id: user.next_plan.user_template_id ? Number(user.next_plan.user_template_id) : undefined,
+          data_limit: user.next_plan.data_limit ? Number(user.next_plan.data_limit) : undefined,
+          expire: user.next_plan.expire ? Number(user.next_plan.expire) : undefined,
+          add_remaining_traffic: user.next_plan.add_remaining_traffic || false,
+        }
         : undefined,
     },
   })
@@ -79,11 +84,11 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
       proxy_settings: user.proxy_settings || undefined,
       next_plan: user.next_plan
         ? {
-            user_template_id: user.next_plan.user_template_id ? Number(user.next_plan.user_template_id) : undefined,
-            data_limit: user.next_plan.data_limit ? Number(user.next_plan.data_limit) : undefined,
-            expire: user.next_plan.expire ? Number(user.next_plan.expire) : undefined,
-            add_remaining_traffic: user.next_plan.add_remaining_traffic || false,
-          }
+          user_template_id: user.next_plan.user_template_id ? Number(user.next_plan.user_template_id) : undefined,
+          data_limit: user.next_plan.data_limit ? Number(user.next_plan.data_limit) : undefined,
+          expire: user.next_plan.expire ? Number(user.next_plan.expire) : undefined,
+          add_remaining_traffic: user.next_plan.add_remaining_traffic || false,
+        }
         : undefined,
     }
 
@@ -132,11 +137,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
   }
 
   const handleSetOwner = () => {
-    // Implement set owner functionality
-    toast({
-      title: t('info'),
-      description: t('setOwnerAction', { username: user.username }),
-    })
+    setSetOwnerModalOpen(true)
   }
 
   const handleRevokeSubscription = () => {
@@ -184,7 +185,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
   }
 
   const handleUsageState = () => {
-    // Implement usage state functionality
+    setUsageModalOpen(true)
     toast({
       title: t('info'),
       description: t('usageStateAction', { username: user.username }),
@@ -337,11 +338,13 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
               <span>Qr Code</span>
             </DropdownMenuItem>
 
-            {/* Set Owner */}
-            <DropdownMenuItem onClick={handleSetOwner}>
-              <User className="h-4 w-4 mr-2" />
-              <span>{t('setOwner')}</span>
-            </DropdownMenuItem>
+            {/* Set Owner: only for sudo admins */}
+            {currentAdmin?.is_sudo && (
+              <DropdownMenuItem onClick={handleSetOwner}>
+                <User className="h-4 w-4 mr-2" />
+                <span>{t('setOwnerModal.title')}</span>
+              </DropdownMenuItem>
+            )}
 
             <DropdownMenuSeparator />
 
@@ -427,6 +430,19 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
 
       {/* Edit User Modal */}
       <UserModal isDialogOpen={isEditModalOpen} onOpenChange={setEditModalOpen} form={userForm} editingUser={true} editingUserId={user.id} onSuccessCallback={refreshUserData} />
+
+      <UsageModal open={isUsageModalOpen} onClose={() => setUsageModalOpen(false)} username={user.username} />
+
+      {/* SetOwnerModal: only for sudo admins */}
+      {currentAdmin?.is_sudo && (
+        <SetOwnerModal
+          open={isSetOwnerModalOpen}
+          onClose={() => setSetOwnerModalOpen(false)}
+          username={user.username}
+          currentOwner={user.admin?.username}
+          onSuccess={refreshUserData}
+        />
+      )}
     </div>
   )
 }

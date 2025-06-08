@@ -242,6 +242,7 @@ class UserOperation(BaseOperation):
         sort: str | None = None,
         proxy_id: str | None = None,
         load_sub: bool = False,
+        group_ids: list[int] | None = None,
     ) -> UsersResponse:
         """Get all users"""
         sort_list = []
@@ -265,6 +266,7 @@ class UserOperation(BaseOperation):
             proxy_id=proxy_id,
             admins=owner if admin.is_sudo else [admin.username],
             return_with_count=True,
+            group_ids=group_ids,
         )
 
         if load_sub:

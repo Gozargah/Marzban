@@ -1,5 +1,5 @@
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
-import React, { useState } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { cn } from '@/lib/utils'
@@ -22,51 +22,87 @@ interface DataTableProps<TData extends UserResponse, TValue> {
 export function DataTable<TData extends UserResponse, TValue>({ columns, data, isLoading = false, isFetching = false, onEdit }: DataTableProps<TData, TValue>) {
   const { t } = useTranslation()
   const [expandedRow, setExpandedRow] = useState<number | null>(null)
+  const dir = useDirDetection()
+  const isRTL = dir === 'rtl'
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
   })
-  const isRTL = useDirDetection() === 'rtl'
 
-  const handleRowToggle = (rowId: number) => {
-    setExpandedRow(expandedRow === rowId ? null : rowId)
-  }
+  const handleRowToggle = useCallback((rowId: number) => {
+    setExpandedRow(prev => prev === rowId ? null : rowId)
+  }, [])
 
-  const handleEditModal = (e: React.MouseEvent, user: UserResponse) => {
-    // Don't open modal if clicking on chevron
-    if ((e.target as HTMLElement).closest('.chevron')) {
-      return
-    }
-
-    // On mobile, toggle row expansion instead of opening edit modal
+  const handleEditModal = useCallback((e: React.MouseEvent, user: UserResponse) => {
+    if ((e.target as HTMLElement).closest('.chevron')) return
     if (window.innerWidth < 768) {
       handleRowToggle(user.id)
       return
     }
-
-    // Don't open modal if clicking on dropdown menu or its items
-    if ((e.target as HTMLElement).closest('[role="menu"], [role="menuitem"], [data-radix-popper-content-wrapper]')) {
-      return
-    }
+    if ((e.target as HTMLElement).closest('[role="menu"], [role="menuitem"], [data-radix-popper-content-wrapper]')) return
     onEdit?.(user)
-  }
-
-  const dir = useDirDetection()
+  }, [handleRowToggle, onEdit])
 
   const isLoadingData = isLoading || isFetching
 
+  const ExpandedRowContent = useCallback(({ row }: { row: any }) => (
+    <div className="p-4 flex flex-col gap-y-4">
+      <UsageSliderCompact
+        isMobile
+        status={row.original.status}
+        total={row.original.data_limit}
+        totalUsedTraffic={row.original.lifetime_used_traffic}
+        used={row.original.used_traffic}
+        dataLimitResetStrategy={row.original.data_limit_reset_strategy || undefined}
+      />
+      <div className="flex flex-col">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <StatusBadge showOnlyExpiry expiryDate={row.original.expire} status={row.original.status} showExpiry />
+          </div>
+          <div onClick={e => e.stopPropagation()}>
+            <ActionButtons user={row.original} />
+          </div>
+        </div>
+        <div>
+          <OnlineStatus lastOnline={row.original.online_at} />
+        </div>
+      </div>
+    </div>
+  ), [])
+
+  const LoadingState = useMemo(() => (
+    <TableRow>
+      <TableCell colSpan={columns.length} className="h-24">
+        <div dir={dir} className="flex flex-col items-center justify-center gap-2">
+          <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
+          <span className="text-sm">{t('loading')}</span>
+        </div>
+      </TableCell>
+    </TableRow>
+  ), [columns.length, dir, t])
+
+  const EmptyState = useMemo(() => (
+    <TableRow>
+      <TableCell colSpan={columns.length} className="h-24 text-center">
+        <span className="text-muted-foreground">{t('noResults')}</span>
+      </TableCell>
+    </TableRow>
+  ), [columns.length, t])
+
   return (
-    <div className="rounded-md border">
-      <Table dir={cn(isRTL && 'rtl')}>
-        <TableHeader className="relative">
+    <div className="rounded-md border overflow-hidden">
+      <Table dir={isRTL ? 'rtl' : 'ltr'}>
+        <TableHeader>
           {table.getHeaderGroups().map(headerGroup => (
-            <TableRow className="uppercase" key={headerGroup.id}>
+            <TableRow key={headerGroup.id} className="uppercase">
               {headerGroup.headers.map((header, index) => (
                 <TableHead
                   key={header.id}
                   className={cn(
-                    'text-xs sticky z-10 overflow-visible',
+                    'text-xs sticky z-10 bg-background',
                     isRTL && 'text-right',
                     index === 0 && 'w-[200px] sm:w-[270px] md:w-auto',
                     index === 1 && 'max-w-[70px] md:w-auto !px-0',
@@ -82,30 +118,14 @@ export function DataTable<TData extends UserResponse, TValue>({ columns, data, i
           ))}
         </TableHeader>
         <TableBody>
-          {isLoadingData ? (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24">
-                <div dir={dir} className="flex flex-col items-center justify-center gap-2">
-                  <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
-                  <span className="text-sm">{t('loading')}</span>
-                </div>
-              </TableCell>
-            </TableRow>
-          ) : table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row, index) => (
+          {isLoadingData ? LoadingState : table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => (
               <React.Fragment key={row.id}>
                 <TableRow
                   className={cn(
                     'cursor-pointer md:cursor-default border-b hover:!bg-inherit md:hover:!bg-muted/50',
                     expandedRow === row.original.id && 'border-transparent',
-                    'transition-all duration-300 ease-in-out',
-                    'animate-slide-up will-change-transform',
                   )}
-                  style={{
-                    animationDelay: `${index * 40}ms`,
-                    animationDuration: '0.4s',
-                    animationFillMode: 'both',
-                  }}
                   onClick={e => handleEditModal(e, row.original)}
                   data-state={row.getIsSelected() && 'selected'}
                 >
@@ -113,14 +133,14 @@ export function DataTable<TData extends UserResponse, TValue>({ columns, data, i
                     <TableCell
                       key={cell.id}
                       className={cn(
-                        'py-2 text-sm',
+                        'py-2 text-sm whitespace-nowrap',
                         index <= 1 && 'md:py-2 max-w-[calc(100vw-50px-32px-100px-48px)]',
                         index === 2 && 'w-[120px]',
                         index === 3 && 'w-8',
-                        index === 3 && dir === 'rtl' ? 'pr-0' : index === 3 && dir === 'ltr' && 'pl-0',
+                        index === 3 && isRTL ? 'pr-0' : index === 3 && !isRTL && 'pl-0',
                         index >= 4 && 'hidden md:table-cell',
                         cell.column.id === 'chevron' && 'table-cell md:hidden',
-                        dir === 'rtl' ? 'pl-1.5 sm:pl-3' : 'pr-1.5 sm:pr-3',
+                        isRTL ? 'pl-1.5 sm:pl-3' : 'pr-1.5 sm:pr-3',
                       )}
                     >
                       {cell.column.id === 'chevron' ? (
@@ -131,7 +151,7 @@ export function DataTable<TData extends UserResponse, TValue>({ columns, data, i
                             handleRowToggle(row.original.id)
                           }}
                         >
-                          <ChevronDown className={cn('h-4 w-4 transition-transform duration-300', expandedRow === row.original.id && 'rotate-180')} />
+                          <ChevronDown className={cn('h-4 w-4 transition-transform duration-200', expandedRow === row.original.id && 'rotate-180')} />
                         </div>
                       ) : (
                         flexRender(cell.column.columnDef.cell, cell.getContext())
@@ -140,45 +160,15 @@ export function DataTable<TData extends UserResponse, TValue>({ columns, data, i
                   ))}
                 </TableRow>
                 {expandedRow === row.original.id && (
-                  <TableRow className="md:hidden border-b hover:!bg-inherit overflow-hidden">
+                  <TableRow className="md:hidden border-b hover:!bg-inherit">
                     <TableCell colSpan={columns.length} className="p-0 text-sm">
-                      <div className="transform-gpu animate-zoom-out overflow-hidden origin-top will-change-transform" style={{ animationDuration: '0.4s' }}>
-                        <div className="p-4 flex flex-col gap-y-4">
-                          <UsageSliderCompact
-                            isMobile
-                            status={row.original.status}
-                            total={row.original.data_limit}
-                            totalUsedTraffic={row.original.lifetime_used_traffic}
-                            used={row.original.used_traffic}
-                            dataLimitResetStrategy={row.original.data_limit_reset_strategy || undefined}
-                          />
-                          <div className="flex flex-col">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center">
-                                <StatusBadge showOnlyExpiry expiryDate={row.original.expire} status={row.original.status} showExpiry />
-                              </div>
-                              <div onClick={e => e.stopPropagation()}>
-                                <ActionButtons user={row.original} />
-                              </div>
-                            </div>
-                            <div>
-                              <OnlineStatus lastOnline={row.original.online_at} />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <ExpandedRowContent row={row} />
                     </TableCell>
                   </TableRow>
                 )}
               </React.Fragment>
             ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                <span className="text-muted-foreground animate-fade-in">{t('noResults')}</span>
-              </TableCell>
-            </TableRow>
-          )}
+          ) : EmptyState}
         </TableBody>
       </Table>
     </div>
