@@ -1112,5 +1112,28 @@
     "notConnectedYet": "尚未连接"
   },
   "node.xrayVersion": "Xray 版本",
-  "node.coreVersion": "核心版本"
+  "node.coreVersion": "核心版本",
+  "calendar": {
+    "selectRange": "选择时间范围",
+    "startDate": "开始日期",
+    "endDate": "结束日期"
+  },
+  "usersTable": {
+    "usageChart": "用量图表",
+    "noUsageData": "此期间没有可用数据。",
+    "tryDifferentRange": "请尝试其他时间范围。",
+    "trendingUp": "上升",
+    "trendingDown": "下降",
+    "usageSummary": "显示所选期间的总用量。"
+  },
+  "setOwnerModal": {
+    "title": "设置所有者",
+    "currentOwner": "当前所有者:",
+    "none": "无",
+    "selectAdmin": "选择新所有者",
+    "confirm": "设置所有者",
+    "success": "用户 {{username}} 的所有者已成功更改为 {{admin}}。",
+    "error": "无法将用户 {{username}} 的所有者更改为 {{admin}}。",
+    "loadError": "加载管理员列表失败。"
+  }
 }

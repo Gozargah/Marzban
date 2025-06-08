@@ -154,8 +154,9 @@ async def get_users(
     offset: int = None,
     limit: int = None,
     username: list[str] = Query(None),
-    search: str | None = None,
     owner: list[str] | None = Query(None, alias="admin"),
+    group_ids: list[int] | None = Query(None,alias="group"),
+    search: str | None = None,
     status: UserStatus | None = None,
     sort: str | None = None,
     proxy_id: str | None = None,
@@ -176,6 +177,7 @@ async def get_users(
         sort=sort,
         load_sub=load_sub,
         proxy_id=proxy_id,
+        group_ids=group_ids,
     )
 
 

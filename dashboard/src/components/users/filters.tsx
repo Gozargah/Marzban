@@ -177,7 +177,7 @@ export const PaginationControls = ({ currentPage, totalPages, itemsPerPage, tota
             </SelectGroup>
           </SelectContent>
         </Select>
-        <span className="text-sm text-gray-600">{t('itemsPerPage')}</span>
+        <span className="text-sm text-muted-foreground whitespace-nowrap">{t('itemsPerPage')}</span>
       </div>
 
       <Pagination dir="ltr" className={`md:justify-end ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>

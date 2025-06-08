@@ -383,8 +383,8 @@
   "deleteUser.title": "حذف کاربر",
   "disabled": "غیر فعال",
   "expire": "انقضا",
-  "expired": "منقضی شده در {{time}}",
-  "expires": "منقضی می‌شود در {{time}}",
+  "expired": "پایان یافته در {{time}}",
+  "expires": "پایان در {{time}}",
   "header.donation": "کمک مالی",
   "header.hostSettings": "تنظیمات هاست",
   "header.logout": "خروج",
@@ -1105,5 +1105,28 @@
   },
   "notConnectedYet": "هنوز متصل نشده",
   "node.xrayVersion": "نسخه Xray",
-  "node.coreVersion": "نسخه هسته"
+  "node.coreVersion": "نسخه هسته",
+  "calendar": {
+    "selectRange": "انتخاب بازه زمانی",
+    "startDate": "تاریخ شروع",
+    "endDate": "تاریخ پایان"
+  },
+  "usersTable": {
+    "usageChart": "نمودار مصرف",
+    "noUsageData": "داده‌ای برای این بازه زمانی وجود ندارد.",
+    "tryDifferentRange": "بازه زمانی دیگری را امتحان کنید.",
+    "trendingUp": "روند افزایشی",
+    "trendingDown": "روند کاهشی",
+    "usageSummary": "نمایش مجموع مصرف در بازه انتخاب شده."
+  },
+  "setOwnerModal": {
+    "title": "تعیین مالک",
+    "currentOwner": "مالک فعلی:",
+    "none": "بدون مالک",
+    "selectAdmin": "انتخاب مالک جدید",
+    "confirm": "تعیین مالک",
+    "success": "مالک کاربر {{username}} با موفقیت به {{admin}} تغییر یافت.",
+    "error": "تغییر مالک کاربر {{username}} به {{admin}} ناموفق بود.",
+    "loadError": "بارگذاری لیست مدیران ناموفق بود."
+  }
 }

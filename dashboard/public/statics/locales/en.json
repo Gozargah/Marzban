@@ -1111,5 +1111,28 @@
   },
   "notConnectedYet": "Not connected yet",
   "node.xrayVersion": "Xray Version",
-  "node.coreVersion": "Core Version"
+  "node.coreVersion": "Core Version",
+  "calendar": {
+    "selectRange": "Select range",
+    "startDate": "Start date",
+    "endDate": "End date"
+  },
+  "usersTable": {
+    "usageChart": "Usage Chart",
+    "noUsageData": "No usage data available for this period.",
+    "tryDifferentRange": "Try a different time range.",
+    "trendingUp": "Trending up by",
+    "trendingDown": "Trending down by",
+    "usageSummary": "Showing total usage for the selected period."
+  },
+  "setOwnerModal": {
+    "title": "Set Owner",
+    "currentOwner": "Current owner:",
+    "none": "None",
+    "selectAdmin": "Select new owner",
+    "confirm": "Set Owner",
+    "success": "User {{username}}'s owner changed to {{admin}} successfully.",
+    "error": "Failed to change owner of user {{username}} to {{admin}}.",
+    "loadError": "Failed to load admins."
+  }
 }

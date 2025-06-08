@@ -1114,5 +1114,28 @@
   },
   "notConnectedYet": "Еще не подключен",
   "node.xrayVersion": "Версия Xray",
-  "node.coreVersion": "Версия ядра"
+  "node.coreVersion": "Версия ядра",
+  "calendar": {
+    "selectRange": "Выбрать диапазон",
+    "startDate": "Дата начала",
+    "endDate": "Дата окончания"
+  },
+  "usersTable": {
+    "usageChart": "График использования",
+    "noUsageData": "Нет данных за этот период.",
+    "tryDifferentRange": "Попробуйте другой диапазон времени.",
+    "trendingUp": "Рост на",
+    "trendingDown": "Снижение на",
+    "usageSummary": "Показано общее использование за выбранный период."
+  },
+  "setOwnerModal": {
+    "title": "Назначить владельца",
+    "currentOwner": "Текущий владелец:",
+    "none": "Нет",
+    "selectAdmin": "Выбрать нового владельца",
+    "confirm": "Назначить владельца",
+    "success": "Владелец пользователя {{username}} успешно изменён на {{admin}}.",
+    "error": "Не удалось изменить владельца пользователя {{username}} на {{admin}}.",
+    "loadError": "Не удалось загрузить список администраторов."
+  }
 }
