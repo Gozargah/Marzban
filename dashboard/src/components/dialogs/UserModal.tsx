@@ -1554,17 +1554,22 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                             <FormField
                                 control={form.control}
                                 name="next_plan.user_template_id"
-                                render={({field}) => (
+                                render={({field}) => {
+                                  // Watch the value to ensure real-time updates
+                                  const templateId = form.watch('next_plan.user_template_id')
+                                  return (
                                     <FormItem>
                                       <FormLabel>{t('userDialog.nextPlanTemplateId', {defaultValue: 'Template ID' })}</FormLabel>
                                 <FormControl>
                                   <Select
-                                    value={field.value ? String(field.value) : 'none'}
+                                    value={templateId === undefined ? 'none' : String(templateId)}
                                     onValueChange={val => {
                                       if (val === 'none' || (field.value && String(field.value) === val)) {
                                         field.onChange(undefined)
+                                        form.setValue('next_plan.user_template_id', undefined, { shouldValidate: true })
                                       } else {
                                         field.onChange(Number(val))
+                                        form.setValue('next_plan.user_template_id', Number(val), { shouldValidate: true })
                                       }
                                     }}
                                   >
@@ -1583,7 +1588,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
-                            )}
+                            )}}
                           />
                           {/* Only show expire and data_limit if no template is selected */}
                           {!nextPlanTemplateSelected && (
