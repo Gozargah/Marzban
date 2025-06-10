@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Trash2, Filter, FileText, Link, Clock, HelpCircle, User, Settings, Code, FileCode2, Sword, Shield, Lock } from 'lucide-react'
+import { Plus, Trash2, Filter, FileText, Link, Clock, HelpCircle, User, Settings, Code, FileCode2, Sword, Shield, Lock, GripVertical } from 'lucide-react'
 import { useSettingsContext } from './_dashboard.settings'
 import { ConfigFormat } from '@/service/api'
 import { toast } from 'sonner'
@@ -76,116 +76,102 @@ function SortableRule({ index, onRemove, form, id }: SortableRuleProps) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 1000 : 1,
-    opacity: isDragging ? 0.9 : 1,
+    zIndex: isDragging ? 2 : 1,
+    opacity: isDragging ? 0.8 : 1,
   }
+  const cursor = isDragging ? 'grabbing' : 'grab'
 
   return (
     <div 
       ref={setNodeRef} 
       style={style} 
-      className={`
-        group relative select-none touch-none
-        ${isDragging ? 'cursor-grabbing shadow-xl scale-[1.02]' : 'cursor-grab hover:shadow-md'}
-        transition-all duration-150 ease-out
-      `}
-      {...attributes}
-      {...listeners}
+      className="cursor-default"
     >
-      <div className="flex flex-col gap-2 p-2 border rounded-md bg-card hover:bg-accent/20 transition-colors h-full">
-        {/* Compact header */}
-        <div className="flex items-center justify-between min-h-[20px]">
-          <div className="flex items-center gap-1.5">
-            <div className="flex flex-col gap-[1px]">
-              <div className="w-2 h-[2px] bg-muted-foreground/40 rounded-full group-hover:bg-muted-foreground/60 transition-colors"></div>
-              <div className="w-2 h-[2px] bg-muted-foreground/40 rounded-full group-hover:bg-muted-foreground/60 transition-colors"></div>
-              <div className="w-2 h-[2px] bg-muted-foreground/40 rounded-full group-hover:bg-muted-foreground/60 transition-colors"></div>
-            </div>
+      <div className="p-4 relative group h-full hover:bg-accent/20 transition-colors border rounded-md bg-card">
+        <div className="flex items-center gap-3">
+          {/* Drag handle */}
+          <button 
+            style={{ cursor: cursor }} 
+            className="touch-none opacity-50 group-hover:opacity-100 transition-opacity" 
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-5 w-5" />
+            <span className="sr-only">Drag to reorder</span>
+          </button>
+
+          {/* Rule content */}
+          <div className="flex-1 min-w-0 space-y-2">
+            <FormField
+              control={form.control}
+              name={`rules.${index}.pattern`}
+              render={({ field }) => (
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-xs text-muted-foreground/80">
+                    {t('settings.subscriptions.rules.pattern')}
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t('settings.subscriptions.rules.patternPlaceholder')}
+                      {...field}
+                      className="font-mono text-xs h-7 bg-background/60 border-muted focus:bg-background text-foreground/90"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name={`rules.${index}.target`}
+              render={({ field }) => (
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-xs text-muted-foreground/80">
+                    {t('settings.subscriptions.rules.target')}
+                  </FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="h-7 text-xs bg-background/60 border-muted focus:bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="scrollbar-thin z-[1001]">
+                      {configFormatOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs">{option.icon}</span>
+                            <span className="text-xs">{t(option.label)}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
-          
+
+          {/* Delete button */}
           <Button
             type="button"
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
               onRemove(index)
             }}
-            className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0 h-5 w-5 p-0 z-50 relative opacity-70 hover:opacity-100 transition-opacity"
-            onPointerDown={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()}
+            className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0 h-8 w-8 p-0 opacity-70 hover:opacity-100 transition-opacity"
           >
-            <Trash2 className="h-3 w-3" />
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
-        
-        {/* Compact form fields */}
-        <div className="space-y-2 flex-1">
-          <FormField
-            control={form.control}
-            name={`rules.${index}.pattern`}
-            render={({ field }) => (
-              <FormItem className="space-y-1">
-                <FormLabel className="text-xs text-muted-foreground/80">
-                  {t('settings.subscriptions.rules.pattern')}
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder={t('settings.subscriptions.rules.patternPlaceholder')}
-                    {...field}
-                    className="font-mono text-xs h-7 bg-background/60 border-muted focus:bg-background text-foreground/90"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    onFocus={(e) => e.stopPropagation()}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
-          <FormField
-            control={form.control}
-            name={`rules.${index}.target`}
-            render={({ field }) => (
-              <FormItem className="space-y-1">
-                <FormLabel className="text-xs text-muted-foreground/80">
-                  {t('settings.subscriptions.rules.target')}
-                </FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger 
-                      className="h-7 text-xs bg-background/60 border-muted focus:bg-background"
-                      onPointerDown={(e) => e.stopPropagation()}
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onTouchStart={(e) => e.stopPropagation()}
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="scrollbar-thin z-[1001]">
-                    {configFormatOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs">{option.icon}</span>
-                          <span className="text-xs">{t(option.label)}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        {/* Subtle drag overlay */}
+        {/* Drag overlay */}
         {isDragging && (
-          <div className="absolute inset-0 bg-primary/10 border border-primary/30 rounded-md pointer-events-none"></div>
+          <div className="absolute inset-0 bg-primary/5 border border-primary/20 rounded-md pointer-events-none"></div>
         )}
       </div>
     </div>
@@ -594,7 +580,7 @@ export default function SubscriptionSettings() {
                   items={ruleFields.map(field => field.id)}
                   strategy={rectSortingStrategy}
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 max-h-[500px] overflow-y-auto scrollbar-thin p-1">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto scrollbar-thin p-1 touch-pan-y">
                     {ruleFields.map((field, index) => (
                       <SortableRule
                         key={field.id}

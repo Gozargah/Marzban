@@ -98,6 +98,11 @@ run-cli:
 .PHONY: test
 test:
 	@uv run pytest tests/
+# Run tests-watch
+.PHONY: test-whatch
+test-whatch:
+	@uv run ptw
+
 
 # Run marzban with watchfiles
 .PHONY: run-watch

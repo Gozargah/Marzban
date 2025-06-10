@@ -2,8 +2,8 @@ import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils.ts'
 import useDirDetection from '@/hooks/use-dir-detection.tsx'
-import React, { useState } from 'react'
-import { ChevronDown, Edit2, Power, PowerOff, RefreshCw, Trash2, User, UserRound } from 'lucide-react'
+import React, { useState, useMemo, useEffect } from 'react'
+import { ChevronDown, Edit2, Power, PowerOff, RefreshCw, Trash2, User, UserRound, LoaderCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button.tsx'
 import { AdminDetails } from '@/service/api'
 import { useTranslation } from 'react-i18next'
@@ -19,6 +19,8 @@ interface DataTableProps<TData extends AdminDetails> {
   onToggleStatus: (admin: AdminDetails) => void
   setStatusToggleDialogOpen: (isOpen: boolean) => void
   onResetUsage: (adminUsername: string) => void
+  isLoading?: boolean
+  isFetching?: boolean
 }
 
 const ExpandedRowContent = ({
@@ -39,7 +41,7 @@ const ExpandedRowContent = ({
   const isSudo = row.is_sudo
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between py-4 px-2">
       <div className="flex gap-1">
         <div className="flex items-center gap-2">
           <Badge
@@ -76,8 +78,10 @@ const ExpandedRowContent = ({
   )
 }
 
-export function DataTable<TData extends AdminDetails>({ columns, data, onEdit, onDelete, onToggleStatus, setStatusToggleDialogOpen, onResetUsage }: DataTableProps<TData>) {
+export function DataTable<TData extends AdminDetails>({ columns, data, onEdit, onDelete, onToggleStatus, setStatusToggleDialogOpen, onResetUsage, isLoading = false, isFetching = false }: DataTableProps<TData>) {
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
+  const { t } = useTranslation()
+  const [visibleRows, setVisibleRows] = useState<number>(0)
   const table = useReactTable({
     data,
     columns,
@@ -85,6 +89,46 @@ export function DataTable<TData extends AdminDetails>({ columns, data, onEdit, o
   })
   const dir = useDirDetection()
   const isRTL = dir === 'rtl'
+  const isLoadingData = isLoading || isFetching
+
+  useEffect(() => {
+    if (isLoading || isFetching) {
+      setVisibleRows(0)
+      return
+    }
+
+    const totalRows = table.getRowModel().rows.length
+    let currentRow = 0
+
+    const loadNextRow = () => {
+      if (currentRow < totalRows) {
+        setVisibleRows(prev => prev + 1)
+        currentRow++
+        setTimeout(loadNextRow, 50)
+      }
+    }
+
+    loadNextRow()
+  }, [isLoading, isFetching, table.getRowModel().rows.length])
+
+  const LoadingState = useMemo(() => (
+    <TableRow>
+      <TableCell colSpan={columns.length} className="h-24">
+        <div dir={dir} className="flex flex-col items-center justify-center gap-2">
+          <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
+          <span className="text-sm">{t('loading')}</span>
+        </div>
+      </TableCell>
+    </TableRow>
+  ), [columns.length, dir, t])
+
+  const EmptyState = useMemo(() => (
+    <TableRow>
+      <TableCell colSpan={columns.length} className="h-24 text-center">
+        <span className="text-muted-foreground">{t('noResults')}</span>
+      </TableCell>
+    </TableRow>
+  ), [columns.length, t])
 
   const handleRowToggle = (rowId: string) => {
     setExpandedRow(expandedRow === rowId ? null : rowId)
@@ -95,13 +139,6 @@ export function DataTable<TData extends AdminDetails>({ columns, data, onEdit, o
     const isSmallScreen = window.innerWidth < 768
     if (!isSmallScreen && !isChevron) {
       onEdit(rowData)
-    }
-  }
-
-  const handleStatusToggle = (admin: AdminDetails) => {
-    if (admin) {
-      onToggleStatus(admin)
-      setStatusToggleDialogOpen(true)
     }
   }
 
@@ -133,11 +170,19 @@ export function DataTable<TData extends AdminDetails>({ columns, data, onEdit, o
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map(row => (
+          {isLoadingData ? LoadingState : table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row, index) => (
               <React.Fragment key={row.id}>
                 <TableRow
-                  className={cn('cursor-pointer md:cursor-default border-b hover:!bg-inherit md:hover:!bg-muted/50', expandedRow === row.id && 'border-transparent')}
+                  className={cn(
+                    'cursor-pointer md:cursor-default border-b hover:!bg-inherit md:hover:!bg-muted/50',
+                    expandedRow === row.id && 'border-transparent',
+                    index >= visibleRows && 'opacity-0',
+                    'transition-all duration-300 ease-in-out'
+                  )}
+                  style={{
+                    transform: index >= visibleRows ? 'translateY(10px)' : 'translateY(0)',
+                  }}
                   onClick={() => window.innerWidth < 768 && handleRowToggle(row.id)}
                   data-state={row.getIsSelected() && 'selected'}
                 >
@@ -168,21 +213,30 @@ export function DataTable<TData extends AdminDetails>({ columns, data, onEdit, o
                   ))}
                 </TableRow>
                 {expandedRow === row.id && (
-                  <TableRow className="md:hidden border-b hover:!bg-inherit">
-                    <TableCell colSpan={columns.length} className="p-4 text-sm">
-                      <ExpandedRowContent row={row.original} onEdit={onEdit} onDelete={onDelete} onResetUsage={onResetUsage} onToggleStatus={handleStatusToggle} />
+                  <TableRow 
+                    className={cn(
+                      "md:hidden border-b hover:!bg-inherit",
+                      index >= visibleRows && 'opacity-0',
+                      'transition-all duration-300 ease-in-out'
+                    )}
+                    style={{
+                      transform: index >= visibleRows ? 'translateY(10px)' : 'translateY(0)',
+                    }}
+                  >
+                    <TableCell colSpan={columns.length} className="p-0 text-sm">
+                      <ExpandedRowContent
+                        row={row.original}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        onToggleStatus={onToggleStatus}
+                        onResetUsage={onResetUsage}
+                      />
                     </TableCell>
                   </TableRow>
                 )}
               </React.Fragment>
             ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
-              </TableCell>
-            </TableRow>
-          )}
+          ) : EmptyState}
         </TableBody>
       </Table>
     </div>

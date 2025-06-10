@@ -57,7 +57,7 @@ export function TimeRangeSelector({ className, onRangeChange, initialRange }: Ti
     <div className={cn('grid gap-2', className)}>
       <Popover>
         <PopoverTrigger asChild>
-          <Button id="date" variant={'outline'} className={cn('w-[260px] justify-start text-left font-normal', !date && 'text-muted-foreground')}>
+          <Button id="date" variant={'outline'} className={cn('w-full justify-start text-left font-normal', !date && 'text-muted-foreground')}>
             <CalendarIcon className="mr-2 h-4 w-4" />
             {date?.from ? (
               date.to ? (

@@ -13,6 +13,7 @@ sys.path.insert(0, project_root)
 import config  # noqa
 
 config.TESTING = True
+config.DEBUG = True
 config.SUDOERS["testadmin"] = "testadmin"
 
 

@@ -194,7 +194,7 @@ export default function NotificationSettings() {
                 name="notification_enable.admin"
                 render={({ field }) => (
                   <FormItem className="flex items-center justify-between space-y-0 p-3 sm:p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
-                    <FormLabel className="text-xs font-medium cursor-pointer truncate pr-2">
+                    <FormLabel className="text-xs sm:text-sm font-medium cursor-pointer truncate pr-2">
                       {t('settings.notifications.types.admin')}
                     </FormLabel>
                     <FormControl>

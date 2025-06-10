@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { Dialog, DialogContent } from '../ui/dialog'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../ui/card'
 import { ChartContainer, ChartTooltipContent, ChartTooltip, ChartConfig } from '../ui/chart'
@@ -6,16 +6,19 @@ import { PieChart, TrendingUp, Calendar } from 'lucide-react'
 import * as RechartsPrimitive from 'recharts'
 import TimeSelector from '../charts/TimeSelector'
 import { useTranslation } from 'react-i18next'
-import { Period, useGetUserUsage } from '@/service/api'
+import { Period, useGetUserUsage, useGetNodes } from '@/service/api'
 import { DateRange } from 'react-day-picker'
 import { TimeRangeSelector } from '@/components/common/TimeRangeSelector'
 import { Button } from '../ui/button'
+import { ResponsiveContainer } from 'recharts'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select'
 
 // Define allowed period keys
-const PERIOD_KEYS = ['12h', '24h', '3d', '1w'] as const;
+const PERIOD_KEYS = ['1h', '12h', '24h', '3d', '1w'] as const;
 type PeriodKey = typeof PERIOD_KEYS[number];
 
 const getPeriodMap = (now: number) => ({
+  '1h': { period: Period.minute, start: new Date(now - 60 * 60 * 1000) },
   '12h': { period: Period.hour, start: new Date(now - 12 * 60 * 60 * 1000) },
   '24h': { period: Period.hour, start: new Date(now - 24 * 60 * 60 * 1000) },
   '3d': { period: Period.day, start: new Date(now - 3 * 24 * 60 * 60 * 1000) },
@@ -28,12 +31,40 @@ interface UsageModalProps {
   username: string;
 }
 
+// Add useWindowSize hook before UsageModal component
+const useWindowSize = () => {
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return windowSize;
+};
+
 const UsageModal = ({ open, onClose, username }: UsageModalProps) => {
   const [period, setPeriod] = useState<PeriodKey>('1w')
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined)
   const [showCustomRange, setShowCustomRange] = useState(false)
   const nowRef = useRef(Date.now())
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const { width } = useWindowSize()
+  const [activeIndex, setActiveIndex] = useState<number | null>(null)
+  const [selectedNodeId, setSelectedNodeId] = useState<number | undefined>(undefined)
+
+  // Fetch nodes list
+  const { data: nodes, isLoading: isLoadingNodes } = useGetNodes(undefined, { query: { enabled: open } })
 
   // Compute periodMap with custom range
   const periodMap = useMemo(() => getPeriodMap(nowRef.current), [nowRef])
@@ -50,24 +81,52 @@ const UsageModal = ({ open, onClose, username }: UsageModalProps) => {
     backendPeriod = map.period;
     start = map.start;
   }
-  const params = useMemo(() => {
+  
+  const userUsageParams = useMemo(() => {
     if (showCustomRange && customRange?.from && customRange?.to) {
-      return { period: backendPeriod, start: start.toISOString(), end: end!.toISOString() }
+      return { period: backendPeriod, start: start.toISOString(), end: end!.toISOString(), node_id: selectedNodeId }
     }
-    return { period: backendPeriod, start: start.toISOString() }
-  }, [backendPeriod, start, end, period, customRange, showCustomRange])
+    return { period: backendPeriod, start: start.toISOString(), node_id: selectedNodeId }
+  }, [backendPeriod, start, end, period, customRange, showCustomRange, selectedNodeId])
 
   // Only fetch when modal is open
-  const { data, isLoading } = useGetUserUsage(username, params, { query: { enabled: open } })
+  const { data, isLoading } = useGetUserUsage(username, userUsageParams, { query: { enabled: open } })
 
   // Prepare chart data for BarChart
   const chartData = useMemo(() => {
     if (!data?.stats) return []
-    return data.stats.map((point: any) => ({
-      period: point.period_start.slice(0, 10),
-      usage: point.total_traffic / (1024 * 1024 * 1024),
-    }))
-  }, [data])
+    // Filter data to only include points within the selected range
+    let filtered = data.stats
+    if ((period === '12h' || period === '24h') && !showCustomRange) {
+      // For 12h/24h, filter to last 12/24 hours
+      const now = nowRef.current
+      const hours = period === '12h' ? 12 : 24
+      const from = new Date(now - hours * 60 * 60 * 1000)
+      filtered = filtered.filter((point: any) => new Date(point.period_start) >= from)
+    } else if (showCustomRange && customRange?.from && customRange?.to) {
+      // For custom range, filter to selected range
+      filtered = filtered.filter((point: any) => {
+        if (!customRange.from || !customRange.to) return false;
+        const d = new Date(point.period_start)
+        return d >= customRange.from && d <= customRange.to
+      })
+    }
+    return filtered.map((point: any) => {
+      let label = ''
+      if (period === '12h' || period === '24h' || (showCustomRange && backendPeriod === Period.hour)) {
+        // Show hour label: YYYY-MM-DD HH:00
+        const d = new Date(point.period_start)
+        label = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')} ${d.getHours().toString().padStart(2, '0')}:00`
+      } else {
+        // Show date label: YYYY-MM-DD
+        label = point.period_start.slice(0, 10)
+      }
+      return {
+        period: label,
+        usage: point.total_traffic / (1024 * 1024 * 1024),
+      }
+    })
+  }, [data, period, showCustomRange, customRange, backendPeriod])
 
   // Calculate trend (simple: compare last and previous usage)
   const trend = useMemo(() => {
@@ -93,9 +152,11 @@ const UsageModal = ({ open, onClose, username }: UsageModalProps) => {
       setShowCustomRange(true)
       // Calculate the time difference in hours
       const diffHours = (range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60)
-      
+
       // Update period based on the time range
-      if (diffHours <= 12) {
+      if (diffHours <= 1) {
+        setPeriod('1h')
+      } else if (diffHours <= 12) {
         setPeriod('12h')
       } else if (diffHours <= 24) {
         setPeriod('24h')
@@ -136,6 +197,25 @@ const UsageModal = ({ open, onClose, username }: UsageModalProps) => {
                   <Calendar className="h-4 w-4" />
                 </Button>
               </div>
+              <div className="flex justify-center items-center gap-2 w-full">
+                <Select
+                  value={selectedNodeId?.toString() || 'all'}
+                  onValueChange={(value) => setSelectedNodeId(value === 'all' ? undefined : Number(value))}
+                  disabled={isLoadingNodes}
+                >
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder={t('userDialog.selectNode', { defaultValue: 'Select Node' })} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('userDialog.allNodes', { defaultValue: 'All Nodes' })}</SelectItem>
+                    {nodes?.map((node) => (
+                      <SelectItem key={node.id} value={node.id.toString()}>
+                        {node.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               {showCustomRange && (
                 <div className="flex justify-center w-full">
                   <TimeRangeSelector
@@ -161,34 +241,84 @@ const UsageModal = ({ open, onClose, username }: UsageModalProps) => {
                 </div>
               ) : (
                 <ChartContainer config={chartConfig}>
-                  <RechartsPrimitive.BarChart
-                    data={chartData}
-                    width={undefined}
-                    height={320}
-                    margin={{ top: 16, right: 8, left: 8, bottom: 8 }}
-                    barSize={28}
-                  >
-                    <RechartsPrimitive.CartesianGrid vertical={false} strokeDasharray="3 3" />
-                    <RechartsPrimitive.XAxis
-                      dataKey="period"
-                      tickLine={false}
-                      tickMargin={8}
-                      axisLine={false}
-                      tickFormatter={(value: string) => value.slice(5)}
-                    />
-                    <RechartsPrimitive.YAxis tick={{ fontSize: 12 }} unit="GB" />
-                    <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                    <RechartsPrimitive.Bar dataKey="usage" fill='hsl(var(--primary))' radius={6}>
-                      <RechartsPrimitive.LabelList
-                        dataKey="usage"
-                        position="top"
-                        offset={8}
-                        className="fill-foreground"
-                        fontSize={12}
-                        formatter={(value: number) => value.toFixed(2)}
+                  <ResponsiveContainer width="100%" height={320}>
+                    <RechartsPrimitive.BarChart
+                      data={chartData}
+                      margin={{ top: 16, right: chartData.length > 7 ? 0 : 8, left: chartData.length > 7 ? 0 : 8, bottom: 8 }}
+                      barSize={width >= 768 ? 40 : 28}
+                      onMouseMove={(state) => {
+                        if (state.activeTooltipIndex !== activeIndex) {
+                          setActiveIndex(state.activeTooltipIndex !== undefined ? state.activeTooltipIndex : null);
+                        }
+                      }}
+                      onMouseLeave={() => {
+                        setActiveIndex(null);
+                      }}
+                    >
+                      <RechartsPrimitive.CartesianGrid vertical={false} strokeDasharray="3 3" />
+                      <RechartsPrimitive.XAxis
+                        dataKey="period"
+                        tickLine={false}
+                        tickMargin={8}
+                        axisLine={false}
+                        interval={period === '12h' || period === '24h' ? 0 : 'preserveEnd'}
+                        tickFormatter={(value: string) => {
+                          if (period === '12h' || period === '24h' || (showCustomRange && backendPeriod === Period.hour)) {
+                            // Show only hour part for compactness
+                            return value.slice(11, 16)
+                          } else {
+                            // Show only MM-DD
+                            return value.slice(5, 10)
+                          }
+                        }}
                       />
-                    </RechartsPrimitive.Bar>
-                  </RechartsPrimitive.BarChart>
+                      <RechartsPrimitive.YAxis tick={{ fontSize: 12 }} unit="GB" />
+                      <ChartTooltip
+                        cursor={false}
+                        content={
+                          <ChartTooltipContent
+                            color='hsl(var(--primary))'
+                            labelClassName='text-foreground text-center'
+                            labelFormatter={(label: string) => {
+                              if (i18n.language === 'fa') {
+                                const date = new Date(label);
+                                if (backendPeriod === Period.hour) {
+                                  return date.toLocaleDateString('fa-IR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+                                } else {
+                                  return date.toLocaleDateString('fa-IR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+                                }
+                              } else {
+                                return label;
+                              }
+                            }}
+                          />
+                        }
+                      />
+                      <RechartsPrimitive.Bar
+                        dataKey="usage"
+                        radius={6}
+                      >
+                        {
+                          chartData.map((_: { period: string, usage: number }, index: number) => (
+                            <RechartsPrimitive.Cell
+                              key={`cell-${index}`}
+                              fill={index === activeIndex ? 'hsl(var(--muted-foreground))' : 'hsl(var(--primary))'}
+                            />
+                          ))
+                        }
+                        {chartData.length <= 7 && (
+                          <RechartsPrimitive.LabelList
+                            dataKey="usage"
+                            position="top"
+                            offset={8}
+                            className="fill-foreground"
+                            fontSize={12}
+                            formatter={(value: number) => value.toFixed(2)}
+                          />
+                        )}
+                      </RechartsPrimitive.Bar>
+                    </RechartsPrimitive.BarChart>
+                  </ResponsiveContainer>
                 </ChartContainer>
               )}
             </div>

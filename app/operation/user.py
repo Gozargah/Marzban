@@ -223,6 +223,9 @@ class UserOperation(BaseOperation):
         start, end = await self.validate_dates(start, end)
         db_user = await self.get_validated_user(db, username, admin)
 
+        if not admin.is_sudo:
+            node_id = None
+
         return await get_user_usages(db, db_user.id, start, end, period, node_id)
 
     async def get_user(self, db: AsyncSession, username: str, admin: AdminDetails) -> UserNotificationResponse:
@@ -292,6 +295,9 @@ class UserOperation(BaseOperation):
     ) -> UserUsageStatsList:
         """Get all users usage"""
         start, end = await self.validate_dates(start, end)
+
+        if not admin.is_sudo:
+            node_id = None
 
         return await get_all_users_usages(
             db=db,

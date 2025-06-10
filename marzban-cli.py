@@ -3,12 +3,14 @@ from textual.app import App, ComposeResult
 from textual.widgets import Footer, Header
 
 from cli.help import HelpModal
+from config import DEBUG
 
 
 class MarzbanCLI(App):
     """A Textual app to manage marzban"""
 
     CSS_PATH = "cli/style.tcss"
+    ENABLE_COMMAND_PALETTE = DEBUG
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
