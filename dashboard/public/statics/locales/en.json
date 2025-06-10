@@ -858,7 +858,9 @@
     "proxySettings.password": "Password",
     "proxySettings.method": "Method",
     "proxySettings.flow": "Flow",
-    "proxySettings.desc": "Configure protocol-specific settings for this user."
+    "proxySettings.desc": "Configure protocol-specific settings for this user.",
+    "selectNode": "Select Node",
+    "allNodes": "All Nodes"
   },
   "users": "Users",
   "usersTable.copied": "Copied",

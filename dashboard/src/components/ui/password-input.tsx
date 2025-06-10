@@ -2,12 +2,13 @@ import * as React from "react"
 import { Eye, EyeOff } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "./button"
+import { Input, InputProps } from "./input"
 
 export interface PasswordInputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {}
+  extends InputProps {}
 
 const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
-  ({ className, ...props }, ref) => {
+  ({ className, type, error, isError, value, ...props }, ref) => {
     const [showPassword, setShowPassword] = React.useState(false)
 
     const togglePasswordVisibility = () => {
@@ -16,20 +17,23 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
 
     return (
       <div className="relative">
-        <input
+        <Input
           type={showPassword ? "text" : "password"}
-          className={cn(
-            "flex h-10 w-full rounded-md border border-input bg-input px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pr-10",
-            className
-          )}
+          className={cn("pr-10", className)}
           ref={ref}
+          error={error}
+          isError={isError}
+          value={value}
           {...props}
         />
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+          className={cn(
+            "absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent flex items-center justify-center transition-opacity duration-200",
+            value === '' && "opacity-0",
+          )}
           onClick={togglePasswordVisibility}
           tabIndex={-1}
         >

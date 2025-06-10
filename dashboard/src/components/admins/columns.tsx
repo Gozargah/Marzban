@@ -27,7 +27,7 @@ const createSortButton = (
     sort: string
   },
 ) => (
-  <button onClick={handleSort.bind(null, column)} className="flex gap-1 py-3 w-full items-center">
+  <button onClick={handleSort.bind(null, column)} className="flex gap-1 py-1 w-full items-center">
     <div className="text-xs">{t(label)}</div>
     {filters.sort && (filters.sort === column || filters.sort === '-' + column) && (
       <ChevronDown
@@ -67,7 +67,7 @@ export const setupColumns = ({ t, handleSort, filters, onDelete, toggleStatus, o
       return (
         <div className="flex gap-2 items-center">
           <ChartPie className="h-4 w-4 sm:block hidden" />
-          <span>{traffic ? `${(traffic / (1024 * 1024 * 1024 * 1024)).toFixed(2)} TB` : '0 TB'}</span>
+          <span dir='ltr'>{traffic ? formatBytes(traffic) : '0 B'}</span>
         </div>
       )
     },
@@ -79,7 +79,7 @@ export const setupColumns = ({ t, handleSort, filters, onDelete, toggleStatus, o
       const total = row.getValue('lifetime_used_traffic') as number | null
       return (
         <div className="flex gap-2 items-center">
-          <span>{formatBytes(total || 0)}</span>
+          <span dir='ltr'>{formatBytes(total || 0)}</span>
         </div>
       )
     },

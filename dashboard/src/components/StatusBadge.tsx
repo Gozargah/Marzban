@@ -18,7 +18,16 @@ export const StatusBadge: FC<UserStatusProps> = ({ expiryDate = null, status: us
   const { t } = useTranslation()
   const dir = useDirDetection()
   const convertDateFormat = (expire: UserStatusProps['expiryDate']) => {
-    const date = new Date(expire + 'Z')
+    if (!expire) return null
+    // If it's already a number, return it
+    if (typeof expire === 'number') return expire
+    // If it's a string that's a number, convert it
+    if (typeof expire === 'string') {
+      const num = Number(expire)
+      if (!isNaN(num)) return num
+    }
+    // For date strings, convert to timestamp
+    const date = new Date(expire)
     return Math.floor(date.getTime() / 1000)
   }
   const unixTime = convertDateFormat(expiryDate)

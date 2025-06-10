@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime as dt, timezone as tz, timedelta as td
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -98,15 +99,41 @@ async def days_left_notification_job():
                 )
 
 
+now = dt.now(tz.utc) + td(seconds=2)
+
 # Register each job separately
-scheduler.add_job(expire_users_job, "interval", seconds=JOB_REVIEW_USERS_INTERVAL, coalesce=True, max_instances=1)
-scheduler.add_job(limit_users_job, "interval", seconds=JOB_REVIEW_USERS_INTERVAL, coalesce=True, max_instances=1)
 scheduler.add_job(
-    on_hold_to_active_users_job, "interval", seconds=JOB_REVIEW_USERS_INTERVAL, coalesce=True, max_instances=1
+    expire_users_job, "interval", seconds=JOB_REVIEW_USERS_INTERVAL, coalesce=True, max_instances=1, start_date=now
 )
 scheduler.add_job(
-    usage_percent_notification_job, "interval", seconds=JOB_REVIEW_USERS_INTERVAL, coalesce=True, max_instances=1
+    limit_users_job,
+    "interval",
+    seconds=JOB_REVIEW_USERS_INTERVAL,
+    coalesce=True,
+    max_instances=1,
+    start_date=now + td(seconds=6),
 )
 scheduler.add_job(
-    days_left_notification_job, "interval", seconds=JOB_REVIEW_USERS_INTERVAL, coalesce=True, max_instances=1
+    on_hold_to_active_users_job,
+    "interval",
+    seconds=JOB_REVIEW_USERS_INTERVAL,
+    coalesce=True,
+    max_instances=1,
+    start_date=now + td(seconds=12),
+)
+scheduler.add_job(
+    usage_percent_notification_job,
+    "interval",
+    seconds=JOB_REVIEW_USERS_INTERVAL,
+    coalesce=True,
+    max_instances=1,
+    start_date=now + td(seconds=18),
+)
+scheduler.add_job(
+    days_left_notification_job,
+    "interval",
+    seconds=JOB_REVIEW_USERS_INTERVAL,
+    coalesce=True,
+    max_instances=1,
+    start_date=now + td(seconds=24),
 )

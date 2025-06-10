@@ -113,7 +113,7 @@ const ChartTooltipContent = React.forwardRef<
     const value = !labelKey && typeof label === 'string' ? config[label as keyof typeof config]?.label || label : itemConfig?.label
 
     if (labelFormatter) {
-      return <div className={cn('font-medium', labelClassName)}>{labelFormatter(value, payload)}</div>
+      return <div className={cn('font-semibold', labelClassName)}>{labelFormatter(value, payload)}</div>
     }
 
     if (!value) {
@@ -130,7 +130,7 @@ const ChartTooltipContent = React.forwardRef<
   const nestLabel = payload.length === 1 && indicator !== 'dot'
 
   return (
-    <div ref={ref} className={cn('grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl', className)}>
+    <div ref={ref} className={cn('grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-primary/50 bg-primary/5 backdrop-blur-3xl px-2.5 py-1.5 text-xs shadow-xl text-primary-foreground', className)}>
       {!nestLabel ? tooltipLabel : null}
       <div className="grid gap-1.5">
         {payload.map((item, index) => {
@@ -167,7 +167,7 @@ const ChartTooltipContent = React.forwardRef<
                   <div className={cn('flex flex-1 justify-between leading-none', nestLabel ? 'items-end' : 'items-center')}>
                     <div className="grid gap-1.5">
                       {nestLabel ? tooltipLabel : null}
-                      <span className="text-muted-foreground">{itemConfig?.label || item.name}</span>
+                      <span className="text-foreground">{itemConfig?.label || item.name}</span>
                     </div>
                     {item.value && <span className="font-mono font-medium tabular-nums text-foreground">{item.value.toLocaleString()}</span>}
                   </div>

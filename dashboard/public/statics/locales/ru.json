@@ -1072,7 +1072,9 @@
     "proxySettings.password": "Пароль",
     "proxySettings.method": "Метод",
     "proxySettings.flow": "Поток (Flow)",
-    "proxySettings.desc": "Настройте параметры протокола для этого пользователя."
+    "proxySettings.desc": "Настройте параметры протокола для этого пользователя.",
+    "selectNode": "Выберите узел",
+    "allNodes": "Все узлы"
   },
   "sidebar.expand": "Развернуть меню",
   "sidebar.collapse": "Свернуть меню",

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime as dt, timezone as tz
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -26,12 +26,12 @@ class NextPlanModel(BaseModel):
 
 class User(BaseModel):
     proxy_settings: ProxyTable = Field(default_factory=ProxyTable)
-    expire: datetime | int | None = None
+    expire: dt | int | None = None
     data_limit: int | None = Field(ge=0, default=None, description="data_limit can be 0 or greater")
     data_limit_reset_strategy: UserDataLimitResetStrategy | None = None
     note: str | None = Field(max_length=500, default=None)
     on_hold_expire_duration: int | None = None
-    on_hold_timeout: datetime | int | None = None
+    on_hold_timeout: dt | int | None = None
     group_ids: list[int] | None = Field(default_factory=list)
     auto_delete_in_days: int | None = None
 
@@ -55,10 +55,17 @@ class UserWithValidator(User):
     @field_validator("expire", check_fields=False)
     @classmethod
     def validator_expire(cls, value):
-        if value == 0 or isinstance(value, datetime) or value is None:
+        if not value:
             return value
+        elif isinstance(value, dt):
+            # If dt is naive (no tz), assume it's UTC
+            if value.tzinfo is None:
+                return value.replace(tzinfo=tz.utc)
+            # If dt has tz, convert to UTC
+            else:
+                return value.astimezone(tz.utc)
         elif isinstance(value, int):
-            return datetime.fromtimestamp(value, tz=timezone.utc)
+            return dt.fromtimestamp(value, tz=tz.utc)
         else:
             raise ValueError("expire can be datetime, timestamp or 0")
 
@@ -97,10 +104,10 @@ class UserNotificationResponse(User):
     status: UserStatus
     used_traffic: int
     lifetime_used_traffic: int = 0
-    created_at: datetime
-    sub_updated_at: datetime | None = None
+    created_at: dt
+    sub_updated_at: dt | None = None
     sub_last_user_agent: str | None = None
-    online_at: datetime | None = None
+    online_at: dt | None = None
     subscription_url: str = ""
     admin: AdminContactInfo | None = None
     model_config = ConfigDict(from_attributes=True)

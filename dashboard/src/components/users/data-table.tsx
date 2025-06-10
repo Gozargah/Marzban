@@ -24,12 +24,34 @@ export function DataTable<TData extends UserResponse, TValue>({ columns, data, i
   const [expandedRow, setExpandedRow] = useState<number | null>(null)
   const dir = useDirDetection()
   const isRTL = dir === 'rtl'
+  const [visibleRows, setVisibleRows] = useState<number>(0)
 
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
   })
+
+  // Add effect to handle staggered loading
+  React.useEffect(() => {
+    if (isLoading || isFetching) {
+      setVisibleRows(0)
+      return
+    }
+
+    const totalRows = table.getRowModel().rows.length
+    let currentRow = 0
+
+    const loadNextRow = () => {
+      if (currentRow < totalRows) {
+        setVisibleRows(prev => prev + 1)
+        currentRow++
+        setTimeout(loadNextRow, 50) // Adjust timing as needed
+      }
+    }
+
+    loadNextRow()
+  }, [isLoading, isFetching, table.getRowModel().rows.length])
 
   const handleRowToggle = useCallback((rowId: number) => {
     setExpandedRow(prev => prev === rowId ? null : rowId)
@@ -55,7 +77,6 @@ export function DataTable<TData extends UserResponse, TValue>({ columns, data, i
         total={row.original.data_limit}
         totalUsedTraffic={row.original.lifetime_used_traffic}
         used={row.original.used_traffic}
-        dataLimitResetStrategy={row.original.data_limit_reset_strategy || undefined}
       />
       <div className="flex flex-col">
         <div className="flex items-center justify-between">
@@ -119,13 +140,18 @@ export function DataTable<TData extends UserResponse, TValue>({ columns, data, i
         </TableHeader>
         <TableBody>
           {isLoadingData ? LoadingState : table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
+            table.getRowModel().rows.map((row, index) => (
               <React.Fragment key={row.id}>
                 <TableRow
                   className={cn(
                     'cursor-pointer md:cursor-default border-b hover:!bg-inherit md:hover:!bg-muted/50',
                     expandedRow === row.original.id && 'border-transparent',
+                    index >= visibleRows && 'opacity-0',
+                    'transition-all duration-300 ease-in-out'
                   )}
+                  style={{
+                    transform: index >= visibleRows ? 'translateY(10px)' : 'translateY(0)',
+                  }}
                   onClick={e => handleEditModal(e, row.original)}
                   data-state={row.getIsSelected() && 'selected'}
                 >
@@ -160,7 +186,16 @@ export function DataTable<TData extends UserResponse, TValue>({ columns, data, i
                   ))}
                 </TableRow>
                 {expandedRow === row.original.id && (
-                  <TableRow className="md:hidden border-b hover:!bg-inherit">
+                  <TableRow 
+                    className={cn(
+                      "md:hidden border-b hover:!bg-inherit",
+                      index >= visibleRows && 'opacity-0',
+                      'transition-all duration-300 ease-in-out'
+                    )}
+                    style={{
+                      transform: index >= visibleRows ? 'translateY(10px)' : 'translateY(0)',
+                    }}
+                  >
                     <TableCell colSpan={columns.length} className="p-0 text-sm">
                       <ExpandedRowContent row={row} />
                     </TableCell>

@@ -67,6 +67,7 @@ dev = [
     "faker>=37.1.0",
     "pytest>=8.3.5",
     "pytest-asyncio>=0.26.0",
+    "pytest-watch>=4.2.0",
     "ruff>=0.11.6",
     "sqlalchemy-utils>=0.41.2",
     "textual-dev>=1.7.0",

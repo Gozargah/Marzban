@@ -9,6 +9,7 @@ import { RefreshCw, SearchIcon, X } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGetAdmins } from '@/service/api'
+import { LoaderCircle } from 'lucide-react'
 
 interface BaseFilters {
   sort: string
@@ -80,23 +81,50 @@ export function Filters<T extends BaseFilters>({ filters, onFilterChange }: Filt
 
 export const PaginationControls = () => {
   const { t } = useTranslation()
+  const dir = useDirDetection()
   const [itemsPerPage, setItemsPerPage] = useState(20)
   const [currentPage, setCurrentPage] = useState(0)
-  const { data: adminsData } = useGetAdmins({
+  const [isChangingPage, setIsChangingPage] = useState(false)
+  const { data: adminsData, isLoading, isFetching } = useGetAdmins({
     limit: itemsPerPage,
     offset: currentPage * itemsPerPage,
   })
 
   const totalAdmins = adminsData?.length || 0
+  const isPageLoading = isLoading || isFetching || isChangingPage
 
-  const handleItemsPerPageChange = (value: string) => {
+  const handleItemsPerPageChange = async (value: string) => {
     const newLimit = parseInt(value, 10)
+    setIsChangingPage(true)
     setItemsPerPage(newLimit)
     setCurrentPage(0) // Reset to first page when items per page changes
+
+    try {
+      // Wait for state to update before refetching
+      await new Promise(resolve => setTimeout(resolve, 0))
+    } finally {
+      // Add a small delay to prevent flickering
+      setTimeout(() => {
+        setIsChangingPage(false)
+      }, 300)
+    }
   }
 
-  const handlePageChange = (newPage: number) => {
+  const handlePageChange = async (newPage: number) => {
+    if (newPage === currentPage || isChangingPage) return
+
+    setIsChangingPage(true)
     setCurrentPage(newPage)
+
+    try {
+      // Wait for state to update before refetching
+      await new Promise(resolve => setTimeout(resolve, 0))
+    } finally {
+      // Add a small delay to prevent flickering
+      setTimeout(() => {
+        setIsChangingPage(false)
+      }, 300)
+    }
   }
 
   // Pagination controls
@@ -104,9 +132,9 @@ export const PaginationControls = () => {
   const paginationRange = getPaginationRange(currentPage, totalPages)
 
   return (
-    <div className="mt-4 flex items-center justify-between">
+    <div className="mt-4 flex flex-col-reverse md:flex-row gap-4 items-center justify-between">
       <div className="flex items-center gap-2">
-        <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
+        <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange} disabled={isPageLoading}>
           <SelectTrigger className="w-[70px]">
             <SelectValue />
           </SelectTrigger>
@@ -123,26 +151,38 @@ export const PaginationControls = () => {
         <span className="text-sm text-muted-foreground whitespace-nowrap">{t('itemsPerPage')}</span>
       </div>
 
-      <Pagination>
-        <PaginationContent>
+      <Pagination dir="ltr" className={`md:justify-end ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+        <PaginationContent className="max-w-[300px] overflow-x-auto sm:max-w-full">
           <PaginationItem>
-            <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 0} />
+            <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 0 || isLoading} />
           </PaginationItem>
           {paginationRange.map((pageNumber, i) =>
-            pageNumber === '...' ? (
+            pageNumber === -1 ? (
               <PaginationItem key={`ellipsis-${i}`}>
                 <PaginationEllipsis />
               </PaginationItem>
             ) : (
               <PaginationItem key={pageNumber}>
-                <PaginationLink isActive={currentPage === pageNumber} onClick={() => handlePageChange(pageNumber as number)}>
-                  {(pageNumber as number) + 1}
+                <PaginationLink
+                  isActive={currentPage === pageNumber}
+                  onClick={() => handlePageChange(pageNumber as number)}
+                  disabled={isLoading}
+                  className={isLoading && currentPage === pageNumber ? 'opacity-70' : ''}
+                >
+                  {isLoading && currentPage === pageNumber ? (
+                    <div className="flex items-center">
+                      <LoaderCircle className="h-3 w-3 mr-1 animate-spin" />
+                      {(pageNumber as number) + 1}
+                    </div>
+                  ) : (
+                    (pageNumber as number) + 1
+                  )}
                 </PaginationLink>
               </PaginationItem>
             ),
           )}
           <PaginationItem>
-            <PaginationNext onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages - 1} />
+            <PaginationNext onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages - 1 || totalPages === 0 || isLoading} />
           </PaginationItem>
         </PaginationContent>
       </Pagination>

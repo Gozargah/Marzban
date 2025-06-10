@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import type { AdminDetails } from '@/service/api'
+import { useGetAdmins } from '@/service/api'
 import { DataTable } from './data-table'
 import { setupColumns } from './columns'
 import { Filters } from './filters'
@@ -104,17 +105,18 @@ const ResetUsersUsageConfirmationDialog = ({ adminUsername, isOpen, onClose, onC
 export default function AdminsTable({ data, onEdit, onDelete, onToggleStatus, onResetUsage }: AdminsTableProps) {
   const { t } = useTranslation()
   const [filters, setFilters] = useState<AdminFilters>({
-    sort: '-username',
-    search: '',
-    limit: 10,
+    sort: '-created_at',
+    limit: 20,
     offset: 0,
   })
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [statusToggleDialogOpen, setStatusToggleDialogOpen] = useState(false)
   const [resetUsersUsageDialogOpen, setResetUsersUsageDialogOpen] = useState(false)
   const [adminToDelete, setAdminToDelete] = useState<AdminDetails | null>(null)
-  const [adminToReset, setAdminToReset] = useState<string | null>(null)
   const [adminToToggleStatus, setAdminToToggleStatus] = useState<AdminDetails | null>(null)
+  const [adminToReset, setAdminToReset] = useState<string | null>(null)
+
+  const { data: adminsData, isLoading, isFetching } = useGetAdmins(filters)
 
   const handleDeleteClick = (admin: AdminDetails) => {
     setAdminToDelete(admin)
@@ -183,12 +185,14 @@ export default function AdminsTable({ data, onEdit, onDelete, onToggleStatus, on
       <Filters filters={filters} onFilterChange={handleFilterChange} />
       <DataTable
         columns={columns}
-        data={data}
+        data={adminsData || []}
         onEdit={onEdit}
         onDelete={handleDeleteClick}
         onToggleStatus={handleStatusToggleClick}
         onResetUsage={handleResetUsersUsageClick}
         setStatusToggleDialogOpen={setStatusToggleDialogOpen}
+        isLoading={isLoading}
+        isFetching={isFetching}
       />
       <PaginationControls />
       {adminToDelete && <DeleteAlertDialog admin={adminToDelete} isOpen={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} onConfirm={handleConfirmDelete} />}

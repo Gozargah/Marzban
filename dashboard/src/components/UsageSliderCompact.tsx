@@ -7,13 +7,12 @@ import { Progress } from './ui/progress'
 type UsageSliderProps = {
   used: number
   total: number | null | undefined
-  dataLimitResetStrategy: string | undefined
   totalUsedTraffic: number | undefined
   status: string
   isMobile?: boolean
 }
 
-const UsageSliderCompact: React.FC<UsageSliderProps> = ({ used, total = 0, status, dataLimitResetStrategy, totalUsedTraffic, isMobile }) => {
+const UsageSliderCompact: React.FC<UsageSliderProps> = ({ used, total = 0, status, totalUsedTraffic, isMobile }) => {
   const isUnlimited = total === 0 || total === null
   const progressValue = isUnlimited ? 100 : (used / total) * 100
   const color = statusColors[status]?.sliderColor
@@ -25,9 +24,9 @@ const UsageSliderCompact: React.FC<UsageSliderProps> = ({ used, total = 0, statu
         <span className={isMobile ? 'hidden' : ''} dir="ltr">
           {formatBytes(used)} / {isUnlimited ? <span className="font-system-ui">∞</span> : formatBytes(total)}
         </span>
-        <span className={cn(isMobile ? 'block' : 'hidden md:block')}>
-          {t('usersTable.total')}: {formatBytes(totalUsedTraffic || 0)}
-        </span>
+        <div className={cn(isMobile ? 'block' : 'hidden md:block')}>
+          <span>{t('usersTable.total')}:</span> <span dir='ltr'>{formatBytes(totalUsedTraffic || 0)}</span>
+        </div>
       </div>
     </div>
   )

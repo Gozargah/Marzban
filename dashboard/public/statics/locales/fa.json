@@ -1063,7 +1063,9 @@
     "nextPlanExpire": "انقضا (روز)",
     "nextPlanAddRemainingTraffic": "افزودن ترافیک باقی‌مانده",
     "selectTemplate": "انتخاب قالب",
-    "selectTemplatePlaceholder": "یک قالب را انتخاب کنید"
+    "selectTemplatePlaceholder": "یک قالب را انتخاب کنید",
+    "selectNode": "انتخاب گره",
+    "allNodes": "همه گره‌ها"
   },
   "sidebar.expand": "باز کردن منو",
   "sidebar.collapse": "بستن منو",

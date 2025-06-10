@@ -71,11 +71,34 @@ const ExpiryDateField = ({ field, displayDate, usePersianCalendar, calendarOpen,
   const handleDateSelect = React.useCallback((date: Date | undefined) => {
     if (date) {
       const now = new Date()
-      if (date < now) {
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      const selectedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+      
+      if (selectedDate < today) {
         date = now
-      } else {
-        date.setHours(now.getHours(), now.getMinutes())
       }
+      
+      if (selectedDate.getTime() === today.getTime()) {
+        // Convert to UTC and set to end of day
+        const utcDate = new Date(Date.UTC(
+          date.getFullYear(),
+          date.getMonth(),
+          date.getDate(),
+          23, 59, 59
+        ))
+        date = utcDate
+      } else {
+        // Convert to UTC and set current time
+        const utcDate = new Date(Date.UTC(
+          date.getFullYear(),
+          date.getMonth(),
+          date.getDate(),
+          now.getUTCHours(),
+          now.getUTCMinutes()
+        ))
+        date = utcDate
+      }
+      
       const timestamp = Math.floor(date.getTime() / 1000)
       field.onChange(timestamp)
       handleFieldChange('expire', timestamp)
@@ -88,27 +111,21 @@ const ExpiryDateField = ({ field, displayDate, usePersianCalendar, calendarOpen,
 
   // Get current date for comparison
   const now = new Date()
-  const currentYear = now.getFullYear()
-  const currentMonth = now.getMonth()
 
   // Function to check if a date should be disabled
   const isDateDisabled = React.useCallback((date: Date) => {
-    const year = date.getFullYear()
-    const month = date.getMonth()
+    // Create a new date object for today at midnight for accurate comparison
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const compareDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
 
-    // If it's the current year, disable past months
-    if (year === currentYear && month < currentMonth) {
+    // Disable if the date is before today
+    if (compareDate < today) {
       return true
     }
 
-    // If it's a past year, disable all dates
-    if (year < currentYear) {
-      return true
-    }
-
-    // For future years, allow all dates
+    // For future dates, allow all
     return false
-  }, [currentYear, currentMonth])
+  }, [now])
 
   return (
     <FormItem className="flex-1 flex flex-col">
@@ -205,7 +222,16 @@ const ExpiryDateField = ({ field, displayDate, usePersianCalendar, calendarOpen,
                       newDate.setTime(now.getTime())
                     }
 
-                    const timestamp = Math.floor(newDate.getTime() / 1000)
+                    // Convert to UTC
+                    const utcDate = new Date(Date.UTC(
+                      newDate.getFullYear(),
+                      newDate.getMonth(),
+                      newDate.getDate(),
+                      newDate.getHours(),
+                      newDate.getMinutes()
+                    ))
+
+                    const timestamp = Math.floor(utcDate.getTime() / 1000)
                     field.onChange(timestamp)
                     handleFieldChange('expire', timestamp)
                   }
@@ -478,12 +504,12 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
 
   // Helper to convert expire field to needed schema
   function normalizeExpire(expire: Date | string | number | null | undefined): string | number | null | undefined {
-    if (expire === undefined || expire === null || expire === '') return undefined
+    if (expire === undefined || expire === null || expire === '') return 0
 
     // For number values, return directly (already a timestamp)
     if (typeof expire === 'number') return expire
 
-    // For Date objects, convert to Unix timestamp (seconds)
+    // For Date objects, convert to Unix timestamp (seconds) in UTC
     if (expire instanceof Date) {
       return Math.floor(expire.getTime() / 1000)
     }
@@ -496,15 +522,15 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
         return asNum // Return as number if it's a valid numeric string
       }
 
-      // Try as date string
-      const asDate = new Date(expire)
+      // Try as date string - convert to UTC
+      const asDate = new Date(expire + 'Z')
       if (!isNaN(asDate.getTime())) {
         return Math.floor(asDate.getTime() / 1000)
       }
     }
 
-    // Return as is for any other case
-    return expire
+    // Return 0 for any other case
+    return 0
   }
 
   // Helper to clear group selection

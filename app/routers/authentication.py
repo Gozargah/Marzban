@@ -1,17 +1,16 @@
 from datetime import timezone as tz
 
+from aiogram.utils.web_app import WebAppInitData, safe_parse_webapp_init_data
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from aiogram.utils.web_app import WebAppInitData, safe_parse_webapp_init_data
 
 from app.db import AsyncSession, get_db
 from app.db.crud import get_admin as get_admin_by_username, get_admin_by_telegram_id
-from app.models.admin import AdminDetails, AdminValidationResult, AdminInDB
+from app.models.admin import AdminDetails, AdminInDB, AdminValidationResult
 from app.models.settings import Telegram
 from app.settings import telegram_settings
 from app.utils.jwt import get_admin_payload
-from config import SUDOERS
-
+from config import DEBUG, SUDOERS
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/admin/token")
 
@@ -69,6 +68,9 @@ async def validate_admin(db: AsyncSession, username: str, password: str) -> Admi
         )
 
     if not db_admin and SUDOERS.get(username) == password:
+        if not DEBUG:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="env admin not allowed in production")
+
         return AdminValidationResult(username=username, is_sudo=True, is_disabled=False)
 
 

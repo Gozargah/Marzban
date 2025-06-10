@@ -9,7 +9,6 @@ import { RefreshCw, SearchIcon, X } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGetUsers, UserStatus } from '@/service/api'
-import { getUsersPerPageLimitSize } from '@/utils/userPreferenceStorage'
 import { RefetchOptions } from '@tanstack/react-query'
 import { LoaderCircle } from 'lucide-react'
 
