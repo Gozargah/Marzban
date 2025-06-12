@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, Header, Request
+from datetime import datetime as dt
+
+from fastapi import APIRouter, Depends, Header, Query, Request
 
 from app.db import AsyncSession, get_db
 from app.models.stats import Period, UserUsageStatsList
@@ -39,7 +41,11 @@ async def user_subscription_info(token: str, db: AsyncSession = Depends(get_db))
 
 @router.get("/{token}/usage", response_model=UserUsageStatsList)
 async def get_sub_user_usage(
-    token: str, start: str = "", end: str = "", period: Period = Period.hour, db: AsyncSession = Depends(get_db)
+    token: str,
+    start: dt | None = Query(None, example="2024-01-01T00:00:00+03:30"),
+    end: dt | None = Query(None, example="2024-01-31T23:59:59+03:30"),
+    period: Period = Period.hour,
+    db: AsyncSession = Depends(get_db),
 ):
     """Fetches the usage statistics for the user within a specified date range."""
     return await subscription_operator.get_user_usage(db, token=token, start=start, end=end, period=period)

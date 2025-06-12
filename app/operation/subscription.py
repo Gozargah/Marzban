@@ -1,4 +1,5 @@
 import re
+from datetime import datetime as dt
 
 from fastapi import Response
 from fastapi.responses import HTMLResponse
@@ -134,8 +135,8 @@ class SubscriptionOperation(BaseOperation):
         self,
         db: AsyncSession,
         token: str,
-        start: str = "",
-        end: str = "",
+        start: dt = None,
+        end: dt = None,
         period: Period = Period.hour,
     ) -> UserUsageStatsList:
         """Fetches the usage statistics for the user within a specified date range."""

@@ -155,7 +155,7 @@ async def get_users(
     limit: int = None,
     username: list[str] = Query(None),
     owner: list[str] | None = Query(None, alias="admin"),
-    group_ids: list[int] | None = Query(None,alias="group"),
+    group_ids: list[int] | None = Query(None, alias="group"),
     search: str | None = None,
     status: UserStatus | None = None,
     sort: str | None = None,
@@ -188,8 +188,8 @@ async def get_user_usage(
     username: str,
     period: Period,
     node_id: int | None = None,
-    start: dt | None = Query(None, example="2024-01-01T00:00:00"),
-    end: dt | None = Query(None, example="2024-01-31T23:59:59"),
+    start: dt | None = Query(None, example="2024-01-01T00:00:00+03:30"),
+    end: dt | None = Query(None, example="2024-01-31T23:59:59+03:30"),
     db: AsyncSession = Depends(get_db),
     admin: AdminDetails = Depends(get_current),
 ):
@@ -203,8 +203,8 @@ async def get_user_usage(
 async def get_users_usage(
     period: Period,
     node_id: int | None = None,
-    start: dt | None = Query(None, example="2024-01-01T00:00:00"),
-    end: dt | None = Query(None, example="2024-01-31T23:59:59"),
+    start: dt | None = Query(None, example="2024-01-01T00:00:00+03:30"),
+    end: dt | None = Query(None, example="2024-01-31T23:59:59+03:30"),
     db: AsyncSession = Depends(get_db),
     owner: list[str] | None = Query(None, alias="admin"),
     admin: AdminDetails = Depends(get_current),
@@ -219,8 +219,8 @@ async def get_users_usage(
 async def get_expired_users(
     db: AsyncSession = Depends(get_db),
     admin: AdminDetails = Depends(get_current),
-    expired_after: dt | None = Query(None, example="2024-01-01T00:00:00"),
-    expired_before: dt | None = Query(None, example="2024-01-31T23:59:59"),
+    expired_after: dt | None = Query(None, example="2024-01-01T00:00:00+03:30"),
+    expired_before: dt | None = Query(None, example="2024-01-31T23:59:59+03:30"),
 ):
     """
     Get users who have expired within the specified date range.
@@ -238,8 +238,8 @@ async def get_expired_users(
 async def delete_expired_users(
     db: AsyncSession = Depends(get_db),
     admin: AdminDetails = Depends(get_current),
-    expired_after: dt | None = Query(None, example="2024-01-01T00:00:00"),
-    expired_before: dt | None = Query(None, example="2024-01-31T23:59:59"),
+    expired_after: dt | None = Query(None, example="2024-01-01T00:00:00+03:30"),
+    expired_before: dt | None = Query(None, example="2024-01-31T23:59:59+03:30"),
 ):
     """
     Delete users who have expired within the specified date range.

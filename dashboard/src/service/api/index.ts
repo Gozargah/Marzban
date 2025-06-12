@@ -27,8 +27,8 @@ export type GetUserTemplatesParams = {
 }
 
 export type GetSubUserUsageParams = {
-  start?: string
-  end?: string
+  start?: string | null
+  end?: string | null
   period?: Period
 }
 
@@ -61,8 +61,9 @@ export type GetUsersParams = {
   offset?: number
   limit?: number
   username?: string[]
-  search?: string | null
   admin?: string[] | null
+  group?: number[] | null
+  search?: string | null
   status?: UserStatus | null
   sort?: string | null
   proxy_id?: string | null
@@ -289,8 +290,6 @@ export interface XHttpSettingsInput {
 }
 
 export interface WebhookInfo {
-  /** @maxLength 128 */
-  name?: string
   url: string
   secret: string
 }
@@ -353,8 +352,6 @@ export interface UserUsageStatsList {
 
 export type UserTemplateResponseIsDisabled = boolean | null
 
-export type UserTemplateResponseDataLimitResetStrategy = UserDataLimitResetStrategy | null
-
 export type UserTemplateResponseOnHoldTimeout = number | null
 
 export type UserTemplateResponseResetUsages = boolean | null
@@ -392,14 +389,12 @@ export interface UserTemplateResponse {
   status?: UserTemplateResponseStatus
   reset_usages?: UserTemplateResponseResetUsages
   on_hold_timeout?: UserTemplateResponseOnHoldTimeout
-  data_limit_reset_strategy?: UserTemplateResponseDataLimitResetStrategy
+  data_limit_reset_strategy?: UserDataLimitResetStrategy
   is_disabled?: UserTemplateResponseIsDisabled
   id: number
 }
 
 export type UserTemplateModifyIsDisabled = boolean | null
-
-export type UserTemplateModifyDataLimitResetStrategy = UserDataLimitResetStrategy | null
 
 export type UserTemplateModifyOnHoldTimeout = number | null
 
@@ -440,13 +435,11 @@ export interface UserTemplateModify {
   status?: UserTemplateModifyStatus
   reset_usages?: UserTemplateModifyResetUsages
   on_hold_timeout?: UserTemplateModifyOnHoldTimeout
-  data_limit_reset_strategy?: UserTemplateModifyDataLimitResetStrategy
+  data_limit_reset_strategy?: UserDataLimitResetStrategy
   is_disabled?: UserTemplateModifyIsDisabled
 }
 
 export type UserTemplateCreateIsDisabled = boolean | null
-
-export type UserTemplateCreateDataLimitResetStrategy = UserDataLimitResetStrategy | null
 
 export type UserTemplateCreateOnHoldTimeout = number | null
 
@@ -485,7 +478,7 @@ export interface UserTemplateCreate {
   status?: UserTemplateCreateStatus
   reset_usages?: UserTemplateCreateResetUsages
   on_hold_timeout?: UserTemplateCreateOnHoldTimeout
-  data_limit_reset_strategy?: UserTemplateCreateDataLimitResetStrategy
+  data_limit_reset_strategy?: UserDataLimitResetStrategy
   is_disabled?: UserTemplateCreateIsDisabled
 }
 
@@ -869,6 +862,7 @@ export const ShadowsocksMethods = {
 } as const
 
 export interface ShadowsocksSettings {
+  /** @minLength 22 */
   password?: string
   method?: ShadowsocksMethods
 }
@@ -1446,7 +1440,6 @@ export interface CreateHost {
 export type CoreResponseConfig = { [key: string]: unknown }
 
 export interface CoreResponse {
-  /** @maxLength 256 */
   name: string
   config: CoreResponseConfig
   /** @maxLength 2048 */

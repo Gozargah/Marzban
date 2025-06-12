@@ -1,5 +1,7 @@
 {
-  "active": "active",
+  "marzban": "Marzban",
+  "active": "активный",
+  "online": "В сети",
   "platform": "Платформа",
   "allStatuses": "Все статусы",
   "status": "Статус",
@@ -894,7 +896,6 @@
     "allow": "Разрешить",
     "skip": "Пропустить"
   },
-  "marzban": "Marzban",
   "group": {
     "createSuccess": "Группа «{{name}}» успешно создана",
     "createFailed": "Не удалось создать группу «{{name}}»",

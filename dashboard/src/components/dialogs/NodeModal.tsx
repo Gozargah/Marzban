@@ -1,9 +1,9 @@
-import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/dialog'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/components/ui/form'
-import {Input} from '@/components/ui/input'
-import {Button} from '@/components/ui/button'
-import {useTranslation} from 'react-i18next'
-import {UseFormReturn} from 'react-hook-form'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { useTranslation } from 'react-i18next'
+import { UseFormReturn } from 'react-hook-form'
 import {
     useCreateNode,
     useModifyNode,
@@ -13,18 +13,19 @@ import {
     getNode,
     reconnectNode
 } from '@/service/api'
-import {toast} from 'sonner'
-import {z} from 'zod'
-import {cn} from '@/lib/utils'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select'
-import {Textarea} from '@/components/ui/textarea'
-import {queryClient} from '@/utils/query-client'
+import { toast } from 'sonner'
+import { z } from 'zod'
+import { cn } from '@/lib/utils'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { queryClient } from '@/utils/query-client'
 import useDirDetection from '@/hooks/use-dir-detection'
-import {useState, useEffect} from 'react'
-import {Loader2} from 'lucide-react'
-import {v4 as uuidv4, v5 as uuidv5, v6 as uuidv6, v7 as uuidv7} from 'uuid'
-import {LoaderButton} from '../ui/loader-button'
+import { useState, useEffect } from 'react'
+import { Loader2, Settings } from 'lucide-react'
+import { v4 as uuidv4, v5 as uuidv5, v6 as uuidv6, v7 as uuidv7 } from 'uuid'
+import { LoaderButton } from '../ui/loader-button'
 import useDynamicErrorHandler from "@/hooks/use-dynamic-errors.ts";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
 export const nodeFormSchema = z.object({
     name: z.string().min(1, 'Name is required'),
@@ -52,13 +53,13 @@ interface NodeModalProps {
 
 type ConnectionStatus = 'idle' | 'success' | 'error' | 'checking'
 
-export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode, editingNodeId}: NodeModalProps) {
-    const {t} = useTranslation()
+export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNode, editingNodeId }: NodeModalProps) {
+    const { t } = useTranslation()
     const dir = useDirDetection()
     const addNodeMutation = useCreateNode()
     const modifyNodeMutation = useModifyNode()
     const handleError = useDynamicErrorHandler();
-    const {data: cores} = useGetAllCores()
+    const { data: cores } = useGetAllCores()
     const [statusChecking, setStatusChecking] = useState(false)
     const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('idle')
     const [errorDetails, setErrorDetails] = useState<string | null>(null)
@@ -90,7 +91,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
     useEffect(() => {
         if (!isDialogOpen || !autoCheck || editingNode || !debouncedValues) return
 
-        const {name, address, port, api_key} = debouncedValues
+        const { name, address, port, api_key } = debouncedValues
         if (name && address && port && api_key) {
             checkNodeStatus()
         }
@@ -121,7 +122,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                         server_ca: nodeData.server_ca,
                         keep_alive: nodeData.keep_alive,
                         max_logs: nodeData.max_logs,
-                        api_key: nodeData.api_key,
+                        api_key: (nodeData.api_key as string) || '',
                         core_config_id: nodeData.core_config_id || cores?.cores?.[0]?.id,
                     })
                 } catch (error) {
@@ -250,12 +251,12 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
             }
 
             // Invalidate nodes queries after successful operation
-            queryClient.invalidateQueries({queryKey: ['/api/nodes']})
+            queryClient.invalidateQueries({ queryKey: ['/api/nodes'] })
             onOpenChange(false)
             form.reset()
         } catch (error: any) {
             const fields = ['name', 'address', 'port', 'core_config_id', 'api_key', 'max_logs', 'keep_alive_unit', 'keep_alive', 'server_ca', 'connection_type', '']
-            handleError({error, fields, form, contextKey: "nodes"})
+            handleError({ error, fields, form, contextKey: "nodes" })
 
         }
     }
@@ -275,29 +276,28 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                         <div className="flex items-center gap-2">
                             <div className="flex items-center gap-2">
                                 <div
-                                    className={`w-2 h-2 rounded-full ${
-                                        connectionStatus === 'success'
-                                            ? 'bg-green-500 dark:bg-green-400'
-                                            : connectionStatus === 'error'
-                                                ? 'bg-red-500 dark:bg-red-400'
-                                                : connectionStatus === 'checking'
-                                                    ? 'bg-yellow-500 dark:bg-yellow-400'
-                                                    : 'bg-gray-500 dark:bg-gray-400'
-                                    }`}
+                                    className={`w-2 h-2 rounded-full ${connectionStatus === 'success'
+                                        ? 'bg-green-500 dark:bg-green-400'
+                                        : connectionStatus === 'error'
+                                            ? 'bg-red-500 dark:bg-red-400'
+                                            : connectionStatus === 'checking'
+                                                ? 'bg-yellow-500 dark:bg-yellow-400'
+                                                : 'bg-gray-500 dark:bg-gray-400'
+                                        }`}
                                 />
                                 <span className="text-sm font-medium text-foreground">
-                  {connectionStatus === 'success'
-                      ? t('nodeModal.status.connected')
-                      : connectionStatus === 'error'
-                          ? t('nodeModal.status.error')
-                          : connectionStatus === 'checking'
-                              ? t('nodeModal.status.connecting')
-                              : t('nodeModal.status.disabled')}
-                </span>
+                                    {connectionStatus === 'success'
+                                        ? t('nodeModal.status.connected')
+                                        : connectionStatus === 'error'
+                                            ? t('nodeModal.status.error')
+                                            : connectionStatus === 'checking'
+                                                ? t('nodeModal.status.connecting')
+                                                : t('nodeModal.status.disabled')}
+                                </span>
                             </div>
                             {connectionStatus === 'error' && (
                                 <Button variant="ghost" size="sm" onClick={() => setShowErrorDetails(!showErrorDetails)}
-                                        className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground">
+                                    className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground">
                                     {showErrorDetails ? t('nodeModal.hideDetails') : t('nodeModal.showDetails')}
                                 </Button>
                             )}
@@ -323,7 +323,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                 >
                                     {reconnecting ? (
                                         <div className="flex items-center gap-1">
-                                            <Loader2 className="h-3 w-3 animate-spin"/>
+                                            <Loader2 className="h-3 w-3 animate-spin" />
                                             {t('nodeModal.reconnecting')}
                                         </div>
                                     ) : (
@@ -332,10 +332,10 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                 </Button>
                             )}
                             <Button variant="outline" size="sm" onClick={checkNodeStatus}
-                                    disabled={statusChecking || !form.formState.isValid} className="h-6 px-2 text-xs">
+                                disabled={statusChecking || !form.formState.isValid} className="h-6 px-2 text-xs">
                                 {statusChecking ? (
                                     <div className="flex items-center gap-1">
-                                        <Loader2 className="h-3 w-3 animate-spin"/>
+                                        <Loader2 className="h-3 w-3 animate-spin" />
                                         {t('nodeModal.statusChecking')}
                                     </div>
                                 ) : (
@@ -352,20 +352,20 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
-                        <div className="max-h-[72dvh] overflow-y-auto pr-4 -mr-4 sm:max-h-[65dvh] px-2">
+                        <div className="max-h-[68.5dvh] overflow-y-auto pr-4 -mr-4 sm:max-h-[65dvh] px-2">
                             <div className="flex h-full flex-col sm:flex-row items-start gap-4">
                                 <div className="flex-1 space-y-4 w-full">
                                     <FormField
                                         control={form.control}
                                         name="name"
-                                        render={({field}) => (
+                                        render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>{t('nodeModal.name')}</FormLabel>
                                                 <FormControl>
                                                     <Input isError={!!form.formState.errors.name}
-                                                           placeholder={t('nodeModal.namePlaceholder')} {...field} />
+                                                        placeholder={t('nodeModal.namePlaceholder')} {...field} />
                                                 </FormControl>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -374,14 +374,14 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                         <FormField
                                             control={form.control}
                                             name="address"
-                                            render={({field}) => (
+                                            render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>{t('nodeModal.address')}</FormLabel>
                                                     <FormControl>
                                                         <Input isError={!!form.formState.errors.address}
-                                                               placeholder={t('nodeModal.addressPlaceholder')} {...field} />
+                                                            placeholder={t('nodeModal.addressPlaceholder')} {...field} />
                                                     </FormControl>
-                                                    <FormMessage/>
+                                                    <FormMessage />
                                                 </FormItem>
                                             )}
                                         />
@@ -389,7 +389,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                         <FormField
                                             control={form.control}
                                             name="port"
-                                            render={({field}) => (
+                                            render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>{t('nodeModal.port')}</FormLabel>
                                                     <FormControl>
@@ -401,7 +401,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                                             onChange={e => field.onChange(parseInt(e.target.value))}
                                                         />
                                                     </FormControl>
-                                                    <FormMessage/>
+                                                    <FormMessage />
                                                 </FormItem>
                                             )}
                                         />
@@ -410,15 +410,15 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                     <FormField
                                         control={form.control}
                                         name="core_config_id"
-                                        render={({field}) => (
+                                        render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>{t('nodeModal.coreConfig')}</FormLabel>
                                                 <Select onValueChange={value => field.onChange(parseInt(value))}
-                                                        value={field.value?.toString()}
-                                                        defaultValue={cores?.cores?.[0]?.id.toString()}>
+                                                    value={field.value?.toString()}
+                                                    defaultValue={cores?.cores?.[0]?.id.toString()}>
                                                     <FormControl>
                                                         <SelectTrigger>
-                                                            <SelectValue placeholder={t('nodeModal.selectCoreConfig')}/>
+                                                            <SelectValue placeholder={t('nodeModal.selectCoreConfig')} />
                                                         </SelectTrigger>
                                                     </FormControl>
                                                     <SelectContent>
@@ -429,231 +429,241 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                                         ))}
                                                     </SelectContent>
                                                 </Select>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
 
-                                    <div className="flex flex-col gap-4 w-full md">
-                                        <div className="flex  gap-4">
-                                            <FormField
-                                                control={form.control}
-                                                name="usage_coefficient"
-                                                render={({field}) => (
-                                                    <FormItem className="flex-1">
-                                                        <FormLabel>{t('nodeModal.usageRatio')}</FormLabel>
-                                                        <FormControl>
+                                    <FormField
+                                        control={form.control}
+                                        name="api_key"
+                                        render={({ field }) => {
+                                            const [uuidVersion, setUuidVersion] = useState<'v4' | 'v5' | 'v6' | 'v7'>('v4')
+
+                                            const generateUUID = () => {
+                                                switch (uuidVersion) {
+                                                    case 'v4':
+                                                        field.onChange(uuidv4())
+                                                        break
+                                                    case 'v5':
+                                                        // Using a fixed namespace for v5 UUIDs
+                                                        const namespace = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'
+                                                        field.onChange(uuidv5(field.value || 'default', namespace))
+                                                        break
+                                                    case 'v6':
+                                                        field.onChange(uuidv6())
+                                                        break
+                                                    case 'v7':
+                                                        field.onChange(uuidv7())
+                                                        break
+                                                }
+                                            }
+
+                                            return (
+                                                <FormItem className={'min-h-[100px]'}>
+                                                    <FormLabel>{t('nodeModal.apiKey')}</FormLabel>
+                                                    <FormControl>
+                                                        <div className="flex items-center gap-2">
                                                             <Input
-                                                                isError={!!form.formState.errors.usage_coefficient}
-                                                                type="number"
-                                                                step="0.1"
-                                                                placeholder={t('nodeModal.usageRatioPlaceholder')}
+                                                                isError={!!form.formState.errors.api_key}
+                                                                type="text"
+                                                                placeholder={t('nodeModal.apiKeyPlaceholder')}
+                                                                autoComplete="off"
                                                                 {...field}
-                                                                onChange={e => field.onChange(parseFloat(e.target.value))}
+                                                                onChange={e => field.onChange(e.target.value)}
                                                             />
-                                                        </FormControl>
-                                                        <FormMessage/>
-                                                    </FormItem>
-                                                )}
-                                            />
+                                                            <div
+                                                                className={cn('flex items-center flex-1', dir === 'rtl' && 'flex-row-reverse')}>
+                                                                <Select value={uuidVersion}
+                                                                    onValueChange={(value: 'v4' | 'v5' | 'v6' | 'v7') => setUuidVersion(value)}>
+                                                                    <SelectTrigger
+                                                                        className="w-[60px] h-full rounded-r-none border-r-0">
+                                                                        <SelectValue />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        <SelectItem value="v4">v4</SelectItem>
+                                                                        <SelectItem value="v5">v5</SelectItem>
+                                                                        <SelectItem value="v6">v6</SelectItem>
+                                                                        <SelectItem value="v7">v7</SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
+                                                                <Button type="button" variant="outline"
+                                                                    onClick={generateUUID}
+                                                                    className="rounded-l-none flex-1">
+                                                                    {t('nodeModal.generateUUID')}
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )
+                                        }}
+                                    />
 
-                                            <FormField
-                                                control={form.control}
-                                                name="max_logs"
-                                                render={({field}) => (
-                                                    <FormItem className="flex-1">
-                                                        <FormLabel>{t('nodes.maxLogs')}</FormLabel>
-                                                        <FormControl>
-                                                            <Input
-                                                                isError={!!form.formState.errors.max_logs}
-                                                                type="number"
-                                                                placeholder={t('nodes.maxLogsPlaceholder')}
-                                                                {...field}
-                                                                onChange={e => field.onChange(parseInt(e.target.value))}
-                                                            />
-                                                        </FormControl>
-                                                        <FormMessage/>
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-
-                                        <div className="flex flex-col gap-4 w-full">
-                                            <FormField
-                                                control={form.control}
-                                                name="connection_type"
-                                                render={({field}) => (
-                                                    <FormItem className="w-full">
-                                                        <FormLabel>{t('nodeModal.connectionType')}</FormLabel>
-                                                        <Select onValueChange={field.onChange}
-                                                                defaultValue={field.value}>
-                                                            <FormControl>
-                                                                <SelectTrigger>
-                                                                    <SelectValue placeholder="Rest"/>
-                                                                </SelectTrigger>
-                                                            </FormControl>
-                                                            <SelectContent>
-                                                                <SelectItem
-                                                                    value={NodeConnectionType.grpc}>gRPC</SelectItem>
-                                                                <SelectItem
-                                                                    value={NodeConnectionType.rest}>Rest</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                        <FormMessage/>
-                                                    </FormItem>
-                                                )}
-                                            />
-
-                                            <FormField
-                                                control={form.control}
-                                                name="api_key"
-                                                render={({field}) => {
-                                                    const [uuidVersion, setUuidVersion] = useState<'v4' | 'v5' | 'v6' | 'v7'>('v4')
-
-                                                    const generateUUID = () => {
-                                                        switch (uuidVersion) {
-                                                            case 'v4':
-                                                                field.onChange(uuidv4())
-                                                                break
-                                                            case 'v5':
-                                                                // Using a fixed namespace for v5 UUIDs
-                                                                const namespace = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'
-                                                                field.onChange(uuidv5(field.value || 'default', namespace))
-                                                                break
-                                                            case 'v6':
-                                                                field.onChange(uuidv6())
-                                                                break
-                                                            case 'v7':
-                                                                field.onChange(uuidv7())
-                                                                break
-                                                        }
-                                                    }
-
-                                                    return (
-                                                        <FormItem className={'min-h-[100px]'}>
-                                                            <FormLabel>{t('nodeModal.apiKey')}</FormLabel>
-                                                            <FormControl>
-                                                                <div className="flex items-center gap-2">
-                                                                    <Input
-                                                                        isError={!!form.formState.errors.api_key}
-                                                                        type="text"
-                                                                        placeholder={t('nodeModal.apiKeyPlaceholder')}
-                                                                        autoComplete="off"
-                                                                        {...field}
-                                                                        onChange={e => field.onChange(e.target.value)}
-                                                                    />
-                                                                    <div
-                                                                        className={cn('flex items-center flex-1', dir === 'rtl' && 'flex-row-reverse')}>
-                                                                        <Select value={uuidVersion}
-                                                                                onValueChange={(value: 'v4' | 'v5' | 'v6' | 'v7') => setUuidVersion(value)}>
-                                                                            <SelectTrigger
-                                                                                className="w-[60px] h-full rounded-r-none border-r-0">
-                                                                                <SelectValue/>
-                                                                            </SelectTrigger>
-                                                                            <SelectContent>
-                                                                                <SelectItem value="v4">v4</SelectItem>
-                                                                                <SelectItem value="v5">v5</SelectItem>
-                                                                                <SelectItem value="v6">v6</SelectItem>
-                                                                                <SelectItem value="v7">v7</SelectItem>
-                                                                            </SelectContent>
-                                                                        </Select>
-                                                                        <Button type="button" variant="outline"
-                                                                                onClick={generateUUID}
-                                                                                className="rounded-l-none flex-1">
-                                                                            {t('nodeModal.generateUUID')}
-                                                                        </Button>
-                                                                    </div>
-                                                                </div>
-                                                            </FormControl>
-                                                            <FormMessage/>
-                                                        </FormItem>
-                                                    )
-                                                }}
-                                            />
-
-                                            <FormField
-                                                control={form.control}
-                                                name="keep_alive"
-                                                render={({field}) => {
-                                                    const [displayValue, setDisplayValue] = useState<string>(field.value?.toString() || '')
-                                                    const [unit, setUnit] = useState<'seconds' | 'minutes' | 'hours'>('seconds')
-
-                                                    const convertToSeconds = (value: number, fromUnit: 'seconds' | 'minutes' | 'hours') => {
-                                                        switch (fromUnit) {
-                                                            case 'minutes':
-                                                                return value * 60
-                                                            case 'hours':
-                                                                return value * 3600
-                                                            default:
-                                                                return value
-                                                        }
-                                                    }
-
-                                                    const convertFromSeconds = (seconds: number, toUnit: 'seconds' | 'minutes' | 'hours') => {
-                                                        switch (toUnit) {
-                                                            case 'minutes':
-                                                                return Math.floor(seconds / 60)
-                                                            case 'hours':
-                                                                return Math.floor(seconds / 3600)
-                                                            default:
-                                                                return seconds
-                                                        }
-                                                    }
-
-                                                    return (
-                                                        <FormItem>
-                                                            <FormLabel>{t('nodeModal.keepAlive')}</FormLabel>
-                                                            <div className="flex flex-col gap-1.5">
-                                                                <p className="text-xs text-muted-foreground">{t('nodeModal.keepAliveDescription')}</p>
-                                                                <div className="flex gap-2">
+                                    <Accordion type="single" collapsible className="w-full">
+                                        <AccordionItem value="advanced-settings">
+                                            <AccordionTrigger className="flex items-center gap-2 no-underline">
+                                                <div className='flex items-center gap-2 decoration-transparent'>
+                                                    <Settings className="h-4 w-4" />
+                                                    <span>{t('settings.notifications.advanced.title')}</span>
+                                                </div>
+                                            </AccordionTrigger>
+                                            <AccordionContent>
+                                                <div className="flex flex-col gap-4">
+                                                    <div className="flex gap-4">
+                                                        <FormField
+                                                            control={form.control}
+                                                            name="usage_coefficient"
+                                                            render={({ field }) => (
+                                                                <FormItem className="flex-1">
+                                                                    <FormLabel>{t('nodeModal.usageRatio')}</FormLabel>
                                                                     <FormControl>
                                                                         <Input
-                                                                            isError={!!form.formState.errors.keep_alive}
+                                                                            isError={!!form.formState.errors.usage_coefficient}
                                                                             type="number"
-                                                                            value={displayValue}
-                                                                            onChange={e => {
-                                                                                const value = e.target.value
-                                                                                setDisplayValue(value)
-                                                                                const numValue = parseInt(value) || 0
-                                                                                field.onChange(convertToSeconds(numValue, unit))
-                                                                            }}
+                                                                            step="0.1"
+                                                                            placeholder={t('nodeModal.usageRatioPlaceholder')}
+                                                                            {...field}
+                                                                            onChange={e => field.onChange(parseFloat(e.target.value))}
                                                                         />
                                                                     </FormControl>
-                                                                    <Select
-                                                                        value={unit}
-                                                                        onValueChange={(value: 'seconds' | 'minutes' | 'hours') => {
-                                                                            setUnit(value)
-                                                                            const currentSeconds = field.value || 0
-                                                                            const newDisplayValue = convertFromSeconds(currentSeconds, value)
-                                                                            setDisplayValue(newDisplayValue.toString())
-                                                                        }}
-                                                                    >
-                                                                        <SelectTrigger className="flex-1">
-                                                                            <SelectValue/>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+
+                                                        <FormField
+                                                            control={form.control}
+                                                            name="max_logs"
+                                                            render={({ field }) => (
+                                                                <FormItem className="flex-1">
+                                                                    <FormLabel>{t('nodes.maxLogs')}</FormLabel>
+                                                                    <FormControl>
+                                                                        <Input
+                                                                            isError={!!form.formState.errors.max_logs}
+                                                                            type="number"
+                                                                            placeholder={t('nodes.maxLogsPlaceholder')}
+                                                                            {...field}
+                                                                            onChange={e => field.onChange(parseInt(e.target.value))}
+                                                                        />
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                    </div>
+
+                                                    <FormField
+                                                        control={form.control}
+                                                        name="connection_type"
+                                                        render={({ field }) => (
+                                                            <FormItem className="w-full">
+                                                                <FormLabel>{t('nodeModal.connectionType')}</FormLabel>
+                                                                <Select onValueChange={field.onChange}
+                                                                    defaultValue={field.value}>
+                                                                    <FormControl>
+                                                                        <SelectTrigger>
+                                                                            <SelectValue placeholder="Rest" />
                                                                         </SelectTrigger>
-                                                                        <SelectContent>
-                                                                            <SelectItem
-                                                                                value="seconds">{t('nodeModal.seconds')}</SelectItem>
-                                                                            <SelectItem
-                                                                                value="minutes">{t('nodeModal.minutes')}</SelectItem>
-                                                                            <SelectItem
-                                                                                value="hours">{t('nodeModal.hours')}</SelectItem>
-                                                                        </SelectContent>
-                                                                    </Select>
-                                                                </div>
-                                                            </div>
-                                                            <FormMessage/>
-                                                        </FormItem>
-                                                    )
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
+                                                                    </FormControl>
+                                                                    <SelectContent>
+                                                                        <SelectItem
+                                                                            value={NodeConnectionType.grpc}>gRPC</SelectItem>
+                                                                        <SelectItem
+                                                                            value={NodeConnectionType.rest}>Rest</SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                        )}
+                                                    />
+
+                                                    <FormField
+                                                        control={form.control}
+                                                        name="keep_alive"
+                                                        render={({ field }) => {
+                                                            const [displayValue, setDisplayValue] = useState<string>(field.value?.toString() || '')
+                                                            const [unit, setUnit] = useState<'seconds' | 'minutes' | 'hours'>('seconds')
+
+                                                            const convertToSeconds = (value: number, fromUnit: 'seconds' | 'minutes' | 'hours') => {
+                                                                switch (fromUnit) {
+                                                                    case 'minutes':
+                                                                        return value * 60
+                                                                    case 'hours':
+                                                                        return value * 3600
+                                                                    default:
+                                                                        return value
+                                                                }
+                                                            }
+
+                                                            const convertFromSeconds = (seconds: number, toUnit: 'seconds' | 'minutes' | 'hours') => {
+                                                                switch (toUnit) {
+                                                                    case 'minutes':
+                                                                        return Math.floor(seconds / 60)
+                                                                    case 'hours':
+                                                                        return Math.floor(seconds / 3600)
+                                                                    default:
+                                                                        return seconds
+                                                                }
+                                                            }
+
+                                                            return (
+                                                                <FormItem>
+                                                                    <FormLabel>{t('nodeModal.keepAlive')}</FormLabel>
+                                                                    <div className="flex flex-col gap-1.5">
+                                                                        <p className="text-xs text-muted-foreground">{t('nodeModal.keepAliveDescription')}</p>
+                                                                        <div className="flex gap-2">
+                                                                            <FormControl>
+                                                                                <Input
+                                                                                    isError={!!form.formState.errors.keep_alive}
+                                                                                    type="number"
+                                                                                    value={displayValue}
+                                                                                    onChange={e => {
+                                                                                        const value = e.target.value
+                                                                                        setDisplayValue(value)
+                                                                                        const numValue = parseInt(value) || 0
+                                                                                        field.onChange(convertToSeconds(numValue, unit))
+                                                                                    }}
+                                                                                />
+                                                                            </FormControl>
+                                                                            <Select
+                                                                                value={unit}
+                                                                                onValueChange={(value: 'seconds' | 'minutes' | 'hours') => {
+                                                                                    setUnit(value)
+                                                                                    const currentSeconds = field.value || 0
+                                                                                    const newDisplayValue = convertFromSeconds(currentSeconds, value)
+                                                                                    setDisplayValue(newDisplayValue.toString())
+                                                                                }}
+                                                                            >
+                                                                                <SelectTrigger className="flex-1">
+                                                                                    <SelectValue />
+                                                                                </SelectTrigger>
+                                                                                <SelectContent>
+                                                                                    <SelectItem
+                                                                                        value="seconds">{t('nodeModal.seconds')}</SelectItem>
+                                                                                    <SelectItem
+                                                                                        value="minutes">{t('nodeModal.minutes')}</SelectItem>
+                                                                                    <SelectItem
+                                                                                        value="hours">{t('nodeModal.hours')}</SelectItem>
+                                                                                </SelectContent>
+                                                                            </Select>
+                                                                        </div>
+                                                                    </div>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )
+                                                        }}
+                                                    />
+                                                </div>
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    </Accordion>
                                 </div>
                                 <FormField
                                     control={form.control}
                                     name="server_ca"
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem className="flex-1 w-full mb-6 md:mb-0 h-full">
                                             <FormLabel>{t('nodeModal.certificate')}</FormLabel>
                                             <FormControl>
@@ -664,7 +674,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                                                     {...field}
                                                 />
                                             </FormControl>
-                                            <FormMessage/>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
@@ -672,7 +682,7 @@ export default function NodeModal({isDialogOpen, onOpenChange, form, editingNode
                         </div>
                         <div className="flex justify-end gap-2 pt-4">
                             <Button variant="outline" onClick={() => onOpenChange(false)}
-                                    disabled={addNodeMutation.isPending || modifyNodeMutation.isPending}>
+                                disabled={addNodeMutation.isPending || modifyNodeMutation.isPending}>
                                 {t('cancel')}
                             </Button>
                             <LoaderButton

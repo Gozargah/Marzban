@@ -215,8 +215,8 @@ class UserOperation(BaseOperation):
         db: AsyncSession,
         username: str,
         admin: AdminDetails,
-        start: str = "",
-        end: str = "",
+        start: dt = None,
+        end: dt = None,
         period: Period = Period.hour,
         node_id: int | None = None,
     ) -> UserUsageStatsList:
@@ -287,8 +287,8 @@ class UserOperation(BaseOperation):
         self,
         db: AsyncSession,
         admin: AdminDetails,
-        start: str = "",
-        end: str = "",
+        start: dt = None,
+        end: dt = None,
         owner: list[str] | None = None,
         period: Period = Period.hour,
         node_id: int | None = None,
@@ -314,7 +314,7 @@ class UserOperation(BaseOperation):
             logger.info(f'User "{user}" deleted by admin "{by}"')
 
     async def get_expired_users(
-        self, db: AsyncSession, admin: AdminDetails, expired_after: dt | None = None, expired_before: dt | None = None
+        self, db: AsyncSession, admin: AdminDetails, expired_after: dt = None, expired_before: dt = None
     ) -> list[str]:
         """
         Get users who have expired within the specified date range.
@@ -334,7 +334,7 @@ class UserOperation(BaseOperation):
         return [row.username for row in users]
 
     async def delete_expired_users(
-        self, db: AsyncSession, admin: AdminDetails, expired_after: dt | None = None, expired_before: dt | None = None
+        self, db: AsyncSession, admin: AdminDetails, expired_after: dt = None, expired_before: dt = None
     ) -> RemoveUsersResponse:
         """
         Delete users who have expired within the specified date range.

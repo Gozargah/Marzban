@@ -1,25 +1,24 @@
-from collections import defaultdict
 import asyncio
+from collections import defaultdict
 from datetime import datetime as dt, timezone as tz
 from operator import attrgetter
 
-from sqlalchemy.exc import OperationalError, DatabaseError
-from sqlalchemy import and_, bindparam, insert, select, update
-from sqlalchemy.sql.expression import Insert
 from GozargahNodeBridge import GozargahNode, NodeAPIError
 from GozargahNodeBridge.common.service_pb2 import StatType
+from sqlalchemy import and_, bindparam, insert, select, update
+from sqlalchemy.exc import DatabaseError, OperationalError
+from sqlalchemy.sql.expression import Insert
 
 from app import scheduler
+from app.db import AsyncSession, GetDB
+from app.db.models import Admin, NodeUsage, NodeUserUsage, System, User
 from app.node import node_manager as node_manager
 from app.utils.logger import get_logger
-from app.db import GetDB, AsyncSession
-from app.db.models import Admin, NodeUsage, NodeUserUsage, System, User
 from config import (
     DISABLE_RECORDING_NODE_USAGE,
     JOB_RECORD_NODE_USAGES_INTERVAL,
     JOB_RECORD_USER_USAGES_INTERVAL,
 )
-
 
 logger = get_logger("record-usages")
 
@@ -99,7 +98,8 @@ async def record_user_stats(params: list[dict], node_id: int, usage_coefficient:
             )
             await safe_execute(db, insert_stmt, new_users)
 
-        # Update user traffic
+        # Update user traffic - ensure uid is converted to int
+        update_params = [{"uid": int(p["uid"]), "value": p["value"]} for p in params]
         update_stmt = (
             update(NodeUserUsage)
             .values(used_traffic=NodeUserUsage.used_traffic + bindparam("value") * usage_coefficient)
@@ -111,7 +111,7 @@ async def record_user_stats(params: list[dict], node_id: int, usage_coefficient:
                 )
             )
         )
-        await safe_execute(db, update_stmt, params)
+        await safe_execute(db, update_stmt, update_params)
 
 
 async def record_node_stats(params: dict, node_id: int):
@@ -155,7 +155,7 @@ async def get_users_stats(node: GozargahNode):
         params = defaultdict(int)
         for stat in filter(attrgetter("value"), stats_respons.stats):
             params[stat.name.split(".", 1)[0]] += stat.value
-        params = list({"uid": uid, "value": value} for uid, value in params.items())
+        params = list({"uid": int(uid), "value": value} for uid, value in params.items())
         return params
     except NodeAPIError as e:
         logger.error("Failed to get outbounds stats, error: %s", e.detail)

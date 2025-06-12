@@ -65,7 +65,7 @@ XRAY_SUBSCRIPTION_URL_PREFIX = get_config("XRAY_SUBSCRIPTION_URL_PREFIX", defaul
 SUB_UPDATE_INTERVAL = get_config("SUB_UPDATE_INTERVAL", default="12")
 SUB_SUPPORT_URL = get_config("SUB_SUPPORT_URL", default="https://t.me/")
 SUB_PROFILE_TITLE = get_config("SUB_PROFILE_TITLE", default="Subscription")
-HOST_STATUS_FILTER = get_config("HOST_STATUS_FILTER", default=False, cast=bool)
+HOST_STATUS_FILTER = get_config("HOST_STATUS_FILTER", default=True, cast=bool)
 
 # Custom JSON settings
 USE_CUSTOM_JSON_DEFAULT = get_config("USE_CUSTOM_JSON_DEFAULT", default=False, cast=bool)

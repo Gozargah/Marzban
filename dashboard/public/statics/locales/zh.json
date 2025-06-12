@@ -1137,5 +1137,6 @@
     "success": "用户 {{username}} 的所有者已成功更改为 {{admin}}。",
     "error": "无法将用户 {{username}} 的所有者更改为 {{admin}}。",
     "loadError": "加载管理员列表失败。"
-  }
+  },
+  "online": "在线"
 }
