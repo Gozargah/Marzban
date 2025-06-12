@@ -421,7 +421,7 @@ export default function CoreConfigModal({
 
     return (
         <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-full sm:max-w-[1000px] h-full sm:h-auto px-4 py-6">
+            <DialogContent className="max-w-full sm:max-w-[1000px] h-full sm:h-auto px-4 py-6" onOpenAutoFocus={(e) => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle
                         className={cn('text-xl text-start font-semibold', dir === 'rtl' && 'sm:text-right')}>{editingCore ? t('coreConfigModal.editCore') : t('coreConfigModal.addConfig')}</DialogTitle>

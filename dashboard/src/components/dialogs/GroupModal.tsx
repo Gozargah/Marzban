@@ -73,7 +73,7 @@ export default function GroupModal({isDialogOpen, onOpenChange, form, editingGro
 
     return (
         <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
-            <DialogContent>
+            <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle
                         className={cn(dir === 'rtl' && 'text-right')}>{editingGroup ? t('editGroup', {defaultValue: 'Edit Group'}) : t('createGroup')}</DialogTitle>

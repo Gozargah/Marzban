@@ -177,7 +177,7 @@ export default function AdminModal({
 
     return (
         <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[750px] h-full sm:h-auto ">
+            <DialogContent className="max-w-[750px] h-full sm:h-auto "  onOpenAutoFocus={(e) => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle>{editingAdmin ? t('admins.editAdmin') : t('admins.createAdmin')}</DialogTitle>
                 </DialogHeader>
