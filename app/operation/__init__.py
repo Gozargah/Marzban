@@ -18,6 +18,7 @@ from app.db.models import Group, ProxyHost, User, Node, UserTemplate, CoreConfig
 from app.models.admin import AdminDetails
 from app.models.user import UserCreate, UserModify
 from app.core.manager import core_manager
+from app.utils.helpers import fix_datetime_timezone
 from app.utils.jwt import get_subscription_payload
 
 
@@ -45,22 +46,16 @@ class BaseOperation:
         else:
             raise ValueError(message)
 
-    async def validate_dates(self, start: str | dt | None, end: str | dt | None) -> tuple[dt, dt]:
+    async def validate_dates(self, start: dt | None, end: dt | None) -> tuple[dt, dt]:
         """Validate if start and end dates are correct and if end is after start."""
         try:
             if start:
-                start_date = (
-                    start.replace(tzinfo=tz.utc)
-                    if isinstance(start, dt)
-                    else dt.fromisoformat(start).astimezone(tz.utc)
-                )
+                start_date = fix_datetime_timezone(start)
             else:
                 start_date = dt.now(tz.utc) - td(days=30)
 
             if end:
-                end_date = (
-                    end.replace(tzinfo=tz.utc) if isinstance(end, dt) else dt.fromisoformat(end).astimezone(tz.utc)
-                )
+                end_date = fix_datetime_timezone(end)
             else:
                 end_date = dt.now(tz.utc)
 

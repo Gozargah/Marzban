@@ -1,5 +1,5 @@
 import json
-from datetime import datetime as dt
+from datetime import datetime as dt, timezone as tz
 from typing import Union
 from uuid import UUID
 
@@ -26,6 +26,21 @@ def readable_datetime(date_time: Union[dt, int, None], include_date: bool = True
         date_time = dt.fromtimestamp(date_time)
 
     return date_time.strftime(get_datetime_format()) if date_time else "-"
+
+
+def fix_datetime_timezone(value: dt | int):
+    if isinstance(value, dt):
+        # If datetime is naive (no timezone), assume it's UTC
+        if value.tzinfo is None:
+            return value.replace(tzinfo=tz.utc)
+        # If datetime has timezone, convert to UTC
+        else:
+            return value.astimezone(tz.utc)
+    elif isinstance(value, int):
+        # Timestamp will be assume it's UTC
+        return dt.fromtimestamp(value, tz=tz.utc)
+
+    raise ValueError("input can be datetime or timestamp")
 
 
 class UUIDEncoder(json.JSONEncoder):

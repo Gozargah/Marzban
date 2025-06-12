@@ -1,4 +1,4 @@
-from datetime import datetime as dt, timezone as tz
+from datetime import datetime as dt
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.db.models import UserDataLimitResetStrategy, UserStatus, UserStatusCreate
 from app.models.admin import AdminContactInfo, AdminBase
 from app.models.proxy import ProxyTable
+from app.utils.helpers import fix_datetime_timezone
 
 from .validators import ListValidator, NumericValidatorMixin, UserValidator
 
@@ -57,17 +58,7 @@ class UserWithValidator(User):
     def validator_expire(cls, value):
         if not value:
             return value
-        elif isinstance(value, dt):
-            # If dt is naive (no tz), assume it's UTC
-            if value.tzinfo is None:
-                return value.replace(tzinfo=tz.utc)
-            # If dt has tz, convert to UTC
-            else:
-                return value.astimezone(tz.utc)
-        elif isinstance(value, int):
-            return dt.fromtimestamp(value, tz=tz.utc)
-        else:
-            raise ValueError("expire can be datetime, timestamp or 0")
+        return fix_datetime_timezone(value)
 
     @field_validator("status", mode="before", check_fields=False)
     def validate_status(cls, status, values):

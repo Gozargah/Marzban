@@ -1,4 +1,5 @@
 import { FC } from 'react'
+import { dateUtils } from '@/utils/dateFormatter'
 
 type UserStatusProps = {
   lastOnline?: string | null
@@ -7,8 +8,28 @@ type UserStatusProps = {
 const convertDateFormat = (lastOnline?: string | null): number | null => {
   if (!lastOnline) return null
 
-  const date = new Date(`${lastOnline}Z`)
-  return Math.floor(date.getTime() / 1000)
+  // If it's already a timestamp, return it
+  if (!isNaN(Number(lastOnline))) {
+    return Number(lastOnline)
+  }
+
+  // If it's an ISO string without timezone, add UTC
+  if (lastOnline.endsWith('Z')) {
+    return dateUtils.isoToTimestamp(lastOnline)
+  }
+
+  // If it's an ISO string with timezone, use it directly
+  if (lastOnline.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/)) {
+    return dateUtils.isoToTimestamp(lastOnline)
+  }
+
+  // For any other format, try to parse it
+  const date = new Date(lastOnline)
+  if (!isNaN(date.getTime())) {
+    return Math.floor(date.getTime() / 1000)
+  }
+
+  return null
 }
 
 export const OnlineBadge: FC<UserStatusProps> = ({ lastOnline }) => {

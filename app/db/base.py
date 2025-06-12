@@ -1,11 +1,11 @@
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass
 
 from config import (
     SQLALCHEMY_DATABASE_URL,
-    SQLALCHEMY_POOL_SIZE,
     SQLALCHEMY_MAX_OVERFLOW,
+    SQLALCHEMY_POOL_SIZE,
 )
 
 IS_SQLITE = SQLALCHEMY_DATABASE_URL.startswith("sqlite")
@@ -35,7 +35,7 @@ else:
     raise ValueError("Unsupported database URL")
 
 
-class Base(DeclarativeBase, AsyncAttrs):
+class Base(DeclarativeBase, MappedAsDataclass, AsyncAttrs):
     pass
 
 

@@ -3,6 +3,7 @@ Functions for managing proxy hosts, users, user templates, nodes, and administra
 """
 
 import asyncio
+from copy import deepcopy
 from datetime import UTC, datetime, timedelta, timezone
 from enum import Enum
 from random import randint
@@ -111,7 +112,7 @@ def build_json_proxy_settings_search_condition(column, value: str):
         *[
             json_extract(column, field) == value
             for field in ("$.vmess.id", "$.vless.id", "$.trojan.password", "$.shadowsocks.password")
-        ]
+        ],
     )
 
 
@@ -727,6 +728,7 @@ async def modify_user(db: AsyncSession, db_user: User, modify: UserModify) -> Us
 
     if modify.next_plan is not None:
         db_user.next_plan = NextPlan(
+            user_id=db_user.id,
             user_template_id=modify.next_plan.user_template_id,
             data_limit=modify.next_plan.data_limit,
             expire=modify.next_plan.expire,
@@ -766,7 +768,7 @@ async def reset_user_data_usage(db: AsyncSession, db_user: User) -> User:
     """
     await db_user.awaitable_attrs.node_usages
     usage_log = UserUsageResetLogs(
-        user=db_user,
+        user_id=db_user.id,
         used_traffic_at_reset=db_user.used_traffic,
     )
     db.add(usage_log)
@@ -799,25 +801,39 @@ async def reset_user_by_next(db: AsyncSession, db_user: User) -> User:
     """
     await db_user.awaitable_attrs.node_usages
     usage_log = UserUsageResetLogs(
-        user=db_user,
+        user_id=db_user.id,
         used_traffic_at_reset=db_user.used_traffic,
     )
     db.add(usage_log)
 
     db_user.node_usages.clear()
-    db_user.status = UserStatus.active.value
+    db_user.status = UserStatus.active
 
     if db_user.next_plan.user_template_id is None:
         db_user.data_limit = db_user.next_plan.data_limit + (
-            0 if db_user.next_plan.add_remaining_traffic else db_user.data_limit or 0 - db_user.used_traffic
+            0 if not db_user.next_plan.add_remaining_traffic else db_user.data_limit or 0 - db_user.used_traffic
         )
         db_user.expire = timedelta(seconds=db_user.next_plan.expire) + datetime.now(UTC)
     else:
+        await db_user.next_plan.awaitable_attrs.user_template
+        await db_user.next_plan.user_template.awaitable_attrs.groups
         db_user.groups = db_user.next_plan.user_template.groups
         db_user.data_limit = db_user.next_plan.user_template.data_limit + (
-            0 if db_user.next_plan.add_remaining_traffic else db_user.data_limit or 0 - db_user.used_traffic
+            0 if not db_user.next_plan.add_remaining_traffic else db_user.data_limit or 0 - db_user.used_traffic
         )
-        db_user.expire = timedelta(seconds=db_user.next_plan.user_template.expire_duration) + datetime.now(UTC)
+        if db_user.next_plan.user_template.status is UserStatus.on_hold:
+            db_user.status = UserStatus.on_hold
+            db_user.on_hold_expire_duration = db_user.next_plan.user_template.expire_duration
+            db_user.on_hold_timeout = db_user.next_plan.user_template.on_hold_timeout
+            db_user.expire = None
+        else:
+            db_user.expire = timedelta(seconds=db_user.next_plan.user_template.expire_duration) + datetime.now(UTC)
+
+        proxy_settings = deepcopy(db_user.proxy_settings)
+        proxy_settings["vless"]["flow"] = db_user.next_plan.user_template.extra_settings["flow"]
+        proxy_settings["shadowsocks"]["method"] = db_user.next_plan.user_template.extra_settings["method"]
+        db_user.proxy_settings = proxy_settings
+        db_user.data_limit_reset_strategy = db_user.next_plan.user_template.data_limit_reset_strategy
 
     db_user.used_traffic = 0
     await db.delete(db_user.next_plan)
@@ -1441,6 +1457,7 @@ async def create_user_template(db: AsyncSession, user_template: UserTemplateCrea
         reset_usages=user_template.reset_usages,
         on_hold_timeout=user_template.on_hold_timeout,
         is_disabled=user_template.is_disabled,
+        data_limit_reset_strategy=user_template.data_limit_reset_strategy,
     )
 
     db.add(db_user_template)
@@ -1486,6 +1503,8 @@ async def modify_user_template(
         db_user_template.on_hold_timeout = modified_user_template.on_hold_timeout
     if modified_user_template.is_disabled is not None:
         db_user_template.is_disabled = modified_user_template.is_disabled
+    if modified_user_template.data_limit_reset_strategy is not None:
+        db_user_template.data_limit_reset_strategy = modified_user_template.data_limit_reset_strategy
 
     await db.commit()
     await db.refresh(db_user_template)

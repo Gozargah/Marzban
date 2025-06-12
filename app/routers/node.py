@@ -28,8 +28,8 @@ async def get_node_settings(_: AdminDetails = Depends(check_sudo_admin)):
 @router.get("/usage", response_model=NodeUsageStatsList)
 async def get_usage(
     db: AsyncSession = Depends(get_db),
-    start: dt | None = Query(None, example="2024-01-01T00:00:00"),
-    end: dt | None = Query(None, example="2024-01-31T23:59:59"),
+    start: dt | None = Query(None, example="2024-01-01T00:00:00+03:30"),
+    end: dt | None = Query(None, example="2024-01-31T23:59:59+03:30"),
     period: Period = Period.hour,
     node_id: int | None = None,
     _: AdminDetails = Depends(check_sudo_admin),
@@ -138,8 +138,8 @@ async def node_logs(node_id: int, request: Request, _: AdminDetails = Depends(ch
 @router.get("/{node_id}/stats", response_model=NodeStatsList)
 async def get_node_stats_periodic(
     node_id: int,
-    start: dt | None = Query(None, example="2024-01-01T00:00:00"),
-    end: dt | None = Query(None, example="2024-01-31T23:59:59"),
+    start: dt | None = Query(None, example="2024-01-01T00:00:00+03:30"),
+    end: dt | None = Query(None, example="2024-01-31T23:59:59+03:30"),
     period: Period = Period.hour,
     db: AsyncSession = Depends(get_db),
     _: AdminDetails = Depends(check_sudo_admin),

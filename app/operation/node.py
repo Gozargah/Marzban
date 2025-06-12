@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime as dt
 
 from sqlalchemy.exc import IntegrityError
 from GozargahNodeBridge import GozargahNode, NodeAPIError
@@ -198,7 +199,12 @@ class NodeOperation(BaseOperation):
         logger.info(f'All nodes restarted by admin "{admin.username}"')
 
     async def get_usage(
-        self, db: AsyncSession, start: str = "", end: str = "", period: Period = Period.hour, node_id: int | None = None
+        self,
+        db: AsyncSession,
+        start: dt = None,
+        end: dt = None,
+        period: Period = Period.hour,
+        node_id: int | None = None,
     ) -> NodeUsageStatsList:
         start, end = await self.validate_dates(start, end)
         return await get_nodes_usage(db, start, end, period=period, node_id=node_id)
@@ -217,7 +223,7 @@ class NodeOperation(BaseOperation):
         return logs_queue
 
     async def get_node_stats_periodic(
-        self, db: AsyncSession, node_id: id, start: str = "", end: str = "", period: Period = Period.hour
+        self, db: AsyncSession, node_id: id, start: dt = None, end: dt = None, period: Period = Period.hour
     ) -> NodeStatsList:
         start, end = await self.validate_dates(start, end)
 
