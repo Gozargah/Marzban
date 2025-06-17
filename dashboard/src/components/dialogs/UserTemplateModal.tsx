@@ -147,7 +147,7 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[1000px] h-full sm:h-auto">
+      <DialogContent className="max-w-[1000px] h-full sm:h-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className={cn('text-xl text-start font-semibold', dir === 'rtl' && 'sm:text-right')}>
             {editingUserTemplate ? t('editUserTemplateModal.title') : t('userTemplateModal.title')}

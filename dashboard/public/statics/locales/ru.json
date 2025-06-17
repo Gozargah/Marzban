@@ -1062,6 +1062,7 @@
     "resetUsageSuccess": "Использование пользователя «{{name}}» было сброшено.",
     "revokeSubSuccess": "Подписка пользователя «{{name}}» была отозвана.",
     "activeNextPlanSuccess": "Следующий план для пользователя «{{name}}» был активирован.",
+    "activeNextPlanError": "Не удалось активировать следующий план для пользователя «{{name}}».",
     "deleteConfirmTitle": "Удалить пользователя",
     "deleteConfirm": "Вы уверены, что хотите удалить пользователя «{{name}}»?",
     "selectTemplate": "Выберите шаблон",
@@ -1077,7 +1078,8 @@
     "proxySettings.flow": "Поток (Flow)",
     "proxySettings.desc": "Настройте параметры протокола для этого пользователя.",
     "selectNode": "Выберите узел",
-    "allNodes": "Все узлы"
+    "allNodes": "Все узлы",
+    "activeNextPlan": "Активировать следующий план"
   },
   "sidebar.expand": "Развернуть меню",
   "sidebar.collapse": "Свернуть меню",

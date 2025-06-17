@@ -1058,6 +1058,7 @@
     "resetUsageSuccess": "مصرف کاربر «{{name}}» بازنشانی شد.",
     "revokeSubSuccess": "اشتراک کاربر «{{name}}» لغو شد.",
     "activeNextPlanSuccess": "پلن بعدی برای کاربر «{{name}}» فعال شد.",
+    "activeNextPlanError": "فعال‌سازی پلن بعدی برای کاربر «{{name}}» با شکست مواجه شد.",
     "deleteConfirmTitle": "حذف کاربر",
     "deleteConfirm": "آیا مطمئن هستید که می‌خواهید کاربر «{{name}}» را حذف کنید؟",
     "nextPlanTitle": "پلن بعدی",
@@ -1068,7 +1069,8 @@
     "selectTemplate": "انتخاب قالب",
     "selectTemplatePlaceholder": "یک قالب را انتخاب کنید",
     "selectNode": "انتخاب گره",
-    "allNodes": "همه گره‌ها"
+    "allNodes": "همه گره‌ها",
+    "activeNextPlan": "فعال‌سازی پلن بعدی"
   },
   "sidebar.expand": "باز کردن منو",
   "sidebar.collapse": "بستن منو",
