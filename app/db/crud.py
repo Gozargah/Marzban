@@ -813,7 +813,9 @@ async def reset_user_by_next(db: AsyncSession, db_user: User) -> User:
         db_user.data_limit = db_user.next_plan.data_limit + (
             0 if not db_user.next_plan.add_remaining_traffic else db_user.data_limit or 0 - db_user.used_traffic
         )
-        db_user.expire = timedelta(seconds=db_user.next_plan.expire) + datetime.now(UTC)
+        db_user.expire = (
+            timedelta(seconds=db_user.next_plan.expire) + datetime.now(UTC) if db_user.next_plan.expire else None
+        )
     else:
         await db_user.next_plan.awaitable_attrs.user_template
         await db_user.next_plan.user_template.awaitable_attrs.groups
@@ -827,7 +829,11 @@ async def reset_user_by_next(db: AsyncSession, db_user: User) -> User:
             db_user.on_hold_timeout = db_user.next_plan.user_template.on_hold_timeout
             db_user.expire = None
         else:
-            db_user.expire = timedelta(seconds=db_user.next_plan.user_template.expire_duration) + datetime.now(UTC)
+            db_user.expire = (
+                timedelta(seconds=db_user.next_plan.user_template.expire_duration) + datetime.now(UTC)
+                if db_user.next_plan.user_template.expire_duration
+                else None
+            )
 
         proxy_settings = deepcopy(db_user.proxy_settings)
         proxy_settings["vless"]["flow"] = db_user.next_plan.user_template.extra_settings["flow"]
