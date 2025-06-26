@@ -104,12 +104,12 @@ export default function Node({ node, onEdit, onToggleStatus }: NodeProps) {
               <div className="text-xs text-muted-foreground mt-1 flex gap-2">
                 {node.xray_version && (
                   <span>
-                    {t('node.xrayVersion', { defaultValue: 'Xray Version' })}: {node.xray_version}
+                    {t('node.xrayVersion', { defaultValue: 'Xray Core Version' })}: {node.xray_version}
                   </span>
                 )}
                 {node.node_version && (
                   <span>
-                    {t('node.coreVersion', { defaultValue: 'Core Version' })}: {node.node_version}
+                    {t('node.coreVersion', { defaultValue: 'Node Core Version' })}: {node.node_version}
                   </span>
                 )}
               </div>

@@ -1,4 +1,12 @@
 {
+    "remote.extensionKind": {
+        "GitHub.copilot": [
+            "ui"
+        ],
+        "GitHub.copilot-chat": [
+            "ui"
+        ]
+    },
     "folders": [
         {
             "path": "."
@@ -66,9 +74,14 @@
         "emmet.includeLanguages": {
             "javascript": "javascriptreact"
         },
-        "css.enabledLanguages": ["html", "jsx"],
+        "css.enabledLanguages": [
+            "html",
+            "jsx"
+        ],
         "files.autoSave": "afterDelay",
-        "python.testing.pytestArgs": ["."],
+        "python.testing.pytestArgs": [
+            "."
+        ],
         "python.testing.unittestEnabled": false,
         "python.testing.pytestEnabled": true
     },
