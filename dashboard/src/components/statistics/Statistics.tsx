@@ -1,15 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { BarChart, Cpu, Gauge, MemoryStick } from 'lucide-react'
-import { CostumeBarChart } from '../charts/CostumeBarChart'
-import { AreaCostumeChart } from '../charts/AreaCostumeChart'
-import { SystemStats, useGetNodes, NodeResponse, useRealtimeNodeStats, NodeRealtimeStats } from '@/service/api'
-import { formatBytes } from '@/utils/formatByte'
-import { useTranslation } from 'react-i18next'
-import { cn } from '@/lib/utils'
-import useDirDetection from '@/hooks/use-dir-detection'
 import { Skeleton } from '@/components/ui/skeleton'
+import useDirDetection from '@/hooks/use-dir-detection'
+import { cn } from '@/lib/utils'
+import { NodeRealtimeStats, NodeResponse, SystemStats, useGetNodes, useRealtimeNodeStats } from '@/service/api'
+import { formatBytes } from '@/utils/formatByte'
+import { BarChart, Cpu, Gauge, MemoryStick } from 'lucide-react'
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { AreaCostumeChart } from '../charts/AreaCostumeChart'
+import { CostumeBarChart } from '../charts/CostumeBarChart'
 
 interface StatisticsProps {
   data?: SystemStats
@@ -94,7 +94,7 @@ export default function Statistics({ data, isLoading, error, selectedServer, onS
           </CardHeader>
           <CardContent>
             <div dir="ltr" className={cn('text-2xl font-bold', dir === 'rtl' && 'text-right')}>
-              {currentStats?.cpu_usage.toFixed(1)}%
+              {currentStats?.cpu_usage?.toFixed(1)}%
             </div>
           </CardContent>
         </Card>

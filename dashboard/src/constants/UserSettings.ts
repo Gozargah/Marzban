@@ -1,6 +1,6 @@
-import { ForwardRefExoticComponent, SVGProps } from 'react'
-import { Wifi, Ban, AlertCircle, Clock } from 'lucide-react'
 import { DataLimitResetStrategy } from '@/types/User'
+import { AlertCircle, Ban, Clock, Wifi } from 'lucide-react'
+import { ForwardRefExoticComponent, SVGProps } from 'react'
 
 export const resetStrategy: { title: string; value: DataLimitResetStrategy }[] = [
   {

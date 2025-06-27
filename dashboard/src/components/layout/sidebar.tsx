@@ -10,9 +10,30 @@ import { DISCUSSION_GROUP, DOCUMENTATION, DONATION_URL, REPO_URL } from '@/const
 import { useAdmin } from '@/hooks/use-admin'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { getSystemStats } from '@/service/api'
-import { BookOpen, Cpu, FileText, GithubIcon, LayoutTemplate, LifeBuoy, ListTodo, Palette, PieChart, RssIcon, Settings2, Share2Icon, UserCog, Users2, UsersIcon, Bell, MessageCircle, Webhook, Send } from 'lucide-react'
+import {
+  Bell,
+  BookOpen,
+  Cpu,
+  FileText,
+  GithubIcon,
+  LayoutDashboardIcon,
+  LayoutTemplate,
+  LifeBuoy,
+  ListTodo,
+  MessageCircle,
+  Palette,
+  PieChart,
+  RssIcon,
+  Send,
+  Settings2,
+  Share2Icon,
+  UserCog,
+  Users2,
+  UsersIcon,
+  Webhook,
+} from 'lucide-react'
 import * as React from 'react'
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -91,8 +112,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
     navMain: [
       {
-        title: 'users',
+        title: 'dashboard',
         url: '/',
+        icon: LayoutDashboardIcon,
+      },
+      {
+        title: 'users',
+        url: '/users',
         icon: UsersIcon,
       },
       {
@@ -223,12 +249,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </div>
         <SidebarTrigger />
       </div>
-      <Sidebar 
-        variant="sidebar" 
-        {...props} 
-        className="border-sidebar-border p-0" 
-        side={isRTL ? 'right' : 'left'}
-      >
+      <Sidebar variant="sidebar" {...props} className="border-sidebar-border p-0" side={isRTL ? 'right' : 'left'}>
         <SidebarRail />
         <SidebarHeader>
           <SidebarMenu>

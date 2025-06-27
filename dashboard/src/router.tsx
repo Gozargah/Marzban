@@ -1,24 +1,25 @@
 import CoreSettings from '@/pages/_dashboard.nodes.cores'
+import ThemePage from '@/pages/_dashboard.settings.theme'
 import { getCurrentAdmin } from '@/service/api'
 import { createHashRouter, RouteObject } from 'react-router'
 import DashboardLayout from './pages/_dashboard'
 import Dashboard from './pages/_dashboard._index'
+import AdminsPage from './pages/_dashboard.admins'
 import Groups from './pages/_dashboard.groups'
+import Hosts from './pages/_dashboard.hosts'
 import Nodes from './pages/_dashboard.nodes'
+import NodesPage from './pages/_dashboard.nodes._index'
+import NodeLogs from './pages/_dashboard.nodes.logs'
 import Settings from './pages/_dashboard.settings'
+import DiscordSettings from './pages/_dashboard.settings.discord'
 import NotificationSettings from './pages/_dashboard.settings.notifications'
 import SubscriptionSettings from './pages/_dashboard.settings.subscriptions'
 import TelegramSettings from './pages/_dashboard.settings.telegram'
-import DiscordSettings from './pages/_dashboard.settings.discord'
 import WebhookSettings from './pages/_dashboard.settings.webhook'
 import Statistics from './pages/_dashboard.statistics'
 import UserTemplates from './pages/_dashboard.templates'
+import Users from './pages/_dashboard.users'
 import Login from './pages/login'
-import Hosts from './pages/_dashboard.hosts'
-import AdminsPage from './pages/_dashboard.admins'
-import ThemePage from '@/pages/_dashboard.settings.theme'
-import NodesPage from './pages/_dashboard.nodes._index'
-import NodeLogs from './pages/_dashboard.nodes.logs'
 
 const fetchAdminLoader = async (): Promise<any> => {
   try {
@@ -39,6 +40,10 @@ export const router = createHashRouter([
         path: '/',
         index: true,
         element: <Dashboard />,
+      },
+      {
+        path: '/users',
+        element: <Users />,
       },
       {
         path: '/statistics',

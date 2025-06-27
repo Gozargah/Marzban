@@ -130,7 +130,10 @@ const ChartTooltipContent = React.forwardRef<
   const nestLabel = payload.length === 1 && indicator !== 'dot'
 
   return (
-    <div ref={ref} className={cn('grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-primary/50 bg-primary/5 backdrop-blur-3xl px-2.5 py-1.5 text-xs shadow-xl text-primary-foreground', className)}>
+    <div
+      ref={ref}
+      className={cn('grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-primary/50 bg-primary/5 px-2.5 py-1.5 text-xs text-primary-foreground shadow-xl backdrop-blur-3xl', className)}
+    >
       {!nestLabel ? tooltipLabel : null}
       <div className="grid gap-1.5">
         {payload.map((item, index) => {
