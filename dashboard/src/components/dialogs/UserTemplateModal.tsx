@@ -84,8 +84,8 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
         name: values.name,
         data_limit: values.data_limit,
         expire_duration: values.expire_duration,
-        username_prefix: values.username_prefix ? values.username_prefix : '',
-        username_suffix: values.username_suffix ? values.username_suffix : '',
+        username_prefix: values.username_prefix || undefined,
+        username_suffix: values.username_suffix || undefined,
         group_ids: values.groups, // map groups to group_ids
         status: values.status,
         reset_usages: values.resetUsages,

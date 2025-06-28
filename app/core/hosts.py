@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import on_startup
 from app.core.manager import core_manager
 from app.db import GetDB
-from app.db.crud import get_host_by_id, get_hosts, get_or_create_inbound
+from app.db.crud.host import get_host_by_id, get_hosts, get_or_create_inbound
 from app.db.models import ProxyHostSecurity
 from app.utils.store import DictStorage
 

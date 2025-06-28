@@ -15,6 +15,17 @@ const isIPAddress = (input: string) => {
   return false
 }
 
+// Function to get current IP using ipify API
+export const getCurrentIP = async (): Promise<string | null> => {
+  try {
+    const response = await axios.get('https://api.ipify.org?format=json')
+    return response.data?.ip || null
+  } catch (error) {
+    console.error('Error fetching current IP from ipify:', error)
+    return null
+  }
+}
+
 const FlagFromIP: React.FC<FlagFromIPProps> = ({ ip }) => {
   const [flag, setFlag] = useState<string | null>(null)
 
@@ -32,18 +43,27 @@ const FlagFromIP: React.FC<FlagFromIPProps> = ({ ip }) => {
     let targetIP = ipOrDomain
     try {
       if (!isIPAddress(ipOrDomain)) {
-        // Resolve domain to IP using DNS-over-HTTPS (Google)
-        const dnsRes = await axios.get(`https://dns.google/resolve?name=${encodeURIComponent(ipOrDomain)}&type=A`)
-        const answer = dnsRes.data?.Answer?.find((a: any) => a.type === 1) // type 1 = A record
-        if (answer && answer.data) {
-          targetIP = answer.data
-        } else {
+        // For domains, we need to resolve them to IP first
+        // Using a simple DNS resolution service
+        try {
+          const dnsRes = await axios.get(`https://dns.google/resolve?name=${encodeURIComponent(ipOrDomain)}&type=A`)
+          const answer = dnsRes.data?.Answer?.find((a: any) => a.type === 1) // type 1 = A record
+          if (answer && answer.data) {
+            targetIP = answer.data
+          } else {
+            setFlag('') // Show nothing
+            return
+          }
+        } catch (error) {
+          console.error('Error resolving domain:', error)
           setFlag('') // Show nothing
           return
         }
       }
-      const { data } = await axios.get(`https://freeipapi.com/api/json/${targetIP}`)
-      if (data && data.countryCode) {
+      
+      // Use ip-api.com for geolocation (country code)
+      const { data } = await axios.get(`http://ip-api.com/json/${targetIP}?fields=status,countryCode`)
+      if (data && data.status === 'success' && data.countryCode) {
         const countryCode = data.countryCode.toUpperCase()
         const flagEmoji = generateFlagEmoji(countryCode)
         setFlag(flagEmoji)

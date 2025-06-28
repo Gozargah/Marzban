@@ -91,6 +91,7 @@ function SortableRule({ index, onRemove, form, id }: SortableRuleProps) {
         <div className="flex items-center gap-3">
           {/* Drag handle */}
           <button 
+            type="button"
             style={{ cursor: cursor }} 
             className="touch-none opacity-50 group-hover:opacity-100 transition-opacity" 
             {...attributes}
@@ -225,7 +226,9 @@ export default function SubscriptionSettings() {
       const newIndex = ruleFields.findIndex((field) => field.id === over.id)
       
       if (oldIndex !== -1 && newIndex !== -1) {
+        // Only update local form state, don't trigger any API calls
         moveRule(oldIndex, newIndex)
+        // The changes will only be saved when the user clicks the Save button
       }
     }
   }

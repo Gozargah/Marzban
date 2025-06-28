@@ -33,7 +33,7 @@ export default function Cores({ isDialogOpen, onOpenChange, cores, onEditCore, o
   const modifyCoreMutation = useModifyCoreConfig()
   const dir = useDirDetection()
 
-  const { data: coresData, isLoading } = useGetAllCores({})
+  const { data: coresData, isLoading, refetch } = useGetAllCores({})
 
   useEffect(() => {
     const handleOpenDialog = () => onOpenChange?.(true)
@@ -93,6 +93,16 @@ export default function Cores({ isDialogOpen, onOpenChange, cores, onEditCore, o
     }
   }
 
+  const handleModalClose = (open: boolean) => {
+    if (!open) {
+      setEditingCore(null)
+      form.reset(initialDefaultValues)
+      // Refresh cores data when modal closes
+      refetch()
+    }
+    onOpenChange?.(open)
+  }
+
   return (
     <div className="flex-1 w-full">
       <ScrollArea dir={dir} className="h-[calc(100vh-8rem)]">
@@ -112,13 +122,7 @@ export default function Cores({ isDialogOpen, onOpenChange, cores, onEditCore, o
 
       <CoreConfigModal
         isDialogOpen={!!isDialogOpen}
-        onOpenChange={(open: boolean) => {
-          if (!open) {
-            setEditingCore(null)
-            form.reset(initialDefaultValues)
-          }
-          onOpenChange?.(open)
-        }}
+        onOpenChange={handleModalClose}
         form={form}
         editingCore={!!editingCore}
         editingCoreId={editingCore?.id}

@@ -4,16 +4,15 @@ from sqlalchemy.exc import IntegrityError
 
 from app import notification
 from app.db import AsyncSession
-from app.db.crud import (
-    activate_all_disabled_users,
+from app.db.crud.admin import (
     create_admin,
-    disable_all_active_users,
     get_admins,
-    get_users,
     remove_admin,
     reset_admin_usage,
     update_admin,
 )
+from app.db.crud.bulk import activate_all_disabled_users, disable_all_active_users
+from app.db.crud.user import get_users
 from app.db.models import Admin as DBAdmin
 from app.models.admin import AdminCreate, AdminDetails, AdminModify
 from app.models.user import UserResponse

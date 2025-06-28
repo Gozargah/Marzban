@@ -1,61 +1,45 @@
-import { AdminDetails } from '@/service/api'
+import { AdminDetails, useGetCurrentAdmin } from '@/service/api'
 import { useLoaderData } from 'react-router'
-import { useState, useEffect } from 'react'
-import { getCurrentAdmin } from '@/service/api'
-import { useToast } from '@/hooks/use-toast'
 
 export const useAdmin = () => {
-  const [admin, setAdmin] = useState<AdminDetails | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-  const { toast } = useToast()
-
   // Get initial admin data from loader
   const initialAdminData = useLoaderData() as AdminDetails
 
-  useEffect(() => {
-    const fetchAdmin = async () => {
-      try {
-        setIsLoading(true)
-        const response = await getCurrentAdmin()
-        setAdmin(response)
-        setError(null)
-      } catch (err) {
-        setError(err as Error)
-        toast({
-          title: 'Error',
-          description: 'Failed to fetch admin details',
-          variant: 'destructive',
-        })
-      } finally {
-        setIsLoading(false)
-      }
+  // Use React Query's useGetCurrentAdmin with proper configuration
+  const {
+    data: admin,
+    isLoading,
+    error,
+    refetch
+  } = useGetCurrentAdmin({
+    query: {
+      // Use initial data from router loader if available
+      initialData: initialAdminData,
+      // Only refetch when window regains focus, not on a timer
+      refetchOnWindowFocus: true,
+      // Cache the data for 5 minutes
+      staleTime: 5 * 60 * 1000,
+      // Keep the data in cache for 10 minutes
+      gcTime: 10 * 60 * 1000,
+      // Don't refetch automatically on mount if we have initial data
+      refetchOnMount: !initialAdminData,
+      // Retry failed requests up to 2 times
+      retry: 2,
+      // Don't refetch on reconnect if we have fresh data
+      refetchOnReconnect: 'always'
     }
-
-    // If we have initial data, use it
-    if (initialAdminData) {
-      setAdmin(initialAdminData)
-      setIsLoading(false)
-    } else {
-      // Otherwise fetch fresh data
-      fetchAdmin()
-    }
-
-    // Poll every 30 seconds
-    const interval = setInterval(() => {
-      fetchAdmin()
-    }, 30000)
-    return () => clearInterval(interval)
-  }, [initialAdminData, toast])
+  })
 
   const clearAdmin = () => {
-    setAdmin(null)
+    // This would typically invalidate the query cache
+    // but since we're using React Query, we can just refetch
+    refetch()
   }
 
   return {
-    admin,
+    admin: admin || null,
     isLoading,
-    error,
+    error: error as Error | null,
     clearAdmin,
   }
 }

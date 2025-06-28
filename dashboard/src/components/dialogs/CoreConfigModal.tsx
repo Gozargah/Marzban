@@ -263,7 +263,7 @@ export default function CoreConfigModal({
             )
 
             // Invalidate core config queries after successful action
-            queryClient.invalidateQueries({queryKey: ['/api/core/configs']})
+            queryClient.invalidateQueries({queryKey: ['/api/cores']})
             onOpenChange(false)
             form.reset()
         } catch (error: any) {

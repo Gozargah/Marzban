@@ -73,7 +73,18 @@ const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
     const resetUserDataUsageMutation = useResetUserDataUsage()
     const revokeUserSubscriptionMutation = useRevokeUserSubscription()
     const activeNextMutation = useActiveNextPlan()
-    const {data: currentAdmin} = useGetCurrentAdmin()
+    const {data: currentAdmin} = useGetCurrentAdmin({
+        query: {
+            // Cache for 5 minutes to avoid repeated calls
+            staleTime: 5 * 60 * 1000,
+            // Keep in cache for 10 minutes
+            gcTime: 10 * 60 * 1000,
+            // Don't refetch on mount if we have cached data
+            refetchOnMount: false,
+            // Only refetch on window focus if data is stale
+            refetchOnWindowFocus: false
+        }
+    })
 
 
     // Create form for user editing
@@ -210,7 +221,6 @@ const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
 
     const handleUsageState = () => {
         setUsageModalOpen(true)
-        toast.info(t('usageStateAction', {username: user.username}))
     }
 
     const handleDelete = () => {
@@ -447,7 +457,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
 
             {/* Edit User Modal */}
             <UserModal isDialogOpen={isEditModalOpen} onOpenChange={setEditModalOpen} form={userForm} editingUser={true}
-                       editingUserId={user.id} onSuccessCallback={refreshUserData}/>
+                       editingUserId={user.id} editingUserData={user} onSuccessCallback={refreshUserData}/>
 
             <UsageModal open={isUsageModalOpen} onClose={() => setUsageModalOpen(false)} username={user.username}/>
 

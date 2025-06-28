@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, field_validator, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .validators import ListValidator
 
@@ -37,3 +37,9 @@ class GroupResponse(Group):
 class GroupsResponse(BaseModel):
     groups: list[GroupResponse]
     total: int
+
+
+class BulkGroup(BaseModel):
+    group_ids: set[int]
+    admins: set[int] = Field(default_factory=set)
+    users: set[int] = Field(default_factory=set)

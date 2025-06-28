@@ -9,8 +9,7 @@ import {z} from 'zod'
 import {useCreateAdmin, useModifyAdmin} from '@/service/api'
 import {toast} from 'sonner'
 import {queryClient} from '@/utils/query-client.ts'
-import {Eye, EyeOff} from 'lucide-react'
-import {useState} from 'react'
+import {PasswordInput} from '@/components/ui/password-input'
 import useDynamicErrorHandler from "@/hooks/use-dynamic-errors.ts";
 
 interface AdminModalProps {
@@ -125,8 +124,6 @@ export default function AdminModal({
     const handleError = useDynamicErrorHandler();
     const addAdminMutation = useCreateAdmin()
     const modifyAdminMutation = useModifyAdmin()
-    const [showPassword, setShowPassword] = useState(false)
-    const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
 
     const onSubmit = async (values: AdminFormValues) => {
         try {
@@ -212,20 +209,12 @@ export default function AdminModal({
                                                 <FormItem className="min-h-[100px]">
                                                     <FormLabel>{t('admins.password')}</FormLabel>
                                                     <FormControl>
-                                                        <div className="relative">
-                                                            <Input type={showPassword ? 'text' : 'password'}
-                                                                   placeholder={t('admins.enterPassword')}
-                                                                   isError={hasError} {...field} />
-                                                            <Button type="button" variant="ghost" size="sm"
-                                                                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                                                    onClick={() => setShowPassword(!showPassword)}>
-                                                                {showPassword ? <EyeOff
-                                                                        className="h-4 w-4 text-muted-foreground"/> :
-                                                                    <Eye className="h-4 w-4 text-muted-foreground"/>}
-                                                            </Button>
-                                                        </div>
+                                                        <PasswordInput
+                                                            placeholder={t('admins.enterPassword')}
+                                                            isError={hasError}
+                                                            {...field}
+                                                        />
                                                     </FormControl>
-
                                                     <FormMessage/>
                                                 </FormItem>
                                             )
@@ -239,21 +228,10 @@ export default function AdminModal({
                                             <FormItem className="min-h-[100px]">
                                                 <FormLabel>{t('admins.passwordConfirm')}</FormLabel>
                                                 <FormControl>
-                                                    <div className="relative">
-                                                        <Input type={showPasswordConfirm ? 'text' : 'password'}
-                                                               placeholder={t('admins.enterPasswordConfirm')} {...field} />
-                                                        <Button
-                                                            type="button"
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                                            onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
-                                                        >
-                                                            {showPasswordConfirm ?
-                                                                <EyeOff className="h-4 w-4 text-muted-foreground"/> :
-                                                                <Eye className="h-4 w-4 text-muted-foreground"/>}
-                                                        </Button>
-                                                    </div>
+                                                    <PasswordInput
+                                                        placeholder={t('admins.enterPasswordConfirm')}
+                                                        {...field}
+                                                    />
                                                 </FormControl>
                                                 <FormMessage/>
                                             </FormItem>

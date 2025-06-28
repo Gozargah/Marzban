@@ -3,21 +3,21 @@ from enum import IntEnum
 
 from fastapi import HTTPException
 
+from app.core.manager import core_manager
 from app.db import AsyncSession
 from app.db.crud import (
     get_admin,
+    get_core_config_by_id,
     get_group_by_id,
     get_host_by_id,
+    get_node_by_id,
     get_user,
     get_user_template,
-    get_node_by_id,
-    get_core_config_by_id,
 )
-from app.db.models import Admin as DBAdmin
-from app.db.models import Group, ProxyHost, User, Node, UserTemplate, CoreConfig
+from app.db.models import Admin as DBAdmin, CoreConfig, Group, Node, ProxyHost, User, UserTemplate
 from app.models.admin import AdminDetails
+from app.models.group import BulkGroup
 from app.models.user import UserCreate, UserModify
-from app.core.manager import core_manager
 from app.utils.helpers import fix_datetime_timezone
 from app.utils.jwt import get_subscription_payload
 
@@ -109,10 +109,10 @@ class BaseOperation:
             await self.raise_error("Group not found", 404)
         return db_group
 
-    async def validate_all_groups(self, db, user: UserCreate | UserModify | UserTemplate) -> list[Group]:
+    async def validate_all_groups(self, db, model: UserCreate | UserModify | UserTemplate | BulkGroup) -> list[Group]:
         all_groups: list[Group] = []
-        if user.group_ids:
-            for group_id in user.group_ids:
+        if model.group_ids:
+            for group_id in model.group_ids:
                 db_group = await self.get_validated_group(db, group_id)
                 all_groups.append(db_group)
         return all_groups

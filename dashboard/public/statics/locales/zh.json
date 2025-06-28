@@ -610,6 +610,11 @@
   "userDialog.resetStrategyWeekly": "每周",
   "userDialog.resetUsage": "重置流量",
   "userDialog.revokeSubscription": "撤销订阅",
+  "userDialog.subscriptionInfo": "订阅信息",
+  "userDialog.subscriptionUpdated": "最后更新",
+  "userDialog.lastClient": "最后客户端",
+  "userDialog.subscriptionNotAccessed": "尚未访问",
+  "userDialog.unknownClient": "未知客户端",
   "userDialog.selectOneProtocol": "请至少选择一个协议",
   "userDialog.shadowsocksDesc": "快速且安全, 但效率不如其它",
   "userDialog.startDate": "开始日期",
@@ -942,6 +947,8 @@
     "statusChecking": "检查中...",
     "reconnect": "重新连接",
     "reconnecting": "重新连接中...",
+    "gatherLogs": "收集日志",
+    "gatherLogsDescription": "启用从此节点收集日志以进行监控和调试",
     "hideDetails": "隐藏详情",
     "showDetails": "显示详情",
     "errorDetails": "错误详情",
@@ -1117,8 +1124,8 @@
     "ago": "前",
     "notConnectedYet": "尚未连接"
   },
-  "node.xrayVersion": "Xray 版本",
-  "node.coreVersion": "核心版本",
+  "node.xrayVersion": "核心版本",
+  "node.coreVersion": "节点版本",
   "calendar": {
     "selectRange": "选择时间范围",
     "startDate": "开始日期",
@@ -1142,5 +1149,14 @@
     "error": "无法将用户 {{username}} 的所有者更改为 {{admin}}。",
     "loadError": "加载管理员列表失败。"
   },
-  "online": "在线"
+  "online": "在线",
+  "loading": "加载中...",
+  "noResults": "未找到结果",
+  "emptyState": {
+    "noUsers": {
+      "title": "暂无用户",
+      "description": "开始创建您的第一个用户账户",
+      "createFirstUser": "创建第一个用户"
+    }
+  }
 }

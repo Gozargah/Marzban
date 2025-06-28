@@ -129,7 +129,7 @@
 
   /* Enhanced shadcn-style scrollbar */
   ::-webkit-scrollbar {
-    @apply w-3 h-3;
+    @apply w-2 h-2;
   }
 
   ::-webkit-scrollbar-track {

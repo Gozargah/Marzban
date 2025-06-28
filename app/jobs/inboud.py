@@ -1,6 +1,6 @@
 from app import scheduler
 from app.db import GetDB
-from app.db.crud import get_inbounds_not_in_tags, remove_inbounds
+from app.db.crud.host import get_inbounds_not_in_tags, remove_inbounds
 from app.core.manager import core_manager
 from app.utils.logger import get_logger
 from config import JOB_REMOVE_OLD_INBOUNDS_INTERVAL

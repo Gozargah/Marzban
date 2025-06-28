@@ -1,7 +1,7 @@
 import asyncio
 
 from app.db import AsyncSession
-from app.db.crud import create_core_config, modify_core_config, remove_core_config, get_core_configs
+from app.db.crud.core import create_core_config, modify_core_config, remove_core_config, get_core_configs
 from app.models.admin import AdminDetails
 from app.models.core import CoreCreate, CoreResponseList, CoreResponse
 from app.core.manager import core_manager

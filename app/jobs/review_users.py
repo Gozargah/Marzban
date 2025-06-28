@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import notification, scheduler
 from app.db import GetDB
-from app.db.crud import (
+from app.db.crud.user import (
     get_active_to_expire_users,
     get_active_to_limited_users,
     get_days_left_reached_users,

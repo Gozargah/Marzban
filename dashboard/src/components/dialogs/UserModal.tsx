@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils'
 import { UseEditFormValues, UseFormValues, userCreateSchema, userEditSchema } from '@/pages/_dashboard.users'
 import { useCreateUser, useCreateUserFromTemplate, useGetAllGroups, useGetUsers, useGetUserTemplates, useModifyUser, useModifyUserWithTemplate } from '@/service/api'
 import { useRelativeExpiryDate } from '@/utils/dateFormatter'
+import { SubscriptionInfo } from '@/components/SubscriptionInfo'
 import { formatBytes } from '@/utils/formatByte'
 import { useQueryClient } from '@tanstack/react-query'
 import { CalendarIcon, Layers, ListStart, Lock, RefreshCcw, Search, Users, X } from 'lucide-react'
@@ -34,6 +35,7 @@ interface UserModalProps {
   form: UseFormReturn<UseFormValues | UseEditFormValues>
   editingUser: boolean
   editingUserId?: number
+  editingUserData?: any // The user data object when editing
   onSuccessCallback?: () => void
 }
 
@@ -56,14 +58,23 @@ const UUID_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'
 
 // Add this helper function at the top level
 function getLocalISOTime(date: Date): string {
+  // Create a properly formatted ISO string with timezone offset
   const tzOffset = -date.getTimezoneOffset()
   const offsetSign = tzOffset >= 0 ? '+' : '-'
   const pad = (num: number) => Math.abs(num).toString().padStart(2, '0')
 
-  const offsetHours = pad(Math.floor(tzOffset / 60))
-  const offsetMinutes = pad(tzOffset % 60)
+  const offsetHours = pad(Math.floor(Math.abs(tzOffset) / 60))
+  const offsetMinutes = pad(Math.abs(tzOffset) % 60)
 
-  return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, -1) + `${offsetSign}${offsetHours}:${offsetMinutes}`
+  // Get the local date/time components without timezone conversion
+  const year = date.getFullYear()
+  const month = pad(date.getMonth() + 1)
+  const day = pad(date.getDate())
+  const hours = pad(date.getHours())
+  const minutes = pad(date.getMinutes())
+  const seconds = pad(date.getSeconds())
+
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${offsetSign}${offsetHours}:${offsetMinutes}`
 }
 
 // Add this new component before the UserModal component
@@ -187,27 +198,27 @@ const ExpiryDateField = ({
               >
                 {displayDate ? (
                   usePersianCalendar ? (
-                    // Persian format
-                    new Intl.DateTimeFormat('fa-IR', {
+                    // Persian format - display in local time
+                    displayDate.toLocaleDateString('fa-IR', {
                       year: 'numeric',
                       month: '2-digit',
                       day: '2-digit',
+                    }) + ' ' + displayDate.toLocaleTimeString('fa-IR', {
                       hour: '2-digit',
                       minute: '2-digit',
                       hour12: false,
-                    }).format(displayDate)
+                    })
                   ) : (
-                    // Gregorian format - keep local time
-                    displayDate
-                      .toLocaleString('sv', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false,
-                      })
-                      .replace('T', ' ')
+                    // Gregorian format - display in local time
+                    displayDate.toLocaleDateString('sv-SE', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                    }) + ' ' + displayDate.toLocaleTimeString('sv-SE', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false,
+                    })
                   )
                 ) : field.value && !isNaN(Number(field.value)) ? (
                   String(field.value)
@@ -261,10 +272,23 @@ const ExpiryDateField = ({
                 type="time"
                 value={
                   displayDate
-                    ? displayDate.toLocaleTimeString('sv', { hour: '2-digit', minute: '2-digit', hour12: false })
-                    : now.toLocaleTimeString('sv', { hour: '2-digit', minute: '2-digit', hour12: false })
+                    ? displayDate.toLocaleTimeString('sv-SE', { 
+                        hour: '2-digit', 
+                        minute: '2-digit', 
+                        hour12: false
+                      })
+                    : now.toLocaleTimeString('sv-SE', { 
+                        hour: '2-digit', 
+                        minute: '2-digit', 
+                        hour12: false
+                      })
                 }
-                min={displayDate && displayDate.toDateString() === now.toDateString() ? now.toLocaleTimeString('sv', { hour: '2-digit', minute: '2-digit', hour12: false }) : undefined}
+                min={displayDate && displayDate.toDateString() === now.toDateString() ? 
+                  now.toLocaleTimeString('sv-SE', { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    hour12: false
+                  }) : undefined}
                 onChange={handleTimeChange}
               />
             </FormControl>
@@ -300,7 +324,7 @@ const ExpiryDateField = ({
   )
 }
 
-export default function UserModal({ isDialogOpen, onOpenChange, form, editingUser, editingUserId, onSuccessCallback }: UserModalProps) {
+export default function UserModal({ isDialogOpen, onOpenChange, form, editingUser, editingUserId, editingUserData, onSuccessCallback }: UserModalProps) {
   const { t } = useTranslation()
   const dir = useDirDetection()
   const handleError = useDynamicErrorHandler()
@@ -370,12 +394,36 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
     if (expireValue === '') {
       displayDate = null
     } else {
-      const date = new Date(expireValue)
-      if (!isNaN(date.getTime())) {
-        displayDate = date
+      const utcString = expireValue.trim()
+      
+      // Check if this is a timezone-aware string (from user input)
+      // Look for timezone offset patterns like +03:30, -05:00, or Z at the end
+      const hasTimezone = /[+-]\d{2}:\d{2}$/.test(utcString) || utcString.endsWith('Z')
+      
+      if (hasTimezone) {
+        // This is from user input - already has timezone info
+        const date = new Date(utcString)
+        if (!isNaN(date.getTime())) {
+          displayDate = date
+        }
+      } else {
+        // This is from backend - treat as UTC and convert to local
+        let utcDateString = utcString
+        if (!utcDateString.includes('T')) {
+          utcDateString += 'T00:00:00'
+        }
+        if (!utcDateString.endsWith('Z')) {
+          utcDateString += 'Z'
+        }
+        
+        const date = new Date(utcDateString)
+        if (!isNaN(date.getTime())) {
+          displayDate = date
+        }
       }
     }
   } else if (typeof expireValue === 'number') {
+    // Handle Unix timestamp (seconds) - convert to milliseconds and create Date
     const date = new Date(expireValue * 1000)
     if (!isNaN(date.getTime())) {
       displayDate = date
@@ -413,6 +461,8 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
       refetchOnReconnect: true,
     },
   })
+
+
 
   // Function to refresh all user-related data
   const refreshUserData = () => {
@@ -1329,6 +1379,14 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                       </FormItem>
                     )}
                   />
+                  
+                  {/* Subscription Information - only show when editing and data exists */}
+                  {editingUser && editingUserData && (editingUserData.sub_updated_at || editingUserData.sub_last_user_agent) && (
+                    <SubscriptionInfo
+                      subUpdatedAt={editingUserData.sub_updated_at}
+                      subLastUserAgent={editingUserData.sub_last_user_agent}
+                    />
+                  )}
                   {/* Proxy Settings Accordion */}
                   <Accordion type="single" collapsible className="w-full my-4">
                     <AccordionItem className="border px-4 rounded-sm [&_[data-state=open]]:no-underline [&_[data-state=closed]]:no-underline" value="proxySettings">

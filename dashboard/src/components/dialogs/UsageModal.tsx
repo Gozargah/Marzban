@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { Dialog, DialogContent } from '../ui/dialog'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../ui/card'
 import { ChartContainer, ChartTooltipContent, ChartTooltip, ChartConfig } from '../ui/chart'
@@ -31,7 +31,7 @@ interface UsageModalProps {
   username: string;
 }
 
-// Add useWindowSize hook before UsageModal component
+// Move this hook to a separate file if reused elsewhere
 const useWindowSize = () => {
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
@@ -53,11 +53,24 @@ const useWindowSize = () => {
   return windowSize;
 };
 
+// Add this helper function before UsageModal
+const getXAxisInterval = (dataLength: number, width: number) => {
+  if (dataLength <= 8) return 0;
+  if (width < 500) return Math.ceil(dataLength / 3); // mobile: show 3 labels
+  if (width < 900) return Math.ceil(dataLength / 6); // tablet: show 6 labels
+  return Math.ceil(dataLength / 10); // desktop: show 10 labels
+};
+
 const UsageModal = ({ open, onClose, username }: UsageModalProps) => {
+  // Memoize now only once per modal open
+  const nowRef = useRef<number>(Date.now());
+  useEffect(() => {
+    if (open) nowRef.current = Date.now();
+  }, [open]);
+
   const [period, setPeriod] = useState<PeriodKey>('1w')
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined)
   const [showCustomRange, setShowCustomRange] = useState(false)
-  const nowRef = useRef(Date.now())
   const { t, i18n } = useTranslation()
   const { width } = useWindowSize()
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
@@ -66,8 +79,8 @@ const UsageModal = ({ open, onClose, username }: UsageModalProps) => {
   // Fetch nodes list
   const { data: nodes, isLoading: isLoadingNodes } = useGetNodes(undefined, { query: { enabled: open } })
 
-  // Compute periodMap with custom range
-  const periodMap = useMemo(() => getPeriodMap(nowRef.current), [nowRef])
+  // Memoize periodMap only when modal opens
+  const periodMap = useMemo(() => getPeriodMap(nowRef.current), [open]);
   let backendPeriod: Period;
   let start: Date;
   let end: Date | undefined = undefined;
@@ -146,33 +159,25 @@ const UsageModal = ({ open, onClose, username }: UsageModalProps) => {
     },
   } satisfies ChartConfig
 
-  const handleCustomRangeChange = (range: DateRange | undefined) => {
-    setCustomRange(range)
+  // Handlers
+  const handleCustomRangeChange = useCallback((range: DateRange | undefined) => {
+    setCustomRange(range);
     if (range?.from && range?.to) {
-      setShowCustomRange(true)
-      // Calculate the time difference in hours
-      const diffHours = (range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60)
-
-      // Update period based on the time range
-      if (diffHours <= 1) {
-        setPeriod('1h')
-      } else if (diffHours <= 12) {
-        setPeriod('12h')
-      } else if (diffHours <= 24) {
-        setPeriod('24h')
-      } else if (diffHours <= 72) {
-        setPeriod('3d')
-      } else {
-        setPeriod('1w')
-      }
+      setShowCustomRange(true);
+      const diffHours = (range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60);
+      if (diffHours <= 1) setPeriod('1h');
+      else if (diffHours <= 12) setPeriod('12h');
+      else if (diffHours <= 24) setPeriod('24h');
+      else if (diffHours <= 72) setPeriod('3d');
+      else setPeriod('1w');
     }
-  }
+  }, []);
 
-  const handleTimeSelect = (newPeriod: PeriodKey) => {
-    setPeriod(newPeriod)
-    setShowCustomRange(false)
-    setCustomRange(undefined)
-  }
+  const handleTimeSelect = useCallback((newPeriod: PeriodKey) => {
+    setPeriod(newPeriod);
+    setShowCustomRange(false);
+    setCustomRange(undefined);
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -186,6 +191,7 @@ const UsageModal = ({ open, onClose, username }: UsageModalProps) => {
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label={t('usersTable.selectCustomRange', { defaultValue: 'Select custom range' })}
                   className={showCustomRange ? "text-primary" : ""}
                   onClick={() => {
                     setShowCustomRange(!showCustomRange)
@@ -241,11 +247,11 @@ const UsageModal = ({ open, onClose, username }: UsageModalProps) => {
                 </div>
               ) : (
                 <ChartContainer config={chartConfig}>
-                  <ResponsiveContainer width="100%" height={320}>
+                  <ResponsiveContainer width="100%" height={width < 500 ? 200 : 320}>
                     <RechartsPrimitive.BarChart
                       data={chartData}
                       margin={{ top: 16, right: chartData.length > 7 ? 0 : 8, left: chartData.length > 7 ? 0 : 8, bottom: 8 }}
-                      barSize={width >= 768 ? 40 : 28}
+                      barSize={Math.max(16, Math.min(40, Math.floor(width / (chartData.length * 1.5))))}
                       onMouseMove={(state) => {
                         if (state.activeTooltipIndex !== activeIndex) {
                           setActiveIndex(state.activeTooltipIndex !== undefined ? state.activeTooltipIndex : null);
@@ -261,7 +267,7 @@ const UsageModal = ({ open, onClose, username }: UsageModalProps) => {
                         tickLine={false}
                         tickMargin={8}
                         axisLine={false}
-                        interval={period === '12h' || period === '24h' ? 0 : 'preserveEnd'}
+                        interval={getXAxisInterval(chartData.length, width)}
                         tickFormatter={(value: string) => {
                           if (period === '12h' || period === '24h' || (showCustomRange && backendPeriod === Period.hour)) {
                             // Show only hour part for compactness

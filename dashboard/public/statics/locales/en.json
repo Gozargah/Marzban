@@ -427,7 +427,7 @@
   "core.toggleFailed": "Failed to toggle core «{name}»",
   "core.deleteSuccess": "Core «{name}» has been removed successfully",
   "core.deleteFailed": "Failed to remove core «{name}»",
-  "core.deleteConfirm": "Are you sure you want to remove {name}?",
+  "core.deleteConfirm": "Are you sure you want to remove {{name}}?",
   "createNewUser": "Create new user",
   "createUser": "Create User",
   "createGroup": "Create Group",
@@ -435,17 +435,17 @@
   "dateFormat": "MMMM d, yyy",
   "delete": "Remove",
   "deleteNode.deleteSuccess": "Node {{name}} removed successfully",
-  "deleteNode.prompt": "Are you sure you want to remove the <b>{{name}}</b> node?",
+  "deleteNode.prompt": "Are you sure you want to remove the {{name}} node?",
   "deleteNode.title": "Remove Node",
   "deleteHost.title": "Remove Host",
-  "deleteHost.prompt": "Are you sure you want to remove the <b>{{name}}</b> host?",
+  "deleteHost.prompt": "Are you sure you want to remove the {{name}} host?",
   "deleteHost.deleteSuccess": "Host {{name}} removed successfully",
   "deleteHost.deleteFailed": "Failed to remove host {{name}}",
   "editHost.title": "Modify Host",
   "editNode.editSuccess": "Node {{name}} has been modified successfully",
   "editNode.title": "Modify Node",
   "deleteUser.deleteSuccess": "{{username}} removed successfully.",
-  "deleteUser.prompt": "Are you sure you want to remove <b>{{username}}</b>?",
+  "deleteUser.prompt": "Are you sure you want to remove {{username}}?",
   "deleteUser.title": "Remove User",
   "disabled": "disabled",
   "expires": "Expires in {{time}}",
@@ -456,6 +456,14 @@
   "header.nodeSettings": "Node Settings",
   "header.nodesUsage": "Nodes Usage",
   "loading": "Loading...",
+  "noResults": "No results found",
+  "emptyState": {
+    "noUsers": {
+      "title": "No users yet",
+      "description": "Get started by creating your first user account",
+      "createFirstUser": "Create your first user"
+    }
+  },
   "hostsDialog": {
     "addHost": "Create Host",
     "selectInbound": "Select an inbound",
@@ -812,7 +820,7 @@
     "months": "Months",
     "note": "Note",
     "onHold": "On Hold",
-    "onHoldExpireDuration": "Expire Duration",
+    "onHoldExpireDuration": "On-Hold Expire Duration",
     "onHoldExpireDurationPlaceholder": "e.g. 7",
     "optional": "optional",
     "periodicUsageReset": "Periodic Usage Reset",
@@ -865,7 +873,20 @@
     "proxySettings.desc": "Configure protocol-specific settings for this user.",
     "selectNode": "Select Node",
     "allNodes": "All Nodes",
-    "activeNextPlan": "Active Next Plan"
+    "activeNextPlan": "Active Next Plan",
+    "status": "Status",
+    "dataLimitResetStrategy": "Data Limit Reset Strategy",
+    "expire": "Expire Date",
+    "onHoldTimeout": "On-Hold Timeout",
+    "autoDeleteInDays": "Auto Delete In Days",
+    "proxySettings": "Proxy Settings",
+    "nextPlan": "Next Plan",
+    "groups": "Groups",
+    "subscriptionInfo": "Subscription Info",
+    "subscriptionUpdated": "Last Updated",
+    "lastClient": "Last Client",
+    "subscriptionNotAccessed": "Not accessed yet",
+    "unknownClient": "Unknown client"
   },
   "users": "Users",
   "usersTable.copied": "Copied",
@@ -957,7 +978,9 @@
     "statusCheck": "Check Status",
     "statusChecking": "Checking...",
     "reconnect": "Reconnect",
-    "reconnecting": "Reconnecting..."
+    "reconnecting": "Reconnecting...",
+    "gatherLogs": "Gather Logs",
+    "gatherLogsDescription": "Enable log collection from this node for monitoring and debugging purposes"
   },
   "theme": {
     "title": "Theme",
@@ -1117,8 +1140,8 @@
     "ago": "ago"
   },
   "notConnectedYet": "Not connected yet",
-  "node.xrayVersion": "Xray Version",
-  "node.coreVersion": "Core Version",
+  "node.xrayVersion": "Core Version",
+  "node.coreVersion": "Node Version",
   "calendar": {
     "selectRange": "Select range",
     "startDate": "Start date",

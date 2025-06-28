@@ -18,9 +18,9 @@ from .authentication import get_current
 system_operator = SystemOperation(operator_type=OperatorType.API)
 router = APIRouter(tags=["System"], prefix="/api", responses={401: responses._401})
 
-TELEGRAN_WEBHOOK_PATH = "/tghook"
+TELEGRAM_WEBHOOK_PATH = "/tghook"
 uvicorn_access_logger = get_logger("uvicorn.access")
-uvicorn_access_logger.addFilter(EndpointFilter([f"{router.prefix}{TELEGRAN_WEBHOOK_PATH}"]))
+uvicorn_access_logger.addFilter(EndpointFilter([f"{router.prefix}{TELEGRAM_WEBHOOK_PATH}"]))
 
 
 @router.get("/system", response_model=SystemStats)
@@ -37,7 +37,7 @@ async def get_inbounds(_: AdminDetails = Depends(get_current)):
     return await system_operator.get_inbounds()
 
 
-@router.post(TELEGRAN_WEBHOOK_PATH, include_in_schema=False)
+@router.post(TELEGRAM_WEBHOOK_PATH, include_in_schema=False)
 async def webhook_handler(request: Request, X_Telegram_Bot_Api_Secret_Token: str = Header()):
     """Telegram webhook handler"""
     settings: Telegram = await telegram_settings()

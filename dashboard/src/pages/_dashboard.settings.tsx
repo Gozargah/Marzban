@@ -6,6 +6,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router'
 import { cn } from '@/lib/utils'
 import { useGetSettings, useModifySettings } from '@/service/api'
 import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface Tab {
   id: string
@@ -47,6 +48,7 @@ export default function Settings() {
   const location = useLocation()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<string>('notifications')
+  const queryClient = useQueryClient()
 
   // Fetch settings once at parent level
   const { data: settings, isLoading, error } = useGetSettings()
@@ -54,6 +56,8 @@ export default function Settings() {
     mutation: {
       onSuccess: () => {
         toast.success(t(`settings.${activeTab}.saveSuccess`))
+        // Invalidate settings query to refresh with new data from API response
+        queryClient.invalidateQueries({ queryKey: ['/api/settings'] })
       },
       onError: (error: any) => {
         // Extract validation errors from FetchError

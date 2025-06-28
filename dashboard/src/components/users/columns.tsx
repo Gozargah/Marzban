@@ -6,7 +6,6 @@ import { OnlineBadge } from '../OnlineBadge'
 import { StatusBadge } from '../StatusBadge'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '../ui/select'
 import UsageSliderCompact from '../UsageSliderCompact'
-import { useIsMobile } from '@/hooks/use-mobile'
 
 export const setupColumns = ({
   t,
@@ -152,7 +151,6 @@ export const setupColumns = ({
           total={row.original.data_limit}
           used={row.original.used_traffic}
           totalUsedTraffic={row.original.lifetime_used_traffic}
-          dataLimitResetStrategy={row.original.data_limit_reset_strategy || undefined}
           status={row.original.status}
         />
         <div className="hidden md:block w-[200px] px-4 py-1">

@@ -14,7 +14,7 @@ from app.notification.webhook import queue
 from app.utils.logger import get_logger
 from config import JOB_SEND_NOTIFICATIONS_INTERVAL
 
-logger = get_logger("send-notfication")
+logger = get_logger("send-notification")
 
 
 async def send_to_all_webhooks(client, notification, webhooks):

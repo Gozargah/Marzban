@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 
-from app.db import AsyncSession, crud, get_db
+from app.db import AsyncSession, get_db
+from app.db.crud import dev as crud
 from app.models.admin import AdminDetails
 from app.utils import responses
 from config import DEBUG

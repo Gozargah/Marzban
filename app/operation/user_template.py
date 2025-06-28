@@ -4,7 +4,12 @@ from app.db import AsyncSession
 import asyncio
 
 from app.db.models import Admin
-from app.db.crud import create_user_template, modify_user_template, remove_user_template, get_user_templates
+from app.db.crud.user_template import (
+    create_user_template,
+    modify_user_template,
+    remove_user_template,
+    get_user_templates,
+)
 from app.operation import BaseOperation
 from app.models.user_template import UserTemplateCreate, UserTemplateModify, UserTemplateResponse
 from app.utils.logger import get_logger

@@ -12,7 +12,7 @@ from app.models.admin import AdminDetails
 from app.models.user import UserNotificationResponse
 from app.db import AsyncSession
 from app.db.models import ReminderType
-from app.db.crud import create_notification_reminder
+from app.db.crud.user import create_notification_reminder
 from app.settings import notification_enable
 
 

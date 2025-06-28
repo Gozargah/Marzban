@@ -1,7 +1,7 @@
 from aiocache import cached
 
 from app.db import GetDB
-from app.db.crud import get_settings
+from app.db.crud.settings import get_settings
 from app.models import settings
 
 

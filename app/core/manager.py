@@ -5,7 +5,7 @@ from app import on_startup
 from app.core.abstract_core import AbstractCore
 from app.core.xray import XRayConfig
 from app.db import GetDB
-from app.db.crud import get_core_configs
+from app.db.crud.core import get_core_configs
 from app.db.models import CoreConfig
 
 

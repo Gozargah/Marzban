@@ -616,6 +616,11 @@
   "userDialog.resetStrategyWeekly": "Еженедельно",
   "userDialog.resetUsage": "Сбросить трафик",
   "userDialog.revokeSubscription": "Отозвать подписку",
+  "userDialog.subscriptionInfo": "Информация о подписке",
+  "userDialog.subscriptionUpdated": "Последнее обновление",
+  "userDialog.lastClient": "Последний клиент",
+  "userDialog.subscriptionNotAccessed": "Еще не использовалась",
+  "userDialog.unknownClient": "Неизвестный клиент",
   "userDialog.selectOneProtocol": "Пожалуйста, выберите хотя бы один протокол",
   "userDialog.shadowsocksDesc": "Быстрый и безопасный, но не такой эффективный, как другие",
   "userDialog.startDate": "Дата начала",
@@ -953,7 +958,9 @@
     "statusCheck": "Проверить статус",
     "statusChecking": "Проверка...",
     "reconnect": "Переподключить",
-    "reconnecting": "Переподключение..."
+    "reconnecting": "Переподключение...",
+    "gatherLogs": "Сбор логов",
+    "gatherLogsDescription": "Включить сбор логов с этого узла для мониторинга и отладки"
   },
   "theme": {
     "title": "Тема",
@@ -1120,8 +1127,8 @@
     "ago": "назад"
   },
   "notConnectedYet": "Еще не подключен",
-  "node.xrayVersion": "Версия Xray",
-  "node.coreVersion": "Версия ядра",
+  "node.xrayVersion": "Версия ядра",
+  "node.coreVersion": "Версия узла",
   "calendar": {
     "selectRange": "Выбрать диапазон",
     "startDate": "Дата начала",
@@ -1133,7 +1140,16 @@
     "tryDifferentRange": "Попробуйте другой диапазон времени.",
     "trendingUp": "Рост на",
     "trendingDown": "Снижение на",
-    "usageSummary": "Показано общее использование за выбранный период."
+    "usageSummary": "Показано общее использование за выбранный период.",
+    "loading": "загрузка...",
+    "noResults": "Результаты не найдены",
+    "emptyState": {
+      "noUsers": {
+        "title": "Пользователей пока нет",
+        "description": "Начните с создания первой учетной записи пользователя",
+        "createFirstUser": "Создать первого пользователя"
+      }
+    }
   },
   "setOwnerModal": {
     "title": "Назначить владельца",

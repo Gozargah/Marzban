@@ -2,8 +2,9 @@ import asyncio
 from datetime import datetime as dt, timedelta as td, timezone as tz
 
 from app import scheduler
-from app.db import GetDB, crud
+from app.db import GetDB
 from app.db.models import UserStatus, UserDataLimitResetStrategy, User
+from app.db.crud.user import reset_user_data_usage, get_users
 from app.models.user import UserNotificationResponse
 from app import notification
 from app.core.manager import core_manager
@@ -22,7 +23,7 @@ reset_strategy_to_days = {
 logger = get_logger("jobs")
 
 
-async def reset_user_data_usage():
+async def reset_data_usage():
     now = dt.now(tz.utc)
     async with GetDB() as db:
 
@@ -35,7 +36,7 @@ async def reset_user_data_usage():
 
             old_status = db_user.status
 
-            db_user = await crud.reset_user_data_usage(db, db_user)
+            db_user = await reset_user_data_usage(db, db_user)
             user = UserNotificationResponse.model_validate(db_user)
             asyncio.create_task(notification.reset_user_data_usage(user, SYSTEM_ADMIN))
 
@@ -48,7 +49,7 @@ async def reset_user_data_usage():
 
             logger.info(f'User data usage reset for User "{user.username}"')
 
-        users = await crud.get_users(
+        users = await get_users(
             db,
             status=[UserStatus.active, UserStatus.limited],
             reset_strategy=[
@@ -63,7 +64,7 @@ async def reset_user_data_usage():
 
 
 scheduler.add_job(
-    reset_user_data_usage,
+    reset_data_usage,
     "interval",
     seconds=JOB_RESET_USER_DATA_USAGE_INTERVAL,
     coalesce=True,

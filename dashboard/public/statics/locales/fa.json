@@ -233,6 +233,14 @@
   "saving": "در حال ذخیره...",
   "general": "عمومی",
   "loading": "در حال بارگذاری...",
+  "noResults": "نتیجه‌ای یافت نشد",
+  "emptyState": {
+    "noUsers": {
+      "title": "هنوز کاربری وجود ندارد",
+      "description": "با ایجاد اولین حساب کاربری شروع کنید",
+      "createFirstUser": "ایجاد اولین کاربر"
+    }
+  },
   "core": "هسته‌ها",
   "activeUsers": "کاربران فعال",
   "apply": "تایید",
@@ -766,6 +774,11 @@
   "userDialog.resetStrategyWeekly": "هفتگی",
   "userDialog.resetUsage": "بازنشانی مصرف",
   "userDialog.revokeSubscription": "بازنشانی اشتراک",
+  "userDialog.subscriptionInfo": "اطلاعات اشتراک",
+  "userDialog.subscriptionUpdated": "آخرین بروزرسانی",
+  "userDialog.lastClient": "آخرین کلاینت",
+  "userDialog.subscriptionNotAccessed": "هنوز دسترسی نشده",
+  "userDialog.unknownClient": "کلاینت ناشناخته",
   "userDialog.selectOneProtocol": "لطفا حداقل یک پروتکل انتخاب کنید",
   "userDialog.shadowsocksDesc": "سریع و امن، اما کارآمد کمتر از بقیه",
   "userDialog.startDate": "تاریخ شروع",
@@ -872,7 +885,9 @@
     "statusCheck": "بررسی وضعیت",
     "statusChecking": "در حال بررسی...",
     "reconnect": "دوباره متصل کن",
-    "reconnecting": "در حال دوباره متصل کردن..."
+    "reconnecting": "در حال دوباره متصل کردن...",
+    "gatherLogs": "جمع‌آوری لاگ‌ها",
+    "gatherLogsDescription": "فعال‌سازی جمع‌آوری لاگ‌ها از این گره برای نظارت و عیب‌یابی"
   },
   "nodes": {
     "title": "گره‌ها",
@@ -1120,8 +1135,8 @@
     "ago": "پیش"
   },
   "notConnectedYet": "هنوز متصل نشده",
-  "node.xrayVersion": "نسخه Xray",
-  "node.coreVersion": "نسخه هسته",
+  "node.xrayVersion": "نسخه هسته",
+  "node.coreVersion": "نسخه گره",
   "calendar": {
     "selectRange": "انتخاب بازه زمانی",
     "startDate": "تاریخ شروع",

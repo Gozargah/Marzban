@@ -2,8 +2,6 @@ from enum import Enum
 from app.db.models import ProxyHostSecurity, ProxyHostALPN, ProxyHostFingerprint, UserStatus
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.models.validators import ListValidator
-
 
 class XHttpModes(str, Enum):
     auto = "auto"
@@ -180,7 +178,7 @@ class BaseHost(BaseModel):
     random_user_agent: bool = False
     use_sni_as_host: bool = False
     priority: int
-    status: list[UserStatus] = []
+    status: set[UserStatus] = Field(default_factory=set)
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -203,7 +201,3 @@ class CreateHost(BaseHost):
             raise ValueError("Invalid formatting variables")
 
         return v
-
-    @field_validator("status", mode="after")
-    def deduplicate_status(cls, v):
-        return ListValidator.deduplicate_values(v)

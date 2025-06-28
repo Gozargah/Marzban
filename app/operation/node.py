@@ -10,7 +10,7 @@ from app.models.node import NodeCreate, NodeResponse, NodeModify
 from app.models.admin import AdminDetails
 from app.db.models import Node, NodeStatus
 from app.db import AsyncSession
-from app.db.crud import (
+from app.db.crud.node import (
     create_node,
     get_node_by_id,
     update_node_status,
@@ -18,9 +18,9 @@ from app.db.crud import (
     remove_node,
     get_nodes_usage,
     modify_node,
-    get_user,
     get_node_stats,
 )
+from app.db.crud.user import get_user
 from app.db.base import GetDB
 from app.core.manager import core_manager
 from app.node import core_users, node_manager
@@ -99,7 +99,7 @@ class NodeOperation(BaseOperation):
                 info = await gozargah_node.start(
                     config=core.to_str(),
                     backend_type=0,
-                    users=await core_users(db=db, inbounds=core.inbounds),
+                    users=await core_users(db=db),
                     keep_alive=db_node.keep_alive,
                     ghather_logs=db_node.gather_logs,
                     timeout=10,
@@ -327,10 +327,8 @@ class NodeOperation(BaseOperation):
         if gozargah_node is None:
             await self.raise_error(message="Node is not connected", code=409)
 
-        core = await core_manager.get_core(db_node.core_config_id or 1)
-
         try:
-            await gozargah_node.sync_users(await core_users(db=db, inbounds=core.inbounds), flush_queue=flush_users)
+            await gozargah_node.sync_users(await core_users(db=db), flush_queue=flush_users)
         except NodeAPIError as e:
             await update_node_status(db=db, db_node=db_node, status=NodeStatus.error, message=e.detail)
             await self.raise_error(message=e.detail, code=e.code)

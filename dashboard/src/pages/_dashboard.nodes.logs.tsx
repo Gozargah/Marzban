@@ -36,7 +36,6 @@ export default function NodeLogs() {
   const [filteredLogs, setFilteredLogs] = useState<LogEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [autoScroll, setAutoScroll] = useState(true)
-  const [autoScrollEnabled, setAutoScrollEnabled] = useState(true)
   const [showTimestamps, setShowTimestamps] = useState(false)
   const [selectedLevels, setSelectedLevels] = useState<LogLevel[]>(['debug', 'info', 'warning', 'error'])
   const [searchQuery, setSearchQuery] = useState('')
@@ -51,6 +50,8 @@ export default function NodeLogs() {
   const updateTimerRef = useRef<NodeJS.Timeout | null>(null)
   const maxStorageLogsRef = useRef<number>(10000)
   const isNodeSwitchingRef = useRef<boolean>(false)
+  const lastScrollTopRef = useRef<number>(0)
+  const wasAtBottomRef = useRef<boolean>(true)
 
   const { data: nodes = [] } = useGetNodes({})
 
@@ -281,28 +282,6 @@ export default function NodeLogs() {
     console.log('Raw logs updated:', logs.length)
   }, [logs])
 
-  // Auto-scroll effect with improved node switching handling
-  useEffect(() => {
-    if (!isNodeSwitchingRef.current && autoScroll && autoScrollEnabled && logsContainerRef.current) {
-      const scrollToBottom = () => {
-        if (logsContainerRef.current) {
-          logsContainerRef.current.scrollTop = logsContainerRef.current.scrollHeight
-        }
-      }
-
-      // Use requestAnimationFrame for smoother scrolling
-      requestAnimationFrame(scrollToBottom)
-    }
-  }, [filteredLogs, autoScroll, autoScrollEnabled])
-
-  // Update autoScrollEnabled when autoScroll changes
-  useEffect(() => {
-    if (autoScroll) {
-      setAutoScrollEnabled(true)
-      scrollToBottom()
-    }
-  }, [autoScroll])
-
   // For windowed rendering
   const [visibleStartIndex, setVisibleStartIndex] = useState(0)
   const itemHeight = 36 // Approximate height of a log entry in pixels
@@ -310,24 +289,121 @@ export default function NodeLogs() {
   const containerHeight = 600 // Container height in pixels
   const visibleItemsCount = Math.ceil(containerHeight / itemHeight) + 2 * bufferSize
 
-  // Handle scroll events with improved node switching awareness
-  const handleScroll = useMemo(() => {
-    return (e: React.UIEvent<HTMLDivElement>) => {
-      if (isNodeSwitchingRef.current) return
-
-      const container = e.currentTarget
-      const scrollTop = container.scrollTop
-      const firstVisibleIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - bufferSize)
-
-      if (container.scrollHeight - scrollTop - container.clientHeight > 50) {
-        if (autoScrollEnabled) {
-          setAutoScrollEnabled(false)
-        }
-      }
-
-      setVisibleStartIndex(firstVisibleIndex)
+  // Auto-scroll effect - completely rewritten for proper behavior
+  useEffect(() => {
+    if (!logsContainerRef.current || isNodeSwitchingRef.current) {
+      return
     }
-  }, [autoScrollEnabled, bufferSize, itemHeight])
+
+    const container = logsContainerRef.current
+    
+    if (autoScroll) {
+      // If auto-scroll is enabled, always scroll to bottom immediately
+      container.scrollTop = container.scrollHeight
+      lastScrollTopRef.current = container.scrollHeight
+      wasAtBottomRef.current = true
+      
+      // Update visible window for windowed rendering
+      if (filteredLogs.length > 0) {
+        const maxStartIndex = Math.max(0, filteredLogs.length - visibleItemsCount)
+        setVisibleStartIndex(maxStartIndex)
+      }
+    } else {
+      // Auto-scroll is OFF - force maintain exact position
+      const savedScrollTop = lastScrollTopRef.current
+      
+      // Use multiple methods to ensure position is maintained
+      container.scrollTop = savedScrollTop
+      
+      // Double-check with requestAnimationFrame
+      requestAnimationFrame(() => {
+        if (container && container.scrollTop !== savedScrollTop) {
+          container.scrollTop = savedScrollTop
+        }
+      })
+      
+      // Triple-check with setTimeout as fallback
+      setTimeout(() => {
+        if (container && container.scrollTop !== savedScrollTop) {
+          container.scrollTop = savedScrollTop
+        }
+      }, 0)
+    }
+  }, [filteredLogs, autoScroll, visibleItemsCount])
+
+  // Handle scroll events - improved logic
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    if (isNodeSwitchingRef.current) return
+
+    const container = e.currentTarget
+    const scrollTop = container.scrollTop
+    const scrollHeight = container.scrollHeight
+    const clientHeight = container.clientHeight
+    
+    // Always update last scroll position when user manually scrolls
+    lastScrollTopRef.current = scrollTop
+    
+    // Calculate visible start index for windowed rendering
+    const firstVisibleIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - bufferSize)
+    setVisibleStartIndex(firstVisibleIndex)
+    
+    // Check if user is at the bottom
+    const isAtBottom = scrollHeight - scrollTop - clientHeight <= 5
+    wasAtBottomRef.current = isAtBottom
+    
+    // Auto-disable auto-scroll only if user deliberately scrolls up
+    if (autoScroll && !isAtBottom) {
+      setAutoScroll(false)
+    }
+  }, [autoScroll, bufferSize, itemHeight])
+
+  const scrollToBottom = () => {
+    if (logsContainerRef.current) {
+      const container = logsContainerRef.current
+      
+      // Immediately scroll to bottom
+      container.scrollTop = container.scrollHeight
+      lastScrollTopRef.current = container.scrollHeight
+      wasAtBottomRef.current = true
+      
+      // Enable auto-scroll
+      setAutoScroll(true)
+      
+      // Update visible window
+      if (filteredLogs.length > 0) {
+        const maxStartIndex = Math.max(0, filteredLogs.length - visibleItemsCount)
+        setVisibleStartIndex(maxStartIndex)
+      }
+    }
+  }
+
+  // Reset scroll state when node changes
+  useEffect(() => {
+    if (selectedNode !== 0 && logsContainerRef.current) {
+      logsContainerRef.current.scrollTop = 0
+      lastScrollTopRef.current = 0
+      wasAtBottomRef.current = true
+      setVisibleStartIndex(0)
+    }
+  }, [selectedNode])
+
+  // Handle auto-scroll toggle - simplified
+  useEffect(() => {
+    if (autoScroll && logsContainerRef.current && filteredLogs.length > 0) {
+      // When auto-scroll is turned on, immediately go to bottom
+      const container = logsContainerRef.current
+      container.scrollTop = container.scrollHeight
+      lastScrollTopRef.current = container.scrollHeight
+      wasAtBottomRef.current = true
+      
+      if (filteredLogs.length > 0) {
+        const maxStartIndex = Math.max(0, filteredLogs.length - visibleItemsCount)
+        setVisibleStartIndex(maxStartIndex)
+      }
+    }
+    // When auto-scroll is turned off, we don't need to do anything special
+    // The main useEffect will handle position maintenance
+  }, [autoScroll, filteredLogs.length, visibleItemsCount])
 
   // Calculate the items to display in the window
   const visibleLogs = useMemo(() => {
@@ -345,21 +421,6 @@ export default function NodeLogs() {
 
   // Calculate offset for the visible items
   const offsetY = Math.max(0, visibleStartIndex * itemHeight)
-
-  const scrollToBottom = () => {
-    if (logsContainerRef.current) {
-      logsContainerRef.current.scrollTop = logsContainerRef.current.scrollHeight
-      // Re-enable auto-scroll if it's turned on but was disabled by manual scrolling
-      if (autoScroll && !autoScrollEnabled) {
-        setAutoScrollEnabled(true)
-      }
-      // Update the visible window indices
-      if (filteredLogs.length > 0) {
-        const maxStartIndex = Math.max(0, filteredLogs.length - visibleItemsCount)
-        setVisibleStartIndex(maxStartIndex)
-      }
-    }
-  }
 
   const toggleLogLevel = (level: LogLevel) => {
     setSelectedLevels(prev => (prev.includes(level) ? prev.filter(l => l !== level) : [...prev, level]))
@@ -509,13 +570,7 @@ export default function NodeLogs() {
               <Switch
                 id="auto-scroll"
                 checked={autoScroll}
-                onCheckedChange={checked => {
-                  setAutoScroll(checked)
-                  setAutoScrollEnabled(checked)
-                  if (checked) {
-                    scrollToBottom()
-                  }
-                }}
+                onCheckedChange={setAutoScroll}
                 className="scale-75 sm:scale-90"
               />
             </div>

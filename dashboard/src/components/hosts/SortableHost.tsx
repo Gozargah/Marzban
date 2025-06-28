@@ -4,7 +4,7 @@ import { UniqueIdentifier } from '@dnd-kit/core'
 
 import { BaseHost, removeHost, modifyHost } from '@/service/api'
 import { Card } from '../ui/card'
-import { ChevronsLeftRightEllipsis, CloudCog, Copy, GripVertical, MoreVertical, Pencil, Power, Trash2 } from 'lucide-react'
+import { ChevronsLeftRightEllipsis, CloudCog, Copy, GripVertical, MoreVertical, Pencil, Power, Trash2, Settings } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { Button } from '../ui/button'
 import { useTranslation } from 'react-i18next'
@@ -149,7 +149,7 @@ export default function SortableHost({ host, onEdit, onDuplicate, onDataChanged 
             <div className={cn('flex items-center gap-1', dir === 'rtl' && 'justify-start')}>
               <ChevronsLeftRightEllipsis className="h-4 w-4 text-muted-foreground" />
               <div dir="ltr" className="text-sm text-muted-foreground truncate">
-                {host.address ?? ''}:{host.port ?? 0}
+                {host.address ?? ''}:{host.port === null ? <Settings className="h-3 w-3 inline" /> : host.port}
               </div>
             </div>
             <div className="flex items-center gap-1 text-sm text-muted-foreground truncate">

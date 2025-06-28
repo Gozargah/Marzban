@@ -53,12 +53,13 @@ class ClashConfiguration(BaseSubscription):
         config = {
             "path": [path] if path else None,
             "Host": host,
+            "headers": {},
         }
         if request:
             config.update(request)
 
         if random_user_agent:
-            config["header"]["User-Agent"] = choice(self.user_agent_list)
+            config["headers"]["User-Agent"] = choice(self.user_agent_list)
 
         return self._remove_none_values(config)
 

@@ -104,4 +104,4 @@ class NodeManager:
 node_manager: NodeManager = NodeManager()
 
 
-__all__ = ["core_users"]
+__all__ = ["core_users", "node_manager"]

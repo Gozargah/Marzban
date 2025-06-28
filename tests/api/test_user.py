@@ -144,7 +144,7 @@ def test_user_update(access_token):
 def test_reset_by_next_user_usage(access_token):
     """Test that the user next plan is available."""
     response = client.post(
-        "/api/user/test_user_active/active-next",
+        "/api/user/test_user_active/active_next",
         headers={"Authorization": f"Bearer {access_token}"},
     )
     assert response.status_code == status.HTTP_200_OK
@@ -170,7 +170,7 @@ def test_user_delete(access_token):
 
 def test_create_user_with_template(access_token):
     response = client.post(
-        "/api/user/from-template",
+        "/api/user/from_template",
         headers={"Authorization": f"Bearer {access_token}"},
         json={"username": "test_user_template", "user_template_id": 1},
     )
@@ -183,7 +183,7 @@ def test_create_user_with_template(access_token):
 
 def test_modify_user_with_template(access_token):
     response = client.put(
-        "/api/user/from-template/test_user_template",
+        "/api/user/from_template/test_user_template",
         headers={"Authorization": f"Bearer {access_token}"},
         json={"user_template_id": 1},
     )

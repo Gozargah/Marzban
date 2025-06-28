@@ -120,7 +120,7 @@ async def reset_users_data_usage(db: AsyncSession = Depends(get_db), admin: Admi
     return {}
 
 
-@router.put("/{username}/set-owner", response_model=UserResponse, responses={403: responses._403})
+@router.put("/{username}/set_owner", response_model=UserResponse, responses={403: responses._403})
 async def set_owner(
     username: str,
     admin_username: str,
@@ -132,7 +132,7 @@ async def set_owner(
 
 
 @router.post(
-    "/{username}/active-next", response_model=UserResponse, responses={403: responses._403, 404: responses._404}
+    "/{username}/active_next", response_model=UserResponse, responses={403: responses._403, 404: responses._404}
 )
 async def active_next_plan(
     username: str, db: AsyncSession = Depends(get_db), admin: AdminDetails = Depends(get_current)
@@ -251,7 +251,7 @@ async def delete_expired_users(
     return await user_operator.delete_expired_users(db, admin, expired_after, expired_before)
 
 
-@router.post("/from-template", status_code=status.HTTP_201_CREATED, response_model=UserResponse)
+@router.post("/from_template", status_code=status.HTTP_201_CREATED, response_model=UserResponse)
 async def create_user_from_template(
     new_template_user: CreateUserFromTemplate,
     db: AsyncSession = Depends(get_db),
@@ -260,7 +260,7 @@ async def create_user_from_template(
     return await user_operator.create_user_from_template(db, new_template_user, admin)
 
 
-@router.put("/from-template/{username}", response_model=UserResponse)
+@router.put("/from_template/{username}", response_model=UserResponse)
 async def modify_user_with_template(
     username: str,
     modify_template_user: ModifyUserByTemplate,

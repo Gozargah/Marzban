@@ -442,15 +442,14 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
                         </div>
                         <FormControl>
                           <Input
-                            placeholder="443"
                             isError={!!form.formState.errors.port}
                             type="number"
                             {...field}
                             onChange={e => {
                               const val = e.target.value
-                              field.onChange(val === '' ? '' : Number.parseInt(val, 10))
+                              field.onChange(val === '' ? null : Number.parseInt(val, 10))
                             }}
-                            value={field.value === undefined ? '' : field.value}
+                            value={field.value === null || field.value === undefined ? '' : field.value}
                           />
                         </FormControl>
                         <FormMessage />

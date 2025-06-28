@@ -5,7 +5,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
 from app.db import AsyncSession, get_db
-from app.db.crud import get_admin as get_admin_by_username, get_admin_by_telegram_id
+from app.db.crud.admin import get_admin as get_admin_by_username, get_admin_by_telegram_id
 from app.models.admin import AdminDetails, AdminInDB, AdminValidationResult
 from app.models.settings import Telegram
 from app.settings import telegram_settings

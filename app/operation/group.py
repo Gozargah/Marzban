@@ -2,9 +2,11 @@ import asyncio
 
 from app import notification
 from app.db import AsyncSession
-from app.db.crud import create_group, get_group, get_users, modify_group, remove_group
+from app.db.crud.bulk import bulk_add_groups_to_users, bulk_remove_groups_from_users
+from app.db.crud.group import create_group, get_group, modify_group, remove_group
+from app.db.crud.user import get_users
 from app.db.models import Admin
-from app.models.group import Group, GroupCreate, GroupModify, GroupResponse, GroupsResponse
+from app.models.group import BulkGroup, Group, GroupCreate, GroupModify, GroupResponse, GroupsResponse
 from app.models.user import UserResponse
 from app.node import node_manager
 from app.operation import BaseOperation
@@ -66,3 +68,21 @@ class GroupOperation(BaseOperation):
         logger.info(f'Group "{db_group.name}" deleted by admin "{admin.username}"')
 
         asyncio.create_task(notification.remove_group(db_group.id, admin.username))
+
+    async def bulk_add_groups(self, db: AsyncSession, bulk_model: BulkGroup):
+        await self.validate_all_groups(db, bulk_model)
+
+        users = await bulk_add_groups_to_users(db, bulk_model)
+
+        await asyncio.gather(
+            *[node_manager.update_user(UserResponse.model_validate(user), await user.inbounds()) for user in users]
+        )
+
+    async def bulk_remove_groups(self, db: AsyncSession, bulk_model: BulkGroup):
+        await self.validate_all_groups(db, bulk_model)
+
+        users = await bulk_remove_groups_from_users(db, bulk_model)
+
+        await asyncio.gather(
+            *[node_manager.update_user(UserResponse.model_validate(user), await user.inbounds()) for user in users]
+        )

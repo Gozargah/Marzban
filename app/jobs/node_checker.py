@@ -5,7 +5,7 @@ from GozargahNodeBridge import NodeAPIError, GozargahNode
 from app import on_shutdown, on_startup, scheduler
 from app.db import GetDB
 from app.db.models import Node, NodeStatus
-from app.db.crud import get_nodes
+from app.db.crud.node import get_nodes
 from app.node import node_manager
 from app.utils.logger import get_logger
 from app.operation.node import NodeOperation

@@ -78,7 +78,7 @@ export function DataTable<TData extends UserResponse, TValue>({ columns, data, i
         totalUsedTraffic={row.original.lifetime_used_traffic}
         used={row.original.used_traffic}
       />
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <StatusBadge showOnlyExpiry expiryDate={row.original.expire} status={row.original.status} showExpiry />
@@ -161,10 +161,10 @@ export function DataTable<TData extends UserResponse, TValue>({ columns, data, i
                       className={cn(
                         'py-2 text-sm whitespace-nowrap',
                         index <= 1 && 'md:py-2 max-w-[calc(100vw-50px-32px-100px-48px)]',
-                        index === 2 && 'w-[120px]',
+                        index === 2 && 'w-[120px] !p-0 px-1',
                         index === 3 && 'w-8',
                         index === 3 && isRTL ? 'pr-0' : index === 3 && !isRTL && 'pl-0',
-                        index >= 4 && 'hidden md:table-cell',
+                        index >= 4 && 'hidden md:table-cell !p-0',
                         cell.column.id === 'chevron' && 'table-cell md:hidden',
                         isRTL ? 'pl-1.5 sm:pl-3' : 'pr-1.5 sm:pr-3',
                       )}

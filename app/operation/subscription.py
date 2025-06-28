@@ -5,7 +5,7 @@ from fastapi import Response
 from fastapi.responses import HTMLResponse
 
 from app.db import AsyncSession
-from app.db.crud import get_user_usages, update_user_sub
+from app.db.crud.user import get_user_usages, update_user_sub
 from app.db.models import User
 from app.models.stats import Period, UserUsageStatsList
 from app.models.user import UserResponse

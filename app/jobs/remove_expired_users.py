@@ -2,7 +2,7 @@ import asyncio
 
 from app import scheduler
 from app.db import GetDB
-from app.db.crud import autodelete_expired_users
+from app.db.crud.user import autodelete_expired_users
 from app.models.user import UserNotificationResponse
 from app import notification
 from app.jobs.dependencies import SYSTEM_ADMIN

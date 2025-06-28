@@ -3,7 +3,7 @@ import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Settings
-from app.db.crud import get_settings, modify_settings
+from app.db.crud.settings import get_settings, modify_settings
 from app.models.settings import SettingsSchema
 from app.settings import refresh_caches
 from app.notification.client import define_client

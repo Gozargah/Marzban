@@ -241,6 +241,7 @@ const UsersTable = () => {
           form={userForm}
           editingUser={true}
           editingUserId={selectedUser.id || undefined}
+          editingUserData={selectedUser}
           onSuccessCallback={handleEditSuccess}
         />
       )}

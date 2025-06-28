@@ -892,6 +892,8 @@ export type SettingsSchemaInputSubscription = SubscriptionInput | null
 
 export type SettingsSchemaInputNotificationEnable = NotificationEnable | null
 
+export type SettingsSchemaInputNotificationSettings = NotificationSettings | null
+
 export type SettingsSchemaInputWebhook = Webhook | null
 
 export type SettingsSchemaInputDiscord = Discord | null
@@ -999,8 +1001,6 @@ export interface NotificationSettings {
   /** */
   max_retries: number
 }
-
-export type SettingsSchemaInputNotificationSettings = NotificationSettings | null
 
 export interface NotificationEnable {
   admin?: boolean
@@ -1290,6 +1290,11 @@ export interface HTTPException {
   detail: string
 }
 
+export interface GroupsResponse {
+  groups: GroupResponse[]
+  total: number
+}
+
 export type GroupResponseInboundTags = string[] | null
 
 export interface GroupResponse {
@@ -1302,11 +1307,6 @@ export interface GroupResponse {
   is_disabled?: boolean
   id: number
   total_users?: number
-}
-
-export interface GroupsResponse {
-  groups: GroupResponse[]
-  total: number
 }
 
 export type GroupModifyInboundTags = string[] | null
@@ -1506,6 +1506,12 @@ export interface ClashMuxSettings {
   brutal?: ClashMuxSettingsBrutal
   statistic?: boolean
   only_tcp?: boolean
+}
+
+export interface BulkGroup {
+  group_ids: number[]
+  admins?: number[]
+  users?: number[]
 }
 
 export interface Brutal {
@@ -2694,6 +2700,120 @@ export const useRemoveGroup = <TData = Awaited<ReturnType<typeof removeGroup>>, 
   mutation?: UseMutationOptions<TData, TError, { groupId: number }, TContext>
 }): UseMutationResult<TData, TError, { groupId: number }, TContext> => {
   const mutationOptions = getRemoveGroupMutationOptions(options)
+
+  return useMutation(mutationOptions)
+}
+
+/**
+ * Bulk assign groups to multiple users, users under specific admins, or all users.
+
+- **group_ids**: List of group IDs to add (required)
+- **users**: Optional list of user IDs to assign the groups to
+- **admins**: Optional list of admin IDs — their users will be targeted
+
+Notes:
+- If neither 'users' nor 'admins' are provided, groups will be added to *all users*
+- Existing user-group associations will be ignored (no duplication)
+- Returns list of affected users (those who received new group associations)
+ * @summary Bulk add groups to users
+ */
+export const bulkAddGroupsToUsers = (bulkGroup: BodyType<BulkGroup>, signal?: AbortSignal) => {
+  return orvalFetcher<unknown>({ url: `/api/groups/bulk/add`, method: 'POST', headers: { 'Content-Type': 'application/json' }, data: bulkGroup, signal })
+}
+
+export const getBulkAddGroupsToUsersMutationOptions = <
+  TData = Awaited<ReturnType<typeof bulkAddGroupsToUsers>>,
+  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<BulkGroup> }, TContext>
+}) => {
+  const mutationKey = ['bulkAddGroupsToUsers']
+  const { mutation: mutationOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } }
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof bulkAddGroupsToUsers>>, { data: BodyType<BulkGroup> }> = props => {
+    const { data } = props ?? {}
+
+    return bulkAddGroupsToUsers(data)
+  }
+
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { data: BodyType<BulkGroup> }, TContext>
+}
+
+export type BulkAddGroupsToUsersMutationResult = NonNullable<Awaited<ReturnType<typeof bulkAddGroupsToUsers>>>
+export type BulkAddGroupsToUsersMutationBody = BodyType<BulkGroup>
+export type BulkAddGroupsToUsersMutationError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
+
+/**
+ * @summary Bulk add groups to users
+ */
+export const useBulkAddGroupsToUsers = <TData = Awaited<ReturnType<typeof bulkAddGroupsToUsers>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<BulkGroup> }, TContext>
+}): UseMutationResult<TData, TError, { data: BodyType<BulkGroup> }, TContext> => {
+  const mutationOptions = getBulkAddGroupsToUsersMutationOptions(options)
+
+  return useMutation(mutationOptions)
+}
+
+/**
+ * Bulk remove groups from multiple users, users under specific admins, or all users.
+
+- **group_ids**: List of group IDs to remove (required)
+- **users**: Optional list of user IDs to remove the groups from
+- **admins**: Optional list of admin IDs — their users will be targeted
+
+Notes:
+- If neither 'users' nor 'admins' are provided, groups will be removed from *all users*
+- Only existing user-group associations will be removed
+- Returns list of affected users (those who had groups removed)
+ * @summary Bulk remove groups from users
+ */
+export const bulkRemoveGroupsToUsers = (bulkGroup: BodyType<BulkGroup>, signal?: AbortSignal) => {
+  return orvalFetcher<unknown>({ url: `/api/groups/bulk/remove`, method: 'POST', headers: { 'Content-Type': 'application/json' }, data: bulkGroup, signal })
+}
+
+export const getBulkRemoveGroupsToUsersMutationOptions = <
+  TData = Awaited<ReturnType<typeof bulkRemoveGroupsToUsers>>,
+  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<BulkGroup> }, TContext>
+}) => {
+  const mutationKey = ['bulkRemoveGroupsToUsers']
+  const { mutation: mutationOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } }
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof bulkRemoveGroupsToUsers>>, { data: BodyType<BulkGroup> }> = props => {
+    const { data } = props ?? {}
+
+    return bulkRemoveGroupsToUsers(data)
+  }
+
+  return { mutationFn, ...mutationOptions } as UseMutationOptions<TData, TError, { data: BodyType<BulkGroup> }, TContext>
+}
+
+export type BulkRemoveGroupsToUsersMutationResult = NonNullable<Awaited<ReturnType<typeof bulkRemoveGroupsToUsers>>>
+export type BulkRemoveGroupsToUsersMutationBody = BodyType<BulkGroup>
+export type BulkRemoveGroupsToUsersMutationError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>
+
+/**
+ * @summary Bulk remove groups from users
+ */
+export const useBulkRemoveGroupsToUsers = <
+  TData = Awaited<ReturnType<typeof bulkRemoveGroupsToUsers>>,
+  TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<TData, TError, { data: BodyType<BulkGroup> }, TContext>
+}): UseMutationResult<TData, TError, { data: BodyType<BulkGroup> }, TContext> => {
+  const mutationOptions = getBulkRemoveGroupsToUsersMutationOptions(options)
 
   return useMutation(mutationOptions)
 }
@@ -4506,7 +4626,7 @@ export const useResetUsersDataUsage = <TData = Awaited<ReturnType<typeof resetUs
  * @summary Set Owner
  */
 export const setOwner = (username: string, params: SetOwnerParams) => {
-  return orvalFetcher<UserResponse>({ url: `/api/user/${username}/set-owner`, method: 'PUT', params })
+  return orvalFetcher<UserResponse>({ url: `/api/user/${username}/set_owner`, method: 'PUT', params })
 }
 
 export const getSetOwnerMutationOptions = <TData = Awaited<ReturnType<typeof setOwner>>, TError = ErrorType<Unauthorized | Forbidden | HTTPValidationError>, TContext = unknown>(options?: {
@@ -4548,7 +4668,7 @@ export const useSetOwner = <TData = Awaited<ReturnType<typeof setOwner>>, TError
  * @summary Active Next Plan
  */
 export const activeNextPlan = (username: string, signal?: AbortSignal) => {
-  return orvalFetcher<UserResponse>({ url: `/api/user/${username}/active-next`, method: 'POST', signal })
+  return orvalFetcher<UserResponse>({ url: `/api/user/${username}/active_next`, method: 'POST', signal })
 }
 
 export const getActiveNextPlanMutationOptions = <
@@ -4897,7 +5017,7 @@ export const useDeleteExpiredUsers = <TData = Awaited<ReturnType<typeof deleteEx
  * @summary Create User From Template
  */
 export const createUserFromTemplate = (createUserFromTemplate: BodyType<CreateUserFromTemplate>, signal?: AbortSignal) => {
-  return orvalFetcher<UserResponse>({ url: `/api/user/from-template`, method: 'POST', headers: { 'Content-Type': 'application/json' }, data: createUserFromTemplate, signal })
+  return orvalFetcher<UserResponse>({ url: `/api/user/from_template`, method: 'POST', headers: { 'Content-Type': 'application/json' }, data: createUserFromTemplate, signal })
 }
 
 export const getCreateUserFromTemplateMutationOptions = <
@@ -4942,7 +5062,7 @@ export const useCreateUserFromTemplate = <TData = Awaited<ReturnType<typeof crea
  * @summary Modify User With Template
  */
 export const modifyUserWithTemplate = (username: string, modifyUserByTemplate: BodyType<ModifyUserByTemplate>) => {
-  return orvalFetcher<UserResponse>({ url: `/api/user/from-template/${username}`, method: 'PUT', headers: { 'Content-Type': 'application/json' }, data: modifyUserByTemplate })
+  return orvalFetcher<UserResponse>({ url: `/api/user/from_template/${username}`, method: 'PUT', headers: { 'Content-Type': 'application/json' }, data: modifyUserByTemplate })
 }
 
 export const getModifyUserWithTemplateMutationOptions = <

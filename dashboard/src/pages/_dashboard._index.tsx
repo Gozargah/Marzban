@@ -5,7 +5,6 @@ import PageHeader from '@/components/page-header'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Settings2Icon, UserPlusIcon } from 'lucide-react'
-
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
