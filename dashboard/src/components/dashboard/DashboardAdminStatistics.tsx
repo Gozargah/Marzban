@@ -1,7 +1,5 @@
 import { useGetAdmins, useGetCurrentAdmin } from '@/service/api'
 import AdminStatisticsCard from './admin-statistics-card'
-import DataUsageChart from './data-usage-chart'
-import UserStatisticsCard from './users-statistics-card'
 
 const DashboardAdminStatistics = () => {
   const { data } = useGetAdmins(undefined, {
@@ -15,12 +13,7 @@ const DashboardAdminStatistics = () => {
   if (!data) return null
 
   if (data.length === 1) {
-    return (
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <DataUsageChart />
-        <UserStatisticsCard />
-      </div>
-    )
+    return <AdminStatisticsCard showAdminInfo={false} admin={data[0]} />
   }
 
   if (currentAdmin?.is_sudo)

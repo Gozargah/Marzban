@@ -275,6 +275,7 @@
     "total.users": "کل کاربران",
     "used.traffic": "ترافیک مصرف‌ شده",
     "monitor.traffic": "نظارت بر ترافیک مصرف شده",
+    "monitor.no_traffic": "هیچ ترافیکی وجود ندارد",
     "total": "کل مدیران",
     "active": "مدیران فعال",
     "disable": "مدیران غیرفعال",

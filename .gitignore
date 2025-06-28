@@ -164,7 +164,6 @@ xray-core
 
 *Zone.Identifier
 .DS_Store
-Marzban.code-workspace
 
 #ignore node-module for dashboard
 node_modules/
