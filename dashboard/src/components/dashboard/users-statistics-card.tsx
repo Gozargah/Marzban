@@ -1,15 +1,11 @@
 import { ActivityIcon, UsersIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
-import { useGetSystemStats, useGetUsers } from '@/service/api'
+import { SystemStats, useGetSystemStats } from '@/service/api'
 
-const UserStatisticsCard = ({ admin_username }: { admin_username: string }) => {
+const UserStatisticsCard = ({ data }: { data: SystemStats | undefined }) => {
   const { t } = useTranslation()
 
-  const { data } = useGetSystemStats({
-    admin_username,
-  })
   return (
     <Card>
       <CardHeader>

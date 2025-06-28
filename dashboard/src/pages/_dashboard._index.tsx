@@ -10,6 +10,8 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { UseEditFormValues, UseFormValues, UserFormDefaultValues } from './_dashboard.users'
 import { useQueryClient } from '@tanstack/react-query'
+import { useGetCurrentAdmin, useGetSystemStats } from '@/service/api'
+import AdminStatisticsCard from '@/components/dashboard/admin-statistics-card'
 
 const Dashboard = () => {
   const { t } = useTranslation()
@@ -31,6 +33,15 @@ const Dashboard = () => {
     userForm.reset()
     setUserModalOpen(true)
   }
+
+  const { data: systemStatsData } = useGetSystemStats(undefined, {
+    query: {
+      refetchInterval: 5000,
+    },
+  })
+
+  const { data: currentAdmin } = useGetCurrentAdmin()
+  const is_sudo = currentAdmin?.is_sudo || false
 
   return (
     <div className="flex w-full flex-col items-start gap-2">
@@ -56,10 +67,14 @@ const Dashboard = () => {
           </Button>
         </div>
         <div className="transform-gpu animate-slide-up" style={{ animationDuration: '500ms', animationDelay: '100ms', animationFillMode: 'both' }}>
-          <DashboardStatistics />
+          <DashboardStatistics systemData={systemStatsData} />
         </div>
         <div className="transform-gpu animate-slide-up" style={{ animationDuration: '500ms', animationDelay: '100ms', animationFillMode: 'both' }}>
-          <DashboardAdminStatistics />
+          {is_sudo ? (
+            <DashboardAdminStatistics currentAdmin={currentAdmin} systemStats={systemStatsData} />
+          ) : (
+            <AdminStatisticsCard showAdminInfo={false} admin={currentAdmin} systemStats={systemStatsData} />
+          )}
         </div>
       </div>
       <UserModal isDialogOpen={isUserModalOpen} onOpenChange={setUserModalOpen} form={userForm} editingUser={false} onSuccessCallback={refreshAllUserData} />

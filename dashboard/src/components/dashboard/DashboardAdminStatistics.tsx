@@ -1,31 +1,26 @@
-import { useGetAdmins, useGetCurrentAdmin } from '@/service/api'
+import { AdminDetails, SystemStats, useGetAdmins } from '@/service/api'
 import AdminStatisticsCard from './admin-statistics-card'
 
-const DashboardAdminStatistics = () => {
+const DashboardAdminStatistics = ({ currentAdmin, systemStats }: { currentAdmin: AdminDetails | undefined; systemStats: SystemStats | undefined }) => {
   const { data } = useGetAdmins(undefined, {
     query: {
       refetchInterval: 60000,
     },
   })
 
-  const { data: currentAdmin } = useGetCurrentAdmin()
-
-  if (!data) return null
+  if (!data || !currentAdmin) return null
 
   if (data.length === 1) {
-    return <AdminStatisticsCard showAdminInfo={false} admin={data[0]} />
+    return <AdminStatisticsCard showAdminInfo={false} admin={currentAdmin} systemStats={systemStats} />
   }
 
-  if (currentAdmin?.is_sudo)
-    return (
-      <div className="flex flex-col gap-4">
-        {data?.map(admin => (
-          <AdminStatisticsCard admin={admin} />
-        ))}
-      </div>
-    )
-
-  return null
+  return (
+    <div className="flex flex-col gap-4">
+      {data?.map(admin => (
+        <AdminStatisticsCard admin={admin} systemStats={systemStats} />
+      ))}
+    </div>
+  )
 }
 
 export default DashboardAdminStatistics
