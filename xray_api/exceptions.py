@@ -35,7 +35,7 @@ class TagNotFoundError(XrayError):
 
 
 class ConnectionError(XrayError):
-    REGEXP = re.compile(r"Failed to connect to remote host|Socket closed|Broken pipe")
+    REGEXP = re.compile(r"Failed to connect to remote host|Socket closed|Broken pipe|Connection reset by peer")
 
     def __init__(self, details):
         super().__init__(details)
