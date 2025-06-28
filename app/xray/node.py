@@ -135,15 +135,21 @@ class ReSTXRayNode:
             raise ConnectionError("Node is not connected")
 
         if not self._api:
-            if self._started is True:
-                self._api = XRayAPI(
-                    address=self.address,
-                    port=self.api_port,
-                    ssl_cert=self._node_cert.encode(),
-                    ssl_target_name="Gozargah"
-                )
-            else:
-                raise ConnectionError("Node is not started")
+            if self._started is not True:
+                try:
+                    if self.started:
+                        self._started = True
+                    else:
+                        raise ConnectionError("Node is not started")
+                except NodeAPIError:
+                    raise ConnectionError("Node is not started")
+
+            self._api = XRayAPI(
+                address=self.address,
+                port=self.api_port,
+                ssl_cert=self._node_cert.encode(),
+                ssl_target_name="Gozargah"
+            )
 
         return self._api
 
