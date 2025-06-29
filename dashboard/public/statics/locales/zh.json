@@ -1,6 +1,8 @@
 {
   "active": "激活",
   "platform": "平台",
+  "dashboard": "仪表板",
+  "dashboardDescription": "Marzban 管理仪表板",
   "allStatuses": "所有状态",
   "status": "状态",
   "statistics": "统计",
@@ -15,6 +17,8 @@
   "modifying": "修改中...",
   "removing": "删除中...",
   "creating": "正在创建...",
+  "monitorUsers": "监控用户",
+  "alltime": "全部时间",
   "nodes": {
     "title": "节点",
     "description": "管理您的节点",
@@ -288,7 +292,51 @@
       }
     },
     "theme": {
-      "title": "主题"
+      "title": "主题",
+      "description": "自定义您的应用主题",
+      "light": "明亮",
+      "dark": "深色",
+      "system": "系统",
+      "selectTheme": "选择主题",
+      "themeSaved": "主题保存成功",
+      "themeChanged": "主题更改成功",
+      "visitThemePage": "访问主题页面进行进一步自定义",
+      "radiusSaved": "边框圆角更新成功",
+      "mode": "模式",
+      "color": "颜色",
+      "radius": "边框圆角",
+      "zinc": "锌灰",
+      "rose": "玫瑰",
+      "blue": "蓝色",
+      "green": "绿色",
+      "violet": "紫色",
+      "orange": "橙色",
+      "yellow": "黄色",
+      "default": "默认",
+      "red": "红色",
+      "modeDescription": "选择界面的显示方式",
+      "colorDescription": "选择您喜欢的配色方案",
+      "radiusDescription": "调整界面元素的圆角程度",
+      "lightDescription": "明亮清新",
+      "darkDescription": "护眼模式",
+      "systemDescription": "跟随设备",
+      "preview": "实时预览",
+      "previewDescription": "实时查看您的主题设置效果",
+      "dashboardPreview": "仪表板预览",
+      "dashboardDescription": "监控系统性能和管理用户账户",
+      "currentTheme": "当前主题",
+      "sampleInput": "示例输入",
+      "primaryButton": "主要按钮",
+      "resetToDefaults": "重置为默认",
+      "resetDescription": "将所有主题设置恢复为默认值",
+      "resetting": "重置中...",
+      "reset": "重置",
+      "resetSuccess": "主题已重置为默认设置",
+      "resetFailed": "重置主题设置失败",
+      "radiusNone": "无",
+      "radiusSmall": "小",
+      "radiusMedium": "中",
+      "radiusLarge": "大"
     }
   },
   "saving": "保存中...",
@@ -352,7 +400,25 @@
     "resetUsageFailed": "管理员重置用户「{{name}}」的使用情况失败",
     "reset": "重置使用情况",
     "discordId": "Discord ID",
-    "lifetime.used.traffic": "总计"
+    "lifetime.used.traffic": "总计",
+    "used": {
+      "traffic": "使用情况"
+    },
+    "monitor": {
+      "traffic": "监控管理员使用情况",
+      "no_traffic": "没有使用情况数据"
+    }
+  },
+  "shortcuts": {
+    "title": "键盘快捷键",
+    "description": "管理您的仪表板快捷键以便快速访问",
+    "add": "添加快捷键",
+    "empty": "未配置快捷键"
+  },
+  "quickActions": {
+    "title": "快速操作",
+    "description": "选择操作以在系统中创建新项目",
+    "comingSoon": "即将推出"
   },
   "resetUsersUsage.prompt": "你确定要重置管理员用户<b>{{name}}</b>的使用情况吗？",
   "admin.disable": "管理员已禁用",
@@ -997,6 +1063,7 @@
     "preview": "实时预览",
     "previewDescription": "实时查看您的主题设置效果",
     "dashboardPreview": "仪表板预览",
+    "dashboardDescription": "监控系统性能和管理用户账户",
     "currentTheme": "当前主题",
     "sampleInput": "示例输入",
     "primaryButton": "主要按钮",

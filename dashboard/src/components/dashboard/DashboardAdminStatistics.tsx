@@ -17,7 +17,7 @@ const DashboardAdminStatistics = ({ currentAdmin, systemStats }: { currentAdmin:
   return (
     <div className="flex flex-col gap-4">
       {data?.map(admin => (
-        <AdminStatisticsCard admin={admin} systemStats={systemStats} />
+        <AdminStatisticsCard key={admin.username} admin={admin} systemStats={systemStats} />
       ))}
     </div>
   )

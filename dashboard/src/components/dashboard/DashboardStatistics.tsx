@@ -1,11 +1,11 @@
 import useDirDetection from '@/hooks/use-dir-detection'
 import { cn } from '@/lib/utils'
-import { SystemStats, useGetSystemStats } from '@/service/api'
+import { SystemStats } from '@/service/api'
 import { formatBytes, numberWithCommas } from '@/utils/formatByte'
-import { CpuIcon, MemoryStickIcon, Users } from 'lucide-react'
+import { CpuIcon, MemoryStickIcon, Users, TrendingUp, TrendingDown } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, CardTitle } from '../ui/card'
+import { Card, CardTitle, CardContent } from '../ui/card'
 
 const CountUp = ({ end, duration = 1500 }: { end: number; duration?: number }) => {
   const [count, setCount] = useState(0)
@@ -59,9 +59,9 @@ const DashboardStatistics = ({ systemData }: { systemData: SystemStats | undefin
   return (
     <div className="flex flex-col gap-y-4">
       <div className={cn('flex flex-col items-center justify-between gap-x-4 gap-y-4 lg:flex-row', dir === 'rtl' && 'lg:flex-row-reverse')}>
-        {/* Online Users */}
+        {/* CPU Usage */}
         <div className="w-full animate-fade-in" style={{ animationDuration: '600ms', animationDelay: '50ms' }}>
-          <Card dir={dir} className="group relative w-full overflow-hidden rounded-md px-4 py-6 transition-all duration-500">
+          <Card dir={dir} className="group relative w-full overflow-hidden rounded-lg border transition-all duration-300 hover:shadow-lg">
             <div
               className={cn(
                 'absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 transition-opacity duration-500',
@@ -69,20 +69,34 @@ const DashboardStatistics = ({ systemData }: { systemData: SystemStats | undefin
                 'group-hover:opacity-100',
               )}
             />
-            <CardTitle className="relative z-10 flex items-center justify-between gap-x-4">
-              <div className="flex items-center gap-x-4">
-                <CpuIcon className="size-5" />
-                <span className="">{t('statistics.cpuUsage')}</span>
+            <CardContent className="relative z-10 p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <CpuIcon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('statistics.cpuUsage')}</p>
+                    <div className="flex items-center gap-2">
+                      <span dir="ltr" className={cn('text-2xl font-bold transition-all duration-500', isIncreased.cpu_usage ? 'animate-zoom-out' : '')} style={{ animationDuration: '400ms' }}>
+                        {systemData ? <CountUp end={systemData.cpu_usage ?? 0} /> : 0}%
+                      </span>
+                      {isIncreased.cpu_usage !== undefined && (
+                        <div className={cn('flex items-center text-xs', isIncreased.cpu_usage ? 'text-red-500' : 'text-green-500')}>
+                          {isIncreased.cpu_usage ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <span dir="ltr" className={cn('mx-2 text-3xl transition-all duration-500', isIncreased.online_users ? 'animate-zoom-out' : '')} style={{ animationDuration: '400ms' }}>
-                {systemData ? <CountUp end={systemData.cpu_usage ?? 0} /> : 0}%
-              </span>
-            </CardTitle>
+            </CardContent>
           </Card>
         </div>
 
+        {/* Memory Usage */}
         <div className="w-full animate-fade-in" style={{ animationDuration: '600ms', animationDelay: '150ms' }}>
-          <Card dir={dir} className="group relative w-full overflow-hidden rounded-md px-4 py-6 transition-all duration-500">
+          <Card dir={dir} className="group relative w-full overflow-hidden rounded-lg border transition-all duration-300 hover:shadow-lg">
             <div
               className={cn(
                 'absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 transition-opacity duration-500',
@@ -90,26 +104,40 @@ const DashboardStatistics = ({ systemData }: { systemData: SystemStats | undefin
                 'group-hover:opacity-100',
               )}
             />
-            <CardTitle className="relative z-10 flex items-center justify-between gap-x-4">
-              <div className="flex items-center gap-x-4">
-                <MemoryStickIcon className="size-5" />
-                <span className="">{t('statistics.ramUsage')}</span>
+            <CardContent className="relative z-10 p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <MemoryStickIcon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('statistics.ramUsage')}</p>
+                    <div className="flex items-center gap-2">
+                      <span dir="ltr" className={cn('text-2xl font-bold transition-all duration-500', isIncreased.mem_usage ? 'animate-zoom-out' : '')} style={{ animationDuration: '400ms' }}>
+                        {systemData ? (
+                          <span>
+                            <CountUp end={Number(formatBytes(systemData.mem_used ?? 0, 1, false)) ?? 0} />/{formatBytes(systemData.mem_total ?? 0, 1, true)}
+                          </span>
+                        ) : (
+                          0
+                        )}
+                      </span>
+                      {isIncreased.mem_usage !== undefined && (
+                        <div className={cn('flex items-center text-xs', isIncreased.mem_usage ? 'text-red-500' : 'text-green-500')}>
+                          {isIncreased.mem_usage ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <span dir="ltr" className={cn('mx-2 text-3xl transition-all duration-500', isIncreased.active_users ? 'animate-zoom-out' : '')} style={{ animationDuration: '400ms' }}>
-                {systemData ? (
-                  <span>
-                    <CountUp end={Number(formatBytes(systemData.mem_used ?? 0, 1, false)) ?? 0} />/{formatBytes(systemData.mem_total ?? 0, 1, true)}
-                  </span>
-                ) : (
-                  0
-                )}
-              </span>
-            </CardTitle>
+            </CardContent>
           </Card>
         </div>
 
+        {/* Online Users */}
         <div className="w-full animate-fade-in" style={{ animationDuration: '600ms', animationDelay: '250ms' }}>
-          <Card dir={dir} className="group relative w-full overflow-hidden rounded-md px-4 py-6 transition-all duration-500">
+          <Card dir={dir} className="group relative w-full overflow-hidden rounded-lg border transition-all duration-300 hover:shadow-lg">
             <div
               className={cn(
                 'absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 transition-opacity duration-500',
@@ -117,15 +145,28 @@ const DashboardStatistics = ({ systemData }: { systemData: SystemStats | undefin
                 'group-hover:opacity-100',
               )}
             />
-            <CardTitle className="relative z-10 flex items-center justify-between gap-x-4">
-              <div className="flex items-center gap-x-4">
-                <Users className="h-5 w-5" />
-                <span className="">{t('statistics.onlineUsers')}</span>
+            <CardContent className="relative z-10 p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('statistics.onlineUsers')}</p>
+                    <div className="flex items-center gap-2">
+                      <span className={cn('text-2xl font-bold transition-all duration-500', isIncreased.online_users ? 'animate-zoom-out' : '')} style={{ animationDuration: '400ms' }}>
+                        {systemData ? <CountUp end={systemData.online_users} /> : 0}
+                      </span>
+                      {isIncreased.online_users !== undefined && (
+                        <div className={cn('flex items-center text-xs', isIncreased.online_users ? 'text-green-500' : 'text-red-500')}>
+                          {isIncreased.online_users ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <span className={cn('mx-2 text-3xl transition-all duration-500', isIncreased.total_user ? 'animate-zoom-out' : '')} style={{ animationDuration: '400ms' }}>
-                {systemData ? <CountUp end={systemData.online_users} /> : 0}
-              </span>
-            </CardTitle>
+            </CardContent>
           </Card>
         </div>
       </div>

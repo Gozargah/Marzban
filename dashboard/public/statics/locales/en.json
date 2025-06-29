@@ -1,5 +1,7 @@
 {
   "marzban": "Marzban",
+  "dashboard": "Dashboard",
+  "dashboardDescription": "Marzban Management Dashboard",
   "active": "active",
   "online": "Online",
   "platform": "Platform",
@@ -18,6 +20,8 @@
   "modifying": "Modifying...",
   "removing": "Removing...",
   "creating": "Creating",
+  "monitorUsers": "Monitor Users",
+  "alltime": "All time",
   "nodes": {
     "title": "Nodes",
     "description": "Manage your nodes",
@@ -293,7 +297,51 @@
       }
     },
     "theme": {
-      "title": "Theme"
+      "title": "Theme",
+      "description": "Customize your application theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "selectTheme": "Select theme",
+      "themeSaved": "Theme saved successfully",
+      "themeChanged": "Theme changed successfully",
+      "visitThemePage": "Visit theme page to customize further",
+      "radiusSaved": "Border radius updated successfully",
+      "mode": "Mode",
+      "color": "Color",
+      "radius": "Border Radius",
+      "zinc": "Zinc",
+      "rose": "Rose",
+      "blue": "Blue",
+      "green": "Green",
+      "violet": "Violet",
+      "orange": "Orange",
+      "yellow": "Yellow",
+      "default": "Default",
+      "red": "Red",
+      "modeDescription": "Choose how the interface should appear",
+      "colorDescription": "Select your preferred color scheme",
+      "radiusDescription": "Adjust the roundness of UI elements",
+      "lightDescription": "Bright and clean",
+      "darkDescription": "Easy on the eyes",
+      "systemDescription": "Matches device",
+      "preview": "Live Preview",
+      "previewDescription": "See how your theme settings look in real-time",
+      "dashboardPreview": "Dashboard Preview",
+      "dashboardDescription": "Monitor system performance and manage user accounts",
+      "currentTheme": "Current theme",
+      "sampleInput": "Sample input",
+      "primaryButton": "Primary Button",
+      "resetToDefaults": "Reset to defaults",
+      "resetDescription": "Restore all theme settings to their default values",
+      "resetting": "Resetting...",
+      "reset": "Reset",
+      "resetSuccess": "Theme reset to default settings",
+      "resetFailed": "Failed to reset theme settings",
+      "radiusNone": "None",
+      "radiusSmall": "Small",
+      "radiusMedium": "Medium",
+      "radiusLarge": "Large"
     }
   },
   "saving": "Saving...",
@@ -357,7 +405,25 @@
     "resetUsageFailed": "Failed to reset admin «{{name}}» user usage",
     "reset": "Reset usage",
     "discordId": "Discord ID",
-    "lifetime.used.traffic": "Total"
+    "lifetime.used.traffic": "Total",
+    "used": {
+      "traffic": "Traffic Usage"
+    },
+    "monitor": {
+      "traffic": "Monitor admin traffic usage over time",
+      "no_traffic": "No traffic data available"
+    }
+  },
+  "shortcuts": {
+    "title": "Keyboard Shortcuts",
+    "description": "Manage your dashboard shortcuts for quick access",
+    "add": "Add Shortcut",
+    "empty": "No shortcuts configured"
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "description": "Choose an action to create new items in the system",
+    "comingSoon": "Coming Soon"
   },
   "resetUsersUsage.prompt": "Are you sure you want to reset the <b>{{name}}</b> admin users usage?",
   "admin.disable": "Disabled Admin",
@@ -1014,6 +1080,7 @@
     "preview": "Live Preview",
     "previewDescription": "See how your theme settings look in real-time",
     "dashboardPreview": "Dashboard Preview",
+    "dashboardDescription": "Monitor system performance and manage user accounts",
     "currentTheme": "Current theme",
     "sampleInput": "Sample input",
     "primaryButton": "Primary Button",

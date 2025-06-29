@@ -1,6 +1,7 @@
 {
   "marzban": "مـرزبان",
   "dashboard": "داشبورد",
+  "dashboardDescription": "داشبورد مدیریت مـرزبان",
   "active": "فعال",
   "online": "آنلاین",
   "platform": "پلتفرم",
@@ -20,6 +21,8 @@
   "github": "گیت‌هاب",
   "manageHosts": "مدیریت و کنترل هاست‌ها.",
   "manageSettings": "مدیریت و کنترل تنظیمات.",
+  "monitorUsers": "مدیریت کاربران",
+  "alltime": "همه زمان",
   "settings": {
     "title": "تنظیمات",
     "notifications": {
@@ -304,7 +307,25 @@
     "resetUsageFailed": "ریست مصرف کاربر «{{name}}» توسط ادمین ناموفق بود",
     "reset": "ریست مصرف",
     "discordId": "شناسه دیسکورد",
-    "lifetime.used.traffic": "مجموع کل"
+    "lifetime.used.traffic": "مجموع کل",
+    "used": {
+      "traffic": "مصرف ترافیک"
+    },
+    "monitor": {
+      "traffic": "نظارت بر مصرف ترافیک مدیر در طول زمان",
+      "no_traffic": "داده‌ای برای ترافیک موجود نیست"
+    }
+  },
+  "shortcuts": {
+    "title": "میانبرهای صفحه‌کلید",
+    "description": "میانبرهای داشبورد خود را برای دسترسی سریع مدیریت کنید",
+    "add": "افزودن میانبر",
+    "empty": "هیچ میانبری پیکربندی نشده است"
+  },
+  "quickActions": {
+    "title": "عملیات سریع",
+    "description": "عملیاتی را برای ایجاد آیتم‌های جدید در سیستم انتخاب کنید",
+    "comingSoon": "به زودی"
   },
   "resetUsersUsage.prompt": "آیا مطمئن هستید که می‌خواهید مصرف کاربر ادمین <b>{{name}}</b> را ریست کنید؟",
   "admin.disable": "غیر فعالسازی مدیر",
@@ -315,14 +336,6 @@
   "manageAccounts": "کنترل، بروزرسانی، و ترتیب حساب‌های کاربری",
   "manageGroups": "کنترل، بروزرسانی، و ترتیب گروه‌های کاربری",
   "manageNodes": "نظارت، کنترل، افزودن، ویرایش و حذف گره‌ها",
-  "Users": "کاربران",
-  "onlineUsers": "کاربران آنلاین",
-  "totalUsers": "کل کاربران",
-  "expiredUsers": "کاربران منقضی شده",
-  "limitedUsers": "کاربران محدود شده",
-  "onHoldUsers": "کاربران در انتظار",
-  "disabledUsers": "کاربران غیرفعال",
-  "monitorUsers": "نظارت بر وضعیت کاربران",
   "edit": "ویرایش",
   "editGroup": "ویرایش گروه",
   "disable": "غیرفعال کردن",
@@ -985,6 +998,7 @@
     "preview": "پیش‌نمایش زنده",
     "previewDescription": "تنظیمات تم خود را به صورت زمان واقعی ببینید",
     "dashboardPreview": "پیش‌نمایش داشبورد",
+    "dashboardDescription": "نظارت بر عملکرد سیستم و مدیریت حساب‌های کاربری",
     "currentTheme": "تم فعلی",
     "sampleInput": "ورودی نمونه",
     "primaryButton": "دکمه اصلی",

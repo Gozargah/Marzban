@@ -1,10 +1,23 @@
-import { AdminDetails, SystemStats } from '@/service/api'
+import { AdminDetails, SystemStats, useGetSystemStats } from '@/service/api'
 import { UserCircleIcon } from 'lucide-react'
 import UserStatisticsCard from './users-statistics-card'
 import DataUsageChart from './data-usage-chart'
 
 const AdminStatisticsCard = ({ admin, systemStats, showAdminInfo = true }: { admin: AdminDetails | undefined; systemStats: SystemStats | undefined; showAdminInfo?: boolean }) => {
   if (!admin) return null
+
+  // Fetch system stats specific to this admin
+  const { data: adminSystemStats } = useGetSystemStats(
+    { admin_username: admin.username },
+    {
+      query: {
+        refetchInterval: 5000,
+      },
+    }
+  )
+
+  // Use admin-specific stats if available, otherwise fall back to global stats
+  const statsToUse = adminSystemStats || systemStats
 
   if (showAdminInfo)
     return (
@@ -16,7 +29,7 @@ const AdminStatisticsCard = ({ admin, systemStats, showAdminInfo = true }: { adm
           </div>
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <UserStatisticsCard data={systemStats} />
+          <UserStatisticsCard data={statsToUse} />
           <DataUsageChart admin_username={admin.username} />
         </div>
       </div>
@@ -24,7 +37,7 @@ const AdminStatisticsCard = ({ admin, systemStats, showAdminInfo = true }: { adm
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-      <UserStatisticsCard data={systemStats} />
+      <UserStatisticsCard data={statsToUse} />
       <DataUsageChart admin_username={admin.username} />
     </div>
   )

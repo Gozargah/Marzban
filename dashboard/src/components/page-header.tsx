@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { LucideIcon, Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -9,9 +10,10 @@ interface PageHeaderProps {
   buttonText?: string
   onButtonClick?: () => void
   buttonIcon?: LucideIcon
+  buttonTooltip?: string
 }
 
-export default function PageHeader({ title, description, buttonText, onButtonClick, buttonIcon: Icon = Plus }: PageHeaderProps) {
+export default function PageHeader({ title, description, buttonText, onButtonClick, buttonIcon: Icon = Plus, buttonTooltip }: PageHeaderProps) {
   const { t } = useTranslation()
   const dir = useDirDetection()
   return (
@@ -22,10 +24,26 @@ export default function PageHeader({ title, description, buttonText, onButtonCli
       </div>
       {buttonText && onButtonClick && (
         <div>
-          <Button className="flex items-center" onClick={onButtonClick} size="sm">
-            {Icon && <Icon />}
-            <span>{t(buttonText)}</span>
-          </Button>
+          {buttonTooltip ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button className="flex items-center" onClick={onButtonClick} size="sm">
+                    {Icon && <Icon />}
+                    <span>{t(buttonText)}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{buttonTooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <Button className="flex items-center" onClick={onButtonClick} size="sm">
+              {Icon && <Icon />}
+              <span>{t(buttonText)}</span>
+            </Button>
+          )}
         </div>
       )}
     </div>
