@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy.orm import Session
 
 from app import logger, scheduler, xray
+from sqlalchemy.orm.exc import ObjectDeletedError
 from app.db import (GetDB, get_notification_reminder, get_users,
                     start_user_expire, update_user_status, reset_user_by_next)
 from app.models.user import ReminderType, UserResponse, UserStatus
@@ -56,9 +57,12 @@ def review():
     now_ts = now.timestamp()
     with GetDB() as db:
         for user in get_users(db, status=UserStatus.active):
-
-            limited = user.data_limit and user.used_traffic >= user.data_limit
-            expired = user.expire and user.expire <= now_ts
+            try:
+                limited = user.data_limit and user.used_traffic >= user.data_limit
+                expired = user.expire and user.expire <= now_ts
+            except ObjectDeletedError:
+                logger.warning("User removed during review", exc_info=True)
+                continue
 
             if (limited or expired) and user.next_plan is not None:
                 if user.next_plan is not None:
@@ -89,11 +93,14 @@ def review():
             logger.info(f"User \"{user.username}\" status changed to {status}")
 
         for user in get_users(db, status=UserStatus.on_hold):
-
-            if user.edit_at:
-                base_time = datetime.timestamp(user.edit_at)
-            else:
-                base_time = datetime.timestamp(user.created_at)
+            try:
+                if user.edit_at:
+                    base_time = datetime.timestamp(user.edit_at)
+                else:
+                    base_time = datetime.timestamp(user.created_at)
+            except ObjectDeletedError:
+                logger.warning("User removed during review", exc_info=True)
+                continue
 
             # Check if the user is online After or at 'base_time'
             if user.online_at and base_time <= datetime.timestamp(user.online_at):
