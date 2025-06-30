@@ -48,8 +48,12 @@ def get_system_info():
     with GetDB() as db:
         bandwidth = crud.get_system_usage(db)
         total_users = crud.get_users_count(db)
+        online_users = crud.count_online_users(db, 24)
         active_users = crud.get_users_count(db, UserStatus.active)
+        disabled_users = crud.get_users_count(db, UserStatus.disabled)
         onhold_users = crud.get_users_count(db, UserStatus.on_hold)
+        limited_users = crud.get_users_count(db, UserStatus.limited)
+        expired_users = crud.get_users_count(db, UserStatus.expired)
     return """\
 🎛 *CPU Cores*: `{cpu_cores}`
 🖥 *CPU Usage*: `{cpu_percent}%`
@@ -63,8 +67,12 @@ def get_system_info():
 ↕️ *Total Usage*: `{total_bandwidth}`
 ➖➖➖➖➖➖➖
 👥 *Total Users*: `{total_users}`
+🔵 *Online Users in last 24h*: `{online_users}`
 🟢 *Active Users*: `{active_users}`
+⚫ *Disabled Users*: `{disabled_users}`
 🟣 *OnHold Users*: `{onhold_users}`
+🟡 *Limited Users*: `{limited_users}`
+🟠 *Expired Users*: `{expired_users}`
 🔴 *Deactivate Users*: `{deactivate_users}`
 ➖➖➖➖➖➖➖
 ⏫ *Upload Speed*: `{up_speed}/s`
@@ -79,8 +87,12 @@ def get_system_info():
         up_bandwidth=readable_size(bandwidth.uplink),
         down_bandwidth=readable_size(bandwidth.downlink),
         total_users=total_users,
+        online_users=online_users,
         active_users=active_users,
+        disabled_users=disabled_users,
         onhold_users=onhold_users,
+        limited_users=limited_users,
+        expired_users=expired_users,
         deactivate_users=total_users - (active_users + onhold_users),
         up_speed=readable_size(realtime_bandwidth().outgoing_bytes),
         down_speed=readable_size(realtime_bandwidth().incoming_bytes)
