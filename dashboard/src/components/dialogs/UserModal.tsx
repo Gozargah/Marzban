@@ -85,6 +85,7 @@ const ExpiryDateField = ({
   calendarOpen,
   setCalendarOpen,
   handleFieldChange,
+  label = 'userDialog.expiryDate',
 }: {
   field: any
   displayDate: Date | null
@@ -92,6 +93,7 @@ const ExpiryDateField = ({
   calendarOpen: boolean
   setCalendarOpen: (open: boolean) => void
   handleFieldChange: (field: string, value: any) => void
+  label?: string
 }) => {
   const { t } = useTranslation()
   const expireInfo = useRelativeExpiryDate(displayDate ? Math.floor(displayDate.getTime() / 1000) : null)
@@ -180,7 +182,7 @@ const ExpiryDateField = ({
 
   return (
     <FormItem className="flex-1 flex flex-col">
-      <FormLabel>{t('userDialog.expiryDate', { defaultValue: 'Expire date' })}</FormLabel>
+      <FormLabel>{t(label, { defaultValue: 'Expire date' })}</FormLabel>
       <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
         <PopoverTrigger asChild>
           <FormControl>
@@ -203,7 +205,9 @@ const ExpiryDateField = ({
                       year: 'numeric',
                       month: '2-digit',
                       day: '2-digit',
-                    }) + ' ' + displayDate.toLocaleTimeString('fa-IR', {
+                    }) +
+                    ' ' +
+                    displayDate.toLocaleTimeString('fa-IR', {
                       hour: '2-digit',
                       minute: '2-digit',
                       hour12: false,
@@ -214,7 +218,9 @@ const ExpiryDateField = ({
                       year: 'numeric',
                       month: '2-digit',
                       day: '2-digit',
-                    }) + ' ' + displayDate.toLocaleTimeString('sv-SE', {
+                    }) +
+                    ' ' +
+                    displayDate.toLocaleTimeString('sv-SE', {
                       hour: '2-digit',
                       minute: '2-digit',
                       hour12: false,
@@ -272,23 +278,26 @@ const ExpiryDateField = ({
                 type="time"
                 value={
                   displayDate
-                    ? displayDate.toLocaleTimeString('sv-SE', { 
-                        hour: '2-digit', 
-                        minute: '2-digit', 
-                        hour12: false
+                    ? displayDate.toLocaleTimeString('sv-SE', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false,
                       })
-                    : now.toLocaleTimeString('sv-SE', { 
-                        hour: '2-digit', 
-                        minute: '2-digit', 
-                        hour12: false
+                    : now.toLocaleTimeString('sv-SE', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false,
                       })
                 }
-                min={displayDate && displayDate.toDateString() === now.toDateString() ? 
-                  now.toLocaleTimeString('sv-SE', { 
-                    hour: '2-digit', 
-                    minute: '2-digit', 
-                    hour12: false
-                  }) : undefined}
+                min={
+                  displayDate && displayDate.toDateString() === now.toDateString()
+                    ? now.toLocaleTimeString('sv-SE', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false,
+                      })
+                    : undefined
+                }
                 onChange={handleTimeChange}
               />
             </FormControl>
@@ -385,50 +394,59 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
 
   // Get the expire value from the form
   const expireValue = form.watch('expire')
+  const onHoldValue = form.watch('on_hold_timeout')
+
   let displayDate: Date | null = null
+  let onHoldDisplayDate: Date | null = null
 
   // Handle various formats of expire value
-  if (isDate(expireValue)) {
-    displayDate = expireValue
-  } else if (typeof expireValue === 'string') {
-    if (expireValue === '') {
-      displayDate = null
-    } else {
-      const utcString = expireValue.trim()
-      
-      // Check if this is a timezone-aware string (from user input)
-      // Look for timezone offset patterns like +03:30, -05:00, or Z at the end
-      const hasTimezone = /[+-]\d{2}:\d{2}$/.test(utcString) || utcString.endsWith('Z')
-      
-      if (hasTimezone) {
-        // This is from user input - already has timezone info
-        const date = new Date(utcString)
-        if (!isNaN(date.getTime())) {
-          displayDate = date
-        }
+  const parseDateValue = (value: unknown): Date | null => {
+    if (isDate(value)) {
+      return value
+    } else if (typeof value === 'string') {
+      if (value === '') {
+        return null
       } else {
-        // This is from backend - treat as UTC and convert to local
-        let utcDateString = utcString
-        if (!utcDateString.includes('T')) {
-          utcDateString += 'T00:00:00'
-        }
-        if (!utcDateString.endsWith('Z')) {
-          utcDateString += 'Z'
-        }
-        
-        const date = new Date(utcDateString)
-        if (!isNaN(date.getTime())) {
-          displayDate = date
+        const utcString = value.trim()
+
+        // Check if this is a timezone-aware string (from user input)
+        // Look for timezone offset patterns like +03:30, -05:00, or Z at the end
+        const hasTimezone = /[+-]\d{2}:\d{2}$/.test(utcString) || utcString.endsWith('Z')
+
+        if (hasTimezone) {
+          // This is from user input - already has timezone info
+          const date = new Date(utcString)
+          if (!isNaN(date.getTime())) {
+            return date
+          }
+        } else {
+          // This is from backend - treat as UTC and convert to local
+          let utcDateString = utcString
+          if (!utcDateString.includes('T')) {
+            utcDateString += 'T00:00:00'
+          }
+          if (!utcDateString.endsWith('Z')) {
+            utcDateString += 'Z'
+          }
+
+          const date = new Date(utcDateString)
+          if (!isNaN(date.getTime())) {
+            return date
+          }
         }
       }
+    } else if (typeof value === 'number') {
+      // Handle Unix timestamp (seconds) - convert to milliseconds and create Date
+      const date = new Date(value * 1000)
+      if (!isNaN(date.getTime())) {
+        return date
+      }
     }
-  } else if (typeof expireValue === 'number') {
-    // Handle Unix timestamp (seconds) - convert to milliseconds and create Date
-    const date = new Date(expireValue * 1000)
-    if (!isNaN(date.getTime())) {
-      displayDate = date
-    }
+    return null
   }
+
+  displayDate = parseDateValue(expireValue)
+  onHoldDisplayDate = parseDateValue(onHoldValue)
 
   // Query client for data refetching
   const queryClient = useQueryClient()
@@ -461,8 +479,6 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
       refetchOnReconnect: true,
     },
   })
-
-
 
   // Function to refresh all user-related data
   const refreshUserData = () => {
@@ -547,10 +563,6 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
 
   useEffect(() => {
     if (status === 'on_hold') {
-      // Clear expire field and its errors
-      form.setValue('expire', undefined)
-      form.clearErrors('expire')
-
       // Set default on_hold_expire_duration if not set
       const duration = form.getValues('on_hold_expire_duration')
       if (!duration || duration < 1) {
@@ -563,6 +575,9 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
       form.setValue('on_hold_expire_duration', undefined)
       form.clearErrors('on_hold_expire_duration')
     }
+    // to prevent the datepicker showing 604800, expire has to be reseted each time
+    form.setValue('expire', undefined)
+    form.clearErrors('expire')
   }, [status, form, t, handleFieldChange])
 
   useEffect(() => {
@@ -962,10 +977,13 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
       // For edit mode, only validate fields that have been changed
       const allFieldsTouched = editingUser
         ? {}
-        : Object.keys(currentValues).reduce((acc, key) => {
-            acc[key] = true
-            return acc
-          }, {} as Record<string, boolean>)
+        : Object.keys(currentValues).reduce(
+            (acc, key) => {
+              acc[key] = true
+              return acc
+            },
+            {} as Record<string, boolean>,
+          )
       const isValid = validateAllFields(currentValues, allFieldsTouched)
       setIsFormValid(isValid)
       setTouchedFields(allFieldsTouched)
@@ -1358,6 +1376,23 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                       </div>
                     </div>
                   )}
+                  {status === 'on_hold' && (
+                    <FormField
+                      control={form.control}
+                      name="on_hold_timeout"
+                      render={({ field }) => (
+                        <ExpiryDateField
+                          field={field}
+                          displayDate={onHoldDisplayDate}
+                          usePersianCalendar={usePersianCalendar}
+                          calendarOpen={calendarOpen}
+                          setCalendarOpen={setCalendarOpen}
+                          handleFieldChange={handleFieldChange}
+                          label="userDialog.timeOutDate"
+                        />
+                      )}
+                    />
+                  )}
                   <FormField
                     control={form.control}
                     name="note"
@@ -1379,13 +1414,10 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                       </FormItem>
                     )}
                   />
-                  
+
                   {/* Subscription Information - only show when editing and data exists */}
                   {editingUser && editingUserData && (editingUserData.sub_updated_at || editingUserData.sub_last_user_agent) && (
-                    <SubscriptionInfo
-                      subUpdatedAt={editingUserData.sub_updated_at}
-                      subLastUserAgent={editingUserData.sub_last_user_agent}
-                    />
+                    <SubscriptionInfo subUpdatedAt={editingUserData.sub_updated_at} subLastUserAgent={editingUserData.sub_last_user_agent} />
                   )}
                   {/* Proxy Settings Accordion */}
                   <Accordion type="single" collapsible className="w-full my-4">
