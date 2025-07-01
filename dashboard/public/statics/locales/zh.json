@@ -657,6 +657,7 @@
   "userDialog.editUserTitle": "用户编辑",
   "userDialog.endDate": "结束日期",
   "userDialog.expiryDate": "过期日期",
+  "userDialog.timeOutDate": "超时日期",
   "userDialog.generatedByDefault": "默认自动生成",
   "userDialog.hours": "小时",
   "userDialog.method": "加密方式",

@@ -85,7 +85,7 @@ const ExpiryDateField = ({
   calendarOpen,
   setCalendarOpen,
   handleFieldChange,
-  label = 'userDialog.expiryDate',
+  label,
 }: {
   field: any
   displayDate: Date | null
@@ -93,7 +93,7 @@ const ExpiryDateField = ({
   calendarOpen: boolean
   setCalendarOpen: (open: boolean) => void
   handleFieldChange: (field: string, value: any) => void
-  label?: string
+  label: string
 }) => {
   const { t } = useTranslation()
   const expireInfo = useRelativeExpiryDate(displayDate ? Math.floor(displayDate.getTime() / 1000) : null)
@@ -181,8 +181,8 @@ const ExpiryDateField = ({
   )
 
   return (
-    <FormItem className="flex-1 flex flex-col">
-      <FormLabel>{t(label, { defaultValue: 'Expire date' })}</FormLabel>
+    <FormItem className="flex flex-1 flex-col">
+      <FormLabel>{label}</FormLabel>
       <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
         <PopoverTrigger asChild>
           <FormControl>
@@ -190,7 +190,7 @@ const ExpiryDateField = ({
               <Button
                 dir={'ltr'}
                 variant={'outline'}
-                className={cn('w-full h-fit !mt-3.5 text-left font-normal', !field.value && 'text-muted-foreground')}
+                className={cn('!mt-3.5 h-fit w-full text-left font-normal', !field.value && 'text-muted-foreground')}
                 type="button"
                 onClick={e => {
                   e.preventDefault()
@@ -272,7 +272,7 @@ const ExpiryDateField = ({
               }}
             />
           )}
-          <div className="flex items-center gap-4 p-3 border-t">
+          <div className="flex items-center gap-4 border-t p-3">
             <FormControl>
               <Input
                 type="time"
@@ -952,7 +952,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
       }}
       title="Generate proxy settings"
     >
-      <RefreshCcw className="w-3 h-3" />
+      <RefreshCcw className="h-3 w-3" />
     </Button>
   )
 
@@ -1028,7 +1028,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={handleModalOpenChange}>
-      <DialogContent className={`lg:min-w-[900px]  ${editingUser ? 'sm:h-auto h-full' : 'h-auto'}`}>
+      <DialogContent className={`lg:min-w-[900px] ${editingUser ? 'h-full sm:h-auto' : 'h-auto'}`}>
         <DialogHeader>
           <DialogTitle className={`${dir === 'rtl' ? 'text-right' : ''}`}>
             {editingUser ? t('userDialog.editUser', { defaultValue: 'Edit User' }) : t('createUser', { defaultValue: 'Create User' })}
@@ -1036,10 +1036,10 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="max-h-[80dvh] overflow-y-auto pr-4 -mr-4 sm:max-h-[75dvh] px-2">
-              <div className="flex flex-col gap-6 lg:flex-row items-center lg:items-start justify-between w-full lg:pb-8">
-                <div className="space-y-6 flex-[2] w-full">
-                  <div className="flex items-center justify-center w-full gap-4">
+            <div className="-mr-4 max-h-[80dvh] overflow-y-auto px-2 pr-4 sm:max-h-[75dvh]">
+              <div className="flex w-full flex-col items-center justify-between gap-6 lg:flex-row lg:items-start lg:pb-8">
+                <div className="w-full flex-[2] space-y-6">
+                  <div className="flex w-full items-center justify-center gap-4">
                     {/* Hide these fields if a template is selected */}
                     {!selectedTemplateId && (
                       <div className={'flex w-full gap-4'}>
@@ -1052,7 +1052,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                               <FormItem className="flex-1">
                                 <FormLabel>{t('username', { defaultValue: 'Username' })}</FormLabel>
                                 <FormControl>
-                                  <div className="flex gap-2 items-center">
+                                  <div className="flex items-center gap-2">
                                     <div className="w-full">
                                       <Input
                                         placeholder={t('admins.enterUsername', { defaultValue: 'Enter username' })}
@@ -1081,7 +1081,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                         }}
                                         title="Generate username"
                                       >
-                                        <RefreshCcw className="w-3 h-3" />
+                                        <RefreshCcw className="h-3 w-3" />
                                       </Button>
                                     )}
                                   </div>
@@ -1130,10 +1130,10 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                         render={({ field }) => {
                           const hasError = !!form.formState.errors.username
                           return (
-                            <FormItem className="flex-1 w-full">
+                            <FormItem className="w-full flex-1">
                               <FormLabel>{t('username', { defaultValue: 'Username' })}</FormLabel>
                               <FormControl>
-                                <div className="flex flex-row justify-between gap-4 w-full items-center">
+                                <div className="flex w-full flex-row items-center justify-between gap-4">
                                   <div className="w-full">
                                     <Input
                                       placeholder={t('admins.enterUsername', { defaultValue: 'Enter username' })}
@@ -1162,7 +1162,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                       }}
                                       title="Generate username"
                                     >
-                                      <RefreshCcw className="w-3 h-3" />
+                                      <RefreshCcw className="h-3 w-3" />
                                     </Button>
                                   )}
                                 </div>
@@ -1176,7 +1176,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                   </div>
                   {/* Hide data_limit and expire if template is selected */}
                   {!selectedTemplateId && (
-                    <div className="flex flex-col w-full gap-4 lg:flex-row lg:items-start">
+                    <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-start">
                       <FormField
                         control={form.control}
                         name="data_limit"
@@ -1226,7 +1226,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                   value={field.value === undefined ? '' : field.value}
                                   className="pr-20"
                                 />
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+                                <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
                                   <div className="flex flex-col border-l border-input">
                                     <Button
                                       type="button"
@@ -1283,12 +1283,12 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                       </svg>
                                     </Button>
                                   </div>
-                                  <span className="text-muted-foreground pointer-events-none ml-1">GB</span>
+                                  <span className="pointer-events-none ml-1 text-muted-foreground">GB</span>
                                 </div>
                               </div>
                             </FormControl>
                             {field.value !== null && field.value !== undefined && field.value > 0 && field.value < 1 && (
-                              <p className="text-xs text-muted-foreground mt-1">{formatBytes(Math.round(field.value * 1024 * 1024 * 1024))}</p>
+                              <p className="mt-1 text-xs text-muted-foreground">{formatBytes(Math.round(field.value * 1024 * 1024 * 1024))}</p>
                             )}
                             <FormMessage />
                           </FormItem>
@@ -1326,7 +1326,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                           )}
                         />
                       )}
-                      <div className="flex items-start lg:w-52 gap-4">
+                      <div className="flex items-start gap-4 lg:w-52">
                         {status === 'on_hold' ? (
                           <FormField
                             control={form.control}
@@ -1369,6 +1369,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                 calendarOpen={calendarOpen}
                                 setCalendarOpen={setCalendarOpen}
                                 handleFieldChange={handleFieldChange}
+                                label={t('userDialog.expiryDate', { defaultValue: 'Expire date' })}
                               />
                             )}
                           />
@@ -1388,7 +1389,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                           calendarOpen={calendarOpen}
                           setCalendarOpen={setCalendarOpen}
                           handleFieldChange={handleFieldChange}
-                          label="userDialog.timeOutDate"
+                          label={t('userDialog.timeOutDate', { defaultValue: 'Expire date' })}
                         />
                       )}
                     />
@@ -1420,8 +1421,8 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                     <SubscriptionInfo subUpdatedAt={editingUserData.sub_updated_at} subLastUserAgent={editingUserData.sub_last_user_agent} />
                   )}
                   {/* Proxy Settings Accordion */}
-                  <Accordion type="single" collapsible className="w-full my-4">
-                    <AccordionItem className="border px-4 rounded-sm [&_[data-state=open]]:no-underline [&_[data-state=closed]]:no-underline" value="proxySettings">
+                  <Accordion type="single" collapsible className="my-4 w-full">
+                    <AccordionItem className="rounded-sm border px-4 [&_[data-state=closed]]:no-underline [&_[data-state=open]]:no-underline" value="proxySettings">
                       <AccordionTrigger>
                         <div className="flex items-center gap-2">
                           <Lock className="h-4 w-4" />
@@ -1429,8 +1430,8 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-2">
-                        <div className="flex justify-between items-center mb-2">
-                          <div className="text-muted-foreground text-xs">{t('userDialog.proxySettings.desc')}</div>
+                        <div className="mb-2 flex items-center justify-between">
+                          <div className="text-xs text-muted-foreground">{t('userDialog.proxySettings.desc')}</div>
                           <GenerateProxySettingsButton />
                         </div>
                         {/* VMess */}
@@ -1445,7 +1446,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                   {t('userDialog.proxySettings.vmess')} {t('userDialog.proxySettings.id')}
                                 </FormLabel>
                                 <FormControl>
-                                  <div dir="ltr" className="flex gap-2 items-center">
+                                  <div dir="ltr" className="flex items-center gap-2">
                                     <Input
                                       {...field}
                                       placeholder={t('userDialog.proxySettings.id')}
@@ -1479,7 +1480,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                       }}
                                       title="Generate UUID"
                                     >
-                                      <RefreshCcw className="w-3 h-3" />
+                                      <RefreshCcw className="h-3 w-3" />
                                     </Button>
                                   </div>
                                 </FormControl>
@@ -1500,7 +1501,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                   {t('userDialog.proxySettings.vless')} {t('userDialog.proxySettings.id')}
                                 </FormLabel>
                                 <FormControl>
-                                  <div dir="ltr" className="flex gap-2 items-center">
+                                  <div dir="ltr" className="flex items-center gap-2">
                                     <Input
                                       {...field}
                                       placeholder={t('userDialog.proxySettings.id')}
@@ -1534,7 +1535,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                       }}
                                       title="Generate UUID"
                                     >
-                                      <RefreshCcw className="w-3 h-3" />
+                                      <RefreshCcw className="h-3 w-3" />
                                     </Button>
                                   </div>
                                 </FormControl>
@@ -1582,7 +1583,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                 {t('userDialog.proxySettings.trojan')} {t('userDialog.proxySettings.password')}
                               </FormLabel>
                               <FormControl>
-                                <div dir="ltr" className="flex gap-2 items-center">
+                                <div dir="ltr" className="flex items-center gap-2">
                                   <Input
                                     {...field}
                                     placeholder={t('userDialog.proxySettings.password')}
@@ -1606,7 +1607,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                     }}
                                     title="Generate password"
                                   >
-                                    <RefreshCcw className="w-3 h-3" />
+                                    <RefreshCcw className="h-3 w-3" />
                                   </Button>
                                 </div>
                               </FormControl>
@@ -1624,7 +1625,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                 {t('userDialog.proxySettings.shadowsocks')} {t('userDialog.proxySettings.password')}
                               </FormLabel>
                               <FormControl>
-                                <div dir="ltr" className="flex gap-2 items-center">
+                                <div dir="ltr" className="flex items-center gap-2">
                                   <Input
                                     {...field}
                                     placeholder={t('userDialog.proxySettings.password')}
@@ -1648,7 +1649,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                     }}
                                     title="Generate password"
                                   >
-                                    <RefreshCcw className="w-3 h-3" />
+                                    <RefreshCcw className="h-3 w-3" />
                                   </Button>
                                 </div>
                               </FormControl>
@@ -1692,10 +1693,10 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                   </Accordion>
                   {/* Next Plan Section (toggleable) */}
                   {editingUser && (
-                    <div className="border border-border rounded-[--radius] p-4">
+                    <div className="rounded-[--radius] border border-border p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <ListStart className="w-4 h-4" />
+                          <ListStart className="h-4 w-4" />
                           <div>{t('userDialog.nextPlanTitle', { defaultValue: 'Next Plan' })}</div>
                         </div>
                         <Switch checked={nextPlanEnabled} onCheckedChange={setNextPlanEnabled} />
@@ -1807,19 +1808,19 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                     </div>
                   )}
                 </div>
-                <div className="space-y-6 w-full h-full flex-1">
+                <div className="h-full w-full flex-1 space-y-6">
                   <div className="w-full">
-                    <div className="flex border-b items-center">
+                    <div className="flex items-center border-b">
                       {tabs.map(tab => (
                         <button
                           key={tab.id}
                           onClick={() => setActiveTab(tab.id as typeof activeTab)}
                           className={`relative flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                            activeTab === tab.id ? 'text-foreground border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'
+                            activeTab === tab.id ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground hover:text-foreground'
                           }`}
                           type="button"
                         >
-                          <div className="flex items-center gap-1.5 justify-center">
+                          <div className="flex items-center justify-center gap-1.5">
                             <tab.icon className="h-4 w-4" />
                             <span>{t(tab.label)}</span>
                           </div>
@@ -1914,13 +1915,13 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                         className="pl-8"
                                       />
                                     </div>
-                                    <label className="flex items-center border border-border gap-2 p-3 rounded-md hover:bg-accent cursor-pointer">
+                                    <label className="flex cursor-pointer items-center gap-2 rounded-md border border-border p-3 hover:bg-accent">
                                       <Checkbox checked={filteredGroups.length > 0 && selectedGroups.length === filteredGroups.length} onCheckedChange={handleSelectAll} />
                                       <span className="text-sm font-medium">{t('selectAll', { defaultValue: 'Select All' })}</span>
                                     </label>
-                                    <div className="max-h-[200px] overflow-y-auto space-y-2 p-2 border rounded-md">
+                                    <div className="max-h-[200px] space-y-2 overflow-y-auto rounded-md border p-2">
                                       {filteredGroups.length === 0 ? (
-                                        <div className="flex flex-col gap-4 w-full border-yellow-500 border p-4 rounded-md">
+                                        <div className="flex w-full flex-col gap-4 rounded-md border border-yellow-500 p-4">
                                           <span className="text-sm font-bold text-yellow-500">{t('warning')}</span>
                                           <span className="text-sm font-medium text-foreground">
                                             <Trans
@@ -1942,7 +1943,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                         </div>
                                       ) : (
                                         filteredGroups.map((group: any) => (
-                                          <label key={group.id} className="flex items-center gap-2 p-2 rounded-md hover:bg-accent cursor-pointer">
+                                          <label key={group.id} className="flex cursor-pointer items-center gap-2 rounded-md p-2 hover:bg-accent">
                                             <Checkbox checked={selectedGroups.includes(group.id)} onCheckedChange={checked => handleGroupChange(!!checked, group.id)} />
                                             <span className="text-sm">{group.name}</span>
                                           </label>
@@ -1970,7 +1971,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
               </div>
             </div>
             {/* Cancel/Create buttons - always visible */}
-            <div className="flex justify-end gap-2 mt-4">
+            <div className="mt-4 flex justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
