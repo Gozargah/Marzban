@@ -28,10 +28,12 @@ interface FiltersProps {
         sort: string
         status?: UserStatus | null
         load_sub: boolean
+        admin?: string[]
+        group?: number[]
     }
     onFilterChange: (filters: Partial<FiltersProps['filters']>) => void
     refetch?: (options?: RefetchOptions) => Promise<any>
-    advanceSearchOnOpen: (status:boolean) => void
+    advanceSearchOnOpen: (status: boolean) => void
 }
 
 export const Filters = ({filters, onFilterChange, refetch, advanceSearchOnOpen}: FiltersProps) => {
@@ -41,6 +43,8 @@ export const Filters = ({filters, onFilterChange, refetch, advanceSearchOnOpen}:
     const [isRefreshing, setIsRefreshing] = useState(false)
     const userQuery = useGetUsers(filters)
     const handleRefetch = refetch || userQuery.refetch
+    console.log(filters)
+    console.log(userQuery);
 
     // Debounced search function
     const setSearchField = useCallback(
@@ -100,7 +104,8 @@ export const Filters = ({filters, onFilterChange, refetch, advanceSearchOnOpen}:
                 )}
             </div>
             <div className="flex items-center gap-2 h-full">
-                <Button size="icon-md" variant="ghost" className="flex items-center gap-2 border" onClick={handleOpenAdvanceSearch}>
+                <Button size="icon-md" variant="ghost" className="flex items-center gap-2 border"
+                        onClick={handleOpenAdvanceSearch}>
                     <SettingsIcon className="w-4 h-4"/>
                 </Button>
             </div>

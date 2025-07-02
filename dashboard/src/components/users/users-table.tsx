@@ -32,7 +32,15 @@ const UsersTable = () => {
     search: undefined as string | undefined,
   })
 
-  const advanceSearchForm = useForm<AdvanceSearchFormValue>()
+  const advanceSearchForm = useForm<AdvanceSearchFormValue>({
+    defaultValues: {
+      is_username: true,
+      is_protocol: false,
+      admin: [],
+      group: [],
+      status: [],
+    }
+  })
 
   // Create form for user editing
   const userForm = useForm<UseEditFormValues>({
@@ -202,6 +210,21 @@ const UsersTable = () => {
     }
   }
 
+  const handleAdvanceSearchSubmit = (values: AdvanceSearchFormValue) => {
+    setFilters((prev) => ({
+      ...prev,
+      admin: values.admin && values.admin.length > 0 ? values.admin : undefined,
+      group: Array.isArray(values.group) && values.group.length > 0 ? values.group.map(Number) : undefined,
+      status: values.status && values.status.length > 0 ? values.status : undefined,
+      offset: 0,
+    }));
+
+    setCurrentPage(0);
+    setIsAdvanceSearchOpen(false);
+    advanceSearchForm.reset(values);
+  };
+
+
   const handleEdit = (user: UserResponse) => {
     setSelectedUser(user)
     setEditModalOpen(true)
@@ -250,8 +273,15 @@ const UsersTable = () => {
         />
       )}
       {isAdvanceSearchOpen && (
-          <AdvanceSearchModal isDialogOpen={isAdvanceSearchOpen} onOpenChange={setIsAdvanceSearchOpen} form={advanceSearchForm}/>
-      )}
+          <AdvanceSearchModal
+              isDialogOpen={isAdvanceSearchOpen}
+              onOpenChange={(open) => {
+                setIsAdvanceSearchOpen(open)
+                if (!open) advanceSearchForm.reset() // Reset form when closing
+              }}
+              form={advanceSearchForm}
+              onSubmit={handleAdvanceSearchSubmit}
+          />      )}
     </div>
   )
 }
