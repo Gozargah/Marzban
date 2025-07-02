@@ -1173,5 +1173,23 @@
     "success": "مالک کاربر {{username}} با موفقیت به {{admin}} تغییر یافت.",
     "error": "تغییر مالک کاربر {{username}} به {{admin}} ناموفق بود.",
     "loadError": "بارگذاری لیست مدیران ناموفق بود."
+  },
+  "advanceSearch": {
+    "title": "جستجوی پیشرفته",
+    "byUsername": "نام کاربری و یادداشت‌ها",
+    "byProtocol": "داده‌های پروتکل",
+    "byStatus": "وضعیت",
+    "byAdmin": "مدیر",
+    "byGroup": "گروه",
+    "selectGroup": "انتخاب گروه ...",
+    "selectAdmin": "انتخاب مدیر ...",
+    "selectStatus": "انتخاب وضعیت ...",
+    "status": {
+      "active": "فعال",
+      "disable": "غیرفعال",
+      "expired": "منقضی‌شده",
+      "limited": "محدود",
+      "onHold": "متوقف‌شده"
+    }
   }
 }

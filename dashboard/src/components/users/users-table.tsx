@@ -11,6 +11,7 @@ import { PaginationControls } from './filters'
 import { useForm } from 'react-hook-form'
 import { UseEditFormValues } from '@/pages/_dashboard._index'
 import UserModal from '../dialogs/UserModal'
+import AdvanceSearchModal, {AdvanceSearchFormValue} from "@/components/dialogs/AdvanceSearchModal.tsx";
 
 const UsersTable = () => {
   const { t } = useTranslation()
@@ -21,6 +22,7 @@ const UsersTable = () => {
   const [isChangingPage, setIsChangingPage] = useState(false)
   const [isEditModalOpen, setEditModalOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null)
+  const [isAdvanceSearchOpen, setIsAdvanceSearchOpen] = useState(false)
 
   const [filters, setFilters] = useState({
     limit: itemsPerPage,
@@ -29,6 +31,8 @@ const UsersTable = () => {
     offset: 0,
     search: undefined as string | undefined,
   })
+
+  const advanceSearchForm = useForm<AdvanceSearchFormValue>()
 
   // Create form for user editing
   const userForm = useForm<UseEditFormValues>({
@@ -223,7 +227,7 @@ const UsersTable = () => {
 
   return (
     <div>
-      <Filters filters={filters} onFilterChange={handleFilterChange} refetch={handleManualRefresh} />
+      <Filters filters={filters} onFilterChange={handleFilterChange} refetch={handleManualRefresh} advanceSearchOnOpen={setIsAdvanceSearchOpen}/>
       <DataTable columns={columns} data={usersData?.users || []} isLoading={isLoading} isFetching={isFetching} onEdit={handleEdit} />
       <PaginationControls
         currentPage={currentPage}
@@ -244,6 +248,9 @@ const UsersTable = () => {
           editingUserData={selectedUser}
           onSuccessCallback={handleEditSuccess}
         />
+      )}
+      {isAdvanceSearchOpen && (
+          <AdvanceSearchModal isDialogOpen={isAdvanceSearchOpen} onOpenChange={setIsAdvanceSearchOpen} form={advanceSearchForm}/>
       )}
     </div>
   )

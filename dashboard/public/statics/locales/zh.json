@@ -1225,5 +1225,23 @@
       "description": "开始创建您的第一个用户账户",
       "createFirstUser": "创建第一个用户"
     }
+  },
+  "advanceSearch": {
+    "title": "高级搜索",
+    "byUsername": "用户名和备注",
+    "byProtocol": "协议数据",
+    "byStatus": "状态",
+    "byAdmin": "管理员",
+    "byGroup": "分组",
+    "selectGroup": "选择分组...",
+    "selectAdmin": "选择管理员...",
+    "selectStatus": "选择状态...",
+    "status": {
+      "active": "激活",
+      "disable": "禁用",
+      "expired": "已过期",
+      "limited": "受限",
+      "onHold": "暂停"
+    }
   }
 }

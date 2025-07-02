@@ -1231,5 +1231,23 @@
     "success": "User {{username}}'s owner changed to {{admin}} successfully.",
     "error": "Failed to change owner of user {{username}} to {{admin}}.",
     "loadError": "Failed to load admins."
+  },
+  "advanceSearch": {
+    "title": "Advanced Search",
+    "byUsername": "Username and Notes",
+    "byProtocol": "Protocol Data",
+    "byStatus": "Status",
+    "byAdmin":"Admin",
+    "byGroup": "Group",
+    "selectGroup": "Select Group ... ",
+    "selectAdmin": "Select Admin ... ",
+    "selectStatus": "Select Status ... ",
+    "status": {
+        "active": "Active",
+        "disable": "Disable",
+        "expired": "Expired",
+        "limited": "Limited",
+        "onHold": "On Hold"
+    }
   }
 }
