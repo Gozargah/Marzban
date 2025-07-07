@@ -209,7 +209,7 @@ class UserOperation(BaseOperation):
 
         db_user = await set_owner(db, db_user, new_admin)
         user = await self.validate_user(db_user)
-        logger.info(f'{user.username}"owner successfully set to{new_admin.username} by admin "{admin.username}"')
+        logger.info(f'{user.username}" owner successfully set to {new_admin.username} by admin "{admin.username}"')
 
         return user
 
