@@ -11,7 +11,16 @@ async def create_admin(admin: AdminDetails, by: str):
         + f"**Username:** `{admin.username}`\n"
         + f"**Is Sudo:** `{admin.is_sudo}`\n"
         + f"**Is Disabled:** `{admin.is_disabled}`\n"
-        + f"**Used Traffic:** `{admin.used_traffic}`\n"
+        + (f"**Telegram ID:** `{admin.telegram_id}` — [mention](tg://user?id={admin.telegram_id})\n" if admin.telegram_id else "")
+        + (f"**Discord ID:** `{admin.discord_id}`\n" if admin.discord_id else "")
+        + (f"**Discord Webhook:** `{admin.discord_webhook}`\n" if admin.discord_webhook else "")
+        + (f"**Sub Domain:** `{admin.sub_domain}`\n" if admin.sub_domain else "")
+        + (f"**Sub Template:** `{admin.sub_template}`\n" if admin.sub_template else "")
+        + (f"**Profile Title:** `{admin.profile_title}`\n" if admin.profile_title else "")
+        + (f"**Support URL:** `{admin.support_url}`\n" if admin.support_url else "")
+        + (f"**Total Users:** `{admin.total_users}`\n" if admin.total_users else "")
+        + (f"**Used Traffic:** `{admin.used_traffic}`\n" if admin.used_traffic else "")
+        + (f"**Lifetime Used Traffic:** `{admin.lifetime_used_traffic}`\n" if admin.lifetime_used_traffic else "")
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_By: #{by}_"
     )
@@ -28,8 +37,17 @@ async def modify_admin(admin: AdminDetails, by: str):
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"**Username:** `{admin.username}`\n"
         + f"**Is Sudo:** `{admin.is_sudo}`\n"
-        + f"**Is Disabled:** {admin.is_disabled}\n"
-        + f"**Used Traffic:** {admin.used_traffic}\n"
+        + f"**Is Disabled:** `{admin.is_disabled}`\n"
+        + (f"**Telegram ID:** `{admin.telegram_id}` — [mention](tg://user?id={admin.telegram_id})\n" if admin.telegram_id else "")
+        + (f"**Discord ID:** `{admin.discord_id}`\n" if admin.discord_id else "")
+        + (f"**Discord Webhook:** `{admin.discord_webhook}`\n" if admin.discord_webhook else "")
+        + (f"**Sub Domain:** `{admin.sub_domain}`\n" if admin.sub_domain else "")
+        + (f"**Sub Template:** `{admin.sub_template}`\n" if admin.sub_template else "")
+        + (f"**Profile Title:** `{admin.profile_title}`\n" if admin.profile_title else "")
+        + (f"**Support URL:** `{admin.support_url}`\n" if admin.support_url else "")
+        + (f"**Total Users:** `{admin.total_users}`\n" if admin.total_users else "")
+        + (f"**Used Traffic:** `{admin.used_traffic}`\n" if admin.used_traffic else "")
+        + (f"**Lifetime Used Traffic:** `{admin.lifetime_used_traffic}`\n" if admin.lifetime_used_traffic else "")
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_By: #{by}_"
     )
