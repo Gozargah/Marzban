@@ -77,7 +77,7 @@ async def modify_user(user: UserNotificationResponse, by: str):
 
 async def remove_user(user: UserNotificationResponse, by: str):
     data = (
-        "🗑️ #Remove_User\n"
+        "*🗑️ #Remove_User*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"**Username:** `{user.username}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
@@ -95,7 +95,7 @@ async def remove_user(user: UserNotificationResponse, by: str):
 
 async def reset_user_data_usage(user: UserNotificationResponse, by: str):
     data = (
-        "🔁 #Reset_User_Data_Usage\n"
+        "*🔁 #Reset_User_Data_Usage*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"**Username:** `{user.username}`\n"
         + f"**Data Limit**: `{readable_size(user.data_limit) if user.data_limit else 'Unlimited'}`\n"
@@ -114,7 +114,7 @@ async def reset_user_data_usage(user: UserNotificationResponse, by: str):
 
 async def user_data_reset_by_next(user: UserNotificationResponse, by: str):
     data = (
-        "🔁 #Reset_User_By_Next\n"
+        "*🔁 #Reset_User_By_Next*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"**Username:** `{user.username}`\n"
         + f"**Data Limit**: `{readable_size(user.data_limit) if user.data_limit else 'Unlimited'}`\n"
@@ -134,7 +134,7 @@ async def user_data_reset_by_next(user: UserNotificationResponse, by: str):
 
 async def user_subscription_revoked(user: UserNotificationResponse, by: str):
     data = (
-        "🛑 #Revoke_User_Subscribtion\n"
+        "*🛑 #Revoke_User_Subscribtion*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"**Username:** `{user.username}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"

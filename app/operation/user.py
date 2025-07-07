@@ -92,6 +92,8 @@ class UserOperation(BaseOperation):
         user = await self.update_user(db_user)
 
         logger.info(f'New user "{db_user.username}" with id "{db_user.id}" added by admin "{admin.username}"')
+        
+        asyncio.create_task(notification.create_user(user, admin))
 
         return user
 
