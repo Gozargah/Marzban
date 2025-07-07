@@ -8,10 +8,10 @@ async def create_host(host: BaseHost, by: str):
     data = (
         "*#Create_Host*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Remark:** `{host.remark}`\n"
-        + f"**Address:** `{host.address}`\n"
-        + f"**Inbound Tag:** `{host.inbound_tag}`\n"
-        + f"**Port:** `{host.port}`\n"
+        + f"*Remark:* `{host.remark}`\n"
+        + f"*Address:* `{host.address}`\n"
+        + f"*Inbound Tag:* `{host.inbound_tag}`\n"
+        + f"*Port:* `{host.port}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_ID_: `{host.id}`\n"
         + f"_By: #{by}_"
@@ -27,10 +27,10 @@ async def modify_host(host: BaseHost, by: str):
     data = (
         "*#Modify_Host*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Remark:** `{host.remark}`\n"
-        + f"**Address:** `{host.address}`\n"
-        + f"**Inbound Tag:** `{host.inbound_tag}`\n"
-        + f"**Port:** `{host.port}`\n\n"
+        + f"*Remark:* `{host.remark}`\n"
+        + f"*Address:* `{host.address}`\n"
+        + f"*Inbound Tag:* `{host.inbound_tag}`\n"
+        + f"*Port:* `{host.port}`\n\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_ID_: `{host.id}`\n"
         + f"_By: #{by}_"
@@ -46,7 +46,7 @@ async def remove_host(host: BaseHost, by: str):
     data = (
         "*#Remove_Host*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Remark:** `{host.remark}`\n"
+        + f"*Remark:* `{host.remark}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_ID_: {host.id}\n"
         + f"_By: #{by}_"
@@ -59,7 +59,7 @@ async def remove_host(host: BaseHost, by: str):
 
 
 async def modify_hosts(by: str):
-    data = f"*#Modify_Hosts*\n➖➖➖➖➖➖➖➖➖\nAll hosts has been updated by **#{by}**"
+    data = f"*#Modify_Hosts*\n➖➖➖➖➖➖➖➖➖\nAll hosts has been updated by *#{by}*"
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(

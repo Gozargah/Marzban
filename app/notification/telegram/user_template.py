@@ -8,11 +8,11 @@ async def create_user_template(user_template: UserTemplateResponse, by: str):
     data = (
         "*#Create_User_Template*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Name:** `{user_template.name}`\n"
-        + f"**Data Limit:** `{user_template.data_limit}`\n"
-        + f"**Expire Duration:** `{user_template.expire_duration}`\n"
-        + f"**Username Prefix:** `{user_template.username_prefix}`\n"
-        + f"**Username Suffix:** `{user_template.username_suffix}`\n"
+        + f"*Name:* `{user_template.name}`\n"
+        + f"*Data Limit:* `{user_template.data_limit}`\n"
+        + f"*Expire Duration:* `{user_template.expire_duration}`\n"
+        + f"*Username Prefix:* `{user_template.username_prefix}`\n"
+        + f"*Username Suffix:* `{user_template.username_suffix}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_By: #{by}_"
     )
@@ -27,11 +27,11 @@ async def modify_user_template(user_template: UserTemplateResponse, by: str):
     data = (
         "*#Modify_User_Template*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Name:** `{user_template.name}`\n"
-        + f"**Data Limit:** `{user_template.data_limit}`\n"
-        + f"**Expire Duration:** `{user_template.expire_duration}`\n"
-        + f"**Username Prefix:** `{user_template.username_prefix}`\n"
-        + f"**Username Suffix:** `{user_template.username_suffix}`\n"
+        + f"*Name:* `{user_template.name}`\n"
+        + f"*Data Limit:* `{user_template.data_limit}`\n"
+        + f"*Expire Duration:* `{user_template.expire_duration}`\n"
+        + f"*Username Prefix:* `{user_template.username_prefix}`\n"
+        + f"*Username Suffix:* `{user_template.username_suffix}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_By: #{by}_"
     )
@@ -43,7 +43,7 @@ async def modify_user_template(user_template: UserTemplateResponse, by: str):
 
 
 async def remove_user_template(name: str, by: str):
-    data = "*#Remove_User_Template*\n" + f"**Name:** `{name}`\n" + "➖➖➖➖➖➖➖➖➖\n" + f"_By: #{by}_"
+    data = "*#Remove_User_Template*\n" + f"*Name:* `{name}`\n" + "➖➖➖➖➖➖➖➖➖\n" + f"_By: #{by}_"
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(

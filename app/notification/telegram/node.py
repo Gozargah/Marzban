@@ -8,10 +8,10 @@ async def create_node(node: NodeResponse, by: str):
     data = (
         "*#Create_Node*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**ID:** `{node.id}`\n"
-        + f"**Name:** `{node.name}`\n"
-        + f"**Address:** `{node.address}`\n"
-        + f"**Port:** `{node.port}`\n"
+        + f"*ID:* `{node.id}`\n"
+        + f"*Name:* `{node.name}`\n"
+        + f"*Address:* `{node.address}`\n"
+        + f"*Port:* `{node.port}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_By: #{by}_"
     )
@@ -26,10 +26,10 @@ async def modify_node(node: NodeResponse, by: str):
     data = (
         "*#Modify_Node*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**ID:** `{node.id}`\n"
-        + f"**Name:** `{node.name}`\n"
-        + f"**Address:** `{node.address}`\n"
-        + f"**Port:** `{node.port}`\n"
+        + f"*ID:* `{node.id}`\n"
+        + f"*Name:* `{node.name}`\n"
+        + f"*Address:* `{node.address}`\n"
+        + f"*Port:* `{node.port}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_By: #{by}_"
     )
@@ -44,8 +44,8 @@ async def remove_node(node: NodeResponse, by: str):
     data = (
         "*#Remove_Node*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**ID:** `{node.id}`\n"
-        + f"**Name:** `{node.name}`\n"
+        + f"*ID:* `{node.id}`\n"
+        + f"*Name:* `{node.name}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_By: #{by}_"
     )
@@ -60,9 +60,9 @@ async def connect_node(node: NodeResponse):
     data = (
         "*#Connect_Node*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Name:** `{node.name}`\n"
-        + f"**Node Version:** {node.node_version}\n"
-        + f"**Core Version:** {node.xray_version}\n"
+        + f"*Name:* `{node.name}`\n"
+        + f"*Node Version:* {node.node_version}\n"
+        + f"*Core Version:* {node.xray_version}\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_ID_: `{node.id}`"
     )
@@ -77,8 +77,8 @@ async def error_node(node: NodeResponse):
     data = (
         "*#Error_Node*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Name:** `{node.name}`\n"
-        + f"**Error:** {node.message}\n"
+        + f"*Name:* `{node.name}`\n"
+        + f"*Error:* {node.message}\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_ID_: `{node.id}`"
     )

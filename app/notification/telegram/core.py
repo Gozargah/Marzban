@@ -8,9 +8,9 @@ async def create_core(core: CoreResponse, by: str):
     data = (
         "*#Create_core*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Name:** `{core.name}`\n"
-        + f"**Exclude inbound tags:** `{core.exclude_inbound_tags}`\n"
-        + f"**Fallbacks inbound tags:** `{core.fallbacks_inbound_tags}`\n"
+        + f"*Name:* `{core.name}`\n"
+        + f"*Exclude inbound tags:* `{core.exclude_inbound_tags}`\n"
+        + f"*Fallbacks inbound tags:* `{core.fallbacks_inbound_tags}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_ID_: `{core.id}`\n"
         + f"_By: #{by}_"
@@ -26,9 +26,9 @@ async def modify_core(core: CoreResponse, by: str):
     data = (
         "*#Modify_core*\n"
         + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Name:** `{core.name}`\n"
-        + f"**Exclude inbound tags:** `{core.exclude_inbound_tags}`\n"
-        + f"**Fallbacks inbound tags:** `{core.fallbacks_inbound_tags}`\n"
+        + f"*Name:* `{core.name}`\n"
+        + f"*Exclude inbound tags:* `{core.exclude_inbound_tags}`\n"
+        + f"*Fallbacks inbound tags:* `{core.fallbacks_inbound_tags}`\n"
         + "➖➖➖➖➖➖➖➖➖\n"
         + f"_ID_: `{core.id}`\n"
         + f"_By: #{by}_"
@@ -42,7 +42,7 @@ async def modify_core(core: CoreResponse, by: str):
 
 async def remove_core(core_id: int, by: str):
     data = (
-        "*#Remove_core*\n" + "➖➖➖➖➖➖➖➖➖\n" + f"**ID:** `{core_id}`\n" + "➖➖➖➖➖➖➖➖➖\n" + f"_By: #{by}_"
+        "*#Remove_core*\n" + "➖➖➖➖➖➖➖➖➖\n" + f"*ID:* `{core_id}`\n" + "➖➖➖➖➖➖➖➖➖\n" + f"_By: #{by}_"
     )
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
