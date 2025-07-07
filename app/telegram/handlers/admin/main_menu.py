@@ -21,7 +21,10 @@ router = Router(name="main_menu")
 async def reload_data(event: CallbackQuery, db: AsyncSession, admin: AdminDetails):
     stats = await system_operator.get_system_stats(db, admin)
     try:
-        await event.message.edit_text(text=Texts.start(stats), reply_markup=AdminPanel().as_markup())
+        await event.message.edit_text(
+            text=Texts.start(stats),
+            reply_markup=AdminPanel(is_sudo=admin.is_sudo).as_markup()
+        )
     finally:
         await event.answer(Texts.refreshed)
 
@@ -33,6 +36,9 @@ async def sync_users(event: CallbackQuery, db: AsyncSession, admin: AdminDetails
         await node_operator.sync_node_users(db, node.id, flush_users=True)
     try:
         stats = await system_operator.get_system_stats(db, admin)
-        await event.message.edit_text(text=Texts.start(stats), reply_markup=AdminPanel().as_markup())
+        await event.message.edit_text(
+            text=Texts.start(stats),
+            reply_markup=AdminPanel(is_sudo=admin.is_sudo).as_markup()
+        )
     finally:
         await event.answer(Texts.synced)

@@ -36,7 +36,13 @@ async def command_start_handler(
     if admin:
         stats = await system_operator.get_system_stats(db, admin)
         if isinstance(event, types.CallbackQuery):
-            return await message.edit_text(text=Texts.start(stats), reply_markup=AdminPanel().as_markup())
-        await message.answer(text=Texts.start(stats), reply_markup=AdminPanel().as_markup())
+            return await message.edit_text(
+                text=Texts.start(stats),
+                reply_markup=AdminPanel(is_sudo=admin.is_sudo).as_markup()
+            )
+        await message.answer(
+            text=Texts.start(stats),
+            reply_markup=AdminPanel(is_sudo=admin.is_sudo).as_markup()
+        )
     else:
         await message.answer(f"Hello, {event.from_user.full_name}!")
