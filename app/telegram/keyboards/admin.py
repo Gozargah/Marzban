@@ -19,6 +19,7 @@ class AdminPanel(InlineKeyboardBuilder):
         self.button(text=Texts.refresh_data, callback_data=self.Callback(action=AdminPanelAction.refresh))
         if is_sudo:
             self.button(text=Texts.sync_users, callback_data=self.Callback(action=AdminPanelAction.sync_users))
+        self.button(text=Texts.users, switch_inline_query_current_chat="")
         self.button(text=Texts.create_user, callback_data=self.Callback(action=AdminPanelAction.create_user))
         self.adjust(*([2, 1] if is_sudo else [1, 1]))
 

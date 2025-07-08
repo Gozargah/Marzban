@@ -281,27 +281,25 @@ async def get_user(event: Message | CallbackQuery, admin: AdminDetails, db: Asyn
 
 @router.inline_query()
 async def search_user(event: InlineQuery, admin: AdminDetails, db: AsyncSession):
-    result = []
-    if event.query.strip():
-        search = await user_operations.get_users(db, admin, search=event.query.strip(), limit=50)
+    search = await user_operations.get_users(db, admin, search=event.query.strip(), limit=50)
+    result = [
+        InlineQueryResultArticle(
+            id=str(user.id),
+            title=f"{Texts.status_emoji(user.status)}{user.username}",
+            description=Texts.user_short_detail(user),
+            url=user.subscription_url if user.subscription_url.startswith("https://") else None,
+            input_message_content=InputTextMessageContent(message_text=user.username),
+        )
+        for user in search.users
+    ]
+    if not result:
         result = [
             InlineQueryResultArticle(
-                id=str(user.id),
-                title=f"{Texts.status_emoji(user.status)}{user.username}",
-                description=Texts.user_short_detail(user),
-                url=user.subscription_url if user.subscription_url.startswith("https://") else None,
-                input_message_content=InputTextMessageContent(message_text=user.username),
+                id="1",
+                title=Texts.user_not_found,
+                input_message_content=InputTextMessageContent(message_text="/start"),
             )
-            for user in search.users
         ]
-        if not result:
-            result = [
-                InlineQueryResultArticle(
-                    id="1",
-                    title=Texts.user_not_found,
-                    input_message_content=InputTextMessageContent(message_text="/start"),
-                )
-            ]
     await event.answer(result, cache_time=5)
 
 
