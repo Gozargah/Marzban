@@ -62,5 +62,7 @@ class UserTemplateOperation(BaseOperation):
 
         asyncio.create_task(notification.remove_user_template(db_user_template.name, admin.username))
 
-    async def get_user_templates(self, db: AsyncSession, offset: int, limit: int) -> list[UserTemplateResponse]:
+    async def get_user_templates(
+            self, db: AsyncSession, offset: int = None, limit: int = None
+    ) -> list[UserTemplateResponse]:
         return await get_user_templates(db, offset, limit)

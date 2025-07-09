@@ -34,6 +34,7 @@ class Button:
     confirm = "✅ Confirm"
     cancel = "❌ Cancel"
     create_user = "👤 Create User"
+    create_user_from_template = "👤 Create User From Template"
     sync_users = "🔄 Sync Users"
     refresh_data = "♻ Refresh"
     users = "👥 Users"
@@ -42,6 +43,7 @@ class Button:
 
 
 class Message:
+    there_is_no_template = "❌ There is no Template!"
     user_not_found = "❌ User not found!"
     confirm = "⚠ Are you sure you want to proceed?"
     enter_username = "🗣 Enter new user's Username:"
@@ -59,6 +61,7 @@ class Message:
     refreshed = "♻ Refreshed successfully"
     syncing = "🔄 Syncing..."
     synced = "✅ Users successfully Synced"
+    choose_a_template = "📦 Choose a Template:"
 
     @staticmethod
     def start(stats: SystemStats):

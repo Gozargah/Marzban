@@ -8,6 +8,7 @@ class AdminPanelAction(str, Enum):
     sync_users = "sync_users"
     refresh = "refresh"
     create_user = "create_user"
+    create_user_from_template = "create_user_from_template"
 
 
 class AdminPanel(InlineKeyboardBuilder):
@@ -21,7 +22,11 @@ class AdminPanel(InlineKeyboardBuilder):
             self.button(text=Texts.sync_users, callback_data=self.Callback(action=AdminPanelAction.sync_users))
         self.button(text=Texts.users, switch_inline_query_current_chat="")
         self.button(text=Texts.create_user, callback_data=self.Callback(action=AdminPanelAction.create_user))
-        self.adjust(*([2, 1] if is_sudo else [1, 1]))
+        self.button(
+            text=Texts.create_user_from_template,
+            callback_data=self.Callback(action=AdminPanelAction.create_user_from_template)
+        )
+        self.adjust(*([2, 1, 1] if is_sudo else [1, 1, 1]))
 
 
 class InlineQuerySearch(InlineKeyboardBuilder):
