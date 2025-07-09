@@ -35,6 +35,7 @@ class Button:
     cancel = "❌ Cancel"
     create_user = "👤 Create User"
     create_user_from_template = "👤 Create User From Template"
+    modify_with_template = "📦 Modify with Template"
     sync_users = "🔄 Sync Users"
     refresh_data = "♻ Refresh"
     users = "👥 Users"

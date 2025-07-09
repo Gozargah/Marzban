@@ -19,6 +19,7 @@ class UserPanelAction(str, Enum):
     revoke_sub = "revoke_sub"
     reset_usage = "reset_usage"
     activate_next_plan = "activate_next_plan"
+    modify_with_template = "modify_with_template"
 
 
 class UserPanel(InlineKeyboardBuilder):
@@ -74,12 +75,18 @@ class UserPanel(InlineKeyboardBuilder):
                 ),
             )
 
+
+        self.button(
+            text=Texts.modify_with_template,
+            callback_data=self.Callback(action=UserPanelAction.modify_with_template, username=user.username),
+        )
+
         self.button(
             text=Texts.back,
             callback_data=CancelKeyboard.Callback(action=CancelAction.cancel),
         )
 
-        self.adjust(2, 2, 1, 1)
+        self.adjust(2, 2, 1, 1, 1)
 
 
 class ChooseStatus(InlineKeyboardBuilder):
@@ -96,12 +103,16 @@ class ChooseStatus(InlineKeyboardBuilder):
 class ChooseTemplate(InlineKeyboardBuilder):
     class Callback(CallbackData, prefix="choose_template"):
         template_id: int
+        username: str = None  # in case choose template for modify
 
-    def __init__(self, templates: List[UserTemplate], *args, **kwargs):
+    def __init__(self, templates: List[UserTemplate], username: str = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         for template in templates:
-            self.button(text=template.name, callback_data=self.Callback(template_id=template.id))
+            self.button(
+                text=template.name,
+                callback_data=self.Callback(template_id=template.id, username=username).pack(),
+            )
 
         self.button(
             text=Texts.back,

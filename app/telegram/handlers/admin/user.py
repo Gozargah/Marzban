@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram.exceptions import TelegramBadRequest
 
 from app.db.models import UserStatus
-from app.models.user import UserCreate, UserModify, UserStatusModify, CreateUserFromTemplate
+from app.models.user import UserCreate, UserModify, UserStatusModify, CreateUserFromTemplate, ModifyUserByTemplate
 from app.models.validators import UserValidator
 from app.operation import OperatorType
 from app.operation.user import UserOperation
@@ -266,8 +266,37 @@ async def activate_next_plan(
     await event.message.edit_text(Texts.user_details(user), reply_markup=UserPanel(user).as_markup())
 
 
+@router.callback_query(UserPanel.Callback.filter(UserPanelAction.modify_with_template == F.action))
+async def modify_with_template(event: CallbackQuery, db: AsyncSession, callback_data: UserPanel.Callback):
+    templates = await user_templates.get_user_templates(db)
+    if not templates:
+        return event.answer(Texts.there_is_no_template)
+
+    await event.message.edit_text(
+        Texts.choose_a_template,
+        reply_markup=ChooseTemplate(templates, username=callback_data.username).as_markup()
+    )
+
+
+@router.callback_query(ChooseTemplate.Callback.filter(F.username))
+async def modify_with_template_done(
+        event: CallbackQuery,
+        db: AsyncSession,
+        admin: AdminDetails,
+        callback_data: ChooseTemplate.Callback
+):
+    user = await user_operations.modify_user_with_template(
+        db,
+        callback_data.username,
+        ModifyUserByTemplate(user_template_id=callback_data.template_id),
+        admin,
+    )
+    return await event.message.edit_text(Texts.user_details(user), reply_markup=UserPanel(user).as_markup())
+
+
+
 @router.callback_query(AdminPanel.Callback.filter(AdminPanelAction.create_user_from_template == F.action))
-async def create_user_from_templates(event: CallbackQuery, db: AsyncSession):
+async def create_user_from_template(event: CallbackQuery, db: AsyncSession):
     templates = await user_templates.get_user_templates(db)
     if not templates:
         return event.answer(Texts.there_is_no_template)
@@ -275,8 +304,8 @@ async def create_user_from_templates(event: CallbackQuery, db: AsyncSession):
     await event.message.edit_text(Texts.choose_a_template, reply_markup=ChooseTemplate(templates).as_markup())
 
 
-@router.callback_query(ChooseTemplate.Callback.filter())
-async def create_user_from_templates_username(
+@router.callback_query(ChooseTemplate.Callback.filter(~F.username))
+async def create_user_from_template_username(
         event: CallbackQuery,
         state: FSMContext,
         callback_data: ChooseTemplate.Callback
@@ -295,7 +324,7 @@ async def create_user_from_templates_username(
 
 
 @router.message(forms.CreateUserFromTemplate.username)
-async def create_user_from_templates_choose(event: Message, state: FSMContext, db: AsyncSession, admin: AdminDetails):
+async def create_user_from_template_choose(event: Message, state: FSMContext, db: AsyncSession, admin: AdminDetails):
     await delete_messages(event, state)
     await add_to_messages_to_delete(state, event)
 
