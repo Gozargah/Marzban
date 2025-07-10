@@ -1,3 +1,4 @@
+import logging
 import re
 from distutils.version import LooseVersion
 
@@ -37,21 +38,25 @@ router = APIRouter(tags=['Subscription'], prefix=f'/{XRAY_SUBSCRIPTION_PATH}')
 
 def get_subscription_user_info(user: UserResponse) -> dict:
     """Retrieve user subscription information including upload, download, total data, and expiry."""
-    return {
+    userinfo = {
         "upload": 0,
         "download": user.used_traffic,
         "total": user.data_limit if user.data_limit is not None else 0,
-        "expire": user.expire if user.expire is not None else None,
     }
+
+    if user.expire is not None:
+        userinfo["expire"] = user.expire
+
+    return userinfo
 
 
 @router.get("/{token}/")
 @router.get("/{token}", include_in_schema=False)
 def user_subscription(
-    request: Request,
-    db: Session = Depends(get_db),
-    dbuser: UserResponse = Depends(get_validated_sub),
-    user_agent: str = Header(default="")
+        request: Request,
+        db: Session = Depends(get_db),
+        dbuser: UserResponse = Depends(get_validated_sub),
+        user_agent: str = Header(default="")
 ):
     """Provides a subscription link based on the user agent (Clash, V2Ray, etc.)."""
     user: UserResponse = UserResponse.model_validate(dbuser)
@@ -141,7 +146,7 @@ def user_subscription(
 
 @router.get("/{token}/info", response_model=SubscriptionUserResponse)
 def user_subscription_info(
-    dbuser: UserResponse = Depends(get_validated_sub),
+        dbuser: UserResponse = Depends(get_validated_sub),
 ):
     """Retrieves detailed information about the user's subscription."""
     return dbuser
@@ -149,10 +154,10 @@ def user_subscription_info(
 
 @router.get("/{token}/usage")
 def user_get_usage(
-    dbuser: UserResponse = Depends(get_validated_sub),
-    start: str = "",
-    end: str = "",
-    db: Session = Depends(get_db)
+        dbuser: UserResponse = Depends(get_validated_sub),
+        start: str = "",
+        end: str = "",
+        db: Session = Depends(get_db)
 ):
     """Fetches the usage statistics for the user within a specified date range."""
     start, end = validate_dates(start, end)
@@ -164,11 +169,11 @@ def user_get_usage(
 
 @router.get("/{token}/{client_type}")
 def user_subscription_with_client_type(
-    request: Request,
-    dbuser: UserResponse = Depends(get_validated_sub),
-    client_type: str = Path(..., regex="sing-box|clash-meta|clash|outline|v2ray|v2ray-json"),
-    db: Session = Depends(get_db),
-    user_agent: str = Header(default="")
+        request: Request,
+        dbuser: UserResponse = Depends(get_validated_sub),
+        client_type: str = Path(..., regex="sing-box|clash-meta|clash|outline|v2ray|v2ray-json"),
+        db: Session = Depends(get_db),
+        user_agent: str = Header(default="")
 ):
     """Provides a subscription link based on the specified client type (e.g., Clash, V2Ray)."""
     user: UserResponse = UserResponse.model_validate(dbuser)
