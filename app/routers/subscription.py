@@ -41,7 +41,7 @@ def get_subscription_user_info(user: UserResponse) -> dict:
         "upload": 0,
         "download": user.used_traffic,
         "total": user.data_limit if user.data_limit is not None else 0,
-        "expire": user.expire if user.expire is not None else 0,
+        "expire": user.expire if user.expire is not None else None,
     }
 
 
