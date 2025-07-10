@@ -1,8 +1,10 @@
 from enum import Enum
 
-from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from .validators import ProxyValidator, DiscordValidator, ListValidator
+from app.models.proxy import ShadowsocksMethods, XTLSFlows
+
+from .validators import DiscordValidator, ListValidator, ProxyValidator
 
 
 class Telegram(BaseModel):
@@ -170,6 +172,11 @@ class Subscription(BaseModel):
     manual_sub_request: SubFormatEnable = Field(default_factory=SubFormatEnable)
 
 
+class General(BaseModel):
+    default_flow: XTLSFlows = Field(default=XTLSFlows.NONE)
+    default_method: ShadowsocksMethods = Field(default=ShadowsocksMethods.CHACHA20_POLY1305)
+
+
 class SettingsSchema(BaseModel):
     telegram: Telegram | None = Field(default=None)
     discord: Discord | None = Field(default=None)
@@ -177,5 +184,6 @@ class SettingsSchema(BaseModel):
     notification_settings: NotificationSettings | None = Field(default=None)
     notification_enable: NotificationEnable | None = Field(default=None)
     subscription: Subscription | None = Field(default=None)
+    general: General | None = Field(default=None)
 
     model_config = ConfigDict(from_attributes=True)

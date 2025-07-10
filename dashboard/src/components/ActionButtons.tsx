@@ -1,5 +1,5 @@
-import {Button} from '@/components/ui/button'
-import {useClipboard} from '@/hooks/use-clipboard'
+import { Button } from '@/components/ui/button'
+import { useClipboard } from '@/hooks/use-clipboard'
 import {
     Check,
     Copy,
@@ -12,9 +12,9 @@ import {
     EllipsisVertical,
     ListStart
 } from 'lucide-react'
-import {FC, useCallback, useEffect, useState} from 'react'
-import {useTranslation} from 'react-i18next'
-import {CopyButton} from './CopyButton'
+import { FC, useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { CopyButton } from './CopyButton'
 import QRCodeModal from './dialogs/QRCodeModal'
 import UserModal from './dialogs/UserModal'
 import {
@@ -24,11 +24,11 @@ import {
     DropdownMenuTrigger,
     DropdownMenuSeparator
 } from './ui/dropdown-menu'
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from './ui/tooltip'
-import {useActiveNextPlan, UserResponse} from '@/service/api'
-import {useQueryClient} from '@tanstack/react-query'
-import {useForm} from 'react-hook-form'
-import {UseEditFormValues, UseFormValues} from '@/pages/_dashboard._index'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip'
+import { useActiveNextPlan, UserResponse } from '@/service/api'
+import { useQueryClient } from '@tanstack/react-query'
+import { useForm } from 'react-hook-form'
+import { UseEditFormValues, UseFormValues } from '@/pages/_dashboard.users'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -39,12 +39,12 @@ import {
     AlertDialogHeader,
     AlertDialogTitle
 } from '@/components/ui/alert-dialog'
-import {useRemoveUser, useResetUserDataUsage, useRevokeUserSubscription, useGetCurrentAdmin} from '@/service/api'
-import {cn} from '@/lib/utils'
+import { useRemoveUser, useResetUserDataUsage, useRevokeUserSubscription, useGetCurrentAdmin } from '@/service/api'
+import { cn } from '@/lib/utils'
 import useDirDetection from '@/hooks/use-dir-detection'
 import UsageModal from './dialogs/UsageModal'
 import SetOwnerModal from './dialogs/SetOwnerModal'
-import {toast} from "sonner";
+import { toast } from "sonner";
 
 type ActionButtonsProps = {
     user: UserResponse
@@ -56,7 +56,7 @@ export interface SubscribeLink {
     icon: string
 }
 
-const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
+const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
     const [subscribeUrl, setSubscribeUrl] = useState<string>('')
     const [subscribeLinks, setSubscribeLinks] = useState<SubscribeLink[]>([])
     const [showQRModal, setShowQRModal] = useState(false)
@@ -67,13 +67,13 @@ const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
     const [isUsageModalOpen, setUsageModalOpen] = useState(false)
     const [isSetOwnerModalOpen, setSetOwnerModalOpen] = useState(false)
     const queryClient = useQueryClient()
-    const {t} = useTranslation()
+    const { t } = useTranslation()
     const dir = useDirDetection()
     const removeUserMutation = useRemoveUser()
     const resetUserDataUsageMutation = useResetUserDataUsage()
     const revokeUserSubscriptionMutation = useRevokeUserSubscription()
     const activeNextMutation = useActiveNextPlan()
-    const {data: currentAdmin} = useGetCurrentAdmin({
+    const { data: currentAdmin } = useGetCurrentAdmin({
         query: {
             // Cache for 5 minutes to avoid repeated calls
             staleTime: 5 * 60 * 1000,
@@ -150,23 +150,23 @@ const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
             const subURL = user.subscription_url.startsWith('/') ? window.location.origin + user.subscription_url : user.subscription_url
 
             const links = [
-                {protocol: 'links', link: `${subURL}/links`, icon: '🔗'},
-                {protocol: 'links (base64)', link: `${subURL}/links_base64`, icon: '📝'},
-                {protocol: 'xray', link: `${subURL}/xray`, icon: '⚡'},
-                {protocol: 'clash', link: `${subURL}/clash`, icon: '⚔️'},
-                {protocol: 'clash-meta', link: `${subURL}/clash_meta`, icon: '🛡️'},
-                {protocol: 'outline', link: `${subURL}/outline`, icon: '🔒'},
-                {protocol: 'sing-box', link: `${subURL}/sing_box`, icon: '📦'},
+                { protocol: 'links', link: `${subURL}/links`, icon: '🔗' },
+                { protocol: 'links (base64)', link: `${subURL}/links_base64`, icon: '📝' },
+                { protocol: 'xray', link: `${subURL}/xray`, icon: '⚡' },
+                { protocol: 'clash', link: `${subURL}/clash`, icon: '⚔️' },
+                { protocol: 'clash-meta', link: `${subURL}/clash_meta`, icon: '🛡️' },
+                { protocol: 'outline', link: `${subURL}/outline`, icon: '🔒' },
+                { protocol: 'sing-box', link: `${subURL}/sing_box`, icon: '📦' },
             ]
             setSubscribeLinks(links)
         }
     }, [user.subscription_url])
 
-    const {copy, copied} = useClipboard({timeout: 1500})
+    const { copy, copied } = useClipboard({ timeout: 1500 })
 
     // Refresh user data function
     const refreshUserData = () => {
-        queryClient.invalidateQueries({queryKey: ['/api/users']})
+        queryClient.invalidateQueries({ queryKey: ['/api/users'] })
     }
 
     // Handlers for menu items
@@ -185,22 +185,22 @@ const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
 
     const confirmRevokeSubscription = async () => {
         try {
-            await revokeUserSubscriptionMutation.mutateAsync({username: user.username})
-            toast.success(t('userDialog.revokeSubSuccess', {name: user.username}))
+            await revokeUserSubscriptionMutation.mutateAsync({ username: user.username })
+            toast.success(t('userDialog.revokeSubSuccess', { name: user.username }))
             setRevokeSubDialogOpen(false)
             refreshUserData()
         } catch (error: any) {
-            toast.error(t('revokeUserSub.error', {name: user.username, error: error?.message || ''}))
+            toast.error(t('revokeUserSub.error', { name: user.username, error: error?.message || '' }))
         }
     }
 
     const activeNextPlan = async () => {
         try {
-            await activeNextMutation.mutateAsync({username: user.username})
-            toast.success(t('userDialog.activeNextPlanSuccess', {name: user.username}))
+            await activeNextMutation.mutateAsync({ username: user.username })
+            toast.success(t('userDialog.activeNextPlanSuccess', { name: user.username }))
             refreshUserData()
         } catch (error: any) {
-            toast.error(t('userDialog.activeNextPlanError', {name: user.username, error: error?.message || ''}))
+            toast.error(t('userDialog.activeNextPlanError', { name: user.username, error: error?.message || '' }))
         }
     }
 
@@ -210,12 +210,12 @@ const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
 
     const confirmResetUsage = async () => {
         try {
-            await resetUserDataUsageMutation.mutateAsync({username: user.username})
-            toast.success(t('usersTable.resetUsageSuccess', {name: user.username}))
+            await resetUserDataUsageMutation.mutateAsync({ username: user.username })
+            toast.success(t('usersTable.resetUsageSuccess', { name: user.username }))
             setResetUsageDialogOpen(false)
             refreshUserData()
         } catch (error: any) {
-            toast.error(t('usersTable.resetUsageFailed', {name: user.username, error: error?.message || ''}))
+            toast.error(t('usersTable.resetUsageFailed', { name: user.username, error: error?.message || '' }))
         }
     }
 
@@ -229,12 +229,12 @@ const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
 
     const confirmDelete = async () => {
         try {
-            await removeUserMutation.mutateAsync({username: user.username})
-            toast.success(t('usersTable.deleteSuccess', {name: user.username}))
+            await removeUserMutation.mutateAsync({ username: user.username })
+            toast.success(t('usersTable.deleteSuccess', { name: user.username }))
             setDeleteDialogOpen(false)
             refreshUserData()
         } catch (error: any) {
-            toast.error(t('usersTable.deleteFailed', {name: user.username, error: error?.message || ''}))
+            toast.error(t('usersTable.deleteFailed', { name: user.username, error: error?.message || '' }))
         }
     }
 
@@ -248,15 +248,15 @@ const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
                 }
                 const content = await response.text()
                 await copy(content)
-                toast.success(t('usersTable.copied', {defaultValue: 'Copied to clipboard'}))
+                toast.success(t('usersTable.copied', { defaultValue: 'Copied to clipboard' }))
             } catch (error) {
                 console.error('Failed to fetch and copy content:', error)
                 // Fallback: copy the URL instead
                 try {
                     await copy(subLink.link)
-                    toast.success(t('usersTable.copied', {defaultValue: 'URL copied to clipboard'}))
+                    toast.success(t('usersTable.copied', { defaultValue: 'URL copied to clipboard' }))
                 } catch (copyError) {
-                    toast.error(t('copyFailed', {defaultValue: 'Failed to copy content'}))
+                    toast.error(t('copyFailed', { defaultValue: 'Failed to copy content' }))
                 }
             }
         } else {
@@ -275,10 +275,10 @@ const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
                 a.click()
                 window.URL.revokeObjectURL(url)
                 document.body.removeChild(a)
-                toast.success(t('downloadSuccess', {defaultValue: 'Configuration downloaded successfully'}))
+                toast.success(t('downloadSuccess', { defaultValue: 'Configuration downloaded successfully' }))
             } catch (error) {
                 console.error('Failed to download configuration:', error)
-                toast.error(t('downloadFailed', {defaultValue: 'Failed to download configuration'}))
+                toast.error(t('downloadFailed', { defaultValue: 'Failed to download configuration' }))
             }
         }
     }
@@ -287,7 +287,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
         <div onClick={e => e.stopPropagation()}>
             <div className="flex justify-end items-center">
                 <Button size="icon" variant="ghost" onClick={handleEdit} className="md:hidden">
-                    <Pencil className="h-4 w-4"/>
+                    <Pencil className="h-4 w-4" />
                 </Button>
                 <TooltipProvider>
                     <CopyButton
@@ -301,7 +301,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
                             <DropdownMenuTrigger>
                                 <TooltipTrigger>
                                     <Button size="icon" variant="ghost">
-                                        {copied ? <Check className="h-4 w-4"/> : <Copy className="h-4 w-4"/>}
+                                        {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                                     </Button>
                                 </TooltipTrigger>
                             </DropdownMenuTrigger>
@@ -314,10 +314,10 @@ const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
                                             aria-label={subLink.protocol.includes('links') ? 'Copy' : 'Download'}
                                             onClick={() => handleCopyOrDownload(subLink)}
                                         >
-                      <span className="flex items-center gap-2">
-                        <span className="text-sm">{subLink.icon}</span>
-                        <span>{subLink.protocol}</span>
-                      </span>
+                                            <span className="flex items-center gap-2">
+                                                <span className="text-sm">{subLink.icon}</span>
+                                                <span>{subLink.protocol}</span>
+                                            </span>
                                         </Button>
                                     </DropdownMenuItem>
                                 ))}
@@ -329,63 +329,63 @@ const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button size="icon" variant="ghost">
-                            <EllipsisVertical className="h-4 w-4"/>
+                            <EllipsisVertical className="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         {/* Edit */}
                         <DropdownMenuItem className="hidden md:flex" onClick={handleEdit}>
-                            <Pencil className="h-4 w-4 mr-2"/>
+                            <Pencil className="h-4 w-4 mr-2" />
                             <span>{t('edit')}</span>
                         </DropdownMenuItem>
 
                         {/* QR Code */}
                         <DropdownMenuItem onClick={onOpenQRModal}>
-                            <QrCode className="h-4 w-4 mr-2"/>
+                            <QrCode className="h-4 w-4 mr-2" />
                             <span>Qr Code</span>
                         </DropdownMenuItem>
 
                         {/* Set Owner: only for sudo admins */}
                         {currentAdmin?.is_sudo && (
                             <DropdownMenuItem onClick={handleSetOwner}>
-                                <User className="h-4 w-4 mr-2"/>
+                                <User className="h-4 w-4 mr-2" />
                                 <span>{t('setOwnerModal.title')}</span>
                             </DropdownMenuItem>
                         )}
 
-                        <DropdownMenuSeparator/>
+                        <DropdownMenuSeparator />
 
                         {/* Revoke Sub */}
                         <DropdownMenuItem onClick={handleRevokeSubscription}>
-                            <RefreshCcw className="h-4 w-4 mr-2"/>
+                            <RefreshCcw className="h-4 w-4 mr-2" />
                             <span>{t('userDialog.revokeSubscription')}</span>
                         </DropdownMenuItem>
 
                         {/* Reset Usage */}
                         <DropdownMenuItem onClick={handleResetUsage}>
-                            <RefreshCcw className="h-4 w-4 mr-2"/>
+                            <RefreshCcw className="h-4 w-4 mr-2" />
                             <span>{t('userDialog.resetUsage')}</span>
                         </DropdownMenuItem>
 
                         {/* Usage State */}
                         <DropdownMenuItem onClick={handleUsageState}>
-                            <PieChart className="h-4 w-4 mr-2"/>
+                            <PieChart className="h-4 w-4 mr-2" />
                             <span>{t('userDialog.usage')}</span>
                         </DropdownMenuItem>
 
-                        { /* Active Next Plan */}
+                        {/* Active Next Plan */}
                         {user.next_plan && (
                             <DropdownMenuItem onClick={activeNextPlan}>
-                                <ListStart className="w-4 h-4 mr-2"/>
+                                <ListStart className="w-4 h-4 mr-2" />
                                 <span>{t('userDialog.activeNextPlan')}</span>
                             </DropdownMenuItem>
                         )}
 
-                        <DropdownMenuSeparator/>
+                        <DropdownMenuSeparator />
 
                         {/* Trash */}
                         <DropdownMenuItem onClick={handleDelete} className="text-red-600">
-                            <Trash2 className="h-4 w-4 mr-2"/>
+                            <Trash2 className="h-4 w-4 mr-2" />
                             <span>{t('remove')}</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -394,7 +394,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
 
             {/* QR Code Modal */}
             {showQRModal && subscribeUrl && <QRCodeModal subscribeLinks={subscribeLinks} subscribeUrl={subscribeUrl}
-                                                         onCloseModal={onCloseQRModal}/>}
+                onCloseModal={onCloseQRModal} />}
 
             {/* Delete User Confirm Dialog */}
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -403,13 +403,13 @@ const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
                         <AlertDialogTitle
                             className={cn(dir === 'rtl' && 'text-right')}>{t('usersTable.deleteUserTitle')}</AlertDialogTitle>
                         <AlertDialogDescription
-                            className={cn(dir === 'rtl' && 'text-right')}>{t('usersTable.deleteUserPrompt', {name: user.username})}</AlertDialogDescription>
+                            className={cn(dir === 'rtl' && 'text-right')}>{t('usersTable.deleteUserPrompt', { name: user.username })}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="flex items-center gap-2">
                         <AlertDialogCancel
                             onClick={() => setDeleteDialogOpen(false)}>{t('usersTable.cancel')}</AlertDialogCancel>
                         <AlertDialogAction variant="destructive" onClick={confirmDelete}
-                                           disabled={removeUserMutation.isPending}>
+                            disabled={removeUserMutation.isPending}>
                             {t('usersTable.delete')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
@@ -423,7 +423,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
                         <AlertDialogTitle
                             className={cn(dir === 'rtl' && 'text-right')}>{t('usersTable.resetUsageTitle')}</AlertDialogTitle>
                         <AlertDialogDescription
-                            className={cn(dir === 'rtl' && 'text-right')}>{t('usersTable.resetUsagePrompt', {name: user.username})}</AlertDialogDescription>
+                            className={cn(dir === 'rtl' && 'text-right')}>{t('usersTable.resetUsagePrompt', { name: user.username })}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="flex items-center gap-2">
                         <AlertDialogCancel
@@ -442,13 +442,13 @@ const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
                         <AlertDialogTitle
                             className={cn(dir === 'rtl' && 'text-right')}>{t('revokeUserSub.title')}</AlertDialogTitle>
                         <AlertDialogDescription
-                            className={cn(dir === 'rtl' && 'text-right')}>{t('revokeUserSub.prompt', {username: user.username})}</AlertDialogDescription>
+                            className={cn(dir === 'rtl' && 'text-right')}>{t('revokeUserSub.prompt', { username: user.username })}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="flex items-center gap-2">
                         <AlertDialogCancel
                             onClick={() => setRevokeSubDialogOpen(false)}>{t('usersTable.cancel')}</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmRevokeSubscription}
-                                           disabled={revokeUserSubscriptionMutation.isPending}>
+                            disabled={revokeUserSubscriptionMutation.isPending}>
                             {t('revokeUserSub.title')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
@@ -457,9 +457,9 @@ const ActionButtons: FC<ActionButtonsProps> = ({user}) => {
 
             {/* Edit User Modal */}
             <UserModal isDialogOpen={isEditModalOpen} onOpenChange={setEditModalOpen} form={userForm} editingUser={true}
-                       editingUserId={user.id} editingUserData={user} onSuccessCallback={refreshUserData}/>
+                editingUserId={user.id} editingUserData={user} onSuccessCallback={refreshUserData} />
 
-            <UsageModal open={isUsageModalOpen} onClose={() => setUsageModalOpen(false)} username={user.username}/>
+            <UsageModal open={isUsageModalOpen} onClose={() => setUsageModalOpen(false)} username={user.username} />
 
             {/* SetOwnerModal: only for sudo admins */}
             {currentAdmin?.is_sudo && (

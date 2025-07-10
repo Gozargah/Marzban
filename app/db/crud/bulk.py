@@ -1,24 +1,26 @@
-from typing import List, Optional
 from datetime import datetime as dt, timezone as tz
+from typing import List, Optional
 
-from sqlalchemy import select, and_, delete, update, or_, case
+from sqlalchemy import and_, case, cast, delete, func, or_, select, text, update
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import BinaryExpression
 
+from app.db.base import DATABASE_DIALECT
 from app.db.models import (
     Admin,
+    Group,
+    NextPlan,
+    NodeUserUsage,
     User,
     UserStatus,
-    NextPlan,
     UserUsageResetLogs,
-    NodeUserUsage,
-    Group,
     users_groups_association,
 )
 from app.models.group import BulkGroup
-from app.models.user import BulkUser
+from app.models.user import BulkUser, BulkUsersProxy
 
-from .general import get_datetime_add_expression
+from .general import get_datetime_add_expression, json_extract
 from .user import load_user_attrs
 
 
@@ -213,9 +215,9 @@ async def remove_groups_from_users(db: AsyncSession, bulk_model: BulkGroup) -> L
     return users
 
 
-def create_conditions(bulk_model: BulkUser) -> list[BinaryExpression]:
+def create_conditions(bulk_model: BulkUser | BulkUsersProxy) -> list[BinaryExpression]:
     conditions = []
-    if bulk_model.status:
+    if hasattr(bulk_model, "status") and bulk_model.status:
         conditions.append(User.status.in_([i.value for i in bulk_model.status]))
     if bulk_model.admins:
         conditions.append(User.admin_id.in_([i for i in bulk_model.admins]))
@@ -322,3 +324,71 @@ async def update_users_datalimit(db: AsyncSession, bulk_model: BulkUser) -> List
         return result.scalars().all()
     else:
         return []
+
+
+async def update_users_proxy_settings(db: AsyncSession, bulk_model: BulkUsersProxy):
+    """
+    Bulk update the `proxy_settings` JSON field for users across PostgreSQL, MySQL, or SQLite.
+
+    Uses `json_extract` for filtering users who don't already have the target `flow` or `method`.
+
+    Args:
+        db (AsyncSession): SQLAlchemy async session.
+        bulk_model (BulkUsersProxy): Contains target flow/method and filters.
+
+    Raises:
+        NotImplementedError: If DB dialect is not supported.
+        SQLAlchemyError: If DB operation fails.
+    """
+    conditions = create_conditions(bulk_model)
+
+    # Apply user-level filters
+    if bulk_model.users:
+        conditions.append(User.id.in_(bulk_model.users))
+
+    # Filter out users who already have the target values (optional optimization)
+    if bulk_model.flow is not None:
+        conditions.append(json_extract(User.proxy_settings, "$.vless.flow") != str(bulk_model.flow.value))
+
+    if bulk_model.method is not None:
+        conditions.append(json_extract(User.proxy_settings, "$.shadowsocks.method") != str(bulk_model.method.value))
+
+    stmt = select(User).where(*conditions)
+
+    if DATABASE_DIALECT == "postgresql":
+        proxy_settings_expr = cast(User.proxy_settings, JSONB)
+
+        if bulk_model.flow is not None:
+            proxy_settings_expr = func.jsonb_set(
+                proxy_settings_expr,
+                text("'{vless,flow}'"),
+                cast(f"{bulk_model.flow.value}", JSONB),
+                True,
+            )
+        if bulk_model.method is not None:
+            proxy_settings_expr = func.jsonb_set(
+                proxy_settings_expr,
+                text("'{shadowsocks,method}'"),
+                cast(f"{bulk_model.method.value}", JSONB),
+                True,
+            )
+
+        stmt = update(User).where(*conditions).values(proxy_settings=proxy_settings_expr)
+
+    else:
+        proxy_settings_expr = User.proxy_settings
+
+        if bulk_model.flow is not None:
+            proxy_settings_expr = func.json_set(proxy_settings_expr, "$.vless.flow", f"{bulk_model.flow.value}")
+
+        if bulk_model.method is not None:
+            proxy_settings_expr = func.json_set(
+                proxy_settings_expr, "$.shadowsocks.method", f"{bulk_model.method.value}"
+            )
+
+        stmt = update(User).where(*conditions).values(proxy_settings=proxy_settings_expr)
+
+    result = await db.execute(stmt)
+    await db.commit()
+    updated_users = result.scalars().all()
+    return updated_users

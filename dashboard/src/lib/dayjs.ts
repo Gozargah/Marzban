@@ -11,3 +11,5 @@ dayjs.extend(LocalizedFormat)
 dayjs.extend(utc)
 dayjs.extend(RelativeTime)
 dayjs.extend(Duration)
+
+export default dayjs

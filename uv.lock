@@ -390,18 +390,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a2/55/8f8cab2afd404cf578136ef2cc5dfb50baa1761b68c9da1fb1e4eed343c9/docopt-0.6.2.tar.gz", hash = "sha256:49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491", size = 25901, upload-time = "2014-06-16T11:18:57.406Z" }
 
 [[package]]
-name = "faker"
-version = "37.3.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "tzdata" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/97/4b/5354912eaff922876323f2d07e21408b10867f3295d5f917748341cb6f53/faker-37.3.0.tar.gz", hash = "sha256:77b79e7a2228d57175133af0bbcdd26dc623df81db390ee52f5104d46c010f2f", size = 1901376, upload-time = "2025-05-14T15:24:18.039Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ce/99/045b2dae19a01b9fbb23b9971bc04f4ef808e7f3a213d08c81067304a210/faker-37.3.0-py3-none-any.whl", hash = "sha256:48c94daa16a432f2d2bc803c7ff602509699fca228d13e97e379cd860a7e216e", size = 1942203, upload-time = "2025-05-14T15:24:16.159Z" },
-]
-
-[[package]]
 name = "fastapi"
 version = "0.115.12"
 source = { registry = "https://pypi.org/simple" }
@@ -477,7 +465,7 @@ wheels = [
 
 [[package]]
 name = "gozargah-node-bridge"
-version = "0.0.39"
+version = "0.0.40"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiorwlock" },
@@ -486,9 +474,9 @@ dependencies = [
     { name = "httpx" },
     { name = "protobuf" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/67/08/9f7a74eee74191e5ff5a670e256d80ebde2f596293e621e8d2faea3ed8b3/gozargah_node_bridge-0.0.39.tar.gz", hash = "sha256:366a0a7a9683f92badcebf3a0b1ea15ac0ed74a5eb796365405408e1f148ef4c", size = 39015, upload-time = "2025-05-29T17:26:59.321Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/57/65/069f756d0df0270661bedbe532000909647da2650c417bf1c8c41b5a008e/gozargah_node_bridge-0.0.40.tar.gz", hash = "sha256:2b51194da08de1f9bfd967f942e643378d6eded14940c8ca91896cce8917a249", size = 39964, upload-time = "2025-07-06T23:43:59.228Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3b/e2/a6a2f3c517a38227d492b02032a0809f7b47bc021a7f9436de7cdcc1071c/gozargah_node_bridge-0.0.39-py3-none-any.whl", hash = "sha256:794cf7cec0acdd1cad4b8e4c3bb1b7d8491344af961ccd3d8ec24f335f5f81f9", size = 29825, upload-time = "2025-05-29T17:26:58.27Z" },
+    { url = "https://files.pythonhosted.org/packages/4c/04/054f2290777b3b54bb61c6237c538845c49218a9cd4b2e810a5a4860c90b/gozargah_node_bridge-0.0.40-py3-none-any.whl", hash = "sha256:7707672a59c1bd6c15c27716f1b166e7b11c943912edd112a660cb623f732469", size = 29812, upload-time = "2025-07-06T23:43:58.42Z" },
 ]
 
 [[package]]
@@ -817,7 +805,7 @@ wheels = [
 
 [[package]]
 name = "marzban"
-version = "1.0.0a6"
+version = "1.0.0b1"
 source = { virtual = "." }
 dependencies = [
     { name = "aiocache" },
@@ -862,7 +850,6 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "faker" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-watch" },
@@ -889,7 +876,7 @@ requires-dist = [
     { name = "cryptography", specifier = "==43.0.1" },
     { name = "deprecated", specifier = "==1.2.13" },
     { name = "fastapi", specifier = ">=0.115.12" },
-    { name = "gozargah-node-bridge", specifier = "==0.0.39" },
+    { name = "gozargah-node-bridge", specifier = ">=0.0.40" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "jdatetime", specifier = ">=5.2.0" },
     { name = "jinja2", specifier = ">=3.1.6" },
@@ -916,7 +903,6 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "faker", specifier = ">=37.1.0" },
     { name = "pytest", specifier = ">=8.3.5" },
     { name = "pytest-asyncio", specifier = ">=0.26.0" },
     { name = "pytest-watch", specifier = ">=4.2.0" },

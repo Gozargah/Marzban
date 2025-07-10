@@ -2,19 +2,21 @@ from app.notification.client import send_telegram_message
 from app.models.user_template import UserTemplateResponse
 from app.models.settings import NotificationSettings
 from app.settings import notification_settings
+from app.utils.helpers import escape_tg_html
+
+from .utils import escape_html_template
+from . import messages
 
 
 async def create_user_template(user_template: UserTemplateResponse, by: str):
-    data = (
-        "*#Create_User_Template*\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Name:** `{user_template.name}`\n"
-        + f"**Data Limit:** `{user_template.data_limit}`\n"
-        + f"**Expire Duration:** `{user_template.expire_duration}`\n"
-        + f"**Username Prefix:** `{user_template.username_prefix}`\n"
-        + f"**Username Suffix:** `{user_template.username_suffix}`\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_By: #{by}_"
+    name, prefix, suffix, by = escape_html_template(user_template, by)
+    data = messages.CREATE_USER_TEMPLATE.format(
+        name=name,
+        data_limit=user_template.data_limit,
+        expire_duration=user_template.expire_duration,
+        username_prefix=prefix,
+        username_suffix=suffix,
+        by=by,
     )
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
@@ -24,16 +26,14 @@ async def create_user_template(user_template: UserTemplateResponse, by: str):
 
 
 async def modify_user_template(user_template: UserTemplateResponse, by: str):
-    data = (
-        "*#Modify_User_Template*\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Name:** `{user_template.name}`\n"
-        + f"**Data Limit:** `{user_template.data_limit}`\n"
-        + f"**Expire Duration:** `{user_template.expire_duration}`\n"
-        + f"**Username Prefix:** `{user_template.username_prefix}`\n"
-        + f"**Username Suffix:** `{user_template.username_suffix}`\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_By: #{by}_"
+    name, prefix, suffix, by = escape_html_template(user_template, by)
+    data = messages.MODIFY_USER_TEMPLATE.format(
+        name=name,
+        data_limit=user_template.data_limit,
+        expire_duration=user_template.expire_duration,
+        username_prefix=prefix,
+        username_suffix=suffix,
+        by=by,
     )
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
@@ -43,7 +43,8 @@ async def modify_user_template(user_template: UserTemplateResponse, by: str):
 
 
 async def remove_user_template(name: str, by: str):
-    data = "*#Remove_User_Template*\n" + f"**Name:** `{name}`\n" + "➖➖➖➖➖➖➖➖➖\n" + f"_By: #{by}_"
+    name, by = escape_tg_html((name, by))
+    data = messages.REMOVE_USER_TEMPLATE.format(name=name, by=by)
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(

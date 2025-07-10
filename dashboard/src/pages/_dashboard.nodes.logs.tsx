@@ -272,16 +272,6 @@ export default function NodeLogs() {
     setSelectedLevels(['debug', 'info', 'warning', 'error'])
   }, [])
 
-  // Debug log when filtered logs change
-  useEffect(() => {
-    console.log('Filtered logs updated:', filteredLogs.length)
-  }, [filteredLogs])
-
-  // Debug log when raw logs change
-  useEffect(() => {
-    console.log('Raw logs updated:', logs.length)
-  }, [logs])
-
   // For windowed rendering
   const [visibleStartIndex, setVisibleStartIndex] = useState(0)
   const itemHeight = 36 // Approximate height of a log entry in pixels

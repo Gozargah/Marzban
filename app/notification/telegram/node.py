@@ -1,20 +1,16 @@
+from html import escape
+
 from app.notification.client import send_telegram_message
 from app.models.node import NodeResponse
 from app.models.settings import NotificationSettings
 from app.settings import notification_settings
+from app.utils.helpers import escape_tg_html
+from . import messages
 
 
 async def create_node(node: NodeResponse, by: str):
-    data = (
-        "*#Create_Node*\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**ID:** `{node.id}`\n"
-        + f"**Name:** `{node.name}`\n"
-        + f"**Address:** `{node.address}`\n"
-        + f"**Port:** `{node.port}`\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_By: #{by}_"
-    )
+    name, by = escape_tg_html((node.name, by))
+    data = messages.CREATE_NODE.format(id=node.id, name=name, address=node.address, port=node.port, by=by)
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(
@@ -23,16 +19,8 @@ async def create_node(node: NodeResponse, by: str):
 
 
 async def modify_node(node: NodeResponse, by: str):
-    data = (
-        "*#Modify_Node*\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**ID:** `{node.id}`\n"
-        + f"**Name:** `{node.name}`\n"
-        + f"**Address:** `{node.address}`\n"
-        + f"**Port:** `{node.port}`\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_By: #{by}_"
-    )
+    name, by = escape_tg_html((node.name, by))
+    data = messages.MODIFY_NODE.format(id=node.id, name=name, address=node.address, port=node.port, by=by)
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(
@@ -41,14 +29,8 @@ async def modify_node(node: NodeResponse, by: str):
 
 
 async def remove_node(node: NodeResponse, by: str):
-    data = (
-        "*#Remove_Node*\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**ID:** `{node.id}`\n"
-        + f"**Name:** `{node.name}`\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_By: #{by}_"
-    )
+    name, by = escape_tg_html((node.name, by))
+    data = messages.REMOVE_NODE.format(id=node.id, name=name, by=by)
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(
@@ -57,14 +39,8 @@ async def remove_node(node: NodeResponse, by: str):
 
 
 async def connect_node(node: NodeResponse):
-    data = (
-        "*#Connect_Node*\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Name:** `{node.name}`\n"
-        + f"**Node Version:** {node.node_version}\n"
-        + f"**Core Version:** {node.xray_version}\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_ID_: `{node.id}`"
+    data = messages.CONNECT_NODE.format(
+        name=escape(node.name), node_version=node.node_version, core_version=node.xray_version, id=node.id
     )
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
@@ -74,14 +50,8 @@ async def connect_node(node: NodeResponse):
 
 
 async def error_node(node: NodeResponse):
-    data = (
-        "*#Error_Node*\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Name:** `{node.name}`\n"
-        + f"**Error:** {node.message}\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_ID_: `{node.id}`"
-    )
+    name, message = escape_tg_html((node.name, node.message))
+    data = messages.ERROR_NODE.format(name=name, error=message, id=node.id)
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(

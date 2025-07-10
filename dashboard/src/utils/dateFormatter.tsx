@@ -1,4 +1,4 @@
-import dayjs from 'dayjs'
+import dayjs from '@/lib/dayjs'
 import { useTranslation } from 'react-i18next'
 
 // Helper function to convert timestamp to ISO string
@@ -17,77 +17,50 @@ export const useRelativeExpiryDate = (
   const { t } = useTranslation()
   const dateInfo = { status: '', time: '' }
 
-  if (!expiryDate) {
-    return dateInfo
-  }
+  if (!expiryDate) return dateInfo
 
-  // Convert to ISO string if it's a timestamp
-  const isoDate = typeof expiryDate === 'number' ? timestampToISO(expiryDate) : expiryDate
-  
-  const isAfter = dayjs(isoDate).isAfter(dayjs())
-  
+  const target = dateUtils.toDayjs(expiryDate)
+  const now = dayjs()
+
+  const isAfter = target.isAfter(now) // This is now a dayjs object
   dateInfo.status = isAfter ? t('expires') : t('expired')
-  
+
+  const duration = dayjs.duration(target.diff(now))
   const durationSlots: string[] = []
-  const duration = dayjs.duration(
-    dayjs(isoDate).diff(dayjs())
-  )
-  
-  if (duration.years() != 0) {
+
+  if (duration.years()) {
     durationSlots.push(
-      Math.abs(duration.years()) +
-      ' ' +
-      t(
-        `time.${Math.abs(duration.years()) !== 1 ? 'years' : 'year'}`
-      )
+      `${Math.abs(duration.years())} ${t(`time.${Math.abs(duration.years()) !== 1 ? 'years' : 'year'}`)}`
     )
-  }
-  if (duration.months() != 0) {
-    durationSlots.push(
-      Math.abs(duration.months()) +
-      ' ' +
-      t(
-        `time.${Math.abs(duration.months()) !== 1 ? 'months' : 'month'}`
-      )
-    )
-  }
-  if (duration.days() != 0) {
-    durationSlots.push(
-      Math.abs(duration.days()) +
-      ' ' +
-      t(
-        `time.${Math.abs(duration.days()) !== 1 ? 'days' : 'day'}`
-      )
-    )
-  }
-  if (durationSlots.length === 0) {
-    if (duration.hours() != 0) {
-      durationSlots.push(
-        Math.abs(duration.hours()) +
-        ' ' +
-        t(
-          `time.${Math.abs(duration.hours()) !== 1 ? 'hours' : 'hour'}`
-        )
-      )
-    }
-    if (duration.minutes() != 0) {
-      durationSlots.push(
-        Math.abs(duration.minutes()) +
-        ' ' +
-        t(
-          `time.${Math.abs(duration.minutes()) !== 1 ? 'mins' : 'min'}`
-        )
-      )
-    }
-  }
-  
-  // Add "ago" for past dates
-  if (!isAfter && durationSlots.length > 0) {
-    dateInfo.time = durationSlots.join(', ') + ' ' + t('time.ago')
-  } else {
-    dateInfo.time = durationSlots.join(', ')
   }
 
+  if (duration.months()) {
+    durationSlots.push(
+      `${Math.abs(duration.months())} ${t(`time.${Math.abs(duration.months()) !== 1 ? 'months' : 'month'}`)}`
+    )
+  }
+
+  if (duration.days()) {
+    durationSlots.push(
+      `${Math.abs(duration.days())} ${t(`time.${Math.abs(duration.days()) !== 1 ? 'days' : 'day'}`)}`
+    )
+  }
+
+  if (durationSlots.length === 0) {
+    if (duration.hours()) {
+      durationSlots.push(
+        `${Math.abs(duration.hours())} ${t(`time.${Math.abs(duration.hours()) !== 1 ? 'hours' : 'hour'}`)}`
+      )
+    }
+
+    if (duration.minutes()) {
+      durationSlots.push(
+        `${Math.abs(duration.minutes())} ${t(`time.${Math.abs(duration.minutes()) !== 1 ? 'mins' : 'min'}`)}`
+      )
+    }
+  }
+
+  dateInfo.time = durationSlots.join(', ') + (isAfter ? '' : ` ${t('time.ago')}`)
   return dateInfo
 }
 
@@ -95,28 +68,47 @@ export const useRelativeExpiryDate = (
 export const dateUtils = {
   timestampToISO,
   isoToTimestamp,
-  // Helper to get current time in ISO format with timezone
+
   getCurrentISOTime: () => {
-    const now = new Date()
-    const tzOffset = -now.getTimezoneOffset()
-    const offsetSign = tzOffset >= 0 ? '+' : '-'
-    const pad = (num: number) => Math.abs(num).toString().padStart(2, '0')
-    
-    const offsetHours = pad(Math.floor(tzOffset / 60))
-    const offsetMinutes = pad(tzOffset % 60)
-    
-    return now.toISOString().slice(0, -1) + `${offsetSign}${offsetHours}:${offsetMinutes}`
+    return dayjs().toISOString() // ISO in UTC (standard)
   },
-  // Helper to format date for display
+
   formatDate: (date: string | number | Date) => {
-    const d = typeof date === 'string' ? new Date(date) : 
-             typeof date === 'number' ? new Date(date * 1000) : date
-    return d.toLocaleString()
+    const d = typeof date === 'string'
+      ? dayjs.utc(date).local()
+      : typeof date === 'number'
+        ? dayjs.unix(date).local()
+        : dayjs(date).local()
+
+    return d.format('YYYY-MM-DD HH:mm:ss')
   },
-  // Helper to check if a date is valid
+
+  toDayjs: (date: string | number | Date) => {
+    return typeof date === 'string'
+      ? dayjs.utc(date).local()
+      : typeof date === 'number'
+        ? dayjs.unix(date).local()
+        : dayjs(date).local()
+  },
+
   isValidDate: (date: string | number | Date) => {
-    const d = typeof date === 'string' ? new Date(date) : 
-             typeof date === 'number' ? new Date(date * 1000) : date
+    const d = typeof date === 'string'
+      ? new Date(date)
+      : typeof date === 'number'
+        ? new Date(date * 1000)
+        : date
+
     return !isNaN(d.getTime())
+  },
+
+  daysToSeconds: (days: number | undefined): number | undefined => {
+    if (days === undefined || days === null || days === 0) return undefined
+    return Math.round(Number(days) * 24 * 60 * 60)
+  },
+
+  secondsToDays: (seconds: number | undefined): number | undefined => {
+    if (seconds === undefined || seconds === null || seconds === 0) return undefined
+    return Math.round(Number(seconds) / (24 * 60 * 60))
   }
 }
+

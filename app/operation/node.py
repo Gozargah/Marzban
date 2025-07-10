@@ -276,7 +276,7 @@ class NodeOperation(BaseOperation):
             return None
 
     async def get_user_online_stats_by_node(self, db: AsyncSession, node_id: Node, username: str) -> dict[int, int]:
-        db_user = get_user(db, username=username)
+        db_user = await get_user(db, username=username)
         if db_user is None:
             await self.raise_error(message="User not found", code=404)
 
@@ -298,7 +298,7 @@ class NodeOperation(BaseOperation):
     async def get_user_ip_list_by_node(
         self, db: AsyncSession, node_id: Node, username: str
     ) -> dict[int, dict[str, int]]:
-        db_user = get_user(db, username=username)
+        db_user = await get_user(db, username=username)
         if db_user is None:
             await self.raise_error(message="User not found", code=404)
 

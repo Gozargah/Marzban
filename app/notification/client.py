@@ -55,13 +55,15 @@ async def send_discord_webhook(json_data, webhook):
     logger.error(f"Discord webhook failed after {max_retries} retries")
 
 
-async def send_telegram_message(message, chat_id=0, channel_id=0, topic_id=0):
+async def send_telegram_message(
+    message, chat_id: int | None = None, channel_id: int | None = None, topic_id: int | None = None
+):
     """
     Send a message to Telegram based on the available IDs.
     Args:
         message (str): The message to send
-        chat_id (str, optional): The chat ID for direct messages
-        channel_id (str, optional): The channel ID for channel messages
+        chat_id (int, optional): The chat ID for direct messages
+        channel_id (int, optional): The channel ID for channel messages
         topic_id (int, optional): The topic ID for forum topics in channels
     Returns:
         bool: True if message was sent successfully, False otherwise
@@ -73,15 +75,15 @@ async def send_telegram_message(message, chat_id=0, channel_id=0, topic_id=0):
         return
 
     base_url = f"https://api.telegram.org/bot{settings.telegram_api_token}/sendMessage"
-    payload = {"parse_mode": "Markdown", "text": message}
+    payload = {"parse_mode": "HTML", "text": message}
 
     # Determine the target chat/channel/topic
-    if topic_id != 0 and channel_id != 0:
+    if topic_id and channel_id:
         payload["chat_id"] = channel_id
         payload["message_thread_id"] = topic_id
-    elif channel_id != 0:
+    elif channel_id:
         payload["chat_id"] = channel_id
-    elif chat_id != 0:
+    elif chat_id:
         payload["chat_id"] = chat_id
     else:
         logger.error("At least one of chat_id, channel_id must be provided")

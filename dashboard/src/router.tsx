@@ -11,6 +11,7 @@ import Nodes from './pages/_dashboard.nodes'
 import NodesPage from './pages/_dashboard.nodes._index'
 import NodeLogs from './pages/_dashboard.nodes.logs'
 import Settings from './pages/_dashboard.settings'
+import CleanupSettings from './pages/_dashboard.settings.cleanup'
 import DiscordSettings from './pages/_dashboard.settings.discord'
 import NotificationSettings from './pages/_dashboard.settings.notifications'
 import SubscriptionSettings from './pages/_dashboard.settings.subscriptions'
@@ -111,6 +112,10 @@ export const router = createHashRouter([
           {
             path: '/settings/webhook',
             element: <WebhookSettings />,
+          },
+          {
+            path: '/settings/cleanup',
+            element: <CleanupSettings />,
           },
           {
             path: '/settings/theme',

@@ -14,6 +14,7 @@ import {
   Bell,
   BookOpen,
   Cpu,
+  Database,
   FileText,
   GithubIcon,
   LayoutDashboardIcon,
@@ -121,13 +122,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         url: '/users',
         icon: UsersIcon,
       },
-      {
-        title: 'statistics',
-        url: '/statistics',
-        icon: PieChart,
-      },
       ...(admin?.is_sudo
         ? [
+            {
+              title: 'statistics',
+              url: '/statistics',
+              icon: PieChart,
+            },
             {
               title: 'hosts',
               url: '/hosts',
@@ -201,6 +202,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   icon: Webhook,
                 },
                 {
+                  title: 'settings.cleanup.title',
+                  url: '/settings/cleanup',
+                  icon: Database,
+                },
+                {
                   title: 'theme.title',
                   url: '/settings/theme',
                   icon: Palette,
@@ -212,7 +218,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ],
     navSecondary: [
       {
-        title: 'Support Us',
+        title: t('supportUs'),
         url: DONATION_URL,
         icon: LifeBuoy,
         target: '_blank',
@@ -266,7 +272,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarHeader>
         <SidebarContent>
           <NavMain items={data.navMain} />
-          {admin?.is_sudo && <NavSecondary items={data.community} label="Community" />}
+          {admin?.is_sudo && <NavSecondary items={data.community} label={t('community')} />}
           <NavSecondary items={data.navSecondary} className="mt-auto" />
           <div className="flex justify-between px-4 [&>:first-child]:[direction:ltr]">
             <GithubStar />

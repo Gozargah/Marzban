@@ -1,5 +1,5 @@
 import PageHeader from '@/components/page-header'
-import { LucideIcon, Palette, Bell, ListTodo, Webhook, MessageCircle, Send } from 'lucide-react'
+import { LucideIcon, Palette, Bell, ListTodo, Webhook, MessageCircle, Send, Database } from 'lucide-react'
 import { useEffect, useState, createContext, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Outlet, useLocation, useNavigate } from 'react-router'
@@ -40,6 +40,7 @@ const tabs: Tab[] = [
   { id: 'telegram', label: 'settings.telegram.title', icon: Send, url: '/settings/telegram' },
   { id: 'discord', label: 'settings.discord.title', icon: MessageCircle, url: '/settings/discord' },
   { id: 'webhook', label: 'settings.webhook.title', icon: Webhook, url: '/settings/webhook' },
+  { id: 'cleanup', label: 'settings.cleanup.title', icon: Database, url: '/settings/cleanup' },
   { id: 'theme', label: 'theme.title', icon: Palette, url: '/settings/theme' },
 ]
 
@@ -150,6 +151,10 @@ export default function Settings() {
         break
       case 'webhook':
         // Add webhook specific filtering if needed
+        filteredData = { data: data }
+        break
+      case 'cleanup':
+        // Add cleanup specific filtering if needed
         filteredData = { data: data }
         break
       case 'theme':

@@ -1,19 +1,18 @@
+from html import escape
+
 from app.notification.client import send_telegram_message
 from app.models.core import CoreResponse
 from app.models.settings import NotificationSettings
 from app.settings import notification_settings
 
+from .utils import escape_html_core
+from . import messages
+
 
 async def create_core(core: CoreResponse, by: str):
-    data = (
-        "*#Create_core*\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Name:** `{core.name}`\n"
-        + f"**Exclude inbound tags:** `{core.exclude_inbound_tags}`\n"
-        + f"**Fallbacks inbound tags:** `{core.fallbacks_inbound_tags}`\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_ID_: `{core.id}`\n"
-        + f"_By: #{by}_"
+    name, exclude_tags, fallback_tags, by = escape_html_core(core, by)
+    data = messages.CREATE_CORE.format(
+        name=name, exclude_inbound_tags=exclude_tags, fallbacks_inbound_tags=fallback_tags, id=core.id, by=by
     )
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
@@ -23,15 +22,13 @@ async def create_core(core: CoreResponse, by: str):
 
 
 async def modify_core(core: CoreResponse, by: str):
-    data = (
-        "*#Modify_core*\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Name:** `{core.name}`\n"
-        + f"**Exclude inbound tags:** `{core.exclude_inbound_tags}`\n"
-        + f"**Fallbacks inbound tags:** `{core.fallbacks_inbound_tags}`\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_ID_: `{core.id}`\n"
-        + f"_By: #{by}_"
+    name, exclude_tags, fallback_tags, by = escape_html_core(core, by)
+    data = messages.MODIFY_CORE.format(
+        name=name,
+        exclude_inbound_tags=exclude_tags,
+        fallbacks_inbound_tags=fallback_tags,
+        id=core.id,
+        by=by,
     )
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
@@ -41,9 +38,7 @@ async def modify_core(core: CoreResponse, by: str):
 
 
 async def remove_core(core_id: int, by: str):
-    data = (
-        "*#Remove_core*\n" + "➖➖➖➖➖➖➖➖➖\n" + f"**ID:** `{core_id}`\n" + "➖➖➖➖➖➖➖➖➖\n" + f"_By: #{by}_"
-    )
+    data = messages.REMOVE_CORE.format(id=core_id, by=escape(by))
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(

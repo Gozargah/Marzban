@@ -1,13 +1,10 @@
 import { AdminDetails } from '@/service/api'
 import { ColumnDef } from '@tanstack/react-table'
-import { ChartPie, ChevronDown, MoreVertical, Power, PowerOff, RefreshCw, Trash2, User, UserRound } from 'lucide-react'
+import { ChartPie, ChevronDown, MoreVertical, Power, PowerOff, RefreshCw, Trash2, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu.tsx'
 import { formatBytes } from '@/utils/formatByte.ts'
-import { useIsMobile } from '@/hooks/use-mobile.tsx'
-import { Badge } from '@/components/ui/badge.tsx'
-import { cn } from '@/lib/utils.ts'
-import { statusColors } from '@/constants/UserSettings.ts'
+import { AdminStatusBadge } from '@/components/AdminStatusBadge'
 
 interface ColumnSetupProps {
   t: (key: string) => string
@@ -47,15 +44,19 @@ export const setupColumns = ({ t, handleSort, filters, onDelete, toggleStatus, o
     accessorKey: 'username',
     header: () => createSortButton('username', 'username', t, handleSort, filters),
     cell: ({ row }) => (
-      <div className="flex items-start gap-x-3 py-1 px-1">
-        <div className="pt-1">
-          {row.original.is_disabled ? (
-            <div className="min-h-[10px] min-w-[10px] rounded-full border border-gray-400 dark:border-gray-600 shadow-sm" />
-          ) : (
-            <div className="min-h-[10px] min-w-[10px] rounded-full bg-green-300 dark:bg-green-500 shadow-sm animate-greenPulse" />
-          )}
+      <div className="font-medium pl-1 md:pl-2 overflow-hidden text-ellipsis whitespace-nowrap">
+        <div className="flex items-start gap-x-3 py-1 px-1">
+          <div className="pt-1">
+            {row.original.is_disabled ? (
+              <div className="min-h-[10px] min-w-[10px] rounded-full border border-gray-400 dark:border-gray-600 shadow-sm" />
+            ) : (
+              <div className="min-h-[10px] min-w-[10px] rounded-full bg-green-500 shadow-sm" />
+            )}
+          </div>
+          <div className="flex flex-col gap-y-0.5 whitespace-nowrap text-ellipsis overflow-hidden">
+            <span className="whitespace-nowrap text-ellipsis overflow-hidden text-sm font-medium">{row.getValue('username')}</span>
+          </div>
         </div>
-        <div className="whitespace-nowrap  text-ellipsis px-2 overflow-hidden text-sm font-medium">{row.getValue('username')}</div>
       </div>
     ),
   },
@@ -88,19 +89,11 @@ export const setupColumns = ({ t, handleSort, filters, onDelete, toggleStatus, o
     accessorKey: 'is_sudo',
     header: () => <div className="text-xs flex items-center capitalize">{t('admins.role')}</div>,
     cell: ({ row }) => {
-      const isMobile = useIsMobile()
       const isSudo = row.getValue('is_sudo')
+      const isDisabled = row.original.is_disabled
       return (
         <div className="flex items-center gap-2">
-          <Badge
-            className={cn(
-              'flex items-center justify-center rounded-full px-0.5 sm:px-2 py-0.5 w-fit max-w-[150px] gap-x-2 pointer-events-none',
-              isSudo ? statusColors['active'].statusColor : statusColors['disabled'].statusColor || 'bg-gray-400 text-white',
-              isMobile && 'py-2.5 h-6 px-1.5',
-            )}
-          >
-            <div>{isMobile ? <UserRound className="w-4 h-4" /> : <span className="capitalize text-nowrap font-medium text-xs">{isSudo ? t(`sudo`) : t('admin')}</span>}</div>
-          </Badge>
+          <AdminStatusBadge isSudo={!!isSudo} isDisabled={!!isDisabled} />
         </div>
       )
     },

@@ -72,7 +72,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-const DataUsageChart = ({ admin_username }: { admin_username: string }) => {
+const DataUsageChart = ({ admin_username }: { admin_username?: string }) => {
   const { t, i18n } = useTranslation()
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const PERIOD_OPTIONS: PeriodOption[] = useMemo(() => [
@@ -107,7 +107,7 @@ const DataUsageChart = ({ admin_username }: { admin_username: string }) => {
 
   const { data } = useGetUsersUsage(
     {
-      admin: [admin_username],
+      ...(admin_username ? { admin: [admin_username] } : {}),
       period: periodOption.period,
       start: startDate,
       end: endDate,

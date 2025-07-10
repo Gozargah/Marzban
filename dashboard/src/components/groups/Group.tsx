@@ -3,7 +3,7 @@ import { GroupResponse } from '@/service/api'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { useRemoveGroup } from '@/service/api'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { useState } from 'react'
 import { MoreVertical, Pencil, Power, Trash2 } from 'lucide-react'
@@ -55,8 +55,7 @@ export default function Group({ group, onEdit, onToggleStatus }: GroupProps) {
   const handleConfirmDelete = async () => {
     try {
       await deleteGroupMutation.mutateAsync({ groupId: group.id })
-      toast({
-        title: t('success', { defaultValue: 'Success' }),
+      toast.success(t('success', { defaultValue: 'Success' }), {
         description: t('group.deleteSuccess', {
           name: group.name,
           defaultValue: 'Group "{name}" has been deleted successfully',
@@ -65,13 +64,11 @@ export default function Group({ group, onEdit, onToggleStatus }: GroupProps) {
       setShowDeleteDialog(false)
       queryClient.invalidateQueries({ queryKey: ['/api/groups'] })
     } catch (error) {
-      toast({
-        title: t('error', { defaultValue: 'Error' }),
+      toast.error(t('error', { defaultValue: 'Error' }), {
         description: t('group.deleteFailed', {
           name: group.name,
           defaultValue: 'Failed to delete group "{name}"',
-        }),
-        variant: 'destructive',
+        })
       })
     }
   }
@@ -89,7 +86,7 @@ export default function Group({ group, onEdit, onToggleStatus }: GroupProps) {
               </div>
             </div>
             <div className="text-sm text-muted-foreground truncate">
-              {t('totalUsers')}: {group.total_users || 0}
+              {t('admins.total.users')}: {group.total_users || 0}
             </div>
           </div>
           <DropdownMenu>

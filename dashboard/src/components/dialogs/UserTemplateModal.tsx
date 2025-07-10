@@ -1,20 +1,18 @@
 import { Button } from '@/components/ui/button.tsx'
-import { Checkbox } from '@/components/ui/checkbox.tsx'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog.tsx'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form.tsx'
 import { Input } from '@/components/ui/input.tsx'
+import { LoaderButton } from '@/components/ui/loader-button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.tsx'
-import { Switch } from '@/components/ui/switch.tsx'
+import GroupsSelector from '@/components/common/GroupsSelector'
 import useDirDetection from '@/hooks/use-dir-detection.tsx'
 import useDynamicErrorHandler from '@/hooks/use-dynamic-errors.ts'
 import { cn } from '@/lib/utils.ts'
-import { ShadowsocksMethods, useCreateUserTemplate, useGetAllGroups, useModifyUserTemplate, UserDataLimitResetStrategy, UserStatusCreate, XTLSFlows } from '@/service/api'
+import { ShadowsocksMethods, useCreateUserTemplate, useModifyUserTemplate, UserDataLimitResetStrategy, UserStatusCreate, XTLSFlows } from '@/service/api'
 import { queryClient } from '@/utils/query-client.ts'
-import { Search } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
-import { Trans, useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -29,7 +27,6 @@ export const userTemplateFormSchema = z.object({
   method: z.enum([ShadowsocksMethods['aes-128-gcm'], ShadowsocksMethods['aes-256-gcm'], ShadowsocksMethods['chacha20-ietf-poly1305'], ShadowsocksMethods['xchacha20-poly1305']]).optional(),
   flow: z.enum([XTLSFlows[''], XTLSFlows['xtls-rprx-vision']]).optional(),
   groups: z.array(z.number()).min(1, 'Groups is required'),
-  resetUsages: z.boolean().optional().default(false),
   data_limit_reset_strategy: z
     .enum([
       UserDataLimitResetStrategy['month'],
@@ -58,26 +55,11 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
   const addUserTemplateMutation = useCreateUserTemplate()
   const handleError = useDynamicErrorHandler()
   const modifyUserTemplateMutation = useModifyUserTemplate()
-  const { data } = useGetAllGroups({})
-  const [checkGroups, setCheckGroups] = useState(false)
   const [timeType, setTimeType] = useState<'seconds' | 'hours' | 'days'>('seconds')
-  const navigate = useNavigate()
-  const { data: groupsData, isLoading: groupsLoading } = useGetAllGroups()
-  const checkGroupsExist = useCallback(() => {
-    if (!data?.groups || data.groups.length === 0) {
-      setCheckGroups(false)
-      return
-    }
-    setCheckGroups(true)
-  }, [data])
-
-  useEffect(() => {
-    if (isDialogOpen) {
-      checkGroupsExist()
-    }
-  }, [isDialogOpen, checkGroupsExist])
+  const [loading, setLoading] = useState(false)
 
   const onSubmit = async (values: UserTemplatesFromValue) => {
+    setLoading(true)
     try {
       // Build payload according to UserTemplateCreate interface
       const submitData = {
@@ -88,7 +70,6 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
         username_suffix: values.username_suffix || undefined,
         group_ids: values.groups, // map groups to group_ids
         status: values.status,
-        reset_usages: values.resetUsages,
         on_hold_timeout: values.status === UserStatusCreate.on_hold ? values.on_hold_timeout : undefined,
         data_limit_reset_strategy: values.data_limit ? values.data_limit_reset_strategy : undefined,
         extra_settings:
@@ -135,13 +116,14 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
         'username_suffix',
         'groups',
         'status',
-        'resetUsages',
         'on_hold_timeout',
         'data_limit_reset_strategy',
         'method',
         'flow',
       ]
       handleError({ error, fields, form, contextKey: 'groups' })
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -156,7 +138,7 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
-            <div className="max-h-[80dvh] overflow-y-auto pr-4 -mr-4 sm:max-h-[75dvh] flex flex-col sm:flex-row items-start gap-4 px-2">
+            <div className="max-h-[76dvh] overflow-y-auto pr-4 -mr-4 sm:max-h-[75dvh] flex flex-col sm:flex-row items-start gap-4 px-2">
               <div className="flex-1 space-y-4 w-full">
                 <div className="flex flex-row gap-2 w-full ">
                   <FormField
@@ -251,26 +233,12 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="resetUsages"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <div className="flex-row justify-between items-center flex">
-                        <FormLabel>{t('templates.resetUsage')}</FormLabel>
-                        <FormControl>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                        <FormMessage />
-                      </div>
-                    </FormItem>
-                  )}
-                />
+
                 <FormField
                   control={form.control}
                   name="data_limit_reset_strategy"
                   render={({ field }) => {
-                    // Only show if resetUsages is enabled
+                    // Only show if data_limit is set
                     const datalimit = form.watch('data_limit')
                     if (!datalimit) {
                       return <></>
@@ -285,11 +253,11 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value={UserDataLimitResetStrategy['no_reset']}>No Reset</SelectItem>
-                            <SelectItem value={UserDataLimitResetStrategy['day']}>Day</SelectItem>
-                            <SelectItem value={UserDataLimitResetStrategy['week']}>Week</SelectItem>
-                            <SelectItem value={UserDataLimitResetStrategy['month']}>Month</SelectItem>
-                            <SelectItem value={UserDataLimitResetStrategy['year']}>Year</SelectItem>
+                            <SelectItem value={UserDataLimitResetStrategy['no_reset']}>{t('userDialog.resetStrategyNo')}</SelectItem>
+                            <SelectItem value={UserDataLimitResetStrategy['day']}>{t('userDialog.resetStrategyDaily')}</SelectItem>
+                            <SelectItem value={UserDataLimitResetStrategy['week']}>{t('userDialog.resetStrategyWeekly')}</SelectItem>
+                            <SelectItem value={UserDataLimitResetStrategy['month']}>{t('userDialog.resetStrategyMonthly')}</SelectItem>
+                            <SelectItem value={UserDataLimitResetStrategy['year']}>{t('userDialog.resetStrategyAnnually')}</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -428,105 +396,30 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
                     </FormItem>
                   )}
                 />
-                {groupsLoading ? (
-                  <div>{t('Loading...', { defaultValue: 'Loading...' })}</div>
-                ) : (
-                  <FormField
-                    control={form.control}
-                    name="groups"
-                    render={({ field }) => {
-                      const [searchQuery, setSearchQuery] = useState('')
-                      const selectedGroups = field.value || []
-                      const filteredGroups = (groupsData?.groups || []).filter((group: any) => group.name.toLowerCase().includes(searchQuery.toLowerCase()))
-
-                      const handleSelectAll = (checked: boolean) => {
-                        if (checked) {
-                          field.onChange(filteredGroups.map((group: any) => group.id))
-                        } else {
-                          field.onChange([])
-                        }
-                      }
-
-                      // If a group is selected, clear template selection
-                      const handleGroupChange = (checked: boolean, groupId: number) => {
-                        if (checked) {
-                          field.onChange([...selectedGroups, groupId])
-                        } else {
-                          field.onChange(selectedGroups.filter((id: number) => id !== groupId))
-                        }
-                      }
-
-                      return (
-                        <FormItem>
-                          <div className="space-y-4 pt-4">
-                            <div className="relative">
-                              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                              <Input
-                                placeholder={t('search', { defaultValue: 'Search' }) + ' ' + t('groups', { defaultValue: 'groups' })}
-                                value={searchQuery}
-                                onChange={e => setSearchQuery(e.target.value)}
-                                className="pl-8"
-                              />
-                            </div>
-                            <label className="flex items-center border border-border gap-2 p-3 rounded-md hover:bg-accent cursor-pointer">
-                              <Checkbox checked={filteredGroups.length > 0 && selectedGroups.length === filteredGroups.length} onCheckedChange={handleSelectAll} />
-                              <span className="text-sm font-medium">{t('selectAll', { defaultValue: 'Select All' })}</span>
-                            </label>
-                            <div className="max-h-[200px] overflow-y-auto space-y-2 p-2 border rounded-md">
-                              {filteredGroups.length === 0 ? (
-                                <div className="flex flex-col gap-4 w-full border-yellow-500 border p-4 rounded-md">
-                                  <span className="text-sm ftext-foreground font-bold text-yellow-500">{t('warning')}</span>
-                                  <span className="text-sm font-medium text-foreground">
-                                    <Trans
-                                      i18nKey={'templates.groupsExistingWarning'}
-                                      components={{
-                                        a: (
-                                          <a
-                                            href="/groups"
-                                            className="font-bold text-primary hover:underline"
-                                            onClick={e => {
-                                              e.preventDefault()
-                                              navigate('/groups')
-                                            }}
-                                          />
-                                        ),
-                                      }}
-                                    ></Trans>
-                                  </span>
-                                </div>
-                              ) : (
-                                filteredGroups.map((group: any) => (
-                                  <label key={group.id} className="flex items-center gap-2 p-2 rounded-md hover:bg-accent cursor-pointer">
-                                    <Checkbox checked={selectedGroups.includes(group.id)} onCheckedChange={checked => handleGroupChange(!!checked, group.id)} />
-                                    <span className="text-sm">{group.name}</span>
-                                  </label>
-                                ))
-                              )}
-                            </div>
-                            {selectedGroups.length > 0 && (
-                              <div className="text-sm text-muted-foreground">
-                                {t('users.selectedGroups', {
-                                  count: selectedGroups.length,
-                                  defaultValue: '{{count}} groups selected',
-                                })}
-                              </div>
-                            )}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )
-                    }}
-                  />
-                )}
+                <FormField
+                  control={form.control}
+                  name="groups"
+                  render={({ field }) => (
+                    <GroupsSelector
+                      control={form.control}
+                      name="groups"
+                      onGroupsChange={field.onChange}
+                    />
+                  )}
+                />
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-4 mt-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 {t('cancel')}
               </Button>
-              <Button type="submit" disabled={!checkGroups}>
+              <LoaderButton 
+                type="submit" 
+                isLoading={loading}
+                loadingText={editingUserTemplate ? t('modifying') : t('creating')}
+              >
                 {editingUserTemplate ? t('save') : t('create')}
-              </Button>
+              </LoaderButton>
             </div>
           </form>
         </Form>

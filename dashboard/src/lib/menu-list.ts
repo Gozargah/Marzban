@@ -1,4 +1,4 @@
-import { Users, Settings, LucideIcon, ChartPie, ListTodo, Share2, Settings2, UserCog } from 'lucide-react'
+import { Users, Settings, LucideIcon, ChartPie, ListTodo, Share2, Settings2 } from 'lucide-react'
 
 type Submenu = {
   href: string
@@ -19,7 +19,7 @@ type Group = {
   menus: Menu[]
 }
 
-export function getMenuList(pathname: string): Group[] {
+export function getMenuList(): Group[] {
   return [
     {
       groupLabel: 'platform',

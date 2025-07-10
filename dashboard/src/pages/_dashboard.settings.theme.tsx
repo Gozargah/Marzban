@@ -4,7 +4,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { useTheme, colorThemes, type ColorTheme, type Radius } from '@/components/theme-provider'
 import { useState } from 'react'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Palette, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -45,8 +45,7 @@ export default function ThemeSettings() {
 
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
     setTheme(newTheme)
-    toast({
-      title: t('success'),
+    toast.success(t('success'), {
       description: t('theme.themeChanged'),
     })
   }
@@ -54,8 +53,7 @@ export default function ThemeSettings() {
   const handleColorChange = (colorName: string) => {
     if (Object.keys(colorThemes).includes(colorName)) {
       setColorTheme(colorName as ColorTheme)
-      toast({
-        title: t('success'),
+      toast.success(t('success'), {
         description: t('theme.themeSaved'),
       })
     }
@@ -64,10 +62,9 @@ export default function ThemeSettings() {
   const handleRadiusChange = (radiusValue: string) => {
     if (['0', '0.3rem', '0.5rem', '0.75rem'].includes(radiusValue)) {
       setRadius(radiusValue as Radius)
-    toast({
-      title: t('success'),
-      description: t('theme.radiusSaved'),
-    })
+      toast.success(t('success'), {
+        description: t('theme.radiusSaved'),
+      })
     }
   }
 
@@ -75,15 +72,12 @@ export default function ThemeSettings() {
     setIsResetting(true)
     try {
       resetToDefaults()
-      toast({
-        title: t('success'),
+      toast.success(t('success'), {
         description: t('theme.resetSuccess'),
       })
     } catch (error) {
-      toast({
-        title: t('error'),
+      toast.error(t('error'), {
         description: t('theme.resetFailed'),
-        variant: 'destructive',
       })
     } finally {
       setIsResetting(false)

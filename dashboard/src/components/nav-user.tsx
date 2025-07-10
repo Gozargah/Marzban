@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { formatBytes } from '@/utils/formatByte'
 import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
 
 export function NavUser({
   username,
@@ -47,7 +46,7 @@ export function NavUser({
                 {admin && (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Network className="size-3" />
-                    <span>{formatBytes(admin?.used_traffic || 0)}</span>
+                    <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{formatBytes(admin?.used_traffic || 0)}</span>
                   </div>
                 )}
               </div>
@@ -82,13 +81,13 @@ export function NavUser({
                     <div className="flex items-center gap-2">
                       <Network className="size-3" />
                       <span>
-                        {t('admins.used.traffic')}: {formatBytes(admin?.used_traffic || 0)}
+                        {t('admins.used.traffic')}: <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{formatBytes(admin?.used_traffic || 0)}</span>
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Wifi className="size-3" />
                       <span>
-                        {t('admins.lifetime.used.traffic')}: {formatBytes(admin?.lifetime_used_traffic || 0)}
+                        {t('admins.lifetime.used.traffic')}: <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{formatBytes(admin?.lifetime_used_traffic || 0)}</span>
                       </span>
                     </div>
                     <div className="flex items-center gap-2">

@@ -1,8 +1,7 @@
 from passlib.context import CryptContext
 from pydantic import BaseModel, ConfigDict, field_validator
 
-from .validators import NumericValidatorMixin, PasswordValidator, DiscordValidator
-
+from .validators import DiscordValidator, NumericValidatorMixin, PasswordValidator
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -34,6 +33,7 @@ class AdminContactInfo(AdminBase):
 class AdminDetails(AdminContactInfo):
     """Complete admin model with all fields for database representation and API responses."""
 
+    id: int | None = None
     is_sudo: bool
     total_users: int = 0
     used_traffic: int = 0

@@ -1,7 +1,7 @@
 import { FC } from 'react'
 import { useTranslation } from 'react-i18next'
 import { parseUserAgent, formatClientInfo } from '@/utils/userAgentParser'
-import { useRelativeExpiryDate } from '@/utils/dateFormatter'
+import { useRelativeExpiryDate, dateUtils } from '@/utils/dateFormatter'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Clock, Monitor, Smartphone, Globe, HelpCircle } from 'lucide-react'
 
@@ -77,7 +77,7 @@ export const SubscriptionInfo: FC<SubscriptionInfoProps> = ({
                 </div>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{t('userDialog.subscriptionUpdated')}: {unixTime ? new Date(unixTime * 1000).toLocaleString() : t('userDialog.subscriptionNotAccessed')}</p>
+                <p>{t('userDialog.subscriptionUpdated')}: {subUpdatedAt ? dateUtils.formatDate(subUpdatedAt) : t('userDialog.subscriptionNotAccessed')}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -129,7 +129,7 @@ export const SubscriptionInfo: FC<SubscriptionInfoProps> = ({
                     </span>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{unixTime ? new Date(unixTime * 1000).toLocaleString() : t('userDialog.subscriptionNotAccessed')}</p>
+                    <p>{subUpdatedAt ? dateUtils.formatDate(subUpdatedAt) : t('userDialog.subscriptionNotAccessed')}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

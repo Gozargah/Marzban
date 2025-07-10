@@ -106,7 +106,7 @@ importers:
         specifier: ^2.0.1
         version: 2.0.1
       '@tanstack/react-query':
-        specifier: ^5.63.0
+        specifier: ^5.64.0
         version: 5.64.0(react@18.3.1)
       '@tanstack/react-table':
         specifier: ^8.20.6
@@ -115,7 +115,7 @@ importers:
         specifier: ^4.3.4
         version: 4.3.4(vite@6.2.4(@types/node@20.17.28)(jiti@1.21.7)(yaml@2.7.0))
       axios:
-        specifier: '>=1.8.2'
+        specifier: ^1.8.4
         version: 1.8.4
       class-variance-authority:
         specifier: ^0.7.1
@@ -254,13 +254,13 @@ importers:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.4.49)
       eslint:
-        specifier: ^9.17.0
+        specifier: ^9.18.0
         version: 9.18.0(jiti@1.21.7)
       eslint-plugin-react-hooks:
         specifier: ^5.1.0
         version: 5.1.0(eslint@9.18.0(jiti@1.21.7))
       eslint-plugin-react-refresh:
-        specifier: ^0.4.16
+        specifier: ^0.4.18
         version: 0.4.18(eslint@9.18.0(jiti@1.21.7))
       orval:
         specifier: ^7.4.1
@@ -284,7 +284,7 @@ importers:
         specifier: ^8.19.1
         version: 8.19.1(eslint@9.18.0(jiti@1.21.7))(typescript@5.6.3)
       vite:
-        specifier: '>=6.0.12'
+        specifier: ^6.2.4
         version: 6.2.4(@types/node@20.17.28)(jiti@1.21.7)(yaml@2.7.0)
       vite-plugin-svgr:
         specifier: ^4.3.0
@@ -2800,8 +2800,8 @@ packages:
     resolution: {integrity: sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==}
     engines: {node: '>=10'}
 
-  caniuse-lite@1.0.30001692:
-    resolution: {integrity: sha512-A95VKan0kdtrsnMubMKxEKUKImOPSuCpYgxSQBo036P5YYgVIcOYJEgt/txJWqObiRQeISNCfef9nvlQ0vbV7A==}
+  caniuse-lite@1.0.30001726:
+    resolution: {integrity: sha512-VQAUIUzBiZ/UnlM28fSp2CRF3ivUn1BWEvxMcVTNwpw91Py1pGbPIyIKtd+tzct9C3ouceCVdGAXxZOpZAsgdw==}
 
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
@@ -7886,7 +7886,7 @@ snapshots:
   autoprefixer@10.4.20(postcss@8.4.49):
     dependencies:
       browserslist: 4.24.4
-      caniuse-lite: 1.0.30001692
+      caniuse-lite: 1.0.30001726
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.1.1
@@ -7963,7 +7963,7 @@ snapshots:
 
   browserslist@4.24.4:
     dependencies:
-      caniuse-lite: 1.0.30001692
+      caniuse-lite: 1.0.30001726
       electron-to-chromium: 1.5.80
       node-releases: 2.0.19
       update-browserslist-db: 1.1.2(browserslist@4.24.4)
@@ -7997,7 +7997,7 @@ snapshots:
 
   camelcase@6.3.0: {}
 
-  caniuse-lite@1.0.30001692: {}
+  caniuse-lite@1.0.30001726: {}
 
   ccount@2.0.1: {}
 

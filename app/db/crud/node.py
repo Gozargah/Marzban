@@ -250,9 +250,9 @@ async def clear_usage_data(
 ):
     filters = []
     if start:
-        filters.append(getattr(_table_model(table), "created_at") >= start)
+        filters.append(getattr(_table_model(table), "created_at") >= start.replace(tzinfo=timezone.utc))
     if end:
-        filters.append(getattr(_table_model(table), "created_at") < end)
+        filters.append(getattr(_table_model(table), "created_at") < end.replace(tzinfo=timezone.utc))
 
     stmt = delete(_table_model(table))
     if filters:

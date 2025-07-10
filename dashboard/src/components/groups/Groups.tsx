@@ -6,7 +6,7 @@ import GroupModal, { groupFormSchema, GroupFormValues } from '@/components/dialo
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { queryClient } from '@/utils/query-client'
 import useDirDetection from '@/hooks/use-dir-detection'
@@ -27,7 +27,7 @@ export default function Groups({ isDialogOpen, onOpenChange }: GroupsProps) {
   const { t } = useTranslation()
   const modifyGroupMutation = useModifyGroup()
   const dir = useDirDetection()
-  const { data: groupsData, isLoading } = useGetAllGroups({})
+  const { data: groupsData } = useGetAllGroups({})
 
   const form = useForm<GroupFormValues>({
     resolver: zodResolver(groupFormSchema),
@@ -55,8 +55,7 @@ export default function Groups({ isDialogOpen, onOpenChange }: GroupsProps) {
         },
       })
 
-      toast({
-        title: t('success', { defaultValue: 'Success' }),
+      toast.success(t('success', { defaultValue: 'Success' }), {
         description: t(group.is_disabled ? 'group.enableSuccess' : 'group.disableSuccess', {
           name: group.name,
           defaultValue: `Group "{name}" has been ${group.is_disabled ? 'enabled' : 'disabled'} successfully`,
@@ -68,13 +67,11 @@ export default function Groups({ isDialogOpen, onOpenChange }: GroupsProps) {
         queryKey: ['/api/groups'],
       })
     } catch (error) {
-      toast({
-        title: t('error', { defaultValue: 'Error' }),
+      toast.error(t('error', { defaultValue: 'Error' }), {
         description: t(group.is_disabled ? 'group.enableFailed' : 'group.disableFailed', {
           name: group.name,
           defaultValue: `Failed to ${group.is_disabled ? 'enable' : 'disable'} group "{name}"`,
         }),
-        variant: 'destructive',
       })
     }
   }

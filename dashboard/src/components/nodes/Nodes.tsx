@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import Node from '@/components/nodes/Node'
 import { useGetNodes, useModifyNode, NodeResponse, NodeConnectionType } from '@/service/api'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { queryClient } from '@/utils/query-client'
 import NodeModal from '@/components/dialogs/NodeModal'
 import { useForm } from 'react-hook-form'
@@ -26,7 +26,7 @@ export default function Nodes() {
   const [editingNode, setEditingNode] = useState<NodeResponse | null>(null)
   const modifyNodeMutation = useModifyNode()
 
-  const { data: nodesData, isLoading } = useGetNodes(undefined, {
+  const { data: nodesData } = useGetNodes(undefined, {
     query: {
       refetchInterval: 5000,
       refetchIntervalInBackground: true,
@@ -76,8 +76,7 @@ export default function Nodes() {
         },
       })
 
-      toast({
-        title: t('success', { defaultValue: 'Success' }),
+      toast.success(t('success', { defaultValue: 'Success' }), {
         description: t(node.status === 'connected' ? 'nodes.disableSuccess' : 'nodes.enableSuccess', {
           name: node.name,
           defaultValue: `Node "{name}" has been ${node.status === 'connected' ? 'disabled' : 'enabled'} successfully`,
@@ -89,13 +88,11 @@ export default function Nodes() {
         queryKey: ['/api/nodes'],
       })
     } catch (error) {
-      toast({
-        title: t('error', { defaultValue: 'Error' }),
+      toast.error(t('error', { defaultValue: 'Error' }), {
         description: t(node.status === 'connected' ? 'nodes.disableFailed' : 'nodes.enableFailed', {
           name: node.name,
           defaultValue: `Failed to ${node.status === 'connected' ? 'disable' : 'enable'} node "{name}"`,
         }),
-        variant: 'destructive',
       })
     }
   }

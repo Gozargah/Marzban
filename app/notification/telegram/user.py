@@ -4,23 +4,25 @@ from app.utils.system import readable_size
 from app.models.settings import NotificationSettings
 from app.settings import notification_settings
 
+from .utils import escape_html_user
+from . import messages
+
 _status = {
-    "active": "**✅ #Activated**",
-    "on_hold": "**🕔 #On_Hold**",
-    "disabled": "**❌ #Disabled**",
-    "limited": "**🪫 #Limited**",
-    "expired": "**📅 #Expired**",
+    "active": "<b>✅ #Activated</b>",
+    "on_hold": "<b>🕔 #On_Hold</b>",
+    "disabled": "<b>❌ #Disabled</b>",
+    "limited": "<b>🪫 #Limited</b>",
+    "expired": "<b>📅 #Expired</b>",
 }
 
 
 async def user_status_change(user: UserNotificationResponse, by: str):
-    data = (
-        _status[user.status.value]
-        + "\n➖➖➖➖➖➖➖➖➖\n"
-        + f"**Username:** `{user.username}`\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_Belongs To_: `{user.admin.username if user.admin else None}`\n"
-        + f"_By: #{by}_"
+    username, admin_username, by = escape_html_user(user, by)
+    data = messages.USER_STATUS_CHANGE.format(
+        status=_status[user.status.value],
+        username=username,
+        admin_username=admin_username,
+        by=by,
     )
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
@@ -32,17 +34,15 @@ async def user_status_change(user: UserNotificationResponse, by: str):
 
 
 async def create_user(user: UserNotificationResponse, by: str):
-    data = (
-        "*🆕 #Create_User*\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Username:** `{user.username}`\n"
-        + f"**Data Limit**: `{readable_size(user.data_limit) if user.data_limit else 'Unlimited'}`\n"
-        + f"**Expire Date:** `{user.expire if user.expire else 'Never'}`\n"
-        + f"**Data Limit Reset Strategy:** `{user.data_limit_reset_strategy.value}`\n"
-        + f"**Has Next Plan**: `{bool(user.next_plan)}`\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_Belongs To_: `{user.admin.username if user.admin else None}`\n"
-        + f"_By: #{by}_"
+    username, admin_username, by = escape_html_user(user, by)
+    data = messages.CREATE_USER.format(
+        username=username,
+        data_limit=readable_size(user.data_limit) if user.data_limit else "Unlimited",
+        expire_date=user.expire if user.expire else "Never",
+        data_limit_reset_strategy=user.data_limit_reset_strategy.value,
+        has_next_plan=bool(user.next_plan),
+        admin_username=admin_username,
+        by=by,
     )
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
@@ -54,17 +54,15 @@ async def create_user(user: UserNotificationResponse, by: str):
 
 
 async def modify_user(user: UserNotificationResponse, by: str):
-    data = (
-        "*✏️ #Modify_User*\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Username:** `{user.username}`\n"
-        + f"**Data Limit**: `{readable_size(user.data_limit) if user.data_limit else 'Unlimited'}`\n"
-        + f"**Expire Date:** `{user.expire if user.expire else 'Never'}`\n"
-        + f"**Data Limit Reset Strategy:** `{user.data_limit_reset_strategy.value}`\n"
-        + f"**Has Next Plan**: `{bool(user.next_plan)}`\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_Belongs To_: `{user.admin.username if user.admin else None}`\n"
-        + f"_By: #{by}_"
+    username, admin_username, by = escape_html_user(user, by)
+    data = messages.MODIFY_USER.format(
+        username=username,
+        data_limit=readable_size(user.data_limit) if user.data_limit else "Unlimited",
+        expire_date=user.expire if user.expire else "Never",
+        data_limit_reset_strategy=user.data_limit_reset_strategy.value,
+        has_next_plan=bool(user.next_plan),
+        admin_username=admin_username,
+        by=by,
     )
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
@@ -76,13 +74,11 @@ async def modify_user(user: UserNotificationResponse, by: str):
 
 
 async def remove_user(user: UserNotificationResponse, by: str):
-    data = (
-        "🗑️ #Remove_User\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Username:** `{user.username}`\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_Belongs To_: `{user.admin.username if user.admin else None}`\n"
-        + f"_By: #{by}_"
+    username, admin_username, by = escape_html_user(user, by)
+    data = messages.REMOVE_USER.format(
+        username=username,
+        admin_username=admin_username,
+        by=by,
     )
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
@@ -94,14 +90,12 @@ async def remove_user(user: UserNotificationResponse, by: str):
 
 
 async def reset_user_data_usage(user: UserNotificationResponse, by: str):
-    data = (
-        "🔁 #Reset_User_Data_Usage\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Username:** `{user.username}`\n"
-        + f"**Data Limit**: `{readable_size(user.data_limit) if user.data_limit else 'Unlimited'}`\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_Belongs To_: `{user.admin.username if user.admin else None}`\n"
-        + f"_By: #{by}_"
+    username, admin_username, by = escape_html_user(user, by)
+    data = messages.RESET_USER_DATA_USAGE.format(
+        username=username,
+        data_limit=readable_size(user.data_limit) if user.data_limit else "Unlimited",
+        admin_username=admin_username,
+        by=by,
     )
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
@@ -113,15 +107,13 @@ async def reset_user_data_usage(user: UserNotificationResponse, by: str):
 
 
 async def user_data_reset_by_next(user: UserNotificationResponse, by: str):
-    data = (
-        "🔁 #Reset_User_By_Next\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Username:** `{user.username}`\n"
-        + f"**Data Limit**: `{readable_size(user.data_limit) if user.data_limit else 'Unlimited'}`\n"
-        + f"**Expire Date:** `{user.expire if user.expire else 'Never'}`\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_Belongs To_: `{user.admin.username if user.admin else None}`\n"
-        + f"_By: #{by}_"
+    username, admin_username, by = escape_html_user(user, by)
+    data = messages.USER_DATA_RESET_BY_NEXT.format(
+        username=username,
+        data_limit=readable_size(user.data_limit) if user.data_limit else "Unlimited",
+        expire_date=user.expire if user.expire else "Never",
+        admin_username=admin_username,
+        by=by,
     )
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
@@ -133,13 +125,11 @@ async def user_data_reset_by_next(user: UserNotificationResponse, by: str):
 
 
 async def user_subscription_revoked(user: UserNotificationResponse, by: str):
-    data = (
-        "🛑 #Revoke_User_Subscribtion\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Username:** `{user.username}`\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_Belongs To_: `{user.admin.username if user.admin else None}`\n"
-        + f"_By: #{by}_"
+    username, admin_username, by = escape_html_user(user, by)
+    data = messages.USER_SUBSCRIPTION_REVOKED.format(
+        username=username,
+        admin_username=admin_username,
+        by=by,
     )
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:

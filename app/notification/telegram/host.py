@@ -1,21 +1,18 @@
+from html import escape
+
 from app.notification.client import send_telegram_message
 from app.models.host import BaseHost
 from app.models.settings import NotificationSettings
 from app.settings import notification_settings
+from app.utils.helpers import escape_tg_html
+
+from .utils import escape_html_host
+from . import messages
 
 
 async def create_host(host: BaseHost, by: str):
-    data = (
-        "*#Create_Host*\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Remark:** `{host.remark}`\n"
-        + f"**Address:** `{host.address}`\n"
-        + f"**Inbound Tag:** `{host.inbound_tag}`\n"
-        + f"**Port:** `{host.port}`\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_ID_: `{host.id}`\n"
-        + f"_By: #{by}_"
-    )
+    remark, address, tag, by = escape_html_host(host, by)
+    data = messages.CREATE_HOST.format(remark=remark, address=address, tag=tag, port=host.port, id=host.id, by=by)
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(
@@ -24,17 +21,8 @@ async def create_host(host: BaseHost, by: str):
 
 
 async def modify_host(host: BaseHost, by: str):
-    data = (
-        "*#Modify_Host*\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Remark:** `{host.remark}`\n"
-        + f"**Address:** `{host.address}`\n"
-        + f"**Inbound Tag:** `{host.inbound_tag}`\n"
-        + f"**Port:** `{host.port}`\n\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_ID_: `{host.id}`\n"
-        + f"_By: #{by}_"
-    )
+    remark, address, tag, by = escape_html_host(host, by)
+    data = messages.MODIFY_HOST.format(remark=remark, address=address, tag=tag, port=host.port, id=host.id, by=by)
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(
@@ -43,14 +31,8 @@ async def modify_host(host: BaseHost, by: str):
 
 
 async def remove_host(host: BaseHost, by: str):
-    data = (
-        "*#Remove_Host*\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"**Remark:** `{host.remark}`\n"
-        + "➖➖➖➖➖➖➖➖➖\n"
-        + f"_ID_: {host.id}\n"
-        + f"_By: #{by}_"
-    )
+    remark, by = escape_tg_html((host.remark, by))
+    data = messages.REMOVE_HOST.format(remark=remark, id=host.id, by=by)
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(
@@ -59,7 +41,7 @@ async def remove_host(host: BaseHost, by: str):
 
 
 async def modify_hosts(by: str):
-    data = f"*#Modify_Hosts*\n➖➖➖➖➖➖➖➖➖\nAll hosts has been updated by **#{by}**"
+    data = messages.MODIFY_HOSTS.format(by=escape(by))
     settings: NotificationSettings = await notification_settings()
     if settings.notify_telegram:
         await send_telegram_message(

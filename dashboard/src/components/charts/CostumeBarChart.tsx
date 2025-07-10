@@ -5,10 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { useTranslation } from 'react-i18next'
 import useDirDetection from '@/hooks/use-dir-detection'
-import { getUsage, Period, type NodeUsageStat, getNode } from '@/service/api'
+import { getUsage, Period, type NodeUsageStat } from '@/service/api'
 import { formatBytes } from '@/utils/formatByte'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TimeRangeSelector } from '@/components/common/TimeRangeSelector'
+import { EmptyState } from './EmptyState'
+import { TrendingUp } from 'lucide-react'
 
 type DataPoint = {
   time: string
@@ -147,7 +149,15 @@ export function CostumeBarChart({ nodeId }: CostumeBarChartProps) {
             <Skeleton className="h-[300px] w-full" />
           </div>
         ) : error ? (
-          <div className="max-h-[400px] min-h-[200px] w-full flex items-center justify-center text-destructive">{t('errors.failedToLoad')}</div>
+          <EmptyState type="error" className="max-h-[400px] min-h-[200px]" />
+        ) : !dateRange ? (
+          <EmptyState 
+            type="no-data" 
+            title={t('statistics.selectTimeRange')}
+            description={t('statistics.selectTimeRangeDescription')}
+            icon={<TrendingUp className="h-12 w-12 text-muted-foreground/50" />}
+            className="max-h-[400px] min-h-[200px]" 
+          />
         ) : (
           <ChartContainer dir={'ltr'} config={chartConfig} className="max-h-[400px] min-h-[200px] w-full">
             {chartData && chartData.length > 0 ? (
@@ -159,7 +169,12 @@ export function CostumeBarChart({ nodeId }: CostumeBarChartProps) {
                 <Bar dataKey="usage" fill="var(--color-usage)" radius={8} />
               </BarChart>
             ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground">{t('statistics.noDataAvailable')}</div>
+              <EmptyState 
+                type="no-data" 
+                title={t('statistics.noDataInRange')}
+                description={t('statistics.noDataInRangeDescription')}
+                className="max-h-[400px] min-h-[200px]" 
+              />
             )}
           </ChartContainer>
         )}

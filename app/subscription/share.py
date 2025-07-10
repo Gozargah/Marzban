@@ -101,6 +101,7 @@ async def generate_subscription(user: User, config_format: str, as_base64: bool,
         "extra_data": user.__dict__,
         "reverse": reverse,
     }
+    kwargs["extra_data"]["expire"] = user.expire
 
     if config_format == "links":
         config = "\n".join(await generate_standard_links(**kwargs))
@@ -158,7 +159,6 @@ def setup_format_variables(extra_data: dict) -> dict:
 
     if user_status != UserStatus.on_hold:
         if expire is not None:
-            expire = expire.astimezone(timezone.utc)
             seconds_left = (expire - now).total_seconds()
             expire_date = expire.date()
             jalali_expire_date = jd.fromgregorian(

@@ -143,7 +143,6 @@ export default function AdminModal({
                 discord_id: values.discord_id,
             }
             if (editingAdmin && editingAdminUserName) {
-                console.log(editingAdminUserName)
                 await modifyAdminMutation.mutateAsync({
                     username: editingAdminUserName,
                     data: editData,

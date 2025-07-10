@@ -1,6 +1,7 @@
 {
   "marzban": "مـرزبان",
   "dashboard": "داشبورد",
+  "master": "سرور اصلی",
   "dashboardDescription": "داشبورد مدیریت مـرزبان",
   "active": "فعال",
   "online": "آنلاین",
@@ -9,8 +10,6 @@
   "status": "وضعیت",
   "statistics": "آمار",
   "selectAll": "انتخاب همه",
-  "statistics.realTimeStats": "آمار لحظه‌ای",
-  "statistics.serverPerformance": "عملکرد سرور",
   "modifying": "در حال ویرایش...",
   "removing": "در حال حذف...",
   "creating": "در حال ایجاد...",
@@ -19,6 +18,8 @@
   "documentation": "مستندات",
   "discussionGroup": "گروه گفتگو",
   "github": "گیت‌هاب",
+  "community": "جامعه",
+  "supportUs": "پشتیبانی از ما",
   "manageHosts": "مدیریت و کنترل هاست‌ها.",
   "manageSettings": "مدیریت و کنترل تنظیمات.",
   "monitorUsers": "مدیریت کاربران",
@@ -35,16 +36,16 @@
       "filterTitle": "فیلتر اعلان‌ها",
       "filterDescription": "رویدادهایی را انتخاب کنید که باید اعلان‌هایی را برای اطلاع‌رسانی از فعالیت‌های مهم سیستم ایجاد کنند",
       "types": {
-        "admin": "رویدادهای مدیر",
-        "core": "سیستم هسته",
-        "group": "تغییرات گروه",
-        "host": "رویدادهای هاست",
-        "login": "فعالیت ورود",
-        "node": "وضعیت گره",
-        "user": "فعالیت کاربر",
-        "userTemplate": "رویدادهای قالب",
-        "daysLeft": "هشدارهای انقضا",
-        "percentageReached": "هشدارهای مصرف"
+        "admin": "مدیران",
+        "core": "هسته",
+        "group": "گروه‌ها",
+        "host": "هاست‌ها",
+        "login": "ورود",
+        "node": "گره‌ها",
+        "user": "کاربران",
+        "userTemplate": "قالب‌ها",
+        "daysLeft": "انقضا",
+        "percentageReached": "مصرف"
       },
       "telegram": {
         "title": "تلگرام",
@@ -229,6 +230,65 @@
         }
       }
     },
+    "cleanup": {
+      "title": "پاکسازی",
+      "description": "مدیریت حساب‌های منقضی شده و بازنشانی مصرف داده‌ها برای نگهداری سیستم",
+      "loadError": "بارگذاری تنظیمات پاکسازی ناموفق بود. لطفاً دوباره تلاش کنید.",
+      "saveSuccess": "عملیات پاکسازی با موفقیت تکمیل شد",
+      "saveFailed": "تکمیل عملیات پاکسازی ناموفق بود",
+      "cancelSuccess": "عملیات پاکسازی لغو شد",
+      "expiredUsers": {
+        "title": "حذف حساب‌های منقضی شده",
+        "description": "حذف حساب‌هایی که در بازه زمانی مشخصی منقضی شده‌اند",
+        "expiredAfter": "منقضی شده بعد از",
+        "expiredBefore": "منقضی شده قبل از",
+        "expiredAfterPlaceholder": "تاریخ شروع را انتخاب کنید",
+        "expiredBeforePlaceholder": "تاریخ پایان را انتخاب کنید",
+        "dateRange": "بازه زمانی",
+        "deleteExpired": "حذف منقضی‌ها",
+        "deleting": "در حال حذف...",
+        "deleteSuccess": "{{count}} حساب منقضی شده با موفقیت حذف شد",
+        "deleteFailed": "حذف حساب‌های منقضی شده ناموفق بود",
+        "confirmDelete": "حذف حساب‌های منقضی شده",
+        "confirmDeleteMessage": "آیا مطمئن هستید که می‌خواهید همه حساب‌های منقضی شده در بازه زمانی انتخاب شده را حذف کنید؟ این عمل قابل بازگشت نیست.",
+        "noDateSelected": "لطفاً حداقل یک تاریخ انتخاب کنید",
+        "selectDateRange": "بازه زمانی حساب‌های منقضی شده برای حذف را انتخاب کنید (فقط تاریخ‌های گذشته قابل انتخاب هستند)"
+      },
+      "resetUsage": {
+        "title": "بازنشانی کل مصرف داده‌ها",
+        "description": "بازنشانی مصرف داده‌ها برای همه حساب‌ها در سیستم",
+        "resetAll": "بازنشانی همه مصرف‌ها",
+        "resetting": "در حال بازنشانی...",
+        "resetSuccess": "همه مصرف داده‌ها با موفقیت بازنشانی شد",
+        "resetFailed": "بازنشانی مصرف داده‌ها ناموفق بود",
+        "confirmReset": "بازنشانی همه مصرف داده‌ها",
+        "confirmResetMessage": "آیا مطمئن هستید که می‌خواهید مصرف داده‌ها را برای همه حساب‌ها بازنشانی کنید؟ این عمل قابل بازگشت نیست.",
+        "warning": "این عمل مصرف داده‌ها را برای همه حساب‌ها در سیستم بازنشانی می‌کند"
+      },
+      "clearUsageData": {
+        "title": "پاک کردن داده‌های مصرف",
+        "description": "حذف دائمی داده‌های مصرف از جداول انتخاب شده پایگاه داده",
+        "selectTable": "انتخاب جدول",
+        "selectTablePlaceholder": "جدولی برای پاک کردن انتخاب کنید",
+        "noTableSelected": "لطفاً جدولی برای پاک کردن انتخاب کنید",
+        "dataAfter": "داده‌ها بعد از",
+        "dataBefore": "داده‌ها قبل از",
+        "dataAfterPlaceholder": "تاریخ شروع را انتخاب کنید",
+        "dataBeforePlaceholder": "تاریخ پایان را انتخاب کنید",
+        "selectDateRange": "بازه زمانی برای فیلتر کردن داده‌ها بر اساس زمان ایجاد انتخاب کنید (اختیاری - برای پاک کردن همه داده‌ها خالی بگذارید)",
+        "clearData": "پاک کردن داده‌ها",
+        "clearing": "در حال پاک کردن...",
+        "clearSuccess": "داده‌ها از جدول {{table}} با موفقیت پاک شد",
+        "clearFailed": "پاک کردن داده‌های مصرف ناموفق بود",
+        "confirmClear": "تأیید پاک کردن داده‌ها",
+        "confirmClearMessage": "آیا مطمئن هستید که می‌خواهید تمام داده‌ها از جدول {{table}} را به طور دائمی حذف کنید؟ این عمل قابل بازگشت نیست.",
+        "warning": "هشدار: این عمل تمام داده‌های مصرف را از جدول انتخاب شده به طور دائمی حذف می‌کند. این عمل قابل بازگشت نیست.",
+        "tables": {
+          "nodeUserUsages": "مصرف کاربران گره",
+          "userUsages": "مصرف کاربران"
+        }
+      }
+    },
     "theme": {
       "title": "تم"
     }
@@ -257,8 +317,7 @@
   "test": "تست",
   "testing": "در حال تست",
   "confirm": "تایید",
-  "underDevelopment.title": "در حال توسعه",
-  "underDevelopment.description": "این صفحه در حال ساخت است و به‌زودی در دسترس قرار خواهد گرفت.",
+
   "admins": {
     "title": "مدیران",
     "description": "مدیریت مدیران سیستم",
@@ -768,6 +827,7 @@
   "userDialog.editUserTitle": "ویرایش کاربر",
   "userDialog.endDate": "تاریخ پایان",
   "userDialog.expiryDate": "تاریخ پایان",
+  "userDialog.timeOutDate": "تاریخ تایم اوت",
   "userDialog.generatedByDefault": "پیش‌فرض ساخته می‌شود",
   "userDialog.hours": "ساعات",
   "userDialog.method": "روش",
@@ -827,9 +887,24 @@
   "usersTable.status": "وضعیت",
   "usersTable.total": "مجموع",
   "statistics.system": "سیستم",
-  "statistics.realTimeBandwidth": "پهنای باند لحظه‌ای",
+  "statistics.totalTraffic": "کل ترافیک",
   "statistics.ramUsage": "مصرف رم",
   "statistics.cpuUsage": "مصرف پردازنده",
+  "statistics.cores": "هسته",
+  "statistics.serverSelection": "انتخاب سرور",
+  "statistics.selectServerToMonitor": "سروری را برای نظارت بر معیارهای عملکرد انتخاب کنید",
+  "statistics.selectServer": "انتخاب سرور",
+  "statistics.realTimeData": "داده‌های لحظه‌ای",
+  "statistics.historicalData": "داده‌های تاریخی",
+  "statistics.viewHistorical": "مشاهده تاریخی",
+  "statistics.viewRealtime": "مشاهده زمان واقعی",
+  "statistics.historical": "تاریخی",
+  "statistics.realtime": "زمان واقعی",
+  "statistics.realtimeDescription": "آمار و نمودارهای زنده برای سرورها و کاربران شما.",
+  "statistics.historicalDescription": "داده‌های عملکرد تاریخی سرور برای بازه زمانی انتخاب شده",
+  "statistics.selectTimeRange": "انتخاب بازه زمانی",
+  "statistics.selectTimeRangeDescription": "دوره مورد نظر را برای تجزیه و تحلیل داده‌های تاریخی انتخاب کنید",
+  "statistics.selectTimeRangeToView": "لطفاً یک بازه زمانی برای مشاهده داده‌های تاریخی انتخاب کنید",
   "enable": "فعالسازی",
   "editHost.title": "ویرایش هاست",
   "host": {
@@ -851,6 +926,8 @@
     "editSuccess": "گروه «{{name}}» با موفقیت ویرایش شد",
     "disableSuccess": "گروه «{{name}}» با موفقیت غیرفعال شد",
     "disableFailed": "غیرفعال‌سازی گروه «{{name}}» با خطا مواجه شد",
+    "enableSuccess": "گروه «{{name}}» با موفقیت فعال شد",
+    "enableFailed": "فعال‌سازی گروه «{{name}}» با خطا مواجه شد",
     "editFailed": "ویرایش گروه «{{name}}» با خطا مواجه شد",
     "deleteSuccess": "گروه «{{name}}» با موفقیت حذف شد",
     "deleteFailed": "حذف گروه «{{name}}» با خطا مواجه شد",
@@ -899,8 +976,36 @@
     "statusChecking": "در حال بررسی...",
     "reconnect": "دوباره متصل کن",
     "reconnecting": "در حال دوباره متصل کردن...",
+    "sync": "همگام‌سازی",
+    "syncing": "در حال همگام‌سازی...",
+    "syncSuccess": "گره با موفقیت همگام‌سازی شد",
+    "syncFailed": "همگام‌سازی گره ناموفق بود",
     "gatherLogs": "جمع‌آوری لاگ‌ها",
-    "gatherLogsDescription": "فعال‌سازی جمع‌آوری لاگ‌ها از این گره برای نظارت و عیب‌یابی"
+    "gatherLogsDescription": "فعال‌سازی جمع‌آوری لاگ‌ها از این گره برای نظارت و عیب‌یابی",
+    "statusMessages": {
+      "checkUnavailableForNew": "بررسی وضعیت برای گره‌های جدید در دسترس نیست. ابتدا گره را ایجاد کنید تا بتوانید وضعیت آن را بررسی کنید."
+    },
+    "onlineStats": {
+      "button": "آمار آنلاین",
+      "title": "آمار کاربران آنلاین",
+      "ipListTitle": "آدرس‌های IP برای {{username}}",
+      "nodeInfo": "گره: {{nodeName}}",
+      "searchPlaceholder": "نام کاربری را وارد کنید...",
+      "enterUsername": "لطفاً نام کاربری را وارد کنید",
+      "refreshed": "داده‌ها با موفقیت به‌روزرسانی شدند",
+      "refreshFailed": "به‌روزرسانی داده‌ها ناموفق بود",
+      "backToStats": "بازگشت به آمار",
+      "ipAddresses": "آدرس IP",
+      "errorLoading": "خطا در بارگذاری آمار کاربر",
+      "userNotOnline": "کاربر آنلاین نیست",
+      "searchUser": "برای مشاهده آمار آنلاین، کاربری را جستجو کنید",
+      "autoRefresh": "به‌روزرسانی خودکار هر 5 ثانیه",
+      "connections": "اتصال",
+      "protocols": "پروتکل",
+      "viewIPs": "مشاهده IP ‌ها",
+      "userNotFound": "کاربر '{{username}}' یافت نشد یا آنلاین نیست",
+      "errorLoadingIPs": "خطا در بارگذاری آدرس‌های IP کاربر"
+    }
   },
   "nodes": {
     "title": "گره‌ها",
@@ -1108,7 +1213,12 @@
     "selectTemplatePlaceholder": "یک قالب را انتخاب کنید",
     "selectNode": "انتخاب گره",
     "allNodes": "همه گره‌ها",
-    "activeNextPlan": "فعال‌سازی پلن بعدی"
+    "activeNextPlan": "فعال‌سازی پلن بعدی",
+    "selectedGroups": "{{count}} گروه انتخاب شده",
+    "editError": "خطا در ویرایش کاربر «{{name}}»",
+    "createError": "خطا در ایجاد کاربر «{{name}}»",
+    "selectStatus": "انتخاب وضعیت",
+    "selectedTemplates": "{{count}} قالب انتخاب شده"
   },
   "sidebar.expand": "باز کردن منو",
   "sidebar.collapse": "بستن منو",
@@ -1128,6 +1238,23 @@
   "statistics.disabledUsers": "کاربران غیرفعال",
   "statistics.expiredUsers": "کاربران منقضی شده",
   "statistics.onHoldUsers": "کاربران در انتظار",
+  "statistics.allUsers": "همه کاربران",
+  "statistics.serverTraffic": "ترافیک سرور",
+  "statistics.nodeTrafficDistribution": "توزیع ترافیک نودها",
+  "statistics.noNodesAvailable": "هیچ نودی در دسترس نیست",
+  "statistics.noDataAvailable": "هیچ داده‌ای در دسترس نیست",
+  "statistics.noDataDescription": "یک بازه زمانی را انتخاب کنید تا آمار و روند مصرف ترافیک را مشاهده کنید.",
+  "statistics.noNodesDescription": "هیچ نودی در حال حاضر متصل نیست تا توزیع ترافیک را نمایش دهد.",
+  "statistics.loadingDescription": "در حال دریافت آخرین داده‌های آمار...",
+  "statistics.waitingForData": "در انتظار داده‌ها",
+  "statistics.waitingForDataDescription": "آمار لحظه‌ای در اینجا نمایش داده می‌شود پس از شروع جریان داده‌ها.",
+  "statistics.noDataInRange": "داده‌ای در بازه انتخابی وجود ندارد",
+  "statistics.noDataInRangeDescription": "هیچ داده ترافیکی برای دوره زمانی انتخابی یافت نشد. بازه زمانی متفاوتی را انتخاب کنید.",
+
+  "statistics.selectNodeToView": "یک نود را انتخاب کنید تا آمار دقیق را مشاهده کنید",
+  "statistics.userStatisticsDescription": "نمای کلی از وضعیت و فعالیت حساب‌های کاربری",
+  "errors.connectionFailed": "اتصال با خطا مواجه شد. لطفاً شبکه خود را بررسی کنید و دوباره تلاش کنید.",
+  "errors.statisticsLoadFailed": "بارگذاری آمار با خطا مواجه شد",
   "usersTable.resetUsageTitle": "ریست مصرف کاربر",
   "usersTable.resetUsagePrompt": "آیا مطمئن هستید که می‌خواهید مصرف «{{name}}» را ریست کنید؟",
   "usersTable.resetUsageSubmit": "ریست مصرف",
@@ -1174,22 +1301,7 @@
     "error": "تغییر مالک کاربر {{username}} به {{admin}} ناموفق بود.",
     "loadError": "بارگذاری لیست مدیران ناموفق بود."
   },
-  "advanceSearch": {
-    "title": "جستجوی پیشرفته",
-    "byUsername": "نام کاربری و یادداشت‌ها",
-    "byProtocol": "داده‌های پروتکل",
-    "byStatus": "وضعیت",
-    "byAdmin": "مدیر",
-    "byGroup": "گروه",
-    "selectGroup": "انتخاب گروه ...",
-    "selectAdmin": "انتخاب مدیر ...",
-    "selectStatus": "انتخاب وضعیت ...",
-    "status": {
-      "active": "فعال",
-      "disable": "غیرفعال",
-      "expired": "منقضی‌شده",
-      "limited": "محدود",
-      "onHold": "متوقف‌شده"
-    }
-  }
+  "inboundTags": "تگ‌های ورودی",
+  "searchInbounds": "جستجوی ورودی‌ها...",
+  "noInboundsFound": "هیچ ورودی‌ای یافت نشد"
 }

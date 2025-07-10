@@ -38,3 +38,7 @@ class SettingsOperation(BaseOperation):
         asyncio.create_task(self.reset_services(old_settings, new_settings))
 
         return new_settings
+
+    async def get_general_settings(self, db: AsyncSession):
+        settings = await self.get_settings(db)
+        return settings.general

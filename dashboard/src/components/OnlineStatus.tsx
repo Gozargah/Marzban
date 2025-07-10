@@ -1,55 +1,61 @@
 import useDirDetection from '@/hooks/use-dir-detection'
 import { cn } from '@/lib/utils'
-import { useRelativeExpiryDate, dateUtils } from '@/utils/dateFormatter'
+import { dateUtils } from '@/utils/dateFormatter'
 import { FC } from 'react'
 import { useTranslation } from 'react-i18next'
+import dayjs from '@/lib/dayjs'
 
 type UserStatusProps = {
   lastOnline: string | number | null | undefined
 }
 
-const convertDateFormat = (lastOnline: UserStatusProps['lastOnline']): number | null => {
-  if (!lastOnline) return null
-
-  // If it's already a timestamp, return it
-  if (!isNaN(Number(lastOnline))) {
-    return Number(lastOnline)
-  }
-
-  // Handle string values
-  if (typeof lastOnline === 'string') {
-    // If it's an ISO string without timezone, add UTC
-    if (lastOnline.endsWith('Z')) {
-      return dateUtils.isoToTimestamp(lastOnline)
-    }
-
-    // If it's an ISO string with timezone, use it directly
-    if (lastOnline.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/)) {
-      return dateUtils.isoToTimestamp(lastOnline)
-    }
-
-    // For any other string format, try to parse it
-    const date = new Date(lastOnline)
-    if (!isNaN(date.getTime())) {
-      return Math.floor(date.getTime() / 1000)
-    }
-  }
-
-  return null
-}
-
 export const OnlineStatus: FC<UserStatusProps> = ({ lastOnline }) => {
   const { t } = useTranslation()
-  const currentTimeInSeconds = Math.floor(Date.now() / 1000)
-  const unixTime = convertDateFormat(lastOnline)
   const dir = useDirDetection()
 
-  const timeDifferenceInSeconds = unixTime ? currentTimeInSeconds - unixTime : null
-  const dateInfo = unixTime ? useRelativeExpiryDate(unixTime) : { status: '', time: t('notConnectedYet') }
+  if (!lastOnline) {
+    return (
+      <span className={cn('inline-block text-xs font-medium', dir === 'rtl' ? 'mr-0.5 md:mr-2' : 'ml-0.5 md:ml-2', 'text-gray-600 dark:text-gray-400')}>
+        {t('notConnectedYet')}
+      </span>
+    )
+  }
 
-  return (
-    <span className={cn('inline-block text-xs font-medium', dir === 'rtl' ? 'mr-0.5 md:mr-2' : 'ml-0.5 md:ml-2', 'text-gray-600 dark:text-gray-400')}>
-      {timeDifferenceInSeconds && timeDifferenceInSeconds <= 60 ? t('online') : timeDifferenceInSeconds ? `${dateInfo.time}` : dateInfo.time}
-    </span>
-  )
+  const currentTime = dayjs()
+  const lastOnlineTime = dateUtils.toDayjs(lastOnline)
+  const diffInSeconds = currentTime.diff(lastOnlineTime, 'seconds')
+
+  const isOnline = diffInSeconds <= 60
+
+  if (isOnline) {
+    return (
+      <span className={cn('inline-block text-xs font-medium', dir === 'rtl' ? 'mr-0.5 md:mr-2' : 'ml-0.5 md:ml-2', 'text-gray-600 dark:text-gray-400')}>
+        {t('online')}
+      </span>
+    )
+  } else {
+    // Format the time difference for offline status
+    const duration = dayjs.duration(diffInSeconds, 'seconds')
+    let timeText = ''
+
+    if (duration.years() > 0) {
+      timeText = `${duration.years()} ${t(`time.${duration.years() !== 1 ? 'years' : 'year'}`)} ${t('time.ago')}`
+    } else if (duration.months() > 0) {
+      timeText = `${duration.months()} ${t(`time.${duration.months() !== 1 ? 'months' : 'month'}`)} ${t('time.ago')}`
+    } else if (duration.days() > 0) {
+      timeText = `${duration.days()} ${t(`time.${duration.days() !== 1 ? 'days' : 'day'}`)} ${t('time.ago')}`
+    } else if (duration.hours() > 0) {
+      timeText = `${duration.hours()} ${t(`time.${duration.hours() !== 1 ? 'hours' : 'hour'}`)} ${t('time.ago')}`
+    } else if (duration.minutes() > 0) {
+      timeText = `${duration.minutes()} ${t(`time.${duration.minutes() !== 1 ? 'mins' : 'min'}`)} ${t('time.ago')}`
+    } else {
+      timeText = `${duration.seconds()} ${t(`time.${duration.seconds() !== 1 ? 'seconds' : 'second'}`)} ${t('time.ago')}`
+    }
+
+    return (
+      <span className={cn('inline-block text-xs font-medium', dir === 'rtl' ? 'mr-0.5 md:mr-2' : 'ml-0.5 md:ml-2', 'text-gray-600 dark:text-gray-400')}>
+        {timeText}
+      </span>
+    )
+  }
 }
