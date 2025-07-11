@@ -17,10 +17,10 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column('hosts', sa.Column('status_new', sa.String(length=255), nullable=True, server_default=""))
+    op.add_column('hosts', sa.Column('status_new', sa.String(length=60), nullable=True, server_default=""))
 
     connection = op.get_bind()
-    hosts_table = sa.Table('hosts', sa.MetaData(), sa.Column('id', sa.Integer, primary_key=True), sa.Column('status', sa.JSON), sa.Column('status_new', sa.String(255)))
+    hosts_table = sa.Table('hosts', sa.MetaData(), sa.Column('id', sa.Integer, primary_key=True), sa.Column('status', sa.JSON), sa.Column('status_new', sa.String(60)))
 
     for host in connection.execute(sa.select(hosts_table.c.id, hosts_table.c.status)):
         if host.status:
@@ -34,14 +34,14 @@ def upgrade() -> None:
 
     with op.batch_alter_table('hosts') as batch_op:
         batch_op.drop_column('status')
-        batch_op.alter_column('status_new', new_column_name='status', existing_type=sa.String(255))
+        batch_op.alter_column('status_new', new_column_name='status', existing_type=sa.String(60))
 
 
 def downgrade() -> None:
     op.add_column('hosts', sa.Column('status_old', sa.JSON(), nullable=True, server_default=sa.text("'[]'")))
 
     connection = op.get_bind()
-    hosts_table = sa.Table('hosts', sa.MetaData(), sa.Column('id', sa.Integer, primary_key=True), sa.Column('status', sa.String(255)), sa.Column('status_old', sa.JSON))
+    hosts_table = sa.Table('hosts', sa.MetaData(), sa.Column('id', sa.Integer, primary_key=True), sa.Column('status', sa.String(60)), sa.Column('status_old', sa.JSON))
 
     for host in connection.execute(sa.select(hosts_table.c.id, hosts_table.c.status)):
         if host.status:

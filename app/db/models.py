@@ -438,7 +438,7 @@ class ProxyHost(Base):
     http_headers: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON(none_as_null=True), default=None)
     transport_settings: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON(none_as_null=True), default=None)
     mux_settings: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON(none_as_null=True), default=None)
-    status: Mapped[List[UserStatus]] = mapped_column(EnumArray(UserStatus), default=list, server_default="")
+    status: Mapped[List[UserStatus]] = mapped_column(EnumArray(UserStatus, 60), default=list, server_default="")
 
 
 class System(Base):
