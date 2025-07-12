@@ -29,8 +29,8 @@ services:
     ports:
       - "8000:8000" #Dashboard
       - "1080:1080" #Shadowsocks TCP
-      # Customize to your needs <Host_port>:<Container_port>
-      # you must open your Configs Listening ports. for e.g "vless + xhttp + TLS" listening on port 443
+      # <Host_port>:<Container_port>, Customize to your needs
+      # you must open your Config's Listening ports. for e.g "vless + xhttp + TLS" listening on port 443
 networks:
   marzban:
     driver: bridge
