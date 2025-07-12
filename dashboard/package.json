@@ -8,7 +8,7 @@
     "preview": "vite preview",
     "gen:api": "orval",
     "wait-port": "wait-port http://localhost:$UVICORN_PORT/openapi.json",
-    "wait-port-gen-api": "pnpm run wait-port && pnpm run gen:api"
+    "wait-port-gen-api": "bun run wait-port && bun run gen:api"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -105,17 +105,5 @@
     "vite-plugin-svgr": "^4.3.0",
     "wait-port": "^1.1.0"
   },
-  "packageManager": "pnpm@9.15.3+sha256.c1da43727ccbc1ed42aff4fd6bdb4b1e91e65a818e6efff5b240fbf070ba4eaf",
-  "pnpm": {
-    "overrides": {
-      "undici@>=6.0.0 <6.21.1": ">=6.21.1",
-      "esbuild@<=0.24.2": ">=0.25.0",
-      "vite@>=6.0.0 <=6.0.8": ">=6.0.9",
-      "jsonpath-plus@<10.3.0": ">=10.3.0",
-      "@babel/runtime@<7.26.10": ">=7.26.10",
-      "@babel/helpers@<7.26.10": ">=7.26.10",
-      "vite@>=6.0.0 <6.0.12": ">=6.0.12",
-      "axios@>=1.0.0 <1.8.2": ">=1.8.2"
-    }
-  }
+  "packageManager": "bun@1.0.0"
 }
