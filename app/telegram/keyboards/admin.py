@@ -1,6 +1,8 @@
 from enum import Enum
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+from aiogram.utils.keyboard import InlineKeyboardBuilder, WebAppInfo
 from aiogram.filters.callback_data import CallbackData
+
 from app.telegram.utils.texts import Button as Texts
 
 
@@ -15,18 +17,27 @@ class AdminPanel(InlineKeyboardBuilder):
     class Callback(CallbackData, prefix="panel"):
         action: AdminPanelAction
 
-    def __init__(self, is_sudo: bool = False, *args, **kwargs):
+    def __init__(self, is_sudo: bool = False, panel_url: str = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        adjust = []
+        if panel_url and panel_url.startswith("https://"):
+            self.button(text=Texts.open_panel, web_app=WebAppInfo(url=panel_url))
+            adjust.append(1)
+
         self.button(text=Texts.refresh_data, callback_data=self.Callback(action=AdminPanelAction.refresh))
         if is_sudo:
             self.button(text=Texts.sync_users, callback_data=self.Callback(action=AdminPanelAction.sync_users))
+            adjust.append(2)
+        else:
+            adjust.append(1)
         self.button(text=Texts.users, switch_inline_query_current_chat="")
         self.button(text=Texts.create_user, callback_data=self.Callback(action=AdminPanelAction.create_user))
         self.button(
             text=Texts.create_user_from_template,
             callback_data=self.Callback(action=AdminPanelAction.create_user_from_template)
         )
-        self.adjust(*([2, 1, 1] if is_sudo else [1, 1, 1]))
+        adjust = adjust + [1] * 3
+        self.adjust(*adjust)
 
 
 class InlineQuerySearch(InlineKeyboardBuilder):

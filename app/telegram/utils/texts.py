@@ -23,6 +23,7 @@ ebl = html_decoration.expandable_blockquote
 
 
 class Button:
+    open_panel = "🎛 Open Panel"
     done = "✅ Done"
     search = "🔎 Search"
     enable = "✅ Enable"

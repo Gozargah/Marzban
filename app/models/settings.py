@@ -2,7 +2,7 @@ from enum import Enum
 
 from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict
 
-from .validators import ProxyValidator, DiscordValidator, ListValidator
+from .validators import ProxyValidator, DiscordValidator, ListValidator, URLValidator
 
 
 class Telegram(BaseModel):
@@ -13,6 +13,17 @@ class Telegram(BaseModel):
     proxy_url: str | None = Field(default=None)
 
     mini_app_login: bool = Field(default=True)
+    mini_app_web_url: str | None = Field(default="")
+
+    @field_validator("mini_app_web_url")
+    @classmethod
+    def validate_mini_app_web_url(cls, v):
+        return URLValidator.validate_url(v)
+
+    @field_validator("webhook_url")
+    @classmethod
+    def validate_webhook_url(cls, v):
+        return URLValidator.validate_url(v)
 
     @field_validator("proxy_url")
     @classmethod

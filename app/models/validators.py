@@ -1,6 +1,8 @@
-from datetime import datetime
 import re
+from datetime import datetime
 from decimal import Decimal
+from typing import Optional
+
 from app.db.models import UserStatusCreate
 
 
@@ -163,4 +165,28 @@ class DiscordValidator:
     def validate_webhook(value: str | None):
         if value and not value.startswith("https://discord.com"):
             raise ValueError("Discord webhook must start with 'https://discord.com'")
+        return value
+
+
+class URLValidator:
+    @staticmethod
+    def validate_url(value: Optional[str]) -> Optional[str]:
+        """
+        Validates a general-purpose URL.
+        Examples:
+            http://example.com
+            https://example.com:8443
+        """
+        if not value:
+            return value
+
+        pattern = (
+            r"^(?P<scheme>http|https)://"  # Scheme
+            r"(:(?P<port>\d{1,5}))?"  # Optional port
+            r"(?P<path>/[^\s?#]*)?"  # Optional path
+        )
+
+        if not re.match(pattern, value):
+            raise ValueError(f"URL must be a valid address (e.g., https://example.com:8443/path): {value}")
+
         return value
