@@ -1,8 +1,35 @@
 services:
+  db:
+    image: mariadb:latest
+    restart: always
+    env_file: .env
+    environment:
+      MARIADB_DATABASE: marzban
+      MARIADB_ROOT_PASSWORD: DB_PASSWORD_123456789
+    volumes:
+      - /var/lib/marzban/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
   marzban:
     image: gozargah/marzban:latest
     restart: always
     env_file: .env
-    network_mode: host
+    environment:
+      SQLALCHEMY_DATABASE_URL: "mysql+pymysql://root:DB_PASSWORD_123456789@db/marzban"
+    depends_on:
+      db:
+        condition: service_healthy
     volumes:
       - /var/lib/marzban:/var/lib/marzban
+      - /var/log/xray:/var/log/xray
+    ports:
+      - "8000:8000"
+      # Customize to your needs <Host_port>:<Container_port>
+      # you must open your Configs Listening ports. for e.g "vless + xhttp + TLS" listening on port 443
+networks:
+  marzban:
+    driver: bridge
