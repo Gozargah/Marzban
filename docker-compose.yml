@@ -28,6 +28,7 @@ services:
       - /var/log/xray:/var/log/xray
     ports:
       - "8000:8000"
+      - "1080:1080" #Shadowsocks TCP
       # Customize to your needs <Host_port>:<Container_port>
       # you must open your Configs Listening ports. for e.g "vless + xhttp + TLS" listening on port 443
 networks:
