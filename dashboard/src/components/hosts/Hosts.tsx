@@ -416,11 +416,13 @@ export interface HostsProps {
 export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit, editingHost, setEditingHost }: HostsProps) {
   const [hosts, setHosts] = useState<BaseHost[] | undefined>()
   const [debouncedHosts, setDebouncedHosts] = useState<BaseHost[] | undefined>([])
+  const [skipNextDebounce, setSkipNextDebounce] = useState(false)
   const { t } = useTranslation()
 
   // Set up hosts data from props
   useEffect(() => {
     setHosts(data ?? [])
+    setSkipNextDebounce(true)
   }, [data])
 
   const form = useForm<HostFormValues>({
@@ -726,12 +728,16 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit, editing
 
   // Debounce the host updates to prevent too many API calls
   useEffect(() => {
+    if (skipNextDebounce) {
+        setSkipNextDebounce(false)
+        return
+    }
     const handler = setTimeout(() => {
-      setDebouncedHosts(hosts)
+        setDebouncedHosts(hosts)
     }, 1500)
 
     return () => {
-      clearTimeout(handler)
+        clearTimeout(handler)
     }
   }, [hosts])
 

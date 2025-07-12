@@ -419,6 +419,22 @@ export default function CoreConfigModal({
         }
     }, [])
 
+    // Handle Monaco Editor web component registration errors
+    useEffect(() => {
+        const originalError = console.error
+        console.error = (...args) => {
+            // Suppress the specific web component registration error
+            if (args[0]?.message?.includes('custom element with name') && args[0]?.message?.includes('has already been defined')) {
+                return
+            }
+            originalError.apply(console, args)
+        }
+
+        return () => {
+            console.error = originalError
+        }
+    }, [])
+
     return (
         <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-full sm:max-w-[1000px] h-full sm:h-auto px-4 py-6" onOpenAutoFocus={(e) => e.preventDefault()}>
@@ -430,7 +446,7 @@ export default function CoreConfigModal({
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <div className="max-h-[72dvh] overflow-y-auto pr-4 -mr-4 px-2">
+                        <div className="max-h-[69dvh] sm:max-h-[72dvh] overflow-y-auto pr-4 -mr-4 px-2">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <h3 className="text-lg font-semibold mb-4">{t('coreConfigModal.jsonConfig')}</h3>

@@ -1,7 +1,6 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -11,20 +10,20 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import GroupsSelector from '@/components/common/GroupsSelector'
 import useDirDetection from '@/hooks/use-dir-detection'
 import useDynamicErrorHandler from '@/hooks/use-dynamic-errors.ts'
 import { cn } from '@/lib/utils'
 import { UseEditFormValues, UseFormValues, userCreateSchema, userEditSchema } from '@/pages/_dashboard.users'
-import { useCreateUser, useCreateUserFromTemplate, useGetAllGroups, useGetUsers, useGetUserTemplates, useModifyUser, useModifyUserWithTemplate } from '@/service/api'
+import { useCreateUser, useCreateUserFromTemplate, useGetUsers, useGetUserTemplates, useModifyUser, useModifyUserWithTemplate } from '@/service/api'
 import { useRelativeExpiryDate, dateUtils } from '@/utils/dateFormatter'
 import { SubscriptionInfo } from '@/components/SubscriptionInfo'
 import { formatBytes } from '@/utils/formatByte'
 import { useQueryClient } from '@tanstack/react-query'
-import { CalendarIcon, Layers, ListStart, Lock, RefreshCcw, Search, Users, X } from 'lucide-react'
+import { CalendarIcon, Layers, ListStart, Lock, RefreshCcw, Users, X } from 'lucide-react'
 import React, { useEffect, useState, useTransition } from 'react'
 import { UseFormReturn } from 'react-hook-form'
-import { Trans, useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { v4 as uuidv4, v5 as uuidv5, v7 as uuidv7 } from 'uuid'
 import { z } from 'zod'
@@ -370,7 +369,6 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
   ]
   const [nextPlanEnabled, setNextPlanEnabled] = useState(!!form.watch('next_plan'))
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null)
-  const navigate = useNavigate()
   const [expireCalendarOpen, setExpireCalendarOpen] = useState(false)
   const [onHoldCalendarOpen, setOnHoldCalendarOpen] = useState(false)
   const { i18n } = useTranslation()
@@ -480,16 +478,6 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
 
   // Fetch data for tabs with proper caching and refetch on page view
   const { data: templatesData, isLoading: templatesLoading } = useGetUserTemplates(undefined, {
-    query: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes
-      refetchOnWindowFocus: true,
-      refetchOnMount: true,
-      refetchOnReconnect: true,
-    },
-  })
-
-  const { data: groupsData, isLoading: groupsLoading } = useGetAllGroups(undefined, {
     query: {
       staleTime: 5 * 60 * 1000, // 5 minutes
       gcTime: 10 * 60 * 1000, // 10 minutes
@@ -613,9 +601,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
   // Helper to convert GB to bytes
   function gbToBytes(gb: string | number | undefined): number | undefined {
     if (gb === undefined || gb === null || gb === '') return undefined
-    const num = typeof gb === 'string' ? parseFloat(gb) : gb
-    if (isNaN(num)) return undefined
-    return Math.round(num * 1024 * 1024 * 1024)
+    return Math.round(Number(gb) * 1024 * 1024 * 1024)
   }
 
   // Helper to convert expire field to needed schema using the same logic as other components
@@ -783,7 +769,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
       } catch (error: any) {
         toast.error(
           error?.response?._data?.detail ||
-            t(editingUser ? 'users.editError' : 'users.createError', {
+            t(editingUser ? 'userDialog.editError' : 'userDialog.createError', {
               name: values.username,
               defaultValue: `Failed to ${editingUser ? 'update' : 'create'} user «{{name}}»`,
             }),
@@ -835,13 +821,27 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
         const hasProxySettings = values.proxy_settings && Object.values(values.proxy_settings).some(settings => settings && Object.values(settings).some(value => value !== undefined && value !== ''))
 
         setLoading(true)
+        
+        // Clean proxy settings to ensure proper enum values
+        const cleanedProxySettings = hasProxySettings ? {
+          ...values.proxy_settings,
+          vless: values.proxy_settings?.vless ? {
+            ...values.proxy_settings.vless,
+            flow: values.proxy_settings.vless.flow || undefined
+          } : undefined,
+          shadowsocks: values.proxy_settings?.shadowsocks ? {
+            ...values.proxy_settings.shadowsocks,
+            method: values.proxy_settings.shadowsocks.method || undefined
+          } : undefined
+        } : undefined
+
         // Convert data_limit from GB to bytes
         const sendValues = {
           ...preparedValues,
           data_limit: gbToBytes(preparedValues.data_limit as any),
           expire: normalizeExpire(preparedValues.expire),
           // Only include proxy_settings if they are filled
-          ...(hasProxySettings ? { proxy_settings: values.proxy_settings } : {}),
+          ...(hasProxySettings ? { proxy_settings: cleanedProxySettings } : {}),
         }
 
         // Remove proxy_settings from the payload if it's empty or undefined
@@ -901,8 +901,13 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
   )
 
   function generateUsername() {
-    // Example: random 8-char string
-    return Math.random().toString(36).slice(2, 10)
+    // Generate random 8-char string with only alphanumeric characters (no special chars)
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    let result = ''
+    for (let i = 0; i < 8; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return result
   }
 
   // Add this function after the generateUsername function
@@ -1116,7 +1121,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                   value={field.value || ''}
                                 >
                                   <SelectTrigger>
-                                    <SelectValue placeholder={t('users.selectStatus', { defaultValue: 'Select status' })} />
+                                    <SelectValue placeholder={t('userDialog.selectStatus', { defaultValue: 'Select status' })} />
                                   </SelectTrigger>
                                   <SelectContent>
                                     <SelectItem value="active">{t('status.active', { defaultValue: 'Active' })}</SelectItem>
@@ -1194,108 +1199,24 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                             <FormItem className="flex-1">
                               <FormLabel>{t('userDialog.dataLimit', { defaultValue: 'Data Limit (GB)' })}</FormLabel>
                               <FormControl>
-                                <div className="relative w-full">
-                                  <Input
-                                    type="text"
-                                    inputMode="decimal"
-                                    placeholder={t('userDialog.dataLimit', { defaultValue: 'e.g. 1' })}
-                                    onChange={e => {
-                                      const value = e.target.value
-                                      // Allow empty string
-                                      if (value === '') {
-                                        field.onChange(undefined)
-                                        handleFieldChange('data_limit', undefined)
-                                        return
-                                      }
-                                      // Allow only numbers and decimal point
-                                      if (/^\d*\.?\d*$/.test(value)) {
-                                        const numValue = parseFloat(value)
-                                        if (!isNaN(numValue)) {
-                                          field.onChange(numValue)
-                                          handleFieldChange('data_limit', numValue)
-                                        }
-                                      }
-                                    }}
-                                    onKeyDown={e => {
-                                      const currentValue = field.value === undefined ? 0 : field.value
-                                      if (e.key === 'ArrowUp') {
-                                        e.preventDefault()
-                                        const newValue = currentValue + 1
-                                        field.onChange(newValue)
-                                        handleFieldChange('data_limit', newValue)
-                                      } else if (e.key === 'ArrowDown') {
-                                        e.preventDefault()
-                                        const newValue = Math.max(0, currentValue - 1)
-                                        field.onChange(newValue)
-                                        handleFieldChange('data_limit', newValue)
-                                      }
-                                    }}
-                                    onBlur={() => {
-                                      handleFieldChange('data_limit', field.value)
-                                    }}
-                                    value={field.value === undefined ? '' : field.value}
-                                    className="pr-20"
-                                  />
-                                  <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
-                                    <div className="flex flex-col border-l border-input">
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-4 w-4 rounded-none border-b border-input hover:bg-accent hover:text-accent-foreground"
-                                        onClick={() => {
-                                          const currentValue = field.value === undefined ? 0 : field.value
-                                          const newValue = currentValue + 1
-                                          field.onChange(newValue)
-                                          handleFieldChange('data_limit', newValue)
-                                        }}
-                                      >
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          width="12"
-                                          height="12"
-                                          viewBox="0 0 24 24"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          strokeWidth="2"
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          className="h-3 w-3"
-                                        >
-                                          <path d="m5 15 7-7 7 7" />
-                                        </svg>
-                                      </Button>
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-4 w-4 rounded-none hover:bg-accent hover:text-accent-foreground"
-                                        onClick={() => {
-                                          const currentValue = field.value === undefined ? 0 : field.value
-                                          const newValue = Math.max(0, currentValue - 1)
-                                          field.onChange(newValue)
-                                          handleFieldChange('data_limit', newValue)
-                                        }}
-                                      >
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          width="12"
-                                          height="12"
-                                          viewBox="0 0 24 24"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          strokeWidth="2"
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          className="h-3 w-3"
-                                        >
-                                          <path d="m19 9-7 7-7-7" />
-                                        </svg>
-                                      </Button>
-                                    </div>
-                                    <span className="pointer-events-none ml-1 text-muted-foreground">GB</span>
-                                  </div>
-                                </div>
+                                <Input
+                                  type="number"
+                                  step="any"
+                                  min="0"
+                                  placeholder={t('userDialog.dataLimit', { defaultValue: 'e.g. 1' })}
+                                  {...field}
+                                  value={field.value === undefined || field.value === null ? '' : field.value}
+                                  onChange={e => {
+                                    const value = e.target.value === '' ? 0 : parseFloat(e.target.value)
+                                    if (!isNaN(value) && value >= 0) {
+                                      field.onChange(value)
+                                      handleFieldChange('data_limit', value)
+                                    }
+                                  }}
+                                  onBlur={() => {
+                                    handleFieldChange('data_limit', field.value || 0)
+                                  }}
+                                />
                               </FormControl>
                               {field.value !== null && field.value !== undefined && field.value > 0 && field.value < 1 && (
                                 <p className="mt-1 text-xs text-muted-foreground">{formatBytes(Math.round(field.value * 1024 * 1024 * 1024))}</p>
@@ -1565,10 +1486,11 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                               </FormLabel>
                               <FormControl>
                                 <Select
-                                  value={field.value ?? ''}
+                                  value={field.value ?? 'none'}
                                   onValueChange={val => {
-                                    field.onChange(val === 'none' ? undefined : val)
-                                    handleFieldChange('proxy_settings.vless.flow', val === 'none' ? undefined : val)
+                                    const flowValue = val === 'none' ? '' : val
+                                    field.onChange(flowValue)
+                                    handleFieldChange('proxy_settings.vless.flow', flowValue)
                                   }}
                                 >
                                   <SelectTrigger>
@@ -1680,8 +1602,9 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                 <Select
                                   value={field.value ?? ''}
                                   onValueChange={val => {
-                                    field.onChange(val)
-                                    handleFieldChange('proxy_settings.shadowsocks.method', val)
+                                    const methodValue = val || undefined
+                                    field.onChange(methodValue)
+                                    handleFieldChange('proxy_settings.shadowsocks.method', methodValue)
                                   }}
                                 >
                                   <SelectTrigger>
@@ -1761,12 +1684,13 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                       <Input
                                         type="number"
                                         min="0"
+                                        step="any"
                                         {...field}
-                                        value={field.value ? Math.round(field.value / (1024 * 1024 * 1024)) : ''}
+                                        value={field.value ? dateUtils.secondsToDays(field.value) || '' : ''}
                                         onChange={e => {
-                                          const value = parseInt(e.target.value)
-                                          // Convert GB to bytes (1 GB = 1024 * 1024 * 1024 bytes)
-                                          field.onChange(value ? value * 1024 * 1024 * 1024 : 0)
+                                          const days = e.target.value ? Number(e.target.value) : 0
+                                          const seconds = dateUtils.daysToSeconds(days)
+                                          field.onChange(seconds)
                                         }}
                                       />
                                     </FormControl>
@@ -1788,10 +1712,11 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                         step="any"
                                         {...field}
                                         onChange={e => {
-                                          const value = parseInt(e.target.value)
-                                          field.onChange(value ? value * 24 * 60 * 60 : 0)
+                                          const value = e.target.value ? Number(e.target.value) : 0
+                                          // Convert GB to bytes (1 GB = 1024 * 1024 * 1024 bytes)
+                                          field.onChange(value ? value * 1024 * 1024 * 1024 : 0)
                                         }}
-                                        value={field.value ? Math.round(field.value / (24 * 60 * 60)) : ''}
+                                        value={field.value ? Math.round(field.value / (1024 * 1024 * 1024)) : ''}
                                       />
                                     </FormControl>
                                     <span className="text-xs text-muted-foreground">GB</span>
@@ -1860,7 +1785,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                             </Select>
                             {selectedTemplateId && (
                               <div className="text-sm text-muted-foreground">
-                                {t('users.selectedTemplates', {
+                                {t('userDialog.selectedTemplates', {
                                   count: 1,
                                   defaultValue: '1 template selected',
                                 })}
@@ -1868,114 +1793,32 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                             )}
                           </div>
                         ))}
-                      {activeTab === 'groups' &&
-                        (groupsLoading ? (
-                          <div>{t('Loading...', { defaultValue: 'Loading...' })}</div>
-                        ) : (
-                          <FormField
-                            control={form.control}
-                            name="group_ids"
-                            render={({ field }) => {
-                              const [searchQuery, setSearchQuery] = useState('')
-                              const selectedGroups = field.value || []
-                              const filteredGroups = (groupsData?.groups || []).filter((group: any) => group.name.toLowerCase().includes(searchQuery.toLowerCase()))
-
-                              const handleSelectAll = (checked: boolean) => {
-                                const newGroups = checked ? filteredGroups.map((group: any) => group.id) : []
-
-                                field.onChange(newGroups)
-                                handleFieldChange('group_ids', newGroups)
+                      {activeTab === 'groups' && (
+                        <FormField
+                          control={form.control}
+                          name="group_ids"
+                          render={({ field }) => (
+                            <GroupsSelector
+                              control={form.control}
+                              name="group_ids"
+                              onGroupsChange={(groups) => {
+                                field.onChange(groups)
+                                handleFieldChange('group_ids', groups)
 
                                 // Clear template selection when groups are selected
-                                if (checked && selectedTemplateId) {
+                                if (groups.length > 0 && selectedTemplateId) {
                                   setSelectedTemplateId(null)
                                   clearTemplate()
                                 }
 
                                 // Trigger validation after group selection changes
-                                const isValid = validateAllFields({ ...form.getValues(), group_ids: newGroups }, touchedFields)
+                                const isValid = validateAllFields({ ...form.getValues(), group_ids: groups }, touchedFields)
                                 setIsFormValid(isValid)
-                              }
-
-                              const handleGroupChange = (checked: boolean, groupId: number) => {
-                                const newGroups = checked ? [...selectedGroups, groupId] : selectedGroups.filter(id => id !== groupId)
-
-                                field.onChange(newGroups)
-                                handleFieldChange('group_ids', newGroups)
-
-                                // Clear template selection when groups are selected
-                                if (checked && selectedTemplateId) {
-                                  setSelectedTemplateId(null)
-                                  clearTemplate()
-                                }
-
-                                // Trigger validation after group selection changes
-                                const isValid = validateAllFields({ ...form.getValues(), group_ids: newGroups }, touchedFields)
-                                setIsFormValid(isValid)
-                              }
-
-                              return (
-                                <FormItem>
-                                  <div className="space-y-4 pt-4">
-                                    <div className="relative">
-                                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                                      <Input
-                                        placeholder={t('search', { defaultValue: 'Search' }) + ' ' + t('groups', { defaultValue: 'groups' })}
-                                        value={searchQuery}
-                                        onChange={e => setSearchQuery(e.target.value)}
-                                        className="pl-8"
-                                      />
-                                    </div>
-                                    <label className="flex cursor-pointer items-center gap-2 rounded-md border border-border p-3 hover:bg-accent">
-                                      <Checkbox checked={filteredGroups.length > 0 && selectedGroups.length === filteredGroups.length} onCheckedChange={handleSelectAll} />
-                                      <span className="text-sm font-medium">{t('selectAll', { defaultValue: 'Select All' })}</span>
-                                    </label>
-                                    <div className="max-h-[200px] space-y-2 overflow-y-auto rounded-md border p-2">
-                                      {filteredGroups.length === 0 ? (
-                                        <div className="flex w-full flex-col gap-4 rounded-md border border-yellow-500 p-4">
-                                          <span className="text-sm font-bold text-yellow-500">{t('warning')}</span>
-                                          <span className="text-sm font-medium text-foreground">
-                                            <Trans
-                                              i18nKey={'templates.groupsExistingWarning'}
-                                              components={{
-                                                a: (
-                                                  <a
-                                                    href="/groups"
-                                                    className="font-bold text-primary hover:underline"
-                                                    onClick={e => {
-                                                      e.preventDefault()
-                                                      navigate('/groups')
-                                                    }}
-                                                  />
-                                                ),
-                                              }}
-                                            />
-                                          </span>
-                                        </div>
-                                      ) : (
-                                        filteredGroups.map((group: any) => (
-                                          <label key={group.id} className="flex cursor-pointer items-center gap-2 rounded-md p-2 hover:bg-accent">
-                                            <Checkbox checked={selectedGroups.includes(group.id)} onCheckedChange={checked => handleGroupChange(!!checked, group.id)} />
-                                            <span className="text-sm">{group.name}</span>
-                                          </label>
-                                        ))
-                                      )}
-                                    </div>
-                                    {selectedGroups.length > 0 && (
-                                      <div className="text-sm text-muted-foreground">
-                                        {t('users.selectedGroups', {
-                                          count: selectedGroups.length,
-                                          defaultValue: '{{count}} groups selected',
-                                        })}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )
-                            }}
-                          />
-                        ))}
+                              }}
+                            />
+                          )}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1997,7 +1840,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
               <LoaderButton
                 type="submit"
                 isLoading={loading}
-                disabled={(!isFormValid && !selectedTemplateId) || (!selectedTemplateId && groupsData?.groups?.length === 0)}
+                disabled={!isFormValid && !selectedTemplateId}
                 loadingText={editingUser ? t('modifying') : t('creating')}
               >
                 {editingUser ? t('modify', { defaultValue: 'Modify' }) : t('create', { defaultValue: 'Create' })}

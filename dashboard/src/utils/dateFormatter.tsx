@@ -99,6 +99,16 @@ export const dateUtils = {
         : date
 
     return !isNaN(d.getTime())
+  },
+
+  daysToSeconds: (days: number | undefined): number | undefined => {
+    if (days === undefined || days === null || days === 0) return undefined
+    return Math.round(Number(days) * 24 * 60 * 60)
+  },
+
+  secondsToDays: (seconds: number | undefined): number | undefined => {
+    if (seconds === undefined || seconds === null || seconds === 0) return undefined
+    return Math.round(Number(seconds) / (24 * 60 * 60))
   }
 }
 

@@ -1,15 +1,27 @@
 import PageHeader from '@/components/page-header'
 import MainContent from '@/components/statistics/Statistics'
 import { Separator } from '@/components/ui/separator'
-import { getGetSystemStatsQueryKey, getSystemStats } from '@/service/api'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { getGetSystemStatsQueryKey, getSystemStats, useGetNodes, NodeResponse } from '@/service/api'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
-import { Construction } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Card, CardContent } from '@/components/ui/card'
 
 const Statistics = () => {
-  const [selectedServer, setSelectedServer] = useState<string>('master')
   const { t } = useTranslation()
+  const [selectedServer, setSelectedServer] = useState<string>('master')
+  
+
+  
+  // Fetch nodes for the selector
+  const { data: nodesData, isLoading: isLoadingNodes } = useGetNodes(undefined, {
+    query: {
+      enabled: true,
+    },
+  })
+  
   // Use the getSystemStats API with proper query key and refetch interval
   const { data, error, isLoading } = useQuery({
     queryKey: getGetSystemStatsQueryKey(),
@@ -27,27 +39,53 @@ const Statistics = () => {
         <Separator />
       </div>
 
-      <div className="w-full relative">
-        <div className="px-4 w-full pt-2">
-          <div className="transform-gpu animate-slide-up" style={{ animationDuration: '500ms', animationDelay: '100ms', animationFillMode: 'both' }}>
-            <MainContent error={error} isLoading={isLoading} data={data} selectedServer={selectedServer} onServerChange={setSelectedServer} />
-          </div>
+      {/* Node Selector at the top */}
+      <div className="w-full px-3 sm:px-4 pt-3 sm:pt-4">
+        <div className="transform-gpu animate-slide-up" style={{ animationDuration: '500ms', animationDelay: '50ms', animationFillMode: 'both' }}>
+          <Card>
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base sm:text-lg font-semibold truncate">{t('nodes.title')}</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{t('statistics.selectNodeToView')}</p>
+                </div>
+                <div className="w-full sm:w-auto sm:min-w-[180px] lg:min-w-[200px]">
+                  {isLoadingNodes ? (
+                    <Skeleton className="h-9 sm:h-10 w-full" />
+                  ) : (
+                    <Select value={selectedServer} onValueChange={setSelectedServer}>
+                      <SelectTrigger className="w-full h-9 sm:h-10 text-xs sm:text-sm">
+                        <SelectValue placeholder={t('selectServer')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="master" className="text-xs sm:text-sm">{t('master')}</SelectItem>
+                        {nodesData
+                          ?.filter((node: NodeResponse) => node.status === 'connected')
+                          .map((node: NodeResponse) => (
+                            <SelectItem key={node.id} value={String(node.id)} className="text-xs sm:text-sm">
+                              {node.name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
+      </div>
 
-        {/* Under Development Overlay */}
-        <div
-          className="absolute inset-0 bg-black/20 backdrop-blur-[2px] flex flex-col items-center z-10 transform-gpu animate-fade-in"
-          style={{ animationDuration: '600ms', animationDelay: '250ms', animationFillMode: 'both' }}
-        >
-          <div
-            className="bg-background/90 border-2 border-amber-400 dark:border-amber-600 shadow-md rounded-md p-4 max-w-md sm:max-w-lg md:max-w-xl mt-6 mx-auto flex flex-col items-center gap-3 transform-gpu animate-bounce-in"
-            style={{ animationDuration: '700ms', animationDelay: '300ms', animationFillMode: 'both' }}
-          >
-            <Construction className="h-16 w-16 sm:h-20 sm:w-20 text-amber-500 " />
-            <div>
-              <h2 className="text-lg font-bold text-foreground">{t('underDevelopment.title')}</h2>
-              <p className="text-sm text-muted-foreground">{t('underDevelopment.description')}</p>
-            </div>
+      <div className="w-full">
+        <div className="px-3 sm:px-4 w-full pt-2">
+          <div className="transform-gpu animate-slide-up" style={{ animationDuration: '500ms', animationDelay: '100ms', animationFillMode: 'both' }}>
+            <MainContent 
+              error={error} 
+              isLoading={isLoading} 
+              data={data} 
+              selectedServer={selectedServer}
+              is_sudo={true}
+            />
           </div>
         </div>
       </div>

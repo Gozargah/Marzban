@@ -4,9 +4,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { useTheme, colorThemes, type ColorTheme, type Radius } from '@/components/theme-provider'
 import { useState } from 'react'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { Palette, CheckCircle2 } from 'lucide-react'
+import { Palette, CheckCircle2, Sun, Moon, Monitor } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const colorThemeData = [
@@ -45,18 +45,34 @@ export default function ThemeSettings() {
 
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
     setTheme(newTheme)
-    toast({
-      title: t('success'),
-      description: t('theme.themeChanged'),
+    
+    // Get the appropriate icon for the toast
+    const getThemeIcon = (theme: string) => {
+      switch (theme) {
+        case 'light': return '☀️'
+        case 'dark': return '🌙'
+        case 'system': return '💻'
+        default: return '🎨'
+      }
+    }
+    
+    toast.success(t('success'), {
+      description: `${getThemeIcon(newTheme)} ${t('theme.themeChanged')}`,
+      duration: 2000,
     })
   }
 
   const handleColorChange = (colorName: string) => {
     if (Object.keys(colorThemes).includes(colorName)) {
       setColorTheme(colorName as ColorTheme)
-      toast({
-        title: t('success'),
-        description: t('theme.themeSaved'),
+      
+      // Get the color dot for the toast
+      const colorData = colorThemeData.find(c => c.name === colorName)
+      const colorEmoji = '🎨'
+      
+      toast.success(t('success'), {
+        description: `${colorEmoji} ${t('theme.themeSaved')} - ${t(colorData?.label || '')}`,
+        duration: 2000,
       })
     }
   }
@@ -64,10 +80,13 @@ export default function ThemeSettings() {
   const handleRadiusChange = (radiusValue: string) => {
     if (['0', '0.3rem', '0.5rem', '0.75rem'].includes(radiusValue)) {
       setRadius(radiusValue as Radius)
-    toast({
-      title: t('success'),
-      description: t('theme.radiusSaved'),
-    })
+      
+      const radiusData = radiusOptions.find(r => r.value === radiusValue)
+      
+      toast.success(t('success'), {
+        description: `📐 ${t('theme.radiusSaved')} - ${t(radiusData?.label || '')}`,
+        duration: 2000,
+      })
     }
   }
 
@@ -75,15 +94,14 @@ export default function ThemeSettings() {
     setIsResetting(true)
     try {
       resetToDefaults()
-      toast({
-        title: t('success'),
-        description: t('theme.resetSuccess'),
+      toast.success(t('success'), {
+        description: '🔄 ' + t('theme.resetSuccess'),
+        duration: 3000,
       })
     } catch (error) {
-      toast({
-        title: t('error'),
-        description: t('theme.resetFailed'),
-        variant: 'destructive',
+      toast.error(t('error'), {
+        description: '❌ ' + t('theme.resetFailed'),
+        duration: 3000,
       })
     } finally {
       setIsResetting(false)
@@ -124,17 +142,7 @@ export default function ThemeSettings() {
                 className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-background p-6 hover:bg-accent/50 hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 [&:has([data-state=checked])]:border-primary transition-all cursor-pointer group"
               >
                 <div className="mb-3 p-2 rounded-md bg-gradient-to-br from-orange-400 to-orange-600 text-white">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="4"/>
-                    <path d="M12 2v2"/>
-                    <path d="M12 20v2"/>
-                    <path d="m4.93 4.93 1.41 1.41"/>
-                    <path d="m17.66 17.66 1.41 1.41"/>
-                    <path d="M2 12h2"/>
-                    <path d="M20 12h2"/>
-                    <path d="m6.34 17.66-1.41 1.41"/>
-                    <path d="m19.07 4.93-1.41 1.41"/>
-                  </svg>
+                  <Sun className="h-5 w-5" />
                 </div>
                 <span className="font-medium">{t('theme.light')}</span>
                 <span className="text-xs text-muted-foreground mt-1">{t('theme.lightDescription')}</span>
@@ -151,9 +159,7 @@ export default function ThemeSettings() {
                 className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-background p-6 hover:bg-accent/50 hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 [&:has([data-state=checked])]:border-primary transition-all cursor-pointer group"
               >
                 <div className="mb-3 p-2 rounded-md bg-gradient-to-br from-slate-700 to-slate-900 text-white">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
-                  </svg>
+                  <Moon className="h-5 w-5" />
                 </div>
                 <span className="font-medium">{t('theme.dark')}</span>
                 <span className="text-xs text-muted-foreground mt-1">{t('theme.darkDescription')}</span>
@@ -170,12 +176,7 @@ export default function ThemeSettings() {
                 className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-background p-6 hover:bg-accent/50 hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 [&:has([data-state=checked])]:border-primary transition-all cursor-pointer group"
               >
                 <div className="mb-3 p-2 rounded-md bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect width="14" height="8" x="5" y="2" rx="2"/>
-                    <rect width="20" height="8" x="2" y="14" rx="2"/>
-                    <path d="M6 18h2"/>
-                    <path d="M12 18h6"/>
-                  </svg>
+                  <Monitor className="h-5 w-5" />
                 </div>
                 <span className="font-medium">{t('theme.system')}</span>
                 <span className="text-xs text-muted-foreground mt-1">

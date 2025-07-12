@@ -6,7 +6,7 @@ import { PieChart, TrendingUp, Calendar } from 'lucide-react'
 import * as RechartsPrimitive from 'recharts'
 import TimeSelector from '../charts/TimeSelector'
 import { useTranslation } from 'react-i18next'
-import { Period, useGetUserUsage, useGetNodes } from '@/service/api'
+import { Period, useGetUserUsage, useGetNodes, useGetCurrentAdmin } from '@/service/api'
 import { DateRange } from 'react-day-picker'
 import { TimeRangeSelector } from '@/components/common/TimeRangeSelector'
 import { Button } from '../ui/button'
@@ -76,8 +76,23 @@ const UsageModal = ({ open, onClose, username }: UsageModalProps) => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [selectedNodeId, setSelectedNodeId] = useState<number | undefined>(undefined)
 
-  // Fetch nodes list
-  const { data: nodes, isLoading: isLoadingNodes } = useGetNodes(undefined, { query: { enabled: open } })
+  // Get current admin to check permissions
+  const { data: currentAdmin } = useGetCurrentAdmin()
+  const is_sudo = currentAdmin?.is_sudo || false
+
+  // Reset node selection for non-sudo admins
+  useEffect(() => {
+    if (!is_sudo) {
+      setSelectedNodeId(undefined) // Non-sudo admins see all nodes (master server data)
+    }
+  }, [is_sudo])
+
+  // Fetch nodes list - only for sudo admins
+  const { data: nodes, isLoading: isLoadingNodes } = useGetNodes(undefined, { 
+    query: { 
+      enabled: open && is_sudo // Only fetch nodes for sudo admins when modal is open
+    } 
+  })
 
   // Memoize periodMap only when modal opens
   const periodMap = useMemo(() => getPeriodMap(nowRef.current), [open]);
@@ -203,25 +218,28 @@ const UsageModal = ({ open, onClose, username }: UsageModalProps) => {
                   <Calendar className="h-4 w-4" />
                 </Button>
               </div>
-              <div className="flex justify-center items-center gap-2 w-full">
-                <Select
-                  value={selectedNodeId?.toString() || 'all'}
-                  onValueChange={(value) => setSelectedNodeId(value === 'all' ? undefined : Number(value))}
-                  disabled={isLoadingNodes}
-                >
-                  <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder={t('userDialog.selectNode', { defaultValue: 'Select Node' })} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t('userDialog.allNodes', { defaultValue: 'All Nodes' })}</SelectItem>
-                    {nodes?.map((node) => (
-                      <SelectItem key={node.id} value={node.id.toString()}>
-                        {node.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Node selector - only show for sudo admins */}
+              {is_sudo && (
+                <div className="flex justify-center items-center gap-2 w-full">
+                  <Select
+                    value={selectedNodeId?.toString() || 'all'}
+                    onValueChange={(value) => setSelectedNodeId(value === 'all' ? undefined : Number(value))}
+                    disabled={isLoadingNodes}
+                  >
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                      <SelectValue placeholder={t('userDialog.selectNode', { defaultValue: 'Select Node' })} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t('userDialog.allNodes', { defaultValue: 'All Nodes' })}</SelectItem>
+                      {nodes?.map((node) => (
+                        <SelectItem key={node.id} value={node.id.toString()}>
+                          {node.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               {showCustomRange && (
                 <div className="flex justify-center w-full">
                   <TimeRangeSelector

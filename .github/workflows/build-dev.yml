@@ -17,22 +17,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          run_install: false
-          version: 10
-
-      - name: Setup nodejs
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: "pnpm"
-          cache-dependency-path: ./dashboard/pnpm-lock.yaml
+          bun-version: latest
 
       - name: Install dependencies
         working-directory: ./dashboard
-        run: pnpm i
+        run: bun install --frozen-lockfile
 
       - name: Build dashboard
         run: ./build_dashboard.sh
@@ -113,14 +105,16 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: int128/docker-manifest-create-action@v2
+      - name: Create tagged manifest
+        uses: int128/docker-manifest-create-action@v2
         with:
           tags: ${{ env.IMAGE }}
           sources: |
             ${{ env.IMAGE }}-amd64
             ${{ env.IMAGE }}-arm64
 
-      - uses: int128/docker-manifest-create-action@v2
+      - name: Create tagged manifest for GitHub
+        uses: int128/docker-manifest-create-action@v2
         with:
           tags: ${{ env.GHCR_IMAGE }}
           sources: |

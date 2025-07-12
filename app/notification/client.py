@@ -75,7 +75,7 @@ async def send_telegram_message(
         return
 
     base_url = f"https://api.telegram.org/bot{settings.telegram_api_token}/sendMessage"
-    payload = {"parse_mode": "Markdown", "text": message}
+    payload = {"parse_mode": "HTML", "text": message}
 
     # Determine the target chat/channel/topic
     if topic_id and channel_id:

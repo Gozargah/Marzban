@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { cn } from '@/lib/utils'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { formatBytes } from '@/utils/formatByte'
 import { createUserTemplate, useRemoveUserTemplate, UserTemplateCreate, UserTemplateResponse } from '@/service/api'
 import { queryClient } from '@/utils/query-client.ts'
@@ -49,7 +49,6 @@ const UserTemplate = ({
 }) => {
   const { t } = useTranslation()
   const dir = useDirDetection()
-  const { toast } = useToast()
   const removeUserTemplateMutation = useRemoveUserTemplate()
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
@@ -68,8 +67,7 @@ const UserTemplate = ({
       await removeUserTemplateMutation.mutateAsync({
         templateId: template.id,
       })
-      toast({
-        title: t('success', { defaultValue: 'Success' }),
+      toast.success(t('success', { defaultValue: 'Success' }), {
         description: t('templates.deleteSuccess', {
           name: template.name,
           defaultValue: 'Template «{name}» has been deleted successfully',
@@ -79,13 +77,11 @@ const UserTemplate = ({
       // Invalidate nodes queries
       queryClient.invalidateQueries({ queryKey: ['/api/user_templates'] })
     } catch (error) {
-      toast({
-        title: t('error', { defaultValue: 'Error' }),
+      toast.error(t('error', { defaultValue: 'Error' }), {
         description: t('templates.deleteFailed', {
           name: template.name,
           defaultValue: 'Failed to delete template «{name}»',
         }),
-        variant: 'destructive',
       })
     }
   }
@@ -97,8 +93,7 @@ const UserTemplate = ({
         name: `${template.name} (copy)`,
       }
       await createUserTemplate(newTemplate)
-      toast({
-        title: t('success', { defaultValue: 'Success' }),
+      toast.success(t('success', { defaultValue: 'Success' }), {
         description: t('templates.duplicateSuccess', {
           name: template.name,
           defaultValue: 'Template «{name}» has been duplicated successfully',
@@ -106,13 +101,11 @@ const UserTemplate = ({
       })
       queryClient.invalidateQueries({ queryKey: ['/api/user_templates'] })
     } catch (error) {
-      toast({
-        title: t('error', { defaultValue: 'Error' }),
+      toast.error(t('error', { defaultValue: 'Error' }), {
         description: t('templates.duplicateFailed', {
           name: template.name,
           defaultValue: 'Failed to duplicate template «{name}»',
         }),
-        variant: 'destructive',
       })
     }
   }
@@ -132,8 +125,8 @@ const UserTemplate = ({
                 <span dir="ltr">{!template.data_limit || template.data_limit === 0 ? <Infinity className="w-4 h-4"></Infinity> : formatBytes(template.data_limit ? template.data_limit : 0)}</span>
               </p>
               <p className={'flex items-center gap-x-1'}>
-                {t('expire')}:{' '}
-                <span dir="ltr">{!template.expire_duration || template.expire_duration === 0 ? <Infinity className="w-4 h-4"></Infinity> : `${template.expire_duration / 60 / 60 / 24} Days`}</span>
+                {t('expire')}:
+                <span>{!template.expire_duration || template.expire_duration === 0 ? <Infinity className="w-4 h-4"></Infinity> : `${template.expire_duration / 60 / 60 / 24} ${t('dateInfo.day')}`}</span>
               </p>
             </div>
           </CardDescription>

@@ -7,6 +7,8 @@ from app.db.models import UserStatus
 from app.models.admin import AdminDetails
 from app.models.stats import Period, UserUsageStatsList
 from app.models.user import (
+    BulkUser,
+    BulkUsersProxy,
     CreateUserFromTemplate,
     ModifyUserByTemplate,
     RemoveUsersResponse,
@@ -14,7 +16,6 @@ from app.models.user import (
     UserModify,
     UserResponse,
     UsersResponse,
-    BulkUser,
 )
 from app.operation import OperatorType
 from app.operation.node import NodeOperation
@@ -307,3 +308,14 @@ async def bulk_modify_users_datalimit(
     - **group_ids**: Optional list of group IDs to filter users by their group membership
     """
     return await user_operator.bulk_modify_datalimit(db, bulk_model)
+
+
+@router.post(
+    "s/bulk/proxy_settings", summary="Bulk modify users proxy settings", response_description="Success confirmation"
+)
+async def bulk_modify_users_proxy_settings(
+    bulk_model: BulkUsersProxy,
+    db: AsyncSession = Depends(get_db),
+    _: AdminDetails = Depends(check_sudo_admin),
+):
+    return await user_operator.bulk_modify_proxy_settings(db, bulk_model)

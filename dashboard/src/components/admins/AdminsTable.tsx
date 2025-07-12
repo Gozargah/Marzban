@@ -102,7 +102,7 @@ const ResetUsersUsageConfirmationDialog = ({ adminUsername, isOpen, onClose, onC
   )
 }
 
-export default function AdminsTable({ data, onEdit, onDelete, onToggleStatus, onResetUsage }: AdminsTableProps) {
+export default function AdminsTable({ onEdit, onDelete, onToggleStatus, onResetUsage }: AdminsTableProps) {
   const { t } = useTranslation()
   const [filters, setFilters] = useState<AdminFilters>({
     sort: '-created_at',
@@ -175,6 +175,7 @@ export default function AdminsTable({ data, onEdit, onDelete, onToggleStatus, on
     t,
     handleSort,
     filters,
+    onEdit,
     onDelete: handleDeleteClick,
     toggleStatus: handleStatusToggleClick,
     onResetUsage: handleResetUsersUsageClick,

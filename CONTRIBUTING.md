@@ -101,7 +101,7 @@ The frontend is located in the `dashboard` directory and is built using:
 To build:
 
 ```bash
-pnpm install
+bun install
 ```
 
 Remove the `dashboard/build` directory and restart the Python backend — the frontend will auto-rebuild (except in debug mode).

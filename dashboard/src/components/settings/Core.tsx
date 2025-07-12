@@ -14,7 +14,7 @@ interface CoreProps {
   onDelete?: () => void
 }
 
-export default function Core({ core, onEdit, onToggleStatus, onDuplicate, onDelete }: CoreProps) {
+export default function Core({ core, onEdit, onDuplicate, onDelete }: CoreProps) {
   const { t } = useTranslation()
 
   const handleDeleteClick = (event: Event) => {
@@ -33,10 +33,6 @@ export default function Core({ core, onEdit, onToggleStatus, onDuplicate, onDele
               <div className={cn('min-h-2 min-w-2 rounded-full', 'bg-green-500')} />
               <div className="font-medium">{core.name}</div>
             </div>
-            <div className="text-xs text-muted-foreground">Core ID: {core.id}</div>
-          </div>
-          <div className="text-sm text-muted-foreground mt-1">
-            {t('createdAt')}: {new Date(core.created_at).toLocaleDateString()}
           </div>
         </div>
         <DropdownMenu>

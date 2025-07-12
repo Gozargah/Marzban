@@ -1,6 +1,7 @@
 {
   "marzban": "Marzban",
   "dashboard": "Dashboard",
+  "master": "Master",
   "dashboardDescription": "Marzban Management Dashboard",
   "active": "active",
   "online": "Online",
@@ -9,14 +10,10 @@
   "status": "Status",
   "statistics": "Statistics",
   "selectAll": "Select All",
-  "statistics.realTimeStats": "Real-time Statistics",
-  "statistics.serverPerformance": "Server Performance",
   "hosts": "Hosts",
   "success": "Success",
   "error": "Error",
   "username": "Username",
-  "underDevelopment.title": "Under Development",
-  "underDevelopment.description": "This page is currently being built and will be available soon.",
   "modifying": "Modifying...",
   "removing": "Removing...",
   "creating": "Creating",
@@ -88,6 +85,8 @@
   "documentation": "Documentation",
   "discussionGroup": "Discussion Group",
   "github": "GitHub",
+  "community": "Community",
+  "supportUs": "Support Us",
   "manageHosts": "Manage and control hosts.",
   "manageSettings": "Manage and control settings.",
   "settings": {
@@ -293,9 +292,9 @@
           "title": "Usage Percentage Notifications",
           "description": "Notify when users reach specific usage percentages",
           "empty": "No triggers set"
-                  }
         }
-      },
+      }
+    },
     "cleanup": {
       "title": "Cleanup",
       "description": "Manage expired accounts and reset data usage for system maintenance",
@@ -330,6 +329,29 @@
         "confirmReset": "Reset All Data Usage",
         "confirmResetMessage": "Are you sure you want to reset data usage for all accounts? This action cannot be undone.",
         "warning": "This will reset data usage for ALL accounts in the system"
+      },
+      "clearUsageData": {
+        "title": "Clear Usage Data",
+        "description": "Permanently delete usage data from selected database tables",
+        "selectTable": "Select Table",
+        "selectTablePlaceholder": "Choose a table to clear",
+        "noTableSelected": "Please select a table to clear",
+        "dataAfter": "Data After",
+        "dataBefore": "Data Before",
+        "dataAfterPlaceholder": "Select start date",
+        "dataBeforePlaceholder": "Select end date",
+        "selectDateRange": "Select date range to filter data by creation time (optional - leave blank to clear all data)",
+        "clearData": "Clear Data",
+        "clearing": "Clearing...",
+        "clearSuccess": "Successfully cleared data from {{table}}",
+        "clearFailed": "Failed to clear usage data",
+        "confirmClear": "Confirm Clear Data",
+        "confirmClearMessage": "Are you sure you want to permanently delete all data from the {{table}} table? This action cannot be undone.",
+        "warning": "Warning: This will permanently delete all usage data from the selected table. This action cannot be undone.",
+        "tables": {
+          "nodeUserUsages": "Node User Usages",
+          "userUsages": "User Usages"
+        }
       }
     },
     "theme": {
@@ -550,6 +572,7 @@
   "deleteUser.prompt": "Are you sure you want to remove {{username}}?",
   "deleteUser.title": "Remove User",
   "disabled": "disabled",
+  "expire": "Expire",
   "expires": "Expires in {{time}}",
   "expired": "Expired in {{time}}",
   "header.donation": "Donation",
@@ -989,7 +1012,12 @@
     "subscriptionUpdated": "Last Updated",
     "lastClient": "Last Client",
     "subscriptionNotAccessed": "Not accessed yet",
-    "unknownClient": "Unknown client"
+    "unknownClient": "Unknown client",
+    "selectedGroups": "{{count}} groups selected",
+    "editError": "Failed to update user «{{name}}»",
+    "createError": "Failed to create user «{{name}}»",
+    "selectStatus": "Select status",
+    "selectedTemplates": "{{count}} template(s) selected"
   },
   "users": "Users",
   "usersTable.copied": "Copied",
@@ -1001,9 +1029,12 @@
   "usersTable.status": "Status",
   "usersTable.total": "Total",
   "statistics.system": "System",
-  "statistics.realTimeBandwidth": "Real-Time Bandwidth",
+  "statistics.totalTraffic": "Total Traffic",
   "statistics.ramUsage": "RAM Usage",
   "statistics.cpuUsage": "CPU Usage",
+  "statistics.cores": "cores",
+  "statistics.realTimeData": "Real-Time Data",
+  "statistics.realtimeDescription": "Live statistics and charts for your servers and users.",
   "enable": "Enable",
   "host": {
     "enableSuccess": "Host «{{name}}» has been enabled successfully",
@@ -1251,6 +1282,25 @@
   "statistics.disabledUsers": "Disabled Users",
   "statistics.expiredUsers": "Expired Users",
   "statistics.onHoldUsers": "On Hold Users",
+  "statistics.allUsers": "All Users",
+  "statistics.serverTraffic": "Server Traffic",
+  "statistics.nodeTrafficDistribution": "Node Traffic Distribution",
+  "statistics.noNodesAvailable": "No Nodes Available",
+  "statistics.noDataAvailable": "No Data Available",
+  "statistics.noDataDescription": "Select a time range to view traffic usage statistics and trends.",
+  "statistics.noNodesDescription": "No nodes are currently connected to display traffic distribution.",
+  "statistics.loadingDescription": "Fetching the latest statistics data...",
+  "statistics.waitingForData": "Waiting for Data",
+  "statistics.waitingForDataDescription": "Real-time statistics will appear here once data starts flowing.",
+  "statistics.selectTimeRange": "Select Time Range",
+  "statistics.selectTimeRangeDescription": "Choose a date range above to view traffic usage statistics.",
+  "statistics.noDataInRange": "No Data in Selected Range",
+  "statistics.noDataInRangeDescription": "No traffic data found for the selected time period. Try selecting a different date range.",
+
+  "statistics.selectNodeToView": "Select a node to view detailed statistics",
+  "statistics.userStatisticsDescription": "Overview of user account status and activity",
+  "errors.connectionFailed": "Connection failed. Please check your network and try again.",
+  "errors.statisticsLoadFailed": "Failed to Load Statistics",
   "usersTable.resetUsageTitle": "Reset User Usage",
   "usersTable.resetUsagePrompt": "Are you sure you want to reset the usage for «{{name}}»?",
   "usersTable.resetUsageSubmit": "Reset Usage",
@@ -1269,6 +1319,8 @@
     "hours": "hours",
     "min": "min",
     "mins": "mins",
+    "second": "second",
+    "seconds": "seconds",
     "ago": "ago"
   },
   "notConnectedYet": "Not connected yet",

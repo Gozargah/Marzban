@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { cn } from '@/lib/utils'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { queryClient } from '@/utils/query-client'
 import { NodeResponse, useRemoveNode } from '@/service/api'
 
@@ -44,7 +44,6 @@ const DeleteAlertDialog = ({ node, isOpen, onClose, onConfirm }: { node: NodeRes
 
 export default function Node({ node, onEdit, onToggleStatus }: NodeProps) {
   const { t } = useTranslation()
-  const { toast } = useToast()
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const removeNodeMutation = useRemoveNode()
 
@@ -58,8 +57,7 @@ export default function Node({ node, onEdit, onToggleStatus }: NodeProps) {
       await removeNodeMutation.mutateAsync({
         nodeId: node.id,
       })
-      toast({
-        title: t('success', { defaultValue: 'Success' }),
+      toast.success(t('success', { defaultValue: 'Success' }), {
         description: t('nodes.deleteSuccess', {
           name: node.name,
           defaultValue: 'Node «{name}» has been deleted successfully',
@@ -69,13 +67,11 @@ export default function Node({ node, onEdit, onToggleStatus }: NodeProps) {
       // Invalidate nodes queries
       queryClient.invalidateQueries({ queryKey: ['/api/nodes'] })
     } catch (error) {
-      toast({
-        title: t('error', { defaultValue: 'Error' }),
+      toast.error(t('error', { defaultValue: 'Error' }), {
         description: t('nodes.deleteFailed', {
           name: node.name,
           defaultValue: 'Failed to delete node «{name}»',
         }),
-        variant: 'destructive',
       })
     }
   }
@@ -129,7 +125,7 @@ export default function Node({ node, onEdit, onToggleStatus }: NodeProps) {
                 }}
               >
                 <Power className="h-4 w-4 mr-2" />
-                {node.status !== 'disabled' ? t('disable') : t('enable')}
+                {node.status === 'disabled' ? t('enable') : t('disable')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem

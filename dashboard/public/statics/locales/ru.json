@@ -1,6 +1,7 @@
 {
   "marzban": "Marzban",
   "dashboard": "Панель управления",
+  "master": "Мастер",
   "dashboardDescription": "Панель управления Marzban",
   "active": "активный",
   "online": "В сети",
@@ -11,11 +12,11 @@
   "selectAll": "Выбрать все",
   "statistics.realTimeStats": "Статистика в реальном времени",
   "statistics.serverPerformance": "Производительность сервера",
+  "statistics.realTimeData": "Данные в реальном времени",
+  "statistics.realtimeDescription": "Живая статистика и графики для ваших серверов и пользователей.",
   "hosts": "Хосты",
   "success": "Успешно",
   "error": "Ошибка",
-  "underDevelopment.title": "В разработке",
-  "underDevelopment.description": "Эта страница находится в разработке и скоро будет доступна.",
   "modifying": "Изменение...",
   "removing": "Удаление...",
   "creating": "Создание...",
@@ -87,6 +88,8 @@
   "documentation": "Документация",
   "discussionGroup": "Группа обсуждений",
   "github": "GitHub",
+  "community": "Сообщество",
+  "supportUs": "Поддержать нас",
   "manageHosts": "Управление и контроль хостов.",
   "manageSettings": "Управление и контроль настроек.",
   "settings": {
@@ -330,6 +333,29 @@
         "confirmReset": "Сбросить все использование данных",
         "confirmResetMessage": "Вы уверены, что хотите сбросить использование данных для всех аккаунтов? Это действие нельзя отменить.",
         "warning": "Это действие сбросит использование данных для ВСЕХ аккаунтов в системе"
+      },
+      "clearUsageData": {
+        "title": "Очистка данных использования",
+        "description": "Окончательное удаление данных использования из выбранных таблиц базы данных",
+        "selectTable": "Выберите таблицу",
+        "selectTablePlaceholder": "Выберите таблицу для очистки",
+        "noTableSelected": "Пожалуйста, выберите таблицу для очистки",
+        "dataAfter": "Данные после",
+        "dataBefore": "Данные до",
+        "dataAfterPlaceholder": "Выберите дату начала",
+        "dataBeforePlaceholder": "Выберите дату окончания",
+        "selectDateRange": "Выберите диапазон дат для фильтрации данных по времени создания (необязательно - оставьте пустым для очистки всех данных)",
+        "clearData": "Очистить данные",
+        "clearing": "Очистка...",
+        "clearSuccess": "Данные из таблицы {{table}} успешно очищены",
+        "clearFailed": "Не удалось очистить данные использования",
+        "confirmClear": "Подтвердить очистку данных",
+        "confirmClearMessage": "Вы уверены, что хотите окончательно удалить все данные из таблицы {{table}}? Это действие нельзя отменить.",
+        "warning": "Предупреждение: Это действие окончательно удалит все данные использования из выбранной таблицы. Это действие нельзя отменить.",
+        "tables": {
+          "nodeUserUsages": "Использование пользователей узла",
+          "userUsages": "Использование пользователей"
+        }
       }
     },
     "theme": {
@@ -705,9 +731,10 @@
   "usersTable.status": "Статус",
   "usersTable.total": "Всего",
   "statistics.system": "Система",
-  "statistics.realTimeBandwidth": "Полоса пропускания в реальном времени",
+  "statistics.totalTraffic": "Общий трафик",
   "statistics.ramUsage": "Использование RAM",
   "statistics.cpuUsage": "Использование CPU",
+  "statistics.cores": "ядер",
   "hostsDialog": {
     "addHost": "Добавить хост",
     "selectInbound": "Выберите входящий",
@@ -1174,7 +1201,13 @@
     "proxySettings.desc": "Настройте параметры протокола для этого пользователя.",
     "selectNode": "Выберите узел",
     "allNodes": "Все узлы",
-    "activeNextPlan": "Активировать следующий план"
+    "activeNextPlan": "Активировать следующий план",
+    "unknownClient": "Неизвестный клиент",
+    "selectedGroups": "{{count}} групп выбрано",
+    "editError": "Не удалось обновить пользователя «{{name}}»",
+    "createError": "Не удалось создать пользователя «{{name}}»",
+    "selectStatus": "Выберите статус",
+    "selectedTemplates": "Выбрано шаблонов: {{count}}"
   },
   "sidebar.expand": "Развернуть меню",
   "sidebar.collapse": "Свернуть меню",
@@ -1194,6 +1227,26 @@
   "statistics.disabledUsers": "Отключенные пользователи",
   "statistics.expiredUsers": "Истекшие пользователи",
   "statistics.onHoldUsers": "Пользователи на удержании",
+  "statistics.allUsers": "Все пользователи",
+  "statistics.serverTraffic": "Трафик сервера",
+  "statistics.nodeTrafficDistribution": "Распределение трафика узлов",
+  "statistics.noNodesAvailable": "Нет доступных узлов",
+  "statistics.noDataAvailable": "Нет данных",
+  "statistics.noDataDescription": "Выберите временной диапазон для просмотра статистики и трендов использования трафика.",
+  "statistics.noNodesDescription": "Нет подключенных узлов для отображения распределения трафика.",
+  "statistics.loadingDescription": "Получение последних статистических данных...",
+  "statistics.waitingForData": "Ожидание данных",
+  "statistics.waitingForDataDescription": "Статистика в реальном времени появится здесь после начала передачи данных.",
+  "statistics.selectTimeRange": "Выберите временной диапазон",
+  "statistics.selectTimeRangeDescription": "Выберите диапазон дат выше, чтобы просмотреть статистику использования трафика.",
+  "statistics.noDataInRange": "Нет данных в выбранном диапазоне",
+  "statistics.noDataInRangeDescription": "Данные о трафике для выбранного периода времени не найдены. Попробуйте выбрать другой диапазон дат.",
+  "statistics.showTimeRange": "Временной диапазон",
+  "statistics.hideTimeRange": "Скрыть диапазон",
+  "statistics.selectNodeToView": "Выберите узел для просмотра подробной статистики",
+  "statistics.userStatisticsDescription": "Обзор состояния и активности учетных записей пользователей",
+  "errors.connectionFailed": "Ошибка подключения. Проверьте сеть и попробуйте снова.",
+  "errors.statisticsLoadFailed": "Не удалось загрузить статистику",
   "usersTable.resetUsageTitle": "Сбросить использование пользователя",
   "usersTable.resetUsagePrompt": "Вы уверены, что хотите сбросить использование для «{{name}}»?",
   "usersTable.resetUsageSubmit": "Сбросить использование",
@@ -1212,6 +1265,8 @@
     "hours": "часа",
     "min": "мин",
     "mins": "мин",
+    "second": "секунда",
+    "seconds": "секунды",
     "ago": "назад"
   },
   "notConnectedYet": "Еще не подключен",
@@ -1248,5 +1303,8 @@
     "success": "Владелец пользователя {{username}} успешно изменён на {{admin}}.",
     "error": "Не удалось изменить владельца пользователя {{username}} на {{admin}}.",
     "loadError": "Не удалось загрузить список администраторов."
-  }
+  },
+  "inboundTags": "Входящие теги",
+  "searchInbounds": "Поиск входящих...",
+  "noInboundsFound": "Входящие не найдены"
 }

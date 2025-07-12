@@ -1,5 +1,6 @@
 import re
 from enum import Enum
+from ipaddress import ip_address
 from uuid import UUID
 
 from cryptography.x509 import load_pem_x509_certificate
@@ -53,6 +54,29 @@ class NodeCreate(Node):
             }
         }
     )
+
+    @field_validator("address")
+    @classmethod
+    def validate_address(cls, v: str) -> str:
+        if not v:
+            return v
+        try:
+            ip_address(v)
+            return v
+        except ValueError:
+            # Regex for domain validation
+            if re.match(r"^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}$", v):
+                return v
+            raise ValueError("Invalid address format, must be a valid IPv4/IPv6 or domain")
+
+    @field_validator("port")
+    @classmethod
+    def validate_port(cls, v: int) -> int:
+        if not v:
+            return v
+        if not 1 <= v <= 65535:
+            raise ValueError("Port must be between 1 and 65535")
+        return v
 
     @field_validator("server_ca")
     @classmethod

@@ -100,10 +100,10 @@ export default function GroupModal({isDialogOpen, onOpenChange, form, editingGro
                                 <FormItem>
                                     <FormLabel>{t('inboundTags')}</FormLabel>
                                     <div className="space-y-2">
-                                        <Command className="border rounded-md">
+                                        <Command className="border rounded-md mb-3">
                                             <CommandInput placeholder={t('searchInbounds')}/>
                                             <CommandEmpty>{t('noInboundsFound')}</CommandEmpty>
-                                            <CommandGroup className="max-h-40 overflow-auto">
+                                            <CommandGroup dir='ltr' className="max-h-40 overflow-auto">
                                                 {inbounds?.map(inbound => (
                                                     <CommandItem
                                                         key={inbound}

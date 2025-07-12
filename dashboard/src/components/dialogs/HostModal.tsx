@@ -14,7 +14,7 @@ import {getHosts, getInbounds, UserStatus} from '@/service/api'
 import { queryClient } from '@/utils/query-client'
 import { useQuery } from '@tanstack/react-query'
 import { Cable, ChevronsLeftRightEllipsis, GlobeLock, Info, Lock, Network, Plus, Trash2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { HostFormValues } from '../hosts/Hosts'
@@ -41,6 +41,7 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
   const [isTransportOpen, setIsTransportOpen] = useState(false)
   const { t } = useTranslation()
   const dir = useDirDetection()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const cleanPayload = (data: any): any => {
     // Helper function to check if an object has any non-empty values
@@ -92,23 +93,16 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
     queryFn: () => getInbounds(),
   })
 
-  // Update the hosts query to refetch when needed
+  // Update the hosts query to refetch only when needed (not on dialog open)
   const { data: hosts = [] } = useQuery({
     queryKey: ['getHostsQueryKey'],
     queryFn: () => getHosts(),
-    enabled: isDialogOpen || isTransportOpen, // Fetch when dialog opens or transport section is open
+    enabled: isTransportOpen, // Only fetch when transport section is open
     refetchOnWindowFocus: false,
     select: data => data.filter(host => host.id != null), // Filter out hosts with null IDs
   })
 
-  // Refresh hosts data when the dialog opens
-  useEffect(() => {
-    if (isDialogOpen) {
-      queryClient.invalidateQueries({
-        queryKey: ['getHostsQueryKey'],
-      })
-    }
-  }, [isDialogOpen])
+  // No automatic refresh when dialog opens - only fetch on specific actions
 
   const handleAccordionChange = (value: string) => {
     if (value === 'transport') {
@@ -118,22 +112,22 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
   }
 
   const handleSubmit = async (data: HostFormValues) => {
+    setIsSubmitting(true)
     try {
       // Clean the payload before sending
       const cleanedData = cleanPayload(data)
-
       const response = await onSubmit(cleanedData)
       if (response.status >= 400) {
         throw new Error(`Operation failed with status: ${response.status}`)
       }
       handleModalOpenChange(false)
-      // The form reset is handled by the parent component
-      // Invalidate hosts query to refresh the list
       queryClient.invalidateQueries({
         queryKey: ['getHostsQueryKey'],
       })
     } catch (error) {
       console.error(error)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -708,7 +702,7 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>{t('hostsDialog.alpn')}</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
+                              <Select onValueChange={value => field.onChange(value === 'default' ? '' : value)} value={field.value || 'default'}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder={t('hostsDialog.alpn')} />
@@ -2350,7 +2344,7 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
               <Button type="button" variant="outline" onClick={() => handleModalOpenChange(false)}>
                 {t('cancel')}
               </Button>
-              <Button type="submit">{editingHost ? t('edit') : t('create')}</Button>
+              <Button type="submit" disabled={isSubmitting}>{editingHost ? t('edit') : t('create')}</Button>
             </div>
           </form>
         </Form>

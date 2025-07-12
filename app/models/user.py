@@ -4,8 +4,8 @@ from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.db.models import UserDataLimitResetStrategy, UserStatus, UserStatusCreate
-from app.models.admin import AdminContactInfo, AdminBase
-from app.models.proxy import ProxyTable
+from app.models.admin import AdminBase, AdminContactInfo
+from app.models.proxy import ProxyTable, ShadowsocksMethods, XTLSFlows
 from app.utils.helpers import fix_datetime_timezone
 
 from .validators import ListValidator, NumericValidatorMixin, UserValidator
@@ -151,3 +151,11 @@ class BulkUser(BaseModel):
     admins: set[int] = Field(default_factory=set)
     users: set[int] = Field(default_factory=set)
     status: set[UserStatus] = Field(default_factory=set)
+
+
+class BulkUsersProxy(BaseModel):
+    flow: XTLSFlows | None = Field(default=None)
+    method: ShadowsocksMethods | None = Field(default=None)
+    group_ids: set[int] = Field(default_factory=set)
+    admins: set[int] = Field(default_factory=set)
+    users: set[int] = Field(default_factory=set)

@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import useDirDetection from '@/hooks/use-dir-detection'
 import { cn } from '@/lib/utils'
 import { UserResponse } from '@/service/api'
-import { ChevronDown, LoaderCircle } from 'lucide-react'
+import { ChevronDown, LoaderCircle, Rss } from 'lucide-react'
 import ActionButtons from '../ActionButtons'
 import { OnlineStatus } from '../OnlineStatus'
 import { StatusBadge } from '../StatusBadge'
@@ -87,7 +87,11 @@ export function DataTable<TData extends UserResponse, TValue>({ columns, data, i
             <ActionButtons user={row.original} />
           </div>
         </div>
-        <div>
+        <div className="flex items-center gap-x-1">
+          <span className="flex items-center gap-x-0.5">
+            <Rss className="h-3 w-3 text-muted-foreground" />
+            <span className='text-muted-foreground'>:</span>
+          </span>
           <OnlineStatus lastOnline={row.original.online_at} />
         </div>
       </div>

@@ -1,4 +1,6 @@
+import re
 import json
+import html
 from datetime import datetime as dt, timezone as tz
 from typing import Union
 from uuid import UUID
@@ -63,3 +65,23 @@ def format_cli_validation_error(errors: ValidationError, notify: callable):
                 message=err.strip(),
                 severity="error",
             )
+
+
+def escape_tg_html(list: tuple[str]) -> tuple[str]:
+    """Escapes HTML special characters for the telegram HTML parser."""
+    return tuple(html.escape(text) for text in list)
+
+
+def escape_ds_markdown(text: str) -> str:
+    """Escapes markdown special characters for Discord."""
+    # Other characters like >, |, [, ], (, ) are often handled by Discord's parser
+    # or are part of specific markdown constructs (e.g., links, blockquotes)
+    # that might not need general escaping.
+    escape_chars = r"[*_`~]"
+    return re.sub(escape_chars, r"\\\g<0>", text)
+
+
+def escape_ds_markdown_list(list: tuple[str]) -> tuple[str]:
+    """Escapes markdown special characters for Discord."""
+    return tuple(escape_ds_markdown(text) for text in list)
+    

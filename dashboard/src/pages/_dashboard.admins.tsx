@@ -4,7 +4,7 @@ import { Plus } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import PageHeader from '@/components/page-header'
 import { Separator } from '@/components/ui/separator'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import AdminsTable from '@/components/admins/AdminsTable'
 import AdminModal, { adminFormSchema, AdminFormValues } from '@/components/dialogs/AdminModal'
 import { useActivateAllDisabledUsers, useDisableAllActiveUsers, useGetAdmins, useModifyAdmin, useRemoveAdmin, useResetAdminUsage } from '@/service/api'
@@ -28,7 +28,6 @@ const initialDefaultValues: Partial<AdminFormValues> = {
 
 export default function AdminsPage() {
   const { t } = useTranslation()
-  const { toast } = useToast()
   const [editingAdmin, setEditingAdmin] = useState<Partial<AdminDetails> | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const form = useForm<AdminFormValues>({
@@ -47,8 +46,7 @@ export default function AdminsPage() {
       await removeAdminMutation.mutateAsync({
         username: admin.username,
       })
-      toast({
-        title: t('success', { defaultValue: 'Success' }),
+      toast.success(t('success', { defaultValue: 'Success' }), {
         description: t('admins.deleteSuccess', {
           name: admin.username,
           defaultValue: 'Admin «{{name}}» has been deleted successfully',
@@ -57,13 +55,11 @@ export default function AdminsPage() {
       // Invalidate nodes queries
       queryClient.invalidateQueries({ queryKey: ['/api/admins'] })
     } catch (error) {
-      toast({
-        title: t('error', { defaultValue: 'Error' }),
+      toast.error(t('error', { defaultValue: 'Error' }), {
         description: t('admins.deleteFailed', {
           name: admin.username,
           defaultValue: 'Failed to delete node «{{name}}»',
         }),
-        variant: 'destructive',
       })
     }
   }
@@ -96,8 +92,7 @@ export default function AdminsPage() {
         },
       })
 
-      toast({
-        title: t('success', { defaultValue: 'Success' }),
+      toast.success(t('success', { defaultValue: 'Success' }), {
         description: t(admin.is_disabled ? 'admins.enableSuccess' : 'admins.disableSuccess', {
           name: admin.username,
           defaultValue: `Admin "{name}" has been ${admin.is_disabled ? 'enabled' : 'disabled'} successfully`,
@@ -109,13 +104,11 @@ export default function AdminsPage() {
         queryKey: ['/api/admins'],
       })
     } catch (error) {
-      toast({
-        title: t('error', { defaultValue: 'Error' }),
+      toast.error(t('error', { defaultValue: 'Error' }), {
         description: t(admin.is_disabled ? 'admins.enableFailed' : 'admins.disableFailed', {
           name: admin.username,
           defaultValue: `Failed to ${admin.is_disabled ? 'enable' : 'disable'} admin "{name}"`,
         }),
-        variant: 'destructive',
       })
     }
   }
@@ -144,8 +137,7 @@ export default function AdminsPage() {
         username: adminUsername,
       })
 
-      toast({
-        title: t('success', { defaultValue: 'Success' }),
+      toast.success(t('success', { defaultValue: 'Success' }), {
         description: t('admins.resetUsageSuccess', {
           name: adminUsername,
           defaultValue: `Admin "{name}" user usage has been reset successfully`,
@@ -157,13 +149,11 @@ export default function AdminsPage() {
         queryKey: ['/api/admins'],
       })
     } catch (error) {
-      toast({
-        title: t('error', { defaultValue: 'Error' }),
+      toast.error(t('error', { defaultValue: 'Error' }), {
         description: t('admins.resetUsageFailed', {
           name: adminUsername,
           defaultValue: `Failed to reset admin "{name}" user usage`,
         }),
-        variant: 'destructive',
       })
     }
   }

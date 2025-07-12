@@ -317,9 +317,9 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                                 </Button>
                             )}
                         </div>
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             {editingNode && (
-                                <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+                                <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-2">
                                     <Button
                                         variant="outline"
                                         size="sm"
@@ -327,9 +327,9 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                                         disabled={syncing || reconnecting}
                                         className="h-7 px-2 text-xs flex-shrink-0"
                                     >
-                                        <Activity className="!h-3 !w-3 sm:mx-1" />
-                                        <span className="hidden sm:inline">{t('nodeModal.onlineStats.button', { defaultValue: 'Online Stats' })}</span>
-                                        <span className="sm:hidden">Stats</span>
+                                        <Activity className="!h-3 !w-3 sm:mr-1" />
+                                        <span className="hidden sm:inline">{t('nodeModal.onlineStats.button')}</span>
+                                        <span className="sm:hidden">{t('nodeModal.onlineStats.button')}</span>
                                     </Button>
                                     <Button
                                         variant="outline"
@@ -342,14 +342,13 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                                                     nodeId: editingNodeId,
                                                     params: { flush_users: false }
                                                 })
-                                                toast.success(t('nodeModal.syncSuccess', { defaultValue: 'Node synchronized successfully' }))
+                                                toast.success(t('nodeModal.syncSuccess'))
                                                 // Refresh node status after sync
                                                 await checkNodeStatus()
                                                 // Invalidate queries to refresh data
                                                 queryClient.invalidateQueries({ queryKey: ['/api/nodes'] })
                                             } catch (error: any) {
                                                 toast.error(t('nodeModal.syncFailed', { 
-                                                    defaultValue: 'Failed to sync node',
                                                     message: error?.message || 'Unknown error'
                                                 }))
                                             } finally {
@@ -363,11 +362,13 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                                             <div className="flex items-center gap-1">
                                                 <Loader2 className="h-3 w-3 animate-spin" />
                                                 <span className="hidden sm:inline">{t('nodeModal.syncing')}</span>
+                                                <span className="sm:hidden">{t('nodeModal.syncing')}</span>
                                             </div>
                                         ) : (
                                             <div className="flex items-center gap-1">
                                                 <RotateCcw className="h-3 w-3" />
                                                 <span className="hidden sm:inline">{t('nodeModal.sync')}</span>
+                                                <span className="sm:hidden">{t('nodeModal.sync')}</span>
                                             </div>
                                         )}
                                     </Button>
@@ -392,11 +393,13 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                                             <div className="flex items-center gap-1">
                                                 <Loader2 className="h-3 w-3 animate-spin" />
                                                 <span className="hidden sm:inline">{t('nodeModal.reconnecting')}</span>
+                                                <span className="sm:hidden">{t('nodeModal.reconnecting')}</span>
                                             </div>
                                         ) : (
                                             <div className="flex items-center gap-1">
                                                 <Wifi className="h-3 w-3" />
                                                 <span className="hidden sm:inline">{t('nodeModal.reconnect')}</span>
+                                                <span className="sm:hidden">{t('nodeModal.reconnect')}</span>
                                             </div>
                                         )}
                                     </Button>
@@ -413,13 +416,13 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                                     <div className="flex items-center gap-1">
                                         <Loader2 className="h-3 w-3 animate-spin" />
                                         <span className="hidden sm:inline">{t('nodeModal.statusChecking')}</span>
-                                        <span className="sm:hidden">Checking...</span>
+                                        <span className="sm:hidden">{t('nodeModal.statusChecking')}</span>
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-1">
                                         <RefreshCw className="h-3 w-3" />
                                         <span className="hidden sm:inline">{t('nodeModal.statusCheck')}</span>
-                                        <span className="sm:hidden">Check</span>
+                                        <span className="sm:hidden">{t('nodeModal.statusCheck')}</span>
                                     </div>
                                 )}
                             </Button>
@@ -427,13 +430,17 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                     </div>
                     {showErrorDetails && connectionStatus === 'error' && (
                         <div
-                            className="text-xs text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded whitespace-pre-wrap break-words">{errorDetails}</div>
+                            className="text-xs text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-3 rounded whitespace-pre-wrap break-words max-h-32 overflow-y-auto"
+                            style={{ whiteSpace: 'pre-line' }}
+                        >
+                            {errorDetails}
+                        </div>
                     )}
                 </div>
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
-                        <div className="max-h-[68.5dvh] overflow-y-auto pr-2 -mr-2 sm:pr-4 sm:-mr-4 sm:max-h-[65dvh] px-1 sm:px-2">
+                        <div className="max-h-[49dvh] overflow-y-auto pr-2 -mr-2 sm:pr-4 sm:-mr-4 sm:max-h-[65dvh] px-1 sm:px-2">
                             <div className="flex h-full flex-col lg:flex-row items-start gap-4">
                                 <div className="flex-1 space-y-4 w-full">
                                     <FormField
@@ -571,7 +578,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                                                 <Button type="button" variant="outline"
                                                     onClick={generateUUID}
                                                     className="rounded-l-none h-10 px-3">
-                                                    {t('nodeModal.generateUUID')}
+                                                    <RefreshCw className="h-3 w-3" />
                                                 </Button>
                                             </div>
                                                         </div>
@@ -768,7 +775,7 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                                     control={form.control}
                                     name="server_ca"
                                     render={({ field }) => (
-                                        <FormItem className="flex-1 w-full mb-6 lg:mb-0 h-full">
+                                        <FormItem className="flex-1 w-full pb-4 lg:mb-0 h-full">
                                             <FormLabel>{t('nodeModal.certificate')}</FormLabel>
                                             <FormControl>
                                                 <Textarea

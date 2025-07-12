@@ -91,7 +91,7 @@ export const router = createHashRouter([
           {
             path: '/settings',
             index: true,
-            element: <NotificationSettings />,
+            element: <ThemePage />,
           },
           {
             path: '/settings/notifications',
