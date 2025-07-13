@@ -115,8 +115,8 @@ class BaseOperation:
             for group_id in model.group_ids:
                 db_group = await self.get_validated_group(db, group_id)
                 all_groups.append(db_group)
-        if hasattr(model,"hase_group_ids") and model.hase_group_ids:
-            for group_id in model.hase_group_ids:
+        if hasattr(model, "has_group_ids") and model.has_group_ids:
+            for group_id in model.has_group_ids:
                 db_group = await self.get_validated_group(db, group_id)
                 all_groups.append(db_group)
         return all_groups

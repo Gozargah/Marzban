@@ -41,6 +41,6 @@ class GroupsResponse(BaseModel):
 
 class BulkGroup(BaseModel):
     group_ids: set[int]
-    hase_group_ids: set[int] = Field(default_factory=set)
+    has_group_ids: set[int] = Field(default_factory=set)
     admins: set[int] = Field(default_factory=set)
     users: set[int] = Field(default_factory=set)
