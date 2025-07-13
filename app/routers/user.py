@@ -118,7 +118,7 @@ async def revoke_user_subscription(
 async def reset_users_data_usage(db: AsyncSession = Depends(get_db), admin: AdminDetails = Depends(check_sudo_admin)):
     """Reset all users data usage"""
     await user_operator.reset_users_data_usage(db, admin)
-    await node_operator.restart_all_node(admin)
+    await node_operator.restart_all_node(db, admin)
     return {}
 
 

@@ -91,7 +91,7 @@ class AdminUsageLogs(Base):
     admin_id: Mapped[int] = mapped_column(ForeignKey("admins.id"))
     admin: Mapped["Admin"] = relationship(back_populates="usage_logs", init=False)
     used_traffic_at_reset: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    reset_at: Mapped[dt] = mapped_column(DateTime(timezone=True), default=lambda: dt.now(tz.utc))
+    reset_at: Mapped[dt] = mapped_column(DateTime(timezone=True), default=lambda: dt.now(tz.utc), init=False)
 
 
 class ReminderType(str, Enum):
@@ -438,7 +438,7 @@ class ProxyHost(Base):
     http_headers: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON(none_as_null=True), default=None)
     transport_settings: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON(none_as_null=True), default=None)
     mux_settings: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON(none_as_null=True), default=None)
-    status: Mapped[List[UserStatus]] = mapped_column(EnumArray(UserStatus), default=list, server_default="[]")
+    status: Mapped[List[UserStatus]] = mapped_column(EnumArray(UserStatus, 60), default=list, server_default="")
 
 
 class System(Base):
@@ -454,14 +454,6 @@ class JWT(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, init=False)
     secret_key: Mapped[str] = mapped_column(String(64), default=lambda: os.urandom(32).hex())
-
-
-class TLS(Base):
-    __tablename__ = "tls"
-
-    id: Mapped[int] = mapped_column(primary_key=True, init=False)
-    key: Mapped[str] = mapped_column(String(4096), nullable=False)
-    certificate: Mapped[str] = mapped_column(String(2048), nullable=False)
 
 
 class NodeConnectionType(str, Enum):

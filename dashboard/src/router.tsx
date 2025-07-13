@@ -21,6 +21,19 @@ import Statistics from './pages/_dashboard.statistics'
 import UserTemplates from './pages/_dashboard.templates'
 import Users from './pages/_dashboard.users'
 import Login from './pages/login'
+import { useAdmin } from '@/hooks/use-admin'
+import { Navigate } from 'react-router'
+
+// Component to handle default settings routing based on user permissions
+function SettingsIndex() {
+  const { admin } = useAdmin()
+  const is_sudo = admin?.is_sudo || false
+  
+  // For sudo admins, default to notifications; for non-sudo admins, default to theme
+  const defaultPath = is_sudo ? '/settings/notifications' : '/settings/theme'
+  
+  return <Navigate to={defaultPath} replace />
+}
 
 const fetchAdminLoader = async (): Promise<any> => {
   try {
@@ -91,7 +104,7 @@ export const router = createHashRouter([
           {
             path: '/settings',
             index: true,
-            element: <ThemePage />,
+            element: <SettingsIndex />,
           },
           {
             path: '/settings/notifications',

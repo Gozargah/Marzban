@@ -13,7 +13,13 @@
   "statistics.realTimeStats": "Статистика в реальном времени",
   "statistics.serverPerformance": "Производительность сервера",
   "statistics.realTimeData": "Данные в реальном времени",
+  "statistics.historicalData": "Исторические данные",
+  "statistics.viewHistorical": "Просмотр истории",
+  "statistics.viewRealtime": "Просмотр в реальном времени",
+  "statistics.historical": "История",
+  "statistics.realtime": "Реальное время",
   "statistics.realtimeDescription": "Живая статистика и графики для ваших серверов и пользователей.",
+  "statistics.historicalDescription": "Исторические данные о производительности сервера за выбранный период времени",
   "hosts": "Хосты",
   "success": "Успешно",
   "error": "Ошибка",
@@ -90,8 +96,8 @@
   "github": "GitHub",
   "community": "Сообщество",
   "supportUs": "Поддержать нас",
-  "manageHosts": "Управление и контроль хостов.",
-  "manageSettings": "Управление и контроль настроек.",
+  "manageHosts": "Управление и контроль хостов",
+  "manageSettings": "Управление и контроль настроек",
   "settings": {
     "title": "Настройки",
     "notifications": {
@@ -465,7 +471,7 @@
   "userTemplateModal.title": "Создать шаблон пользователя",
   "templates": {
     "title": "Шаблоны",
-    "description": "Управление шаблонами.",
+    "description": "Управление шаблонами",
     "addTemplate": "Создать шаблон",
     "editSuccess": "Шаблон пользователя «{{name}}» успешно обновлен",
     "createSuccess": "Шаблон пользователя «{{name}}» успешно создан",
@@ -896,7 +902,8 @@
       "status_text": "Статус пользователя",
       "status_emoji": "Статус пользователя в виде эмодзи (✅,⌛️,🪫,❌,🔌)",
       "protocol": "Протокол прокси (например, VMess)",
-      "transport": "Метод транспорта прокси (например, ws)"
+      "transport": "Метод транспорта прокси (например, ws)",
+      "admin_username": "Имя пользователя администратора"
     },
     "httpVersions": {
       "1.0": "HTTP/1.0",

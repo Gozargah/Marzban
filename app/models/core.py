@@ -1,4 +1,3 @@
-from typing import Any
 from datetime import datetime as dt
 
 from pydantic import BaseModel, ConfigDict, field_validator, Field
@@ -6,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, field_validator, Field
 
 class CoreBase(BaseModel):
     name: str
-    config: dict[str, Any]
+    config: dict
     exclude_inbound_tags: str = Field(max_length=2048)
     fallbacks_inbound_tags: str = Field(max_length=2048)
 
@@ -17,7 +16,7 @@ class CoreCreate(CoreBase):
     fallbacks_inbound_tags: str | None = None
 
     @field_validator("config", mode="before")
-    def validate_config(cls, v: dict[str, Any]) -> dict[str, Any]:
+    def validate_config(cls, v: dict) -> dict:
         if not v:
             raise ValueError("config dictionary cannot be empty")
         return v

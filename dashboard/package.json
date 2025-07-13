@@ -8,7 +8,7 @@
     "preview": "vite preview",
     "gen:api": "orval",
     "wait-port": "wait-port http://localhost:$UVICORN_PORT/openapi.json",
-    "wait-port-gen-api": "pnpm run wait-port && pnpm run gen:api"
+    "wait-port-gen-api": "bun run wait-port && bun run gen:api"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -94,7 +94,7 @@
     "eslint": "^9.18.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.18",
-    "orval": "^7.4.1",
+    "orval": "7.4.1",
     "postcss": "^8.4.49",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.13",
@@ -102,20 +102,9 @@
     "typescript": "~5.6.3",
     "typescript-eslint": "^8.19.1",
     "vite": "^6.2.4",
+    "vite-plugin-pwa": "^1.0.1",
     "vite-plugin-svgr": "^4.3.0",
     "wait-port": "^1.1.0"
   },
-  "packageManager": "pnpm@9.15.3+sha256.c1da43727ccbc1ed42aff4fd6bdb4b1e91e65a818e6efff5b240fbf070ba4eaf",
-  "pnpm": {
-    "overrides": {
-      "undici@>=6.0.0 <6.21.1": ">=6.21.1",
-      "esbuild@<=0.24.2": ">=0.25.0",
-      "vite@>=6.0.0 <=6.0.8": ">=6.0.9",
-      "jsonpath-plus@<10.3.0": ">=10.3.0",
-      "@babel/runtime@<7.26.10": ">=7.26.10",
-      "@babel/helpers@<7.26.10": ">=7.26.10",
-      "vite@>=6.0.0 <6.0.12": ">=6.0.12",
-      "axios@>=1.0.0 <1.8.2": ">=1.8.2"
-    }
-  }
+  "packageManager": "bun@1.0.0"
 }

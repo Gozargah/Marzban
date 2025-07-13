@@ -238,34 +238,112 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
         }
     }
 
-    const handleCopyOrDownload = async (subLink: SubscribeLink) => {
-        if (subLink.protocol === 'links' || subLink.protocol === 'links (base64)') {
-            // For links protocols, fetch content and copy to clipboard
-            try {
-                const response = await fetch(subLink.link)
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`)
+    // Utility functions
+    const isIOS = () => {
+        return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    }
+
+    const copyToClipboardIOS = async (content: string): Promise<boolean> => {
+        try {
+            // Try modern clipboard API first
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(content)
+                return true
+            }
+            
+            // Fallback: create temporary textarea
+            const textArea = document.createElement('textarea')
+            textArea.value = content
+            textArea.style.position = 'fixed'
+            textArea.style.left = '-999999px'
+            textArea.style.top = '-999999px'
+            document.body.appendChild(textArea)
+            textArea.focus()
+            textArea.select()
+            
+            const success = document.execCommand('copy')
+            document.body.removeChild(textArea)
+            return success
+        } catch (error) {
+            console.error('iOS clipboard copy failed:', error)
+            return false
+        }
+    }
+
+    const showManualCopyAlert = (content: string, type: 'content' | 'url') => {
+        const message = type === 'content' 
+            ? t('copyFailed', { defaultValue: 'Failed to copy automatically. Please copy manually:' })
+            : t('downloadFailed', { defaultValue: 'Download blocked. Please copy manually:' })
+        alert(`${message}\n\n${content}`)
+    }
+
+    const fetchContent = async (url: string): Promise<string> => {
+        const response = await fetch(url)
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        return response.text()
+    }
+
+    const handleLinksCopy = async (subLink: SubscribeLink) => {
+        try {
+            const content = await fetchContent(subLink.link)
+            
+            if (isIOS()) {
+                const success = await copyToClipboardIOS(content)
+                if (success) {
+                    toast.success(t('usersTable.copied', { defaultValue: 'Copied to clipboard' }))
+                } else {
+                    showManualCopyAlert(content, 'content')
                 }
-                const content = await response.text()
+            } else {
                 await copy(content)
                 toast.success(t('usersTable.copied', { defaultValue: 'Copied to clipboard' }))
-            } catch (error) {
-                console.error('Failed to fetch and copy content:', error)
-                // Fallback: copy the URL instead
-                try {
-                    await copy(subLink.link)
-                    toast.success(t('usersTable.copied', { defaultValue: 'URL copied to clipboard' }))
-                } catch (copyError) {
-                    toast.error(t('copyFailed', { defaultValue: 'Failed to copy content' }))
-                }
             }
-        } else {
-            // For other protocols, trigger download
-            try {
+        } catch (error) {
+            console.error('Failed to fetch and copy content:', error)
+            // Fallback: copy the URL instead
+            await handleUrlCopy(subLink.link)
+        }
+    }
+
+    const handleUrlCopy = async (url: string) => {
+        try {
+            if (isIOS()) {
+                const success = await copyToClipboardIOS(url)
+                if (success) {
+                    toast.success(t('usersTable.copied', { defaultValue: 'URL copied to clipboard' }))
+                } else {
+                    showManualCopyAlert(url, 'url')
+                }
+            } else {
+                await copy(url)
+                toast.success(t('usersTable.copied', { defaultValue: 'URL copied to clipboard' }))
+            }
+        } catch (error) {
+            toast.error(t('copyFailed', { defaultValue: 'Failed to copy content' }))
+        }
+    }
+
+    const handleConfigDownload = async (subLink: SubscribeLink) => {
+        try {
+            if (isIOS()) {
+                // iOS: open in new tab or show content
+                const newWindow = window.open(subLink.link, '_blank')
+                if (!newWindow) {
+                    const content = await fetchContent(subLink.link)
+                    showManualCopyAlert(content, 'url')
+                } else {
+                    toast.success(t('downloadSuccess', { defaultValue: 'Configuration opened in new tab' }))
+                }
+            } else {
+                // Non-iOS: regular download
                 const response = await fetch(subLink.link)
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`)
                 }
+                
                 const blob = await response.blob()
                 const url = window.URL.createObjectURL(blob)
                 const a = document.createElement('a')
@@ -276,10 +354,20 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
                 window.URL.revokeObjectURL(url)
                 document.body.removeChild(a)
                 toast.success(t('downloadSuccess', { defaultValue: 'Configuration downloaded successfully' }))
-            } catch (error) {
-                console.error('Failed to download configuration:', error)
-                toast.error(t('downloadFailed', { defaultValue: 'Failed to download configuration' }))
             }
+        } catch (error) {
+            console.error('Failed to download configuration:', error)
+            toast.error(t('downloadFailed', { defaultValue: 'Failed to download configuration' }))
+        }
+    }
+
+    const handleCopyOrDownload = async (subLink: SubscribeLink) => {
+        const isLinksProtocol = subLink.protocol === 'links' || subLink.protocol === 'links (base64)'
+        
+        if (isLinksProtocol) {
+            await handleLinksCopy(subLink)
+        } else {
+            await handleConfigDownload(subLink)
         }
     }
 
@@ -309,6 +397,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
                                 {subscribeLinks.map(subLink => (
                                     <DropdownMenuItem className="p-0 justify-start" key={subLink.link}>
                                         <Button
+                                            dir='ltr'
                                             variant="ghost"
                                             className="w-full h-full px-2 justify-start"
                                             aria-label={subLink.protocol.includes('links') ? 'Copy' : 'Download'}

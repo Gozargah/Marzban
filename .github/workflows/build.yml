@@ -17,22 +17,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          run_install: false
-          version: 10
-
-      - name: Setup nodejs
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'pnpm'
-          cache-dependency-path: ./dashboard/pnpm-lock.yaml
+          bun-version: latest
 
       - name: Install dependencies
         working-directory: ./dashboard
-        run: pnpm i
+        run: bun install --frozen-lockfile
 
       - name: Build dashboard
         run: ./build_dashboard.sh
@@ -129,7 +121,6 @@ jobs:
             ${{ env.GHCR_IMAGE }}-amd64
             ${{ env.GHCR_IMAGE }}-arm64
 
-      # Check if it's pre release or latest
       - name: Create latest manifest if not prerelease
         if: ${{ github.event.release.prerelease != true }}
         uses: int128/docker-manifest-create-action@v2
