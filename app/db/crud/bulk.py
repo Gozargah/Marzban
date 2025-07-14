@@ -130,7 +130,11 @@ async def _resolve_target_user_ids(db: AsyncSession, bulk_model: BulkGroup) -> s
         result = await db.execute(select(User.id).where(User.admin_id.in_(bulk_model.admins)))
         user_ids.update({row[0] for row in result.all()})
 
-    if not bulk_model.users and not bulk_model.admins:
+    if bulk_model.has_group_ids:
+        result = await db.execute(select(User.id).where(User.groups.any(Group.id.in_(bulk_model.has_group_ids))))
+        user_ids.update({row[0] for row in result.all()})
+
+    if not bulk_model.users and not bulk_model.admins and not bulk_model.has_group_ids:
         result = await db.execute(select(User.id))
         user_ids.update({uid[0] for uid in result.all()})
 

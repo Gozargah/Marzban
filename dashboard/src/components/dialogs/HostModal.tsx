@@ -17,6 +17,8 @@ import { Cable, ChevronsLeftRightEllipsis, GlobeLock, Info, Lock, Network, Plus,
 import { useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { useClipboard } from '@/hooks/use-clipboard'
+import { toast } from 'sonner'
 import { HostFormValues } from '../hosts/Hosts'
 
 interface HostModalProps {
@@ -42,6 +44,7 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
   const { t } = useTranslation()
   const dir = useDirDetection()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { copy } = useClipboard()
 
   const cleanPayload = (data: any): any => {
     // Helper function to check if an object has any non-empty values
@@ -129,6 +132,11 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleCopy = (text: string) => {
+    copy(text)
+    toast.success(t('usersTable.copied'))
   }
 
   return (
@@ -256,60 +264,154 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
                             <h4 className="font-medium text-[12px] mb-2">{t('hostsDialog.variables.title')}</h4>
                             <div className="space-y-1">
                               <div className="flex items-center gap-1.5">
-                                <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{SERVER_IP}'}</code>
+                                <code 
+                                  className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                  onClick={() => handleCopy('{SERVER_IP}')}
+                                  title={t('copy')}
+                                >
+                                  {'{SERVER_IP}'}
+                                </code>
                                 <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.server_ip')}</span>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{SERVER_IPV6}'}</code>
+                                <code 
+                                  className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                  onClick={() => handleCopy('{SERVER_IPV6}')}
+                                  title={t('copy')}
+                                >
+                                  {'{SERVER_IPV6}'}
+                                </code>
                                 <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.server_ipv6')}</span>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{USERNAME}'}</code>
+                                <code 
+                                  className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                  onClick={() => handleCopy('{USERNAME}')}
+                                  title={t('copy')}
+                                >
+                                  {'{USERNAME}'}
+                                </code>
                                 <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.username')}</span>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{DATA_USAGE}'}</code>
+                                <code 
+                                  className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                  onClick={() => handleCopy('{DATA_USAGE}')}
+                                  title={t('copy')}
+                                >
+                                  {'{DATA_USAGE}'}
+                                </code>
                                 <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.data_usage')}</span>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{DATA_LEFT}'}</code>
+                                <code 
+                                  className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                  onClick={() => handleCopy('{DATA_LEFT}')}
+                                  title={t('copy')}
+                                >
+                                  {'{DATA_LEFT}'}
+                                </code>
                                 <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.data_left')}</span>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{DATA_LIMIT}'}</code>
+                                <code 
+                                  className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                  onClick={() => handleCopy('{DATA_LIMIT}')}
+                                  title={t('copy')}
+                                >
+                                  {'{DATA_LIMIT}'}
+                                </code>
                                 <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.data_limit')}</span>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{DAYS_LEFT}'}</code>
+                                <code 
+                                  className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                  onClick={() => handleCopy('{DAYS_LEFT}')}
+                                  title={t('copy')}
+                                >
+                                  {'{DAYS_LEFT}'}
+                                </code>
                                 <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.days_left')}</span>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{EXPIRE_DATE}'}</code>
+                                <code 
+                                  className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                  onClick={() => handleCopy('{EXPIRE_DATE}')}
+                                  title={t('copy')}
+                                >
+                                  {'{EXPIRE_DATE}'}
+                                </code>
                                 <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.expire_date')}</span>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{JALALI_EXPIRE_DATE}'}</code>
+                                <code 
+                                  className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                  onClick={() => handleCopy('{JALALI_EXPIRE_DATE}')}
+                                  title={t('copy')}
+                                >
+                                  {'{JALALI_EXPIRE_DATE}'}
+                                </code>
                                 <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.jalali_expire_date')}</span>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{TIME_LEFT}'}</code>
+                                <code 
+                                  className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                  onClick={() => handleCopy('{TIME_LEFT}')}
+                                  title={t('copy')}
+                                >
+                                  {'{TIME_LEFT}'}
+                                </code>
                                 <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.time_left')}</span>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{STATUS_TEXT}'}</code>
+                                <code 
+                                  className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                  onClick={() => handleCopy('{STATUS_TEXT}')}
+                                  title={t('copy')}
+                                >
+                                  {'{STATUS_TEXT}'}
+                                </code>
                                 <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.status_text')}</span>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{STATUS_EMOJI}'}</code>
+                                <code 
+                                  className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                  onClick={() => handleCopy('{STATUS_EMOJI}')}
+                                  title={t('copy')}
+                                >
+                                  {'{STATUS_EMOJI}'}
+                                </code>
                                 <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.status_emoji')}</span>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{PROTOCOL}'}</code>
+                                <code 
+                                  className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                  onClick={() => handleCopy('{PROTOCOL}')}
+                                  title={t('copy')}
+                                >
+                                  {'{PROTOCOL}'}
+                                </code>
                                 <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.protocol')}</span>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{TRANSPORT}'}</code>
+                                <code 
+                                  className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                  onClick={() => handleCopy('{TRANSPORT}')}
+                                  title={t('copy')}
+                                >
+                                  {'{TRANSPORT}'}
+                                </code>
                                 <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.transport')}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <code 
+                                  className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                  onClick={() => handleCopy('{ADMIN_USERNAME}')}
+                                  title={t('copy')}
+                                >
+                                  {'{ADMIN_USERNAME}'}
+                                </code>
+                                <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.admin_username')}</span>
                               </div>
                             </div>
                           </div>
@@ -346,60 +448,154 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
                                   <h4 className="font-medium text-[12px] mb-2">{t('hostsDialog.variables.title')}</h4>
                                   <div className="space-y-1">
                                     <div className="flex items-center gap-1.5">
-                                      <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{SERVER_IP}'}</code>
+                                      <code 
+                                        className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                        onClick={() => handleCopy('{SERVER_IP}')}
+                                        title={t('copy')}
+                                      >
+                                        {'{SERVER_IP}'}
+                                      </code>
                                       <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.server_ip')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                      <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{SERVER_IPV6}'}</code>
+                                      <code 
+                                        className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                        onClick={() => handleCopy('{SERVER_IPV6}')}
+                                        title={t('copy')}
+                                      >
+                                        {'{SERVER_IPV6}'}
+                                      </code>
                                       <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.server_ipv6')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                      <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{USERNAME}'}</code>
+                                      <code 
+                                        className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                        onClick={() => handleCopy('{USERNAME}')}
+                                        title={t('copy')}
+                                      >
+                                        {'{USERNAME}'}
+                                      </code>
                                       <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.username')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                      <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{DATA_USAGE}'}</code>
+                                      <code 
+                                        className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                        onClick={() => handleCopy('{DATA_USAGE}')}
+                                        title={t('copy')}
+                                      >
+                                        {'{DATA_USAGE}'}
+                                      </code>
                                       <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.data_usage')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                      <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{DATA_LEFT}'}</code>
+                                      <code 
+                                        className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                        onClick={() => handleCopy('{DATA_LEFT}')}
+                                        title={t('copy')}
+                                      >
+                                        {'{DATA_LEFT}'}
+                                      </code>
                                       <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.data_left')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                      <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{DATA_LIMIT}'}</code>
+                                      <code 
+                                        className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                        onClick={() => handleCopy('{DATA_LIMIT}')}
+                                        title={t('copy')}
+                                      >
+                                        {'{DATA_LIMIT}'}
+                                      </code>
                                       <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.data_limit')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                      <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{DAYS_LEFT}'}</code>
+                                      <code 
+                                        className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                        onClick={() => handleCopy('{DAYS_LEFT}')}
+                                        title={t('copy')}
+                                      >
+                                        {'{DAYS_LEFT}'}
+                                      </code>
                                       <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.days_left')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                      <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{EXPIRE_DATE}'}</code>
+                                      <code 
+                                        className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                        onClick={() => handleCopy('{EXPIRE_DATE}')}
+                                        title={t('copy')}
+                                      >
+                                        {'{EXPIRE_DATE}'}
+                                      </code>
                                       <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.expire_date')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                      <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{JALALI_EXPIRE_DATE}'}</code>
+                                      <code 
+                                        className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                        onClick={() => handleCopy('{JALALI_EXPIRE_DATE}')}
+                                        title={t('copy')}
+                                      >
+                                        {'{JALALI_EXPIRE_DATE}'}
+                                      </code>
                                       <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.jalali_expire_date')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                      <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{TIME_LEFT}'}</code>
+                                      <code 
+                                        className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                        onClick={() => handleCopy('{TIME_LEFT}')}
+                                        title={t('copy')}
+                                      >
+                                        {'{TIME_LEFT}'}
+                                      </code>
                                       <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.time_left')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                      <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{STATUS_TEXT}'}</code>
+                                      <code 
+                                        className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                        onClick={() => handleCopy('{STATUS_TEXT}')}
+                                        title={t('copy')}
+                                      >
+                                        {'{STATUS_TEXT}'}
+                                      </code>
                                       <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.status_text')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                      <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{STATUS_EMOJI}'}</code>
+                                      <code 
+                                        className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                        onClick={() => handleCopy('{STATUS_EMOJI}')}
+                                        title={t('copy')}
+                                      >
+                                        {'{STATUS_EMOJI}'}
+                                      </code>
                                       <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.status_emoji')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                      <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{PROTOCOL}'}</code>
+                                      <code 
+                                        className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                        onClick={() => handleCopy('{PROTOCOL}')}
+                                        title={t('copy')}
+                                      >
+                                        {'{PROTOCOL}'}
+                                      </code>
                                       <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.protocol')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                      <code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm">{'{TRANSPORT}'}</code>
+                                      <code 
+                                        className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                        onClick={() => handleCopy('{TRANSPORT}')}
+                                        title={t('copy')}
+                                      >
+                                        {'{TRANSPORT}'}
+                                      </code>
                                       <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.transport')}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                      <code 
+                                        className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded-sm cursor-pointer hover:bg-muted transition-colors" 
+                                        onClick={() => handleCopy('{ADMIN_USERNAME}')}
+                                        title={t('copy')}
+                                      >
+                                        {'{ADMIN_USERNAME}'}
+                                      </code>
+                                      <span className="text-[11px] text-muted-foreground">{t('hostsDialog.variables.admin_username')}</span>
                                     </div>
                                   </div>
                                 </div>
@@ -747,6 +943,8 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
                                   <SelectItem value="qq">{t('qq')}</SelectItem>
                                   <SelectItem value="random">{t('random')}</SelectItem>
                                   <SelectItem value="randomized">{t('randomized')}</SelectItem>
+                                  <SelectItem value="randomizednoalpn">{t('randomizednoalpn')}</SelectItem>
+                                  <SelectItem value="unsafe">{t('unsafe')}</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />

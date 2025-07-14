@@ -2,7 +2,7 @@ from sqlalchemy import func, String, or_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.base import DATABASE_DIALECT
-from app.db.models import TLS, System, JWT
+from app.db.models import System, JWT
 from app.models.stats import Period
 
 MYSQL_FORMATS = {
@@ -97,16 +97,3 @@ async def get_jwt_secret_key(db: AsyncSession) -> str:
         str: JWT secret key.
     """
     return (await db.execute(select(JWT))).scalar_one_or_none().secret_key
-
-
-async def get_tls_certificate(db: AsyncSession) -> TLS:
-    """
-    Retrieves the TLS certificate.
-
-    Args:
-        db (AsyncSession): Database session.
-
-    Returns:
-        TLS: TLS certificate information.
-    """
-    return (await db.execute(select(TLS))).scalar_one_or_none()

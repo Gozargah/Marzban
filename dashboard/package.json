@@ -94,7 +94,7 @@
     "eslint": "^9.18.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.18",
-    "orval": "^7.4.1",
+    "orval": "7.4.1",
     "postcss": "^8.4.49",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.13",
@@ -102,6 +102,7 @@
     "typescript": "~5.6.3",
     "typescript-eslint": "^8.19.1",
     "vite": "^6.2.4",
+    "vite-plugin-pwa": "^1.0.1",
     "vite-plugin-svgr": "^4.3.0",
     "wait-port": "^1.1.0"
   },

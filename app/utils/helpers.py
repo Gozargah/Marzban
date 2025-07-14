@@ -84,4 +84,3 @@ def escape_ds_markdown(text: str) -> str:
 def escape_ds_markdown_list(list: tuple[str]) -> tuple[str]:
     """Escapes markdown special characters for Discord."""
     return tuple(escape_ds_markdown(text) for text in list)
-    
