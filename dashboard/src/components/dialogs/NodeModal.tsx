@@ -430,7 +430,11 @@ export default function NodeModal({ isDialogOpen, onOpenChange, form, editingNod
                     </div>
                     {showErrorDetails && connectionStatus === 'error' && (
                         <div
-                            className="text-xs text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded whitespace-pre-wrap break-words">{errorDetails}</div>
+                            className="text-xs text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-3 rounded whitespace-pre-wrap break-words max-h-32 overflow-y-auto"
+                            style={{ whiteSpace: 'pre-line' }}
+                        >
+                            {errorDetails}
+                        </div>
                     )}
                 </div>
 

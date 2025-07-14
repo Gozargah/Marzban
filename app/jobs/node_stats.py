@@ -1,5 +1,4 @@
 import asyncio
-from datetime import datetime as dt, timezone as tz
 
 from GozargahNodeBridge import GozargahNode
 
@@ -20,7 +19,6 @@ async def get_stat(id: int, node: GozargahNode) -> NodeStat:
         return
 
     return NodeStat(
-        created_at=dt.now(tz.utc),
         node_id=id,
         mem_total=stats.mem_total,
         mem_used=stats.mem_used,

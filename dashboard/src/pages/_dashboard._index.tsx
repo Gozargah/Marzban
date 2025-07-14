@@ -48,6 +48,9 @@ const Dashboard = () => {
   const [isCoreModalOpen, setCoreModalOpen] = useState(false)
   const [isQuickActionsModalOpen, setQuickActionsModalOpen] = useState(false)
   const { data: currentAdmin } = useGetCurrentAdmin()
+  const is_sudo = currentAdmin?.is_sudo || false
+
+  // Admin search state - only for sudo admins
   const [selectedAdmin, setSelectedAdmin] = useState<AdminDetails | undefined>(currentAdmin)
   const [adminSearch, setAdminSearch] = useState('')
   const [offset, setOffset] = useState(0)
@@ -57,29 +60,29 @@ const Dashboard = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const listRef = useRef<HTMLDivElement>(null)
 
-  // Debounced search
+  // Debounced search - only for sudo admins
   const debouncedSearch = useCallback(
     debounce((value: string) => {
+      if (!is_sudo) return // Don't run for non-sudo admins
       setOffset(0)
       setAdmins([])
       setHasMore(true)
       setAdminSearch(value)
     }, 300),
-    []
+    [is_sudo]
   )
 
   // In the useGetAdmins call, only set username if searching and not current admin or 'system'
   let usernameParam: string | undefined = undefined;
   if (
+    is_sudo &&
     adminSearch &&
     adminSearch !== 'system' &&
     adminSearch !== currentAdmin?.username
   ) {
     usernameParam = adminSearch;
   }
-  
-  const is_sudo = currentAdmin?.is_sudo || false
-  
+
   // Only fetch admins for sudo admins
   const { data: fetchedAdmins = [] } = useGetAdmins({
     limit: PAGE_SIZE,
@@ -91,8 +94,9 @@ const Dashboard = () => {
     },
   })
 
-  // When fetchedAdmins changes, update admins and hasMore
+  // When fetchedAdmins changes, update admins and hasMore - only for sudo admins
   useEffect(() => {
+    if (!is_sudo) return // Don't run for non-sudo admins
     if (fetchedAdmins) {
       setAdmins(prev =>
         offset === 0 ? fetchedAdmins : [...prev, ...fetchedAdmins]
@@ -100,24 +104,25 @@ const Dashboard = () => {
       setHasMore(fetchedAdmins.length === PAGE_SIZE)
       setIsLoading(false)
     }
-  }, [fetchedAdmins, offset])
+  }, [fetchedAdmins, offset, is_sudo])
 
-  // Infinite scroll
+  // Infinite scroll - only for sudo admins
   const handleScroll = useCallback(() => {
-    if (!listRef.current || isLoading || !hasMore) return
+    if (!is_sudo || !listRef.current || isLoading || !hasMore) return
     const { scrollTop, scrollHeight, clientHeight } = listRef.current
     if (scrollHeight - scrollTop - clientHeight < 100) {
       setIsLoading(true)
       setOffset(prev => prev + PAGE_SIZE)
     }
-  }, [isLoading, hasMore])
+  }, [isLoading, hasMore, is_sudo])
 
   useEffect(() => {
+    if (!is_sudo) return // Don't add scroll listeners for non-sudo admins
     const el = listRef.current
     if (!el) return
     el.addEventListener('scroll', handleScroll)
     return () => el.removeEventListener('scroll', handleScroll)
-  }, [handleScroll])
+  }, [handleScroll, is_sudo])
 
   const userForm = useForm<UseFormValues | UseEditFormValues>({
     defaultValues: UserFormDefaultValues,
@@ -301,15 +306,15 @@ const Dashboard = () => {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  // Auto-select current admin when it loads, but don't send admin_username for current admin
+  // Auto-select current admin when it loads - only for sudo admins
   useEffect(() => {
-    if (currentAdmin && !selectedAdmin) {
+    if (is_sudo && currentAdmin && !selectedAdmin) {
       setSelectedAdmin(currentAdmin)
     }
-  }, [currentAdmin, selectedAdmin])
+  }, [currentAdmin, selectedAdmin, is_sudo])
 
   // Only send admin_username if selectedAdmin is explicitly set and different from current admin
-  const systemStatsParams = selectedAdmin &&
+  const systemStatsParams = is_sudo && selectedAdmin &&
     selectedAdmin.username &&
     currentAdmin?.username &&
     selectedAdmin.username !== currentAdmin.username
@@ -321,12 +326,12 @@ const Dashboard = () => {
     },
   })
 
-  // Filter out current admin and 'system'
-  const filteredAdmins = admins.filter(
+  // Filter out current admin and 'system' - only for sudo admins
+  const filteredAdmins = is_sudo ? admins.filter(
     admin =>
       admin.username !== currentAdmin?.username &&
       admin.username !== 'system'
-  )
+  ) : []
 
   return (
     <div className="flex w-full flex-col items-start gap-2">
@@ -338,9 +343,8 @@ const Dashboard = () => {
           </div>
           <div className="flex gap-1 sm:gap-2 flex-shrink-0">
             <Button onClick={handleOpenQuickActions} size="sm" variant="outline" className="hidden sm:flex text-xs sm:text-sm">
-              <Bookmark className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              <span className="hidden md:inline">{t('quickActions.title')}</span>
-              <span className="md:hidden">Quick</span>
+              <Bookmark className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden lg:inline">{t('quickActions.title')}</span>
             </Button>
             <Button onClick={handleOpenQuickActions} size="sm" variant="outline" className="sm:hidden p-2">
               <Bookmark className="h-3 w-3" />
@@ -384,7 +388,7 @@ const Dashboard = () => {
                           </span>
                           {selectedAdmin && (
                             <div className="flex-shrink-0">
-                              {currentAdmin?.is_sudo ? (
+                              {selectedAdmin.is_sudo ? (
                                 <UserCog className="h-3 w-3 text-primary" />
                               ) : (
                                 <UserRound className="h-3 w-3 text-primary" />
@@ -406,7 +410,7 @@ const Dashboard = () => {
                           onValueChange={debouncedSearch}
                           className="h-7 sm:h-8 text-xs sm:text-sm mb-1"
                         />
-                        <CommandList>
+                        <CommandList ref={listRef}>
                           <CommandEmpty>
                             <div className="py-3 sm:py-4 text-center text-xs sm:text-sm text-muted-foreground">
                               {t('noAdminsFound') || 'No admins found'}

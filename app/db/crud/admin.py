@@ -193,7 +193,7 @@ async def reset_admin_usage(db: AsyncSession, db_admin: Admin) -> Admin:
     if db_admin.used_traffic == 0:
         return db_admin
 
-    usage_log = AdminUsageLogs(admin=db_admin, used_traffic_at_reset=db_admin.used_traffic)
+    usage_log = AdminUsageLogs(admin_id=db_admin.id, used_traffic_at_reset=db_admin.used_traffic)
     db.add(usage_log)
     db_admin.used_traffic = 0
 

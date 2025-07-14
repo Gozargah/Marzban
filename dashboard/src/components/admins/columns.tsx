@@ -1,6 +1,6 @@
 import { AdminDetails } from '@/service/api'
 import { ColumnDef } from '@tanstack/react-table'
-import { ChartPie, ChevronDown, MoreVertical, Power, PowerOff, RefreshCw, Trash2, User } from 'lucide-react'
+import { ChartPie, ChevronDown, MoreVertical, Pen, Power, PowerOff, RefreshCw, Trash2, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu.tsx'
 import { formatBytes } from '@/utils/formatByte.ts'
@@ -10,6 +10,7 @@ interface ColumnSetupProps {
   t: (key: string) => string
   handleSort: (column: string) => void
   filters: { sort: string }
+  onEdit: (admin: AdminDetails) => void
   onDelete: (admin: AdminDetails) => void
   toggleStatus: (admin: AdminDetails) => void
   onResetUsage: (adminUsername: string) => void
@@ -39,7 +40,7 @@ const createSortButton = (
   </button>
 )
 
-export const setupColumns = ({ t, handleSort, filters, onDelete, toggleStatus, onResetUsage }: ColumnSetupProps): ColumnDef<AdminDetails>[] => [
+export const setupColumns = ({ t, handleSort, filters, onEdit, onDelete, toggleStatus, onResetUsage }: ColumnSetupProps): ColumnDef<AdminDetails>[] => [
   {
     accessorKey: 'username',
     header: () => createSortButton('username', 'username', t, handleSort, filters),
@@ -123,13 +124,23 @@ export const setupColumns = ({ t, handleSort, filters, onDelete, toggleStatus, o
               onSelect={e => {
                 e.preventDefault()
                 e.stopPropagation()
+                onEdit(row.original)
+              }}
+            >
+              <Pen className="h-4 w-4 mr-2" />
+              {t('edit')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={e => {
+                e.preventDefault()
+                e.stopPropagation()
                 toggleStatus(row.original)
               }}
             >
               {row.original.is_disabled ? <Power className="h-4 w-4 mr-2" /> : <PowerOff className="h-4 w-4 mr-2" />}
               {row.original.is_disabled ? t('enable') : t('disable')}
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
             <DropdownMenuItem
               onSelect={e => {
                 e.preventDefault()

@@ -821,13 +821,27 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
         const hasProxySettings = values.proxy_settings && Object.values(values.proxy_settings).some(settings => settings && Object.values(settings).some(value => value !== undefined && value !== ''))
 
         setLoading(true)
+        
+        // Clean proxy settings to ensure proper enum values
+        const cleanedProxySettings = hasProxySettings ? {
+          ...values.proxy_settings,
+          vless: values.proxy_settings?.vless ? {
+            ...values.proxy_settings.vless,
+            flow: values.proxy_settings.vless.flow || undefined
+          } : undefined,
+          shadowsocks: values.proxy_settings?.shadowsocks ? {
+            ...values.proxy_settings.shadowsocks,
+            method: values.proxy_settings.shadowsocks.method || undefined
+          } : undefined
+        } : undefined
+
         // Convert data_limit from GB to bytes
         const sendValues = {
           ...preparedValues,
           data_limit: gbToBytes(preparedValues.data_limit as any),
           expire: normalizeExpire(preparedValues.expire),
           // Only include proxy_settings if they are filled
-          ...(hasProxySettings ? { proxy_settings: values.proxy_settings } : {}),
+          ...(hasProxySettings ? { proxy_settings: cleanedProxySettings } : {}),
         }
 
         // Remove proxy_settings from the payload if it's empty or undefined
@@ -887,8 +901,13 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
   )
 
   function generateUsername() {
-    // Example: random 8-char string
-    return Math.random().toString(36).slice(2, 10)
+    // Generate random 8-char string with only alphanumeric characters (no special chars)
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    let result = ''
+    for (let i = 0; i < 8; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return result
   }
 
   // Add this function after the generateUsername function
@@ -1467,10 +1486,11 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                               </FormLabel>
                               <FormControl>
                                 <Select
-                                  value={field.value ?? ''}
+                                  value={field.value ?? 'none'}
                                   onValueChange={val => {
-                                    field.onChange(val === 'none' ? undefined : val)
-                                    handleFieldChange('proxy_settings.vless.flow', val === 'none' ? undefined : val)
+                                    const flowValue = val === 'none' ? '' : val
+                                    field.onChange(flowValue)
+                                    handleFieldChange('proxy_settings.vless.flow', flowValue)
                                   }}
                                 >
                                   <SelectTrigger>
@@ -1582,8 +1602,9 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                 <Select
                                   value={field.value ?? ''}
                                   onValueChange={val => {
-                                    field.onChange(val)
-                                    handleFieldChange('proxy_settings.shadowsocks.method', val)
+                                    const methodValue = val || undefined
+                                    field.onChange(methodValue)
+                                    handleFieldChange('proxy_settings.shadowsocks.method', methodValue)
                                   }}
                                 >
                                   <SelectTrigger>

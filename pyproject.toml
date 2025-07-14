@@ -43,6 +43,7 @@ dependencies = [
     "textual[syntax]>=2.1.2",
     "aiogram>=3.19.0",
     "aiohttp-socks>=0.10.1",
+    "uvloop>=0.21.0",
 ]
 
 [tool.ruff]

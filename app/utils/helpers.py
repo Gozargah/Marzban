@@ -72,12 +72,15 @@ def escape_tg_html(list: tuple[str]) -> tuple[str]:
     return tuple(html.escape(text) for text in list)
 
 
-def escape_ds_markdown(list: tuple[str]) -> tuple[str]:
+def escape_ds_markdown(text: str) -> str:
     """Escapes markdown special characters for Discord."""
-    # Discord markdown characters to escape: *, _, `, ~, >, |, [, ], (, )
-    # For general text, escaping *, _, `, ~ is usually sufficient to prevent unintended formatting.
     # Other characters like >, |, [, ], (, ) are often handled by Discord's parser
     # or are part of specific markdown constructs (e.g., links, blockquotes)
     # that might not need general escaping.
     escape_chars = r"[*_`~]"
-    return tuple(re.sub(escape_chars, r"\\\g<0>", text) for text in list)
+    return re.sub(escape_chars, r"\\\g<0>", text)
+
+
+def escape_ds_markdown_list(list: tuple[str]) -> tuple[str]:
+    """Escapes markdown special characters for Discord."""
+    return tuple(escape_ds_markdown(text) for text in list)

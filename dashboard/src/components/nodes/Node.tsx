@@ -125,7 +125,7 @@ export default function Node({ node, onEdit, onToggleStatus }: NodeProps) {
                 }}
               >
                 <Power className="h-4 w-4 mr-2" />
-                {node.status !== 'disabled' ? t('disable') : t('enable')}
+                {node.status === 'disabled' ? t('enable') : t('disable')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem

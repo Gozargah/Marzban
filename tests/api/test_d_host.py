@@ -1,7 +1,7 @@
 from fastapi import status
 
 from tests.api import client
-from tests.api.test_group import test_groups_get
+from tests.api.test_c_group import test_groups_get
 
 host_data = {
     "remark": "test_host",

@@ -4,7 +4,7 @@ from app.notification.client import send_discord_webhook
 from app.models.host import BaseHost
 from app.models.settings import NotificationSettings
 from app.settings import notification_settings
-from app.utils.helpers import escape_ds_markdown
+from app.utils.helpers import escape_ds_markdown_list, escape_ds_markdown
 
 from .utils import escape_md_host
 from . import colors, messages
@@ -45,7 +45,7 @@ async def modify_host(host: BaseHost, by: str):
 
 
 async def remove_host(host: BaseHost, by: str):
-    remark, by = escape_ds_markdown((host.remark, by))
+    remark, by = escape_ds_markdown_list((host.remark, by))
     message = copy.deepcopy(messages.REMOVE_HOST)
     message["description"] = message["description"].format(remark=remark)
     message["footer"]["text"] = message["footer"]["text"].format(id=host.id, by=by)
@@ -60,7 +60,7 @@ async def remove_host(host: BaseHost, by: str):
 
 
 async def modify_hosts(by: str):
-    by, _ = escape_ds_markdown((by,))
+    by = escape_ds_markdown(by)
     message = copy.deepcopy(messages.MODIFY_HOSTS)
     message["description"] = message["description"].format(by=by)
     data = {

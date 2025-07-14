@@ -4,7 +4,7 @@ from app.notification.client import send_discord_webhook
 from app.models.user_template import UserTemplateResponse
 from app.models.settings import NotificationSettings
 from app.settings import notification_settings
-from app.utils.helpers import escape_ds_markdown
+from app.utils.helpers import escape_ds_markdown_list
 
 from . import colors, messages
 from .utils import escape_md_template
@@ -53,7 +53,7 @@ async def modify_user_template(user_template: UserTemplateResponse, by: str):
 
 
 async def remove_user_template(name: str, by: str):
-    name, by = escape_ds_markdown((name, by))
+    name, by = escape_ds_markdown_list((name, by))
     message = copy.deepcopy(messages.REMOVE_USER_TEMPLATE)
     message["description"] = message["description"].format(name=name)
     message["footer"]["text"] = message["footer"]["text"].format(by=by)

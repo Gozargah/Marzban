@@ -4,13 +4,13 @@ from app.notification.client import send_discord_webhook
 from app.models.group import GroupResponse
 from app.models.settings import NotificationSettings
 from app.settings import notification_settings
-from app.utils.helpers import escape_ds_markdown
+from app.utils.helpers import escape_ds_markdown_list, escape_ds_markdown
 
 from . import colors, messages
 
 
 async def create_group(group: GroupResponse, by: str):
-    name, by = escape_ds_markdown((group.name, by))
+    name, by = escape_ds_markdown_list((group.name, by))
     message = copy.deepcopy(messages.CREATE_GROUP)
     message["description"] = message["description"].format(
         name=name,
@@ -29,7 +29,7 @@ async def create_group(group: GroupResponse, by: str):
 
 
 async def modify_group(group: GroupResponse, by: str):
-    name, by = escape_ds_markdown((group.name, by))
+    name, by = escape_ds_markdown_list((group.name, by))
     message = copy.deepcopy(messages.MODIFY_GROUP)
     message["description"] = message["description"].format(
         name=name,
@@ -48,7 +48,7 @@ async def modify_group(group: GroupResponse, by: str):
 
 
 async def remove_group(group_id: int, by: str):
-    by, _ = escape_ds_markdown((by,))
+    by = escape_ds_markdown(by)
     message = copy.deepcopy(messages.REMOVE_GROUP)
     message["description"] = message["description"].format(id=group_id)
     message["footer"]["text"] = message["footer"]["text"].format(by=by)

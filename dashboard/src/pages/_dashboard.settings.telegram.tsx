@@ -17,7 +17,19 @@ import { toast } from 'sonner'
 const telegramSettingsSchema = z.object({
   enable: z.boolean().default(false),
   token: z.string().optional(),
-  webhook_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+  webhook_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')).refine((url) => {
+    if (!url || url === '') return true; // Allow empty URLs
+    try {
+      const parsedUrl = new URL(url);
+      const allowedPorts = ['443', '80', '88', '8443'];
+      const port = parsedUrl.port || (parsedUrl.protocol === 'https:' ? '443' : '80');
+      return allowedPorts.includes(port);
+    } catch {
+      return false;
+    }
+  }, {
+    message: 'Telegram webhook URL must use ports 443, 80, 88, or 8443'
+  }),
   webhook_secret: z.string().optional(),
   proxy_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
   mini_app_login: z.boolean().default(false),
@@ -230,6 +242,7 @@ export default function TelegramSettings() {
                       </FormControl>
                       <FormDescription className="text-sm text-muted-foreground">
                         {t('settings.telegram.general.webhookUrlDescription')}
+                        <br />
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

@@ -14,8 +14,8 @@ related to the node version, install Node with version >= v20
     Install the latest LTS version of Node.js
     git clone https://github.com/Gozargah/Marzban.git
     `bash cd Marzban/app/dashboard`
-    `bash corepack enable`
-    `bash pnpm install`
+    `bash curl -fsSL https://bun.sh/install | bash`
+    `bash bun install`
 
 ### Configure app
 
@@ -31,11 +31,11 @@ Copy `example.env` to `.env` then set the backend api address:
 
 ## Start development server
 
-    pnpm dev
+    bun dev
 
 ## Simple build for production
 
-    pnpm build
+    bun build
 
 ## Contribution
 

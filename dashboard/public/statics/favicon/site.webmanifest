@@ -1,19 +1,27 @@
 {
-  "name": "",
-  "short_name": "",
+  "name": "Marzban",
+  "short_name": "Marzban",
+  "description": "Marzban: Modern dashboard for managing proxies and users.",
   "icons": [
     {
-      "src": "/favicon/android-chrome-192x192.png",
+      "src": "/statics/favicon/android-chrome-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/favicon/android-chrome-512x512.png",
+      "src": "/statics/favicon/android-chrome-512x512.png",
       "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/statics/favicon/apple-touch-icon.png",
+      "sizes": "180x180",
       "type": "image/png"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
-  "display": "standalone"
+  "theme_color": "#1b1b1d",
+  "background_color": "#1b1b1d",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/"
 }

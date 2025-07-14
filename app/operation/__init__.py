@@ -115,6 +115,10 @@ class BaseOperation:
             for group_id in model.group_ids:
                 db_group = await self.get_validated_group(db, group_id)
                 all_groups.append(db_group)
+        if hasattr(model, "has_group_ids") and model.has_group_ids:
+            for group_id in model.has_group_ids:
+                db_group = await self.get_validated_group(db, group_id)
+                all_groups.append(db_group)
         return all_groups
 
     async def get_validated_user_template(self, db: AsyncSession, template_id: int) -> UserTemplate:

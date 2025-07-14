@@ -138,7 +138,7 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
-            <div className="max-h-[76dvh] overflow-y-auto pr-4 -mr-4 sm:max-h-[75dvh] flex flex-col sm:flex-row items-start gap-4 px-2">
+            <div className="max-h-[76dvh] overflow-y-auto pr-4 pb-6 -mr-4 sm:max-h-[75dvh] flex flex-col sm:flex-row items-start gap-4 px-2">
               <div className="flex-1 space-y-4 w-full">
                 <div className="flex flex-row gap-2 w-full ">
                   <FormField
@@ -164,7 +164,7 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Active" />
+                              <SelectValue placeholder={t('status.active', { defaultValue: 'Active' })} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -226,7 +226,7 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
                             className="pr-10"
                             min="0"
                           />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium pointer-events-none">GB</span>
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium pointer-events-none">{t('userDialog.gb', { defaultValue: 'GB' })}</span>
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -249,7 +249,7 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="" />
+                              <SelectValue placeholder={t('userDialog.resetStrategyNo', { defaultValue: 'No' })} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -285,7 +285,7 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
                             className="pr-14"
                             min="0"
                           />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium pointer-events-none">Days</span>
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium pointer-events-none">{t('time.days', { defaultValue: 'Days' })}</span>
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -332,12 +332,12 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
                             <div className="flex-[2]">
                               <Select value={timeType} onValueChange={v => setTimeType(v as any)}>
                                 <SelectTrigger className="w-full rounded-none border-0 focus:ring-0 focus:ring-offset-0">
-                                  <SelectValue placeholder="Second" />
+                                  <SelectValue placeholder={t('time.seconds', { defaultValue: 'Seconds' })} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="days">Days</SelectItem>
-                                  <SelectItem value="hours">Hours</SelectItem>
-                                  <SelectItem value="seconds">Seconds</SelectItem>
+                                  <SelectItem value="days">{t('time.days', { defaultValue: 'Days' })}</SelectItem>
+                                  <SelectItem value="hours">{t('time.hours', { defaultValue: 'Hours' })}</SelectItem>
+                                  <SelectItem value="seconds">{t('time.seconds', { defaultValue: 'Seconds' })}</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
@@ -359,11 +359,11 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
                       <Select onValueChange={value => field.onChange(value === 'null' ? undefined : value)} value={field.value ?? 'null'}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select Method" />
+                            <SelectValue placeholder={t('userDialog.proxySettings.method', { defaultValue: 'Select Method' })} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="null">None</SelectItem>
+                          <SelectItem value="null">{t('userDialog.proxySettings.flow.none', { defaultValue: 'None' })}</SelectItem>
                           <SelectItem value={ShadowsocksMethods['aes-128-gcm']}>aes-128-gcm</SelectItem>
                           <SelectItem value={ShadowsocksMethods['aes-256-gcm']}>aes-256-gcm</SelectItem>
                           <SelectItem value={ShadowsocksMethods['chacha20-ietf-poly1305']}>chacha20-ietf-poly1305</SelectItem>
@@ -384,11 +384,11 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
                       <Select onValueChange={value => field.onChange(value === 'null' ? undefined : value)} value={field.value ?? 'null'}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="" />
+                            <SelectValue placeholder={t('userDialog.proxySettings.flow', { defaultValue: 'Flow' })} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="null">None</SelectItem>
+                          <SelectItem value="null">{t('userDialog.proxySettings.flow.none', { defaultValue: 'None' })}</SelectItem>
                           <SelectItem value={XTLSFlows['xtls-rprx-vision']}>xtls-rprx-vision</SelectItem>
                         </SelectContent>
                       </Select>

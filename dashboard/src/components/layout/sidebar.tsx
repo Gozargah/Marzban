@@ -214,7 +214,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               ],
             },
           ]
-        : []),
+        : [
+            // For non-sudo admins, show only theme settings
+            {
+              title: 'settings.title',
+              url: '/settings',
+              icon: Settings2,
+              items: [
+                {
+                  title: 'theme.title',
+                  url: '/settings/theme',
+                  icon: Palette,
+                },
+              ],
+            },
+          ]),
     ],
     navSecondary: [
       {

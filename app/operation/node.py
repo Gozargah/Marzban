@@ -192,7 +192,7 @@ class NodeOperation(BaseOperation):
         asyncio.create_task(self.connect_node(node_id))
         logger.info(f'Node "{node_id}" restarted by admin "{admin.username}"')
 
-    async def restart_all_node(self, db: AsyncSession, core_id: int | None, admin: AdminDetails) -> None:
+    async def restart_all_node(self, db: AsyncSession, admin: AdminDetails, core_id: int | None = None) -> None:
         nodes: list[Node] = await self.get_db_nodes(db, core_id)
         await asyncio.gather(*[NodeOperation.connect_node(node.id) for node in nodes])
 

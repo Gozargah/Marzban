@@ -4,13 +4,13 @@ from app.notification.client import send_discord_webhook
 from app.models.admin import AdminDetails
 from app.models.settings import NotificationSettings
 from app.settings import notification_settings
-from app.utils.helpers import escape_ds_markdown
+from app.utils.helpers import escape_ds_markdown_list
 
 from . import colors, messages
 
 
 async def create_admin(admin: AdminDetails, by: str):
-    username, by = escape_ds_markdown((admin.username, by))
+    username, by = escape_ds_markdown_list((admin.username, by))
     message = copy.deepcopy(messages.CREATE_ADMIN)
     message["description"] = message["description"].format(
         username=username,
@@ -30,7 +30,7 @@ async def create_admin(admin: AdminDetails, by: str):
 
 
 async def modify_admin(admin: AdminDetails, by: str):
-    username, by = escape_ds_markdown((admin.username, by))
+    username, by = escape_ds_markdown_list((admin.username, by))
     message = copy.deepcopy(messages.MODIFY_ADMIN)
     message["description"] = message["description"].format(
         username=username,
@@ -50,7 +50,7 @@ async def modify_admin(admin: AdminDetails, by: str):
 
 
 async def remove_admin(username: str, by: str):
-    username, by = escape_ds_markdown((username, by))
+    username, by = escape_ds_markdown_list((username, by))
     message = copy.deepcopy(messages.REMOVE_ADMIN)
     message["description"] = message["description"].format(username=username)
     message["footer"]["text"] = message["footer"]["text"].format(by=by)
@@ -65,7 +65,7 @@ async def remove_admin(username: str, by: str):
 
 
 async def admin_reset_usage(admin: AdminDetails, by: str):
-    username, by = escape_ds_markdown((admin.username, by))
+    username, by = escape_ds_markdown_list((admin.username, by))
     message = copy.deepcopy(messages.ADMIN_RESET_USAGE)
     message["description"] = message["description"].format(username=username)
     message["footer"]["text"] = message["footer"]["text"].format(by=by)
@@ -80,7 +80,7 @@ async def admin_reset_usage(admin: AdminDetails, by: str):
 
 
 async def admin_login(username: str, password: str, client_ip: str, success: bool):
-    username, password = escape_ds_markdown((username, password))
+    username, password = escape_ds_markdown_list((username, password))
     message = copy.deepcopy(messages.ADMIN_LOGIN)
     message["description"] = message["description"].format(
         username=username,

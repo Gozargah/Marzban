@@ -82,8 +82,8 @@
   "github": "GitHub",
   "community": "社区",
   "supportUs": "支持我们",
-  "manageHosts": "管理和控制主机。",
-  "manageSettings": "管理和控制设置。",
+  "manageHosts": "管理和控制主机",
+  "manageSettings": "管理和控制设置",
   "settings": {
     "title": "设置",
     "notifications": {
@@ -500,7 +500,7 @@
   "userTemplateModal.title": "创建用户模板",
   "templates": {
     "title": "模板",
-    "description": "管理您的模板。",
+    "description": "管理您的模板",
     "addTemplate": "创建模板",
     "editSuccess": "用户模板「{{name}}」已成功更新",
     "createSuccess": "用户模板「{{name}}」已成功创建",
@@ -955,7 +955,8 @@
       "status_text": "用户状态",
       "status_emoji": "用户状态表情符号 (✅,⌛️,🪫,❌,🔌)",
       "protocol": "代理协议（如 VMess）",
-      "transport": "代理传输方式（如 ws）"
+      "transport": "代理传输方式（如 ws）",
+      "admin_username": "管理员用户名"
     },
     "httpVersions": {
       "1.0": "HTTP/1.0",
@@ -1312,6 +1313,8 @@
     "hours": "小时",
     "min": "分钟",
     "mins": "分钟",
+    "second": "秒",
+    "seconds": "秒",
     "ago": "前",
     "notConnectedYet": "尚未连接"
   },

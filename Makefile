@@ -61,23 +61,23 @@ check-nodejs: check-nvm
 		echo "nodejs is already installed."; \
 	fi
 
-# Check if pnpm is installed, if not, install it
-.PHONY: check-pnpm
-check-pnpm: check-nodejs
-	@if ! pnpm --version > /dev/null 2>&1; then \
-		echo "pnpm not found. Installing..."; \
-		curl -fsSL https://get.pnpm.io/install.sh | sh - || { \
-			echo "Failed to install pnpm. Please install it manually."; \
+# Check if bun is installed, if not, install it
+.PHONY: check-bun
+check-bun: check-nodejs
+	@if ! bun --version > /dev/null 2>&1; then \
+		echo "bun not found. Installing..."; \
+		curl -fsSL https://bun.sh/install | bash || { \
+			echo "Failed to install bun. Please install it manually."; \
 			exit 1; \
 		}; \
 	else \
-		echo "pnpm is already installed."; \
+		echo "bun is already installed."; \
 	fi
 
 # Install frontend dependencies (Node.js packages)
 .PHONY: install-front
-install-front: check-pnpm
-	@cd dashboard && pnpm i 
+install-front: check-bun
+	@cd dashboard && bun install 
 
 # Run database migrations using Alembic
 .PHONY: run-migration
@@ -133,4 +133,4 @@ setup: check-python install_uv requirements
 # Format code (front-end)
 .PHONY: fformat
 fformat:
-	@cd dashboard && pnpm exec prettier . --write
+	@cd dashboard && bun run prettier . --write
