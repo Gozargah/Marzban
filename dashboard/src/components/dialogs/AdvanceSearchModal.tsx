@@ -25,8 +25,8 @@ export const advanceSearchFormSchema = z.object({
     admin: z.array(z.string()).optional(),
     group: z.array(z.number()).optional(),
     status: z.array(z.enum(
-        ['active', 'on_hold', 'disabled', 'expired', 'limited']
-    )).optional(),
+        ['0', 'active', 'on_hold', 'disable', 'expired', 'limited']
+    )).default(['0']).optional(),
 })
 
 export type AdvanceSearchFormValue = z.infer<typeof advanceSearchFormSchema>
@@ -112,42 +112,43 @@ export default function AdvanceSearchModal({
                                         )
                                     }}
                                 />
-                              <FormField
-                                        control={form.control}
-                                        name="admin"
-                                        render={({field}) => {
-                                            return (
-                                                <FormItem className="flex-1 w-full">
-                                                    <FormLabel>{t('advanceSearch.byAdmin')}</FormLabel>
-                                                    <FormControl>
-                                                        <Accordion type="single" collapsible className="w-full">
-                                                            <AccordionItem value="admin-select"
-                                                                           className="[&_[data-state=open]]:no-underline [&_[data-state=closed]]:no-underline border-none">
-                                                                <AccordionTrigger
-                                                                    className="border p-2 rounded-md">{t('advanceSearch.selectAdmin')}</AccordionTrigger>
-                                                                <AccordionContent>
-                                                                    <div className="mt-2">
-                                                                        <AdminsSelector control={form.control}
-                                                                                        name="admin"
-                                                                                        onAdminsChange={field.onChange}/>
-                                                                    </div>
-                                                                </AccordionContent>
-                                                            </AccordionItem>
-                                                        </Accordion>
-                                                    </FormControl>
-                                                    <FormMessage/>
-                                                </FormItem>
-                                            )
-                                        }}
-                                    />
+                                <FormField
+                                    control={form.control}
+                                    name="admin"
+                                    render={({field}) => {
+                                        return (
+                                            <FormItem className="flex-1 w-full">
+                                                <FormLabel>{t('advanceSearch.byAdmin')}</FormLabel>
+                                                <FormControl>
+                                                    <Accordion type="single" collapsible className="w-full">
+                                                        <AccordionItem value="admin-select"
+                                                                       className="[&_[data-state=open]]:no-underline [&_[data-state=closed]]:no-underline border-none">
+                                                            <AccordionTrigger
+                                                                className="border p-2 rounded-md">{t('advanceSearch.selectAdmin')}</AccordionTrigger>
+                                                            <AccordionContent>
+                                                                <div className="mt-2">
+                                                                    <AdminsSelector control={form.control}
+                                                                                    name="admin"
+                                                                                    onAdminsChange={field.onChange}/>
+                                                                </div>
+                                                            </AccordionContent>
+                                                        </AccordionItem>
+                                                    </Accordion>
+                                                </FormControl>
+                                                <FormMessage/>
+                                            </FormItem>
+                                        )
+                                    }}
+                                />
                                 <FormField
                                     control={form.control}
                                     name="status"
                                     render={({field}) => {
                                         const statusOptions = [
+                                            {value: '0', label: t('allStatuses')},
                                             {value: 'active', label: t('advanceSearch.status.active')},
                                             {value: 'on_hold', label: t('advanceSearch.status.onHold')},
-                                            {value: 'disabled', label: t('advanceSearch.status.disable')},
+                                            {value: 'disable', label: t('advanceSearch.status.disable')},
                                             {value: 'expired', label: t('advanceSearch.status.expired')},
                                             {value: 'limited', label: t('advanceSearch.status.limited')}
                                         ];
@@ -159,8 +160,8 @@ export default function AdvanceSearchModal({
                                                 <FormControl>
                                                     <div>
                                                         <Select
-                                                            value={selectedStatus || ''}
-                                                            onValueChange={value => field.onChange([value])}
+                                                            value={selectedStatus || '0'}
+                                                            onValueChange={value => field.onChange(value === '0' ? [] : [value])}
                                                             dir={dir}
                                                         >
                                                             <SelectTrigger>
