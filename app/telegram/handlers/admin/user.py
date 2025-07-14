@@ -211,8 +211,9 @@ async def process_done(event: CallbackQuery, db: AsyncSession, admin: AdminDetai
 
     new_user = UserCreate(**data)
     user = await user_operations.create_user(db, new_user, admin)
+    groups = await user_operations.validate_all_groups(db, user)
     await event.answer(Texts.user_created)
-    return await event.message.edit_text(Texts.user_details(user), reply_markup=UserPanel(user).as_markup())
+    return await event.message.edit_text(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
 
 
 @router.callback_query(GroupsSelector.DoneCallback.filter(DoneAction.cancel == F.action))
@@ -230,7 +231,8 @@ async def disable_user(event: CallbackQuery, admin: AdminDetails, db: AsyncSessi
     modified_user.status = UserStatusModify.disabled
     user = await user_operations.modify_user(db, callback_data.username, modified_user, admin)
     await event.answer(f"User {callback_data.username} has been disabled.")
-    await event.message.edit_text(Texts.user_details(user), reply_markup=UserPanel(user).as_markup())
+    groups = await user_operations.validate_all_groups(db, user)
+    await event.message.edit_text(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
 
 
 @router.callback_query(UserPanel.Callback.filter(UserPanelAction.enable == F.action))
@@ -240,21 +242,24 @@ async def enable_user(event: CallbackQuery, admin: AdminDetails, db: AsyncSessio
     modified_user.status = UserStatusModify.active
     user = await user_operations.modify_user(db, callback_data.username, modified_user, admin)
     await event.answer(f"User {callback_data.username} has been enabled.")
-    await event.message.edit_text(Texts.user_details(user), reply_markup=UserPanel(user).as_markup())
+    groups = await user_operations.validate_all_groups(db, user)
+    await event.message.edit_text(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
 
 
 @router.callback_query(UserPanel.Callback.filter(UserPanelAction.revoke_sub == F.action))
 async def revoke_sub(event: CallbackQuery, admin: AdminDetails, db: AsyncSession, callback_data: UserPanel.Callback):
     user = await user_operations.revoke_user_sub(db, callback_data.username, admin)
     await event.answer(f"User {callback_data.username} Subscription has been revoked.")
-    await event.message.edit_text(Texts.user_details(user), reply_markup=UserPanel(user).as_markup())
+    groups = await user_operations.validate_all_groups(db, user)
+    await event.message.edit_text(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
 
 
 @router.callback_query(UserPanel.Callback.filter(UserPanelAction.reset_usage == F.action))
 async def reset_usage(event: CallbackQuery, admin: AdminDetails, db: AsyncSession, callback_data: UserPanel.Callback):
     user = await user_operations.reset_user_data_usage(db, callback_data.username, admin)
     await event.answer(f"User {callback_data.username} Usage has been reset.")
-    await event.message.edit_text(Texts.user_details(user), reply_markup=UserPanel(user).as_markup())
+    groups = await user_operations.validate_all_groups(db, user)
+    await event.message.edit_text(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
 
 
 @router.callback_query(UserPanel.Callback.filter(UserPanelAction.activate_next_plan == F.action))
@@ -263,7 +268,8 @@ async def activate_next_plan(
 ):
     user = await user_operations.active_next_plan(db, callback_data.username, admin)
     await event.answer(f"User {callback_data.username} Next plan has been activated.")
-    await event.message.edit_text(Texts.user_details(user), reply_markup=UserPanel(user).as_markup())
+    groups = await user_operations.validate_all_groups(db, user)
+    await event.message.edit_text(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
 
 
 @router.callback_query(UserPanel.Callback.filter(UserPanelAction.modify_with_template == F.action))
@@ -291,7 +297,8 @@ async def modify_with_template_done(
         ModifyUserByTemplate(user_template_id=callback_data.template_id),
         admin,
     )
-    return await event.message.edit_text(Texts.user_details(user), reply_markup=UserPanel(user).as_markup())
+    groups = await user_operations.validate_all_groups(db, user)
+    return await event.message.edit_text(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
 
 
 
@@ -356,7 +363,8 @@ async def create_user_from_template_choose(event: Message, state: FSMContext, db
         CreateUserFromTemplate(username=username, user_template_id=template_id),
         admin
     )
-    return await event.answer(Texts.user_details(user), reply_markup=UserPanel(user).as_markup())
+    groups = await user_operations.validate_all_groups(db, user)
+    return await event.answer(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
 
 
 
@@ -370,10 +378,11 @@ async def get_user(event: Message | CallbackQuery, admin: AdminDetails, db: Asyn
     except ValueError:
         return await event.reply(Texts.user_not_found, reply_markup=InlineQuerySearch(username).as_markup())
 
+    groups = await user_operations.validate_all_groups(db, user)
     if isinstance(event, Message):
-        await event.reply(Texts.user_details(user), reply_markup=UserPanel(user).as_markup())
+        await event.reply(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
     else:
-        await event.message.edit_text(Texts.user_details(user), reply_markup=UserPanel(user).as_markup())
+        await event.message.edit_text(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
 
 
 @router.inline_query()

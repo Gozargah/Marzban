@@ -1,5 +1,6 @@
 from aiogram.utils.formatting import html_decoration
 
+from app.models.group import Group
 from app.models.user import UserResponse, UserStatus
 from app.models.system import SystemStats
 from app.telegram.utils.shared import readable_size
@@ -90,7 +91,7 @@ class Message:
         return STATUS_EMOJIS[status.value]
 
     @staticmethod
-    def user_details(user: UserResponse) -> str:
+    def user_details(user: UserResponse, groups: list[Group]) -> str:
         data_limit = c(readable_size(user.data_limit)) if user.data_limit else "∞"
         used_traffic = c(readable_size(user.used_traffic))
         expire = user.expire.strftime("%Y-%m-%d %H:%M") if user.expire else "∞"
@@ -103,6 +104,7 @@ class Message:
         admin = ln(user.admin.username, f"tg://user?id={user.admin.telegram_id}")
         note = bl(escape(user.note)) if user.note else "-"
         emojy_status = Message.status_emoji(user.status)
+        groups = ", ".join([g.name for g in groups])
 
         if user.status == UserStatus.on_hold:
             expire_text = f"{b('On Hold Duration: ')} {c(on_hold_expire_duration)} days\n"
@@ -124,6 +126,7 @@ class Message:
 {b("Online At:")} {online_at}
 {b("Subscription Updated At:")} {sub_update_at}
 {b("Last Update User Agent:")} {user_agent}
+{b("Groups:")} {c(groups)}
 {b("Admin:")} {admin}
 {b("Note:")} {note}
 {b("Subscription URL:")}
