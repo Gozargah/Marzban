@@ -133,7 +133,7 @@ export default function AdvanceSearchModal({ isDialogOpen, onOpenChange, form, o
                       { value: '0', label: t('allStatuses') },
                       { value: 'active', label: t('advanceSearch.status.active') },
                       { value: 'on_hold', label: t('advanceSearch.status.onHold') },
-                      { value: 'disabled', label: t('advanceSearch.status.disabled') },
+                      { value: 'disabled', label: t('advanceSearch.status.disable') },
                       { value: 'expired', label: t('advanceSearch.status.expired') },
                       { value: 'limited', label: t('advanceSearch.status.limited') },
                     ]
