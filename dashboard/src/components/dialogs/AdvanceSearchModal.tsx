@@ -25,7 +25,7 @@ export const advanceSearchFormSchema = z.object({
     admin: z.array(z.string()).optional(),
     group: z.array(z.number()).optional(),
     status: z.array(z.enum(
-        ['0', 'active', 'on_hold', 'disable', 'expired', 'limited']
+        ['0', 'active', 'on_hold', 'disabled', 'expired', 'limited']
     )).default(['0']).optional(),
 })
 
@@ -148,7 +148,7 @@ export default function AdvanceSearchModal({
                                             {value: '0', label: t('allStatuses')},
                                             {value: 'active', label: t('advanceSearch.status.active')},
                                             {value: 'on_hold', label: t('advanceSearch.status.onHold')},
-                                            {value: 'disable', label: t('advanceSearch.status.disable')},
+                                            {value: 'disabled', label: t('advanceSearch.status.disabled')},
                                             {value: 'expired', label: t('advanceSearch.status.expired')},
                                             {value: 'limited', label: t('advanceSearch.status.limited')}
                                         ];
