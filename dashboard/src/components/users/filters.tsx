@@ -43,8 +43,6 @@ export const Filters = ({filters, onFilterChange, refetch, advanceSearchOnOpen}:
     const [isRefreshing, setIsRefreshing] = useState(false)
     const userQuery = useGetUsers(filters)
     const handleRefetch = refetch || userQuery.refetch
-    console.log(filters)
-    console.log(userQuery);
 
     // Debounced search function
     const setSearchField = useCallback(

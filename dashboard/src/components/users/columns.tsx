@@ -16,7 +16,7 @@ export const setupColumns = ({
 }: {
   t: (key: string) => string
   handleSort: (column: string) => void
-  filters: { sort: string; status?: string }
+  filters: { sort: string; status?: string |null }
   handleStatusFilter: (value: any) => void
   dir: any
 }): ColumnDef<UserResponse>[] => [
