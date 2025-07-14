@@ -459,6 +459,8 @@
     "reset": "重置使用情况",
     "discordId": "Discord ID",
     "lifetime.used.traffic": "总计",
+    "adminsExistingWarning": "您尚未添加任何<a>管理员</a>。",
+    "selectedAdmins": "已选择 {{count}} 位管理员",
     "used": {
       "traffic": "使用情况"
     },
@@ -1290,7 +1292,6 @@
   "statistics.waitingForDataDescription": "实时统计数据将在数据流开始后显示在这里。",
   "statistics.noDataInRange": "所选范围内无数据",
   "statistics.noDataInRangeDescription": "在所选时间段内未找到流量数据。请尝试选择不同的日期范围。",
-
   "statistics.selectNodeToView": "选择一个节点以查看详细统计信息",
   "statistics.userStatisticsDescription": "用户账户状态和活动概览",
   "errors.connectionFailed": "连接失败。请检查您的网络并重试。",
@@ -1355,5 +1356,23 @@
   },
   "inboundTags": "入站标签",
   "searchInbounds": "搜索入站...",
-  "noInboundsFound": "未找到入站"
+  "noInboundsFound": "未找到入站",
+  "advanceSearch": {
+    "title": "高级搜索",
+    "byUsername": "用户名和备注",
+    "byProtocol": "协议数据",
+    "byStatus": "状态",
+    "byAdmin": "管理员",
+    "byGroup": "分组",
+    "selectGroup": "选择分组 ...",
+    "selectAdmin": "选择管理员 ...",
+    "selectStatus": "选择状态 ...",
+    "status": {
+      "active": "活跃",
+      "disable": "禁用",
+      "expired": "已过期",
+      "limited": "受限",
+      "onHold": "暂停"
+    }
+  }
 }

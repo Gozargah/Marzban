@@ -8,9 +8,9 @@ import useDirDetection from "@/hooks/use-dir-detection.tsx";
 import {UseFormReturn} from "react-hook-form";
 import {useTranslation} from "react-i18next";
 import {z} from "zod";
-import {useGetAdmins, useGetAllGroups} from "@/service/api";
-import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
+import GroupsSelector from "@/components/common/GroupsSelector.tsx";
+import AdminsSelector from "@/components/common/AdminsSelector.tsx";
 
 interface AdvanceSearchModalProps {
     isDialogOpen: boolean
@@ -38,18 +38,18 @@ export default function AdvanceSearchModal({
                                            }: AdvanceSearchModalProps) {
     const dir = useDirDetection()
     const {t} = useTranslation()
-    const {data: groupsData, isLoading: groupsLoading} = useGetAllGroups()
-    const {data: adminData, isLoading: adminsLoading} = useGetAdmins()
 
     return (
         <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[650px] h-full sm:h-auto flex flex-col justify-start" onOpenAutoFocus={(e) => e.preventDefault()}>
+            <DialogContent className="max-w-[650px] h-full sm:h-auto flex flex-col justify-start"
+                           onOpenAutoFocus={(e) => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle className={`${dir === 'rtl' ? 'text-right' : 'text-left'}`}
                                  dir={dir}>{t('advanceSearch.title')}</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 h-full flex flex-col justify-between">
+                    <form onSubmit={form.handleSubmit(onSubmit)}
+                          className="space-y-4 h-full flex flex-col justify-between">
                         <div className="max-h-[80dvh] overflow-y-auto pr-4 -mr-4 sm:max-h-[75dvh] px-2">
                             <div className="flex flex-col w-full flex-1 items-start gap-4 pb-4">
                                 <FormField
@@ -82,67 +82,40 @@ export default function AdvanceSearchModal({
                                         )
                                     }}
                                 />
-                                {groupsLoading ? (
-                                        <div>{t('Loading...', {defaultValue: 'Loading...'})}</div>
-                                    ) :
-                                    (<FormField
-                                        control={form.control}
-                                        name="group"
-                                        render={({field}) => {
-                                            const selectedGroups = field.value || []
-                                            const handleGroupChange = (checked: boolean, groupId: number) => {
-                                                if (checked) {
-                                                    field.onChange([...selectedGroups, groupId])
-                                                } else {
-                                                    field.onChange(selectedGroups.filter((id: number) => id !== groupId))
-                                                }
-                                            }
-                                            return (
-                                                <FormItem className="flex-1 w-full">
-                                                    <FormLabel>{t('advanceSearch.byGroup')}</FormLabel>
-                                                    <FormControl>
-                                                        <Accordion type="single" collapsible className="w-full">
-                                                            <AccordionItem value="group-select"
-                                                                           className="[&_[data-state=open]]:no-underline [&_[data-state=closed]]:no-underline border-none">
-                                                                <AccordionTrigger
-                                                                    className="border p-2 rounded-md">{t('advanceSearch.selectGroup')}</AccordionTrigger>
-                                                                <AccordionContent>
-                                                                    <div className="border rounded-md mt-2">
-                                                                        {groupsData?.groups.map((group: any) => (
-                                                                            <label key={group.id}
-                                                                                   className="flex items-center gap-2 p-2 rounded-md hover:bg-accent cursor-pointer">
-                                                                                <Checkbox
-                                                                                    checked={selectedGroups.includes(group.id)}
-                                                                                    onCheckedChange={checked => handleGroupChange(!!checked, group.id)}/>
-                                                                                <span
-                                                                                    className="text-sm">{group.name}</span>
-                                                                            </label>)
-                                                                        )}
-                                                                    </div>
-                                                                </AccordionContent>
-                                                            </AccordionItem>
-                                                        </Accordion>
-                                                    </FormControl>
-                                                    <FormMessage/>
-                                                </FormItem>
-                                            )
-                                        }}
-                                    />)}
-                                {adminsLoading ? (
-                                        <div>{t('Loading...', {defaultValue: 'Loading...'})}</div>
-                                    ) :
-                                    (<FormField
+                                <FormField
+                                    control={form.control}
+                                    name="group"
+                                    render={({field}) => {
+                                        return (
+                                            <FormItem className="flex-1 w-full">
+                                                <FormLabel>{t('advanceSearch.byGroup')}</FormLabel>
+                                                <FormControl>
+                                                    <Accordion type="single" collapsible className="w-full">
+                                                        <AccordionItem value="group-select"
+                                                                       className="[&_[data-state=open]]:no-underline [&_[data-state=closed]]:no-underline border-none">
+                                                            <AccordionTrigger
+                                                                className="border p-2 rounded-md">{t('advanceSearch.selectGroup')}</AccordionTrigger>
+                                                            <AccordionContent>
+                                                                <div className="mt-2">
+                                                                    <GroupsSelector
+                                                                        control={form.control}
+                                                                        name="group"
+                                                                        onGroupsChange={field.onChange}
+                                                                    />
+                                                                </div>
+                                                            </AccordionContent>
+                                                        </AccordionItem>
+                                                    </Accordion>
+                                                </FormControl>
+                                                <FormMessage/>
+                                            </FormItem>
+                                        )
+                                    }}
+                                />
+                              <FormField
                                         control={form.control}
                                         name="admin"
                                         render={({field}) => {
-                                            const selectedAdmins = field.value || []
-                                            const handleAdminChange = (checked: boolean, adminUsername: string) => {
-                                                if (checked) {
-                                                    field.onChange([...selectedAdmins, adminUsername])
-                                                } else {
-                                                    field.onChange(selectedAdmins.filter((username: string) => username !== adminUsername))
-                                                }
-                                            }
                                             return (
                                                 <FormItem className="flex-1 w-full">
                                                     <FormLabel>{t('advanceSearch.byAdmin')}</FormLabel>
@@ -153,17 +126,10 @@ export default function AdvanceSearchModal({
                                                                 <AccordionTrigger
                                                                     className="border p-2 rounded-md">{t('advanceSearch.selectAdmin')}</AccordionTrigger>
                                                                 <AccordionContent>
-                                                                    <div className="w-full border rounded-md mt-2">
-                                                                        {adminData?.map((admin: any) => (
-                                                                            <label key={admin.username}
-                                                                                   className="flex w-full items-center gap-2 p-2 rounded-md hover:bg-accent cursor-pointer">
-                                                                                <Checkbox
-                                                                                    checked={selectedAdmins.includes(admin.username)}
-                                                                                    onCheckedChange={checked => handleAdminChange(!!checked, admin.username)}/>
-                                                                                <span
-                                                                                    className="text-sm">{admin.username}</span>
-                                                                            </label>)
-                                                                        )}
+                                                                    <div className="mt-2">
+                                                                        <AdminsSelector control={form.control}
+                                                                                        name="admin"
+                                                                                        onAdminsChange={field.onChange}/>
                                                                     </div>
                                                                 </AccordionContent>
                                                             </AccordionItem>
@@ -173,7 +139,7 @@ export default function AdvanceSearchModal({
                                                 </FormItem>
                                             )
                                         }}
-                                    />)}
+                                    />
                                 <FormField
                                     control={form.control}
                                     name="status"
@@ -195,6 +161,7 @@ export default function AdvanceSearchModal({
                                                         <Select
                                                             value={selectedStatus || ''}
                                                             onValueChange={value => field.onChange([value])}
+                                                            dir={dir}
                                                         >
                                                             <SelectTrigger>
                                                                 <SelectValue

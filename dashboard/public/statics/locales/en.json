@@ -308,7 +308,7 @@
         "expiredAfter": "Expired After",
         "expiredBefore": "Expired Before",
         "expiredAfterPlaceholder": "Select start date",
-        "expiredBeforePlaceholder": "Select end date", 
+        "expiredBeforePlaceholder": "Select end date",
         "dateRange": "Date Range",
         "deleteExpired": "Delete Expired",
         "deleting": "Deleting...",
@@ -464,6 +464,8 @@
     "reset": "Reset usage",
     "discordId": "Discord ID",
     "lifetime.used.traffic": "Total",
+    "adminsExistingWarning": "You dont create any <a>Admins</a> yet.",
+    "selectedAdmins": "{{count}} admins selected",
     "used": {
       "traffic": "Traffic Usage"
     },
@@ -1303,7 +1305,6 @@
   "statistics.selectTimeRangeDescription": "Choose a date range above to view traffic usage statistics.",
   "statistics.noDataInRange": "No Data in Selected Range",
   "statistics.noDataInRangeDescription": "No traffic data found for the selected time period. Try selecting a different date range.",
-
   "statistics.selectNodeToView": "Select a node to view detailed statistics",
   "statistics.userStatisticsDescription": "Overview of user account status and activity",
   "errors.connectionFailed": "Connection failed. Please check your network and try again.",
@@ -1361,17 +1362,17 @@
     "byUsername": "Username and Notes",
     "byProtocol": "Protocol Data",
     "byStatus": "Status",
-    "byAdmin":"Admin",
+    "byAdmin": "Admin",
     "byGroup": "Group",
     "selectGroup": "Select Group ... ",
     "selectAdmin": "Select Admin ... ",
     "selectStatus": "Select Status ... ",
     "status": {
-        "active": "Active",
-        "disable": "Disable",
-        "expired": "Expired",
-        "limited": "Limited",
-        "onHold": "On Hold"
+      "active": "Active",
+      "disable": "Disable",
+      "expired": "Expired",
+      "limited": "Limited",
+      "onHold": "On Hold"
     }
   }
 }

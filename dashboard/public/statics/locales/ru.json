@@ -430,6 +430,8 @@
     "reset": "Сброс использования",
     "discordId": "Discord ID",
     "lifetime.used.traffic": "Всего",
+    "adminsExistingWarning": "Вы еще не добавили ни одного <a>администратора</a>.",
+    "selectedAdmins": "{{count}} администратор(ов) выбрано",
     "used": {
       "traffic": "Использование трафика"
     },
@@ -1313,5 +1315,23 @@
   },
   "inboundTags": "Входящие теги",
   "searchInbounds": "Поиск входящих...",
-  "noInboundsFound": "Входящие не найдены"
+  "noInboundsFound": "Входящие не найдены",
+  "advanceSearch": {
+    "title": "Расширенный поиск",
+    "byUsername": "Имя пользователя и заметки",
+    "byProtocol": "Данные протокола",
+    "byStatus": "Статус",
+    "byAdmin": "Администратор",
+    "byGroup": "Группа",
+    "selectGroup": "Выберите группу ...",
+    "selectAdmin": "Выберите администратора ...",
+    "selectStatus": "Выберите статус ...",
+    "status": {
+      "active": "Активный",
+      "disable": "Отключён",
+      "expired": "Истёк",
+      "limited": "Ограничен",
+      "onHold": "Приостановлен"
+    }
+  }
 }

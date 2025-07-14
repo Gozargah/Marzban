@@ -317,7 +317,6 @@
   "test": "تست",
   "testing": "در حال تست",
   "confirm": "تایید",
-
   "admins": {
     "title": "مدیران",
     "description": "مدیریت مدیران سیستم",
@@ -367,6 +366,8 @@
     "reset": "ریست مصرف",
     "discordId": "شناسه دیسکورد",
     "lifetime.used.traffic": "مجموع کل",
+    "adminsExistingWarning": "شما هنوز هیچ <a>مدیری</a> اضافه نکرده‌اید.",
+    "selectedAdmins": "{{count}} مدیر انتخاب شده",
     "used": {
       "traffic": "مصرف ترافیک"
     },
@@ -1251,7 +1252,6 @@
   "statistics.waitingForDataDescription": "آمار لحظه‌ای در اینجا نمایش داده می‌شود پس از شروع جریان داده‌ها.",
   "statistics.noDataInRange": "داده‌ای در بازه انتخابی وجود ندارد",
   "statistics.noDataInRangeDescription": "هیچ داده ترافیکی برای دوره زمانی انتخابی یافت نشد. بازه زمانی متفاوتی را انتخاب کنید.",
-
   "statistics.selectNodeToView": "یک نود را انتخاب کنید تا آمار دقیق را مشاهده کنید",
   "statistics.userStatisticsDescription": "نمای کلی از وضعیت و فعالیت حساب‌های کاربری",
   "errors.connectionFailed": "اتصال با خطا مواجه شد. لطفاً شبکه خود را بررسی کنید و دوباره تلاش کنید.",
@@ -1306,5 +1306,23 @@
   },
   "inboundTags": "تگ‌های ورودی",
   "searchInbounds": "جستجوی ورودی‌ها...",
-  "noInboundsFound": "هیچ ورودی‌ای یافت نشد"
+  "noInboundsFound": "هیچ ورودی‌ای یافت نشد",
+  "advanceSearch": {
+    "title": "جستجوی پیشرفته",
+    "byUsername": "نام کاربری و یادداشت‌ها",
+    "byProtocol": "داده‌های پروتکل",
+    "byStatus": "وضعیت",
+    "byAdmin": "مدیر",
+    "byGroup": "گروه",
+    "selectGroup": "انتخاب گروه ...",
+    "selectAdmin": "انتخاب مدیر ...",
+    "selectStatus": "انتخاب وضعیت ...",
+    "status": {
+      "active": "فعال",
+      "disable": "غیرفعال",
+      "expired": "منقضی شده",
+      "limited": "محدود",
+      "onHold": "در انتظار"
+    }
+  }
 }
