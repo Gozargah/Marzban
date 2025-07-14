@@ -22,7 +22,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, type,
         ref={ref}
         {...props}
       />
-      {error && <span className="text-destructive text-sm my-1 inline-block">{error}</span>}
+      {error && <span className="my-1 inline-block text-sm text-destructive">{error}</span>}
     </div>
   )
 })

@@ -34,7 +34,7 @@ const DeleteAlertDialog = ({ host, isOpen, onClose, onConfirm }: { host: BaseHos
             <span dir={dir} dangerouslySetInnerHTML={{ __html: t('deleteHost.prompt', { name: host.remark ?? '' }) }} />
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className={cn(dir === 'rtl' && 'sm:gap-x-2 sm:flex-row-reverse')}>
+        <AlertDialogFooter className={cn(dir === 'rtl' && 'sm:flex-row-reverse sm:gap-x-2')}>
           <AlertDialogCancel onClick={onClose}>{t('cancel')}</AlertDialogCancel>
           <AlertDialogAction variant="destructive" onClick={onConfirm}>
             {t('delete')}
@@ -135,24 +135,24 @@ export default function SortableHost({ host, onEdit, onDuplicate, onDataChanged 
 
   return (
     <div ref={setNodeRef} className="cursor-default" style={style} {...attributes}>
-      <Card className="p-4 relative group h-full hover:bg-accent transition-colors">
+      <Card className="group relative h-full p-4 transition-colors hover:bg-accent">
         <div className="flex items-center gap-3">
-          <button style={{ cursor: cursor }} className="touch-none opacity-50 group-hover:opacity-100 transition-opacity" {...listeners}>
+          <button style={{ cursor: cursor }} className="touch-none opacity-50 transition-opacity group-hover:opacity-100" {...listeners}>
             <GripVertical className="h-5 w-5" />
             <span className="sr-only">Drag to reorder</span>
           </button>
-          <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onEdit(host)}>
+          <div className="min-w-0 flex-1 cursor-pointer" onClick={() => onEdit(host)}>
             <div className="flex items-center gap-2">
               <div className={cn('min-h-2 min-w-2 rounded-full', host.is_disabled ? 'bg-red-500' : 'bg-green-500')} />
-              <div className="font-medium truncate">{host.remark ?? ''}</div>
+              <div className="truncate font-medium">{host.remark ?? ''}</div>
             </div>
             <div className={cn('flex items-center gap-1', dir === 'rtl' && 'justify-start')}>
               <ChevronsLeftRightEllipsis className="h-4 w-4 text-muted-foreground" />
-              <div dir="ltr" className="text-sm text-muted-foreground truncate">
-                {host.address ?? ''}:{host.port === null ? <Settings className="h-3 w-3 inline" /> : host.port}
+              <div dir="ltr" className="truncate text-sm text-muted-foreground">
+                {host.address ?? ''}:{host.port === null ? <Settings className="inline h-3 w-3" /> : host.port}
               </div>
             </div>
-            <div className="flex items-center gap-1 text-sm text-muted-foreground truncate">
+            <div className="flex items-center gap-1 truncate text-sm text-muted-foreground">
               <CloudCog className="h-4 w-4" />
               <span>{t('inbound')}: </span>
               <span dir="ltr">{host.inbound_tag ?? ''}</span>
@@ -171,7 +171,7 @@ export default function SortableHost({ host, onEdit, onDuplicate, onDataChanged 
                   handleToggleStatus()
                 }}
               >
-                <Power className="h-4 w-4 mr-2" />
+                <Power className="mr-2 h-4 w-4" />
                 {host?.is_disabled ? t('enable') : t('disable')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -181,7 +181,7 @@ export default function SortableHost({ host, onEdit, onDuplicate, onDataChanged 
                   onEdit(host)
                 }}
               >
-                <Pencil className="h-4 w-4 mr-2" />
+                <Pencil className="mr-2 h-4 w-4" />
                 {t('edit')}
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -190,11 +190,11 @@ export default function SortableHost({ host, onEdit, onDuplicate, onDataChanged 
                   onDuplicate(host)
                 }}
               >
-                <Copy className="h-4 w-4 mr-2" />
+                <Copy className="mr-2 h-4 w-4" />
                 {t('duplicate')}
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={handleDeleteClick} className="text-destructive">
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Trash2 className="mr-2 h-4 w-4" />
                 {t('delete')}
               </DropdownMenuItem>
             </DropdownMenuContent>

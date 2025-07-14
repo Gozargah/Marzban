@@ -9,12 +9,12 @@ import { queryClient } from './utils/query-client'
 export default function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="theme">
-        <QueryClientProvider client={queryClient}>
-          <main>
-            <Toaster />
-            <RouterProvider router={router} />
-          </main>
-        </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <main>
+          <Toaster />
+          <RouterProvider router={router} />
+        </main>
+      </QueryClientProvider>
     </ThemeProvider>
   )
 }

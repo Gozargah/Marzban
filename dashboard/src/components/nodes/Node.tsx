@@ -31,7 +31,7 @@ const DeleteAlertDialog = ({ node, isOpen, onClose, onConfirm }: { node: NodeRes
             <span dir={dir} dangerouslySetInnerHTML={{ __html: t('deleteNode.prompt', { name: node.name }) }} />
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className={cn(dir === 'rtl' && 'sm:gap-x-2 sm:flex-row-reverse')}>
+        <AlertDialogFooter className={cn(dir === 'rtl' && 'sm:flex-row-reverse sm:gap-x-2')}>
           <AlertDialogCancel onClick={onClose}>{t('cancel')}</AlertDialogCancel>
           <AlertDialogAction variant="destructive" onClick={onConfirm}>
             {t('delete')}
@@ -78,9 +78,9 @@ export default function Node({ node, onEdit, onToggleStatus }: NodeProps) {
 
   return (
     <>
-      <Card className="p-4 relative group h-full hover:bg-accent transition-colors">
+      <Card className="group relative h-full p-4 transition-colors hover:bg-accent">
         <div className="flex items-center gap-3">
-          <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onEdit(node)}>
+          <div className="min-w-0 flex-1 cursor-pointer" onClick={() => onEdit(node)}>
             <div className="flex items-center gap-2">
               <div
                 className={cn(
@@ -88,16 +88,16 @@ export default function Node({ node, onEdit, onToggleStatus }: NodeProps) {
                   node.status === 'connected' ? 'bg-green-500' : node.status === 'connecting' ? 'bg-yellow-500' : node.status === 'error' ? 'bg-red-500' : 'bg-gray-500',
                 )}
               />
-              <div className="font-medium truncate">{node.name}</div>
+              <div className="truncate font-medium">{node.name}</div>
             </div>
-            <CardTitle className="text-sm text-muted-foreground truncate flex items-center gap-1">
+            <CardTitle className="flex items-center gap-1 truncate text-sm text-muted-foreground">
               <FlagFromIP ip={node.address} />
               <span>
                 {node.address}:{node.port}
               </span>
             </CardTitle>
             {(node.xray_version || node.node_version) && (
-              <div className="text-xs text-muted-foreground mt-1 flex gap-2">
+              <div className="mt-1 flex gap-2 text-xs text-muted-foreground">
                 {node.xray_version && (
                   <span>
                     {t('node.xrayVersion', { defaultValue: 'Xray Core Version' })}: {node.xray_version}
@@ -124,7 +124,7 @@ export default function Node({ node, onEdit, onToggleStatus }: NodeProps) {
                   onToggleStatus(node)
                 }}
               >
-                <Power className="h-4 w-4 mr-2" />
+                <Power className="mr-2 h-4 w-4" />
                 {node.status === 'disabled' ? t('enable') : t('disable')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -134,11 +134,11 @@ export default function Node({ node, onEdit, onToggleStatus }: NodeProps) {
                   onEdit(node)
                 }}
               >
-                <Pencil className="h-4 w-4 mr-2" />
+                <Pencil className="mr-2 h-4 w-4" />
                 {t('edit')}
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={handleDeleteClick} className="text-destructive">
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Trash2 className="mr-2 h-4 w-4" />
                 {t('delete')}
               </DropdownMenuItem>
             </DropdownMenuContent>

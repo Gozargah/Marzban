@@ -108,19 +108,7 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
       onOpenChange(false)
       form.reset()
     } catch (error: any) {
-      const fields = [
-        'name',
-        'data_limit',
-        'expire_duration',
-        'username_prefix',
-        'username_suffix',
-        'groups',
-        'status',
-        'on_hold_timeout',
-        'data_limit_reset_strategy',
-        'method',
-        'flow',
-      ]
+      const fields = ['name', 'data_limit', 'expire_duration', 'username_prefix', 'username_suffix', 'groups', 'status', 'on_hold_timeout', 'data_limit_reset_strategy', 'method', 'flow']
       handleError({ error, fields, form, contextKey: 'groups' })
     } finally {
       setLoading(false)
@@ -129,18 +117,18 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[1000px] h-full sm:h-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogContent className="h-full max-w-[1000px] sm:h-auto" onOpenAutoFocus={e => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle className={cn('text-xl text-start font-semibold', dir === 'rtl' && 'sm:text-right')}>
+          <DialogTitle className={cn('text-start text-xl font-semibold', dir === 'rtl' && 'sm:text-right')}>
             {editingUserTemplate ? t('editUserTemplateModal.title') : t('userTemplateModal.title')}
           </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
-            <div className="max-h-[76dvh] overflow-y-auto pr-4 pb-6 -mr-4 sm:max-h-[75dvh] flex flex-col sm:flex-row items-start gap-4 px-2">
-              <div className="flex-1 space-y-4 w-full">
-                <div className="flex flex-row gap-2 w-full ">
+            <div className="-mr-4 flex max-h-[76dvh] flex-col items-start gap-4 overflow-y-auto px-2 pb-6 pr-4 sm:max-h-[75dvh] sm:flex-row">
+              <div className="w-full flex-1 space-y-4">
+                <div className="flex w-full flex-row gap-2">
                   <FormField
                     control={form.control}
                     name="name"
@@ -226,7 +214,7 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
                             className="pr-10"
                             min="0"
                           />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium pointer-events-none">{t('userDialog.gb', { defaultValue: 'GB' })}</span>
+                          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">{t('userDialog.gb', { defaultValue: 'GB' })}</span>
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -285,7 +273,7 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
                             className="pr-14"
                             min="0"
                           />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium pointer-events-none">{t('time.days', { defaultValue: 'Days' })}</span>
+                          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">{t('time.days', { defaultValue: 'Days' })}</span>
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -318,7 +306,7 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
                       <FormItem className="flex-1">
                         <FormLabel>{t('templates.onHoldTimeout')}</FormLabel>
                         <FormControl>
-                          <div className="rounded-md border border-border flex flex-row overflow-hidden">
+                          <div className="flex flex-row overflow-hidden rounded-md border border-border">
                             <div className="flex-[3]">
                               <Input
                                 type="number"
@@ -349,7 +337,7 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
                   }}
                 />
               </div>
-              <div className="flex-1 space-y-4 w-full">
+              <div className="w-full flex-1 space-y-4">
                 <FormField
                   control={form.control}
                   name="method"
@@ -396,28 +384,14 @@ export default function UserTemplateModal({ isDialogOpen, onOpenChange, form, ed
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="groups"
-                  render={({ field }) => (
-                    <GroupsSelector
-                      control={form.control}
-                      name="groups"
-                      onGroupsChange={field.onChange}
-                    />
-                  )}
-                />
+                <FormField control={form.control} name="groups" render={({ field }) => <GroupsSelector control={form.control} name="groups" onGroupsChange={field.onChange} />} />
               </div>
             </div>
-            <div className="flex justify-end gap-2 pt-4 mt-4">
+            <div className="mt-4 flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 {t('cancel')}
               </Button>
-              <LoaderButton 
-                type="submit" 
-                isLoading={loading}
-                loadingText={editingUserTemplate ? t('modifying') : t('creating')}
-              >
+              <LoaderButton type="submit" isLoading={loading} loadingText={editingUserTemplate ? t('modifying') : t('creating')}>
                 {editingUserTemplate ? t('save') : t('create')}
               </LoaderButton>
             </div>

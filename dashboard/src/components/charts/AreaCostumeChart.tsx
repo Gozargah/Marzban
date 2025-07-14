@@ -50,13 +50,13 @@ const gradientDefs = {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div dir="ltr" className="bg-background/95 backdrop-blur-sm p-3 rounded-lg border shadow-lg">
+      <div dir="ltr" className="rounded-lg border bg-background/95 p-3 shadow-lg backdrop-blur-sm">
         <p className="text-sm font-medium text-muted-foreground">{label}</p>
         <div className="mt-1 space-y-1">
           {payload.map((entry: any, index: number) => (
             <div key={index} className="flex items-center gap-2">
               <div
-                className="w-3 h-3 rounded-full"
+                className="h-3 w-3 rounded-full"
                 style={{
                   backgroundColor: entry.color,
                   boxShadow: `0 0 8px ${entry.color}`,
@@ -252,7 +252,7 @@ export function AreaCostumeChart({ nodeId, currentStats, realtimeStats }: AreaCo
       const cpuUsage = Number(currentStats.cpu_usage ?? 0)
       const memUsed = Number(currentStats.mem_used ?? 0)
       const memTotal = Number(currentStats.mem_total ?? 1)
-      const ramPercentage = ((memUsed / memTotal) * 100)
+      const ramPercentage = (memUsed / memTotal) * 100
 
       displayCpuUsage = `${cpuUsage.toFixed(1)}%`
       displayRamUsage = `${ramPercentage.toFixed(1)}%`
@@ -261,7 +261,7 @@ export function AreaCostumeChart({ nodeId, currentStats, realtimeStats }: AreaCo
       const cpuUsage = Number(currentStats.cpu_usage ?? 0)
       const memUsed = Number(currentStats.mem_used ?? 0)
       const memTotal = Number(currentStats.mem_total ?? 1)
-      const ramPercentage = ((memUsed / memTotal) * 100)
+      const ramPercentage = (memUsed / memTotal) * 100
 
       displayCpuUsage = `${cpuUsage.toFixed(1)}%`
       displayRamUsage = `${ramPercentage.toFixed(1)}%`
@@ -279,33 +279,22 @@ export function AreaCostumeChart({ nodeId, currentStats, realtimeStats }: AreaCo
         <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
           <div className="flex items-center space-x-3">
             <div className="flex items-center gap-x-2">
-              {viewMode === 'realtime' ? (
-                <Clock className="h-5 w-5 flex-shrink-0" />
-              ) : (
-                <History className="h-5 w-5 flex-shrink-0" />
-              )}
-              <CardTitle className="text-lg md:text-xl">
-                {viewMode === 'realtime' ? t('statistics.realTimeData') : t('statistics.historicalData')}
-              </CardTitle>
+              {viewMode === 'realtime' ? <Clock className="h-5 w-5 flex-shrink-0" /> : <History className="h-5 w-5 flex-shrink-0" />}
+              <CardTitle className="text-lg md:text-xl">{viewMode === 'realtime' ? t('statistics.realTimeData') : t('statistics.historicalData')}</CardTitle>
             </div>
           </div>
 
           {/* Toggle Button - Always visible on mobile */}
           {nodeId !== undefined && (
-            <Button
-              variant={viewMode === 'realtime' ? 'default' : 'outline'}
-              size="sm"
-              onClick={toggleViewMode}
-              className="w-full sm:w-auto h-9 px-4 font-medium"
-            >
+            <Button variant={viewMode === 'realtime' ? 'default' : 'outline'} size="sm" onClick={toggleViewMode} className="h-9 w-full px-4 font-medium sm:w-auto">
               {viewMode === 'realtime' ? (
                 <>
-                  <History className="h-4 w-4 mr-2" />
+                  <History className="mr-2 h-4 w-4" />
                   <span>{t('statistics.viewHistorical')}</span>
                 </>
               ) : (
                 <>
-                  <Clock className="h-4 w-4 mr-2" />
+                  <Clock className="mr-2 h-4 w-4" />
                   <span>{t('statistics.viewRealtime')}</span>
                 </>
               )}
@@ -314,28 +303,17 @@ export function AreaCostumeChart({ nodeId, currentStats, realtimeStats }: AreaCo
         </div>
 
         {/* Description */}
-        <CardDescription className="text-sm text-muted-foreground">
-          {viewMode === 'realtime'
-            ? t('statistics.realtimeDescription')
-            : t('statistics.historicalDescription')
-          }
-        </CardDescription>
+        <CardDescription className="text-sm text-muted-foreground">{viewMode === 'realtime' ? t('statistics.realtimeDescription') : t('statistics.historicalDescription')}</CardDescription>
 
         {/* Stats Display - Responsive Grid */}
-        <div className="grid grid-cols-2 gap-4 sm:gap-6 pt-2">
-          <div className="flex flex-col items-center space-y-2 p-3 rounded-lg bg-muted/50">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              {t('statistics.cpuUsage')}
-            </span>
-            <span className="text-xl sm:text-2xl font-bold text-foreground">
-              {displayCpuUsage}
-            </span>
+        <div className="grid grid-cols-2 gap-4 pt-2 sm:gap-6">
+          <div className="flex flex-col items-center space-y-2 rounded-lg bg-muted/50 p-3">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t('statistics.cpuUsage')}</span>
+            <span className="text-xl font-bold text-foreground sm:text-2xl">{displayCpuUsage}</span>
           </div>
-          <div className="flex flex-col items-center space-y-2 p-3 rounded-lg bg-muted/50">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              {t('statistics.ramUsage')}
-            </span>
-            <span dir="ltr" className="text-xl sm:text-2xl font-bold text-foreground">
+          <div className="flex flex-col items-center space-y-2 rounded-lg bg-muted/50 p-3">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t('statistics.ramUsage')}</span>
+            <span dir="ltr" className="text-xl font-bold text-foreground sm:text-2xl">
               {displayRamUsage}
             </span>
           </div>
@@ -347,12 +325,8 @@ export function AreaCostumeChart({ nodeId, currentStats, realtimeStats }: AreaCo
         <div className="border-t bg-muted/30 p-4 md:p-6">
           <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
             <div className="space-y-1">
-              <h4 className="text-sm font-semibold text-foreground">
-                {t('statistics.selectTimeRange')}
-              </h4>
-              <p className="text-xs text-muted-foreground">
-                {t('statistics.selectTimeRangeDescription')}
-              </p>
+              <h4 className="text-sm font-semibold text-foreground">{t('statistics.selectTimeRange')}</h4>
+              <p className="text-xs text-muted-foreground">{t('statistics.selectTimeRangeDescription')}</p>
             </div>
             <div className="flex-shrink-0">
               <TimeRangeSelector onRangeChange={setDateRange} />
@@ -362,9 +336,9 @@ export function AreaCostumeChart({ nodeId, currentStats, realtimeStats }: AreaCo
       )}
 
       {/* Chart Content */}
-      <CardContent className="flex-1 p-4 md:p-6 pt-0">
+      <CardContent className="flex-1 p-4 pt-0 md:p-6">
         {isLoading ? (
-          <div className="h-[280px] sm:h-[320px] lg:h-[360px] w-full flex items-center justify-center">
+          <div className="flex h-[280px] w-full items-center justify-center sm:h-[320px] lg:h-[360px]">
             <Skeleton className="h-full w-full rounded-lg" />
           </div>
         ) : error ? (
@@ -377,7 +351,7 @@ export function AreaCostumeChart({ nodeId, currentStats, realtimeStats }: AreaCo
             className="h-[280px] sm:h-[320px] lg:h-[360px]"
           />
         ) : (
-          <div className="h-[280px] sm:h-[320px] lg:h-[360px] w-full">
+          <div className="h-[280px] w-full sm:h-[320px] lg:h-[360px]">
             <ChartContainer dir="ltr" config={chartConfig} className="h-full w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={statsHistory} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
@@ -396,12 +370,7 @@ export function AreaCostumeChart({ nodeId, currentStats, realtimeStats }: AreaCo
                     </linearGradient>
                   </defs>
 
-                  <CartesianGrid
-                    vertical={false}
-                    strokeDasharray="4 4"
-                    stroke="hsl(var(--border))"
-                    opacity={0.1}
-                  />
+                  <CartesianGrid vertical={false} strokeDasharray="4 4" stroke="hsl(var(--border))" opacity={0.1} />
 
                   <XAxis
                     dataKey="time"
@@ -447,12 +416,16 @@ export function AreaCostumeChart({ nodeId, currentStats, realtimeStats }: AreaCo
                     fill={`url(#${gradientDefs.cpu.id})`}
                     stroke={gradientDefs.cpu.color1}
                     strokeWidth={2}
-                    dot={viewMode === 'realtime' ? false : {
-                      fill: 'white',
-                      stroke: gradientDefs.cpu.color1,
-                      strokeWidth: 2,
-                      r: 3,
-                    }}
+                    dot={
+                      viewMode === 'realtime'
+                        ? false
+                        : {
+                            fill: 'white',
+                            stroke: gradientDefs.cpu.color1,
+                            strokeWidth: 2,
+                            r: 3,
+                          }
+                    }
                     activeDot={{
                       r: 6,
                       fill: 'white',
@@ -469,12 +442,16 @@ export function AreaCostumeChart({ nodeId, currentStats, realtimeStats }: AreaCo
                     fill={`url(#${gradientDefs.ram.id})`}
                     stroke={gradientDefs.ram.color1}
                     strokeWidth={2}
-                    dot={viewMode === 'realtime' ? false : {
-                      fill: 'white',
-                      stroke: gradientDefs.ram.color1,
-                      strokeWidth: 2,
-                      r: 3,
-                    }}
+                    dot={
+                      viewMode === 'realtime'
+                        ? false
+                        : {
+                            fill: 'white',
+                            stroke: gradientDefs.ram.color1,
+                            strokeWidth: 2,
+                            r: 3,
+                          }
+                    }
                     activeDot={{
                       r: 6,
                       fill: 'white',

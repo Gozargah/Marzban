@@ -74,23 +74,9 @@ export function TimeRangeSelector({ className, onRangeChange, initialRange }: Ti
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="end">
           {isPersianLocale ? (
-            <PersianCalendar
-              mode="range"
-              defaultMonth={date?.from}
-              selected={date}
-              onSelect={handleSelect}
-              numberOfMonths={2}
-              disabled={{ after: new Date() }}
-            />
+            <PersianCalendar mode="range" defaultMonth={date?.from} selected={date} onSelect={handleSelect} numberOfMonths={2} disabled={{ after: new Date() }} />
           ) : (
-            <Calendar
-              mode="range"
-              defaultMonth={date?.from}
-              selected={date}
-              onSelect={handleSelect}
-              numberOfMonths={2}
-              disabled={{ after: new Date() }}
-            />
+            <Calendar mode="range" defaultMonth={date?.from} selected={date} onSelect={handleSelect} numberOfMonths={2} disabled={{ after: new Date() }} />
           )}
         </PopoverContent>
       </Popover>

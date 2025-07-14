@@ -44,8 +44,9 @@ export default function SetOwnerModal({ open, onClose, username, currentOwner, o
       setIsLoading(true)
       setIsError(false)
       import('@/service/api').then(api => {
-        api.getAdmins()
-          .then((admins) => {
+        api
+          .getAdmins()
+          .then(admins => {
             setAdmins(admins)
             setIsLoading(false)
           })
@@ -79,20 +80,20 @@ export default function SetOwnerModal({ open, onClose, username, currentOwner, o
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md w-full">
+      <DialogContent className="w-full max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {t('setOwnerModal.title', { defaultValue: 'Set Owner' })}
-          </DialogTitle>
+          <DialogTitle className="flex items-center gap-2">{t('setOwnerModal.title', { defaultValue: 'Set Owner' })}</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col gap-4 mt-2">
+        <div className="mt-2 flex flex-col gap-4">
           <div>
-            <div className="text-sm text-muted-foreground mb-3">
+            <div className="mb-3 text-sm text-muted-foreground">
               {t('setOwnerModal.currentOwner', { defaultValue: 'Current owner:' })}
-              <span className="font-bold ml-4">{currentOwner || t('setOwnerModal.none', { defaultValue: 'None' })}</span>
+              <span className="ml-4 font-bold">{currentOwner || t('setOwnerModal.none', { defaultValue: 'None' })}</span>
             </div>
             {isLoading ? (
-              <div className="flex items-center justify-center p-2"><Loader2 className="animate-spin" /></div>
+              <div className="flex items-center justify-center p-2">
+                <Loader2 className="animate-spin" />
+              </div>
             ) : isError ? (
               <div className="p-2 text-destructive">{t('setOwnerModal.loadError', { defaultValue: 'Failed to load admins.' })}</div>
             ) : admins.length > 0 ? (
@@ -114,12 +115,12 @@ export default function SetOwnerModal({ open, onClose, username, currentOwner, o
               </Button>
             )}
           </div>
-          <div className="flex justify-end gap-2 mt-4">
+          <div className="mt-4 flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose} disabled={submitting}>
               {t('cancel', { defaultValue: 'Cancel' })}
             </Button>
             <Button type="button" onClick={handleSubmit} disabled={!selectedAdmin || submitting}>
-              {submitting && <Loader2 className="animate-spin mr-2 h-4 w-4" />}
+              {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t('setOwnerModal.confirm', { defaultValue: 'Set Owner' })}
             </Button>
           </div>
@@ -127,4 +128,4 @@ export default function SetOwnerModal({ open, onClose, username, currentOwner, o
       </DialogContent>
     </Dialog>
   )
-} 
+}

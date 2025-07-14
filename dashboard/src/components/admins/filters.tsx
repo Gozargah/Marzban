@@ -61,18 +61,18 @@ export function Filters<T extends BaseFilters>({ filters, onFilterChange }: Filt
     <div dir={dir} className="flex items-center gap-4 pb-4">
       {/* Search Input */}
       <div className="relative w-full md:w-[calc(100%/3-10px)]">
-        <SearchIcon className={cn('absolute', dir === 'rtl' ? 'right-2' : 'left-2 ', 'top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 text-input-placeholder')} />
-        <Input placeholder={t('search')} value={search} onChange={handleSearchChange} className="pl-8 pr-10 bg-[--background-custom]" />
+        <SearchIcon className={cn('absolute', dir === 'rtl' ? 'right-2' : 'left-2', 'top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 text-input-placeholder')} />
+        <Input placeholder={t('search')} value={search} onChange={handleSearchChange} className="bg-[--background-custom] pl-8 pr-10" />
         {search && (
           <button onClick={clearSearch} className={cn('absolute', dir === 'rtl' ? 'left-2' : 'right-2', 'top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600')}>
-            <X className="w-4 h-4" />
+            <X className="h-4 w-4" />
           </button>
         )}
       </div>
       {/* Refresh Button */}
-      <div className="flex items-center gap-2 h-full">
+      <div className="flex h-full items-center gap-2">
         <Button size="icon-md" onClick={() => refetch()} variant="ghost" className="flex items-center gap-2 border">
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
     </div>
@@ -85,7 +85,11 @@ export const PaginationControls = () => {
   const [itemsPerPage, setItemsPerPage] = useState(20)
   const [currentPage, setCurrentPage] = useState(0)
   const [isChangingPage, setIsChangingPage] = useState(false)
-  const { data: adminsData, isLoading, isFetching } = useGetAdmins({
+  const {
+    data: adminsData,
+    isLoading,
+    isFetching,
+  } = useGetAdmins({
     limit: itemsPerPage,
     offset: currentPage * itemsPerPage,
   })
@@ -132,7 +136,7 @@ export const PaginationControls = () => {
   const paginationRange = getPaginationRange(currentPage, totalPages)
 
   return (
-    <div className="mt-4 flex flex-col-reverse md:flex-row gap-4 items-center justify-between">
+    <div className="mt-4 flex flex-col-reverse items-center justify-between gap-4 md:flex-row">
       <div className="flex items-center gap-2">
         <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange} disabled={isPageLoading}>
           <SelectTrigger className="w-[70px]">
@@ -148,7 +152,7 @@ export const PaginationControls = () => {
             </SelectGroup>
           </SelectContent>
         </Select>
-        <span className="text-sm text-muted-foreground whitespace-nowrap">{t('itemsPerPage')}</span>
+        <span className="whitespace-nowrap text-sm text-muted-foreground">{t('itemsPerPage')}</span>
       </div>
 
       <Pagination dir="ltr" className={`md:justify-end ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
@@ -171,7 +175,7 @@ export const PaginationControls = () => {
                 >
                   {isLoading && currentPage === pageNumber ? (
                     <div className="flex items-center">
-                      <LoaderCircle className="h-3 w-3 mr-1 animate-spin" />
+                      <LoaderCircle className="mr-1 h-3 w-3 animate-spin" />
                       {(pageNumber as number) + 1}
                     </div>
                   ) : (

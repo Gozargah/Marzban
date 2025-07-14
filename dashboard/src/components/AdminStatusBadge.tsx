@@ -18,22 +18,22 @@ export const AdminStatusBadge: FC<AdminStatusProps> = ({ isSudo, isDisabled }) =
       return {
         color: statusColors['disabled']?.statusColor || 'bg-gray-400 text-white',
         icon: null,
-        text: t('disabled')
+        text: t('disabled'),
       }
     }
-    
+
     if (isSudo) {
       return {
         color: 'bg-violet-500 text-white',
         icon: Shield,
-        text: t('sudo')
+        text: t('sudo'),
       }
     }
-    
+
     return {
       color: statusColors['active']?.statusColor || 'bg-green-500 text-white',
       icon: UserRound,
-      text: t('admin')
+      text: t('admin'),
     }
   }
 
@@ -41,18 +41,10 @@ export const AdminStatusBadge: FC<AdminStatusProps> = ({ isSudo, isDisabled }) =
   const StatusIcon = statusInfo.icon
 
   return (
-    <Badge
-      className={cn(
-        'flex items-center justify-center rounded-full px-2 py-1 w-fit gap-x-2 pointer-events-none',
-        statusInfo.color,
-        'py-2.5 h-6 px-1.5 sm:py-0.5 sm:h-auto sm:px-1'
-      )}
-    >
+    <Badge className={cn('pointer-events-none flex w-fit items-center justify-center gap-x-2 rounded-full px-2 py-1', statusInfo.color, 'h-6 px-1.5 py-2.5 sm:h-auto sm:px-1 sm:py-0.5')}>
       <div className="flex items-center gap-1 sm:px-1">
-        {StatusIcon && <StatusIcon className="w-4 h-4 sm:w-3 sm:h-3" />}
-        <span className="capitalize text-nowrap font-medium text-xs">
-          {statusInfo.text}
-        </span>
+        {StatusIcon && <StatusIcon className="h-4 w-4 sm:h-3 sm:w-3" />}
+        <span className="text-nowrap text-xs font-medium capitalize">{statusInfo.text}</span>
       </div>
     </Badge>
   )

@@ -10,13 +10,7 @@ interface EmptyStateProps {
   className?: string
 }
 
-export function EmptyState({ 
-  type, 
-  title, 
-  description, 
-  icon, 
-  className = "max-h-[300px] min-h-[200px]" 
-}: EmptyStateProps) {
+export function EmptyState({ type, title, description, icon, className = 'max-h-[300px] min-h-[200px]' }: EmptyStateProps) {
   const { t } = useTranslation()
 
   const getEmptyStateContent = () => {
@@ -35,7 +29,7 @@ export function EmptyState({
         }
       case 'loading':
         return {
-          icon: icon || <Activity className="h-12 w-12 text-muted-foreground/50 animate-pulse" />,
+          icon: icon || <Activity className="h-12 w-12 animate-pulse text-muted-foreground/50" />,
           title: title || t('loading'),
           description: description || t('statistics.loadingDescription'),
         }
@@ -57,36 +51,22 @@ export function EmptyState({
   const content = getEmptyStateContent()
 
   return (
-    <div className={`w-full flex flex-col items-center justify-center ${className}`}>
-      <div className="flex flex-col items-center gap-4 max-w-md text-center">
-        <div className="flex items-center justify-center w-20 h-20 rounded-full bg-muted/30">
-          {content.icon}
-        </div>
+    <div className={`flex w-full flex-col items-center justify-center ${className}`}>
+      <div className="flex max-w-md flex-col items-center gap-4 text-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted/30">{content.icon}</div>
         <div className="space-y-2">
           <h3 className="text-lg font-semibold text-foreground">{content.title}</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">{content.description}</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">{content.description}</p>
         </div>
       </div>
     </div>
   )
 }
 
-export function ChartEmptyState({ 
-  type, 
-  title, 
-  description, 
-  icon, 
-  className = "max-h-[300px] min-h-[200px]" 
-}: EmptyStateProps) {
+export function ChartEmptyState({ type, title, description, icon, className = 'max-h-[300px] min-h-[200px]' }: EmptyStateProps) {
   return (
     <CardContent className="pt-6">
-      <EmptyState 
-        type={type} 
-        title={title} 
-        description={description} 
-        icon={icon} 
-        className={className}
-      />
+      <EmptyState type={type} title={title} description={description} icon={icon} className={className} />
     </CardContent>
   )
-} 
+}

@@ -10,7 +10,7 @@ export const useAdmin = () => {
     data: admin,
     isLoading,
     error,
-    refetch
+    refetch,
   } = useGetCurrentAdmin({
     query: {
       // Use initial data from router loader if available
@@ -26,8 +26,8 @@ export const useAdmin = () => {
       // Retry failed requests up to 2 times
       retry: 2,
       // Don't refetch on reconnect if we have fresh data
-      refetchOnReconnect: 'always'
-    }
+      refetchOnReconnect: 'always',
+    },
   })
 
   const clearAdmin = () => {

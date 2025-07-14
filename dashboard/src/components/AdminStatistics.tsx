@@ -16,30 +16,30 @@ const AdminsStatistics = ({ data }: AdminsStatisticsProps) => {
 
   return (
     <div className="flex flex-col gap-y-4 pb-4">
-      <div className={cn('flex flex-col lg:flex-row items-center justify-between gap-x-4 gap-y-4', dir === 'rtl' && 'lg:flex-row-reverse')}>
+      <div className={cn('flex flex-col items-center justify-between gap-x-4 gap-y-4 lg:flex-row', dir === 'rtl' && 'lg:flex-row-reverse')}>
         {/* Online Users */}
-        <Card dir={dir} className="py-6 px-4 w-full rounded-md">
+        <Card dir={dir} className="w-full rounded-md px-4 py-6">
           <CardTitle className="flex items-center justify-between gap-x-4">
             <div className="flex items-center gap-x-4">
               <span className="">{t('admins.total')}</span>
             </div>
-            <span className="text-3xl mx-2">{data.length}</span>
+            <span className="mx-2 text-3xl">{data.length}</span>
           </CardTitle>
         </Card>
-        <Card dir={dir} className="py-6 px-4 w-full rounded-md">
+        <Card dir={dir} className="w-full rounded-md px-4 py-6">
           <CardTitle className="flex items-center justify-between gap-x-4">
             <div className="flex items-center gap-x-4">
               <span className="">{t('admins.active')}</span>
             </div>
-            <span className="text-3xl mx-2">{numberWithCommas(data.length - filter(data, 'is_disabled').length)}</span>
+            <span className="mx-2 text-3xl">{numberWithCommas(data.length - filter(data, 'is_disabled').length)}</span>
           </CardTitle>
         </Card>
-        <Card dir={dir} className="py-6 px-4 w-full rounded-md">
+        <Card dir={dir} className="w-full rounded-md px-4 py-6">
           <CardTitle className="flex items-center justify-between gap-x-4">
             <div className="flex items-center gap-x-4">
               <span className="">{t('admins.disable')}</span>
             </div>
-            <span className="text-3xl mx-2">{numberWithCommas(filter(data, 'is_disabled').length)}</span>
+            <span className="mx-2 text-3xl">{numberWithCommas(filter(data, 'is_disabled').length)}</span>
           </CardTitle>
         </Card>
       </div>

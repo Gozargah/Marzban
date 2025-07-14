@@ -95,7 +95,7 @@ export default function UserTemplates() {
   }
 
   return (
-    <div className="flex flex-col gap-2 w-full items-start">
+    <div className="flex w-full flex-col items-start gap-2">
       <div className="w-full transform-gpu animate-fade-in" style={{ animationDuration: '400ms' }}>
         <PageHeader
           title="templates.title"
@@ -109,12 +109,14 @@ export default function UserTemplates() {
         <Separator />
       </div>
 
-      <div className="flex-1 space-y-4 p-4 pt-6 w-full">
+      <div className="w-full flex-1 space-y-4 p-4 pt-6">
         <div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12 transform-gpu animate-slide-up"
+          className="mb-12 grid transform-gpu animate-slide-up grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
           style={{ animationDuration: '500ms', animationDelay: '100ms', animationFillMode: 'both' }}
         >
-          {userTemplates?.map((template: UserTemplateResponse) => <UserTemplate onEdit={handleEdit} template={template} key={template.id} onToggleStatus={handleToggleStatus} />)}
+          {userTemplates?.map((template: UserTemplateResponse) => (
+            <UserTemplate onEdit={handleEdit} template={template} key={template.id} onToggleStatus={handleToggleStatus} />
+          ))}
         </div>
       </div>
 

@@ -286,13 +286,13 @@ export default function NodeLogs() {
     }
 
     const container = logsContainerRef.current
-    
+
     if (autoScroll) {
       // If auto-scroll is enabled, always scroll to bottom immediately
       container.scrollTop = container.scrollHeight
       lastScrollTopRef.current = container.scrollHeight
       wasAtBottomRef.current = true
-      
+
       // Update visible window for windowed rendering
       if (filteredLogs.length > 0) {
         const maxStartIndex = Math.max(0, filteredLogs.length - visibleItemsCount)
@@ -301,17 +301,17 @@ export default function NodeLogs() {
     } else {
       // Auto-scroll is OFF - force maintain exact position
       const savedScrollTop = lastScrollTopRef.current
-      
+
       // Use multiple methods to ensure position is maintained
       container.scrollTop = savedScrollTop
-      
+
       // Double-check with requestAnimationFrame
       requestAnimationFrame(() => {
         if (container && container.scrollTop !== savedScrollTop) {
           container.scrollTop = savedScrollTop
         }
       })
-      
+
       // Triple-check with setTimeout as fallback
       setTimeout(() => {
         if (container && container.scrollTop !== savedScrollTop) {
@@ -322,43 +322,46 @@ export default function NodeLogs() {
   }, [filteredLogs, autoScroll, visibleItemsCount])
 
   // Handle scroll events - improved logic
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    if (isNodeSwitchingRef.current) return
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      if (isNodeSwitchingRef.current) return
 
-    const container = e.currentTarget
-    const scrollTop = container.scrollTop
-    const scrollHeight = container.scrollHeight
-    const clientHeight = container.clientHeight
-    
-    // Always update last scroll position when user manually scrolls
-    lastScrollTopRef.current = scrollTop
-    
-    // Calculate visible start index for windowed rendering
-    const firstVisibleIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - bufferSize)
-    setVisibleStartIndex(firstVisibleIndex)
-    
-    // Check if user is at the bottom
-    const isAtBottom = scrollHeight - scrollTop - clientHeight <= 5
-    wasAtBottomRef.current = isAtBottom
-    
-    // Auto-disable auto-scroll only if user deliberately scrolls up
-    if (autoScroll && !isAtBottom) {
-      setAutoScroll(false)
-    }
-  }, [autoScroll, bufferSize, itemHeight])
+      const container = e.currentTarget
+      const scrollTop = container.scrollTop
+      const scrollHeight = container.scrollHeight
+      const clientHeight = container.clientHeight
+
+      // Always update last scroll position when user manually scrolls
+      lastScrollTopRef.current = scrollTop
+
+      // Calculate visible start index for windowed rendering
+      const firstVisibleIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - bufferSize)
+      setVisibleStartIndex(firstVisibleIndex)
+
+      // Check if user is at the bottom
+      const isAtBottom = scrollHeight - scrollTop - clientHeight <= 5
+      wasAtBottomRef.current = isAtBottom
+
+      // Auto-disable auto-scroll only if user deliberately scrolls up
+      if (autoScroll && !isAtBottom) {
+        setAutoScroll(false)
+      }
+    },
+    [autoScroll, bufferSize, itemHeight],
+  )
 
   const scrollToBottom = () => {
     if (logsContainerRef.current) {
       const container = logsContainerRef.current
-      
+
       // Immediately scroll to bottom
       container.scrollTop = container.scrollHeight
       lastScrollTopRef.current = container.scrollHeight
       wasAtBottomRef.current = true
-      
+
       // Enable auto-scroll
       setAutoScroll(true)
-      
+
       // Update visible window
       if (filteredLogs.length > 0) {
         const maxStartIndex = Math.max(0, filteredLogs.length - visibleItemsCount)
@@ -385,7 +388,7 @@ export default function NodeLogs() {
       container.scrollTop = container.scrollHeight
       lastScrollTopRef.current = container.scrollHeight
       wasAtBottomRef.current = true
-      
+
       if (filteredLogs.length > 0) {
         const maxStartIndex = Math.max(0, filteredLogs.length - visibleItemsCount)
         setVisibleStartIndex(maxStartIndex)
@@ -473,16 +476,16 @@ export default function NodeLogs() {
   }, [itemHeight, bufferSize, filteredLogs.length])
 
   return (
-    <div className={cn('flex flex-col gap-2 w-full', dir === 'rtl' && 'rtl')}>
+    <div className={cn('flex w-full flex-col gap-2', dir === 'rtl' && 'rtl')}>
       <div className="w-full pt-2">
-        <div className={cn('flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-end md:justify-between gap-4 mb-4 py-2')}>
-          <div className={cn('flex flex-col sm:flex-row items-start sm:items-center gap-4')}>
+        <div className={cn('mb-4 flex flex-col gap-4 space-y-4 py-2 md:flex-row md:items-end md:justify-between md:space-y-0')}>
+          <div className={cn('flex flex-col items-start gap-4 sm:flex-row sm:items-center')}>
             <div className="w-full sm:w-auto">
               <Label htmlFor="node-select" className="mb-1 block text-sm">
                 {t('nodes.title')}
               </Label>
               <Select value={selectedNode.toString()} onValueChange={value => handleNodeChange(Number(value))}>
-                <SelectTrigger id="node-select" className="w-full sm:w-[200px] h-8 text-xs sm:text-sm">
+                <SelectTrigger id="node-select" className="h-8 w-full text-xs sm:w-[200px] sm:text-sm">
                   <SelectValue placeholder={t('nodes.selectNode')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -501,7 +504,7 @@ export default function NodeLogs() {
               </Label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-full sm:w-auto flex items-center justify-between gap-2 h-8 text-xs sm:text-sm">
+                  <Button variant="outline" className="flex h-8 w-full items-center justify-between gap-2 text-xs sm:w-auto sm:text-sm">
                     <div className="flex items-center gap-1">
                       <FilterIcon size={12} className="mr-1" />
                       <span>{t('nodes.logs.levels', { defaultValue: 'Log Levels' })}</span>
@@ -515,7 +518,7 @@ export default function NodeLogs() {
                 <DropdownMenuContent align="start" className="w-[180px]">
                   {(['debug', 'info', 'warning', 'error'] as LogLevel[]).map(level => (
                     <DropdownMenuCheckboxItem key={level} checked={selectedLevels.includes(level)} onCheckedChange={() => toggleLogLevel(level)} className="flex items-center gap-2 text-xs sm:text-sm">
-                      <div className="flex items-center gap-2 w-full">
+                      <div className="flex w-full items-center gap-2">
                         <Badge variant="outline" className={cn('shrink-0', logBadgeColors[level], 'text-xs')}>
                           {getLevelName(level)}
                         </Badge>
@@ -537,32 +540,27 @@ export default function NodeLogs() {
                   placeholder={t('nodes.logs.search', { defaultValue: 'Search logs' })}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="pl-7 w-full sm:w-[220px] h-8 text-xs sm:text-sm"
+                  className="h-8 w-full pl-7 text-xs sm:w-[220px] sm:text-sm"
                 />
               </div>
             </div>
           </div>
 
           <div className={cn('flex flex-wrap items-center gap-2', dir === 'rtl' && 'flex-row-reverse')}>
-            <div className={cn('flex items-center gap-1 mr-1', dir === 'rtl' && 'flex-row-reverse ml-1 mr-0')}>
-              <Label htmlFor="show-timestamps" className="text-xs whitespace-nowrap">
-                <Clock size={10} className={cn('inline mr-1 opacity-70', dir === 'rtl' && 'ml-1 mr-0')} />
+            <div className={cn('mr-1 flex items-center gap-1', dir === 'rtl' && 'ml-1 mr-0 flex-row-reverse')}>
+              <Label htmlFor="show-timestamps" className="whitespace-nowrap text-xs">
+                <Clock size={10} className={cn('mr-1 inline opacity-70', dir === 'rtl' && 'ml-1 mr-0')} />
                 {t('nodes.logs.timestamps', { defaultValue: 'Timestamps' })}
               </Label>
               <Switch id="show-timestamps" checked={showTimestamps} onCheckedChange={setShowTimestamps} className="scale-75 sm:scale-90" />
             </div>
 
-            <div className={cn('flex items-center gap-1 mr-1', dir === 'rtl' && 'flex-row-reverse ml-1 mr-0')}>
-              <Label htmlFor="auto-scroll" className="text-xs whitespace-nowrap">
-                <ArrowDownCircle size={10} className={cn('inline mr-1 opacity-70', dir === 'rtl' && 'ml-1 mr-0')} />
+            <div className={cn('mr-1 flex items-center gap-1', dir === 'rtl' && 'ml-1 mr-0 flex-row-reverse')}>
+              <Label htmlFor="auto-scroll" className="whitespace-nowrap text-xs">
+                <ArrowDownCircle size={10} className={cn('mr-1 inline opacity-70', dir === 'rtl' && 'ml-1 mr-0')} />
                 {t('nodes.logs.autoScroll', { defaultValue: 'Auto Scroll' })}
               </Label>
-              <Switch
-                id="auto-scroll"
-                checked={autoScroll}
-                onCheckedChange={setAutoScroll}
-                className="scale-75 sm:scale-90"
-              />
+              <Switch id="auto-scroll" checked={autoScroll} onCheckedChange={setAutoScroll} className="scale-75 sm:scale-90" />
             </div>
 
             <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
@@ -592,10 +590,10 @@ export default function NodeLogs() {
 
               <PopoverContent className="w-56 p-3" align="end">
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-medium text-sm">{t('nodes.logs.memory')}</h4>
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-medium">{t('nodes.logs.memory')}</h4>
                     {isUnlimited && (
-                      <Badge variant="outline" className="text-xs text-amber-500 border-amber-500 dark:text-amber-400 dark:border-amber-400">
+                      <Badge variant="outline" className="border-amber-500 text-xs text-amber-500 dark:border-amber-400 dark:text-amber-400">
                         <AlertTriangleIcon size={10} className="mr-1" />
                         {t('nodes.logs.unlimited')}
                       </Badge>
@@ -624,7 +622,7 @@ export default function NodeLogs() {
                     </div>
                   </div>
 
-                  <div className="pt-2 text-[10px] text-muted-foreground flex items-start gap-1">
+                  <div className="flex items-start gap-1 pt-2 text-[10px] text-muted-foreground">
                     <AlertTriangleIcon size={10} className="mt-0.5 shrink-0 text-amber-500" />
                     <span>{t('nodes.logs.memoryWarning')}</span>
                   </div>
@@ -644,31 +642,31 @@ export default function NodeLogs() {
 
         <Card className="transform-gpu animate-slide-up" style={{ animationDuration: '500ms', animationFillMode: 'both' }}>
           <CardContent dir="ltr" className="p-4">
-            <div className="h-[600px] w-full rounded-md overflow-auto" ref={logsContainerRef} onScroll={handleScroll}>
+            <div className="h-[600px] w-full overflow-auto rounded-md" ref={logsContainerRef} onScroll={handleScroll}>
               <div className="p-1">
                 {isLoading ? (
-                  <div className="flex items-center justify-center h-full animate-pulse">
+                  <div className="flex h-full animate-pulse items-center justify-center">
                     <p className="text-muted-foreground">{t('loading')}</p>
                   </div>
                 ) : selectedNode === 0 ? (
-                  <div className="flex items-center justify-center h-full">
+                  <div className="flex h-full items-center justify-center">
                     <p className="text-muted-foreground">{t('nodes.selectNode')}</p>
                   </div>
                 ) : filteredLogs.length > 0 ? (
                   <div style={{ height: `${totalContentHeight}px`, position: 'relative' }}>
                     <div style={{ position: 'absolute', top: 0, left: 0, right: 0, transform: `translateY(${offsetY}px)` }}>
                       {visibleLogs.map((log, index) => (
-                        <div key={`${log.timestamp}-${visibleStartIndex + index}`} className="text-sm font-mono p-2 mb-1 border-b border-muted last:border-b-0 hover:bg-muted/20 transition-colors">
+                        <div key={`${log.timestamp}-${visibleStartIndex + index}`} className="mb-1 border-b border-muted p-2 font-mono text-sm transition-colors last:border-b-0 hover:bg-muted/20">
                           <div className="flex flex-wrap items-start gap-2">
                             {showTimestamps && (
-                              <div className="shrink-0 text-xs text-muted-foreground flex items-center gap-1 min-w-[85px]">
+                              <div className="flex min-w-[85px] shrink-0 items-center gap-1 text-xs text-muted-foreground">
                                 <Clock size={10} className="opacity-60" />
                                 {formatTimestamp(log.timestamp)}
                               </div>
                             )}
                             <Badge variant="outline" className={`shrink-0 ${logBadgeColors[log.level]}`}>
                               <Terminal size={12} className={`mr-1 ${logIconColors[log.level]}`} />
-                              <span className={cn(logLevelColors[log.level], 'text-xs font-body')}>{getLevelName(log.level)}</span>
+                              <span className={cn(logLevelColors[log.level], 'font-body text-xs')}>{getLevelName(log.level)}</span>
                             </Badge>
                             <span className="break-words text-foreground">{log.message}</span>
                           </div>
@@ -677,7 +675,7 @@ export default function NodeLogs() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center h-full">
+                  <div className="flex h-full items-center justify-center">
                     <p className="text-muted-foreground">{t('nodes.logs.noLogs')}</p>
                   </div>
                 )}

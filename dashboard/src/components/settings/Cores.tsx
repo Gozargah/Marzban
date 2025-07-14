@@ -104,9 +104,9 @@ export default function Cores({ isDialogOpen, onOpenChange, cores, onEditCore, o
   }
 
   return (
-    <div className="flex-1 w-full">
+    <div className="w-full flex-1">
       <ScrollArea dir={dir} className="h-[calc(100vh-8rem)]">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-6 w-full">
+        <div className="grid w-full grid-cols-1 gap-4 pt-6 md:grid-cols-2 lg:grid-cols-3">
           {(cores || coresData?.cores)?.map((core: CoreResponse) => (
             <Core
               key={core.id}
@@ -120,13 +120,7 @@ export default function Cores({ isDialogOpen, onOpenChange, cores, onEditCore, o
         </div>
       </ScrollArea>
 
-      <CoreConfigModal
-        isDialogOpen={!!isDialogOpen}
-        onOpenChange={handleModalClose}
-        form={form}
-        editingCore={!!editingCore}
-        editingCoreId={editingCore?.id}
-      />
+      <CoreConfigModal isDialogOpen={!!isDialogOpen} onOpenChange={handleModalClose} form={form} editingCore={!!editingCore} editingCoreId={editingCore?.id} />
     </div>
   )
 }

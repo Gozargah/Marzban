@@ -15,7 +15,7 @@ export function parseUserAgent(userAgent: string | null | undefined): ClientInfo
     return {
       name: 'Unknown',
       isKnownClient: false,
-      iconType: 'unknown'
+      iconType: 'unknown',
     }
   }
 
@@ -50,12 +50,12 @@ export function parseUserAgent(userAgent: string | null | undefined): ClientInfo
     if (client.pattern.test(ua)) {
       // Try to extract version
       const versionMatch = userAgent.match(new RegExp(`${client.name.toLowerCase()}[/\\s]([\\d.]+)`, 'i'))
-      
+
       return {
         name: client.name,
         version: versionMatch?.[1],
         isKnownClient: true,
-        iconType: client.iconType
+        iconType: client.iconType,
       }
     }
   }
@@ -88,14 +88,14 @@ export function parseUserAgent(userAgent: string | null | undefined): ClientInfo
     return {
       name: appMatch[1],
       isKnownClient: false,
-      iconType: 'unknown'
+      iconType: 'unknown',
     }
   }
 
   return {
     name: 'Unknown',
     isKnownClient: false,
-    iconType: 'unknown'
+    iconType: 'unknown',
   }
 }
 
@@ -113,4 +113,4 @@ export function formatClientInfo(clientInfo: ClientInfo): string {
   }
 
   return result
-} 
+}

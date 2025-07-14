@@ -12,16 +12,14 @@ import { Card, CardContent } from '@/components/ui/card'
 const Statistics = () => {
   const { t } = useTranslation()
   const [selectedServer, setSelectedServer] = useState<string>('master')
-  
 
-  
   // Fetch nodes for the selector
   const { data: nodesData, isLoading: isLoadingNodes } = useGetNodes(undefined, {
     query: {
       enabled: true,
     },
   })
-  
+
   // Use the getSystemStats API with proper query key and refetch interval
   const { data, error, isLoading } = useQuery({
     queryKey: getGetSystemStatsQueryKey(),
@@ -33,32 +31,34 @@ const Statistics = () => {
   })
 
   return (
-    <div className="flex flex-col gap-2 w-full items-start">
+    <div className="flex w-full flex-col items-start gap-2">
       <div className="w-full transform-gpu animate-fade-in" style={{ animationDuration: '400ms' }}>
         <PageHeader title="statistics" description="monitorServers" />
         <Separator />
       </div>
 
       {/* Node Selector at the top */}
-      <div className="w-full px-3 sm:px-4 pt-3 sm:pt-4">
+      <div className="w-full px-3 pt-3 sm:px-4 sm:pt-4">
         <div className="transform-gpu animate-slide-up" style={{ animationDuration: '500ms', animationDelay: '50ms', animationFillMode: 'both' }}>
           <Card>
             <CardContent className="p-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-base sm:text-lg font-semibold truncate">{t('nodes.title')}</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{t('statistics.selectNodeToView')}</p>
+              <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate text-base font-semibold sm:text-lg">{t('nodes.title')}</h3>
+                  <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">{t('statistics.selectNodeToView')}</p>
                 </div>
                 <div className="w-full sm:w-auto sm:min-w-[180px] lg:min-w-[200px]">
                   {isLoadingNodes ? (
-                    <Skeleton className="h-9 sm:h-10 w-full" />
+                    <Skeleton className="h-9 w-full sm:h-10" />
                   ) : (
                     <Select value={selectedServer} onValueChange={setSelectedServer}>
-                      <SelectTrigger className="w-full h-9 sm:h-10 text-xs sm:text-sm">
+                      <SelectTrigger className="h-9 w-full text-xs sm:h-10 sm:text-sm">
                         <SelectValue placeholder={t('selectServer')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="master" className="text-xs sm:text-sm">{t('master')}</SelectItem>
+                        <SelectItem value="master" className="text-xs sm:text-sm">
+                          {t('master')}
+                        </SelectItem>
                         {nodesData
                           ?.filter((node: NodeResponse) => node.status === 'connected')
                           .map((node: NodeResponse) => (
@@ -77,15 +77,9 @@ const Statistics = () => {
       </div>
 
       <div className="w-full">
-        <div className="px-3 sm:px-4 w-full pt-2">
+        <div className="w-full px-3 pt-2 sm:px-4">
           <div className="transform-gpu animate-slide-up" style={{ animationDuration: '500ms', animationDelay: '100ms', animationFillMode: 'both' }}>
-            <MainContent 
-              error={error} 
-              isLoading={isLoading} 
-              data={data} 
-              selectedServer={selectedServer}
-              is_sudo={true}
-            />
+            <MainContent error={error} isLoading={isLoading} data={data} selectedServer={selectedServer} is_sudo={true} />
           </div>
         </div>
       </div>

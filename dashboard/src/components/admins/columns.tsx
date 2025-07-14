@@ -25,17 +25,10 @@ const createSortButton = (
     sort: string
   },
 ) => (
-  <button onClick={handleSort.bind(null, column)} className="flex gap-1 py-1 w-full items-center">
+  <button onClick={handleSort.bind(null, column)} className="flex w-full items-center gap-1 py-1">
     <div className="text-xs">{t(label)}</div>
     {filters.sort && (filters.sort === column || filters.sort === '-' + column) && (
-      <ChevronDown
-        size={16}
-        className={`
-                    transition-transform duration-300
-                    ${filters.sort === column ? 'rotate-180' : ''}
-                    ${filters.sort === '-' + column ? 'rotate-0' : ''}
-                `}
-      />
+      <ChevronDown size={16} className={`transition-transform duration-300 ${filters.sort === column ? 'rotate-180' : ''} ${filters.sort === '-' + column ? 'rotate-0' : ''} `} />
     )}
   </button>
 )
@@ -45,17 +38,17 @@ export const setupColumns = ({ t, handleSort, filters, onEdit, onDelete, toggleS
     accessorKey: 'username',
     header: () => createSortButton('username', 'username', t, handleSort, filters),
     cell: ({ row }) => (
-      <div className="font-medium pl-1 md:pl-2 overflow-hidden text-ellipsis whitespace-nowrap">
-        <div className="flex items-start gap-x-3 py-1 px-1">
+      <div className="overflow-hidden text-ellipsis whitespace-nowrap pl-1 font-medium md:pl-2">
+        <div className="flex items-start gap-x-3 px-1 py-1">
           <div className="pt-1">
             {row.original.is_disabled ? (
-              <div className="min-h-[10px] min-w-[10px] rounded-full border border-gray-400 dark:border-gray-600 shadow-sm" />
+              <div className="min-h-[10px] min-w-[10px] rounded-full border border-gray-400 shadow-sm dark:border-gray-600" />
             ) : (
               <div className="min-h-[10px] min-w-[10px] rounded-full bg-green-500 shadow-sm" />
             )}
           </div>
-          <div className="flex flex-col gap-y-0.5 whitespace-nowrap text-ellipsis overflow-hidden">
-            <span className="whitespace-nowrap text-ellipsis overflow-hidden text-sm font-medium">{row.getValue('username')}</span>
+          <div className="flex flex-col gap-y-0.5 overflow-hidden text-ellipsis whitespace-nowrap">
+            <span className="overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium">{row.getValue('username')}</span>
           </div>
         </div>
       </div>
@@ -67,9 +60,9 @@ export const setupColumns = ({ t, handleSort, filters, onEdit, onDelete, toggleS
     cell: ({ row }) => {
       const traffic = row.getValue('used_traffic') as number | null
       return (
-        <div className="flex gap-2 items-center">
-          <ChartPie className="h-4 w-4 sm:block hidden" />
-          <span dir='ltr'>{traffic ? formatBytes(traffic) : '0 B'}</span>
+        <div className="flex items-center gap-2">
+          <ChartPie className="hidden h-4 w-4 sm:block" />
+          <span dir="ltr">{traffic ? formatBytes(traffic) : '0 B'}</span>
         </div>
       )
     },
@@ -80,15 +73,15 @@ export const setupColumns = ({ t, handleSort, filters, onEdit, onDelete, toggleS
     cell: ({ row }) => {
       const total = row.getValue('lifetime_used_traffic') as number | null
       return (
-        <div className="flex gap-2 items-center">
-          <span dir='ltr'>{formatBytes(total || 0)}</span>
+        <div className="flex items-center gap-2">
+          <span dir="ltr">{formatBytes(total || 0)}</span>
         </div>
       )
     },
   },
   {
     accessorKey: 'is_sudo',
-    header: () => <div className="text-xs flex items-center capitalize">{t('admins.role')}</div>,
+    header: () => <div className="flex items-center text-xs capitalize">{t('admins.role')}</div>,
     cell: ({ row }) => {
       const isSudo = row.getValue('is_sudo')
       const isDisabled = row.original.is_disabled
@@ -112,7 +105,7 @@ export const setupColumns = ({ t, handleSort, filters, onEdit, onDelete, toggleS
   {
     id: 'actions',
     cell: ({ row }) => (
-      <div className="flex justify-end gap-2 items-center">
+      <div className="flex items-center justify-end gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
@@ -127,7 +120,7 @@ export const setupColumns = ({ t, handleSort, filters, onEdit, onDelete, toggleS
                 onEdit(row.original)
               }}
             >
-              <Pen className="h-4 w-4 mr-2" />
+              <Pen className="mr-2 h-4 w-4" />
               {t('edit')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -138,7 +131,7 @@ export const setupColumns = ({ t, handleSort, filters, onEdit, onDelete, toggleS
                 toggleStatus(row.original)
               }}
             >
-              {row.original.is_disabled ? <Power className="h-4 w-4 mr-2" /> : <PowerOff className="h-4 w-4 mr-2" />}
+              {row.original.is_disabled ? <Power className="mr-2 h-4 w-4" /> : <PowerOff className="mr-2 h-4 w-4" />}
               {row.original.is_disabled ? t('enable') : t('disable')}
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -148,7 +141,7 @@ export const setupColumns = ({ t, handleSort, filters, onEdit, onDelete, toggleS
                 onResetUsage(row.original.username)
               }}
             >
-              <RefreshCw className="h-4 w-4 mr-2" />
+              <RefreshCw className="mr-2 h-4 w-4" />
               {t('admins.reset')}
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -159,7 +152,7 @@ export const setupColumns = ({ t, handleSort, filters, onEdit, onDelete, toggleS
                 onDelete(row.original)
               }}
             >
-              <Trash2 className="h-4 w-4 mr-2" />
+              <Trash2 className="mr-2 h-4 w-4" />
               {t('delete')}
             </DropdownMenuItem>
           </DropdownMenuContent>

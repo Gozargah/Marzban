@@ -11,9 +11,7 @@ function isoToTimestamp(isoString: string): number {
   return Math.floor(new Date(isoString).getTime() / 1000)
 }
 
-export const useRelativeExpiryDate = (
-  expiryDate: string | number | null | undefined,
-) => {
+export const useRelativeExpiryDate = (expiryDate: string | number | null | undefined) => {
   const { t } = useTranslation()
   const dateInfo = { status: '', time: '' }
 
@@ -29,34 +27,24 @@ export const useRelativeExpiryDate = (
   const durationSlots: string[] = []
 
   if (duration.years()) {
-    durationSlots.push(
-      `${Math.abs(duration.years())} ${t(`time.${Math.abs(duration.years()) !== 1 ? 'years' : 'year'}`)}`
-    )
+    durationSlots.push(`${Math.abs(duration.years())} ${t(`time.${Math.abs(duration.years()) !== 1 ? 'years' : 'year'}`)}`)
   }
 
   if (duration.months()) {
-    durationSlots.push(
-      `${Math.abs(duration.months())} ${t(`time.${Math.abs(duration.months()) !== 1 ? 'months' : 'month'}`)}`
-    )
+    durationSlots.push(`${Math.abs(duration.months())} ${t(`time.${Math.abs(duration.months()) !== 1 ? 'months' : 'month'}`)}`)
   }
 
   if (duration.days()) {
-    durationSlots.push(
-      `${Math.abs(duration.days())} ${t(`time.${Math.abs(duration.days()) !== 1 ? 'days' : 'day'}`)}`
-    )
+    durationSlots.push(`${Math.abs(duration.days())} ${t(`time.${Math.abs(duration.days()) !== 1 ? 'days' : 'day'}`)}`)
   }
 
   if (durationSlots.length === 0) {
     if (duration.hours()) {
-      durationSlots.push(
-        `${Math.abs(duration.hours())} ${t(`time.${Math.abs(duration.hours()) !== 1 ? 'hours' : 'hour'}`)}`
-      )
+      durationSlots.push(`${Math.abs(duration.hours())} ${t(`time.${Math.abs(duration.hours()) !== 1 ? 'hours' : 'hour'}`)}`)
     }
 
     if (duration.minutes()) {
-      durationSlots.push(
-        `${Math.abs(duration.minutes())} ${t(`time.${Math.abs(duration.minutes()) !== 1 ? 'mins' : 'min'}`)}`
-      )
+      durationSlots.push(`${Math.abs(duration.minutes())} ${t(`time.${Math.abs(duration.minutes()) !== 1 ? 'mins' : 'min'}`)}`)
     }
   }
 
@@ -74,29 +62,17 @@ export const dateUtils = {
   },
 
   formatDate: (date: string | number | Date) => {
-    const d = typeof date === 'string'
-      ? dayjs.utc(date).local()
-      : typeof date === 'number'
-        ? dayjs.unix(date).local()
-        : dayjs(date).local()
+    const d = typeof date === 'string' ? dayjs.utc(date).local() : typeof date === 'number' ? dayjs.unix(date).local() : dayjs(date).local()
 
     return d.format('YYYY-MM-DD HH:mm:ss')
   },
 
   toDayjs: (date: string | number | Date) => {
-    return typeof date === 'string'
-      ? dayjs.utc(date).local()
-      : typeof date === 'number'
-        ? dayjs.unix(date).local()
-        : dayjs(date).local()
+    return typeof date === 'string' ? dayjs.utc(date).local() : typeof date === 'number' ? dayjs.unix(date).local() : dayjs(date).local()
   },
 
   isValidDate: (date: string | number | Date) => {
-    const d = typeof date === 'string'
-      ? new Date(date)
-      : typeof date === 'number'
-        ? new Date(date * 1000)
-        : date
+    const d = typeof date === 'string' ? new Date(date) : typeof date === 'number' ? new Date(date * 1000) : date
 
     return !isNaN(d.getTime())
   },
@@ -109,6 +85,5 @@ export const dateUtils = {
   secondsToDays: (seconds: number | undefined): number | undefined => {
     if (seconds === undefined || seconds === null || seconds === 0) return undefined
     return Math.round(Number(seconds) / (24 * 60 * 60))
-  }
+  },
 }
-

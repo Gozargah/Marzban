@@ -48,7 +48,7 @@ export function NavMain({
               {item.items?.length ? (
                 <>
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuAction className="data-[state=open]:rotate-90 data-[state=open]:rtl:-rotate-90 rtl:">
+                    <SidebarMenuAction className="rtl: data-[state=open]:rotate-90 data-[state=open]:rtl:-rotate-90">
                       <ChevronRight className="rtl:rotate-180" />
                       <span className="sr-only">Toggle</span>
                     </SidebarMenuAction>

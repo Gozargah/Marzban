@@ -20,8 +20,8 @@ export function ThemeToggle() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="transition-colors duration-200">
-          <Sun className="dark:hidden transition-all duration-300 ease-in-out" />
-          <Moon className="hidden dark:block transition-all duration-300 ease-in-out" />
+          <Sun className="transition-all duration-300 ease-in-out dark:hidden" />
+          <Moon className="hidden transition-all duration-300 ease-in-out dark:block" />
           <span className="sr-only">{t('theme.toggle')}</span>
         </Button>
       </DropdownMenuTrigger>

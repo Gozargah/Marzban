@@ -223,7 +223,7 @@ export default function PageTransition({
 
   return (
     <div
-      className={cn('w-full will-change-opacity will-change-transform', isShaking ? 'animate-telegram-shake' : '', isPageTransitioning ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0')}
+      className={cn('will-change-opacity w-full will-change-transform', isShaking ? 'animate-telegram-shake' : '', isPageTransitioning ? 'translate-y-2 opacity-0' : 'translate-y-0 opacity-100')}
       style={{
         animationDuration: isShaking ? `${duration}ms` : undefined,
         animationDelay: isShaking && delay > 0 ? `${delay}ms` : undefined,

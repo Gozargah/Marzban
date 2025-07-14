@@ -19,9 +19,9 @@ export default function DashboardLayout() {
   return (
     <SidebarProvider>
       <RouteGuard>
-        <div className="w-full flex flex-col lg:flex-row">
+        <div className="flex w-full flex-col lg:flex-row">
           <AppSidebar />
-          <div className="flex flex-col justify-between min-h-screen gap-y-4 w-full">
+          <div className="flex min-h-screen w-full flex-col justify-between gap-y-4">
             <PageTransition duration={450}>
               <Outlet />
             </PageTransition>

@@ -47,9 +47,7 @@ const sudoTabs: Tab[] = [
 ]
 
 // Define tabs for non-sudo admins (only theme settings)
-const nonSudoTabs: Tab[] = [
-  { id: 'theme', label: 'theme.title', icon: Palette, url: '/settings/theme' },
-]
+const nonSudoTabs: Tab[] = [{ id: 'theme', label: 'theme.title', icon: Palette, url: '/settings/theme' }]
 
 export default function Settings() {
   const { t } = useTranslation()
@@ -58,18 +56,22 @@ export default function Settings() {
   const { admin } = useAdmin()
   const is_sudo = admin?.is_sudo || false
   const tabs = is_sudo ? sudoTabs : nonSudoTabs
-  
+
   // Derive activeTab from current location instead of state
   const currentTab = tabs.find(tab => location.pathname === tab.url)
   const activeTab = currentTab?.id || (is_sudo ? 'notifications' : 'theme')
-  
+
   const queryClient = useQueryClient()
 
   // Only fetch settings for sudo admins (non-sudo admins only need theme settings which are client-side)
-  const { data: settings, isLoading, error } = useGetSettings({
+  const {
+    data: settings,
+    isLoading,
+    error,
+  } = useGetSettings({
     query: {
       enabled: is_sudo, // Only fetch for sudo admins
-    }
+    },
   })
   const { mutate: updateSettings, isPending: isSaving } = useModifySettings({
     mutation: {
@@ -88,9 +90,9 @@ export default function Settings() {
 
           // If detail is an object with field-specific errors
           if (typeof detail === 'object' && !Array.isArray(detail)) {
-            const fieldErrors = Object.entries(detail).map(([field, message]) =>
-              `${field}: ${message}`
-            ).join(', ')
+            const fieldErrors = Object.entries(detail)
+              .map(([field, message]) => `${field}: ${message}`)
+              .join(', ')
             errorMessage = fieldErrors
           }
           // If detail is a string
@@ -106,9 +108,9 @@ export default function Settings() {
         else if (error?.response?.data?.detail) {
           const detail = error.response.data.detail
           if (typeof detail === 'object' && !Array.isArray(detail)) {
-            const fieldErrors = Object.entries(detail).map(([field, message]) =>
-              `${field}: ${message}`
-            ).join(', ')
+            const fieldErrors = Object.entries(detail)
+              .map(([field, message]) => `${field}: ${message}`)
+              .join(', ')
             errorMessage = fieldErrors
           } else if (typeof detail === 'string') {
             errorMessage = detail
@@ -120,16 +122,16 @@ export default function Settings() {
         }
 
         toast.error(t(`settings.${activeTab}.saveFailed`), {
-          description: errorMessage
+          description: errorMessage,
         })
-      }
-    }
+      },
+    },
   })
 
   // Wrapper function to filter data based on active tab (only for sudo admins)
   const handleUpdateSettings = (data: any) => {
     if (!is_sudo) return // No-op for non-sudo admins
-    
+
     let filteredData: any = {}
 
     // Only include data relevant to the active tab
@@ -143,8 +145,8 @@ export default function Settings() {
           filteredData = {
             data: {
               notification_enable: data.notification_enable,
-              notification_settings: data.notification_settings
-            }
+              notification_settings: data.notification_settings,
+            },
           }
         }
         break
@@ -153,8 +155,8 @@ export default function Settings() {
           // Wrap subscription data in the expected format
           filteredData = {
             data: {
-              subscription: data.subscription
-            }
+              subscription: data.subscription,
+            },
           }
         } else {
           // If data is already wrapped, use it as is
@@ -192,18 +194,18 @@ export default function Settings() {
     isLoading: is_sudo ? isLoading : false,
     error: is_sudo ? error : null,
     updateSettings: is_sudo ? handleUpdateSettings : () => {}, // No-op for non-sudo admins
-    isSaving: is_sudo ? isSaving : false
+    isSaving: is_sudo ? isSaving : false,
   }
 
   return (
     <SettingsContext.Provider value={settingsContextValue}>
-      <div className="flex flex-col gap-0 w-full items-start">
+      <div className="flex w-full flex-col items-start gap-0">
         <PageHeader title={t(`settings.${activeTab}.title`)} description="manageSettings" />
 
-        <div className="w-full relative">
+        <div className="relative w-full">
           <div className="flex border-b">
             <div className="w-full">
-              <div className="flex border-b px-4 overflow-x-auto scrollbar-hide">
+              <div className="scrollbar-hide flex overflow-x-auto border-b px-4">
                 {tabs.map(tab => {
                   const isActive = activeTab === tab.id
                   return (
@@ -211,10 +213,8 @@ export default function Settings() {
                       key={tab.id}
                       onClick={() => navigate(tab.url)}
                       className={cn(
-                        'relative px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0',
-                        isActive
-                          ? 'text-foreground border-b-2 border-primary'
-                          : 'text-muted-foreground hover:text-foreground'
+                        'relative flex-shrink-0 whitespace-nowrap px-3 py-2 text-sm font-medium transition-colors',
+                        isActive ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground hover:text-foreground',
                       )}
                     >
                       <div className="flex items-center gap-1.5">

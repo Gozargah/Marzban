@@ -66,35 +66,35 @@ export const Login: FC = () => {
   }
 
   return (
-    <div className="flex flex-col justify-between min-h-screen p-6 w-full">
+    <div className="flex min-h-screen w-full flex-col justify-between p-6">
       <div className="w-full">
-        <div className="flex justify-between items-center w-full">
+        <div className="flex w-full items-center justify-between">
           <Language />
           <ThemeToggle />
         </div>
-        <div className="w-full justify-center flex items-center">
-          <div className="w-full max-w-[340px] mt-6">
+        <div className="flex w-full items-center justify-center">
+          <div className="mt-6 w-full max-w-[340px]">
             <div className="flex flex-col items-center gap-2">
-              <Logo className="w-12 h-12 stroke-[12px]" />
+              <Logo className="h-12 w-12 stroke-[12px]" />
               <span className="text-2xl font-semibold">{t('login.loginYourAccount')}</span>
               <span className="text-gray-600 dark:text-gray-400">{t('login.welcomeBack')}</span>
             </div>
-            <div className="w-full max-w-[300px] mx-auto pt-4">
+            <div className="mx-auto w-full max-w-[300px] pt-4">
               <form onSubmit={handleSubmit(handleLogin)}>
-                <div className="flex flex-col mt-4 gap-y-2">
+                <div className="mt-4 flex flex-col gap-y-2">
                   <Input className="py-5" placeholder={t('username')} {...register('username')} error={t(errors?.username?.message as string)} />
                   <PasswordInput className="py-5" placeholder={t('password')} {...register('password')} error={t(errors?.password?.message as string)} />
                   {error && error.data && (
-                    <Alert className='mt-2' variant="destructive">
+                    <Alert className="mt-2" variant="destructive">
                       <CircleAlertIcon size="18px" />
                       <AlertDescription>{String(error.data.detail)}</AlertDescription>
                     </Alert>
                   )}
-                  <div className='mt-2'>
-                  <LoaderButton  isLoading={loading} type="submit" className="w-full flex items-center gap-2">
-                    <span>{t('login')}</span>
-                    <LogInIcon size="18px" />
-                  </LoaderButton>
+                  <div className="mt-2">
+                    <LoaderButton isLoading={loading} type="submit" className="flex w-full items-center gap-2">
+                      <span>{t('login')}</span>
+                      <LogInIcon size="18px" />
+                    </LoaderButton>
                   </div>
                 </div>
               </form>

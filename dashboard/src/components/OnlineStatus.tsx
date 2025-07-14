@@ -14,11 +14,7 @@ export const OnlineStatus: FC<UserStatusProps> = ({ lastOnline }) => {
   const dir = useDirDetection()
 
   if (!lastOnline) {
-    return (
-      <span className={cn('inline-block text-xs font-medium', dir === 'rtl' ? 'mr-0.5 md:mr-2' : 'ml-0.5 md:ml-2', 'text-gray-600 dark:text-gray-400')}>
-        {t('notConnectedYet')}
-      </span>
-    )
+    return <span className={cn('inline-block text-xs font-medium', dir === 'rtl' ? 'mr-0.5 md:mr-2' : 'ml-0.5 md:ml-2', 'text-gray-600 dark:text-gray-400')}>{t('notConnectedYet')}</span>
   }
 
   const currentTime = dayjs()
@@ -28,11 +24,7 @@ export const OnlineStatus: FC<UserStatusProps> = ({ lastOnline }) => {
   const isOnline = diffInSeconds <= 60
 
   if (isOnline) {
-    return (
-      <span className={cn('inline-block text-xs font-medium', dir === 'rtl' ? 'mr-0.5 md:mr-2' : 'ml-0.5 md:ml-2', 'text-gray-600 dark:text-gray-400')}>
-        {t('online')}
-      </span>
-    )
+    return <span className={cn('inline-block text-xs font-medium', dir === 'rtl' ? 'mr-0.5 md:mr-2' : 'ml-0.5 md:ml-2', 'text-gray-600 dark:text-gray-400')}>{t('online')}</span>
   } else {
     // Format the time difference for offline status
     const duration = dayjs.duration(diffInSeconds, 'seconds')
@@ -52,10 +44,6 @@ export const OnlineStatus: FC<UserStatusProps> = ({ lastOnline }) => {
       timeText = `${duration.seconds()} ${t(`time.${duration.seconds() !== 1 ? 'seconds' : 'second'}`)} ${t('time.ago')}`
     }
 
-    return (
-      <span className={cn('inline-block text-xs font-medium', dir === 'rtl' ? 'mr-0.5 md:mr-2' : 'ml-0.5 md:ml-2', 'text-gray-600 dark:text-gray-400')}>
-        {timeText}
-      </span>
-    )
+    return <span className={cn('inline-block text-xs font-medium', dir === 'rtl' ? 'mr-0.5 md:mr-2' : 'ml-0.5 md:ml-2', 'text-gray-600 dark:text-gray-400')}>{timeText}</span>
   }
 }

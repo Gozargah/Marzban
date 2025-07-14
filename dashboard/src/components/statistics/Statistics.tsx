@@ -58,12 +58,7 @@ export default function Statistics({ data, isLoading, error, selectedServer, is_
             <p className="text-sm">{t('monitorServers')}</p>
           </div>
         </div>
-        <EmptyState
-          type="error"
-          title={t('errors.statisticsLoadFailed')}
-          description={error?.message || nodesError?.message || t('errors.connectionFailed')}
-          className="min-h-[400px]"
-        />
+        <EmptyState type="error" title={t('errors.statisticsLoadFailed')} description={error?.message || nodesError?.message || t('errors.connectionFailed')} className="min-h-[400px]" />
       </div>
     )
   }
@@ -108,7 +103,7 @@ function StatisticsSkeletons({ is_sudo }: { is_sudo: boolean }) {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <Skeleton className="h-6 w-[150px] mb-2" />
+            <Skeleton className="mb-2 h-6 w-[150px]" />
             <Skeleton className="h-4 w-[200px]" />
           </div>
         </div>
@@ -119,7 +114,7 @@ function StatisticsSkeletons({ is_sudo }: { is_sudo: boolean }) {
                 <div className="flex items-center gap-3">
                   <Skeleton className="h-9 w-9 rounded-lg" />
                   <div>
-                    <Skeleton className="h-4 w-[100px] mb-2" />
+                    <Skeleton className="mb-2 h-4 w-[100px]" />
                     <Skeleton className="h-8 w-[120px]" />
                   </div>
                 </div>

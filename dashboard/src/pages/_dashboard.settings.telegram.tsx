@@ -17,19 +17,27 @@ import { toast } from 'sonner'
 const telegramSettingsSchema = z.object({
   enable: z.boolean().default(false),
   token: z.string().optional(),
-  webhook_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')).refine((url) => {
-    if (!url || url === '') return true; // Allow empty URLs
-    try {
-      const parsedUrl = new URL(url);
-      const allowedPorts = ['443', '80', '88', '8443'];
-      const port = parsedUrl.port || (parsedUrl.protocol === 'https:' ? '443' : '80');
-      return allowedPorts.includes(port);
-    } catch {
-      return false;
-    }
-  }, {
-    message: 'Telegram webhook URL must use ports 443, 80, 88, or 8443'
-  }),
+  webhook_url: z
+    .string()
+    .url('Please enter a valid URL')
+    .optional()
+    .or(z.literal(''))
+    .refine(
+      url => {
+        if (!url || url === '') return true // Allow empty URLs
+        try {
+          const parsedUrl = new URL(url)
+          const allowedPorts = ['443', '80', '88', '8443']
+          const port = parsedUrl.port || (parsedUrl.protocol === 'https:' ? '443' : '80')
+          return allowedPorts.includes(port)
+        } catch {
+          return false
+        }
+      },
+      {
+        message: 'Telegram webhook URL must use ports 443, 80, 88, or 8443',
+      },
+    ),
   webhook_secret: z.string().optional(),
   proxy_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
   mini_app_login: z.boolean().default(false),
@@ -50,7 +58,7 @@ export default function TelegramSettings() {
       webhook_secret: '',
       proxy_url: '',
       mini_app_login: false,
-    }
+    },
   })
 
   // Watch the enable and mini_app_login fields for conditional rendering
@@ -82,7 +90,7 @@ export default function TelegramSettings() {
           webhook_url: data.webhook_url?.trim() || undefined,
           webhook_secret: data.webhook_secret?.trim() || undefined,
           proxy_url: data.proxy_url?.trim() || undefined,
-        }
+        },
       }
 
       await updateSettings(filteredData)
@@ -111,33 +119,33 @@ export default function TelegramSettings() {
 
   if (isLoading) {
     return (
-      <div className="w-full max-w-7xl mx-auto p-4 sm:py-6 lg:py-8">
+      <div className="mx-auto w-full max-w-7xl p-4 sm:py-6 lg:py-8">
         <div className="space-y-6 sm:space-y-8 lg:space-y-10">
           {/* General Settings Skeleton */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <div className="h-6 bg-muted rounded w-48 animate-pulse"></div>
-              <div className="h-4 bg-muted rounded w-96 animate-pulse"></div>
+              <div className="h-6 w-48 animate-pulse rounded bg-muted"></div>
+              <div className="h-4 w-96 animate-pulse rounded bg-muted"></div>
             </div>
-            <div className="h-16 bg-muted rounded animate-pulse"></div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="h-16 animate-pulse rounded bg-muted"></div>
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="space-y-2">
-                  <div className="h-4 bg-muted rounded w-24 animate-pulse"></div>
-                  <div className="h-10 bg-muted rounded animate-pulse"></div>
-                  <div className="h-3 bg-muted rounded w-64 animate-pulse"></div>
+                  <div className="h-4 w-24 animate-pulse rounded bg-muted"></div>
+                  <div className="h-10 animate-pulse rounded bg-muted"></div>
+                  <div className="h-3 w-64 animate-pulse rounded bg-muted"></div>
                 </div>
               ))}
             </div>
-            <div className="h-16 bg-muted rounded animate-pulse"></div>
+            <div className="h-16 animate-pulse rounded bg-muted"></div>
           </div>
-          
+
           {/* Action Buttons Skeleton */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
+          <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:gap-4">
             <div className="flex-1"></div>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:shrink-0">
-              <div className="h-10 bg-muted rounded w-24 animate-pulse"></div>
-              <div className="h-10 bg-muted rounded w-20 animate-pulse"></div>
+            <div className="flex flex-col gap-3 sm:shrink-0 sm:flex-row sm:gap-4">
+              <div className="h-10 w-24 animate-pulse rounded bg-muted"></div>
+              <div className="h-10 w-20 animate-pulse rounded bg-muted"></div>
             </div>
           </div>
         </div>
@@ -147,9 +155,9 @@ export default function TelegramSettings() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[400px] p-4 sm:py-6 lg:py-8">
-        <div className="text-center space-y-3">
-          <div className="text-red-500 text-lg">⚠️</div>
+      <div className="flex min-h-[400px] items-center justify-center p-4 sm:py-6 lg:py-8">
+        <div className="space-y-3 text-center">
+          <div className="text-lg text-red-500">⚠️</div>
           <p className="text-sm text-red-500">Error loading settings</p>
         </div>
       </div>
@@ -157,213 +165,164 @@ export default function TelegramSettings() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto min-h-[calc(100vh-200px)] flex flex-col">
+    <div className="mx-auto flex min-h-[calc(100vh-200px)] w-full max-w-7xl flex-col">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 p-4 sm:py-6 lg:py-8">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-1 flex-col p-4 sm:py-6 lg:py-8">
           <div className="flex-1 space-y-6 sm:space-y-8 lg:space-y-10">
-          
-          {/* General Settings */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold tracking-tight">
-                {t('settings.telegram.general.title')}
-              </h3>
-              <p className="text-sm text-muted-foreground">{t('settings.telegram.general.description')}</p>
+            {/* General Settings */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold tracking-tight">{t('settings.telegram.general.title')}</h3>
+                <p className="text-sm text-muted-foreground">{t('settings.telegram.general.description')}</p>
+              </div>
+
+              {/* Enable Telegram */}
+              <FormField
+                control={form.control}
+                name="enable"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between gap-x-2 space-y-0 rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50 sm:p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="flex cursor-pointer items-center gap-2 text-sm font-medium">
+                        <Send className="h-4 w-4" />
+                        {t('settings.telegram.general.enable')}
+                      </FormLabel>
+                      <FormDescription className="text-sm text-muted-foreground">{t('settings.telegram.general.enableDescription')}</FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {/* Configuration Fields - Only show when Telegram is enabled */}
+              {enableTelegram && (
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="token"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
+                        <FormLabel className="flex items-center gap-2 text-sm font-medium">
+                          <Bot className="h-4 w-4" />
+                          {t('settings.telegram.general.token')}
+                        </FormLabel>
+                        <FormControl>
+                          <PasswordInput placeholder={t('settings.telegram.general.tokenPlaceholder')} {...field} className="font-mono" />
+                        </FormControl>
+                        <FormDescription className="text-sm text-muted-foreground">{t('settings.telegram.general.tokenDescription')}</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="webhook_url"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
+                        <FormLabel className="flex items-center gap-2 text-sm font-medium">
+                          <Webhook className="h-4 w-4" />
+                          {t('settings.telegram.general.webhookUrl')}
+                        </FormLabel>
+                        <FormControl>
+                          <Input type="url" placeholder={t('settings.telegram.general.webhookUrlPlaceholder')} {...field} className="font-mono" />
+                        </FormControl>
+                        <FormDescription className="text-sm text-muted-foreground">
+                          {t('settings.telegram.general.webhookUrlDescription')}
+                          <br />
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="webhook_secret"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
+                        <FormLabel className="flex items-center gap-2 text-sm font-medium">
+                          <Shield className="h-4 w-4" />
+                          {t('settings.telegram.general.webhookSecret')}
+                        </FormLabel>
+                        <FormControl>
+                          <PasswordInput placeholder={t('settings.telegram.general.webhookSecretPlaceholder')} {...field} className="font-mono" />
+                        </FormControl>
+                        <FormDescription className="text-sm text-muted-foreground">{t('settings.telegram.general.webhookSecretDescription')}</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="proxy_url"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
+                        <FormLabel className="flex items-center gap-2 text-sm font-medium">
+                          <Globe className="h-4 w-4" />
+                          {t('settings.telegram.general.proxyUrl')}
+                        </FormLabel>
+                        <FormControl>
+                          <Input type="url" placeholder={t('settings.telegram.general.proxyUrlPlaceholder')} {...field} className="font-mono" />
+                        </FormControl>
+                        <FormDescription className="text-sm text-muted-foreground">{t('settings.telegram.general.proxyUrlDescription')}</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
             </div>
 
-            {/* Enable Telegram */}
-            <FormField
-              control={form.control}
-              name="enable"
-              render={({ field }) => (
-                <FormItem className="flex items-center justify-between space-y-0 gap-x-2 p-3 sm:p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-sm font-medium flex items-center gap-2 cursor-pointer">
-                      <Send className="h-4 w-4" />
-                      {t('settings.telegram.general.enable')}
-                    </FormLabel>
-                    <FormDescription className="text-sm text-muted-foreground">
-                      {t('settings.telegram.general.enableDescription')}
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            {/* Configuration Fields - Only show when Telegram is enabled */}
+            {/* Advanced Settings - Only show when Telegram is enabled */}
             {enableTelegram && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="token"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel className="text-sm font-medium flex items-center gap-2">
-                        <Bot className="h-4 w-4" />
-                        {t('settings.telegram.general.token')}
-                      </FormLabel>
-                      <FormControl>
-                        <PasswordInput
-                          placeholder={t('settings.telegram.general.tokenPlaceholder')}
-                          {...field}
-                          className="font-mono"
-                        />
-                      </FormControl>
-                      <FormDescription className="text-sm text-muted-foreground">
-                        {t('settings.telegram.general.tokenDescription')}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <>
+                <Separator className="my-4" />
 
-                <FormField
-                  control={form.control}
-                  name="webhook_url"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel className="text-sm font-medium flex items-center gap-2">
-                        <Webhook className="h-4 w-4" />
-                        {t('settings.telegram.general.webhookUrl')}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="url"
-                          placeholder={t('settings.telegram.general.webhookUrlPlaceholder')}
-                          {...field}
-                          className="font-mono"
-                        />
-                      </FormControl>
-                      <FormDescription className="text-sm text-muted-foreground">
-                        {t('settings.telegram.general.webhookUrlDescription')}
-                        <br />
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-semibold tracking-tight">{t('settings.telegram.advanced.title')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('settings.telegram.advanced.description')}</p>
+                  </div>
 
-                <FormField
-                  control={form.control}
-                  name="webhook_secret"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel className="text-sm font-medium flex items-center gap-2">
-                        <Shield className="h-4 w-4" />
-                        {t('settings.telegram.general.webhookSecret')}
-                      </FormLabel>
-                      <FormControl>
-                        <PasswordInput
-                          placeholder={t('settings.telegram.general.webhookSecretPlaceholder')}
-                          {...field}
-                          className="font-mono"
-                        />
-                      </FormControl>
-                      <FormDescription className="text-sm text-muted-foreground">
-                        {t('settings.telegram.general.webhookSecretDescription')}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="proxy_url"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel className="text-sm font-medium flex items-center gap-2">
-                        <Globe className="h-4 w-4" />
-                        {t('settings.telegram.general.proxyUrl')}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="url"
-                          placeholder={t('settings.telegram.general.proxyUrlPlaceholder')}
-                          {...field}
-                          className="font-mono"
-                        />
-                      </FormControl>
-                      <FormDescription className="text-sm text-muted-foreground">
-                        {t('settings.telegram.general.proxyUrlDescription')}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                  {/* Mini App Login */}
+                  <FormField
+                    control={form.control}
+                    name="mini_app_login"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between space-y-0 rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50 sm:p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="flex cursor-pointer items-center gap-2 text-sm font-medium">
+                            <Smartphone className="h-4 w-4" />
+                            {t('settings.telegram.advanced.miniAppLogin')}
+                          </FormLabel>
+                          <FormDescription className="text-sm text-muted-foreground">{t('settings.telegram.advanced.miniAppLoginDescription')}</FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </>
             )}
           </div>
 
-          {/* Advanced Settings - Only show when Telegram is enabled */}
-          {enableTelegram && (
-            <>
-              <Separator className="my-4" />
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold tracking-tight">
-                    {t('settings.telegram.advanced.title')}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">{t('settings.telegram.advanced.description')}</p>
-                </div>
-
-                {/* Mini App Login */}
-                <FormField
-                  control={form.control}
-                  name="mini_app_login"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between space-y-0 p-3 sm:p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-sm font-medium flex items-center gap-2 cursor-pointer">
-                          <Smartphone className="h-4 w-4" />
-                          {t('settings.telegram.advanced.miniAppLogin')}
-                        </FormLabel>
-                        <FormDescription className="text-sm text-muted-foreground">
-                          {t('settings.telegram.advanced.miniAppLoginDescription')}
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </>
-          )}
-          </div>
-
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-6 mt-6 border-t">
+          <div className="mt-6 flex flex-col gap-3 border-t pt-6 sm:flex-row sm:gap-4">
             <div className="flex-1"></div>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:shrink-0">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={handleCancel}
-                className="w-full sm:w-auto min-w-[100px]"
-                disabled={isSaving}
-              >
+            <div className="flex flex-col gap-3 sm:shrink-0 sm:flex-row sm:gap-4">
+              <Button type="button" variant="outline" onClick={handleCancel} className="w-full min-w-[100px] sm:w-auto" disabled={isSaving}>
                 {t('cancel')}
               </Button>
-              <Button 
-                type="submit" 
-                disabled={isSaveDisabled}
-                className="w-full sm:w-auto min-w-[100px]"
-              >
+              <Button type="submit" disabled={isSaveDisabled} className="w-full min-w-[100px] sm:w-auto">
                 {isSaving ? (
                   <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
                     {t('saving')}
                   </div>
                 ) : (

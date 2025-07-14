@@ -31,7 +31,7 @@ const DeleteAlertDialog = ({ group, isOpen, onClose, onConfirm }: { group: Group
             <span dir={dir} dangerouslySetInnerHTML={{ __html: t('group.deleteConfirm', { name: group.name }) }} />
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className={cn(dir === 'rtl' && 'sm:gap-x-2 sm:flex-row-reverse')}>
+        <AlertDialogFooter className={cn(dir === 'rtl' && 'sm:flex-row-reverse sm:gap-x-2')}>
           <AlertDialogCancel onClick={onClose}>{t('cancel')}</AlertDialogCancel>
           <AlertDialogAction variant="destructive" onClick={onConfirm}>
             {t('delete')}
@@ -68,24 +68,24 @@ export default function Group({ group, onEdit, onToggleStatus }: GroupProps) {
         description: t('group.deleteFailed', {
           name: group.name,
           defaultValue: 'Failed to delete group "{name}"',
-        })
+        }),
       })
     }
   }
 
   return (
     <>
-      <Card className="px-4 py-5 relative group h-full hover:bg-accent transition-colors">
+      <Card className="group relative h-full px-4 py-5 transition-colors hover:bg-accent">
         <div className="flex items-center gap-3">
-          <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onEdit(group)}>
+          <div className="min-w-0 flex-1 cursor-pointer" onClick={() => onEdit(group)}>
             <div className="flex items-center gap-2">
               <div className={cn('min-h-2 min-w-2 rounded-full', group.is_disabled ? 'bg-red-500' : 'bg-green-500')} />
               <div className="flex items-center gap-2">
-                <div className="font-medium truncate">{group.name}</div>
+                <div className="truncate font-medium">{group.name}</div>
                 <div className="font-mono text-xs text-muted-foreground">({group.inbound_tags?.length || 0})</div>
               </div>
             </div>
-            <div className="text-sm text-muted-foreground truncate">
+            <div className="truncate text-sm text-muted-foreground">
               {t('admins.total.users')}: {group.total_users || 0}
             </div>
           </div>
@@ -102,7 +102,7 @@ export default function Group({ group, onEdit, onToggleStatus }: GroupProps) {
                   onToggleStatus(group)
                 }}
               >
-                <Power className="h-4 w-4 mr-2" />
+                <Power className="mr-2 h-4 w-4" />
                 {group.is_disabled ? t('enable') : t('disable')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -112,11 +112,11 @@ export default function Group({ group, onEdit, onToggleStatus }: GroupProps) {
                   onEdit(group)
                 }}
               >
-                <Pencil className="h-4 w-4 mr-2" />
+                <Pencil className="mr-2 h-4 w-4" />
                 {t('edit')}
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={handleDeleteClick} className="text-destructive">
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Trash2 className="mr-2 h-4 w-4" />
                 {t('delete')}
               </DropdownMenuItem>
             </DropdownMenuContent>

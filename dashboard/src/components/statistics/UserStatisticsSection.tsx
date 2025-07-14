@@ -1,14 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { SystemStats } from '@/service/api'
 import { useTranslation } from 'react-i18next'
-import { 
-  Users, 
-  Activity, 
-  UserX,
-  UserMinus,
-  Clock,
-  Ban
-} from 'lucide-react'
+import { Users, Activity, UserX, UserMinus, Clock, Ban } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { numberWithCommas } from '@/utils/formatByte'
@@ -73,10 +66,10 @@ export default function UserStatisticsSection({ data }: UserStatisticsSectionPro
           <div
             key={stat.key}
             className="w-full animate-fade-in"
-            style={{ 
-              animationDuration: '600ms', 
+            style={{
+              animationDuration: '600ms',
               animationDelay: `${(index + 1) * 100}ms`,
-              animationFillMode: 'both'
+              animationFillMode: 'both',
             }}
           >
             <Card dir={dir} className="group relative w-full overflow-hidden rounded-lg border transition-all duration-300 hover:shadow-lg">
@@ -90,15 +83,11 @@ export default function UserStatisticsSection({ data }: UserStatisticsSectionPro
               <CardContent className="relative z-10 p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      {stat.icon}
-                    </div>
+                    <div className="rounded-lg bg-primary/10 p-2">{stat.icon}</div>
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">
-                        {stat.label}
-                      </p>
+                      <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
                       <div className="flex items-center gap-2">
-                        <span dir='ltr' className="text-2xl font-bold">
+                        <span dir="ltr" className="text-2xl font-bold">
                           {stat.showTotal ? (
                             <>
                               {numberWithCommas(stat.value)} / {numberWithCommas(stat.totalValue || 0)}
@@ -118,4 +107,4 @@ export default function UserStatisticsSection({ data }: UserStatisticsSectionPro
       </CardContent>
     </Card>
   )
-} 
+}

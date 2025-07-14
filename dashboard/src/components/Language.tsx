@@ -16,7 +16,7 @@ export const Language: React.FC = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon">
-          <LanguagesIcon className="w-4 h-4" />
+          <LanguagesIcon className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" side="top">

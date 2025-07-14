@@ -27,11 +27,14 @@ type ThemeProviderState = {
 }
 
 // Color theme definitions with proper typing
-const colorThemes: Record<ColorTheme, {
-  name: string
-  light: Record<string, string>
-  dark: Record<string, string>
-}> = {
+const colorThemes: Record<
+  ColorTheme,
+  {
+    name: string
+    light: Record<string, string>
+    dark: Record<string, string>
+  }
+> = {
   default: {
     name: 'Default',
     light: {
@@ -504,7 +507,7 @@ export function ThemeProvider({
   // Handle system theme changes
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    
+
     const handleChange = (e: MediaQueryListEvent) => {
       if (theme === 'system') {
         const systemTheme = e.matches ? 'dark' : 'light'
@@ -525,53 +528,62 @@ export function ThemeProvider({
   }, [theme, colorTheme, radius, applyTheme])
 
   // Enhanced setTheme function with error handling and toast
-  const setTheme = useCallback((newTheme: Theme) => {
-    if (safeLocalStorage.setItem(storageKey, newTheme)) {
-      setThemeState(newTheme)
-      
-      // Show success toast - this will be handled by the settings page
-      // The provider itself shouldn't show toasts to avoid dependency issues
-    } else {
-      // Fallback: set theme without localStorage
-      setThemeState(newTheme)
-      console.warn('Failed to save theme to localStorage, changes may not persist')
-    }
-  }, [storageKey])
+  const setTheme = useCallback(
+    (newTheme: Theme) => {
+      if (safeLocalStorage.setItem(storageKey, newTheme)) {
+        setThemeState(newTheme)
+
+        // Show success toast - this will be handled by the settings page
+        // The provider itself shouldn't show toasts to avoid dependency issues
+      } else {
+        // Fallback: set theme without localStorage
+        setThemeState(newTheme)
+        console.warn('Failed to save theme to localStorage, changes may not persist')
+      }
+    },
+    [storageKey],
+  )
 
   // Enhanced setColorTheme function
-  const setColorTheme = useCallback((newColorTheme: ColorTheme) => {
-    if (Object.keys(colorThemes).includes(newColorTheme)) {
-      if (safeLocalStorage.setItem(colorStorageKey, newColorTheme)) {
-        setColorThemeState(newColorTheme)
+  const setColorTheme = useCallback(
+    (newColorTheme: ColorTheme) => {
+      if (Object.keys(colorThemes).includes(newColorTheme)) {
+        if (safeLocalStorage.setItem(colorStorageKey, newColorTheme)) {
+          setColorThemeState(newColorTheme)
+        } else {
+          setColorThemeState(newColorTheme)
+          console.warn('Failed to save color theme to localStorage, changes may not persist')
+        }
       } else {
-        setColorThemeState(newColorTheme)
-        console.warn('Failed to save color theme to localStorage, changes may not persist')
+        console.warn(`Invalid color theme: ${newColorTheme}`)
       }
-    } else {
-      console.warn(`Invalid color theme: ${newColorTheme}`)
-    }
-  }, [colorStorageKey])
+    },
+    [colorStorageKey],
+  )
 
   // Enhanced setRadius function
-  const setRadius = useCallback((newRadius: Radius) => {
-    if (['0', '0.3rem', '0.5rem', '0.75rem'].includes(newRadius)) {
-      if (safeLocalStorage.setItem(radiusStorageKey, newRadius)) {
-        setRadiusState(newRadius)
+  const setRadius = useCallback(
+    (newRadius: Radius) => {
+      if (['0', '0.3rem', '0.5rem', '0.75rem'].includes(newRadius)) {
+        if (safeLocalStorage.setItem(radiusStorageKey, newRadius)) {
+          setRadiusState(newRadius)
+        } else {
+          setRadiusState(newRadius)
+          console.warn('Failed to save radius to localStorage, changes may not persist')
+        }
       } else {
-        setRadiusState(newRadius)
-        console.warn('Failed to save radius to localStorage, changes may not persist')
+        console.warn(`Invalid radius value: ${newRadius}`)
       }
-    } else {
-      console.warn(`Invalid radius value: ${newRadius}`)
-    }
-  }, [radiusStorageKey])
+    },
+    [radiusStorageKey],
+  )
 
   // Reset to defaults function
   const resetToDefaults = useCallback(() => {
     safeLocalStorage.removeItem(storageKey)
     safeLocalStorage.removeItem(colorStorageKey)
     safeLocalStorage.removeItem(radiusStorageKey)
-    
+
     setThemeState(defaultTheme)
     setColorThemeState(defaultColorTheme)
     setRadiusState(defaultRadius)

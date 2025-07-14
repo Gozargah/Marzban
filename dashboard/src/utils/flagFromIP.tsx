@@ -60,7 +60,7 @@ const FlagFromIP: React.FC<FlagFromIPProps> = ({ ip }) => {
           return
         }
       }
-      
+
       // Use ip-api.com for geolocation (country code)
       const { data } = await axios.get(`http://ip-api.com/json/${targetIP}?fields=status,countryCode`)
       if (data && data.status === 'success' && data.countryCode) {

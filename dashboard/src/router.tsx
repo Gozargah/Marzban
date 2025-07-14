@@ -28,10 +28,10 @@ import { Navigate } from 'react-router'
 function SettingsIndex() {
   const { admin } = useAdmin()
   const is_sudo = admin?.is_sudo || false
-  
+
   // For sudo admins, default to notifications; for non-sudo admins, default to theme
   const defaultPath = is_sudo ? '/settings/notifications' : '/settings/theme'
-  
+
   return <Navigate to={defaultPath} replace />
 }
 

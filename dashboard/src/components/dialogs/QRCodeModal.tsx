@@ -37,7 +37,7 @@ const QRCodeModal: FC<QRCodeModalProps> = memo(({ subscribeLinks, subscribeUrl, 
 
   return (
     <Dialog open={isOpen} onOpenChange={onCloseModal}>
-      <DialogContent className="max-w-[425px] md:max-w-[750px] max-h-[100dvh] overflow-y-auto">
+      <DialogContent className="max-h-[100dvh] max-w-[425px] overflow-y-auto md:max-w-[750px]">
         <DialogHeader dir={dir}>
           <DialogTitle>
             <div className="px-2">
@@ -47,12 +47,12 @@ const QRCodeModal: FC<QRCodeModalProps> = memo(({ subscribeLinks, subscribeUrl, 
         </DialogHeader>
         <div dir="ltr" className="flex flex-col md:flex-row md:gap-x-8">
           <div className="flex justify-center py-4">
-            <div className="flex flex-col justify-center items-center py-4 gap-y-4 m-2">
-              <QRCodeCanvas value={subscribeQrLink} size={300} className="bg-white p-2 rounded-md" />
+            <div className="m-2 flex flex-col items-center justify-center gap-y-4 py-4">
+              <QRCodeCanvas value={subscribeQrLink} size={300} className="rounded-md bg-white p-2" />
               <span>{t('qrcodeDialog.sublink')}</span>
             </div>
           </div>
-          <div className="flex flex-col justify-center items-center py-4 gap-y-4">
+          <div className="flex flex-col items-center justify-center gap-y-4 py-4">
             <Carousel
               opts={{
                 loop: true,
@@ -63,7 +63,7 @@ const QRCodeModal: FC<QRCodeModalProps> = memo(({ subscribeLinks, subscribeUrl, 
               <CarouselContent>
                 {subscribeLinks?.map((_, index) => (
                   <CarouselItem key={index}>
-                    <QRCodeCanvas value={subscribeLinks[index].link} size={300} className="bg-white p-2 rounded-md" level={'L'} />
+                    <QRCodeCanvas value={subscribeLinks[index].link} size={300} className="rounded-md bg-white p-2" level={'L'} />
                   </CarouselItem>
                 ))}
               </CarouselContent>

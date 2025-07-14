@@ -124,12 +124,12 @@
   }
 
   body {
-    @apply bg-background text-foreground font-body;
+    @apply bg-background font-body text-foreground;
   }
 
   /* Enhanced shadcn-style scrollbar */
   ::-webkit-scrollbar {
-    @apply w-2 h-2;
+    @apply h-2 w-2;
   }
 
   ::-webkit-scrollbar-track {
@@ -158,7 +158,7 @@
 
   /* Thin scrollbar variant for smaller containers */
   .scrollbar-thin::-webkit-scrollbar {
-    @apply w-2 h-2;
+    @apply h-2 w-2;
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {

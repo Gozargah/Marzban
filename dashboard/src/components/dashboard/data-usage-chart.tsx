@@ -75,17 +75,20 @@ const chartConfig = {
 const DataUsageChart = ({ admin_username }: { admin_username?: string }) => {
   const { t, i18n } = useTranslation()
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
-  const PERIOD_OPTIONS: PeriodOption[] = useMemo(() => [
-    ...PERIOD_KEYS.slice(0, 6).map(opt => ({
-      label: typeof opt.amount === 'number' ? `${opt.amount} ${t(`time.${opt.unit}${opt.amount > 1 ? 's' : ''}`)}` : '',
-      value: opt.key,
-      period: opt.period,
-      hours: opt.unit === 'hour' && typeof opt.amount === 'number' ? opt.amount : undefined,
-      days: opt.unit === 'day' && typeof opt.amount === 'number' ? opt.amount : undefined,
-      months: opt.unit === 'month' && typeof opt.amount === 'number' ? opt.amount : undefined,
-    })),
-    { label: t('alltime', { defaultValue: 'All Time' }), value: 'all', period: 'day', allTime: true },
-  ], [t])
+  const PERIOD_OPTIONS: PeriodOption[] = useMemo(
+    () => [
+      ...PERIOD_KEYS.slice(0, 6).map(opt => ({
+        label: typeof opt.amount === 'number' ? `${opt.amount} ${t(`time.${opt.unit}${opt.amount > 1 ? 's' : ''}`)}` : '',
+        value: opt.key,
+        period: opt.period,
+        hours: opt.unit === 'hour' && typeof opt.amount === 'number' ? opt.amount : undefined,
+        days: opt.unit === 'day' && typeof opt.amount === 'number' ? opt.amount : undefined,
+        months: opt.unit === 'month' && typeof opt.amount === 'number' ? opt.amount : undefined,
+      })),
+      { label: t('alltime', { defaultValue: 'All Time' }), value: 'all', period: 'day', allTime: true },
+    ],
+    [t],
+  )
   const [periodOption, setPeriodOption] = useState<PeriodOption>(() => PERIOD_OPTIONS[3])
 
   const { startDate, endDate } = useMemo(() => {
@@ -134,7 +137,7 @@ const DataUsageChart = ({ admin_username }: { admin_username?: string }) => {
   }, [chartData])
 
   return (
-    <Card className="flex flex-col h-full justify-between">
+    <Card className="flex h-full flex-col justify-between">
       <CardHeader className="flex flex-row items-start justify-between gap-2">
         <div>
           <CardTitle>{t('admins.used.traffic', { defaultValue: 'Traffic Usage' })}</CardTitle>
@@ -147,131 +150,136 @@ const DataUsageChart = ({ admin_username }: { admin_username?: string }) => {
             if (found) setPeriodOption(found)
           }}
         >
-          <SelectTrigger className={`w-32 h-8 text-xs${i18n.dir() === 'rtl' ? ' text-right' : ''}`} dir={i18n.dir()}>
+          <SelectTrigger className={`h-8 w-32 text-xs${i18n.dir() === 'rtl' ? 'text-right' : ''}`} dir={i18n.dir()}>
             <SelectValue>{periodOption.label}</SelectValue>
           </SelectTrigger>
           <SelectContent dir={i18n.dir()}>
             {PERIOD_OPTIONS.map(opt => (
-              <SelectItem key={opt.value} value={opt.value} className={i18n.dir() === 'rtl' ? 'text-right' : ''}>{opt.label}</SelectItem>
+              <SelectItem key={opt.value} value={opt.value} className={i18n.dir() === 'rtl' ? 'text-right' : ''}>
+                {opt.label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col justify-center p-2 sm:p-6">
+      <CardContent className="flex flex-1 flex-col justify-center p-2 sm:p-6">
         {chartData.length === 0 ? (
-          <div className="mt-16 flex flex-col items-center justify-center gap-4 text-muted-foreground min-h-[200px]">
+          <div className="mt-16 flex min-h-[200px] flex-col items-center justify-center gap-4 text-muted-foreground">
             <SearchXIcon className="size-16" strokeWidth={1} />
             {t('admins.monitor.no_traffic', { defaultValue: 'No traffic data available' })}
           </div>
         ) : (
           <ChartContainer config={chartConfig} dir="ltr">
             <ResponsiveContainer width="100%" height={320}>
-              <BarChart 
+              <BarChart
                 data={chartData}
                 margin={{ top: 16, right: 8, left: 8, bottom: 8 }}
-                onMouseMove={(state) => {
+                onMouseMove={state => {
                   if (state.activeTooltipIndex !== activeIndex) {
-                    setActiveIndex(state.activeTooltipIndex !== undefined ? state.activeTooltipIndex : null);
+                    setActiveIndex(state.activeTooltipIndex !== undefined ? state.activeTooltipIndex : null)
                   }
                 }}
                 onMouseLeave={() => {
-                  setActiveIndex(null);
+                  setActiveIndex(null)
                 }}
               >
                 <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="date" 
-                  tickLine={false} 
-                  tickMargin={10} 
+                <XAxis
+                  dataKey="date"
+                  tickLine={false}
+                  tickMargin={10}
                   axisLine={false}
                   tickFormatter={(_value: string, index: number): string => {
                     // If this is the last bar, show 'Today' (translated)
                     if (periodOption.hours && index === chartData.length - 1) {
-                      return i18n.language === 'fa' ? 'امروز' : 'Today';
+                      return i18n.language === 'fa' ? 'امروز' : 'Today'
                     }
                     if (periodOption.hours) {
                       // For hour periods, show only time part for compactness
-                      const timePart = chartData[index]?.date?.split(' ')[1];
-                      return timePart || chartData[index]?.date;
+                      const timePart = chartData[index]?.date?.split(' ')[1]
+                      return timePart || chartData[index]?.date
                     }
                     // For day periods, show date or 'Today' if present
                     if (chartData[index]?.date === 'Today') {
-                      return i18n.language === 'fa' ? 'امروز' : 'Today';
+                      return i18n.language === 'fa' ? 'امروز' : 'Today'
                     }
-                    return chartData[index]?.date;
+                    return chartData[index]?.date
                   }}
                 />
                 <YAxis dataKey={'traffic'} tickLine={false} tickMargin={10} axisLine={false} tickFormatter={val => formatBytes(val, 0, true).toString()} />
-                <ChartTooltip 
-                  cursor={false} 
+                <ChartTooltip
+                  cursor={false}
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
-                      const data = payload[0].payload;
-                      const localDate = data.localDate;
-                      const traffic = data.traffic;
+                      const data = payload[0].payload
+                      const localDate = data.localDate
+                      const traffic = data.traffic
                       try {
-                        const dateObj = new Date(localDate);
-                        let formattedDate = '';
+                        const dateObj = new Date(localDate)
+                        let formattedDate = ''
                         if (!isNaN(dateObj.getTime())) {
                           if (i18n.language === 'fa') {
                             if (periodOption.hours) {
-                              formattedDate = dateObj.toLocaleDateString('fa-IR', {
-                                year: 'numeric',
-                                month: '2-digit',
-                                day: '2-digit',
-                              }) + ' ' + dateObj.toLocaleTimeString('fa-IR', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              });
+                              formattedDate =
+                                dateObj.toLocaleDateString('fa-IR', {
+                                  year: 'numeric',
+                                  month: '2-digit',
+                                  day: '2-digit',
+                                }) +
+                                ' ' +
+                                dateObj.toLocaleTimeString('fa-IR', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })
                             } else {
                               formattedDate = dateObj.toLocaleDateString('fa-IR', {
                                 year: 'numeric',
                                 month: '2-digit',
                                 day: '2-digit',
-                              });
+                              })
                             }
                           } else {
                             if (periodOption.hours) {
-                              formattedDate = dateObj.toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: '2-digit',
-                                day: '2-digit',
-                              }) + ' ' + dateObj.toLocaleTimeString('en-US', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              });
+                              formattedDate =
+                                dateObj.toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: '2-digit',
+                                  day: '2-digit',
+                                }) +
+                                ' ' +
+                                dateObj.toLocaleTimeString('en-US', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })
                             } else {
                               formattedDate = dateObj.toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: '2-digit',
                                 day: '2-digit',
-                              });
+                              })
                             }
                           }
                         } else {
-                          formattedDate = data.date;
+                          formattedDate = data.date
                         }
                         return (
                           <div className="rounded-lg border border-border bg-background p-3 shadow-lg">
-                            <p className="text-sm font-medium text-center">{formattedDate}</p>
+                            <p className="text-center text-sm font-medium">{formattedDate}</p>
                             <p className="text-sm text-muted-foreground">
                               {t('admins.traffic', { defaultValue: 'Traffic' })}: <span className="font-medium text-foreground">{formatBytes(traffic, 2)}</span>
                             </p>
                           </div>
-                        );
+                        )
                       } catch (error) {
-                        return null;
+                        return null
                       }
                     }
-                    return null;
+                    return null
                   }}
                 />
                 <Bar dataKey="traffic" radius={6} maxBarSize={48}>
                   {chartData.map((_: any, index: number) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={index === activeIndex ? 'hsl(var(--muted-foreground))' : 'hsl(var(--primary))'}
-                    />
+                    <Cell key={`cell-${index}`} fill={index === activeIndex ? 'hsl(var(--muted-foreground))' : 'hsl(var(--primary))'} />
                   ))}
                 </Bar>
               </BarChart>
@@ -279,20 +287,18 @@ const DataUsageChart = ({ admin_username }: { admin_username?: string }) => {
           </ChartContainer>
         )}
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm mt-0 pt-2 sm:pt-4">
+      <CardFooter className="mt-0 flex-col items-start gap-2 pt-2 text-sm sm:pt-4">
         {chartData.length > 0 && trend !== null && trend > 0 && (
-          <div className="flex gap-2 leading-none font-medium text-green-600 dark:text-green-400">
+          <div className="flex gap-2 font-medium leading-none text-green-600 dark:text-green-400">
             {t('usersTable.trendingUp', { defaultValue: 'Trending up by' })} {trend.toFixed(1)}% <TrendingUp className="h-4 w-4" />
           </div>
         )}
         {chartData.length > 0 && trend !== null && trend < 0 && (
-          <div className="flex gap-2 leading-none font-medium text-red-600 dark:text-red-400">
+          <div className="flex gap-2 font-medium leading-none text-red-600 dark:text-red-400">
             {t('usersTable.trendingDown', { defaultValue: 'Trending down by' })} {Math.abs(trend).toFixed(1)}% <TrendingDown className="h-4 w-4" />
           </div>
         )}
-        <div className="text-muted-foreground leading-none">
-          {t('statistics.trafficUsageDescription', { defaultValue: 'Total traffic usage across all servers' })}
-        </div>
+        <div className="leading-none text-muted-foreground">{t('statistics.trafficUsageDescription', { defaultValue: 'Total traffic usage across all servers' })}</div>
       </CardFooter>
     </Card>
   )

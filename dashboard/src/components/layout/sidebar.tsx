@@ -262,9 +262,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <>
-      <div className="sticky top-0 z-30 bg-neutral-200/75 dark:bg-neutral-900/75 backdrop-blur flex lg:hidden border-b border-sidebar-border py-3 px-4 justify-between items-center">
-        <div className="flex gap-2 items-center">
-          <Logo className="!w-4 !h-4 stroke-[2px]" />
+      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-sidebar-border bg-neutral-200/75 px-4 py-3 backdrop-blur dark:bg-neutral-900/75 lg:hidden">
+        <div className="flex items-center gap-2">
+          <Logo className="!h-4 !w-4 stroke-[2px]" />
           <span className="text-sm font-bold">{t('marzban')}</span>
         </div>
         <SidebarTrigger />
@@ -276,8 +276,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuItem>
               <SidebarMenuButton size="lg" asChild>
                 <a href={REPO_URL} target="_blank" className="!gap-0">
-                  <Logo className="!w-5 !h-5 stroke-[2px]" />
-                  <span className="truncate font-semibold text-sm leading-tight ltr:ml-2 rtl:mr-2">{t('marzban')}</span>
+                  <Logo className="!h-5 !w-5 stroke-[2px]" />
+                  <span className="truncate text-sm font-semibold leading-tight ltr:ml-2 rtl:mr-2">{t('marzban')}</span>
                   <span className="text-xs opacity-45 ltr:ml-1 rtl:mr-1">{version}</span>
                 </a>
               </SidebarMenuButton>
@@ -290,7 +290,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <NavSecondary items={data.navSecondary} className="mt-auto" />
           <div className="flex justify-between px-4 [&>:first-child]:[direction:ltr]">
             <GithubStar />
-            <div className="flex gap-2 items-start">
+            <div className="flex items-start gap-2">
               <Language />
               <ThemeToggle />
             </div>

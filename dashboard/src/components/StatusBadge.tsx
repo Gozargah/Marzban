@@ -37,7 +37,7 @@ export const StatusBadge: FC<UserStatusProps> = ({ expiryDate = null, status: us
 
   if (showOnlyExpiry) {
     return (
-      <div className={cn('flex flex-wrap gap-x-2 justify-start')}>
+      <div className={cn('flex flex-wrap justify-start gap-x-2')}>
         <div className={cn(!dateInfo.time && !dateInfo.status && 'hidden', showExpiry ? 'block' : 'hidden md:block')}>
           <div>
             <span className={cn('inline-block text-xs font-medium', dir === 'rtl' ? 'mr-0.5 md:mr-2' : 'ml-0.5 md:ml-2', 'text-gray-600 dark:text-gray-400')}>
@@ -50,22 +50,22 @@ export const StatusBadge: FC<UserStatusProps> = ({ expiryDate = null, status: us
   }
 
   return (
-    <div className={cn('flex flex-wrap gap-x-2 justify-start')}>
+    <div className={cn('flex flex-wrap justify-start gap-x-2')}>
       <Badge
         className={cn(
-          'flex items-center justify-center rounded-full px-0.5 sm:px-2 py-0.5 w-fit max-w-[150px] gap-x-2 pointer-events-none',
+          'pointer-events-none flex w-fit max-w-[150px] items-center justify-center gap-x-2 rounded-full px-0.5 py-0.5 sm:px-2',
           statusColors[userStatus]?.statusColor || 'bg-gray-400 text-white',
-          'py-2.5 h-6 px-1.5 sm:py-0.5 sm:h-auto sm:px-0.5',
+          'h-6 px-1.5 py-2.5 sm:h-auto sm:px-0.5 sm:py-0.5',
         )}
       >
         <div className={cn('flex items-center gap-1 sm:px-1', showExpiry && 'px-1')}>
-          {StatusIcon && <StatusIcon className="w-4 h-4 sm:w-3 sm:h-3" />}
-          <span className={cn('capitalize text-nowrap font-medium text-xs hidden sm:block', showExpiry && 'block')}>{userStatus && t(`status.${userStatus}`)}</span>
+          {StatusIcon && <StatusIcon className="h-4 w-4 sm:h-3 sm:w-3" />}
+          <span className={cn('hidden text-nowrap text-xs font-medium capitalize sm:block', showExpiry && 'block')}>{userStatus && t(`status.${userStatus}`)}</span>
         </div>
       </Badge>
       <div className={cn(!dateInfo.time && !dateInfo.status && 'hidden', showExpiry ? 'block' : 'hidden md:block')}>
         <div>
-          <span className={cn('inline-block text-[11.5px] sm:text-xs font-normal text-muted-foreground dark:text-muted-foreground', dir === 'rtl' && 'ml-0 mr-1')}>
+          <span className={cn('inline-block text-[11.5px] font-normal text-muted-foreground dark:text-muted-foreground sm:text-xs', dir === 'rtl' && 'ml-0 mr-1')}>
             {t(dateInfo.status, { time: dateInfo.time })}
           </span>
         </div>

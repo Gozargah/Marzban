@@ -18,14 +18,14 @@ const UsageSliderCompact: React.FC<UsageSliderProps> = ({ used, total = 0, statu
   const color = statusColors[status]?.sliderColor
   const { t } = useTranslation()
   return (
-    <div className="flex flex-col justify-between text-xs text-muted-foreground font-medium w-full gap-y-1">
+    <div className="flex w-full flex-col justify-between gap-y-1 text-xs font-medium text-muted-foreground">
       <Progress indicatorClassName={color} value={progressValue} className={cn(isMobile ? 'block' : 'hidden md:block')} />
       <div className="flex items-center justify-between">
         <span className={isMobile ? 'hidden' : ''} dir="ltr">
           {formatBytes(used)} / {isUnlimited ? <span className="font-system-ui">∞</span> : formatBytes(total)}
         </span>
         <div className={cn(isMobile ? 'block' : 'hidden md:block')}>
-          <span>{t('usersTable.total')}:</span> <span dir='ltr'>{formatBytes(totalUsedTraffic || 0)}</span>
+          <span>{t('usersTable.total')}:</span> <span dir="ltr">{formatBytes(totalUsedTraffic || 0)}</span>
         </div>
       </div>
     </div>

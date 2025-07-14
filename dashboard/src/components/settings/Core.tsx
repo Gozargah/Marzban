@@ -25,9 +25,9 @@ export default function Core({ core, onEdit, onDuplicate, onDelete }: CoreProps)
   }
 
   return (
-    <Card className="px-4 py-5 relative group h-full hover:bg-accent transition-colors">
+    <Card className="group relative h-full px-4 py-5 transition-colors hover:bg-accent">
       <div className="flex items-center gap-3">
-        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onEdit(core)}>
+        <div className="min-w-0 flex-1 cursor-pointer" onClick={() => onEdit(core)}>
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className={cn('min-h-2 min-w-2 rounded-full', 'bg-green-500')} />
@@ -48,7 +48,7 @@ export default function Core({ core, onEdit, onDuplicate, onDelete }: CoreProps)
                 onEdit(core)
               }}
             >
-              <Pencil className="h-4 w-4 mr-2" />
+              <Pencil className="mr-2 h-4 w-4" />
               {t('edit')}
             </DropdownMenuItem>
             {onDuplicate && (
@@ -58,12 +58,12 @@ export default function Core({ core, onEdit, onDuplicate, onDelete }: CoreProps)
                   onDuplicate()
                 }}
               >
-                <Copy className="h-4 w-4 mr-2" />
+                <Copy className="mr-2 h-4 w-4" />
                 {t('duplicate')}
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onSelect={handleDeleteClick} className="text-destructive">
-              <Trash2 className="h-4 w-4 mr-2" />
+              <Trash2 className="mr-2 h-4 w-4" />
               {t('delete')}
             </DropdownMenuItem>
           </DropdownMenuContent>

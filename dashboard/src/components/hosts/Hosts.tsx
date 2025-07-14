@@ -729,15 +729,15 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit, editing
   // Debounce the host updates to prevent too many API calls
   useEffect(() => {
     if (skipNextDebounce) {
-        setSkipNextDebounce(false)
-        return
+      setSkipNextDebounce(false)
+      return
     }
     const handler = setTimeout(() => {
-        setDebouncedHosts(hosts)
+      setDebouncedHosts(hosts)
     }, 1500)
 
     return () => {
-        clearTimeout(handler)
+      clearTimeout(handler)
     }
   }, [hosts])
 
@@ -775,7 +775,7 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit, editing
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={sortableHosts} strategy={rectSortingStrategy}>
             <div className="max-w-screen-[2000px] min-h-screen overflow-hidden">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {sortedHosts.map(host => (
                   <SortableHost key={host.id ?? 'new'} host={host} onEdit={handleEdit} onDuplicate={handleDuplicate} onDataChanged={refreshHostsData} />
                 ))}

@@ -374,7 +374,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
   const { i18n } = useTranslation()
   const isPersianLocale = i18n.language === 'fa'
   const [usePersianCalendar, setUsePersianCalendar] = useState(isPersianLocale)
-  
+
   // Reset calendar state when modal opens/closes
   useEffect(() => {
     if (!isDialogOpen) {
@@ -821,19 +821,25 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
         const hasProxySettings = values.proxy_settings && Object.values(values.proxy_settings).some(settings => settings && Object.values(settings).some(value => value !== undefined && value !== ''))
 
         setLoading(true)
-        
+
         // Clean proxy settings to ensure proper enum values
-        const cleanedProxySettings = hasProxySettings ? {
-          ...values.proxy_settings,
-          vless: values.proxy_settings?.vless ? {
-            ...values.proxy_settings.vless,
-            flow: values.proxy_settings.vless.flow || undefined
-          } : undefined,
-          shadowsocks: values.proxy_settings?.shadowsocks ? {
-            ...values.proxy_settings.shadowsocks,
-            method: values.proxy_settings.shadowsocks.method || undefined
-          } : undefined
-        } : undefined
+        const cleanedProxySettings = hasProxySettings
+          ? {
+              ...values.proxy_settings,
+              vless: values.proxy_settings?.vless
+                ? {
+                    ...values.proxy_settings.vless,
+                    flow: values.proxy_settings.vless.flow || undefined,
+                  }
+                : undefined,
+              shadowsocks: values.proxy_settings?.shadowsocks
+                ? {
+                    ...values.proxy_settings.shadowsocks,
+                    method: values.proxy_settings.shadowsocks.method || undefined,
+                  }
+                : undefined,
+            }
+          : undefined
 
         // Convert data_limit from GB to bytes
         const sendValues = {
@@ -1801,7 +1807,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                             <GroupsSelector
                               control={form.control}
                               name="group_ids"
-                              onGroupsChange={(groups) => {
+                              onGroupsChange={groups => {
                                 field.onChange(groups)
                                 handleFieldChange('group_ids', groups)
 
@@ -1837,12 +1843,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
               >
                 {t('cancel', { defaultValue: 'Cancel' })}
               </Button>
-              <LoaderButton
-                type="submit"
-                isLoading={loading}
-                disabled={!isFormValid && !selectedTemplateId}
-                loadingText={editingUser ? t('modifying') : t('creating')}
-              >
+              <LoaderButton type="submit" isLoading={loading} disabled={!isFormValid && !selectedTemplateId} loadingText={editingUser ? t('modifying') : t('creating')}>
                 {editingUser ? t('modify', { defaultValue: 'Modify' }) : t('create', { defaultValue: 'Create' })}
               </LoaderButton>
             </div>

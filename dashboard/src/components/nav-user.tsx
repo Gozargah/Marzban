@@ -28,15 +28,15 @@ export function NavUser({
                 <div className="flex items-center gap-2">
                   <span className="truncate font-semibold">{username.name}</span>
                   {admin && (
-                    <Badge variant={admin.is_sudo ? 'secondary' : 'outline'} className="hidden lg:hidden text-[10px] px-1 py-0 h-4">
+                    <Badge variant={admin.is_sudo ? 'secondary' : 'outline'} className="hidden h-4 px-1 py-0 text-[10px] lg:hidden">
                       {admin.is_sudo ? (
                         <>
-                          <Shield className="size-3 mr-1" />
+                          <Shield className="mr-1 size-3" />
                           {t('sudo')}
                         </>
                       ) : (
                         <>
-                          <UsersIcon className="size-3 mr-1" />
+                          <UsersIcon className="mr-1 size-3" />
                           {t('admin')}
                         </>
                       )}
@@ -46,7 +46,9 @@ export function NavUser({
                 {admin && (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Network className="size-3" />
-                    <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{formatBytes(admin?.used_traffic || 0)}</span>
+                    <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+                      {formatBytes(admin?.used_traffic || 0)}
+                    </span>
                   </div>
                 )}
               </div>
@@ -60,7 +62,7 @@ export function NavUser({
                   <div className="flex items-center gap-2">
                     <span className="truncate font-semibold">{username.name}</span>
                     {admin && (
-                      <Badge variant={admin.is_sudo ? 'secondary' : 'outline'} className="text-[10px] py-0 h-4 flex items-center gap-2">
+                      <Badge variant={admin.is_sudo ? 'secondary' : 'outline'} className="flex h-4 items-center gap-2 py-0 text-[10px]">
                         {admin.is_sudo ? (
                           <>
                             <Shield className="size-3" />
@@ -81,13 +83,19 @@ export function NavUser({
                     <div className="flex items-center gap-2">
                       <Network className="size-3" />
                       <span>
-                        {t('admins.used.traffic')}: <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{formatBytes(admin?.used_traffic || 0)}</span>
+                        {t('admins.used.traffic')}:{' '}
+                        <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+                          {formatBytes(admin?.used_traffic || 0)}
+                        </span>
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Wifi className="size-3" />
                       <span>
-                        {t('admins.lifetime.used.traffic')}: <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{formatBytes(admin?.lifetime_used_traffic || 0)}</span>
+                        {t('admins.lifetime.used.traffic')}:{' '}
+                        <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+                          {formatBytes(admin?.lifetime_used_traffic || 0)}
+                        </span>
                       </span>
                     </div>
                     <div className="flex items-center gap-2">

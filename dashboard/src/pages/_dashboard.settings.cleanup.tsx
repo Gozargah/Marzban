@@ -4,7 +4,17 @@ import { Calendar } from '@/components/ui/calendar'
 import { Calendar as PersianCalendar } from '@/components/ui/persian-calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CalendarIcon, Database, RotateCcw, AlertTriangle, Trash2, Server } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -43,14 +53,14 @@ export default function CleanupSettings() {
     deleteExpiredUsersMutation.mutate(
       { params: Object.keys(params).length > 0 ? params : undefined },
       {
-        onSuccess: (response) => {
+        onSuccess: response => {
           const count = response?.count || 0
           toast.success(t('settings.cleanup.expiredUsers.deleteSuccess', { count }))
         },
         onError: () => {
           toast.error(t('settings.cleanup.expiredUsers.deleteFailed'))
-        }
-      }
+        },
+      },
     )
   }
 
@@ -72,7 +82,7 @@ export default function CleanupSettings() {
       },
       onError: () => {
         toast.error(t('settings.cleanup.resetUsage.resetFailed'))
-      }
+      },
     })
   }
 
@@ -89,7 +99,7 @@ export default function CleanupSettings() {
     clearUsageDataMutation.mutate(
       {
         table: selectedTable as UsageTable,
-        params: Object.keys(params).length > 0 ? params : undefined
+        params: Object.keys(params).length > 0 ? params : undefined,
       },
       {
         onSuccess: () => {
@@ -97,13 +107,13 @@ export default function CleanupSettings() {
         },
         onError: () => {
           toast.error(t('settings.cleanup.clearUsageData.clearFailed'))
-        }
-      }
+        },
+      },
     )
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       {/* Delete Expired Users Section */}
       <Card>
         <CardHeader>
@@ -111,25 +121,15 @@ export default function CleanupSettings() {
             <Database className="h-5 w-5" />
             {t('settings.cleanup.expiredUsers.title')}
           </CardTitle>
-          <CardDescription>
-            {t('settings.cleanup.expiredUsers.description')}
-          </CardDescription>
+          <CardDescription>{t('settings.cleanup.expiredUsers.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium">
-                {t('settings.cleanup.expiredUsers.expiredAfter')}
-              </label>
+              <label className="text-sm font-medium">{t('settings.cleanup.expiredUsers.expiredAfter')}</label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      'w-full justify-start text-left font-normal',
-                      !expiredAfter && 'text-muted-foreground'
-                    )}
-                  >
+                  <Button variant="outline" className={cn('w-full justify-start text-left font-normal', !expiredAfter && 'text-muted-foreground')}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {expiredAfter ? formatDate(expiredAfter) : t('settings.cleanup.expiredUsers.expiredAfterPlaceholder')}
                   </Button>
@@ -140,7 +140,7 @@ export default function CleanupSettings() {
                       mode="single"
                       selected={expiredAfter}
                       onSelect={setExpiredAfter}
-                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                      disabled={date => date > new Date() || date < new Date('1900-01-01')}
                       captionLayout="dropdown"
                       formatters={{
                         formatMonthDropdown: date => date.toLocaleString('fa-IR', { month: 'short' }),
@@ -151,7 +151,7 @@ export default function CleanupSettings() {
                       mode="single"
                       selected={expiredAfter}
                       onSelect={setExpiredAfter}
-                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                      disabled={date => date > new Date() || date < new Date('1900-01-01')}
                       captionLayout="dropdown"
                       formatters={{
                         formatMonthDropdown: date => date.toLocaleString('default', { month: 'short' }),
@@ -163,18 +163,10 @@ export default function CleanupSettings() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">
-                {t('settings.cleanup.expiredUsers.expiredBefore')}
-              </label>
+              <label className="text-sm font-medium">{t('settings.cleanup.expiredUsers.expiredBefore')}</label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      'w-full justify-start text-left font-normal',
-                      !expiredBefore && 'text-muted-foreground'
-                    )}
-                  >
+                  <Button variant="outline" className={cn('w-full justify-start text-left font-normal', !expiredBefore && 'text-muted-foreground')}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {expiredBefore ? formatDate(expiredBefore) : t('settings.cleanup.expiredUsers.expiredBeforePlaceholder')}
                   </Button>
@@ -185,7 +177,7 @@ export default function CleanupSettings() {
                       mode="single"
                       selected={expiredBefore}
                       onSelect={setExpiredBefore}
-                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                      disabled={date => date > new Date() || date < new Date('1900-01-01')}
                       captionLayout="dropdown"
                       formatters={{
                         formatMonthDropdown: date => date.toLocaleString('fa-IR', { month: 'short' }),
@@ -196,7 +188,7 @@ export default function CleanupSettings() {
                       mode="single"
                       selected={expiredBefore}
                       onSelect={setExpiredBefore}
-                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                      disabled={date => date > new Date() || date < new Date('1900-01-01')}
                       captionLayout="dropdown"
                       formatters={{
                         formatMonthDropdown: date => date.toLocaleString('default', { month: 'short' }),
@@ -208,17 +200,11 @@ export default function CleanupSettings() {
             </div>
           </div>
 
-          <div className="text-sm text-muted-foreground">
-            {t('settings.cleanup.expiredUsers.selectDateRange')}
-          </div>
+          <div className="text-sm text-muted-foreground">{t('settings.cleanup.expiredUsers.selectDateRange')}</div>
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button
-                variant="destructive"
-                disabled={deleteExpiredUsersMutation.isPending}
-                className="w-full"
-              >
+              <Button variant="destructive" disabled={deleteExpiredUsersMutation.isPending} className="w-full">
                 <Trash2 className="mr-2 h-4 w-4" />
                 {deleteExpiredUsersMutation.isPending ? t('settings.cleanup.expiredUsers.deleting') : t('settings.cleanup.expiredUsers.deleteExpired')}
               </Button>
@@ -229,17 +215,11 @@ export default function CleanupSettings() {
                   <AlertTriangle className="h-5 w-5 text-destructive" />
                   {t('settings.cleanup.expiredUsers.confirmDelete')}
                 </AlertDialogTitle>
-                <AlertDialogDescription className={cn(dir === 'rtl' ? 'text-right' : 'text-left', 'text-sm')}>
-                  {t('settings.cleanup.expiredUsers.confirmDeleteMessage')}
-                </AlertDialogDescription>
+                <AlertDialogDescription className={cn(dir === 'rtl' ? 'text-right' : 'text-left', 'text-sm')}>{t('settings.cleanup.expiredUsers.confirmDeleteMessage')}</AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter className="gap-2">
                 <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDeleteExpired}
-                  disabled={deleteExpiredUsersMutation.isPending}
-                  className="bg-destructive !m-0 text-destructive-foreground hover:bg-destructive/90"
-                >
+                <AlertDialogAction onClick={handleDeleteExpired} disabled={deleteExpiredUsersMutation.isPending} className="!m-0 bg-destructive text-destructive-foreground hover:bg-destructive/90">
                   {t('settings.cleanup.expiredUsers.deleteExpired')}
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -255,16 +235,12 @@ export default function CleanupSettings() {
             <RotateCcw className="h-5 w-5" />
             {t('settings.cleanup.resetUsage.title')}
           </CardTitle>
-          <CardDescription>
-            {t('settings.cleanup.resetUsage.description')}
-          </CardDescription>
+          <CardDescription>{t('settings.cleanup.resetUsage.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert>
             <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              {t('settings.cleanup.resetUsage.warning')}
-            </AlertDescription>
+            <AlertDescription>{t('settings.cleanup.resetUsage.warning')}</AlertDescription>
           </Alert>
 
           <AlertDialog>
@@ -280,17 +256,11 @@ export default function CleanupSettings() {
                   <AlertTriangle className="h-5 w-5 text-destructive" />
                   {t('settings.cleanup.resetUsage.confirmReset')}
                 </AlertDialogTitle>
-                <AlertDialogDescription className={cn(dir === 'rtl' ? 'text-right' : 'text-left')}>
-                  {t('settings.cleanup.resetUsage.confirmResetMessage')}
-                </AlertDialogDescription>
+                <AlertDialogDescription className={cn(dir === 'rtl' ? 'text-right' : 'text-left')}>{t('settings.cleanup.resetUsage.confirmResetMessage')}</AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter className="gap-2">
                 <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleResetUsage}
-                  disabled={resetUsersDataUsageMutation.isPending}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90 !m-0"
-                >
+                <AlertDialogAction onClick={handleResetUsage} disabled={resetUsersDataUsageMutation.isPending} className="!m-0 bg-destructive text-destructive-foreground hover:bg-destructive/90">
                   {t('settings.cleanup.resetUsage.resetAll')}
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -306,21 +276,17 @@ export default function CleanupSettings() {
             <Server className="h-5 w-5" />
             {t('settings.cleanup.clearUsageData.title')}
           </CardTitle>
-          <CardDescription>
-            {t('settings.cleanup.clearUsageData.description')}
-          </CardDescription>
+          <CardDescription>{t('settings.cleanup.clearUsageData.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">
-              {t('settings.cleanup.clearUsageData.selectTable')}
-            </label>
+            <label className="text-sm font-medium">{t('settings.cleanup.clearUsageData.selectTable')}</label>
             <Select value={selectedTable} onValueChange={setSelectedTable}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={t('settings.cleanup.clearUsageData.selectTablePlaceholder')} />
               </SelectTrigger>
               <SelectContent>
-                {usageDataTables.map((table) => (
+                {usageDataTables.map(table => (
                   <SelectItem key={table.value} value={table.value}>
                     {table.label}
                   </SelectItem>
@@ -329,20 +295,12 @@ export default function CleanupSettings() {
             </Select>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium">
-                {t('settings.cleanup.clearUsageData.dataAfter')}
-              </label>
+              <label className="text-sm font-medium">{t('settings.cleanup.clearUsageData.dataAfter')}</label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      'w-full justify-start text-left font-normal',
-                      !clearDataAfter && 'text-muted-foreground'
-                    )}
-                  >
+                  <Button variant="outline" className={cn('w-full justify-start text-left font-normal', !clearDataAfter && 'text-muted-foreground')}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {clearDataAfter ? formatDate(clearDataAfter) : t('settings.cleanup.clearUsageData.dataAfterPlaceholder')}
                   </Button>
@@ -353,7 +311,7 @@ export default function CleanupSettings() {
                       mode="single"
                       selected={clearDataAfter}
                       onSelect={setClearDataAfter}
-                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                      disabled={date => date > new Date() || date < new Date('1900-01-01')}
                       captionLayout="dropdown"
                       formatters={{
                         formatMonthDropdown: date => date.toLocaleString('fa-IR', { month: 'short' }),
@@ -364,7 +322,7 @@ export default function CleanupSettings() {
                       mode="single"
                       selected={clearDataAfter}
                       onSelect={setClearDataAfter}
-                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                      disabled={date => date > new Date() || date < new Date('1900-01-01')}
                       captionLayout="dropdown"
                       formatters={{
                         formatMonthDropdown: date => date.toLocaleString('default', { month: 'short' }),
@@ -376,18 +334,10 @@ export default function CleanupSettings() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">
-                {t('settings.cleanup.clearUsageData.dataBefore')}
-              </label>
+              <label className="text-sm font-medium">{t('settings.cleanup.clearUsageData.dataBefore')}</label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      'w-full justify-start text-left font-normal',
-                      !clearDataBefore && 'text-muted-foreground'
-                    )}
-                  >
+                  <Button variant="outline" className={cn('w-full justify-start text-left font-normal', !clearDataBefore && 'text-muted-foreground')}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {clearDataBefore ? formatDate(clearDataBefore) : t('settings.cleanup.clearUsageData.dataBeforePlaceholder')}
                   </Button>
@@ -398,7 +348,7 @@ export default function CleanupSettings() {
                       mode="single"
                       selected={clearDataBefore}
                       onSelect={setClearDataBefore}
-                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                      disabled={date => date > new Date() || date < new Date('1900-01-01')}
                       captionLayout="dropdown"
                       formatters={{
                         formatMonthDropdown: date => date.toLocaleString('fa-IR', { month: 'short' }),
@@ -409,7 +359,7 @@ export default function CleanupSettings() {
                       mode="single"
                       selected={clearDataBefore}
                       onSelect={setClearDataBefore}
-                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                      disabled={date => date > new Date() || date < new Date('1900-01-01')}
                       captionLayout="dropdown"
                       formatters={{
                         formatMonthDropdown: date => date.toLocaleString('default', { month: 'short' }),
@@ -421,24 +371,16 @@ export default function CleanupSettings() {
             </div>
           </div>
 
-          <div className="text-sm text-muted-foreground">
-            {t('settings.cleanup.clearUsageData.selectDateRange')}
-          </div>
+          <div className="text-sm text-muted-foreground">{t('settings.cleanup.clearUsageData.selectDateRange')}</div>
 
           <Alert>
             <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              {t('settings.cleanup.clearUsageData.warning')}
-            </AlertDescription>
+            <AlertDescription>{t('settings.cleanup.clearUsageData.warning')}</AlertDescription>
           </Alert>
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button
-                variant="destructive"
-                disabled={!selectedTable || clearUsageDataMutation.isPending}
-                className="w-full"
-              >
+              <Button variant="destructive" disabled={!selectedTable || clearUsageDataMutation.isPending} className="w-full">
                 <Server className="mr-2 h-4 w-4" />
                 {clearUsageDataMutation.isPending ? t('settings.cleanup.clearUsageData.clearing') : t('settings.cleanup.clearUsageData.clearData')}
               </Button>
@@ -455,11 +397,7 @@ export default function CleanupSettings() {
               </AlertDialogHeader>
               <AlertDialogFooter className="gap-2">
                 <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleClearUsageData}
-                  disabled={clearUsageDataMutation.isPending}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90 !m-0"
-                >
+                <AlertDialogAction onClick={handleClearUsageData} disabled={clearUsageDataMutation.isPending} className="!m-0 bg-destructive text-destructive-foreground hover:bg-destructive/90">
                   {t('settings.cleanup.clearUsageData.clearData')}
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -469,4 +407,4 @@ export default function CleanupSettings() {
       </Card>
     </div>
   )
-} 
+}

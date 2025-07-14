@@ -129,34 +129,34 @@ export function CostumeBarChart({ nodeId }: CostumeBarChartProps) {
   return (
     <Card>
       <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
-        <div className="flex flex-1 flex-col sm:flex-row gap-1 px-6 py-6 sm:py-6 border-b">
-          <div className="flex flex-1 flex-col justify-center align-middle gap-1 px-1 py-1">
+        <div className="flex flex-1 flex-col gap-1 border-b px-6 py-6 sm:flex-row sm:py-6">
+          <div className="flex flex-1 flex-col justify-center gap-1 px-1 py-1 align-middle">
             <CardTitle>{t('statistics.trafficUsage')}</CardTitle>
             <CardDescription>{t('statistics.trafficUsageDescription')}</CardDescription>
           </div>
-          <div className="px-1 py-1 flex justify-center align-middle flex-col">
+          <div className="flex flex-col justify-center px-1 py-1 align-middle">
             <TimeRangeSelector onRangeChange={setDateRange} />
           </div>
         </div>
-        <div className="sm:border-l p-6 m-0 flex flex-col justify-center px-4 ">
-          <span className="text-muted-foreground text-xs sm:text-sm">{t('statistics.usageDuringPeriod')}</span>
-          <span className="text-foreground text-lg flex justify-center">{isLoading ? <Skeleton className="h-5 w-20" /> : totalUsage}</span>
+        <div className="m-0 flex flex-col justify-center p-6 px-4 sm:border-l">
+          <span className="text-xs text-muted-foreground sm:text-sm">{t('statistics.usageDuringPeriod')}</span>
+          <span className="flex justify-center text-lg text-foreground">{isLoading ? <Skeleton className="h-5 w-20" /> : totalUsage}</span>
         </div>
       </CardHeader>
       <CardContent dir={dir} className="pt-8">
         {isLoading ? (
-          <div className="max-h-[400px] min-h-[200px] w-full flex items-center justify-center">
+          <div className="flex max-h-[400px] min-h-[200px] w-full items-center justify-center">
             <Skeleton className="h-[300px] w-full" />
           </div>
         ) : error ? (
           <EmptyState type="error" className="max-h-[400px] min-h-[200px]" />
         ) : !dateRange ? (
-          <EmptyState 
-            type="no-data" 
+          <EmptyState
+            type="no-data"
             title={t('statistics.selectTimeRange')}
             description={t('statistics.selectTimeRangeDescription')}
             icon={<TrendingUp className="h-12 w-12 text-muted-foreground/50" />}
-            className="max-h-[400px] min-h-[200px]" 
+            className="max-h-[400px] min-h-[200px]"
           />
         ) : (
           <ChartContainer dir={'ltr'} config={chartConfig} className="max-h-[400px] min-h-[200px] w-full">
@@ -169,12 +169,7 @@ export function CostumeBarChart({ nodeId }: CostumeBarChartProps) {
                 <Bar dataKey="usage" fill="var(--color-usage)" radius={8} />
               </BarChart>
             ) : (
-              <EmptyState 
-                type="no-data" 
-                title={t('statistics.noDataInRange')}
-                description={t('statistics.noDataInRangeDescription')}
-                className="max-h-[400px] min-h-[200px]" 
-              />
+              <EmptyState type="no-data" title={t('statistics.noDataInRange')} description={t('statistics.noDataInRangeDescription')} className="max-h-[400px] min-h-[200px]" />
             )}
           </ChartContainer>
         )}
