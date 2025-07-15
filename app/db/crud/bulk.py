@@ -1,5 +1,6 @@
 from datetime import datetime as dt, timezone as tz
 from typing import List, Optional
+from unittest import result
 
 from sqlalchemy import and_, case, cast, delete, func, or_, select, text, update
 from sqlalchemy.dialects.postgresql import JSONB
@@ -20,7 +21,7 @@ from app.db.models import (
 from app.models.group import BulkGroup
 from app.models.user import BulkUser, BulkUsersProxy
 
-from .general import get_datetime_add_expression, json_extract
+from .general import get_datetime_add_expression
 from .user import load_user_attrs
 
 
@@ -145,24 +146,17 @@ async def add_groups_to_users(db: AsyncSession, bulk_model: BulkGroup) -> List[U
     """
     Bulk add groups to users and return list of affected User objects.
     """
-    conditions = [users_groups_association.c.groups_id.in_(bulk_model.group_ids)]
-
+    
     user_ids = await _resolve_target_user_ids(db, bulk_model)
 
-    if bulk_model.users or bulk_model.admins:
-        conditions.append(users_groups_association.c.user_id.in_(user_ids))
+    stmt = select(users_groups_association)
+    if bulk_model.users or bulk_model.admins or bulk_model.has_group_ids:
+        stmt = stmt.where(users_groups_association.c.user_id.in_(user_ids))
 
     # Fetch existing associations
-    existing = await db.execute(
-        select(users_groups_association).where(
-            and_(*conditions),
-        )
-    )
+    existing = await db.execute(stmt)
 
     existing_pairs = {(r.user_id, r.groups_id) for r in existing.all()}
-
-    if not existing_pairs:
-        return []
 
     # Prepare new associations
     new_rows = [
@@ -196,11 +190,13 @@ async def remove_groups_from_users(db: AsyncSession, bulk_model: BulkGroup) -> L
         conditions.append(users_groups_association.c.user_id.in_(user_ids))
 
     # Identify affected users
-    result = await db.execute(
-        select(User)
-        .distinct()
-        .join(users_groups_association, User.id == users_groups_association.c.user_id)
+    subquery = (
+        select(users_groups_association.c.user_id)
         .where(and_(*conditions))
+        .distinct()
+    )
+    result = await db.execute(
+        select(User).where(User.id.in_(subquery))
     )
     users = result.scalars().all()
 
@@ -332,36 +328,24 @@ async def update_users_datalimit(db: AsyncSession, bulk_model: BulkUser) -> List
 
 async def update_users_proxy_settings(db: AsyncSession, bulk_model: BulkUsersProxy):
     """
-    Bulk update the `proxy_settings` JSON field for users across PostgreSQL, MySQL, or SQLite.
-
-    Uses `json_extract` for filtering users who don't already have the target `flow` or `method`.
-
-    Args:
-        db (AsyncSession): SQLAlchemy async session.
-        bulk_model (BulkUsersProxy): Contains target flow/method and filters.
-
-    Raises:
-        NotImplementedError: If DB dialect is not supported.
-        SQLAlchemyError: If DB operation fails.
+    Bulk update the `proxy_settings` JSON field for users and return updated rows.
     """
     conditions = create_conditions(bulk_model)
 
-    # Apply user-level filters
     if bulk_model.users:
         conditions.append(User.id.in_(bulk_model.users))
 
-    # Filter out users who already have the target values (optional optimization)
-    if bulk_model.flow is not None:
-        conditions.append(json_extract(User.proxy_settings, "$.vless.flow") != str(bulk_model.flow.value))
+    # First select the users that will be updated
+    select_stmt = select(User).where(*conditions)
+    result = await db.execute(select_stmt)
+    users_to_update = result.scalars().all()
 
-    if bulk_model.method is not None:
-        conditions.append(json_extract(User.proxy_settings, "$.shadowsocks.method") != str(bulk_model.method.value))
+    if not users_to_update:
+        return []
 
-    stmt = select(User).where(*conditions)
-
+    # Prepare the update statement
     if DATABASE_DIALECT == "postgresql":
         proxy_settings_expr = cast(User.proxy_settings, JSONB)
-
         if bulk_model.flow is not None:
             proxy_settings_expr = func.jsonb_set(
                 proxy_settings_expr,
@@ -376,23 +360,27 @@ async def update_users_proxy_settings(db: AsyncSession, bulk_model: BulkUsersPro
                 cast(f"{bulk_model.method.value}", JSONB),
                 True,
             )
-
-        stmt = update(User).where(*conditions).values(proxy_settings=proxy_settings_expr)
-
     else:
         proxy_settings_expr = User.proxy_settings
-
         if bulk_model.flow is not None:
             proxy_settings_expr = func.json_set(proxy_settings_expr, "$.vless.flow", f"{bulk_model.flow.value}")
-
         if bulk_model.method is not None:
             proxy_settings_expr = func.json_set(
                 proxy_settings_expr, "$.shadowsocks.method", f"{bulk_model.method.value}"
             )
 
-        stmt = update(User).where(*conditions).values(proxy_settings=proxy_settings_expr)
-
-    result = await db.execute(stmt)
+    # Perform the update
+    update_stmt = (
+        update(User)
+        .where(*conditions)
+        .values(proxy_settings=proxy_settings_expr)
+    )
+    await db.execute(update_stmt)
     await db.commit()
-    updated_users = result.scalars().all()
-    return updated_users
+
+    # Refresh the user objects to get updated values
+    for user in users_to_update:
+        await db.refresh(user)
+        await load_user_attrs(user)
+
+    return users_to_update

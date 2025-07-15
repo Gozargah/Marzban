@@ -320,14 +320,14 @@ async def get_user_usages(
     )
 
 
-async def get_users_count(db: AsyncSession, status: UserStatus = None, admin: Admin = None) -> int:
+async def get_users_count(db: AsyncSession, status: UserStatus = None, admin_id: int = None) -> int:
     """
     Gets the total count of users with optional filters.
 
     Args:
         db (AsyncSession): Database session.
         status (UserStatus, optional): Filter by user status.
-        admin (Admin, optional): Filter by admin.
+        admin_id (int, optional): Filter by admin.
     Returns:
         int: Total count of users.
     """
@@ -336,8 +336,8 @@ async def get_users_count(db: AsyncSession, status: UserStatus = None, admin: Ad
     filters = []
     if status:
         filters.append(User.status == status)
-    if admin:
-        filters.append(User.admin_id == admin.id)
+    if admin_id:
+        filters.append(User.admin_id == admin_id)
 
     if filters:
         stmt = stmt.where(and_(*filters))
@@ -982,20 +982,20 @@ async def delete_notification_reminder(db: AsyncSession, db_reminder: Notificati
     await db.commit()
 
 
-async def count_online_users(db: AsyncSession, time_delta: timedelta, admin: Admin | None = None):
+async def count_online_users(db: AsyncSession, time_delta: timedelta, admin_id: int | None = None):
     """
     Counts the number of users who have been online within the specified time delta.
 
     Args:
         db (AsyncSession): The database session.
         time_delta (timedelta): The time period to check for online users.
-        admin (Admin, optional): Filter by admin.
+        admin_id (int, optional): Filter by admin.
 
     Returns:
         int: The number of users who have been online within the specified time period.
     """
     twenty_four_hours_ago = datetime.now(timezone.utc) - time_delta
     query = select(func.count(User.id)).where(User.online_at.isnot(None), User.online_at >= twenty_four_hours_ago)
-    if admin and not admin.is_sudo:
-        query = query.where(User.admin_id == admin.id)
+    if admin_id:
+        query = query.where(User.admin_id == admin_id)
     return (await db.execute(query)).scalar_one_or_none()

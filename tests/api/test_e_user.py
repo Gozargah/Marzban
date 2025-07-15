@@ -4,7 +4,7 @@ from fastapi import status
 
 from tests.api import client
 
-from .test_user_template import test_user_template_create  # noqa
+from tests.api.test_f_user_template import test_user_template_create # noqa
 
 
 def test_user_create_active(access_token):
