@@ -31,6 +31,7 @@ class SystemOperation(BaseOperation):
         elif not admin.is_sudo:
             admin_param = await get_admin(db, admin.username)
 
+        admin_id = admin_param.id if admin_param else None
         # Gather remaining async CRUD operations together
         (
             total_user,
@@ -41,13 +42,13 @@ class SystemOperation(BaseOperation):
             limited_users,
             online_users,
         ) = await asyncio.gather(
-            get_users_count(db, admin=admin_param),
-            get_users_count(db, status=UserStatus.active, admin=admin_param),
-            get_users_count(db, status=UserStatus.disabled, admin=admin_param),
-            get_users_count(db, status=UserStatus.on_hold, admin=admin_param),
-            get_users_count(db, status=UserStatus.expired, admin=admin_param),
-            get_users_count(db, status=UserStatus.limited, admin=admin_param),
-            count_online_users(db, timedelta(minutes=2), admin_param),
+            get_users_count(db, None, admin_id),
+            get_users_count(db, UserStatus.active, admin_id),
+            get_users_count(db, UserStatus.disabled, admin_id),
+            get_users_count(db, UserStatus.on_hold, admin_id),
+            get_users_count(db, UserStatus.expired, admin_id),
+            get_users_count(db, UserStatus.limited, admin_id),
+            count_online_users(db, timedelta(minutes=2), admin_id),
         )
 
         return SystemStats(

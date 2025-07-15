@@ -323,7 +323,11 @@ class UserOperation(BaseOperation):
             logger.info(f'User "{user}" deleted by admin "{by}"')
 
     async def get_expired_users(
-        self, db: AsyncSession, admin: AdminDetails, expired_after: dt = None, expired_before: dt = None
+        self,
+        db: AsyncSession,
+        expired_after: dt = None,
+        expired_before: dt = None,
+        admin_username: str = None,
     ) -> list[str]:
         """
         Get users who have expired within the specified date range.
@@ -335,15 +339,20 @@ class UserOperation(BaseOperation):
         """
 
         expired_after, expired_before = await self.validate_dates(expired_after, expired_before)
-        if not admin.is_sudo:
-            id = (await self.get_validated_admin(db, admin.username)).id
+        if admin_username:
+            admin_id = (await self.get_validated_admin(db, admin_username)).id
         else:
-            id = None
-        users = await get_expired_users(db, expired_after, expired_before, id)
+            admin_id = None
+        users = await get_expired_users(db, expired_after, expired_before, admin_id)
         return [row.username for row in users]
 
     async def delete_expired_users(
-        self, db: AsyncSession, admin: AdminDetails, expired_after: dt = None, expired_before: dt = None
+        self,
+        db: AsyncSession,
+        admin: AdminDetails,
+        expired_after: dt = None,
+        expired_before: dt = None,
+        admin_username: str = None,
     ) -> RemoveUsersResponse:
         """
         Delete users who have expired within the specified date range.
@@ -354,11 +363,11 @@ class UserOperation(BaseOperation):
         """
 
         expired_after, expired_before = await self.validate_dates(expired_after, expired_before)
-        if not admin.is_sudo:
-            id = (await self.get_validated_admin(db, admin.username)).id
+        if admin_username:
+            admin_id = (await self.get_validated_admin(db, admin_username)).id
         else:
-            id = None
-        users = await get_expired_users(db, expired_after, expired_before, id)
+            admin_id = None
+        users = await get_expired_users(db, expired_after, expired_before, admin_id)
         await remove_users(db, users)
 
         username_list = [row.username for row in users]

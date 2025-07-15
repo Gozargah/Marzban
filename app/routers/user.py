@@ -220,7 +220,8 @@ async def get_users_usage(
 @router.get("s/expired", response_model=list[str])
 async def get_expired_users(
     db: AsyncSession = Depends(get_db),
-    admin: AdminDetails = Depends(get_current),
+    _: AdminDetails = Depends(check_sudo_admin),
+    admin_username: str | None = None,
     expired_after: dt | None = Query(None, example="2024-01-01T00:00:00+03:30"),
     expired_before: dt | None = Query(None, example="2024-01-31T23:59:59+03:30"),
 ):
@@ -233,13 +234,16 @@ async def get_expired_users(
     - If both are omitted, returns all expired users
     """
 
-    return await user_operator.get_expired_users(db, admin, expired_after, expired_before)
+    return await user_operator.get_expired_users(
+        db, expired_after, expired_before, admin_username=admin_username
+    )
 
 
 @router.delete("s/expired", response_model=RemoveUsersResponse)
 async def delete_expired_users(
     db: AsyncSession = Depends(get_db),
-    admin: AdminDetails = Depends(get_current),
+    admin: AdminDetails = Depends(check_sudo_admin),
+    admin_username: str | None = None,
     expired_after: dt | None = Query(None, example="2024-01-01T00:00:00+03:30"),
     expired_before: dt | None = Query(None, example="2024-01-31T23:59:59+03:30"),
 ):
@@ -250,7 +254,9 @@ async def delete_expired_users(
     - **expired_before** UTC datetime (optional)
     - At least one of expired_after or expired_before must be provided
     """
-    return await user_operator.delete_expired_users(db, admin, expired_after, expired_before)
+    return await user_operator.delete_expired_users(
+        db, admin, expired_after, expired_before, admin_username=admin_username
+    )
 
 
 @router.post("/from_template", status_code=status.HTTP_201_CREATED, response_model=UserResponse)
