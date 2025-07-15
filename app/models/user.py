@@ -18,25 +18,25 @@ class UserStatusModify(str, Enum):
 
 
 class NextPlanModel(BaseModel):
-    user_template_id: int | None = None
-    data_limit: int | None = None
-    expire: int | None = None
+    user_template_id: int | None = Field(default=None)
+    data_limit: int | None = Field(default=None)
+    expire: int | None = Field(default=None)
     add_remaining_traffic: bool = False
     model_config = ConfigDict(from_attributes=True)
 
 
 class User(BaseModel):
     proxy_settings: ProxyTable = Field(default_factory=ProxyTable)
-    expire: dt | int | None = None
+    expire: dt | int | None = Field(default=None)
     data_limit: int | None = Field(ge=0, default=None, description="data_limit can be 0 or greater")
-    data_limit_reset_strategy: UserDataLimitResetStrategy | None = None
+    data_limit_reset_strategy: UserDataLimitResetStrategy | None = Field(default=None)
     note: str | None = Field(max_length=500, default=None)
-    on_hold_expire_duration: int | None = None
-    on_hold_timeout: dt | int | None = None
+    on_hold_expire_duration: int | None = Field(default=None)
+    on_hold_timeout: dt | int | None = Field(default=None)
     group_ids: list[int] | None = Field(default_factory=list)
-    auto_delete_in_days: int | None = None
+    auto_delete_in_days: int | None = Field(default=None)
 
-    next_plan: NextPlanModel | None = None
+    next_plan: NextPlanModel | None = Field(default=None)
 
 
 class UserWithValidator(User):
@@ -67,7 +67,7 @@ class UserWithValidator(User):
 
 class UserCreate(UserWithValidator):
     username: str
-    status: UserStatusCreate | None = None
+    status: UserStatusCreate | None = Field(default=None)
 
     @field_validator("username", check_fields=False)
     @classmethod
@@ -81,7 +81,8 @@ class UserCreate(UserWithValidator):
 
 
 class UserModify(UserWithValidator):
-    status: UserStatusModify | None = None
+    status: UserStatusModify | None = Field(default=None)
+    proxy_settings: ProxyTable | None = Field(default=None)
 
     @field_validator("group_ids", mode="after")
     @classmethod
@@ -96,11 +97,11 @@ class UserNotificationResponse(User):
     used_traffic: int
     lifetime_used_traffic: int = 0
     created_at: dt
-    sub_updated_at: dt | None = None
-    sub_last_user_agent: str | None = None
-    online_at: dt | None = None
-    subscription_url: str = ""
-    admin: AdminContactInfo | None = None
+    sub_updated_at: dt | None = Field(default=None)
+    sub_last_user_agent: str | None = Field(default=None)
+    online_at: dt | None = Field(default=None)
+    subscription_url: str = Field(default="")
+    admin: AdminContactInfo | None = Field(default=None)
     model_config = ConfigDict(from_attributes=True)
 
     @field_validator("used_traffic", "lifetime_used_traffic", "data_limit", mode="before")

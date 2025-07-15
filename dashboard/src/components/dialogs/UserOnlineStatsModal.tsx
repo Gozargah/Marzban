@@ -350,36 +350,79 @@ export default function UserOnlineStatsModal({
     }, [userStats])
 
     const transformedIPData = useMemo(() => {
-        if (!userIPs || typeof userIPs !== 'object') return null
+        if (!userIPs || typeof userIPs !== 'object') return null;
 
-        const transformedData: { [ip: string]: string[] } = {}
-        
-        Object.entries(userIPs).forEach(([ipData]) => {
-            if (typeof ipData === 'object' && ipData !== null) {
-                Object.entries(ipData).forEach(([ip, timestamp]) => {
-                    if (!transformedData[ip]) {
-                        transformedData[ip] = []
-                    }
-                    const date = new Date(timestamp as number * 1000)
-                    const timeString = date.toLocaleTimeString('en-US', { 
-                        hour: '2-digit', 
-                        minute: '2-digit', 
-                        second: '2-digit',
-                        hour12: false 
-                    })
-                    transformedData[ip].push(timeString)
-                })
+        const transformedData: { [ip: string]: string[] } = {};
+
+        // If userIPs is an array, handle as before
+        if (Array.isArray(userIPs)) {
+            userIPs.forEach((ipObj: any) => {
+                if (typeof ipObj === 'object' && ipObj !== null) {
+                    Object.entries(ipObj).forEach(([ip, timestamp]) => {
+                        if (!transformedData[ip]) transformedData[ip] = [];
+                        let tsNum = Number(timestamp);
+                        if (tsNum < 1e12) tsNum = tsNum * 1000;
+                        const date = new Date(tsNum);
+                        const timeString = date.toLocaleTimeString('en-US', {
+                            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+                        });
+                        transformedData[ip].push(timeString);
+                    });
+                }
+            });
+        } else if (
+            typeof userIPs === 'object' &&
+            Object.keys(userIPs).length === 1 &&
+            !isNaN(Number(Object.keys(userIPs)[0]))
+        ) {
+            // If userIPs is an object with a single numeric key, use its value
+            const onlyKey = Object.keys(userIPs)[0];
+            const ipMap = userIPs[onlyKey];
+            if (typeof ipMap === 'object' && ipMap !== null) {
+                Object.entries(ipMap).forEach(([ip, timestamp]) => {
+                    if (!transformedData[ip]) transformedData[ip] = [];
+                    let tsNum = Number(timestamp);
+                    if (tsNum < 1e12) tsNum = tsNum * 1000;
+                    const date = new Date(tsNum);
+                    const timeString = date.toLocaleTimeString('en-US', {
+                        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+                    });
+                    transformedData[ip].push(timeString);
+                });
             }
-        })
+        }
 
-        return transformedData
-    }, [userIPs])
+        return transformedData;
+    }, [userIPs]);
 
 
 
     // Memoized render functions
-        const renderIPList = useCallback(() => {
-        if (!transformedIPData) return null
+    const renderIPList = useCallback(() => {
+        if (!transformedIPData) {
+            // Show raw data for debugging if transformation failed
+            if (userIPs) {
+                return (
+                    <div className="space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <Button variant="ghost" onClick={handleBackToStats} className="text-sm px-0 mb-2 self-start">
+                                <ArrowLeft className={cn("h-4 w-4", dir === 'rtl' && 'rotate-180')} />
+                                <span dir={dir}>{t('nodeModal.onlineStats.backToStats', { defaultValue: 'Back to Stats' })}</span>
+                            </Button>
+                        </div>
+                        <ScrollArea className="h-[300px] sm:h-[400px]">
+                            <div className="p-4">
+                                <h4 className="text-sm font-medium mb-2">Raw Data (Debug):</h4>
+                                <pre className="text-xs bg-muted p-2 rounded overflow-auto">
+                                    {JSON.stringify(userIPs, null, 2)}
+                                </pre>
+                            </div>
+                        </ScrollArea>
+                    </div>
+                )
+            }
+            return null
+        }
 
         // Limit the number of items to prevent memory issues
         const maxItems = 100
@@ -411,7 +454,7 @@ export default function UserOnlineStatsModal({
                 </ScrollArea>
             </div>
         )
-    }, [transformedIPData, handleBackToStats, dir, t])
+    }, [transformedIPData, userIPs, handleBackToStats, dir, t])
 
     const renderUserStats = useCallback(() => {
         if (isLoadingUserStats) {

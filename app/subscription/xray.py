@@ -28,18 +28,19 @@ class XrayConfig(BaseSubscription):
         return json.dumps(self.config, indent=4, cls=UUIDEncoder)
 
     def tls_config(self, sni=None, fp=None, alpn=None, ais: bool = False) -> dict:
-        tlsSettings = {
+        tls_settings = {
             "serverName": sni,
             "allowInsecure": ais if ais else False,
-            "fingerprint": fp,
-            "alpn": ([alpn] if not isinstance(alpn, list) else alpn) if fp else None,
             "show": False,
+            "fingerprint": fp,
         }
+        if fp:
+            tls_settings["alpn"] = [alpn] if not isinstance(alpn, list) else alpn
 
-        return self._remove_none_values(tlsSettings)
+        return self._remove_none_values(tls_settings)
 
     def reality_config(self, sni=None, fp=None, pbk=None, sid=None, spx=None) -> dict:
-        realitySettings = {
+        reality_settings = {
             "serverName": sni,
             "fingerprint": fp,
             "show": False,
@@ -47,38 +48,39 @@ class XrayConfig(BaseSubscription):
             "shortId": sid,
             "spiderX": spx,
         }
-        return self._remove_none_values(realitySettings)
+        
+        return self._remove_none_values(reality_settings)
 
     def ws_config(
         self,
         path: str = "",
         host: str = "",
         random_user_agent: bool = False,
-        heartbeatPeriod: int | None = None,
+        heartbeat_period: int | None = None,
         http_headers: dict | None = None,
     ) -> dict:
-        wsSettings = {
+        ws_settings = {
             "headers": http_headers if http_headers is not None else {},
-            "heartbeatPeriod": heartbeatPeriod,
+            "heartbeatPeriod": heartbeat_period,
             "path": path,
             "host": host,
         }
         if random_user_agent:
-            wsSettings["headers"]["User-Agent"] = choice(self.user_agent_list)
-        return self._remove_none_values(wsSettings)
+            ws_settings["headers"]["User-Agent"] = choice(self.user_agent_list)
+        return self._remove_none_values(ws_settings)
 
     def httpupgrade_config(
         self, path: str = "", host: str = "", random_user_agent: bool = False, http_headers=None
     ) -> dict:
-        httpupgradeSettings = {
+        httpupgrade_settings = {
             "headers": http_headers if http_headers is not None else {},
             "path": path,
             "host": host,
         }
         if random_user_agent:
-            httpupgradeSettings["headers"]["User-Agent"] = choice(self.user_agent_list)
+            httpupgrade_settings["headers"]["User-Agent"] = choice(self.user_agent_list)
 
-        return self._remove_none_values(httpupgradeSettings)
+        return self._remove_none_values(httpupgrade_settings)
 
     def xhttp_config(
         self,
@@ -90,44 +92,42 @@ class XrayConfig(BaseSubscription):
         sc_min_posts_interval_ms: int | None = None,
         x_padding_bytes: str | None = None,
         xmux: dict | None = None,
-        downloadSettings: dict | None = None,
+        download_settings: dict | None = None,
         mode: str = "",
-        noGRPCHeader: bool | None = None,
-        scStreamUpServerSecs: int | None = None,
+        no_grpc_header: bool | None = None,
         http_headers: dict | None = None,
     ) -> dict:
-        xhttSettings = {}
+        xhttp_settings = {}
 
-        xhttSettings["mode"] = mode
+        xhttp_settings["mode"] = mode
         if path:
-            xhttSettings["path"] = path
+            xhttp_settings["path"] = path
         if host:
-            xhttSettings["host"] = host
+            xhttp_settings["host"] = host
         extra = {
             "headers": http_headers if http_headers is not None else {},
             "scMaxEachPostBytes": sc_max_each_post_bytes,
             "scMaxConcurrentPosts": sc_max_concurrent_posts,
             "scMinPostsIntervalMs": sc_min_posts_interval_ms,
             "xPaddingBytes": x_padding_bytes,
-            "noGRPCHeader": noGRPCHeader,
-            "scStreamUpServerSecs": scStreamUpServerSecs,
+            "noGRPCHeader": no_grpc_header,
             "xmux": xmux,
-            "downloadSettings": self.download_config(downloadSettings, False) if downloadSettings else None,
+            "downloadSettings": self.download_config(download_settings, False) if download_settings else None,
         }
         if random_user_agent:
-            if mode in ("stream-one", "stream-up") and not noGRPCHeader:
+            if mode in ("stream-one", "stream-up") and not no_grpc_header:
                 extra["headers"]["User-Agent"] = choice(self.grpc_user_agent_data)
             else:
                 extra["headers"]["User-Agent"] = choice(self.user_agent_list)
 
-        xhttSettings["extra"] = extra
-        return self._remove_none_values(xhttSettings)
+        xhttp_settings["extra"] = extra
+        return self._remove_none_values(xhttp_settings)
 
     def grpc_config(
         self,
         path: str = "",
         host: str = "",
-        multiMode: bool = False,
+        multi_mode: bool = False,
         random_user_agent: bool = False,
         idle_timeout=None,
         health_check_timeout=None,
@@ -135,20 +135,20 @@ class XrayConfig(BaseSubscription):
         initial_windows_size=None,
         http_headers=None,
     ) -> dict:
-        grpcSettings = {
+        grpc_settings = {
             "idle_timeout": idle_timeout if idle_timeout is not None else 60,
             "health_check_timeout": health_check_timeout if health_check_timeout is not None else 20,
             "permit_without_stream": permit_without_stream,
             "initial_windows_size": initial_windows_size if initial_windows_size is not None else 35538,
             "serviceName": path,
             "authority": host,
-            "multiMode": multiMode,
+            "multiMode": multi_mode,
         }
         if http_headers and "user-agent" in http_headers:
-            grpcSettings["user_agent"] = http_headers["user-agent"]
+            grpc_settings["user_agent"] = http_headers["user-agent"]
         if random_user_agent:
-            grpcSettings["user_agent"] = choice(self.grpc_user_agent_data)
-        return self._remove_none_values(grpcSettings)
+            grpc_settings["user_agent"] = choice(self.grpc_user_agent_data)
+        return self._remove_none_values(grpc_settings)
 
     def tcp_config(
         self,
@@ -160,7 +160,7 @@ class XrayConfig(BaseSubscription):
         response: dict | None = None,
     ) -> dict:
         if headers == "http":
-            tcpSettings = {
+            tcp_settings = {
                 "header": {
                     "type": headers,
                     "request": request
@@ -191,38 +191,41 @@ class XrayConfig(BaseSubscription):
             }
 
         else:
-            tcpSettings = {"header": {"type": headers}}
+            tcp_settings = {"header": {"type": headers}}
 
         if any((path, host, random_user_agent)):
-            if "request" not in tcpSettings["header"]:
-                tcpSettings["header"]["request"] = {}
+            if "request" not in tcp_settings["header"]:
+                tcp_settings["header"]["request"] = {}
 
         if any((random_user_agent, host)):
-            if "headers" not in tcpSettings["header"]["request"] or tcpSettings["header"]["request"]["headers"] is None:
-                tcpSettings["header"]["request"]["headers"] = {}
+            if (
+                "headers" not in tcp_settings["header"]["request"]
+                or tcp_settings["header"]["request"]["headers"] is None
+            ):
+                tcp_settings["header"]["request"]["headers"] = {}
 
         if path:
-            tcpSettings["header"]["request"]["path"] = [path]
+            tcp_settings["header"]["request"]["path"] = [path]
 
         if host:
-            tcpSettings["header"]["request"]["headers"]["Host"] = [host]
+            tcp_settings["header"]["request"]["headers"]["Host"] = [host]
 
         if random_user_agent:
-            tcpSettings["header"]["request"]["headers"]["User-Agent"] = [choice(self.user_agent_list)]
+            tcp_settings["header"]["request"]["headers"]["User-Agent"] = [choice(self.user_agent_list)]
 
-        return tcpSettings
+        return tcp_settings
 
     def http_config(
         self, path: str = "", host: str = "", random_user_agent: bool = False, http_headers: dict | None = None
     ) -> dict:
-        httpSettings = {
+        http_settings = {
             "headers": {k: [v] for k, v in http_headers.items()} if http_headers is not None else {},
             "path": path,
             "host": [host] if host else [],
         }
         if random_user_agent:
-            httpSettings["headers"]["User-Agent"] = [choice(self.user_agent_list)]
-        return self._remove_none_values(httpSettings)
+            http_settings["headers"]["User-Agent"] = [choice(self.user_agent_list)]
+        return self._remove_none_values(http_settings)
 
     def quic_config(self, path=None, host=None, header="none") -> dict:
         quicSettings = {"security": host, "header": {"type": header}, "key": path}
@@ -241,7 +244,7 @@ class XrayConfig(BaseSubscription):
         readBufferSize=None,
         writeBufferSize=None,
     ) -> dict:
-        kcpSettings = {
+        kcp_settings = {
             "header": {"type": header, "domain": host},
             "mtu": mtu if mtu else 1350,
             "tti": tti if tti else 50,
@@ -252,25 +255,25 @@ class XrayConfig(BaseSubscription):
             "writeBufferSize": writeBufferSize if writeBufferSize else 2,
             "seed": seed,
         }
-        return self._remove_none_values(kcpSettings)
+        return self._remove_none_values(kcp_settings)
 
     @staticmethod
     def stream_setting_config(
         network=None, security=None, network_setting=None, tls_settings=None, sockopt=None
     ) -> dict:
-        streamSettings = {"network": network}
+        stream_settings = {"network": network}
 
         if security and security != "none":
-            streamSettings["security"] = security
-            streamSettings[f"{security}Settings"] = tls_settings
+            stream_settings["security"] = security
+            stream_settings[f"{security}Settings"] = tls_settings
 
         if network and network_setting:
-            streamSettings[f"{network}Settings"] = network_setting
+            stream_settings[f"{network}Settings"] = network_setting
 
         if sockopt:
-            streamSettings["sockopt"] = sockopt
+            stream_settings["sockopt"] = sockopt
 
-        return streamSettings
+        return stream_settings
 
     def download_config(self, inbound: dict, link_format: bool = False) -> dict:
         net = inbound["network"]
@@ -311,28 +314,27 @@ class XrayConfig(BaseSubscription):
             spx=inbound.get("spx", ""),
             headers=headers,
             ais=inbound.get("ais", ""),
-            multiMode=multi_mode,
+            multi_mode=multi_mode,
             random_user_agent=inbound.get("random_user_agent", False),
             sc_max_each_post_bytes=inbound.get("sc_max_each_post_bytes"),
             sc_max_concurrent_posts=inbound.get("sc_max_concurrent_posts"),
             sc_min_posts_interval_ms=inbound.get("sc_min_posts_interval_ms"),
             x_padding_bytes=inbound.get("x_padding_bytes"),
             xmux=inbound.get("xmux", {}),
-            downloadSettings=inbound.get("downloadSettings"),
+            download_settings=inbound.get("downloadSettings"),
             mode=inbound.get("mode", "auto"),
-            noGRPCHeader=inbound.get("no_grpc_header"),
-            heartbeatPeriod=inbound.get("heartbeat_period"),
-            scStreamUpServerSecs=inbound.get("sc_stream_up_server_secs"),
+            no_grpc_header=inbound.get("no_grpc_header"),
+            heartbeat_period=inbound.get("heartbeat_period"),
             http_headers=inbound.get("http_headers"),
             request=inbound.get("request"),
             response=inbound.get("response"),
             mtu=inbound.get("mtu"),
             tti=inbound.get("tti"),
-            uplinkCapacity=inbound.get("uplink_capacity"),
-            downlinkCapacity=inbound.get("downlink_capacity"),
+            uplink_capacity=inbound.get("uplink_capacity"),
+            downlink_capacity=inbound.get("downlink_capacity"),
             congestion=inbound.get("congestion"),
-            readBufferSize=inbound.get("read_buffer_size"),
-            writeBufferSize=inbound.get("write_buffer_size"),
+            read_buffer_size=inbound.get("read_buffer_size"),
+            write_buffer_size=inbound.get("write_buffer_size"),
             idle_timeout=inbound.get("idle_timeout"),
             health_check_timeout=inbound.get("health_check_timeout"),
             permit_without_stream=inbound.get("permit_without_stream", False),
@@ -434,18 +436,17 @@ class XrayConfig(BaseSubscription):
         headers="",
         ais="",
         dialer_proxy="",
-        multiMode: bool = False,
+        multi_mode: bool = False,
         random_user_agent: bool = False,
         sc_max_each_post_bytes: int | None = None,
         sc_max_concurrent_posts: int | None = None,
         sc_min_posts_interval_ms: int | None = None,
         x_padding_bytes: str | None = None,
         xmux: dict = {},
-        downloadSettings: dict = {},
+        download_settings: dict = {},
         mode: str = "",
-        noGRPCHeader: bool | None = None,
-        scStreamUpServerSecs: int | None = None,
-        heartbeatPeriod: int = 0,
+        no_grpc_header: bool | None = None,
+        heartbeat_period: int = 0,
         http_headers: dict | None = None,
         idle_timeout=None,
         health_check_timeout=None,
@@ -455,25 +456,25 @@ class XrayConfig(BaseSubscription):
         response: dict | None = None,
         mtu=None,
         tti=None,
-        uplinkCapacity=None,
-        downlinkCapacity=None,
+        uplink_capacity=None,
+        downlink_capacity=None,
         congestion=False,
-        readBufferSize=None,
-        writeBufferSize=None,
+        read_buffer_size=None,
+        write_buffer_size=None,
     ) -> dict:
         if net == "ws":
             network_setting = self.ws_config(
                 path=path,
                 host=host,
                 random_user_agent=random_user_agent,
-                heartbeatPeriod=heartbeatPeriod,
+                heartbeat_period=heartbeat_period,
                 http_headers=http_headers,
             )
         elif net == "grpc":
             network_setting = self.grpc_config(
                 path=path,
                 host=host,
-                multiMode=multiMode,
+                multi_mode=multi_mode,
                 random_user_agent=random_user_agent,
                 idle_timeout=idle_timeout,
                 health_check_timeout=health_check_timeout,
@@ -492,11 +493,11 @@ class XrayConfig(BaseSubscription):
                 header=headers,
                 mtu=mtu,
                 tti=tti,
-                uplinkCapacity=uplinkCapacity,
-                downlinkCapacity=downlinkCapacity,
+                uplinkCapacity=uplink_capacity,
+                downlinkCapacity=downlink_capacity,
                 congestion=congestion,
-                readBufferSize=readBufferSize,
-                writeBufferSize=writeBufferSize,
+                readBufferSize=read_buffer_size,
+                writeBufferSize=write_buffer_size,
             )
         elif net in ("tcp", "raw") and tls != "reality":
             network_setting = self.tcp_config(
@@ -523,10 +524,9 @@ class XrayConfig(BaseSubscription):
                 sc_min_posts_interval_ms=sc_min_posts_interval_ms,
                 x_padding_bytes=x_padding_bytes,
                 xmux=xmux,
-                downloadSettings=downloadSettings,
+                download_settings=download_settings,
                 mode=mode,
-                noGRPCHeader=noGRPCHeader,
-                scStreamUpServerSecs=scStreamUpServerSecs,
+                no_grpc_header=no_grpc_header,
                 http_headers=http_headers,
             )
         else:
@@ -622,28 +622,27 @@ class XrayConfig(BaseSubscription):
             headers=headers,
             ais=inbound.get("ais", ""),
             dialer_proxy=dialer_proxy,
-            multiMode=multi_mode,
+            multi_mode=multi_mode,
             random_user_agent=inbound.get("random_user_agent", False),
             sc_max_each_post_bytes=inbound.get("sc_max_each_post_bytes"),
             sc_max_concurrent_posts=inbound.get("sc_max_concurrent_posts"),
             sc_min_posts_interval_ms=inbound.get("sc_min_posts_interval_ms"),
             x_padding_bytes=inbound.get("x_padding_bytes"),
             xmux=inbound.get("xmux", {}),
-            downloadSettings=inbound.get("downloadSettings"),
+            download_settings=inbound.get("downloadSettings"),
             mode=inbound.get("mode", "auto"),
-            noGRPCHeader=inbound.get("no_grpc_header"),
-            heartbeatPeriod=inbound.get("heartbeat_period"),
-            scStreamUpServerSecs=inbound.get("sc_stream_up_server_secs"),
+            no_grpc_header=inbound.get("no_grpc_header"),
+            heartbeat_period=inbound.get("heartbeat_period"),
             http_headers=inbound.get("http_headers"),
             request=inbound.get("request"),
             response=inbound.get("response"),
             mtu=inbound.get("mtu"),
             tti=inbound.get("tti"),
-            uplinkCapacity=inbound.get("uplink_capacity"),
-            downlinkCapacity=inbound.get("downlink_capacity"),
+            uplink_capacity=inbound.get("uplink_capacity"),
+            downlink_capacity=inbound.get("downlink_capacity"),
             congestion=inbound.get("congestion"),
-            readBufferSize=inbound.get("read_buffer_size"),
-            writeBufferSize=inbound.get("write_buffer_size"),
+            read_buffer_size=inbound.get("read_buffer_size"),
+            write_buffer_size=inbound.get("write_buffer_size"),
             idle_timeout=inbound.get("idle_timeout"),
             health_check_timeout=inbound.get("health_check_timeout"),
             permit_without_stream=inbound.get("permit_without_stream", False),

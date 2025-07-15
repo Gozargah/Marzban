@@ -1,3 +1,4 @@
+import re
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -5,6 +6,9 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from app.models.proxy import ShadowsocksMethods, XTLSFlows
 
 from .validators import DiscordValidator, ListValidator, ProxyValidator
+
+
+TELEGRAM_TOKEN_PATTERN = r"^\d{8,12}:[A-Za-z0-9_-]{35}$"
 
 
 class Telegram(BaseModel):
@@ -20,6 +24,15 @@ class Telegram(BaseModel):
     @classmethod
     def validate_proxy_url(cls, v):
         return ProxyValidator.validate_proxy_url(v)
+
+    @field_validator("token")
+    @classmethod
+    def token_validation(cls, v):
+        if not v:
+            return v
+        if not re.match(TELEGRAM_TOKEN_PATTERN, v):
+            raise ValueError("Invalid telegram token format")
+        return v
 
     @model_validator(mode="after")
     def check_enable_requires_token_and_url(self):

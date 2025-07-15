@@ -36,6 +36,7 @@ export default defineConfig({
     tsconfigPaths(),
     VitePWA({
       registerType: 'prompt',
+      injectRegister: false, // Disable automatic registration
       workbox: {
         navigateFallback: '/index.html',
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
@@ -52,34 +53,8 @@ export default defineConfig({
             }
           }
         ]
-      },
-      manifest: {
-        name: 'Marzban',
-        short_name: 'Marzban',
-        description: 'Marzban: Modern dashboard for managing proxies and users.',
-        theme_color: '#1b1b1d',
-        background_color: '#1b1b1d',
-        display: 'standalone',
-        start_url: './',
-        scope: './',
-        icons: [
-          {
-            src: '/statics/favicon/android-chrome-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: '/statics/favicon/android-chrome-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          },
-          {
-            src: '/statics/favicon/apple-touch-icon.png',
-            sizes: '180x180',
-            type: 'image/png'
-          }
-        ]
       }
+      // Remove the manifest configuration entirely - we'll handle it dynamically
     })
   ],
 })
