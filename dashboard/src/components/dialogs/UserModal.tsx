@@ -356,6 +356,8 @@ const ExpiryDateField = ({
   )
 }
 
+export { ExpiryDateField }
+
 export default function UserModal({ isDialogOpen, onOpenChange, form, editingUser, editingUserId, editingUserData, onSuccessCallback }: UserModalProps) {
   const { t } = useTranslation()
   const dir = useDirDetection()

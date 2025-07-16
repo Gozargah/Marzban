@@ -93,7 +93,7 @@ export function SelectorPanel({
         </div>
         <div className="flex items-center justify-between">
           <Badge variant="secondary" className="text-xs w-fit">
-            {selected.length} selected
+            {t("selectedCount", { count: selected.length, defaultValue: "{{count}} selected" })}
           </Badge>
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" className="h-6 px-2 text-xs bg-transparent" onClick={handleSelectAll}>
@@ -108,7 +108,7 @@ export function SelectorPanel({
 
       <CardContent className="space-y-4">
         {/* Search */}
-        <div className="relative">
+        <div className="relative" dir="ltr">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={searchPlaceholder}
@@ -119,7 +119,7 @@ export function SelectorPanel({
         </div>
 
         {/* Items List */}
-        <div className="space-y-1 max-h-[200px] overflow-y-auto">
+        <div className="space-y-1 max-h-[200px] overflow-y-auto" dir="ltr">
           {filteredItems.map((item) => {
             const id = typeof item[itemValueKey] === "number" ? (item[itemValueKey] as number) : undefined
             let label = ""

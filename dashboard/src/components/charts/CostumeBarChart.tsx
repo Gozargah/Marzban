@@ -140,7 +140,7 @@ export function CostumeBarChart({ nodeId }: CostumeBarChartProps) {
         </div>
         <div className="sm:border-l p-6 m-0 flex flex-col justify-center px-4 ">
           <span className="text-muted-foreground text-xs sm:text-sm">{t('statistics.usageDuringPeriod')}</span>
-          <span className="text-foreground text-lg flex justify-center">{isLoading ? <Skeleton className="h-5 w-20" /> : totalUsage}</span>
+          <span dir='ltr' className="text-foreground text-lg flex justify-center">{isLoading ? <Skeleton className="h-5 w-20" /> : totalUsage}</span>
         </div>
       </CardHeader>
       <CardContent dir={dir} className="pt-8">

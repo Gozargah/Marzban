@@ -115,9 +115,9 @@ export default function BulkProxyPage() {
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Settings className="h-5 w-5" />
-            Proxy Settings
+            {t("bulk.proxySettings", { defaultValue: "Proxy Settings" })}
           </CardTitle>
-          <p className="text-sm text-muted-foreground">Configure the proxy settings to apply</p>
+          <p className="text-sm text-muted-foreground">{t("bulk.proxySettingsDesc", { defaultValue: "Configure the proxy settings to apply" })}</p>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
@@ -161,9 +161,9 @@ export default function BulkProxyPage() {
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
             <User className="h-5 w-5" />
-            Apply To
+            {t("bulk.applyTo", { defaultValue: "Apply To" })}
           </CardTitle>
-          <p className="text-sm text-muted-foreground">Select the groups, users, or admins you want to apply proxy settings to</p>
+          <p className="text-sm text-muted-foreground">{t("bulk.applyToProxyDesc", { defaultValue: "Select the groups, users, or admins you want to apply proxy settings to" })}</p>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -238,11 +238,11 @@ export default function BulkProxyPage() {
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <Badge variant="outline" className="flex items-center gap-1">
               <Settings className="h-3 w-3" />
-              Flow: {selectedFlow === "none" ? "None" : selectedFlow || "None"} | Method: {selectedMethod || "None"}
+              {t("bulk.flowMethod", { flow: selectedFlow === "none" || !selectedFlow ? t("none", { defaultValue: "None" }) : selectedFlow, method: selectedMethod || t("none", { defaultValue: "None" }), defaultValue: "Flow: {{flow}} | Method: {{method}}" })}
             </Badge>
             <Badge variant="outline" className="flex items-center gap-1">
               <User className="h-3 w-3" />
-              {totalTargets} targets
+              {t("bulk.targetsCount", { count: totalTargets, defaultValue: "{{count}} targets" })}
             </Badge>
           </div>
 

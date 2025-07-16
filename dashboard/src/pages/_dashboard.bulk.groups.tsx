@@ -85,9 +85,9 @@ export default function BulkGroupsPage() {
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Users2 className="h-5 w-5" />
-            Groups
+            {t("bulk.groups", { defaultValue: "Groups" })}
           </CardTitle>
-          <p className="text-sm text-muted-foreground">Select the groups you want to apply</p>
+          <p className="text-sm text-muted-foreground">{t("bulk.groupsDescShort", { defaultValue: "Select the groups you want to apply" })}</p>
         </CardHeader>
         <CardContent>
           <SelectorPanel
@@ -114,9 +114,9 @@ export default function BulkGroupsPage() {
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
             <User className="h-5 w-5" />
-            Apply To
+            {t("bulk.applyTo", { defaultValue: "Apply To" })}
           </CardTitle>
-          <p className="text-sm text-muted-foreground">Select the user or admin you want to apply settings</p>
+          <p className="text-sm text-muted-foreground">{t("bulk.applyToDesc", { defaultValue: "Select the user or admin you want to apply settings" })}</p>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -191,11 +191,11 @@ export default function BulkGroupsPage() {
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <Badge variant="outline" className="flex items-center gap-1">
               <Users2 className="h-3 w-3" />
-              {totalGroups} groups
+              {t("bulk.groupsCount", { count: totalGroups, defaultValue: "{{count}} groups" })}
             </Badge>
             <Badge variant="outline" className="flex items-center gap-1">
               <User className="h-3 w-3" />
-              {totalTargets} targets
+              {t("bulk.targetsCount", { count: totalTargets, defaultValue: "{{count}} targets" })}
             </Badge>
           </div>
 

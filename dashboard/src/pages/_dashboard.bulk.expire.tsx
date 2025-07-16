@@ -7,12 +7,18 @@ import {
   useGetAdmins,
   useBulkModifyUsersExpire,
 } from "@/service/api"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
+import { useTranslation } from "react-i18next"
+import { useEffect, useTransition, useCallback } from "react"
+import { Calendar as PersianCalendar } from "@/components/ui/persian-calendar"
+import { Input } from "@/components/ui/input"
+import { X, CalendarIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { useRelativeExpiryDate } from "@/utils/dateFormatter"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,12 +29,208 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
-import { Users2, User, Shield, CalendarIcon } from "lucide-react"
+import { Users2, User, Shield } from "lucide-react"
 import { SelectorPanel } from "@/components/bulk/SelectorPanel"
-import { cn } from "@/lib/utils"
 import { format } from "date-fns"
+
+const ExpiryDateField = ({
+  value,
+  onChange,
+  label,
+}: {
+  value: Date | undefined
+  onChange: (date: Date | undefined) => void
+  label: string
+}) => {
+  const { t, i18n } = useTranslation()
+  const expireInfo = useRelativeExpiryDate(value ? Math.floor(value.getTime() / 1000) : null)
+  const [calendarOpen, setCalendarOpen] = useState(false)
+  const [usePersianCalendar, setUsePersianCalendar] = useState(i18n.language === 'fa')
+  const [, startTransition] = useTransition()
+  const now = new Date()
+
+  useEffect(() => {
+    setUsePersianCalendar(i18n.language === 'fa')
+  }, [i18n.language])
+
+  const handleDateSelect = useCallback(
+    (date: Date | undefined) => {
+      if (date) {
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        const selectedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+        if (selectedDate < today) {
+          date = new Date(now)
+        }
+        if (selectedDate.getTime() === today.getTime()) {
+          date.setHours(23, 59, 59)
+        } else {
+          date.setHours(now.getHours(), now.getMinutes())
+        }
+        startTransition(() => {
+          onChange(date)
+        })
+      } else {
+        startTransition(() => {
+          onChange(undefined)
+        })
+      }
+      setCalendarOpen(false)
+    },
+    [onChange, now],
+  )
+
+  const handleTimeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      e.preventDefault()
+      e.stopPropagation()
+      if (value && e.target.value) {
+        const [hours, minutes] = e.target.value.split(':')
+        const newDate = new Date(value)
+        newDate.setHours(parseInt(hours), parseInt(minutes))
+        if (newDate.toDateString() === now.toDateString() && newDate < now) {
+          newDate.setTime(now.getTime())
+        }
+        startTransition(() => {
+          onChange(newDate)
+        })
+      }
+    },
+    [value, onChange, now],
+  )
+
+  const isDateDisabled = useCallback(
+    (date: Date) => {
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      const compareDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+      if (compareDate < today) return true
+      if (date.getFullYear() < now.getFullYear()) return true
+      if (date.getFullYear() > now.getFullYear() + 15) return true
+      if (date.getFullYear() === now.getFullYear()) {
+        if (date.getMonth() < now.getMonth()) return true
+        if (date.getMonth() === now.getMonth() && compareDate < today) return true
+      }
+      return false
+    },
+    [now],
+  )
+
+  return (
+    <div className="flex flex-1 flex-col">
+      <label className="mb-1 text-sm font-medium">{label}</label>
+      <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+        <PopoverTrigger asChild>
+          <div className="relative w-full">
+            <Button
+              dir={'ltr'}
+              variant={'outline'}
+              className={cn('!mt-3.5 h-fit w-full text-left font-normal', !value && 'text-muted-foreground')}
+              type="button"
+              onClick={e => {
+                e.preventDefault()
+                e.stopPropagation()
+                setCalendarOpen(true)
+              }}
+            >
+              {value ? (
+                usePersianCalendar ? (
+                  value.toLocaleDateString('fa-IR', { year: 'numeric', month: '2-digit', day: '2-digit' }) +
+                  ' ' +
+                  value.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', hour12: false })
+                ) : (
+                  value.toLocaleDateString('sv-SE', { year: 'numeric', month: '2-digit', day: '2-digit' }) +
+                  ' ' +
+                  value.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', hour12: false })
+                )
+              ) : (
+                <span>{t('userDialog.expireDate', { defaultValue: 'Expire date' })}</span>
+              )}
+              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+            </Button>
+          </div>
+        </PopoverTrigger>
+        <PopoverContent
+          className="w-auto p-0"
+          align="start"
+          onInteractOutside={e => {
+            e.preventDefault()
+            setCalendarOpen(false)
+          }}
+          onEscapeKeyDown={() => setCalendarOpen(false)}
+        >
+          {usePersianCalendar ? (
+            <PersianCalendar
+              mode="single"
+              selected={value}
+              onSelect={handleDateSelect}
+              disabled={isDateDisabled}
+              captionLayout="dropdown"
+              defaultMonth={value || now}
+              startMonth={new Date(now.getFullYear(), now.getMonth(), 1)}
+              endMonth={new Date(now.getFullYear() + 15, 11, 31)}
+              formatters={{
+                formatMonthDropdown: date => date.toLocaleString('fa-IR', { month: 'short' }),
+              }}
+            />
+          ) : (
+            <Calendar
+              mode="single"
+              selected={value}
+              onSelect={handleDateSelect}
+              disabled={isDateDisabled}
+              captionLayout="dropdown"
+              defaultMonth={value || now}
+              startMonth={new Date(now.getFullYear(), now.getMonth(), 1)}
+              endMonth={new Date(now.getFullYear() + 15, 11, 31)}
+              formatters={{
+                formatMonthDropdown: date => date.toLocaleString('default', { month: 'short' }),
+              }}
+            />
+          )}
+          <div className="flex items-center gap-4 border-t p-3">
+            <Input
+              type="time"
+              value={
+                value
+                  ? value.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', hour12: false })
+                  : now.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', hour12: false })
+              }
+              min={
+                value && value.toDateString() === now.toDateString()
+                  ? now.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', hour12: false })
+                  : undefined
+              }
+              onChange={handleTimeChange}
+            />
+            {value && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={e => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onChange(undefined)
+                  setCalendarOpen(false)
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
+      {expireInfo && (
+        <p className={cn(!expireInfo.time && 'hidden', 'text-xs text-muted-foreground mt-2')}>
+          {expireInfo.time !== '0' && expireInfo.time !== '0s'
+            ? t('expires', { time: expireInfo.time, defaultValue: 'Expires in {{time}}' })
+            : t('expired', { time: expireInfo.time, defaultValue: 'Expired in {{time}}' })}
+        </p>
+      )}
+    </div>
+  )
+}
 
 export default function BulkExpirePage() {
   const { t } = useTranslation()
@@ -104,6 +306,18 @@ export default function BulkExpirePage() {
   }
 
   const totalTargets = selectedUsers.length + selectedAdmins.length + selectedGroups.length
+  const { i18n } = useTranslation()
+  const isPersianLocale = i18n.language === 'fa'
+  const formatDate = (date: Date) => {
+    if (isPersianLocale) {
+      return new Intl.DateTimeFormat('fa-IR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).format(date)
+    }
+    return format(date, 'PPP')
+  }
 
   return (
     <div className="flex flex-col w-full space-y-6 mt-3">
@@ -112,27 +326,17 @@ export default function BulkExpirePage() {
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
             <CalendarIcon className="h-5 w-5" />
-            Expire Date
+            {t("bulk.expireDate", { defaultValue: "Expire Date" })}
           </CardTitle>
-          <p className="text-sm text-muted-foreground">Select the expiration date to apply</p>
+          <p className="text-sm text-muted-foreground">{t("bulk.expireDateDesc", { defaultValue: "Select the expiration date to apply" })}</p>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <Label htmlFor="expire-date">{t("bulk.expireDateLabel", { defaultValue: "Expire Date" })}</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn("w-full justify-start text-left font-normal", !expireDate && "text-muted-foreground")}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {expireDate ? format(expireDate, "PPP") : <span>{t("bulk.selectExpireDate", { defaultValue: "Select expire date" })}</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar mode="single" selected={expireDate} onSelect={setExpireDate} initialFocus />
-              </PopoverContent>
-            </Popover>
+            <ExpiryDateField
+              value={expireDate}
+              onChange={setExpireDate}
+              label={t("bulk.expireDate", { defaultValue: "Expire Date" })}
+            />
           </div>
         </CardContent>
       </Card>
@@ -142,9 +346,9 @@ export default function BulkExpirePage() {
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
             <User className="h-5 w-5" />
-            Apply To
+            {t("bulk.applyTo", { defaultValue: "Apply To" })}
           </CardTitle>
-          <p className="text-sm text-muted-foreground">Select the groups, users, or admins you want to apply expiration date to</p>
+          <p className="text-sm text-muted-foreground">{t("bulk.applyToExpireDesc", { defaultValue: "Select the groups, users, or admins you want to apply expiration date to" })}</p>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -219,11 +423,11 @@ export default function BulkExpirePage() {
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <Badge variant="outline" className="flex items-center gap-1">
               <CalendarIcon className="h-3 w-3" />
-              {expireDate ? format(expireDate, "PPP") : "No date selected"}
+              {expireDate ? formatDate(expireDate) : t("bulk.noDateSelected", { defaultValue: "No date selected" })}
             </Badge>
             <Badge variant="outline" className="flex items-center gap-1">
               <User className="h-3 w-3" />
-              {totalTargets} targets
+              {t("bulk.targetsCount", { count: totalTargets, defaultValue: "{{count}} targets" })}
             </Badge>
           </div>
 
@@ -250,7 +454,7 @@ export default function BulkExpirePage() {
               {t("bulk.confirmApplyExpireDescription", {
                 defaultValue:
                   "Are you sure you want to apply expire date {{expireDate}} to {{totalTargets}} target(s)? This action will update the expiration date for all selected groups, users, and admins.",
-                expireDate: expireDate ? format(expireDate, "PPP") : "",
+                expireDate: expireDate ? formatDate(expireDate) : "",
                 totalTargets,
               })}
             </AlertDialogDescription>
