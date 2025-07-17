@@ -1387,5 +1387,23 @@
   "inboundTags": "تگ‌های ورودی",
   "searchInbounds": "جستجوی ورودی‌ها...",
   "noInboundsFound": "هیچ ورودی‌ای یافت نشد",
-  "selectedCount": "{{count}} انتخاب شده"
+  "selectedCount": "{{count}} انتخاب شده",
+  "advanceSearch": {
+    "title": "جستجوی پیشرفته",
+    "byUsername": "نام کاربری و یادداشت‌ها",
+    "byProtocol": "داده‌های پروتکل",
+    "byStatus": "وضعیت",
+    "byAdmin": "مدیر",
+    "byGroup": "گروه",
+    "selectGroup": "انتخاب گروه ...",
+    "selectAdmin": "انتخاب مدیر ...",
+    "selectStatus": "انتخاب وضعیت ...",
+    "status": {
+      "active": "فعال",
+      "disable": "غیرفعال",
+      "expired": "منقضی شده",
+      "limited": "محدود",
+      "onHold": "در انتظار"
+    }
+  }
 }

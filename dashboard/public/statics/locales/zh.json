@@ -1438,5 +1438,23 @@
   "inboundTags": "入站标签",
   "searchInbounds": "搜索入站...",
   "noInboundsFound": "未找到入站",
-  "selectedCount": "已选择 {{count}} 项"
+  "selectedCount": "已选择 {{count}} 项",
+  "advanceSearch": {
+    "title": "高级搜索",
+    "byUsername": "用户名和备注",
+    "byProtocol": "协议数据",
+    "byStatus": "状态",
+    "byAdmin": "管理员",
+    "byGroup": "分组",
+    "selectGroup": "选择分组 ...",
+    "selectAdmin": "选择管理员 ...",
+    "selectStatus": "选择状态 ...",
+    "status": {
+      "active": "活跃",
+      "disable": "禁用",
+      "expired": "已过期",
+      "limited": "受限",
+      "onHold": "暂停"
+    }
+  }
 }
