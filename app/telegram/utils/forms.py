@@ -11,3 +11,12 @@ class CreateUser(StatesGroup):
 
 class CreateUserFromTemplate(StatesGroup):
     username = State()
+
+
+class DeleteExpired(StatesGroup):
+    expired_before = State()
+
+
+class BulkModify(StatesGroup):
+    expiry = State()
+    data_limit = State()

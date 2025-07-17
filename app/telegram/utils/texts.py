@@ -24,6 +24,10 @@ ebl = html_decoration.expandable_blockquote
 
 
 class Button:
+    modify_data_limit = "📶 Modify Data Limit"
+    modify_expiry = "📅 Modify Expiry"
+    delete_expired = "⌛ Delete Expired"
+    bulk_actions = "🔧 Bulk Actions"
     open_panel = "🎛 Open Panel"
     done = "✅ Done"
     search = "🔎 Search"
@@ -46,6 +50,10 @@ class Button:
 
 
 class Message:
+    enter_modify_data_limit = "📶 Enter data limit change (GB):\nPositive and Negative values are allowed."
+    enter_modify_expiry = "📅 Enter expiry change (days):\nPositive and Negative values are allowed."
+    enter_expire_before = "📅 Delete Users expired before (days):\nSend 0 for all."
+    choose_action = "🔧 Choose an Action:"
     there_is_no_template = "❌ There is no Template!"
     user_not_found = "❌ User not found!"
     confirm = "⚠ Are you sure you want to proceed?"
@@ -53,7 +61,7 @@ class Message:
     username_already_exist = "❌ Username already exists."
     enter_data_limit = "🌐 Enter Data Limit (GB):\nSend 0 for unlimited."
     data_limit_not_valid = "❌ Data limit is not valid."
-    enter_duration = "📅 Enter duration: (days):\nSend 0 for unlimited."
+    enter_duration = "📅 Enter duration (days):\nSend 0 for unlimited."
     duration_not_valid = "❌ Duration is not valid."
     choose_status = "Do you want to enable it or keep it on-hold?"
     enter_on_hold_timeout = "🔌 Enter On-Hold timeout duration (days):\nSend 0 for Never."
@@ -165,6 +173,42 @@ class Message:
     @staticmethod
     def confirm_activate_next_plan(username: str) -> str:
         return f"⚠ Are you sure you want to {b('Activate Next Plan')} for {c(username)}?"
+
+    @classmethod
+    def confirm_delete_expired(cls, expired_before_days: int | str) -> str:
+        return f"⚠ Are you sure you want to delete all users expired before {expired_before_days} days ago?"
+
+    @classmethod
+    def users_deleted(cls, count):
+        return f"✅ {count} users successfully deleted."
+
+    @classmethod
+    def confirm_modify_expiry(cls, days: int) -> str:
+        if days > 0:
+            return f"⚠ Are you sure you want to extend users expiry by {c(days)} days?"
+        else:
+            return f"⚠ Are you sure you want to subtract {c(abs(days))} days from users expiry?"
+
+    @classmethod
+    def users_expiry_changed(cls, result: dict, amount: int):
+        if amount > 0:
+            return f"✅ {len(result)} users successfully extended by {amount} days."
+        else:
+            return f"✅ {len(result)} users successfully subtracted by {abs(amount)} days."
+
+    @classmethod
+    def confirm_modify_data_limit(cls, amount: int) -> str:
+        if amount > 0:
+            return f"⚠ Are you sure you want to increase users data limit by {c(amount)} GB?"
+        else:
+            return f"⚠ Are you sure you want to decrease users data limit by {c(abs(amount))} GB?"
+
+    @classmethod
+    def users_data_limit_changed(cls, result: dict, amount: int):
+        if amount > 0:
+            return f"✅ {len(result)} users successfully increased by {amount} GB."
+        else:
+            return f"✅ {len(result)} users successfully decreased by {abs(amount)} GB."
 
 
 __all__ = ["Button", "Message"]

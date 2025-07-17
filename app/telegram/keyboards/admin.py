@@ -11,6 +11,7 @@ class AdminPanelAction(str, Enum):
     refresh = "refresh"
     create_user = "create_user"
     create_user_from_template = "create_user_from_template"
+    bulk_actions = "bulk_actions"
 
 
 class AdminPanel(InlineKeyboardBuilder):
@@ -27,16 +28,18 @@ class AdminPanel(InlineKeyboardBuilder):
         self.button(text=Texts.refresh_data, callback_data=self.Callback(action=AdminPanelAction.refresh))
         if is_sudo:
             self.button(text=Texts.sync_users, callback_data=self.Callback(action=AdminPanelAction.sync_users))
-            adjust.append(2)
+            self.button(text=Texts.users, switch_inline_query_current_chat="")
+            self.button(text=Texts.bulk_actions, callback_data=self.Callback(action=AdminPanelAction.bulk_actions))
+            adjust = adjust + [2] * 2
         else:
-            adjust.append(1)
-        self.button(text=Texts.users, switch_inline_query_current_chat="")
+            self.button(text=Texts.users, switch_inline_query_current_chat="")
+            adjust = adjust + [1] * 2
         self.button(text=Texts.create_user, callback_data=self.Callback(action=AdminPanelAction.create_user))
         self.button(
             text=Texts.create_user_from_template,
             callback_data=self.Callback(action=AdminPanelAction.create_user_from_template)
         )
-        adjust = adjust + [1] * 3
+        adjust = adjust + [1] * 2
         self.adjust(*adjust)
 
 
