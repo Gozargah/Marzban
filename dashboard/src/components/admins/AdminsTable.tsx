@@ -13,7 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox.tsx'
 
 interface AdminFilters {
   sort: string
-  search?: string
+  username?: string | null
   limit: number
   offset: number
 }
@@ -33,13 +33,13 @@ const DeleteAlertDialog = ({ admin, isOpen, onClose, onConfirm }: { admin: Admin
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
-        <AlertDialogHeader className={cn(dir === 'rtl' && 'sm:text-right')}>
+        <AlertDialogHeader>
           <AlertDialogTitle>{t('admins.deleteAdmin')}</AlertDialogTitle>
           <AlertDialogDescription>
             <span dir={dir} dangerouslySetInnerHTML={{ __html: t('deleteAdmin.prompt', { name: admin.username }) }} />
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className={cn(dir === 'rtl' && 'sm:gap-x-2 sm:flex-row-reverse')}>
+        <AlertDialogFooter>
           <AlertDialogCancel onClick={onClose}>{t('cancel')}</AlertDialogCancel>
           <AlertDialogAction variant="destructive" onClick={onConfirm}>
             {t('delete')}
@@ -104,10 +104,13 @@ const ResetUsersUsageConfirmationDialog = ({ adminUsername, isOpen, onClose, onC
 
 export default function AdminsTable({ onEdit, onDelete, onToggleStatus, onResetUsage }: AdminsTableProps) {
   const { t } = useTranslation()
+  const [currentPage, setCurrentPage] = useState(0)
+  const [itemsPerPage, setItemsPerPage] = useState(20)
   const [filters, setFilters] = useState<AdminFilters>({
     sort: '-created_at',
     limit: 20,
     offset: 0,
+    username: null,
   })
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [statusToggleDialogOpen, setStatusToggleDialogOpen] = useState(false)
@@ -117,6 +120,31 @@ export default function AdminsTable({ onEdit, onDelete, onToggleStatus, onResetU
   const [adminToReset, setAdminToReset] = useState<string | null>(null)
 
   const { data: adminsData, isLoading, isFetching } = useGetAdmins(filters)
+
+  // Update filters when pagination changes
+  useEffect(() => {
+    setFilters(prev => ({
+      ...prev,
+      limit: itemsPerPage,
+      offset: currentPage * itemsPerPage,
+    }))
+  }, [currentPage, itemsPerPage])
+
+  // When filters change (e.g., search), reset page if needed
+  const handleFilterChange = (newFilters: Partial<AdminFilters>) => {
+    setFilters(prev => {
+      const resetPage = newFilters.username !== undefined && newFilters.username !== prev.username
+      return {
+        ...prev,
+        ...newFilters,
+        offset: resetPage ? 0 : (newFilters.offset !== undefined ? newFilters.offset : prev.offset),
+      }
+    })
+    // Reset page if search changes
+    if (newFilters.username !== undefined) {
+      setCurrentPage(0)
+    }
+  }
 
   const handleDeleteClick = (admin: AdminDetails) => {
     setAdminToDelete(admin)
@@ -167,10 +195,6 @@ export default function AdminsTable({ onEdit, onDelete, onToggleStatus, onResetU
     setFilters(prev => ({ ...prev, sort: newSort }))
   }
 
-  const handleFilterChange = (newFilters: Partial<AdminFilters>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }))
-  }
-
   const columns = setupColumns({
     t,
     handleSort,
@@ -195,7 +219,14 @@ export default function AdminsTable({ onEdit, onDelete, onToggleStatus, onResetU
         isLoading={isLoading}
         isFetching={isFetching}
       />
-      <PaginationControls />
+      <PaginationControls
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+        setCurrentPage={setCurrentPage}
+        setItemsPerPage={setItemsPerPage}
+        isLoading={isLoading || isFetching}
+        totalItems={adminsData?.length || 0}
+      />
       {adminToDelete && <DeleteAlertDialog admin={adminToDelete} isOpen={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} onConfirm={handleConfirmDelete} />}
       {adminToToggleStatus && (
         <ToggleAdminStatusModal admin={adminToToggleStatus} isOpen={statusToggleDialogOpen} onClose={() => setStatusToggleDialogOpen(false)} onConfirm={handleConfirmStatusToggle} />

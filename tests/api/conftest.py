@@ -1,6 +1,7 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from aiorwlock import RWLock
 
 from app.db.models import Settings
 
@@ -12,6 +13,14 @@ def mock_db_session(monkeypatch: pytest.MonkeyPatch):
     db_session = MagicMock(spec=TestSession)
     monkeypatch.setattr("app.settings.GetDB", db_session)
     return db_session
+
+
+@pytest.fixture(autouse=True)
+def mock_lock(monkeypatch: pytest.MonkeyPatch):
+    _lock = MagicMock(spec=RWLock(fast=True))
+    monkeypatch.setattr("app.core.manager.core_manager._lock", _lock)
+    _lock = MagicMock(spec=RWLock(fast=True))
+    monkeypatch.setattr("app.node.node_manager._lock", _lock)
 
 
 @pytest.fixture(autouse=True)

@@ -25,13 +25,13 @@ const DeleteAlertDialog = ({ group, isOpen, onClose, onConfirm }: { group: Group
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
-        <AlertDialogHeader className={cn(dir === 'rtl' && 'sm:text-right')}>
-          <AlertDialogTitle>{t('deleteConfirmation')}</AlertDialogTitle>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t('group.deleteConfirmation')}</AlertDialogTitle>
           <AlertDialogDescription>
             <span dir={dir} dangerouslySetInnerHTML={{ __html: t('group.deleteConfirm', { name: group.name }) }} />
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className={cn(dir === 'rtl' && 'sm:gap-x-2 sm:flex-row-reverse')}>
+        <AlertDialogFooter>
           <AlertDialogCancel onClick={onClose}>{t('cancel')}</AlertDialogCancel>
           <AlertDialogAction variant="destructive" onClick={onConfirm}>
             {t('delete')}

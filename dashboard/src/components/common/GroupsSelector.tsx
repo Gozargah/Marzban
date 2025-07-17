@@ -24,7 +24,7 @@ export default function GroupsSelector<T extends FieldValues>({
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
-  
+
   const { field } = useController({
     control,
     name,
@@ -41,9 +41,7 @@ export default function GroupsSelector<T extends FieldValues>({
   })
 
   const selectedGroups = (field.value as number[]) || []
-  const filteredGroups = (groupsData?.groups || []).filter((group: any) => 
-    group.name.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredGroups = (groupsData?.groups || []).filter((group: any) => group.name.toLowerCase().includes(searchQuery.toLowerCase()))
 
   const handleSelectAll = (checked: boolean) => {
     const newGroups = checked ? filteredGroups.map((group: any) => group.id) : []
@@ -52,10 +50,8 @@ export default function GroupsSelector<T extends FieldValues>({
   }
 
   const handleGroupChange = (checked: boolean, groupId: number) => {
-    const newGroups = checked 
-      ? [...selectedGroups, groupId] 
-      : selectedGroups.filter(id => id !== groupId)
-    
+    const newGroups = checked ? [...selectedGroups, groupId] : selectedGroups.filter(id => id !== groupId)
+
     field.onChange(newGroups)
     onGroupsChange?.(newGroups)
   }
@@ -78,11 +74,7 @@ export default function GroupsSelector<T extends FieldValues>({
           />
         </div>
         <label className="flex cursor-pointer items-center gap-2 rounded-md border border-border p-3 hover:bg-accent">
-          <Checkbox 
-            checked={filteredGroups.length > 0 && selectedGroups.length === filteredGroups.length} 
-            onCheckedChange={handleSelectAll}
-            disabled={disabled}
-          />
+          <Checkbox checked={filteredGroups.length > 0 && selectedGroups.length === filteredGroups.length} onCheckedChange={handleSelectAll} disabled={disabled} />
           <span className="text-sm font-medium">{t('selectAll', { defaultValue: 'Select All' })}</span>
         </label>
         <div className="max-h-[200px] space-y-2 overflow-y-auto rounded-md border p-2">
@@ -110,11 +102,7 @@ export default function GroupsSelector<T extends FieldValues>({
           ) : (
             filteredGroups.map((group: any) => (
               <label key={group.id} className="flex cursor-pointer items-center gap-2 rounded-md p-2 hover:bg-accent">
-                <Checkbox 
-                  checked={selectedGroups.includes(group.id)} 
-                  onCheckedChange={checked => handleGroupChange(!!checked, group.id)}
-                  disabled={disabled}
-                />
+                <Checkbox checked={selectedGroups.includes(group.id)} onCheckedChange={checked => handleGroupChange(!!checked, group.id)} disabled={disabled} />
                 <span className="text-sm">{group.name}</span>
               </label>
             ))
@@ -132,4 +120,4 @@ export default function GroupsSelector<T extends FieldValues>({
       <FormMessage />
     </FormItem>
   )
-} 
+}

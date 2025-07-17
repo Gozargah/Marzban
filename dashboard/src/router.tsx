@@ -23,15 +23,20 @@ import Users from './pages/_dashboard.users'
 import Login from './pages/login'
 import { useAdmin } from '@/hooks/use-admin'
 import { Navigate } from 'react-router'
+import BulkPage from './pages/_dashboard.bulk'
+import BulkGroupsPage from './pages/_dashboard.bulk.groups'
+import BulkProxyPage from './pages/_dashboard.bulk.proxy'
+import BulkExpirePage from './pages/_dashboard.bulk.expire'
+import BulkDataPage from './pages/_dashboard.bulk.data'
 
 // Component to handle default settings routing based on user permissions
 function SettingsIndex() {
   const { admin } = useAdmin()
   const is_sudo = admin?.is_sudo || false
-  
+
   // For sudo admins, default to notifications; for non-sudo admins, default to theme
   const defaultPath = is_sudo ? '/settings/notifications' : '/settings/theme'
-  
+
   return <Navigate to={defaultPath} replace />
 }
 
@@ -133,6 +138,28 @@ export const router = createHashRouter([
           {
             path: '/settings/theme',
             element: <ThemePage />,
+          },
+        ],
+      },
+      {
+        path: '/bulk',
+        element: <BulkPage />, // Main bulk page with tabs
+        children: [
+          {
+            path: '/bulk',
+            element: <BulkGroupsPage />,
+          },
+          {
+            path: '/bulk/proxy',
+            element: <BulkProxyPage />,
+          },
+          {
+            path: '/bulk/expire',
+            element: <BulkExpirePage />,
+          },
+          {
+            path: '/bulk/data',
+            element: <BulkDataPage />,
           },
         ],
       },

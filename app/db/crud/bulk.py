@@ -1,6 +1,5 @@
 from datetime import datetime as dt, timezone as tz
 from typing import List, Optional
-from unittest import result
 
 from sqlalchemy import and_, case, cast, delete, func, or_, select, text, update
 from sqlalchemy.dialects.postgresql import JSONB
@@ -146,7 +145,7 @@ async def add_groups_to_users(db: AsyncSession, bulk_model: BulkGroup) -> List[U
     """
     Bulk add groups to users and return list of affected User objects.
     """
-    
+
     user_ids = await _resolve_target_user_ids(db, bulk_model)
 
     stmt = select(users_groups_association)
@@ -190,14 +189,8 @@ async def remove_groups_from_users(db: AsyncSession, bulk_model: BulkGroup) -> L
         conditions.append(users_groups_association.c.user_id.in_(user_ids))
 
     # Identify affected users
-    subquery = (
-        select(users_groups_association.c.user_id)
-        .where(and_(*conditions))
-        .distinct()
-    )
-    result = await db.execute(
-        select(User).where(User.id.in_(subquery))
-    )
+    subquery = select(users_groups_association.c.user_id).where(and_(*conditions)).distinct()
+    result = await db.execute(select(User).where(User.id.in_(subquery)))
     users = result.scalars().all()
 
     if not users:
@@ -215,24 +208,37 @@ async def remove_groups_from_users(db: AsyncSession, bulk_model: BulkGroup) -> L
     return users
 
 
-def create_conditions(bulk_model: BulkUser | BulkUsersProxy) -> list[BinaryExpression]:
-    conditions = []
+def _create_final_filter(bulk_model: BulkUser | BulkUsersProxy):
+    """Create a comprehensive SQLAlchemy filter condition from a bulk model."""
+    other_conditions = []
     if hasattr(bulk_model, "status") and bulk_model.status:
-        conditions.append(User.status.in_([i.value for i in bulk_model.status]))
+        other_conditions.append(User.status.in_([i.value for i in bulk_model.status]))
     if bulk_model.admins:
-        conditions.append(User.admin_id.in_([i for i in bulk_model.admins]))
+        other_conditions.append(User.admin_id.in_([i for i in bulk_model.admins]))
     if bulk_model.group_ids:
-        conditions.append(User.groups.any(Group.id.in_(bulk_model.group_ids)))
+        other_conditions.append(User.groups.any(Group.id.in_(bulk_model.group_ids)))
 
-    return conditions
+    user_ids = bulk_model.users or []
+
+    filter_conditions = []
+    if user_ids:
+        filter_conditions.append(User.id.in_(user_ids))
+    if other_conditions:
+        filter_conditions.append(and_(*other_conditions))
+
+    if len(filter_conditions) > 1:
+        return or_(*filter_conditions)
+    elif filter_conditions:
+        return filter_conditions[0]
+    else:
+        return True
 
 
 async def update_users_expire(db: AsyncSession, bulk_model: BulkUser) -> List[User]:
     """
     Bulk update user expiration dates and return list of User objects where status changed.
-    Works with MySQL, PostgreSQL, and SQLite.
     """
-    conditions = create_conditions(bulk_model)
+    final_filter = _create_final_filter(bulk_model)
 
     # Get database-specific datetime addition expression
     new_expire = get_datetime_add_expression(User.expire, bulk_model.amount)
@@ -246,7 +252,13 @@ async def update_users_expire(db: AsyncSession, bulk_model: BulkUser) -> List[Us
 
     # Get IDs of users whose status will change
     result = await db.execute(
-        select(User.id).where(and_(or_(*conditions), User.expire.isnot(None), status_change_conditions))
+        select(User.id).where(
+            and_(
+                final_filter,
+                User.expire.isnot(None),
+                status_change_conditions,
+            )
+        )
     )
     status_changed_user_ids = [row[0] for row in result.fetchall()]
 
@@ -258,7 +270,12 @@ async def update_users_expire(db: AsyncSession, bulk_model: BulkUser) -> List[Us
 
     await db.execute(
         update(User)
-        .where(and_(or_(*conditions), User.expire.isnot(None)))
+        .where(
+            and_(
+                final_filter,
+                User.expire.isnot(None),
+            )
+        )
         .values(expire=new_expire, status=case(*status_cases, else_=User.status))
     )
     await db.commit()
@@ -266,16 +283,18 @@ async def update_users_expire(db: AsyncSession, bulk_model: BulkUser) -> List[Us
     # Return the users whose status changed
     if status_changed_user_ids:
         result = await db.execute(select(User).where(User.id.in_(status_changed_user_ids)))
-        return result.scalars().all()
-    else:
-        return []
+        users = result.scalars().all()
+        for user in users:
+            await load_user_attrs(user)
+        return users
+    return []
 
 
 async def update_users_datalimit(db: AsyncSession, bulk_model: BulkUser) -> List[User]:
     """
     Bulk update user data limits and return list of User objects where status changed.
     """
-    conditions = create_conditions(bulk_model)
+    final_filter = _create_final_filter(bulk_model)
 
     # First, get the users that will have status changes BEFORE updating
     status_change_conditions = or_(
@@ -286,10 +305,12 @@ async def update_users_datalimit(db: AsyncSession, bulk_model: BulkUser) -> List
     # Get IDs of users whose status will change
     result = await db.execute(
         select(User.id).where(
-            and_(or_(and_(*conditions)), User.id.in_([i for i in bulk_model.users])),
-            User.data_limit.isnot(None),
-            User.data_limit != 0,
-            status_change_conditions,
+            and_(
+                final_filter,
+                User.data_limit.isnot(None),
+                User.data_limit != 0,
+                status_change_conditions,
+            )
         )
     )
     status_changed_user_ids = [row[0] for row in result.fetchall()]
@@ -309,9 +330,11 @@ async def update_users_datalimit(db: AsyncSession, bulk_model: BulkUser) -> List
     await db.execute(
         update(User)
         .where(
-            and_(or_(and_(*conditions), User.id.in_([i for i in bulk_model.users]))),
-            User.data_limit.isnot(None),
-            User.data_limit != 0,
+            and_(
+                final_filter,
+                User.data_limit.isnot(None),
+                User.data_limit != 0,
+            )
         )
         .values(data_limit=User.data_limit + bulk_model.amount, status=case(*status_cases, else_=User.status))
     )
@@ -321,22 +344,21 @@ async def update_users_datalimit(db: AsyncSession, bulk_model: BulkUser) -> List
     # Return the users whose status changed
     if status_changed_user_ids:
         result = await db.execute(select(User).where(User.id.in_(status_changed_user_ids)))
-        return result.scalars().all()
-    else:
-        return []
+        users = result.scalars().all()
+        for user in users:
+            await load_user_attrs(user)
+        return users
+    return []
 
 
 async def update_users_proxy_settings(db: AsyncSession, bulk_model: BulkUsersProxy):
     """
     Bulk update the `proxy_settings` JSON field for users and return updated rows.
     """
-    conditions = create_conditions(bulk_model)
-
-    if bulk_model.users:
-        conditions.append(User.id.in_(bulk_model.users))
+    final_filter = _create_final_filter(bulk_model)
 
     # First select the users that will be updated
-    select_stmt = select(User).where(*conditions)
+    select_stmt = select(User).where(final_filter)
     result = await db.execute(select_stmt)
     users_to_update = result.scalars().all()
 
@@ -370,11 +392,7 @@ async def update_users_proxy_settings(db: AsyncSession, bulk_model: BulkUsersPro
             )
 
     # Perform the update
-    update_stmt = (
-        update(User)
-        .where(*conditions)
-        .values(proxy_settings=proxy_settings_expr)
-    )
+    update_stmt = update(User).where(final_filter).values(proxy_settings=proxy_settings_expr)
     await db.execute(update_stmt)
     await db.commit()
 

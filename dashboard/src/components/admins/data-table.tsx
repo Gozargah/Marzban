@@ -78,7 +78,7 @@ const ExpandedRowContent = ({
   )
 }
 
-export function DataTable<TData extends AdminDetails>({ columns, data, onEdit, onDelete, onToggleStatus, setStatusToggleDialogOpen, onResetUsage, isLoading = false, isFetching = false }: DataTableProps<TData>) {
+export function DataTable<TData extends AdminDetails>({ columns, data, onEdit, onDelete, onToggleStatus, onResetUsage, isLoading = false, isFetching = false }: DataTableProps<TData>) {
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
   const { t } = useTranslation()
   const [visibleRows, setVisibleRows] = useState<number>(0)

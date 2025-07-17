@@ -5,6 +5,7 @@ from app.core.manager import core_manager
 from app.db import GetDB
 from app.db.crud.host import get_host_by_id, get_hosts, get_or_create_inbound
 from app.db.models import ProxyHostSecurity
+from app.models.host import MuxSettings, TransportSettings
 from app.utils.store import DictStorage
 
 
@@ -45,8 +46,14 @@ async def hosts(storage: dict, db: AsyncSession):
             "random_user_agent": host.random_user_agent,
             "use_sni_as_host": host.use_sni_as_host,
             "http_headers": host.http_headers,
-            "mux_settings": host.mux_settings,
-            "transport_settings": host.transport_settings,
+            "mux_settings": MuxSettings.model_validate(host.mux_settings).model_dump(by_alias=True, exclude_none=True)
+            if host.mux_settings
+            else {},
+            "transport_settings": TransportSettings.model_validate(host.transport_settings).model_dump(
+                by_alias=True, exclude_none=True
+            )
+            if host.transport_settings
+            else {},
             "status": host.status,
         }
 
@@ -68,8 +75,16 @@ async def hosts(storage: dict, db: AsyncSession):
                 "random_user_agent": downstream.random_user_agent,
                 "use_sni_as_host": downstream.use_sni_as_host,
                 "http_headers": downstream.http_headers,
-                "mux_settings": downstream.mux_settings,
-                "transport_settings": downstream.transport_settings,
+                "mux_settings": MuxSettings.model_validate(downstream.mux_settings).model_dump(
+                    by_alias=True, exclude_none=True
+                )
+                if downstream.mux_settings
+                else {},
+                "transport_settings": TransportSettings.model_validate(downstream.transport_settings).model_dump(
+                    by_alias=True, exclude_none=True
+                )
+                if downstream.transport_settings
+                else {},
                 "status": downstream.status,
             }
         else:

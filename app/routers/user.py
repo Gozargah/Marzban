@@ -234,9 +234,7 @@ async def get_expired_users(
     - If both are omitted, returns all expired users
     """
 
-    return await user_operator.get_expired_users(
-        db, expired_after, expired_before, admin_username=admin_username
-    )
+    return await user_operator.get_expired_users(db, expired_after, expired_before, admin_username)
 
 
 @router.delete("s/expired", response_model=RemoveUsersResponse)

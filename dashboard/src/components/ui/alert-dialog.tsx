@@ -4,6 +4,7 @@ import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 import { VariantProps } from 'class-variance-authority'
+import useDirDetection from '@/hooks/use-dir-detection'
 
 const AlertDialog = AlertDialogPrimitive.Root
 
@@ -39,12 +40,36 @@ const AlertDialogContent = React.forwardRef<React.ElementRef<typeof AlertDialogP
 )
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName
 
-const AlertDialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div className={cn('flex flex-col space-y-2 text-center sm:text-left', className)} {...props} />
+const AlertDialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
+  const dir = useDirDetection()
+  return (
+    <div
+      dir={dir}
+      className={cn(
+        'flex flex-col space-y-2',
+        dir === 'rtl' ? 'text-center sm:text-right' : 'text-center sm:text-left',
+        className
+      )}
+      {...props}
+    />
+  )
+}
 AlertDialogHeader.displayName = 'AlertDialogHeader'
 
-const AlertDialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)} {...props} />
-)
+const AlertDialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
+  const dir = useDirDetection()
+  return (
+    <div
+      dir={dir}
+      className={cn(
+        'flex flex-col-reverse sm:flex-row sm:justify-end',
+        dir === "rtl" ? 'sm:space-x-reverse sm:space-x-2' : 'sm:space-x-2',
+        className
+      )}
+      {...props}
+    />
+  )
+}
 AlertDialogFooter.displayName = 'AlertDialogFooter'
 
 const AlertDialogTitle = React.forwardRef<React.ElementRef<typeof AlertDialogPrimitive.Title>, React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title>>(({ className, ...props }, ref) => (

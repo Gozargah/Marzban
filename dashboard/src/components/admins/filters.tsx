@@ -13,7 +13,7 @@ import { LoaderCircle } from 'lucide-react'
 
 interface BaseFilters {
   sort: string
-  search?: string
+  username?: string | null
   limit?: number
   offset?: number
 }
@@ -29,13 +29,13 @@ export function Filters<T extends BaseFilters>({ filters, onFilterChange }: Filt
   const { t } = useTranslation()
   const dir = useDirDetection()
   const { refetch } = useGetAdmins(filters)
-  const [search, setSearch] = useState(filters.search || '')
+  const [search, setSearch] = useState(filters.username || '')
 
   // Debounced search function
   const setSearchField = useCallback(
     debounce((value: string) => {
       onFilterChange({
-        search: value,
+        username: value ? value : null,
         offset: 0, // Reset to first page when search is updated
       } as Partial<T>)
     }, 300),
@@ -52,7 +52,7 @@ export function Filters<T extends BaseFilters>({ filters, onFilterChange }: Filt
   const clearSearch = () => {
     setSearch('')
     onFilterChange({
-      search: '',
+      username: null,
       offset: 0,
     } as Partial<T>)
   }
@@ -79,62 +79,51 @@ export function Filters<T extends BaseFilters>({ filters, onFilterChange }: Filt
   )
 }
 
-export const PaginationControls = () => {
+// Add props interface for PaginationControls
+interface PaginationControlsProps {
+  currentPage: number;
+  itemsPerPage: number;
+  setCurrentPage: (page: number) => void;
+  setItemsPerPage: (size: number) => void;
+  isLoading: boolean;
+  totalItems: number;
+}
+
+// Update PaginationControls to use props
+export const PaginationControls = ({
+  currentPage,
+  itemsPerPage,
+  setCurrentPage,
+  setItemsPerPage,
+  isLoading,
+  totalItems,
+}: PaginationControlsProps) => {
   const { t } = useTranslation()
   const dir = useDirDetection()
-  const [itemsPerPage, setItemsPerPage] = useState(20)
-  const [currentPage, setCurrentPage] = useState(0)
   const [isChangingPage, setIsChangingPage] = useState(false)
-  const { data: adminsData, isLoading, isFetching } = useGetAdmins({
-    limit: itemsPerPage,
-    offset: currentPage * itemsPerPage,
-  })
 
-  const totalAdmins = adminsData?.length || 0
-  const isPageLoading = isLoading || isFetching || isChangingPage
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const paginationRange = getPaginationRange(currentPage, totalPages)
 
   const handleItemsPerPageChange = async (value: string) => {
     const newLimit = parseInt(value, 10)
     setIsChangingPage(true)
     setItemsPerPage(newLimit)
     setCurrentPage(0) // Reset to first page when items per page changes
-
-    try {
-      // Wait for state to update before refetching
-      await new Promise(resolve => setTimeout(resolve, 0))
-    } finally {
-      // Add a small delay to prevent flickering
-      setTimeout(() => {
-        setIsChangingPage(false)
-      }, 300)
-    }
+    setTimeout(() => setIsChangingPage(false), 300)
   }
 
   const handlePageChange = async (newPage: number) => {
     if (newPage === currentPage || isChangingPage) return
-
     setIsChangingPage(true)
     setCurrentPage(newPage)
-
-    try {
-      // Wait for state to update before refetching
-      await new Promise(resolve => setTimeout(resolve, 0))
-    } finally {
-      // Add a small delay to prevent flickering
-      setTimeout(() => {
-        setIsChangingPage(false)
-      }, 300)
-    }
+    setTimeout(() => setIsChangingPage(false), 300)
   }
-
-  // Pagination controls
-  const totalPages = Math.ceil(totalAdmins / itemsPerPage)
-  const paginationRange = getPaginationRange(currentPage, totalPages)
 
   return (
     <div className="mt-4 flex flex-col-reverse md:flex-row gap-4 items-center justify-between">
       <div className="flex items-center gap-2">
-        <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange} disabled={isPageLoading}>
+        <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange} disabled={isLoading || isChangingPage}>
           <SelectTrigger className="w-[70px]">
             <SelectValue />
           </SelectTrigger>

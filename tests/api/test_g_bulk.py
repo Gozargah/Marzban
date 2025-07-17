@@ -5,6 +5,7 @@ from tests.api import client
 
 usernames = ["user1", "user2"]
 
+
 def create_test_users(access_token):
     """Helper function to create users for testing."""
     for username in usernames:
@@ -121,7 +122,7 @@ def test_update_users_proxy_settings(access_token):
     response = client.post(
         "/api/users/bulk/proxy_settings",
         headers={"Authorization": f"Bearer {access_token}"},
-        json={"flow": "xtls-rprx-vision",},
+        json={"flow": "xtls-rprx-vision"},
     )
 
     assert response.status_code == status.HTTP_200_OK

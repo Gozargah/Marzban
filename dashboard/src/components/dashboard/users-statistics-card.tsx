@@ -1,7 +1,7 @@
 import { ActivityIcon, UsersIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
-import { SystemStats, useGetSystemStats } from '@/service/api'
+import { SystemStats } from '@/service/api'
 
 const UserStatisticsCard = ({ data }: { data: SystemStats | undefined }) => {
   const { t } = useTranslation()

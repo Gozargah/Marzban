@@ -25,13 +25,13 @@ const DeleteAlertDialog = ({ node, isOpen, onClose, onConfirm }: { node: NodeRes
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
-        <AlertDialogHeader className={cn(dir === 'rtl' && 'sm:text-right')}>
+        <AlertDialogHeader>
           <AlertDialogTitle>{t('nodes.deleteNode')}</AlertDialogTitle>
           <AlertDialogDescription>
             <span dir={dir} dangerouslySetInnerHTML={{ __html: t('deleteNode.prompt', { name: node.name }) }} />
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className={cn(dir === 'rtl' && 'sm:gap-x-2 sm:flex-row-reverse')}>
+        <AlertDialogFooter>
           <AlertDialogCancel onClick={onClose}>{t('cancel')}</AlertDialogCancel>
           <AlertDialogAction variant="destructive" onClick={onConfirm}>
             {t('delete')}

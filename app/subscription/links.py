@@ -5,9 +5,11 @@ from random import choice
 from typing import Union
 from urllib.parse import quote
 from uuid import UUID
-from . import BaseSubscription
-from app.subscription.funcs import get_grpc_gun, get_grpc_multi, detect_shadowsocks_2022
+
+from app.subscription.funcs import detect_shadowsocks_2022, get_grpc_gun, get_grpc_multi
 from config import EXTERNAL_CONFIG
+
+from . import BaseSubscription
 
 
 class StandardLinks(BaseSubscription):
@@ -199,7 +201,8 @@ class StandardLinks(BaseSubscription):
         if alpn:
             payload["alpn"] = alpn
         if fs:
-            payload["fragment"] = fs
+            xray_fragment = fs["xray"]
+            payload["fragment"] = f"{xray_fragment['length']},{xray_fragment['interval']},{xray_fragment['packets']}"
         if tls == "reality":
             payload["pbk"] = pbk
             payload["sid"] = sid

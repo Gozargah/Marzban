@@ -1,32 +1,32 @@
 import asyncio
 from copy import deepcopy
-from datetime import datetime, timezone, timedelta, UTC
+from datetime import UTC, datetime, timedelta, timezone
 from enum import Enum
-from typing import Optional, List, Union
+from typing import List, Optional, Union
 
-from sqlalchemy import select, or_, and_, func, not_, delete
+from sqlalchemy import and_, delete, func, not_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.functions import coalesce
 
 from app.db.models import (
-    User,
-    UserStatus,
     Admin,
-    UserDataLimitResetStrategy,
     Group,
+    NextPlan,
+    NodeUserUsage,
     NotificationReminder,
     ReminderType,
-    NodeUserUsage,
-    NextPlan,
+    User,
+    UserDataLimitResetStrategy,
+    UserStatus,
     UserUsageResetLogs,
 )
 from app.models.proxy import ProxyTable
-from app.models.stats import Period, UserUsageStatsList, UserUsageStat
+from app.models.stats import Period, UserUsageStat, UserUsageStatsList
 from app.models.user import UserCreate, UserModify
 from config import USERS_AUTODELETE_DAYS
 
-from .general import build_json_proxy_settings_search_condition, _build_trunc_expression
+from .general import _build_trunc_expression, build_json_proxy_settings_search_condition
 from .group import get_groups_by_ids
 
 
@@ -83,11 +83,13 @@ UsersSortingOptions = Enum(
         "data_limit": User.data_limit.asc(),
         "expire": User.expire.asc(),
         "created_at": User.created_at.asc(),
+        "edit_at": User.edit_at.asc(),
         "-username": User.username.desc(),
         "-used_traffic": User.used_traffic.desc(),
         "-data_limit": User.data_limit.desc(),
         "-expire": User.expire.desc(),
         "-created_at": User.created_at.desc(),
+        "-edit_at": User.edit_at.desc(),
     },
 )
 
@@ -417,7 +419,7 @@ async def modify_user(db: AsyncSession, db_user: User, modify: UserModify) -> Us
     remove_usage_reminder = False
     remove_expiration_reminder = False
 
-    if modify.proxy_settings:
+    if modify.proxy_settings is not None:
         db_user.proxy_settings = modify.proxy_settings.dict()
     if modify.group_ids:
         db_user.groups = await get_groups_by_ids(db, modify.group_ids)

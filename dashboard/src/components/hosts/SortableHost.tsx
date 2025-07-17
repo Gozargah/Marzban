@@ -28,13 +28,13 @@ const DeleteAlertDialog = ({ host, isOpen, onClose, onConfirm }: { host: BaseHos
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
-        <AlertDialogHeader className={cn(dir === 'rtl' && 'sm:text-right')}>
+        <AlertDialogHeader>
           <AlertDialogTitle>{t('deleteHost.title')}</AlertDialogTitle>
           <AlertDialogDescription>
             <span dir={dir} dangerouslySetInnerHTML={{ __html: t('deleteHost.prompt', { name: host.remark ?? '' }) }} />
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className={cn(dir === 'rtl' && 'sm:gap-x-2 sm:flex-row-reverse')}>
+        <AlertDialogFooter>
           <AlertDialogCancel onClick={onClose}>{t('cancel')}</AlertDialogCancel>
           <AlertDialogAction variant="destructive" onClick={onConfirm}>
             {t('delete')}

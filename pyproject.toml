@@ -44,6 +44,7 @@ dependencies = [
     "aiogram>=3.19.0",
     "aiohttp-socks>=0.10.1",
     "uvloop>=0.21.0",
+    "aiorwlock>=1.5.0",
 ]
 
 [tool.ruff]

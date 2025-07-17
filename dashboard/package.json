@@ -90,6 +90,7 @@
     "@types/node": "^20.17.28",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
+    "ajv": "^8.17.1",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.18.0",
     "eslint-plugin-react-hooks": "^5.1.0",

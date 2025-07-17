@@ -79,13 +79,17 @@ const Statistics = () => {
       <div className="w-full">
         <div className="px-3 sm:px-4 w-full pt-2">
           <div className="transform-gpu animate-slide-up" style={{ animationDuration: '500ms', animationDelay: '100ms', animationFillMode: 'both' }}>
-            <MainContent 
-              error={error} 
-              isLoading={isLoading} 
-              data={data} 
-              selectedServer={selectedServer}
-              is_sudo={true}
-            />
+            <Card>
+              <CardContent className="p-4 sm:p-6">
+                <MainContent 
+                  error={error} 
+                  isLoading={isLoading} 
+                  data={data} 
+                  selectedServer={selectedServer}
+                  is_sudo={true}
+                />
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

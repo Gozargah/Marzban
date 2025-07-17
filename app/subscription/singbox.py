@@ -199,6 +199,7 @@ class SingBoxConfiguration(BaseSubscription):
         request: dict | None = None,
         random_user_agent: bool = False,
         permit_without_stream: bool = False,
+        fragment: dict | None = None,
     ):
         if isinstance(port, str):
             ports = port.split(",")
@@ -256,6 +257,9 @@ class SingBoxConfiguration(BaseSubscription):
             singbox_mux = self._remove_none_values(singbox_mux)
             config["multiplex"] = singbox_mux
 
+        if fragment and (singbox_fragment := fragment.get("sing_box")):
+            config.update(singbox_fragment)
+
         return config
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
@@ -298,6 +302,7 @@ class SingBoxConfiguration(BaseSubscription):
             http_headers=inbound.get("http_headers"),
             request=inbound.get("request"),
             mux_settings=inbound.get("mux_settings", {}),
+            fragment=inbound.get("fragment_settings", {}),
         )
 
         if inbound["protocol"] == "vmess":

@@ -378,7 +378,7 @@ export default function AdminModal({
                                 isLoading={addAdminMutation.isPending || modifyAdminMutation.isPending}
                                 loadingText={editingAdmin ? t('modifying') : t('creating')}
                             >
-                                {editingAdmin ? t('save') : t('create')}
+                                {editingAdmin ? t('modify') : t('create')}
                             </LoaderButton>
                         </div>
                     </form>

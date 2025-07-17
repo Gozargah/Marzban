@@ -240,8 +240,8 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
 
     // Utility functions
     const isIOS = () => {
-        return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+        return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
     }
 
     const copyToClipboardIOS = async (content: string): Promise<boolean> => {
@@ -251,7 +251,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
                 await navigator.clipboard.writeText(content)
                 return true
             }
-            
+
             // Fallback: create temporary textarea
             const textArea = document.createElement('textarea')
             textArea.value = content
@@ -261,7 +261,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
             document.body.appendChild(textArea)
             textArea.focus()
             textArea.select()
-            
+
             const success = document.execCommand('copy')
             document.body.removeChild(textArea)
             return success
@@ -272,7 +272,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
     }
 
     const showManualCopyAlert = (content: string, type: 'content' | 'url') => {
-        const message = type === 'content' 
+        const message = type === 'content'
             ? t('copyFailed', { defaultValue: 'Failed to copy automatically. Please copy manually:' })
             : t('downloadFailed', { defaultValue: 'Download blocked. Please copy manually:' })
         alert(`${message}\n\n${content}`)
@@ -289,7 +289,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
     const handleLinksCopy = async (subLink: SubscribeLink) => {
         try {
             const content = await fetchContent(subLink.link)
-            
+
             if (isIOS()) {
                 const success = await copyToClipboardIOS(content)
                 if (success) {
@@ -343,7 +343,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`)
                 }
-                
+
                 const blob = await response.blob()
                 const url = window.URL.createObjectURL(blob)
                 const a = document.createElement('a')
@@ -363,7 +363,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
 
     const handleCopyOrDownload = async (subLink: SubscribeLink) => {
         const isLinksProtocol = subLink.protocol === 'links' || subLink.protocol === 'links (base64)'
-        
+
         if (isLinksProtocol) {
             await handleLinksCopy(subLink)
         } else {
@@ -489,12 +489,10 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                 <AlertDialogContent dir={dir}>
                     <AlertDialogHeader>
-                        <AlertDialogTitle
-                            className={cn(dir === 'rtl' && 'sm:text-right')}>{t('usersTable.deleteUserTitle')}</AlertDialogTitle>
-                        <AlertDialogDescription
-                            className={cn(dir === 'rtl' && 'sm:text-right')}>{t('usersTable.deleteUserPrompt', { name: user.username })}</AlertDialogDescription>
+                        <AlertDialogTitle>{t('usersTable.deleteUserTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t('usersTable.deleteUserPrompt', { name: user.username })}</AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 gap-2 sm:gap-0', dir === 'rtl' && 'sm:flex-row-reverse sm:space-x-reverse')}>
+                    <AlertDialogFooter className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 gap-2 sm:gap-0')}>
                         <AlertDialogCancel
                             onClick={() => setDeleteDialogOpen(false)}>{t('usersTable.cancel')}</AlertDialogCancel>
                         <AlertDialogAction variant="destructive" onClick={confirmDelete}
@@ -509,12 +507,10 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
             <AlertDialog open={isResetUsageDialogOpen} onOpenChange={setResetUsageDialogOpen}>
                 <AlertDialogContent dir={dir}>
                     <AlertDialogHeader>
-                        <AlertDialogTitle
-                            className={cn(dir === 'rtl' && 'sm:text-right')}>{t('usersTable.resetUsageTitle')}</AlertDialogTitle>
-                        <AlertDialogDescription
-                            className={cn(dir === 'rtl' && 'sm:text-right')}>{t('usersTable.resetUsagePrompt', { name: user.username })}</AlertDialogDescription>
+                        <AlertDialogTitle>{t('usersTable.resetUsageTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t('usersTable.resetUsagePrompt', { name: user.username })}</AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 gap-2 sm:gap-0', dir === 'rtl' && 'sm:flex-row-reverse sm:space-x-reverse')}>
+                    <AlertDialogFooter className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 gap-2 sm:gap-0')}>
                         <AlertDialogCancel
                             onClick={() => setResetUsageDialogOpen(false)}>{t('usersTable.cancel')}</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmResetUsage} disabled={resetUserDataUsageMutation.isPending}>
@@ -528,12 +524,10 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
             <AlertDialog open={isRevokeSubDialogOpen} onOpenChange={setRevokeSubDialogOpen}>
                 <AlertDialogContent dir={dir}>
                     <AlertDialogHeader>
-                        <AlertDialogTitle
-                            className={cn(dir === 'rtl' && 'sm:text-right')}>{t('revokeUserSub.title')}</AlertDialogTitle>
-                        <AlertDialogDescription
-                            className={cn(dir === 'rtl' && 'sm:text-right')}>{t('revokeUserSub.prompt', { username: user.username })}</AlertDialogDescription>
+                        <AlertDialogTitle>{t('revokeUserSub.title')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t('revokeUserSub.prompt', { username: user.username })}</AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 gap-2 sm:gap-0', dir === 'rtl' && 'sm:flex-row-reverse sm:space-x-reverse')}>
+                    <AlertDialogFooter className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 gap-2 sm:gap-0')}>
                         <AlertDialogCancel
                             onClick={() => setRevokeSubDialogOpen(false)}>{t('usersTable.cancel')}</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmRevokeSubscription}
