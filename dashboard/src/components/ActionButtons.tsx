@@ -471,7 +471,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
                         {user.next_plan && (
                             <DropdownMenuItem onClick={handleActiveNextPlan}>
                                 <ListStart className="w-4 h-4 mr-2" />
-                                <span>{t('usersTable.activeNextPlanTitle')}</span>
+                                <span>{t('usersTable.activeNextPlanSubmit')}</span>
                             </DropdownMenuItem>
                         )}
 
