@@ -1,4 +1,5 @@
 from aiogram import Router, types, F
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import CommandStart
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -39,13 +40,16 @@ async def command_start_handler(
     if admin:
         stats = await system_operator.get_system_stats(db, admin)
         if isinstance(event, types.CallbackQuery):
-            return await message.edit_text(
-                text=Texts.start(stats),
-                reply_markup=AdminPanel(
-                    is_sudo=admin.is_sudo,
-                    panel_url=settings.mini_app_web_url if settings.mini_app_login else None,
-                ).as_markup()
-            )
+            try:
+                return await message.edit_text(
+                    text=Texts.start(stats),
+                    reply_markup=AdminPanel(
+                        is_sudo=admin.is_sudo,
+                        panel_url=settings.mini_app_web_url if settings.mini_app_login else None,
+                    ).as_markup()
+                )
+            except TelegramBadRequest:
+                pass
         await message.answer(
             text=Texts.start(stats),
             reply_markup=AdminPanel(
