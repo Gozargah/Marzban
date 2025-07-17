@@ -66,6 +66,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
     const [isRevokeSubDialogOpen, setRevokeSubDialogOpen] = useState(false)
     const [isUsageModalOpen, setUsageModalOpen] = useState(false)
     const [isSetOwnerModalOpen, setSetOwnerModalOpen] = useState(false)
+    const [isActiveNextPlanModalOpen, setIsActiveNextPlanModalOpen] = useState(false)
     const queryClient = useQueryClient()
     const { t } = useTranslation()
     const dir = useDirDetection()
@@ -192,6 +193,10 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
         } catch (error: any) {
             toast.error(t('revokeUserSub.error', { name: user.username, error: error?.message || '' }))
         }
+    }
+
+    const handleActiveNextPlan = () => {
+        setIsActiveNextPlanModalOpen(true)
     }
 
     const activeNextPlan = async () => {
@@ -464,9 +469,9 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
 
                         {/* Active Next Plan */}
                         {user.next_plan && (
-                            <DropdownMenuItem onClick={activeNextPlan}>
+                            <DropdownMenuItem onClick={handleActiveNextPlan}>
                                 <ListStart className="w-4 h-4 mr-2" />
-                                <span>{t('userDialog.activeNextPlan')}</span>
+                                <span>{t('usersTable.activeNextPlanTitle')}</span>
                             </DropdownMenuItem>
                         )}
 
@@ -484,6 +489,23 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
             {/* QR Code Modal */}
             {showQRModal && subscribeUrl && <QRCodeModal subscribeLinks={subscribeLinks} subscribeUrl={subscribeUrl}
                 onCloseModal={onCloseQRModal} />}
+
+            {/* Active Next Plan Confirm Dialog */}
+            <AlertDialog open={isActiveNextPlanModalOpen} onOpenChange={setIsActiveNextPlanModalOpen}>
+                <AlertDialogContent dir={dir}>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{t('usersTable.activeNextPlanTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t('usersTable.activeNextPlanPrompt', { name: user.username })}</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 gap-2 sm:gap-0')}>
+                        <AlertDialogCancel
+                            onClick={() => setDeleteDialogOpen(false)}>{t('usersTable.cancel')}</AlertDialogCancel>
+                        <AlertDialogAction onClick={activeNextPlan} disabled={activeNextMutation.isPending}>
+                            {t('usersTable.activeNextPlanSubmit')}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {/* Delete User Confirm Dialog */}
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
