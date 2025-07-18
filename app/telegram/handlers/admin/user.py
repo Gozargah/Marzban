@@ -368,7 +368,7 @@ async def create_user_from_template_choose(event: Message, state: FSMContext, db
 
 
 
-@router.message()
+@router.message(F.text)
 @router.callback_query(UserPanel.Callback.filter(UserPanelAction.show == F.action))
 async def get_user(event: Message | CallbackQuery, admin: AdminDetails, db: AsyncSession, **kwargs):
     """get exact user, otherwise not found"""
