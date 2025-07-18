@@ -37,7 +37,7 @@ from app.telegram.utils.shared import (
 )
 from app.utils.store import MemoryStorage
 from app.utils.system import cpu_usage, memory_usage, readable_size, realtime_bandwidth
-from config import TELEGRAM_DEFAULT_VLESS_FLOW, TELEGRAM_LOGGER_CHANNEL_ID
+from config import TELEGRAM_DEFAULT_VLESS_FLOW, TELEGRAM_LOGGER_CHANNEL_ID, TELEGRAM_LOGGER_THREAD_ID
 
 mem_store = MemoryStorage()
 
@@ -633,7 +633,7 @@ def edit_note_step(message: types.Message):
 ➖➖➖➖➖➖➖➖➖
 <b>By :</b> <a href="tg://user?id={message.chat.id}">{message.from_user.full_name}</a>"""
             try:
-                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML', message_thread_id=TELEGRAM_LOGGER_THREAD_ID)
             except ApiTelegramException:
                 pass
 
@@ -842,7 +842,7 @@ def template_charge_command(call: types.CallbackQuery):
 ➖➖➖➖➖➖➖➖➖
 <b>By :</b> <a href="tg://user?id={call.from_user.id}">{call.from_user.full_name}</a>"""
                 try:
-                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML', message_thread_id=TELEGRAM_LOGGER_THREAD_ID)
                 except ApiTelegramException:
                     pass
         else:
@@ -1512,7 +1512,7 @@ def confirm_user_command(call: types.CallbackQuery):
 ➖➖➖➖➖➖➖➖➖
 <b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>"""
             try:
-                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML', message_thread_id=TELEGRAM_LOGGER_THREAD_ID)
             except ApiTelegramException:
                 pass
     elif data == "suspend":
@@ -1536,7 +1536,7 @@ def confirm_user_command(call: types.CallbackQuery):
 ➖➖➖➖➖➖➖➖➖
 <b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>"""
             try:
-                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML', message_thread_id=TELEGRAM_LOGGER_THREAD_ID)
             except ApiTelegramException:
                 pass
     elif data == "activate":
@@ -1560,7 +1560,7 @@ def confirm_user_command(call: types.CallbackQuery):
 ➖➖➖➖➖➖➖➖➖
 <b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>"""
             try:
-                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML', message_thread_id=TELEGRAM_LOGGER_THREAD_ID)
             except ApiTelegramException:
                 pass
     elif data == 'reset_usage':
@@ -1585,7 +1585,7 @@ def confirm_user_command(call: types.CallbackQuery):
 ➖➖➖➖➖➖➖➖➖
 <b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>"""
             try:
-                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML', message_thread_id=TELEGRAM_LOGGER_THREAD_ID)
             except ApiTelegramException:
                 pass
     elif data == 'restart':
@@ -1673,7 +1673,7 @@ def confirm_user_command(call: types.CallbackQuery):
 <b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>\
 """
                 try:
-                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML', message_thread_id=TELEGRAM_LOGGER_THREAD_ID)
                 except ApiTelegramException:
                     pass
 
@@ -1756,7 +1756,7 @@ def confirm_user_command(call: types.CallbackQuery):
 <b>Last Traffic Limit :</b> <code>{readable_size(last_user.data_limit) if last_user.data_limit else "Unlimited"}</code>
 <b>New Traffic Limit :</b> <code>{readable_size(user.data_limit) if user.data_limit else "Unlimited"}</code>{tag}"""
                 try:
-                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML', message_thread_id=TELEGRAM_LOGGER_THREAD_ID)
                 except ApiTelegramException:
                     pass
             if last_user.expire != user.expire:
@@ -1769,7 +1769,7 @@ def confirm_user_command(call: types.CallbackQuery):
 <b>New Expire Date :</b> <code>\
 {datetime.fromtimestamp(user.expire).strftime('%H:%M:%S %Y-%m-%d') if user.expire else "Never"}</code>{tag}"""
                 try:
-                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML', message_thread_id=TELEGRAM_LOGGER_THREAD_ID)
                 except ApiTelegramException:
                     pass
             if list(last_user.inbounds.values())[0] != list(user.inbounds.values())[0]:
@@ -1780,7 +1780,7 @@ def confirm_user_command(call: types.CallbackQuery):
 <b>Last Proxies :</b> <code>{", ".join(list(last_user.inbounds.values())[0])}</code>
 <b>New Proxies :</b> <code>{", ".join(list(user.inbounds.values())[0])}</code>{tag}"""
                 try:
-                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML', message_thread_id=TELEGRAM_LOGGER_THREAD_ID)
                 except ApiTelegramException:
                     pass
 
@@ -1902,7 +1902,7 @@ def confirm_user_command(call: types.CallbackQuery):
 ➖➖➖➖➖➖➖➖➖
 <b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>"""
                 try:
-                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML', message_thread_id=TELEGRAM_LOGGER_THREAD_ID)
                 except ApiTelegramException:
                     pass
 
@@ -1947,7 +1947,7 @@ def confirm_user_command(call: types.CallbackQuery):
 <b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>"""
                 try:
                     bot.send_document(TELEGRAM_LOGGER_CHANNEL_ID, open(
-                        file_name, 'rb'), caption=text, parse_mode='HTML')
+                        file_name, 'rb'), caption=text, parse_mode='HTML', message_thread_id=TELEGRAM_LOGGER_THREAD_ID)
                     os.remove(file_name)
                 except ApiTelegramException:
                     pass
@@ -1992,7 +1992,7 @@ def confirm_user_command(call: types.CallbackQuery):
 <b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>"""
                 try:
                     bot.send_document(TELEGRAM_LOGGER_CHANNEL_ID, open(
-                        file_name, 'rb'), caption=text, parse_mode='HTML')
+                        file_name, 'rb'), caption=text, parse_mode='HTML', message_thread_id=TELEGRAM_LOGGER_THREAD_ID)
                     os.remove(file_name)
                 except ApiTelegramException:
                     pass
@@ -2041,7 +2041,7 @@ def confirm_user_command(call: types.CallbackQuery):
 <b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>"""
                 try:
                     bot.send_document(TELEGRAM_LOGGER_CHANNEL_ID, open(
-                        file_name, 'rb'), caption=text, parse_mode='HTML')
+                        file_name, 'rb'), caption=text, parse_mode='HTML', message_thread_id=TELEGRAM_LOGGER_THREAD_ID)
                     os.remove(file_name)
                 except ApiTelegramException:
                     pass
@@ -2104,7 +2104,7 @@ def confirm_user_command(call: types.CallbackQuery):
 ➖➖➖➖➖➖➖➖➖
 <b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>"""
                 try:
-                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+                    bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML', message_thread_id=TELEGRAM_LOGGER_THREAD_ID)
                 except ApiTelegramException:
                     pass
 
@@ -2132,7 +2132,7 @@ def confirm_user_command(call: types.CallbackQuery):
 ➖➖➖➖➖➖➖➖➖
 <b>By :</b> <a href="tg://user?id={chat_id}">{full_name}</a>"""
             try:
-                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML')
+                bot.send_message(TELEGRAM_LOGGER_CHANNEL_ID, text, 'HTML', message_thread_id=TELEGRAM_LOGGER_THREAD_ID)
             except ApiTelegramException:
                 pass
 
