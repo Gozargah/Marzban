@@ -190,11 +190,11 @@ class Message:
             return f"⚠ Are you sure you want to subtract {c(abs(days))} days from users expiry?"
 
     @classmethod
-    def users_expiry_changed(cls, result: dict, amount: int):
+    def users_expiry_changed(cls, result: int, amount: int):
         if amount > 0:
-            return f"✅ {len(result)} users successfully extended by {amount} days."
+            return f"✅ {result} users successfully extended by {amount} days."
         else:
-            return f"✅ {len(result)} users successfully subtracted by {abs(amount)} days."
+            return f"✅ {result} users successfully subtracted by {abs(amount)} days."
 
     @classmethod
     def confirm_modify_data_limit(cls, amount: int) -> str:
@@ -204,11 +204,11 @@ class Message:
             return f"⚠ Are you sure you want to decrease users data limit by {c(abs(amount))} GB?"
 
     @classmethod
-    def users_data_limit_changed(cls, result: dict, amount: int):
+    def users_data_limit_changed(cls, result: int, amount: int):
         if amount > 0:
-            return f"✅ {len(result)} users successfully increased by {amount} GB."
+            return f"✅ {result} users successfully increased by {amount} GB."
         else:
-            return f"✅ {len(result)} users successfully decreased by {abs(amount)} GB."
+            return f"✅ {result} users successfully decreased by {abs(amount)} GB."
 
 
 __all__ = ["Button", "Message"]

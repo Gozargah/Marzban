@@ -127,9 +127,7 @@ async def process_expiry_change_amount(
         db: AsyncSession,
         callback_data: BulkActionPanel.Callback
 ):
-    result = await user_operations.bulk_modify_expire(
-        db, BulkUser(amount=int(callback_data.amount) * 86400)
-    )
+    result = await user_operations.bulk_modify_expire(db, BulkUser(amount=int(callback_data.amount) * 86400))
     await event.answer(Texts.users_expiry_changed(result, int(callback_data.amount)))
     await event.message.edit_text(Texts.choose_action, reply_markup=BulkActionPanel().as_markup())
 
@@ -178,8 +176,6 @@ async def process_data_limit_change_amount(
         db: AsyncSession,
         callback_data: BulkActionPanel.Callback
 ):
-    result = await user_operations.bulk_modify_datalimit(
-        db, BulkUser(amount=int(callback_data.amount) * (1024**3))
-    )
+    result = await user_operations.bulk_modify_datalimit(db, BulkUser(amount=int(callback_data.amount) * (1024**3)))
     await event.answer(Texts.users_data_limit_changed(result, int(callback_data.amount)))
     await event.message.edit_text(Texts.choose_action, reply_markup=BulkActionPanel().as_markup())
