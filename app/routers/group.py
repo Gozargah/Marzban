@@ -179,8 +179,7 @@ async def bulk_add_groups_to_users(
     - Existing user-group associations will be ignored (no duplication)
     - Returns list of affected users (those who received new group associations)
     """
-    await group_operator.bulk_add_groups(db, bulk_group)
-    return {}
+    return await group_operator.bulk_add_groups(db, bulk_group)
 
 
 @router.post(
@@ -203,5 +202,4 @@ async def bulk_remove_users_from_groups(
     - Only existing user-group associations will be removed
     - Returns list of affected users (those who had groups removed)
     """
-    await group_operator.bulk_remove_groups(db, bulk_group)
-    return {}
+    return await group_operator.bulk_remove_groups(db, bulk_group)

@@ -45,7 +45,7 @@ from app.models.user import (
     UsersResponse,
 )
 from app.node import node_manager as node_manager
-from app.operation import BaseOperation
+from app.operation import BaseOperation, OperatorType
 from app.settings import subscription_settings
 from app.utils.jwt import create_subscription_token
 from app.utils.logger import get_logger
@@ -462,22 +462,28 @@ class UserOperation(BaseOperation):
         return await self._modify_user(db, db_user, modify_user, admin)
 
     async def bulk_modify_expire(self, db: AsyncSession, bulk_model: BulkUser):
-        users = await update_users_expire(db, bulk_model)
+        users, users_count = await update_users_expire(db, bulk_model)
 
         await asyncio.gather(*[self.update_user(user) for user in users])
 
-        return {}
+        if self.operator_type in (OperatorType.API, OperatorType.WEB):
+            return {"detail": f"operation has been successfuly done on {users_count} users"}
+        return users_count
 
     async def bulk_modify_datalimit(self, db: AsyncSession, bulk_model: BulkUser):
-        users = await update_users_datalimit(db, bulk_model)
+        users, users_count = await update_users_datalimit(db, bulk_model)
 
         await asyncio.gather(*[self.update_user(user) for user in users])
 
-        return {}
+        if self.operator_type in (OperatorType.API, OperatorType.WEB):
+            return {"detail": f"operation has been successfuly done on {users_count} users"}
+        return users_count
 
     async def bulk_modify_proxy_settings(self, db: AsyncSession, bulk_model: BulkUsersProxy):
-        users = await update_users_proxy_settings(db, bulk_model)
+        users, users_count = await update_users_proxy_settings(db, bulk_model)
 
         await asyncio.gather(*[self.update_user(user) for user in users])
 
-        return {}
+        if self.operator_type in (OperatorType.API, OperatorType.WEB):
+            return {"detail": f"operation has been successfuly done on {users_count} users"}
+        return users_count
