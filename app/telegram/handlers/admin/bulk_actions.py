@@ -66,7 +66,7 @@ async def process_expire_before(event: Message, state: FSMContext):
 
 
 @router.callback_query(BulkActionPanel.Callback.filter((BulkAction.delete_expired == F.action) & F.amount))
-async def process_expire_before(
+async def delete_expired_done(
         event: CallbackQuery,
         db: AsyncSession,
         admin: AdminDetails,
@@ -122,7 +122,7 @@ async def process_expiry(event: Message, state: FSMContext):
 
 
 @router.callback_query(BulkActionPanel.Callback.filter((BulkAction.modify_expiry == F.action) & F.amount))
-async def process_expiry_change_amount(
+async def modify_expiry_done(
         event: CallbackQuery,
         db: AsyncSession,
         callback_data: BulkActionPanel.Callback
@@ -171,7 +171,7 @@ async def process_data_limit(event: Message, state: FSMContext):
 
 
 @router.callback_query(BulkActionPanel.Callback.filter((BulkAction.modify_data_limit == F.action) & F.amount))
-async def process_data_limit_change_amount(
+async def modify_data_limit_done(
         event: CallbackQuery,
         db: AsyncSession,
         callback_data: BulkActionPanel.Callback
