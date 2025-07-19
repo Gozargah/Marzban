@@ -61,6 +61,10 @@ export default function Nodes() {
 
   const handleToggleStatus = async (node: NodeResponse) => {
     try {
+      // Determine the new status: enable if currently disabled, otherwise disable
+      const shouldEnable = node.status === 'disabled';
+      const newStatus = shouldEnable ? 'connected' : 'disabled';
+
       await modifyNodeMutation.mutateAsync({
         nodeId: node.id,
         data: {
@@ -72,28 +76,28 @@ export default function Nodes() {
           server_ca: node.server_ca,
           keep_alive: node.keep_alive,
           max_logs: node.max_logs,
-          status: node.status === 'connected' ? 'disabled' : 'connected',
+          status: newStatus,
         },
-      })
+      });
 
       toast.success(t('success', { defaultValue: 'Success' }), {
-        description: t(node.status === 'connected' ? 'nodes.disableSuccess' : 'nodes.enableSuccess', {
+        description: t(shouldEnable ? 'nodes.enableSuccess' : 'nodes.disableSuccess', {
           name: node.name,
-          defaultValue: `Node "{name}" has been ${node.status === 'connected' ? 'disabled' : 'enabled'} successfully`,
+          defaultValue: `Node "{name}" has been ${shouldEnable ? 'enabled' : 'disabled'} successfully`,
         }),
-      })
+      });
 
       // Invalidate nodes queries
       queryClient.invalidateQueries({
         queryKey: ['/api/nodes'],
-      })
+      });
     } catch (error) {
       toast.error(t('error', { defaultValue: 'Error' }), {
-        description: t(node.status === 'connected' ? 'nodes.disableFailed' : 'nodes.enableFailed', {
+        description: t(node.status === 'disabled' ? 'nodes.enableFailed' : 'nodes.disableFailed', {
           name: node.name,
-          defaultValue: `Failed to ${node.status === 'connected' ? 'disable' : 'enable'} node "{name}"`,
+          defaultValue: `Failed to ${node.status === 'disabled' ? 'enable' : 'disable'} node "{name}"`,
         }),
-      })
+      });
     }
   }
 

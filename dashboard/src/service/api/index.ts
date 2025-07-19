@@ -872,7 +872,7 @@ export interface SingBoxMuxSettings {
 
 export interface SingBoxFragmentSettings {
   fragment?: boolean
-  /** @pattern \b+ms */
+  /** @pattern \d+ms */
   fragment_fallback_delay?: string
   record_fragment?: boolean
 }

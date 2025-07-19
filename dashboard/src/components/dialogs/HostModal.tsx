@@ -66,7 +66,7 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
 
         if (typeof value === 'object' && !Array.isArray(value)) {
           const cleanedNested = cleanObject(value, currentPath)
-          if (hasNonEmptyValues(cleanedNested)) {
+          if (Object.keys(cleanedNested).length > 0) {
             result[key] = cleanedNested
           }
         } else if (Array.isArray(value)) {
@@ -118,7 +118,17 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
     setIsSubmitting(true)
     try {
       // Clean the payload before sending
-      const cleanedData = cleanPayload(data)
+      const payload = { ...data }
+
+      // If SingBox fragment is disabled, clear related fields
+      if (!payload.fragment_settings?.sing_box?.fragment) {
+        if (payload.fragment_settings?.sing_box) {
+          payload.fragment_settings.sing_box.fragment_fallback_delay = undefined
+          payload.fragment_settings.sing_box.record_fragment = undefined
+        }
+      }
+
+      const cleanedData = cleanPayload(payload)
       const response = await onSubmit(cleanedData)
       if (response.status >= 400) {
         throw new Error(`Operation failed with status: ${response.status}`)
@@ -618,7 +628,7 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
                             {...field}
                             onChange={e => {
                               const val = e.target.value
-                              field.onChange(val === '' ? null : Number.parseInt(val, 10))
+                              field.onChange(val === '' ? '' : Number.parseInt(val, 10))
                             }}
                             value={field.value === null || field.value === undefined ? '' : field.value}
                           />
@@ -1878,179 +1888,251 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-2">
-                    <div className="space-y-6">
-                      {/* Fragment Settings */}
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <h4 className="flex items-center gap-2 text-sm font-medium">
-                            {t('hostsDialog.fragment.title')}
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button type="button" variant="ghost" size="icon" className="h-4 w-4 p-0 hover:bg-transparent">
-                                  <Info className="h-4 w-4 text-muted-foreground" />
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-[320px] p-3" side="right" align="start" sideOffset={5}>
-                                <div className="space-y-1.5">
-                                  <p className="text-[11px] text-muted-foreground">{t('hostsDialog.fragment.info')}</p>
-                                  <p className="text-[11px] text-muted-foreground">{t('hostsDialog.fragment.info.attention')}</p>
-                                  <p className="text-[11px] text-muted-foreground">{t('hostsDialog.fragment.info.examples')}</p>
-                                  <p className="overflow-hidden text-[11px] text-muted-foreground">100-200,10-20,tlshello 100-200,10-20,1-3</p>
-                                </div>
-                              </PopoverContent>
-                            </Popover>
-                          </h4>
-                        </div>
-                        <div className="grid grid-cols-3 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="fragment_settings.xray.packets"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>{t('hostsDialog.fragment.packets')}</FormLabel>
-                                <FormControl>
-                                  <Input placeholder={t('hostsDialog.fragment.packetsPlaceholder')} {...field} value={field.value || ''} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="fragment_settings.xray.length"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>{t('hostsDialog.fragment.length')}</FormLabel>
-                                <FormControl>
-                                  <Input placeholder={t('hostsDialog.fragment.lengthPlaceholder')} {...field} value={field.value || ''} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="fragment_settings.xray.interval"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>{t('hostsDialog.fragment.interval')}</FormLabel>
-                                <FormControl>
-                                  <Input placeholder={t('hostsDialog.fragment.intervalPlaceholder')} {...field} value={field.value || ''} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Noise Settings */}
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-sm font-medium">{t('hostsDialog.noise.title')}</h4>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button type="button" variant="ghost" size="icon" className="h-4 w-4 p-0 hover:bg-transparent">
-                                  <Info className="h-4 w-4 text-muted-foreground" />
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-[320px] p-3" side="right" align="start" sideOffset={5}>
-                                <div className="space-y-1.5">
-                                  <p className="text-[11px] text-muted-foreground">{t('hostsDialog.noise.info')}</p>
-                                  <p className="text-[11px] text-muted-foreground">{t('hostsDialog.noise.info.attention')}</p>
-                                  <p className="text-[11px] text-muted-foreground">{t('hostsDialog.noise.info.examples')}</p>
-                                  <p className="overflow-hidden text-[11px] text-muted-foreground">rand:10-20,10-20 rand:10-20,10-20 &base64:7nQBAAABAAAAAAAABnQtcmluZwZtc2VkZ2UDbmV0AAABAAE=,10-25</p>
-                                </div>
-                              </PopoverContent>
-                            </Popover>
+                    <Tabs defaultValue="xray" className="w-full">
+                      <TabsList className="mb-4 grid w-full grid-cols-2">
+                        <TabsTrigger value="xray">Xray</TabsTrigger>
+                        <TabsTrigger value="singbox">SingBox</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="xray">
+                        <div className="space-y-6">
+                          {/* Fragment Settings */}
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h4 className="flex items-center gap-2 text-sm font-medium">
+                                {t('hostsDialog.fragment.title')}
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button type="button" variant="ghost" size="icon" className="h-4 w-4 p-0 hover:bg-transparent">
+                                      <Info className="h-4 w-4 text-muted-foreground" />
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-[320px] p-3" side="right" align="start" sideOffset={5}>
+                                    <div className="space-y-1.5">
+                                      <p className="text-[11px] text-muted-foreground">{t('hostsDialog.fragment.info')}</p>
+                                      <p className="text-[11px] text-muted-foreground">{t('hostsDialog.fragment.info.attention')}</p>
+                                      <p className="text-[11px] text-muted-foreground">{t('hostsDialog.fragment.info.examples')}</p>
+                                      <p className="overflow-hidden text-[11px] text-muted-foreground">100-200,10-20,tlshello 100-200,10-20,1-3</p>
+                                    </div>
+                                  </PopoverContent>
+                                </Popover>
+                              </h4>
+                            </div>
+                            <div className="grid grid-cols-3 gap-4">
+                              <FormField
+                                control={form.control}
+                                name="fragment_settings.xray.packets"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>{t('hostsDialog.fragment.packets')}</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder={t('hostsDialog.fragment.packetsPlaceholder')} {...field} value={field.value || ''} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name="fragment_settings.xray.length"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>{t('hostsDialog.fragment.length')}</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder={t('hostsDialog.fragment.lengthPlaceholder')} {...field} value={field.value || ''} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name="fragment_settings.xray.interval"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>{t('hostsDialog.fragment.interval')}</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder={t('hostsDialog.fragment.intervalPlaceholder')} {...field} value={field.value || ''} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
                           </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => {
-                              const currentNoiseSettings = form.getValues('noise_settings.xray') || []
-                              form.setValue('noise_settings.xray', [...currentNoiseSettings, { type: '', packet: '', delay: '' }], {
-                                shouldDirty: true,
-                                shouldTouch: true,
-                              })
-                            }}
-                            title={t('hostsDialog.noise.addNoise')}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <div className="space-y-2">
-                          {(form.watch('noise_settings.xray') || []).map((_, index) => (
-                            <div key={index} className="flex items-center justify-between gap-2">
+
+                          {/* Noise Settings */}
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <Select
-                                  value={form.watch(`noise_settings.xray.${index}.type`) || ''}
-                                  onValueChange={value => {
-                                    form.setValue(`noise_settings.xray.${index}.type`, value, {
-                                      shouldDirty: true,
-                                      shouldTouch: true,
-                                    })
-                                  }}
-                                >
-                                  <SelectTrigger className="w-[120px]">
-                                    <SelectValue placeholder="Type" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="rand">rand</SelectItem>
-                                    <SelectItem value="str">str</SelectItem>
-                                    <SelectItem value="base64">base64</SelectItem>
-                                    <SelectItem value="hex">hex</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <Input
-                                  placeholder={t('hostsDialog.noise.packetPlaceholder')}
-                                  value={form.watch(`noise_settings.xray.${index}.packet`) || ''}
-                                  onChange={e => {
-                                    form.setValue(`noise_settings.xray.${index}.packet`, e.target.value, {
-                                      shouldDirty: true,
-                                      shouldTouch: true,
-                                    })
-                                  }}
-                                />
-                                <Input
-                                  placeholder={t('hostsDialog.noise.delayPlaceholder')}
-                                  value={form.watch(`noise_settings.xray.${index}.delay`) || ''}
-                                  onChange={e => {
-                                    form.setValue(`noise_settings.xray.${index}.delay`, e.target.value, {
-                                      shouldDirty: true,
-                                      shouldTouch: true,
-                                    })
-                                  }}
-                                />
+                                <h4 className="text-sm font-medium">{t('hostsDialog.noise.title')}</h4>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button type="button" variant="ghost" size="icon" className="h-4 w-4 p-0 hover:bg-transparent">
+                                      <Info className="h-4 w-4 text-muted-foreground" />
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-[320px] p-3" side="right" align="start" sideOffset={5}>
+                                    <div className="space-y-1.5">
+                                      <p className="text-[11px] text-muted-foreground">{t('hostsDialog.noise.info')}</p>
+                                      <p className="text-[11px] text-muted-foreground">{t('hostsDialog.noise.info.attention')}</p>
+                                      <p className="text-[11px] text-muted-foreground">{t('hostsDialog.noise.info.examples')}</p>
+                                      <p className="overflow-hidden text-[11px] text-muted-foreground">
+                                        rand:10-20,10-20 rand:10-20,10-20 &base64:7nQBAAABAAAAAAAABnQtcmluZwZtc2VkZ2UDbmV0AAABAAE=,10-25
+                                      </p>
+                                    </div>
+                                  </PopoverContent>
+                                </Popover>
                               </div>
                               <Button
                                 type="button"
-                                variant="ghost"
+                                variant="outline"
                                 size="icon"
-                                className="h-8 w-8 border-red-500"
+                                className="h-6 w-6"
                                 onClick={() => {
-                                  const currentNoiseSettings = [...(form.getValues('noise_settings.xray') || [])]
-                                  currentNoiseSettings.splice(index, 1)
-                                  form.setValue('noise_settings.xray', currentNoiseSettings, {
+                                  const currentNoiseSettings = form.getValues('noise_settings.xray') || []
+                                  form.setValue('noise_settings.xray', [...currentNoiseSettings, { type: '', packet: '', delay: '' }], {
                                     shouldDirty: true,
                                     shouldTouch: true,
                                   })
                                 }}
-                                title={t('hostsDialog.noise.removeNoise')}
+                                title={t('hostsDialog.noise.addNoise')}
                               >
-                                <Trash2 className="h-4 w-4 text-red-500" />
+                                <Plus className="h-4 w-4" />
                               </Button>
                             </div>
-                          ))}
+                            <div className="space-y-2">
+                              {(form.watch('noise_settings.xray') || []).map((_, index) => (
+                                <div key={index} className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2">
+                                    <Select
+                                      value={form.watch(`noise_settings.xray.${index}.type`) || ''}
+                                      onValueChange={value => {
+                                        form.setValue(`noise_settings.xray.${index}.type`, value, {
+                                          shouldDirty: true,
+                                          shouldTouch: true,
+                                        })
+                                      }}
+                                    >
+                                      <SelectTrigger className="w-[120px]">
+                                        <SelectValue placeholder="Type" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="rand">rand</SelectItem>
+                                        <SelectItem value="str">str</SelectItem>
+                                        <SelectItem value="base64">base64</SelectItem>
+                                        <SelectItem value="hex">hex</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                    <Input
+                                      placeholder="Packet"
+                                      value={form.watch(`noise_settings.xray.${index}.packet`) || ''}
+                                      onChange={e =>
+                                        form.setValue(`noise_settings.xray.${index}.packet`, e.target.value, {
+                                          shouldDirty: true,
+                                          shouldTouch: true,
+                                        })
+                                      }
+                                    />
+                                    <Input
+                                      placeholder="Delay"
+                                      value={form.watch(`noise_settings.xray.${index}.delay`) || ''}
+                                      onChange={e =>
+                                        form.setValue(`noise_settings.xray.${index}.delay`, e.target.value, {
+                                          shouldDirty: true,
+                                          shouldTouch: true,
+                                        })
+                                      }
+                                    />
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 border-red-500"
+                                    onClick={() => {
+                                      const currentNoiseSettings = form.getValues('noise_settings.xray') || []
+                                      form.setValue(
+                                        'noise_settings.xray',
+                                        currentNoiseSettings.filter((_, i) => i !== index),
+                                        {
+                                          shouldDirty: true,
+                                          shouldTouch: true,
+                                        },
+                                      )
+                                    }}
+                                    title={t('hostsDialog.noise.removeNoise')}
+                                  >
+                                    <Trash2 className="h-4 w-4 text-red-500" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
+                      </TabsContent>
+                      <TabsContent value="singbox">
+                        <div className="space-y-6">
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h4 className="flex items-center gap-2 text-sm font-medium">{t('hostsDialog.fragment.title')}</h4>
+                            </div>
+                            <div className="grid grid-cols-1 gap-4">
+                              <FormField
+                                control={form.control}
+                                name="fragment_settings.sing_box.fragment"
+                                render={({ field }) => (
+                                  <FormItem className="flex cursor-pointer flex-row items-center justify-between rounded-lg border p-4" onClick={() => field.onChange(!field.value)}>
+                                    <div className="space-y-0.5">
+                                      <FormLabel className="text-base">{t('hostsDialog.fragment.fragment')}</FormLabel>
+                                    </div>
+                                    <FormControl>
+                                      <div onClick={e => e.stopPropagation()}>
+                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                      </div>
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              {form.watch('fragment_settings.sing_box.fragment') && (
+                                <>
+                                  <FormField
+                                    control={form.control}
+                                    name="fragment_settings.sing_box.fragment_fallback_delay"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>{t('hostsDialog.fragment.fallbackDelay')}</FormLabel>
+                                        <FormControl>
+                                          <Input placeholder="e.g. 100ms" {...field} value={field.value || ''} />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={form.control}
+                                    name="fragment_settings.sing_box.record_fragment"
+                                    render={({ field }) => (
+                                      <FormItem className="flex cursor-pointer flex-row items-center justify-between rounded-lg border p-4" onClick={() => field.onChange(!field.value)}>
+                                        <div className="space-y-0.5">
+                                          <FormLabel className="text-base">{t('hostsDialog.fragment.recordFragment')}</FormLabel>
+                                        </div>
+                                        <FormControl>
+                                          <div onClick={e => e.stopPropagation()}>
+                                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                          </div>
+                                        </FormControl>
+                                      </FormItem>
+                                    )}
+                                  />
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
                   </AccordionContent>
                 </AccordionItem>
-
                 <AccordionItem className="rounded-sm border px-4 [&_[data-state=closed]]:no-underline [&_[data-state=open]]:no-underline" value="mux">
                   <AccordionTrigger>
                     <div className="flex items-center gap-2">
@@ -2519,7 +2601,7 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
         </Form>
       </DialogContent>
     </Dialog>
-  )
+                          )
 }
 
 export default HostModal

@@ -718,7 +718,10 @@
       "allFieldsRequired": "If one field is entered, all fields must be filled",
       "info": "length,interval,packet (e.g. 10-100,100-200,tlshello)",
       "info.attention": "Attention: currently, this feature only supported in streisand >= 1.6.12 and v2rayNG >= 1.8.16 (custom config)",
-      "info.examples": "Examples:"
+      "info.examples": "Examples:",
+      "fragment": "Fragment",
+      "fallbackDelay": "Fallback Delay",
+      "recordFragment": "Record Fragment"
     },
     "noise": {
       "title": "Noise",
@@ -1371,6 +1374,11 @@
     "noDateSelected": "No date selected",
     "dataLimitDesc": "Set the data limit in GB to add or subtract",
     "operationType": "Operation Type",
+    "groupsOperationDesc": "Select whether to add or remove groups from users.",
+    "addGroups": "Add Groups",
+    "removeGroups": "Remove Groups",
+    "addExpiry": "Add to Expiry",
+    "subtractExpiry": "Subtract from Expiry",
     "addDataLimit": "Add Data Limit",
     "subtractDataLimit": "Subtract Data Limit",
     "applyToDataLimitDesc": "Select the groups, users, or admins you want to apply data limit to",
@@ -1404,7 +1412,8 @@
     "confirmApplyDataLimitDescriptionAll": "Are you sure you want to apply the data limit of {{dataLimit}} GB to ALL users, admins, and groups? This will update the data limit for everyone.",
     "confirmApplyProxyDescriptionAll": "Are you sure you want to apply the proxy settings to ALL users, admins, and groups? This will update the proxy settings for everyone.",
     "confirmApplyGroupsDescriptionAll": "Are you sure you want to apply the group changes to ALL users, admins, and groups? This will update the groups for everyone.",
-    "confirmApplyGroupsDescription": "Are you sure you want to apply the group changes to {{totalTargets}} target(s)? This will update the groups for all selected users and admins."
+    "confirmApplyGroupsDescription": "Are you sure you want to apply the group changes to {{totalTargets}} target(s)? This will update the groups for all selected users and admins.",
+    "expire.placeholder": "Enter expire date"
   },
   "operationSuccess": "Operation successful!",
   "operationFailed": "Operation failed!",

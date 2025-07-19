@@ -2,15 +2,15 @@ import { setupColumns } from '@/components/users/columns'
 import { DataTable } from '@/components/users/data-table'
 import { Filters } from '@/components/users/filters'
 import useDirDetection from '@/hooks/use-dir-detection'
+import { UseEditFormValues } from '@/pages/_dashboard._index'
 import { useGetUsers, UserResponse } from '@/service/api'
-import { useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
 import { getUsersPerPageLimitSize } from '@/utils/userPreferenceStorage'
 import { useQueryClient } from '@tanstack/react-query'
-import { PaginationControls } from './filters'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { UseEditFormValues } from '@/pages/_dashboard._index'
+import { useTranslation } from 'react-i18next'
 import UserModal from '../dialogs/UserModal'
+import { PaginationControls } from './filters'
 
 const UsersTable = () => {
   const { t } = useTranslation()
@@ -41,6 +41,7 @@ const UsersTable = () => {
       data_limit_reset_strategy: selectedUser?.data_limit_reset_strategy || undefined,
       group_ids: selectedUser?.group_ids || [], // Add group_ids
       on_hold_expire_duration: selectedUser?.on_hold_expire_duration || undefined,
+      on_hold_timeout: selectedUser?.on_hold_timeout || undefined,
       proxy_settings: selectedUser?.proxy_settings || undefined,
       next_plan: selectedUser?.next_plan
         ? {
@@ -65,6 +66,7 @@ const UsersTable = () => {
         data_limit_reset_strategy: selectedUser.data_limit_reset_strategy || undefined,
         group_ids: selectedUser.group_ids || [],
         on_hold_expire_duration: selectedUser.on_hold_expire_duration || undefined,
+        on_hold_timeout: selectedUser.on_hold_timeout || undefined,
         proxy_settings: selectedUser.proxy_settings || undefined,
         next_plan: selectedUser.next_plan
           ? {

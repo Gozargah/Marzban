@@ -32,6 +32,8 @@ export default function BulkGroupsPage() {
   const { data: adminsData } = useGetAdmins()
   const { data: groupsData } = useGetAllGroups()
 
+  const [operation, setOperation] = useState<"add" | "remove">("add")
+
   // State for the four sections
   const [selectedGroups, setSelectedGroups] = useState<number[]>([])
   const [selectedHasGroups, setSelectedHasGroups] = useState<number[]>([])
@@ -45,20 +47,39 @@ export default function BulkGroupsPage() {
   const [adminSearch, setAdminSearch] = useState("")
 
   // Dialog states
-  const [showAddDialog, setShowAddDialog] = useState(false)
-  const [showRemoveDialog, setShowRemoveDialog] = useState(false)
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
 
   const addMutation = useBulkAddGroupsToUsers()
   const removeMutation = useBulkRemoveUsersFromGroups()
 
-  const handleBulk = (action: "add" | "remove") => {
+  const handleApply = () => {
+    if (totalGroups === 0) {
+      toast.error(t("error", { defaultValue: "Error" }), {
+        description: t("bulk.noGroupsSelected", {
+          defaultValue: "Please select at least one group.",
+        }),
+      })
+      return
+    }
+    if (operation === "remove" && totalTargets === 0) {
+      toast.error(t("error", { defaultValue: "Error" }), {
+        description: t("bulk.noTargetsSelected", {
+          defaultValue: "Please select at least one target for removal.",
+        }),
+      })
+      return
+    }
+    setShowConfirmDialog(true)
+  }
+
+  const confirmBulk = () => {
     const payload = {
       group_ids: selectedGroups,
-      has_group_ids: selectedHasGroups,
+      has_group_ids: selectedHasGroups.length > 0 ? selectedHasGroups : undefined,
       users: selectedUsers.length ? selectedUsers : undefined,
       admins: selectedAdmins.length ? selectedAdmins : undefined,
     }
-    const mutation = action === "add" ? addMutation : removeMutation
+    const mutation = operation === "add" ? addMutation : removeMutation
     mutation.mutate(
       { data: payload },
       {
@@ -69,18 +90,56 @@ export default function BulkGroupsPage() {
           setSelectedHasGroups([])
           setSelectedUsers([])
           setSelectedAdmins([])
+          setShowConfirmDialog(false)
         },
-        onError: () => toast.error(t("operationFailed", { defaultValue: "Operation failed!" })),
+        onError: () => {
+          toast.error(t("operationFailed", { defaultValue: "Operation failed!" }))
+          setShowConfirmDialog(false)
+        },
       },
     )
   }
 
-  const totalTargets = selectedUsers.length + selectedAdmins.length + selectedHasGroups.length;
-  const totalGroups = selectedGroups.length;
-  const isApplyToAll = totalTargets === 0;
+  const totalTargets = selectedUsers.length + selectedAdmins.length + selectedHasGroups.length
+  const totalGroups = selectedGroups.length
+  const isApplyToAll = totalTargets === 0
 
   return (
     <div className="flex flex-col w-full space-y-6 mt-3">
+      {/* Operation Selection */}
+      <Card className="bg-card">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            {t("bulk.operationType", { defaultValue: "Operation Type" })}
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            {t("bulk.groupsOperationDesc")}
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-2">
+            <Button
+              variant={operation === "add" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setOperation("add")}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              {t("bulk.addGroups")}
+            </Button>
+            <Button
+              variant={operation === "remove" ? "destructive" : "outline"}
+              size="sm"
+              onClick={() => setOperation("remove")}
+              className="flex items-center gap-2"
+            >
+              <Minus className="h-4 w-4" />
+              {t("bulk.removeGroups")}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Groups Section */}
       <Card className="bg-card">
         <CardHeader className="pb-4">
@@ -88,7 +147,9 @@ export default function BulkGroupsPage() {
             <Users2 className="h-5 w-5" />
             {t("bulk.groups", { defaultValue: "Groups" })}
           </CardTitle>
-          <p className="text-sm text-muted-foreground">{t("bulk.groupsDescShort", { defaultValue: "Select the groups you want to apply" })}</p>
+          <p className="text-sm text-muted-foreground">
+            {t("bulk.groupsDescShort", { defaultValue: "Select the groups you want to apply" })}
+          </p>
         </CardHeader>
         <CardContent>
           <SelectorPanel
@@ -117,7 +178,9 @@ export default function BulkGroupsPage() {
             <User className="h-5 w-5" />
             {t("bulk.applyTo", { defaultValue: "Apply To" })}
           </CardTitle>
-          <p className="text-sm text-muted-foreground">{t("bulk.applyToDesc", { defaultValue: "Select the user or admin you want to apply settings" })}</p>
+          <p className="text-sm text-muted-foreground">
+            {t("bulk.applyToDesc", { defaultValue: "Select the user or admin you want to apply settings" })}
+          </p>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -200,91 +263,66 @@ export default function BulkGroupsPage() {
             </Badge>
           </div>
 
-          <div className="flex items-center gap-4">
-            <Button
-              onClick={() => setShowAddDialog(true)}
-              className="flex items-center gap-2 px-6"
-              disabled={totalGroups === 0 || addMutation.isPending}
-              size="lg"
-            >
-              <Plus className="h-4 w-4" />
-              {t("bulk.addGroupsToUsers", { defaultValue: "Add Groups to Users" })}
-            </Button>
-
-            <Button
-              variant="destructive"
-              onClick={() => setShowRemoveDialog(true)}
-              className="flex items-center gap-2 px-6"
-              disabled={totalGroups === 0 || totalTargets === 0}
-              size="lg"
-            >
-              <Minus className="h-4 w-4" />
-              {t("bulk.removeGroupsFromUsers", { defaultValue: "Remove Groups from Users" })}
-            </Button>
-          </div>
+          <Button
+            onClick={handleApply}
+            className="flex items-center gap-2 px-6"
+            disabled={totalGroups === 0 || addMutation.isPending || removeMutation.isPending}
+            size="lg"
+            variant={operation === "remove" ? "destructive" : "default"}
+          >
+            {operation === "add" ? <Plus className="h-4 w-4" /> : <Minus className="h-4 w-4" />}
+            {addMutation.isPending || removeMutation.isPending
+              ? t("applying", { defaultValue: "Applying..." })
+              : operation === "add"
+              ? t("bulk.addGroups")
+              : t("bulk.removeGroups")}
+          </Button>
         </CardContent>
       </Card>
 
-      {/* Add Groups Confirmation Dialog */}
-      <AlertDialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+      {/* Confirmation Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {t("bulk.confirmAddGroupsTitle", { defaultValue: "Confirm Add Groups" })}
+              {operation === "add"
+                ? t("bulk.confirmAddGroupsTitle", { defaultValue: "Confirm Add Groups" })
+                : t("bulk.confirmRemoveGroupsTitle", { defaultValue: "Confirm Remove Groups" })}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {isApplyToAll
-                ? t("bulk.confirmApplyGroupsDescriptionAll", {
-                    totalGroups,
-                    defaultValue: "Are you sure you want to apply the group changes to ALL users, admins, and groups? This will update the groups for everyone.",
-                  })
-                : t("bulk.confirmApplyGroupsDescription", {
+              {operation === "add"
+                ? isApplyToAll
+                  ? t("bulk.confirmApplyGroupsDescriptionAll", {
+                      totalGroups,
+                      defaultValue:
+                        "Are you sure you want to apply the group changes to ALL users, admins, and groups? This will update the groups for everyone.",
+                    })
+                  : t("bulk.confirmApplyGroupsDescription", {
+                      totalGroups,
+                      totalTargets,
+                      defaultValue:
+                        "Are you sure you want to apply the group changes to {{totalTargets}} target(s)? This will update the groups for all selected users and admins.",
+                    })
+                : t("bulk.confirmRemoveGroupsDescription", {
+                    defaultValue:
+                      "Are you sure you want to remove {{totalGroups}} group(s) from {{totalTargets}} target(s)? This action will remove the selected groups from all selected users and admins.",
                     totalGroups,
                     totalTargets,
-                    defaultValue: "Are you sure you want to apply the group changes to {{totalTargets}} target(s)? This will update the groups for all selected users and admins.",
                   })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("cancel", { defaultValue: "Cancel" })}</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                handleBulk("add")
-                setShowAddDialog(false)
-              }}
+              onClick={confirmBulk}
+              variant={operation === "remove" ? "destructive" : "default"}
+              disabled={addMutation.isPending || removeMutation.isPending}
             >
-              {t("bulk.addGroupsToUsers", { defaultValue: "Add Groups" })}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Remove Groups Confirmation Dialog */}
-      <AlertDialog open={showRemoveDialog} onOpenChange={setShowRemoveDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {t("bulk.confirmRemoveGroupsTitle", { defaultValue: "Confirm Remove Groups" })}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("bulk.confirmRemoveGroupsDescription", {
-                defaultValue:
-                  "Are you sure you want to remove {{totalGroups}} group(s) from {{totalTargets}} target(s)? This action will remove the selected groups from all selected users and admins.",
-                totalGroups,
-                totalTargets,
-              })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("cancel", { defaultValue: "Cancel" })}</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              onClick={() => {
-                handleBulk("remove")
-                setShowRemoveDialog(false)
-              }}
-            >
-              {t("bulk.removeGroupsFromUsers", { defaultValue: "Remove Groups" })}
+              {addMutation.isPending || removeMutation.isPending
+                ? t("applying", { defaultValue: "Applying..." })
+                : operation === "add"
+                ? t("bulk.addGroups")
+                : t("bulk.removeGroups")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

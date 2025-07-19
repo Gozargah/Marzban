@@ -77,6 +77,11 @@ export interface HostFormValues {
       length?: string
       interval?: string
     }
+    sing_box?: {
+      fragment: boolean
+      fragment_fallback_delay: string
+      record_fragment: boolean
+    }
   }
   noise_settings?: {
     xray?: {
@@ -312,6 +317,13 @@ export const HostFormSchema = z.object({
           interval: z.string().optional(),
         })
         .optional(),
+      sing_box: z
+        .object({
+          fragment: z.boolean().optional(),
+          fragment_fallback_delay: z.string().optional(),
+          record_fragment: z.boolean().optional(),
+        })
+        .optional(),
     })
     .optional(),
   noise_settings: z
@@ -461,6 +473,7 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit, editing
       fragment_settings: host.fragment_settings
         ? {
             xray: host.fragment_settings.xray ?? undefined,
+            sing_box: host.fragment_settings.sing_box ?? undefined,
           }
         : undefined,
       noise_settings: host.noise_settings
@@ -637,8 +650,7 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit, editing
       toast.error(t('host.duplicateFailed', { name: host.remark || '' }))
     }
   }
-
-  const cleanEmptyValues = (obj: any) => {
+const cleanEmptyValues = (obj: any) => {
     if (!obj) return undefined
     const cleaned: any = {}
     for (const [key, value] of Object.entries(obj)) {
@@ -657,11 +669,25 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit, editing
     return Object.keys(cleaned).length > 0 ? cleaned : undefined
   }
 
+
   const handleSubmit = async (data: HostFormValues) => {
     try {
       // Clean up the data before submission
       const cleanedData = {
         ...data,
+        fragment_settings: data.fragment_settings
+          ? {
+              xray:
+                data.fragment_settings.xray && (data.fragment_settings.xray.packets || data.fragment_settings.xray.length || data.fragment_settings.xray.interval)
+                  ? data.fragment_settings.xray
+                  : undefined,
+              sing_box:
+                data.fragment_settings.sing_box &&
+                (data.fragment_settings.sing_box.fragment || data.fragment_settings.sing_box.fragment_fallback_delay || data.fragment_settings.sing_box.record_fragment)
+                  ? data.fragment_settings.sing_box
+                  : undefined,
+            }
+          : undefined,
         mux_settings: data.mux_settings
           ? {
               xray: data.mux_settings.xray
@@ -675,6 +701,11 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit, editing
               clash: data.mux_settings.clash && data.mux_settings.clash.protocol !== 'none' ? data.mux_settings.clash : undefined,
             }
           : undefined,
+      }
+
+      // Remove fragment_settings if it's empty
+      if (cleanedData.fragment_settings && !cleanedData.fragment_settings.xray && !cleanedData.fragment_settings.sing_box) {
+        delete cleanedData.fragment_settings
       }
 
       // Remove mux_settings if it's empty
