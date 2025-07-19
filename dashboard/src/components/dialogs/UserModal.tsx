@@ -1284,9 +1284,9 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                     isError={hasError}
                                     placeholder={t('userDialog.onHoldExpireDurationPlaceholder', { defaultValue: 'e.g. 7' })}
                                     {...field}
-                                    value={field.value === null || field.value === undefined ? '' : Math.round(field.value / (24 * 60 * 60))}
+                                    value={field.value ?Math.round(field.value / (24 * 60 * 60)): '' }
                                     onChange={e => {
-                                      const value = e.target.value === '' ? undefined : parseInt(e.target.value, 10)
+                                      const value = e.target.value === '' ? 1 : parseInt(e.target.value, 10)
                                       field.onChange(value ? value * (24 * 60 * 60) : 1)
                                       handleFieldChange('on_hold_expire_duration', value)
                                     }}
