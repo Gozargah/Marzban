@@ -528,6 +528,23 @@ async def modify_user(db: AsyncSession, db_user: User, modify: UserModify) -> Us
     return db_user
 
 
+async def _reset_user_traffic_and_log(db: AsyncSession, db_user: User):
+    """Helper to reset user traffic and log the action."""
+    await db_user.awaitable_attrs.node_usages
+    usage_log = UserUsageResetLogs(
+        user_id=db_user.id,
+        used_traffic_at_reset=db_user.used_traffic,
+    )
+    db.add(usage_log)
+
+    db_user.used_traffic = 0
+    db_user.node_usages.clear()
+
+    if db_user.next_plan:
+        await db.delete(db_user.next_plan)
+        db_user.next_plan = None
+
+
 async def reset_user_data_usage(db: AsyncSession, db_user: User) -> User:
     """
     Resets the data usage of a user and logs the reset.
@@ -539,21 +556,10 @@ async def reset_user_data_usage(db: AsyncSession, db_user: User) -> User:
     Returns:
         User: The updated user object.
     """
-    await db_user.awaitable_attrs.node_usages
-    usage_log = UserUsageResetLogs(
-        user_id=db_user.id,
-        used_traffic_at_reset=db_user.used_traffic,
-    )
-    db.add(usage_log)
+    await _reset_user_traffic_and_log(db, db_user)
 
-    db_user.used_traffic = 0
-    db_user.node_usages.clear()
     if db_user.status not in [UserStatus.expired, UserStatus.disabled]:
         db_user.status = UserStatus.active.value
-
-    if db_user.next_plan:
-        await db.delete(db_user.next_plan)
-        db_user.next_plan = None
 
     await db.commit()
     await db.refresh(db_user)
@@ -572,19 +578,10 @@ async def reset_user_by_next(db: AsyncSession, db_user: User) -> User:
     Returns:
         User: The updated user object.
     """
-    await db_user.awaitable_attrs.node_usages
-    usage_log = UserUsageResetLogs(
-        user_id=db_user.id,
-        used_traffic_at_reset=db_user.used_traffic,
-    )
-    db.add(usage_log)
-
-    db_user.node_usages.clear()
-    db_user.status = UserStatus.active
-
+    remaining_traffic = (db_user.data_limit or 0) - db_user.used_traffic
     if db_user.next_plan.user_template_id is None:
         db_user.data_limit = db_user.next_plan.data_limit + (
-            0 if not db_user.next_plan.add_remaining_traffic else db_user.data_limit or 0 - db_user.used_traffic
+            0 if not db_user.next_plan.add_remaining_traffic else remaining_traffic
         )
         db_user.expire = (
             timedelta(seconds=db_user.next_plan.expire) + datetime.now(UTC) if db_user.next_plan.expire else None
@@ -594,7 +591,7 @@ async def reset_user_by_next(db: AsyncSession, db_user: User) -> User:
         await db_user.next_plan.user_template.awaitable_attrs.groups
         db_user.groups = db_user.next_plan.user_template.groups
         db_user.data_limit = db_user.next_plan.user_template.data_limit + (
-            0 if not db_user.next_plan.add_remaining_traffic else db_user.data_limit or 0 - db_user.used_traffic
+            0 if not db_user.next_plan.add_remaining_traffic else remaining_traffic
         )
         if db_user.next_plan.user_template.status is UserStatus.on_hold:
             db_user.status = UserStatus.on_hold
@@ -614,9 +611,8 @@ async def reset_user_by_next(db: AsyncSession, db_user: User) -> User:
         db_user.proxy_settings = proxy_settings
         db_user.data_limit_reset_strategy = db_user.next_plan.user_template.data_limit_reset_strategy
 
-    db_user.used_traffic = 0
-    await db.delete(db_user.next_plan)
-    db_user.next_plan = None
+    await _reset_user_traffic_and_log(db, db_user)
+    db_user.status = UserStatus.active
 
     await db.commit()
     await db.refresh(db_user)
