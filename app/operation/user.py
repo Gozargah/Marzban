@@ -228,14 +228,18 @@ class UserOperation(BaseOperation):
         end: dt = None,
         period: Period = Period.hour,
         node_id: int | None = None,
+        group_by_node: bool = False,
     ) -> UserUsageStatsList:
         start, end = await self.validate_dates(start, end)
         db_user = await self.get_validated_user(db, username, admin)
 
         if not admin.is_sudo:
             node_id = None
+            group_by_node = False
 
-        return await get_user_usages(db, db_user.id, start, end, period, node_id)
+        return await get_user_usages(
+            db, db_user.id, start, end, period, node_id=node_id, group_by_node=group_by_node
+        )
 
     async def get_user(self, db: AsyncSession, username: str, admin: AdminDetails) -> UserNotificationResponse:
         db_user = await self.get_validated_user(db, username, admin)
@@ -301,12 +305,14 @@ class UserOperation(BaseOperation):
         owner: list[str] | None = None,
         period: Period = Period.hour,
         node_id: int | None = None,
+        group_by_node: bool = False,
     ) -> UserUsageStatsList:
         """Get all users usage"""
         start, end = await self.validate_dates(start, end)
 
         if not admin.is_sudo:
             node_id = None
+            group_by_node = False
 
         return await get_all_users_usages(
             db=db,
@@ -315,6 +321,7 @@ class UserOperation(BaseOperation):
             period=period,
             node_id=node_id,
             admin=owner if admin.is_sudo else [admin.username],
+            group_by_node=group_by_node,
         )
 
     @staticmethod

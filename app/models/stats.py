@@ -29,7 +29,7 @@ class UserUsageStat(BaseModel):
 
 
 class UserUsageStatsList(StatList):
-    stats: list[UserUsageStat]
+    stats: dict[int, list[UserUsageStat]]
 
 
 class NodeUsageStat(BaseModel):
@@ -43,7 +43,7 @@ class NodeUsageStat(BaseModel):
 
 
 class NodeUsageStatsList(StatList):
-    stats: list[NodeUsageStat]
+    stats: dict[int, list[NodeUsageStat]]
 
 
 class NodeRealtimeStats(BaseModel):

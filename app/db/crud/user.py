@@ -291,7 +291,13 @@ async def get_days_left_reached_users(db: AsyncSession, days: int) -> list[User]
 
 
 async def get_user_usages(
-    db: AsyncSession, user_id: int, start: datetime, end: datetime, period: Period, node_id: int | None = None
+    db: AsyncSession,
+    user_id: int,
+    start: datetime,
+    end: datetime,
+    period: Period,
+    node_id: int | None = None,
+    group_by_node: bool = False,
 ) -> UserUsageStatsList:
     """
     Retrieves user usages within a specified date range.
@@ -308,18 +314,39 @@ async def get_user_usages(
 
     if node_id is not None:
         conditions.append(NodeUserUsage.node_id == node_id)
+    else:
+        node_id = -1
 
-    stmt = (
-        select(trunc_expr.label("period_start"), func.sum(NodeUserUsage.used_traffic).label("total_traffic"))
-        .where(and_(*conditions))
-        .group_by(trunc_expr)
-        .order_by(trunc_expr)
-    )
+    if group_by_node:
+        stmt = (
+            select(
+                trunc_expr.label("period_start"),
+                func.coalesce(NodeUserUsage.node_id, 0).label("node_id"),
+                func.sum(NodeUserUsage.used_traffic).label("total_traffic"),
+            )
+            .where(and_(*conditions))
+            .group_by(trunc_expr, "node_id")
+            .order_by(trunc_expr)
+        )
+
+    else:
+        stmt = (
+            select(trunc_expr.label("period_start"), func.sum(NodeUserUsage.used_traffic).label("total_traffic"))
+            .where(and_(*conditions))
+            .group_by(trunc_expr)
+            .order_by(trunc_expr)
+        )
 
     result = await db.execute(stmt)
-    return UserUsageStatsList(
-        period=period, start=start, end=end, stats=[UserUsageStat(**row) for row in result.mappings()]
-    )
+    stats = {}
+    for row in result.mappings():
+        row_dict = dict(row)
+        node_id_val = row_dict.pop("node_id", node_id)
+        if node_id_val not in stats:
+            stats[node_id_val] = []
+        stats[node_id_val].append(UserUsageStat(**row_dict))
+
+    return UserUsageStatsList(period=period, start=start, end=end, stats=stats)
 
 
 async def get_users_count(db: AsyncSession, status: UserStatus = None, admin_id: int = None) -> int:
@@ -692,6 +719,7 @@ async def get_all_users_usages(
     end: datetime,
     period: Period = Period.hour,
     node_id: int | None = None,
+    group_by_node: bool = False,
 ) -> UserUsageStatsList:
     """
     Retrieves aggregated usage data for all users of an admin within a specified time range,
@@ -721,18 +749,38 @@ async def get_all_users_usages(
 
     if node_id is not None:
         conditions.append(NodeUserUsage.node_id == node_id)
+    else:
+        node_id = -1
 
-    stmt = (
-        select(trunc_expr.label("period_start"), func.sum(NodeUserUsage.used_traffic).label("total_traffic"))
-        .where(and_(*conditions))
-        .group_by(trunc_expr)
-        .order_by(trunc_expr)
-    )
+    if group_by_node:
+        stmt = (
+            select(
+                trunc_expr.label("period_start"),
+                func.coalesce(NodeUserUsage.node_id, 0).label("node_id"),
+                func.sum(NodeUserUsage.used_traffic).label("total_traffic"),
+            )
+            .where(and_(*conditions))
+            .group_by(trunc_expr, "node_id")
+            .order_by(trunc_expr)
+        )
+    else:
+        stmt = (
+            select(trunc_expr.label("period_start"), func.sum(NodeUserUsage.used_traffic).label("total_traffic"))
+            .where(and_(*conditions))
+            .group_by(trunc_expr)
+            .order_by(trunc_expr)
+        )
 
     result = await db.execute(stmt)
-    return UserUsageStatsList(
-        period=period, start=start, end=end, stats=[UserUsageStat(**row) for row in result.mappings()]
-    )
+    stats = {}
+    for row in result.mappings():
+        row_dict = dict(row)
+        node_id_val = row_dict.pop("node_id", node_id)
+        if node_id_val not in stats:
+            stats[node_id_val] = []
+        stats[node_id_val].append(UserUsageStat(**row_dict))
+
+    return UserUsageStatsList(period=period, start=start, end=end, stats=stats)
 
 
 async def update_users_status(db: AsyncSession, users: list[User], status: UserStatus) -> list[User]:
