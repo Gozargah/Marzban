@@ -1,7 +1,7 @@
-from decouple import config
-from dotenv import load_dotenv
 import os
 
+from decouple import config
+from dotenv import load_dotenv
 
 TESTING = os.getenv("TESTING", False)
 
@@ -54,6 +54,7 @@ EXTERNAL_CONFIG = config("EXTERNAL_CONFIG", default="", cast=str)
 USERS_AUTODELETE_DAYS = config("USERS_AUTODELETE_DAYS", default=-1, cast=int)
 USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS = config("USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS", default=False, cast=bool)
 
+DO_NOT_LOG_TELEGRAM_BOT = config("DO_NOT_LOG_TELEGRAM_BOT", default=True, cast=bool)
 
 # USERNAME: PASSWORD
 SUDOERS = (

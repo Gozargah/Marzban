@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   useGetAllGroups,
   useGetUsers,
@@ -11,10 +11,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useTranslation } from "react-i18next"
-import { useEffect } from "react"
 import { Input } from "@/components/ui/input"
-import { CalendarIcon } from "lucide-react"
-import { useRelativeExpiryDate } from "@/utils/dateFormatter"
+import { CalendarIcon, Plus, Minus } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,31 +27,32 @@ import { toast } from "sonner"
 import { Users2, User, Shield } from "lucide-react"
 import { SelectorPanel } from "@/components/bulk/SelectorPanel"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import useDirDetection from '@/hooks/use-dir-detection'
+import { Label } from "@/components/ui/label"
 
-const ExpiryDateField = ({
-  value,
-  onChange,
-}: {
-  value: number | undefined // seconds
-  onChange: (seconds: number | undefined) => void
-}) => {
+type ExpiryUnit = 'seconds' | 'minutes' | 'hours' | 'days' | 'months'
+
+export default function BulkExpirePage() {
   const { t } = useTranslation()
-  const dir = useDirDetection()
-  const expireInfo = useRelativeExpiryDate(value ? Math.floor(Date.now() / 1000) + value : null)
-  type ExpiryUnit = 'seconds' | 'minutes' | 'hours' | 'days' | 'months'
+  const { data: usersData } = useGetUsers()
+  const { data: adminsData } = useGetAdmins()
+  const { data: groupsData } = useGetAllGroups()
+
+  const [operation, setOperation] = useState<"add" | "subtract">("add")
+
+  // State for expire seconds
+  const [expireSeconds, setExpireSeconds] = useState<number | undefined>(undefined)
   const [unit, setUnit] = useState<ExpiryUnit>('days')
-  const [amount, setAmount] = useState<string>('')
+  const [amount, setAmount] = useState<number | undefined>(undefined)
 
   // When amount or unit changes, update the seconds
   useEffect(() => {
-    if (amount === '' || isNaN(Number(amount))) {
-      onChange(undefined)
+    if (amount === undefined) {
+      setExpireSeconds(undefined)
       return
     }
     const num = Number(amount)
-    if (num === 0) {
-      onChange(undefined)
+    if (num <= 0) {
+      setExpireSeconds(undefined)
       return
     }
     let seconds = num
@@ -64,75 +63,9 @@ const ExpiryDateField = ({
       case 'months': seconds = num * 2592000; break // 30 days
       // seconds: do nothing
     }
-    onChange(seconds)
+    setExpireSeconds(seconds)
   }, [amount, unit])
 
-  // Preview: show the relative time from now
-  const preview = value
-    ? t('bulk.previewSeconds', { count: value, defaultValue: `+${value} seconds` })
-    : t('bulk.noDateSelected', { defaultValue: 'No date selected' })
-
-  // Direction-aware classes
-  const inputRadius = dir === 'rtl' ? 'rounded-r-full rounded-l-none' : 'rounded-l-full rounded-r-none'
-  const selectRadius = dir === 'rtl' ? 'rounded-l-full rounded-r-none' : 'rounded-r-full rounded-l-none'
-  const inputBorderFix = dir === 'rtl' ? 'border-l-0' : 'border-r-0'
-  const selectBorderFix = dir === 'rtl' ? 'border-r-0' : 'border-l-0'
-
-  return (
-    <div className="w-full flex flex-col md:flex-row gap-4 p-0 sm:p-2 items-center justify-between" dir={dir}>
-      <div className="flex flex-col gap-1 w-full max-w-md items-center">
-        <div className={`flex gap-0 w-full justify-center items-center`}>
-          <Input
-            type="number"
-            value={amount}
-            onChange={e => setAmount(e.target.value)}
-            placeholder={""}
-            className={`text-sm font-normal ${inputRadius} ${inputBorderFix} border border-input bg-background px-2 py-2 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all w-32 text-center shadow-none hover:border-primary/60 focus:border-primary/80`}
-            min="-999999"
-            max="999999"
-            inputMode="numeric"
-            aria-label={"0"}
-            dir={dir}
-          />
-          <Select value={unit} onValueChange={v => setUnit(v as ExpiryUnit)}>
-            <SelectTrigger className={`${selectRadius} flex px-4 ${selectBorderFix}`}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="z-50" dir={dir}>
-              <SelectGroup>
-                <SelectItem value="seconds">{t('time.seconds', { defaultValue: 'Seconds' })}</SelectItem>
-                <SelectItem value="minutes">{t('time.mins', { defaultValue: 'Minutes' })}</SelectItem>
-                <SelectItem value="hours">{t('time.hours', { defaultValue: 'Hours' })}</SelectItem>
-                <SelectItem value="days">{t('time.days', { defaultValue: 'Days' })}</SelectItem>
-                <SelectItem value="months">{t('time.months', { defaultValue: 'Months' })}</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      <div className="flex flex-col items-center w-fit">
-        <div className="w-full px-20 max-w-md rounded-lg border border-primary/10 py-2 flex flex-col items-center gap-1 bg-background" dir={dir}>
-          <span className="text-sm font-medium text-primary text-center break-all leading-tight w-full" dir="ltr">{preview}</span>
-          {expireInfo && expireInfo.time && (
-            <span className="text-xs text-muted-foreground text-center w-full" dir={dir}>{expireInfo.time !== '0' && expireInfo.time !== '0s'
-              ? t('expires', { time: expireInfo.time, defaultValue: 'Expires in {{time}}' })
-              : t('expired', { time: expireInfo.time, defaultValue: 'Expired in {{time}}' })}
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export default function BulkExpirePage() {
-  const { t } = useTranslation()
-  const { data: usersData } = useGetUsers()
-  const { data: adminsData } = useGetAdmins()
-  const { data: groupsData } = useGetAllGroups()
-
-  // State for expire seconds
-  const [expireSeconds, setExpireSeconds] = useState<number | undefined>(undefined)
 
   // State for the three sections
   const [selectedGroups, setSelectedGroups] = useState<number[]>([])
@@ -164,7 +97,7 @@ export default function BulkExpirePage() {
     if (!expireSeconds) return
 
     const payload = {
-      amount: expireSeconds,
+      amount: operation === 'subtract' ? -expireSeconds : expireSeconds,
       group_ids: selectedGroups.length ? selectedGroups : undefined,
       users: selectedUsers.length ? selectedUsers : undefined,
       admins: selectedAdmins.length ? selectedAdmins : undefined,
@@ -178,6 +111,7 @@ export default function BulkExpirePage() {
           toast.success(t("operationSuccess", { defaultValue: "Operation successful!" }))
           // Reset selections after successful operation
           setExpireSeconds(undefined)
+          setAmount(undefined)
           setSelectedGroups([])
           setSelectedUsers([])
           setSelectedAdmins([])
@@ -206,11 +140,68 @@ export default function BulkExpirePage() {
           <p className="text-sm text-muted-foreground">{t("bulk.expireDateDesc", { defaultValue: "Select the expiration date to apply" })}</p>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <ExpiryDateField
-              value={expireSeconds}
-              onChange={setExpireSeconds}
-            />
+          <div className="space-y-4">
+            {/* Operation Selection */}
+            <div className="space-y-2">
+              <Label>{t("bulk.operationType", { defaultValue: "Operation Type" })}</Label>
+              <div className="flex gap-2">
+                <Button
+                  variant={operation === "add" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setOperation("add")}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  {t("bulk.addExpiry")}
+                </Button>
+                <Button
+                  variant={operation === "subtract" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setOperation("subtract")}
+                  className="flex items-center gap-2"
+                >
+                  <Minus className="h-4 w-4" />
+                  {t("bulk.subtractExpiry")}
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="expire-date">{t("bulk.expireDate", { defaultValue: "Expire Date" })}</Label>
+              <div className="relative">
+                <Input
+                  id="expire-date"
+                  type="number"
+                  placeholder={t("bulk.expire.placeholder", { defaultValue: "Enter expire date" })}
+                  value={amount === undefined ? "" : amount}
+                  onChange={(e) => {
+                    const value = Number.parseFloat(e.target.value)
+                    if (!isNaN(value)) {
+                      setAmount(value)
+                    } else if (e.target.value === "") {
+                      setAmount(undefined)
+                    }
+                  }}
+                  step="1"
+                  className="pr-24"
+                />
+                <div className="absolute right-0 top-0 h-full w-20">
+                  <Select value={unit} onValueChange={(v) => setUnit(v as ExpiryUnit)}>
+                    <SelectTrigger className="h-full rounded-l-none border-l-0 w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="seconds">{t('time.seconds', { defaultValue: 'Seconds' })}</SelectItem>
+                        <SelectItem value="minutes">{t('time.mins', { defaultValue: 'Minutes' })}</SelectItem>
+                        <SelectItem value="hours">{t('time.hours', { defaultValue: 'Hours' })}</SelectItem>
+                        <SelectItem value="days">{t('time.days', { defaultValue: 'Days' })}</SelectItem>
+                        <SelectItem value="months">{t('time.months', { defaultValue: 'Months' })}</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -297,7 +288,12 @@ export default function BulkExpirePage() {
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <Badge variant="outline" className="flex items-center gap-1">
               <CalendarIcon className="h-3 w-3" />
-              {expireSeconds ? `${expireSeconds}s` : t("bulk.noDateSelected", { defaultValue: "No date selected" })}
+              {expireSeconds ? (
+                <span dir="ltr" className="flex items-center gap-1">
+                  {operation === "add" ? <Plus className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
+                  {`${expireSeconds}s`}
+                </span>
+              ) : t("bulk.noDateSelected", { defaultValue: "No date selected" })}
             </Badge>
             <Badge variant="outline" className="flex items-center gap-1">
               <User className="h-3 w-3" />

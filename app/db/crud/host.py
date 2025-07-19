@@ -9,19 +9,6 @@ from app.db.models import ProxyInbound, ProxyHost
 from app.models.host import CreateHost
 
 
-async def add_default_host(db: AsyncSession, inbound: ProxyInbound):
-    """
-    Adds a default host to a proxy inbound.
-
-    Args:
-        db (AsyncSession): Database session.
-        inbound (ProxyInbound): Proxy inbound to add the default host to.
-    """
-    host = ProxyHost(remark="🚀 Marz ({USERNAME}) [{PROTOCOL} - {TRANSPORT}]", address="{SERVER_IP}", inbound=inbound)
-    db.add(host)
-    await db.commit()
-
-
 async def get_or_create_inbound(db: AsyncSession, inbound_tag: str) -> ProxyInbound:
     """
     Retrieves or creates a proxy inbound based on the given tag.

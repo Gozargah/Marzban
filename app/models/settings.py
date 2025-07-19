@@ -4,8 +4,8 @@ from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.models.proxy import ShadowsocksMethods, XTLSFlows
+from .validators import DiscordValidator, ListValidator, ProxyValidator, URLValidator
 
-from .validators import DiscordValidator, ListValidator, ProxyValidator
 
 
 TELEGRAM_TOKEN_PATTERN = r"^\d{8,12}:[A-Za-z0-9_-]{35}$"
@@ -19,6 +19,17 @@ class Telegram(BaseModel):
     proxy_url: str | None = Field(default=None)
 
     mini_app_login: bool = Field(default=True)
+    mini_app_web_url: str | None = Field(default="")
+
+    @field_validator("mini_app_web_url")
+    @classmethod
+    def validate_mini_app_web_url(cls, v):
+        return URLValidator.validate_url(v)
+
+    @field_validator("webhook_url")
+    @classmethod
+    def validate_webhook_url(cls, v):
+        return URLValidator.validate_url(v)
 
     @field_validator("proxy_url")
     @classmethod

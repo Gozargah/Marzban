@@ -7,7 +7,7 @@ import AdminModal from '@/components/dialogs/AdminModal'
 import UserTemplateModal from '@/components/dialogs/UserTemplateModal'
 import QuickActionsModal from '@/components/dialogs/ShortcutsModal'
 import { Separator } from '@/components/ui/separator'
-import { Bookmark, UserRound, UserCog, ChevronDown, Check } from 'lucide-react'
+import { Bookmark, UserRound, UserCog, ChevronDown, Check, Sigma } from 'lucide-react'
 import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react'
 import { useForm } from 'react-hook-form'
 import { UseEditFormValues, UseFormValues, UserFormDefaultValues } from './_dashboard.users'
@@ -38,6 +38,12 @@ const CoreConfigModal = lazy(() => import('@/components/dialogs/CoreConfigModal'
 
 const PAGE_SIZE = 20;
 
+const totalAdmin: AdminDetails = {
+  username: 'Total',
+  is_sudo: false,
+};
+
+
 const Dashboard = () => {
   const [isUserModalOpen, setUserModalOpen] = useState(false)
   const [isGroupModalOpen, setGroupModalOpen] = useState(false)
@@ -51,7 +57,7 @@ const Dashboard = () => {
   const is_sudo = currentAdmin?.is_sudo || false
 
   // Admin search state - only for sudo admins
-  const [selectedAdmin, setSelectedAdmin] = useState<AdminDetails | undefined>(currentAdmin)
+  const [selectedAdmin, setSelectedAdmin] = useState<AdminDetails | undefined>(totalAdmin)
   const [adminSearch, setAdminSearch] = useState('')
   const [offset, setOffset] = useState(0)
   const [admins, setAdmins] = useState<AdminDetails[]>([])
@@ -309,17 +315,15 @@ const Dashboard = () => {
   // Auto-select current admin when it loads - only for sudo admins
   useEffect(() => {
     if (is_sudo && currentAdmin && !selectedAdmin) {
-      setSelectedAdmin(currentAdmin)
+      setSelectedAdmin(totalAdmin)
     }
   }, [currentAdmin, selectedAdmin, is_sudo])
 
-  // Only send admin_username if selectedAdmin is explicitly set and different from current admin
-  const systemStatsParams = is_sudo && selectedAdmin &&
-    selectedAdmin.username &&
-    currentAdmin?.username &&
-    selectedAdmin.username !== currentAdmin.username
+  // Only send admin_username if selectedAdmin is explicitly set and not 'Total'
+  const systemStatsParams = is_sudo && selectedAdmin && selectedAdmin.username !== 'Total'
     ? { admin_username: selectedAdmin.username }
     : undefined;
+
   const { data: systemStatsData } = useGetSystemStats(systemStatsParams, {
     query: {
       refetchInterval: 5000,
@@ -380,13 +384,13 @@ const Dashboard = () => {
                         )}>
                           <Avatar className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0">
                             <AvatarFallback className="bg-muted text-xs font-medium">
-                              {selectedAdmin?.username?.charAt(0).toUpperCase() || '?'}
+                              {selectedAdmin?.username === 'Total' ? <Sigma className="h-3 w-3" /> : selectedAdmin?.username?.charAt(0).toUpperCase() || '?'}
                             </AvatarFallback>
                           </Avatar>
                           <span className="truncate text-xs sm:text-sm">
                             {selectedAdmin?.username || t('selectAdmin')}
                           </span>
-                          {selectedAdmin && (
+                          {selectedAdmin && selectedAdmin.username !== 'Total' && (
                             <div className="flex-shrink-0">
                               {selectedAdmin.is_sudo ? (
                                 <UserCog className="h-3 w-3 text-primary" />
@@ -416,6 +420,31 @@ const Dashboard = () => {
                               {t('noAdminsFound') || 'No admins found'}
                             </div>
                           </CommandEmpty>
+
+                          <CommandItem
+                              onSelect={() => {
+                                setSelectedAdmin(totalAdmin)
+                                setDropdownOpen(false)
+                              }}
+                              className={cn(
+                                "flex items-center gap-2 px-2 py-1.5 min-w-0 text-xs sm:text-sm",
+                                dir === 'rtl' ? 'flex-row-reverse' : 'flex-row'
+                              )}
+                            >
+                              <Avatar className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0">
+                                <AvatarFallback className="bg-primary/10 text-xs font-medium">
+                                  <Sigma className="h-3 w-3" />
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="truncate flex-1">
+                                Total
+                              </span>
+                              <div className="flex items-center gap-1 flex-shrink-0">
+                                {selectedAdmin?.username === 'Total' && (
+                                  <Check className="h-3 w-3 text-primary" />
+                                )}
+                              </div>
+                            </CommandItem>
 
                           {currentAdmin && (
                             <CommandItem

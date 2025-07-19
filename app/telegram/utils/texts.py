@@ -1,11 +1,12 @@
 from aiogram.utils.formatting import html_decoration
 
+from app.models.group import Group
 from app.models.user import UserResponse, UserStatus
 from app.models.system import SystemStats
 from app.telegram.utils.shared import readable_size
 from app.subscription.share import STATUS_EMOJIS
 
-from datetime import datetime as dt, timedelta as td
+from datetime import datetime as dt, timedelta as td, timezone as tz
 from html import escape
 
 
@@ -23,6 +24,11 @@ ebl = html_decoration.expandable_blockquote
 
 
 class Button:
+    modify_data_limit = "📶 Modify Data Limit"
+    modify_expiry = "📅 Modify Expiry"
+    delete_expired = "⌛ Delete Expired"
+    bulk_actions = "🔧 Bulk Actions"
+    open_panel = "🎛 Open Panel"
     done = "✅ Done"
     search = "🔎 Search"
     enable = "✅ Enable"
@@ -34,6 +40,8 @@ class Button:
     confirm = "✅ Confirm"
     cancel = "❌ Cancel"
     create_user = "👤 Create User"
+    create_user_from_template = "👤 Create User From Template"
+    modify_with_template = "📦 Modify with Template"
     sync_users = "🔄 Sync Users"
     refresh_data = "♻ Refresh"
     users = "👥 Users"
@@ -42,13 +50,18 @@ class Button:
 
 
 class Message:
+    enter_modify_data_limit = "📶 Enter data limit change (GB):\nPositive and Negative values are allowed."
+    enter_modify_expiry = "📅 Enter expiry change (days):\nPositive and Negative values are allowed."
+    enter_expire_before = "📅 Delete Users expired before (days):\nSend 0 for all."
+    choose_action = "🔧 Choose an Action:"
+    there_is_no_template = "❌ There is no Template!"
     user_not_found = "❌ User not found!"
     confirm = "⚠ Are you sure you want to proceed?"
     enter_username = "🗣 Enter new user's Username:"
     username_already_exist = "❌ Username already exists."
     enter_data_limit = "🌐 Enter Data Limit (GB):\nSend 0 for unlimited."
     data_limit_not_valid = "❌ Data limit is not valid."
-    enter_duration = "📅 Enter duration: (days):\nSend 0 for unlimited."
+    enter_duration = "📅 Enter duration (days):\nSend 0 for unlimited."
     duration_not_valid = "❌ Duration is not valid."
     choose_status = "Do you want to enable it or keep it on-hold?"
     enter_on_hold_timeout = "🔌 Enter On-Hold timeout duration (days):\nSend 0 for Never."
@@ -59,6 +72,7 @@ class Message:
     refreshed = "♻ Refreshed successfully"
     syncing = "🔄 Syncing..."
     synced = "✅ Users successfully Synced"
+    choose_a_template = "📦 Choose a Template:"
 
     @staticmethod
     def start(stats: SystemStats):
@@ -85,11 +99,11 @@ class Message:
         return STATUS_EMOJIS[status.value]
 
     @staticmethod
-    def user_details(user: UserResponse) -> str:
+    def user_details(user: UserResponse, groups: list[Group]) -> str:
         data_limit = c(readable_size(user.data_limit)) if user.data_limit else "∞"
         used_traffic = c(readable_size(user.used_traffic))
         expire = user.expire.strftime("%Y-%m-%d %H:%M") if user.expire else "∞"
-        days_left = (user.expire - dt.now()).days if user.expire else "∞"
+        days_left = (user.expire - dt.now(tz.utc)).days if user.expire else "∞"
         on_hold_timeout = user.on_hold_timeout.strftime("%Y-%m-%d %H:%M") if user.on_hold_timeout else "-"
         on_hold_expire_duration = td(seconds=user.on_hold_expire_duration).days if user.on_hold_expire_duration else "0"
         online_at = bl(user.online_at.strftime("%Y-%m-%d %H:%M:%S")) if user.online_at else "-"
@@ -98,6 +112,7 @@ class Message:
         admin = ln(user.admin.username, f"tg://user?id={user.admin.telegram_id}")
         note = bl(escape(user.note)) if user.note else "-"
         emojy_status = Message.status_emoji(user.status)
+        groups = ", ".join([g.name for g in groups])
 
         if user.status == UserStatus.on_hold:
             expire_text = f"{b('On Hold Duration: ')} {c(on_hold_expire_duration)} days\n"
@@ -119,6 +134,7 @@ class Message:
 {b("Online At:")} {online_at}
 {b("Subscription Updated At:")} {sub_update_at}
 {b("Last Update User Agent:")} {user_agent}
+{b("Groups:")} {c(groups)}
 {b("Admin:")} {admin}
 {b("Note:")} {note}
 {b("Subscription URL:")}
@@ -131,7 +147,7 @@ class Message:
         if user.status == UserStatus.on_hold:
             expiry = int(user.on_hold_expire_duration / 24 / 60 / 60)
         else:
-            expiry = (user.expire - dt.now()).days if user.expire else "∞"
+            expiry = (user.expire - dt.now(tz.utc)).days if user.expire else "∞"
         return f"{used_traffic} / {data_limit} | {expiry} days\n{user.note or ''}"
 
     @staticmethod
@@ -157,6 +173,42 @@ class Message:
     @staticmethod
     def confirm_activate_next_plan(username: str) -> str:
         return f"⚠ Are you sure you want to {b('Activate Next Plan')} for {c(username)}?"
+
+    @classmethod
+    def confirm_delete_expired(cls, expired_before_days: int | str) -> str:
+        return f"⚠ Are you sure you want to delete all users expired before {expired_before_days} days ago?"
+
+    @classmethod
+    def users_deleted(cls, count):
+        return f"✅ {count} users successfully deleted."
+
+    @classmethod
+    def confirm_modify_expiry(cls, days: int) -> str:
+        if days > 0:
+            return f"⚠ Are you sure you want to extend users expiry by {c(days)} days?"
+        else:
+            return f"⚠ Are you sure you want to subtract {c(abs(days))} days from users expiry?"
+
+    @classmethod
+    def users_expiry_changed(cls, result: int, amount: int):
+        if amount > 0:
+            return f"✅ {result} users successfully extended by {amount} days."
+        else:
+            return f"✅ {result} users successfully subtracted by {abs(amount)} days."
+
+    @classmethod
+    def confirm_modify_data_limit(cls, amount: int) -> str:
+        if amount > 0:
+            return f"⚠ Are you sure you want to increase users data limit by {c(amount)} GB?"
+        else:
+            return f"⚠ Are you sure you want to decrease users data limit by {c(abs(amount))} GB?"
+
+    @classmethod
+    def users_data_limit_changed(cls, result: int, amount: int):
+        if amount > 0:
+            return f"✅ {result} users successfully increased by {amount} GB."
+        else:
+            return f"✅ {result} users successfully decreased by {abs(amount)} GB."
 
 
 __all__ = ["Button", "Message"]

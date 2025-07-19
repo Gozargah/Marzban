@@ -12,6 +12,7 @@ from app.settings import telegram_settings
 from app.telegram import get_bot, get_dispatcher
 from app.utils import responses
 from app.utils.logger import EndpointFilter, get_logger
+from config import DO_NOT_LOG_TELEGRAM_BOT
 
 from .authentication import get_current
 
@@ -19,8 +20,9 @@ system_operator = SystemOperation(operator_type=OperatorType.API)
 router = APIRouter(tags=["System"], prefix="/api", responses={401: responses._401})
 
 TELEGRAM_WEBHOOK_PATH = "/tghook"
-uvicorn_access_logger = get_logger("uvicorn.access")
-uvicorn_access_logger.addFilter(EndpointFilter([f"{router.prefix}{TELEGRAM_WEBHOOK_PATH}"]))
+if DO_NOT_LOG_TELEGRAM_BOT:
+    uvicorn_access_logger = get_logger("uvicorn.access")
+    uvicorn_access_logger.addFilter(EndpointFilter([f"{router.prefix}{TELEGRAM_WEBHOOK_PATH}"]))
 
 
 @router.get("/system", response_model=SystemStats)

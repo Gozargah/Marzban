@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta, timezone
 from enum import Enum
 from typing import List, Optional, Union
 
-from sqlalchemy import and_, delete, func, not_, or_, select
+from sqlalchemy import and_, delete, func, not_, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.functions import coalesce
@@ -608,10 +608,12 @@ async def revoke_user_sub(db: AsyncSession, db_user: User) -> User:
     Returns:
         User: The updated user object.
     """
-    db_user.sub_revoked_at = datetime.now(timezone.utc)
-
-    db_user.proxy_settings = ProxyTable().dict()
-
+    stmt = (
+        update(User)
+        .where(User.id == db_user.id)
+        .values(sub_revoked_at=datetime.now(timezone.utc), proxy_settings=ProxyTable().dict())
+    )
+    await db.execute(stmt)
     await db.commit()
     await db.refresh(db_user)
     await load_user_attrs(db_user)
@@ -624,15 +626,18 @@ async def update_user_sub(db: AsyncSession, db_user: User, user_agent: str) -> U
 
     Args:
         db (AsyncSession): Database session.
-        dbuser (User): The user object whose subscription is to be updated.
+        db_user (User): The user object whose subscription is to be updated.
         user_agent (str): The user agent string to update.
 
     Returns:
         User: The updated user object.
     """
-    db_user.sub_updated_at = datetime.now(timezone.utc)
-    db_user.sub_last_user_agent = user_agent
-
+    stmt = (
+        update(User)
+        .where(User.id == db_user.id)
+        .values(sub_updated_at=datetime.now(timezone.utc), sub_last_user_agent=user_agent)
+    )
+    await db.execute(stmt)
     await db.commit()
     await db.refresh(db_user)
     await load_user_attrs(db_user)
@@ -730,41 +735,6 @@ async def get_all_users_usages(
     )
 
 
-async def _update_user_status(db_user: User, status: UserStatus) -> User:
-    """
-    Updates a user's status and records the time of change.
-
-    Args:
-        db_user (User): The user to update.
-        status (UserStatus): The new status.
-
-    Returns:
-        User: The updated user object.
-    """
-    db_user.status = status
-    db_user.last_status_change = datetime.now(timezone.utc)
-    return db_user
-
-
-async def update_user_status(db: AsyncSession, db_user: User, status: UserStatus) -> User:
-    """
-    Updates a user status and records the time of change.
-
-    Args:
-        db (AsyncSession): Database session.
-        db_user (User): The user to update.
-        status (UserStatus): The new status.
-
-    Returns:
-        User: The updated user object.
-    """
-    db_user = await _update_user_status(db_user, status)
-    await db.commit()
-    await db.refresh(db_user)
-    await load_user_attrs(db_user)
-    return db_user
-
-
 async def update_users_status(db: AsyncSession, users: list[User], status: UserStatus) -> list[User]:
     """
     Updates a users status and records the time of change.
@@ -777,9 +747,13 @@ async def update_users_status(db: AsyncSession, users: list[User], status: UserS
     Returns:
         User: The updated user object.
     """
-    updated_users = await asyncio.gather(*[_update_user_status(user, status) for user in users])
+    user_ids = [user.id for user in users]
+    stmt = (
+        update(User).where(User.id.in_(user_ids)).values(status=status, last_status_change=datetime.now(timezone.utc))
+    )
+    await db.execute(stmt)
     await db.commit()
-    for user in updated_users:
+    for user in users:
         await db.refresh(user)
         await load_user_attrs(user)
     return users
@@ -791,35 +765,17 @@ async def set_owner(db: AsyncSession, db_user: User, admin: Admin) -> User:
 
     Args:
         db (AsyncSession): Database session.
-        dbuser (User): The user object whose owner is to be set.
+        db_user (User): The user object whose owner is to be set.
         admin (Admin): The admin to set as owner.
 
     Returns:
         User: The updated user object.
     """
-    db_user.admin = admin
+    stmt = update(User).where(User.id == db_user.id).values(admin_id=admin.id)
+    await db.execute(stmt)
     await db.commit()
     await db.refresh(db_user)
     await load_user_attrs(db_user)
-    return db_user
-
-
-async def _start_user_expire(db_user: User) -> User:
-    """
-    Starts the expiration timer for a user.
-
-    Args:
-        db (AsyncSession): Database session.
-        dbuser (User): The user object whose expiration timer is to be started.
-
-    Returns:
-        User: The updated user object.
-    """
-    db_user.expire = datetime.now(timezone.utc) + timedelta(seconds=db_user.on_hold_expire_duration)
-    db_user.on_hold_expire_duration = None
-    db_user.on_hold_timeout = None
-    db_user.status = UserStatus.active
-
     return db_user
 
 
@@ -834,7 +790,13 @@ async def start_user_expire(db: AsyncSession, db_user: User) -> User:
     Returns:
         User: The updated user object.
     """
-    db_user = await _start_user_expire(db_user)
+    expire_time = datetime.now(timezone.utc) + timedelta(seconds=db_user.on_hold_expire_duration)
+    stmt = (
+        update(User)
+        .where(User.id == db_user.id)
+        .values(expire=expire_time, on_hold_expire_duration=None, on_hold_timeout=None, status=UserStatus.active)
+    )
+    await db.execute(stmt)
 
     await db.commit()
     await db.refresh(db_user)
@@ -853,10 +815,23 @@ async def start_users_expire(db: AsyncSession, users: list[User]) -> list[User]:
     Returns:
         list[User]: The updated users list.
     """
-    updated_users = await asyncio.gather(*[_start_user_expire(user) for user in users])
+    now = datetime.now(timezone.utc)
+    for user in users:
+        expire_time = now + timedelta(seconds=user.on_hold_expire_duration)
+        stmt = (
+            update(User)
+            .where(User.id == user.id)
+            .values(
+                expire=expire_time,
+                on_hold_expire_duration=None,
+                on_hold_timeout=None,
+                status=UserStatus.active,
+            )
+        )
+        await db.execute(stmt)
 
     await db.commit()
-    for user in updated_users:
+    for user in users:
         await db.refresh(user)
         await load_user_attrs(user)
     return users

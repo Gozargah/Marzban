@@ -1,3 +1,4 @@
+from enum import Enum
 import json
 from random import choice
 from typing import Union
@@ -99,6 +100,7 @@ class XrayConfig(BaseSubscription):
     ) -> dict:
         xhttp_settings = {}
 
+        mode = mode.value if isinstance(mode, Enum) else mode
         xhttp_settings["mode"] = mode
         if path:
             xhttp_settings["path"] = path

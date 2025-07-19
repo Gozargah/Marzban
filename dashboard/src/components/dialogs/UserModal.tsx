@@ -1,3 +1,5 @@
+import GroupsSelector from '@/components/common/GroupsSelector'
+import { SubscriptionInfo } from '@/components/SubscriptionInfo'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
@@ -10,14 +12,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
-import GroupsSelector from '@/components/common/GroupsSelector'
 import useDirDetection from '@/hooks/use-dir-detection'
 import useDynamicErrorHandler from '@/hooks/use-dynamic-errors.ts'
 import { cn } from '@/lib/utils'
 import { UseEditFormValues, UseFormValues, userCreateSchema, userEditSchema } from '@/pages/_dashboard.users'
 import { useCreateUser, useCreateUserFromTemplate, useGetUsers, useGetUserTemplates, useModifyUser, useModifyUserWithTemplate } from '@/service/api'
-import { useRelativeExpiryDate, dateUtils } from '@/utils/dateFormatter'
-import { SubscriptionInfo } from '@/components/SubscriptionInfo'
+import { dateUtils, useRelativeExpiryDate } from '@/utils/dateFormatter'
 import { formatBytes } from '@/utils/formatByte'
 import { useQueryClient } from '@tanstack/react-query'
 import { CalendarIcon, Layers, ListStart, Lock, RefreshCcw, Users, X } from 'lucide-react'
@@ -376,7 +376,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
   const { i18n } = useTranslation()
   const isPersianLocale = i18n.language === 'fa'
   const [usePersianCalendar, setUsePersianCalendar] = useState(isPersianLocale)
-  
+
   // Reset calendar state when modal opens/closes
   useEffect(() => {
     if (!isDialogOpen) {
@@ -575,7 +575,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
       // Set default on_hold_expire_duration if not set
       const duration = form.getValues('on_hold_expire_duration')
       if (!duration || duration < 1) {
-        const defaultDuration = 7 * 24 * 60 * 60 // 7 days in seconds
+        const defaultDuration = 30 * 24 * 60 * 60 // 7 days in seconds
         form.setValue('on_hold_expire_duration', defaultDuration)
         handleFieldChange('on_hold_expire_duration', defaultDuration)
       }
@@ -823,19 +823,25 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
         const hasProxySettings = values.proxy_settings && Object.values(values.proxy_settings).some(settings => settings && Object.values(settings).some(value => value !== undefined && value !== ''))
 
         setLoading(true)
-        
+
         // Clean proxy settings to ensure proper enum values
-        const cleanedProxySettings = hasProxySettings ? {
-          ...values.proxy_settings,
-          vless: values.proxy_settings?.vless ? {
-            ...values.proxy_settings.vless,
-            flow: values.proxy_settings.vless.flow || undefined
-          } : undefined,
-          shadowsocks: values.proxy_settings?.shadowsocks ? {
-            ...values.proxy_settings.shadowsocks,
-            method: values.proxy_settings.shadowsocks.method || undefined
-          } : undefined
-        } : undefined
+        const cleanedProxySettings = hasProxySettings
+          ? {
+              ...values.proxy_settings,
+              vless: values.proxy_settings?.vless
+                ? {
+                    ...values.proxy_settings.vless,
+                    flow: values.proxy_settings.vless.flow || undefined,
+                  }
+                : undefined,
+              shadowsocks: values.proxy_settings?.shadowsocks
+                ? {
+                    ...values.proxy_settings.shadowsocks,
+                    method: values.proxy_settings.shadowsocks.method || undefined,
+                  }
+                : undefined,
+            }
+          : undefined
 
         // Convert data_limit from GB to bytes
         const sendValues = {
@@ -1803,7 +1809,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                             <GroupsSelector
                               control={form.control}
                               name="group_ids"
-                              onGroupsChange={(groups) => {
+                              onGroupsChange={groups => {
                                 field.onChange(groups)
                                 handleFieldChange('group_ids', groups)
 
@@ -1839,12 +1845,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
               >
                 {t('cancel', { defaultValue: 'Cancel' })}
               </Button>
-              <LoaderButton
-                type="submit"
-                isLoading={loading}
-                disabled={!isFormValid && !selectedTemplateId}
-                loadingText={editingUser ? t('modifying') : t('creating')}
-              >
+              <LoaderButton type="submit" isLoading={loading} disabled={!isFormValid && !selectedTemplateId} loadingText={editingUser ? t('modifying') : t('creating')}>
                 {editingUser ? t('modify', { defaultValue: 'Modify' }) : t('create', { defaultValue: 'Create' })}
               </LoaderButton>
             </div>

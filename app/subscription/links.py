@@ -1,6 +1,7 @@
 import base64
 import json
 import urllib.parse as urlparse
+from enum import Enum
 from random import choice
 from typing import Union
 from urllib.parse import quote
@@ -150,6 +151,7 @@ class StandardLinks(BaseSubscription):
         elif net in ("splithttp", "xhttp"):
             payload["path"] = path
             payload["host"] = host
+            mode = mode.value if isinstance(mode, Enum) else mode
             if protocol == "vmess":
                 payload["type"] = mode
             else:

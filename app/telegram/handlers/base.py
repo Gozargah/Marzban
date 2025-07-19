@@ -1,4 +1,5 @@
 from aiogram import Router, types, F
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import CommandStart
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,6 +11,7 @@ from app.operation import OperatorType
 from app.operation.system import SystemOperation
 from app.telegram.utils.texts import Message as Texts
 from app.telegram.utils.shared import delete_messages
+from app.settings import telegram_settings
 
 system_operator = SystemOperation(OperatorType.TELEGRAM)
 
@@ -33,10 +35,27 @@ async def command_start_handler(
         await delete_messages(event, state)
         await state.clear()
 
+    settings = await telegram_settings()
+
     if admin:
         stats = await system_operator.get_system_stats(db, admin)
         if isinstance(event, types.CallbackQuery):
-            return await message.edit_text(text=Texts.start(stats), reply_markup=AdminPanel().as_markup())
-        await message.answer(text=Texts.start(stats), reply_markup=AdminPanel().as_markup())
+            try:
+                return await message.edit_text(
+                    text=Texts.start(stats),
+                    reply_markup=AdminPanel(
+                        is_sudo=admin.is_sudo,
+                        panel_url=settings.mini_app_web_url if settings.mini_app_login else None,
+                    ).as_markup()
+                )
+            except TelegramBadRequest:
+                pass
+        await message.answer(
+            text=Texts.start(stats),
+            reply_markup=AdminPanel(
+                is_sudo=admin.is_sudo,
+                panel_url=settings.mini_app_web_url if settings.mini_app_login else None
+            ).as_markup()
+        )
     else:
         await message.answer(f"Hello, {event.from_user.full_name}!")
