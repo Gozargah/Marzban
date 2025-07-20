@@ -78,14 +78,14 @@ function getLocalISOTime(date: Date): string {
 
 // Add this new component before the UserModal component
 const ExpiryDateField = ({
-  field,
-  displayDate,
-  usePersianCalendar,
-  calendarOpen,
-  setCalendarOpen,
-  handleFieldChange,
-  label,
-}: {
+                           field,
+                           displayDate,
+                           usePersianCalendar,
+                           calendarOpen,
+                           setCalendarOpen,
+                           handleFieldChange,
+                           label,
+                         }: {
   field: any
   displayDate: Date | null
   usePersianCalendar: boolean
@@ -99,63 +99,63 @@ const ExpiryDateField = ({
   const [, startTransition] = useTransition()
 
   const handleDateSelect = React.useCallback(
-    (date: Date | undefined) => {
-      if (date) {
-        const now = new Date()
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-        const selectedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+      (date: Date | undefined) => {
+        if (date) {
+          const now = new Date()
+          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+          const selectedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
 
-        if (selectedDate < today) {
-          date = new Date(now)
-        }
+          if (selectedDate < today) {
+            date = new Date(now)
+          }
 
-        if (selectedDate.getTime() === today.getTime()) {
-          // Set to end of day
-          date.setHours(23, 59, 59)
+          if (selectedDate.getTime() === today.getTime()) {
+            // Set to end of day
+            date.setHours(23, 59, 59)
+          } else {
+            // Set current time
+            date.setHours(now.getHours(), now.getMinutes())
+          }
+
+          const isoString = getLocalISOTime(date)
+          startTransition(() => {
+            field.onChange(isoString)
+            handleFieldChange('expire', isoString)
+          })
         } else {
-          // Set current time
-          date.setHours(now.getHours(), now.getMinutes())
+          startTransition(() => {
+            field.onChange('')
+            handleFieldChange('expire', undefined)
+          })
         }
-
-        const isoString = getLocalISOTime(date)
-        startTransition(() => {
-          field.onChange(isoString)
-          handleFieldChange('expire', isoString)
-        })
-      } else {
-        startTransition(() => {
-          field.onChange('')
-          handleFieldChange('expire', undefined)
-        })
-      }
-      setCalendarOpen(false)
-    },
-    [field, handleFieldChange, setCalendarOpen, startTransition],
+        setCalendarOpen(false)
+      },
+      [field, handleFieldChange, setCalendarOpen, startTransition],
   )
 
   // Update time input handling to work with local time
   const handleTimeChange = React.useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      e.preventDefault()
-      e.stopPropagation()
-      if (displayDate && e.target.value) {
-        const [hours, minutes] = e.target.value.split(':')
-        const newDate = new Date(displayDate)
-        newDate.setHours(parseInt(hours), parseInt(minutes))
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        e.preventDefault()
+        e.stopPropagation()
+        if (displayDate && e.target.value) {
+          const [hours, minutes] = e.target.value.split(':')
+          const newDate = new Date(displayDate)
+          newDate.setHours(parseInt(hours), parseInt(minutes))
 
-        const now = new Date()
-        if (newDate.toDateString() === now.toDateString() && newDate < now) {
-          newDate.setTime(now.getTime())
+          const now = new Date()
+          if (newDate.toDateString() === now.toDateString() && newDate < now) {
+            newDate.setTime(now.getTime())
+          }
+
+          const isoString = getLocalISOTime(newDate)
+          startTransition(() => {
+            field.onChange(isoString)
+            handleFieldChange('expire', isoString)
+          })
         }
-
-        const isoString = getLocalISOTime(newDate)
-        startTransition(() => {
-          field.onChange(isoString)
-          handleFieldChange('expire', isoString)
-        })
-      }
-    },
-    [displayDate, field, handleFieldChange, startTransition],
+      },
+      [displayDate, field, handleFieldChange, startTransition],
   )
 
   // Get current date for comparison
@@ -163,196 +163,196 @@ const ExpiryDateField = ({
 
   // Function to check if a date should be disabled
   const isDateDisabled = React.useCallback(
-    (date: Date) => {
-      // Create a new date object for today at midnight for accurate comparison
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-      const compareDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+      (date: Date) => {
+        // Create a new date object for today at midnight for accurate comparison
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        const compareDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
 
-      // Disable if the date is before today
-      if (compareDate < today) {
-        return true
-      }
-
-      // Disable if the year is before current year
-      if (date.getFullYear() < now.getFullYear()) {
-        return true
-      }
-
-      // Disable if the year is more than 15 years in the future
-      if (date.getFullYear() > now.getFullYear() + 15) {
-        return true
-      }
-
-      // For current year, disable past months
-      if (date.getFullYear() === now.getFullYear()) {
-        // If the month is before current month, disable it
-        if (date.getMonth() < now.getMonth()) {
+        // Disable if the date is before today
+        if (compareDate < today) {
           return true
         }
-        // If it's the current month, disable past days
-        if (date.getMonth() === now.getMonth() && compareDate < today) {
+
+        // Disable if the year is before current year
+        if (date.getFullYear() < now.getFullYear()) {
           return true
         }
-      }
 
-      // Allow all other dates
-      return false
-    },
-    [now],
+        // Disable if the year is more than 15 years in the future
+        if (date.getFullYear() > now.getFullYear() + 15) {
+          return true
+        }
+
+        // For current year, disable past months
+        if (date.getFullYear() === now.getFullYear()) {
+          // If the month is before current month, disable it
+          if (date.getMonth() < now.getMonth()) {
+            return true
+          }
+          // If it's the current month, disable past days
+          if (date.getMonth() === now.getMonth() && compareDate < today) {
+            return true
+          }
+        }
+
+        // Allow all other dates
+        return false
+      },
+      [now],
   )
 
   return (
-    <FormItem className="flex flex-1 flex-col">
-      <FormLabel>{label}</FormLabel>
-      <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-        <PopoverTrigger asChild>
-          <FormControl>
-            <div className="relative w-full">
-              <Button
-                dir={'ltr'}
-                variant={'outline'}
-                className={cn('!mt-3.5 h-fit w-full text-left font-normal', !field.value && 'text-muted-foreground')}
-                type="button"
-                onClick={e => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setCalendarOpen(true)
-                }}
-              >
-                {displayDate ? (
-                  usePersianCalendar ? (
-                    // Persian format - display in local time
-                    displayDate.toLocaleDateString('fa-IR', {
-                      year: 'numeric',
-                      month: '2-digit',
-                      day: '2-digit',
-                    }) +
-                    ' ' +
-                    displayDate.toLocaleTimeString('fa-IR', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: false,
-                    })
-                  ) : (
-                    // Gregorian format - display in local time
-                    displayDate.toLocaleDateString('sv-SE', {
-                      year: 'numeric',
-                      month: '2-digit',
-                      day: '2-digit',
-                    }) +
-                    ' ' +
-                    displayDate.toLocaleTimeString('sv-SE', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: false,
-                    })
-                  )
-                ) : field.value && !isNaN(Number(field.value)) ? (
-                  String(field.value)
-                ) : (
-                  <span>{t('userDialog.expireDate', { defaultValue: 'Expire date' })}</span>
-                )}
-                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-              </Button>
-            </div>
-          </FormControl>
-        </PopoverTrigger>
-        <PopoverContent
-          className="w-auto p-0"
-          align="start"
-          onInteractOutside={e => {
-            e.preventDefault()
-            setCalendarOpen(false)
-          }}
-          onEscapeKeyDown={() => setCalendarOpen(false)}
-        >
-          {usePersianCalendar ? (
-            <PersianCalendar
-              mode="single"
-              selected={displayDate || undefined}
-              onSelect={handleDateSelect}
-              disabled={isDateDisabled}
-              captionLayout="dropdown"
-              defaultMonth={displayDate || now}
-              startMonth={new Date(now.getFullYear(), now.getMonth(), 1)}
-              endMonth={new Date(now.getFullYear() + 15, 11, 31)}
-              formatters={{
-                formatMonthDropdown: date => date.toLocaleString('fa-IR', { month: 'short' }),
-              }}
-            />
-          ) : (
-            <Calendar
-              mode="single"
-              selected={displayDate || undefined}
-              onSelect={handleDateSelect}
-              disabled={isDateDisabled}
-              captionLayout="dropdown"
-              defaultMonth={displayDate || now}
-              startMonth={new Date(now.getFullYear(), now.getMonth(), 1)}
-              endMonth={new Date(now.getFullYear() + 15, 11, 31)}
-              formatters={{
-                formatMonthDropdown: date => date.toLocaleString('default', { month: 'short' }),
-              }}
-            />
-          )}
-          <div className="flex items-center gap-4 border-t p-3">
+      <FormItem className="flex flex-1 flex-col">
+        <FormLabel>{label}</FormLabel>
+        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+          <PopoverTrigger asChild>
             <FormControl>
-              <Input
-                type="time"
-                value={
-                  displayDate
-                    ? displayDate.toLocaleTimeString('sv-SE', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false,
-                      })
-                    : now.toLocaleTimeString('sv-SE', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false,
-                      })
-                }
-                min={
-                  displayDate && displayDate.toDateString() === now.toDateString()
-                    ? now.toLocaleTimeString('sv-SE', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false,
-                      })
-                    : undefined
-                }
-                onChange={handleTimeChange}
-              />
+              <div className="relative w-full">
+                <Button
+                    dir={'ltr'}
+                    variant={'outline'}
+                    className={cn('!mt-3.5 h-fit w-full text-left font-normal', !field.value && 'text-muted-foreground')}
+                    type="button"
+                    onClick={e => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setCalendarOpen(true)
+                    }}
+                >
+                  {displayDate ? (
+                      usePersianCalendar ? (
+                          // Persian format - display in local time
+                          displayDate.toLocaleDateString('fa-IR', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                          }) +
+                          ' ' +
+                          displayDate.toLocaleTimeString('fa-IR', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false,
+                          })
+                      ) : (
+                          // Gregorian format - display in local time
+                          displayDate.toLocaleDateString('sv-SE', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                          }) +
+                          ' ' +
+                          displayDate.toLocaleTimeString('sv-SE', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false,
+                          })
+                      )
+                  ) : field.value && !isNaN(Number(field.value)) ? (
+                      String(field.value)
+                  ) : (
+                      <span>{t('userDialog.expireDate', { defaultValue: 'Expire date' })}</span>
+                  )}
+                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                </Button>
+              </div>
             </FormControl>
-            {displayDate && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={e => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  field.onChange('')
-                  handleFieldChange('expire', undefined)
-                  setCalendarOpen(false)
-                }}
-              >
-                <X className="h-4 w-4" />
-              </Button>
+          </PopoverTrigger>
+          <PopoverContent
+              className="w-auto p-0"
+              align="start"
+              onInteractOutside={e => {
+                e.preventDefault()
+                setCalendarOpen(false)
+              }}
+              onEscapeKeyDown={() => setCalendarOpen(false)}
+          >
+            {usePersianCalendar ? (
+                <PersianCalendar
+                    mode="single"
+                    selected={displayDate || undefined}
+                    onSelect={handleDateSelect}
+                    disabled={isDateDisabled}
+                    captionLayout="dropdown"
+                    defaultMonth={displayDate || now}
+                    startMonth={new Date(now.getFullYear(), now.getMonth(), 1)}
+                    endMonth={new Date(now.getFullYear() + 15, 11, 31)}
+                    formatters={{
+                      formatMonthDropdown: date => date.toLocaleString('fa-IR', { month: 'short' }),
+                    }}
+                />
+            ) : (
+                <Calendar
+                    mode="single"
+                    selected={displayDate || undefined}
+                    onSelect={handleDateSelect}
+                    disabled={isDateDisabled}
+                    captionLayout="dropdown"
+                    defaultMonth={displayDate || now}
+                    startMonth={new Date(now.getFullYear(), now.getMonth(), 1)}
+                    endMonth={new Date(now.getFullYear() + 15, 11, 31)}
+                    formatters={{
+                      formatMonthDropdown: date => date.toLocaleString('default', { month: 'short' }),
+                    }}
+                />
             )}
-          </div>
-        </PopoverContent>
-      </Popover>
-      {expireInfo && (
-        <p className={cn(!expireInfo.time && 'hidden', 'text-xs text-muted-foreground')}>
-          {expireInfo.time !== '0' && expireInfo.time !== '0s'
-            ? t('expires', { time: expireInfo.time, defaultValue: 'Expires in {{time}}' })
-            : t('expired', { time: expireInfo.time, defaultValue: 'Expired in {{time}}' })}
-        </p>
-      )}
-      <FormMessage />
-    </FormItem>
+            <div className="flex items-center gap-4 border-t p-3">
+              <FormControl>
+                <Input
+                    type="time"
+                    value={
+                      displayDate
+                          ? displayDate.toLocaleTimeString('sv-SE', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false,
+                          })
+                          : now.toLocaleTimeString('sv-SE', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false,
+                          })
+                    }
+                    min={
+                      displayDate && displayDate.toDateString() === now.toDateString()
+                          ? now.toLocaleTimeString('sv-SE', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false,
+                          })
+                          : undefined
+                    }
+                    onChange={handleTimeChange}
+                />
+              </FormControl>
+              {displayDate && (
+                  <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={e => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        field.onChange('')
+                        handleFieldChange('expire', undefined)
+                        setCalendarOpen(false)
+                      }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
+        {expireInfo && (
+            <p className={cn(!expireInfo.time && 'hidden', 'text-xs text-muted-foreground')}>
+              {expireInfo.time !== '0' && expireInfo.time !== '0s'
+                  ? t('expires', { time: expireInfo.time, defaultValue: 'Expires in {{time}}' })
+                  : t('expired', { time: expireInfo.time, defaultValue: 'Expired in {{time}}' })}
+            </p>
+        )}
+        <FormMessage />
+      </FormItem>
   )
 }
 
@@ -388,41 +388,41 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
   const [isFormValid, setIsFormValid] = useState(false)
 
   const handleModalOpenChange = React.useCallback(
-    (open: boolean) => {
-      if (!open) {
-        form.reset()
-        setTouchedFields({})
-        setIsFormValid(false)
-      }
-      onOpenChange(open)
-    },
-    [form, onOpenChange],
+      (open: boolean) => {
+        if (!open) {
+          form.reset()
+          setTouchedFields({})
+          setIsFormValid(false)
+        }
+        onOpenChange(open)
+      },
+      [form, onOpenChange],
   )
 
   const handleFieldChange = React.useCallback(
-    (fieldName: string, value: any) => {
-      setTouchedFields(prev => ({ ...prev, [fieldName]: true }))
-      const currentValues = {
-        ...form.getValues(),
-        [fieldName]: value,
-      }
-      const isValid = validateAllFields(currentValues, { ...touchedFields, [fieldName]: true })
-      setIsFormValid(isValid)
-    },
-    [form, touchedFields],
+      (fieldName: string, value: any) => {
+        setTouchedFields(prev => ({ ...prev, [fieldName]: true }))
+        const currentValues = {
+          ...form.getValues(),
+          [fieldName]: value,
+        }
+        const isValid = validateAllFields(currentValues, { ...touchedFields, [fieldName]: true })
+        setIsFormValid(isValid)
+      },
+      [form, touchedFields],
   )
 
   // Add handleFieldBlur function
   const handleFieldBlur = React.useCallback(
-    (fieldName: string) => {
-      if (!touchedFields[fieldName]) {
-        setTouchedFields(prev => ({ ...prev, [fieldName]: true }))
-        const currentValues = form.getValues()
-        const isValid = validateAllFields(currentValues, { ...touchedFields, [fieldName]: true })
-        setIsFormValid(isValid)
-      }
-    },
-    [form, touchedFields],
+      (fieldName: string) => {
+        if (!touchedFields[fieldName]) {
+          setTouchedFields(prev => ({ ...prev, [fieldName]: true }))
+          const currentValues = form.getValues()
+          const isValid = validateAllFields(currentValues, { ...touchedFields, [fieldName]: true })
+          setIsFormValid(isValid)
+        }
+      },
+      [form, touchedFields],
   )
 
   // Get the expire value from the form
@@ -472,10 +472,10 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
 
   // Get refetch function for users
   const { refetch: refetchUsers } = useGetUsers(
-    {},
-    {
-      query: { enabled: false },
-    },
+      {},
+      {
+        query: { enabled: false },
+      },
   )
 
   // Fetch data for tabs with proper caching and refetch on page view
@@ -572,10 +572,13 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
 
   useEffect(() => {
     if (status === 'on_hold') {
-      // Set default on_hold_expire_duration if not set
+      // Set default on_hold_expire_duration if not set and not explicitly cleared by user
       const duration = form.getValues('on_hold_expire_duration')
-      if (!duration || duration < 1) {
-        const defaultDuration = 30 * 24 * 60 * 60 // 7 days in seconds
+      const touched = touchedFields['on_hold_expire_duration']
+
+      // Only set default if the field hasn't been touched by user and has no value
+      if (!touched && (!duration || duration < 1)) {
+        const defaultDuration = 7 * 24 * 60 * 60 // 7 days in seconds
         form.setValue('on_hold_expire_duration', defaultDuration)
         handleFieldChange('on_hold_expire_duration', defaultDuration)
       }
@@ -589,7 +592,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
       form.setValue('on_hold_timeout', undefined)
       form.clearErrors('on_hold_timeout')
     }
-  }, [status, form, t, handleFieldChange])
+  }, [status, form, t, handleFieldChange, touchedFields])
 
   useEffect(() => {
     if (!nextPlanEnabled) {
@@ -710,202 +713,202 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
 
   // Update template selection handlers to use number type
   const handleTemplateSelect = React.useCallback(
-    (val: string) => {
-      const currentValues = form.getValues()
-      if (val === 'none' || (selectedTemplateId && String(selectedTemplateId) === val)) {
-        setSelectedTemplateId(null)
-        clearGroups()
-      } else {
-        setSelectedTemplateId(Number(val))
-        clearGroups()
-        // Clear group selection when template is selected
-        form.setValue('group_ids', [])
-        handleFieldChange('group_ids', [])
-      }
-      // Trigger validation after template selection changes
-      const isValid = validateAllFields(currentValues, touchedFields)
-      setIsFormValid(isValid)
-    },
-    [form, selectedTemplateId, touchedFields, handleFieldChange],
+      (val: string) => {
+        const currentValues = form.getValues()
+        if (val === 'none' || (selectedTemplateId && String(selectedTemplateId) === val)) {
+          setSelectedTemplateId(null)
+          clearGroups()
+        } else {
+          setSelectedTemplateId(Number(val))
+          clearGroups()
+          // Clear group selection when template is selected
+          form.setValue('group_ids', [])
+          handleFieldChange('group_ids', [])
+        }
+        // Trigger validation after template selection changes
+        const isValid = validateAllFields(currentValues, touchedFields)
+        setIsFormValid(isValid)
+      },
+      [form, selectedTemplateId, touchedFields, handleFieldChange],
   )
 
   // Update the template mutation calls
   const handleTemplateMutation = React.useCallback(
-    async (values: UseFormValues | UseEditFormValues) => {
-      if (!selectedTemplateId) return
+      async (values: UseFormValues | UseEditFormValues) => {
+        if (!selectedTemplateId) return
 
-      setLoading(true)
-      try {
-        if (editingUser) {
-          await modifyUserWithTemplateMutation.mutateAsync({
-            username: values.username,
-            data: {
-              user_template_id: selectedTemplateId,
-              note: values.note,
-            },
-          })
-          toast.success(
-            t('userDialog.userEdited', {
+        setLoading(true)
+        try {
+          if (editingUser) {
+            await modifyUserWithTemplateMutation.mutateAsync({
               username: values.username,
-              defaultValue: 'User «{{name}}» has been updated successfully',
-            }),
+              data: {
+                user_template_id: selectedTemplateId,
+                note: values.note,
+              },
+            })
+            toast.success(
+                t('userDialog.userEdited', {
+                  username: values.username,
+                  defaultValue: 'User «{{name}}» has been updated successfully',
+                }),
+            )
+          } else {
+            await createUserFromTemplateMutation.mutateAsync({
+              data: {
+                user_template_id: selectedTemplateId,
+                username: values.username,
+                note: values.note || undefined,
+              },
+            })
+            toast.success(
+                t('userDialog.userCreated', {
+                  username: values.username,
+                  defaultValue: 'User «{{name}}» has been created successfully',
+                }),
+            )
+          }
+          onOpenChange(false)
+          form.reset()
+          setSelectedTemplateId(null)
+        } catch (error: any) {
+          toast.error(
+              error?.response?._data?.detail ||
+              t(editingUser ? 'userDialog.editError' : 'userDialog.createError', {
+                name: values.username,
+                defaultValue: `Failed to ${editingUser ? 'update' : 'create'} user «{{name}}»`,
+              }),
           )
-        } else {
-          await createUserFromTemplateMutation.mutateAsync({
-            data: {
-              user_template_id: selectedTemplateId,
-              username: values.username,
-              note: values.note || undefined,
-            },
-          })
-          toast.success(
-            t('userDialog.userCreated', {
-              username: values.username,
-              defaultValue: 'User «{{name}}» has been created successfully',
-            }),
-          )
+        } finally {
+          setLoading(false)
         }
-        onOpenChange(false)
-        form.reset()
-        setSelectedTemplateId(null)
-      } catch (error: any) {
-        toast.error(
-          error?.response?._data?.detail ||
-            t(editingUser ? 'userDialog.editError' : 'userDialog.createError', {
-              name: values.username,
-              defaultValue: `Failed to ${editingUser ? 'update' : 'create'} user «{{name}}»`,
-            }),
-        )
-      } finally {
-        setLoading(false)
-      }
-    },
-    [editingUser, selectedTemplateId, form, onOpenChange, t],
+      },
+      [editingUser, selectedTemplateId, form, onOpenChange, t],
   )
 
   const onSubmit = React.useCallback(
-    async (values: UseFormValues | UseEditFormValues) => {
-      try {
-        form.clearErrors()
+      async (values: UseFormValues | UseEditFormValues) => {
+        try {
+          form.clearErrors()
 
-        // Handle template-based operations
-        if (selectedTemplateId) {
-          await handleTemplateMutation(values)
-          return
-        }
-
-        // Regular create/edit flow
-        if (!validateAllFields(values, touchedFields)) {
-          return
-        }
-
-        // Convert data to the right format before validation
-        const preparedValues = {
-          ...values,
-          data_limit: typeof values.data_limit === 'string' ? parseFloat(values.data_limit) : values.data_limit,
-          on_hold_expire_duration: values.on_hold_expire_duration
-            ? typeof values.on_hold_expire_duration === 'string'
-              ? parseInt(values.on_hold_expire_duration, 10)
-              : values.on_hold_expire_duration
-            : undefined,
-          expire: status === 'on_hold' ? undefined : normalizeExpire(values.expire),
-          group_ids: Array.isArray(values.group_ids) ? values.group_ids : [],
-          status: values.status,
-        }
-
-        // Remove next_plan.data_limit and next_plan.expire if next_plan.user_template_id is set
-        if (preparedValues.next_plan && preparedValues.next_plan.user_template_id) {
-          delete preparedValues.next_plan.data_limit
-          delete preparedValues.next_plan.expire
-        }
-
-        // Check if proxy settings are filled
-        const hasProxySettings = values.proxy_settings && Object.values(values.proxy_settings).some(settings => settings && Object.values(settings).some(value => value !== undefined && value !== ''))
-
-        setLoading(true)
-
-        // Clean proxy settings to ensure proper enum values
-        const cleanedProxySettings = hasProxySettings
-          ? {
-              ...values.proxy_settings,
-              vless: values.proxy_settings?.vless
-                ? {
-                    ...values.proxy_settings.vless,
-                    flow: values.proxy_settings.vless.flow || undefined,
-                  }
-                : undefined,
-              shadowsocks: values.proxy_settings?.shadowsocks
-                ? {
-                    ...values.proxy_settings.shadowsocks,
-                    method: values.proxy_settings.shadowsocks.method || undefined,
-                  }
-                : undefined,
-            }
-          : undefined
-
-        // Convert data_limit from GB to bytes
-        const sendValues = {
-          ...preparedValues,
-          data_limit: gbToBytes(preparedValues.data_limit as any),
-          expire: normalizeExpire(preparedValues.expire),
-          // Only include proxy_settings if they are filled
-          ...(hasProxySettings ? { proxy_settings: cleanedProxySettings } : {}),
-        }
-
-        // Remove proxy_settings from the payload if it's empty or undefined
-        if (!hasProxySettings) {
-          delete sendValues.proxy_settings
-        }
-
-        // Make API calls to the backend
-        if (editingUser && editingUserId) {
-          try {
-            await modifyUserMutation.mutateAsync({
-              username: sendValues.username,
-              data: sendValues,
-            })
-            toast.success(
-              t('userDialog.userEdited', {
-                username: values.username,
-                defaultValue: 'User «{{name}}» has been updated successfully',
-              }),
-            )
-          } catch (error) {
-            console.error('Modify user error:', error)
-            throw error
+          // Handle template-based operations
+          if (selectedTemplateId) {
+            await handleTemplateMutation(values)
+            return
           }
-        } else {
-          try {
-            const createData = {
-              ...sendValues,
-              status: (sendValues.status === 'active' ? 'active' : sendValues.status) as 'active' | 'on_hold',
-            }
-            await createUserMutation.mutateAsync({
-              data: createData,
-            })
-            toast.success(
-              t('userDialog.userCreated', {
-                username: values.username,
-                defaultValue: 'User «{{name}}» has been created successfully',
-              }),
-            )
-          } catch (error) {
-            console.error('Create user error:', error)
-            throw error
-          }
-        }
 
-        onOpenChange(false)
-        form.reset()
-        setTouchedFields({})
-      } catch (error: any) {
-        const fields = ['username', 'data_limit', 'expire', 'note', 'data_limit_reset_strategy', 'on_hold_expire_duration', 'on_hold_timeout', 'group_ids']
-        handleError({ error, fields, form, contextKey: 'users' })
-      } finally {
-        setLoading(false)
-      }
-    },
-    [editingUser, editingUserId, form, handleTemplateMutation, onOpenChange, selectedTemplateId, status, t, touchedFields],
+          // Regular create/edit flow
+          if (!validateAllFields(values, touchedFields)) {
+            return
+          }
+
+          // Convert data to the right format before validation
+          const preparedValues = {
+            ...values,
+            data_limit: typeof values.data_limit === 'string' ? parseFloat(values.data_limit) : values.data_limit,
+            on_hold_expire_duration: values.on_hold_expire_duration
+                ? typeof values.on_hold_expire_duration === 'string'
+                    ? parseInt(values.on_hold_expire_duration, 10)
+                    : values.on_hold_expire_duration
+                : undefined,
+            expire: status === 'on_hold' ? undefined : normalizeExpire(values.expire),
+            group_ids: Array.isArray(values.group_ids) ? values.group_ids : [],
+            status: values.status,
+          }
+
+          // Remove next_plan.data_limit and next_plan.expire if next_plan.user_template_id is set
+          if (preparedValues.next_plan && preparedValues.next_plan.user_template_id) {
+            delete preparedValues.next_plan.data_limit
+            delete preparedValues.next_plan.expire
+          }
+
+          // Check if proxy settings are filled
+          const hasProxySettings = values.proxy_settings && Object.values(values.proxy_settings).some(settings => settings && Object.values(settings).some(value => value !== undefined && value !== ''))
+
+          setLoading(true)
+
+          // Clean proxy settings to ensure proper enum values
+          const cleanedProxySettings = hasProxySettings
+              ? {
+                ...values.proxy_settings,
+                vless: values.proxy_settings?.vless
+                    ? {
+                      ...values.proxy_settings.vless,
+                      flow: values.proxy_settings.vless.flow || undefined,
+                    }
+                    : undefined,
+                shadowsocks: values.proxy_settings?.shadowsocks
+                    ? {
+                      ...values.proxy_settings.shadowsocks,
+                      method: values.proxy_settings.shadowsocks.method || undefined,
+                    }
+                    : undefined,
+              }
+              : undefined
+
+          // Convert data_limit from GB to bytes
+          const sendValues = {
+            ...preparedValues,
+            data_limit: gbToBytes(preparedValues.data_limit as any),
+            expire: normalizeExpire(preparedValues.expire),
+            // Only include proxy_settings if they are filled
+            ...(hasProxySettings ? { proxy_settings: cleanedProxySettings } : {}),
+          }
+
+          // Remove proxy_settings from the payload if it's empty or undefined
+          if (!hasProxySettings) {
+            delete sendValues.proxy_settings
+          }
+
+          // Make API calls to the backend
+          if (editingUser && editingUserId) {
+            try {
+              await modifyUserMutation.mutateAsync({
+                username: sendValues.username,
+                data: sendValues,
+              })
+              toast.success(
+                  t('userDialog.userEdited', {
+                    username: values.username,
+                    defaultValue: 'User «{{name}}» has been updated successfully',
+                  }),
+              )
+            } catch (error) {
+              console.error('Modify user error:', error)
+              throw error
+            }
+          } else {
+            try {
+              const createData = {
+                ...sendValues,
+                status: (sendValues.status === 'active' ? 'active' : sendValues.status) as 'active' | 'on_hold',
+              }
+              await createUserMutation.mutateAsync({
+                data: createData,
+              })
+              toast.success(
+                  t('userDialog.userCreated', {
+                    username: values.username,
+                    defaultValue: 'User «{{name}}» has been created successfully',
+                  }),
+              )
+            } catch (error) {
+              console.error('Create user error:', error)
+              throw error
+            }
+          }
+
+          onOpenChange(false)
+          form.reset()
+          setTouchedFields({})
+        } catch (error: any) {
+          const fields = ['username', 'data_limit', 'expire', 'note', 'data_limit_reset_strategy', 'on_hold_expire_duration', 'on_hold_timeout', 'group_ids']
+          handleError({ error, fields, form, contextKey: 'users' })
+        } finally {
+          setLoading(false)
+        }
+      },
+      [editingUser, editingUserId, form, handleTemplateMutation, onOpenChange, selectedTemplateId, status, t, touchedFields],
   )
 
   function generateUsername() {
@@ -937,9 +940,9 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
 
     // Shuffle the password to make it more random
     return password
-      .split('')
-      .sort(() => Math.random() - 0.5)
-      .join('')
+        .split('')
+        .sort(() => Math.random() - 0.5)
+        .join('')
   }
 
   // Add this function after the generatePassword function
@@ -963,19 +966,19 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
 
   // Add this button component after the username generate button
   const GenerateProxySettingsButton = () => (
-    <Button
-      size="icon"
-      type="button"
-      variant="ghost"
-      onClick={() => {
-        const newSettings = generateProxySettings()
-        form.setValue('proxy_settings', newSettings)
-        handleFieldChange('proxy_settings', newSettings)
-      }}
-      title="Generate proxy settings"
-    >
-      <RefreshCcw className="h-3 w-3" />
-    </Button>
+      <Button
+          size="icon"
+          type="button"
+          variant="ghost"
+          onClick={() => {
+            const newSettings = generateProxySettings()
+            form.setValue('proxy_settings', newSettings)
+            handleFieldChange('proxy_settings', newSettings)
+          }}
+          title="Generate proxy settings"
+      >
+        <RefreshCcw className="h-3 w-3" />
+      </Button>
   )
 
   useEffect(() => {
@@ -998,13 +1001,13 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
       const currentValues = form.getValues()
       // For edit mode, only validate fields that have been changed
       const allFieldsTouched = editingUser
-        ? {}
-        : Object.keys(currentValues).reduce(
-            (acc, key) => {
-              acc[key] = true
-              return acc
-            },
-            {} as Record<string, boolean>,
+          ? {}
+          : Object.keys(currentValues).reduce(
+              (acc, key) => {
+                acc[key] = true
+                return acc
+              },
+              {} as Record<string, boolean>,
           )
       const isValid = validateAllFields(currentValues, allFieldsTouched)
       setIsFormValid(isValid)
@@ -1049,809 +1052,842 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
   }, [i18n.language])
 
   return (
-    <Dialog open={isDialogOpen} onOpenChange={handleModalOpenChange}>
-      <DialogContent className={`lg:min-w-[900px] ${editingUser ? 'h-full sm:h-auto' : 'h-auto'}`}>
-        <DialogHeader>
-          <DialogTitle className={`${dir === 'rtl' ? 'text-right' : ''}`}>
-            {editingUser ? t('userDialog.editUser', { defaultValue: 'Edit User' }) : t('createUser', { defaultValue: 'Create User' })}
-          </DialogTitle>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="-mr-4 max-h-[80dvh] overflow-y-auto px-2 pr-4 sm:max-h-[75dvh]">
-              <div className="flex w-full flex-col items-center justify-between gap-6 lg:flex-row lg:items-start lg:pb-8">
-                <div className="w-full flex-[2] space-y-6">
-                  <div className="flex w-full items-center justify-center gap-4">
-                    {/* Hide these fields if a template is selected */}
-                    {!selectedTemplateId && (
-                      <div className={'flex w-full gap-4'}>
-                        <FormField
-                          control={form.control}
-                          name="username"
-                          render={({ field }) => {
-                            const hasError = !!form.formState.errors.username
-                            return (
-                              <FormItem className="flex-1">
-                                <FormLabel>{t('username', { defaultValue: 'Username' })}</FormLabel>
-                                <FormControl>
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-full">
-                                      <Input
-                                        placeholder={t('admins.enterUsername', { defaultValue: 'Enter username' })}
-                                        {...field}
-                                        value={field.value ?? ''}
-                                        disabled={editingUser}
-                                        isError={hasError}
-                                        onChange={e => {
-                                          field.onChange(e)
-                                          handleFieldChange('username', e.target.value)
-                                        }}
-                                        onBlur={() => handleFieldBlur('username')}
-                                      />
-                                    </div>
-                                    {!editingUser && (
-                                      <Button
-                                        size="icon"
-                                        type="button"
-                                        variant="ghost"
-                                        onClick={e => {
-                                          e.preventDefault()
-                                          e.stopPropagation()
-                                          const newUsername = generateUsername()
-                                          field.onChange(newUsername)
-                                          handleFieldChange('username', newUsername)
-                                        }}
-                                        title="Generate username"
-                                      >
-                                        <RefreshCcw className="h-3 w-3" />
-                                      </Button>
-                                    )}
-                                  </div>
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )
-                          }}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="status"
-                          render={({ field }) => (
-                            <FormItem className="w-1/3">
-                              <FormLabel>{t('status', { defaultValue: 'Status' })}</FormLabel>
-                              <FormControl>
-                                <Select
-                                  onValueChange={value => {
-                                    field.onChange(value)
-                                    handleFieldChange('status', value)
-                                    handleFieldBlur('status')
-                                  }}
-                                  value={field.value || ''}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder={t('userDialog.selectStatus', { defaultValue: 'Select status' })} />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="active">{t('status.active', { defaultValue: 'Active' })}</SelectItem>
-                                    {editingUser && <SelectItem value="disabled">{t('status.disabled', { defaultValue: 'Disabled' })}</SelectItem>}
-                                    <SelectItem value="on_hold">{t('status.on_hold', { defaultValue: 'On Hold' })}</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    )}
-                    {/* If template is selected, only show username field */}
-                    {selectedTemplateId && (
-                      <FormField
-                        control={form.control}
-                        name="username"
-                        render={({ field }) => {
-                          const hasError = !!form.formState.errors.username
-                          return (
-                            <FormItem className="w-full flex-1">
-                              <FormLabel>{t('username', { defaultValue: 'Username' })}</FormLabel>
-                              <FormControl>
-                                <div className="flex w-full flex-row items-center justify-between gap-4">
-                                  <div className="w-full">
-                                    <Input
-                                      placeholder={t('admins.enterUsername', { defaultValue: 'Enter username' })}
-                                      {...field}
-                                      value={field.value ?? ''}
-                                      disabled={editingUser}
-                                      isError={hasError}
-                                      onChange={e => {
-                                        field.onChange(e)
-                                        handleFieldChange('username', e.target.value)
-                                      }}
-                                      onBlur={() => handleFieldBlur('username')}
-                                    />
-                                  </div>
-                                  {!editingUser && (
-                                    <Button
-                                      size="icon"
-                                      type="button"
-                                      variant="ghost"
-                                      onClick={e => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                        const newUsername = generateUsername()
-                                        field.onChange(newUsername)
-                                        handleFieldChange('username', newUsername)
-                                      }}
-                                      title="Generate username"
-                                    >
-                                      <RefreshCcw className="h-3 w-3" />
-                                    </Button>
-                                  )}
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )
-                        }}
-                      />
-                    )}
-                  </div>
-                  {/* Data limit and expire fields - show data_limit only when no template is selected */}
-                  <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-start">
-                    {!selectedTemplateId && (
-                      <>
-                        <FormField
-                          control={form.control}
-                          name="data_limit"
-                          render={({ field }) => (
-                            <FormItem className="flex-1">
-                              <FormLabel>{t('userDialog.dataLimit', { defaultValue: 'Data Limit (GB)' })}</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  step="any"
-                                  min="0"
-                                  placeholder={t('userDialog.dataLimit', { defaultValue: 'e.g. 1' })}
-                                  {...field}
-                                  value={field.value ? field.value : '' }
-                                  onChange={e => {
-                                    const value = e.target.value === '' ? 0 : parseFloat(e.target.value)
-                                    if (!isNaN(value) && value >= 0) {
-                                      field.onChange(value)
-                                      handleFieldChange('data_limit', value)
-                                    }
-                                  }}
-                                  onBlur={() => {
-                                    handleFieldChange('data_limit', field.value || 0)
-                                  }}
-                                />
-                              </FormControl>
-                              {field.value !== null && field.value !== undefined && field.value > 0 && field.value < 1 && (
-                                <p className="mt-1 text-xs text-muted-foreground">{formatBytes(Math.round(field.value * 1024 * 1024 * 1024))}</p>
-                              )}
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        {form.watch('data_limit') !== undefined && form.watch('data_limit') !== null && Number(form.watch('data_limit')) > 0 && (
-                          <FormField
-                            control={form.control}
-                            name="data_limit_reset_strategy"
-                            render={({ field }) => (
-                              <FormItem className="flex-1">
-                                <FormLabel>{t('userDialog.periodicUsageReset', { defaultValue: 'Periodic Usage Reset' })}</FormLabel>
-                                <Select
-                                  onValueChange={value => {
-                                    field.onChange(value)
-                                    handleFieldChange('data_limit_reset_strategy', value)
-                                  }}
-                                  value={field.value || ''}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder={t('userDialog.resetStrategyNo', { defaultValue: 'No' })} />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="no_reset">{t('userDialog.resetStrategyNo', { defaultValue: 'No' })}</SelectItem>
-                                    <SelectItem value="day">{t('userDialog.resetStrategyDaily', { defaultValue: 'Daily' })}</SelectItem>
-                                    <SelectItem value="week">{t('userDialog.resetStrategyWeekly', { defaultValue: 'Weekly' })}</SelectItem>
-                                    <SelectItem value="month">{t('userDialog.resetStrategyMonthly', { defaultValue: 'Monthly' })}</SelectItem>
-                                    <SelectItem value="year">{t('userDialog.resetStrategyAnnually', { defaultValue: 'Annually' })}</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        )}
-                      </>
-                    )}
-                    <div className="flex items-start gap-4 lg:w-52">
-                      {status === 'on_hold' ? (
-                        <FormField
-                          control={form.control}
-                          name="on_hold_expire_duration"
-                          render={({ field }) => {
-                            const hasError = !!form.formState.errors.on_hold_expire_duration
-                            return (
-                              <FormItem className="flex-1">
-                                <FormLabel>{t('userDialog.onHoldExpireDuration', { defaultValue: 'On Hold Expire Duration (days)' })}</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type="number"
-                                    min="1"
-                                    isError={hasError}
-                                    placeholder={t('userDialog.onHoldExpireDurationPlaceholder', { defaultValue: 'e.g. 7' })}
-                                    {...field}
-                                    value={field.value ?Math.round(field.value / (24 * 60 * 60)): '' }
-                                    onChange={e => {
-                                      const value = e.target.value === '' ? 1 : parseInt(e.target.value, 10)
-                                      field.onChange(value ? value * (24 * 60 * 60) : 1)
-                                      handleFieldChange('on_hold_expire_duration', value)
-                                    }}
-                                    onBlur={() => handleFieldBlur('on_hold_expire_duration')}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )
-                          }}
-                        />
-                      ) : (
-                        <FormField
-                          control={form.control}
-                          name="expire"
-                          render={({ field }) => (
-                            <ExpiryDateField
-                              field={field}
-                              displayDate={displayDate}
-                              usePersianCalendar={usePersianCalendar}
-                              calendarOpen={expireCalendarOpen}
-                              setCalendarOpen={setExpireCalendarOpen}
-                              handleFieldChange={handleFieldChange}
-                              label={t('userDialog.expiryDate', { defaultValue: 'Expire date' })}
+      <Dialog open={isDialogOpen} onOpenChange={handleModalOpenChange}>
+        <DialogContent className={`lg:min-w-[900px] ${editingUser ? 'h-full sm:h-auto' : 'h-auto'}`}>
+          <DialogHeader>
+            <DialogTitle className={`${dir === 'rtl' ? 'text-right' : ''}`}>
+              {editingUser ? t('userDialog.editUser', { defaultValue: 'Edit User' }) : t('createUser', { defaultValue: 'Create User' })}
+            </DialogTitle>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div className="-mr-4 max-h-[80dvh] overflow-y-auto px-2 pr-4 sm:max-h-[75dvh]">
+                <div className="flex w-full flex-col items-center justify-between gap-6 lg:flex-row lg:items-start lg:pb-8">
+                  <div className="w-full flex-[2] space-y-6">
+                    <div className="flex w-full items-center justify-center gap-4">
+                      {/* Hide these fields if a template is selected */}
+                      {!selectedTemplateId && (
+                          <div className={'flex w-full gap-4'}>
+                            <FormField
+                                control={form.control}
+                                name="username"
+                                render={({ field }) => {
+                                  const hasError = !!form.formState.errors.username
+                                  return (
+                                      <FormItem className="flex-1">
+                                        <FormLabel>{t('username', { defaultValue: 'Username' })}</FormLabel>
+                                        <FormControl>
+                                          <div className="flex items-center gap-2">
+                                            <div className="w-full">
+                                              <Input
+                                                  placeholder={t('admins.enterUsername', { defaultValue: 'Enter username' })}
+                                                  {...field}
+                                                  value={field.value ?? ''}
+                                                  disabled={editingUser}
+                                                  isError={hasError}
+                                                  onChange={e => {
+                                                    field.onChange(e)
+                                                    handleFieldChange('username', e.target.value)
+                                                  }}
+                                                  onBlur={() => handleFieldBlur('username')}
+                                              />
+                                            </div>
+                                            {!editingUser && (
+                                                <Button
+                                                    size="icon"
+                                                    type="button"
+                                                    variant="ghost"
+                                                    onClick={e => {
+                                                      e.preventDefault()
+                                                      e.stopPropagation()
+                                                      const newUsername = generateUsername()
+                                                      field.onChange(newUsername)
+                                                      handleFieldChange('username', newUsername)
+                                                    }}
+                                                    title="Generate username"
+                                                >
+                                                  <RefreshCcw className="h-3 w-3" />
+                                                </Button>
+                                            )}
+                                          </div>
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                  )
+                                }}
                             />
-                          )}
-                        />
+                            <FormField
+                                control={form.control}
+                                name="status"
+                                render={({ field }) => (
+                                    <FormItem className="w-1/3">
+                                      <FormLabel>{t('status', { defaultValue: 'Status' })}</FormLabel>
+                                      <FormControl>
+                                        <Select
+                                            onValueChange={value => {
+                                              field.onChange(value)
+                                              handleFieldChange('status', value)
+                                              handleFieldBlur('status')
+                                            }}
+                                            value={field.value || ''}
+                                        >
+                                          <SelectTrigger>
+                                            <SelectValue placeholder={t('userDialog.selectStatus', { defaultValue: 'Select status' })} />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="active">{t('status.active', { defaultValue: 'Active' })}</SelectItem>
+                                            {editingUser && <SelectItem value="disabled">{t('status.disabled', { defaultValue: 'Disabled' })}</SelectItem>}
+                                            <SelectItem value="on_hold">{t('status.on_hold', { defaultValue: 'On Hold' })}</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                          </div>
+                      )}
+                      {/* If template is selected, only show username field */}
+                      {selectedTemplateId && (
+                          <FormField
+                              control={form.control}
+                              name="username"
+                              render={({ field }) => {
+                                const hasError = !!form.formState.errors.username
+                                return (
+                                    <FormItem className="w-full flex-1">
+                                      <FormLabel>{t('username', { defaultValue: 'Username' })}</FormLabel>
+                                      <FormControl>
+                                        <div className="flex w-full flex-row items-center justify-between gap-4">
+                                          <div className="w-full">
+                                            <Input
+                                                placeholder={t('admins.enterUsername', { defaultValue: 'Enter username' })}
+                                                {...field}
+                                                value={field.value ?? ''}
+                                                disabled={editingUser}
+                                                isError={hasError}
+                                                onChange={e => {
+                                                  field.onChange(e)
+                                                  handleFieldChange('username', e.target.value)
+                                                }}
+                                                onBlur={() => handleFieldBlur('username')}
+                                            />
+                                          </div>
+                                          {!editingUser && (
+                                              <Button
+                                                  size="icon"
+                                                  type="button"
+                                                  variant="ghost"
+                                                  onClick={e => {
+                                                    e.preventDefault()
+                                                    e.stopPropagation()
+                                                    const newUsername = generateUsername()
+                                                    field.onChange(newUsername)
+                                                    handleFieldChange('username', newUsername)
+                                                  }}
+                                                  title="Generate username"
+                                              >
+                                                <RefreshCcw className="h-3 w-3" />
+                                              </Button>
+                                          )}
+                                        </div>
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                )
+                              }}
+                          />
                       )}
                     </div>
-                  </div>
-                  {status === 'on_hold' && (
-                    <FormField
-                      control={form.control}
-                      name="on_hold_timeout"
-                      render={({ field }) => (
-                        <ExpiryDateField
-                          field={field}
-                          displayDate={onHoldDisplayDate}
-                          usePersianCalendar={usePersianCalendar}
-                          calendarOpen={onHoldCalendarOpen}
-                          setCalendarOpen={setOnHoldCalendarOpen}
-                          handleFieldChange={handleFieldChange}
-                          label={t('userDialog.timeOutDate', { defaultValue: 'Expire date' })}
-                        />
+                    {/* Data limit and expire fields - show data_limit only when no template is selected */}
+                    <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-start">
+                      {!selectedTemplateId && (
+                          <>
+                            <FormField
+                                control={form.control}
+                                name="data_limit"
+                                render={({ field }) => (
+                                    <FormItem className="flex-1">
+                                      <FormLabel>{t('userDialog.dataLimit', { defaultValue: 'Data Limit (GB)' })}</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                            type="number"
+                                            step="any"
+                                            min="0"
+                                            placeholder={t('userDialog.dataLimit', { defaultValue: 'e.g. 1' })}
+                                            {...field}
+                                            value={field.value ? field.value : '' }
+                                            onChange={e => {
+                                              const value = e.target.value === '' ? 0 : parseFloat(e.target.value)
+                                              if (!isNaN(value) && value >= 0) {
+                                                field.onChange(value)
+                                                handleFieldChange('data_limit', value)
+                                              }
+                                            }}
+                                            onBlur={() => {
+                                              handleFieldChange('data_limit', field.value || 0)
+                                            }}
+                                        />
+                                      </FormControl>
+                                      {field.value !== null && field.value !== undefined && field.value > 0 && field.value < 1 && (
+                                          <p className="mt-1 text-xs text-muted-foreground">{formatBytes(Math.round(field.value * 1024 * 1024 * 1024))}</p>
+                                      )}
+                                      <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            {form.watch('data_limit') !== undefined && form.watch('data_limit') !== null && Number(form.watch('data_limit')) > 0 && (
+                                <FormField
+                                    control={form.control}
+                                    name="data_limit_reset_strategy"
+                                    render={({ field }) => (
+                                        <FormItem className="flex-1">
+                                          <FormLabel>{t('userDialog.periodicUsageReset', { defaultValue: 'Periodic Usage Reset' })}</FormLabel>
+                                          <Select
+                                              onValueChange={value => {
+                                                field.onChange(value)
+                                                handleFieldChange('data_limit_reset_strategy', value)
+                                              }}
+                                              value={field.value || ''}
+                                          >
+                                            <FormControl>
+                                              <SelectTrigger>
+                                                <SelectValue placeholder={t('userDialog.resetStrategyNo', { defaultValue: 'No' })} />
+                                              </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                              <SelectItem value="no_reset">{t('userDialog.resetStrategyNo', { defaultValue: 'No' })}</SelectItem>
+                                              <SelectItem value="day">{t('userDialog.resetStrategyDaily', { defaultValue: 'Daily' })}</SelectItem>
+                                              <SelectItem value="week">{t('userDialog.resetStrategyWeekly', { defaultValue: 'Weekly' })}</SelectItem>
+                                              <SelectItem value="month">{t('userDialog.resetStrategyMonthly', { defaultValue: 'Monthly' })}</SelectItem>
+                                              <SelectItem value="year">{t('userDialog.resetStrategyAnnually', { defaultValue: 'Annually' })}</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                          <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
+                          </>
                       )}
-                    />
-                  )}
-                  <FormField
-                    control={form.control}
-                    name="note"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('userDialog.note', { defaultValue: 'Note' })}</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder={t('userDialog.note', { defaultValue: 'Optional note' }) + '...'}
-                            {...field}
-                            rows={3}
-                            onChange={e => {
-                              field.onChange(e)
-                              handleFieldChange('note', e.target.value)
-                            }}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      <div className="flex items-start gap-4 lg:w-52">
+                        {status === 'on_hold' ? (
+                            <FormField
+                                control={form.control}
+                                name="on_hold_expire_duration"
+                                render={({ field }) => {
+                                  const hasError = !!form.formState.errors.on_hold_expire_duration
+                                  const fieldValue = field.value ? Math.round(field.value / (24 * 60 * 60)): ''
+                                  const isZeroOrEmpty = fieldValue === 0 || fieldValue === ''
+                                  const isTouched = touchedFields['on_hold_expire_duration']
 
-                  {/* Subscription Information - only show when editing and data exists */}
-                  {editingUser && editingUserData && (editingUserData.sub_updated_at || editingUserData.sub_last_user_agent) && (
-                    <SubscriptionInfo subUpdatedAt={editingUserData.sub_updated_at} subLastUserAgent={editingUserData.sub_last_user_agent} />
-                  )}
-                  {/* Proxy Settings Accordion */}
-                  <Accordion type="single" collapsible className="my-4 w-full">
-                    <AccordionItem className="rounded-sm border px-4 [&_[data-state=closed]]:no-underline [&_[data-state=open]]:no-underline" value="proxySettings">
-                      <AccordionTrigger>
-                        <div className="flex items-center gap-2">
-                          <Lock className="h-4 w-4" />
-                          <span>{t('userDialog.proxySettingsAccordion')}</span>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="px-2">
-                        <div className="mb-2 flex items-center justify-between">
-                          <div className="text-xs text-muted-foreground">{t('userDialog.proxySettings.desc')}</div>
-                          <GenerateProxySettingsButton />
-                        </div>
-                        {/* VMess */}
-                        <FormField
-                          control={form.control}
-                          name="proxy_settings.vmess.id"
-                          render={({ field, formState }) => {
-                            const error = formState.errors.proxy_settings?.vmess?.id
-                            return (
-                              <FormItem className="mb-2">
-                                <FormLabel>
-                                  {t('userDialog.proxySettings.vmess')} {t('userDialog.proxySettings.id')}
-                                </FormLabel>
-                                <FormControl>
-                                  <div dir="ltr" className="flex items-center gap-2">
-                                    <Input
-                                      {...field}
-                                      placeholder={t('userDialog.proxySettings.id')}
-                                      onChange={e => {
-                                        field.onChange(e)
-                                        form.trigger('proxy_settings.vmess.id')
-                                        handleFieldChange('proxy_settings.vmess.id', e.target.value)
-                                      }}
+                                  return (
+                                      <FormItem className="flex-1">
+                                        <FormLabel>{t('userDialog.onHoldExpireDuration', { defaultValue: 'On Hold Expire Duration (days)' })}</FormLabel>
+                                        <FormControl>
+                                          <Input
+                                              type="number"
+                                              min="1"
+                                              isError={hasError || (isTouched && isZeroOrEmpty)}
+                                              placeholder={t('userDialog.onHoldExpireDurationPlaceholder', { defaultValue: 'e.g. 7' })}
+                                              {...field}
+                                              value={fieldValue ? fieldValue : ''}
+                                              onChange={e => {
+                                                // Allow empty string for deletion
+                                                if (e.target.value === '') {
+                                                  field.onChange(0)
+                                                  handleFieldChange('on_hold_expire_duration', 0)
+                                                  // Mark field as touched to prevent auto-default
+                                                  setTouchedFields(prev => ({ ...prev, on_hold_expire_duration: true }))
+                                                } else {
+                                                  const value = parseInt(e.target.value, 10)
+                                                  if (!isNaN(value) && value >= 0) {
+                                                    field.onChange(value ? value * (24 * 60 * 60) : 0)
+                                                    handleFieldChange('on_hold_expire_duration', value)
+                                                    // Mark field as touched
+                                                    setTouchedFields(prev => ({ ...prev, on_hold_expire_duration: true }))
+                                                  }
+                                                }
+                                              }}
+                                              onBlur={() => {
+                                                handleFieldBlur('on_hold_expire_duration')
+                                                // Set validation error if value is 0 or empty
+                                                if (fieldValue === 0 || fieldValue === '') {
+                                                  form.setError('on_hold_expire_duration', {
+                                                    type: 'manual',
+                                                    message: t('validation.required', { field: t('userDialog.onHoldExpireDuration', { defaultValue: 'On Hold Expire Duration' }) }),
+                                                  })
+                                                } else {
+                                                  // Clear error if value is valid
+                                                  form.clearErrors('on_hold_expire_duration')
+                                                }
+                                              }}
+                                          />
+                                        </FormControl>
+                                        <FormMessage />
+                                        {isTouched && isZeroOrEmpty && !hasError && (
+                                            <p className="text-sm text-destructive">
+                                              {t('validation.required', { field: t('userDialog.onHoldExpireDuration', { defaultValue: 'On Hold Expire Duration' }) })}
+                                            </p>
+                                        )}
+                                      </FormItem>
+                                  )
+                                }}
+                            />
+                        ) : (
+                            <FormField
+                                control={form.control}
+                                name="expire"
+                                render={({ field }) => (
+                                    <ExpiryDateField
+                                        field={field}
+                                        displayDate={displayDate}
+                                        usePersianCalendar={usePersianCalendar}
+                                        calendarOpen={expireCalendarOpen}
+                                        setCalendarOpen={setExpireCalendarOpen}
+                                        handleFieldChange={handleFieldChange}
+                                        label={t('userDialog.expiryDate', { defaultValue: 'Expire date' })}
                                     />
-                                    <Select value={uuidVersions.vmess} onValueChange={val => setUuidVersions(v => ({ ...v, vmess: val }))}>
-                                      <SelectTrigger className="w-[60px]">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="v4">v4</SelectItem>
-                                        <SelectItem value="v5">v5</SelectItem>
-                                        <SelectItem value="v7">v7</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                    <Button
-                                      size="icon"
-                                      type="button"
-                                      variant="ghost"
-                                      onClick={e => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                        const newVal = generateUUID(uuidVersions.vmess, field.value)
-                                        field.onChange(newVal)
-                                        form.trigger('proxy_settings.vmess.id')
-                                        handleFieldChange('proxy_settings.vmess.id', newVal)
-                                      }}
-                                      title="Generate UUID"
-                                    >
-                                      <RefreshCcw className="h-3 w-3" />
-                                    </Button>
-                                  </div>
-                                </FormControl>
-                                <FormMessage>{error?.message === 'Invalid uuid' && t('validation.invalidUuid', { defaultValue: 'Invalid UUID format' })}</FormMessage>
-                              </FormItem>
-                            )
-                          }}
-                        />
-                        {/* VLESS */}
-                        <FormField
-                          control={form.control}
-                          name="proxy_settings.vless.id"
-                          render={({ field, formState }) => {
-                            const error = formState.errors.proxy_settings?.vless?.id
-                            return (
-                              <FormItem className="mb-2">
-                                <FormLabel>
-                                  {t('userDialog.proxySettings.vless')} {t('userDialog.proxySettings.id')}
-                                </FormLabel>
-                                <FormControl>
-                                  <div dir="ltr" className="flex items-center gap-2">
-                                    <Input
-                                      {...field}
-                                      placeholder={t('userDialog.proxySettings.id')}
-                                      onChange={e => {
-                                        field.onChange(e)
-                                        form.trigger('proxy_settings.vless.id')
-                                        handleFieldChange('proxy_settings.vless.id', e.target.value)
-                                      }}
-                                    />
-                                    <Select value={uuidVersions.vless} onValueChange={val => setUuidVersions(v => ({ ...v, vless: val }))}>
-                                      <SelectTrigger className="w-[60px]">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="v4">v4</SelectItem>
-                                        <SelectItem value="v5">v5</SelectItem>
-                                        <SelectItem value="v7">v7</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                    <Button
-                                      size="icon"
-                                      type="button"
-                                      variant="ghost"
-                                      onClick={e => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                        const newVal = generateUUID(uuidVersions.vless, field.value)
-                                        field.onChange(newVal)
-                                        form.trigger('proxy_settings.vless.id')
-                                        handleFieldChange('proxy_settings.vless.id', newVal)
-                                      }}
-                                      title="Generate UUID"
-                                    >
-                                      <RefreshCcw className="h-3 w-3" />
-                                    </Button>
-                                  </div>
-                                </FormControl>
-                                <FormMessage>{error?.message === 'Invalid uuid' && t('validation.invalidUuid', { defaultValue: 'Invalid UUID format' })}</FormMessage>
-                              </FormItem>
-                            )
-                          }}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="proxy_settings.vless.flow"
-                          render={({ field }) => (
-                            <FormItem className="mb-2">
-                              <FormLabel>
-                                {t('userDialog.proxySettings.vless')} {t('userDialog.proxySettings.flow')}
-                              </FormLabel>
-                              <FormControl>
-                                <Select
-                                  value={field.value ?? 'none'}
-                                  onValueChange={val => {
-                                    const flowValue = val === 'none' ? '' : val
-                                    field.onChange(flowValue)
-                                    handleFieldChange('proxy_settings.vless.flow', flowValue)
-                                  }}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder={t('userDialog.proxySettings.flow')} />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="none">{t('userDialog.proxySettings.flow.none', { defaultValue: 'None' })}</SelectItem>
-                                    <SelectItem value="xtls-rprx-vision">xtls-rprx-vision</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        {/* Trojan */}
-                        <FormField
-                          control={form.control}
-                          name="proxy_settings.trojan.password"
-                          render={({ field }) => (
-                            <FormItem className="mb-2">
-                              <FormLabel>
-                                {t('userDialog.proxySettings.trojan')} {t('userDialog.proxySettings.password')}
-                              </FormLabel>
-                              <FormControl>
-                                <div dir="ltr" className="flex items-center gap-2">
-                                  <Input
-                                    {...field}
-                                    placeholder={t('userDialog.proxySettings.password')}
-                                    onChange={e => {
-                                      field.onChange(e)
-                                      form.trigger('proxy_settings.trojan.password')
-                                      handleFieldChange('proxy_settings.trojan.password', e.target.value)
-                                    }}
-                                  />
-                                  <Button
-                                    size="icon"
-                                    type="button"
-                                    variant="ghost"
-                                    onClick={e => {
-                                      e.preventDefault()
-                                      e.stopPropagation()
-                                      const newVal = generatePassword()
-                                      field.onChange(newVal)
-                                      form.trigger('proxy_settings.trojan.password')
-                                      handleFieldChange('proxy_settings.trojan.password', newVal)
-                                    }}
-                                    title="Generate password"
-                                  >
-                                    <RefreshCcw className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        {/* Shadowsocks */}
-                        <FormField
-                          control={form.control}
-                          name="proxy_settings.shadowsocks.password"
-                          render={({ field }) => (
-                            <FormItem className="mb-2 w-full">
-                              <FormLabel>
-                                {t('userDialog.proxySettings.shadowsocks')} {t('userDialog.proxySettings.password')}
-                              </FormLabel>
-                              <FormControl>
-                                <div dir="ltr" className="flex items-center gap-2">
-                                  <Input
-                                    {...field}
-                                    placeholder={t('userDialog.proxySettings.password')}
-                                    onChange={e => {
-                                      field.onChange(e)
-                                      form.trigger('proxy_settings.shadowsocks.password')
-                                      handleFieldChange('proxy_settings.shadowsocks.password', e.target.value)
-                                    }}
-                                  />
-                                  <Button
-                                    size="icon"
-                                    type="button"
-                                    variant="ghost"
-                                    onClick={e => {
-                                      e.preventDefault()
-                                      e.stopPropagation()
-                                      const newVal = generatePassword()
-                                      field.onChange(newVal)
-                                      form.trigger('proxy_settings.shadowsocks.password')
-                                      handleFieldChange('proxy_settings.shadowsocks.password', newVal)
-                                    }}
-                                    title="Generate password"
-                                  >
-                                    <RefreshCcw className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="proxy_settings.shadowsocks.method"
-                          render={({ field }) => (
-                            <FormItem className="mb-2">
-                              <FormLabel>
-                                {t('userDialog.proxySettings.shadowsocks')} {t('userDialog.proxySettings.method')}
-                              </FormLabel>
-                              <FormControl>
-                                <Select
-                                  value={field.value ?? ''}
-                                  onValueChange={val => {
-                                    const methodValue = val || undefined
-                                    field.onChange(methodValue)
-                                    handleFieldChange('proxy_settings.shadowsocks.method', methodValue)
-                                  }}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder={t('userDialog.proxySettings.method')} />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="aes-128-gcm">aes-128-gcm</SelectItem>
-                                    <SelectItem value="aes-256-gcm">aes-256-gcm</SelectItem>
-                                    <SelectItem value="chacha20-ietf-poly1305">chacha20-ietf-poly1305</SelectItem>
-                                    <SelectItem value="xchacha20-poly1305">xchacha20-poly1305</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                  {/* Next Plan Section (toggleable) */}
-                  {editingUser && (
-                    <div className="rounded-[--radius] border border-border p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <ListStart className="h-4 w-4" />
-                          <div>{t('userDialog.nextPlanTitle', { defaultValue: 'Next Plan' })}</div>
-                        </div>
-                        <Switch checked={nextPlanEnabled} onCheckedChange={setNextPlanEnabled} />
+                                )}
+                            />
+                        )}
                       </div>
-                      {nextPlanEnabled && (
-                        <div className="flex flex-col gap-4 py-4">
-                          <FormField
+                    </div>
+                    {status === 'on_hold' && (
+                        <FormField
                             control={form.control}
-                            name="next_plan.user_template_id"
+                            name="on_hold_timeout"
                             render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>{t('userDialog.nextPlanTemplateId', { defaultValue: 'Template' })}</FormLabel>
-                                <FormControl>
-                                  <Select
-                                    value={field.value ? String(field.value) : 'none'}
-                                    onValueChange={val => {
-                                      if (val === 'none' || (field.value && String(field.value) === val)) {
-                                        field.onChange(undefined)
-                                      } else {
-                                        field.onChange(Number(val))
-                                      }
+                                <ExpiryDateField
+                                    field={field}
+                                    displayDate={onHoldDisplayDate}
+                                    usePersianCalendar={usePersianCalendar}
+                                    calendarOpen={onHoldCalendarOpen}
+                                    setCalendarOpen={setOnHoldCalendarOpen}
+                                    handleFieldChange={handleFieldChange}
+                                    label={t('userDialog.timeOutDate', { defaultValue: 'Expire date' })}
+                                />
+                            )}
+                        />
+                    )}
+                    <FormField
+                        control={form.control}
+                        name="note"
+                        render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t('userDialog.note', { defaultValue: 'Note' })}</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                    placeholder={t('userDialog.note', { defaultValue: 'Optional note' }) + '...'}
+                                    {...field}
+                                    rows={3}
+                                    onChange={e => {
+                                      field.onChange(e)
+                                      handleFieldChange('note', e.target.value)
                                     }}
-                                  >
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    {/* Subscription Information - only show when editing and data exists */}
+                    {editingUser && editingUserData && (editingUserData.sub_updated_at || editingUserData.sub_last_user_agent) && (
+                        <SubscriptionInfo subUpdatedAt={editingUserData.sub_updated_at} subLastUserAgent={editingUserData.sub_last_user_agent} />
+                    )}
+                    {/* Proxy Settings Accordion */}
+                    <Accordion type="single" collapsible className="my-4 w-full">
+                      <AccordionItem className="rounded-sm border px-4 [&_[data-state=closed]]:no-underline [&_[data-state=open]]:no-underline" value="proxySettings">
+                        <AccordionTrigger>
+                          <div className="flex items-center gap-2">
+                            <Lock className="h-4 w-4" />
+                            <span>{t('userDialog.proxySettingsAccordion')}</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-2">
+                          <div className="mb-2 flex items-center justify-between">
+                            <div className="text-xs text-muted-foreground">{t('userDialog.proxySettings.desc')}</div>
+                            <GenerateProxySettingsButton />
+                          </div>
+                          {/* VMess */}
+                          <FormField
+                              control={form.control}
+                              name="proxy_settings.vmess.id"
+                              render={({ field, formState }) => {
+                                const error = formState.errors.proxy_settings?.vmess?.id
+                                return (
+                                    <FormItem className="mb-2">
+                                      <FormLabel>
+                                        {t('userDialog.proxySettings.vmess')} {t('userDialog.proxySettings.id')}
+                                      </FormLabel>
+                                      <FormControl>
+                                        <div dir="ltr" className="flex items-center gap-2">
+                                          <Input
+                                              {...field}
+                                              placeholder={t('userDialog.proxySettings.id')}
+                                              onChange={e => {
+                                                field.onChange(e)
+                                                form.trigger('proxy_settings.vmess.id')
+                                                handleFieldChange('proxy_settings.vmess.id', e.target.value)
+                                              }}
+                                          />
+                                          <Select value={uuidVersions.vmess} onValueChange={val => setUuidVersions(v => ({ ...v, vmess: val }))}>
+                                            <SelectTrigger className="w-[60px]">
+                                              <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="v4">v4</SelectItem>
+                                              <SelectItem value="v5">v5</SelectItem>
+                                              <SelectItem value="v7">v7</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                          <Button
+                                              size="icon"
+                                              type="button"
+                                              variant="ghost"
+                                              onClick={e => {
+                                                e.preventDefault()
+                                                e.stopPropagation()
+                                                const newVal = generateUUID(uuidVersions.vmess, field.value)
+                                                field.onChange(newVal)
+                                                form.trigger('proxy_settings.vmess.id')
+                                                handleFieldChange('proxy_settings.vmess.id', newVal)
+                                              }}
+                                              title="Generate UUID"
+                                          >
+                                            <RefreshCcw className="h-3 w-3" />
+                                          </Button>
+                                        </div>
+                                      </FormControl>
+                                      <FormMessage>{error?.message === 'Invalid uuid' && t('validation.invalidUuid', { defaultValue: 'Invalid UUID format' })}</FormMessage>
+                                    </FormItem>
+                                )
+                              }}
+                          />
+                          {/* VLESS */}
+                          <FormField
+                              control={form.control}
+                              name="proxy_settings.vless.id"
+                              render={({ field, formState }) => {
+                                const error = formState.errors.proxy_settings?.vless?.id
+                                return (
+                                    <FormItem className="mb-2">
+                                      <FormLabel>
+                                        {t('userDialog.proxySettings.vless')} {t('userDialog.proxySettings.id')}
+                                      </FormLabel>
+                                      <FormControl>
+                                        <div dir="ltr" className="flex items-center gap-2">
+                                          <Input
+                                              {...field}
+                                              placeholder={t('userDialog.proxySettings.id')}
+                                              onChange={e => {
+                                                field.onChange(e)
+                                                form.trigger('proxy_settings.vless.id')
+                                                handleFieldChange('proxy_settings.vless.id', e.target.value)
+                                              }}
+                                          />
+                                          <Select value={uuidVersions.vless} onValueChange={val => setUuidVersions(v => ({ ...v, vless: val }))}>
+                                            <SelectTrigger className="w-[60px]">
+                                              <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="v4">v4</SelectItem>
+                                              <SelectItem value="v5">v5</SelectItem>
+                                              <SelectItem value="v7">v7</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                          <Button
+                                              size="icon"
+                                              type="button"
+                                              variant="ghost"
+                                              onClick={e => {
+                                                e.preventDefault()
+                                                e.stopPropagation()
+                                                const newVal = generateUUID(uuidVersions.vless, field.value)
+                                                field.onChange(newVal)
+                                                form.trigger('proxy_settings.vless.id')
+                                                handleFieldChange('proxy_settings.vless.id', newVal)
+                                              }}
+                                              title="Generate UUID"
+                                          >
+                                            <RefreshCcw className="h-3 w-3" />
+                                          </Button>
+                                        </div>
+                                      </FormControl>
+                                      <FormMessage>{error?.message === 'Invalid uuid' && t('validation.invalidUuid', { defaultValue: 'Invalid UUID format' })}</FormMessage>
+                                    </FormItem>
+                                )
+                              }}
+                          />
+                          <FormField
+                              control={form.control}
+                              name="proxy_settings.vless.flow"
+                              render={({ field }) => (
+                                  <FormItem className="mb-2">
+                                    <FormLabel>
+                                      {t('userDialog.proxySettings.vless')} {t('userDialog.proxySettings.flow')}
+                                    </FormLabel>
+                                    <FormControl>
+                                      <Select
+                                          value={field.value ?? 'none'}
+                                          onValueChange={val => {
+                                            const flowValue = val === 'none' ? '' : val
+                                            field.onChange(flowValue)
+                                            handleFieldChange('proxy_settings.vless.flow', flowValue)
+                                          }}
+                                      >
+                                        <SelectTrigger>
+                                          <SelectValue placeholder={t('userDialog.proxySettings.flow')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="none">{t('userDialog.proxySettings.flow.none', { defaultValue: 'None' })}</SelectItem>
+                                          <SelectItem value="xtls-rprx-vision">xtls-rprx-vision</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                              )}
+                          />
+                          {/* Trojan */}
+                          <FormField
+                              control={form.control}
+                              name="proxy_settings.trojan.password"
+                              render={({ field }) => (
+                                  <FormItem className="mb-2">
+                                    <FormLabel>
+                                      {t('userDialog.proxySettings.trojan')} {t('userDialog.proxySettings.password')}
+                                    </FormLabel>
+                                    <FormControl>
+                                      <div dir="ltr" className="flex items-center gap-2">
+                                        <Input
+                                            {...field}
+                                            placeholder={t('userDialog.proxySettings.password')}
+                                            onChange={e => {
+                                              field.onChange(e)
+                                              form.trigger('proxy_settings.trojan.password')
+                                              handleFieldChange('proxy_settings.trojan.password', e.target.value)
+                                            }}
+                                        />
+                                        <Button
+                                            size="icon"
+                                            type="button"
+                                            variant="ghost"
+                                            onClick={e => {
+                                              e.preventDefault()
+                                              e.stopPropagation()
+                                              const newVal = generatePassword()
+                                              field.onChange(newVal)
+                                              form.trigger('proxy_settings.trojan.password')
+                                              handleFieldChange('proxy_settings.trojan.password', newVal)
+                                            }}
+                                            title="Generate password"
+                                        >
+                                          <RefreshCcw className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                              )}
+                          />
+                          {/* Shadowsocks */}
+                          <FormField
+                              control={form.control}
+                              name="proxy_settings.shadowsocks.password"
+                              render={({ field }) => (
+                                  <FormItem className="mb-2 w-full">
+                                    <FormLabel>
+                                      {t('userDialog.proxySettings.shadowsocks')} {t('userDialog.proxySettings.password')}
+                                    </FormLabel>
+                                    <FormControl>
+                                      <div dir="ltr" className="flex items-center gap-2">
+                                        <Input
+                                            {...field}
+                                            placeholder={t('userDialog.proxySettings.password')}
+                                            onChange={e => {
+                                              field.onChange(e)
+                                              form.trigger('proxy_settings.shadowsocks.password')
+                                              handleFieldChange('proxy_settings.shadowsocks.password', e.target.value)
+                                            }}
+                                        />
+                                        <Button
+                                            size="icon"
+                                            type="button"
+                                            variant="ghost"
+                                            onClick={e => {
+                                              e.preventDefault()
+                                              e.stopPropagation()
+                                              const newVal = generatePassword()
+                                              field.onChange(newVal)
+                                              form.trigger('proxy_settings.shadowsocks.password')
+                                              handleFieldChange('proxy_settings.shadowsocks.password', newVal)
+                                            }}
+                                            title="Generate password"
+                                        >
+                                          <RefreshCcw className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                              )}
+                          />
+                          <FormField
+                              control={form.control}
+                              name="proxy_settings.shadowsocks.method"
+                              render={({ field }) => (
+                                  <FormItem className="mb-2">
+                                    <FormLabel>
+                                      {t('userDialog.proxySettings.shadowsocks')} {t('userDialog.proxySettings.method')}
+                                    </FormLabel>
+                                    <FormControl>
+                                      <Select
+                                          value={field.value ?? ''}
+                                          onValueChange={val => {
+                                            const methodValue = val || undefined
+                                            field.onChange(methodValue)
+                                            handleFieldChange('proxy_settings.shadowsocks.method', methodValue)
+                                          }}
+                                      >
+                                        <SelectTrigger>
+                                          <SelectValue placeholder={t('userDialog.proxySettings.method')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="aes-128-gcm">aes-128-gcm</SelectItem>
+                                          <SelectItem value="aes-256-gcm">aes-256-gcm</SelectItem>
+                                          <SelectItem value="chacha20-ietf-poly1305">chacha20-ietf-poly1305</SelectItem>
+                                          <SelectItem value="xchacha20-poly1305">xchacha20-poly1305</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                              )}
+                          />
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                    {/* Next Plan Section (toggleable) */}
+                    {editingUser && (
+                        <div className="rounded-[--radius] border border-border p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <ListStart className="h-4 w-4" />
+                              <div>{t('userDialog.nextPlanTitle', { defaultValue: 'Next Plan' })}</div>
+                            </div>
+                            <Switch checked={nextPlanEnabled} onCheckedChange={setNextPlanEnabled} />
+                          </div>
+                          {nextPlanEnabled && (
+                              <div className="flex flex-col gap-4 py-4">
+                                <FormField
+                                    control={form.control}
+                                    name="next_plan.user_template_id"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>{t('userDialog.nextPlanTemplateId', { defaultValue: 'Template' })}</FormLabel>
+                                          <FormControl>
+                                            <Select
+                                                value={field.value ? String(field.value) : 'none'}
+                                                onValueChange={val => {
+                                                  if (val === 'none' || (field.value && String(field.value) === val)) {
+                                                    field.onChange(undefined)
+                                                  } else {
+                                                    field.onChange(Number(val))
+                                                  }
+                                                }}
+                                            >
+                                              <SelectTrigger>
+                                                <SelectValue placeholder={t('userDialog.selectTemplatePlaceholder', { defaultValue: 'Choose a template' })} />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                <SelectItem value="none">---</SelectItem>
+                                                {(templatesData || []).map((tpl: any) => (
+                                                    <SelectItem key={tpl.id} value={String(tpl.id)}>
+                                                      {tpl.name}
+                                                    </SelectItem>
+                                                ))}
+                                              </SelectContent>
+                                            </Select>
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                {/* Only show expire and data_limit if no template is selected */}
+                                {!nextPlanTemplateSelected && (
+                                    <div className="flex gap-4">
+                                      <FormField
+                                          control={form.control}
+                                          name="next_plan.expire"
+                                          render={({ field }) => (
+                                              <FormItem>
+                                                <FormLabel>{t('userDialog.nextPlanExpire', { defaultValue: 'Expire' })}</FormLabel>
+                                                <FormControl>
+                                                  <Input
+                                                      type="number"
+                                                      min="0"
+                                                      step="any"
+                                                      {...field}
+                                                      value={field.value ? dateUtils.secondsToDays(field.value) || '' : ''}
+                                                      onChange={e => {
+                                                        const days = e.target.value ? Number(e.target.value) : 0
+                                                        const seconds = dateUtils.daysToSeconds(days)
+                                                        field.onChange(seconds)
+                                                      }}
+                                                  />
+                                                </FormControl>
+                                                <span className="text-xs text-muted-foreground">{t('userDialog.days', { defaultValue: 'Days' })}</span>
+                                                <FormMessage />
+                                              </FormItem>
+                                          )}
+                                      />
+                                      <FormField
+                                          control={form.control}
+                                          name="next_plan.data_limit"
+                                          render={({ field }) => (
+                                              <FormItem>
+                                                <FormLabel>{t('userDialog.nextPlanDataLimit', { defaultValue: 'Data Limit' })}</FormLabel>
+                                                <FormControl>
+                                                  <Input
+                                                      type="number"
+                                                      min="0"
+                                                      step="any"
+                                                      {...field}
+                                                      onChange={e => {
+                                                        const value = e.target.value ? Number(e.target.value) : 0
+                                                        // Convert GB to bytes (1 GB = 1024 * 1024 * 1024 bytes)
+                                                        field.onChange(value ? value * 1024 * 1024 * 1024 : 0)
+                                                      }}
+                                                      value={field.value ? Math.round(field.value / (1024 * 1024 * 1024)) : ''}
+                                                  />
+                                                </FormControl>
+                                                <span className="text-xs text-muted-foreground">GB</span>
+                                                <FormMessage />
+                                              </FormItem>
+                                          )}
+                                      />
+                                    </div>
+                                )}
+                                <div className="flex gap-8">
+                                  <FormField
+                                      control={form.control}
+                                      name="next_plan.add_remaining_traffic"
+                                      render={({ field }) => (
+                                          <FormItem className="flex flex-row items-center justify-between w-full">
+                                            <FormLabel>{t('userDialog.nextPlanAddRemainingTraffic', { defaultValue: 'Add Remaining Traffic' })}</FormLabel>
+                                            <Switch checked={!!field.value} onCheckedChange={field.onChange} />
+                                            <FormMessage />
+                                          </FormItem>
+                                      )}
+                                  />
+                                </div>
+                              </div>
+                          )}
+                        </div>
+                    )}
+                  </div>
+                  <div className="h-full w-full flex-1 space-y-6">
+                    <div className="w-full">
+                      <div className="flex items-center border-b">
+                        {tabs.map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                                className={`relative flex-1 px-3 py-2 text-sm font-medium transition-colors ${
+                                    activeTab === tab.id ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                                type="button"
+                            >
+                              <div className="flex items-center justify-center gap-1.5">
+                                <tab.icon className="h-4 w-4" />
+                                <span>{t(tab.label)}</span>
+                              </div>
+                            </button>
+                        ))}
+                      </div>
+                      <div className="py-2">
+                        {activeTab === 'templates' &&
+                            (templatesLoading ? (
+                                <div>{t('Loading...', { defaultValue: 'Loading...' })}</div>
+                            ) : (
+                                <div className="space-y-4 pt-4">
+                                  <FormLabel>{t('userDialog.selectTemplate', { defaultValue: 'Select Template' })}</FormLabel>
+                                  <Select value={selectedTemplateId ? String(selectedTemplateId) : 'none'} onValueChange={handleTemplateSelect}>
                                     <SelectTrigger>
                                       <SelectValue placeholder={t('userDialog.selectTemplatePlaceholder', { defaultValue: 'Choose a template' })} />
                                     </SelectTrigger>
                                     <SelectContent>
                                       <SelectItem value="none">---</SelectItem>
-                                      {(templatesData || []).map((tpl: any) => (
-                                        <SelectItem key={tpl.id} value={String(tpl.id)}>
-                                          {tpl.name}
-                                        </SelectItem>
+                                      {(templatesData || []).map((template: any) => (
+                                          <SelectItem key={template.id} value={String(template.id)}>
+                                            {template.name}
+                                          </SelectItem>
                                       ))}
                                     </SelectContent>
                                   </Select>
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          {/* Only show expire and data_limit if no template is selected */}
-                          {!nextPlanTemplateSelected && (
-                            <div className="flex gap-4">
-                              <FormField
-                                control={form.control}
-                                name="next_plan.expire"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>{t('userDialog.nextPlanExpire', { defaultValue: 'Expire' })}</FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        type="number"
-                                        min="0"
-                                        step="any"
-                                        {...field}
-                                        value={field.value ? dateUtils.secondsToDays(field.value) || '' : ''}
-                                        onChange={e => {
-                                          const days = e.target.value ? Number(e.target.value) : 0
-                                          const seconds = dateUtils.daysToSeconds(days)
-                                          field.onChange(seconds)
-                                        }}
-                                      />
-                                    </FormControl>
-                                    <span className="text-xs text-muted-foreground">{t('userDialog.days', { defaultValue: 'Days' })}</span>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={form.control}
-                                name="next_plan.data_limit"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>{t('userDialog.nextPlanDataLimit', { defaultValue: 'Data Limit' })}</FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        type="number"
-                                        min="0"
-                                        step="any"
-                                        {...field}
-                                        onChange={e => {
-                                          const value = e.target.value ? Number(e.target.value) : 0
-                                          // Convert GB to bytes (1 GB = 1024 * 1024 * 1024 bytes)
-                                          field.onChange(value ? value * 1024 * 1024 * 1024 : 0)
-                                        }}
-                                        value={field.value ? Math.round(field.value / (1024 * 1024 * 1024)) : ''}
-                                      />
-                                    </FormControl>
-                                    <span className="text-xs text-muted-foreground">GB</span>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-                          )}
-                          <div className="flex gap-8">
+                                  {selectedTemplateId && (
+                                      <div className="text-sm text-muted-foreground">
+                                        {t('userDialog.selectedTemplates', {
+                                          count: 1,
+                                          defaultValue: '1 template selected',
+                                        })}
+                                      </div>
+                                  )}
+                                </div>
+                            ))}
+                        {activeTab === 'groups' && (
                             <FormField
-                              control={form.control}
-                              name="next_plan.add_remaining_traffic"
-                              render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between w-full">
-                                  <FormLabel>{t('userDialog.nextPlanAddRemainingTraffic', { defaultValue: 'Add Remaining Traffic' })}</FormLabel>
-                                  <Switch checked={!!field.value} onCheckedChange={field.onChange} />
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <div className="h-full w-full flex-1 space-y-6">
-                  <div className="w-full">
-                    <div className="flex items-center border-b">
-                      {tabs.map(tab => (
-                        <button
-                          key={tab.id}
-                          onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                          className={`relative flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                            activeTab === tab.id ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground hover:text-foreground'
-                          }`}
-                          type="button"
-                        >
-                          <div className="flex items-center justify-center gap-1.5">
-                            <tab.icon className="h-4 w-4" />
-                            <span>{t(tab.label)}</span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                    <div className="py-2">
-                      {activeTab === 'templates' &&
-                        (templatesLoading ? (
-                          <div>{t('Loading...', { defaultValue: 'Loading...' })}</div>
-                        ) : (
-                          <div className="space-y-4 pt-4">
-                            <FormLabel>{t('userDialog.selectTemplate', { defaultValue: 'Select Template' })}</FormLabel>
-                            <Select value={selectedTemplateId ? String(selectedTemplateId) : 'none'} onValueChange={handleTemplateSelect}>
-                              <SelectTrigger>
-                                <SelectValue placeholder={t('userDialog.selectTemplatePlaceholder', { defaultValue: 'Choose a template' })} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="none">---</SelectItem>
-                                {(templatesData || []).map((template: any) => (
-                                  <SelectItem key={template.id} value={String(template.id)}>
-                                    {template.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            {selectedTemplateId && (
-                              <div className="text-sm text-muted-foreground">
-                                {t('userDialog.selectedTemplates', {
-                                  count: 1,
-                                  defaultValue: '1 template selected',
-                                })}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      {activeTab === 'groups' && (
-                        <FormField
-                          control={form.control}
-                          name="group_ids"
-                          render={({ field }) => (
-                            <GroupsSelector
-                              control={form.control}
-                              name="group_ids"
-                              onGroupsChange={groups => {
-                                field.onChange(groups)
-                                handleFieldChange('group_ids', groups)
+                                control={form.control}
+                                name="group_ids"
+                                render={({ field }) => (
+                                    <GroupsSelector
+                                        control={form.control}
+                                        name="group_ids"
+                                        onGroupsChange={groups => {
+                                          field.onChange(groups)
+                                          handleFieldChange('group_ids', groups)
 
-                                // Clear template selection when groups are selected
-                                if (groups.length > 0 && selectedTemplateId) {
-                                  setSelectedTemplateId(null)
-                                  clearTemplate()
-                                }
+                                          // Clear template selection when groups are selected
+                                          if (groups.length > 0 && selectedTemplateId) {
+                                            setSelectedTemplateId(null)
+                                            clearTemplate()
+                                          }
 
-                                // Trigger validation after group selection changes
-                                const isValid = validateAllFields({ ...form.getValues(), group_ids: groups }, touchedFields)
-                                setIsFormValid(isValid)
-                              }}
+                                          // Trigger validation after group selection changes
+                                          const isValid = validateAllFields({ ...form.getValues(), group_ids: groups }, touchedFields)
+                                          setIsFormValid(isValid)
+                                        }}
+                                    />
+                                )}
                             />
-                          )}
-                        />
-                      )}
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            {/* Cancel/Create buttons - always visible */}
-            <div className="mt-4 flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={e => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  onOpenChange(false)
-                }}
-              >
-                {t('cancel', { defaultValue: 'Cancel' })}
-              </Button>
-              <LoaderButton type="submit" isLoading={loading} disabled={!isFormValid && !selectedTemplateId} loadingText={editingUser ? t('modifying') : t('creating')}>
-                {editingUser ? t('modify', { defaultValue: 'Modify' }) : t('create', { defaultValue: 'Create' })}
-              </LoaderButton>
-            </div>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+              {/* Cancel/Create buttons - always visible */}
+              <div className="mt-4 flex justify-end gap-2">
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={e => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      onOpenChange(false)
+                    }}
+                >
+                  {t('cancel', { defaultValue: 'Cancel' })}
+                </Button>
+                <LoaderButton type="submit" isLoading={loading} disabled={!isFormValid && !selectedTemplateId} loadingText={editingUser ? t('modifying') : t('creating')}>
+                  {editingUser ? t('modify', { defaultValue: 'Modify' }) : t('create', { defaultValue: 'Create' })}
+                </LoaderButton>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
   )
 }
