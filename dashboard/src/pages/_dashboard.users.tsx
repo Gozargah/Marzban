@@ -3,14 +3,15 @@ import { Separator } from '@/components/ui/separator'
 import UsersTable from '@/components/users/users-table'
 import UsersStatistics from '@/components/UsersStatistics'
 import { Plus } from 'lucide-react'
-import PageTransition from '@/components/PageTransition'
 
 import UserModal from '@/components/dialogs/UserModal'
-import { useForm } from 'react-hook-form'
-import { useState } from 'react'
-import { z } from 'zod'
+import { DEFAULT_SHADOWSOCKS_METHOD } from '@/constants/Proxies'
+import { getGetSettingsQueryKey, getGetSettingsQueryOptions, SettingsSchemaOutput } from '@/service/api'
+import { queryClient } from '@/utils/query-client'
 import { useQueryClient } from '@tanstack/react-query'
-import { cn } from '@/lib/utils'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 
 // --- Zod Schemas matching backend ---
 export const userStatusEnum = z.enum(['active', 'disabled', 'limited', 'expired', 'on_hold'])
@@ -111,37 +112,42 @@ export type UseEditFormValues = z.infer<typeof userEditSchema>
 
 export type UseFormValues = z.infer<typeof userCreateSchema>
 
-export const UserFormDefaultValues: UseFormValues = {
-  username: '',
-  status: 'active',
-  data_limit: 0,
-  expire: '',
-  note: '',
-  group_ids: [],
-  proxy_settings: {
-    vmess: {
-      id: undefined,
+export const getDefaultUserForm = async () => {
+  let settings = queryClient.getQueryData<SettingsSchemaOutput>(getGetSettingsQueryKey())
+  if (!settings) {
+    settings = await queryClient.fetchQuery(getGetSettingsQueryOptions())
+  }
+  return {
+    username: '',
+    status: 'active',
+    data_limit: 0,
+    expire: '',
+    note: '',
+    group_ids: [],
+    proxy_settings: {
+      vmess: {
+        id: undefined,
+      },
+      vless: {
+        id: undefined,
+        flow: settings?.general?.default_flow || '',
+      },
+      trojan: {
+        password: undefined,
+      },
+      shadowsocks: {
+        password: undefined,
+        method: settings?.general?.default_method || DEFAULT_SHADOWSOCKS_METHOD,
+      },
     },
-    vless: {
-      id: undefined,
-      flow: '',
-    },
-    trojan: {
-      password: undefined,
-    },
-    shadowsocks: {
-      password: undefined,
-      method: 'chacha20-ietf-poly1305',
-    },
-  },
+  } satisfies UseFormValues
 }
 
 const Users = () => {
   const [isUserModalOpen, setUserModalOpen] = useState(false)
   const queryClient = useQueryClient()
-
   const userForm = useForm<UseFormValues | UseEditFormValues>({
-    defaultValues: UserFormDefaultValues,
+    defaultValues: getDefaultUserForm,
   })
 
   // Configure global refetch for all user data

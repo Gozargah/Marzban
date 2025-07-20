@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { DEFAULT_SHADOWSOCKS_METHOD } from '@/constants/Proxies'
 import { ShadowsocksMethods, XTLSFlows } from '@/service/api'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { XIcon } from 'lucide-react'
@@ -34,7 +35,7 @@ export default function General() {
   useEffect(() => {
     form.reset({
       default_flow: settings?.general?.default_flow || '',
-      default_method: settings?.general?.default_method || '',
+      default_method: settings?.general?.default_method || DEFAULT_SHADOWSOCKS_METHOD,
     })
   }, [settings])
 
@@ -45,7 +46,7 @@ export default function General() {
         general: {
           ...data,
           default_flow: data.default_flow || undefined,
-          default_method: data.default_method || null,
+          default_method: data.default_method || DEFAULT_SHADOWSOCKS_METHOD,
         },
       }
 
@@ -59,7 +60,7 @@ export default function General() {
     if (settings?.general) {
       form.reset({
         default_flow: '',
-        default_method: '',
+        default_method: DEFAULT_SHADOWSOCKS_METHOD,
       })
       toast.success(t('settings.general.cancelSuccess'))
     }
@@ -169,18 +170,13 @@ export default function General() {
                 control={form.control}
                 name="default_method"
                 render={({ field }) => (
-                  <FormItem className="relative space-y-2">
+                  <FormItem className="space-y-2">
                     <FormLabel className="flex items-center gap-2 text-sm font-medium">{t('settings.general.defaultMethod.title')}</FormLabel>
                     <FormControl>
                       <Select value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
-                        {field.value && (
-                          <Button size="icon" variant="ghost" className="absolute right-8 top-6" onClick={clearField('default_method')}>
-                            <XIcon />
-                          </Button>
-                        )}
                         <SelectContent>
                           {Object.values(ShadowsocksMethods)
                             .filter(Boolean)
