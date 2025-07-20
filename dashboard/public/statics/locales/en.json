@@ -92,6 +92,22 @@
   "manageSettings": "Manage and control settings",
   "settings": {
     "title": "Settings",
+    "general": {
+      "title": "General Settings",
+      "description": "Configure basic settings for your system",
+      "loadError": "Failed to load general settings. Please try again.",
+      "saveSuccess": "General settings saved successfully",
+      "saveFailed": "Failed to save general settings",
+      "cancelSuccess": "Changes cancelled and original settings restored",
+      "defaultFlow": {
+        "title": "Default VLESS Flow",
+        "description": "Autofill the flow field for new VLESS users"
+      },
+      "defaultMethod": {
+        "title": "Default Shadowsocks Method",
+        "description": "Autofill the encryption method for new Shadowsocks users"
+      }
+    },
     "notifications": {
       "title": "Notifications",
       "description": "Configure notification settings and manage alert preferences for your system",

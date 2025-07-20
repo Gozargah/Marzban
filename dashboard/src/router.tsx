@@ -1,10 +1,16 @@
+import { useAdmin } from '@/hooks/use-admin'
 import CoreSettings from '@/pages/_dashboard.nodes.cores'
 import ThemePage from '@/pages/_dashboard.settings.theme'
 import { getCurrentAdmin } from '@/service/api'
-import { createHashRouter, RouteObject } from 'react-router'
+import { createHashRouter, Navigate, RouteObject } from 'react-router'
 import DashboardLayout from './pages/_dashboard'
 import Dashboard from './pages/_dashboard._index'
 import AdminsPage from './pages/_dashboard.admins'
+import BulkPage from './pages/_dashboard.bulk'
+import BulkDataPage from './pages/_dashboard.bulk.data'
+import BulkExpirePage from './pages/_dashboard.bulk.expire'
+import BulkGroupsPage from './pages/_dashboard.bulk.groups'
+import BulkProxyPage from './pages/_dashboard.bulk.proxy'
 import Groups from './pages/_dashboard.groups'
 import Hosts from './pages/_dashboard.hosts'
 import Nodes from './pages/_dashboard.nodes'
@@ -13,6 +19,7 @@ import NodeLogs from './pages/_dashboard.nodes.logs'
 import Settings from './pages/_dashboard.settings'
 import CleanupSettings from './pages/_dashboard.settings.cleanup'
 import DiscordSettings from './pages/_dashboard.settings.discord'
+import GeneralSettings from './pages/_dashboard.settings.general'
 import NotificationSettings from './pages/_dashboard.settings.notifications'
 import SubscriptionSettings from './pages/_dashboard.settings.subscriptions'
 import TelegramSettings from './pages/_dashboard.settings.telegram'
@@ -21,13 +28,6 @@ import Statistics from './pages/_dashboard.statistics'
 import UserTemplates from './pages/_dashboard.templates'
 import Users from './pages/_dashboard.users'
 import Login from './pages/login'
-import { useAdmin } from '@/hooks/use-admin'
-import { Navigate } from 'react-router'
-import BulkPage from './pages/_dashboard.bulk'
-import BulkGroupsPage from './pages/_dashboard.bulk.groups'
-import BulkProxyPage from './pages/_dashboard.bulk.proxy'
-import BulkExpirePage from './pages/_dashboard.bulk.expire'
-import BulkDataPage from './pages/_dashboard.bulk.data'
 
 // Component to handle default settings routing based on user permissions
 function SettingsIndex() {
@@ -35,7 +35,7 @@ function SettingsIndex() {
   const is_sudo = admin?.is_sudo || false
 
   // For sudo admins, default to notifications; for non-sudo admins, default to theme
-  const defaultPath = is_sudo ? '/settings/notifications' : '/settings/theme'
+  const defaultPath = is_sudo ? '/settings/general' : '/settings/theme'
 
   return <Navigate to={defaultPath} replace />
 }
@@ -110,6 +110,10 @@ export const router = createHashRouter([
             path: '/settings',
             index: true,
             element: <SettingsIndex />,
+          },
+          {
+            path: '/settings/general',
+            element: <GeneralSettings />,
           },
           {
             path: '/settings/notifications',
