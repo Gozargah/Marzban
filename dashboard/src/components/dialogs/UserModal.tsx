@@ -610,25 +610,28 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
   }
 
   // Helper to convert expire field to needed schema using the same logic as other components
-  function normalizeExpire(expire: Date | string | number | null | undefined): string | undefined {
-    if (expire === undefined || expire === null || expire === '') return undefined
+  function normalizeExpire(expire: Date | string | number | null | undefined): string | number {
+    if (expire === undefined || expire === null || expire === '' || expire === 0 || expire === '0') return 0;
 
-    // For Date objects, convert to ISO string with timezone
+    // For Date objects, convert to ISO string with timezone, but check for epoch
     if (expire instanceof Date) {
-      return getLocalISOTime(expire)
+      if (expire.getTime() === 0) return 0;
+      return getLocalISOTime(expire);
     }
 
     // For strings and numbers, use the same dateUtils logic as other components
     try {
-      const dayjsDate = dateUtils.toDayjs(expire)
+      const dayjsDate = dateUtils.toDayjs(expire);
       if (dayjsDate.isValid()) {
-        return getLocalISOTime(dayjsDate.toDate())
+        const jsDate = dayjsDate.toDate();
+        if (jsDate.getTime() === 0) return 0;
+        return getLocalISOTime(jsDate);
       }
     } catch (error) {
-      // If dayjs parsing fails, return undefined
+      // If dayjs parsing fails, return 0
     }
 
-    return undefined
+    return 0;
   }
 
   // Helper to clear group selection
