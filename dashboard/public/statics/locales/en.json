@@ -923,6 +923,17 @@
   "revokeUserSub.prompt": "Are you sure you want to revoke «{{username}}»'s subscription?",
   "revokeUserSub.success": "{{username}}'s subscription has revoked successfully.",
   "revokeUserSub.title": "Revoke User Subscription",
+  "subscriptionClients": {
+    "title": "Subscription Clients",
+    "viewAllClients": "View All Clients",
+    "total": "Total: {{count}} clients",
+    "showing": "Showing last {{count}} accesses",
+    "noClients": "No subscription clients found",
+    "noClientsDesc": "This user has not accessed their subscription yet",
+    "knownClient": "Known",
+    "unknown": "Unknown",
+    "error": "Failed to load subscription clients"
+  },
   "search": "Search",
   "status.active": "Active",
   "status.enable": "Enable",

@@ -700,6 +700,17 @@
   "revokeUserSub.prompt": "您确定要撤销用户 «{{username}}» 的订阅吗？",
   "revokeUserSub.success": "成功撤销用户 {{username}} 的订阅。",
   "revokeUserSub.title": "撤销用户订阅",
+  "subscriptionClients": {
+    "title": "订阅客户端",
+    "viewAllClients": "查看所有客户端",
+    "total": "总计：{{count}} 个客户端",
+    "showing": "显示最近 {{count}} 次访问",
+    "noClients": "未找到订阅客户端",
+    "noClientsDesc": "此用户尚未访问过其订阅",
+    "knownClient": "已知",
+    "unknown": "未知",
+    "error": "加载订阅客户端失败"
+  },
   "search": "搜索",
   "status.active": "活跃",
   "status.enable": "启用",
