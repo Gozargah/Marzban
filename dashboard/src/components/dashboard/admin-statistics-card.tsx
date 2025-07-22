@@ -16,8 +16,8 @@ const AdminStatisticsCard = ({
 }) => {
   if (!admin) return null
 
-  // Only send admin_username if this admin is different from current admin
-  const systemStatsParams = admin.username !== currentAdmin?.username 
+  // Only send admin_username if this admin is different from current admin and not 'Total'
+  const systemStatsParams = admin.username !== currentAdmin?.username && admin.username !== 'Total'
     ? { admin_username: admin.username }
     : undefined;
 
@@ -34,8 +34,8 @@ const AdminStatisticsCard = ({
   // Use admin-specific stats if available, otherwise fall back to global stats
   const statsToUse = adminSystemStats || systemStats
 
-  // For DataUsageChart: pass admin_username only if different from current admin
-  const shouldPassAdminUsername = admin.username !== currentAdmin?.username;
+  // For DataUsageChart: pass admin_username only if different from current admin and not 'Total'
+  const shouldPassAdminUsername = admin.username !== currentAdmin?.username && admin.username !== 'Total';
 
   if (showAdminInfo)
     return (

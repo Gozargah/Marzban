@@ -26,7 +26,7 @@ class StandardLinks(BaseSubscription):
             self.links.append(EXTERNAL_CONFIG)
         if reverse:
             self.links.reverse()
-        return self.links
+        return "\n".join((self.links))
 
     def add(self, remark: str, address: str, inbound: dict, settings: dict):
         net = inbound["network"]

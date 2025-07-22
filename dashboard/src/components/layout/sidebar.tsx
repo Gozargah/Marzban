@@ -11,16 +11,20 @@ import { useAdmin } from '@/hooks/use-admin'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { getSystemStats } from '@/service/api'
 import {
+  ArrowUpDown,
   Bell,
   BookOpen,
+  Calendar,
   Cpu,
   Database,
   FileText,
   GithubIcon,
+  Layers,
   LayoutDashboardIcon,
   LayoutTemplate,
   LifeBuoy,
   ListTodo,
+  Lock,
   MessageCircle,
   Palette,
   PieChart,
@@ -32,10 +36,6 @@ import {
   Users2,
   UsersIcon,
   Webhook,
-  Layers,
-  Lock,
-  Calendar,
-  ArrowUpDown,
 } from 'lucide-react'
 import * as React from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -186,11 +186,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   icon: Users2,
                 },
                 {
-                  title: 'bulk.proxySettings',
-                  url: '/bulk/proxy',
-                  icon: Lock,
-                },
-                {
                   title: 'bulk.expireDate',
                   url: '/bulk/expire',
                   icon: Calendar,
@@ -199,6 +194,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   title: 'bulk.dataLimit',
                   url: '/bulk/data',
                   icon: ArrowUpDown,
+                },
+                {
+                  title: 'bulk.proxySettings',
+                  url: '/bulk/proxy',
+                  icon: Lock,
                 },
               ],
             },

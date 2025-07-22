@@ -19,6 +19,7 @@ from app.db.crud.user import (
     create_user,
     get_all_users_usages,
     get_expired_users,
+    get_user_sub_update_list,
     get_user_usages,
     get_users,
     modify_user,
@@ -43,6 +44,7 @@ from app.models.user import (
     UserNotificationResponse,
     UserResponse,
     UsersResponse,
+    UserSubscriptionUpdateList,
 )
 from app.node import node_manager as node_manager
 from app.operation import BaseOperation, OperatorType
@@ -494,3 +496,9 @@ class UserOperation(BaseOperation):
         if self.operator_type in (OperatorType.API, OperatorType.WEB):
             return {"detail": f"operation has been successfuly done on {users_count} users"}
         return users_count
+
+    async def get_user_sub_update_list(
+        self, db: AsyncSession, username: str, admin: AdminDetails, offset: int = 0, limit: int = 10
+    ) -> UserSubscriptionUpdateList:
+        db_user = await self.get_validated_user(db, username, admin)
+        return await get_user_sub_update_list(db, user_id=db_user.id, offset=offset, limit=limit)

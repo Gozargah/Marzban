@@ -110,6 +110,21 @@ def test_user_subscriptions(access_token):
             assert response.status_code == status.HTTP_200_OK
 
 
+def test_user_sub_update_user_agent(access_token):
+    """Test that the user sub_update user_agent is accessible."""
+    users = test_users_get(access_token)
+    user = users[0]
+    url = f"{user['subscription_url']}"
+    user_agent = "v2rayNG/1.9.46 This is Marzban Test"
+    client.get(url, headers={"User-Agent": user_agent})
+    response = client.get(
+        f"/api/user/{user['username']}/sub_update",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["updates"][0]["user_agent"] == user_agent
+
+
 def test_user_get(access_token):
     """Test that the user get by id route is accessible."""
     response = client.get(

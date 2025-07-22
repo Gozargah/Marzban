@@ -8,7 +8,8 @@ from jdatetime import date as jd
 
 from app.core.hosts import hosts as hosts_storage
 from app.core.manager import core_manager
-from app.db.models import User, UserStatus
+from app.db.models import UserStatus
+from app.models.user import UsersResponseWithInbounds
 from app.settings import subscription_settings
 from app.utils.system import get_public_ip, get_public_ipv6, readable_size
 
@@ -18,7 +19,7 @@ from . import (
     OutlineConfiguration,
     SingBoxConfiguration,
     StandardLinks,
-    XrayConfig,
+    XrayConfiguration,
 )
 
 SERVER_IP = get_public_ip()
@@ -33,90 +34,28 @@ STATUS_EMOJIS = {
 }
 
 
-async def generate_standard_links(
-    proxies: dict, inbounds: list[str], extra_data: dict, reverse: bool, user_status: UserStatus
-) -> list:
-    format_variables = setup_format_variables(extra_data)
-    conf = StandardLinks()
-    return await process_inbounds_and_tags(
-        inbounds, proxies, format_variables, conf=conf, reverse=reverse, user_status=user_status
-    )
-
-
-async def generate_clash_subscription(
-    proxies: dict,
-    inbounds: list[str],
-    extra_data: dict,
-    reverse: bool,
-    is_meta: bool = False,
-    user_status: UserStatus = UserStatus.active,
+async def generate_subscription(
+    user: UsersResponseWithInbounds, config_format: str, as_base64: bool, reverse: bool = False
 ) -> str:
-    if is_meta is True:
-        conf = ClashMetaConfiguration()
-    else:
-        conf = ClashConfiguration()
-
-    format_variables = setup_format_variables(extra_data)
-    return await process_inbounds_and_tags(
-        inbounds, proxies, format_variables, conf=conf, reverse=reverse, user_status=user_status
-    )
-
-
-async def generate_singbox_subscription(
-    proxies: dict, inbounds: list[str], extra_data: dict, reverse: bool, user_status: UserStatus
-) -> str:
-    conf = SingBoxConfiguration()
-
-    format_variables = setup_format_variables(extra_data)
-    return await process_inbounds_and_tags(inbounds, proxies, format_variables, conf=conf, reverse=reverse)
-
-
-async def generate_outline_subscription(
-    proxies: dict, inbounds: list[str], extra_data: dict, reverse: bool, user_status: UserStatus
-) -> str:
-    conf = OutlineConfiguration()
-
-    format_variables = setup_format_variables(extra_data)
-    return await process_inbounds_and_tags(
-        inbounds, proxies, format_variables, conf=conf, reverse=reverse, user_status=user_status
-    )
-
-
-async def generate_xray_subscription(
-    proxies: dict, inbounds: list[str], extra_data: dict, reverse: bool, user_status: UserStatus
-) -> str:
-    conf = XrayConfig()
-
-    format_variables = setup_format_variables(extra_data)
-    return await process_inbounds_and_tags(
-        inbounds, proxies, format_variables, conf=conf, reverse=reverse, user_status=user_status
-    )
-
-
-async def generate_subscription(user: User, config_format: str, as_base64: bool, reverse: bool = False) -> str:
-    kwargs = {
-        "proxies": user.proxy_settings,
-        "user_status": user.status,
-        "inbounds": await user.inbounds(),
-        "extra_data": user.__dict__,
-        "reverse": reverse,
-    }
-    kwargs["extra_data"]["expire"] = user.expire
-
+    conf = None
     if config_format == "links":
-        config = "\n".join(await generate_standard_links(**kwargs))
+        conf = StandardLinks()
     elif config_format == "clash-meta":
-        config = await generate_clash_subscription(**kwargs, is_meta=True)
+        conf = ClashMetaConfiguration()
     elif config_format == "clash":
-        config = await generate_clash_subscription(**kwargs)
+        conf = ClashConfiguration()
     elif config_format == "sing-box":
-        config = await generate_singbox_subscription(**kwargs)
+        conf = SingBoxConfiguration()
     elif config_format == "outline":
-        config = await generate_outline_subscription(**kwargs)
+        conf = OutlineConfiguration()
     elif config_format == "xray":
-        config = await generate_xray_subscription(**kwargs)
+        conf = XrayConfiguration()
     else:
         raise ValueError(f'Unsupported format "{config_format}"')
+
+    format_variables = setup_format_variables(user)
+
+    config = await process_inbounds_and_tags(user, format_variables, conf, reverse)
 
     if as_base64:
         config = base64.b64encode(config.encode()).decode()
@@ -147,14 +86,14 @@ def format_time_left(seconds_left: int) -> str:
     return " ".join(result)
 
 
-def setup_format_variables(extra_data: dict) -> dict:
-    user_status = extra_data.get("status")
-    expire = extra_data.get("expire")
-    on_hold_expire_duration = extra_data.get("on_hold_expire_duration")
+def setup_format_variables(user: UsersResponseWithInbounds) -> dict:
+    user_status = user.status
+    expire = user.expire
+    on_hold_expire_duration = user.on_hold_expire_duration
     now = dt.now(timezone.utc)
 
     admin_username = ""
-    if admin_data := extra_data.get("admin"):
+    if admin_data := user.admin:
         admin_username = admin_data.username
 
     if user_status != UserStatus.on_hold:
@@ -188,10 +127,10 @@ def setup_format_variables(extra_data: dict) -> dict:
             expire_date = "∞"
             jalali_expire_date = "∞"
 
-    if extra_data.get("data_limit"):
-        data_limit = readable_size(extra_data["data_limit"])
-        data_left = extra_data["data_limit"] - extra_data["used_traffic"]
-        usage_Percentage = round((extra_data["used_traffic"] / extra_data["data_limit"]) * 100.0, 2)
+    if user.data_limit:
+        data_limit = readable_size(user.data_limit)
+        data_left = user.data_limit - user.used_traffic
+        usage_Percentage = round((user.used_traffic / user.data_limit) * 100.0, 2)
 
         if data_left < 0:
             data_left = 0
@@ -201,15 +140,15 @@ def setup_format_variables(extra_data: dict) -> dict:
         data_left = "∞"
         usage_Percentage = "∞"
 
-    status_emoji = STATUS_EMOJIS.get(extra_data.get("status")) or ""
+    status_emoji = STATUS_EMOJIS.get(user.status.value)
 
     format_variables = defaultdict(
         lambda: "<missing>",
         {
             "SERVER_IP": SERVER_IP,
             "SERVER_IPV6": SERVER_IPV6,
-            "USERNAME": extra_data.get("username", "{USERNAME}"),
-            "DATA_USAGE": readable_size(extra_data.get("used_traffic")),
+            "USERNAME": user.username,
+            "DATA_USAGE": readable_size(user.used_traffic),
             "DATA_LIMIT": data_limit,
             "DATA_LEFT": data_left,
             "DAYS_LEFT": days_left,
@@ -305,7 +244,7 @@ async def process_host(
         if ds_data and ds_data[0]:
             ds_data[0]["address"] = ds_data[2].format_map(format_variables)
             if isinstance(conf, StandardLinks):
-                xc = XrayConfig()
+                xc = XrayConfiguration()
                 host_inbound["downloadSettings"] = xc.download_config(ds_data[0], True)
             else:
                 host_inbound["downloadSettings"] = ds_data[0]
@@ -314,20 +253,19 @@ async def process_host(
 
 
 async def process_inbounds_and_tags(
-    inbounds: list[str],
-    proxies: dict,
+    user: UsersResponseWithInbounds,
     format_variables: dict,
     conf: StandardLinks
-    | XrayConfig
+    | XrayConfiguration
     | SingBoxConfiguration
     | ClashConfiguration
     | ClashMetaConfiguration
     | OutlineConfiguration,
     reverse=False,
-    user_status: UserStatus = UserStatus.active,
 ) -> list | str:
-    for host in await filter_hosts(hosts_storage.values(), user_status):
-        host_data = await process_host(host, format_variables, inbounds, proxies, conf)
+    proxy_settings = user.proxy_settings.dict()
+    for host in await filter_hosts(hosts_storage.values(), user.status):
+        host_data = await process_host(host, format_variables, user.inbounds, proxy_settings, conf)
         if not host_data:
             continue
         host_inbound, settings, address = host_data

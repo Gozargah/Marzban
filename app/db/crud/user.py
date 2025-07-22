@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta, timezone
 from enum import Enum
 from typing import List, Optional, Union
 
-from sqlalchemy import and_, delete, func, not_, or_, select, update
+from sqlalchemy import and_, delete, desc, func, not_, or_, select, update, case
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.functions import coalesce
@@ -19,11 +19,13 @@ from app.db.models import (
     User,
     UserDataLimitResetStrategy,
     UserStatus,
+    UserSubscriptionUpdate,
     UserUsageResetLogs,
 )
+from app.db.compiles_types import DateDiff
 from app.models.proxy import ProxyTable
 from app.models.stats import Period, UserUsageStat, UserUsageStatsList
-from app.models.user import UserCreate, UserModify
+from app.models.user import UserCreate, UserModify, UserSubscriptionUpdateList, UserSubscriptionUpdateSchema
 from config import USERS_AUTODELETE_DAYS
 
 from .general import _build_trunc_expression, build_json_proxy_settings_search_condition
@@ -206,8 +208,6 @@ async def get_active_to_expire_users(db: AsyncSession) -> list[User]:
     stmt = select(User).where(User.status == UserStatus.active).where(User.is_expired)
 
     users = list((await db.execute(stmt)).unique().scalars().all())
-    for user in users:
-        await load_user_attrs(user)
     return users
 
 
@@ -215,8 +215,6 @@ async def get_active_to_limited_users(db: AsyncSession) -> list[User]:
     stmt = select(User).where(User.status == UserStatus.active).where(User.is_limited)
 
     users = list((await db.execute(stmt)).unique().scalars().all())
-    for user in users:
-        await load_user_attrs(user)
     return users
 
 
@@ -224,8 +222,50 @@ async def get_on_hold_to_active_users(db: AsyncSession) -> list[User]:
     stmt = select(User).where(User.status == UserStatus.on_hold).where(User.become_online)
 
     users = list((await db.execute(stmt)).unique().scalars().all())
-    for user in users:
-        await load_user_attrs(user)
+    return users
+
+
+async def get_users_to_reset_data_usage(db: AsyncSession) -> list[User]:
+    """
+    Retrieves users whose data usage needs to be reset based on their reset strategy.
+    """
+    last_reset_subq = (
+        select(
+            UserUsageResetLogs.user_id,
+            func.max(UserUsageResetLogs.reset_at).label("last_reset_at"),
+        )
+        .group_by(UserUsageResetLogs.user_id)
+        .subquery()
+    )
+
+    last_reset_time = coalesce(last_reset_subq.c.last_reset_at, User.created_at)
+
+    reset_strategy_to_days = {
+        UserDataLimitResetStrategy.day: 1,
+        UserDataLimitResetStrategy.week: 7,
+        UserDataLimitResetStrategy.month: 30,
+        UserDataLimitResetStrategy.year: 365,
+    }
+
+    num_days_to_reset_case = case(
+        *(
+            (User.data_limit_reset_strategy == strategy, days)
+            for strategy, days in reset_strategy_to_days.items()
+        ),
+        else_=None,
+    )
+
+    stmt = (
+        select(User)
+        .outerjoin(last_reset_subq, User.id == last_reset_subq.c.user_id)
+        .where(
+            User.status.in_([UserStatus.active, UserStatus.limited]),
+            User.data_limit_reset_strategy != UserDataLimitResetStrategy.no_reset,
+            DateDiff(func.now(), last_reset_time) >= num_days_to_reset_case,
+        )
+    )
+
+    users = list((await db.execute(stmt)).unique().scalars().all())
     return users
 
 
@@ -531,6 +571,7 @@ async def modify_user(db: AsyncSession, db_user: User, modify: UserModify) -> Us
 async def _reset_user_traffic_and_log(db: AsyncSession, db_user: User):
     """Helper to reset user traffic and log the action."""
     await db_user.awaitable_attrs.node_usages
+    await db_user.awaitable_attrs.next_plan
     usage_log = UserUsageResetLogs(
         user_id=db_user.id,
         used_traffic_at_reset=db_user.used_traffic,
@@ -643,28 +684,45 @@ async def revoke_user_sub(db: AsyncSession, db_user: User) -> User:
     return db_user
 
 
-async def update_user_sub(db: AsyncSession, db_user: User, user_agent: str) -> User:
+async def user_sub_update(db: AsyncSession, user_id: User, user_agent: str) -> User:
     """
     Updates the user's subscription details.
 
     Args:
         db (AsyncSession): Database session.
-        db_user (User): The user object whose subscription is to be updated.
-        user_agent (str): The user agent string to update.
+        user_id (User): The user id whose subscription is to be updated.
+        user_agent (str): The user agent string.
 
-    Returns:
-        User: The updated user object.
     """
-    stmt = (
-        update(User)
-        .where(User.id == db_user.id)
-        .values(sub_updated_at=datetime.now(timezone.utc), sub_last_user_agent=user_agent)
-    )
-    await db.execute(stmt)
+    agent = UserSubscriptionUpdate(user_id=user_id, user_agent=user_agent)
+    db.add(agent)
     await db.commit()
-    await db.refresh(db_user)
-    await load_user_attrs(db_user)
-    return db_user
+
+
+async def get_user_sub_update_list(
+    db: AsyncSession, user_id: int, offset: int = 0, limit: int = 10
+) -> UserSubscriptionUpdateList:
+    stmt = (
+        select(UserSubscriptionUpdate)
+        .where(UserSubscriptionUpdate.user_id == user_id)
+        .order_by(desc(UserSubscriptionUpdate.created_at))
+    )
+
+    result = await db.execute(select(func.count()).select_from(stmt.subquery()))
+    count = result.scalar()
+
+    if offset:
+        stmt = stmt.offset(offset)
+    if limit:
+        stmt = stmt.limit(limit)
+
+    result = (await db.execute(stmt)).unique().scalars().all()
+    subscriptions = UserSubscriptionUpdateList(
+        updates=[UserSubscriptionUpdateSchema(created_at=row.created_at, user_agent=row.user_agent) for row in result],
+        count=count,
+    )
+
+    return subscriptions
 
 
 async def autodelete_expired_users(db: AsyncSession, include_limited_users: bool = False) -> List[User]:
@@ -793,7 +851,10 @@ async def update_users_status(db: AsyncSession, users: list[User], status: UserS
     """
     user_ids = [user.id for user in users]
     stmt = (
-        update(User).where(User.id.in_(user_ids)).values(status=status, last_status_change=datetime.now(timezone.utc))
+        update(User)
+        .where(User.id.in_(user_ids))
+        .values(status=status, last_status_change=datetime.now(timezone.utc))
+        .execution_options(synchronize_session=False)
     )
     await db.execute(stmt)
     await db.commit()
@@ -815,33 +876,10 @@ async def set_owner(db: AsyncSession, db_user: User, admin: Admin) -> User:
     Returns:
         User: The updated user object.
     """
-    stmt = update(User).where(User.id == db_user.id).values(admin_id=admin.id)
-    await db.execute(stmt)
-    await db.commit()
-    await db.refresh(db_user)
-    await load_user_attrs(db_user)
-    return db_user
-
-
-async def start_user_expire(db: AsyncSession, db_user: User) -> User:
-    """
-    Starts the expiration timer for a user.
-
-    Args:
-        db (AsyncSession): Database session.
-        db_user (User): The user object whose expiration timer is to be started.
-
-    Returns:
-        User: The updated user object.
-    """
-    expire_time = datetime.now(timezone.utc) + timedelta(seconds=db_user.on_hold_expire_duration)
     stmt = (
-        update(User)
-        .where(User.id == db_user.id)
-        .values(expire=expire_time, on_hold_expire_duration=None, on_hold_timeout=None, status=UserStatus.active)
+        update(User).where(User.id == db_user.id).values(admin_id=admin.id).execution_options(synchronize_session=False)
     )
     await db.execute(stmt)
-
     await db.commit()
     await db.refresh(db_user)
     await load_user_attrs(db_user)
@@ -871,6 +909,7 @@ async def start_users_expire(db: AsyncSession, users: list[User]) -> list[User]:
                 on_hold_timeout=None,
                 status=UserStatus.active,
             )
+            .execution_options(synchronize_session=False)
         )
         await db.execute(stmt)
 

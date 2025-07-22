@@ -1,15 +1,15 @@
 import PageHeader from '@/components/page-header'
 import PageTransition from '@/components/PageTransition'
-import { Users2, Lock, Calendar, ArrowUpDown } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
-import { useNavigate, useLocation, Outlet } from 'react-router'
+import { ArrowUpDown, Calendar, Lock, Users2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Outlet, useLocation, useNavigate } from 'react-router'
 
 const tabs = [
   { id: 'groups', label: 'bulk.groups', icon: Users2, url: '/bulk' },
-  { id: 'proxy', label: 'bulk.proxySettings', icon: Lock, url: '/bulk/proxy' },
   { id: 'expire', label: 'bulk.expireDate', icon: Calendar, url: '/bulk/expire' },
   { id: 'data', label: 'bulk.dataLimit', icon: ArrowUpDown, url: '/bulk/data' },
+  { id: 'proxy', label: 'bulk.proxySettings', icon: Lock, url: '/bulk/proxy' },
 ]
 
 const BulkPage = () => {
@@ -63,17 +63,17 @@ const BulkPage = () => {
   }
 
   return (
-    <div className="flex flex-col gap-0 w-full items-start">
+    <div className="flex w-full flex-col items-start gap-0">
       <PageTransition isContentTransition={true}>
         <PageHeader {...getPageHeaderProps()} />
       </PageTransition>
       <div className="w-full">
-        <div className="flex border-b px-4 overflow-x-auto scrollbar-hide">
+        <div className="scrollbar-hide flex overflow-x-auto border-b px-4">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => navigate(tab.url)}
-              className={`relative px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === tab.id ? 'text-foreground border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`relative flex-shrink-0 whitespace-nowrap px-3 py-2 text-sm font-medium transition-colors ${activeTab === tab.id ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
             >
               <div className="flex items-center gap-1.5">
                 <tab.icon className="h-4 w-4" />
@@ -92,4 +92,4 @@ const BulkPage = () => {
   )
 }
 
-export default BulkPage 
+export default BulkPage

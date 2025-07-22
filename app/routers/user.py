@@ -16,6 +16,7 @@ from app.models.user import (
     UserModify,
     UserResponse,
     UsersResponse,
+    UserSubscriptionUpdateList,
 )
 from app.operation import OperatorType
 from app.operation.node import NodeOperation
@@ -147,6 +148,24 @@ async def active_next_plan(
 async def get_user(username: str, db: AsyncSession = Depends(get_db), admin: AdminDetails = Depends(get_current)):
     """Get user information"""
     return await user_operator.get_user(db=db, username=username, admin=admin)
+
+
+@router.get(
+    "/{username}/sub_update",
+    response_model=UserSubscriptionUpdateList,
+    responses={403: responses._403, 404: responses._404},
+)
+async def get_user_sub_update_list(
+    username: str,
+    offset: int = 0,
+    limit: int = 10,
+    db: AsyncSession = Depends(get_db),
+    admin: AdminDetails = Depends(get_current),
+):
+    """Get user subscription agent list"""
+    return await user_operator.get_user_sub_update_list(
+        db, username=username, admin=admin, offset=offset, limit=limit
+    )
 
 
 @router.get(

@@ -97,8 +97,6 @@ class UserNotificationResponse(User):
     used_traffic: int
     lifetime_used_traffic: int = 0
     created_at: dt
-    sub_updated_at: dt | None = Field(default=None)
-    sub_last_user_agent: str | None = Field(default=None)
     online_at: dt | None = Field(default=None)
     subscription_url: str = Field(default="")
     admin: AdminContactInfo | None = Field(default=None)
@@ -122,9 +120,25 @@ class SubscriptionUserResponse(UserResponse):
     model_config = ConfigDict(from_attributes=True)
 
 
+class UsersResponseWithInbounds(SubscriptionUserResponse):
+    inbounds: list[str] | None = Field(default_factory=list)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class UsersResponse(BaseModel):
     users: list[UserResponse]
     total: int
+
+
+class UserSubscriptionUpdateSchema(BaseModel):
+    created_at: dt | None = Field(default=None)
+    user_agent: str | None = Field(default=None)
+
+
+class UserSubscriptionUpdateList(BaseModel):
+    updates: list[UserSubscriptionUpdateSchema] = Field(default_factory=list)
+    count: int
 
 
 class RemoveUsersResponse(BaseModel):

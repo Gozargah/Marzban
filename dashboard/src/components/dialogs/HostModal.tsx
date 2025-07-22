@@ -121,10 +121,17 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
       const payload = { ...data }
 
       // If SingBox fragment is disabled, clear related fields
-      if (!payload.fragment_settings?.sing_box?.fragment) {
-        if (payload.fragment_settings?.sing_box) {
-          payload.fragment_settings.sing_box.fragment_fallback_delay = undefined
-          payload.fragment_settings.sing_box.record_fragment = undefined
+      if (!payload.fragment_settings?.sing_box?.fragment && payload.fragment_settings?.sing_box) {
+        const singBox = payload.fragment_settings.sing_box!
+        ;(singBox as any).fragment_fallback_delay = undefined
+        ;(singBox as any).record_fragment = undefined
+      }
+
+      // Convert fragment_fallback_delay number to ms format
+      if (payload.fragment_settings?.sing_box?.fragment_fallback_delay) {
+        const delay = payload.fragment_settings.sing_box.fragment_fallback_delay
+        if (/^\d+$/.test(delay)) {
+          payload.fragment_settings.sing_box.fragment_fallback_delay = delay + 'ms'
         }
       }
 
@@ -2102,7 +2109,16 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
                                       <FormItem>
                                         <FormLabel>{t('hostsDialog.fragment.fallbackDelay')}</FormLabel>
                                         <FormControl>
-                                          <Input placeholder="e.g. 100ms" {...field} value={field.value || ''} />
+                                          <Input 
+                                            placeholder="e.g. 100" 
+                                            {...field} 
+                                            value={field.value ? field.value.replace('ms', '') : ''} 
+                                            onChange={(e) => {
+                                              const value = e.target.value
+                                              field.onChange(value)
+                                            }}
+                                            title="Enter a number (e.g., 100)"
+                                          />
                                         </FormControl>
                                         <FormMessage />
                                       </FormItem>

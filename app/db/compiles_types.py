@@ -67,3 +67,29 @@ def compile_days_diff_mysql(element, compiler, **kw):
 @compiles(DaysDiff, "sqlite")
 def compile_days_diff_sqlite(element, compiler, **kw):
     return "(julianday(expire) - julianday('now'))"
+
+
+class DateDiff(FunctionElement):
+    type = Numeric()
+    name = "date_diff"
+    inherit_cache = True
+
+    def __init__(self, date1, date2, **kwargs):
+        super().__init__(**kwargs)
+        self.date1 = date1
+        self.date2 = date2
+
+
+@compiles(DateDiff, "postgresql")
+def compile_date_diff_postgresql(element, compiler, **kw):
+    return f"EXTRACT(EPOCH FROM ({compiler.process(element.date1)} - {compiler.process(element.date2)})) / 86400"
+
+
+@compiles(DateDiff, "mysql")
+def compile_date_diff_mysql(element, compiler, **kw):
+    return f"DATEDIFF({compiler.process(element.date1)}, {compiler.process(element.date2)})"
+
+
+@compiles(DateDiff, "sqlite")
+def compile_date_diff_sqlite(element, compiler, **kw):
+    return f"julianday({compiler.process(element.date1)}) - julianday({compiler.process(element.date2)})"

@@ -11,7 +11,7 @@ from config import XRAY_SUBSCRIPTION_TEMPLATE
 from . import BaseSubscription
 
 
-class XrayConfig(BaseSubscription):
+class XrayConfiguration(BaseSubscription):
     def __init__(self):
         super().__init__()
         self.config = []

@@ -24,8 +24,8 @@ export function parseUserAgent(userAgent: string | null | undefined): ClientInfo
   // Common VPN/Proxy clients
   const clientPatterns = [
     { pattern: /clash/, name: 'Clash', iconType: 'desktop' as const },
-    { pattern: /v2rayn/, name: 'v2rayN', iconType: 'desktop' as const },
     { pattern: /v2rayng/, name: 'v2rayNG', iconType: 'mobile' as const },
+    { pattern: /v2rayn/, name: 'v2rayN', iconType: 'desktop' as const },
     { pattern: /shadowrocket/, name: 'Shadowrocket', iconType: 'mobile' as const },
     { pattern: /quantumult/, name: 'Quantumult', iconType: 'mobile' as const },
     { pattern: /surge/, name: 'Surge', iconType: 'mobile' as const },

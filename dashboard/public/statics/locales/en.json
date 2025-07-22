@@ -1017,11 +1017,11 @@
     "lastClient": "Last Client",
     "subscriptionNotAccessed": "Not accessed yet",
     "unknownClient": "Unknown client",
-    "selectedGroups": "{{count}} groups selected",
+    "selectedGroups": "{{count}} Group(s) selected",
     "editError": "Failed to update user «{{name}}»",
     "createError": "Failed to create user «{{name}}»",
     "selectStatus": "Select status",
-    "selectedTemplates": "{{count}} template(s) selected"
+    "selectedTemplates": "{{count}} Template(s) selected"
   },
   "users": "Users",
   "usersTable.copied": "Copied",
