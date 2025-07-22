@@ -6,7 +6,7 @@ import { Plus } from 'lucide-react'
 
 import UserModal from '@/components/dialogs/UserModal'
 import { DEFAULT_SHADOWSOCKS_METHOD } from '@/constants/Proxies'
-import { getGetSettingsQueryKey, getGetSettingsQueryOptions, SettingsSchemaOutput } from '@/service/api'
+import { General, getGetGeneralSettingsQueryKey, getGetGeneralSettingsQueryOptions } from '@/service/api'
 import { queryClient } from '@/utils/query-client'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
@@ -113,9 +113,10 @@ export type UseEditFormValues = z.infer<typeof userEditSchema>
 export type UseFormValues = z.infer<typeof userCreateSchema>
 
 export const getDefaultUserForm = async () => {
-  let settings = queryClient.getQueryData<SettingsSchemaOutput>(getGetSettingsQueryKey())
-  if (!settings) {
-    settings = await queryClient.fetchQuery(getGetSettingsQueryOptions())
+  // Use /api/settings/general instead of /api/settings
+  let general = queryClient.getQueryData<General>(getGetGeneralSettingsQueryKey())
+  if (!general) {
+    general = await queryClient.fetchQuery(getGetGeneralSettingsQueryOptions())
   }
   return {
     username: '',
@@ -130,14 +131,14 @@ export const getDefaultUserForm = async () => {
       },
       vless: {
         id: undefined,
-        flow: settings?.general?.default_flow || '',
+        flow: general?.default_flow || '',
       },
       trojan: {
         password: undefined,
       },
       shadowsocks: {
         password: undefined,
-        method: settings?.general?.default_method || DEFAULT_SHADOWSOCKS_METHOD,
+        method: general?.default_method || DEFAULT_SHADOWSOCKS_METHOD,
       },
     },
   } satisfies UseFormValues
