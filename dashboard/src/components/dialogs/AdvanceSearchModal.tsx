@@ -13,6 +13,7 @@ import GroupsSelector from '@/components/common/GroupsSelector.tsx'
 import AdminsSelector from "@/components/common/AdminsSelector.tsx";
 import {Badge} from "@/components/ui/badge.tsx";
 import {X} from "lucide-react";
+import {useGetAllGroups} from '@/service/api'
 
 interface AdvanceSearchModalProps {
     isDialogOpen: boolean
@@ -36,6 +37,21 @@ export type AdvanceSearchFormValue = z.infer<typeof advanceSearchFormSchema>
 export default function AdvanceSearchModal({isDialogOpen, onOpenChange, form, onSubmit}: AdvanceSearchModalProps) {
     const dir = useDirDetection()
     const {t} = useTranslation()
+
+    const { data: groupsData } = useGetAllGroups(undefined, {
+        query: {
+            staleTime: 5 * 60 * 1000, // 5 minutes
+            gcTime: 10 * 60 * 1000, // 10 minutes
+            refetchOnWindowFocus: true,
+            refetchOnMount: true,
+            refetchOnReconnect: true,
+        },
+    })
+
+    const groupIdToName = new Map(
+        (groupsData?.groups || []).map((group: any) => [group.id, group.name])
+    )
+
 
     return (
         <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
@@ -94,7 +110,7 @@ export default function AdvanceSearchModal({isDialogOpen, onOpenChange, form, on
                                                             {field.value?.map(tag => (
                                                                 <Badge key={tag} variant="secondary"
                                                                        className="flex items-center gap-1">
-                                                                    {tag}
+                                                                    {groupIdToName.get(tag) || tag}
                                                                     <X
                                                                         className="h-3 w-3 cursor-pointer"
                                                                         onClick={() => {
