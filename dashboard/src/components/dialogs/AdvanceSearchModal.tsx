@@ -72,7 +72,13 @@ export default function AdvanceSearchModal({isDialogOpen, onOpenChange, form, on
                                             <FormItem className="flex w-full flex-1 items-center justify-between">
                                                 <FormLabel>{t('advanceSearch.byUsername')}</FormLabel>
                                                 <FormControl>
-                                                    <Switch checked={field.value} onCheckedChange={field.onChange}/>
+                                                    <Switch
+                                                        checked={field.value}
+                                                        onCheckedChange={(checked) => {
+                                                            field.onChange(checked)
+                                                            form.setValue('is_protocol', !checked)
+                                                        }}
+                                                    />
                                                 </FormControl>
                                                 <FormMessage/>
                                             </FormItem>
@@ -87,7 +93,13 @@ export default function AdvanceSearchModal({isDialogOpen, onOpenChange, form, on
                                             <FormItem className="flex w-full flex-1 items-center justify-between">
                                                 <FormLabel>{t('advanceSearch.byProtocol')}</FormLabel>
                                                 <FormControl>
-                                                    <Switch checked={field.value} onCheckedChange={field.onChange}/>
+                                                    <Switch
+                                                        checked={field.value}
+                                                        onCheckedChange={(checked) => {
+                                                            field.onChange(checked)
+                                                            form.setValue('is_username', !checked)
+                                                        }}
+                                                    />
                                                 </FormControl>
                                                 <FormMessage/>
                                             </FormItem>
