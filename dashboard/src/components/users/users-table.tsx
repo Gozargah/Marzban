@@ -30,7 +30,10 @@ const UsersTable = () => {
     load_sub: true,
     offset: 0,
     search: undefined as string | undefined,
+    proxy_id: undefined as string | undefined, // add proxy_id
+    is_protocol: false, // add is_protocol
   })
+
 
   const advanceSearchForm = useForm<AdvanceSearchFormValue>({
     defaultValues: {
@@ -158,15 +161,23 @@ const UsersTable = () => {
   }
 
   const handleFilterChange = (newFilters: Partial<typeof filters>) => {
-    setFilters(prev => ({
-      ...prev,
-      ...newFilters,
-      offset: newFilters.search !== undefined ? 0 : prev.offset, // Reset offset when search changes
-    }))
+    setFilters(prev => {
+      let updated = { ...prev, ...newFilters };
+      if ('search' in newFilters) {
+        if (prev.is_protocol) {
+          updated.proxy_id = newFilters.search;
+          updated.search = undefined;
+        } else {
+          updated.search = newFilters.search;
+          updated.proxy_id = undefined;
+        }
+        updated.offset = 0;
+      }
+      return updated;
+    });
 
-    // Reset page when search changes
     if (newFilters.search !== undefined) {
-      setCurrentPage(0)
+      setCurrentPage(0);
     }
   }
 
@@ -237,6 +248,7 @@ const UsersTable = () => {
       admin: values.admin && values.admin.length > 0 ? values.admin : undefined,
       group: values.group && values.group.length > 0 ? values.group : undefined,
       status: values.status && values.status.length > 0 ? values.status : undefined,
+      is_protocol: values.is_protocol, // update is_protocol
       offset: 0, // Reset to first page
     }))
     setCurrentPage(0)
