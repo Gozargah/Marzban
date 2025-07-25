@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import useDirDetection from '@/hooks/use-dir-detection'
 import { cn } from '@/lib/utils'
 import { debounce } from 'es-toolkit'
-import { RefreshCw, SearchIcon, X } from 'lucide-react'
+import {RefreshCw, SearchIcon, SettingsIcon, X} from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGetUsers, UserStatus } from '@/service/api'
@@ -23,9 +23,11 @@ interface FiltersProps {
   }
   onFilterChange: (filters: Partial<FiltersProps['filters']>) => void
   refetch?: (options?: RefetchOptions) => Promise<any>
+  advanceSearchOnOpen: (status: boolean) => void
+
 }
 
-export const Filters = ({ filters, onFilterChange, refetch }: FiltersProps) => {
+export const Filters = ({ filters, onFilterChange, refetch, advanceSearchOnOpen }: FiltersProps) => {
   const { t } = useTranslation()
   const dir = useDirDetection()
   const [search, setSearch] = useState(filters.search || '')
@@ -72,25 +74,38 @@ export const Filters = ({ filters, onFilterChange, refetch }: FiltersProps) => {
     }
   }
 
+  const handleOpenAdvanceSearch = () => {
+    advanceSearchOnOpen(true)
+  }
+
   return (
-    <div dir={dir} className="flex items-center gap-4 py-4">
-      {/* Search Input */}
-      <div className="relative w-full md:w-[calc(100%/3-10px)]">
-        <SearchIcon className={cn('absolute', dir === 'rtl' ? 'right-2' : 'left-2 ', 'top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 text-input-placeholder')} />
-        <Input placeholder={t('search')} value={search} onChange={handleSearchChange} className="pl-8 pr-10" />
-        {search && (
-          <button onClick={clearSearch} className={cn('absolute', dir === 'rtl' ? 'left-2' : 'right-2', 'top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600')}>
-            <X className="w-4 h-4" />
-          </button>
-        )}
+      <div dir={dir} className="flex items-center gap-4 py-4">
+        {/* Search Input */}
+        <div className="relative w-full md:w-[calc(100%/3-10px)]">
+          <SearchIcon
+              className={cn('absolute', dir === 'rtl' ? 'right-2' : 'left-2 ', 'top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 text-input-placeholder')}/>
+          <Input placeholder={t('search')} value={search} onChange={handleSearchChange} className="pl-8 pr-10"/>
+          {search && (
+              <button onClick={clearSearch}
+                      className={cn('absolute', dir === 'rtl' ? 'left-2' : 'right-2', 'top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600')}>
+                <X className="w-4 h-4"/>
+              </button>
+          )}
+        </div>
+        <div className="flex h-full items-center gap-2">
+          <Button size="icon-md" variant="ghost" className="flex items-center gap-2 border"
+                  onClick={handleOpenAdvanceSearch}>
+            <SettingsIcon className="h-4 w-4"/>
+          </Button>
+        </div>
+        {/* Refresh Button */}
+        <div className="flex items-center gap-2 h-full">
+          <Button size="icon-md" onClick={handleRefreshClick} variant="ghost" className="flex items-center gap-2 border"
+                  disabled={isRefreshing}>
+            <RefreshCw className={cn('w-4 h-4', isRefreshing && 'animate-spin')}/>
+          </Button>
+        </div>
       </div>
-      {/* Refresh Button */}
-      <div className="flex items-center gap-2 h-full">
-        <Button size="icon-md" onClick={handleRefreshClick} variant="ghost" className="flex items-center gap-2 border" disabled={isRefreshing}>
-          <RefreshCw className={cn('w-4 h-4', isRefreshing && 'animate-spin')} />
-        </Button>
-      </div>
-    </div>
   )
 }
 

@@ -1424,5 +1424,23 @@
   "statistics.totalUsage": "مصرف کل",
   "statistics.uplink": "ارسال",
   "statistics.downlink": "دریافت",
-  "timeSelector.pickDate": "انتخاب تاریخ"
+  "timeSelector.pickDate": "انتخاب تاریخ",
+  "advanceSearch": {
+    "title": "جستجوی پیشرفته",
+    "byUsername": "نام کاربری و یادداشت‌ها",
+    "byProtocol": "داده‌های پروتکل",
+    "byStatus": "وضعیت",
+    "byAdmin": "مدیر",
+    "byGroup": "گروه",
+    "selectGroup": "انتخاب گروه ...",
+    "selectAdmin": "انتخاب مدیر ...",
+    "selectStatus": "انتخاب وضعیت ...",
+    "status": {
+      "active": "فعال",
+      "disable": "غیرفعال",
+      "expired": "منقضی شده",
+      "limited": "محدود",
+      "onHold": "در انتظار"
+    }
+  }
 }

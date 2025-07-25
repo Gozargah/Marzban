@@ -11,6 +11,7 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import UserModal from '../dialogs/UserModal'
 import { PaginationControls } from './filters'
+import AdvanceSearchModal, {AdvanceSearchFormValue} from "@/components/dialogs/AdvanceSearchModal.tsx";
 
 const UsersTable = () => {
   const { t } = useTranslation()
@@ -21,6 +22,7 @@ const UsersTable = () => {
   const [isChangingPage, setIsChangingPage] = useState(false)
   const [isEditModalOpen, setEditModalOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null)
+  const [isAdvanceSearchOpen, setIsAdvanceSearchOpen] = useState(false)
 
   const [filters, setFilters] = useState({
     limit: itemsPerPage,
@@ -28,6 +30,16 @@ const UsersTable = () => {
     load_sub: true,
     offset: 0,
     search: undefined as string | undefined,
+  })
+
+  const advanceSearchForm = useForm<AdvanceSearchFormValue>({
+    defaultValues: {
+      is_username: true,
+      is_protocol: false,
+      admin: [],
+      group: [],
+      status: [],
+    }
   })
 
   // Create form for user editing
@@ -219,13 +231,26 @@ const UsersTable = () => {
     handleStatusFilter,
   })
 
+  const handleAdvanceSearchSubmit = (values: AdvanceSearchFormValue) => {
+    setFilters((prev) => ({
+      ...prev,
+      admin: values.admin && values.admin.length > 0 ? values.admin : undefined,
+      group: values.group && values.group.length > 0 ? values.group : undefined,
+      status: values.status && values.status.length > 0 ? values.status : undefined,
+      offset: 0, // Reset to first page
+    }))
+    setCurrentPage(0)
+    setIsAdvanceSearchOpen(false)
+    advanceSearchForm.reset(values)
+  }
+
   const totalUsers = usersData?.total || 0
   const totalPages = Math.ceil(totalUsers / itemsPerPage)
   const isPageLoading = isLoading || isFetching || isChangingPage
 
   return (
     <div>
-      <Filters filters={filters} onFilterChange={handleFilterChange} refetch={handleManualRefresh} />
+      <Filters filters={filters} onFilterChange={handleFilterChange} advanceSearchOnOpen={setIsAdvanceSearchOpen} refetch={handleManualRefresh} />
       <DataTable columns={columns} data={usersData?.users || []} isLoading={isLoading} isFetching={isFetching} onEdit={handleEdit} />
       <PaginationControls
         currentPage={currentPage}
@@ -246,6 +271,17 @@ const UsersTable = () => {
           editingUserData={selectedUser}
           onSuccessCallback={handleEditSuccess}
         />
+      )}
+      {isAdvanceSearchOpen && (
+          <AdvanceSearchModal
+              isDialogOpen={isAdvanceSearchOpen}
+              onOpenChange={open => {
+                setIsAdvanceSearchOpen(open)
+                if (!open) advanceSearchForm.reset() // Reset form when closing
+              }}
+              form={advanceSearchForm}
+              onSubmit={handleAdvanceSearchSubmit}
+          />
       )}
     </div>
   )

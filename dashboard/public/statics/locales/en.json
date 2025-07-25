@@ -1447,5 +1447,23 @@
   "operationFailed": "Operation failed!",
   "settingsApplied": "Settings applied successfully!",
   "applying": "Applying...",
-  "timeSelector.pickDate": "Pick a date"
+  "timeSelector.pickDate": "Pick a date",
+  "advanceSearch": {
+    "title": "Advanced Search",
+    "byUsername": "Username and Notes",
+    "byProtocol": "Protocol Data",
+    "byStatus": "Status",
+    "byAdmin": "Admin",
+    "byGroup": "Group",
+    "selectGroup": "Select Group ... ",
+    "selectAdmin": "Select Admin ... ",
+    "selectStatus": "Select Status ... ",
+    "status": {
+      "active": "Active",
+      "disable": "Disable",
+      "expired": "Expired",
+      "limited": "Limited",
+      "onHold": "On Hold"
+    }
+  }
 }
