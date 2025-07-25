@@ -41,7 +41,7 @@ const UsersTable = () => {
       is_protocol: false,
       admin: [],
       group: [],
-      status: [],
+      status: '0',
     }
   })
 
@@ -247,7 +247,7 @@ const UsersTable = () => {
       ...prev,
       admin: values.admin && values.admin.length > 0 ? values.admin : undefined,
       group: values.group && values.group.length > 0 ? values.group : undefined,
-      status: values.status && values.status.length > 0 ? values.status : undefined,
+      status: values.status && values.status !== '0' ? values.status : undefined,
       is_protocol: values.is_protocol, // update is_protocol
       offset: 0, // Reset to first page
     }))

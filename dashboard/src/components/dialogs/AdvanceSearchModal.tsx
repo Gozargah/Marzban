@@ -27,10 +27,7 @@ export const advanceSearchFormSchema = z.object({
     is_protocol: z.boolean().default(false),
     admin: z.array(z.string()).optional(),
     group: z.array(z.number()).optional(),
-    status: z
-        .array(z.enum(['0', 'active', 'on_hold', 'disabled', 'expired', 'limited']))
-        .default(['0'])
-        .optional(),
+    status: z.enum(['0', 'active', 'on_hold', 'disabled', 'expired', 'limited']).default('0').optional(),
 })
 
 export type AdvanceSearchFormValue = z.infer<typeof advanceSearchFormSchema>
@@ -197,15 +194,14 @@ export default function AdvanceSearchModal({isDialogOpen, onOpenChange, form, on
                                             {value: 'expired', label: t('advanceSearch.status.expired')},
                                             {value: 'limited', label: t('advanceSearch.status.limited')},
                                         ]
-                                        // Only allow one status to be selected
-                                        const selectedStatus = Array.isArray(field.value) ? field.value[0] : field.value
+
                                         return (
                                             <FormItem className="w-full flex-1">
                                                 <FormLabel>{t('advanceSearch.byStatus')}</FormLabel>
                                                 <FormControl>
                                                     <div>
-                                                        <Select value={selectedStatus || '0'}
-                                                                onValueChange={value => field.onChange(value === '0' ? [] : [value])}
+                                                        <Select value={field.value || '0'}
+                                                                onValueChange={field.onChange}
                                                                 dir={dir}>
                                                             <SelectTrigger>
                                                                 <SelectValue
