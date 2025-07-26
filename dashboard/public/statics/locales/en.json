@@ -1458,5 +1458,7 @@
     "selectGroup": "Select Group ... ",
     "selectAdmin": "Select Admin ... ",
     "selectStatus": "Select Status ... "
-  }
+  },
+  "clearAllFilters": "Clear All Filters",
+  "activeFilters": "active"
 }

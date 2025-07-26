@@ -1435,5 +1435,7 @@
     "selectGroup": "انتخاب گروه ...",
     "selectAdmin": "انتخاب مدیر ...",
     "selectStatus": "انتخاب وضعیت ..."
-  }
+  },
+  "clearAllFilters": "پاک کردن همه فیلترها",
+  "activeFilters": "فعال"
 }

@@ -2,7 +2,7 @@ import { setupColumns } from '@/components/users/columns'
 import { DataTable } from '@/components/users/data-table'
 import { Filters } from '@/components/users/filters'
 import useDirDetection from '@/hooks/use-dir-detection'
-import { UseEditFormValues } from '@/pages/_dashboard._index'
+import { UseEditFormValues } from '@/pages/_dashboard.users'
 import { useGetUsers, UserResponse } from '@/service/api'
 import { getUsersPerPageLimitSize } from '@/utils/userPreferenceStorage'
 import { useQueryClient } from '@tanstack/react-query'
@@ -262,7 +262,30 @@ const UsersTable = () => {
 
   return (
     <div>
-      <Filters filters={filters} onFilterChange={handleFilterChange} advanceSearchOnOpen={setIsAdvanceSearchOpen} refetch={handleManualRefresh} />
+      <Filters 
+        filters={filters} 
+        onFilterChange={handleFilterChange} 
+        advanceSearchOnOpen={setIsAdvanceSearchOpen} 
+        refetch={handleManualRefresh}
+        advanceSearchForm={advanceSearchForm}
+        onClearAdvanceSearch={() => {
+          advanceSearchForm.reset({
+            is_username: true,
+            is_protocol: false,
+            admin: [],
+            group: [],
+            status: '0',
+          })
+          setFilters((prev) => ({
+            ...prev,
+            admin: undefined,
+            group: undefined,
+            status: undefined,
+            offset: 0,
+          }))
+          setCurrentPage(0)
+        }}
+      />
       <DataTable columns={columns} data={usersData?.users || []} isLoading={isLoading} isFetching={isFetching} onEdit={handleEdit} />
       <PaginationControls
         currentPage={currentPage}

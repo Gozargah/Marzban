@@ -2,15 +2,18 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { cn } from '@/lib/utils'
 import { debounce } from 'es-toolkit'
-import {RefreshCw, SearchIcon, SettingsIcon, X} from 'lucide-react'
+import {RefreshCw, SearchIcon, Filter, X} from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGetUsers, UserStatus } from '@/service/api'
 import { RefetchOptions } from '@tanstack/react-query'
 import { LoaderCircle } from 'lucide-react'
+import { UseFormReturn } from 'react-hook-form'
 
 interface FiltersProps {
   filters: {
@@ -24,10 +27,11 @@ interface FiltersProps {
   onFilterChange: (filters: Partial<FiltersProps['filters']>) => void
   refetch?: (options?: RefetchOptions) => Promise<any>
   advanceSearchOnOpen: (status: boolean) => void
-
+  advanceSearchForm?: UseFormReturn<any>
+  onClearAdvanceSearch?: () => void
 }
 
-export const Filters = ({ filters, onFilterChange, refetch, advanceSearchOnOpen }: FiltersProps) => {
+export const Filters = ({ filters, onFilterChange, refetch, advanceSearchOnOpen, advanceSearchForm, onClearAdvanceSearch }: FiltersProps) => {
   const { t } = useTranslation()
   const dir = useDirDetection()
   const [search, setSearch] = useState(filters.search || '')
@@ -78,6 +82,28 @@ export const Filters = ({ filters, onFilterChange, refetch, advanceSearchOnOpen 
     advanceSearchOnOpen(true)
   }
 
+  // Check if any advance search filters are active
+  const hasActiveAdvanceFilters = () => {
+    if (!advanceSearchForm) return false
+    const values = advanceSearchForm.getValues()
+    return (
+      (values.admin && values.admin.length > 0) ||
+      (values.group && values.group.length > 0) ||
+      values.status !== '0'
+    )
+  }
+
+  // Get the count of active advance filters
+  const getActiveFiltersCount = () => {
+    if (!advanceSearchForm) return 0
+    const values = advanceSearchForm.getValues()
+    let count = 0
+    if (values.admin && values.admin.length > 0) count++
+    if (values.group && values.group.length > 0) count++
+    if (values.status !== '0') count++
+    return count
+  }
+
   return (
       <div dir={dir} className="flex items-center gap-4 py-4">
         {/* Search Input */}
@@ -92,11 +118,47 @@ export const Filters = ({ filters, onFilterChange, refetch, advanceSearchOnOpen 
               </button>
           )}
         </div>
-        <div className="flex h-full items-center gap-2">
-          <Button size="icon-md" variant="ghost" className="flex items-center gap-2 border"
-                  onClick={handleOpenAdvanceSearch}>
-            <SettingsIcon className="h-4 w-4"/>
+        <div className="flex h-full items-center gap-1">
+          <Button 
+            size="icon-md" 
+            variant="ghost" 
+            className="flex items-center gap-2 border relative"
+            onClick={handleOpenAdvanceSearch}
+          >
+            <Filter className="h-4 w-4"/>
+            {hasActiveAdvanceFilters() && (
+              <Badge 
+                variant="destructive" 
+                className="absolute -top-1 -right-1 h-4 w-4 rounded-full p-0 text-xs flex items-center justify-center"
+              >
+                {getActiveFiltersCount()}
+              </Badge>
+            )}
           </Button>
+          {hasActiveAdvanceFilters() && onClearAdvanceSearch && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className={cn(
+                    "h-8 w-8 p-0",
+                    dir === 'rtl' ? "border-r-0 rounded-r-none" : "border-l-0 rounded-l-none"
+                  )}
+                  onClick={onClearAdvanceSearch}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent 
+                className="w-auto p-2" 
+                side={dir === 'rtl' ? 'left' : 'right'}
+                align="center"
+              >
+                <p className="text-sm">{t('clearAllFilters', { defaultValue: 'Clear All Filters' })}</p>
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
         {/* Refresh Button */}
         <div className="flex items-center gap-2 h-full">
@@ -119,7 +181,7 @@ interface PaginationControlsProps {
   onItemsPerPageChange: (value: number) => Promise<void>
 }
 
-export const PaginationControls = ({ currentPage, totalPages, itemsPerPage, totalUsers, isLoading, onPageChange, onItemsPerPageChange }: PaginationControlsProps) => {
+export const PaginationControls = ({ currentPage, totalPages, itemsPerPage, isLoading, onPageChange, onItemsPerPageChange }: PaginationControlsProps) => {
   const { t } = useTranslation()
 
   const getPaginationRange = (currentPage: number, totalPages: number) => {

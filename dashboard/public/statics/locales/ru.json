@@ -1444,5 +1444,7 @@
     "selectGroup": "Выберите группу ...",
     "selectAdmin": "Выберите администратора ...",
     "selectStatus": "Выберите статус ..."
-  }
+  },
+  "clearAllFilters": "Очистить все фильтры",
+  "activeFilters": "активных"
 }

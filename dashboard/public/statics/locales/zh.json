@@ -1487,5 +1487,7 @@
     "selectGroup": "选择分组 ...",
     "selectAdmin": "选择管理员 ...",
     "selectStatus": "选择状态 ..."
-  }
+  },
+  "clearAllFilters": "清除所有筛选器",
+  "activeFilters": "活跃"
 }
