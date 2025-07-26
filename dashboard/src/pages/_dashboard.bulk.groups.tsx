@@ -83,8 +83,11 @@ export default function BulkGroupsPage() {
     mutation.mutate(
       { data: payload },
       {
-        onSuccess: () => {
-          toast.success(t("operationSuccess", { defaultValue: "Operation successful!" }))
+        onSuccess: (response) => {
+          const detail = typeof response === 'object' && response && 'detail' in response ? response.detail : undefined;
+          toast.success(t("operationSuccess", { defaultValue: "Operation successful!" }), {
+            description: detail || (typeof response === 'string' ? response : JSON.stringify(response, null, 2)),
+          })
           // Reset selections after successful operation
           setSelectedGroups([])
           setSelectedHasGroups([])
@@ -92,8 +95,10 @@ export default function BulkGroupsPage() {
           setSelectedAdmins([])
           setShowConfirmDialog(false)
         },
-        onError: () => {
-          toast.error(t("operationFailed", { defaultValue: "Operation failed!" }))
+        onError: (error) => {
+          toast.error(t("operationFailed", { defaultValue: "Operation failed!" }), {
+            description: error?.message || JSON.stringify(error, null, 2),
+          })
           setShowConfirmDialog(false)
         },
       },

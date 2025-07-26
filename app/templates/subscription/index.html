@@ -1,152 +1,203 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        <title>Subscription Information</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                padding: 20px;
+            }
 
-<head>
-    <title>Subscription Information</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
+            h1 {
+                margin-top: 0;
+            }
 
-        h1 {
-            margin-top: 0;
-        }
+            .link-input {
+                margin-bottom: 10px;
+            }
 
-        .link-input {
-            margin-bottom: 10px;
-        }
+            .copy-button {
+                margin-left: 10px;
+            }
 
-        .copy-button {
-            margin-left: 10px;
-        }
+            .status {
+                display: inline-block;
+                padding: 3px 8px;
+                border-radius: 3px;
+                font-weight: bold;
+                font-size: 16px;
+                line-height: 1;
+            }
 
-        .status {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-weight: bold;
-            font-size: 16px;
-            line-height: 1;
-        }
+            .active {
+                background-color: #4caf50;
+                color: white;
+            }
 
-        .active {
-            background-color: #4CAF50;
-            color: white;
-        }
+            .limited {
+                background-color: #f44336;
+                color: white;
+            }
 
-        .limited {
-            background-color: #F44336;
-            color: white;
-        }
+            .expired {
+                background-color: #ff9800;
+                color: white;
+            }
 
-        .expired {
-            background-color: #FF9800;
-            color: white;
-        }
+            .disabled {
+                background-color: #9e9e9e;
+                color: white;
+            }
+            .on-hold {
+                background-color: #6e17ef;
+                color: white;
+            }
 
-        .disabled {
-            background-color: #9E9E9E;
-            color: white;
-        }
+            .qr-popup {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: white;
+                padding: 10px 25px 25px 25px;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                display: none;
+                z-index: 9999;
+            }
 
-        .qr-popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 10px 25px 25px 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            display: none;
-            z-index: 9999;
-        }
+            .qr-close-button {
+                text-align: right;
+                margin-bottom: 5px;
+                margin-right: -15px;
+            }
+        </style>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    </head>
 
-        .qr-close-button {
-            text-align: right;
-            margin-bottom: 5px;
-            margin-right: -15px;
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-</head>
+    <body>
+        <h1>User Information</h1>
+        <p>Username: {{ user.username }}</p>
+        <p>
+            Status:
+            <span
+                class="status {% if user.status.value == 'active' %}active{% elif user.status.value == 'limited' %}limited{% elif user.status.value == 'on_hold' %}on-hold{% elif user.status.value == 'expired' %}expired{% elif user.status.value == 'disabled' %}disabled{% endif %}"
+                >{{ user.status.value }}</span
+            >
+        </p>
+        <p>
+            Data Limit: {% if not user.data_limit %}∞{% else %}{{
+            user.data_limit | bytesformat }}{% endif %}
+        </p>
+        <p>
+            Data Used: {{ user.used_traffic | bytesformat }}{% if
+            user.data_limit_reset_strategy != 'no_reset' %} (resets every {{
+            user.data_limit_reset_strategy.value }}){% endif %}
+        </p>
+        <p>
+            {% if user.status.value == 'on_hold' %}
+                On Hold For: {% if not user.on_hold_expire_duration %}∞{% else %}{{ (user.on_hold_expire_duration / 86400) | int }} days{% endif %}
+                <p>
+                    On Hold Until: {% if user.on_hold_timeout %}{{ user.on_hold_timeout | datetime }}{% else %}∞{% endif %}
+                </p>
+            {% else %}
+                Expiration Date: {% if not user.expire %} ∞ {% else %} {% set
+                current_datetime = now() %} {% set remaining_days = ((user.expire -
+                current_datetime).days) %} {{ user.expire | datetime }} ({{
+                remaining_days | int }} days remaining) {% endif %}
+            {% endif %}
+        </p>
 
-<body>
-    <h1>User Information</h1>
-    <p>Username: {{ user.username }}</p>
-    <p>Status: <span
-            class="status {% if user.status.value == 'active' %}active{% elif user.status.value == 'limited' %}limited{% elif user.status.value == 'expired' %}expired{% elif user.status.value == 'disabled' %}disabled{% endif %}">{{
-            user.status.value }}</span></p>
-    <p>Data Limit: {% if not user.data_limit %}∞{% else %}{{ user.data_limit | bytesformat }}{% endif %}</p>
-    <p>Data Used: {{ user.used_traffic | bytesformat }}{% if user.data_limit_reset_strategy != 'no_reset' %} (resets
-        every {{ user.data_limit_reset_strategy.value }}){% endif %}</p>
-    <p>Expiration Date:
-        {% if not user.expire %}
-        ∞
-        {% else %}
-        {% set current_datetime = now() %}
-        {% set remaining_days = ((user.expire - current_datetime).days)  %}
-        {{ user.expire | datetime }} ({{ remaining_days | int }} days
-        remaining)
-        {% endif %}</p>
-
-    {% if user.status == 'active' %}
-    <h2>Links:</h2>
-    <ul>
-        {% for link in links %}
-        <li>
-            <input type="text" value="{{ link }}" readonly>
-            <button class="copy-button" onclick="copyLink('{{ link }}', this)">Copy</button>
-            <button class="qr-button" data-link="{{ link }}">QR Code</button>
-        </li>
-        {% endfor %}
-    </ul>
-    <div class="qr-popup" id="qrPopup">
-        <div class="qr-close-button">
-            <button onclick="closeQrPopup()">X</button>
+        {% if user.status in ('active','on_hold') %}
+        <h2>Links:</h2>
+        <ul>
+            {% for link in links %}
+            <li>
+                <input type="text" value="{{ link }}" readonly />
+                <button
+                    class="copy-button"
+                    onclick="copyLink('{{ link }}', this)"
+                >
+                    Copy
+                </button>
+                <button class="qr-button" data-link="{{ link }}">
+                    QR Code
+                </button>
+            </li>
+            {% endfor %}
+        </ul>
+        <button
+            class="copy-all-button"
+            onclick="copyAllLinks(this)"
+            style="margin-top: 10px"
+        >
+            Copy All
+        </button>
+        <div class="qr-popup" id="qrPopup">
+            <div class="qr-close-button">
+                <button onclick="closeQrPopup()">X</button>
+            </div>
+            <div id="qrCodeContainer"></div>
         </div>
-        <div id="qrCodeContainer"></div>
-    </div>
-    {% endif %}
+        {% endif %}
 
-    <script>
-        function copyLink(link, button) {
-            const tempInput = document.createElement('input');
-            tempInput.setAttribute('value', link);
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempInput);
+        <script>
+            function copyLink(link, button) {
+                const tempInput = document.createElement("input");
+                tempInput.setAttribute("value", link);
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand("copy");
+                document.body.removeChild(tempInput);
 
-            button.textContent = 'Copied!';
-            setTimeout(function () {
-                button.textContent = 'Copy';
-            }, 1500);
-        }
+                button.textContent = "Copied!";
+                setTimeout(function () {
+                    button.textContent = "Copy";
+                }, 1500);
+            }
 
-        const qrButtons = document.querySelectorAll('.qr-button');
-        const qrPopup = document.getElementById('qrPopup');
+            function copyAllLinks(button) {
+                const links = Array.from(
+                    document.querySelectorAll("ul li input[type='text']")
+                ).map((input) => input.value);
+                const allLinks = links.join("\n");
 
-        qrButtons.forEach((qrButton) => {
-            qrButton.addEventListener('click', () => {
-                const link = qrButton.dataset.link;
-                while (qrCodeContainer.firstChild) {
-                    qrCodeContainer.removeChild(qrCodeContainer.firstChild);
-                }
-                const qrCode = new QRCode(qrCodeContainer, {
-                    text: link,
-                    width: 256,
-                    height: 256,
-                    correctLevel: QRCode.CorrectLevel.L
+                if (!allLinks) return;
+
+                const tempInput = document.createElement("textarea");
+                tempInput.value = allLinks;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand("copy");
+                document.body.removeChild(tempInput);
+
+                button.textContent = "Copied All!";
+                setTimeout(function () {
+                    button.textContent = "Copy All";
+                }, 1500);
+            }
+
+            const qrButtons = document.querySelectorAll(".qr-button");
+            const qrPopup = document.getElementById("qrPopup");
+
+            qrButtons.forEach((qrButton) => {
+                qrButton.addEventListener("click", () => {
+                    const link = qrButton.dataset.link;
+                    while (qrCodeContainer.firstChild) {
+                        qrCodeContainer.removeChild(qrCodeContainer.firstChild);
+                    }
+                    const qrCode = new QRCode(qrCodeContainer, {
+                        text: link,
+                        width: 256,
+                        height: 256,
+                        correctLevel: QRCode.CorrectLevel.L,
+                    });
+                    qrPopup.style.display = "block";
                 });
-                qrPopup.style.display = 'block';
             });
-        });
-        function closeQrPopup() {
-            document.getElementById('qrPopup').style.display = 'none';
-        }
-    </script>
-</body>
-
+            function closeQrPopup() {
+                document.getElementById("qrPopup").style.display = "none";
+            }
+        </script>
+    </body>
 </html>

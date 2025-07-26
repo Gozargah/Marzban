@@ -13,7 +13,6 @@ class BulkAction(str, Enum):
     modify_data_limit = "modify_data_limit"
 
 
-
 class BulkActionPanel(InlineKeyboardBuilder):
     class Callback(CallbackData, prefix="bulk"):
         action: BulkAction
@@ -32,4 +31,3 @@ class BulkActionPanel(InlineKeyboardBuilder):
         )
 
         self.adjust(1, repeat=True)
-

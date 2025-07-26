@@ -2,16 +2,21 @@ import { ORGANIZATION_URL, REPO_URL } from '@/constants/Project'
 import { useGetSystemStats } from '@/service/api'
 import { FC, HTMLAttributes } from 'react'
 
-const FooterContent = () => {
+interface FooterProps extends HTMLAttributes<HTMLDivElement> {
+  showVersion?: boolean
+}
+
+const FooterContent = ({ showVersion = true }: { showVersion?: boolean }) => {
   const { data: systemStats } = useGetSystemStats(undefined, {
     query: {
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity
+      staleTime: Infinity,
+      enabled: showVersion
     }
   })
 
-  const version = systemStats?.version ? ` (v${systemStats.version})` : ''
+  const version = showVersion && systemStats?.version ? ` (v${systemStats.version})` : ''
 
   return (
     <p className="inline-block flex-grow text-center text-gray-500 text-xs">
@@ -26,10 +31,10 @@ const FooterContent = () => {
   )
 }
 
-export const Footer: FC<HTMLAttributes<HTMLDivElement>> = props => {
+export const Footer: FC<FooterProps> = ({ showVersion = true, ...props }) => {
   return (
     <div className="flex w-full pt-1 pb-3 relative" {...props}>
-      <FooterContent />
+      <FooterContent showVersion={showVersion} />
     </div>
   )
 }

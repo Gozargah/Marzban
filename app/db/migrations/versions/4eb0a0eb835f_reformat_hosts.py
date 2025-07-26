@@ -50,7 +50,7 @@ def upgrade() -> None:
     try:
         with open(XRAY_JSON, 'r') as file:
             config = commentjson.loads(file.read())
-    except (json.JSONDecodeError, ValueError):
+    except Exception:
         config = base_xray
 
     # find current inbound tags

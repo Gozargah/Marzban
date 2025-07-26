@@ -32,7 +32,7 @@ class XrayFragmentSettings(BaseModel):
 
 class SingBoxFragmentSettings(BaseModel):
     fragment: bool = Field(default=False)
-    fragment_fallback_delay: str = Field("", pattern=r"\d+ms")
+    fragment_fallback_delay: str = Field("", pattern=r"^$|^\d+ms$")
     record_fragment: bool = Field(default=False)
 
 

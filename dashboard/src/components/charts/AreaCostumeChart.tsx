@@ -10,6 +10,7 @@ import { TimeRangeSelector } from '@/components/common/TimeRangeSelector'
 import { EmptyState } from './EmptyState'
 import { Button } from '@/components/ui/button'
 import { Clock, History } from 'lucide-react'
+import { dateUtils } from '@/utils/dateFormatter'
 
 type DataPoint = {
   time: string
@@ -49,9 +50,39 @@ const gradientDefs = {
 // Custom tooltip component
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
+    // Parse the label as a date if possible
+    let formattedDate = label
+    try {
+      const today = new Date()
+      // Try to parse label as MM/DD or HH:mm
+      if (/\d{2}\/\d{2}/.test(label)) {
+        // MM/DD format, treat as past day
+        const [month, day] = label.split('/')
+        const localDate = new Date(today.getFullYear(), parseInt(month) - 1, parseInt(day), 0, 0, 0)
+        formattedDate = localDate.toLocaleString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }).replace(',', '')
+      } else if (/\d{2}:\d{2}/.test(label)) {
+        // HH:mm format, treat as today
+        const now = new Date()
+        formattedDate = now.toLocaleString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }).replace(',', '')
+      }
+    } catch {}
     return (
       <div dir="ltr" className="bg-background/95 backdrop-blur-sm p-3 rounded-lg border shadow-lg">
-        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        <p className="text-sm font-medium text-muted-foreground"><span dir="ltr">{formattedDate}</span></p>
         <div className="mt-1 space-y-1">
           {payload.map((entry: any, index: number) => (
             <div key={index} className="flex items-center gap-2">
@@ -211,12 +242,12 @@ export function AreaCostumeChart({ nodeId, currentStats, realtimeStats }: AreaCo
 
         if (Array.isArray(statsArray)) {
           const formattedData = statsArray.map((point: NodeStats) => {
-            const date = new Date(point.period_start)
+            const d = dateUtils.toDayjs(point.period_start)
             let timeFormat
             if (period === Period.hour) {
-              timeFormat = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+              timeFormat = d.format('HH:mm')
             } else {
-              timeFormat = `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`
+              timeFormat = d.format('MM/DD')
             }
             return {
               time: timeFormat,
@@ -421,14 +452,14 @@ export function AreaCostumeChart({ nodeId, currentStats, realtimeStats }: AreaCo
                     tickLine={false}
                     tickFormatter={value => `${value.toFixed(0)}%`}
                     axisLine={false}
-                    tickMargin={12}
+                    tickMargin={2}
                     domain={[0, 100]}
                     tick={{
                       fill: 'hsl(var(--muted-foreground))',
-                      fontSize: 10,
+                      fontSize: 9,
                       fontWeight: 500,
                     }}
-                    width={40}
+                    width={32}
                   />
 
                   <Tooltip

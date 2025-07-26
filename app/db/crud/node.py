@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Optional, Union
 
-from sqlalchemy import and_, delete, func, select
+from sqlalchemy import and_, delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Node, NodeStat, NodeStatus, NodeUsage, NodeUserUsage
@@ -81,7 +81,12 @@ async def get_nodes(
 
 
 async def get_nodes_usage(
-    db: AsyncSession, start: datetime, end: datetime, period: Period, node_id: int | None = None
+    db: AsyncSession,
+    start: datetime,
+    end: datetime,
+    period: Period,
+    node_id: int | None = None,
+    group_by_node: bool = False,
 ) -> NodeUsageStatsList:
     """
     Retrieves usage data for all nodes within a specified time range.
@@ -100,22 +105,43 @@ async def get_nodes_usage(
 
     if node_id is not None:
         conditions.append(NodeUsage.node_id == node_id)
+    else:
+        node_id = -1  # Default value for node_id when not specified
 
-    stmt = (
-        select(
-            trunc_expr.label("period_start"),
-            func.sum(NodeUsage.downlink).label("downlink"),
-            func.sum(NodeUsage.uplink).label("uplink"),
+    if group_by_node:
+        stmt = (
+            select(
+                trunc_expr.label("period_start"),
+                func.coalesce(NodeUsage.node_id, 0).label("node_id"),
+                func.sum(NodeUsage.downlink).label("downlink"),
+                func.sum(NodeUsage.uplink).label("uplink"),
+            )
+            .where(and_(*conditions))
+            .group_by(trunc_expr, "node_id")
+            .order_by(trunc_expr)
         )
-        .where(and_(*conditions))
-        .group_by(trunc_expr)
-        .order_by(trunc_expr)
-    )
+    else:
+        stmt = (
+            select(
+                trunc_expr.label("period_start"),
+                func.sum(NodeUsage.downlink).label("downlink"),
+                func.sum(NodeUsage.uplink).label("uplink"),
+            )
+            .where(and_(*conditions))
+            .group_by(trunc_expr)
+            .order_by(trunc_expr)
+        )
 
     result = await db.execute(stmt)
-    return NodeUsageStatsList(
-        period=period, start=start, end=end, stats=[NodeUsageStat(**row) for row in result.mappings()]
-    )
+    stats = {}
+    for row in result.mappings():
+        row_dict = dict(row)
+        node_id_val = row_dict.pop("node_id", node_id)
+        if node_id_val not in stats:
+            stats[node_id_val] = []
+        stats[node_id_val].append(NodeUsageStat(**row_dict))
+
+    return NodeUsageStatsList(period=period, start=start, end=end, stats=stats)
 
 
 async def get_node_stats(
@@ -227,11 +253,18 @@ async def update_node_status(
     Returns:
         Node: The updated Node object.
     """
-    db_node.status = status
-    db_node.message = message
-    db_node.xray_version = xray_version
-    db_node.node_version = node_version
-    db_node.last_status_change = datetime.now(timezone.utc)
+    stmt = (
+        update(Node)
+        .where(Node.id == db_node.id)
+        .values(
+            status=status,
+            message=message,
+            xray_version=xray_version,
+            node_version=node_version,
+            last_status_change=datetime.now(timezone.utc),
+        )
+    )
+    await db.execute(stmt)
     await db.commit()
     await db.refresh(db_node)
     return db_node

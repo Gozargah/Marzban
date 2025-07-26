@@ -92,6 +92,23 @@
   "manageSettings": "Manage and control settings",
   "settings": {
     "title": "Settings",
+    "general": {
+      "title": "General",
+      "description": "Configure basic settings for your system",
+      "loadError": "Failed to load general settings. Please try again.",
+      "saveSuccess": "General settings saved successfully",
+      "saveFailed": "Failed to save general settings",
+      "cancelSuccess": "Changes cancelled and original settings restored",
+      "defaultFlow": {
+        "title": "Default VLESS Flow",
+        "description": "Autofill the flow field for new VLESS users"
+      },
+      "defaultMethod": {
+        "title": "Default Shadowsocks Method",
+        "description": "Autofill the encryption method for new Shadowsocks users"
+      },
+      "errorLoadingSettings": "Error loading settings"
+    },
     "notifications": {
       "title": "Notifications",
       "description": "Configure notification settings and manage alert preferences for your system",
@@ -227,7 +244,10 @@
         "title": "Advanced Settings",
         "description": "Advanced Telegram bot features and configurations",
         "miniAppLogin": "Enable Mini App Login",
-        "miniAppLoginDescription": "Allow users to log in through Telegram mini apps"
+        "miniAppLoginDescription": "Allow users to log in through Telegram mini apps",
+        "miniAppUrl": "Mini App URL",
+        "miniAppUrlPlaceholder": "Enter the Mini App URL (optional)",
+        "miniAppUrlDescription": "The URL for your Telegram Mini App. Leave empty if not used."
       }
     },
     "discord": {
@@ -534,7 +554,8 @@
     "enableSuccess": "Template «{{name}}» has been enabled successfully",
     "disableSuccess": "Template «{{name}}» has been disabled successfully",
     "enableFailed": "Failed to enable admin «{{name}}»",
-    "disableFailed": "Failed to disable admin «{{name}}»"
+    "disableFailed": "Failed to disable admin «{{name}}»",
+    "resetUsages": "Reset Usages"
   },
   "core.configuration": "Configuration",
   "core.generalErrorMessage": "Something went wrong, please check the configuration",
@@ -1034,6 +1055,9 @@
     "selectStatus": "Select status",
     "selectedTemplates": "{{count}} Template(s) selected"
   },
+  "userSettings": {
+    "subscriptionUrlCopied": "Subscription URL copied to clipboard"
+  },
   "users": "Users",
   "usersTable.copied": "Copied",
   "usersTable.copyConfigs": "Copy Configs",
@@ -1320,6 +1344,10 @@
   "statistics.noDataInRangeDescription": "No traffic data found for the selected time period. Try selecting a different date range.",
   "statistics.selectNodeToView": "Select a node to view detailed statistics",
   "statistics.userStatisticsDescription": "Overview of user account status and activity",
+  "statistics.date": "Date",
+  "statistics.totalUsage": "Total Usage",
+  "statistics.uplink": "Uplink",
+  "statistics.downlink": "Downlink",
   "errors.connectionFailed": "Connection failed. Please check your network and try again.",
   "errors.statisticsLoadFailed": "Failed to Load Statistics",
   "usersTable.resetUsageTitle": "Reset User Usage",
@@ -1429,5 +1457,19 @@
   "operationSuccess": "Operation successful!",
   "operationFailed": "Operation failed!",
   "settingsApplied": "Settings applied successfully!",
-  "applying": "Applying..."
+  "applying": "Applying...",
+  "timeSelector.pickDate": "Pick a date",
+  "advanceSearch": {
+    "title": "Advanced Search",
+    "byUsername": "Username and Notes",
+    "byProtocol": "Protocol Data",
+    "byStatus": "Status",
+    "byAdmin": "Admin",
+    "byGroup": "Group",
+    "selectGroup": "Select Group ... ",
+    "selectAdmin": "Select Admin ... ",
+    "selectStatus": "Select Status ... "
+  },
+  "clearAllFilters": "Clear All Filters",
+  "activeFilters": "active"
 }

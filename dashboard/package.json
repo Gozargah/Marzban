@@ -42,6 +42,7 @@
     "@stablelib/x25519": "^2.0.1",
     "@tanstack/react-query": "^5.64.0",
     "@tanstack/react-table": "^8.20.6",
+    "@telegram-apps/sdk": "^3.11.4",
     "@vitejs/plugin-react": "^4.3.4",
     "axios": "^1.8.4",
     "class-variance-authority": "^0.7.1",

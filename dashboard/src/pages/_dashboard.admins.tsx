@@ -161,7 +161,11 @@ export default function AdminsPage() {
   return (
     <div className="flex flex-col gap-2 w-full items-start">
       <div className="w-full transform-gpu animate-fade-in" style={{ animationDuration: '400ms' }}>
-        <PageHeader title="admins.title" description="admins.description" buttonIcon={Plus} buttonText="admins.createAdmin" onButtonClick={() => setIsDialogOpen(true)} />
+        <PageHeader title="admins.title" description="admins.description" buttonIcon={Plus} buttonText="admins.createAdmin" onButtonClick={() => {
+          setEditingAdmin(null);
+          form.reset(initialDefaultValues);
+          setIsDialogOpen(true);
+        }} />
         <Separator />
       </div>
 

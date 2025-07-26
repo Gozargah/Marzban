@@ -1,15 +1,15 @@
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { cn } from '@/lib/utils.ts'
-import useDirDetection from '@/hooks/use-dir-detection.tsx'
+import { cn } from '@/lib/utils'
+import useDirDetection from '@/hooks/use-dir-detection'
 import React, { useState, useMemo, useEffect } from 'react'
 import { ChevronDown, Edit2, Power, PowerOff, RefreshCw, Trash2, User, UserRound, LoaderCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button.tsx'
+import { Button } from '@/components/ui/button'
 import { AdminDetails } from '@/service/api'
 import { useTranslation } from 'react-i18next'
-import { Badge } from '@/components/ui/badge.tsx'
-import { statusColors } from '@/constants/UserSettings.ts'
-import { useIsMobile } from '@/hooks/use-mobile.tsx'
+import { Badge } from '@/components/ui/badge'
+import { statusColors } from '@/constants/UserSettings'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 interface DataTableProps<TData extends AdminDetails> {
   columns: ColumnDef<TData, any>[]

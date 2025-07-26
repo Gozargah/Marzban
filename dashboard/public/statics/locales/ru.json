@@ -21,6 +21,10 @@
   "statistics.realtime": "Реальное время",
   "statistics.realtimeDescription": "Живая статистика и графики для ваших серверов и пользователей.",
   "statistics.historicalDescription": "Исторические данные о производительности сервера за выбранный период времени",
+  "statistics.date": "Дата",
+  "statistics.totalUsage": "Общий трафик",
+  "statistics.uplink": "Входящий",
+  "statistics.downlink": "Исходящий",
   "hosts": "Хосты",
   "success": "Успешно",
   "error": "Ошибка",
@@ -140,7 +144,10 @@
         "title": "Расширенные настройки",
         "description": "Настройка расширенного поведения уведомлений, включая политики повторных попыток и настройки прокси",
         "maxRetries": "Максимум повторов",
-        "proxyUrl": "URL прокси"
+        "proxyUrl": "URL прокси",
+        "miniAppUrl": "URL мини-приложения",
+        "miniAppUrlPlaceholder": "Введите URL мини-приложения (необязательно)",
+        "miniAppUrlDescription": "URL вашего мини-приложения Telegram. Оставьте пустым, если не используется."
       }
     },
     "subscriptions": {
@@ -216,7 +223,7 @@
       "saveFailed": "Не удалось сохранить настройки Telegram",
       "cancelSuccess": "Изменения отменены и восстановлены первоначальные настройки Telegram",
       "general": {
-        "title": "Основные настройки",
+        "title": "Общие настройки",
         "description": "Базовая конфигурация Telegram бота и настройки подключения",
         "enable": "Включить бота Telegram",
         "enableDescription": "Включить или отключить функциональность бота Telegram для вашей системы",
@@ -367,6 +374,23 @@
     },
     "theme": {
       "title": "темы"
+    },
+    "general": {
+      "title": "Общие",
+      "description": "Настройте основные параметры системы",
+      "loadError": "Не удалось загрузить общие настройки. Пожалуйста, попробуйте снова.",
+      "saveSuccess": "Общие настройки успешно сохранены",
+      "saveFailed": "Не удалось сохранить общие настройки",
+      "cancelSuccess": "Изменения отменены и исходные настройки восстановлены",
+      "defaultFlow": {
+        "title": "Поток VLESS по умолчанию",
+        "description": "Автоматически заполнять поле потока для новых пользователей VLESS"
+      },
+      "defaultMethod": {
+        "title": "Метод Shadowsocks по умолчанию",
+        "description": "Автоматически заполнять метод шифрования для новых пользователей Shadowsocks"
+      },
+      "errorLoadingSettings": "Ошибка загрузки настроек"
     }
   },
   "saving": "Сохранение...",
@@ -500,7 +524,8 @@
     "enableSuccess": "Шаблон «{{name}}» был успешно включён",
     "disableSuccess": "Шаблон «{{name}}» был успешно отключён",
     "enableFailed": "Не удалось включить администратора «{{name}}»",
-    "disableFailed": "Не удалось отключить администратора «{{name}}»"
+    "disableFailed": "Не удалось отключить администратора «{{name}}»",
+    "resetUsages": "Сброс использования"
   },
   "core.configuration": "Конфигурация",
   "core.generalErrorMessage": "Что-то пошло не так, пожалуйста, проверьте конфигурацию",
@@ -1231,6 +1256,9 @@
     "selectStatus": "Выберите статус",
     "selectedTemplates": "Выбрано шаблонов: {{count}}"
   },
+  "userSettings": {
+    "subscriptionUrlCopied": "URL подписки скопирован в буфер обмена"
+  },
   "sidebar.expand": "Развернуть меню",
   "sidebar.collapse": "Свернуть меню",
   "usersTable.deleteUserTitle": "Удалить пользователя",
@@ -1415,5 +1443,19 @@
   "applying": "Применение...",
   "inboundTags": "Входящие теги",
   "searchInbounds": "Поиск входящих...",
-  "noInboundsFound": "Входящие не найдены"
+  "noInboundsFound": "Входящие не найдены",
+  "timeSelector.pickDate": "Выбрать дату",
+  "advanceSearch": {
+    "title": "Расширенный поиск",
+    "byUsername": "Имя пользователя и заметки",
+    "byProtocol": "Данные протокола",
+    "byStatus": "Статус",
+    "byAdmin": "Администратор",
+    "byGroup": "Группа",
+    "selectGroup": "Выберите группу ...",
+    "selectAdmin": "Выберите администратора ...",
+    "selectStatus": "Выберите статус ..."
+  },
+  "clearAllFilters": "Очистить все фильтры",
+  "activeFilters": "активных"
 }

@@ -216,7 +216,10 @@
         "webhookSecretDescription": "用于 webhook 安全的秘密令牌",
         "proxyUrl": "代理 URL",
         "proxyUrlPlaceholder": "socks5://proxy.example.com:1080",
-        "proxyUrlDescription": "Telegram API 连接的代理 URL（可选）"
+        "proxyUrlDescription": "Telegram API 连接的代理 URL（可选）",
+        "miniAppUrl": "Mini App 链接",
+        "miniAppUrlPlaceholder": "输入 Mini App 链接（可选）",
+        "miniAppUrlDescription": "您的 Telegram Mini App 链接。如果未使用请留空。"
       },
       "advanced": {
         "title": "高级设置",
@@ -396,7 +399,25 @@
       "radiusSmall": "小",
       "radiusMedium": "中",
       "radiusLarge": "大"
-    }
+    },
+    "general": {
+      "title": "常规设置",
+      "description": "配置系统的基本设置",
+      "loadError": "加载常规设置失败，请重试。",
+      "saveSuccess": "常规设置保存成功",
+      "saveFailed": "常规设置保存失败",
+      "cancelSuccess": "更改已取消，原始设置已恢复",
+      "defaultFlow": {
+        "title": "默认 VLESS 流",
+        "description": "为新 VLESS 用户自动填写流字段"
+      },
+      "defaultMethod": {
+        "title": "默认 Shadowsocks 加密方式",
+        "description": "为新 Shadowsocks 用户自动填写加密方式"
+      },
+      "errorLoadingSettings": "加载设置时出错"
+    },
+    "errorLoadingSettings": "加载设置时出错"
   },
   "saving": "保存中...",
   "general": "常规",
@@ -529,7 +550,8 @@
     "enableSuccess": "模板「{{name}}」已成功启用",
     "disableSuccess": "模板「{{name}}」已成功禁用",
     "enableFailed": "启用管理员「{{name}}」失败",
-    "disableFailed": "禁用管理员「{{name}}」失败"
+    "disableFailed": "禁用管理员「{{name}}」失败",
+    "resetUsages": "重置使用量"
   },
   "core.configuration": "配置",
   "core.generalErrorMessage": "配置有误, 请检查",
@@ -1275,6 +1297,9 @@
     "selectStatus": "选择状态",
     "selectedTemplates": "已选择 {{count}} 个模板"
   },
+  "userSettings": {
+    "subscriptionUrlCopied": "订阅链接已复制到剪贴板"
+  },
   "sidebar.expand": "展开侧边栏",
   "sidebar.collapse": "折叠侧边栏",
   "usersTable.deleteUserTitle": "删除用户",
@@ -1457,5 +1482,23 @@
   "inboundTags": "入站标签",
   "searchInbounds": "搜索入站...",
   "noInboundsFound": "未找到入站",
-  "selectedCount": "已选择 {{count}} 项"
+  "selectedCount": "已选择 {{count}} 项",
+  "statistics.date": "日期",
+  "statistics.totalUsage": "总用量",
+  "statistics.uplink": "上行",
+  "statistics.downlink": "下行",
+  "timeSelector.pickDate": "选择日期",
+  "advanceSearch": {
+    "title": "高级搜索",
+    "byUsername": "用户名和备注",
+    "byProtocol": "协议数据",
+    "byStatus": "状态",
+    "byAdmin": "管理员",
+    "byGroup": "分组",
+    "selectGroup": "选择分组 ...",
+    "selectAdmin": "选择管理员 ...",
+    "selectStatus": "选择状态 ..."
+  },
+  "clearAllFilters": "清除所有筛选器",
+  "activeFilters": "活跃"
 }

@@ -65,7 +65,10 @@
         "title": "تنظیمات پیشرفته",
         "description": "پیکربندی رفتار پیشرفته اعلان‌ها شامل سیاست‌های تلاش مجدد و تنظیمات پروکسی",
         "maxRetries": "حداکثر تلاش مجدد",
-        "proxyUrl": "آدرس پروکسی"
+        "proxyUrl": "آدرس پروکسی",
+        "miniAppUrl": "آدرس مینی‌اپ تلگرام",
+        "miniAppUrlPlaceholder": "آدرس مینی‌اپ را وارد کنید (اختیاری)",
+        "miniAppUrlDescription": "آدرس مینی‌اپ تلگرام خود را وارد کنید. در صورت عدم استفاده، خالی بگذارید."
       }
     },
     "subscriptions": {
@@ -292,6 +295,23 @@
     },
     "theme": {
       "title": "تم"
+    },
+    "general": {
+      "title": "عمومی",
+      "description": "پیکربندی تنظیمات پایه برای سیستم شما",
+      "loadError": "بارگیری تنظیمات عمومی ناموفق بود. لطفاً دوباره تلاش کنید.",
+      "saveSuccess": "تنظیمات عمومی با موفقیت ذخیره شد",
+      "saveFailed": "ذخیره تنظیمات عمومی ناموفق بود",
+      "cancelSuccess": "تغییرات لغو شد و تنظیمات اصلی بازیابی شد",
+      "defaultFlow": {
+        "title": "جریان VLESS پیش‌فرض",
+        "description": "پر کردن خودکار فیلد جریان برای کاربران جدید VLESS"
+      },
+      "defaultMethod": {
+        "title": "روش پیش‌فرض شدوساکس",
+        "description": "پر کردن خودکار روش رمزنگاری برای کاربران جدید شدوساکس"
+      },
+      "errorLoadingSettings": "خطا در بارگذاری تنظیمات"
     }
   },
   "saving": "در حال ذخیره...",
@@ -434,7 +454,8 @@
     "enableSuccess": "قالب «{{name}}» با موفقیت فعال شد",
     "disableSuccess": "قالب «{{name}}» با موفقیت غیرفعال شد",
     "enableFailed": "فعال‌سازی مدیر «{{name}}» ناموفق بود",
-    "disableFailed": "غیرفعال‌سازی مدیر «{{name}}» ناموفق بود"
+    "disableFailed": "غیرفعال‌سازی مدیر «{{name}}» ناموفق بود",
+    "resetUsages": "ریست مصرف"
   },
   "core.configuration": "پیکربندی",
   "core.generalErrorMessage": "مشکلی پیش آمده، لطفا پیکربندی را بررسی کنید",
@@ -1235,6 +1256,9 @@
     "selectStatus": "انتخاب وضعیت",
     "selectedTemplates": "{{count}} قالب انتخاب شده"
   },
+  "userSettings": {
+    "subscriptionUrlCopied": "لینک اشتراک در کلیپ‌بورد کپی شد"
+  },
   "sidebar.expand": "باز کردن منو",
   "sidebar.collapse": "بستن منو",
   "usersTable.deleteUserTitle": "حذف کاربر",
@@ -1406,5 +1430,23 @@
   "inboundTags": "تگ‌های ورودی",
   "searchInbounds": "جستجوی ورودی‌ها...",
   "noInboundsFound": "هیچ ورودی‌ای یافت نشد",
-  "selectedCount": "{{count}} انتخاب شده"
+  "selectedCount": "{{count}} انتخاب شده",
+  "statistics.date": "تاریخ",
+  "statistics.totalUsage": "مصرف کل",
+  "statistics.uplink": "ارسال",
+  "statistics.downlink": "دریافت",
+  "timeSelector.pickDate": "انتخاب تاریخ",
+  "advanceSearch": {
+    "title": "جستجوی پیشرفته",
+    "byUsername": "نام کاربری و یادداشت‌ها",
+    "byProtocol": "داده‌های پروتکل",
+    "byStatus": "وضعیت",
+    "byAdmin": "مدیر",
+    "byGroup": "گروه",
+    "selectGroup": "انتخاب گروه ...",
+    "selectAdmin": "انتخاب مدیر ...",
+    "selectStatus": "انتخاب وضعیت ..."
+  },
+  "clearAllFilters": "پاک کردن همه فیلترها",
+  "activeFilters": "فعال"
 }

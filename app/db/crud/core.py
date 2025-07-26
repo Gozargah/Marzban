@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import CoreConfig
@@ -59,7 +59,12 @@ async def modify_core_config(
     core_data = modified_core_config.model_dump(exclude_none=True)
 
     for key, value in core_data.items():
-        setattr(db_core_config, key, value)
+        if key == "config":
+            query = update(CoreConfig).where(CoreConfig.id == db_core_config.id)
+            await db.execute(query.values({CoreConfig.config: "{}"}))
+            await db.execute(query.values({CoreConfig.config: value}))
+        else:
+            setattr(db_core_config, key, value)
 
     await db.commit()
     await db.refresh(db_core_config)

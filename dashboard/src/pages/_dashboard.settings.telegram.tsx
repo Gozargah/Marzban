@@ -29,13 +29,34 @@ const telegramSettingsSchema = z.object({
     }
   }, {
     message: 'Telegram webhook URL must use ports 443, 80, 88, or 8443'
+  })
+  .refine((url) => {
+    if (!url || url === '') return true;
+    return !url.endsWith('/');
+  }, {
+    message: 'Telegram webhook URL must not end with a slash (/).'
   }),
   webhook_secret: z.string().optional(),
   proxy_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
   mini_app_login: z.boolean().default(false),
+  mini_app_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
 })
 
 type TelegramSettingsForm = z.infer<typeof telegramSettingsSchema>
+
+// Helper to map frontend Telegram form data to backend payload
+function mapTelegramFormToPayload(data: TelegramSettingsForm) {
+  const mapped = {
+    ...data,
+    token: data.token?.trim() || undefined,
+    webhook_url: data.webhook_url?.trim() || undefined,
+    webhook_secret: data.webhook_secret?.trim() || undefined,
+    proxy_url: data.proxy_url?.trim() || undefined,
+    mini_app_web_url: data.mini_app_url?.trim() || undefined,
+  };
+  delete mapped.mini_app_url;
+  return { telegram: mapped };
+}
 
 export default function TelegramSettings() {
   const { t } = useTranslation()
@@ -50,6 +71,7 @@ export default function TelegramSettings() {
       webhook_secret: '',
       proxy_url: '',
       mini_app_login: false,
+      mini_app_url: '',
     }
   })
 
@@ -67,24 +89,15 @@ export default function TelegramSettings() {
         webhook_secret: telegramData.webhook_secret || '',
         proxy_url: telegramData.proxy_url || '',
         mini_app_login: telegramData.mini_app_login || false,
+        mini_app_url: telegramData.mini_app_web_url || '',
       })
     }
   }, [settings, form])
 
   const onSubmit = async (data: TelegramSettingsForm) => {
     try {
-      // Filter out empty values and prepare the payload
-      const filteredData: any = {
-        telegram: {
-          ...data,
-          // Convert empty strings to undefined
-          token: data.token?.trim() || undefined,
-          webhook_url: data.webhook_url?.trim() || undefined,
-          webhook_secret: data.webhook_secret?.trim() || undefined,
-          proxy_url: data.proxy_url?.trim() || undefined,
-        }
-      }
-
+      // Use the mapping helper
+      const filteredData = mapTelegramFormToPayload(data);
       await updateSettings(filteredData)
     } catch (error) {
       // Error handling is done in the parent context
@@ -101,6 +114,7 @@ export default function TelegramSettings() {
         webhook_secret: telegramData.webhook_secret || '',
         proxy_url: telegramData.proxy_url || '',
         mini_app_login: telegramData.mini_app_login || false,
+        mini_app_url: telegramData.mini_app_url || '',
       })
       toast.success(t('settings.telegram.cancelSuccess'))
     }
@@ -338,6 +352,33 @@ export default function TelegramSettings() {
                     </FormItem>
                   )}
                 />
+                {/* Mini App URL - only show when mini_app_login is enabled */}
+                {form.watch('mini_app_login') && (
+                  <FormField
+                    control={form.control}
+                    name="mini_app_url"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
+                        <FormLabel className="text-sm font-medium flex items-center gap-2">
+                          <Smartphone className="h-4 w-4" />
+                          {t('settings.telegram.advanced.miniAppUrl')}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="url"
+                            placeholder={t('settings.telegram.advanced.miniAppUrlPlaceholder')}
+                            {...field}
+                            className="font-mono"
+                          />
+                        </FormControl>
+                        <FormDescription className="text-sm text-muted-foreground">
+                          {t('settings.telegram.advanced.miniAppUrlDescription')}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
             </>
           )}

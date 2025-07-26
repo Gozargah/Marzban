@@ -49,7 +49,7 @@ class XrayConfiguration(BaseSubscription):
             "shortId": sid,
             "spiderX": spx,
         }
-        
+
         return self._remove_none_values(reality_settings)
 
     def ws_config(

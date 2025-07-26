@@ -1102,34 +1102,6 @@ const HostModal: React.FC<HostModalProps> = ({ isDialogOpen, onOpenChange, onSub
                                 </FormItem>
                               )}
                             />
-
-                            <FormField
-                              control={form.control}
-                              name="transport_settings.xhttp_settings.sc_max_buffered_posts"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>{t('hostsDialog.xhttp.scMaxBufferedPosts')}</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            <FormField
-                              control={form.control}
-                              name="transport_settings.xhttp_settings.sc_stream_up_server_secs"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>{t('hostsDialog.xhttp.scStreamUpServerSecs')}</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
                           </div>
 
                           <div className="space-y-4">

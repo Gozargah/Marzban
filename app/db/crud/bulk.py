@@ -117,43 +117,49 @@ async def activate_all_disabled_users(db: AsyncSession, admin: Admin | None = No
     await db.refresh(admin)
 
 
-async def _resolve_target_user_ids(db: AsyncSession, bulk_model: BulkGroup) -> set[int]:
-    """Resolve all user IDs based on users/admins or return all users if unspecified."""
-    user_ids = set()
-
-    if bulk_model.users:
-        result = await db.execute(select(User.id).where(User.id.in_(bulk_model.users)))
-        user_ids.update({row[0] for row in result.all()})
-
+def _create_group_filter(bulk_model: BulkGroup):
+    """Create a comprehensive SQLAlchemy filter condition from a BulkGroup model."""
+    other_conditions = []
     if bulk_model.admins:
-        result = await db.execute(select(User.id).where(User.admin_id.in_(bulk_model.admins)))
-        user_ids.update({row[0] for row in result.all()})
-
+        other_conditions.append(User.admin_id.in_(bulk_model.admins))
     if bulk_model.has_group_ids:
-        result = await db.execute(select(User.id).where(User.groups.any(Group.id.in_(bulk_model.has_group_ids))))
-        user_ids.update({row[0] for row in result.all()})
+        other_conditions.append(User.groups.any(Group.id.in_(bulk_model.has_group_ids)))
 
-    if not bulk_model.users and not bulk_model.admins and not bulk_model.has_group_ids:
-        result = await db.execute(select(User.id))
-        user_ids.update({uid[0] for uid in result.all()})
+    user_ids = bulk_model.users or []
 
-    return user_ids
+    filter_conditions = []
+    if user_ids:
+        filter_conditions.append(User.id.in_(user_ids))
+    if other_conditions:
+        filter_conditions.append(and_(*other_conditions))
+
+    if len(filter_conditions) > 1:
+        return or_(*filter_conditions)
+    elif filter_conditions:
+        return filter_conditions[0]
+    else:
+        return True
 
 
 async def add_groups_to_users(db: AsyncSession, bulk_model: BulkGroup) -> tuple[list, int] | tuple[list[User], int]:
     """
     Bulk add groups to users and return list of affected User objects.
     """
+    final_filter = _create_group_filter(bulk_model)
 
-    user_ids = await _resolve_target_user_ids(db, bulk_model)
+    # Get target user IDs
+    result = await db.execute(select(User.id).where(final_filter))
+    user_ids = {row[0] for row in result.all()}
 
-    stmt = select(users_groups_association)
-    if bulk_model.users or bulk_model.admins or bulk_model.has_group_ids:
-        stmt = stmt.where(users_groups_association.c.user_id.in_(user_ids))
+    count_effctive_users = len(user_ids)
 
-    # Fetch existing associations
-    existing = await db.execute(stmt)
+    if not user_ids:
+        return [], count_effctive_users
 
+    # Fetch existing associations for target users
+    existing = await db.execute(
+        select(users_groups_association).where(users_groups_association.c.user_id.in_(user_ids))
+    )
     existing_pairs = {(r.user_id, r.groups_id) for r in existing.all()}
 
     # Prepare new associations
@@ -165,16 +171,16 @@ async def add_groups_to_users(db: AsyncSession, bulk_model: BulkGroup) -> tuple[
     ]
 
     if not new_rows:
-        return [], 0
+        return [], count_effctive_users
 
     await db.execute(users_groups_association.insert(), new_rows)
     await db.commit()
 
+    # Return users that actually had groups added
     result = await db.execute(select(User).where(User.id.in_({r["user_id"] for r in new_rows})))
     users = result.scalars().all()
     for user in users:
         await load_user_attrs(user)
-    count_effctive_users = len(users)
     return users, count_effctive_users
 
 
@@ -184,17 +190,26 @@ async def remove_groups_from_users(
     """
     Bulk remove groups from users and return list of affected User objects.
     """
-    conditions = [users_groups_association.c.groups_id.in_(bulk_model.group_ids)]
+    final_filter = _create_group_filter(bulk_model)
 
-    if bulk_model.users or bulk_model.admins or bulk_model.has_group_ids:
-        user_ids = await _resolve_target_user_ids(db, bulk_model)
-        conditions.append(users_groups_association.c.user_id.in_(user_ids))
+    # Get target user IDs
+    result = await db.execute(select(User.id).where(final_filter))
+    user_ids = {row[0] for row in result.all()}
 
-    # Identify affected users
-    subquery = select(users_groups_association.c.user_id).where(and_(*conditions)).distinct()
+    count_effctive_users = len(user_ids)
+
+    if not user_ids:
+        return [], count_effctive_users
+
+    # Identify affected users (those who actually have the groups to be removed)
+    subquery = select(users_groups_association.c.user_id).where(
+        and_(
+            users_groups_association.c.user_id.in_(user_ids),
+            users_groups_association.c.groups_id.in_(bulk_model.group_ids)
+        )
+    ).distinct()
     result = await db.execute(select(User).where(User.id.in_(subquery)))
     users = result.scalars().all()
-    count_effctive_users = len(users)
 
     if not users:
         return [], count_effctive_users

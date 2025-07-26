@@ -32,7 +32,11 @@ VITE_BASE_API = (
     else config("VITE_BASE_API", default="/")
 )
 
-XRAY_SUBSCRIPTION_PATH = config("XRAY_SUBSCRIPTION_PATH", default="sub").strip("/")
+# For backward compatibility
+SUBSCRIPTION_PATH = config("XRAY_SUBSCRIPTION_PATH", default="").strip("/")
+if not SUBSCRIPTION_PATH:
+    SUBSCRIPTION_PATH = config("SUBSCRIPTION_PATH", default="sub").strip("/")
+
 USER_SUBSCRIPTION_CLIENTS_LIMIT = config("USER_SUBSCRIPTION_CLIENTS_LIMIT", cast=int, default=10)
 
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = config("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=1440)

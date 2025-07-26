@@ -2,8 +2,9 @@ import { setupColumns } from '@/components/users/columns'
 import { DataTable } from '@/components/users/data-table'
 import { Filters } from '@/components/users/filters'
 import useDirDetection from '@/hooks/use-dir-detection'
-import { UseEditFormValues } from '@/pages/_dashboard._index'
+import { UseEditFormValues } from '@/pages/_dashboard.users'
 import { useGetUsers, UserResponse } from '@/service/api'
+import { useAdmin } from '@/hooks/use-admin'
 import { getUsersPerPageLimitSize } from '@/utils/userPreferenceStorage'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
@@ -11,6 +12,7 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import UserModal from '../dialogs/UserModal'
 import { PaginationControls } from './filters'
+import AdvanceSearchModal, {AdvanceSearchFormValue} from "@/components/dialogs/AdvanceSearchModal.tsx";
 
 const UsersTable = () => {
   const { t } = useTranslation()
@@ -21,6 +23,9 @@ const UsersTable = () => {
   const [isChangingPage, setIsChangingPage] = useState(false)
   const [isEditModalOpen, setEditModalOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null)
+  const [isAdvanceSearchOpen, setIsAdvanceSearchOpen] = useState(false)
+  const { admin } = useAdmin();
+  const isSudo = admin?.is_sudo || false;
 
   const [filters, setFilters] = useState({
     limit: itemsPerPage,
@@ -28,6 +33,19 @@ const UsersTable = () => {
     load_sub: true,
     offset: 0,
     search: undefined as string | undefined,
+    proxy_id: undefined as string | undefined, // add proxy_id
+    is_protocol: false, // add is_protocol
+  })
+
+
+  const advanceSearchForm = useForm<AdvanceSearchFormValue>({
+    defaultValues: {
+      is_username: true,
+      is_protocol: false,
+      admin: [],
+      group: [],
+      status: '0',
+    }
   })
 
   // Create form for user editing
@@ -146,15 +164,23 @@ const UsersTable = () => {
   }
 
   const handleFilterChange = (newFilters: Partial<typeof filters>) => {
-    setFilters(prev => ({
-      ...prev,
-      ...newFilters,
-      offset: newFilters.search !== undefined ? 0 : prev.offset, // Reset offset when search changes
-    }))
+    setFilters(prev => {
+      let updated = { ...prev, ...newFilters };
+      if ('search' in newFilters) {
+        if (prev.is_protocol) {
+          updated.proxy_id = newFilters.search;
+          updated.search = undefined;
+        } else {
+          updated.search = newFilters.search;
+          updated.proxy_id = undefined;
+        }
+        updated.offset = 0;
+      }
+      return updated;
+    });
 
-    // Reset page when search changes
     if (newFilters.search !== undefined) {
-      setCurrentPage(0)
+      setCurrentPage(0);
     }
   }
 
@@ -219,13 +245,50 @@ const UsersTable = () => {
     handleStatusFilter,
   })
 
+  const handleAdvanceSearchSubmit = (values: AdvanceSearchFormValue) => {
+    setFilters((prev) => ({
+      ...prev,
+      admin: values.admin && values.admin.length > 0 ? values.admin : undefined,
+      group: values.group && values.group.length > 0 ? values.group : undefined,
+      status: values.status && values.status !== '0' ? values.status : undefined,
+      is_protocol: values.is_protocol, // update is_protocol
+      offset: 0, // Reset to first page
+    }))
+    setCurrentPage(0)
+    setIsAdvanceSearchOpen(false)
+    advanceSearchForm.reset(values)
+  }
+
   const totalUsers = usersData?.total || 0
   const totalPages = Math.ceil(totalUsers / itemsPerPage)
   const isPageLoading = isLoading || isFetching || isChangingPage
 
   return (
     <div>
-      <Filters filters={filters} onFilterChange={handleFilterChange} refetch={handleManualRefresh} />
+      <Filters 
+        filters={filters} 
+        onFilterChange={handleFilterChange} 
+        advanceSearchOnOpen={setIsAdvanceSearchOpen} 
+        refetch={handleManualRefresh}
+        advanceSearchForm={advanceSearchForm}
+        onClearAdvanceSearch={() => {
+          advanceSearchForm.reset({
+            is_username: true,
+            is_protocol: false,
+            admin: [],
+            group: [],
+            status: '0',
+          })
+          setFilters((prev) => ({
+            ...prev,
+            admin: undefined,
+            group: undefined,
+            status: undefined,
+            offset: 0,
+          }))
+          setCurrentPage(0)
+        }}
+      />
       <DataTable columns={columns} data={usersData?.users || []} isLoading={isLoading} isFetching={isFetching} onEdit={handleEdit} />
       <PaginationControls
         currentPage={currentPage}
@@ -246,6 +309,18 @@ const UsersTable = () => {
           editingUserData={selectedUser}
           onSuccessCallback={handleEditSuccess}
         />
+      )}
+      {isAdvanceSearchOpen && (
+          <AdvanceSearchModal
+              isDialogOpen={isAdvanceSearchOpen}
+              onOpenChange={open => {
+                setIsAdvanceSearchOpen(open)
+                if (!open) advanceSearchForm.reset() // Reset form when closing
+              }}
+              form={advanceSearchForm}
+              onSubmit={handleAdvanceSearchSubmit}
+              isSudo={isSudo}
+          />
       )}
     </div>
   )

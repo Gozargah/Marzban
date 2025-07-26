@@ -47,6 +47,7 @@ export type GetExpiredUsersParams = {
 export type GetUsersUsageParams = {
   period: Period
   node_id?: number | null
+  group_by_node?: boolean
   start?: string | null
   end?: string | null
   admin?: string[] | null
@@ -55,6 +56,7 @@ export type GetUsersUsageParams = {
 export type GetUserUsageParams = {
   period: Period
   node_id?: number | null
+  group_by_node?: boolean
   start?: string | null
   end?: string | null
 }
@@ -113,6 +115,7 @@ export type GetUsageParams = {
   end?: string | null
   period?: Period
   node_id?: number | null
+  group_by_node?: boolean
 }
 
 export type GetHostsParams = {
@@ -160,6 +163,13 @@ export type XrayMuxSettingsOutputXudpConcurrency = number | null
 
 export type XrayMuxSettingsOutputConcurrency = number | null
 
+export interface XrayMuxSettingsOutput {
+  enable?: boolean
+  concurrency?: XrayMuxSettingsOutputConcurrency
+  xudpConcurrency?: XrayMuxSettingsOutputXudpConcurrency
+  xudpProxyUDP443?: Xudp
+}
+
 export type XrayMuxSettingsInputXudpConcurrency = number | null
 
 export type XrayMuxSettingsInputConcurrency = number | null
@@ -188,13 +198,6 @@ export const Xudp = {
   allow: 'allow',
   skip: 'skip',
 } as const
-
-export interface XrayMuxSettingsOutput {
-  enable?: boolean
-  concurrency?: XrayMuxSettingsOutputConcurrency
-  xudpConcurrency?: XrayMuxSettingsOutputXudpConcurrency
-  xudpProxyUDP443?: Xudp
-}
 
 export type XTLSFlows = (typeof XTLSFlows)[keyof typeof XTLSFlows]
 
@@ -258,16 +261,6 @@ export type XHttpSettingsOutputXPaddingBytes = string | null
 
 export type XHttpSettingsOutputNoGrpcHeader = boolean | null
 
-export interface XHttpSettingsOutput {
-  mode?: XHttpModes
-  no_grpc_header?: XHttpSettingsOutputNoGrpcHeader
-  x_padding_bytes?: XHttpSettingsOutputXPaddingBytes
-  sc_max_each_post_bytes?: XHttpSettingsOutputScMaxEachPostBytes
-  sc_min_posts_interval_ms?: XHttpSettingsOutputScMinPostsIntervalMs
-  xmux?: XHttpSettingsOutputXmux
-  download_settings?: XHttpSettingsOutputDownloadSettings
-}
-
 export type XHttpSettingsInputDownloadSettings = number | null
 
 export type XHttpSettingsInputXmux = XMuxSettingsInput | null
@@ -289,6 +282,16 @@ export const XHttpModes = {
   'stream-up': 'stream-up',
   'stream-one': 'stream-one',
 } as const
+
+export interface XHttpSettingsOutput {
+  mode?: XHttpModes
+  no_grpc_header?: XHttpSettingsOutputNoGrpcHeader
+  x_padding_bytes?: XHttpSettingsOutputXPaddingBytes
+  sc_max_each_post_bytes?: XHttpSettingsOutputScMaxEachPostBytes
+  sc_min_posts_interval_ms?: XHttpSettingsOutputScMinPostsIntervalMs
+  xmux?: XHttpSettingsOutputXmux
+  download_settings?: XHttpSettingsOutputDownloadSettings
+}
 
 export interface XHttpSettingsInput {
   mode?: XHttpModes
@@ -349,17 +352,19 @@ export interface UsersResponse {
 
 export type UserUsageStatsListPeriod = Period | null
 
+export interface UserUsageStatsList {
+  period?: UserUsageStatsListPeriod
+  start: string
+  end: string
+  stats: UserUsageStatsListStats
+}
+
 export interface UserUsageStat {
   total_traffic: number
   period_start: string
 }
 
-export interface UserUsageStatsList {
-  period?: UserUsageStatsListPeriod
-  start: string
-  end: string
-  stats: UserUsageStat[]
-}
+export type UserUsageStatsListStats = { [key: string]: UserUsageStat[] }
 
 export type UserTemplateResponseIsDisabled = boolean | null
 
@@ -456,8 +461,6 @@ export type UserTemplateCreateOnHoldTimeout = number | null
 
 export type UserTemplateCreateResetUsages = boolean | null
 
-export type UserTemplateCreateStatus = UserStatusCreate | null
-
 export type UserTemplateCreateExtraSettings = ExtraSettings | null
 
 export type UserTemplateCreateUsernameSuffix = string | null
@@ -523,6 +526,8 @@ export const UserStatusCreate = {
   active: 'active',
   on_hold: 'on_hold',
 } as const
+
+export type UserTemplateCreateStatus = UserStatusCreate | null
 
 export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus]
 
@@ -597,6 +602,8 @@ export type UserModifyOnHoldExpireDuration = number | null
 
 export type UserModifyNote = string | null
 
+export type UserModifyDataLimitResetStrategy = UserDataLimitResetStrategy | null
+
 /**
  * data_limit can be 0 or greater
  */
@@ -605,19 +612,6 @@ export type UserModifyDataLimit = number | null
 export type UserModifyExpire = string | number | null
 
 export type UserModifyProxySettings = ProxyTableInput | null
-
-export type UserDataLimitResetStrategy = (typeof UserDataLimitResetStrategy)[keyof typeof UserDataLimitResetStrategy]
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const UserDataLimitResetStrategy = {
-  no_reset: 'no_reset',
-  day: 'day',
-  week: 'week',
-  month: 'month',
-  year: 'year',
-} as const
-
-export type UserModifyDataLimitResetStrategy = UserDataLimitResetStrategy | null
 
 export interface UserModify {
   proxy_settings?: UserModifyProxySettings
@@ -633,6 +627,17 @@ export interface UserModify {
   next_plan?: UserModifyNextPlan
   status?: UserModifyStatus
 }
+
+export type UserDataLimitResetStrategy = (typeof UserDataLimitResetStrategy)[keyof typeof UserDataLimitResetStrategy]
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const UserDataLimitResetStrategy = {
+  no_reset: 'no_reset',
+  day: 'day',
+  week: 'week',
+  month: 'month',
+  year: 'year',
+} as const
 
 export type UserCreateStatus = UserStatusCreate | null
 
@@ -879,7 +884,7 @@ export interface SingBoxMuxSettings {
 
 export interface SingBoxFragmentSettings {
   fragment?: boolean
-  /** @pattern \d+ms */
+  /** @pattern ^$|^\d+ms$ */
   fragment_fallback_delay?: string
   record_fragment?: boolean
 }
@@ -898,11 +903,6 @@ export interface ShadowsocksSettings {
   /** @minLength 22 */
   password?: string
   method?: ShadowsocksMethods
-}
-
-export interface General {
-  default_flow?: XTLSFlows
-  default_method?: ShadowsocksMethods
 }
 
 export type SettingsSchemaOutputGeneral = General | null
@@ -932,8 +932,6 @@ export interface SettingsSchemaOutput {
 export type SettingsSchemaInputGeneral = General | null
 
 export type SettingsSchemaInputSubscription = SubscriptionInput | null
-
-export type SettingsSchemaInputNotificationEnable = NotificationEnable | null
 
 export type SettingsSchemaInputNotificationSettings = NotificationSettings | null
 
@@ -1061,6 +1059,8 @@ export interface NotificationEnable {
   percentage_reached?: boolean
 }
 
+export type SettingsSchemaInputNotificationEnable = NotificationEnable | null
+
 export interface NotFound {
   detail?: string
 }
@@ -1073,18 +1073,20 @@ export interface NoiseSettings {
 
 export type NodeUsageStatsListPeriod = Period | null
 
+export interface NodeUsageStatsList {
+  period?: NodeUsageStatsListPeriod
+  start: string
+  end: string
+  stats: NodeUsageStatsListStats
+}
+
 export interface NodeUsageStat {
   uplink: number
   downlink: number
   period_start: string
 }
 
-export interface NodeUsageStatsList {
-  period?: NodeUsageStatsListPeriod
-  start: string
-  end: string
-  stats: NodeUsageStat[]
-}
+export type NodeUsageStatsListStats = { [key: string]: NodeUsageStat[] }
 
 export type NodeStatus = (typeof NodeStatus)[keyof typeof NodeStatus]
 
@@ -1375,6 +1377,11 @@ export interface GroupCreate {
   name: string
   inbound_tags: string[]
   is_disabled?: boolean
+}
+
+export interface General {
+  default_flow?: XTLSFlows
+  default_method?: ShadowsocksMethods
 }
 
 export type GRPCSettingsInitialWindowsSize = number | null

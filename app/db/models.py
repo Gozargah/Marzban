@@ -294,9 +294,7 @@ def after_insert_user_subscription_update(mapper, connection, target):
         return
 
     count = connection.scalar(
-        select(func.count())
-        .select_from(UserSubscriptionUpdate)
-        .where(UserSubscriptionUpdate.user_id == target.user_id)
+        select(func.count()).select_from(UserSubscriptionUpdate).where(UserSubscriptionUpdate.user_id == target.user_id)
     )
     if count > USER_SUBSCRIPTION_CLIENTS_LIMIT:
         oldest_sub_id = connection.scalar(
@@ -470,7 +468,9 @@ class ProxyHost(Base):
     http_headers: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON(none_as_null=True), default=None)
     transport_settings: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON(none_as_null=True), default=None)
     mux_settings: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON(none_as_null=True), default=None)
-    status: Mapped[Optional[list[UserStatus]]] = mapped_column(EnumArray(UserStatus, 60), default=list, server_default="")
+    status: Mapped[Optional[list[UserStatus]]] = mapped_column(
+        EnumArray(UserStatus, 60), default=list, server_default=""
+    )
 
 
 class System(Base):

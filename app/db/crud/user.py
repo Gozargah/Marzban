@@ -207,22 +207,19 @@ async def get_expired_users(
 async def get_active_to_expire_users(db: AsyncSession) -> list[User]:
     stmt = select(User).where(User.status == UserStatus.active).where(User.is_expired)
 
-    users = list((await db.execute(stmt)).unique().scalars().all())
-    return users
+    return list((await db.execute(stmt)).unique().scalars().all())
 
 
 async def get_active_to_limited_users(db: AsyncSession) -> list[User]:
     stmt = select(User).where(User.status == UserStatus.active).where(User.is_limited)
 
-    users = list((await db.execute(stmt)).unique().scalars().all())
-    return users
+    return list((await db.execute(stmt)).unique().scalars().all())
 
 
 async def get_on_hold_to_active_users(db: AsyncSession) -> list[User]:
     stmt = select(User).where(User.status == UserStatus.on_hold).where(User.become_online)
 
-    users = list((await db.execute(stmt)).unique().scalars().all())
-    return users
+    return list((await db.execute(stmt)).unique().scalars().all())
 
 
 async def get_users_to_reset_data_usage(db: AsyncSession) -> list[User]:
@@ -248,10 +245,7 @@ async def get_users_to_reset_data_usage(db: AsyncSession) -> list[User]:
     }
 
     num_days_to_reset_case = case(
-        *(
-            (User.data_limit_reset_strategy == strategy, days)
-            for strategy, days in reset_strategy_to_days.items()
-        ),
+        *((User.data_limit_reset_strategy == strategy, days) for strategy, days in reset_strategy_to_days.items()),
         else_=None,
     )
 
@@ -265,8 +259,7 @@ async def get_users_to_reset_data_usage(db: AsyncSession) -> list[User]:
         )
     )
 
-    users = list((await db.execute(stmt)).unique().scalars().all())
-    return users
+    return list((await db.execute(stmt)).unique().scalars().all())
 
 
 async def get_usage_percentage_reached_users(db: AsyncSession, percentage: int) -> list[User]:
@@ -331,7 +324,13 @@ async def get_days_left_reached_users(db: AsyncSession, days: int) -> list[User]
 
 
 async def get_user_usages(
-    db: AsyncSession, user_id: int, start: datetime, end: datetime, period: Period, node_id: int | None = None
+    db: AsyncSession,
+    user_id: int,
+    start: datetime,
+    end: datetime,
+    period: Period,
+    node_id: int | None = None,
+    group_by_node: bool = False,
 ) -> UserUsageStatsList:
     """
     Retrieves user usages within a specified date range.
@@ -348,18 +347,39 @@ async def get_user_usages(
 
     if node_id is not None:
         conditions.append(NodeUserUsage.node_id == node_id)
+    else:
+        node_id = -1
 
-    stmt = (
-        select(trunc_expr.label("period_start"), func.sum(NodeUserUsage.used_traffic).label("total_traffic"))
-        .where(and_(*conditions))
-        .group_by(trunc_expr)
-        .order_by(trunc_expr)
-    )
+    if group_by_node:
+        stmt = (
+            select(
+                trunc_expr.label("period_start"),
+                func.coalesce(NodeUserUsage.node_id, 0).label("node_id"),
+                func.sum(NodeUserUsage.used_traffic).label("total_traffic"),
+            )
+            .where(and_(*conditions))
+            .group_by(trunc_expr, "node_id")
+            .order_by(trunc_expr)
+        )
+
+    else:
+        stmt = (
+            select(trunc_expr.label("period_start"), func.sum(NodeUserUsage.used_traffic).label("total_traffic"))
+            .where(and_(*conditions))
+            .group_by(trunc_expr)
+            .order_by(trunc_expr)
+        )
 
     result = await db.execute(stmt)
-    return UserUsageStatsList(
-        period=period, start=start, end=end, stats=[UserUsageStat(**row) for row in result.mappings()]
-    )
+    stats = {}
+    for row in result.mappings():
+        row_dict = dict(row)
+        node_id_val = row_dict.pop("node_id", node_id)
+        if node_id_val not in stats:
+            stats[node_id_val] = []
+        stats[node_id_val].append(UserUsageStat(**row_dict))
+
+    return UserUsageStatsList(period=period, start=start, end=end, stats=stats)
 
 
 async def get_users_count(db: AsyncSession, status: UserStatus = None, admin_id: int = None) -> int:
@@ -541,6 +561,24 @@ async def modify_user(db: AsyncSession, db_user: User, modify: UserModify) -> Us
     return db_user
 
 
+async def _reset_user_traffic_and_log(db: AsyncSession, db_user: User):
+    """Helper to reset user traffic and log the action."""
+    await db_user.awaitable_attrs.node_usages
+    await db_user.awaitable_attrs.next_plan
+    usage_log = UserUsageResetLogs(
+        user_id=db_user.id,
+        used_traffic_at_reset=db_user.used_traffic,
+    )
+    db.add(usage_log)
+
+    db_user.used_traffic = 0
+    db_user.node_usages.clear()
+
+    if db_user.next_plan:
+        await db.delete(db_user.next_plan)
+        db_user.next_plan = None
+
+
 async def reset_user_data_usage(db: AsyncSession, db_user: User) -> User:
     """
     Resets the data usage of a user and logs the reset.
@@ -552,27 +590,37 @@ async def reset_user_data_usage(db: AsyncSession, db_user: User) -> User:
     Returns:
         User: The updated user object.
     """
-    await db_user.awaitable_attrs.node_usages
-    await db_user.awaitable_attrs.next_plan
-    usage_log = UserUsageResetLogs(
-        user_id=db_user.id,
-        used_traffic_at_reset=db_user.used_traffic,
-    )
-    db.add(usage_log)
+    await _reset_user_traffic_and_log(db, db_user)
 
-    db_user.used_traffic = 0
-    db_user.node_usages.clear()
     if db_user.status not in [UserStatus.expired, UserStatus.disabled]:
         db_user.status = UserStatus.active.value
-
-    if db_user.next_plan:
-        await db.delete(db_user.next_plan)
-        db_user.next_plan = None
 
     await db.commit()
     await db.refresh(db_user)
     await load_user_attrs(db_user)
     return db_user
+
+
+async def bulk_reset_user_data_usage(db: AsyncSession, users: list[User]) -> list[User]:
+    """
+    Resets the data usage for a list of users and logs the reset.
+
+    Args:
+        db (AsyncSession): Database session.
+        users (list[User]): The list of user objects whose data usage is to be reset.
+
+    Returns:
+        list[User]: The updated list of user objects.
+    """
+    for db_user in users:
+        await _reset_user_traffic_and_log(db, db_user)
+        if db_user.status not in [UserStatus.expired, UserStatus.disabled]:
+            db_user.status = UserStatus.active.value
+    await db.commit()
+    for user in users:
+        await db.refresh(user)
+        await load_user_attrs(user)
+    return users
 
 
 async def reset_user_by_next(db: AsyncSession, db_user: User) -> User:
@@ -586,19 +634,10 @@ async def reset_user_by_next(db: AsyncSession, db_user: User) -> User:
     Returns:
         User: The updated user object.
     """
-    await db_user.awaitable_attrs.node_usages
-    usage_log = UserUsageResetLogs(
-        user_id=db_user.id,
-        used_traffic_at_reset=db_user.used_traffic,
-    )
-    db.add(usage_log)
-
-    db_user.node_usages.clear()
-    db_user.status = UserStatus.active
-
+    remaining_traffic = (db_user.data_limit or 0) - db_user.used_traffic
     if db_user.next_plan.user_template_id is None:
         db_user.data_limit = db_user.next_plan.data_limit + (
-            0 if not db_user.next_plan.add_remaining_traffic else db_user.data_limit or 0 - db_user.used_traffic
+            0 if not db_user.next_plan.add_remaining_traffic else remaining_traffic
         )
         db_user.expire = (
             timedelta(seconds=db_user.next_plan.expire) + datetime.now(UTC) if db_user.next_plan.expire else None
@@ -608,7 +647,7 @@ async def reset_user_by_next(db: AsyncSession, db_user: User) -> User:
         await db_user.next_plan.user_template.awaitable_attrs.groups
         db_user.groups = db_user.next_plan.user_template.groups
         db_user.data_limit = db_user.next_plan.user_template.data_limit + (
-            0 if not db_user.next_plan.add_remaining_traffic else db_user.data_limit or 0 - db_user.used_traffic
+            0 if not db_user.next_plan.add_remaining_traffic else remaining_traffic
         )
         if db_user.next_plan.user_template.status is UserStatus.on_hold:
             db_user.status = UserStatus.on_hold
@@ -628,9 +667,8 @@ async def reset_user_by_next(db: AsyncSession, db_user: User) -> User:
         db_user.proxy_settings = proxy_settings
         db_user.data_limit_reset_strategy = db_user.next_plan.user_template.data_limit_reset_strategy
 
-    db_user.used_traffic = 0
-    await db.delete(db_user.next_plan)
-    db_user.next_plan = None
+    await _reset_user_traffic_and_log(db, db_user)
+    db_user.status = UserStatus.active
 
     await db.commit()
     await db.refresh(db_user)
@@ -750,6 +788,7 @@ async def get_all_users_usages(
     end: datetime,
     period: Period = Period.hour,
     node_id: int | None = None,
+    group_by_node: bool = False,
 ) -> UserUsageStatsList:
     """
     Retrieves aggregated usage data for all users of an admin within a specified time range,
@@ -779,18 +818,38 @@ async def get_all_users_usages(
 
     if node_id is not None:
         conditions.append(NodeUserUsage.node_id == node_id)
+    else:
+        node_id = -1
 
-    stmt = (
-        select(trunc_expr.label("period_start"), func.sum(NodeUserUsage.used_traffic).label("total_traffic"))
-        .where(and_(*conditions))
-        .group_by(trunc_expr)
-        .order_by(trunc_expr)
-    )
+    if group_by_node:
+        stmt = (
+            select(
+                trunc_expr.label("period_start"),
+                func.coalesce(NodeUserUsage.node_id, 0).label("node_id"),
+                func.sum(NodeUserUsage.used_traffic).label("total_traffic"),
+            )
+            .where(and_(*conditions))
+            .group_by(trunc_expr, "node_id")
+            .order_by(trunc_expr)
+        )
+    else:
+        stmt = (
+            select(trunc_expr.label("period_start"), func.sum(NodeUserUsage.used_traffic).label("total_traffic"))
+            .where(and_(*conditions))
+            .group_by(trunc_expr)
+            .order_by(trunc_expr)
+        )
 
     result = await db.execute(stmt)
-    return UserUsageStatsList(
-        period=period, start=start, end=end, stats=[UserUsageStat(**row) for row in result.mappings()]
-    )
+    stats = {}
+    for row in result.mappings():
+        row_dict = dict(row)
+        node_id_val = row_dict.pop("node_id", node_id)
+        if node_id_val not in stats:
+            stats[node_id_val] = []
+        stats[node_id_val].append(UserUsageStat(**row_dict))
+
+    return UserUsageStatsList(period=period, start=start, end=end, stats=stats)
 
 
 async def update_users_status(db: AsyncSession, users: list[User], status: UserStatus) -> list[User]:

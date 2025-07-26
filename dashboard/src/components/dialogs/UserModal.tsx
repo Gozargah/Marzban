@@ -1,6 +1,5 @@
 import GroupsSelector from '@/components/common/GroupsSelector'
 import { SubscriptionInfo } from '@/components/SubscriptionInfo'
-import { UserSubscriptionClientsModal } from '@/components/dialogs/UserSubscriptionClientsModal'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
@@ -17,10 +16,20 @@ import useDirDetection from '@/hooks/use-dir-detection'
 import useDynamicErrorHandler from '@/hooks/use-dynamic-errors.ts'
 import { cn } from '@/lib/utils'
 import { UseEditFormValues, UseFormValues, userCreateSchema, userEditSchema } from '@/pages/_dashboard.users'
-import { useCreateUser, useCreateUserFromTemplate, useGetUsers, useGetUserTemplates, useModifyUser, useModifyUserWithTemplate } from '@/service/api'
+import {
+  getGeneralSettings,
+  getGetGeneralSettingsQueryKey,
+  useCreateUser,
+  useCreateUserFromTemplate,
+  useGetUsers,
+  useGetUserTemplates,
+  useModifyUser,
+  useModifyUserWithTemplate,
+  type UserResponse,
+} from '@/service/api'
 import { dateUtils, useRelativeExpiryDate } from '@/utils/dateFormatter'
 import { formatBytes } from '@/utils/formatByte'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CalendarIcon, Layers, ListStart, Lock, RefreshCcw, Users, X } from 'lucide-react'
 import React, { useEffect, useState, useTransition } from 'react'
 import { UseFormReturn } from 'react-hook-form'
@@ -28,6 +37,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { v4 as uuidv4, v5 as uuidv5, v7 as uuidv7 } from 'uuid'
 import { z } from 'zod'
+import { UserSubscriptionClientsModal } from './UserSubscriptionClientsModal'
 
 interface UserModalProps {
   isDialogOpen: boolean
@@ -36,7 +46,7 @@ interface UserModalProps {
   editingUser: boolean
   editingUserId?: number
   editingUserData?: any // The user data object when editing
-  onSuccessCallback?: () => void
+  onSuccessCallback?: (user: UserResponse) => void
 }
 
 const isDate = (v: unknown): v is Date => typeof v === 'object' && v !== null && v instanceof Date
@@ -491,8 +501,17 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
     },
   })
 
+  // Fetch general settings each time the modal is opened
+  const { data: generalSettings } = useQuery({
+    queryKey: getGetGeneralSettingsQueryKey(),
+    queryFn: () => getGeneralSettings(),
+    enabled: isDialogOpen,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+  })
+
   // Function to refresh all user-related data
-  const refreshUserData = () => {
+  const refreshUserData = (user: UserResponse) => {
     // Invalidate relevant queries to trigger fresh fetches
     queryClient.invalidateQueries({ queryKey: ['/api/users'] })
     queryClient.invalidateQueries({ queryKey: ['getUsersUsage'] })
@@ -505,30 +524,30 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
 
     // Call the success callback if provided
     if (onSuccessCallback) {
-      onSuccessCallback()
+      onSuccessCallback(user)
     }
   }
 
   const createUserMutation = useCreateUser({
     mutation: {
-      onSuccess: () => refreshUserData(),
+      onSuccess: data => refreshUserData(data),
     },
   })
   const modifyUserMutation = useModifyUser({
     mutation: {
-      onSuccess: () => refreshUserData(),
+      onSuccess: data => refreshUserData(data),
     },
   })
   const createUserFromTemplateMutation = useCreateUserFromTemplate({
     mutation: {
-      onSuccess: () => refreshUserData(),
+      onSuccess: data => refreshUserData(data),
     },
   })
 
   // Add the mutation hook at the top with other mutations
   const modifyUserWithTemplateMutation = useModifyUserWithTemplate({
     mutation: {
-      onSuccess: () => refreshUserData(),
+      onSuccess: data => refreshUserData(data),
     },
   })
 
@@ -1041,9 +1060,18 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
     if (isDialogOpen && !editingUser) {
       // Remove auto-fill of proxy settings
       form.setValue('proxy_settings', undefined)
+      // Set default flow and method from generalSettings if available
+      if (generalSettings) {
+        form.setValue('proxy_settings.vless.flow', generalSettings.default_flow || '')
+        const validMethods = ['aes-128-gcm', 'aes-256-gcm', 'chacha20-ietf-poly1305', 'xchacha20-poly1305'] as const
+        const method = validMethods.find(m => m === generalSettings.default_method)
+        if (method) {
+          form.setValue('proxy_settings.shadowsocks.method', method)
+        }
+      }
     }
     // eslint-disable-next-line
-  }, [isDialogOpen, editingUser])
+  }, [isDialogOpen, editingUser, generalSettings])
 
   // Add effect to handle locale changes
   useEffect(() => {
@@ -1051,114 +1079,32 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
   }, [i18n.language])
 
   return (
-    <>
-      <Dialog open={isDialogOpen} onOpenChange={handleModalOpenChange}>
-        <DialogContent className={`lg:min-w-[900px] ${editingUser ? 'h-full sm:h-auto' : 'h-auto'}`}>
-          <DialogHeader>
-            <DialogTitle className={`${dir === 'rtl' ? 'text-right' : ''}`}>
-              {editingUser ? t('userDialog.editUser', { defaultValue: 'Edit User' }) : t('createUser', { defaultValue: 'Create User' })}
-            </DialogTitle>
-          </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="-mr-4 max-h-[80dvh] overflow-y-auto px-2 pr-4 sm:max-h-[75dvh]">
-                <div className="flex w-full flex-col items-center justify-between gap-6 lg:flex-row lg:items-start lg:pb-8">
-                  <div className="w-full flex-[2] space-y-6">
-                    <div className="flex w-full items-center justify-center gap-4">
-                      {/* Hide these fields if a template is selected */}
-                      {!selectedTemplateId && (
-                        <div className={'flex w-full gap-4'}>
-                          <FormField
-                            control={form.control}
-                            name="username"
-                            render={({ field }) => {
-                              const hasError = !!form.formState.errors.username
-                              return (
-                                <FormItem className="flex-1">
-                                  <FormLabel>{t('username', { defaultValue: 'Username' })}</FormLabel>
-                                  <FormControl>
-                                    <div className="flex items-center gap-2">
-                                      <div className="w-full">
-                                        <Input
-                                          placeholder={t('admins.enterUsername', { defaultValue: 'Enter username' })}
-                                          {...field}
-                                          value={field.value ?? ''}
-                                          disabled={editingUser}
-                                          isError={hasError}
-                                          onChange={e => {
-                                            field.onChange(e)
-                                            handleFieldChange('username', e.target.value)
-                                          }}
-                                          onBlur={() => handleFieldBlur('username')}
-                                        />
-                                      </div>
-                                      {!editingUser && (
-                                        <Button
-                                          size="icon"
-                                          type="button"
-                                          variant="ghost"
-                                          onClick={e => {
-                                            e.preventDefault()
-                                            e.stopPropagation()
-                                            const newUsername = generateUsername()
-                                            field.onChange(newUsername)
-                                            handleFieldChange('username', newUsername)
-                                          }}
-                                          title="Generate username"
-                                        >
-                                          <RefreshCcw className="h-3 w-3" />
-                                        </Button>
-                                      )}
-                                    </div>
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )
-                            }}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="status"
-                            render={({ field }) => (
-                              <FormItem className="w-1/3">
-                                <FormLabel>{t('status', { defaultValue: 'Status' })}</FormLabel>
-                                <FormControl>
-                                  <Select
-                                    onValueChange={value => {
-                                      field.onChange(value)
-                                      handleFieldChange('status', value)
-                                      handleFieldBlur('status')
-                                    }}
-                                    value={field.value || ''}
-                                  >
-                                    <SelectTrigger>
-                                      <SelectValue placeholder={t('userDialog.selectStatus', { defaultValue: 'Select status' })} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="active">{t('status.active', { defaultValue: 'Active' })}</SelectItem>
-                                      {editingUser && <SelectItem value="disabled">{t('status.disabled', { defaultValue: 'Disabled' })}</SelectItem>}
-                                      <SelectItem value="on_hold">{t('status.on_hold', { defaultValue: 'On Hold' })}</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      )}
-                      {/* If template is selected, only show username field */}
-                      {selectedTemplateId && (
+    <Dialog open={isDialogOpen} onOpenChange={handleModalOpenChange}>
+      <DialogContent className={`lg:min-w-[900px] ${editingUser ? 'h-full sm:h-auto' : 'h-auto'}`}>
+        <DialogHeader>
+          <DialogTitle className={`${dir === 'rtl' ? 'text-right' : ''}`}>
+            {editingUser ? t('userDialog.editUser', { defaultValue: 'Edit User' }) : t('createUser', { defaultValue: 'Create User' })}
+          </DialogTitle>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="-mr-4 max-h-[80dvh] overflow-y-auto px-2 pr-4 sm:max-h-[75dvh]">
+              <div className="flex w-full flex-col items-center justify-between gap-6 lg:flex-row lg:items-start lg:pb-8">
+                <div className="w-full flex-[2] space-y-6">
+                  <div className="flex w-full items-center justify-center gap-4">
+                    {/* Hide these fields if a template is selected */}
+                    {!selectedTemplateId && (
+                      <div className={'flex w-full gap-4'}>
                         <FormField
                           control={form.control}
                           name="username"
                           render={({ field }) => {
                             const hasError = !!form.formState.errors.username
                             return (
-                              <FormItem className="w-full flex-1">
+                              <FormItem className="flex-1">
                                 <FormLabel>{t('username', { defaultValue: 'Username' })}</FormLabel>
                                 <FormControl>
-                                  <div className="flex w-full flex-row items-center justify-between gap-4">
+                                  <div className="flex items-center gap-2">
                                     <div className="w-full">
                                       <Input
                                         placeholder={t('admins.enterUsername', { defaultValue: 'Enter username' })}
@@ -1197,9 +1143,93 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                             )
                           }}
                         />
-                      )}
-                    </div>
-                    {/* Data limit and expire fields - show data_limit only when no template is selected */}
+                        {activeTab === 'groups' && (
+                          <FormField
+                            control={form.control}
+                            name="status"
+                            render={({ field }) => (
+                              <FormItem className="w-1/3">
+                                <FormLabel>{t('status', { defaultValue: 'Status' })}</FormLabel>
+                                <FormControl>
+                                  <Select
+                                    onValueChange={value => {
+                                      field.onChange(value)
+                                      handleFieldChange('status', value)
+                                      handleFieldBlur('status')
+                                    }}
+                                    value={field.value || ''}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue placeholder={t('userDialog.selectStatus', { defaultValue: 'Select status' })} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="active">{t('status.active', { defaultValue: 'Active' })}</SelectItem>
+                                      {editingUser && <SelectItem value="disabled">{t('status.disabled', { defaultValue: 'Disabled' })}</SelectItem>}
+                                      <SelectItem value="on_hold">{t('status.on_hold', { defaultValue: 'On Hold' })}</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+                      </div>
+                    )}
+                    {/* If template is selected, only show username field */}
+                    {selectedTemplateId && (
+                      <FormField
+                        control={form.control}
+                        name="username"
+                        render={({ field }) => {
+                          const hasError = !!form.formState.errors.username
+                          return (
+                            <FormItem className="w-full flex-1">
+                              <FormLabel>{t('username', { defaultValue: 'Username' })}</FormLabel>
+                              <FormControl>
+                                <div className="flex w-full flex-row items-center justify-between gap-4">
+                                  <div className="w-full">
+                                    <Input
+                                      placeholder={t('admins.enterUsername', { defaultValue: 'Enter username' })}
+                                      {...field}
+                                      value={field.value ?? ''}
+                                      disabled={editingUser}
+                                      isError={hasError}
+                                      onChange={e => {
+                                        field.onChange(e)
+                                        handleFieldChange('username', e.target.value)
+                                      }}
+                                      onBlur={() => handleFieldBlur('username')}
+                                    />
+                                  </div>
+                                  {!editingUser && (
+                                    <Button
+                                      size="icon"
+                                      type="button"
+                                      variant="ghost"
+                                      onClick={e => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        const newUsername = generateUsername()
+                                        field.onChange(newUsername)
+                                        handleFieldChange('username', newUsername)
+                                      }}
+                                      title="Generate username"
+                                    >
+                                      <RefreshCcw className="h-3 w-3" />
+                                    </Button>
+                                  )}
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )
+                        }}
+                      />
+                    )}
+                  </div>
+                  {/* Data limit and expire fields - show data_limit only when no template is selected */}
+                  {activeTab === 'groups' && (
                     <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-start">
                       {!selectedTemplateId && (
                         <>
@@ -1320,59 +1350,61 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                         )}
                       </div>
                     </div>
-                    {status === 'on_hold' && (
-                      <FormField
-                        control={form.control}
-                        name="on_hold_timeout"
-                        render={({ field }) => (
-                          <ExpiryDateField
-                            field={field}
-                            displayDate={onHoldDisplayDate}
-                            usePersianCalendar={usePersianCalendar}
-                            calendarOpen={onHoldCalendarOpen}
-                            setCalendarOpen={setOnHoldCalendarOpen}
-                            handleFieldChange={handleFieldChange}
-                            label={t('userDialog.timeOutDate', { defaultValue: 'Expire date' })}
-                          />
-                        )}
-                      />
-                    )}
+                  )}
+                  {activeTab === 'groups' && status === 'on_hold' && (
                     <FormField
                       control={form.control}
-                      name="note"
+                      name="on_hold_timeout"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('userDialog.note', { defaultValue: 'Note' })}</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder={t('userDialog.note', { defaultValue: 'Optional note' }) + '...'}
-                              {...field}
-                              rows={3}
-                              onChange={e => {
-                                field.onChange(e)
-                                handleFieldChange('note', e.target.value)
-                              }}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
+                        <ExpiryDateField
+                          field={field}
+                          displayDate={onHoldDisplayDate}
+                          usePersianCalendar={usePersianCalendar}
+                          calendarOpen={onHoldCalendarOpen}
+                          setCalendarOpen={setOnHoldCalendarOpen}
+                          handleFieldChange={handleFieldChange}
+                          label={t('userDialog.timeOutDate', { defaultValue: 'Expire date' })}
+                        />
                       )}
                     />
-
-                    {/* Subscription Information - only show when editing and data exists */}
-                    {editingUser && editingUserData && (
-                      <SubscriptionInfo
-                        subUpdatedAt={editingUserData.sub_updated_at}
-                        subLastUserAgent={editingUserData.sub_last_user_agent}
-                        headerButton={
-                          <Button type="button" variant="outline" size="sm" onClick={() => setSubscriptionClientsModalOpen(true)} className="h-7 flex-shrink-0 px-2 text-xs">
-                            <Users className="!h-3 !w-3 sm:mr-1" />
-                            <span className="inline">{t('subscriptionClients.viewAllClients', { defaultValue: 'View All Clients' })}</span>
-                          </Button>
-                        }
-                      />
+                  )}
+                  <FormField
+                    control={form.control}
+                    name="note"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('userDialog.note', { defaultValue: 'Note' })}</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder={t('userDialog.note', { defaultValue: 'Optional note' }) + '...'}
+                            {...field}
+                            rows={3}
+                            onChange={e => {
+                              field.onChange(e)
+                              handleFieldChange('note', e.target.value)
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
                     )}
-                    {/* Proxy Settings Accordion */}
+                  />
+
+                  {/* Subscription Information - only show when editing and data exists */}
+                  {activeTab === 'groups' && editingUser && editingUserData && (editingUserData.sub_updated_at || editingUserData.sub_last_user_agent) && (
+                    <SubscriptionInfo
+                      subUpdatedAt={editingUserData.sub_updated_at}
+                      subLastUserAgent={editingUserData.sub_last_user_agent}
+                      headerButton={
+                        <Button type="button" variant="outline" size="sm" onClick={() => setSubscriptionClientsModalOpen(true)} className="h-7 flex-shrink-0 px-2 text-xs">
+                          <Users className="!h-3 !w-3 sm:mr-1" />
+                          <span className="inline">{t('subscriptionClients.viewAllClients', { defaultValue: 'View All Clients' })}</span>
+                        </Button>
+                      }
+                    />
+                  )}
+                  {/* Proxy Settings Accordion */}
+                  {activeTab === 'groups' && (
                     <Accordion type="single" collapsible className="my-4 w-full">
                       <AccordionItem className="rounded-sm border px-4 [&_[data-state=closed]]:no-underline [&_[data-state=open]]:no-underline" value="proxySettings">
                         <AccordionTrigger>
@@ -1645,229 +1677,228 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                         </AccordionContent>
                       </AccordionItem>
                     </Accordion>
-                    {/* Next Plan Section (toggleable) */}
-                    {editingUser && (
-                      <div className="rounded-[--radius] border border-border p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <ListStart className="h-4 w-4" />
-                            <div>{t('userDialog.nextPlanTitle', { defaultValue: 'Next Plan' })}</div>
-                          </div>
-                          <Switch checked={nextPlanEnabled} onCheckedChange={setNextPlanEnabled} />
+                  )}
+                  {/* Next Plan Section (toggleable) */}
+                  {activeTab === 'groups' && editingUser && (
+                    <div className="rounded-[--radius] border border-border p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <ListStart className="h-4 w-4" />
+                          <div>{t('userDialog.nextPlanTitle', { defaultValue: 'Next Plan' })}</div>
                         </div>
-                        {nextPlanEnabled && (
-                          <div className="flex flex-col gap-4 py-4">
-                            <FormField
-                              control={form.control}
-                              name="next_plan.user_template_id"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>{t('userDialog.nextPlanTemplateId', { defaultValue: 'Template' })}</FormLabel>
-                                  <FormControl>
-                                    <Select
-                                      value={field.value ? String(field.value) : 'none'}
-                                      onValueChange={val => {
-                                        if (val === 'none' || (field.value && String(field.value) === val)) {
-                                          field.onChange(undefined)
-                                        } else {
-                                          field.onChange(Number(val))
-                                        }
-                                      }}
-                                    >
-                                      <SelectTrigger>
-                                        <SelectValue placeholder={t('userDialog.selectTemplatePlaceholder', { defaultValue: 'Choose a template' })} />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="none">---</SelectItem>
-                                        {(templatesData || []).map((tpl: any) => (
-                                          <SelectItem key={tpl.id} value={String(tpl.id)}>
-                                            {tpl.name}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            {/* Only show expire and data_limit if no template is selected */}
-                            {!nextPlanTemplateSelected && (
-                              <div className="flex gap-4">
-                                <FormField
-                                  control={form.control}
-                                  name="next_plan.expire"
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel>{t('userDialog.nextPlanExpire', { defaultValue: 'Expire' })}</FormLabel>
-                                      <FormControl>
-                                        <Input
-                                          type="number"
-                                          min="0"
-                                          step="any"
-                                          {...field}
-                                          value={field.value ? dateUtils.secondsToDays(field.value) || '' : ''}
-                                          onChange={e => {
-                                            const days = e.target.value ? Number(e.target.value) : 0
-                                            const seconds = dateUtils.daysToSeconds(days)
-                                            field.onChange(seconds)
-                                          }}
-                                        />
-                                      </FormControl>
-                                      <span className="text-xs text-muted-foreground">{t('userDialog.days', { defaultValue: 'Days' })}</span>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                                <FormField
-                                  control={form.control}
-                                  name="next_plan.data_limit"
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel>{t('userDialog.nextPlanDataLimit', { defaultValue: 'Data Limit' })}</FormLabel>
-                                      <FormControl>
-                                        <Input
-                                          type="number"
-                                          min="0"
-                                          step="any"
-                                          {...field}
-                                          onChange={e => {
-                                            const value = e.target.value ? Number(e.target.value) : 0
-                                            // Convert GB to bytes (1 GB = 1024 * 1024 * 1024 bytes)
-                                            field.onChange(value ? value * 1024 * 1024 * 1024 : 0)
-                                          }}
-                                          value={field.value ? Math.round(field.value / (1024 * 1024 * 1024)) : ''}
-                                        />
-                                      </FormControl>
-                                      <span className="text-xs text-muted-foreground">GB</span>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                              </div>
+                        <Switch checked={nextPlanEnabled} onCheckedChange={setNextPlanEnabled} />
+                      </div>
+                      {nextPlanEnabled && (
+                        <div className="flex flex-col gap-4 py-4">
+                          <FormField
+                            control={form.control}
+                            name="next_plan.user_template_id"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t('userDialog.nextPlanTemplateId', { defaultValue: 'Template' })}</FormLabel>
+                                <FormControl>
+                                  <Select
+                                    value={field.value ? String(field.value) : 'none'}
+                                    onValueChange={val => {
+                                      if (val === 'none' || (field.value && String(field.value) === val)) {
+                                        field.onChange(undefined)
+                                      } else {
+                                        field.onChange(Number(val))
+                                      }
+                                    }}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue placeholder={t('userDialog.selectTemplatePlaceholder', { defaultValue: 'Choose a template' })} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="none">---</SelectItem>
+                                      {(templatesData || []).map((tpl: any) => (
+                                        <SelectItem key={tpl.id} value={String(tpl.id)}>
+                                          {tpl.name}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
                             )}
-                            <div className="flex gap-8">
+                          />
+                          {/* Only show expire and data_limit if no template is selected */}
+                          {!nextPlanTemplateSelected && (
+                            <div className="flex gap-4">
                               <FormField
                                 control={form.control}
-                                name="next_plan.add_remaining_traffic"
+                                name="next_plan.expire"
                                 render={({ field }) => (
-                                  <FormItem className="flex flex-row items-center gap-2">
-                                    <FormLabel>{t('userDialog.nextPlanAddRemainingTraffic', { defaultValue: 'Add Remaining Traffic' })}</FormLabel>
-                                    <Switch checked={!!field.value} onCheckedChange={field.onChange} />
+                                  <FormItem>
+                                    <FormLabel>{t('userDialog.nextPlanExpire', { defaultValue: 'Expire' })}</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        min="0"
+                                        step="any"
+                                        {...field}
+                                        value={field.value ? dateUtils.secondsToDays(field.value) || '' : ''}
+                                        onChange={e => {
+                                          const days = e.target.value ? Number(e.target.value) : 0
+                                          const seconds = dateUtils.daysToSeconds(days)
+                                          field.onChange(seconds)
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <span className="text-xs text-muted-foreground">{t('userDialog.days', { defaultValue: 'Days' })}</span>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name="next_plan.data_limit"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>{t('userDialog.nextPlanDataLimit', { defaultValue: 'Data Limit' })}</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        min="0"
+                                        step="any"
+                                        {...field}
+                                        onChange={e => {
+                                          const value = e.target.value ? Number(e.target.value) : 0
+                                          // Convert GB to bytes (1 GB = 1024 * 1024 * 1024 bytes)
+                                          field.onChange(value ? value * 1024 * 1024 * 1024 : 0)
+                                        }}
+                                        value={field.value ? Math.round(field.value / (1024 * 1024 * 1024)) : ''}
+                                      />
+                                    </FormControl>
+                                    <span className="text-xs text-muted-foreground">GB</span>
                                     <FormMessage />
                                   </FormItem>
                                 )}
                               />
                             </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <div className="h-full w-full flex-1 space-y-6">
-                    <div className="w-full">
-                      <div className="flex items-center border-b">
-                        {tabs.map(tab => (
-                          <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                            className={`relative flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                              activeTab === tab.id ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground hover:text-foreground'
-                            }`}
-                            type="button"
-                          >
-                            <div className="flex items-center justify-center gap-1.5">
-                              <tab.icon className="h-4 w-4" />
-                              <span>{t(tab.label)}</span>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                      <div className="py-2">
-                        {activeTab === 'templates' &&
-                          (templatesLoading ? (
-                            <div>{t('Loading...', { defaultValue: 'Loading...' })}</div>
-                          ) : (
-                            <div className="space-y-4 pt-4">
-                              <FormLabel>{t('userDialog.selectTemplate', { defaultValue: 'Select Template' })}</FormLabel>
-                              <Select value={selectedTemplateId ? String(selectedTemplateId) : 'none'} onValueChange={handleTemplateSelect}>
-                                <SelectTrigger>
-                                  <SelectValue placeholder={t('userDialog.selectTemplatePlaceholder', { defaultValue: 'Choose a template' })} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="none">---</SelectItem>
-                                  {(templatesData || []).map((template: any) => (
-                                    <SelectItem key={template.id} value={String(template.id)}>
-                                      {template.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              {selectedTemplateId && (
-                                <div className="text-sm text-muted-foreground">
-                                  {t('userDialog.selectedTemplates', {
-                                    count: 1,
-                                    defaultValue: '1 template selected',
-                                  })}
-                                </div>
+                          )}
+                          <div className="flex gap-8">
+                            <FormField
+                              control={form.control}
+                              name="next_plan.add_remaining_traffic"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center gap-2">
+                                  <FormLabel>{t('userDialog.nextPlanAddRemainingTraffic', { defaultValue: 'Add Remaining Traffic' })}</FormLabel>
+                                  <Switch checked={!!field.value} onCheckedChange={field.onChange} />
+                                  <FormMessage />
+                                </FormItem>
                               )}
-                            </div>
-                          ))}
-                        {activeTab === 'groups' && (
-                          <FormField
-                            control={form.control}
-                            name="group_ids"
-                            render={({ field }) => (
-                              <GroupsSelector
-                                control={form.control}
-                                name="group_ids"
-                                onGroupsChange={groups => {
-                                  field.onChange(groups)
-                                  handleFieldChange('group_ids', groups)
-
-                                  // Clear template selection when groups are selected
-                                  if (groups.length > 0 && selectedTemplateId) {
-                                    setSelectedTemplateId(null)
-                                    clearTemplate()
-                                  }
-
-                                  // Trigger validation after group selection changes
-                                  const isValid = validateAllFields({ ...form.getValues(), group_ids: groups }, touchedFields)
-                                  setIsFormValid(isValid)
-                                }}
-                              />
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div className="h-full w-full flex-1 space-y-6">
+                  <div className="w-full">
+                    <div className="flex items-center border-b">
+                      {tabs.map(tab => (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                          className={`relative flex-1 px-3 py-2 text-sm font-medium transition-colors ${
+                            activeTab === tab.id ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                          type="button"
+                        >
+                          <div className="flex items-center justify-center gap-1.5">
+                            <tab.icon className="h-4 w-4" />
+                            <span>{t(tab.label)}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="py-2">
+                      {activeTab === 'templates' &&
+                        (templatesLoading ? (
+                          <div>{t('Loading...', { defaultValue: 'Loading...' })}</div>
+                        ) : (
+                          <div className="space-y-4 pt-4">
+                            <FormLabel>{t('userDialog.selectTemplate', { defaultValue: 'Select Template' })}</FormLabel>
+                            <Select value={selectedTemplateId ? String(selectedTemplateId) : 'none'} onValueChange={handleTemplateSelect}>
+                              <SelectTrigger>
+                                <SelectValue placeholder={t('userDialog.selectTemplatePlaceholder', { defaultValue: 'Choose a template' })} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">---</SelectItem>
+                                {(templatesData || []).map((template: any) => (
+                                  <SelectItem key={template.id} value={String(template.id)}>
+                                    {template.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {selectedTemplateId && (
+                              <div className="text-sm text-muted-foreground">
+                                {t('userDialog.selectedTemplates', {
+                                  count: 1,
+                                  defaultValue: '1 template selected',
+                                })}
+                              </div>
                             )}
-                          />
-                        )}
-                      </div>
+                          </div>
+                        ))}
+                      {activeTab === 'groups' && (
+                        <FormField
+                          control={form.control}
+                          name="group_ids"
+                          render={({ field }) => (
+                            <GroupsSelector
+                              control={form.control}
+                              name="group_ids"
+                              onGroupsChange={groups => {
+                                field.onChange(groups)
+                                handleFieldChange('group_ids', groups)
+
+                                // Clear template selection when groups are selected
+                                if (groups.length > 0 && selectedTemplateId) {
+                                  setSelectedTemplateId(null)
+                                  clearTemplate()
+                                }
+
+                                // Trigger validation after group selection changes
+                                const isValid = validateAllFields({ ...form.getValues(), group_ids: groups }, touchedFields)
+                                setIsFormValid(isValid)
+                              }}
+                            />
+                          )}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
-              {/* Cancel/Create buttons - always visible */}
-              <div className="mt-4 flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={e => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    onOpenChange(false)
-                  }}
-                >
-                  {t('cancel', { defaultValue: 'Cancel' })}
-                </Button>
-                <LoaderButton type="submit" isLoading={loading} disabled={!isFormValid && !selectedTemplateId} loadingText={editingUser ? t('modifying') : t('creating')}>
-                  {editingUser ? t('modify', { defaultValue: 'Modify' }) : t('create', { defaultValue: 'Create' })}
-                </LoaderButton>
-              </div>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-
+            </div>
+            {/* Cancel/Create buttons - always visible */}
+            <div className="mt-4 flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={e => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onOpenChange(false)
+                }}
+              >
+                {t('cancel', { defaultValue: 'Cancel' })}
+              </Button>
+              <LoaderButton type="submit" isLoading={loading} disabled={!isFormValid && !selectedTemplateId} loadingText={editingUser ? t('modifying') : t('creating')}>
+                {editingUser ? t('modify', { defaultValue: 'Modify' }) : t('create', { defaultValue: 'Create' })}
+              </LoaderButton>
+            </div>
+          </form>
+        </Form>
+      </DialogContent>
       {/* Subscription Clients Modal */}
       {editingUser && <UserSubscriptionClientsModal isOpen={subscriptionClientsModalOpen} onOpenChange={setSubscriptionClientsModalOpen} username={form.watch('username') || ''} />}
-    </>
+    </Dialog>
   )
 }

@@ -75,7 +75,6 @@ class UserPanel(InlineKeyboardBuilder):
                 ),
             )
 
-
         self.button(
             text=Texts.modify_with_template,
             callback_data=self.Callback(action=UserPanelAction.modify_with_template, username=user.username),

@@ -205,9 +205,10 @@ class NodeOperation(BaseOperation):
         end: dt = None,
         period: Period = Period.hour,
         node_id: int | None = None,
+        group_by_node: bool = False,
     ) -> NodeUsageStatsList:
         start, end = await self.validate_dates(start, end)
-        return await get_nodes_usage(db, start, end, period=period, node_id=node_id)
+        return await get_nodes_usage(db, start, end, period=period, node_id=node_id, group_by_node=group_by_node)
 
     async def get_logs(self, node_id: Node) -> asyncio.Queue:
         node = await node_manager.get_node(node_id)

@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 
 from app.utils.logger import get_logger
-from config import ALLOWED_ORIGINS, DOCS, XRAY_SUBSCRIPTION_PATH
+from config import ALLOWED_ORIGINS, DOCS, SUBSCRIPTION_PATH
 
 __version__ = "1.0.0-beta-1"
 
@@ -96,8 +96,8 @@ use_route_names_as_operation_ids(app)
 def validate_paths():
     paths = [f"{r.path}/" for r in app.routes]
     paths.append("/api/")
-    if f"/{XRAY_SUBSCRIPTION_PATH}/" in paths:
-        raise ValueError(f"you can't use /{XRAY_SUBSCRIPTION_PATH}/ as subscription path it reserved for {app.title}")
+    if f"/{SUBSCRIPTION_PATH}/" in paths:
+        raise ValueError(f"you can't use /{SUBSCRIPTION_PATH}/ as subscription path it reserved for {app.title}")
 
 
 on_startup(scheduler.start)

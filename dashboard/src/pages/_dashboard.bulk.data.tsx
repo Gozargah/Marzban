@@ -91,8 +91,21 @@ export default function BulkDataPage() {
     mutation.mutate(
       { data: payload },
       {
-        onSuccess: () => {
-          toast.success(t("operationSuccess", { defaultValue: "Operation successful!" }))
+        onSuccess: (response) => {
+          const detail = typeof response === 'object' && response && 'detail' in response ? response.detail : undefined;
+          let description: string | undefined = undefined;
+          if (typeof detail === 'object') {
+            description = JSON.stringify(detail, null, 2);
+          } else if (typeof detail === 'string') {
+            description = detail;
+          } else if (typeof response === 'string') {
+            description = response;
+          } else {
+            description = JSON.stringify(response, null, 2);
+          }
+          toast.success(t("operationSuccess", { defaultValue: "Operation successful!" }), {
+            description,
+          })
           // Reset selections after successful operation
           setDataLimit(undefined)
           setOperation("add")
@@ -101,8 +114,10 @@ export default function BulkDataPage() {
           setSelectedAdmins([])
           setShowConfirmDialog(false)
         },
-        onError: () => {
-          toast.error(t("operationFailed", { defaultValue: "Operation failed!" }))
+        onError: (error) => {
+          toast.error(t("operationFailed", { defaultValue: "Operation failed!" }), {
+            description: error?.message || JSON.stringify(error, null, 2),
+          })
           setShowConfirmDialog(false)
         },
       },

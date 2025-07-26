@@ -140,7 +140,7 @@ if USE_CUSTOM_JSON_DEFAULT:
     append_rule("[Vv]2rayN")
     append_rule("[Ss]treisand")
     append_rule("[Hh]app")
-    append_rule("[Kk]tor\-client")
+    append_rule(r"[Kk]tor\-client")
 
 else:
     if USE_CUSTOM_JSON_FOR_V2RAYNG:
@@ -152,7 +152,7 @@ else:
     if USE_CUSTOM_JSON_FOR_HAPP:
         append_rule("[Hh]app")
     if USE_CUSTOM_JSON_FOR_NPVTUNNEL:
-        append_rule("[Kk]tor\-client")
+        append_rule(r"[Kk]tor\-client")
 
 
 rules = [

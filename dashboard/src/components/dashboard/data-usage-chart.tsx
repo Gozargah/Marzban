@@ -1,4 +1,4 @@
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts'
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Cell, TooltipProps } from 'recharts'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../ui/card'
 import { ChartConfig, ChartContainer, ChartTooltip } from '../ui/chart'
 import { formatBytes } from '@/utils/formatByte'
@@ -7,6 +7,7 @@ import { useGetUsersUsage, Period } from '@/service/api'
 import { useMemo, useState } from 'react'
 import { SearchXIcon, TrendingUp, TrendingDown } from 'lucide-react'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select'
+import { dateUtils } from '@/utils/dateFormatter'
 
 interface PeriodOption {
   label: string
@@ -34,32 +35,28 @@ const transformUsageData = (apiData: any, periodOption: any) => {
   }
 
   return apiData.stats.map((stat: any, index: number, array: any[]) => {
-    // Convert UTC to local time
-    const utcDate = new Date(stat.period_start)
-    const localDate = new Date(utcDate.getTime() + utcDate.getTimezoneOffset() * 60000)
+    const d = dateUtils.toDayjs(stat.period_start)
     const isLastItem = index === array.length - 1
 
     let displayLabel = ''
     if (periodOption.hours) {
-      // For hour periods, show detailed time format
       if (isLastItem) {
         displayLabel = 'Today'
       } else {
-        displayLabel = `${localDate.getMonth() + 1}/${localDate.getDate()} ${localDate.getHours().toString().padStart(2, '0')}:00`
+        displayLabel = d.format('MM/DD HH:00')
       }
     } else {
-      // For day periods, show date format
       if (isLastItem) {
         displayLabel = 'Today'
       } else {
-        displayLabel = `${localDate.getMonth() + 1}/${localDate.getDate()}`
+        displayLabel = d.format('MM/DD')
       }
     }
 
     return {
       date: displayLabel,
-      fullDate: stat.period_start, // Keep original UTC date for API consistency
-      localDate: localDate.toISOString(), // Add local date for display
+      fullDate: stat.period_start,
+      localFullDate: d.toISOString(),
       traffic: stat.total_traffic || 0,
     }
   })
@@ -71,6 +68,37 @@ const chartConfig = {
     color: 'hsl(var(--foreground))',
   },
 } satisfies ChartConfig
+
+function CustomBarTooltip({ active, payload }: TooltipProps<any, any>) {
+  const { t, i18n } = useTranslation()
+  if (!active || !payload || !payload.length) return null
+  const data = payload[0].payload
+  const d = dateUtils.toDayjs(data.localFullDate || data.fullDate)
+  let formattedDate = d.format('YYYY-MM-DD HH:mm')
+  if (i18n.language === 'fa' && typeof window !== 'undefined' && (window as any).Intl && (window as any).Intl.DateTimeFormat) {
+    try {
+      formattedDate = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+        year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false
+      }).format(new Date(data.localFullDate || data.fullDate))
+    } catch {}
+  }
+  return (
+    <div
+      className={`rounded border border-border bg-gradient-to-br from-background to-muted/80 shadow min-w-[160px] text-xs p-2 ${i18n.language === 'fa' ? 'text-right' : 'text-left'}`}
+      dir={i18n.language === 'fa' ? 'rtl' : 'ltr'}
+    >
+      <div className={`mb-1 font-semibold text-primary text-xs ${i18n.language === 'fa' ? 'text-right' : 'text-center'}`}>
+        {t('statistics.date', { defaultValue: 'Date' })}: {formattedDate}
+      </div>
+      <div className="flex flex-col gap-0.5 text-xs">
+        <div>
+          <span className="font-medium text-foreground">{t('statistics.totalUsage', { defaultValue: 'Total Usage' })}:</span>
+          <span className={i18n.language === 'fa' ? 'mr-1' : 'ml-1'}>{formatBytes(data.traffic)}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const DataUsageChart = ({ admin_username }: { admin_username?: string }) => {
   const { t, i18n } = useTranslation()
@@ -110,7 +138,7 @@ const DataUsageChart = ({ admin_username }: { admin_username?: string }) => {
       ...(admin_username ? { admin: [admin_username] } : {}),
       period: periodOption.period,
       start: startDate,
-      end: endDate,
+      end: dateUtils.toDayjs(endDate).endOf('day').toISOString(),
     },
     {
       query: {
@@ -119,9 +147,18 @@ const DataUsageChart = ({ admin_username }: { admin_username?: string }) => {
     },
   )
 
-  const chartData = useMemo(() => {
-    return transformUsageData(data, periodOption)
-  }, [data, periodOption])
+  // Extract correct stats array from grouped or flat API response (like CostumeBarChart)
+  let statsArr: any[] = []
+  if (data?.stats) {
+    if (typeof data.stats === 'object' && !Array.isArray(data.stats)) {
+      // Use '-1' for all, or first key as fallback
+      statsArr = data.stats['-1'] || data.stats[Object.keys(data.stats)[0]] || []
+    } else if (Array.isArray(data.stats)) {
+      statsArr = data.stats
+    }
+  }
+
+  const chartData = useMemo(() => transformUsageData({ stats: statsArr }, periodOption), [statsArr, periodOption])
 
   // Calculate trend
   const trend = useMemo(() => {
@@ -203,68 +240,8 @@ const DataUsageChart = ({ admin_username }: { admin_username?: string }) => {
                 />
                 <YAxis dataKey={'traffic'} tickLine={false} tickMargin={10} axisLine={false} tickFormatter={val => formatBytes(val, 0, true).toString()} />
                 <ChartTooltip 
-                  cursor={false} 
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const data = payload[0].payload;
-                      const localDate = data.localDate;
-                      const traffic = data.traffic;
-                      try {
-                        const dateObj = new Date(localDate);
-                        let formattedDate = '';
-                        if (!isNaN(dateObj.getTime())) {
-                          if (i18n.language === 'fa') {
-                            if (periodOption.hours) {
-                              formattedDate = dateObj.toLocaleDateString('fa-IR', {
-                                year: 'numeric',
-                                month: '2-digit',
-                                day: '2-digit',
-                              }) + ' ' + dateObj.toLocaleTimeString('fa-IR', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              });
-                            } else {
-                              formattedDate = dateObj.toLocaleDateString('fa-IR', {
-                                year: 'numeric',
-                                month: '2-digit',
-                                day: '2-digit',
-                              });
-                            }
-                          } else {
-                            if (periodOption.hours) {
-                              formattedDate = dateObj.toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: '2-digit',
-                                day: '2-digit',
-                              }) + ' ' + dateObj.toLocaleTimeString('en-US', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              });
-                            } else {
-                              formattedDate = dateObj.toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: '2-digit',
-                                day: '2-digit',
-                              });
-                            }
-                          }
-                        } else {
-                          formattedDate = data.date;
-                        }
-                        return (
-                          <div className="rounded-lg border border-border bg-background p-3 shadow-lg">
-                            <p className="text-sm font-medium text-center">{formattedDate}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {t('admins.traffic', { defaultValue: 'Traffic' })}: <span className="font-medium text-foreground">{formatBytes(traffic, 2)}</span>
-                            </p>
-                          </div>
-                        );
-                      } catch (error) {
-                        return null;
-                      }
-                    }
-                    return null;
-                  }}
+                  cursor={false}
+                  content={<CustomBarTooltip />}
                 />
                 <Bar dataKey="traffic" radius={6} maxBarSize={48}>
                   {chartData.map((_: any, index: number) => (

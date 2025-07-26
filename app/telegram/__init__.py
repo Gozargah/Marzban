@@ -19,8 +19,8 @@ logger = get_logger("telegram-bot")
 
 
 _bot = None
-_dp = None
 _lock = Lock()
+_dp = Dispatcher()
 
 
 def get_bot():
@@ -33,26 +33,28 @@ def get_dispatcher():
 
 async def startup_telegram_bot():
     logger.info("Telegram bot starting")
+    restart = False
     global _bot
     global _dp
 
     if _bot:
         await shutdown_telegram_bot()
+        restart = True
 
     async with _lock:
         settings: Telegram = await telegram_settings()
         if settings.enable:
             session = AiohttpSession(proxy=settings.proxy_url)
             _bot = Bot(token=settings.token, session=session, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
-            _dp = Dispatcher()
 
             try:
                 # register handlers
-                include_routers(_dp)
+                if not restart:
+                    include_routers(_dp)
                 # register middlewares
                 setup_middlewares(_dp)
-            except RuntimeError:
-                pass
+            except RuntimeError as err:
+                logger.error(err)
 
             # register webhook
             webhook_address = f"{settings.webhook_url}/api/tghook"
@@ -64,7 +66,13 @@ async def startup_telegram_bot():
                     allowed_updates=["message", "callback_query", "inline_query"],
                 )
                 logger.info("telegram bot started successfully.")
-            except (TelegramNetworkError, ProxyConnectionError, TelegramBadRequest,TelegramUnauthorizedError, Exception)as err:
+            except (
+                TelegramNetworkError,
+                ProxyConnectionError,
+                TelegramBadRequest,
+                TelegramUnauthorizedError,
+                Exception,
+            ) as err:
                 if hasattr(err, "message"):
                     logger.error(err.message)
                 else:
@@ -85,21 +93,10 @@ async def shutdown_telegram_bot():
                 else:
                     logger.error(err)
 
-            await _dp.storage.close()
-
             if _bot.session:
                 await _bot.session.close()
 
-            try:
-                await _bot.close()
-            except (TelegramNetworkError, TelegramRetryAfter, ProxyConnectionError, TelegramUnauthorizedError) as err:
-                if hasattr(err, "message"):
-                    logger.error(err.message)
-                else:
-                    logger.error(err)
-
             _bot = None
-            _dp = None
 
 
 on_startup(startup_telegram_bot)

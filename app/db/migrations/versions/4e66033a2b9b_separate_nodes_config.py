@@ -24,7 +24,6 @@ depends_on = None
 
 base_xray = {
     "log": {"loglevel": "warning"},
-    "routing": {"rules": [{"ip": ["geoip:private"], "outboundTag": "BLOCK", "type": "field"}]},
     "inbounds": [
         {
             "tag": "Shadowsocks TCP",
@@ -35,6 +34,7 @@ base_xray = {
         }
     ],
     "outbounds": [{"protocol": "freedom", "tag": "DIRECT"}, {"protocol": "blackhole", "tag": "BLOCK"}],
+    "routing": {"rules": [{"ip": ["geoip:private"], "outboundTag": "BLOCK", "type": "field"}]},
 }
 
 def get_config(key, default=None, cast=None):

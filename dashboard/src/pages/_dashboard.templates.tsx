@@ -11,6 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { queryClient } from '@/utils/query-client.ts'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
+import { DEFAULT_SHADOWSOCKS_METHOD } from '@/constants/Proxies'
 
 const initialDefaultValues: Partial<UserTemplatesFromValue> = {
   name: '',
@@ -19,10 +20,11 @@ const initialDefaultValues: Partial<UserTemplatesFromValue> = {
   username_suffix: '',
   data_limit: 0,
   expire_duration: 0,
-  method: 'chacha20-ietf-poly1305',
+  method:DEFAULT_SHADOWSOCKS_METHOD,
   flow: '',
   on_hold_timeout: 0,
   groups: [],
+  reset_usages: false,
 }
 
 export default function UserTemplates() {
@@ -48,6 +50,7 @@ export default function UserTemplates() {
       username_suffix: userTemplate.username_suffix || undefined,
       on_hold_timeout: typeof userTemplate.on_hold_timeout === 'number' ? userTemplate.on_hold_timeout : undefined,
       data_limit_reset_strategy: userTemplate.data_limit_reset_strategy || undefined,
+      reset_usages: userTemplate.reset_usages || false,
     })
 
     setIsDialogOpen(true)

@@ -23,13 +23,19 @@ class SystemOperation(BaseOperation):
         mem = memory_usage()
         cpu = cpu_usage()
 
-        system = await get_system_usage(db)
-
         admin_param = None
         if admin.is_sudo and admin_username:
             admin_param = await get_admin(db, admin_username)
         elif not admin.is_sudo:
-            admin_param = await get_admin(db, admin.username)
+            admin_param = admin
+
+        if not admin_param:
+            system = await get_system_usage(db)
+            uplink = system.uplink
+            downlink = system.downlink
+        else:
+            uplink = 0
+            downlink = admin_param.used_traffic
 
         admin_id = admin_param.id if admin_param else None
         # Gather remaining async CRUD operations together
@@ -64,8 +70,8 @@ class SystemOperation(BaseOperation):
             expired_users=expired_users,
             limited_users=limited_users,
             on_hold_users=on_hold_users,
-            incoming_bandwidth=system.uplink,
-            outgoing_bandwidth=system.downlink,
+            incoming_bandwidth=uplink,
+            outgoing_bandwidth=downlink,
         )
 
     @staticmethod

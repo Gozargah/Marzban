@@ -37,7 +37,7 @@ class AdminPanel(InlineKeyboardBuilder):
         self.button(text=Texts.create_user, callback_data=self.Callback(action=AdminPanelAction.create_user))
         self.button(
             text=Texts.create_user_from_template,
-            callback_data=self.Callback(action=AdminPanelAction.create_user_from_template)
+            callback_data=self.Callback(action=AdminPanelAction.create_user_from_template),
         )
         adjust = adjust + [1] * 2
         self.adjust(*adjust)

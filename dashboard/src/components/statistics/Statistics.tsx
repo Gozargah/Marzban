@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next'
 import { CostumeBarChart } from '../charts/CostumeBarChart'
 import { EmptyState } from '../charts/EmptyState'
 import SystemStatisticsSection from './SystemStatisticsSection'
-import { AreaCostumeChart } from '../charts/AreaCostumeChart'
+import { lazy, Suspense } from 'react'
+import { AllNodesStackedBarChart } from '../charts/AllNodesStackedBarChart'
 
 interface StatisticsProps {
   data?: SystemStats
@@ -90,11 +91,17 @@ export default function Statistics({ data, isLoading, error, selectedServer, is_
       <div className="space-y-8">
         {is_sudo && (
           <div className="transform-gpu animate-slide-up" style={{ animationDuration: '500ms', animationDelay: '200ms', animationFillMode: 'both' }}>
-            <CostumeBarChart nodeId={selectedNodeId} />
+            {actualSelectedServer === 'master' ? (
+              <AllNodesStackedBarChart />
+            ) : (
+              <CostumeBarChart nodeId={selectedNodeId} />
+            )}
           </div>
         )}
         <div className="transform-gpu animate-slide-up" style={{ animationDuration: '500ms', animationDelay: '300ms', animationFillMode: 'both' }}>
-          <AreaCostumeChart nodeId={selectedNodeId} currentStats={currentStats} realtimeStats={actualSelectedServer === 'master' ? data : nodeStats || undefined} />
+          <Suspense fallback={<div />}>
+            <AreaCostumeChart nodeId={selectedNodeId} currentStats={currentStats} realtimeStats={actualSelectedServer === 'master' ? data : nodeStats || undefined} />
+          </Suspense>
         </div>
       </div>
     </div>
@@ -139,3 +146,5 @@ function StatisticsSkeletons({ is_sudo }: { is_sudo: boolean }) {
     </div>
   )
 }
+
+const AreaCostumeChart = lazy(() => import('../charts/AreaCostumeChart').then(m => ({ default: m.AreaCostumeChart })))

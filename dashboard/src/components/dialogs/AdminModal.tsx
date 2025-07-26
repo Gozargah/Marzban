@@ -128,6 +128,14 @@ export default function AdminModal({
     const addAdminMutation = useCreateAdmin()
     const modifyAdminMutation = useModifyAdmin()
 
+    // Ensure form is cleared when modal is closed
+    const handleClose = (open: boolean) => {
+        if (!open) {
+            form.reset();
+        }
+        onOpenChange(open);
+    }
+
     const onSubmit = async (values: AdminFormValues) => {
         try {
             const editData = {
@@ -175,7 +183,7 @@ export default function AdminModal({
     }
 
     return (
-        <Dialog open={isDialogOpen} onOpenChange={onOpenChange}>
+        <Dialog open={isDialogOpen} onOpenChange={handleClose}>
             <DialogContent className="max-w-[750px] h-full sm:h-auto " onOpenAutoFocus={(e) => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle className={`${dir === 'rtl' ? 'text-right' : 'text-left'}`} dir={dir}>{editingAdmin ? t('admins.editAdmin') : t('admins.createAdmin')}</DialogTitle>

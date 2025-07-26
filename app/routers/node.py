@@ -32,10 +32,13 @@ async def get_usage(
     end: dt | None = Query(None, example="2024-01-31T23:59:59+03:30"),
     period: Period = Period.hour,
     node_id: int | None = None,
+    group_by_node: bool = False,
     _: AdminDetails = Depends(check_sudo_admin),
 ):
     """Retrieve usage statistics for nodes within a specified date range."""
-    return await node_operator.get_usage(db=db, start=start, end=end, period=period, node_id=node_id)
+    return await node_operator.get_usage(
+        db=db, start=start, end=end, period=period, node_id=node_id, group_by_node=group_by_node
+    )
 
 
 @router.get("s", response_model=list[NodeResponse])

@@ -27,9 +27,8 @@ async def reload_data(event: CallbackQuery, db: AsyncSession, admin: AdminDetail
         await event.message.edit_text(
             text=Texts.start(stats),
             reply_markup=AdminPanel(
-                is_sudo=admin.is_sudo,
-                panel_url=settings.mini_app_web_url if settings.mini_app_login else None
-            ).as_markup()
+                is_sudo=admin.is_sudo, panel_url=settings.mini_app_web_url if settings.mini_app_login else None
+            ).as_markup(),
         )
     except TelegramBadRequest:
         pass
@@ -48,9 +47,8 @@ async def sync_users(event: CallbackQuery, db: AsyncSession, admin: AdminDetails
         await event.message.edit_text(
             text=Texts.start(stats),
             reply_markup=AdminPanel(
-                is_sudo=admin.is_sudo,
-                panel_url=settings.mini_app_web_url if settings.mini_app_login else None
-            ).as_markup()
+                is_sudo=admin.is_sudo, panel_url=settings.mini_app_web_url if settings.mini_app_login else None
+            ).as_markup(),
         )
     except TelegramBadRequest:
         pass

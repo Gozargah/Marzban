@@ -22,7 +22,7 @@ export default function DashboardLayout() {
         <div className="w-full flex flex-col lg:flex-row">
           <AppSidebar />
           <div className="flex flex-col justify-between min-h-screen gap-y-4 w-full">
-            <PageTransition duration={450}>
+            <PageTransition duration={250}>
               <Outlet />
             </PageTransition>
             <Footer />

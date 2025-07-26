@@ -526,8 +526,6 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit, editing
                   x_padding_bytes: host.transport_settings.xhttp_settings.x_padding_bytes ?? undefined,
                   sc_max_each_post_bytes: host.transport_settings.xhttp_settings.sc_max_each_post_bytes ?? undefined,
                   sc_min_posts_interval_ms: host.transport_settings.xhttp_settings.sc_min_posts_interval_ms ?? undefined,
-                  sc_max_buffered_posts: host.transport_settings.xhttp_settings.sc_max_buffered_posts ?? undefined,
-                  sc_stream_up_server_secs: host.transport_settings.xhttp_settings.sc_stream_up_server_secs ?? undefined,
                   download_settings: host.transport_settings.xhttp_settings.download_settings ?? undefined,
                 }
               : undefined,

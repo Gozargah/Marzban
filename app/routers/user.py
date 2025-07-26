@@ -163,9 +163,7 @@ async def get_user_sub_update_list(
     admin: AdminDetails = Depends(get_current),
 ):
     """Get user subscription agent list"""
-    return await user_operator.get_user_sub_update_list(
-        db, username=username, admin=admin, offset=offset, limit=limit
-    )
+    return await user_operator.get_user_sub_update_list(db, username=username, admin=admin, offset=offset, limit=limit)
 
 
 @router.get(
@@ -209,6 +207,7 @@ async def get_user_usage(
     username: str,
     period: Period,
     node_id: int | None = None,
+    group_by_node: bool = False,
     start: dt | None = Query(None, example="2024-01-01T00:00:00+03:30"),
     end: dt | None = Query(None, example="2024-01-31T23:59:59+03:30"),
     db: AsyncSession = Depends(get_db),
@@ -216,7 +215,14 @@ async def get_user_usage(
 ):
     """Get users usage"""
     return await user_operator.get_user_usage(
-        db, username=username, admin=admin, start=start, end=end, period=period, node_id=node_id
+        db,
+        username=username,
+        admin=admin,
+        start=start,
+        end=end,
+        period=period,
+        node_id=node_id,
+        group_by_node=group_by_node,
     )
 
 
@@ -224,6 +230,7 @@ async def get_user_usage(
 async def get_users_usage(
     period: Period,
     node_id: int | None = None,
+    group_by_node: bool = False,
     start: dt | None = Query(None, example="2024-01-01T00:00:00+03:30"),
     end: dt | None = Query(None, example="2024-01-31T23:59:59+03:30"),
     db: AsyncSession = Depends(get_db),
@@ -232,7 +239,14 @@ async def get_users_usage(
 ):
     """Get all users usage"""
     return await user_operator.get_users_usage(
-        db, admin=admin, start=start, end=end, owner=owner, period=period, node_id=node_id
+        db,
+        admin=admin,
+        start=start,
+        end=end,
+        owner=owner,
+        period=period,
+        node_id=node_id,
+        group_by_node=group_by_node,
     )
 
 

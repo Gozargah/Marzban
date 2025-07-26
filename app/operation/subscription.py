@@ -104,7 +104,7 @@ class SubscriptionOperation(BaseOperation):
                 db_user.admin.sub_template
                 if db_user.admin and db_user.admin.sub_template
                 else SUBSCRIPTION_PAGE_TEMPLATE
-            )            
+            )
             conf, media_type = await self.fetch_config(user, ConfigFormat.links)
 
             return HTMLResponse(render_template(template, {"user": user, "links": conf.split("\n")}))

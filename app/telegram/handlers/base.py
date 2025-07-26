@@ -46,16 +46,15 @@ async def command_start_handler(
                     reply_markup=AdminPanel(
                         is_sudo=admin.is_sudo,
                         panel_url=settings.mini_app_web_url if settings.mini_app_login else None,
-                    ).as_markup()
+                    ).as_markup(),
                 )
             except TelegramBadRequest:
                 pass
         await message.answer(
             text=Texts.start(stats),
             reply_markup=AdminPanel(
-                is_sudo=admin.is_sudo,
-                panel_url=settings.mini_app_web_url if settings.mini_app_login else None
-            ).as_markup()
+                is_sudo=admin.is_sudo, panel_url=settings.mini_app_web_url if settings.mini_app_login else None
+            ).as_markup(),
         )
     else:
         await message.answer(f"Hello, {event.from_user.full_name}!")

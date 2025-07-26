@@ -21,6 +21,13 @@ from app.db.models import (
 )
 
 
+# revision identifiers, used by Alembic.
+revision = '16e19723febc'
+down_revision = '3b59f3680c90'
+branch_labels = None
+depends_on = None
+
+
 class ProxyTypes(str, Enum):
     VMess = "vmess"
     VLESS = "vless"
@@ -84,13 +91,20 @@ users_groups_association = Table(
     Column("groups_id", ForeignKey("groups.id")),
 )
 
-
-# revision identifiers, used by Alembic.
-revision = '16e19723febc'
-down_revision = '3b59f3680c90'
-branch_labels = None
-depends_on = None
-
+base_xray = {
+    "log": {"loglevel": "warning"},
+    "inbounds": [
+        {
+            "tag": "Shadowsocks TCP",
+            "listen": "0.0.0.0",
+            "port": 1080,
+            "protocol": "shadowsocks",
+            "settings": {"clients": [], "network": "tcp,udp"},
+        }
+    ],
+    "outbounds": [{"protocol": "freedom", "tag": "DIRECT"}, {"protocol": "blackhole", "tag": "BLOCK"}],
+    "routing": {"rules": [{"ip": ["geoip:private"], "outboundTag": "BLOCK", "type": "field"}]},
+}
 
 def get_config(key, default=None, cast=None):
     if cast is not None:
@@ -158,10 +172,10 @@ def upgrade() -> None:
             groups[excluded_inbounds].append({"id": key, **value})
 
         try:
-            config = commentjson.loads(XRAY_JSON)
-        except (json.JSONDecodeError, ValueError):
             with open(XRAY_JSON, 'r') as file:
                 config = commentjson.loads(file.read())
+        except Exception:
+            config = base_xray
 
         inbounds = [{"tag": inbound['tag'], "protocol": inbound["protocol"]}
                     for inbound in config['inbounds'] if 'tag' in inbound]

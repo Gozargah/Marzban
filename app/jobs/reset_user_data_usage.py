@@ -4,7 +4,7 @@ from datetime import datetime as dt, timedelta as td, timezone as tz
 from app import scheduler
 from app.db import GetDB
 from app.db.models import UserStatus
-from app.db.crud.user import reset_user_data_usage, get_users_to_reset_data_usage
+from app.db.crud.user import get_users_to_reset_data_usage, bulk_reset_user_data_usage
 from app.models.user import UserNotificationResponse
 from app import notification
 from app.core.manager import core_manager
@@ -19,14 +19,15 @@ logger = get_logger("jobs")
 async def reset_data_usage():
     async with GetDB() as db:
         users = await get_users_to_reset_data_usage(db)
-        for db_user in users:
-            old_status = db_user.status
+        old_statuses = {user.id: user.status for user in users}
 
-            db_user = await reset_user_data_usage(db, db_user)
+        updated_users = await bulk_reset_user_data_usage(db, users)
+
+        for db_user in updated_users:
             user = UserNotificationResponse.model_validate(db_user)
             asyncio.create_task(notification.reset_user_data_usage(user, SYSTEM_ADMIN))
 
-            if old_status != db_user.status:
+            if old_statuses.get(user.id) != user.status:
                 asyncio.create_task(notification.user_status_change(user, SYSTEM_ADMIN))
 
             # make user active if limited on usage reset

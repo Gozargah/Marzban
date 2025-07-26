@@ -1,6 +1,7 @@
 import { Checkbox } from '@/components/ui/checkbox'
 import { FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useGetAllGroups } from '@/service/api'
 import { Search } from 'lucide-react'
 import { useState } from 'react'
@@ -57,7 +58,25 @@ export default function GroupsSelector<T extends FieldValues>({
   }
 
   if (groupsLoading) {
-    return <div>{t('Loading...', { defaultValue: 'Loading...' })}</div>
+    return (
+      <FormItem>
+        <div className="space-y-4 pt-4">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Skeleton className="h-10 w-full pl-8" />
+          </div>
+          <Skeleton className="h-12 w-full" />
+          <div className="max-h-[200px] space-y-2 overflow-y-auto rounded-md border p-2">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div key={index} className="flex items-center gap-2 rounded-md p-2">
+                <Skeleton className="h-4 w-4" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </FormItem>
+    )
   }
 
   return (

@@ -9,6 +9,7 @@ class CreateUser(StatesGroup):
     on_hold_timeout = State()
     group_ids = State()
 
+
 class CreateUserFromTemplate(StatesGroup):
     username = State()
 

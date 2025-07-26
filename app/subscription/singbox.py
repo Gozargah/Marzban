@@ -35,7 +35,7 @@ class SingBoxConfiguration(BaseSubscription):
             self.config["outbounds"].reverse()
         return json.dumps(self.config, indent=4, cls=UUIDEncoder)
 
-    def tls_config(self, sni=None, fp=None, tls=None, pbk=None, sid=None, alpn=None, ais=None):
+    def tls_config(self, sni=None, fp=None, tls=None, pbk=None, sid=None, alpn=None, ais=None, fragment=None):
         config = {
             "enabled": tls in ("tls", "reality"),
             "server_name": sni,
@@ -50,6 +50,9 @@ class SingBoxConfiguration(BaseSubscription):
             if tls == "reality"
             else None,
         }
+        if fragment and (singbox_fragment := fragment.get("sing_box")):
+            config.update(singbox_fragment)
+
         return self._remove_none_values(config)
 
     def http_config(
@@ -251,14 +254,13 @@ class SingBoxConfiguration(BaseSubscription):
             )
 
         if tls in ("tls", "reality"):
-            config["tls"] = self.tls_config(sni=sni, fp=fp, tls=tls, pbk=pbk, sid=sid, alpn=alpn, ais=ais)
+            config["tls"] = self.tls_config(
+                sni=sni, fragment=fragment, fp=fp, tls=tls, pbk=pbk, sid=sid, alpn=alpn, ais=ais
+            )
 
         if mux_settings and (singbox_mux := mux_settings.get("sing_box")):
             singbox_mux = self._remove_none_values(singbox_mux)
             config["multiplex"] = singbox_mux
-
-        if fragment and (singbox_fragment := fragment.get("sing_box")):
-            config.update(singbox_fragment)
 
         return config
 

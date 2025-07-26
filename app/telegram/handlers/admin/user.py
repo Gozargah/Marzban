@@ -30,7 +30,9 @@ user_templates = UserTemplateOperation(OperatorType.TELEGRAM)
 router = Router(name="user")
 
 
-@router.callback_query(AdminPanel.Callback.filter(AdminPanelAction.create_user == F.action),)
+@router.callback_query(
+    AdminPanel.Callback.filter(AdminPanelAction.create_user == F.action),
+)
 async def create_user(event: CallbackQuery, state: FSMContext):
     try:
         await event.message.delete()
@@ -279,17 +281,13 @@ async def modify_with_template(event: CallbackQuery, db: AsyncSession, callback_
         return event.answer(Texts.there_is_no_template)
 
     await event.message.edit_text(
-        Texts.choose_a_template,
-        reply_markup=ChooseTemplate(templates, username=callback_data.username).as_markup()
+        Texts.choose_a_template, reply_markup=ChooseTemplate(templates, username=callback_data.username).as_markup()
     )
 
 
 @router.callback_query(ChooseTemplate.Callback.filter(F.username))
 async def modify_with_template_done(
-        event: CallbackQuery,
-        db: AsyncSession,
-        admin: AdminDetails,
-        callback_data: ChooseTemplate.Callback
+    event: CallbackQuery, db: AsyncSession, admin: AdminDetails, callback_data: ChooseTemplate.Callback
 ):
     user = await user_operations.modify_user_with_template(
         db,
@@ -299,7 +297,6 @@ async def modify_with_template_done(
     )
     groups = await user_operations.validate_all_groups(db, user)
     return await event.message.edit_text(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
-
 
 
 @router.callback_query(AdminPanel.Callback.filter(AdminPanelAction.create_user_from_template == F.action))
@@ -313,9 +310,7 @@ async def create_user_from_template(event: CallbackQuery, db: AsyncSession):
 
 @router.callback_query(ChooseTemplate.Callback.filter(~F.username))
 async def create_user_from_template_username(
-        event: CallbackQuery,
-        state: FSMContext,
-        callback_data: ChooseTemplate.Callback
+    event: CallbackQuery, state: FSMContext, callback_data: ChooseTemplate.Callback
 ):
     try:
         await event.message.delete()
@@ -324,10 +319,7 @@ async def create_user_from_template_username(
 
     await state.set_state(forms.CreateUserFromTemplate.username)
     msg = await event.message.answer(Texts.enter_username, reply_markup=CancelKeyboard().as_markup())
-    await state.update_data(
-        template_id=callback_data.template_id,
-        messages_to_delete=[msg.message_id]
-    )
+    await state.update_data(template_id=callback_data.template_id, messages_to_delete=[msg.message_id])
 
 
 @router.message(forms.CreateUserFromTemplate.username)
@@ -359,13 +351,10 @@ async def create_user_from_template_choose(event: Message, state: FSMContext, db
     await delete_messages(event, state)
 
     user = await user_operations.create_user_from_template(
-        db,
-        CreateUserFromTemplate(username=username, user_template_id=template_id),
-        admin
+        db, CreateUserFromTemplate(username=username, user_template_id=template_id), admin
     )
     groups = await user_operations.validate_all_groups(db, user)
     return await event.answer(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
-
 
 
 @router.message(F.text)
