@@ -1434,13 +1434,6 @@
     "byGroup": "گروه",
     "selectGroup": "انتخاب گروه ...",
     "selectAdmin": "انتخاب مدیر ...",
-    "selectStatus": "انتخاب وضعیت ...",
-    "status": {
-      "active": "فعال",
-      "disable": "غیرفعال",
-      "expired": "منقضی شده",
-      "limited": "محدود",
-      "onHold": "در انتظار"
-    }
+    "selectStatus": "انتخاب وضعیت ..."
   }
 }

@@ -1457,13 +1457,6 @@
     "byGroup": "Group",
     "selectGroup": "Select Group ... ",
     "selectAdmin": "Select Admin ... ",
-    "selectStatus": "Select Status ... ",
-    "status": {
-      "active": "Active",
-      "disable": "Disable",
-      "expired": "Expired",
-      "limited": "Limited",
-      "onHold": "On Hold"
-    }
+    "selectStatus": "Select Status ... "
   }
 }

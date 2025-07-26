@@ -1486,13 +1486,6 @@
     "byGroup": "分组",
     "selectGroup": "选择分组 ...",
     "selectAdmin": "选择管理员 ...",
-    "selectStatus": "选择状态 ...",
-    "status": {
-      "active": "活跃",
-      "disable": "禁用",
-      "expired": "已过期",
-      "limited": "受限",
-      "onHold": "暂停"
-    }
+    "selectStatus": "选择状态 ..."
   }
 }

@@ -200,11 +200,11 @@ export default function AdvanceSearchModal({isDialogOpen, onOpenChange, form, on
                                     render={({field}) => {
                                         const statusOptions = [
                                             {value: '0', label: t('allStatuses')},
-                                            {value: 'active', label: t('advanceSearch.status.active')},
-                                            {value: 'on_hold', label: t('advanceSearch.status.onHold')},
-                                            {value: 'disabled', label: t('advanceSearch.status.disable')},
-                                            {value: 'expired', label: t('advanceSearch.status.expired')},
-                                            {value: 'limited', label: t('advanceSearch.status.limited')},
+                                            {value: 'active', label: t('status.active')},
+                                            {value: 'on_hold', label: t('status.onHold')},
+                                            {value: 'disabled', label: t('status.disabled')},
+                                            {value: 'expired', label: t('status.expired')},
+                                            {value: 'limited', label: t('status.limited')},
                                         ]
 
                                         return (
