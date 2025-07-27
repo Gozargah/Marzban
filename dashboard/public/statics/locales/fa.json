@@ -1318,7 +1318,10 @@
     "tryDifferentRange": "بازه زمانی دیگری را امتحان کنید.",
     "trendingUp": "روند افزایشی",
     "trendingDown": "روند کاهشی",
-    "usageSummary": "نمایش مجموع مصرف در بازه انتخاب شده."
+    "usageSummary": "نمایش مجموع مصرف در بازه انتخاب شده.",
+    "activeNextPlanTitle": "فعال‌سازی پلن بعدی کاربر",
+    "activeNextPlanPrompt": "آیا مطمئن هستید که می‌خواهید پلن بعدی را برای «{{name}}» فعال کنید؟",
+    "activeNextPlanSubmit": "فعال‌سازی پلن بعدی"
   },
   "setOwnerModal": {
     "title": "تعیین مالک",

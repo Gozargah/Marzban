@@ -1375,7 +1375,10 @@
     "tryDifferentRange": "Try a different time range.",
     "trendingUp": "Trending up by",
     "trendingDown": "Trending down by",
-    "usageSummary": "Showing total usage for the selected period."
+    "usageSummary": "Showing total usage for the selected period.",
+    "activeNextPlanTitle": "Activate User Next Plan",
+    "activeNextPlanPrompt": "Are you sure you want to activate next plan for «{{name}}»?",
+    "activeNextPlanSubmit": "Activate Next Plan"
   },
   "setOwnerModal": {
     "title": "Set Owner",
