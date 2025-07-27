@@ -930,6 +930,13 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
     [editingUser, editingUserId, form, handleTemplateMutation, onOpenChange, selectedTemplateId, status, t, touchedFields],
   )
 
+  // Helper for cryptographically secure random integer
+  function getRandomInt(max: number): number {
+    const array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    return array[0] % max;
+  }
+
   function generateUsername() {
     // Generate random 8-char string with only alphanumeric characters (no special chars)
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -952,16 +959,18 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
 
     // Fill the rest with letters and numbers
     for (let i = 1; i < length; i++) {
-      const charSet = Math.random() < 0.7 ? letters : numbers
-      const randomIndex = Math.floor(Math.random() * charSet.length)
+      const charSet = getRandomInt(10) < 7 ? letters : numbers // 70% letters, 30% numbers
+      const randomIndex = getRandomInt(charSet.length)
       password += charSet[randomIndex]
     }
 
     // Shuffle the password to make it more random
-    return password
-      .split('')
-      .sort(() => Math.random() - 0.5)
-      .join('')
+    const arr = password.split('')
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = getRandomInt(i + 1)
+      ;[arr[i], arr[j]] = [arr[j], arr[i]]
+    }
+    return arr.join('')
   }
 
   // Add this function after the generatePassword function
