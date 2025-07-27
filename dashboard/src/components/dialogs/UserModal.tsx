@@ -1246,7 +1246,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                     min="0"
                                     placeholder={t('userDialog.dataLimit', { defaultValue: 'e.g. 1' })}
                                     {...field}
-                                    value={field.value === undefined || field.value === null ? '' : field.value}
+                                    value={field.value ? field.value : '' }
                                     onChange={e => {
                                       const value = e.target.value === '' ? 0 : parseFloat(e.target.value)
                                       if (!isNaN(value) && value >= 0) {
