@@ -593,8 +593,9 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
     if (status === 'on_hold') {
       // Set default on_hold_expire_duration if not set
       const duration = form.getValues('on_hold_expire_duration')
-      if (!duration || duration < 1) {
-        const defaultDuration = 30 * 24 * 60 * 60 // 7 days in seconds
+      const touched = touchedFields['on_hold_expire_duration']
+      // Only set default if the field hasn't been touched by user and has no value
+      if (!touched && (!duration || duration < 1)) {        const defaultDuration = 30 * 24 * 60 * 60 // 7 days in seconds
         form.setValue('on_hold_expire_duration', defaultDuration)
         handleFieldChange('on_hold_expire_duration', defaultDuration)
       }
@@ -1302,35 +1303,68 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                       )}
                       <div className="flex items-start gap-4 lg:w-52">
                         {status === 'on_hold' ? (
-                          <FormField
-                            control={form.control}
-                            name="on_hold_expire_duration"
-                            render={({ field }) => {
-                              const hasError = !!form.formState.errors.on_hold_expire_duration
-                              return (
-                                <FormItem className="flex-1">
-                                  <FormLabel>{t('userDialog.onHoldExpireDuration', { defaultValue: 'On Hold Expire Duration (days)' })}</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      type="number"
-                                      min="1"
-                                      isError={hasError}
-                                      placeholder={t('userDialog.onHoldExpireDurationPlaceholder', { defaultValue: 'e.g. 7' })}
-                                      {...field}
-                                      value={field.value === null || field.value === undefined ? '' : Math.round(field.value / (24 * 60 * 60))}
-                                      onChange={e => {
-                                        const value = e.target.value === '' ? undefined : parseInt(e.target.value, 10)
-                                        field.onChange(value ? value * (24 * 60 * 60) : 1)
-                                        handleFieldChange('on_hold_expire_duration', value)
-                                      }}
-                                      onBlur={() => handleFieldBlur('on_hold_expire_duration')}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )
-                            }}
-                          />
+                            <FormField
+                                control={form.control}
+                                name="on_hold_expire_duration"
+                                render={({ field }) => {
+                                  const hasError = !!form.formState.errors.on_hold_expire_duration
+                                  const fieldValue = field.value ? Math.round(field.value / (24 * 60 * 60)): ''
+                                  const isZeroOrEmpty = fieldValue === 0 || fieldValue === ''
+                                  const isTouched = touchedFields['on_hold_expire_duration']
+
+                                  return (
+                                      <FormItem className="flex-1">
+                                        <FormLabel>{t('userDialog.onHoldExpireDuration', { defaultValue: 'On Hold Expire Duration (days)' })}</FormLabel>
+                                        <FormControl>
+                                          <Input
+                                              type="number"
+                                              min="1"
+                                              isError={hasError || (isTouched && isZeroOrEmpty)}
+                                              placeholder={t('userDialog.onHoldExpireDurationPlaceholder', { defaultValue: 'e.g. 7' })}
+                                              {...field}
+                                              value={fieldValue ? fieldValue : ''}
+                                              onChange={e => {
+                                                // Allow empty string for deletion
+                                                if (e.target.value === '') {
+                                                  field.onChange(0)
+                                                  handleFieldChange('on_hold_expire_duration', 0)
+                                                  // Mark field as touched to prevent auto-default
+                                                  setTouchedFields(prev => ({ ...prev, on_hold_expire_duration: true }))
+                                                } else {
+                                                  const value = parseInt(e.target.value, 10)
+                                                  if (!isNaN(value) && value >= 0) {
+                                                    field.onChange(value ? value * (24 * 60 * 60) : 0)
+                                                    handleFieldChange('on_hold_expire_duration', value)
+                                                    // Mark field as touched
+                                                    setTouchedFields(prev => ({ ...prev, on_hold_expire_duration: true }))
+                                                  }
+                                                }
+                                              }}
+                                              onBlur={() => {
+                                                handleFieldBlur('on_hold_expire_duration')
+                                                // Set validation error if value is 0 or empty
+                                                if (fieldValue === 0 || fieldValue === '') {
+                                                  form.setError('on_hold_expire_duration', {
+                                                    type: 'manual',
+                                                    message: t('validation.required', { field: t('userDialog.onHoldExpireDuration', { defaultValue: 'On Hold Expire Duration' }) }),
+                                                  })
+                                                } else {
+                                                  // Clear error if value is valid
+                                                  form.clearErrors('on_hold_expire_duration')
+                                                }
+                                              }}
+                                          />
+                                        </FormControl>
+                                        <FormMessage />
+                                        {isTouched && isZeroOrEmpty && !hasError && (
+                                            <p className="text-sm text-destructive">
+                                              {t('validation.required', { field: t('userDialog.onHoldExpireDuration', { defaultValue: 'On Hold Expire Duration' }) })}
+                                            </p>
+                                        )}
+                                      </FormItem>
+                                  )
+                                }}
+                            />
                         ) : (
                           <FormField
                             control={form.control}
