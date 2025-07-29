@@ -110,7 +110,7 @@ export const Filters = ({ filters, onFilterChange, refetch, advanceSearchOnOpen,
         <div className="relative w-full md:w-[calc(100%/3-10px)]">
           <SearchIcon
               className={cn('absolute', dir === 'rtl' ? 'right-2' : 'left-2 ', 'top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 text-input-placeholder')}/>
-          <Input placeholder={t('search')} value={search} onChange={handleSearchChange} className="pl-8 pr-10"/>
+          <Input placeholder={t('search')} value={search} onChange={handleSearchChange} className="pl-8 pr-10 "/>
           {search && (
               <button onClick={clearSearch}
                       className={cn('absolute', dir === 'rtl' ? 'left-2' : 'right-2', 'top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600')}>
@@ -122,7 +122,7 @@ export const Filters = ({ filters, onFilterChange, refetch, advanceSearchOnOpen,
           <Button 
             size="icon-md" 
             variant="ghost" 
-            className="flex items-center gap-2 border relative"
+            className="flex items-center gap-2 border relative bg-input"
             onClick={handleOpenAdvanceSearch}
           >
             <Filter className="h-4 w-4"/>
@@ -162,7 +162,7 @@ export const Filters = ({ filters, onFilterChange, refetch, advanceSearchOnOpen,
         </div>
         {/* Refresh Button */}
         <div className="flex items-center gap-2 h-full">
-          <Button size="icon-md" onClick={handleRefreshClick} variant="ghost" className="flex items-center gap-2 border"
+          <Button size="icon-md" onClick={handleRefreshClick} variant="ghost" className="flex items-center gap-2 border bg-input"
                   disabled={isRefreshing}>
             <RefreshCw className={cn('w-4 h-4', isRefreshing && 'animate-spin')}/>
           </Button>
