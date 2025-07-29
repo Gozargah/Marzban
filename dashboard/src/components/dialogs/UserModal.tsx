@@ -1027,25 +1027,6 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
     }
   }, [isDialogOpen, form, editingUser, status])
 
-  // Add new effect for initial validation on modal open
-  useEffect(() => {
-    if (isDialogOpen) {
-      const currentValues = form.getValues()
-      // For edit mode, only validate fields that have been changed
-      const allFieldsTouched = editingUser
-        ? {}
-        : Object.keys(currentValues).reduce(
-            (acc, key) => {
-              acc[key] = true
-              return acc
-            },
-            {} as Record<string, boolean>,
-          )
-      const isValid = validateAllFields(currentValues, allFieldsTouched)
-      setIsFormValid(isValid)
-      setTouchedFields(allFieldsTouched)
-    }
-  }, [isDialogOpen, form, editingUser])
 
   // State for UUID version per field
   const [uuidVersions, setUuidVersions] = useState({
@@ -1930,7 +1911,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
               >
                 {t('cancel', { defaultValue: 'Cancel' })}
               </Button>
-              <LoaderButton type="submit" isLoading={loading} disabled={!isFormValid && !selectedTemplateId} loadingText={editingUser ? t('modifying') : t('creating')}>
+              <LoaderButton type="submit" isLoading={loading} disabled={false} loadingText={editingUser ? t('modifying') : t('creating')}>
                 {editingUser ? t('modify', { defaultValue: 'Modify' }) : t('create', { defaultValue: 'Create' })}
               </LoaderButton>
             </div>
