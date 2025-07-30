@@ -132,8 +132,10 @@ class UsersResponse(BaseModel):
 
 
 class UserSubscriptionUpdateSchema(BaseModel):
-    created_at: dt | None = Field(default=None)
-    user_agent: str | None = Field(default=None)
+    created_at: dt
+    user_agent: str
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserSubscriptionUpdateList(BaseModel):

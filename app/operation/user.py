@@ -499,4 +499,6 @@ class UserOperation(BaseOperation):
         self, db: AsyncSession, username: str, admin: AdminDetails, offset: int = 0, limit: int = 10
     ) -> UserSubscriptionUpdateList:
         db_user = await self.get_validated_user(db, username, admin)
-        return await get_user_sub_update_list(db, user_id=db_user.id, offset=offset, limit=limit)
+        user_sub_data, count = await get_user_sub_update_list(db, user_id=db_user.id, offset=offset, limit=limit)
+
+        return UserSubscriptionUpdateList(updates=user_sub_data, count=count)

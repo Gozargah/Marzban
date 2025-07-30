@@ -202,4 +202,4 @@ async def clear_usage_data(
 
     ⚠️ This operation is irreversible. Ensure correct usage in production environments.
     """
-    return await node_operator.clear_usage_data(db, table)
+    return await node_operator.clear_usage_data(db, table, start, end)

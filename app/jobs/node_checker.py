@@ -21,25 +21,32 @@ logger = get_logger("node-checker")
 async def node_health_check():
     async def check_node(id: int, node: GozargahNode):
         try:
-            await node.get_backend_stats(timeout=10)
-            await node_operator.update_node_status(
-                id, NodeStatus.connected, await node.core_version(), await node.node_version()
-            )
+            stats_task = node.get_backend_stats(timeout=8)
+            core_ver_task = node.core_version()
+            node_ver_task = node.node_version()
+
+            # Execute all calls concurrently
+            results = await asyncio.gather(stats_task, core_ver_task, node_ver_task, return_exceptions=True)
+
+            if any(isinstance(result, Exception) for result in results):
+                # If any call failed, treat as connection error
+                raise NodeAPIError(-1, "Failed to get node information")
+
+            _, core_version, node_version = results
+            await node_operator.update_node_status(id, NodeStatus.connected, core_version, node_version)
         except NodeAPIError as e:
             if e.code > -3:
                 await node_operator.update_node_status(id, NodeStatus.error, err=e.detail)
             if e.code > 0:
                 await node_operator.connect_node(node_id=id)
 
-    broken_nodes, not_connected_nodes = await asyncio.gather(
-        node_manager.get_broken_nodes(), node_manager.get_not_connected_nodes()
-    )
+    broken_nodes, not_connected_nodes = await node_manager.get_nodes_by_health_status()
 
-    check_tasks = [asyncio.create_task(check_node(id, node)) for id, node in broken_nodes]
+    check_tasks = [check_node(id, node) for id, node in broken_nodes]
+    connect_tasks = [node_operator.connect_node(id) for id, _ in not_connected_nodes]
 
-    connect_tasks = [asyncio.create_task(node_operator.connect_node(id)) for id, _ in not_connected_nodes]
-
-    await asyncio.gather(*check_tasks + connect_tasks)
+    # Use return_exceptions=True to prevent one failed node from stopping others
+    await asyncio.gather(*check_tasks + connect_tasks, return_exceptions=True)
 
 
 @on_startup

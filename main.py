@@ -10,6 +10,7 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
 from app import app, logger  # noqa
+from app.utils.logger import LOGGING_CONFIG
 from config import DEBUG, UVICORN_HOST, UVICORN_PORT, UVICORN_SSL_CERTFILE, UVICORN_SSL_KEYFILE, UVICORN_UDS
 import dashboard  # noqa
 
@@ -125,9 +126,18 @@ Then, navigate to {click.style(f"http://{ip}:{UVICORN_PORT}", bold=True)} on you
         bind_args["uds"] = None
         bind_args["host"] = "0.0.0.0"
 
+    log_level = logging.DEBUG if DEBUG else logging.INFO
+    LOGGING_CONFIG["loggers"]["uvicorn"]["level"] = log_level
+    LOGGING_CONFIG["loggers"]["uvicorn.error"]["level"] = log_level
+    LOGGING_CONFIG["loggers"]["uvicorn.access"]["level"] = log_level
+
     try:
         uvicorn.run(
-            "main:app", **bind_args, workers=1, reload=DEBUG, log_level=logging.DEBUG if DEBUG else logging.INFO
+            "main:app",
+            **bind_args,
+            workers=1,
+            reload=DEBUG,
+            log_config=LOGGING_CONFIG,
         )
     except FileNotFoundError:  # to prevent error on removing unix sock
         pass

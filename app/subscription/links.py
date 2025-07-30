@@ -72,6 +72,7 @@ class StandardLinks(BaseSubscription):
             xmux=inbound.get("xmux"),
             downloadSettings=inbound.get("downloadSettings"),
             http_headers=inbound.get("http_headers"),
+            ech_config_list=inbound.get("ech_config_list"),
         )
         if inbound["protocol"] == "vmess":
             link = self.vmess(
@@ -196,7 +197,18 @@ class StandardLinks(BaseSubscription):
             payload["host"] = host
 
     def _make_tls_settings(
-        self, payload: dict, tls: str, sni: str, fp: str, alpn: str, pbk: str, sid: str, spx: str, fs: str, ais: bool
+        self,
+        payload: dict,
+        tls: str,
+        sni: str,
+        fp: str,
+        alpn: str,
+        pbk: str,
+        sid: str,
+        spx: str,
+        fs: str,
+        ais: bool,
+        ech_config_list: str,
     ):
         payload["sni"] = sni
         payload["fp"] = fp
@@ -209,6 +221,10 @@ class StandardLinks(BaseSubscription):
                 if xray_fragment
                 else ""
             )
+
+        if ech_config_list:
+            payload["echConfigList"] = ech_config_list
+
         if tls == "reality":
             payload["pbk"] = pbk
             payload["sid"] = sid
@@ -250,6 +266,7 @@ class StandardLinks(BaseSubscription):
         downloadSettings: dict | None = None,
         random_user_agent: bool = False,
         http_headers: dict | None = None,
+        ech_config_list: str | None = None,
     ):
         payload = {
             "add": address,
@@ -286,7 +303,7 @@ class StandardLinks(BaseSubscription):
             downloadSettings=downloadSettings,
         )
         if tls in ("tls", "reality"):
-            self._make_tls_settings(payload, tls, sni, fp, alpn, pbk, sid, spx, fs,ais)
+            self._make_tls_settings(payload, tls, sni, fp, alpn, pbk, sid, spx, fs, ais, ech_config_list)
         return "vmess://" + base64.b64encode(json.dumps(payload, sort_keys=True).encode("utf-8")).decode()
 
     def vless(
@@ -322,6 +339,7 @@ class StandardLinks(BaseSubscription):
         xmux: dict | None = None,
         random_user_agent: bool = False,
         downloadSettings: dict | None = None,
+        ech_config_list: str | None = None,
     ):
         payload = {"security": tls, "type": net, "headerType": type}
         if flow and (tls in ("tls", "reality") and net in ("tcp", "raw", "kcp") and type != "http"):
@@ -348,7 +366,7 @@ class StandardLinks(BaseSubscription):
             downloadSettings=downloadSettings,
         )
         if tls in ("tls", "reality"):
-            self._make_tls_settings(payload, tls, sni, fp, alpn, pbk, sid, spx, fs,ais)
+            self._make_tls_settings(payload, tls, sni, fp, alpn, pbk, sid, spx, fs, ais, ech_config_list)
         return "vless://" + f"{id}@{address}:{port}?" + urlparse.urlencode(payload) + f"#{(urlparse.quote(remark))}"
 
     def trojan(
@@ -384,6 +402,7 @@ class StandardLinks(BaseSubscription):
         xmux: dict | None = None,
         random_user_agent: bool = False,
         downloadSettings: dict | None = None,
+        ech_config_list: str | None = None,
     ):
         payload = {"security": tls, "type": net, "headerType": type}
         if flow and (tls in ("tls", "reality") and net in ("tcp", "raw", "kcp") and type != "http"):
@@ -410,7 +429,7 @@ class StandardLinks(BaseSubscription):
             downloadSettings=downloadSettings,
         )
         if tls in ("tls", "reality"):
-            self._make_tls_settings(payload, tls, sni, fp, alpn, pbk, sid, spx, fs,ais)
+            self._make_tls_settings(payload, tls, sni, fp, alpn, pbk, sid, spx, fs, ais, ech_config_list)
         return (
             "trojan://"
             + f"{urlparse.quote(password, safe=':')}@{address}:{port}?"

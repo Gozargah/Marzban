@@ -601,6 +601,9 @@
   "hostsDialog.addHost": "添加主机",
   "hostsDialog.advancedOptions": "高级选项",
   "hostsDialog.useSniAsHost": "使用 SNI 作为主机名",
+  "hostsDialog.echConfigList": "ECH 配置列表",
+  "hostsDialog.echConfigList.info": "加密客户端问候 (ECH) 配置列表。这是一个 base64 编码的字符串。",
+  "hostsDialog.echConfigListPlaceholder": "输入 ECH 配置列表",
   "hostsDialog.alpn": "ALPN",
   "hostsDialog.apply": "保存",
   "hostsDialog.currentServer": "当前服务器的 IP 地址",
@@ -1370,7 +1373,10 @@
     "tryDifferentRange": "请尝试其他时间范围。",
     "trendingUp": "上升",
     "trendingDown": "下降",
-    "usageSummary": "显示所选期间的总用量。"
+    "usageSummary": "显示所选期间的总用量。",
+    "activeNextPlanTitle": "激活用户的下一个计划",
+    "activeNextPlanPrompt": "您确定要为「{{name}}」激活下一个计划吗？",
+    "activeNextPlanSubmit": "激活下一个计划"
   },
   "setOwnerModal": {
     "title": "设置所有者",

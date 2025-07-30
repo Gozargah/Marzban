@@ -308,6 +308,7 @@ export const HostFormSchema = z.object({
   use_sni_as_host: z.boolean().default(false),
   priority: z.number().default(0),
   is_disabled: z.boolean().default(false),
+  ech_config_list: z.string().optional(),
   fragment_settings: z
     .object({
       xray: z
@@ -470,6 +471,7 @@ export default function Hosts({ data, onAddHost, isDialogOpen, onSubmit, editing
       use_sni_as_host: host.use_sni_as_host || false,
       priority: host.priority || 0,
       is_disabled: host.is_disabled || false,
+      ech_config_list: host.ech_config_list || undefined,
       fragment_settings: host.fragment_settings
         ? {
             xray: host.fragment_settings.xray ?? undefined,

@@ -12,7 +12,7 @@ from fastapi.routing import APIRoute
 from app.utils.logger import get_logger
 from config import ALLOWED_ORIGINS, DOCS, SUBSCRIPTION_PATH
 
-__version__ = "1.0.0-beta-1"
+__version__ = "1.0.0-beta-2"
 
 startup_functions = []
 shutdown_functions = []

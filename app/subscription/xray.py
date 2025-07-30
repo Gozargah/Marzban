@@ -1,5 +1,5 @@
-from enum import Enum
 import json
+from enum import Enum
 from random import choice
 from typing import Union
 
@@ -28,12 +28,13 @@ class XrayConfiguration(BaseSubscription):
             self.config.reverse()
         return json.dumps(self.config, indent=4, cls=UUIDEncoder)
 
-    def tls_config(self, sni=None, fp=None, alpn=None, ais: bool = False) -> dict:
+    def tls_config(self, sni=None, fp=None, alpn=None, ais=False, ech_config_list=None) -> dict:
         tls_settings = {
             "serverName": sni,
             "allowInsecure": ais if ais else False,
             "show": False,
             "fingerprint": fp,
+            "echConfigList": ech_config_list,
         }
         if alpn:
             tls_settings["alpn"] = [alpn] if not isinstance(alpn, list) else alpn
@@ -463,6 +464,7 @@ class XrayConfiguration(BaseSubscription):
         congestion=False,
         read_buffer_size=None,
         write_buffer_size=None,
+        ech_config_list=None,
     ) -> dict:
         if net == "ws":
             network_setting = self.ws_config(
@@ -535,7 +537,7 @@ class XrayConfiguration(BaseSubscription):
             network_setting = {}
 
         if tls == "tls":
-            tls_settings = self.tls_config(sni=sni, fp=fp, alpn=alpn, ais=ais)
+            tls_settings = self.tls_config(sni=sni, fp=fp, alpn=alpn, ais=ais, ech_config_list=ech_config_list)
         elif tls == "reality":
             tls_settings = self.reality_config(sni=sni, fp=fp, pbk=pbk, sid=sid, spx=spx)
         else:
@@ -649,6 +651,7 @@ class XrayConfiguration(BaseSubscription):
             health_check_timeout=inbound.get("health_check_timeout"),
             permit_without_stream=inbound.get("permit_without_stream", False),
             initial_windows_size=inbound.get("initial_windows_size"),
+            ech_config_list=inbound.get("ech_config_list"),
         )
 
         mux_settings: dict = inbound.get("mux_settings", {})

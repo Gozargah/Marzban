@@ -99,7 +99,8 @@ async def days_left_notification_job():
                 )
 
 
-now = dt.now(tz.utc) + td(seconds=2)
+now = dt.now(tz.utc)
+interval = int(JOB_REVIEW_USERS_INTERVAL / 5)
 
 # Register each job separately
 scheduler.add_job(
@@ -111,7 +112,7 @@ scheduler.add_job(
     seconds=JOB_REVIEW_USERS_INTERVAL,
     coalesce=True,
     max_instances=1,
-    start_date=now + td(seconds=6),
+    start_date=now + td(seconds=interval),
 )
 scheduler.add_job(
     on_hold_to_active_users_job,
@@ -119,7 +120,7 @@ scheduler.add_job(
     seconds=JOB_REVIEW_USERS_INTERVAL,
     coalesce=True,
     max_instances=1,
-    start_date=now + td(seconds=12),
+    start_date=now + td(seconds=interval * 2),
 )
 scheduler.add_job(
     usage_percent_notification_job,
@@ -127,7 +128,7 @@ scheduler.add_job(
     seconds=JOB_REVIEW_USERS_INTERVAL,
     coalesce=True,
     max_instances=1,
-    start_date=now + td(seconds=18),
+    start_date=now + td(seconds=interval * 3),
 )
 scheduler.add_job(
     days_left_notification_job,
@@ -135,5 +136,5 @@ scheduler.add_job(
     seconds=JOB_REVIEW_USERS_INTERVAL,
     coalesce=True,
     max_instances=1,
-    start_date=now + td(seconds=24),
+    start_date=now + td(seconds=interval * 4),
 )

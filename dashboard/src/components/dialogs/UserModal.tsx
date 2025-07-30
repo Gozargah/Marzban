@@ -96,6 +96,8 @@ const ExpiryDateField = ({
   setCalendarOpen,
   handleFieldChange,
   label,
+  useUtcTimestamp = false,
+  fieldName = 'expire',
 }: {
   field: any
   displayDate: Date | null
@@ -104,6 +106,8 @@ const ExpiryDateField = ({
   setCalendarOpen: (open: boolean) => void
   handleFieldChange: (field: string, value: any) => void
   label: string
+  useUtcTimestamp?: boolean
+  fieldName?: string
 }) => {
   const { t } = useTranslation()
   const expireInfo = useRelativeExpiryDate(displayDate ? Math.floor(displayDate.getTime() / 1000) : null)
@@ -128,20 +132,20 @@ const ExpiryDateField = ({
           date.setHours(now.getHours(), now.getMinutes())
         }
 
-        const isoString = getLocalISOTime(date)
+        const value = useUtcTimestamp ? Math.floor(date.getTime() / 1000) : getLocalISOTime(date)
         startTransition(() => {
-          field.onChange(isoString)
-          handleFieldChange('expire', isoString)
+          field.onChange(value)
+          handleFieldChange(fieldName, value)
         })
       } else {
         startTransition(() => {
           field.onChange('')
-          handleFieldChange('expire', undefined)
+          handleFieldChange(fieldName, undefined)
         })
       }
       setCalendarOpen(false)
     },
-    [field, handleFieldChange, setCalendarOpen, startTransition],
+    [field, handleFieldChange, setCalendarOpen, startTransition, useUtcTimestamp, fieldName],
   )
 
   // Update time input handling to work with local time
@@ -159,14 +163,14 @@ const ExpiryDateField = ({
           newDate.setTime(now.getTime())
         }
 
-        const isoString = getLocalISOTime(newDate)
+        const value = useUtcTimestamp ? Math.floor(newDate.getTime() / 1000) : getLocalISOTime(newDate)
         startTransition(() => {
-          field.onChange(isoString)
-          handleFieldChange('expire', isoString)
+          field.onChange(value)
+          handleFieldChange(fieldName, value)
         })
       }
     },
-    [displayDate, field, handleFieldChange, startTransition],
+    [displayDate, field, handleFieldChange, startTransition, useUtcTimestamp, fieldName],
   )
 
   // Get current date for comparison
@@ -345,7 +349,7 @@ const ExpiryDateField = ({
                   e.preventDefault()
                   e.stopPropagation()
                   field.onChange('')
-                  handleFieldChange('expire', undefined)
+                  handleFieldChange(fieldName, undefined)
                   setCalendarOpen(false)
                 }}
               >
@@ -595,8 +599,9 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
     if (status === 'on_hold') {
       // Set default on_hold_expire_duration if not set
       const duration = form.getValues('on_hold_expire_duration')
-      if (!duration || duration < 1) {
-        const defaultDuration = 30 * 24 * 60 * 60 // 7 days in seconds
+      const touched = touchedFields['on_hold_expire_duration']
+      // Only set default if the field hasn't been touched by user and has no value
+      if (!touched && (!duration || duration < 1)) {        const defaultDuration = 30 * 24 * 60 * 60 // 7 days in seconds
         form.setValue('on_hold_expire_duration', defaultDuration)
         handleFieldChange('on_hold_expire_duration', defaultDuration)
       }
@@ -628,19 +633,20 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
   }
 
   // Helper to convert expire field to needed schema using the same logic as other components
-  function normalizeExpire(expire: Date | string | number | null | undefined): string | undefined {
-    if (expire === undefined || expire === null || expire === '') return undefined
+  function normalizeExpire(expire: Date | string | number | null | undefined, useUtcTimestamp: boolean = false): string | number | undefined {
+    if (expire === '') return 0
+    if (expire === undefined || expire === null) return undefined
 
-    // For Date objects, convert to ISO string with timezone
+    // For Date objects, convert to appropriate format
     if (expire instanceof Date) {
-      return getLocalISOTime(expire)
+      return useUtcTimestamp ? Math.floor(expire.getTime() / 1000) : getLocalISOTime(expire)
     }
 
     // For strings and numbers, use the same dateUtils logic as other components
     try {
       const dayjsDate = dateUtils.toDayjs(expire)
       if (dayjsDate.isValid()) {
-        return getLocalISOTime(dayjsDate.toDate())
+        return useUtcTimestamp ? Math.floor(dayjsDate.toDate().getTime() / 1000) : getLocalISOTime(dayjsDate.toDate())
       }
     } catch (error) {
       // If dayjs parsing fails, return undefined
@@ -830,6 +836,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
               : values.on_hold_expire_duration
             : undefined,
           expire: status === 'on_hold' ? undefined : normalizeExpire(values.expire),
+          on_hold_timeout: status === 'on_hold' ? normalizeExpire(values.on_hold_timeout) : undefined,
           group_ids: Array.isArray(values.group_ids) ? values.group_ids : [],
           status: values.status,
         }
@@ -868,7 +875,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
         const sendValues = {
           ...preparedValues,
           data_limit: gbToBytes(preparedValues.data_limit as any),
-          expire: normalizeExpire(preparedValues.expire),
+          expire: preparedValues.expire,
           // Only include proxy_settings if they are filled
           ...(hasProxySettings ? { proxy_settings: cleanedProxySettings } : {}),
         }
@@ -929,6 +936,13 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
     [editingUser, editingUserId, form, handleTemplateMutation, onOpenChange, selectedTemplateId, status, t, touchedFields],
   )
 
+  // Helper for cryptographically secure random integer
+  function getRandomInt(max: number): number {
+    const array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    return array[0] % max;
+  }
+
   function generateUsername() {
     // Generate random 8-char string with only alphanumeric characters (no special chars)
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -951,16 +965,18 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
 
     // Fill the rest with letters and numbers
     for (let i = 1; i < length; i++) {
-      const charSet = Math.random() < 0.7 ? letters : numbers
-      const randomIndex = Math.floor(Math.random() * charSet.length)
+      const charSet = getRandomInt(10) < 7 ? letters : numbers // 70% letters, 30% numbers
+      const randomIndex = getRandomInt(charSet.length)
       password += charSet[randomIndex]
     }
 
     // Shuffle the password to make it more random
-    return password
-      .split('')
-      .sort(() => Math.random() - 0.5)
-      .join('')
+    const arr = password.split('')
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = getRandomInt(i + 1)
+      ;[arr[i], arr[j]] = [arr[j], arr[i]]
+    }
+    return arr.join('')
   }
 
   // Add this function after the generatePassword function
@@ -1246,7 +1262,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                     min="0"
                                     placeholder={t('userDialog.dataLimit', { defaultValue: 'e.g. 1' })}
                                     {...field}
-                                    value={field.value === undefined || field.value === null ? '' : field.value}
+                                    value={field.value ? field.value : '' }
                                     onChange={e => {
                                       const value = e.target.value === '' ? 0 : parseFloat(e.target.value)
                                       if (!isNaN(value) && value >= 0) {
@@ -1302,35 +1318,68 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                       )}
                       <div className="flex items-start gap-4 lg:w-52">
                         {status === 'on_hold' ? (
-                          <FormField
-                            control={form.control}
-                            name="on_hold_expire_duration"
-                            render={({ field }) => {
-                              const hasError = !!form.formState.errors.on_hold_expire_duration
-                              return (
-                                <FormItem className="flex-1">
-                                  <FormLabel>{t('userDialog.onHoldExpireDuration', { defaultValue: 'On Hold Expire Duration (days)' })}</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      type="number"
-                                      min="1"
-                                      isError={hasError}
-                                      placeholder={t('userDialog.onHoldExpireDurationPlaceholder', { defaultValue: 'e.g. 7' })}
-                                      {...field}
-                                      value={field.value === null || field.value === undefined ? '' : Math.round(field.value / (24 * 60 * 60))}
-                                      onChange={e => {
-                                        const value = e.target.value === '' ? undefined : parseInt(e.target.value, 10)
-                                        field.onChange(value ? value * (24 * 60 * 60) : 1)
-                                        handleFieldChange('on_hold_expire_duration', value)
-                                      }}
-                                      onBlur={() => handleFieldBlur('on_hold_expire_duration')}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )
-                            }}
-                          />
+                            <FormField
+                                control={form.control}
+                                name="on_hold_expire_duration"
+                                render={({ field }) => {
+                                  const hasError = !!form.formState.errors.on_hold_expire_duration
+                                  const fieldValue = field.value ? Math.round(field.value / (24 * 60 * 60)): ''
+                                  const isZeroOrEmpty = fieldValue === 0 || fieldValue === ''
+                                  const isTouched = touchedFields['on_hold_expire_duration']
+
+                                  return (
+                                      <FormItem className="flex-1">
+                                        <FormLabel>{t('userDialog.onHoldExpireDuration', { defaultValue: 'On Hold Expire Duration (days)' })}</FormLabel>
+                                        <FormControl>
+                                          <Input
+                                              type="number"
+                                              min="1"
+                                              isError={hasError || (isTouched && isZeroOrEmpty)}
+                                              placeholder={t('userDialog.onHoldExpireDurationPlaceholder', { defaultValue: 'e.g. 7' })}
+                                              {...field}
+                                              value={fieldValue ? fieldValue : ''}
+                                              onChange={e => {
+                                                // Allow empty string for deletion
+                                                if (e.target.value === '') {
+                                                  field.onChange(0)
+                                                  handleFieldChange('on_hold_expire_duration', 0)
+                                                  // Mark field as touched to prevent auto-default
+                                                  setTouchedFields(prev => ({ ...prev, on_hold_expire_duration: true }))
+                                                } else {
+                                                  const value = parseInt(e.target.value, 10)
+                                                  if (!isNaN(value) && value >= 0) {
+                                                    field.onChange(value ? value * (24 * 60 * 60) : 0)
+                                                    handleFieldChange('on_hold_expire_duration', value)
+                                                    // Mark field as touched
+                                                    setTouchedFields(prev => ({ ...prev, on_hold_expire_duration: true }))
+                                                  }
+                                                }
+                                              }}
+                                              onBlur={() => {
+                                                handleFieldBlur('on_hold_expire_duration')
+                                                // Set validation error if value is 0 or empty
+                                                if (fieldValue === 0 || fieldValue === '') {
+                                                  form.setError('on_hold_expire_duration', {
+                                                    type: 'manual',
+                                                    message: t('validation.required', { field: t('userDialog.onHoldExpireDuration', { defaultValue: 'On Hold Expire Duration' }) }),
+                                                  })
+                                                } else {
+                                                  // Clear error if value is valid
+                                                  form.clearErrors('on_hold_expire_duration')
+                                                }
+                                              }}
+                                          />
+                                        </FormControl>
+                                        <FormMessage />
+                                        {isTouched && isZeroOrEmpty && !hasError && (
+                                            <p className="text-sm text-destructive">
+                                              {t('validation.required', { field: t('userDialog.onHoldExpireDuration', { defaultValue: 'On Hold Expire Duration' }) })}
+                                            </p>
+                                        )}
+                                      </FormItem>
+                                  )
+                                }}
+                            />
                         ) : (
                           <FormField
                             control={form.control}
@@ -1344,6 +1393,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                                 setCalendarOpen={setExpireCalendarOpen}
                                 handleFieldChange={handleFieldChange}
                                 label={t('userDialog.expiryDate', { defaultValue: 'Expire date' })}
+                                fieldName="expire"
                               />
                             )}
                           />
@@ -1364,6 +1414,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                           setCalendarOpen={setOnHoldCalendarOpen}
                           handleFieldChange={handleFieldChange}
                           label={t('userDialog.timeOutDate', { defaultValue: 'Expire date' })}
+                          fieldName="on_hold_timeout"
                         />
                       )}
                     />
@@ -1784,7 +1835,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                               control={form.control}
                               name="next_plan.add_remaining_traffic"
                               render={({ field }) => (
-                                <FormItem className="flex flex-row items-center gap-2">
+                                  <FormItem className="flex flex-row items-center justify-between w-full">
                                   <FormLabel>{t('userDialog.nextPlanAddRemainingTraffic', { defaultValue: 'Add Remaining Traffic' })}</FormLabel>
                                   <Switch checked={!!field.value} onCheckedChange={field.onChange} />
                                   <FormMessage />

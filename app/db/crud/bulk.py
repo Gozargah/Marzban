@@ -202,12 +202,16 @@ async def remove_groups_from_users(
         return [], count_effctive_users
 
     # Identify affected users (those who actually have the groups to be removed)
-    subquery = select(users_groups_association.c.user_id).where(
-        and_(
-            users_groups_association.c.user_id.in_(user_ids),
-            users_groups_association.c.groups_id.in_(bulk_model.group_ids)
+    subquery = (
+        select(users_groups_association.c.user_id)
+        .where(
+            and_(
+                users_groups_association.c.user_id.in_(user_ids),
+                users_groups_association.c.groups_id.in_(bulk_model.group_ids),
+            )
         )
-    ).distinct()
+        .distinct()
+    )
     result = await db.execute(select(User).where(User.id.in_(subquery)))
     users = result.scalars().all()
 

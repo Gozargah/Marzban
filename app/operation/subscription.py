@@ -53,7 +53,7 @@ class SubscriptionOperation(BaseOperation):
         if user.data_limit:
             user_info["total"] = user.data_limit
         if user.expire:
-            user_info["expire"] = user.expire
+            user_info["expire"] = user.expire.timestamp()
 
         # Create and return headers
         return {

@@ -823,6 +823,9 @@
     "muxEnable": "Включить MUX",
     "randomUserAgent": "Использовать случайный User-Agent",
     "useSniAsHost": "Использовать SNI как хост",
+    "echConfigList": "Список конфигураций ECH",
+    "echConfigList.info": "Список конфигураций Encrypted Client Hello (ECH). Это строка, закодированная в base64.",
+    "echConfigListPlaceholder": "Введите список конфигураций ECH",
     "inboundDefault": "По умолчанию",
     "earlyData": "Ранние данные",
     "httpHeaders": "HTTP заголовки",
@@ -1342,7 +1345,10 @@
         "description": "Начните с создания первой учетной записи пользователя",
         "createFirstUser": "Создать первого пользователя"
       }
-    }
+    },
+    "activeNextPlanTitle": "Активировать следующий план пользователя",
+    "activeNextPlanPrompt": "Вы уверены, что хотите активировать следующий план для «{{name}}»?",
+    "activeNextPlanSubmit": "Активировать следующий план"
   },
   "setOwnerModal": {
     "title": "Назначить владельца",

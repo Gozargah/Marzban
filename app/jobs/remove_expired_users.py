@@ -21,7 +21,7 @@ async def remove_expired_users():
             asyncio.create_task(
                 notification.remove_user(user=UserNotificationResponse.model_validate(user), by=SYSTEM_ADMIN)
             )
-            logger.info("Expired user %s deleted.", user.username)
+            logger.info("Expired user %s deleted.")
 
 
 scheduler.add_job(

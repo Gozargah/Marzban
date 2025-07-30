@@ -175,12 +175,12 @@ async def process_host(
     host: dict, format_variables: dict, inbounds: list[str], proxies: dict, conf
 ) -> tuple[dict, dict, str]:
     tag = host["inbound_tag"]
-    host_inbound: dict = await core_manager.get_inbound_by_tag(tag)
-
-    protocol = host_inbound["protocol"]
 
     if tag not in inbounds:
         return
+
+    host_inbound: dict = await core_manager.get_inbound_by_tag(tag)
+    protocol = host_inbound["protocol"]
 
     settings = proxies.get(protocol)
     if not settings:
@@ -232,6 +232,7 @@ async def process_host(
             "random_user_agent": host["random_user_agent"],
             "http_headers": host["http_headers"],
             "mux_settings": host["mux_settings"],
+            "ech_config_list": host["ech_config_list"],
         },
     )
     if ts := host["transport_settings"]:

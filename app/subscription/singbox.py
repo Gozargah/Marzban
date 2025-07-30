@@ -35,13 +35,22 @@ class SingBoxConfiguration(BaseSubscription):
             self.config["outbounds"].reverse()
         return json.dumps(self.config, indent=4, cls=UUIDEncoder)
 
-    def tls_config(self, sni=None, fp=None, tls=None, pbk=None, sid=None, alpn=None, ais=None, fragment=None):
+    def tls_config(
+        self, sni=None, fp=None, tls=None, pbk=None, sid=None, alpn=None, ais=None, fragment=None, ech_config_list=None
+    ):
         config = {
             "enabled": tls in ("tls", "reality"),
             "server_name": sni,
             "insecure": ais,
             "utls": {"enabled": bool(fp), "fingerprint": fp} if fp else None,
             "alpn": ([alpn] if not isinstance(alpn, list) else alpn) if alpn else None,
+            "ech": {
+                "enabled": True,
+                "config": [],
+                "config_path": "",
+            }
+            if ech_config_list
+            else None,
             "reality": {
                 "enabled": tls == "reality",
                 "public_key": pbk,
@@ -203,6 +212,7 @@ class SingBoxConfiguration(BaseSubscription):
         random_user_agent: bool = False,
         permit_without_stream: bool = False,
         fragment: dict | None = None,
+        ech_config_list: str | None = None,
     ):
         if isinstance(port, str):
             ports = port.split(",")
@@ -305,6 +315,7 @@ class SingBoxConfiguration(BaseSubscription):
             request=inbound.get("request"),
             mux_settings=inbound.get("mux_settings", {}),
             fragment=inbound.get("fragment_settings", {}),
+            ech_config_list=inbound.get("ech_config_list"),
         )
 
         if inbound["protocol"] == "vmess":

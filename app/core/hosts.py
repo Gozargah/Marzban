@@ -55,6 +55,7 @@ async def hosts(storage: dict, db: AsyncSession):
             if host.transport_settings
             else {},
             "status": host.status,
+            "ech_config_list": host.ech_config_list,
         }
 
         if downstream:
@@ -86,6 +87,7 @@ async def hosts(storage: dict, db: AsyncSession):
                 if downstream.transport_settings
                 else {},
                 "status": downstream.status,
+                "ech_config_list": host.ech_config_list,
             }
         else:
             host_data["downloadSettings"] = None

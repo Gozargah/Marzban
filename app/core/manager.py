@@ -1,6 +1,7 @@
 from copy import deepcopy
 
 from aiorwlock import RWLock
+from aiocache import cached
 
 from app import on_startup
 from app.core.abstract_core import AbstractCore
@@ -33,6 +34,9 @@ class CoreManager:
             self._inbounds_by_tag = new_inbounds
             self._inbounds = list(self._inbounds_by_tag.keys())
 
+            await self.get_inbounds.cache.clear()
+            await self.get_inbounds_by_tag.cache.clear()
+
     async def update_core(self, db_core_config: CoreConfig):
         backend_config = self.validate_core(
             db_core_config.config, db_core_config.fallbacks_inbound_tags, db_core_config.exclude_inbound_tags
@@ -62,10 +66,12 @@ class CoreManager:
 
             return core
 
+    @cached()
     async def get_inbounds(self) -> list[str]:
         async with self._lock.reader_lock:
             return deepcopy(self._inbounds)
 
+    @cached()
     async def get_inbounds_by_tag(self) -> dict:
         async with self._lock.reader_lock:
             return deepcopy(self._inbounds_by_tag)

@@ -68,6 +68,7 @@ export default function HostsPage() {
                 priority,
                 alpn: formData.alpn as ProxyHostALPN | undefined,
                 fingerprint: formData.fingerprint as ProxyHostFingerprint | undefined,
+                ech_config_list: formData.ech_config_list || undefined,
                 mux_settings: allProtocolsNone
                     ? undefined
                     : formData.mux_settings

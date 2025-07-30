@@ -86,6 +86,30 @@ class NodeManager:
             ]
             return nodes
 
+    async def get_nodes_by_health_status(self) -> tuple[list[tuple[int, GozargahNode]], list[tuple[int, GozargahNode]]]:
+        """Optimized method to get both broken and not_connected nodes in single lock acquisition"""
+        async with self._lock.reader_lock:
+            if not self._nodes:
+                return [], []
+
+            health_tasks = [node.get_health() for node in self._nodes.values()]
+            health_results = await asyncio.gather(*health_tasks, return_exceptions=True)
+
+            broken_nodes = []
+            not_connected_nodes = []
+
+            for (node_id, node), health in zip(self._nodes.items(), health_results):
+                if isinstance(health, Exception):
+                    continue
+                if health == Health.BROKEN:
+                    broken_nodes.append((node_id, node))
+                elif health == Health.NOT_CONNECTED:
+                    not_connected_nodes.append((node_id, node))
+                else:
+                    continue
+
+            return broken_nodes, not_connected_nodes
+
     async def update_user(self, user: UserResponse, inbounds: list[str] = None):
         proto_user = serialize_user_for_node(user.id, user.username, user.proxy_settings.dict(), inbounds)
 
