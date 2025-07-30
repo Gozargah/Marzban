@@ -1442,7 +1442,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
                   />
 
                   {/* Subscription Information - only show when editing and data exists */}
-                  {activeTab === 'groups' && editingUser && editingUserData && (editingUserData.sub_updated_at || editingUserData.sub_last_user_agent) && (
+                  {activeTab === 'groups' && editingUser && editingUserData && (
                     <SubscriptionInfo
                       subUpdatedAt={editingUserData.sub_updated_at}
                       subLastUserAgent={editingUserData.sub_last_user_agent}

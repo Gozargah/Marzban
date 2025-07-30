@@ -74,11 +74,6 @@ const formatTimeAgo = (timestamp: number, t: any): string => {
 export const SubscriptionInfo: FC<SubscriptionInfoProps> = ({ subUpdatedAt, subLastUserAgent, compact = false, headerButton }) => {
   const { t } = useTranslation()
 
-  // Don't render anything if both values are null/undefined
-  if (!subUpdatedAt && !subLastUserAgent) {
-    return null
-  }
-
   const unixTime = convertDateFormat(subUpdatedAt)
   const timeAgo = unixTime ? formatTimeAgo(unixTime, t) : null
   const clientInfo = parseUserAgent(subLastUserAgent)

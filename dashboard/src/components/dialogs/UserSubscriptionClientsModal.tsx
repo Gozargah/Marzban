@@ -68,24 +68,25 @@ export const UserSubscriptionClientsModal: FC<UserSubscriptionClientsModalProps>
 }) => {
   const { t } = useTranslation()
 
-  const { data: subUpdateList, isLoading, error } = useGetUserSubUpdateList(
+  const {
+    data: subUpdateList,
+    isLoading,
+    error,
+  } = useGetUserSubUpdateList(
     username,
     { offset: 0, limit: 50 }, // Get last 50 clients
     {
       query: {
         enabled: isOpen && !!username,
-      }
-    }
+      },
+    },
   )
-
-  console.log('subUpdateList', subUpdateList);
-  
 
   const renderClientItem = (update: UserSubscriptionUpdateSchema, index: number) => {
     const clientInfo = parseUserAgent(update.user_agent)
     const formattedClient = formatClientInfo(clientInfo)
     const ClientIcon = getClientIcon(clientInfo.iconType)
-    
+
     // Convert created_at to timestamp if it's a string
     let timestamp: number | null = null
     if (update.created_at) {
@@ -100,14 +101,12 @@ export const UserSubscriptionClientsModal: FC<UserSubscriptionClientsModalProps>
     const timeAgo = timestamp ? formatTimeAgo(timestamp, t) : null
 
     return (
-      <div key={index} className="flex items-center justify-between p-4 border-b border-border last:border-b-0">
-        <div className="flex items-center gap-3 flex-1">
+      <div key={index} className="flex items-center justify-between border-b border-border p-4 last:border-b-0">
+        <div className="flex flex-1 items-center gap-3">
           <ClientIcon className="h-5 w-5 text-muted-foreground" />
-          <div className="flex-1 max-w-[200px]">
-            <div className="flex items-center gap-2 mb-1">
-              <span className={`text-sm font-medium ${clientInfo.isKnownClient ? 'text-green-600 dark:text-green-400' : ''}`}>
-                {formattedClient}
-              </span>
+          <div className="max-w-[200px] flex-1">
+            <div className="mb-1 flex items-center gap-2">
+              <span className={`text-sm font-medium ${clientInfo.isKnownClient ? 'text-green-600 dark:text-green-400' : ''}`}>{formattedClient}</span>
               {clientInfo.isKnownClient && (
                 <Badge variant="secondary" className="text-xs">
                   {t('subscriptionClients.knownClient', { defaultValue: 'Known' })}
@@ -117,12 +116,10 @@ export const UserSubscriptionClientsModal: FC<UserSubscriptionClientsModalProps>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <p className="text-xs text-muted-foreground truncate cursor-help">
-                    {update.user_agent}
-                  </p>
+                  <p className="cursor-help truncate text-xs text-muted-foreground">{update.user_agent}</p>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-xs">
-                  <p className="text-xs break-all">{update.user_agent}</p>
+                  <p className="break-all text-xs">{update.user_agent}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -133,17 +130,10 @@ export const UserSubscriptionClientsModal: FC<UserSubscriptionClientsModalProps>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="cursor-help">
-                  {timeAgo || t('subscriptionClients.unknown', { defaultValue: 'Unknown' })}
-                </span>
+                <span className="cursor-help">{timeAgo || t('subscriptionClients.unknown', { defaultValue: 'Unknown' })}</span>
               </TooltipTrigger>
               <TooltipContent>
-                <p>
-                  {update.created_at 
-                    ? dateUtils.formatDate(update.created_at) 
-                    : t('subscriptionClients.unknown', { defaultValue: 'Unknown' })
-                  }
-                </p>
+                <p>{update.created_at ? dateUtils.formatDate(update.created_at) : t('subscriptionClients.unknown', { defaultValue: 'Unknown' })}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -154,7 +144,7 @@ export const UserSubscriptionClientsModal: FC<UserSubscriptionClientsModalProps>
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col max-w-3xl p-6">
+      <DialogContent className="flex max-w-3xl flex-col p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
@@ -163,7 +153,7 @@ export const UserSubscriptionClientsModal: FC<UserSubscriptionClientsModalProps>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4 w-full">
+        <div className="flex w-full flex-col gap-4">
           {isLoading && (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin" />
@@ -171,48 +161,42 @@ export const UserSubscriptionClientsModal: FC<UserSubscriptionClientsModalProps>
             </div>
           )}
 
-          {error && (
-            <div className="text-center py-8 text-destructive">
-              {t('subscriptionClients.error', { defaultValue: 'Failed to load subscription clients' })}
-            </div>
-          )}
+          {error && <div className="py-8 text-center text-destructive">{t('subscriptionClients.error', { defaultValue: 'Failed to load subscription clients' })}</div>}
 
           {!isLoading && !error && subUpdateList && (
             <>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
-                  {t('subscriptionClients.total', { 
-                    defaultValue: 'Total: {{count}} clients', 
-                    count: subUpdateList.count 
+                  {t('subscriptionClients.total', {
+                    defaultValue: 'Total: {{count}} clients',
+                    count: subUpdateList.count,
                   })}
                 </span>
                 {subUpdateList.updates && subUpdateList.updates.length > 0 && (
                   <span className="text-xs text-muted-foreground">
-                    {t('subscriptionClients.showing', { 
+                    {t('subscriptionClients.showing', {
                       defaultValue: 'Showing last {{count}} accesses',
-                      count: subUpdateList.updates.length
+                      count: subUpdateList.updates.length,
                     })}
                   </span>
                 )}
               </div>
 
-              <ScrollArea className="h-[400px] flex border rounded-lg">
+              <ScrollArea className="flex h-[400px] rounded-lg border">
                 {subUpdateList.updates && subUpdateList.updates.length > 0 ? (
-                  <div className="divide-y">
-                    {subUpdateList.updates.map((update, index) => renderClientItem(update, index))}
-                  </div>
+                  <div className="divide-y">{subUpdateList.updates.map((update, index) => renderClientItem(update, index))}</div>
                 ) : (
                   <div className="flex items-center justify-center py-8 text-muted-foreground">
                     <div className="text-center">
-                      <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <Users className="mx-auto mb-2 h-12 w-12 opacity-50" />
                       <p className="text-sm">
-                        {t('subscriptionClients.noClients', { 
-                          defaultValue: 'No subscription clients found' 
+                        {t('subscriptionClients.noClients', {
+                          defaultValue: 'No subscription clients found',
                         })}
                       </p>
-                      <p className="text-xs mt-1">
-                        {t('subscriptionClients.noClientsDesc', { 
-                          defaultValue: 'This user has not accessed their subscription yet' 
+                      <p className="mt-1 text-xs">
+                        {t('subscriptionClients.noClientsDesc', {
+                          defaultValue: 'This user has not accessed their subscription yet',
                         })}
                       </p>
                     </div>
