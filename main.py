@@ -9,10 +9,18 @@ import uvicorn
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
+import dashboard  # noqa
 from app import app, logger  # noqa
 from app.utils.logger import LOGGING_CONFIG
-from config import DEBUG, UVICORN_HOST, UVICORN_PORT, UVICORN_SSL_CERTFILE, UVICORN_SSL_KEYFILE, UVICORN_UDS
-import dashboard  # noqa
+from config import (
+    DEBUG,
+    UVICORN_HOST,
+    UVICORN_LOOP,
+    UVICORN_PORT,
+    UVICORN_SSL_CERTFILE,
+    UVICORN_SSL_KEYFILE,
+    UVICORN_UDS,
+)
 
 
 def check_and_modify_ip(ip_address: str) -> str:
@@ -138,6 +146,7 @@ Then, navigate to {click.style(f"http://{ip}:{UVICORN_PORT}", bold=True)} on you
             workers=1,
             reload=DEBUG,
             log_config=LOGGING_CONFIG,
+            loop=UVICORN_LOOP,
         )
     except FileNotFoundError:  # to prevent error on removing unix sock
         pass

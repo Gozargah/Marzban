@@ -1,51 +1,18 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { SystemStats, NodeRealtimeStats } from '@/service/api'
 import { useTranslation } from 'react-i18next'
-import { Cpu, MemoryStick, Database, TrendingUp, TrendingDown } from 'lucide-react'
+import { Cpu, MemoryStick, Database, Upload, Download } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import useDirDetection from '@/hooks/use-dir-detection'
 import { formatBytes } from '@/utils/formatByte'
-import { useEffect, useState } from 'react'
 
 interface SystemStatisticsSectionProps {
   currentStats?: SystemStats | NodeRealtimeStats | null
 }
 
-const CountUp = ({ end, duration = 1500, suffix = '' }: { end: number; duration?: number; suffix?: string }) => {
-  const [count, setCount] = useState(0)
-
-  useEffect(() => {
-    if (!end && end !== 0) return
-
-    let startTimestamp: number | null = null
-    const startValue = count
-    const step = (timestamp: number) => {
-      if (!startTimestamp) startTimestamp = timestamp
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1)
-      // Using easeOutQuad for a softer animation
-      const eased = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2
-      const currentCount = Math.floor(eased * (end - startValue) + startValue)
-
-      setCount(currentCount)
-
-      if (progress < 1) {
-        window.requestAnimationFrame(step)
-      } else {
-        setCount(end)
-      }
-    }
-
-    window.requestAnimationFrame(step)
-  }, [end, duration])
-
-  return <>{count}{suffix}</>
-}
-
 export default function SystemStatisticsSection({ currentStats }: SystemStatisticsSectionProps) {
   const { t } = useTranslation()
   const dir = useDirDetection()
-  const [prevData, setPrevData] = useState<any>(null)
-  const [isIncreased, setIsIncreased] = useState<Record<string, boolean>>({})
 
   const getTotalTrafficValue = () => {
     if (!currentStats) return 0
@@ -59,6 +26,30 @@ export default function SystemStatisticsSection({ currentStats }: SystemStatisti
       // Note: In a real implementation, you might want to accumulate these values over time
       const stats = currentStats as NodeRealtimeStats
       return Number(stats.incoming_bandwidth_speed) + Number(stats.outgoing_bandwidth_speed)
+    }
+    
+    return 0
+  }
+
+  const getIncomingBandwidth = () => {
+    if (!currentStats) return 0
+    
+    if ('incoming_bandwidth' in currentStats) {
+      return Number(currentStats.incoming_bandwidth) || 0
+    } else if ('incoming_bandwidth_speed' in currentStats) {
+      return Number(currentStats.incoming_bandwidth_speed) || 0
+    }
+    
+    return 0
+  }
+
+  const getOutgoingBandwidth = () => {
+    if (!currentStats) return 0
+    
+    if ('outgoing_bandwidth' in currentStats) {
+      return Number(currentStats.outgoing_bandwidth) || 0
+    } else if ('outgoing_bandwidth_speed' in currentStats) {
+      return Number(currentStats.outgoing_bandwidth_speed) || 0
     }
     
     return 0
@@ -80,12 +71,8 @@ export default function SystemStatisticsSection({ currentStats }: SystemStatisti
     let cpuUsage = Number(currentStats.cpu_usage) || 0
     const cpuCores = Number(currentStats.cpu_cores) || 0
     
-    // Fix potential decimal issue - if usage is between 0-1, it's likely a decimal representation
-    if (cpuUsage > 0 && cpuUsage <= 1) {
-      cpuUsage = cpuUsage * 100
-    }
-    
-    // Ensure CPU usage doesn't exceed 100% and is reasonable
+    // CPU usage is already in percentage (0-100), no need to multiply
+    // Just ensure it's within reasonable bounds
     cpuUsage = Math.min(Math.max(cpuUsage, 0), 100)
     
     return { usage: Math.round(cpuUsage * 10) / 10, cores: cpuCores } // Round to 1 decimal place
@@ -93,21 +80,6 @@ export default function SystemStatisticsSection({ currentStats }: SystemStatisti
 
   const memory = getMemoryUsage()
   const cpu = getCpuInfo()
-
-  useEffect(() => {
-    if (prevData && currentStats) {
-      setIsIncreased({
-        cpu_usage: cpu.usage > prevData.cpu_usage,
-        mem_usage: (currentStats.mem_used ?? 0) > prevData.mem_used,
-        total_traffic: getTotalTrafficValue() > (prevData.total_traffic || 0),
-      })
-    }
-    setPrevData({
-      cpu_usage: cpu.usage,
-      mem_used: currentStats?.mem_used ?? 0,
-      total_traffic: getTotalTrafficValue(),
-    })
-  }, [currentStats])
 
   return (
     <div className={cn(
@@ -141,21 +113,16 @@ export default function SystemStatisticsSection({ currentStats }: SystemStatisti
             
             <div className="flex items-end justify-between gap-2">
               <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
-                <span dir="ltr" className={cn('text-xl sm:text-2xl lg:text-3xl font-bold transition-all duration-500 truncate', isIncreased.cpu_usage ? 'animate-zoom-out' : '')} style={{ animationDuration: '400ms' }}>
-                  <CountUp end={cpu.usage} suffix="%" />
+                <span dir="ltr" className="text-xl sm:text-2xl lg:text-3xl font-bold transition-all duration-300 truncate">
+                  {cpu.usage}%
                 </span>
-                {isIncreased.cpu_usage !== undefined && (
-                  <div className={cn('flex items-center text-xs', isIncreased.cpu_usage ? 'text-red-500' : 'text-green-500')}>
-                    {isIncreased.cpu_usage ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                  </div>
-                )}
               </div>
               
               {cpu.cores > 0 && (
                 <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground bg-muted/50 px-1.5 sm:px-2 py-1 rounded-md shrink-0">
                   <Cpu className="h-3 w-3" />
                   <span className="font-medium whitespace-nowrap">
-                    <CountUp end={cpu.cores} /> {t('statistics.cores')}
+                    {cpu.cores} {t('statistics.cores')}
                   </span>
                 </div>
               )}
@@ -187,27 +154,22 @@ export default function SystemStatisticsSection({ currentStats }: SystemStatisti
             </div>
             
             <div className="flex items-center gap-1 sm:gap-2">
-              <span dir="ltr" className={cn('text-lg sm:text-xl lg:text-2xl font-bold transition-all duration-500 truncate', isIncreased.mem_usage ? 'animate-zoom-out' : '')} style={{ animationDuration: '400ms' }}>
+              <span dir="ltr" className="text-lg sm:text-xl lg:text-2xl font-bold transition-all duration-300 truncate">
                 {currentStats ? (
                   <span className="whitespace-nowrap">
-                    <CountUp end={Number(formatBytes(memory.used, 1, false)) ?? 0} />/{formatBytes(memory.total, 1, true)}
+                    {formatBytes(memory.used, 1, false)}/{formatBytes(memory.total, 1, true)}
                   </span>
                 ) : (
                   0
                 )}
               </span>
-              {isIncreased.mem_usage !== undefined && (
-                <div className={cn('flex items-center text-xs shrink-0', isIncreased.mem_usage ? 'text-red-500' : 'text-green-500')}>
-                  {isIncreased.mem_usage ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Total Traffic */}
-      <div className="w-full h-full animate-fade-in col-span-1 sm:col-span-2 lg:col-span-1" style={{ animationDuration: '600ms', animationDelay: '250ms' }}>
+      {/* Total Traffic with Incoming/Outgoing Details */}
+      <div className="w-full h-full animate-fade-in" style={{ animationDuration: '600ms', animationDelay: '250ms' }}>
         <Card dir={dir} className="group relative w-full h-full overflow-hidden rounded-lg border transition-all duration-300 hover:shadow-lg">
           <div
             className={cn(
@@ -228,15 +190,24 @@ export default function SystemStatisticsSection({ currentStats }: SystemStatisti
               </div>
             </div>
             
-            <div className="flex items-center gap-1 sm:gap-2">
-              <span dir="ltr" className={cn('text-xl sm:text-2xl lg:text-3xl font-bold transition-all duration-500 truncate', isIncreased.total_traffic ? 'animate-zoom-out' : '')} style={{ animationDuration: '400ms' }}>
-                {formatBytes(getTotalTrafficValue() || 0, 1)}
-              </span>
-              {isIncreased.total_traffic !== undefined && (
-                <div className={cn('flex items-center text-xs shrink-0', isIncreased.total_traffic ? 'text-green-500' : 'text-red-500')}>
-                  {isIncreased.total_traffic ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+            <div className="flex items-end justify-between gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
+                <span dir="ltr" className="text-xl sm:text-2xl lg:text-3xl font-bold transition-all duration-300 truncate">
+                  {formatBytes(getTotalTrafficValue() || 0, 1)}
+                </span>
+              </div>
+              
+              {/* Incoming/Outgoing Details */}
+              <div className="flex items-center gap-2 text-xs shrink-0">
+                <div className="flex items-center gap-1 text-green-600 dark:text-green-400 bg-muted/50 px-1.5 py-1 rounded-md">
+                  <Download className="h-3 w-3" />
+                  <span dir="ltr" className="font-medium">{formatBytes(getIncomingBandwidth() || 0, 1)}</span>
                 </div>
-              )}
+                <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400 bg-muted/50 px-1.5 py-1 rounded-md">
+                  <Upload className="h-3 w-3" />
+                  <span dir="ltr" className="font-medium">{formatBytes(getOutgoingBandwidth() || 0, 1)}</span>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

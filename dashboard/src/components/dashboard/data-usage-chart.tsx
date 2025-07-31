@@ -8,6 +8,7 @@ import { useMemo, useState } from 'react'
 import { SearchXIcon, TrendingUp, TrendingDown } from 'lucide-react'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select'
 import { dateUtils } from '@/utils/dateFormatter'
+import dayjs from '@/lib/dayjs'
 
 interface PeriodOption {
   label: string
@@ -43,7 +44,7 @@ const transformUsageData = (apiData: any, periodOption: any) => {
       if (isLastItem) {
         displayLabel = 'Today'
       } else {
-        displayLabel = d.format('MM/DD HH:00')
+        displayLabel = d.format('HH:mm')
       }
     } else {
       if (isLastItem) {
@@ -69,31 +70,66 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-function CustomBarTooltip({ active, payload }: TooltipProps<any, any>) {
+function CustomBarTooltip({ active, payload, period }: TooltipProps<any, any> & { period?: string }) {
   const { t, i18n } = useTranslation()
   if (!active || !payload || !payload.length) return null
   const data = payload[0].payload
   const d = dateUtils.toDayjs(data.localFullDate || data.fullDate)
-  let formattedDate = d.format('YYYY-MM-DD HH:mm')
-  if (i18n.language === 'fa' && typeof window !== 'undefined' && (window as any).Intl && (window as any).Intl.DateTimeFormat) {
+  const today = dateUtils.toDayjs(new Date())
+  const isToday = d.isSame(today, 'day')
+
+  let formattedDate
+  if (i18n.language === 'fa') {
     try {
-      formattedDate = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+      if (period === 'day' && isToday) {
+        formattedDate = new Date().toLocaleString('fa-IR', {
+          year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false
+        }).replace(',', '')
+      } else if (period === 'day') {
+        const localDate = new Date(d.year(), d.month(), d.date(), 0, 0, 0)
+        formattedDate = localDate.toLocaleString('fa-IR', {
+          year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false
+        }).replace(',', '')
+      } else {
+        formattedDate = d.toDate().toLocaleString('fa-IR', {
+          year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false
+        }).replace(',', '')
+      }
+    } catch {
+      formattedDate = d.format('YYYY/MM/DD HH:mm')
+    }
+  } else {
+    if (period === 'day' && isToday) {
+      const now = new Date()
+      formattedDate = now.toLocaleString('en-US', {
         year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false
-      }).format(new Date(data.localFullDate || data.fullDate))
-    } catch {}
+      }).replace(',', '')
+    } else if (period === 'day') {
+      const localDate = new Date(d.year(), d.month(), d.date(), 0, 0, 0)
+      formattedDate = localDate.toLocaleString('en-US', {
+        year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false
+      }).replace(',', '')
+    } else {
+      formattedDate = d.toDate().toLocaleString('en-US', {
+        year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false
+      }).replace(',', '')
+    }
   }
+
+  const isRTL = i18n.language === 'fa'
+
   return (
     <div
-      className={`rounded border border-border bg-gradient-to-br from-background to-muted/80 shadow min-w-[160px] text-xs p-2 ${i18n.language === 'fa' ? 'text-right' : 'text-left'}`}
-      dir={i18n.language === 'fa' ? 'rtl' : 'ltr'}
+      className={`rounded border border-border bg-gradient-to-br from-background to-muted/80 shadow min-w-[160px] text-xs p-2 ${isRTL ? 'text-right' : 'text-left'}`}
+      dir={isRTL ? 'rtl' : 'ltr'}
     >
-      <div className={`mb-1 font-semibold text-primary text-xs ${i18n.language === 'fa' ? 'text-right' : 'text-center'}`}>
-        {t('statistics.date', { defaultValue: 'Date' })}: {formattedDate}
+      <div className={`mb-1 font-semibold text-primary text-xs ${isRTL ? 'text-right' : 'text-center'}`}>
+        {t('statistics.date', { defaultValue: 'Date' })}: <span dir="ltr" className="inline-block">{formattedDate}</span>
       </div>
       <div className="flex flex-col gap-0.5 text-xs">
         <div>
           <span className="font-medium text-foreground">{t('statistics.totalUsage', { defaultValue: 'Total Usage' })}:</span>
-          <span className={i18n.language === 'fa' ? 'mr-1' : 'ml-1'}>{formatBytes(data.traffic)}</span>
+          <span className={isRTL ? 'mr-1' : 'ml-1'}>{formatBytes(data.traffic)}</span>
         </div>
       </div>
     </div>
@@ -117,18 +153,16 @@ const DataUsageChart = ({ admin_username }: { admin_username?: string }) => {
   const [periodOption, setPeriodOption] = useState<PeriodOption>(() => PERIOD_OPTIONS[3])
 
   const { startDate, endDate } = useMemo(() => {
-    const now = new Date()
-    let start: Date
+    const now = dayjs()
+    let start: dayjs.Dayjs
     if (periodOption.allTime) {
-      start = new Date('2000-01-01T00:00:00Z') // Arbitrary early date
+      start = dayjs('2000-01-01T00:00:00Z') // Arbitrary early date
     } else if (periodOption.hours) {
-      start = new Date(now)
-      start.setHours(now.getHours() - periodOption.hours)
+      start = now.subtract(periodOption.hours, 'hour')
     } else if (periodOption.days) {
-      start = new Date(now)
-      start.setDate(now.getDate() - periodOption.days)
+      start = now.subtract(periodOption.days, 'day')
     } else {
-      start = new Date(now)
+      start = now
     }
     return { startDate: start.toISOString(), endDate: now.toISOString() }
   }, [periodOption])
@@ -241,7 +275,7 @@ const DataUsageChart = ({ admin_username }: { admin_username?: string }) => {
                 <YAxis dataKey={'traffic'} tickLine={false} tickMargin={10} axisLine={false} tickFormatter={val => formatBytes(val, 0, true).toString()} />
                 <ChartTooltip 
                   cursor={false}
-                  content={<CustomBarTooltip />}
+                  content={<CustomBarTooltip period={periodOption.period} />}
                 />
                 <Bar dataKey="traffic" radius={6} maxBarSize={48}>
                   {chartData.map((_: any, index: number) => (

@@ -10,13 +10,15 @@ import {
     PieChart,
     Trash2,
     EllipsisVertical,
-    ListStart
+    ListStart,
+    Users
 } from 'lucide-react'
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CopyButton } from './CopyButton'
 import QRCodeModal from './dialogs/QRCodeModal'
 import UserModal from './dialogs/UserModal'
+import { UserSubscriptionClientsModal } from './dialogs/UserSubscriptionClientsModal'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -67,6 +69,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
     const [isUsageModalOpen, setUsageModalOpen] = useState(false)
     const [isSetOwnerModalOpen, setSetOwnerModalOpen] = useState(false)
     const [isActiveNextPlanModalOpen, setIsActiveNextPlanModalOpen] = useState(false)
+    const [isSubscriptionClientsModalOpen, setSubscriptionClientsModalOpen] = useState(false)
     const queryClient = useQueryClient()
     const { t } = useTranslation()
     const dir = useDirDetection()
@@ -476,6 +479,12 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
                             </DropdownMenuItem>
                         )}
 
+                        {/* Subscription Info */}
+                        <DropdownMenuItem onClick={() => setSubscriptionClientsModalOpen(true)}>
+                            <Users className="h-4 w-4 mr-2" />
+                            <span>{t('subscriptionClients.viewAllClients', { defaultValue: 'View All Clients' })}</span>
+                        </DropdownMenuItem>
+
                         <DropdownMenuSeparator />
 
                         {/* Trash */}
@@ -488,7 +497,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
             </div>
 
             {/* QR Code Modal */}
-            {showQRModal && subscribeUrl && <QRCodeModal subscribeLinks={subscribeLinks} subscribeUrl={subscribeUrl}
+            {showQRModal && subscribeUrl && <QRCodeModal subscribeUrl={subscribeUrl}
                 onCloseModal={onCloseQRModal} />}
 
             {/* Active Next Plan Confirm Dialog */}
@@ -577,6 +586,13 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
                     onSuccess={refreshUserData}
                 />
             )}
+
+            {/* UserSubscriptionClientsModal */}
+            <UserSubscriptionClientsModal 
+                isOpen={isSubscriptionClientsModalOpen} 
+                onOpenChange={setSubscriptionClientsModalOpen} 
+                username={user.username} 
+            />
         </div>
     )
 }

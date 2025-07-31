@@ -1,4 +1,5 @@
 import os
+from email.policy import default
 
 from decouple import config
 from dotenv import load_dotenv
@@ -11,7 +12,7 @@ if not TESTING:
 
 SQLALCHEMY_DATABASE_URL = config("SQLALCHEMY_DATABASE_URL", default="sqlite+aiosqlite:///db.sqlite3")
 SQLALCHEMY_POOL_SIZE = config("SQLALCHEMY_POOL_SIZE", cast=int, default=10)
-SQLALCHEMY_MAX_OVERFLOW = config("SQLIALCHEMY_MAX_OVERFLOW", cast=int, default=30)
+SQLALCHEMY_MAX_OVERFLOW = config("SQLALCHEMY_MAX_OVERFLOW", cast=int, default=30)
 ECHO_SQL_QUERIES = config("ECHO_SQL_QUERIES", cast=bool, default=False)
 
 UVICORN_HOST = config("UVICORN_HOST", default="0.0.0.0")
@@ -21,6 +22,7 @@ UVICORN_SSL_CERTFILE = config("UVICORN_SSL_CERTFILE", default=None)
 UVICORN_SSL_KEYFILE = config("UVICORN_SSL_KEYFILE", default=None)
 UVICORN_SSL_CA_TYPE = config("UVICORN_SSL_CA_TYPE", default="public").lower()
 DASHBOARD_PATH = config("DASHBOARD_PATH", default="/dashboard/")
+UVICORN_LOOP = config("UVICORN_LOOP", default="auto", cast=str)
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 DOCS = config("DOCS", default=False, cast=bool)
@@ -61,6 +63,14 @@ USERS_AUTODELETE_DAYS = config("USERS_AUTODELETE_DAYS", default=-1, cast=int)
 USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS = config("USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS", default=False, cast=bool)
 
 DO_NOT_LOG_TELEGRAM_BOT = config("DO_NOT_LOG_TELEGRAM_BOT", default=True, cast=bool)
+
+SAVE_LOGS_TO_FILE = config("SAVE_LOGS_TO_FILE", default=False, cast=bool)
+LOG_FILE_PATH = config("LOG_FILE_PATH", default="marzban.log")
+LOG_BACKUP_COUNT = config("LOG_BACKUP_COUNT", cast=int, default=72)
+LOG_ROTATION_ENABLED = config("LOG_ROTATION_ENABLED", default=False, cast=bool)
+LOG_ROTATION_INTERVAL = config("LOG_ROTATION_INTERVAL", cast=int, default=1)
+LOG_ROTATION_UNIT = config("LOG_ROTATION_UNIT", default="H")
+LOG_MAX_BYTES = config("LOG_MAX_BYTES", cast=int, default=10485760)  # default: 10 MB
 
 # USERNAME: PASSWORD
 SUDOERS = (

@@ -44,7 +44,6 @@ async def send_notifications():
     if not settings.enable:
         return
 
-    logger.info("Job `send_notifications` started")
     logger.debug("Processing notifications batch")
 
     processed = 0
@@ -92,11 +91,9 @@ async def send_notifications():
 
         if processed or failed_to_requeue:
             logger.debug(f"Processed {processed} notifications, requeued {len(failed_to_requeue)}")
-    logger.info("Job `send_notifications` finished")
 
 
 async def delete_expired_reminders() -> None:
-    logger.info("Job `delete_expired_reminders` started")
     async with GetDB() as db:
         # Get current UTC time and convert to naive datetime
         now_utc = dt.now(tz=tz.utc)
@@ -104,7 +101,6 @@ async def delete_expired_reminders() -> None:
 
         result = await db.execute(delete(NotificationReminder).where(NotificationReminder.expires_at < now_naive))
         logger.info(f"Cleaned up {result.rowcount} expired reminders")
-    logger.info("Job `delete_expired_reminders` finished")
 
 
 async def send_pending_notifications_before_shutdown():

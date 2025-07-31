@@ -221,7 +221,6 @@ async def calculate_users_usage(api_params: dict, usage_coefficient: dict) -> li
 
 
 async def record_user_usages():
-    logger.info("Job `record_user_usages` started")
     nodes: tuple[int, GozargahNode] = await node_manager.get_healthy_nodes()
 
     node_data = await asyncio.gather(*[asyncio.create_task(node.get_extra()) for _, node in nodes])
@@ -234,7 +233,6 @@ async def record_user_usages():
 
     users_usage = await calculate_users_usage(api_params, usage_coefficient)
     if not users_usage:
-        logger.info("Job `record_user_usages` finished, no user usage to record")
         return
 
     async with GetDB() as db:
@@ -258,7 +256,6 @@ async def record_user_usages():
             await safe_execute(db, admin_stmt, admin_data)
 
     if DISABLE_RECORDING_NODE_USAGE:
-        logger.info("Job `record_user_usages` finished")
         return
 
     record_tasks = [
@@ -268,11 +265,9 @@ async def record_user_usages():
         for node_id in api_params
     ]
     await asyncio.gather(*record_tasks)
-    logger.info("Job `record_user_usages` finished")
 
 
 async def record_node_usages():
-    logger.info("Job `record_node_usages` started")
     # Create tasks for all nodes
     tasks = {
         node_id: asyncio.create_task(get_outbounds_stats(node))
@@ -300,7 +295,6 @@ async def record_node_usages():
 
     record_tasks = [asyncio.create_task(record_node_stats(params, node_id)) for node_id, params in api_params.items()]
     await asyncio.gather(*record_tasks)
-    logger.info("Job `record_node_usages` finished")
 
 
 scheduler.add_job(

@@ -319,7 +319,10 @@ const Dashboard = () => {
   }, [currentAdmin, selectedAdmin, is_sudo])
 
   // Only send admin_username if selectedAdmin is explicitly set and not 'Total'
-  const systemStatsParams = is_sudo && selectedAdmin && selectedAdmin.username !== 'Total' ? { admin_username: selectedAdmin.username } : undefined
+  // When current admin is selected, we want to show their specific stats, not global stats
+  const systemStatsParams = is_sudo && selectedAdmin && selectedAdmin.username !== 'Total' 
+    ? { admin_username: selectedAdmin.username } 
+    : undefined
 
   const { data: systemStatsData } = useGetSystemStats(systemStatsParams, {
     query: {

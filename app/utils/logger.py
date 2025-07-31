@@ -6,6 +6,17 @@ import click
 from uvicorn.config import LOGGING_CONFIG
 from uvicorn.logging import DefaultFormatter
 
+from config import (
+    ECHO_SQL_QUERIES,
+    LOG_BACKUP_COUNT,
+    LOG_FILE_PATH,
+    LOG_MAX_BYTES,
+    LOG_ROTATION_ENABLED,
+    LOG_ROTATION_INTERVAL,
+    LOG_ROTATION_UNIT,
+    SAVE_LOGS_TO_FILE,
+)
+
 
 class CustomLoggingFormatter(DefaultFormatter):
     def formatMessage(self, record: logging.LogRecord) -> str:
@@ -31,16 +42,45 @@ LOGGING_CONFIG["formatters"]["access"]["fmt"] = (
 )
 
 
+if SAVE_LOGS_TO_FILE:
+    if LOG_ROTATION_ENABLED:
+        LOGGING_CONFIG["handlers"]["file"] = {
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "formatter": "default",
+            "filename": LOG_FILE_PATH,
+            "interval": LOG_ROTATION_INTERVAL,
+            "when": LOG_ROTATION_UNIT,
+            "backupCount": LOG_BACKUP_COUNT,
+        }
+    else:
+        LOGGING_CONFIG["handlers"]["file"] = {
+            "class": "logging.handlers.RotatingFileHandler",
+            "formatter": "default",
+            "filename": LOG_FILE_PATH,
+            "maxBytes": LOG_MAX_BYTES,
+            "backupCount": LOG_BACKUP_COUNT,
+        }
+    LOGGING_CONFIG["loggers"]["uvicorn"]["handlers"].append("file")
+    LOGGING_CONFIG["loggers"]["uvicorn.access"]["handlers"].append("file")
+
+
 def get_logger(name: str = "uvicorn.error") -> logging.Logger:
     if not LOGGING_CONFIG["loggers"].get(name):
+        handlers = ["custom"]
+        if SAVE_LOGS_TO_FILE:
+            handlers.append("file")
         LOGGING_CONFIG["loggers"][name] = {
-            "handlers": ["custom"],
+            "handlers": handlers,
             "level": LOGGING_CONFIG["loggers"]["uvicorn"]["level"],
         }
         logging.config.dictConfig(LOGGING_CONFIG)
 
     logger = logging.getLogger(name)
     return logger
+
+
+if ECHO_SQL_QUERIES:
+    _ = get_logger("sqlalchemy.engine")
 
 
 class EndpointFilter(logging.Filter):

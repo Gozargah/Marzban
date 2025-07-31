@@ -358,7 +358,7 @@ async def get_user_usages(
                 func.sum(NodeUserUsage.used_traffic).label("total_traffic"),
             )
             .where(and_(*conditions))
-            .group_by(trunc_expr, "node_id")
+            .group_by(trunc_expr, NodeUserUsage.node_id)
             .order_by(trunc_expr)
         )
 
@@ -408,7 +408,9 @@ async def get_users_count(db: AsyncSession, status: UserStatus = None, admin_id:
     return result.scalar()
 
 
-async def get_users_count_by_status(db: AsyncSession, statuses: list[UserStatus], admin_id: int = None) -> dict[str, int]:
+async def get_users_count_by_status(
+    db: AsyncSession, statuses: list[UserStatus], admin_id: int = None
+) -> dict[str, int]:
     """
     Gets count of users grouped by status in a single query.
 
@@ -419,23 +421,23 @@ async def get_users_count_by_status(db: AsyncSession, statuses: list[UserStatus]
     Returns:
         dict[str, int]: Dictionary with status counts and total.
     """
-    stmt = select(User.status, func.count(User.id).label('count'))
-    
+    stmt = select(User.status, func.count(User.id).label("count"))
+
     filters = [User.status.in_(statuses)]
     if admin_id:
         filters.append(User.admin_id == admin_id)
-    
+
     stmt = stmt.where(and_(*filters)).group_by(User.status)
-    
+
     result = await db.execute(stmt)
     status_counts = {row.status.value: row.count for row in result}
-    
+
     # Ensure all requested statuses are present with 0 count if missing
     all_statuses = {status.value: status_counts.get(status.value, 0) for status in statuses}
-    
+
     # Add total count
-    all_statuses['total'] = sum(all_statuses.values())
-    
+    all_statuses["total"] = sum(all_statuses.values())
+
     return all_statuses
 
 
@@ -856,7 +858,7 @@ async def get_all_users_usages(
                 func.sum(NodeUserUsage.used_traffic).label("total_traffic"),
             )
             .where(and_(*conditions))
-            .group_by(trunc_expr, "node_id")
+            .group_by(trunc_expr, NodeUserUsage.node_id)
             .order_by(trunc_expr)
         )
     else:

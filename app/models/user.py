@@ -97,6 +97,7 @@ class UserNotificationResponse(User):
     used_traffic: int
     lifetime_used_traffic: int = 0
     created_at: dt
+    edit_at: dt | None = Field(default=None)
     online_at: dt | None = Field(default=None)
     subscription_url: str = Field(default="")
     admin: AdminContactInfo | None = Field(default=None)

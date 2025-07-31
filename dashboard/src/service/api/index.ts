@@ -544,6 +544,8 @@ export type UserResponseAdmin = AdminBase | null
 
 export type UserResponseOnlineAt = string | null
 
+export type UserResponseEditAt = string | null
+
 export type UserResponseNextPlan = NextPlanModel | null
 
 export type UserResponseAutoDeleteInDays = number | null
@@ -555,8 +557,6 @@ export type UserResponseOnHoldTimeout = string | number | null
 export type UserResponseOnHoldExpireDuration = number | null
 
 export type UserResponseNote = string | null
-
-export type UserResponseDataLimitResetStrategy = UserDataLimitResetStrategy | null
 
 /**
  * data_limit can be 0 or greater
@@ -583,6 +583,7 @@ export interface UserResponse {
   used_traffic: number
   lifetime_used_traffic?: number
   created_at: string
+  edit_at?: UserResponseEditAt
   online_at?: UserResponseOnlineAt
   subscription_url?: string
   admin?: UserResponseAdmin
@@ -611,6 +612,21 @@ export type UserModifyExpire = string | number | null
 
 export type UserModifyProxySettings = ProxyTableInput | null
 
+export type UserDataLimitResetStrategy = (typeof UserDataLimitResetStrategy)[keyof typeof UserDataLimitResetStrategy]
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const UserDataLimitResetStrategy = {
+  no_reset: 'no_reset',
+  day: 'day',
+  week: 'week',
+  month: 'month',
+  year: 'year',
+} as const
+
+export type UserResponseDataLimitResetStrategy = UserDataLimitResetStrategy | null
+
+export type UserModifyDataLimitResetStrategy = UserDataLimitResetStrategy | null
+
 export interface UserModify {
   proxy_settings?: UserModifyProxySettings
   expire?: UserModifyExpire
@@ -625,19 +641,6 @@ export interface UserModify {
   next_plan?: UserModifyNextPlan
   status?: UserModifyStatus
 }
-
-export type UserDataLimitResetStrategy = (typeof UserDataLimitResetStrategy)[keyof typeof UserDataLimitResetStrategy]
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const UserDataLimitResetStrategy = {
-  no_reset: 'no_reset',
-  day: 'day',
-  week: 'week',
-  month: 'month',
-  year: 'year',
-} as const
-
-export type UserModifyDataLimitResetStrategy = UserDataLimitResetStrategy | null
 
 export type UserCreateStatus = UserStatusCreate | null
 
@@ -793,6 +796,8 @@ export interface SystemStats {
 
 export type SubscriptionUserResponseOnlineAt = string | null
 
+export type SubscriptionUserResponseEditAt = string | null
+
 export type SubscriptionUserResponseNextPlan = NextPlanModel | null
 
 export type SubscriptionUserResponseGroupIds = number[] | null
@@ -826,6 +831,7 @@ export interface SubscriptionUserResponse {
   used_traffic: number
   lifetime_used_traffic?: number
   created_at: string
+  edit_at?: SubscriptionUserResponseEditAt
   online_at?: SubscriptionUserResponseOnlineAt
 }
 

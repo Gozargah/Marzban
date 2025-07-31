@@ -11,10 +11,6 @@ logger = get_logger("jobs")
 
 async def cleanup_user_subscription_updates():
     """Clean up excess user subscription updates."""
-    if not USER_SUBSCRIPTION_CLIENTS_LIMIT or USER_SUBSCRIPTION_CLIENTS_LIMIT <= 0:
-        return
-
-    logger.info("Job `cleanup_user_subscription_updates` started")
 
     async with GetDB() as db:
         # First query: Find users that have more than the limit
@@ -50,10 +46,12 @@ async def cleanup_user_subscription_updates():
         await db.commit()
         logger.info(f"Cleaned up {result.rowcount} old subscription updates")
 
-    logger.info("Job `cleanup_user_subscription_updates` finished")
 
-
-# Schedule the cleanup job to run every few minutes
-scheduler.add_job(
-    cleanup_user_subscription_updates, "interval", seconds=JOB_CLEANUP_SUBSCRIPTION_UPDATES_INTERVAL, max_instances=1
-)
+if USER_SUBSCRIPTION_CLIENTS_LIMIT and USER_SUBSCRIPTION_CLIENTS_LIMIT >= 0:
+    # Schedule the cleanup job to run every few minutes
+    scheduler.add_job(
+        cleanup_user_subscription_updates,
+        "interval",
+        seconds=JOB_CLEANUP_SUBSCRIPTION_UPDATES_INTERVAL,
+        max_instances=1,
+    )

@@ -47,7 +47,7 @@ export const Statistics = () => {
         content={
           systemData && (
             <div className="flex items-end">
-              <span>{numberWithCommas(systemData.users_active)}</span>
+              <span>{numberWithCommas(systemData.active_users)}</span>
               <span className="font-normal text-lg inline-block pb-[5px]">/ {numberWithCommas(systemData.total_user)}</span>
             </div>
           )
@@ -60,9 +60,9 @@ export const Statistics = () => {
         content={
           systemData && (
             <div className="flex items-end">
-              <span>{formatBytes(systemData.mem_used, 1, true)[0]}</span>
+              <span>{formatBytes(systemData?.mem_used ?? 0, 1, true)[0]}</span>
               <span className="font-normal text-lg inline-block pb-[5px]">
-                {formatBytes(systemData.mem_used, 1, true)[1]} / {formatBytes(systemData.mem_total, 1)}
+                {formatBytes(systemData?.mem_used ?? 0, 1, true)[1]} / {formatBytes(systemData?.mem_total ?? 0, 1)}
               </span>
             </div>
           )

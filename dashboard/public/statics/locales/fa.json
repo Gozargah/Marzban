@@ -835,6 +835,17 @@
   "revokeUserSub.prompt": "آیا مطمئن هستید که می خواهید اشتراک «{{username}}» را بازنشانی کنید؟",
   "revokeUserSub.success": "اشتراک {{username}} با موفقیت بازنشانی شد.",
   "revokeUserSub.title": "بازنشانی اشتراک کاربر",
+  "subscriptionClients": {
+    "title": "کلاینت‌های اشتراک",
+    "viewAllClients": "مشاهده کلاینت‌ها",
+    "total": "مجموع: {{count}} کلاینت",
+    "showing": "نمایش آخرین {{count}} دسترسی",
+    "noClients": "هیچ کلاینت اشتراکی یافت نشد",
+    "noClientsDesc": "این کاربر هنوز به اشتراک خود دسترسی نداشته است",
+    "knownClient": "شناخته شده",
+    "unknown": "نامشخص",
+    "error": "بارگیری کلاینت‌های اشتراک ناموفق بود"
+  },
   "search": "جستجو",
   "status.active": "فعال",
   "status.enable": "فعال",

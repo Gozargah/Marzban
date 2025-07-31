@@ -697,6 +697,17 @@
   "revokeUserSub.prompt": "Вы уверены, что хотите отозвать подписку для пользователя «{{username}}»?",
   "revokeUserSub.success": "Подписка пользователя {{username}} успешно отозвана.",
   "revokeUserSub.title": "Отозвать подписку пользователя",
+  "subscriptionClients": {
+    "title": "Клиенты подписки",
+    "viewAllClients": "Показать клиентов",
+    "total": "Всего: {{count}} клиентов",
+    "showing": "Показано последних {{count}} обращений",
+    "noClients": "Клиенты подписки не найдены",
+    "noClientsDesc": "Этот пользователь ещё не обращался к своей подписке",
+    "knownClient": "Известный",
+    "unknown": "Неизвестно",
+    "error": "Не удалось загрузить клиентов подписки"
+  },
   "search": "Поиск",
   "status.active": "Active",
   "status.enable": "Enable",

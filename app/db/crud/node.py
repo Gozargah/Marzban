@@ -117,7 +117,7 @@ async def get_nodes_usage(
                 func.sum(NodeUsage.uplink).label("uplink"),
             )
             .where(and_(*conditions))
-            .group_by(trunc_expr, "node_id")
+            .group_by(trunc_expr, NodeUsage.node_id)
             .order_by(trunc_expr)
         )
     else:

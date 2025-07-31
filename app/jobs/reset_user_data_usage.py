@@ -17,7 +17,6 @@ logger = get_logger("jobs")
 
 
 async def reset_data_usage():
-    logger.info("Job `reset_data_usage` started")
     async with GetDB() as db:
         users = await get_users_to_reset_data_usage(db)
         old_statuses = {user.id: user.status for user in users}
@@ -36,7 +35,6 @@ async def reset_data_usage():
                 asyncio.create_task(node_manager.update_user(user=user, inbounds=await core_manager.get_inbounds()))
 
             logger.info(f'User data usage reset for User "{user.username}"')
-    logger.info("Job `reset_data_usage` finished")
 
 
 scheduler.add_job(

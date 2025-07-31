@@ -1,4 +1,3 @@
-import asyncio
 from datetime import timedelta
 
 from app import __version__
@@ -38,7 +37,7 @@ class SystemOperation(BaseOperation):
             downlink = admin_param.used_traffic
 
         admin_id = admin_param.id if admin_param else None
-        
+
         # Get user counts by status in a single query and online users count
         statuses = [UserStatus.active, UserStatus.disabled, UserStatus.on_hold, UserStatus.expired, UserStatus.limited]
         user_counts = await get_users_count_by_status(db, statuses, admin_id)
@@ -50,7 +49,7 @@ class SystemOperation(BaseOperation):
             mem_used=mem.used,
             cpu_cores=cpu.cores,
             cpu_usage=cpu.percent,
-            total_user=user_counts['total'],
+            total_user=user_counts["total"],
             online_users=online_users,
             active_users=user_counts[UserStatus.active.value],
             disabled_users=user_counts[UserStatus.disabled.value],
