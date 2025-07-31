@@ -105,10 +105,11 @@ const ResetUsersUsageConfirmationDialog = ({ adminUsername, isOpen, onClose, onC
 export default function AdminsTable({ onEdit, onDelete, onToggleStatus, onResetUsage }: AdminsTableProps) {
   const { t } = useTranslation()
   const [currentPage, setCurrentPage] = useState(0)
-  const [itemsPerPage, setItemsPerPage] = useState(20)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [isChangingPage, setIsChangingPage] = useState(false)
   const [filters, setFilters] = useState<AdminFilters>({
     sort: '-created_at',
-    limit: 20,
+    limit: itemsPerPage,
     offset: 0,
     username: null,
   })
@@ -119,7 +120,8 @@ export default function AdminsTable({ onEdit, onDelete, onToggleStatus, onResetU
   const [adminToToggleStatus, setAdminToToggleStatus] = useState<AdminDetails | null>(null)
   const [adminToReset, setAdminToReset] = useState<string | null>(null)
 
-  const { data: adminsData, isLoading, isFetching } = useGetAdmins(filters)
+  const { data : totalAdmins} = useGetAdmins()
+  const { data: adminsData, refetch, isLoading, isFetching } = useGetAdmins(filters)
 
   // Update filters when pagination changes
   useEffect(() => {
@@ -183,6 +185,41 @@ export default function AdminsTable({ onEdit, onDelete, onToggleStatus, onResetU
     }
   }
 
+  const handlePageChange = async (newPage: number) => {
+    if (newPage === currentPage || isChangingPage) return
+
+    setIsChangingPage(true)
+    setCurrentPage(newPage)
+
+    try {
+      // Wait for state to update before refetching
+      await new Promise(resolve => setTimeout(resolve, 0))
+      await refetch()
+    } finally {
+      // Add a small delay to prevent flickering
+      setTimeout(() => {
+        setIsChangingPage(false)
+      }, 300)
+    }
+  }
+
+  const handleItemsPerPageChange = async (value: number) => {
+    setIsChangingPage(true)
+    setItemsPerPage(value)
+    setCurrentPage(0) // Reset to first page when items per page changes
+
+    try {
+      // Wait for state to update before refetching
+      await new Promise(resolve => setTimeout(resolve, 0))
+      await refetch()
+    } finally {
+      // Add a small delay to prevent flickering
+      setTimeout(() => {
+        setIsChangingPage(false)
+      }, 300)
+    }
+  }
+
   const handleSort = (column: string) => {
     let newSort: string
     if (filters.sort === column) {
@@ -205,6 +242,7 @@ export default function AdminsTable({ onEdit, onDelete, onToggleStatus, onResetU
     onResetUsage: handleResetUsersUsageClick,
   })
 
+
   return (
     <div>
       <Filters filters={filters} onFilterChange={handleFilterChange} />
@@ -220,12 +258,13 @@ export default function AdminsTable({ onEdit, onDelete, onToggleStatus, onResetU
         isFetching={isFetching}
       />
       <PaginationControls
-        currentPage={currentPage}
-        itemsPerPage={itemsPerPage}
-        setCurrentPage={setCurrentPage}
-        setItemsPerPage={setItemsPerPage}
-        isLoading={isLoading || isFetching}
-        totalItems={adminsData?.length || 0}
+          currentPage={currentPage}
+          totalPages={Math.ceil((totalAdmins?.length || 0) / itemsPerPage)}
+          itemsPerPage={itemsPerPage}
+          totalItems={adminsData?.length || 0}
+          isLoading={isLoading || isFetching}
+          onPageChange={handlePageChange}
+          onItemsPerPageChange={handleItemsPerPageChange}
       />
       {adminToDelete && <DeleteAlertDialog admin={adminToDelete} isOpen={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} onConfirm={handleConfirmDelete} />}
       {adminToToggleStatus && (
