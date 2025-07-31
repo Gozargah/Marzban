@@ -664,7 +664,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
   const nextPlanTemplateSelected = !!form.watch('next_plan.user_template_id')
 
   // Update validateAllFields function
-  const validateAllFields = (currentValues: any, touchedFields: any) => {
+  const validateAllFields = (currentValues: any, touchedFields: any, isSubmit: boolean = false) => {
     try {
       // Special case for template mode
       if (selectedTemplateId) {
@@ -681,15 +681,17 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
       }
 
       // Only validate fields that have been touched
-      const touchedValues = Object.keys(touchedFields).reduce((acc, key) => {
-        if (touchedFields[key]) {
-          acc[key] = currentValues[key]
-        }
-        return acc
-      }, {} as any)
+      const fieldsToValidate = isSubmit
+          ? currentValues
+          : Object.keys(touchedFields).reduce((acc, key) => {
+            if (touchedFields[key]) {
+              acc[key] = currentValues[key]
+            }
+            return acc
+          }, {} as any)
 
       // If no fields are touched, clear errors and return true
-      if (Object.keys(touchedValues).length === 0) {
+      if (!isSubmit && Object.keys(fieldsToValidate).length === 0) {
         form.clearErrors()
         return true
       }
@@ -701,7 +703,13 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
       const schema = selectedTemplateId ? (editingUser ? templateModifySchema : templateUserSchema) : editingUser ? userEditSchema : userCreateSchema
 
       // Validate only touched fields using the selected schema
-      schema.partial().parse(touchedValues)
+      if (isSubmit) {
+        // On submit, validate the full schema
+        schema.parse(fieldsToValidate)
+      } else {
+        // For non-submit validation, validate only touched fields
+        schema.partial().parse(fieldsToValidate)
+      }
 
       return true
     } catch (error: any) {
@@ -713,7 +721,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
         // Set new errors only for touched fields
         error.errors.forEach((err: any) => {
           const fieldName = err.path[0]
-          if (fieldName && touchedFields[fieldName]) {
+          if (fieldName && (isSubmit || touchedFields[fieldName])) {
             let message = err.message
             if (fieldName === 'group_ids' && message.includes('Required')) {
               // Check for required message for groups
@@ -822,7 +830,7 @@ export default function UserModal({ isDialogOpen, onOpenChange, form, editingUse
         }
 
         // Regular create/edit flow
-        if (!validateAllFields(values, touchedFields)) {
+        if (!validateAllFields(values, touchedFields, true)) {
           return
         }
 
