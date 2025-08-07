@@ -14,6 +14,7 @@ import useDirDetection from '@/hooks/use-dir-detection'
 const initialDefaultValues: Partial<GroupFormValues> = {
   name: '',
   inbound_tags: [],
+  host_ids: [],
   is_disabled: false,
 }
 
@@ -39,6 +40,7 @@ export default function Groups({ isDialogOpen, onOpenChange }: GroupsProps) {
     form.reset({
       name: group.name,
       inbound_tags: group.inbound_tags || [],
+      host_ids: (group as any).host_ids || [],
       is_disabled: group.is_disabled,
     })
     onOpenChange(true)
@@ -77,10 +79,12 @@ export default function Groups({ isDialogOpen, onOpenChange }: GroupsProps) {
   }
 
   return (
-    <div className="flex-1 w-full space-y-4 pt-4">
+    <div className="w-full flex-1 space-y-4 pt-4">
       <ScrollArea className="h-[calc(100vh-8rem)]">
-        <div dir={dir} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {groupsData?.groups.map(group => <Group key={group.id} group={group} onEdit={handleEdit} onToggleStatus={handleToggleStatus} />)}
+        <div dir={dir} className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {groupsData?.groups.map(group => (
+            <Group key={group.id} group={group} onEdit={handleEdit} onToggleStatus={handleToggleStatus} />
+          ))}
         </div>
       </ScrollArea>
 

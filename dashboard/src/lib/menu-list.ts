@@ -38,7 +38,7 @@ export function getMenuList(): Group[] {
         },
         {
           href: '/hosts',
-          label: 'hosts',
+          label: 'hosts.title',
           icon: ListTodo,
           submenus: [],
         },

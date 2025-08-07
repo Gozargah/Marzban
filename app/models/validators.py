@@ -67,6 +67,13 @@ class ListValidator:
             raise ValueError(f"you must select at least one {name}")
         return list
 
+    @staticmethod
+    def validate_inbound_or_host_selection(inbound_tags: list[str], host_ids: list[int]) -> tuple[list[str], list[int]]:
+        """Validate that at least one inbound or host is selected"""
+        if (not inbound_tags or len(inbound_tags) < 1) and (not host_ids or len(host_ids) < 1):
+            raise ValueError("you must select at least one inbound or host")
+        return inbound_tags, host_ids
+
 
 class PasswordValidator:
     @staticmethod

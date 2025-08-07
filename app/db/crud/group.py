@@ -1,7 +1,7 @@
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import ProxyInbound, Group
+from app.db.models import ProxyInbound, Group, ProxyHost
 from app.models.group import GroupCreate, GroupModify
 
 from .host import get_or_create_inbound
@@ -14,9 +14,19 @@ async def get_inbounds_by_tags(db: AsyncSession, tags: list[str]) -> list[ProxyI
     return [(await get_or_create_inbound(db, tag)) for tag in tags]
 
 
+async def get_hosts_by_ids(db: AsyncSession, host_ids: list[int]) -> list[ProxyHost]:
+    """
+    Retrieves hosts by their IDs.
+    """
+    if not host_ids:
+        return []
+    return (await db.execute(select(ProxyHost).where(ProxyHost.id.in_(host_ids)))).scalars().all()
+
+
 async def load_group_attrs(group: Group):
     await group.awaitable_attrs.users
     await group.awaitable_attrs.inbounds
+    await group.awaitable_attrs.hosts
 
 
 async def get_group_by_id(db: AsyncSession, group_id: int) -> Group | None:
@@ -50,6 +60,7 @@ async def create_group(db: AsyncSession, group: GroupCreate) -> Group:
     db_group = Group(
         name=group.name,
         inbounds=await get_inbounds_by_tags(db, group.inbound_tags),
+        hosts=await get_hosts_by_ids(db, group.host_ids),
         is_disabled=group.is_disabled,
     )
     db.add(db_group)
@@ -128,9 +139,12 @@ async def modify_group(db: AsyncSession, db_group: Group, modified_group: GroupM
         db_group.name = modified_group.name
     if modified_group.is_disabled is not None:
         db_group.is_disabled = modified_group.is_disabled
-    if modified_group.inbound_tags:
+    if modified_group.inbound_tags is not None:
         inbounds = await get_inbounds_by_tags(db, modified_group.inbound_tags)
         db_group.inbounds = inbounds
+    if modified_group.host_ids is not None:
+        hosts = await get_hosts_by_ids(db, modified_group.host_ids)
+        db_group.hosts = hosts
     await db.commit()
     await db.refresh(db_group)
     await load_group_attrs(db_group)

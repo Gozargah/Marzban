@@ -41,6 +41,13 @@ users_groups_association = Table(
     Column("groups_id", ForeignKey("groups.id"), primary_key=True),
 )
 
+hosts_groups_association = Table(
+    "hosts_groups_association",
+    Base.metadata,
+    Column("host_id", ForeignKey("hosts.id"), primary_key=True),
+    Column("group_id", ForeignKey("groups.id"), primary_key=True),
+)
+
 
 class Admin(Base):
     __tablename__ = "admins"
@@ -200,6 +207,18 @@ class User(Base):
             for inbound in group.inbound_tags:
                 included_tags.add(inbound)
         return list(included_tags)
+
+    async def hosts(self) -> list[int]:
+        """Returns a flat list of all included host IDs across all groups"""
+        included_host_ids = set()
+        for group in self.groups:
+            if group.is_disabled:
+                continue
+
+            await group.awaitable_attrs.hosts
+            for host_id in group.host_ids:
+                included_host_ids.add(host_id)
+        return list(included_host_ids)
 
     @property
     def group_ids(self):
@@ -453,6 +472,7 @@ class ProxyHost(Base):
         EnumArray(UserStatus, 60), default=list, server_default=""
     )
     ech_config_list: Mapped[Optional[str]] = mapped_column(String(512), default=None)
+    groups: Mapped[List["Group"]] = relationship(secondary=hosts_groups_association, back_populates="hosts", init=False)
 
 
 class System(Base):
@@ -569,6 +589,9 @@ class Group(Base):
     templates: Mapped[List["UserTemplate"]] = relationship(
         secondary=template_group_association, back_populates="groups", init=False
     )
+    hosts: Mapped[List["ProxyHost"]] = relationship(
+        secondary=hosts_groups_association, back_populates="groups", init=False
+    )
     is_disabled: Mapped[bool] = mapped_column(server_default="0", default=False)
 
     @property
@@ -578,6 +601,10 @@ class Group(Base):
     @property
     def inbound_tags(self):
         return [inbound.tag for inbound in self.inbounds]
+
+    @property
+    def host_ids(self):
+        return [host.id for host in self.hosts]
 
     @property
     def total_users(self):
