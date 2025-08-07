@@ -33,6 +33,7 @@ class SubscriptionOperation(BaseOperation):
     async def validated_user(db_user: User) -> UsersResponseWithInbounds:
         user = UsersResponseWithInbounds.model_validate(db_user.__dict__)
         user.inbounds = await db_user.inbounds()
+        user.hosts = await db_user.hosts()
         user.expire = db_user.expire
 
         return user

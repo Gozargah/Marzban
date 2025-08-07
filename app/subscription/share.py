@@ -172,11 +172,20 @@ async def filter_hosts(hosts: list, user_status: UserStatus) -> list:
 
 
 async def process_host(
-    host: dict, format_variables: dict, inbounds: list[str], proxies: dict, conf
+    host_id: int,
+    host: dict,
+    format_variables: dict,
+    inbounds: list[str],
+    allowed_host_ids: list[int] | None,
+    proxies: dict,
+    conf,
 ) -> tuple[dict, dict, str]:
     tag = host["inbound_tag"]
 
-    if tag not in inbounds:
+    inbound_allowed = tag in inbounds
+    host_allowed = allowed_host_ids is not None and host_id in allowed_host_ids
+
+    if not (inbound_allowed or host_allowed):
         return
 
     host_inbound: dict = await core_manager.get_inbound_by_tag(tag)
@@ -243,7 +252,9 @@ async def process_host(
                 host_inbound.update(v)
 
     if host.get("downloadSettings"):
-        ds_data = await process_host(host["downloadSettings"], format_variables, inbounds, proxies, conf)
+        ds_data = await process_host(
+            0, host["downloadSettings"], format_variables, inbounds, allowed_host_ids, proxies, conf
+        )
         if ds_data and ds_data[0]:
             ds_data[0]["address"] = ds_data[2].format_map(format_variables)
             if isinstance(conf, StandardLinks):
@@ -267,8 +278,19 @@ async def process_inbounds_and_tags(
     reverse=False,
 ) -> list | str:
     proxy_settings = user.proxy_settings.dict()
-    for host in await filter_hosts(hosts_storage.values(), user.status):
-        host_data = await process_host(host, format_variables, user.inbounds, proxy_settings, conf)
+    filtered_hosts = await filter_hosts(list(hosts_storage.values()), user.status)
+
+    for host in filtered_hosts:
+        host_id = None
+        for hid, hdata in hosts_storage.items():
+            if hdata == host:
+                host_id = hid
+                break
+
+        if host_id is None:
+            continue
+
+        host_data = await process_host(host_id, host, format_variables, user.inbounds, user.hosts, proxy_settings, conf)
         if not host_data:
             continue
         host_inbound, settings, address = host_data

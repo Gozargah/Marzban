@@ -123,6 +123,7 @@ class SubscriptionUserResponse(UserResponse):
 
 class UsersResponseWithInbounds(SubscriptionUserResponse):
     inbounds: list[str] | None = Field(default_factory=list)
+    hosts: list[int] | None = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
 
