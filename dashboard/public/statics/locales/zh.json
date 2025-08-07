@@ -9,7 +9,6 @@
   "statistics": "统计",
   "selectAll": "全选",
   "deselectAll": "取消全选",
-  "hosts": "主机",
   "success": "成功",
   "error": "错误",
   "modifying": "修改中...",
@@ -17,6 +16,11 @@
   "creating": "正在创建...",
   "monitorUsers": "监控用户",
   "alltime": "全部时间",
+  "hosts": {
+    "title": "主机",
+    "searchHosts": "搜索主机...",
+    "noHostsFound": "未找到主机"
+  },
   "nodes": {
     "title": "节点",
     "description": "管理您的节点",

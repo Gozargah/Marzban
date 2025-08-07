@@ -14,7 +14,6 @@
   "modifying": "در حال ویرایش...",
   "removing": "در حال حذف...",
   "creating": "در حال ایجاد...",
-  "hosts": "هاست‌ها",
   "groups": "گروه‌ها",
   "documentation": "مستندات",
   "discussionGroup": "گروه گفتگو",
@@ -1045,6 +1044,11 @@
       "userNotFound": "کاربر '{{username}}' یافت نشد یا آنلاین نیست",
       "errorLoadingIPs": "خطا در بارگذاری آدرس‌های IP کاربر"
     }
+  },
+  "hosts": {
+    "title": "هاست‌ها",
+    "searchHosts": "جستجوی هاست...",
+    "noHostsFound": "هیچ هاستی پیدا نشد"
   },
   "nodes": {
     "title": "گره‌ها",

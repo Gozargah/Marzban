@@ -11,7 +11,6 @@
   "statistics": "Statistics",
   "selectAll": "Select All",
   "deselectAll": "Deselect All",
-  "hosts": "Hosts",
   "success": "Success",
   "error": "Error",
   "username": "Username",
@@ -81,6 +80,11 @@
       "customLimit": "Enter custom limit",
       "apply": "Apply"
     }
+  },
+  "hosts": {
+    "title": "Hosts",
+    "searchHosts": "Search hosts...",
+    "noHostsFound": "No hosts found"
   },
   "groups": "Groups",
   "documentation": "Documentation",

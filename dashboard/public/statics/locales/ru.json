@@ -25,7 +25,6 @@
   "statistics.totalUsage": "Общий трафик",
   "statistics.uplink": "Входящий",
   "statistics.downlink": "Исходящий",
-  "hosts": "Хосты",
   "success": "Успешно",
   "error": "Ошибка",
   "modifying": "Изменение...",
@@ -33,6 +32,11 @@
   "creating": "Создание...",
   "monitorUsers": "Мониторинг пользователей",
   "alltime": "Все время",
+  "hosts": {
+    "title": "Хосты",
+    "searchHosts": "Поиск хостов...",
+    "noHostsFound": "Хосты не найдены"
+  },
   "nodes": {
     "title": "Узлы",
     "description": "Управление узлами",
