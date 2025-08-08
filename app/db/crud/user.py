@@ -313,7 +313,7 @@ async def get_days_left_reached_users(db: AsyncSession, days: int) -> list[User]
         .options(joinedload(User.notification_reminders))
         .where(User.status == UserStatus.active)
         .where(User.expire.isnot(None))
-        .where(User.days_left <= days)
+        .where(User.days_left == days)
         .where(not_(existing_reminder_subq))  # Only users without existing reminders
     )
 
