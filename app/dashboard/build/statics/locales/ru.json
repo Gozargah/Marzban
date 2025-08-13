@@ -187,5 +187,6 @@
   "usersTable.noUser": "В системе нет созданных пользователей",
   "usersTable.noUserMatched": "Похоже, нет пользователя, соответствующего вашему запросу",
   "usersTable.status": "Статус",
+  "usersTable.sortByExpire": "Сортировать по сроку действия",
   "usersTable.total": "Всего"
 }
