@@ -146,6 +146,30 @@ class Message:
             expiry = (user.expire - dt.now(tz.utc)).days if user.expire else "∞"
         return f"{used_traffic} / {data_limit} | {expiry} days\n{user.note or ''}"
 
+    @classmethod
+    def client_user_details(cls, user: UserResponse) -> str:
+        data_limit = c(readable_size(user.data_limit)) if user.data_limit else "∞"
+        used_traffic = c(readable_size(user.used_traffic))
+        expire = user.expire.strftime("%Y-%m-%d %H:%M") if user.expire else "∞"
+        days_left = (user.expire - dt.now(tz.utc)).days if user.expire else "∞"
+        online_at = bl(user.online_at.strftime("%Y-%m-%d %H:%M:%S")) if user.online_at else "-"
+        emojy_status = cls.status_emoji(user.status)
+
+        return f"""\
+👤 {b("User Information")}
+
+{b("Status:")} {emojy_status} {user.status.value.replace("_", " ").title()}
+{b("Username:")} {c(user.username)}
+{b("Data Limit:")} {data_limit}
+{b("Used Traffic:")} {used_traffic}
+{b("Data Limit Strategy:")} {user.data_limit_reset_strategy.value.replace("_", " ").title()}
+{b("Expire:")} {c(expire)}
+{b("Days left:")} {c(days_left)}
+{b("Online At:")} {online_at}
+{b("Subscription URL:")}
+{p(user.subscription_url)}
+"""
+
     @staticmethod
     def confirm_disable_user(username: str) -> str:
         return f"⚠ Are you sure you want to {b('Disable')} {c(username)}?"
