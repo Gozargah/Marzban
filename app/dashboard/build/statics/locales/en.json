@@ -187,5 +187,6 @@
   "usersTable.noUser": "There is no user added to the system",
   "usersTable.noUserMatched": "It seems there is no user matched with what you are looking for",
   "usersTable.status": "status",
+  "usersTable.sortByExpire": "Sort by expire",
   "usersTable.total": "Total"
 }
