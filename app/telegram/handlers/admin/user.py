@@ -251,7 +251,7 @@ async def enable_user(event: CallbackQuery, admin: AdminDetails, db: AsyncSessio
     modified_user = UserModify(**user.model_dump())
     modified_user.status = UserStatusModify.active
     user = await user_operations.modify_user(db, callback_data.username, modified_user, admin)
-    await event.answer(f"User {callback_data.username} has been enabled.")
+    await event.answer(Texts.user_enabled(user.username))
     groups = await user_operations.validate_all_groups(db, user)
     await event.message.edit_text(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
 
@@ -259,7 +259,7 @@ async def enable_user(event: CallbackQuery, admin: AdminDetails, db: AsyncSessio
 @router.callback_query(UserPanel.Callback.filter(UserPanelAction.revoke_sub == F.action))
 async def revoke_sub(event: CallbackQuery, admin: AdminDetails, db: AsyncSession, callback_data: UserPanel.Callback):
     user = await user_operations.revoke_user_sub(db, callback_data.username, admin)
-    await event.answer(f"User {callback_data.username} Subscription has been revoked.")
+    await event.answer(Texts.user_sub_revoked(user.username))
     groups = await user_operations.validate_all_groups(db, user)
     await event.message.edit_text(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
 
@@ -267,7 +267,7 @@ async def revoke_sub(event: CallbackQuery, admin: AdminDetails, db: AsyncSession
 @router.callback_query(UserPanel.Callback.filter(UserPanelAction.reset_usage == F.action))
 async def reset_usage(event: CallbackQuery, admin: AdminDetails, db: AsyncSession, callback_data: UserPanel.Callback):
     user = await user_operations.reset_user_data_usage(db, callback_data.username, admin)
-    await event.answer(f"User {callback_data.username} Usage has been reset.")
+    await event.answer(Texts.user_reset_usage(user.username))
     groups = await user_operations.validate_all_groups(db, user)
     await event.message.edit_text(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
 
@@ -277,7 +277,7 @@ async def activate_next_plan(
     event: CallbackQuery, admin: AdminDetails, db: AsyncSession, callback_data: UserPanel.Callback
 ):
     user = await user_operations.active_next_plan(db, callback_data.username, admin)
-    await event.answer(f"User {callback_data.username} Next plan has been activated.")
+    await event.answer(Texts.user_next_plan_activated(user.username))
     groups = await user_operations.validate_all_groups(db, user)
     await event.message.edit_text(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
 

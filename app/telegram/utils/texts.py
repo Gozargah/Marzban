@@ -197,6 +197,30 @@ class Message:
     @classmethod
     def confirm_delete_expired(cls, expired_before_days: int | str) -> str:
         return f"⚠ Are you sure you want to delete all users expired before {expired_before_days} days ago?"
+    
+    @staticmethod
+    def user_disabled(username: str) -> str:
+        return f"✅ {username} has been successfully disabled."
+    
+    @staticmethod
+    def user_enabled(username: str) -> str:
+        return f"✅ {username} has been successfully enabled."
+    
+    @staticmethod
+    def user_deleted(username: str) -> str:
+        return f"✅ {username} has been successfully deleted."
+    
+    @staticmethod
+    def user_sub_revoked(username: str) -> str:
+        return f"✅ {username}'s subscription has been successfully revoked."
+    
+    @staticmethod
+    def user_reset_usage(username: str) -> str:
+        return f"✅ {username}'s usage has been successfully reset."
+    
+    @staticmethod
+    def user_next_plan_activated(username: str) -> str:
+        return f"✅ {username}'s next plan has been successfully activated."
 
     @classmethod
     def users_deleted(cls, count):
