@@ -373,7 +373,10 @@ async def get_user(event: Message | CallbackQuery, admin: AdminDetails, db: Asyn
     try:
         user = await user_operations.get_user(db, username, admin)
     except ValueError:
-        return await event.reply(Texts.user_not_found, reply_markup=InlineQuerySearch(username).as_markup())
+        if isinstance(event, Message):
+            return await event.reply(Texts.user_not_found, reply_markup=InlineQuerySearch(username).as_markup())
+        else:
+            return await event.answer(Texts.user_not_found)
 
     groups = await user_operations.validate_all_groups(db, user)
     if isinstance(event, Message):
