@@ -365,6 +365,22 @@ async def create_user_from_template_choose(event: Message, state: FSMContext, db
     return await event.answer(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
 
 
+@router.message(F.text.contains("/sub/"))
+async def get_user_by_sub(event: Message, db: AsyncSession, admin: AdminDetails):
+    """get exact user by subscription token, otherwise not found"""
+    token = event.text.strip("/").split("/")[-1]
+    try:
+        db_user = await user_operations.get_validated_sub(db, token)
+        user = await user_operations.validate_user(db_user)
+        if user.admin and user.admin.username != admin.username and not admin.is_sudo:
+            return await event.reply(Texts.user_not_found)
+    except ValueError:
+        return await event.reply(Texts.user_not_found)
+
+    groups = await user_operations.validate_all_groups(db, user)
+    await event.reply(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
+
+
 @router.message(F.text)
 @router.callback_query(UserPanel.Callback.filter(UserPanelAction.show == F.action))
 async def get_user(event: Message | CallbackQuery, admin: AdminDetails, db: AsyncSession, **kwargs):
