@@ -406,7 +406,10 @@ async def search_user(event: InlineQuery, admin: AdminDetails, db: AsyncSession)
                 input_message_content=InputTextMessageContent(message_text="/start"),
             )
         ]
-    await event.answer(result, cache_time=5)
+    try:
+        await event.answer(result, cache_time=5)
+    except TelegramBadRequest:  # in case of query too old
+        pass
 
 
 @router.callback_query()
