@@ -237,6 +237,14 @@ async def disable_user(event: CallbackQuery, admin: AdminDetails, db: AsyncSessi
     await event.message.edit_text(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
 
 
+@router.callback_query(UserPanel.Callback.filter(UserPanelAction.delete == F.action))
+async def delete_user(event: CallbackQuery, admin: AdminDetails, db: AsyncSession, callback_data: UserPanel.Callback):
+    user = await user_operations.get_user(db, callback_data.username, admin)
+    await user_operations.remove_user(db, callback_data.username, admin)
+    await event.answer(Texts.user_deleted(user.username))
+    await event.message.edit_text(Texts.user_deleted(user.username), reply_markup=AdminPanel(admin.is_sudo).as_markup())
+
+
 @router.callback_query(UserPanel.Callback.filter(UserPanelAction.enable == F.action))
 async def enable_user(event: CallbackQuery, admin: AdminDetails, db: AsyncSession, callback_data: UserPanel.Callback):
     user = await user_operations.get_user(db, callback_data.username, admin)
