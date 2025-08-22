@@ -24,7 +24,7 @@ class UserPanelAction(str, Enum):
 
 class UserPanel(InlineKeyboardBuilder):
     class Callback(CallbackData, prefix="user"):
-        username: str
+        user_id: int
         action: UserPanelAction = UserPanelAction.show
 
     def __init__(self, user: UserResponse, *args, **kwargs):
@@ -33,51 +33,51 @@ class UserPanel(InlineKeyboardBuilder):
             self.button(
                 text=Texts.disable,
                 callback_data=ConfirmAction.Callback(
-                    action=self.Callback(action=UserPanelAction.disable, username=user.username).pack(),
-                    cancel=self.Callback(username=user.username).pack(),
+                    action=self.Callback(action=UserPanelAction.disable, user_id=user.id).pack(),
+                    cancel=self.Callback(user_id=user.id).pack(),
                 ),
             )
         else:
             self.button(
                 text=Texts.enable,
                 callback_data=ConfirmAction.Callback(
-                    action=self.Callback(action=UserPanelAction.enable, username=user.username).pack(),
-                    cancel=self.Callback(username=user.username).pack(),
+                    action=self.Callback(action=UserPanelAction.enable, user_id=user.id).pack(),
+                    cancel=self.Callback(user_id=user.id).pack(),
                 ),
             )
         self.button(
             text=Texts.delete,
             callback_data=ConfirmAction.Callback(
-                action=self.Callback(action=UserPanelAction.delete, username=user.username).pack(),
-                cancel=self.Callback(username=user.username).pack(),
+                action=self.Callback(action=UserPanelAction.delete, user_id=user.id).pack(),
+                cancel=self.Callback(user_id=user.id).pack(),
             ),
         )
         self.button(
             text=Texts.revoke_sub,
             callback_data=ConfirmAction.Callback(
-                action=self.Callback(action=UserPanelAction.revoke_sub, username=user.username).pack(),
-                cancel=self.Callback(username=user.username).pack(),
+                action=self.Callback(action=UserPanelAction.revoke_sub, user_id=user.id).pack(),
+                cancel=self.Callback(user_id=user.id).pack(),
             ),
         )
         self.button(
             text=Texts.reset_usage,
             callback_data=ConfirmAction.Callback(
-                action=self.Callback(action=UserPanelAction.reset_usage, username=user.username).pack(),
-                cancel=self.Callback(username=user.username).pack(),
+                action=self.Callback(action=UserPanelAction.reset_usage, user_id=user.id).pack(),
+                cancel=self.Callback(user_id=user.id).pack(),
             ),
         )
         if not user.next_plan:
             self.button(
                 text=Texts.activate_next_plan,
                 callback_data=ConfirmAction.Callback(
-                    action=self.Callback(action=UserPanelAction.activate_next_plan, username=user.username).pack(),
-                    cancel=self.Callback(username=user.username).pack(),
+                    action=self.Callback(action=UserPanelAction.activate_next_plan, user_id=user.id).pack(),
+                    cancel=self.Callback(user_id=user.id).pack(),
                 ),
             )
 
         self.button(
             text=Texts.modify_with_template,
-            callback_data=self.Callback(action=UserPanelAction.modify_with_template, username=user.username),
+            callback_data=self.Callback(action=UserPanelAction.modify_with_template, user_id=user.id),
         )
 
         self.button(
@@ -102,15 +102,15 @@ class ChooseStatus(InlineKeyboardBuilder):
 class ChooseTemplate(InlineKeyboardBuilder):
     class Callback(CallbackData, prefix="choose_template"):
         template_id: int
-        username: str = None  # in case choose template for modify
+        user_id: int = None  # in case choose template for modify
 
-    def __init__(self, templates: List[UserTemplate], username: str = None, *args, **kwargs):
+    def __init__(self, templates: List[UserTemplate], user_id: int = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         for template in templates:
             self.button(
                 text=template.name,
-                callback_data=self.Callback(template_id=template.id, username=username).pack(),
+                callback_data=self.Callback(template_id=template.id, user_id=user_id).pack(),
             )
 
         self.button(

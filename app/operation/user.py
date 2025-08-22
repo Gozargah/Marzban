@@ -245,6 +245,10 @@ class UserOperation(BaseOperation):
         db_user = await self.get_validated_user(db, username, admin)
         return await self.validate_user(db_user)
 
+    async def get_user_by_id(self, db: AsyncSession, user_id: int, admin: AdminDetails) -> UserNotificationResponse:
+        db_user = await self.get_validated_user_by_id(db, user_id, admin)
+        return await self.validate_user(db_user)
+
     async def get_users(
         self,
         db: AsyncSession,

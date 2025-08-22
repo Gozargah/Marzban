@@ -14,6 +14,7 @@ from app.db.crud import (
     get_user,
     get_user_template,
 )
+from app.db.crud.user import get_user_by_id
 from app.db.models import Admin as DBAdmin, CoreConfig, Group, Node, ProxyHost, User, UserTemplate
 from app.models.admin import AdminDetails
 from app.models.group import BulkGroup
@@ -89,6 +90,16 @@ class BaseOperation:
 
     async def get_validated_user(self, db: AsyncSession, username: str, admin: AdminDetails) -> User:
         db_user = await get_user(db, username)
+        if not db_user:
+            await self.raise_error(message="User not found", code=404)
+
+        if not (admin.is_sudo or (db_user.admin and db_user.admin.username == admin.username)):
+            await self.raise_error(message="You're not allowed", code=403)
+
+        return db_user
+
+    async def get_validated_user_by_id(self, db: AsyncSession, user_id: int, admin: AdminDetails) -> User:
+        db_user = await get_user_by_id(db, user_id)
         if not db_user:
             await self.raise_error(message="User not found", code=404)
 
