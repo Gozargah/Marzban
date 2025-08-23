@@ -225,7 +225,12 @@
         "title": "高级设置",
         "description": "高级 Telegram 机器人功能和配置",
         "miniAppLogin": "启用小程序登录",
-        "miniAppLoginDescription": "允许用户通过 Telegram 小程序登录"
+        "miniAppLoginDescription": "允许用户通过 Telegram 小程序登录",
+        "miniAppUrl": "Mini App 链接",
+        "miniAppUrlPlaceholder": "输入 Mini App 链接（可选）",
+        "miniAppUrlDescription": "您的 Telegram Mini App 链接。如果未使用请留空。",
+        "forAdminsOnly": "仅限管理员",
+        "forAdminsOnlyDescription": "限制机器人访问仅限管理员"
       }
     },
     "discord": {

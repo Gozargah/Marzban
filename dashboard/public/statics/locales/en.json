@@ -247,7 +247,9 @@
         "miniAppLoginDescription": "Allow users to log in through Telegram mini apps",
         "miniAppUrl": "Mini App URL",
         "miniAppUrlPlaceholder": "Enter the Mini App URL (optional)",
-        "miniAppUrlDescription": "The URL for your Telegram Mini App. Leave empty if not used."
+        "miniAppUrlDescription": "The URL for your Telegram Mini App. Leave empty if not used.",
+        "forAdminsOnly": "For Admins Only",
+        "forAdminsOnlyDescription": "Restrict bot access to administrators only"
       }
     },
     "discord": {

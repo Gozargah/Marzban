@@ -244,7 +244,12 @@
         "title": "Расширенные настройки",
         "description": "Расширенные функции и конфигурации бота Telegram",
         "miniAppLogin": "Включить вход через Mini App",
-        "miniAppLoginDescription": "Разрешить пользователям входить через мини-приложения Telegram"
+        "miniAppLoginDescription": "Разрешить пользователям входить через мини-приложения Telegram",
+        "miniAppUrl": "URL мини-приложения",
+        "miniAppUrlPlaceholder": "Введите URL мини-приложения (необязательно)",
+        "miniAppUrlDescription": "URL вашего мини-приложения Telegram. Оставьте пустым, если не используется.",
+        "forAdminsOnly": "Только для администраторов",
+        "forAdminsOnlyDescription": "Ограничить доступ к боту только администраторами"
       }
     },
     "discord": {

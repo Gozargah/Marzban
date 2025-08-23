@@ -165,7 +165,12 @@
         "title": "تنظیمات پیشرفته",
         "description": "ویژگی‌ها و پیکربندی‌های پیشرفته ربات تلگرام",
         "miniAppLogin": "فعال‌سازی ورود Mini App",
-        "miniAppLoginDescription": "اجازه ورود کاربران از طریق اپلیکیشن‌های کوچک تلگرام"
+        "miniAppLoginDescription": "اجازه ورود کاربران از طریق Mini App تلگرام",
+        "miniAppUrl": "آدرس Mini App تلگرام",
+        "miniAppUrlPlaceholder": "آدرس Mini App را وارد کنید (اختیاری)",
+        "miniAppUrlDescription": "آدرس Mini App تلگرام خود را وارد کنید. در صورت عدم استفاده، خالی بگذارید.",
+        "forAdminsOnly": "فقط برای مدیران",
+        "forAdminsOnlyDescription": "دسترسی ربات فقط به مدیران محدود میشود."
       }
     },
     "discord": {
