@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
-import { Bot, Webhook, Shield, Globe, Smartphone, Send } from 'lucide-react'
+import { Bot, Webhook, Shield, Globe, Smartphone, Send, Users } from 'lucide-react'
 import { useSettingsContext } from './_dashboard.settings'
 import { toast } from 'sonner'
 
@@ -40,6 +40,7 @@ const telegramSettingsSchema = z.object({
   proxy_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
   mini_app_login: z.boolean().default(false),
   mini_app_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+  for_admins_only: z.boolean().default(true),
 })
 
 type TelegramSettingsForm = z.infer<typeof telegramSettingsSchema>
@@ -53,6 +54,7 @@ function mapTelegramFormToPayload(data: TelegramSettingsForm) {
     webhook_secret: data.webhook_secret?.trim() || undefined,
     proxy_url: data.proxy_url?.trim() || undefined,
     mini_app_web_url: data.mini_app_url?.trim() || undefined,
+    for_admins_only: data.for_admins_only,
   };
   delete mapped.mini_app_url;
   return { telegram: mapped };
@@ -72,6 +74,7 @@ export default function TelegramSettings() {
       proxy_url: '',
       mini_app_login: false,
       mini_app_url: '',
+      for_admins_only: true,
     }
   })
 
@@ -90,6 +93,7 @@ export default function TelegramSettings() {
         proxy_url: telegramData.proxy_url || '',
         mini_app_login: telegramData.mini_app_login || false,
         mini_app_url: telegramData.mini_app_web_url || '',
+        for_admins_only: telegramData.for_admins_only !== undefined ? telegramData.for_admins_only : true,
       })
     }
   }, [settings, form])
@@ -114,7 +118,8 @@ export default function TelegramSettings() {
         webhook_secret: telegramData.webhook_secret || '',
         proxy_url: telegramData.proxy_url || '',
         mini_app_login: telegramData.mini_app_login || false,
-        mini_app_url: telegramData.mini_app_url || '',
+        mini_app_url: telegramData.mini_app_web_url || '',
+        for_admins_only: telegramData.for_admins_only !== undefined ? telegramData.for_admins_only : true,
       })
       toast.success(t('settings.telegram.cancelSuccess'))
     }
@@ -379,6 +384,31 @@ export default function TelegramSettings() {
                     )}
                   />
                 )}
+
+                {/* For Admins Only */}
+                <FormField
+                  control={form.control}
+                  name="for_admins_only"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-between space-y-0 p-3 sm:p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-sm font-medium flex items-center gap-2 cursor-pointer">
+                          <Users className="h-4 w-4" />
+                          {t('settings.telegram.advanced.forAdminsOnly')}
+                        </FormLabel>
+                        <FormDescription className="text-sm text-muted-foreground">
+                          {t('settings.telegram.advanced.forAdminsOnlyDescription')}
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
               </div>
             </>
           )}
