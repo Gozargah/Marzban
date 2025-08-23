@@ -289,7 +289,7 @@ async def activate_next_plan(
 async def modify_with_template(event: CallbackQuery, db: AsyncSession, callback_data: UserPanel.Callback):
     templates = await user_templates.get_user_templates(db)
     if not templates:
-        return event.answer(Texts.there_is_no_template)
+        return await event.answer(Texts.there_is_no_template)
 
     await event.message.edit_text(
         Texts.choose_a_template, reply_markup=ChooseTemplate(templates, user_id=callback_data.user_id).as_markup()
@@ -315,8 +315,7 @@ async def modify_with_template_done(
 async def create_user_from_template(event: CallbackQuery, db: AsyncSession):
     templates = await user_templates.get_user_templates(db)
     if not templates:
-        return event.answer(Texts.there_is_no_template)
-
+        return await event.answer(Texts.there_is_no_template)
     await event.message.edit_text(Texts.choose_a_template, reply_markup=ChooseTemplate(templates).as_markup())
 
 
