@@ -1,3 +1,4 @@
+import random
 from datetime import datetime as dt, timedelta as td
 
 from aiogram import Router, F
@@ -20,7 +21,7 @@ from app.models.admin import AdminDetails
 from app.telegram.keyboards.admin import AdminPanel, AdminPanelAction, InlineQuerySearch
 from app.telegram.keyboards.base import CancelKeyboard
 from app.telegram.utils.texts import Message as Texts
-from app.telegram.keyboards.user import UserPanel, UserPanelAction, ChooseStatus, ChooseTemplate
+from app.telegram.keyboards.user import UserPanel, UserPanelAction, ChooseStatus, ChooseTemplate, RandomUsername
 from app.telegram.utils.shared import add_to_messages_to_delete, delete_messages
 
 user_operations = UserOperation(OperatorType.TELEGRAM)
@@ -39,27 +40,34 @@ async def create_user(event: CallbackQuery, state: FSMContext):
     except TelegramBadRequest:
         pass
     await state.set_state(forms.CreateUser.username)
-    msg = await event.message.answer(Texts.enter_username, reply_markup=CancelKeyboard().as_markup())
+    msg = await event.message.answer(Texts.enter_username, reply_markup=RandomUsername().as_markup())
     await state.update_data(messages_to_delete=[msg.message_id])
 
 
 @router.message(forms.CreateUser.username)
-async def process_username(event: Message, state: FSMContext, db: AsyncSession, admin: AdminDetails):
+@router.callback_query(RandomUsername.Callback.filter(~F.with_template))
+async def process_username(event: Message | CallbackQuery, state: FSMContext, db: AsyncSession, admin: AdminDetails):
     await delete_messages(event, state)
-    await add_to_messages_to_delete(state, event)
-
-    username = event.text
-    try:
-        UserValidator.validate_username(username)
-    except ValueError as e:
-        msg = await event.reply(f"❌ {e}", reply_markup=CancelKeyboard().as_markup())
-        await add_to_messages_to_delete(state, msg)
-        return
+    if isinstance(event, Message):
+        await add_to_messages_to_delete(state, event)
+        username = event.text
+        try:
+            UserValidator.validate_username(username)
+        except ValueError as e:
+            msg = await event.reply(f"❌ {e}", reply_markup=RandomUsername().as_markup())
+            await add_to_messages_to_delete(state, msg)
+            return
+    else:
+        await add_to_messages_to_delete(state, event.message)
+        username = "".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=5))
 
     try:
         await user_operations.get_validated_user(db, username, admin)
-        msg = await event.reply(Texts.username_already_exist, reply_markup=CancelKeyboard().as_markup())
-        await add_to_messages_to_delete(state, msg)
+        if isinstance(event, Message):
+            msg = await event.reply(Texts.username_already_exist, reply_markup=RandomUsername().as_markup())
+            await add_to_messages_to_delete(state, msg)
+        else:
+            await event.answer(Texts.username_already_exist)
         return
     except ValueError:
         pass
@@ -67,7 +75,10 @@ async def process_username(event: Message, state: FSMContext, db: AsyncSession, 
     await delete_messages(event, state)
     await state.update_data(username=username)
     await state.set_state(forms.CreateUser.data_limit)
-    msg = await event.answer(Texts.enter_data_limit, reply_markup=CancelKeyboard().as_markup())
+    if isinstance(event, Message):
+        msg = await event.answer(Texts.enter_data_limit, reply_markup=CancelKeyboard().as_markup())
+    else:
+        msg = await event.message.answer(Texts.enter_data_limit, reply_markup=CancelKeyboard().as_markup())
     await add_to_messages_to_delete(state, msg)
 
 
@@ -329,31 +340,56 @@ async def create_user_from_template_username(
         pass
 
     await state.set_state(forms.CreateUserFromTemplate.username)
-    msg = await event.message.answer(Texts.enter_username, reply_markup=CancelKeyboard().as_markup())
+    msg = await event.message.answer(
+        Texts.enter_username,
+        reply_markup=RandomUsername(with_template=True).as_markup()
+    )
     await state.update_data(template_id=callback_data.template_id, messages_to_delete=[msg.message_id])
 
 
 @router.message(forms.CreateUserFromTemplate.username)
-async def create_user_from_template_choose(event: Message, state: FSMContext, db: AsyncSession, admin: AdminDetails):
+@router.callback_query(RandomUsername.Callback.filter(F.with_template))
+async def create_user_from_template_choose(
+        event: Message | CallbackQuery,
+        state: FSMContext,
+        db: AsyncSession,
+        admin: AdminDetails
+):
     await delete_messages(event, state)
-    await add_to_messages_to_delete(state, event)
 
-    username = event.text
-    try:
-        UserValidator.validate_username(username)
-    except ValueError as e:
-        msg = await event.reply(f"❌ {e}", reply_markup=CancelKeyboard().as_markup())
-        await add_to_messages_to_delete(state, msg)
-        return
+    if isinstance(event, Message):
+        await add_to_messages_to_delete(state, event)
+
+        username = event.text
+        try:
+            UserValidator.validate_username(username)
+        except ValueError as e:
+            msg = await event.reply(f"❌ {e}", reply_markup=RandomUsername(with_template=True).as_markup())
+            await add_to_messages_to_delete(state, msg)
+            return
+    else:
+        await add_to_messages_to_delete(state, event.message)
+        username = "".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=5))
 
     template_id = await state.get_value("template_id")
     template = await user_templates.get_validated_user_template(db, template_id)
 
     try:
-        actual_username = template.username_prefix + username + template.username_suffix
+        actual_username = username
+        if template.username_prefix:
+            actual_username = template.username_prefix + username
+        if template.username_suffix:
+            actual_username = username + template.username_suffix
+
         await user_operations.get_validated_user(db, actual_username, admin)
-        msg = await event.reply(Texts.username_already_exist, reply_markup=CancelKeyboard().as_markup())
-        await add_to_messages_to_delete(state, msg)
+        if isinstance(event, Message):
+            msg = await event.reply(
+                Texts.username_already_exist,
+                reply_markup=RandomUsername(with_template=True).as_markup()
+            )
+            await add_to_messages_to_delete(state, msg)
+        else:
+            await event.answer(Texts.username_already_exist)
         return
     except ValueError:
         pass
@@ -365,7 +401,10 @@ async def create_user_from_template_choose(event: Message, state: FSMContext, db
         db, CreateUserFromTemplate(username=username, user_template_id=template_id), admin
     )
     groups = await user_operations.validate_all_groups(db, user)
-    return await event.answer(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
+    if isinstance(event, Message):
+        return await event.answer(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
+    else:
+        return await event.message.answer(Texts.user_details(user, groups), reply_markup=UserPanel(user).as_markup())
 
 
 @router.message(F.text.contains("/sub/"))

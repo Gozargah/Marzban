@@ -102,9 +102,9 @@ class ChooseStatus(InlineKeyboardBuilder):
 class ChooseTemplate(InlineKeyboardBuilder):
     class Callback(CallbackData, prefix="choose_template"):
         template_id: int
-        user_id: int = None  # in case choose template for modify
+        user_id: int = 0  # in case choose template for modify
 
-    def __init__(self, templates: List[UserTemplate], user_id: int = None, *args, **kwargs):
+    def __init__(self, templates: List[UserTemplate], user_id: int = 0, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         for template in templates:
@@ -118,3 +118,19 @@ class ChooseTemplate(InlineKeyboardBuilder):
             callback_data=CancelKeyboard.Callback(action=CancelAction.cancel),
         )
         self.adjust(1, repeat=True)
+
+
+class RandomUsername(InlineKeyboardBuilder):
+    class Callback(CallbackData, prefix="random_username"):
+        with_template: bool = False
+
+    def __init__(self, with_template: bool = False, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.button(text=Texts.random_username, callback_data=self.Callback(with_template=with_template))
+        self.button(
+            text=Texts.back,
+            callback_data=CancelKeyboard.Callback(action=CancelAction.cancel),
+        )
+        self.adjust(1, repeat=True)
+

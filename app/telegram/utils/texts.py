@@ -24,6 +24,7 @@ ebl = html_decoration.expandable_blockquote
 
 
 class Button:
+    random_username = "🎲 Random Username"
     modify_data_limit = "📶 Modify Data Limit"
     modify_expiry = "📅 Modify Expiry"
     delete_expired = "⌛ Delete Expired"
