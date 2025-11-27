@@ -57,6 +57,8 @@ class XRayConfig(dict):
         self.inbounds_by_protocol = {}
         self.inbounds_by_tag = {}
         self._fallbacks_inbound = self.get_inbound(XRAY_FALLBACKS_INBOUND_TAG)
+        # map fallback destination (e.g. "@xhttp-glance") -> inbound that owns the fallback
+        self._fallbacks_by_dest = {}
         self._resolve_inbounds()
 
         self._apply_api()
@@ -141,6 +143,13 @@ class XRayConfig(dict):
                 raise ValueError("all outbounds must have a unique tag")
 
     def _resolve_inbounds(self):
+        # collect fallback destinations to their parent inbound for later inheritance
+        for inbound in self['inbounds']:
+            for fb in inbound.get('settings', {}).get('fallbacks', []):
+                dest = fb.get('dest')
+                if isinstance(dest, str) and dest.startswith('@'):
+                    self._fallbacks_by_dest[dest] = inbound
+
         for inbound in self['inbounds']:
             if not inbound['protocol'] in ProxyTypes._value2member_map_:
                 continue
@@ -170,9 +179,18 @@ class XRayConfig(dict):
             try:
                 settings['port'] = inbound['port']
             except KeyError:
-                if self._fallbacks_inbound:
+                fallback = None
+                # priority 1: match by listen alias against fallback dests
+                listen = inbound.get('listen')
+                if isinstance(listen, str) and listen.startswith('@'):
+                    fallback = self._fallbacks_by_dest.get(listen)
+                # priority 2: explicit global fallback env
+                if not fallback and self._fallbacks_inbound:
+                    fallback = self._fallbacks_inbound
+
+                if fallback:
                     try:
-                        settings['port'] = self._fallbacks_inbound['port']
+                        settings['port'] = fallback['port']
                         settings['is_fallback'] = True
                     except KeyError:
                         raise ValueError("fallbacks inbound doesn't have port")
@@ -186,10 +204,17 @@ class XRayConfig(dict):
 
                 if settings['is_fallback'] is True:
                     # probably this is a fallback
-                    security = self._fallbacks_inbound.get(
-                        'streamSettings', {}).get('security')
-                    tls_settings = self._fallbacks_inbound.get(
-                        'streamSettings', {}).get(f"{security}Settings", {})
+                    fallback_stream = None
+                    listen = inbound.get('listen')
+                    if isinstance(listen, str) and listen.startswith('@'):
+                        fb = self._fallbacks_by_dest.get(listen, {})
+                        fallback_stream = fb.get('streamSettings', {})
+                    if not fallback_stream and self._fallbacks_inbound:
+                        fallback_stream = self._fallbacks_inbound.get('streamSettings', {})
+
+                    if fallback_stream:
+                        security = fallback_stream.get('security')
+                        tls_settings = fallback_stream.get(f"{security}Settings", {})
 
                 settings['network'] = net
 
