@@ -148,12 +148,23 @@ class V2rayShareLink(str):
             )
 
         elif inbound["protocol"] == "shadowsocks":
+            inbound_method = inbound.get("method") or inbound.get("settings", {}).get("method", "")
+            inbound_psk = inbound.get("server_psk") or inbound.get("settings", {}).get("password", "")
+
+            if inbound_method.startswith("2022-"):
+                user_key = settings.get("password", "")
+                password = f"{inbound_psk}:{user_key}"
+                method = inbound_method
+            else:
+                password = settings["password"]
+                method = settings["method"]
+
             link = self.shadowsocks(
                 remark=remark,
                 address=address,
                 port=inbound["port"],
-                password=settings["password"],
-                method=settings["method"],
+                password=password,
+                method=method,
             )
         else:
             return
@@ -998,6 +1009,8 @@ class V2rayJsonConfig(str):
         noise = inbound['noise_setting']
         path = inbound["path"]
         multi_mode = inbound.get("multiMode", False)
+        inbound_method = inbound.get("method") or inbound.get("settings", {}).get("method", "")
+        inbound_psk = inbound.get("server_psk") or inbound.get("settings", {}).get("password", "")
 
         if net in ["grpc", "gun"]:
             if multi_mode:
@@ -1032,10 +1045,20 @@ class V2rayJsonConfig(str):
                                                       password=settings['password'])
 
         elif inbound['protocol'] == 'shadowsocks':
-            outbound["settings"] = self.shadowsocks_config(address=address,
-                                                           port=port,
-                                                           password=settings['password'],
-                                                           method=settings['method'])
+            if inbound_method.startswith("2022-"):
+                outbound["settings"] = self.shadowsocks_config(
+                    address=address,
+                    port=port,
+                    password=f"{inbound_psk}:{settings['password']}",
+                    method=inbound_method,
+                )
+            else:
+                outbound["settings"] = self.shadowsocks_config(
+                    address=address,
+                    port=port,
+                    password=settings['password'],
+                    method=settings['method'],
+                )
 
         outbounds = [outbound]
         dialer_proxy = ''

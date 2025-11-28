@@ -10,7 +10,7 @@ from app.models.user import UserResponse
 from app.utils.concurrency import threaded_function
 from app.xray.node import XRayNode
 from xray_api import XRay as XRayAPI
-from xray_api.types.account import Account, XTLSFlows
+from xray_api.types.account import Account, Shadowsocks2022Account, XTLSFlows
 
 if TYPE_CHECKING:
     from app.db import User as DBUser
@@ -63,12 +63,42 @@ def add_user(dbuser: "DBUser"):
     for proxy_type, inbound_tags in user.inbounds.items():
         for inbound_tag in inbound_tags:
             inbound = xray.config.inbounds_by_tag.get(inbound_tag, {})
+            raw_inbound = xray.config.get_inbound(inbound_tag) or {}
 
             try:
                 proxy_settings = user.proxies[proxy_type].dict(no_obj=True)
             except KeyError:
-                pass
-            account = proxy_type.account_model(email=email, **proxy_settings)
+                continue
+
+            if proxy_type.name == "Shadowsocks":
+                inbound_settings = raw_inbound.get("settings", {})
+                inbound_method = inbound.get("method") or inbound_settings.get("method", "")
+                inbound_server_psk = inbound.get("server_psk") or inbound_settings.get("password", "")
+                user_method = proxy_settings.get("method", "")
+
+                is_ss2022_inbound = isinstance(inbound_method, str) and inbound_method.startswith("2022-")
+                is_ss2022_user = isinstance(user_method, str) and user_method.startswith("2022-")
+
+                if is_ss2022_inbound:
+                    if not inbound_server_psk:
+                        raise ValueError(
+                            f"Inbound '{inbound_tag}' has SS2022 method but missing server_psk"
+                        )
+
+                    account = Shadowsocks2022Account(
+                        email=email,
+                        key=proxy_settings.get("password", ""),
+                        method=inbound_method,
+                    )
+                elif is_ss2022_user:
+                    raise ValueError(
+                        f"Inbound '{inbound_tag}' is not SS2022 but user selected SS2022 method"
+                    )
+                else:
+                    account = proxy_type.account_model(email=email, **proxy_settings)
+
+            else:
+                account = proxy_type.account_model(email=email, **proxy_settings)
 
             # XTLS currently only supports transmission methods of TCP and mKCP
             if getattr(account, 'flow', None) and (
@@ -109,12 +139,42 @@ def update_user(dbuser: "DBUser"):
         for inbound_tag in inbound_tags:
             active_inbounds.append(inbound_tag)
             inbound = xray.config.inbounds_by_tag.get(inbound_tag, {})
+            raw_inbound = xray.config.get_inbound(inbound_tag) or {}
 
             try:
                 proxy_settings = user.proxies[proxy_type].dict(no_obj=True)
             except KeyError:
-                pass
-            account = proxy_type.account_model(email=email, **proxy_settings)
+                continue
+
+            if proxy_type.name == "Shadowsocks":
+                inbound_settings = raw_inbound.get("settings", {})
+                inbound_method = inbound.get("method") or inbound_settings.get("method", "")
+                inbound_server_psk = inbound.get("server_psk") or inbound_settings.get("password", "")
+                user_method = proxy_settings.get("method", "")
+
+                is_ss2022_inbound = isinstance(inbound_method, str) and inbound_method.startswith("2022-")
+                is_ss2022_user = isinstance(user_method, str) and user_method.startswith("2022-")
+
+                if is_ss2022_inbound:
+                    if not inbound_server_psk:
+                        raise ValueError(
+                            f"Inbound '{inbound_tag}' has SS2022 method but missing server_psk"
+                        )
+
+                    account = Shadowsocks2022Account(
+                        email=email,
+                        key=proxy_settings.get("password", ""),
+                        method=inbound_method,
+                    )
+                elif is_ss2022_user:
+                    raise ValueError(
+                        f"Inbound '{inbound_tag}' is not SS2022 but user selected SS2022 method"
+                    )
+                else:
+                    account = proxy_type.account_model(email=email, **proxy_settings)
+
+            else:
+                account = proxy_type.account_model(email=email, **proxy_settings)
 
             # XTLS currently only supports transmission methods of TCP and mKCP
             if getattr(account, 'flow', None) and (
@@ -224,6 +284,15 @@ def connect_node(node_id, config=None):
         version = node.get_version()
         _change_node_status(node_id, NodeStatus.connected, version=version)
         logger.info(f"Connected to \"{dbnode.name}\" node, xray run on v{version}")
+
+        try:
+            version_parts = tuple(int(part) for part in str(version).split('.')[:3])
+            if version_parts and version_parts < (1, 8, 0):
+                logger.warning(
+                    f"Node '{dbnode.name}' runs xray-core v{version}; SS2022 gRPC user management may be unsupported"
+                )
+        except Exception:
+            pass
 
     except Exception as e:
         _change_node_status(node_id, NodeStatus.error, message=str(e))

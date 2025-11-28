@@ -1,3 +1,4 @@
+import base64
 import ipaddress
 import math
 import secrets
@@ -95,6 +96,13 @@ def realtime_bandwidth() -> RealtimeBandwidthStat:
 
 def random_password() -> str:
     return secrets.token_urlsafe(16)
+
+
+def generate_ss2022_key(method: str = "2022-blake3-aes-256-gcm") -> str:
+    """Generate a base64-encoded PSK for Shadowsocks 2022."""
+
+    size = 16 if method.endswith("aes-128-gcm") else 32
+    return base64.b64encode(secrets.token_bytes(size)).decode()
 
 
 def check_port(port: int) -> bool:

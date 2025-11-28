@@ -25,7 +25,9 @@ export type InboundType = {
   protocol: ProtocolType;
   network: string;
   tls: string;
-  port?: number;
+  port?: number | string | null;
+  method?: string | null;
+  server_psk?: string | null;
 };
 export type Inbounds = Map<ProtocolType, InboundType[]>;
 

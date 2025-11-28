@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import base64
+import binascii
 import json
 from collections import defaultdict
 from copy import deepcopy
@@ -9,11 +11,13 @@ from typing import Union
 import commentjson
 from sqlalchemy import func
 
+from app import logger
 from app.db import GetDB
 from app.db import models as db_models
 from app.models.proxy import ProxyTypes
 from app.models.user import UserStatus
 from app.utils.crypto import get_cert_SANs
+from app.utils.system import generate_ss2022_key
 from config import DEBUG, XRAY_EXCLUDE_INBOUND_TAGS, XRAY_FALLBACKS_INBOUND_TAG
 
 
@@ -24,6 +28,18 @@ def merge_dicts(a, b):  # B will override A dictionary key and values
         else:
             a[key] = value
     return a
+
+
+def _ss2022_expected_key_size(method: str) -> int:
+    return 16 if str(method).endswith("aes-128-gcm") else 32
+
+
+def _is_valid_ss2022_key(key: str, method: str) -> bool:
+    try:
+        decoded = base64.b64decode(key or "", validate=True)
+        return len(decoded) == _ss2022_expected_key_size(method)
+    except (binascii.Error, ValueError, TypeError):
+        return False
 
 
 class XRayConfig(dict):
@@ -140,7 +156,31 @@ class XRayConfig(dict):
             if not outbound.get("tag"):
                 raise ValueError("all outbounds must have a unique tag")
 
+    def _validate_ss2022_server_psk(self, inbound_tag: str, method: str, server_psk: str):
+        if not server_psk:
+            raise ValueError(f"Inbound {inbound_tag}: invalid SS2022 server_psk (missing)")
+
+        if not _is_valid_ss2022_key(server_psk, method):
+            raise ValueError(
+                f"Inbound {inbound_tag}: invalid SS2022 server_psk (must be base64 with {_ss2022_expected_key_size(method)} bytes)"
+            )
+
     def _resolve_inbounds(self):
+        # At the moment Marzban stores a single Shadowsocks method/password per user.
+        # To avoid silently generating wrong keys, forbid multiple SS2022 inbounds.
+        ss2022_tags = [
+            inbound.get("tag")
+            for inbound in self.get("inbounds", [])
+            if inbound.get("protocol") == ProxyTypes.Shadowsocks.value
+            and isinstance(inbound.get("settings", {}).get("method"), str)
+            and inbound.get("settings", {}).get("method", "").startswith("2022-")
+        ]
+        if len(ss2022_tags) > 1:
+            raise ValueError(
+                "Only one Shadowsocks 2022 inbound is supported because users hold a single SS2022 credential. "
+                f"Found multiple SS2022 inbounds: {', '.join(filter(None, ss2022_tags))}"
+            )
+
         for inbound in self['inbounds']:
             if not inbound['protocol'] in ProxyTypes._value2member_map_:
                 continue
@@ -334,6 +374,23 @@ class XRayConfig(dict):
                     elif host and isinstance(host, list):
                         settings['host'] = host[0]
 
+            inbound_settings = inbound.get('settings', {})
+
+            if inbound['protocol'] == ProxyTypes.Shadowsocks.value:
+                method = inbound_settings.get('method', '')
+                settings['method'] = method
+                settings['server_psk'] = inbound_settings.get('password', '')
+
+                if isinstance(method, str) and method.startswith('2022-'):
+                    self._validate_ss2022_server_psk(inbound['tag'], method, settings['server_psk'])
+                    # Ensure Xray treats the inbound as UserManager: keep at least one placeholder client.
+                    clients = inbound_settings.get('clients')
+                    if isinstance(clients, list) and len(clients) == 0:
+                        inbound_settings['clients'].append({
+                            "email": "__bootstrap__",
+                            "password": generate_ss2022_key(method)
+                        })
+
             self.inbounds.append(settings)
             self.inbounds_by_tag[inbound['tag']] = settings
 
@@ -357,6 +414,28 @@ class XRayConfig(dict):
 
     def copy(self):
         return deepcopy(self)
+
+    def _ensure_ss2022_user_key(self, db, user_id: int, inbound_method: str, key: str):
+        if _is_valid_ss2022_key(key, inbound_method):
+            return key, False
+
+        new_key = generate_ss2022_key(inbound_method)
+
+        try:
+            dbproxy = db.query(db_models.Proxy).filter(
+                db_models.Proxy.user_id == user_id,
+                db_models.Proxy.type == ProxyTypes.Shadowsocks
+            ).first()
+
+            if dbproxy:
+                settings = dict(dbproxy.settings or {})
+                settings["password"] = new_key
+                dbproxy.settings = settings
+                db.commit()
+        except Exception:
+            db.rollback()
+
+        return new_key, True
 
     def include_db_users(self) -> XRayConfig:
         config = self.copy()
@@ -402,15 +481,42 @@ class XRayConfig(dict):
                 for inbound in inbounds:
                     clients = config.get_inbound(inbound['tag'])['settings']['clients']
 
+                    raw_inbound = config.get_inbound(inbound['tag']) or {}
+                    inbound_settings = raw_inbound.get('settings', {})
+                    inbound_method = inbound.get('method') or inbound_settings.get('method', '')
+                    inbound_server_psk = inbound.get('server_psk') or inbound_settings.get('password', '')
+                    is_ss2022 = (
+                        inbound.get('protocol') == ProxyTypes.Shadowsocks.value
+                        and isinstance(inbound_method, str)
+                        and inbound_method.startswith('2022-')
+                    )
+
+                    if is_ss2022:
+                        self._validate_ss2022_server_psk(inbound['tag'], inbound_method, inbound_server_psk)
+
                     for row in rows:
                         user_id, username, settings, excluded_inbound_tags = row
 
                         if excluded_inbound_tags and inbound['tag'] in excluded_inbound_tags:
                             continue
 
+                        settings = settings or {}
+                        client_settings = dict(settings)
+
+                        if is_ss2022:
+                            client_settings.pop('method', None)
+                            user_key, regenerated = self._ensure_ss2022_user_key(
+                                db, user_id, inbound_method, client_settings.get('password')
+                            )
+                            client_settings['password'] = user_key
+                            if regenerated:
+                                logger.warning(
+                                    f"Regenerated SS2022 key for user {username} (id={user_id}) on inbound {inbound['tag']}"
+                                )
+
                         client = {
                             "email": f"{user_id}.{username}",
-                            **settings
+                            **client_settings
                         }
 
                         # XTLS currently only supports transmission methods of TCP and mKCP

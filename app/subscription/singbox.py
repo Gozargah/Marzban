@@ -287,6 +287,8 @@ class SingBoxConfiguration(str):
 
         net = inbound["network"]
         path = inbound["path"]
+        inbound_method = inbound.get("method") or inbound.get("settings", {}).get("method", "")
+        inbound_psk = inbound.get("server_psk") or inbound.get("settings", {}).get("password", "")
 
         # not supported by sing-box
         if net in ("kcp", "splithttp", "xhttp") or (net == "quic" and inbound["header_type"] != "none"):
@@ -330,7 +332,11 @@ class SingBoxConfiguration(str):
             outbound['password'] = settings['password']
 
         elif inbound['protocol'] == 'shadowsocks':
-            outbound['password'] = settings['password']
-            outbound['method'] = settings['method']
+            if inbound_method.startswith("2022-"):
+                outbound['password'] = f"{inbound_psk}:{settings['password']}"
+                outbound['method'] = inbound_method
+            else:
+                outbound['password'] = settings['password']
+                outbound['method'] = settings['method']
 
         self.add_outbound(outbound)

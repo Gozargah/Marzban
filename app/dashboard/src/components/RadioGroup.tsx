@@ -27,7 +27,14 @@ import {
   useDashboard,
 } from "contexts/DashboardContext";
 import { t } from "i18next";
-import { FC, forwardRef, PropsWithChildren, useState } from "react";
+import {
+  FC,
+  forwardRef,
+  PropsWithChildren,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   ControllerRenderProps,
   useFormContext,
@@ -136,6 +143,7 @@ const RadioCard: FC<
       description: string;
       toggleAccordion: () => void;
       isSelected: boolean;
+      ss2022Method?: string | null;
     }
   >
 > = ({
@@ -144,6 +152,7 @@ const RadioCard: FC<
   description,
   toggleAccordion,
   isSelected,
+  ss2022Method,
   ...props
 }) => {
   const form = useFormContext();
@@ -437,11 +446,13 @@ const RadioCard: FC<
                   fontSize="xs"
                   size="sm"
                   borderRadius="6px"
+                  isDisabled={Boolean(ss2022Method)}
                   {...form.register("proxies.shadowsocks.method")}
                 >
                   {shadowsocksMethods.map((method) => (
                     <option key={method} value={method}>
                       {method}
+                      {ss2022Method && method === ss2022Method ? " (inbound)" : ""}
                     </option>
                   ))}
                 </Select>
@@ -467,6 +478,23 @@ export type RadioGroupProps = ControllerRenderProps & {
 export const RadioGroup = forwardRef<any, RadioGroupProps>(
   ({ name, list, onChange, disabled, ...props }, ref) => {
     const form = useFormContext();
+    const ssInbounds =
+      useDashboard.getState().inbounds.get("shadowsocks") || [];
+    const ss2022Method = useMemo(() => {
+      const methods = ssInbounds
+        .map((i) => i.method)
+        .filter((m): m is string => Boolean(m));
+      if (methods.length && methods.every((m) => m.startsWith("2022-"))) {
+        return methods[0];
+      }
+      return null;
+    }, [ssInbounds]);
+
+    useEffect(() => {
+      if (ss2022Method) {
+        form.setValue("proxies.shadowsocks.method", ss2022Method);
+      }
+    }, [form, ss2022Method]);
     const [expandedAccordions, setExpandedAccordions] = useState<number[]>([]);
 
     const toggleAccordion = (i: number) => {
@@ -526,6 +554,7 @@ export const RadioGroup = forwardRef<any, RadioGroupProps>(
                 isSelected={
                   !!(props.value as string[]).find((v) => v === value.title)
                 }
+                ss2022Method={ss2022Method}
                 {...getCheckboxProps({ value: value.title })}
               />
             );

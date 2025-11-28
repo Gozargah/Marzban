@@ -1,12 +1,14 @@
+import base64
+import binascii
 import json
 import re
 from enum import Enum
 from typing import Optional, Union
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
 
-from app.utils.system import random_password
+from app.utils.system import generate_ss2022_key, random_password
 from xray_api.types.account import (
     ShadowsocksAccount,
     ShadowsocksMethods,
@@ -93,6 +95,29 @@ class ShadowsocksSettings(ProxySettings):
 
     def revoke(self):
         self.password = random_password()
+
+    @field_validator("password", mode="after")
+    @classmethod
+    def ensure_ss2022_key(cls, v: str, info: ValidationInfo):
+        method = info.data.get("method")
+
+        if isinstance(method, ShadowsocksMethods):
+            method_value = method.value
+        else:
+            method_value = str(method) if method else ""
+
+        if not method_value.startswith("2022-"):
+            return v
+
+        expected_size = 16 if method_value.endswith("aes-128-gcm") else 32
+        try:
+            decoded = base64.b64decode(v or "", validate=True)
+            if len(decoded) == expected_size:
+                return v
+        except (binascii.Error, TypeError, ValueError):
+            pass
+
+        return generate_ss2022_key(method_value)
 
 
 class ProxyHostSecurity(str, Enum):
@@ -204,4 +229,6 @@ class ProxyInbound(BaseModel):
     protocol: ProxyTypes
     network: str
     tls: str
-    port: Union[int, str]
+    port: Optional[Union[int, str]] = None
+    method: Optional[str] = None
+    server_psk: Optional[str] = None

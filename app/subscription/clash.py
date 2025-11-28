@@ -260,6 +260,9 @@ class ClashConfiguration(object):
 
         proxy_remark = self._remark_validation(remark)
 
+        inbound_method = inbound.get("method") or inbound.get("settings", {}).get("method", "")
+        inbound_psk = inbound.get("server_psk") or inbound.get("settings", {}).get("password", "")
+
         node = self.make_node(
             name=remark,
             remark=proxy_remark,
@@ -288,8 +291,12 @@ class ClashConfiguration(object):
             node['password'] = settings['password']
 
         elif inbound['protocol'] == 'shadowsocks':
-            node['password'] = settings['password']
-            node['cipher'] = settings['method']
+            if inbound_method.startswith("2022-"):
+                node['password'] = f"{inbound_psk}:{settings['password']}"
+                node['cipher'] = inbound_method
+            else:
+                node['password'] = settings['password']
+                node['cipher'] = settings['method']
 
         else:
             return
@@ -351,6 +358,9 @@ class ClashMetaConfiguration(ClashConfiguration):
 
         proxy_remark = self._remark_validation(remark)
 
+        inbound_method = inbound.get("method") or inbound.get("settings", {}).get("method", "")
+        inbound_psk = inbound.get("server_psk") or inbound.get("settings", {}).get("password", "")
+
         node = self.make_node(
             name=remark,
             remark=proxy_remark,
@@ -388,8 +398,12 @@ class ClashMetaConfiguration(ClashConfiguration):
             node['password'] = settings['password']
 
         elif inbound['protocol'] == 'shadowsocks':
-            node['password'] = settings['password']
-            node['cipher'] = settings['method']
+            if inbound_method.startswith("2022-"):
+                node['password'] = f"{inbound_psk}:{settings['password']}"
+                node['cipher'] = inbound_method
+            else:
+                node['password'] = settings['password']
+                node['cipher'] = settings['method']
 
         else:
             return

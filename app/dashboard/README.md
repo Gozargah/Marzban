@@ -38,3 +38,13 @@ Copy `example.env` to `.env` then set the backend api address:
 ## Contribution
 
 Feel free to contribute. Go on and fork the project. After commiting the changes, make a PR. It means a lot to us.
+### Локальная сборка фронта с собственным API-префиксом
+
+```bash
+cd app/dashboard
+VITE_BASE_API=/api/ npm ci
+VITE_BASE_API=/api/ npm run build -- --outDir build --assetsDir statics
+cp build/index.html build/404.html
+```
+
+Где `VITE_BASE_API` — базовый префикс для всех API‑запросов фронта (в продакшене `/api/`).
