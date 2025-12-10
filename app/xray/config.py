@@ -246,13 +246,19 @@ class XRayConfig(dict):
 
                         # core.get_x25519 may return None if the xray binary output format
                         # is different or the provided private key is invalid. Check before use.
-                        if x25519 and x25519.get('public_key'):
-                            settings['pbk'] = x25519['public_key']
-                        else:
+                        if not x25519:
                             raise ValueError(
                                 f"Could not derive publicKey from provided privateKey for {inbound['tag']}. "
                                 "Make sure the xray binary supports x25519 and the privateKey is valid, "
                                 "or provide publicKey explicitly in realitySettings.")
+
+                        derived_pbk = x25519.get('public_key') or x25519.get('publicKey')
+                        if not derived_pbk:
+                            raise ValueError(
+                                f"Xray x25519 output did not contain public key for {inbound['tag']}. "
+                                "Update xray core or provide publicKey explicitly in realitySettings.")
+
+                        settings['pbk'] = derived_pbk
 
                     try:
                         settings['sid'] = tls_settings.get('shortIds')[0]
