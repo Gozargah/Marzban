@@ -51,12 +51,33 @@ class XRayConfig(dict):
         self._apply_api()
 
     def _apply_api(self):
-        api_inbound = self.get_inbound("API_INBOUND")
-        if api_inbound:
-            api_inbound["listen"] = self.api_host
-            api_inbound["listen"]["address"] = self.api_host
-            api_inbound["port"] = self.api_port
-            return
+        # Normalize any existing API_INBOUND entry. Some configs may store
+        # inbounds in non-standard shapes (e.g. listen as a string). Find the
+        # inbound by tag and normalize/replace it safely.
+        for i, inbound in enumerate(self.get('inbounds', []) or []):
+            try:
+                tag = inbound.get('tag') if isinstance(inbound, dict) else None
+            except Exception:
+                tag = None
+
+            if tag == 'API_INBOUND':
+                # ensure we have a dict to work with
+                if not isinstance(inbound, dict):
+                    inbound = {}
+
+                # Normalize listen to a plain address string. Some configs may
+                # use a dict like {"address": "..."} or other shapes, but
+                # xray expects listen to be a string address. Always set it to
+                # the configured api_host so generated config is valid.
+                inbound['listen'] = self.api_host
+
+                inbound['port'] = self.api_port
+                # replace in the original list to ensure other code sees the change
+                try:
+                    self['inbounds'][i] = inbound
+                except Exception:
+                    pass
+                return
 
         self["api"] = {
             "services": [
@@ -206,10 +227,13 @@ class XRayConfig(dict):
                     settings['tls'] = 'reality'
                     settings['sni'] = tls_settings.get('serverNames', [])
 
-                    try:
-                        settings['pbk'] = tls_settings['publicKey']
-                    except KeyError:
-                        pvk = tls_settings.get('privateKey')
+                    # reality public key can be provided under different names depending on
+                    # xray core version / config style. Try several common keys first.
+                    pbk = tls_settings.get('publicKey') or tls_settings.get('public_key') or tls_settings.get('public-key')
+                    if pbk:
+                        settings['pbk'] = pbk
+                    else:
+                        pvk = tls_settings.get('privateKey') or tls_settings.get('private_key') or tls_settings.get('private-key')
                         if not pvk:
                             raise ValueError(
                                 f"You need to provide privateKey in realitySettings of {inbound['tag']}")
@@ -217,13 +241,18 @@ class XRayConfig(dict):
                         try:
                             from app.xray import core
                             x25519 = core.get_x25519(pvk)
-                            settings['pbk'] = x25519['public_key']
                         except ImportError:
-                            pass
+                            x25519 = None
 
-                        if not settings.get('pbk'):
+                        # core.get_x25519 may return None if the xray binary output format
+                        # is different or the provided private key is invalid. Check before use.
+                        if x25519 and x25519.get('public_key'):
+                            settings['pbk'] = x25519['public_key']
+                        else:
                             raise ValueError(
-                                f"You need to provide publicKey in realitySettings of {inbound['tag']}")
+                                f"Could not derive publicKey from provided privateKey for {inbound['tag']}. "
+                                "Make sure the xray binary supports x25519 and the privateKey is valid, "
+                                "or provide publicKey explicitly in realitySettings.")
 
                     try:
                         settings['sid'] = tls_settings.get('shortIds')[0]

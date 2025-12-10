@@ -1,4 +1,5 @@
 import atexit
+import json
 import re
 import subprocess
 import threading
@@ -42,14 +43,76 @@ class XRayCore:
         cmd = [self.executable_path, "x25519"]
         if private_key:
             cmd.extend(['-i', private_key])
-        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode('utf-8')
-        m = re.match(r'Private key: (.+)\nPublic key: (.+)', output)
-        if m:
-            private, public = m.groups()
-            return {
-                "private_key": private,
-                "public_key": public
-            }
+        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode('utf-8', errors='ignore')
+
+        private, public = None, None
+        stripped = output.strip()
+
+        def _extract_from_obj(obj):
+            nonlocal private, public
+            if isinstance(obj, dict):
+                for key, value in obj.items():
+                    key_l = str(key).lower()
+                    if isinstance(value, (dict, list)):
+                        _extract_from_obj(value)
+                        continue
+                    if not isinstance(value, str):
+                        continue
+                    value = value.strip()
+                    if not value:
+                        continue
+                    if 'private' in key_l and 'key' in key_l and not private:
+                        private = value
+                    elif 'public' in key_l and 'key' in key_l and not public:
+                        public = value
+            elif isinstance(obj, list):
+                for item in obj:
+                    _extract_from_obj(item)
+
+        if stripped:
+            try:
+                parsed = json.loads(stripped)
+            except (json.JSONDecodeError, ValueError):
+                parsed = None
+            if parsed is not None:
+                _extract_from_obj(parsed)
+
+        if not (private or public):
+            pattern = re.compile(
+                r'(?i)(private|public)[_\s-]*key(?:\s*\(\w+\))?\s*(?:[:=]\s*|\s+is\s+)?([A-Za-z0-9+/=_-]+)'
+            )
+            for key_type, value in pattern.findall(output):
+                value = value.strip()
+                if not value:
+                    continue
+                if key_type.lower().startswith('private') and not private:
+                    private = value
+                elif key_type.lower().startswith('public') and not public:
+                    public = value
+
+        if not (private or public):
+            for line in output.splitlines():
+                lower = line.lower()
+                if 'key' not in lower:
+                    continue
+                match = re.search(r'([A-Za-z0-9+/=_-]{16,})', line)
+                if not match:
+                    continue
+                value = match.group(1).strip()
+                if not value:
+                    continue
+                if 'private' in lower and not private:
+                    private = value
+                elif 'public' in lower and not public:
+                    public = value
+
+        if private or public:
+            result = {}
+            if private:
+                result["private_key"] = private
+            if public:
+                result["public_key"] = public
+            return result
 
     def __capture_process_logs(self):
         def capture_and_debug_log():
