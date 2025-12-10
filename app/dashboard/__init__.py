@@ -32,7 +32,15 @@ def run_dev():
         cwd=base_dir
     )
 
-    atexit.register(proc.terminate)
+    def cleanup():
+        proc.terminate()
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.wait()
+
+    atexit.register(cleanup)
 
 
 def run_build():

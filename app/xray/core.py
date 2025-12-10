@@ -140,6 +140,11 @@ class XRayCore:
             return
 
         self.process.terminate()
+        try:
+            self.process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            self.process.kill()
+            self.process.wait()
         self.process = None
         logger.warning("Xray core stopped")
 
