@@ -189,7 +189,7 @@ class ReSTXRayNode:
 
         try:
             grpc.channel_ready_future(self._api._channel).result(timeout=5)
-        except grpc.FutureTimeoutError:
+        except (grpc.FutureTimeoutError, grpc.FutureCancelledError):
             raise ConnectionError('Failed to connect to node\'s API')
 
         return res
@@ -222,7 +222,7 @@ class ReSTXRayNode:
 
         try:
             grpc.channel_ready_future(self._api._channel).result(timeout=5)
-        except grpc.FutureTimeoutError:
+        except (grpc.FutureTimeoutError, grpc.FutureCancelledError):
             raise ConnectionError('Failed to connect to node\'s API')
 
         return res
@@ -418,7 +418,7 @@ class RPyCXRayNode:
         )
         try:
             grpc.channel_ready_future(self._api._channel).result(timeout=5)
-        except grpc.FutureTimeoutError:
+        except (grpc.FutureTimeoutError, grpc.FutureCancelledError):
 
             start_time = time.time()
             end_time = start_time + 3  # check logs for 3 seconds
