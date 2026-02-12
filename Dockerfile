@@ -32,6 +32,6 @@ RUN python3 -m pip install --no-cache-dir --upgrade "setuptools<81"
 
 RUN ln -s /code/marzban-cli.py /usr/bin/marzban-cli \
     && chmod +x /usr/bin/marzban-cli \
-    && marzban-cli completion install --shell bash
+    && (marzban-cli completion install --shell bash || true)
 
 CMD ["bash", "-c", "alembic upgrade head; python main.py"]

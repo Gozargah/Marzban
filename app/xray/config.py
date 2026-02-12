@@ -236,7 +236,8 @@ class XRayConfig(dict):
                         try:
                             from app.xray import core
                             x25519 = core.get_x25519(pvk)
-                            settings['pbk'] = x25519['public_key']
+                            if x25519 and x25519.get('public_key'):
+                                settings['pbk'] = x25519['public_key']
                         except ImportError:
                             pass
 
