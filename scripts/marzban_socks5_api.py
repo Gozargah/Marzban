@@ -18,6 +18,18 @@ import urllib.parse
 import urllib.request
 
 
+def build_tg_socks_link(server: str, port: int | str, user: str, password: str) -> str:
+    params = urllib.parse.urlencode(
+        {
+            "server": server,
+            "port": str(port),
+            "user": user,
+            "pass": password,
+        }
+    )
+    return f"tg://socks?{params}"
+
+
 def request(
     url: str,
     method: str = "GET",
@@ -111,6 +123,11 @@ def main():
         default="text",
         help="Формат вывода: text или json",
     )
+    parser.add_argument(
+        "--tg-server",
+        default="",
+        help="Принудительно использовать этот домен/хост в tg://socks (вместо host из API)",
+    )
     args = parser.parse_args()
 
     base = args.base_url.rstrip("/")
@@ -135,6 +152,13 @@ def main():
             continue
         s5 = get_user_socks5(base, token, username, verify_ssl=verify)
         if s5 and "error" not in s5:
+            tg_server = args.tg_server or s5.get("host", "")
+            s5["tg_link"] = build_tg_socks_link(
+                server=tg_server,
+                port=s5.get("port", ""),
+                user=s5.get("username", ""),
+                password=s5.get("password", ""),
+            )
             s5["marzban_username"] = username
             socks5_list.append(s5)
 
@@ -150,6 +174,7 @@ def main():
         print(f"  Username: {s5.get('username', '')}")
         print(f"  Password: {s5.get('password', '')}")
         print(f"  URI:      socks5://{s5.get('username', '')}:{s5.get('password', '')}@{s5.get('host', '')}:{s5.get('port', '')}")
+        print(f"  TG:       {s5.get('tg_link', '')}")
         print()
 
 
