@@ -14,7 +14,9 @@ from app.db import models as db_models
 from app.models.proxy import ProxyTypes
 from app.models.user import UserStatus
 from app.utils.crypto import get_cert_SANs
-from config import DEBUG, XRAY_EXCLUDE_INBOUND_TAGS, XRAY_FALLBACKS_INBOUND_TAG
+from app.xray.socks import socks5_password, socks5_username
+from config import (DEBUG, XRAY_EXCLUDE_INBOUND_TAGS, XRAY_FALLBACKS_INBOUND_TAG,
+                    XRAY_SOCKS_INBOUND_TAG)
 
 
 def merge_dicts(a, b):  # B will override A dictionary key and values
@@ -56,6 +58,7 @@ class XRayConfig(dict):
         self.inbounds = []
         self.inbounds_by_protocol = {}
         self.inbounds_by_tag = {}
+        self.socks_inbounds_by_tag = {}
         self._fallbacks_inbound = self.get_inbound(XRAY_FALLBACKS_INBOUND_TAG)
         self._resolve_inbounds()
 
@@ -142,6 +145,11 @@ class XRayConfig(dict):
 
     def _resolve_inbounds(self):
         for inbound in self['inbounds']:
+            if inbound.get('protocol') == "socks":
+                if XRAY_SOCKS_INBOUND_TAG and inbound.get("tag") != XRAY_SOCKS_INBOUND_TAG:
+                    continue
+                self.socks_inbounds_by_tag[inbound["tag"]] = inbound
+
             if not inbound['protocol'] in ProxyTypes._value2member_map_:
                 continue
 
@@ -428,6 +436,34 @@ class XRayConfig(dict):
                             del client['flow']
 
                         clients.append(client)
+
+            if self.socks_inbounds_by_tag:
+                users = db.query(
+                    db_models.User.id,
+                    db_models.User.username,
+                    db_models.User.sub_revoked_at,
+                ).filter(
+                    db_models.User.status.in_([UserStatus.active, UserStatus.on_hold])
+                ).all()
+
+                for socks_tag in self.socks_inbounds_by_tag:
+                    socks_inbound = config.get_inbound(socks_tag)
+                    if not socks_inbound:
+                        continue
+
+                    settings = socks_inbound.setdefault("settings", {})
+                    settings["auth"] = "password"
+                    settings["accounts"] = [
+                        {
+                            "user": socks5_username(user.username),
+                            "pass": socks5_password(
+                                user.id,
+                                user.username,
+                                user.sub_revoked_at,
+                            ),
+                        }
+                        for user in users
+                    ]
 
         if DEBUG:
             with open('generated_config-debug.json', 'w') as f:

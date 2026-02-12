@@ -54,6 +54,7 @@ def reset_user_by_next_report(db: Session, user: "User"):
 def review():
     now = datetime.utcnow()
     now_ts = now.timestamp()
+    socks_resync_needed = False
     with GetDB() as db:
         for user in get_users(db, status=UserStatus.active):
 
@@ -80,8 +81,9 @@ def review():
                     add_notification_reminders(db, user, now)
                 continue
 
-            xray.operations.remove_user(user)
+            xray.operations.remove_user(user, sync_socks=False)
             update_user_status(db, user, status)
+            socks_resync_needed = True
 
             report.status_change(username=user.username, status=status,
                                  user=UserResponse.model_validate(user), user_admin=user.admin)
@@ -113,6 +115,9 @@ def review():
                                  user=UserResponse.model_validate(user), user_admin=user.admin)
 
             logger.info(f"User \"{user.username}\" status changed to {status}")
+
+    if socks_resync_needed:
+        xray.operations.sync_socks_accounts()
 
 
 scheduler.add_job(review, 'interval',

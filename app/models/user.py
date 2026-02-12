@@ -364,3 +364,10 @@ class UserUsagesResponse(BaseModel):
 
 class UsersUsagesResponse(BaseModel):
     usages: List[UserUsageResponse]
+
+
+class Socks5CredentialsResponse(BaseModel):
+    host: str
+    port: int
+    username: str
+    password: str

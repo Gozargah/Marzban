@@ -1,14 +1,17 @@
 import re
 from distutils.version import LooseVersion
 
-from fastapi import APIRouter, Depends, Header, Path, Request, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Path, Request, Response
 from fastapi.responses import HTMLResponse
 
+from app import xray
 from app.db import Session, crud, get_db
 from app.dependencies import get_validated_sub, validate_dates
-from app.models.user import SubscriptionUserResponse, UserResponse
+from app.models.user import (Socks5CredentialsResponse, SubscriptionUserResponse,
+                             UserResponse, UserStatus)
 from app.subscription.share import encode_title, generate_subscription
 from app.templates import render_template
+from app.xray.socks import socks5_password, socks5_username
 from config import (
     SUB_PROFILE_TITLE,
     SUB_SUPPORT_URL,
@@ -19,6 +22,7 @@ from config import (
     USE_CUSTOM_JSON_FOR_STREISAND,
     USE_CUSTOM_JSON_FOR_V2RAYN,
     USE_CUSTOM_JSON_FOR_V2RAYNG,
+    XRAY_SOCKS5_HOST,
     XRAY_SUBSCRIPTION_PATH,
 )
 
@@ -145,6 +149,31 @@ def user_subscription_info(
 ):
     """Retrieves detailed information about the user's subscription."""
     return dbuser
+
+
+@router.get("/{token}/socks5", response_model=Socks5CredentialsResponse)
+def user_subscription_socks5(
+    request: Request,
+    dbuser: UserResponse = Depends(get_validated_sub),
+):
+    """Retrieves per-user SOCKS5 credentials for active subscriptions."""
+    if dbuser.status not in [UserStatus.active, UserStatus.on_hold]:
+        raise HTTPException(status_code=403, detail="Subscription is inactive")
+
+    socks_inbound = next(iter(xray.config.socks_inbounds_by_tag.values()), None)
+    if not socks_inbound:
+        raise HTTPException(status_code=404, detail="SOCKS5 inbound is not configured")
+
+    inbound_host = XRAY_SOCKS5_HOST or socks_inbound.get("listen", "")
+    if inbound_host in ("", "0.0.0.0", "::"):
+        inbound_host = request.url.hostname or "127.0.0.1"
+
+    return Socks5CredentialsResponse(
+        host=inbound_host,
+        port=socks_inbound["port"],
+        username=socks5_username(dbuser.username),
+        password=socks5_password(dbuser.id, dbuser.username, dbuser.sub_revoked_at),
+    )
 
 
 @router.get("/{token}/usage")

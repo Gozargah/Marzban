@@ -56,7 +56,18 @@ def _alter_inbound_user(api: XRayAPI, inbound_tag: str, account: Account):
         pass
 
 
-def add_user(dbuser: "DBUser"):
+def sync_socks_accounts():
+    if not xray.config.socks_inbounds_by_tag:
+        return
+
+    startup_config = xray.config.include_db_users()
+    xray.core.restart(startup_config)
+    for node_id, node in list(xray.nodes.items()):
+        if node.connected:
+            restart_node(node_id, startup_config)
+
+
+def add_user(dbuser: "DBUser", sync_socks: bool = True):
     user = UserResponse.model_validate(dbuser)
     email = f"{dbuser.id}.{dbuser.username}"
 
@@ -89,8 +100,11 @@ def add_user(dbuser: "DBUser"):
                 if node.connected and node.started:
                     _add_user_to_inbound(node.api, inbound_tag, account)
 
+    if sync_socks:
+        sync_socks_accounts()
 
-def remove_user(dbuser: "DBUser"):
+
+def remove_user(dbuser: "DBUser", sync_socks: bool = True):
     email = f"{dbuser.id}.{dbuser.username}"
 
     for inbound_tag in xray.config.inbounds_by_tag:
@@ -99,8 +113,11 @@ def remove_user(dbuser: "DBUser"):
             if node.connected and node.started:
                 _remove_user_from_inbound(node.api, inbound_tag, email)
 
+    if sync_socks:
+        sync_socks_accounts()
 
-def update_user(dbuser: "DBUser"):
+
+def update_user(dbuser: "DBUser", sync_socks: bool = True):
     user = UserResponse.model_validate(dbuser)
     email = f"{dbuser.id}.{dbuser.username}"
 
@@ -143,6 +160,9 @@ def update_user(dbuser: "DBUser"):
         for node in list(xray.nodes.values()):
             if node.connected and node.started:
                 _remove_user_from_inbound(node.api, inbound_tag, email)
+
+    if sync_socks:
+        sync_socks_accounts()
 
 
 def remove_node(node_id: int):
@@ -272,6 +292,8 @@ def restart_node(node_id, config=None):
 __all__ = [
     "add_user",
     "remove_user",
+    "update_user",
+    "sync_socks_accounts",
     "add_node",
     "remove_node",
     "connect_node",

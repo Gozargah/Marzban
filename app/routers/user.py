@@ -9,6 +9,7 @@ from app.db import Session, crud, get_db
 from app.dependencies import get_expired_users_list, get_validated_user, validate_dates
 from app.models.admin import Admin
 from app.models.user import (
+    Socks5CredentialsResponse,
     UserCreate,
     UserModify,
     UserResponse,
@@ -18,6 +19,8 @@ from app.models.user import (
     UserUsagesResponse,
 )
 from app.utils import report, responses
+from app.xray.socks import socks5_password, socks5_username
+from config import XRAY_SOCKS5_HOST
 
 router = APIRouter(tags=["User"], prefix="/api", responses={401: responses._401})
 
@@ -73,6 +76,27 @@ def add_user(
 def get_user(dbuser: UserResponse = Depends(get_validated_user)):
     """Get user information"""
     return dbuser
+
+
+@router.get("/user/{username}/socks5", response_model=Socks5CredentialsResponse, responses={403: responses._403, 404: responses._404})
+def get_user_socks5_credentials(
+    dbuser: UserResponse = Depends(get_validated_user),
+):
+    """Get SOCKS5 credentials of a specific user."""
+    socks_inbound = next(iter(xray.config.socks_inbounds_by_tag.values()), None)
+    if not socks_inbound:
+        raise HTTPException(status_code=404, detail="SOCKS5 inbound is not configured")
+
+    inbound_host = XRAY_SOCKS5_HOST or socks_inbound.get("listen", "")
+    if inbound_host in ("", "0.0.0.0", "::"):
+        inbound_host = "SERVER_PUBLIC_DOMAIN"
+
+    return Socks5CredentialsResponse(
+        host=inbound_host,
+        port=socks_inbound["port"],
+        username=socks5_username(dbuser.username),
+        password=socks5_password(dbuser.id, dbuser.username, dbuser.sub_revoked_at),
+    )
 
 
 @router.put("/user/{username}", response_model=UserResponse, responses={400: responses._400, 403: responses._403, 404: responses._404})
