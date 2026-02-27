@@ -67,11 +67,21 @@ def sync_socks_accounts():
             restart_node(node_id, startup_config)
 
 
+def _needs_config_reload(proxy_type) -> bool:
+    """Protocols that have no gRPC API support require a full config reload."""
+    return proxy_type.account_model is None
+
+
 def add_user(dbuser: "DBUser", sync_socks: bool = True):
     user = UserResponse.model_validate(dbuser)
     email = f"{dbuser.id}.{dbuser.username}"
+    has_reload_protocol = False
 
     for proxy_type, inbound_tags in user.inbounds.items():
+        if _needs_config_reload(proxy_type):
+            has_reload_protocol = True
+            continue
+
         for inbound_tag in inbound_tags:
             inbound = xray.config.inbounds_by_tag.get(inbound_tag, {})
 
@@ -100,29 +110,46 @@ def add_user(dbuser: "DBUser", sync_socks: bool = True):
                 if node.connected and node.started:
                     _add_user_to_inbound(node.api, inbound_tag, account)
 
-    if sync_socks:
+    if has_reload_protocol or sync_socks:
         sync_socks_accounts()
 
 
 def remove_user(dbuser: "DBUser", sync_socks: bool = True):
+    from app.models.proxy import ProxyTypes
     email = f"{dbuser.id}.{dbuser.username}"
+    has_reload_protocol = False
 
-    for inbound_tag in xray.config.inbounds_by_tag:
+    for inbound_tag, inbound in xray.config.inbounds_by_tag.items():
+        protocol = inbound.get('protocol', '')
+        try:
+            proxy_type = ProxyTypes(protocol)
+            if _needs_config_reload(proxy_type):
+                has_reload_protocol = True
+                continue
+        except ValueError:
+            pass
+
         _remove_user_from_inbound(xray.api, inbound_tag, email)
         for node in list(xray.nodes.values()):
             if node.connected and node.started:
                 _remove_user_from_inbound(node.api, inbound_tag, email)
 
-    if sync_socks:
+    if has_reload_protocol or sync_socks:
         sync_socks_accounts()
 
 
 def update_user(dbuser: "DBUser", sync_socks: bool = True):
     user = UserResponse.model_validate(dbuser)
     email = f"{dbuser.id}.{dbuser.username}"
+    has_reload_protocol = False
 
     active_inbounds = []
     for proxy_type, inbound_tags in user.inbounds.items():
+        if _needs_config_reload(proxy_type):
+            has_reload_protocol = True
+            active_inbounds.extend(inbound_tags)
+            continue
+
         for inbound_tag in inbound_tags:
             active_inbounds.append(inbound_tag)
             inbound = xray.config.inbounds_by_tag.get(inbound_tag, {})
@@ -161,7 +188,7 @@ def update_user(dbuser: "DBUser", sync_socks: bool = True):
             if node.connected and node.started:
                 _remove_user_from_inbound(node.api, inbound_tag, email)
 
-    if sync_socks:
+    if has_reload_protocol or sync_socks:
         sync_socks_accounts()
 
 

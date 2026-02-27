@@ -7,7 +7,7 @@ export type Status =
   | "error"
   | "connecting"
   | "connected";
-export type ProxyKeys = ("vmess" | "vless" | "trojan" | "shadowsocks")[];
+export type ProxyKeys = ("vmess" | "vless" | "trojan" | "shadowsocks" | "hysteria2")[];
 export type ProxyType = {
   vmess?: {
     id?: string;
@@ -22,6 +22,9 @@ export type ProxyType = {
   shadowsocks?: {
     password?: string;
     method?: string;
+  };
+  hysteria2?: {
+    password?: string;
   };
 };
 

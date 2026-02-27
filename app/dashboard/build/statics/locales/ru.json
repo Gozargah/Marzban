@@ -1,4 +1,4 @@
-{
+﻿{
   "active": "active",
   "activeUsers": "Пользователи",
   "apply": "Применить",
@@ -175,7 +175,7 @@
   "userDialog.userCreated": "Пользователь {{username}} создан.",
   "userDialog.userEdited": "Пользователь {{username}} изменён.",
   "userDialog.vlessDesc": "Легковесный, быстрый и безопасный",
-  "userDialog.vmessDesc": "Быстрый и безопасный",
+  "userDialog.hysteria2Desc": "High-performance UDP-based protocol",`n  "userDialog.generate": "Gen",`n  "userDialog.vmessDesc": "Быстрый и безопасный",
   "userDialog.warningNoProtocol": "Пожалуйста, выберите хотя бы один протокол",
   "userDialog.weeks": "Недели",
   "username": "Имя пользователя",

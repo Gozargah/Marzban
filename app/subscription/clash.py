@@ -351,6 +351,38 @@ class ClashMetaConfiguration(ClashConfiguration):
 
         proxy_remark = self._remark_validation(remark)
 
+        if inbound['protocol'] == 'hysteria2':
+            if isinstance(inbound['port'], str):
+                from random import choice as _choice
+                port = int(_choice(inbound['port'].split(',')))
+            else:
+                port = inbound['port']
+
+            sni = inbound.get('sni', '')
+            if isinstance(sni, list):
+                sni = sni[0] if sni else ''
+
+            node = {
+                'name': proxy_remark,
+                'type': 'hysteria2',
+                'server': address,
+                'port': port,
+                'password': settings['password'],
+                'udp': True,
+            }
+            obfs = inbound.get('obfs', '')
+            if obfs:
+                node['obfs'] = obfs
+                node['obfs-password'] = inbound.get('obfs_password', '')
+            if sni:
+                node['sni'] = sni
+            if inbound.get('ais'):
+                node['skip-cert-verify'] = True
+
+            self.data['proxies'].append(node)
+            self.proxy_remarks.append(proxy_remark)
+            return
+
         node = self.make_node(
             name=remark,
             remark=proxy_remark,

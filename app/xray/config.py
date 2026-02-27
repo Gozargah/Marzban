@@ -171,7 +171,9 @@ class XRayConfig(dict):
                 "host": [],
                 "path": "",
                 "header_type": "",
-                "is_fallback": False
+                "is_fallback": False,
+                "obfs": "",
+                "obfs_password": "",
             }
 
             # port settings
@@ -342,6 +344,15 @@ class XRayConfig(dict):
                         settings['host'] = host
                     elif host and isinstance(host, list):
                         settings['host'] = host[0]
+
+            # Hysteria2: read inbound-level obfs settings
+            if inbound['protocol'] == 'hysteria2':
+                obfs_cfg = inbound.get('settings', {}).get('obfs', {})
+                settings['obfs'] = obfs_cfg.get('type', '')
+                settings['obfs_password'] = obfs_cfg.get('password', '')
+                # Hysteria2 always requires TLS; normalise if streamSettings absent
+                if settings['tls'] == 'none' and not inbound.get('streamSettings'):
+                    settings['tls'] = 'tls'
 
             self.inbounds.append(settings)
             self.inbounds_by_tag[inbound['tag']] = settings

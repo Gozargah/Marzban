@@ -13,7 +13,7 @@ export type FilterType = {
   sort: string;
   status?: "active" | "disabled" | "limited" | "expired" | "on_hold";
 };
-export type ProtocolType = "vmess" | "vless" | "trojan" | "shadowsocks";
+export type ProtocolType = "vmess" | "vless" | "trojan" | "shadowsocks" | "hysteria2";
 
 export type FilterUsageType = {
   start?: string;

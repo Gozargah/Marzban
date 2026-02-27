@@ -11,6 +11,9 @@ import {
   HStack,
   IconButton,
   Input,
+  InputGroup,
+  InputRightElement,
+  Button,
   Select,
   SimpleGrid,
   Text,
@@ -445,6 +448,41 @@ const RadioCard: FC<
                     </option>
                   ))}
                 </Select>
+              </FormControl>
+            </VStack>
+          )}
+          {title === "hysteria2" && isSelected && (
+            <VStack alignItems="flex-start" w="full">
+              <FormControl height="66px">
+                <Text fontSize="sm" pb={1}>
+                  {t("password")}
+                </Text>
+                <InputGroup size="sm">
+                  <Input
+                    fontSize="xs"
+                    borderRadius="6px"
+                    pl={2}
+                    pr={20}
+                    placeholder={t("userDialog.generatedByDefault")}
+                    {...form.register("proxies.hysteria2.password")}
+                  />
+                  <InputRightElement width="4.5rem">
+                    <Button
+                      h="1.4rem"
+                      size="xs"
+                      onClick={() => {
+                        const chars =
+                          "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                        let pwd = "";
+                        for (let i = 0; i < 32; i++)
+                          pwd += chars[Math.floor(Math.random() * chars.length)];
+                        form.setValue("proxies.hysteria2.password", pwd);
+                      }}
+                    >
+                      {t("userDialog.generate")}
+                    </Button>
+                  </InputRightElement>
+                </InputGroup>
               </FormControl>
             </VStack>
           )}

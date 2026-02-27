@@ -176,6 +176,8 @@
   "userDialog.userEdited": "User {{username}} edited.",
   "userDialog.vlessDesc": "Lightweight, fast and secure",
   "userDialog.vmessDesc": "Fast and secure",
+  "userDialog.hysteria2Desc": "High-performance UDP-based protocol",
+  "userDialog.generate": "Gen",
   "userDialog.warningNoProtocol": "Please select at least one protocol",
   "userDialog.weeks": "Weeks",
   "username": "Username",

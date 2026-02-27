@@ -155,6 +155,21 @@ class V2rayShareLink(str):
                 password=settings["password"],
                 method=settings["method"],
             )
+
+        elif inbound["protocol"] == "hysteria2":
+            sni_raw = inbound.get("sni", "")
+            sni = sni_raw[0] if isinstance(sni_raw, list) and sni_raw else (sni_raw if isinstance(sni_raw, str) else "")
+            link = self.hysteria2(
+                remark=remark,
+                address=address,
+                port=inbound["port"],
+                password=settings["password"],
+                obfs=inbound.get("obfs", ""),
+                obfs_password=inbound.get("obfs_password", ""),
+                sni=sni,
+                ais=inbound.get("ais", ""),
+            )
+
         else:
             return
 
@@ -482,6 +497,37 @@ class V2rayShareLink(str):
             "ss://"
             + base64.b64encode(f"{method}:{password}".encode()).decode()
             + f"@{address}:{port}#{urlparse.quote(remark)}"
+        )
+
+    @classmethod
+    def hysteria2(
+            cls,
+            remark: str,
+            address: str,
+            port: int,
+            password: str,
+            obfs: str = "",
+            obfs_password: str = "",
+            sni: str = "",
+            ais: str = "",
+    ):
+        payload = {}
+        if obfs:
+            payload["obfs"] = obfs
+            if obfs_password:
+                payload["obfs-password"] = obfs_password
+        if sni:
+            payload["sni"] = sni
+        if ais:
+            payload["insecure"] = 1
+
+        query = ("?" + urlparse.urlencode(payload)) if payload else ""
+        return (
+            "hy2://"
+            + urlparse.quote(password, safe="")
+            + f"@{address}:{port}"
+            + query
+            + f"#{urlparse.quote(remark)}"
         )
 
 
@@ -858,6 +904,18 @@ class V2rayJsonConfig(str):
         }
 
     @staticmethod
+    def hysteria2_config(address=None, port=None, password=None) -> dict:
+        return {
+            "servers": [
+                {
+                    "address": address,
+                    "port": port,
+                    "password": password,
+                }
+            ]
+        }
+
+    @staticmethod
     def make_fragment(fragment: str) -> dict:
         length, interval, packets = fragment.split(',')
         return {
@@ -1036,6 +1094,16 @@ class V2rayJsonConfig(str):
                                                            port=port,
                                                            password=settings['password'],
                                                            method=settings['method'])
+
+        elif inbound['protocol'] == 'hysteria2':
+            outbound["settings"] = self.hysteria2_config(
+                address=address,
+                port=port,
+                password=settings['password'],
+            )
+            # Hysteria2 uses its own built-in TLS; streamSettings not applicable
+            self.add_config(remarks=remark, outbounds=[outbound])
+            return
 
         outbounds = [outbound]
         dialer_proxy = ''

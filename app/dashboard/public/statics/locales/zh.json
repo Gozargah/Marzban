@@ -1,4 +1,4 @@
-{
+﻿{
   "active": "激活",
   "activeUsers": "活跃用户",
   "apply": "应用",
@@ -176,7 +176,7 @@
   "userDialog.userCreated": "成功创建用户 {{username}}。",
   "userDialog.userEdited": "已更新用户 {{username}}。",
   "userDialog.vlessDesc": "轻量、快速且安全",
-  "userDialog.vmessDesc": "快速且安全",
+  "userDialog.hysteria2Desc": "High-performance UDP-based protocol",`n  "userDialog.generate": "Gen",`n  "userDialog.vmessDesc": "快速且安全",
   "userDialog.warningNoProtocol": "请至少选择一个协议",
   "userDialog.weeks": "周",
   "username": "用户名",

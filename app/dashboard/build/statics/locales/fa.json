@@ -1,4 +1,4 @@
-{
+﻿{
   "active": "فعال",
   "activeUsers": "کاربران فعال",
   "apply": "تایید",
@@ -181,7 +181,7 @@
   "userDialog.userCreated": "کاربر {{username}} ساخته شد.",
   "userDialog.userEdited": "کاربر {{username}} ویرایش شد.",
   "userDialog.vlessDesc": "سبک، سریع و امن",
-  "userDialog.vmessDesc": "سریع و امن",
+  "userDialog.hysteria2Desc": "High-performance UDP-based protocol",`n  "userDialog.generate": "Gen",`n  "userDialog.vmessDesc": "سریع و امن",
   "userDialog.warningNoProtocol": "لطفا حداقل یک پروتکل انتخاب کنید",
   "userDialog.weeks": "هفته‌ها",
   "username": "نام کاربری",
