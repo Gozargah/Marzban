@@ -42,14 +42,22 @@ class XRayCore:
         cmd = [self.executable_path, "x25519"]
         if private_key:
             cmd.extend(['-i', private_key])
-        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode('utf-8')
-        m = re.match(r'Private key: (.+)\nPublic key: (.+)', output)
+        try:
+            output = subprocess.check_output(
+                cmd, stderr=subprocess.STDOUT
+            ).decode('utf-8')
+        except subprocess.CalledProcessError as e:
+            return None
+        # Strip CRLF and use search to handle any output prefix
+        output = output.replace('\r\n', '\n').replace('\r', '\n')
+        m = re.search(r'Private key:\s*(.+)\nPublic key:\s*(.+)', output)
         if m:
             private, public = m.groups()
             return {
-                "private_key": private,
-                "public_key": public
+                "private_key": private.strip(),
+                "public_key": public.strip(),
             }
+        return None
 
     def __capture_process_logs(self):
         def capture_and_debug_log():

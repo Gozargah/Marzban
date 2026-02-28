@@ -238,9 +238,11 @@ class XRayConfig(dict):
                         try:
                             from app.xray import core
                             x25519 = core.get_x25519(pvk)
-                            if x25519 and x25519.get('public_key'):
-                                settings['pbk'] = x25519['public_key']
-                        except ImportError:
+                            if x25519 is not None and isinstance(x25519, dict):
+                                pbk = x25519.get('public_key')
+                                if pbk:
+                                    settings['pbk'] = pbk
+                        except (ImportError, TypeError, AttributeError):
                             pass
 
                         if not settings.get('pbk'):
