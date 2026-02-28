@@ -8,7 +8,7 @@ from app.db import GetDB, crud
 from app.models.node import NodeStatus
 from app.models.proxy import ProxyTypes
 from app.models.user import UserResponse
-from app.routers.hysteria import invalidate_hysteria_cache
+from app.utils.hysteria_cache import invalidate_hysteria_cache
 from app.utils.concurrency import threaded_function
 from app.xray.node import XRayNode
 from xray_api import XRay as XRayAPI
