@@ -102,6 +102,12 @@ class ShadowsocksSettings(ProxySettings):
 
 class Hysteria2Settings(ProxySettings):
     password: str = Field(default_factory=random_password)
+    # Per-user overrides (optional; inbound-level config takes precedence in Xray)
+    obfs_type: Optional[str] = Field(default=None, nullable=True)
+    obfs_password: Optional[str] = Field(default=None, nullable=True)
+    masquerade: Optional[str] = Field(default=None, nullable=True)
+    up_mbps: Optional[int] = Field(default=None, nullable=True)
+    down_mbps: Optional[int] = Field(default=None, nullable=True)
 
     def revoke(self):
         self.password = random_password()

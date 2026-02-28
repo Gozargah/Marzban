@@ -144,6 +144,35 @@
       }
     },
     {
+      "tag": "HYSTERIA2",
+      "listen": "0.0.0.0",
+      "port": 2083,
+      "protocol": "hysteria",
+      "settings": {
+        "clients": []
+      },
+      "streamSettings": {
+        "network": "hysteria",
+        "security": "tls",
+        "hysteriaSettings": {
+          "version": 2,
+          "up": "100 mbps",
+          "down": "200 mbps",
+          "congestion": "brutal",
+          "ignoreClientBandwidth": false
+        },
+        "tlsSettings": {
+          "certificates": [
+            {
+              "certificateFile": "/var/lib/marzban/certs/fullchain.pem",
+              "keyFile": "/var/lib/marzban/certs/key.pem"
+            }
+          ],
+          "alpn": ["h3"]
+        }
+      }
+    },
+    {
       "tag": "SOCKS5_INBOUND",
       "listen": "0.0.0.0",
       "port": 1080,

@@ -150,7 +150,15 @@ class XRayConfig(dict):
                     continue
                 self.socks_inbounds_by_tag[inbound["tag"]] = inbound
 
-            if not inbound['protocol'] in ProxyTypes._value2member_map_:
+            # Xray ≥ 26.x uses protocol "hysteria" + hysteriaSettings.version=2 for Hysteria2
+            _actual_protocol = inbound['protocol']
+            _mapped_protocol = _actual_protocol
+            if _actual_protocol == 'hysteria':
+                _stream = inbound.get('streamSettings', {})
+                if _stream.get('hysteriaSettings', {}).get('version') == 2:
+                    _mapped_protocol = 'hysteria2'
+
+            if not _mapped_protocol in ProxyTypes._value2member_map_:
                 continue
 
             if inbound['tag'] in XRAY_EXCLUDE_INBOUND_TAGS:
@@ -163,7 +171,7 @@ class XRayConfig(dict):
 
             settings = {
                 "tag": inbound["tag"],
-                "protocol": inbound["protocol"],
+                "protocol": _mapped_protocol,   # "hysteria2" for hysteria v2, else original
                 "port": None,
                 "network": "tcp",
                 "tls": 'none',
@@ -347,22 +355,32 @@ class XRayConfig(dict):
                     elif host and isinstance(host, list):
                         settings['host'] = host[0]
 
-            # Hysteria2: read inbound-level obfs settings
-            if inbound['protocol'] == 'hysteria2':
-                obfs_cfg = inbound.get('settings', {}).get('obfs', {})
-                settings['obfs'] = obfs_cfg.get('type', '')
-                settings['obfs_password'] = obfs_cfg.get('password', '')
-                # Hysteria2 always requires TLS; normalise if streamSettings absent
-                if settings['tls'] == 'none' and not inbound.get('streamSettings'):
+            # Hysteria2 (Xray ≥ 26.x): read bandwidth from hysteriaSettings,
+            # obfs from udpmasks in streamSettings
+            if _actual_protocol == 'hysteria' and _mapped_protocol == 'hysteria2':
+                _stream = inbound.get('streamSettings', {})
+                _hyst = _stream.get('hysteriaSettings', {})
+                settings['up'] = _hyst.get('up', '')
+                settings['down'] = _hyst.get('down', '')
+                settings['congestion'] = _hyst.get('congestion', 'brutal')
+                # udpmasks replaces the old "obfs" key in settings
+                _udpmasks = _stream.get('udpmasks', [])
+                if _udpmasks:
+                    settings['obfs'] = _udpmasks[0].get('type', '')
+                    settings['obfs_password'] = (
+                        _udpmasks[0].get('settings', {}).get('password', '')
+                    )
+                # Hysteria2 always needs TLS
+                if settings['tls'] == 'none':
                     settings['tls'] = 'tls'
 
             self.inbounds.append(settings)
             self.inbounds_by_tag[inbound['tag']] = settings
 
             try:
-                self.inbounds_by_protocol[inbound['protocol']].append(settings)
+                self.inbounds_by_protocol[_mapped_protocol].append(settings)
             except KeyError:
-                self.inbounds_by_protocol[inbound['protocol']] = [settings]
+                self.inbounds_by_protocol[_mapped_protocol] = [settings]
 
     def get_inbound(self, tag) -> dict:
         for inbound in self['inbounds']:
@@ -430,10 +448,18 @@ class XRayConfig(dict):
                         if excluded_inbound_tags and inbound['tag'] in excluded_inbound_tags:
                             continue
 
-                        client = {
-                            "email": f"{user_id}.{username}",
-                            **settings
-                        }
+                        # Hysteria2: Xray client uses "id" field for the password
+                        if proxy_type == 'hysteria2':
+                            _pw = (
+                                settings.get('password', '')
+                                if isinstance(settings, dict) else ''
+                            )
+                            client = {"email": f"{user_id}.{username}", "id": _pw}
+                        else:
+                            client = {
+                                "email": f"{user_id}.{username}",
+                                **settings
+                            }
 
                         # XTLS currently only supports transmission methods of TCP and mKCP
                         if client.get('flow') and (
