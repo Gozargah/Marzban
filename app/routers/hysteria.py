@@ -1,12 +1,16 @@
 from datetime import datetime
+from typing import List
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy import update
 
-from app.db import GetDB
-from app.db.models import User as DBUser
-from app.utils.hysteria_cache import get_cache
+from app.db import GetDB, Session, get_db
+from app.db import models as db_models
+from app.db.models import Proxy, User as DBUser
+from app.models.admin import Admin
+from app.models.proxy import ProxyTypes, Hysteria2Settings
+from app.utils.hysteria_cache import get_cache, invalidate_hysteria_cache
 from config import HYSTERIA2_HOOK_TOKEN
 
 router = APIRouter(tags=["Hysteria2"], prefix="/api")
@@ -66,3 +70,75 @@ def hysteria_auth(
         return HysteriaAuthResponse(ok=True, id=username)
 
     return HysteriaAuthResponse(ok=False, msg="Invalid credentials or user inactive")
+
+
+# ---------------------------------------------------------------------------
+# Bulk management endpoints (admin only)
+# ---------------------------------------------------------------------------
+
+class BulkActionResponse(BaseModel):
+    affected: int
+    message: str
+
+
+@router.post("/hysteria/users/enable", response_model=BulkActionResponse)
+def bulk_enable_hysteria(
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.get_current),
+):
+    """
+    Add a Hysteria2 proxy with a fresh random password to every user that
+    does not already have one. Requires admin authentication.
+    """
+    all_users: List[DBUser] = db.query(DBUser).all()
+    count = 0
+    for user in all_users:
+        already_has = any(
+            str(p.type).upper() == "HYSTERIA2" for p in user.proxies
+        )
+        if already_has:
+            continue
+        settings = Hysteria2Settings()
+        new_proxy = Proxy(
+            type=ProxyTypes.HYSTERIA2,
+            settings=settings.dict(no_obj=True),
+        )
+        user.proxies.append(new_proxy)
+        count += 1
+
+    if count:
+        db.commit()
+        invalidate_hysteria_cache()
+
+    return BulkActionResponse(
+        affected=count,
+        message=f"Hysteria2 enabled for {count} user(s).",
+    )
+
+
+@router.post("/hysteria/users/disable", response_model=BulkActionResponse)
+def bulk_disable_hysteria(
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.get_current),
+):
+    """
+    Remove the Hysteria2 proxy from every user that has one.
+    Requires admin authentication.
+    """
+    from sqlalchemy import func as sa_func
+    proxies = db.query(Proxy).filter(
+        sa_func.upper(Proxy.type) == "HYSTERIA2"
+    ).all()
+
+    count = len(proxies)
+    for proxy in proxies:
+        db.delete(proxy)
+
+    if count:
+        db.commit()
+        invalidate_hysteria_cache()
+
+    return BulkActionResponse(
+        affected=count,
+        message=f"Hysteria2 removed from {count} user(s).",
+    )
