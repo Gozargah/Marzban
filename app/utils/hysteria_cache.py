@@ -25,11 +25,12 @@ def build_cache() -> dict[str, str]:
 
     result: dict[str, str] = {}
     with GetDB() as db:
+        from sqlalchemy import func as sa_func
         rows = (
             db.query(db_models.User.username, db_models.Proxy.settings)
             .join(db_models.Proxy, db_models.User.id == db_models.Proxy.user_id)
             .filter(
-                db_models.Proxy.type == ProxyTypes.HYSTERIA2,
+                sa_func.upper(db_models.Proxy.type) == "HYSTERIA2",
                 db_models.User.status.in_([UserStatus.active, UserStatus.on_hold]),
             )
             .all()
