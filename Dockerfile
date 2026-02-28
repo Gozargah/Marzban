@@ -1,5 +1,8 @@
 ARG PYTHON_VERSION=3.12
 
+# Use official Marzban image as Xray source — it ships e6207e3 build with hysteria support
+FROM gozargah/marzban:latest AS marzban-xray
+
 FROM python:$PYTHON_VERSION-slim AS build
 
 ENV PYTHONUNBUFFERED=1
@@ -7,9 +10,12 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /code
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential curl unzip gcc python3-dev libpq-dev \
-    && curl -L https://github.com/Gozargah/Marzban-scripts/raw/master/install_latest_xray.sh | bash \
+    && apt-get install -y --no-install-recommends build-essential gcc python3-dev libpq-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# Copy the Marzban-compatible Xray binary (supports hysteria protocol)
+COPY --from=marzban-xray /usr/local/bin/xray /usr/local/bin/xray
+COPY --from=marzban-xray /usr/local/share/xray /usr/local/share/xray
 
 COPY ./requirements.txt /code/
 RUN python3 -m pip install --upgrade pip "setuptools<81" \
