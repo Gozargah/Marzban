@@ -1,6 +1,11 @@
+from datetime import datetime
+
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
+from sqlalchemy import update
 
+from app.db import GetDB
+from app.db.models import User as DBUser
 from app.utils.hysteria_cache import get_cache
 from config import HYSTERIA2_HOOK_TOKEN
 
@@ -50,6 +55,14 @@ def hysteria_auth(
 
     username = get_cache().get(body.auth)
     if username:
+        # Mark the user as online immediately upon connection
+        with GetDB() as db:
+            db.execute(
+                update(DBUser)
+                .where(DBUser.username == username)
+                .values(online_at=datetime.utcnow())
+            )
+            db.commit()
         return HysteriaAuthResponse(ok=True, id=username)
 
     return HysteriaAuthResponse(ok=False, msg="Invalid credentials or user inactive")

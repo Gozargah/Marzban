@@ -36,6 +36,13 @@ bandwidth:
   up: 100 mbps
   down: 200 mbps
 
+# Traffic stats API — Marzban polls this to record usage and online status.
+# Port must match HYSTERIA2_TRAFFIC_LISTEN in .env (default 127.0.0.1:9999).
+# Secret must match HYSTERIA2_TRAFFIC_SECRET in .env.
+trafficStats:
+  listen: 127.0.0.1:9999
+  secret: YOUR_TRAFFIC_SECRET_HERE
+
 # Optional: QUIC stream/connection limits
 # quic:
 #   initStreamReceiveWindow: 26843545

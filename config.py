@@ -104,6 +104,9 @@ SUDOERS = {config("SUDO_USERNAME"): config("SUDO_PASSWORD")} \
 
 
 HYSTERIA2_HOOK_TOKEN = config("HYSTERIA2_HOOK_TOKEN", default="")
+# hysteriad traffic stats API (must match trafficStats section in hysteria.yaml)
+HYSTERIA2_TRAFFIC_SECRET = config("HYSTERIA2_TRAFFIC_SECRET", default="")
+HYSTERIA2_TRAFFIC_LISTEN = config("HYSTERIA2_TRAFFIC_LISTEN", default="127.0.0.1:9999")
 
 WEBHOOK_ADDRESS = config(
     'WEBHOOK_ADDRESS',
