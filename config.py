@@ -103,6 +103,8 @@ SUDOERS = {config("SUDO_USERNAME"): config("SUDO_PASSWORD")} \
     else {}
 
 
+HYSTERIA2_HOOK_TOKEN = config("HYSTERIA2_HOOK_TOKEN", default="")
+
 WEBHOOK_ADDRESS = config(
     'WEBHOOK_ADDRESS',
     default="",

@@ -6,7 +6,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from app import logger, xray
 from app.db import GetDB, crud
 from app.models.node import NodeStatus
+from app.models.proxy import ProxyTypes
 from app.models.user import UserResponse
+from app.routers.hysteria import invalidate_hysteria_cache
 from app.utils.concurrency import threaded_function
 from app.xray.node import XRayNode
 from xray_api import XRay as XRayAPI
@@ -78,6 +80,9 @@ def add_user(dbuser: "DBUser", sync_socks: bool = True):
     has_reload_protocol = False
 
     for proxy_type, inbound_tags in user.inbounds.items():
+        if proxy_type.is_external:
+            continue  # Handled by external service (e.g., hysteriad); no Xray action needed
+
         if _needs_config_reload(proxy_type):
             has_reload_protocol = True
             continue
@@ -110,12 +115,13 @@ def add_user(dbuser: "DBUser", sync_socks: bool = True):
                 if node.connected and node.started:
                     _add_user_to_inbound(node.api, inbound_tag, account)
 
+    invalidate_hysteria_cache()
+
     if has_reload_protocol or sync_socks:
         sync_socks_accounts()
 
 
 def remove_user(dbuser: "DBUser", sync_socks: bool = True):
-    from app.models.proxy import ProxyTypes
     email = f"{dbuser.id}.{dbuser.username}"
     has_reload_protocol = False
 
@@ -123,6 +129,8 @@ def remove_user(dbuser: "DBUser", sync_socks: bool = True):
         protocol = inbound.get('protocol', '')
         try:
             proxy_type = ProxyTypes(protocol)
+            if proxy_type.is_external:
+                continue  # External service; no Xray action needed
             if _needs_config_reload(proxy_type):
                 has_reload_protocol = True
                 continue
@@ -133,6 +141,8 @@ def remove_user(dbuser: "DBUser", sync_socks: bool = True):
         for node in list(xray.nodes.values()):
             if node.connected and node.started:
                 _remove_user_from_inbound(node.api, inbound_tag, email)
+
+    invalidate_hysteria_cache()
 
     if has_reload_protocol or sync_socks:
         sync_socks_accounts()
@@ -145,6 +155,11 @@ def update_user(dbuser: "DBUser", sync_socks: bool = True):
 
     active_inbounds = []
     for proxy_type, inbound_tags in user.inbounds.items():
+        if proxy_type.is_external:
+            # Mark as active to prevent removal attempt; no Xray action needed
+            active_inbounds.extend(inbound_tags)
+            continue
+
         if _needs_config_reload(proxy_type):
             has_reload_protocol = True
             active_inbounds.extend(inbound_tags)
@@ -182,11 +197,20 @@ def update_user(dbuser: "DBUser", sync_socks: bool = True):
     for inbound_tag in xray.config.inbounds_by_tag:
         if inbound_tag in active_inbounds:
             continue
+        inbound = xray.config.inbounds_by_tag[inbound_tag]
+        protocol = inbound.get('protocol', '')
+        try:
+            if ProxyTypes(protocol).is_external:
+                continue  # External inbound; Xray doesn't manage its clients
+        except ValueError:
+            pass
         # remove disabled inbounds
         _remove_user_from_inbound(xray.api, inbound_tag, email)
         for node in list(xray.nodes.values()):
             if node.connected and node.started:
                 _remove_user_from_inbound(node.api, inbound_tag, email)
+
+    invalidate_hysteria_cache()
 
     if has_reload_protocol or sync_socks:
         sync_socks_accounts()

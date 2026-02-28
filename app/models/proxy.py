@@ -45,6 +45,11 @@ class ProxyTypes(str, Enum):
             return None  # No gRPC API support; handled via config reload
 
     @property
+    def is_external(self) -> bool:
+        """Protocols served by an external service, not by Xray (no gRPC, no config reload)."""
+        return self == self.HYSTERIA2
+
+    @property
     def settings_model(self):
         if self == self.VMess:
             return VMessSettings

@@ -144,6 +144,8 @@ class XRayConfig(dict):
                 raise ValueError("all outbounds must have a unique tag")
 
     def _resolve_inbounds(self):
+        _external_inbound_tags = set()
+
         for inbound in self['inbounds']:
             if inbound.get('protocol') == "socks":
                 if XRAY_SOCKS_INBOUND_TAG and inbound.get("tag") != XRAY_SOCKS_INBOUND_TAG:
@@ -355,24 +357,24 @@ class XRayConfig(dict):
                     elif host and isinstance(host, list):
                         settings['host'] = host[0]
 
-            # Hysteria2 (Xray ≥ 26.x): read bandwidth from hysteriaSettings,
-            # obfs from udpmasks in streamSettings
+            # Hysteria2: read bandwidth and obfs metadata for subscription generation.
+            # This inbound is served by hysteriad (external), NOT by Xray itself.
             if _actual_protocol == 'hysteria' and _mapped_protocol == 'hysteria2':
                 _stream = inbound.get('streamSettings', {})
                 _hyst = _stream.get('hysteriaSettings', {})
                 settings['up'] = _hyst.get('up', '')
                 settings['down'] = _hyst.get('down', '')
                 settings['congestion'] = _hyst.get('congestion', 'brutal')
-                # udpmasks replaces the old "obfs" key in settings
                 _udpmasks = _stream.get('udpmasks', [])
                 if _udpmasks:
                     settings['obfs'] = _udpmasks[0].get('type', '')
                     settings['obfs_password'] = (
                         _udpmasks[0].get('settings', {}).get('password', '')
                     )
-                # Hysteria2 always needs TLS
                 if settings['tls'] == 'none':
                     settings['tls'] = 'tls'
+                # Mark as external so it's stripped from the Xray config below
+                _external_inbound_tags.add(inbound['tag'])
 
             self.inbounds.append(settings)
             self.inbounds_by_tag[inbound['tag']] = settings
@@ -381,6 +383,14 @@ class XRayConfig(dict):
                 self.inbounds_by_protocol[_mapped_protocol].append(settings)
             except KeyError:
                 self.inbounds_by_protocol[_mapped_protocol] = [settings]
+
+        # Remove external inbounds from the raw config dict so Xray never sees them.
+        # Subscription generators still use inbounds_by_tag / inbounds_by_protocol above.
+        if _external_inbound_tags:
+            self['inbounds'] = [
+                i for i in self['inbounds']
+                if i.get('tag') not in _external_inbound_tags
+            ]
 
     def get_inbound(self, tag) -> dict:
         for inbound in self['inbounds']:
@@ -440,7 +450,11 @@ class XRayConfig(dict):
                     continue
 
                 for inbound in inbounds:
-                    clients = config.get_inbound(inbound['tag'])['settings']['clients']
+                    xray_inbound = config.get_inbound(inbound['tag'])
+                    if xray_inbound is None:
+                        # External inbound (e.g., HYSTERIA2 via hysteriad); not in Xray config
+                        continue
+                    clients = xray_inbound['settings']['clients']
 
                     for row in rows:
                         user_id, username, settings, excluded_inbound_tags = row

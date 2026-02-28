@@ -1,11 +1,12 @@
 from fastapi import APIRouter
 from . import (
-    admin, 
-    core, 
-    node, 
-    subscription, 
-    system, 
-    user_template, 
+    admin,
+    core,
+    hysteria,
+    node,
+    subscription,
+    system,
+    user_template,
     user,
     home,
 )
@@ -15,6 +16,7 @@ api_router = APIRouter()
 routers = [
     admin.router,
     core.router,
+    hysteria.router,
     node.router,
     subscription.router,
     system.router,

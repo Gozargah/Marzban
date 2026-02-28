@@ -6,3 +6,14 @@ services:
     network_mode: host
     volumes:
       - /var/lib/marzban:/var/lib/marzban
+
+  hysteria2:
+    image: tobyxdd/hysteria:latest
+    restart: always
+    network_mode: host
+    depends_on:
+      - marzban
+    volumes:
+      - /var/lib/marzban/certs:/certs:ro
+      - /var/lib/marzban/hysteria.yaml:/etc/hysteria/config.yaml:ro
+    command: server

@@ -1,0 +1,44 @@
+# Hysteria2 server configuration
+# Place this file on your server at: /var/lib/marzban/hysteria.yaml
+#
+# SETUP STEPS:
+# 1. Generate a random token:
+#      openssl rand -hex 32
+# 2. Add to /opt/marzban/.env:
+#      HYSTERIA2_HOOK_TOKEN=<token from step 1>
+# 3. Replace YOUR_TOKEN_HERE below with the same token
+# 4. Replace YOUR_DOMAIN with your actual domain
+# 5. Run: marzban restart
+
+listen: :2083
+
+tls:
+  cert: /certs/fullchain.pem
+  key: /certs/key.pem
+
+auth:
+  type: http
+  http:
+    # Marzban auth hook — hysteriad calls this on every new client connection.
+    # Port 8000 is the default Marzban internal HTTP port (UVICORN_PORT).
+    # If Marzban is behind a reverse proxy (nginx/caddy), keep 8000 here.
+    # If Marzban has UVICORN_SSL_CERTFILE set and no reverse proxy, use https and insecure: true.
+    url: http://127.0.0.1:8000/api/hysteria/auth?token=YOUR_TOKEN_HERE
+    insecure: false
+
+masquerade:
+  type: proxy
+  proxy:
+    url: https://YOUR_DOMAIN
+    rewriteHost: true
+
+bandwidth:
+  up: 100 mbps
+  down: 200 mbps
+
+# Optional: QUIC stream/connection limits
+# quic:
+#   initStreamReceiveWindow: 26843545
+#   maxStreamReceiveWindow: 26843545
+#   initConnReceiveWindow: 67108864
+#   maxConnReceiveWindow: 67108864
