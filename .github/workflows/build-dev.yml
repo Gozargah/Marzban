@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - 'dev'
-      - 'test'
-      - 'test/**'   # все подветки типа test/hysteria2
+      - 'legacy'
 
 jobs:
   build-dev:
