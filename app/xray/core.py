@@ -50,7 +50,11 @@ class XRayCore:
             return None
         # Strip CRLF and use search to handle any output prefix
         output = output.replace('\r\n', '\n').replace('\r', '\n')
-        m = re.search(r'Private key:\s*(.+)\nPublic key:\s*(.+)', output)
+        # Xray ≥ 26.x changed output: "PrivateKey:" / "Password:" (Password = public key)
+        # Xray < 26.x used: "Private key:" / "Public key:"
+        m = re.search(r'PrivateKey:\s*(.+)\nPassword:\s*(.+)', output)
+        if not m:
+            m = re.search(r'Private key:\s*(.+)\nPublic key:\s*(.+)', output)
         if m:
             private, public = m.groups()
             return {

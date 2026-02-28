@@ -55,20 +55,15 @@
         "security": "reality",
         "realitySettings": {
           "show": false,
-          "dest": "127.0.0.1:8443",
+          "dest": "ozon.ru:8443",
           "xver": 1,
           "serverNames": [
-            "nider.the-tech.studio",
-            "ger.the-tech.studio",
-            "us.the-tech.studio",
-            "tr.the-tech.studio",
-            "rus.the-tech.studio",
             "ozon.ru"
           ],
-          "privateKey": "MM9IB96Umr5nTrY_1aCtCV0xWbf6txq5OqAVHSNwaDE",
-          "publicKey": "FxBXajlaqEPVKi0y9xmVImnHyU4wD-Utdvt4uwS-jGY",
+          "privateKey": "0Az88Phemm2ZV65zb8GF5Rn__V1GSX6Cc61XhIVJA38",
+          "publicKey": "RDfUMM97vloh-gEEqEoiksNM-6lePmwAE-SlYakCgC4",
           "shortIds": [
-            "6ba85179e30d4fc2"
+            "851941d84d9a07a4"
           ]
         },
         "flow": "xtls-rprx-vision"
@@ -100,8 +95,8 @@
           "serverNames": [
             "api.events.plus.yandex.net"
           ],
-          "privateKey": "0HB1kbz-GPHPsSa1PR8_ii36uC3C5tJfp6uXVZsJED0",
-          "publicKey": "VMExiTnaqxU2_lH8TwqJUX7bteJUI7ULWzgsFZGOQgM",
+          "privateKey": "0Az88Phemm2ZV65zb8GF5Rn__V1GSX6Cc61XhIVJA38",
+          "publicKey": "RDfUMM97vloh-gEEqEoiksNM-6lePmwAE-SlYakCgC4",
           "minClientVer": "",
           "maxClientVer": "",
           "maxTimeDiff": 0,
@@ -168,7 +163,9 @@
               "keyFile": "/var/lib/marzban/certs/key.pem"
             }
           ],
-          "alpn": ["h3"]
+          "alpn": [
+            "h3"
+          ]
         }
       }
     },
