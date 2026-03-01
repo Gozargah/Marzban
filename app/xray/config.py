@@ -228,6 +228,8 @@ class XRayConfig(dict):
                         try:
                             from app.xray import core
                             x25519 = core.get_x25519(pvk)
+                            if not x25519:
+                                raise ValueError(f"Could not parse x25519 output from xray core for {inbound['tag']}")
                             settings['pbk'] = x25519['public_key']
                         except ImportError:
                             pass
