@@ -1498,3 +1498,123 @@ def count_online_users(db: Session, hours: int = 24):
     query = db.query(func.count(User.id)).filter(User.online_at.isnot(
         None), User.online_at >= twenty_four_hours_ago)
     return query.scalar()
+
+
+# ---------------------------------------------------------------------------
+# User-bot specific CRUD helpers
+# ---------------------------------------------------------------------------
+
+def get_user_by_telegram_id(db: Session, telegram_id: int) -> Optional[User]:
+    """Retrieve a Marzban user linked to the given Telegram user ID."""
+    return get_user_queryset(db).filter(User.telegram_id == telegram_id).first()
+
+
+def get_user_by_referral_code(db: Session, referral_code: str) -> Optional[User]:
+    """Retrieve a Marzban user by their referral code."""
+    return get_user_queryset(db).filter(User.referral_code == referral_code).first()
+
+
+def link_user_telegram_id(db: Session, dbuser: User, telegram_id: int) -> User:
+    """Attach a Telegram user ID to an existing Marzban user account."""
+    dbuser.telegram_id = telegram_id
+    db.commit()
+    db.refresh(dbuser)
+    return dbuser
+
+
+def set_user_referral_code(db: Session, dbuser: User, code: str) -> User:
+    """Assign a referral code to a user (idempotent – skips if already set)."""
+    if not dbuser.referral_code:
+        dbuser.referral_code = code
+        db.commit()
+        db.refresh(dbuser)
+    return dbuser
+
+
+def count_rewarded_referrals(db: Session, referrer: User) -> int:
+    """
+    Count how many of this user's referrals have already triggered a bonus payout.
+    A referral is "rewarded" when referred_by_id is set on the invited user.
+    """
+    return (
+        db.query(func.count(User.id))
+        .filter(User.referred_by_id == referrer.id)
+        .scalar() or 0
+    )
+
+
+def record_referral(db: Session, new_user: User, referrer: User) -> bool:
+    """
+    Record that *new_user* was referred by *referrer* and, if the referrer has
+    not yet hit their cap, award them USER_BOT_REFERRAL_BONUS_DAYS extra days.
+
+    Returns True when a bonus was actually credited, False when the cap was
+    already reached or the bonus is deferred (REQUIRE_PAYMENT mode).
+
+    Protection against farming:
+      • USER_BOT_REFERRAL_MAX_BONUS_DAYS  – hard cap on total bonus days
+        (0 = unlimited).  Checked BEFORE applying this referral so an attacker
+        with 100 fake accounts can earn at most MAX days, not infinite.
+      • The function is idempotent: calling it twice for the same new_user has
+        no effect because new_user.referred_by_id will already be set on the
+        second call (the caller guards this, but we double-check here too).
+    """
+    from config import (
+        USER_BOT_REFERRAL_BONUS_DAYS,
+        USER_BOT_REFERRAL_MAX_BONUS_DAYS,
+        USER_BOT_REFERRAL_REQUIRE_PAYMENT,
+    )
+
+    # Idempotency guard
+    if new_user.referred_by_id is not None:
+        return False
+
+    # Always record the relationship, regardless of bonus eligibility
+    new_user.referred_by_id = referrer.id
+    db.flush()  # write referred_by_id without full commit yet
+
+    if USER_BOT_REFERRAL_REQUIRE_PAYMENT:
+        # Bonus deferred – will be applied when the referral makes their first payment
+        db.commit()
+        return False
+
+    # Check the hard cap: how many bonus days has the referrer already accumulated?
+    if USER_BOT_REFERRAL_MAX_BONUS_DAYS > 0:
+        already_rewarded_referrals = count_rewarded_referrals(db, referrer)
+        # The current new_user is already counted (referred_by_id was flushed above),
+        # so subtract 1 to get the count BEFORE this referral
+        prior_referrals = already_rewarded_referrals - 1
+        total_bonus_so_far = prior_referrals * USER_BOT_REFERRAL_BONUS_DAYS
+        if total_bonus_so_far >= USER_BOT_REFERRAL_MAX_BONUS_DAYS:
+            db.commit()
+            return False  # cap reached – relationship recorded, no days added
+
+    # Award the bonus
+    now_ts = int(datetime.utcnow().timestamp())
+    current_expire = referrer.expire or now_ts
+    referrer.expire = max(current_expire, now_ts) + USER_BOT_REFERRAL_BONUS_DAYS * 24 * 3600
+
+    db.commit()
+    return True
+
+
+def extend_user_expire(db: Session, dbuser: User, days: int) -> User:
+    """
+    Extend (or set) *dbuser*'s expiry by *days* calendar days.
+
+    If the account is already expired, the extension starts from *now*.
+    """
+    now_ts = int(datetime.utcnow().timestamp())
+    current_expire = dbuser.expire or 0
+    base = max(current_expire, now_ts)
+    dbuser.expire = base + days * 24 * 3600
+    if dbuser.status in (UserStatus.expired, UserStatus.limited):
+        dbuser.status = UserStatus.active
+    db.commit()
+    db.refresh(dbuser)
+    return dbuser
+
+
+def count_user_referrals(db: Session, dbuser: User) -> int:
+    """Return how many users were referred by *dbuser*."""
+    return db.query(func.count(User.id)).filter(User.referred_by_id == dbuser.id).scalar() or 0

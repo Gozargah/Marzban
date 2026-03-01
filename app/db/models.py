@@ -95,6 +95,12 @@ class User(Base):
     edit_at = Column(DateTime, nullable=True, default=None)
     last_status_change = Column(DateTime, default=datetime.utcnow, nullable=True)
 
+    # User bot fields
+    telegram_id = Column(BigInteger, nullable=True, unique=True, default=None)
+    referral_code = Column(String(16), nullable=True, unique=True, default=None)
+    referred_by_id = Column(Integer, ForeignKey("users.id"), nullable=True, default=None)
+    referrals = relationship("User", foreign_keys="User.referred_by_id", backref="referred_by", lazy="dynamic")
+
     next_plan = relationship(
         "NextPlan",
         uselist=False,

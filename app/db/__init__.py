@@ -31,7 +31,10 @@ from .crud import (create_admin, create_notification_reminder,  # noqa
                    get_users_count, remove_admin, remove_user, revoke_user_sub,
                    set_owner, update_admin, update_user, update_user_status, reset_user_by_next,
                    update_user_sub, start_user_expire, get_admin_by_id,
-                   get_admin_by_telegram_id)
+                   get_admin_by_telegram_id,
+                   get_user_by_telegram_id, get_user_by_referral_code,
+                   link_user_telegram_id, set_user_referral_code,
+                   record_referral, extend_user_expire, count_user_referrals)
 
 from .models import JWT, System, User  # noqa
 
@@ -60,6 +63,15 @@ __all__ = [
     "get_admins",
     "get_admin_by_id",
     "get_admin_by_telegram_id",
+
+    # user-bot
+    "get_user_by_telegram_id",
+    "get_user_by_referral_code",
+    "link_user_telegram_id",
+    "set_user_referral_code",
+    "record_referral",
+    "extend_user_expire",
+    "count_user_referrals",
 
     "create_notification_reminder",
     "get_notification_reminder",

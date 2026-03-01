@@ -1,7 +1,7 @@
 import importlib.util
 from os.path import dirname
 from threading import Thread
-from config import TELEGRAM_API_TOKEN, TELEGRAM_PROXY_URL
+from config import TELEGRAM_API_TOKEN, TELEGRAM_PROXY_URL, TELEGRAM_USER_BOT_TOKEN
 from app import app
 from telebot import TeleBot, apihelper
 
@@ -26,6 +26,16 @@ def start_bot():
 
         thread = Thread(target=bot.infinity_polling, daemon=True)
         thread.start()
+
+    # ── User-facing bot ──────────────────────────────────────────────────────
+    if TELEGRAM_USER_BOT_TOKEN:
+        from app.telegram.user_bot_instance import user_bot
+        if user_bot:
+            # Import handlers so they register themselves on user_bot
+            from app.telegram.handlers import user_bot as _user_bot_handlers  # noqa: F401
+
+            thread = Thread(target=user_bot.infinity_polling, daemon=True)
+            thread.start()
 
 
 from .handlers.report import (  # noqa

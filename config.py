@@ -45,6 +45,26 @@ TELEGRAM_PROXY_URL = config("TELEGRAM_PROXY_URL", default="")
 TELEGRAM_LOGGER_CHANNEL_ID = config("TELEGRAM_LOGGER_CHANNEL_ID", cast=int, default=0)
 TELEGRAM_DEFAULT_VLESS_FLOW = config("TELEGRAM_DEFAULT_VLESS_FLOW", default="")
 
+# ── User-facing bot ──────────────────────────────────────────────────────────
+TELEGRAM_USER_BOT_TOKEN = config("TELEGRAM_USER_BOT_TOKEN", default="")
+
+# Trial account settings
+USER_BOT_TRIAL_DAYS = config("USER_BOT_TRIAL_DAYS", cast=int, default=3)
+USER_BOT_TRIAL_GB = config("USER_BOT_TRIAL_GB", cast=int, default=3)
+
+# Telegram Stars prices (1 XTR ≈ 0.013 USD on Telegram)
+USER_BOT_STARS_1M = config("USER_BOT_STARS_1M", cast=int, default=100)   # 1 month
+USER_BOT_STARS_3M = config("USER_BOT_STARS_3M", cast=int, default=280)   # 3 months
+USER_BOT_STARS_6M = config("USER_BOT_STARS_6M", cast=int, default=520)   # 6 months
+
+# Referral protection
+# Days credited to the referrer per successful referral
+USER_BOT_REFERRAL_BONUS_DAYS = config("USER_BOT_REFERRAL_BONUS_DAYS", cast=int, default=7)
+# Hard cap on total referral-bonus days a single user can accumulate (0 = unlimited)
+USER_BOT_REFERRAL_MAX_BONUS_DAYS = config("USER_BOT_REFERRAL_MAX_BONUS_DAYS", cast=int, default=90)
+# If True, bonus is granted only AFTER the referred user makes their first Stars payment
+USER_BOT_REFERRAL_REQUIRE_PAYMENT = config("USER_BOT_REFERRAL_REQUIRE_PAYMENT", cast=bool, default=False)
+
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = config("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=1440)
 
 CUSTOM_TEMPLATES_DIRECTORY = config("CUSTOM_TEMPLATES_DIRECTORY", default=None)
