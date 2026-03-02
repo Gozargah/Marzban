@@ -168,6 +168,7 @@ class V2rayShareLink(str):
                 obfs_password=inbound.get("obfs_password", ""),
                 sni=sni,
                 ais=inbound.get("ais", ""),
+                pin_sha256=settings.get("pin_sha256") or "",
             )
 
         else:
@@ -510,6 +511,7 @@ class V2rayShareLink(str):
             obfs_password: str = "",
             sni: str = "",
             ais: str = "",
+            pin_sha256: str = "",
     ):
         payload = {}
         if obfs:
@@ -520,6 +522,8 @@ class V2rayShareLink(str):
             payload["sni"] = sni
         if ais:
             payload["insecure"] = 1
+        if pin_sha256:
+            payload["pinSHA256"] = pin_sha256
 
         query = ("?" + urlparse.urlencode(payload)) if payload else ""
         return (
