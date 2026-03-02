@@ -62,3 +62,19 @@ def invalidate_hysteria_cache() -> None:
     global _cache_ts
     with _cache_lock:
         _cache_ts = 0.0
+
+
+def warmup_cache() -> None:
+    """
+    Pre-populate the cache at application startup so the first real auth
+    request hits the in-memory dict instead of the DB.  Failures are
+    silently swallowed so a cold DB at boot does not block the app.
+    """
+    global _cache, _cache_ts
+    try:
+        data = build_cache()
+        with _cache_lock:
+            _cache = data
+            _cache_ts = time.monotonic()
+    except Exception:
+        pass

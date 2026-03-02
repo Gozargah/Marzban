@@ -56,6 +56,8 @@ def on_startup():
             f"you can't use /{XRAY_SUBSCRIPTION_PATH}/ as subscription path it reserved for {app.title}"
         )
     scheduler.start()
+    from app.utils.hysteria_cache import warmup_cache
+    warmup_cache()
 
 
 @app.on_event("shutdown")

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy import update
 
@@ -40,6 +40,7 @@ class HysteriaAuthResponse(BaseModel):
 def hysteria_auth(
     body: HysteriaAuthRequest,
     token: str = Query(default=""),
+    authorization: str = Header(default=""),
 ):
     """
     HTTP auth hook for hysteriad.
@@ -48,9 +49,14 @@ def hysteria_auth(
     makes each check an O(1) dict lookup; the DB is queried at most once per
     _CACHE_TTL seconds, so performance scales to any number of users.
 
-    Protect with HYSTERIA2_HOOK_TOKEN in .env and pass ?token=... in the URL
-    configured in hysteria.yaml.
+    Token accepted via:
+      - query param  ?token=<token>
+      - HTTP header  Authorization: Bearer <token>
     """
+    # Extract bearer token from Authorization header when query param is absent
+    if not token and authorization.startswith("Bearer "):
+        token = authorization[len("Bearer "):]
+
     if HYSTERIA2_HOOK_TOKEN and token != HYSTERIA2_HOOK_TOKEN:
         raise HTTPException(status_code=403, detail="Invalid hook token")
 

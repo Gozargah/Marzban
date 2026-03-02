@@ -113,6 +113,8 @@ class Hysteria2Settings(ProxySettings):
     masquerade: Optional[str] = Field(default=None, nullable=True)
     up_mbps: Optional[int] = Field(default=None, nullable=True)
     down_mbps: Optional[int] = Field(default=None, nullable=True)
+    # SHA-256 fingerprint of the server TLS cert for certificate pinning (DPI evasion)
+    pin_sha256: Optional[str] = Field(default=None, nullable=True)
 
     def revoke(self):
         self.password = random_password()
