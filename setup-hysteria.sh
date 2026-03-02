@@ -59,10 +59,13 @@ fi
 if [[ -f "$HYSTERIA_YAML" ]]; then
     log "hysteria.yaml already exists — skipping creation (delete to regenerate)"
 else
-    log "Creating hysteria.yaml (domain: $DOMAIN, port: 2083)"
+    log "Creating hysteria.yaml (domain: $DOMAIN, port: 443)"
     mkdir -p "$(dirname "$HYSTERIA_YAML")"
     cat > "$HYSTERIA_YAML" <<YAML
-listen: :2083
+listen: :443
+# Port hopping: клиент может подключаться через диапазон портов.
+# Настройте на сервере:
+#   iptables -t nat -A PREROUTING -i eth0 -p udp --dport 20000:50000 -j REDIRECT --to-port 443
 
 tls:
   cert: /certs/fullchain.pem
@@ -73,6 +76,7 @@ auth:
   http:
     url: ${PROTO}://127.0.0.1:${MARZBAN_PORT}/api/hysteria/auth?token=${HOOK_TOKEN}
     insecure: true
+    timeout: 10s
 
 trafficStats:
   listen: ${TRAFFIC_LISTEN}
@@ -87,6 +91,15 @@ masquerade:
 bandwidth:
   up: 100 mbps
   down: 200 mbps
+
+# QUIC tuning — критично для мобильного интернета (CGNAT, смена вышек, нестабильный канал)
+quic:
+  initStreamReceiveWindow: 8388608
+  maxStreamReceiveWindow: 8388608
+  initConnReceiveWindow: 20971520
+  maxConnReceiveWindow: 20971520
+  maxIdleTimeout: 60s
+  keepAlivePeriod: 10s
 YAML
     log "hysteria.yaml created"
 fi

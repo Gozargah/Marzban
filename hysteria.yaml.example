@@ -10,7 +10,11 @@
 # 4. Replace YOUR_DOMAIN with your actual domain
 # 5. Run: marzban restart
 
-listen: :2083
+listen: :443
+# Port hopping диапазон для обхода блокировок мобильных операторов (США, Турция).
+# На сервере нужно выполнить:
+#   iptables -t nat -A PREROUTING -i eth0 -p udp --dport 20000:50000 -j REDIRECT --to-port 443
+# Тогда клиент сможет указать в конфиге: server: YOUR_DOMAIN:20000-50000
 
 tls:
   cert: /certs/fullchain.pem
@@ -25,6 +29,8 @@ auth:
     # If Marzban has UVICORN_SSL_CERTFILE set and no reverse proxy, use https and insecure: true.
     url: http://127.0.0.1:8000/api/hysteria/auth?token=YOUR_TOKEN_HERE
     insecure: false
+    # Увеличенный таймаут для нестабильных соединений
+    timeout: 10s
 
 masquerade:
   type: proxy
@@ -43,9 +49,17 @@ trafficStats:
   listen: 127.0.0.1:9999
   secret: YOUR_TRAFFIC_SECRET_HERE
 
-# Optional: QUIC stream/connection limits
-# quic:
-#   initStreamReceiveWindow: 26843545
-#   maxStreamReceiveWindow: 26843545
-#   initConnReceiveWindow: 67108864
-#   maxConnReceiveWindow: 67108864
+# QUIC tuning — важно для мобильного интернета (нестабильный канал, смена IP)
+quic:
+  initStreamReceiveWindow: 8388608
+  maxStreamReceiveWindow: 8388608
+  initConnReceiveWindow: 20971520
+  maxConnReceiveWindow: 20971520
+  # Таймаут неактивного соединения — увеличить для мобильных клиентов
+  maxIdleTimeout: 60s
+  # Keepalive — отправлять пакеты, чтобы NAT/firewall не закрыл UDP-сессию
+  keepAlivePeriod: 10s
+
+# Congestion control — Brutal требует указать bandwidth на сервере
+# (клиент сам выставляет свои значения при подключении)
+# speedTest: true  # Раскомментировать, если хочешь авто-определение полосы
