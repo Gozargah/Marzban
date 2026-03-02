@@ -89,14 +89,16 @@ bandwidth:
   up: 100 mbps
   down: 200 mbps
 
-# QUIC tuning — критично для мобильного интернета (CGNAT, смена вышек, нестабильный канал)
+# QUIC tuning — optimised for Russian mobile networks (MTS, Beeline, Megafon, Tele2).
+# keepAlivePeriod: server sends QUIC PING every 15s to keep CGNAT UDP session alive.
+# maxIdleTimeout: 90s covers high-latency mobile links without forcing reconnect.
 quic:
   initStreamReceiveWindow: 8388608
   maxStreamReceiveWindow: 8388608
   initConnReceiveWindow: 20971520
   maxConnReceiveWindow: 20971520
-  maxIdleTimeout: 60s
-  keepAlivePeriod: 10s
+  maxIdleTimeout: 90s
+  keepAlivePeriod: 15s
 YAML
     log "hysteria.yaml created"
 fi

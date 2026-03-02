@@ -315,6 +315,15 @@ class SingBoxConfiguration(str):
                     "password": obfs_password,
                 }
 
+            # Bandwidth hints help Brutal congestion control choose the right send rate.
+            # Especially important on high-latency mobile links (RU → USA/Turkey).
+            up = inbound.get('up', '')
+            down = inbound.get('down', '')
+            if up:
+                outbound['up_mbps'] = int(''.join(filter(str.isdigit, str(up)))) or None
+            if down:
+                outbound['down_mbps'] = int(''.join(filter(str.isdigit, str(down)))) or None
+
             sni = inbound.get('sni', '') or (inbound.get('sni') or [''])[0] if isinstance(inbound.get('sni'), list) else inbound.get('sni', '')
             tls_cfg = {"enabled": True}
             if sni:

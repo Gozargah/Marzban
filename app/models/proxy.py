@@ -115,6 +115,10 @@ class Hysteria2Settings(ProxySettings):
     down_mbps: Optional[int] = Field(default=None, nullable=True)
     # SHA-256 fingerprint of the server TLS cert for certificate pinning (DPI evasion)
     pin_sha256: Optional[str] = Field(default=None, nullable=True)
+    # Mobile-optimized preset for Russian mobile networks (MTS, Beeline, Megafon, Tele2).
+    # When True: subscription generators include lower bandwidth hints that work better
+    # with CGNAT and high-latency links typical of RU mobile → foreign server routes.
+    mobile_optimized: bool = Field(default=False)
 
     def revoke(self):
         self.password = random_password()

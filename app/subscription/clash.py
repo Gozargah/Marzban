@@ -378,6 +378,14 @@ class ClashMetaConfiguration(ClashConfiguration):
                 node['sni'] = sni
             if inbound.get('ais'):
                 node['skip-cert-verify'] = True
+            # Bandwidth hints help Brutal congestion control on high-latency mobile links.
+            # Values from inbound config (set in xray_config.json hysteriaSettings).
+            up = inbound.get('up', '')
+            down = inbound.get('down', '')
+            if up:
+                node['up'] = up
+            if down:
+                node['down'] = down
 
             self.data['proxies'].append(node)
             self.proxy_remarks.append(proxy_remark)

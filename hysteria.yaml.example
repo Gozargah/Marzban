@@ -20,12 +20,8 @@ auth:
   type: http
   http:
     # Marzban auth hook — hysteriad calls this on every new client connection.
-    # Port 8000 is the default Marzban internal HTTP port (UVICORN_PORT).
-    # If Marzban is behind a reverse proxy (nginx/caddy), keep 8000 here.
-    # If Marzban has UVICORN_SSL_CERTFILE set and no reverse proxy, use https and insecure: true.
     url: http://127.0.0.1:8000/api/hysteria/auth?token=YOUR_TOKEN_HERE
     insecure: false
-    # Увеличенный таймаут для нестабильных соединений
     timeout: 10s
 
 masquerade:
@@ -39,23 +35,33 @@ bandwidth:
   down: 200 mbps
 
 # Traffic stats API — Marzban polls this to record usage and online status.
-# Port must match HYSTERIA2_TRAFFIC_LISTEN in .env (default 127.0.0.1:9999).
-# Secret must match HYSTERIA2_TRAFFIC_SECRET in .env.
 trafficStats:
   listen: 127.0.0.1:9999
   secret: YOUR_TRAFFIC_SECRET_HERE
 
-# QUIC tuning — важно для мобильного интернета (нестабильный канал, смена IP)
+# ─── QUIC tuning for mobile networks (RU: MTS, Beeline, Megafon, Tele2) ────────
+#
+# Problem: Russian mobile operators use aggressive CGNAT with short UDP idle
+# timeouts (30–60s). High RTT to foreign servers (USA, Turkey) makes QUIC
+# sessions drop before the client can send the next packet.
+#
+# Fix:
+#   keepAlivePeriod — server sends a QUIC PING frame every N seconds.
+#     This resets the CGNAT UDP session timer on the operator side.
+#     Must be less than the operator's UDP idle timeout (usually 30s).
+#     15s gives a comfortable 2x safety margin.
+#
+#   maxIdleTimeout — how long the server waits before closing an idle connection.
+#     90s covers high-latency mobile sessions and brief signal loss between
+#     cell towers without forcing a full reconnect.
+#
+#   initStreamReceiveWindow / initConnReceiveWindow — QUIC flow control windows.
+#     Smaller values (8 MB / 20 MB) reduce memory pressure and play better
+#     with congested mobile uplinks compared to the 26 MB / 67 MB defaults.
 quic:
-  initStreamReceiveWindow: 8388608
+  initStreamReceiveWindow: 8388608   # 8 MB (default: 26 MB)
   maxStreamReceiveWindow: 8388608
-  initConnReceiveWindow: 20971520
+  initConnReceiveWindow: 20971520    # 20 MB (default: 67 MB)
   maxConnReceiveWindow: 20971520
-  # Таймаут неактивного соединения — увеличить для мобильных клиентов
-  maxIdleTimeout: 60s
-  # Keepalive — отправлять пакеты, чтобы NAT/firewall не закрыл UDP-сессию
-  keepAlivePeriod: 10s
-
-# Congestion control — Brutal требует указать bandwidth на сервере
-# (клиент сам выставляет свои значения при подключении)
-# speedTest: true  # Раскомментировать, если хочешь авто-определение полосы
+  maxIdleTimeout: 90s                # increased from default 30s for mobile
+  keepAlivePeriod: 15s               # PING every 15s — keeps CGNAT session alive
