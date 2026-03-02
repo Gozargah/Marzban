@@ -10,11 +10,7 @@
 # 4. Replace YOUR_DOMAIN with your actual domain
 # 5. Run: marzban restart
 
-listen: :443
-# Port hopping диапазон для обхода блокировок мобильных операторов (США, Турция).
-# На сервере нужно выполнить:
-#   iptables -t nat -A PREROUTING -i eth0 -p udp --dport 20000:50000 -j REDIRECT --to-port 443
-# Тогда клиент сможет указать в конфиге: server: YOUR_DOMAIN:20000-50000
+listen: :2087
 
 tls:
   cert: /certs/fullchain.pem

@@ -59,13 +59,10 @@ fi
 if [[ -f "$HYSTERIA_YAML" ]]; then
     log "hysteria.yaml already exists — skipping creation (delete to regenerate)"
 else
-    log "Creating hysteria.yaml (domain: $DOMAIN, port: 443)"
+    log "Creating hysteria.yaml (domain: $DOMAIN, port: 2087)"
     mkdir -p "$(dirname "$HYSTERIA_YAML")"
     cat > "$HYSTERIA_YAML" <<YAML
-listen: :443
-# Port hopping: клиент может подключаться через диапазон портов.
-# Настройте на сервере:
-#   iptables -t nat -A PREROUTING -i eth0 -p udp --dport 20000:50000 -j REDIRECT --to-port 443
+listen: :2087
 
 tls:
   cert: /certs/fullchain.pem

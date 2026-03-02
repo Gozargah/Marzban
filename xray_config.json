@@ -2,8 +2,7 @@
   "log": {
     "access": "/var/lib/marzban/access.log",
     "error": "/var/lib/marzban/error.log",
-    "loglevel": "warning",
-    "dnsLog": false
+    "loglevel": "INFO"
   },
   "dns": {
     "servers": [
@@ -18,6 +17,26 @@
         "type": "field",
         "ip": [
           "geoip:private"
+        ],
+        "outboundTag": "BLOCK"
+      },
+      {
+        "type": "field",
+        "protocol": [
+          "bittorrent"
+        ],
+        "outboundTag": "BLOCK"
+      },
+      {
+        "type": "field",
+        "network": "tcp,udp",
+        "port": "6881-6999,51413,6969,16384-16403,49152-65535",
+        "outboundTag": "BLOCK"
+      },
+      {
+        "type": "field",
+        "domain": [
+          "regexp:.*(announce|scrape|tracker|torrent|bt|magnet).*"
         ],
         "outboundTag": "BLOCK"
       },
@@ -40,6 +59,46 @@
     ]
   },
   "inbounds": [
+    {
+      "tag": "HYSTERIA2",
+      "listen": "0.0.0.0",
+      "port": 2087,
+      "protocol": "hysteria",
+      "settings": {
+        "clients": []
+      },
+      "streamSettings": {
+        "network": "hysteria",
+        "security": "tls",
+        "hysteriaSettings": {
+          "version": 2,
+          "up": "500mbps",
+          "down": "500mbps",
+          "congestion": "brutal",
+          "ignoreClientBandwidth": true
+        },
+        "tlsSettings": {
+          "serverName": "config.the-tech.studio",
+          "certificates": [
+            {
+              "certificateFile": "/var/lib/marzban/certs/fullchain.pem",
+              "keyFile": "/var/lib/marzban/certs/key.pem"
+            }
+          ],
+          "alpn": [
+            "h3"
+          ]
+        },
+        "udpmasks": [
+          {
+            "type": "salamander",
+            "settings": {
+              "password": "9c3cb2dc2a67ebe8b107fb4fe9626cb48718856da68a5d3265700c8a20e30350"
+            }
+          }
+        ]
+      }
+    },
     {
       "tag": "VLESS XHTTP REALITY",
       "listen": "0.0.0.0",
@@ -78,7 +137,8 @@
             "6ba85179e30d4fc2",
             "a1b2c3d4",
             "e5f67890",
-            "f9a8b7c6"
+            "f9a8b7c6",
+            ""
           ],
           "spiderX": "/"
         }
@@ -93,53 +153,14 @@
       }
     },
     {
-      "tag": "HYSTERIA2",
-      "listen": "0.0.0.0",
-      "port": 443,
-      "protocol": "hysteria",
-      "settings": {
-        "clients": []
-      },
-      "streamSettings": {
-        "network": "hysteria",
-        "security": "tls",
-        "hysteriaSettings": {
-          "version": 2,
-          "up": "500mbps",
-          "down": "500mbps",
-          "congestion": "brutal",
-          "ignoreClientBandwidth": true
-        },
-        "tlsSettings": {
-          "serverName": "config.the-tech.studio",
-          "certificates": [
-            {
-              "certificateFile": "/var/lib/marzban/certs/fullchain.pem",
-              "keyFile": "/var/lib/marzban/certs/key.pem"
-            }
-          ],
-          "alpn": [
-            "h3"
-          ]
-        },
-        "udpmasks": [
-          {
-            "type": "salamander",
-            "settings": {
-              "password": "9c3cb2dc2a67ebe8b107fb4fe9626cb48718856da68a5d3265700c8a20e30350"
-            }
-          }
-        ]
-      }
-    },
-    {
       "tag": "SOCKS5_INBOUND",
       "listen": "0.0.0.0",
       "port": 1080,
       "protocol": "socks",
       "settings": {
-        "auth": "noauth",
-        "udp": true
+        "auth": "password",
+        "udp": true,
+        "accounts": []
       },
       "sniffing": {
         "enabled": true,
