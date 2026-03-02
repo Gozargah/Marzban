@@ -86,6 +86,9 @@ def record_hysteria_usages():
         if not user_params:
             return
 
+        # Sort by uid/admin_id for consistent InnoDB lock-acquisition order → no deadlocks
+        user_params.sort(key=lambda x: x["uid"])
+
         # Update users: add traffic + mark online
         stmt = (
             update(User)
@@ -99,10 +102,10 @@ def record_hysteria_usages():
 
         # Update admin aggregate usage
         if admin_usage:
-            admin_params = [
-                {"admin_id": aid, "value": val}
-                for aid, val in admin_usage.items()
-            ]
+            admin_params = sorted(
+                ({"admin_id": aid, "value": val} for aid, val in admin_usage.items()),
+                key=lambda x: x["admin_id"],
+            )
             admin_stmt = (
                 update(Admin)
                 .where(Admin.id == bindparam("admin_id"))
