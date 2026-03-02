@@ -56,6 +56,16 @@ def on_startup():
             f"you can't use /{XRAY_SUBSCRIPTION_PATH}/ as subscription path it reserved for {app.title}"
         )
     scheduler.start()
+
+    from config import HYSTERIA2_HOOK_TOKEN
+    if not HYSTERIA2_HOOK_TOKEN:
+        logger.warning(
+            "SECURITY WARNING: HYSTERIA2_HOOK_TOKEN is not set. "
+            "The /api/hysteria/auth endpoint is open to the public — "
+            "any caller can authenticate without a token. "
+            "Set HYSTERIA2_HOOK_TOKEN in your .env file before going to production."
+        )
+
     from app.utils.hysteria_cache import warmup_cache
     warmup_cache()
 

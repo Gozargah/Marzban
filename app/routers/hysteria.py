@@ -99,9 +99,7 @@ def bulk_enable_hysteria(
     all_users: List[DBUser] = db.query(DBUser).all()
     count = 0
     for user in all_users:
-        already_has = any(
-            str(p.type).upper() == "HYSTERIA2" for p in user.proxies
-        )
+        already_has = any(p.type == ProxyTypes.HYSTERIA2 for p in user.proxies)
         if already_has:
             continue
         settings = Hysteria2Settings()
@@ -131,9 +129,8 @@ def bulk_disable_hysteria(
     Remove the Hysteria2 proxy from every user that has one.
     Requires admin authentication.
     """
-    from sqlalchemy import func as sa_func
     proxies = db.query(Proxy).filter(
-        sa_func.upper(Proxy.type) == "HYSTERIA2"
+        Proxy.type == ProxyTypes.HYSTERIA2
     ).all()
 
     count = len(proxies)
