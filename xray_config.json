@@ -3,7 +3,7 @@
     "access": "/var/lib/marzban/access.log",
     "error": "/var/lib/marzban/error.log",
     "loglevel": "warning",
-    "dnsLog": true
+    "dnsLog": false
   },
   "dns": {
     "servers": [
@@ -41,7 +41,7 @@
   },
   "inbounds": [
     {
-      "tag": "VLESS TCP REALITY",
+      "tag": "VLESS XHTTP REALITY",
       "listen": "0.0.0.0",
       "port": 443,
       "protocol": "vless",
@@ -50,82 +50,37 @@
         "decryption": "none"
       },
       "streamSettings": {
-        "network": "tcp",
-        "tcpSettings": {},
-        "security": "reality",
-        "realitySettings": {
-          "show": false,
-          "dest": "ozon.ru:8443",
-          "xver": 1,
-          "serverNames": [
-            "ozon.ru"
-          ],
-          "privateKey": "0Az88Phemm2ZV65zb8GF5Rn__V1GSX6Cc61XhIVJA38",
-          "publicKey": "RDfUMM97vloh-gEEqEoiksNM-6lePmwAE-SlYakCgC4",
-          "shortIds": [
-            "851941d84d9a07a4"
-          ]
-        },
-        "flow": "xtls-rprx-vision"
-      },
-      "sniffing": {
-        "enabled": true,
-        "destOverride": [
-          "http",
-          "tls",
-          "quic"
-        ]
-      }
-    },
-    {
-      "tag": "VLESS-XHTTP-REALITY",
-      "listen": "0.0.0.0",
-      "port": 80,
-      "protocol": "vless",
-      "settings": {
-        "clients": [],
-        "decryption": "none"
-      },
-      "streamSettings": {
         "network": "xhttp",
+        "xhttpSettings": {
+          "mode": "stream-one",
+          "path": "/",
+          "scMaxBufferedPosts": 30,
+          "scMaxEachPostBytes": 1000000,
+          "scStreamUpServerSecs": "20-80",
+          "xPaddingBytes": "100-1400",
+          "noSSEHeader": false
+        },
         "security": "reality",
         "realitySettings": {
           "show": false,
           "dest": "api.events.plus.yandex.net:443",
+          "xver": 0,
           "serverNames": [
-            "api.events.plus.yandex.net"
+            "api.events.plus.yandex.net",
+            "www.microsoft.com",
+            "microsoft.com",
+            "ozon.ru"
           ],
           "privateKey": "0Az88Phemm2ZV65zb8GF5Rn__V1GSX6Cc61XhIVJA38",
           "publicKey": "RDfUMM97vloh-gEEqEoiksNM-6lePmwAE-SlYakCgC4",
-          "minClientVer": "",
-          "maxClientVer": "",
-          "maxTimeDiff": 0,
+          "fingerprint": "chrome",
           "shortIds": [
             "6ba85179e30d4fc2",
             "a1b2c3d4",
-            "e5f67890"
+            "e5f67890",
+            "f9a8b7c6"
           ],
           "spiderX": "/"
-        },
-        "xhttpSettings": {
-          "path": "/",
-          "host": "api.events.plus.yandex.net",
-          "scMaxBufferedPosts": 30,
-          "scMaxEachPostBytes": 1000000,
-          "scStreamUpServerSecs": "20-80",
-          "noSSEHeader": false,
-          "xPaddingBytes": "100-1000",
-          "mode": "auto"
-        },
-        "tlsSettings": {
-          "fingerprint": "chrome",
-          "serverName": "api.events.plus.yandex.net",
-          "alpn": [
-            "h2",
-            "http/1.1"
-          ],
-          "minVersion": "1.2",
-          "maxVersion": "1.3"
         }
       },
       "sniffing": {
@@ -134,8 +89,7 @@
           "http",
           "tls",
           "quic"
-        ],
-        "routeOnly": false
+        ]
       }
     },
     {
@@ -151,12 +105,13 @@
         "security": "tls",
         "hysteriaSettings": {
           "version": 2,
-          "up": "100 mbps",
-          "down": "200 mbps",
+          "up": "500mbps",
+          "down": "500mbps",
           "congestion": "brutal",
-          "ignoreClientBandwidth": false
+          "ignoreClientBandwidth": true
         },
         "tlsSettings": {
+          "serverName": "config.the-tech.studio",
           "certificates": [
             {
               "certificateFile": "/var/lib/marzban/certs/fullchain.pem",
@@ -166,7 +121,15 @@
           "alpn": [
             "h3"
           ]
-        }
+        },
+        "udpmasks": [
+          {
+            "type": "salamander",
+            "settings": {
+              "password": ""
+            }
+          }
+        ]
       }
     },
     {
@@ -175,9 +138,8 @@
       "port": 1080,
       "protocol": "socks",
       "settings": {
-        "auth": "password",
-        "udp": true,
-        "accounts": []
+        "auth": "noauth",
+        "udp": true
       },
       "sniffing": {
         "enabled": true,
