@@ -1,3 +1,4 @@
+import logging
 import time
 import random
 from collections import defaultdict
@@ -14,6 +15,8 @@ from sqlalchemy.sql.dml import Insert
 from app import scheduler, xray
 from app.db import GetDB
 from app.db.models import Admin, NodeUsage, NodeUserUsage, System, User
+
+logger = logging.getLogger("uvicorn.error")
 from config import (
     DISABLE_RECORDING_NODE_USAGE,
     JOB_RECORD_NODE_USAGES_INTERVAL,
@@ -47,6 +50,32 @@ def safe_execute(db: Session, stmt, params=None):
         db.commit()
 
 
+def _filter_valid_uids(db, params: list) -> list:
+    """
+    Remove entries whose uid no longer exists in the users table.
+
+    Xray keeps deleted users in memory until the process restarts (or until
+    remove_inbound_user is called). If a user is deleted from Marzban before
+    Xray flushes them, the next traffic-recording cycle will try to INSERT a
+    node_user_usages row with a user_id that violates the FK constraint.
+    This filter prevents that IntegrityError (1452).
+    """
+    uid_set = {int(p['uid']) for p in params}
+    valid_uids = {
+        row[0]
+        for row in db.query(User.id).filter(User.id.in_(uid_set)).all()
+    }
+    stale = uid_set - valid_uids
+    if stale:
+        logger.warning(
+            "record_user_stats: skipping %d stale Xray user ID(s) not found "
+            "in users table (deleted users still in Xray memory): %s",
+            len(stale),
+            sorted(stale),
+        )
+    return [p for p in params if int(p['uid']) in valid_uids]
+
+
 def record_user_stats(params: list, node_id: Union[int, None],
                       consumption_factor: int = 1):
     """Record per-node per-user traffic into node_user_usages."""
@@ -60,11 +89,18 @@ def record_user_stats(params: list, node_id: Union[int, None],
     params = sorted(params, key=lambda x: int(x['uid']))
 
     with GetDB() as db:
+        # Drop UIDs that no longer exist in the users table (deleted users that
+        # Xray still holds in memory). Without this filter the INSERT below
+        # raises IntegrityError 1452 (FK constraint on node_user_usages.user_id).
+        params = _filter_valid_uids(db, params)
+        if not params:
+            return
+
         if db.bind.name == 'mysql':
-            # Single atomic upsert: no separate SELECT/INSERT/UPDATE steps,
-            # no gap locks, no interleaving windows.
+            # INSERT IGNORE silently skips any remaining FK violations as a
+            # safety net; ON DUPLICATE KEY UPDATE handles the hourly-bucket case.
             sql = text("""
-                INSERT INTO node_user_usages (user_id, created_at, node_id, used_traffic)
+                INSERT IGNORE INTO node_user_usages (user_id, created_at, node_id, used_traffic)
                 VALUES (:uid, :created_at, :node_id, :value)
                 ON DUPLICATE KEY UPDATE used_traffic = used_traffic + VALUES(used_traffic)
             """)
