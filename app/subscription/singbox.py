@@ -305,6 +305,7 @@ class SingBoxConfiguration(str):
                 "server": address,
                 "server_port": port,
                 "password": settings['password'],
+                "connect_timeout": "5s",
             }
 
             obfs = inbound.get('obfs', '')

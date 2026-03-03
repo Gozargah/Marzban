@@ -47,13 +47,13 @@ trafficStats:
 #
 # Fix:
 #   keepAlivePeriod — server sends a QUIC PING frame every N seconds.
-#     This resets the CGNAT UDP session timer on the operator side.
-#     Must be less than the operator's UDP idle timeout (usually 30s).
-#     15s gives a comfortable 2x safety margin.
+#     This resets the CGNAT UDP session timer on the operator side AND resets
+#     the idle timeout for awake clients — so active connections live forever.
+#     10s is well under any known CGNAT UDP timeout (30–60s).
 #
 #   maxIdleTimeout — how long the server waits before closing an idle connection.
-#     90s covers high-latency mobile sessions and brief signal loss between
-#     cell towers without forcing a full reconnect.
+#     30s: only triggers when the client stops responding to PINGs (phone asleep).
+#     On wake the server immediately sends STATELESS_RESET → client reconnects fast.
 #
 #   initStreamReceiveWindow / initConnReceiveWindow — QUIC flow control windows.
 #     Smaller values (8 MB / 20 MB) reduce memory pressure and play better
@@ -63,8 +63,8 @@ quic:
   maxStreamReceiveWindow: 8388608
   initConnReceiveWindow: 20971520    # 20 MB (default: 67 MB)
   maxConnReceiveWindow: 20971520
-  maxIdleTimeout: 90s                # increased from default 30s for mobile
-  keepAlivePeriod: 15s               # PING every 15s — keeps CGNAT session alive
+  maxIdleTimeout: 30s                # fires only when client ignores PINGs (asleep)
+  keepAlivePeriod: 10s               # PING every 10s — keeps CGNAT + idle timer alive
   disablePathMTUDiscovery: true      # use fixed MTU instead of auto-discovery
 
 # Fixed MTU avoids QUIC PMTUD probes that mobile operators sometimes drop.

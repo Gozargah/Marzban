@@ -90,15 +90,17 @@ bandwidth:
   down: 200 mbps
 
 # QUIC tuning — optimised for Russian mobile networks (MTS, Beeline, Megafon, Tele2).
-# keepAlivePeriod: server sends QUIC PING every 15s to keep CGNAT UDP session alive.
-# maxIdleTimeout: 90s covers high-latency mobile links without forcing reconnect.
+# keepAlivePeriod: 10s PING keeps CGNAT alive; resets idle timer for awake clients.
+# maxIdleTimeout: 30s — only fires when client stops responding to PINGs (phone asleep).
+#   Active clients are unaffected because keepAlive resets the idle timer every 10s.
+#   Sleeping clients get cleaned up in 30s → faster STATELESS_RESET on wake → faster reconnect.
 quic:
   initStreamReceiveWindow: 8388608
   maxStreamReceiveWindow: 8388608
   initConnReceiveWindow: 20971520
   maxConnReceiveWindow: 20971520
-  maxIdleTimeout: 90s
-  keepAlivePeriod: 15s
+  maxIdleTimeout: 30s
+  keepAlivePeriod: 10s
   disablePathMTUDiscovery: true
 
 transport:
