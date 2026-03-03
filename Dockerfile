@@ -1,7 +1,14 @@
 ARG PYTHON_VERSION=3.12
+ARG XRAY_VERSION=v26.2.6
 
-# Borrow the pre-built Xray binary from the official Marzban image
-FROM gozargah/marzban:latest AS marzban-xray
+FROM alpine:latest AS xray-build
+ARG XRAY_VERSION
+RUN apk add --no-cache wget unzip \
+    && wget -qO /tmp/xray.zip \
+       "https://github.com/XTLS/Xray-core/releases/download/${XRAY_VERSION}/Xray-linux-64.zip" \
+    && mkdir -p /tmp/xray \
+    && unzip /tmp/xray.zip -d /tmp/xray \
+    && chmod +x /tmp/xray/xray
 
 FROM python:$PYTHON_VERSION-slim AS build
 
@@ -13,9 +20,9 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential gcc python3-dev libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the Xray binary and geo assets
-COPY --from=marzban-xray /usr/local/bin/xray /usr/local/bin/xray
-COPY --from=marzban-xray /usr/local/share/xray /usr/local/share/xray
+COPY --from=xray-build /tmp/xray/xray /usr/local/bin/xray
+COPY --from=xray-build /tmp/xray/geoip.dat /usr/local/share/xray/geoip.dat
+COPY --from=xray-build /tmp/xray/geosite.dat /usr/local/share/xray/geosite.dat
 
 COPY ./requirements.txt /code/
 RUN python3 -m pip install --upgrade pip "setuptools<81" \
@@ -30,7 +37,9 @@ RUN rm -rf $PYTHON_LIB_PATH/*
 
 COPY --from=build $PYTHON_LIB_PATH $PYTHON_LIB_PATH
 COPY --from=build /usr/local/bin /usr/local/bin
-COPY --from=build /usr/local/share/xray /usr/local/share/xray
+COPY --from=xray-build /tmp/xray/xray /usr/local/bin/xray
+COPY --from=xray-build /tmp/xray/geoip.dat /usr/local/share/xray/geoip.dat
+COPY --from=xray-build /tmp/xray/geosite.dat /usr/local/share/xray/geosite.dat
 
 COPY . /code
 

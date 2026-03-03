@@ -2,7 +2,7 @@
   "log": {
     "access": "/var/lib/marzban/access.log",
     "error": "/var/lib/marzban/error.log",
-    "loglevel": "INFO"
+    "loglevel": "warning"
   },
   "dns": {
     "servers": [
@@ -104,12 +104,14 @@
       "streamSettings": {
         "network": "xhttp",
         "xhttpSettings": {
-          "mode": "stream-one",
+          "mode": "auto",
           "path": "/",
           "scMaxBufferedPosts": 30,
           "scMaxEachPostBytes": 1000000,
           "scStreamUpServerSecs": "20-80",
           "xPaddingBytes": "100-1400",
+          "xPaddingObfsMode": true,
+          "xPaddingMethod": "tokenish",
           "noSSEHeader": false
         },
         "security": "reality",
