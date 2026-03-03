@@ -39,11 +39,16 @@ def safe_execute(db: Session, stmt, params=None):
                 db.commit()
                 return
             except OperationalError as err:
-                if err.args[0] == 1213 and tries < 5:   # Deadlock — retry with backoff
+                if err.args[0] == 1213 and tries < 10:
                     db.rollback()
                     tries += 1
-                    time.sleep(0.05 * tries + random.uniform(0, 0.03))
+                    time.sleep(0.1 * tries + random.uniform(0, 0.05))
+                    logger.debug("Deadlock retry %d/10", tries)
                     continue
+                logger.error(
+                    "MySQL deadlock after %d retries, giving up: %s", tries, err
+                )
+                db.rollback()
                 raise
     else:
         db.connection().execute(stmt, params)
@@ -250,7 +255,12 @@ def record_user_usages():
         return
 
     for node_id, params in api_params.items():
-        record_user_stats(params, node_id, usage_coefficient[node_id])
+        try:
+            record_user_stats(params, node_id, usage_coefficient[node_id])
+        except Exception as exc:
+            logger.error(
+                "record_user_stats failed for node_id=%s: %s", node_id, exc
+            )
 
 
 def record_node_usages():
@@ -284,7 +294,12 @@ def record_node_usages():
         return
 
     for node_id, params in api_params.items():
-        record_node_stats(params, node_id)
+        try:
+            record_node_stats(params, node_id)
+        except Exception as exc:
+            logger.error(
+                "record_node_stats failed for node_id=%s: %s", node_id, exc
+            )
 
 
 def _report_xray_traffic_to_monitoring(users_usage: list):

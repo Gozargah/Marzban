@@ -53,6 +53,13 @@ def _fetch_traffic_from(url: str) -> dict[str, dict]:
             headers={"Authorization": HYSTERIA2_TRAFFIC_SECRET},
             timeout=5,
         )
+        if resp.status_code == 401:
+            logger.warning(
+                f"hysteriad traffic API at {url} returned 401 Unauthorized. "
+                f"Check that HYSTERIA2_TRAFFIC_SECRET on the panel matches "
+                f"the trafficStats.secret in hysteria.yaml on the node."
+            )
+            return {}
         if resp.status_code != 200:
             logger.warning(f"hysteriad traffic API at {url} returned {resp.status_code}")
             return {}
