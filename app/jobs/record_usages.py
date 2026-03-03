@@ -210,10 +210,12 @@ def record_user_usages():
 
     users_usage = sorted(
         ({"uid": uid, "value": value} for uid, value in users_usage.items()),
-        key=lambda x: int(x['uid']),   # consistent lock order → no deadlock on users table
+        key=lambda x: int(x['uid']),
     )
     if not users_usage:
         return
+
+    _report_xray_traffic_to_monitoring(users_usage)
 
     with GetDB() as db:
         user_admin_map = dict(db.query(User.id, User.admin_id).all())
@@ -283,6 +285,57 @@ def record_node_usages():
 
     for node_id, params in api_params.items():
         record_node_stats(params, node_id)
+
+
+def _report_xray_traffic_to_monitoring(users_usage: list):
+    """Feed per-protocol traffic data into the monitoring service."""
+    try:
+        from app.monitoring import monitoring
+        from app.db import GetDB
+        from app.db import models as db_models
+        from sqlalchemy import func as sa_func
+
+        uid_set = {int(u["uid"]) for u in users_usage}
+        uid_traffic = {int(u["uid"]): int(u["value"]) for u in users_usage}
+
+        total_xray_bytes = sum(uid_traffic.values())
+
+        with GetDB() as db:
+            rows = (
+                db.query(
+                    db_models.Proxy.user_id,
+                    sa_func.upper(db_models.Proxy.type),
+                )
+                .filter(db_models.Proxy.user_id.in_(uid_set))
+                .all()
+            )
+
+        proto_map = {
+            "VLESS": "vless", "VMESS": "vmess",
+            "TROJAN": "trojan", "SHADOWSOCKS": "shadowsocks",
+        }
+        user_protocols: dict[int, set] = {}
+        for user_id, ptype in rows:
+            key = proto_map.get(ptype)
+            if key:
+                user_protocols.setdefault(user_id, set()).add(key)
+
+        proto_traffic: dict[str, int] = {}
+        proto_users: dict[str, int] = {}
+        for uid, traffic in uid_traffic.items():
+            protos = user_protocols.get(uid, set())
+            if not protos:
+                continue
+            share = traffic // len(protos)
+            for p in protos:
+                proto_traffic[p] = proto_traffic.get(p, 0) + share
+                proto_users[p] = proto_users.get(p, 0) + 1
+
+        for proto, traffic in proto_traffic.items():
+            monitoring.record_xray_traffic(proto, traffic, proto_users.get(proto, 0))
+
+    except Exception:
+        pass
 
 
 scheduler.add_job(record_user_usages, 'interval',

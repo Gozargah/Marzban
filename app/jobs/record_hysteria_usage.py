@@ -60,6 +60,13 @@ def _fetch_traffic_from(url: str) -> dict[str, dict]:
         return data if isinstance(data, dict) else {}
     except Exception as exc:
         logger.debug(f"hysteriad traffic API unreachable at {url}: {exc}")
+        try:
+            from app.monitoring import monitoring
+            monitoring.record_hysteria_error(
+                f"Traffic API unreachable: {url}"
+            )
+        except Exception:
+            pass
         return {}
 
 
@@ -114,6 +121,8 @@ def record_hysteria_usages():
         if not stats:
             return
 
+        _report_to_monitoring(stats)
+
         # Build username → (user_id, admin_id) map for all users in the stats
         usernames = list(stats.keys())
         rows = (
@@ -167,6 +176,17 @@ def record_hysteria_usages():
                 .values(users_usage=Admin.users_usage + bindparam("value"))
             )
             safe_execute(db, admin_stmt, admin_params)
+
+
+def _report_to_monitoring(stats: dict):
+    try:
+        from app.monitoring import monitoring
+        total_bytes = sum(
+            t.get("tx", 0) + t.get("rx", 0) for t in stats.values()
+        )
+        monitoring.record_hysteria_traffic(total_bytes, len(stats))
+    except Exception:
+        pass
 
 
 # Run on the same interval as the main Xray usage recording job

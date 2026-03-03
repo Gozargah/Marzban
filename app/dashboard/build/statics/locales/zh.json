@@ -209,5 +209,13 @@
   "monitoring.refresh": "刷新",
   "monitoring.minutes": "分钟",
   "monitoring.hour": "小时",
-  "monitoring.hours": "小时"
+  "monitoring.hours": "小时",
+  "monitoring.protocols": "协议",
+  "monitoring.traffic10m": "流量 (10分钟)",
+  "monitoring.auth": "认证",
+  "monitoring.protoTraffic": "协议流量",
+  "monitoring.authHistory": "认证历史",
+  "monitoring.authOk": "成功",
+  "monitoring.authFail": "失败",
+  "monitoring.activeUsers": "活跃用户"
 }

@@ -17,6 +17,8 @@ class EventType(str, Enum):
     high_cpu = "high_cpu"
     high_memory = "high_memory"
     bandwidth_spike = "bandwidth_spike"
+    hysteria_auth_fail = "hysteria_auth_fail"
+    hysteria_unreachable = "hysteria_unreachable"
 
 
 @dataclass
@@ -45,6 +47,17 @@ class MetricPoint:
 
 
 @dataclass
+class ProtocolSnapshot:
+    """Point-in-time stats for a single protocol."""
+    timestamp: float
+    active_users: int = 0
+    traffic_total: int = 0  # bytes accumulated in this interval
+    auth_success: int = 0
+    auth_fail: int = 0
+    errors: int = 0
+
+
+@dataclass
 class NodeHealthRecord:
     node_id: int
     node_name: str
@@ -59,6 +72,7 @@ class NodeHealthRecord:
 
 MAX_METRICS = 720  # 2h at 10s intervals
 MAX_EVENTS = 200
+MAX_PROTOCOL_POINTS = 360  # 1h at 10s intervals
 
 
 class MonitoringService:
@@ -74,6 +88,19 @@ class MonitoringService:
         self._cpu_alert_cooldown: float = 0.0
         self._mem_alert_cooldown: float = 0.0
         self._bw_alert_cooldown: float = 0.0
+
+        # Protocol-specific time-series
+        self.protocol_stats: Dict[str, deque] = {
+            "hysteria2": deque(maxlen=MAX_PROTOCOL_POINTS),
+            "vless": deque(maxlen=MAX_PROTOCOL_POINTS),
+            "vmess": deque(maxlen=MAX_PROTOCOL_POINTS),
+            "trojan": deque(maxlen=MAX_PROTOCOL_POINTS),
+            "shadowsocks": deque(maxlen=MAX_PROTOCOL_POINTS),
+        }
+        # Accumulators reset each collection cycle
+        self._proto_accum: Dict[str, dict] = {}
+        self._reset_proto_accum()
+
         self._init_counters()
 
     def _init_counters(self):
@@ -211,6 +238,118 @@ class MonitoringService:
     def remove_node(self, node_id: int):
         self.node_health.pop(node_id, None)
 
+    # ------------------------------------------------------------------
+    # Protocol-specific tracking
+    # ------------------------------------------------------------------
+
+    def _reset_proto_accum(self):
+        self._proto_accum = {}
+        for proto in self.protocol_stats:
+            self._proto_accum[proto] = {
+                "active_users": 0, "traffic": 0,
+                "auth_ok": 0, "auth_fail": 0, "errors": 0,
+            }
+
+    def record_hysteria_auth(self, success: bool, client_addr: str = ""):
+        acc = self._proto_accum.get("hysteria2")
+        if not acc:
+            return
+        if success:
+            acc["auth_ok"] += 1
+        else:
+            acc["auth_fail"] += 1
+
+    def record_hysteria_traffic(self, total_bytes: int, active_users: int):
+        acc = self._proto_accum.get("hysteria2")
+        if not acc:
+            return
+        acc["traffic"] += total_bytes
+        acc["active_users"] = max(acc["active_users"], active_users)
+
+    def record_hysteria_error(self, message: str, node_name: Optional[str] = None):
+        acc = self._proto_accum.get("hysteria2")
+        if acc:
+            acc["errors"] += 1
+        self.add_event(
+            EventType.hysteria_unreachable, "warning", message,
+            node_name=node_name,
+        )
+
+    def record_xray_traffic(self, protocol: str, total_bytes: int, active_users: int):
+        proto_key = protocol.lower()
+        acc = self._proto_accum.get(proto_key)
+        if not acc:
+            return
+        acc["traffic"] += total_bytes
+        acc["active_users"] = max(acc["active_users"], active_users)
+
+    def flush_protocol_stats(self):
+        """Snapshot accumulators into time-series and reset."""
+        now = time.time()
+        for proto, acc in self._proto_accum.items():
+            series = self.protocol_stats.get(proto)
+            if series is None:
+                continue
+            series.append(ProtocolSnapshot(
+                timestamp=now,
+                active_users=acc["active_users"],
+                traffic_total=acc["traffic"],
+                auth_success=acc["auth_ok"],
+                auth_fail=acc["auth_fail"],
+                errors=acc["errors"],
+            ))
+        self._reset_proto_accum()
+
+    def get_protocol_stats(self, minutes: int = 60) -> Dict[str, List[dict]]:
+        cutoff = time.time() - (minutes * 60)
+        result: Dict[str, List[dict]] = {}
+        for proto, series in self.protocol_stats.items():
+            points = []
+            for s in series:
+                if s.timestamp >= cutoff:
+                    points.append({
+                        "timestamp": s.timestamp,
+                        "active_users": s.active_users,
+                        "traffic": s.traffic_total,
+                        "auth_success": s.auth_success,
+                        "auth_fail": s.auth_fail,
+                        "errors": s.errors,
+                    })
+            if points:
+                result[proto] = points
+        return result
+
+    def get_protocol_summary(self) -> List[dict]:
+        """Aggregate totals from the last 10 minutes per protocol."""
+        cutoff = time.time() - 600
+        summaries = []
+        for proto, series in self.protocol_stats.items():
+            total_traffic = 0
+            total_auth_ok = 0
+            total_auth_fail = 0
+            total_errors = 0
+            last_active = 0
+            count = 0
+            for s in series:
+                if s.timestamp >= cutoff:
+                    total_traffic += s.traffic_total
+                    total_auth_ok += s.auth_success
+                    total_auth_fail += s.auth_fail
+                    total_errors += s.errors
+                    last_active = max(last_active, s.active_users)
+                    count += 1
+            if count > 0:
+                summaries.append({
+                    "protocol": proto,
+                    "active_users": last_active,
+                    "traffic_10m": total_traffic,
+                    "auth_success": total_auth_ok,
+                    "auth_fail": total_auth_fail,
+                    "errors": total_errors,
+                    "data_points": count,
+                })
+        return summaries
+
     def get_metrics(self, minutes: int = 60) -> List[dict]:
         cutoff = time.time() - (minutes * 60)
         result = []
@@ -268,7 +407,9 @@ monitoring = MonitoringService()
 @scheduler.scheduled_job("interval", seconds=10, coalesce=True, max_instances=1)
 def _collect_monitoring_metrics():
     monitoring.collect_metrics()
+    monitoring.flush_protocol_stats()
     _sync_node_statuses()
+    _sync_protocol_users()
 
 
 def _sync_node_statuses():
@@ -303,3 +444,39 @@ def _sync_online_users():
 @scheduler.scheduled_job("interval", seconds=30, coalesce=True, max_instances=1)
 def _collect_online_users():
     _sync_online_users()
+
+
+def _sync_protocol_users():
+    """Count active users per protocol from DB proxy assignments."""
+    try:
+        from app.db import GetDB
+        from app.db import models as db_models
+        from app.models.user import UserStatus
+        from sqlalchemy import func as sa_func
+
+        with GetDB() as db:
+            rows = (
+                db.query(
+                    sa_func.upper(db_models.Proxy.type),
+                    sa_func.count(db_models.Proxy.id),
+                )
+                .join(db_models.User, db_models.User.id == db_models.Proxy.user_id)
+                .filter(db_models.User.status == UserStatus.active)
+                .group_by(db_models.Proxy.type)
+                .all()
+            )
+            proto_map = {
+                "VLESS": "vless",
+                "VMESS": "vmess",
+                "TROJAN": "trojan",
+                "SHADOWSOCKS": "shadowsocks",
+                "HYSTERIA2": "hysteria2",
+            }
+            for type_name, count in rows:
+                key = proto_map.get(type_name)
+                if key and key in monitoring._proto_accum:
+                    monitoring._proto_accum[key]["active_users"] = max(
+                        monitoring._proto_accum[key]["active_users"], count
+                    )
+    except Exception:
+        pass

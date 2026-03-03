@@ -210,5 +210,13 @@
   "monitoring.refresh": "Refresh",
   "monitoring.minutes": "min",
   "monitoring.hour": "hour",
-  "monitoring.hours": "hours"
+  "monitoring.hours": "hours",
+  "monitoring.protocols": "Protocols",
+  "monitoring.traffic10m": "Traffic (10m)",
+  "monitoring.auth": "Auth",
+  "monitoring.protoTraffic": "Traffic by Protocol",
+  "monitoring.authHistory": "Auth History",
+  "monitoring.authOk": "Success",
+  "monitoring.authFail": "Failed",
+  "monitoring.activeUsers": "Active Users"
 }

@@ -208,5 +208,13 @@
   "monitoring.refresh": "Обновить",
   "monitoring.minutes": "мин",
   "monitoring.hour": "час",
-  "monitoring.hours": "часа"
+  "monitoring.hours": "часа",
+  "monitoring.protocols": "Протоколы",
+  "monitoring.traffic10m": "Трафик (10м)",
+  "monitoring.auth": "Авторизация",
+  "monitoring.protoTraffic": "Трафик по протоколам",
+  "monitoring.authHistory": "История авторизаций",
+  "monitoring.authOk": "Успешно",
+  "monitoring.authFail": "Ошибка",
+  "monitoring.activeUsers": "Активные пользователи"
 }

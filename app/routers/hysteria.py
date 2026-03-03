@@ -61,11 +61,11 @@ def hysteria_auth(
         raise HTTPException(status_code=403, detail="Invalid hook token")
 
     if not body.auth:
+        _track_auth(False, body.addr)
         return HysteriaAuthResponse(ok=False, msg="Empty auth string")
 
     username = get_cache().get(body.auth)
     if username:
-        # Mark the user as online immediately upon connection
         with GetDB() as db:
             db.execute(
                 update(DBUser)
@@ -73,9 +73,19 @@ def hysteria_auth(
                 .values(online_at=datetime.utcnow())
             )
             db.commit()
+        _track_auth(True, body.addr)
         return HysteriaAuthResponse(ok=True, id=username)
 
+    _track_auth(False, body.addr)
     return HysteriaAuthResponse(ok=False, msg="Invalid credentials or user inactive")
+
+
+def _track_auth(success: bool, addr: str):
+    try:
+        from app.monitoring import monitoring
+        monitoring.record_hysteria_auth(success, addr)
+    except Exception:
+        pass
 
 
 # ---------------------------------------------------------------------------

@@ -24,11 +24,13 @@ import {
 import {
   ArrowLeftIcon,
   ArrowPathIcon,
+  BoltIcon,
   ChartBarIcon,
   CpuChipIcon,
   ExclamationTriangleIcon,
   GlobeAltIcon,
   ServerIcon,
+  ShieldCheckIcon,
   SignalIcon,
   UsersIcon,
 } from "@heroicons/react/24/outline";
@@ -48,6 +50,8 @@ const NodeIcon = chakra(SignalIcon, { baseStyle: { w: 5, h: 5 } });
 const AlertIcon = chakra(ExclamationTriangleIcon, { baseStyle: { w: 4, h: 4 } });
 const BackIcon = chakra(ArrowLeftIcon, { baseStyle: { w: 4, h: 4 } });
 const RefreshIcon = chakra(ArrowPathIcon, { baseStyle: { w: 4, h: 4 } });
+const ProtoIcon = chakra(BoltIcon, { baseStyle: { w: 5, h: 5 } });
+const AuthIcon = chakra(ShieldCheckIcon, { baseStyle: { w: 4, h: 4 } });
 
 type MetricPoint = {
   timestamp: number;
@@ -82,10 +86,47 @@ type NodeHealth = {
   last_error_time: number | null;
 };
 
+type ProtocolPoint = {
+  timestamp: number;
+  active_users: number;
+  traffic: number;
+  auth_success: number;
+  auth_fail: number;
+  errors: number;
+};
+
+type ProtocolSummary = {
+  protocol: string;
+  active_users: number;
+  traffic_10m: number;
+  auth_success: number;
+  auth_fail: number;
+  errors: number;
+  data_points: number;
+};
+
 type MonitoringData = {
   metrics: MetricPoint[];
   events: MonitoringEvent[];
   nodes: NodeHealth[];
+  protocol_summary: ProtocolSummary[];
+  protocol_stats: Record<string, ProtocolPoint[]>;
+};
+
+const PROTOCOL_COLORS: Record<string, string> = {
+  hysteria2: "#EC4899",
+  vless: "#3B82F6",
+  vmess: "#8B5CF6",
+  trojan: "#10B981",
+  shadowsocks: "#F59E0B",
+};
+
+const PROTOCOL_LABELS: Record<string, string> = {
+  hysteria2: "Hysteria2",
+  vless: "VLESS",
+  vmess: "VMess",
+  trojan: "Trojan",
+  shadowsocks: "Shadowsocks",
 };
 
 function formatSpeed(bytesPerSec: number): string {
@@ -250,6 +291,8 @@ export const Monitoring: FC = () => {
   const metrics = data?.metrics || [];
   const events = data?.events || [];
   const nodes = data?.nodes || [];
+  const protoSummary = data?.protocol_summary || [];
+  const protoStats = data?.protocol_stats || {};
 
   const latest = metrics.length > 0 ? metrics[metrics.length - 1] : null;
 
@@ -337,6 +380,64 @@ export const Monitoring: FC = () => {
     ],
     [metrics, t]
   );
+
+  const activeProtocols = useMemo(
+    () => Object.keys(protoStats).filter((k) => protoStats[k]?.length > 0),
+    [protoStats]
+  );
+
+  const protoTrafficSeries = useMemo(() => {
+    return activeProtocols.map((proto) => ({
+      name: PROTOCOL_LABELS[proto] || proto,
+      data: (protoStats[proto] || []).map((p) => p.traffic),
+    }));
+  }, [activeProtocols, protoStats]);
+
+  const protoTrafficTimestamps = useMemo(() => {
+    const firstProto = activeProtocols[0];
+    if (!firstProto || !protoStats[firstProto]) return [];
+    return protoStats[firstProto].map((p) => formatTime(p.timestamp));
+  }, [activeProtocols, protoStats]);
+
+  const protoChartOptions = useCallback(
+    (cats: string[], yFmt?: (v: number) => string): ApexCharts.ApexOptions => ({
+      chart: {
+        toolbar: { show: false },
+        zoom: { enabled: false },
+        background: "transparent",
+        animations: { enabled: true, easing: "easeinout", dynamicAnimation: { speed: 500 } },
+      },
+      theme: { mode: isDark ? "dark" : "light" },
+      grid: { borderColor: isDark ? "#374151" : "#E5E7EB", strokeDashArray: 3 },
+      xaxis: {
+        categories: cats,
+        labels: {
+          show: true, rotate: 0,
+          style: { fontSize: "10px", colors: isDark ? "#9CA3AF" : "#6B7280" },
+          formatter: (_: string, idx: number) => {
+            if (cats.length < 20) return cats[idx] || "";
+            return idx % Math.ceil(cats.length / 8) === 0 ? cats[idx] || "" : "";
+          },
+        },
+        axisBorder: { show: false }, axisTicks: { show: false }, tooltip: { enabled: false },
+      },
+      yaxis: {
+        labels: {
+          style: { fontSize: "10px", colors: isDark ? "#9CA3AF" : "#6B7280" },
+          formatter: yFmt || ((v: number) => String(Math.round(v))),
+        },
+      },
+      colors: activeProtocols.map((p) => PROTOCOL_COLORS[p] || "#6B7280"),
+      stroke: { curve: "smooth", width: 2 },
+      fill: { type: "gradient", gradient: { opacityFrom: 0.4, opacityTo: 0.05, shadeIntensity: 1 } },
+      dataLabels: { enabled: false },
+      tooltip: { theme: isDark ? "dark" : "light", x: { show: true }, y: { formatter: yFmt } },
+      legend: { labels: { colors: isDark ? "#D1D5DB" : "#374151" } },
+    }),
+    [isDark, activeProtocols]
+  );
+
+  const hysteriaSummary = protoSummary.find((s) => s.protocol === "hysteria2");
 
   return (
     <VStack minH="100vh" p="6" spacing={4} align="stretch">
@@ -508,6 +609,123 @@ export const Monitoring: FC = () => {
               </ChartCard>
             </GridItem>
           </Grid>
+
+          {/* Protocol Overview */}
+          {protoSummary.length > 0 && (
+            <>
+              <Text fontSize="lg" fontWeight="semibold" mt={2}>
+                {t("monitoring.protocols")}
+              </Text>
+              <Grid
+                templateColumns={{
+                  base: "1fr",
+                  sm: "repeat(2, 1fr)",
+                  lg: `repeat(${Math.min(protoSummary.length, 5)}, 1fr)`,
+                }}
+                gap={3}
+              >
+                {protoSummary.map((ps) => (
+                  <Card
+                    key={ps.protocol}
+                    p={4}
+                    borderWidth="1px"
+                    borderColor="light-border"
+                    bg="#F9FAFB"
+                    _dark={{ borderColor: "gray.600", bg: "gray.750" }}
+                    boxShadow="none"
+                    borderRadius="12px"
+                  >
+                    <HStack justify="space-between" mb={2}>
+                      <HStack spacing={2}>
+                        <ProtoIcon color={PROTOCOL_COLORS[ps.protocol] || "gray.400"} />
+                        <Text fontWeight="semibold" fontSize="sm">
+                          {PROTOCOL_LABELS[ps.protocol] || ps.protocol}
+                        </Text>
+                      </HStack>
+                      <Badge
+                        colorScheme={ps.errors > 0 ? "red" : "green"}
+                        borderRadius="full"
+                        fontSize="2xs"
+                      >
+                        {ps.errors > 0 ? `${ps.errors} err` : "OK"}
+                      </Badge>
+                    </HStack>
+                    <VStack align="stretch" spacing={1}>
+                      <HStack justify="space-between">
+                        <Text fontSize="xs" color="gray.500">{t("monitoring.activeUsers")}</Text>
+                        <Text fontSize="xs" fontWeight="bold">{ps.active_users}</Text>
+                      </HStack>
+                      <HStack justify="space-between">
+                        <Text fontSize="xs" color="gray.500">{t("monitoring.traffic10m")}</Text>
+                        <Text fontSize="xs" fontWeight="bold">{formatBytes(ps.traffic_10m)}</Text>
+                      </HStack>
+                      {ps.protocol === "hysteria2" && (
+                        <HStack justify="space-between">
+                          <HStack spacing={1}>
+                            <AuthIcon color="green.400" />
+                            <Text fontSize="xs" color="gray.500">{t("monitoring.auth")}</Text>
+                          </HStack>
+                          <Text fontSize="xs" fontWeight="bold">
+                            <Text as="span" color="green.400">{ps.auth_success}</Text>
+                            {" / "}
+                            <Text as="span" color={ps.auth_fail > 0 ? "red.400" : "gray.500"}>{ps.auth_fail}</Text>
+                          </Text>
+                        </HStack>
+                      )}
+                    </VStack>
+                  </Card>
+                ))}
+              </Grid>
+            </>
+          )}
+
+          {/* Protocol Traffic Chart */}
+          {activeProtocols.length > 0 && (
+            <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={3}>
+              <GridItem>
+                <ChartCard title={t("monitoring.protoTraffic")}>
+                  <Suspense fallback={<Spinner />}>
+                    <ReactApexChart
+                      options={protoChartOptions(protoTrafficTimestamps, formatBytes)}
+                      series={protoTrafficSeries}
+                      type="area"
+                      height="220"
+                    />
+                  </Suspense>
+                </ChartCard>
+              </GridItem>
+
+              {/* Hysteria2 Auth Chart */}
+              {protoStats.hysteria2 && protoStats.hysteria2.length > 0 && (
+                <GridItem>
+                  <ChartCard title={`Hysteria2 — ${t("monitoring.authHistory")}`}>
+                    <Suspense fallback={<Spinner />}>
+                      <ReactApexChart
+                        options={{
+                          ...protoChartOptions(
+                            protoStats.hysteria2.map((p) => formatTime(p.timestamp))
+                          ),
+                          colors: ["#22C55E", "#EF4444"],
+                        }}
+                        series={[
+                          {
+                            name: t("monitoring.authOk"),
+                            data: protoStats.hysteria2.map((p) => p.auth_success),
+                          },
+                          {
+                            name: t("monitoring.authFail"),
+                            data: protoStats.hysteria2.map((p) => p.auth_fail),
+                          },
+                        ]}
+                        type="bar"
+                        height="220"
+                      />
+                    </Suspense>
+                  </ChartCard>
+                </GridItem>
+              )}
+            </Grid>
+          )}
 
           {/* Nodes Health + Events */}
           <Grid
