@@ -1,4 +1,4 @@
-﻿{
+{
   "active": "فعال",
   "activeUsers": "کاربران فعال",
   "apply": "تایید",
@@ -38,6 +38,7 @@
   "header.hostSettings": "تنظیمات هاست",
   "header.logout": "خروج",
   "header.nodeSettings": "تنظیمات گره‌ها",
+  "header.monitoring": "Monitoring",
   "header.nodesUsage": "نمودار گره‌ها",
   "hostsDialog.addHost": "افزودن هاست",
   "hostsDialog.advancedOptions": "تنظیمات پیشرفته",
@@ -194,5 +195,24 @@
   "usersTable.noUser": "کاربری افزوده نشده است",
   "usersTable.noUserMatched": "به‌نظر میرسه کاربری که جستجو کردید، وجود ندارد",
   "usersTable.status": "وضعیت",
-  "usersTable.total": "مجموع"
+  "usersTable.total": "مجموع",
+  "monitoring.title": "Monitoring",
+  "monitoring.cpu": "CPU",
+  "monitoring.memory": "Memory",
+  "monitoring.bandwidth": "Bandwidth",
+  "monitoring.connections": "Connections",
+  "monitoring.onlineUsers": "Online Users",
+  "monitoring.incoming": "Incoming",
+  "monitoring.outgoing": "Outgoing",
+  "monitoring.nodeHealth": "Node Health",
+  "monitoring.events": "Events",
+  "monitoring.noNodes": "No nodes configured",
+  "monitoring.noEvents": "No events recorded yet",
+  "monitoring.time": "Time",
+  "monitoring.severity": "Severity",
+  "monitoring.event": "Event",
+  "monitoring.refresh": "Refresh",
+  "monitoring.minutes": "min",
+  "monitoring.hour": "hour",
+  "monitoring.hours": "hours"
 }

@@ -13,6 +13,7 @@ import {
 import {
   ArrowLeftOnRectangleIcon,
   Bars3Icon,
+  ChartBarSquareIcon,
   ChartPieIcon,
   Cog6ToothIcon,
   CurrencyDollarIcon,
@@ -53,6 +54,7 @@ const DonationIcon = chakra(CurrencyDollarIcon, iconProps);
 const HostsIcon = chakra(LinkIcon, iconProps);
 const NodesIcon = chakra(SquaresPlusIcon, iconProps);
 const NodesUsageIcon = chakra(ChartPieIcon, iconProps);
+const MonitoringIcon = chakra(ChartBarSquareIcon, iconProps);
 const ResetUsageIcon = chakra(DocumentMinusIcon, iconProps);
 const NotificationCircle = chakra(Box, {
   baseStyle: {
@@ -167,6 +169,15 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                   >
                     {t("header.nodesUsage")}
                   </MenuItem>
+                  <Link to="/monitoring">
+                    <MenuItem
+                      maxW="170px"
+                      fontSize="sm"
+                      icon={<MonitoringIcon />}
+                    >
+                      {t("header.monitoring")}
+                    </MenuItem>
+                  </Link>
                   <MenuItem
                     maxW="170px"
                     fontSize="sm"
