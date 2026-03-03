@@ -259,14 +259,14 @@ export const Monitoring: FC = () => {
   );
 
   const baseChartOptions = useCallback(
-    (opts?: { yFormatter?: (v: number) => string }) => ({
+    (opts?: { yFormatter?: (v: number) => string }): ApexCharts.ApexOptions => ({
       chart: {
         toolbar: { show: false },
         zoom: { enabled: false },
         background: "transparent",
-        animations: { enabled: true, easing: "smooth" as const, dynamicAnimation: { speed: 500 } },
+        animations: { enabled: true, easing: "easeinout", dynamicAnimation: { speed: 500 } },
       },
-      theme: { mode: isDark ? ("dark" as const) : ("light" as const) },
+      theme: { mode: isDark ? "dark" : "light" },
       grid: {
         borderColor: isDark ? "#374151" : "#E5E7EB",
         strokeDashArray: 3,
@@ -292,7 +292,7 @@ export const Monitoring: FC = () => {
           formatter: opts?.yFormatter || ((v: number) => String(Math.round(v))),
         },
       },
-      stroke: { curve: "smooth" as const, width: 2 },
+      stroke: { curve: "smooth", width: 2 },
       fill: {
         type: "gradient",
         gradient: { opacityFrom: 0.4, opacityTo: 0.05, shadeIntensity: 1 },
