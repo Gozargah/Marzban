@@ -65,3 +65,13 @@ quic:
   maxConnReceiveWindow: 20971520
   maxIdleTimeout: 90s                # increased from default 30s for mobile
   keepAlivePeriod: 15s               # PING every 15s — keeps CGNAT session alive
+  disablePathMTUDiscovery: true      # use fixed MTU instead of auto-discovery
+
+# Fixed MTU avoids QUIC PMTUD probes that mobile operators sometimes drop.
+# 1400 safely fits inside any link without fragmentation.
+sniff:
+  enable: false
+
+transport:
+  udp:
+    mtu: 1400

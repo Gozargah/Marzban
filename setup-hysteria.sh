@@ -99,6 +99,11 @@ quic:
   maxConnReceiveWindow: 20971520
   maxIdleTimeout: 90s
   keepAlivePeriod: 15s
+  disablePathMTUDiscovery: true
+
+transport:
+  udp:
+    mtu: 1400
 YAML
     log "hysteria.yaml created"
 fi
