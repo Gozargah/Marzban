@@ -5,4 +5,7 @@ services:
     env_file: .env
     network_mode: host
     volumes:
-      - /var/lib/marzban:/var/lib/marzban
+      - marzban_data:/code
+
+volumes:
+  marzban_data:
