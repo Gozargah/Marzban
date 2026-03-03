@@ -89,14 +89,7 @@
             "h3"
           ]
         },
-        "udpmasks": [
-          {
-            "type": "salamander",
-            "settings": {
-              "password": "9c3cb2dc2a67ebe8b107fb4fe9626cb48718856da68a5d3265700c8a20e30350"
-            }
-          }
-        ]
+        "udpmasks": []
       }
     },
     {
