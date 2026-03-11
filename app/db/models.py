@@ -86,6 +86,7 @@ class User(Base):
     online_at = Column(DateTime, nullable=True, default=None)
     on_hold_expire_duration = Column(BigInteger, nullable=True, default=None)
     on_hold_timeout = Column(DateTime, nullable=True, default=None)
+    device_limit = Column(Integer, nullable=True, default=None)
 
     # * Positive values: User will be deleted after the value of this field in days automatically.
     # * Negative values: User won't be deleted automatically at all.
@@ -101,6 +102,7 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan"
     )
+    devices = relationship("UserDevice", back_populates="user", cascade="all, delete-orphan")
 
     @hybrid_property
     def reseted_usage(self) -> int:
@@ -143,6 +145,24 @@ class User(Base):
                     _[proxy.type].append(inbound["tag"])
 
         return _
+
+
+class UserDevice(Base):
+    __tablename__ = "user_devices"
+    __table_args__ = (
+        UniqueConstraint("user_id", "hwid", name="uq_user_devices_user_id_hwid"),
+    )
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user = relationship("User", back_populates="devices")
+    hwid = Column(String(128), nullable=False)
+    device_os = Column(String(64), nullable=True)
+    ver_os = Column(String(64), nullable=True)
+    device_model = Column(String(128), nullable=True)
+    user_agent = Column(String(512), nullable=True)
+    first_seen = Column(DateTime, nullable=False, default=datetime.utcnow)
+    last_seen = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 excluded_inbounds_association = Table(

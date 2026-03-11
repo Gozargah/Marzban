@@ -143,6 +143,7 @@
   "userDialog.absolute": "选择范围",
   "userDialog.custom": "自定义",
   "userDialog.dataLimit": "流量限制",
+  "userDialog.deviceLimit": "设备数量上限",
   "userDialog.days": "天",
   "userDialog.editUser": "修改",
   "userDialog.editUserTitle": "用户编辑",

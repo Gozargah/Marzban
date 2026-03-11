@@ -7,6 +7,7 @@ from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
 from sqlalchemy import and_, delete, func, or_
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Query, Session, joinedload
 from sqlalchemy.sql.functions import coalesce
 
@@ -26,6 +27,7 @@ from app.db.models import (
     ProxyTypes,
     System,
     User,
+    UserDevice,
     UserTemplate,
     UserUsageResetLogs,
 )
@@ -36,6 +38,8 @@ from app.models.user import (
     ReminderType,
     UserCreate,
     UserDataLimitResetStrategy,
+    UserDeviceCreate,
+    UserDeviceUpdate,
     UserModify,
     UserResponse,
     UserStatus,
@@ -383,6 +387,7 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None) -> User:
         proxies=proxies,
         status=user.status,
         data_limit=(user.data_limit or None),
+        device_limit=(user.device_limit or None),
         expire=(user.expire or None),
         admin=admin,
         data_limit_reset_strategy=user.data_limit_reset_strategy,
@@ -488,6 +493,9 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
             else:
                 dbuser.status = UserStatus.limited
 
+    if modify.device_limit is not None:
+        dbuser.device_limit = (modify.device_limit or None)
+
     if modify.expire is not None:
         dbuser.expire = (modify.expire or None)
         if dbuser.status in (UserStatus.active, UserStatus.expired):
@@ -530,6 +538,118 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
     db.commit()
     db.refresh(dbuser)
     return dbuser
+
+
+def get_user_devices(db: Session, dbuser: User) -> List[UserDevice]:
+    return (
+        db.query(UserDevice)
+        .filter(UserDevice.user_id == dbuser.id)
+        .order_by(UserDevice.last_seen.desc())
+        .all()
+    )
+
+
+def get_user_device(db: Session, dbuser: User, device_id: int) -> Optional[UserDevice]:
+    return (
+        db.query(UserDevice)
+        .filter(UserDevice.user_id == dbuser.id, UserDevice.id == device_id)
+        .first()
+    )
+
+
+def get_user_device_by_hwid(db: Session, dbuser: User, hwid: str) -> Optional[UserDevice]:
+    return (
+        db.query(UserDevice)
+        .filter(UserDevice.user_id == dbuser.id, UserDevice.hwid == hwid)
+        .first()
+    )
+
+
+def count_user_devices(db: Session, dbuser: User) -> int:
+    return db.query(func.count(UserDevice.id)).filter(UserDevice.user_id == dbuser.id).scalar() or 0
+
+
+def create_user_device(db: Session, dbuser: User, device: UserDeviceCreate) -> UserDevice:
+    dbdevice = UserDevice(
+        user_id=dbuser.id,
+        hwid=device.hwid,
+        device_os=device.device_os,
+        ver_os=device.ver_os,
+        device_model=device.device_model,
+        user_agent=device.user_agent,
+    )
+    db.add(dbdevice)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise
+    db.refresh(dbdevice)
+    return dbdevice
+
+
+def update_user_device(db: Session, dbdevice: UserDevice, device: UserDeviceUpdate) -> UserDevice:
+    if device.hwid is not None:
+        dbdevice.hwid = device.hwid
+    if device.device_os is not None:
+        dbdevice.device_os = device.device_os
+    if device.ver_os is not None:
+        dbdevice.ver_os = device.ver_os
+    if device.device_model is not None:
+        dbdevice.device_model = device.device_model
+    if device.user_agent is not None:
+        dbdevice.user_agent = device.user_agent
+    db.commit()
+    db.refresh(dbdevice)
+    return dbdevice
+
+
+def delete_user_device(db: Session, dbdevice: UserDevice) -> None:
+    db.delete(dbdevice)
+    db.commit()
+
+
+def register_user_device(
+    db: Session,
+    dbuser: User,
+    hwid: Optional[str],
+    device_os: Optional[str],
+    ver_os: Optional[str],
+    device_model: Optional[str],
+    user_agent: Optional[str],
+) -> bool:
+    effective_hwid = hwid or "unknown"
+
+    dbdevice = get_user_device_by_hwid(db, dbuser, effective_hwid)
+    if dbdevice:
+        dbdevice.device_os = device_os or dbdevice.device_os
+        dbdevice.ver_os = ver_os or dbdevice.ver_os
+        dbdevice.device_model = device_model or dbdevice.device_model
+        dbdevice.user_agent = user_agent or dbdevice.user_agent
+        dbdevice.last_seen = datetime.utcnow()
+        db.commit()
+        return True
+
+    if dbuser.device_limit:
+        current = count_user_devices(db, dbuser)
+        if current >= dbuser.device_limit:
+            return False
+
+    dbdevice = UserDevice(
+        user_id=dbuser.id,
+        hwid=effective_hwid,
+        device_os=device_os,
+        ver_os=ver_os,
+        device_model=device_model,
+        user_agent=user_agent,
+    )
+    db.add(dbdevice)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        return True
+    return True
 
 
 def reset_user_data_usage(db: Session, dbuser: User) -> User:

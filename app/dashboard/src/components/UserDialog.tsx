@@ -110,6 +110,7 @@ const getDefaultValues = (): FormType => {
   return {
     selected_proxies: Object.keys(defaultInbounds) as ProxyKeys,
     data_limit: null,
+    device_limit: null,
     expire: null,
     username: "",
     data_limit_reset_strategy: "no_reset",
@@ -171,6 +172,15 @@ const baseSchema = {
     .nullable()
     .transform((str) => {
       if (str) return Number((parseFloat(String(str)) * 1073741824).toFixed(5));
+      return 0;
+    }),
+  device_limit: z
+    .string()
+    .min(0)
+    .or(z.number())
+    .nullable()
+    .transform((str) => {
+      if (str) return Number(String(str));
       return 0;
     }),
   expire: z.number().nullable(),
@@ -532,6 +542,28 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                 disabled={disabled}
                                 error={
                                   form.formState.errors.data_limit?.message
+                                }
+                                value={field.value ? String(field.value) : ""}
+                              />
+                            );
+                          }}
+                        />
+                      </FormControl>
+                      <FormControl mb={"10px"}>
+                        <FormLabel>{t("userDialog.deviceLimit")}</FormLabel>
+                        <Controller
+                          control={form.control}
+                          name="device_limit"
+                          render={({ field }) => {
+                            return (
+                              <Input
+                                type="number"
+                                size="sm"
+                                borderRadius="6px"
+                                onChange={field.onChange}
+                                disabled={disabled}
+                                error={
+                                  form.formState.errors.device_limit?.message
                                 }
                                 value={field.value ? String(field.value) : ""}
                               />

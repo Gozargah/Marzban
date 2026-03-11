@@ -136,6 +136,19 @@ SUB_UPDATE_INTERVAL = config("SUB_UPDATE_INTERVAL", default="12")
 SUB_SUPPORT_URL = config("SUB_SUPPORT_URL", default="https://t.me/")
 SUB_PROFILE_TITLE = config("SUB_PROFILE_TITLE", default="Subscription")
 
+
+def _parse_server_text_list(v):
+    if v is None or v == "":
+        return []
+    return [s.strip() for s in str(v).split(",")]
+
+
+SUB_DEVICE_LIMIT_SERVER_TEXT = config(
+    "SUB_DEVICE_LIMIT_SERVER_TEXT",
+    default="Device limit reached",
+    cast=lambda v: _parse_server_text_list(v),
+)
+
 # discord webhook log
 DISCORD_WEBHOOK_URL = config("DISCORD_WEBHOOK_URL", default="")
 

@@ -102,7 +102,10 @@ def generate_subscription(
         config_format: Literal["v2ray", "clash-meta", "clash", "sing-box", "outline", "v2ray-json"],
         as_base64: bool,
         reverse: bool,
+        device_limited: bool = False,
 ) -> str:
+    from config import SUB_DEVICE_LIMIT_SERVER_TEXT
+
     kwargs = {
         "proxies": user.proxies,
         "inbounds": user.inbounds,
@@ -110,7 +113,26 @@ def generate_subscription(
         "reverse": reverse,
     }
 
-    if config_format == "v2ray":
+    if config_format == "v2ray" and device_limited:
+        if not SUB_DEVICE_LIMIT_SERVER_TEXT:
+            config = ""
+        else:
+            zero_id = "00000000-0000-0000-0000-000000000000"
+            links = [
+                V2rayShareLink.vless(
+                    remark=remark,
+                    address="0.0.0.0",
+                    port=0,
+                    id=zero_id,
+                    net="ws",
+                    tls="none",
+                    path="",
+                    host="",
+                )
+                for remark in SUB_DEVICE_LIMIT_SERVER_TEXT
+            ]
+            config = "\n".join(links)
+    elif config_format == "v2ray":
         config = "\n".join(generate_v2ray_links(**kwargs))
     elif config_format == "clash-meta":
         config = generate_clash_subscription(**kwargs, is_meta=True)

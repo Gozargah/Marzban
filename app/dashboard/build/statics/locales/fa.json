@@ -148,6 +148,7 @@
   "userDialog.absolute": "مطلق",
   "userDialog.custom": "انتخابی",
   "userDialog.dataLimit": "حد مصرف داده",
+  "userDialog.deviceLimit": "حداکثر دستگاه",
   "userDialog.days": "روزها",
   "userDialog.editUser": "ویرایش کاربر",
   "userDialog.editUserTitle": "ویرایش کاربر",

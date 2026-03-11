@@ -62,6 +62,9 @@ class User(BaseModel):
     data_limit: Optional[int] = Field(
         ge=0, default=None, description="data_limit can be 0 or greater"
     )
+    device_limit: Optional[int] = Field(
+        ge=0, default=None, description="device_limit can be 0 or greater"
+    )
     data_limit_reset_strategy: UserDataLimitResetStrategy = (
         UserDataLimitResetStrategy.no_reset
     )
@@ -86,6 +89,16 @@ class User(BaseModel):
         if isinstance(v, int):  # Allow integers directly
             return v
         raise ValueError("data_limit must be an integer or a float, not a string")  # Reject strings
+
+    @field_validator('device_limit', mode='before')
+    def cast_device_limit_to_int(cls, v):
+        if v is None:  # Allow None values
+            return v
+        if isinstance(v, float):  # Allow float to int conversion
+            return int(v)
+        if isinstance(v, int):  # Allow integers directly
+            return v
+        raise ValueError("device_limit must be an integer or a float, not a string")  # Reject strings
 
     @field_validator("proxies", mode="before")
     def validate_proxies(cls, v, values, **kwargs):
@@ -364,3 +377,34 @@ class UserUsagesResponse(BaseModel):
 
 class UsersUsagesResponse(BaseModel):
     usages: List[UserUsageResponse]
+
+
+class UserDeviceBase(BaseModel):
+    hwid: str
+    device_os: Optional[str] = None
+    ver_os: Optional[str] = None
+    device_model: Optional[str] = None
+    user_agent: Optional[str] = None
+
+
+class UserDeviceCreate(UserDeviceBase):
+    pass
+
+
+class UserDeviceUpdate(BaseModel):
+    hwid: Optional[str] = None
+    device_os: Optional[str] = None
+    ver_os: Optional[str] = None
+    device_model: Optional[str] = None
+    user_agent: Optional[str] = None
+
+
+class UserDeviceResponse(UserDeviceBase):
+    id: int
+    first_seen: datetime
+    last_seen: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserDevicesResponse(BaseModel):
+    devices: List[UserDeviceResponse]

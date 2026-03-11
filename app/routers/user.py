@@ -10,6 +10,10 @@ from app.dependencies import get_expired_users_list, get_validated_user, validat
 from app.models.admin import Admin
 from app.models.user import (
     UserCreate,
+    UserDeviceCreate,
+    UserDeviceResponse,
+    UserDeviceUpdate,
+    UserDevicesResponse,
     UserModify,
     UserResponse,
     UsersResponse,
@@ -73,6 +77,78 @@ def add_user(
 def get_user(dbuser: UserResponse = Depends(get_validated_user)):
     """Get user information"""
     return dbuser
+
+
+@router.get(
+    "/user/{username}/devices",
+    response_model=UserDevicesResponse,
+    responses={403: responses._403, 404: responses._404},
+)
+def list_user_devices(
+    dbuser: UserResponse = Depends(get_validated_user),
+    db: Session = Depends(get_db),
+):
+    devices = crud.get_user_devices(db, dbuser)
+    return {"devices": devices}
+
+
+@router.post(
+    "/user/{username}/devices",
+    response_model=UserDeviceResponse,
+    responses={400: responses._400, 403: responses._403, 404: responses._404, 409: responses._409},
+)
+def add_user_device(
+    device: UserDeviceCreate,
+    dbuser: UserResponse = Depends(get_validated_user),
+    db: Session = Depends(get_db),
+):
+    if dbuser.device_limit and crud.count_user_devices(db, dbuser) >= dbuser.device_limit:
+        raise HTTPException(status_code=403, detail="Device limit reached")
+    try:
+        dbdevice = crud.create_user_device(db, dbuser, device)
+    except IntegrityError:
+        raise HTTPException(status_code=409, detail="Device already exists")
+    return dbdevice
+
+
+@router.put(
+    "/user/{username}/devices/{device_id}",
+    response_model=UserDeviceResponse,
+    responses={400: responses._400, 403: responses._403, 404: responses._404, 409: responses._409},
+)
+def update_user_device(
+    device_id: int,
+    device: UserDeviceUpdate,
+    dbuser: UserResponse = Depends(get_validated_user),
+    db: Session = Depends(get_db),
+):
+    dbdevice = crud.get_user_device(db, dbuser, device_id)
+    if not dbdevice:
+        raise HTTPException(status_code=404, detail="Device not found")
+    if device.hwid:
+        existing = crud.get_user_device_by_hwid(db, dbuser, device.hwid)
+        if existing and existing.id != dbdevice.id:
+            raise HTTPException(status_code=409, detail="Device already exists")
+    try:
+        return crud.update_user_device(db, dbdevice, device)
+    except IntegrityError:
+        raise HTTPException(status_code=409, detail="Device already exists")
+
+
+@router.delete(
+    "/user/{username}/devices/{device_id}",
+    responses={403: responses._403, 404: responses._404},
+)
+def delete_user_device(
+    device_id: int,
+    dbuser: UserResponse = Depends(get_validated_user),
+    db: Session = Depends(get_db),
+):
+    dbdevice = crud.get_user_device(db, dbuser, device_id)
+    if not dbdevice:
+        raise HTTPException(status_code=404, detail="Device not found")
+    crud.delete_user_device(db, dbdevice)
+    return {"detail": "Device successfully deleted"}
 
 
 @router.put("/user/{username}", response_model=UserResponse, responses={400: responses._400, 403: responses._403, 404: responses._404})
