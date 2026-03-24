@@ -253,7 +253,7 @@ class ClashConfiguration(object):
 
         return node
 
-    def add(self, remark: str, address: str, inbound: dict, settings: dict):
+    def add(self, remark: str, address: str, inbound: dict, settings: dict, server_description=None):
         # not supported by clash
         if inbound['network'] in ("kcp", "splithttp", "xhttp"):
             return
@@ -344,7 +344,7 @@ class ClashMetaConfiguration(ClashConfiguration):
 
         return node
 
-    def add(self, remark: str, address: str, inbound: dict, settings: dict):
+    def add(self, remark: str, address: str, inbound: dict, settings: dict, server_description=None):
         # not supported by clash-meta
         if inbound['network'] in ("kcp", "splithttp", "xhttp") or (inbound['network'] == "quic" and inbound["header_type"] != "none"):
             return

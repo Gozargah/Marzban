@@ -9,10 +9,11 @@ from app.db import Session, crud, get_db
 from app.dependencies import get_validated_sub, validate_dates
 from app.models.user import (Socks5CredentialsResponse, SubscriptionUserResponse,
                              UserResponse, UserStatus)
-from app.subscription.share import encode_title, generate_subscription
+from app.subscription.share import encode_subscription_announce, encode_title, generate_subscription
 from app.templates import render_template
 from app.xray.socks import socks5_password, socks5_username
 from config import (
+    SUB_ANNOUNCE,
     SUB_PROFILE_TITLE,
     SUB_SUPPORT_URL,
     SUB_UPDATE_INTERVAL,
@@ -81,6 +82,8 @@ def user_subscription(
             for key, val in get_subscription_user_info(user).items()
         )
     }
+    if SUB_ANNOUNCE:
+        response_headers["announce"] = encode_subscription_announce(SUB_ANNOUNCE)
 
     if re.match(r'^([Cc]lash-verge|[Cc]lash[-\.]?[Mm]eta|[Ff][Ll][Cc]lash|[Mm]ihomo)', user_agent):
         conf = generate_subscription(user=user, config_format="clash-meta", as_base64=False, reverse=False)
@@ -213,6 +216,8 @@ def user_subscription_with_client_type(
             for key, val in get_subscription_user_info(user).items()
         )
     }
+    if SUB_ANNOUNCE:
+        response_headers["announce"] = encode_subscription_announce(SUB_ANNOUNCE)
 
     config = client_config.get(client_type)
     conf = generate_subscription(user=user,

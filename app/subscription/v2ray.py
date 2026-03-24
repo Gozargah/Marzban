@@ -3,7 +3,7 @@ import copy
 import json
 import urllib.parse as urlparse
 from random import choice
-from typing import Union
+from typing import Optional, Union
 from urllib.parse import quote
 from uuid import UUID
 
@@ -22,6 +22,21 @@ from config import (
 )
 
 
+def append_happ_server_description(link: str, remark: str, description: Optional[str]) -> str:
+    """Happ: fragment `#title?serverDescription=<base64 utf-8>` (see Happ app-management docs)."""
+    if not description:
+        return link
+    b64 = base64.b64encode(description.encode("utf-8")).decode("ascii")
+    parts = urlparse.urlparse(link)
+    if parts.fragment and "serverDescription=" in parts.fragment:
+        return link
+    if parts.fragment:
+        new_fragment = f"{parts.fragment}?serverDescription={b64}"
+    else:
+        new_fragment = f"{urlparse.quote(remark)}?serverDescription={b64}"
+    return urlparse.urlunparse(parts._replace(fragment=new_fragment))
+
+
 class V2rayShareLink(str):
     def __init__(self):
         self.links = []
@@ -36,7 +51,14 @@ class V2rayShareLink(str):
             self.links.reverse()
         return self.links
 
-    def add(self, remark: str, address: str, inbound: dict, settings: dict):
+    def add(
+        self,
+        remark: str,
+        address: str,
+        inbound: dict,
+        settings: dict,
+        server_description: Optional[str] = None,
+    ):
         net = inbound["network"]
         multi_mode = inbound.get("multiMode", False)
         old_path: str = inbound["path"]
@@ -174,7 +196,7 @@ class V2rayShareLink(str):
         else:
             return
 
-        self.add_link(link=link)
+        self.add_link(link=append_happ_server_description(link, remark, server_description))
 
     @classmethod
     def vmess(
@@ -562,10 +584,12 @@ class V2rayJsonConfig(str):
 
         del user_agent_data, grpc_user_agent_data
 
-    def add_config(self, remarks, outbounds):
+    def add_config(self, remarks, outbounds, server_description: Optional[str] = None):
         json_template = json.loads(self.template)
         json_template["remarks"] = remarks
         json_template["outbounds"] = outbounds + json_template["outbounds"]
+        if server_description:
+            json_template["meta"] = {"serverDescription": server_description}
         self.config.append(json_template)
 
     def render(self, reverse=False):
@@ -1045,7 +1069,14 @@ class V2rayJsonConfig(str):
                                           tls_settings=tls_settings,
                                           sockopt=sockopt)
 
-    def add(self, remark: str, address: str, inbound: dict, settings: dict):
+    def add(
+        self,
+        remark: str,
+        address: str,
+        inbound: dict,
+        settings: dict,
+        server_description: Optional[str] = None,
+    ):
 
         net = inbound['network']
         protocol = inbound['protocol']
@@ -1106,7 +1137,7 @@ class V2rayJsonConfig(str):
                 password=settings['password'],
             )
             # Hysteria2 uses its own built-in TLS; streamSettings not applicable
-            self.add_config(remarks=remark, outbounds=[outbound])
+            self.add_config(remarks=remark, outbounds=[outbound], server_description=server_description)
             return
 
         outbounds = [outbound]
@@ -1151,4 +1182,4 @@ class V2rayJsonConfig(str):
             outbound["mux"] = mux_config
             outbound["mux"]["enabled"] = True
 
-        self.add_config(remarks=remark, outbounds=outbounds)
+        self.add_config(remarks=remark, outbounds=outbounds, server_description=server_description)

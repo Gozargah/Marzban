@@ -27,7 +27,7 @@ class OutlineConfiguration:
         }
         return config
 
-    def add(self, remark: str, address: str, inbound: dict, settings: dict):
+    def add(self, remark: str, address: str, inbound: dict, settings: dict, server_description=None):
         if inbound["protocol"] != "shadowsocks":
             return
 

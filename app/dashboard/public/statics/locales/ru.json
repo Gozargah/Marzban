@@ -62,6 +62,7 @@
   "hostsDialog.host.wildcard": "Используйте <badge>*</badge>, чтобы сгенерировать случайную строку (работает для wildcard доменов)",
   "hostsDialog.jalaliExpireDate": "Дата истечения срока по солнечному календарю",
   "hostsDialog.loading": "загрузка...",
+  "hostsDialog.happServerDescription": "Happ: подпись под именем сервера (до 30 симв.)",
   "hostsDialog.muxEnable": "Давать возможность MUX",
   "hostsDialog.path": "Path",
   "hostsDialog.path.info": "Set a path for host users, useful behind a reverse proxy.",

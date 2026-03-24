@@ -184,6 +184,7 @@ class ProxyHost(BaseModel):
     noise_setting: Optional[str] = Field(None, nullable=True)
     random_user_agent: Union[bool, None] = None
     use_sni_as_host: Union[bool, None] = None
+    happ_server_description: Optional[str] = Field(default=None, max_length=30)
     model_config = ConfigDict(from_attributes=True)
 
     @field_validator("remark", mode="after")
@@ -202,6 +203,17 @@ class ProxyHost(BaseModel):
         except ValueError as exc:
             raise ValueError("Invalid formatting variables")
 
+        return v
+
+    @field_validator("happ_server_description", mode="after")
+    @classmethod
+    def validate_happ_server_description(cls, v):
+        if v is None or v == "":
+            return None
+        try:
+            v.format_map(FormatVariables())
+        except ValueError as exc:
+            raise ValueError("Invalid formatting variables") from exc
         return v
 
     @field_validator("fragment_setting", check_fields=False)

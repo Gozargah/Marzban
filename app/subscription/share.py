@@ -4,7 +4,7 @@ import secrets
 from collections import defaultdict
 from datetime import datetime as dt
 from datetime import timedelta
-from typing import TYPE_CHECKING, List, Literal, Union
+from typing import TYPE_CHECKING, List, Literal, Optional, Union
 
 from jdatetime import date as jd
 
@@ -313,11 +313,19 @@ def process_inbounds_and_tags(
                     }
                 )
 
+                sd_raw = host.get("happ_server_description") or ""
+                server_description: Optional[str] = (
+                    sd_raw.format_map(format_variables).strip() if sd_raw else None
+                )
+                if server_description == "":
+                    server_description = None
+
                 conf.add(
                     remark=host["remark"].format_map(format_variables),
                     address=address.format_map(format_variables),
                     inbound=host_inbound,
-                    settings=settings.model_dump()
+                    settings=settings.model_dump(),
+                    server_description=server_description,
                 )
 
     return conf.render(reverse=reverse)
@@ -325,3 +333,8 @@ def process_inbounds_and_tags(
 
 def encode_title(text: str) -> str:
     return f"base64:{base64.b64encode(text.encode()).decode()}"
+
+
+def encode_subscription_announce(text: str) -> str:
+    """Happ `announce` header: plain or base64; use base64 like profile-title for Unicode safety."""
+    return encode_title(text)

@@ -62,6 +62,7 @@
   "hostsDialog.host.wildcard": "Use <badge>*</badge> to generate a random string (works for wildcard domain names)",
   "hostsDialog.jalaliExpireDate": "Expiry date of the user in solar calendar",
   "hostsDialog.loading": "loading...",
+  "hostsDialog.happServerDescription": "Happ: line under server name (max 30 chars)",
   "hostsDialog.muxEnable": "Enable MUX",
   "hostsDialog.path": "Path",
   "hostsDialog.path.info": "Set a path for host users, useful behind a reverse proxy.",

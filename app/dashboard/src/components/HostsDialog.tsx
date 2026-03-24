@@ -153,6 +153,10 @@ const hostsSchema = z.record(
       alpn: z.string(),
       fingerprint: z.string(),
       use_sni_as_host: z.boolean().default(false),
+      happ_server_description: z
+        .union([z.string(), z.null(), z.undefined()])
+        .transform((v) => (v == null ? "" : v))
+        .pipe(z.string().max(30, "Max 30 characters (Happ)")),
     })
   )
 );
@@ -214,6 +218,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
       alpn: "",
       fingerprint: "",
       use_sni_as_host: false,
+      happ_server_description: "",
     });
   };
   const duplicateHost = (index: number) => {
@@ -415,6 +420,32 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                       )}
                     </FormControl>
                   </HStack>
+                  <FormControl
+                    isInvalid={
+                      !!(
+                        accordionErrors &&
+                        accordionErrors[index]?.happ_server_description
+                      )
+                    }
+                  >
+                    <Input
+                      size="sm"
+                      borderRadius="4px"
+                      placeholder={t("hostsDialog.happServerDescription")}
+                      {...form.register(
+                        hostKey + "." + index + ".happ_server_description"
+                      )}
+                    />
+                    {accordionErrors &&
+                      accordionErrors[index]?.happ_server_description && (
+                        <Error>
+                          {
+                            accordionErrors[index]?.happ_server_description
+                              ?.message
+                          }
+                        </Error>
+                      )}
+                  </FormControl>
                   <FormControl
                     isInvalid={
                       !!(accordionErrors && accordionErrors[index]?.address)
