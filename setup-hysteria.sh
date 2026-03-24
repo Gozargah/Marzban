@@ -59,10 +59,10 @@ fi
 if [[ -f "$HYSTERIA_YAML" ]]; then
     log "hysteria.yaml already exists — skipping creation (delete to regenerate)"
 else
-    log "Creating hysteria.yaml (domain: $DOMAIN, port: 2087)"
+    log "Creating hysteria.yaml (domain: $DOMAIN, port: 443)"
     mkdir -p "$(dirname "$HYSTERIA_YAML")"
     cat > "$HYSTERIA_YAML" <<YAML
-listen: :2087
+listen: :443
 
 tls:
   cert: /certs/fullchain.pem

@@ -145,16 +145,24 @@ class TestParamSorting:
                     f"Params not sorted within a single call: {uids}"
 
 
-# ── Hysteria2 traffic accounting ──────────────────────────────────────────────
+# в”Ђв”Ђ Hysteria2 traffic accounting в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 
 class TestRecordHysteriaUsages:
     def test_empty_stats_returns_early(self):
-        """No DB calls when there are no traffic stats."""
-        with patch("app.jobs.record_hysteria_usage._fetch_traffic", return_value={}), \
-             patch("app.jobs.record_hysteria_usage.GetDB") as mock_getdb:
+        """No work after collection when merged stats are empty."""
+        mock_db = MagicMock()
+        mock_db.__enter__ = MagicMock(return_value=mock_db)
+        mock_db.__exit__ = MagicMock(return_value=False)
+        with patch(
+            "app.jobs.record_hysteria_usage._collect_traffic_sources",
+            return_value=({}, []),
+        ), patch("app.jobs.record_hysteria_usage.GetDB", return_value=mock_db), \
+             patch("app.jobs.record_hysteria_usage.record_user_stats") as mock_rus, \
+             patch("app.jobs.record_hysteria_usage.record_node_stats") as mock_rns:
             from app.jobs.record_hysteria_usage import record_hysteria_usages
             record_hysteria_usages()
-        mock_getdb.assert_not_called()
+        mock_rus.assert_not_called()
+        mock_rns.assert_not_called()
 
     def test_traffic_aggregated_correctly(self):
         """tx+rx are summed for each user."""
@@ -162,6 +170,7 @@ class TestRecordHysteriaUsages:
             "alice": {"tx": 1000, "rx": 500},
             "bob":   {"tx": 0,    "rx": 200},
         }
+        per_source = [(None, stats)]
 
         captured_params = []
 
@@ -174,7 +183,6 @@ class TestRecordHysteriaUsages:
         mock_db.__enter__ = MagicMock(return_value=mock_db)
         mock_db.__exit__ = MagicMock(return_value=False)
 
-        # Simulate rows returned for alice (id=1, admin=10) and bob (id=2, admin=10)
         row_alice = MagicMock()
         row_alice.id = 1
         row_alice.username = "alice"
@@ -189,22 +197,26 @@ class TestRecordHysteriaUsages:
             row_alice, row_bob
         ]
 
-        with patch("app.jobs.record_hysteria_usage._fetch_traffic", return_value=stats), \
-             patch("app.jobs.record_hysteria_usage.GetDB", return_value=mock_db), \
+        with patch(
+            "app.jobs.record_hysteria_usage._collect_traffic_sources",
+            return_value=(stats, per_source),
+        ), patch("app.jobs.record_hysteria_usage.GetDB", return_value=mock_db), \
              patch("app.jobs.record_hysteria_usage.safe_execute",
-                   side_effect=fake_safe_execute):
+                   side_effect=fake_safe_execute), \
+             patch("app.jobs.record_hysteria_usage.record_user_stats"), \
+             patch("app.jobs.record_hysteria_usage.record_node_stats"):
             from app.jobs.record_hysteria_usage import record_hysteria_usages
             record_hysteria_usages()
 
-        # First safe_execute call = user params
         user_params_sent = [p for p in captured_params if "uid" in p]
         values = {p["uid"]: p["value"] for p in user_params_sent}
-        assert values[1] == 1500  # alice: tx+rx = 1000+500
-        assert values[2] == 200   # bob: tx+rx = 0+200
+        assert values[1] == 1500
+        assert values[2] == 200
 
     def test_user_params_sorted_by_uid(self):
         """record_hysteria_usages must sort user_params by uid."""
         stats = {f"user{i}": {"tx": 100, "rx": 50} for i in range(5)}
+        per_source = [(None, stats)]
         captured_params = []
 
         def fake_safe_execute(db, stmt, params=None):
@@ -219,17 +231,21 @@ class TestRecordHysteriaUsages:
         rows = []
         for i in range(5):
             r = MagicMock()
-            r.id = 5 - i   # reverse order to verify sorting
+            r.id = 5 - i
             r.username = f"user{i}"
             r.admin_id = None
             rows.append(r)
 
         mock_db.query.return_value.filter.return_value.all.return_value = rows
 
-        with patch("app.jobs.record_hysteria_usage._fetch_traffic", return_value=stats), \
-             patch("app.jobs.record_hysteria_usage.GetDB", return_value=mock_db), \
+        with patch(
+            "app.jobs.record_hysteria_usage._collect_traffic_sources",
+            return_value=(stats, per_source),
+        ), patch("app.jobs.record_hysteria_usage.GetDB", return_value=mock_db), \
              patch("app.jobs.record_hysteria_usage.safe_execute",
-                   side_effect=fake_safe_execute):
+                   side_effect=fake_safe_execute), \
+             patch("app.jobs.record_hysteria_usage.record_user_stats"), \
+             patch("app.jobs.record_hysteria_usage.record_node_stats"):
             from app.jobs.record_hysteria_usage import record_hysteria_usages
             record_hysteria_usages()
 
@@ -240,6 +256,7 @@ class TestRecordHysteriaUsages:
     def test_zero_traffic_users_skipped(self):
         """Users with zero total traffic must not generate update params."""
         stats = {"alice": {"tx": 0, "rx": 0}}
+        per_source = [(None, stats)]
 
         mock_db = MagicMock()
         mock_db.bind.name = "sqlite"
@@ -252,10 +269,52 @@ class TestRecordHysteriaUsages:
         row.admin_id = None
         mock_db.query.return_value.filter.return_value.all.return_value = [row]
 
-        with patch("app.jobs.record_hysteria_usage._fetch_traffic", return_value=stats), \
-             patch("app.jobs.record_hysteria_usage.GetDB", return_value=mock_db), \
-             patch("app.jobs.record_hysteria_usage.safe_execute") as mock_se:
+        with patch(
+            "app.jobs.record_hysteria_usage._collect_traffic_sources",
+            return_value=(stats, per_source),
+        ), patch("app.jobs.record_hysteria_usage.GetDB", return_value=mock_db), \
+             patch("app.jobs.record_hysteria_usage.safe_execute") as mock_se, \
+             patch("app.jobs.record_hysteria_usage.record_user_stats") as mock_rus, \
+             patch("app.jobs.record_hysteria_usage.record_node_stats") as mock_rns:
             from app.jobs.record_hysteria_usage import record_hysteria_usages
             record_hysteria_usages()
 
         mock_se.assert_not_called()
+        mock_rus.assert_not_called()
+        mock_rns.assert_not_called()
+
+    def test_per_node_hysteria_calls_record_user_and_node_stats(self):
+        """Each non-empty source triggers per-node DB recording."""
+        n1 = {"alice": {"tx": 100, "rx": 50}}
+        n2 = {"alice": {"tx": 10, "rx": 5}}
+        merged = {"alice": {"tx": 110, "rx": 55}}
+        per_source = [(1, n1), (2, n2)]
+
+        mock_db = MagicMock()
+        mock_db.bind.name = "sqlite"
+        mock_db.__enter__ = MagicMock(return_value=mock_db)
+        mock_db.__exit__ = MagicMock(return_value=False)
+
+        row = MagicMock()
+        row.id = 1
+        row.username = "alice"
+        row.admin_id = None
+        mock_db.query.return_value.filter.return_value.all.return_value = [row]
+
+        with patch(
+            "app.jobs.record_hysteria_usage._collect_traffic_sources",
+            return_value=(merged, per_source),
+        ), patch("app.jobs.record_hysteria_usage.GetDB", return_value=mock_db), \
+             patch("app.jobs.record_hysteria_usage.safe_execute"), \
+             patch("app.jobs.record_hysteria_usage.record_user_stats") as mock_rus, \
+             patch("app.jobs.record_hysteria_usage.record_node_stats") as mock_rns, \
+             patch("app.jobs.record_hysteria_usage.DISABLE_RECORDING_NODE_USAGE", False):
+            from app.jobs.record_hysteria_usage import record_hysteria_usages
+            record_hysteria_usages()
+
+        assert mock_rus.call_count == 2
+        mock_rus.assert_any_call([{"uid": 1, "value": 150}], 1, 1)
+        mock_rus.assert_any_call([{"uid": 1, "value": 15}], 2, 1)
+        assert mock_rns.call_count == 2
+        mock_rns.assert_any_call([{"up": 50, "down": 100}], 1)
+        mock_rns.assert_any_call([{"up": 5, "down": 10}], 2)

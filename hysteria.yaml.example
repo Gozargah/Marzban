@@ -10,7 +10,7 @@
 # 4. Replace YOUR_DOMAIN with your actual domain
 # 5. Run: marzban restart
 
-listen: :2087
+listen: :443
 
 tls:
   cert: /certs/fullchain.pem

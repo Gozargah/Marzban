@@ -367,11 +367,16 @@ class TestTrafficRecording:
                 executed_params.append(list(params))
 
         t0 = time.perf_counter()
-        with patch("app.jobs.record_hysteria_usage._fetch_traffic",
-                   return_value=traffic_stats), \
+        per_src = [(None, traffic_stats)]
+        with patch(
+                   "app.jobs.record_hysteria_usage._collect_traffic_sources",
+                   return_value=(traffic_stats, per_src),
+               ), \
              patch("app.jobs.record_hysteria_usage.GetDB", return_value=db), \
              patch("app.jobs.record_hysteria_usage.safe_execute",
-                   side_effect=fake_safe_execute):
+                   side_effect=fake_safe_execute), \
+             patch("app.jobs.record_hysteria_usage.record_user_stats"), \
+             patch("app.jobs.record_hysteria_usage.record_node_stats"):
             from app.jobs.record_hysteria_usage import record_hysteria_usages
             record_hysteria_usages()
 
@@ -450,9 +455,15 @@ class TestTrafficRecording:
                     if "value" in p and "uid" in p:
                         captured_values.append(p["value"])
 
-        with patch("app.jobs.record_hysteria_usage._fetch_traffic", return_value=stats), \
+        per_src = [(None, stats)]
+        with patch(
+                   "app.jobs.record_hysteria_usage._collect_traffic_sources",
+                   return_value=(stats, per_src),
+               ), \
              patch("app.jobs.record_hysteria_usage.GetDB", return_value=db), \
-             patch("app.jobs.record_hysteria_usage.safe_execute", side_effect=fake_se):
+             patch("app.jobs.record_hysteria_usage.safe_execute", side_effect=fake_se), \
+             patch("app.jobs.record_hysteria_usage.record_user_stats"), \
+             patch("app.jobs.record_hysteria_usage.record_node_stats"):
             from app.jobs.record_hysteria_usage import record_hysteria_usages
             record_hysteria_usages()
 
