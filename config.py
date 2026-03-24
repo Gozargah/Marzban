@@ -146,8 +146,17 @@ SUB_UPDATE_INTERVAL = config("SUB_UPDATE_INTERVAL", default="12")
 SUB_SUPPORT_URL = config("SUB_SUPPORT_URL", default="https://t.me/")
 SUB_PROFILE_TITLE = config("SUB_PROFILE_TITLE", default="Subscription")
 # Happ subscription announcement (max 200 chars of raw text; longer values are truncated)
-_SUB_ANNOUNCE_RAW = config("SUB_ANNOUNCE", default="", cast=str).strip()
-SUB_ANNOUNCE = _SUB_ANNOUNCE_RAW[:200] if _SUB_ANNOUNCE_RAW else ""
+# Optional: SUB_ANNOUNCE_BOT + SUB_ANNOUNCE_SITE build 4 visual lines: blank, bot, site, blank
+_SUB_ANNOUNCE_BOT = config("SUB_ANNOUNCE_BOT", default="", cast=str).strip()
+_SUB_ANNOUNCE_SITE = config("SUB_ANNOUNCE_SITE", default="", cast=str).strip()
+if _SUB_ANNOUNCE_BOT or _SUB_ANNOUNCE_SITE:
+    _SUB_ANNOUNCE_COMPOSED = f"\n{_SUB_ANNOUNCE_BOT}\n{_SUB_ANNOUNCE_SITE}\n"
+    SUB_ANNOUNCE = _SUB_ANNOUNCE_COMPOSED[:200]
+else:
+    _SUB_ANNOUNCE_RAW = config("SUB_ANNOUNCE", default="", cast=str).strip()
+    # In .env use \n for line breaks (backslash + letter n)
+    _SUB_ANNOUNCE_UNESC = _SUB_ANNOUNCE_RAW.replace("\\n", "\n")
+    SUB_ANNOUNCE = _SUB_ANNOUNCE_UNESC[:200] if _SUB_ANNOUNCE_UNESC else ""
 
 # discord webhook log
 DISCORD_WEBHOOK_URL = config("DISCORD_WEBHOOK_URL", default="")
