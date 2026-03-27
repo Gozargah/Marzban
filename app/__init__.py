@@ -69,6 +69,9 @@ def on_startup():
     from app.utils.hysteria_cache import warmup_cache
     warmup_cache()
 
+    from app.mtproto import sync_mtproto_config
+    sync_mtproto_config()
+
 
 @app.on_event("shutdown")
 def on_shutdown():

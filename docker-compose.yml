@@ -17,3 +17,15 @@ services:
       - /var/lib/marzban/certs:/certs:ro
       - /var/lib/marzban/hysteria.yaml:/etc/hysteria/config.yaml:ro
     command: server
+
+  mtproto:
+    build:
+      context: .
+      dockerfile: docker/mtproto/Dockerfile
+    restart: always
+    env_file: .env
+    network_mode: host
+    depends_on:
+      - marzban
+    volumes:
+      - /var/lib/marzban:/var/lib/marzban

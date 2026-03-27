@@ -8,6 +8,7 @@ from starlette.websockets import WebSocketDisconnect
 
 from app import xray
 from app.db import Session, get_db
+from app.mtproto import sync_mtproto_config
 from app.models.admin import Admin
 from app.models.core import CoreStats
 from app.utils import responses
@@ -88,6 +89,7 @@ def get_core_stats(admin: Admin = Depends(Admin.get_current)):
 @router.post("/core/restart", responses={403: responses._403})
 def restart_core(admin: Admin = Depends(Admin.check_sudo_admin)):
     """Restart the core and all connected nodes."""
+    sync_mtproto_config()
     startup_config = xray.config.include_db_users()
     xray.core.restart(startup_config)
 
@@ -121,6 +123,7 @@ def modify_core_config(
     with open(XRAY_JSON, "w") as f:
         f.write(json.dumps(payload, indent=4))
 
+    sync_mtproto_config()
     startup_config = xray.config.include_db_users()
     xray.core.restart(startup_config)
     for node_id, node in list(xray.nodes.items()):

@@ -9,6 +9,7 @@ from app.db import Session, crud, get_db
 from app.dependencies import get_expired_users_list, get_validated_user, validate_dates
 from app.models.admin import Admin
 from app.models.user import (
+    MTProtoCredentialsResponse,
     Socks5CredentialsResponse,
     UserCreate,
     UserModify,
@@ -17,6 +18,14 @@ from app.models.user import (
     UserStatus,
     UsersUsagesResponse,
     UserUsagesResponse,
+)
+from app.mtproto import (
+    build_tg_mtproto_link,
+    get_mtproto_public_endpoint,
+    is_mtproto_enabled,
+    mtproto_password,
+    mtproto_secret,
+    sync_mtproto_config,
 )
 from app.utils import report, responses
 from app.xray.socks import socks5_password, socks5_username
@@ -96,6 +105,27 @@ def get_user_socks5_credentials(
         port=socks_inbound["port"],
         username=socks5_username(dbuser.username),
         password=socks5_password(dbuser.id, dbuser.username, dbuser.sub_revoked_at),
+    )
+
+
+@router.get("/user/{username}/mtproto", response_model=MTProtoCredentialsResponse, responses={403: responses._403, 404: responses._404})
+def get_user_mtproto_credentials(
+    dbuser: UserResponse = Depends(get_validated_user),
+):
+    """Get MTProto credentials of a specific user."""
+    if not is_mtproto_enabled():
+        raise HTTPException(status_code=404, detail="MTProto proxy is not configured")
+
+    host, port = get_mtproto_public_endpoint()
+    password = mtproto_password(dbuser.id, dbuser.username, dbuser.sub_revoked_at)
+    secret = mtproto_secret(dbuser.id, dbuser.username, dbuser.sub_revoked_at)
+
+    return MTProtoCredentialsResponse(
+        host=host,
+        port=port,
+        password=password,
+        secret=secret,
+        tg_link=build_tg_mtproto_link(host, port, secret),
     )
 
 
@@ -269,6 +299,7 @@ def reset_users_data_usage(
     """Reset all users data usage"""
     dbadmin = crud.get_admin(db, admin.username)
     crud.reset_all_users_data_usage(db=db, admin=dbadmin)
+    sync_mtproto_config()
     startup_config = xray.config.include_db_users()
     xray.core.restart(startup_config)
     for node_id, node in list(xray.nodes.items()):

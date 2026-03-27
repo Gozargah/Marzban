@@ -371,3 +371,11 @@ class Socks5CredentialsResponse(BaseModel):
     port: int
     username: str
     password: str
+
+
+class MTProtoCredentialsResponse(BaseModel):
+    host: str
+    port: int
+    password: str
+    secret: str
+    tg_link: str

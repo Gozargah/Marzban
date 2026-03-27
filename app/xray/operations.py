@@ -8,6 +8,7 @@ from app.db import GetDB, crud
 from app.models.node import NodeStatus
 from app.models.proxy import ProxyTypes
 from app.models.user import UserResponse
+from app.mtproto import is_mtproto_enabled, sync_mtproto_config
 from app.utils.hysteria_cache import invalidate_hysteria_cache
 from app.utils.concurrency import threaded_function
 from app.xray.node import XRayNode
@@ -59,6 +60,8 @@ def _alter_inbound_user(api: XRayAPI, inbound_tag: str, account: Account):
 
 
 def sync_socks_accounts():
+    sync_mtproto_config()
+
     if not xray.config.socks_inbounds_by_tag:
         return
 
@@ -117,7 +120,7 @@ def add_user(dbuser: "DBUser", sync_socks: bool = True):
 
     invalidate_hysteria_cache()
 
-    if has_reload_protocol or sync_socks:
+    if has_reload_protocol or sync_socks or is_mtproto_enabled():
         sync_socks_accounts()
 
 
@@ -144,7 +147,7 @@ def remove_user(dbuser: "DBUser", sync_socks: bool = True):
 
     invalidate_hysteria_cache()
 
-    if has_reload_protocol or sync_socks:
+    if has_reload_protocol or sync_socks or is_mtproto_enabled():
         sync_socks_accounts()
 
 
@@ -212,7 +215,7 @@ def update_user(dbuser: "DBUser", sync_socks: bool = True):
 
     invalidate_hysteria_cache()
 
-    if has_reload_protocol or sync_socks:
+    if has_reload_protocol or sync_socks or is_mtproto_enabled():
         sync_socks_accounts()
 
 

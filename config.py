@@ -36,6 +36,17 @@ XRAY_SOCKS_INBOUND_TAG = config("XRAY_SOCKS_INBOUND_TAG", default="SOCKS5_INBOUN
 XRAY_SOCKS5_HOST = config("XRAY_SOCKS5_HOST", default="").strip()
 XRAY_SUBSCRIPTION_URL_PREFIX = config("XRAY_SUBSCRIPTION_URL_PREFIX", default="").strip("/")
 XRAY_SUBSCRIPTION_PATH = config("XRAY_SUBSCRIPTION_PATH", default="sub").strip("/")
+MTPROTO_BIND_TO = config("MTPROTO_BIND_TO", default="0.0.0.0:1443").strip()
+MTPROTO_PUBLIC_HOST = config("MTPROTO_PUBLIC_HOST", default="").strip()
+MTPROTO_PUBLIC_PORT = config("MTPROTO_PUBLIC_PORT", cast=int, default=0)
+MTPROTO_SECRET_MODE = config("MTPROTO_SECRET_MODE", default="dd").strip().lower()
+MTPROTO_TLS_DOMAIN = config("MTPROTO_TLS_DOMAIN", default="").strip()
+MTPROTO_CONFIG_PATH = config(
+    "MTPROTO_CONFIG_PATH", default="/var/lib/marzban/mtproto/config.toml"
+).strip()
+MTPROTO_STATS_BIND_TO = config(
+    "MTPROTO_STATS_BIND_TO", default="127.0.0.1:39090"
+).strip()
 
 TELEGRAM_API_TOKEN = config("TELEGRAM_API_TOKEN", default="")
 TELEGRAM_ADMIN_ID = config(

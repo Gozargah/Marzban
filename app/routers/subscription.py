@@ -7,8 +7,15 @@ from fastapi.responses import HTMLResponse
 from app import xray
 from app.db import Session, crud, get_db
 from app.dependencies import get_validated_sub, validate_dates
-from app.models.user import (Socks5CredentialsResponse, SubscriptionUserResponse,
+from app.models.user import (MTProtoCredentialsResponse, Socks5CredentialsResponse, SubscriptionUserResponse,
                              UserResponse, UserStatus)
+from app.mtproto import (
+    build_tg_mtproto_link,
+    get_mtproto_public_endpoint,
+    is_mtproto_enabled,
+    mtproto_password,
+    mtproto_secret,
+)
 from app.subscription.share import encode_subscription_announce, encode_title, generate_subscription
 from app.templates import render_template
 from app.xray.socks import socks5_password, socks5_username
@@ -176,6 +183,31 @@ def user_subscription_socks5(
         port=socks_inbound["port"],
         username=socks5_username(dbuser.username),
         password=socks5_password(dbuser.id, dbuser.username, dbuser.sub_revoked_at),
+    )
+
+
+@router.get("/{token}/mtproto", response_model=MTProtoCredentialsResponse)
+def user_subscription_mtproto(
+    request: Request,
+    dbuser: UserResponse = Depends(get_validated_sub),
+):
+    """Retrieves per-user MTProto credentials for active subscriptions."""
+    if dbuser.status not in [UserStatus.active, UserStatus.on_hold]:
+        raise HTTPException(status_code=403, detail="Subscription is inactive")
+
+    if not is_mtproto_enabled():
+        raise HTTPException(status_code=404, detail="MTProto proxy is not configured")
+
+    host, port = get_mtproto_public_endpoint(request.url.hostname or "127.0.0.1")
+    password = mtproto_password(dbuser.id, dbuser.username, dbuser.sub_revoked_at)
+    secret = mtproto_secret(dbuser.id, dbuser.username, dbuser.sub_revoked_at)
+
+    return MTProtoCredentialsResponse(
+        host=host,
+        port=port,
+        password=password,
+        secret=secret,
+        tg_link=build_tg_mtproto_link(host, port, secret),
     )
 
 
