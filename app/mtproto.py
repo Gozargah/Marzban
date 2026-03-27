@@ -78,7 +78,17 @@ def _quoted_toml(value: str) -> str:
 
 def _dummy_secret() -> str:
     raw = sha256(f"mtproto-dummy:{get_secret_key()}".encode()).hexdigest()[:32]
-    return f"dd{raw}"
+    mode = MTPROTO_SECRET_MODE.lower().strip()
+    if mode == "dd":
+        return f"dd{raw}"
+    if mode == "ee":
+        domain = MTPROTO_TLS_DOMAIN.strip()
+        if not domain:
+            raise ValueError(
+                "MTPROTO_TLS_DOMAIN must be set when MTPROTO_SECRET_MODE=ee"
+            )
+        return f"ee{raw}{domain.encode('utf-8').hex()}"
+    raise ValueError("MTPROTO_SECRET_MODE must be either 'dd' or 'ee'")
 
 
 def _bind_port() -> int:
