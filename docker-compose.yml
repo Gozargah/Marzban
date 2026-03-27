@@ -1,6 +1,6 @@
 services:
   marzban:
-    build: .
+    image: maximpyatin/marzban:dev
     restart: always
     env_file: .env
     network_mode: host
@@ -19,9 +19,7 @@ services:
     command: server
 
   mtproto:
-    build:
-      context: .
-      dockerfile: docker/mtproto/Dockerfile
+    image: maximpyatin/marzban-mtproto:dev
     restart: always
     env_file: .env
     network_mode: host
