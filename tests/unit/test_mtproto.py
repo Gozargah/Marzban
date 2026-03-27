@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from types import SimpleNamespace
 from unittest.mock import patch
 
+import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -88,6 +89,13 @@ class TestMtprotoHelpers:
         assert secret.startswith("ee")
         assert "63646e2e6578616d706c652e636f6d" in secret
 
+    def test_secret_requires_tls_domain_in_ee_mode(self):
+        with patch("app.mtproto.get_secret_key", return_value="jwt-secret"), patch(
+            "app.mtproto.MTPROTO_SECRET_MODE", "ee"
+        ), patch("app.mtproto.MTPROTO_TLS_DOMAIN", ""):
+            with pytest.raises(ValueError, match="MTPROTO_TLS_DOMAIN"):
+                mtproto_secret(1, "alice")
+
     def test_build_tg_link(self):
         link = build_tg_mtproto_link("pool.example.com", 1443, "ddabcdef")
         assert link == (
@@ -121,11 +129,45 @@ class TestMtprotoHelpers:
         ):
             rendered = render_mtproto_config()
 
-        assert 'bind-to = "0.0.0.0:1443"' in rendered
-        assert 'api-bind-to = "127.0.0.1:39090"' in rendered
-        assert '"alice" = "dd' in rendered
-        assert '"bob" = "dd' in rendered
+        assert "[general]" in rendered
+        assert "use_middle_proxy = false" in rendered
+        assert "[general.modes]" in rendered
+        assert "classic = true" not in rendered
+        assert "secure = true" in rendered
+        assert "tls = false" in rendered
+        assert "[server]" in rendered
+        assert "port = 1443" in rendered
+        assert "[server.api]" in rendered
+        assert 'listen = "127.0.0.1:39090"' in rendered
+        assert "[access.users]" in rendered
+        assert '"alice" = "' in rendered
+        assert '"bob" = "' in rendered
+        assert '"alice" = "dd' not in rendered
+        assert '"bob" = "dd' not in rendered
         assert '"__disabled__"' in rendered
+
+    def test_render_config_uses_tls_mode_for_ee(self):
+        rows = [SimpleNamespace(id=1, username="alice", sub_revoked_at=None)]
+
+        with patch("app.mtproto.GetDB", return_value=_FakeDBContext(rows)), patch(
+            "app.mtproto.MTPROTO_BIND_TO", "0.0.0.0:443"
+        ), patch(
+            "app.mtproto.MTPROTO_CONFIG_PATH", "/tmp/mtproto.toml"
+        ), patch(
+            "app.mtproto.MTPROTO_STATS_BIND_TO", ""
+        ), patch(
+            "app.mtproto.MTPROTO_SECRET_MODE", "ee"
+        ), patch(
+            "app.mtproto.MTPROTO_TLS_DOMAIN", "cdn.example.com"
+        ), patch(
+            "app.mtproto.get_secret_key", return_value="jwt-secret"
+        ):
+            rendered = render_mtproto_config()
+
+        assert "secure = false" in rendered
+        assert "tls = true" in rendered
+        assert "[censorship]" in rendered
+        assert 'tls_domain = "cdn.example.com"' in rendered
 
 
 class TestMtprotoRouters:

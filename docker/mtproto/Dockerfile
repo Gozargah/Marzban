@@ -1,17 +1,20 @@
-FROM golang:1.26-alpine AS build
+FROM rust:alpine AS build
 
-RUN apk add --no-cache git
+ARG TELEMT_REF=3.3.27
+
+RUN apk add --no-cache build-base git musl-dev
 
 WORKDIR /src
 
-RUN git clone --depth 1 https://github.com/dolonet/mtg-multi.git . \
-    && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /usr/local/bin/mtg-multi .
+RUN git clone --depth 1 --branch "${TELEMT_REF}" https://github.com/telemt/telemt.git . \
+    && cargo build --release \
+    && cp target/release/telemt /usr/local/bin/telemt
 
 FROM alpine:3.21
 
 RUN apk add --no-cache ca-certificates
 
-COPY --from=build /usr/local/bin/mtg-multi /usr/local/bin/mtg-multi
+COPY --from=build /usr/local/bin/telemt /usr/local/bin/telemt
 COPY docker/mtproto/entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh

@@ -18,7 +18,7 @@ cleanup() {
 trap cleanup INT TERM
 
 start_proxy() {
-  /usr/local/bin/mtg-multi run "$CONFIG_PATH" &
+  /usr/local/bin/telemt "$CONFIG_PATH" &
   child_pid="$!"
 }
 

@@ -45,20 +45,30 @@ def mtproto_secret(
     sub_revoked_at: datetime | None = None,
 ) -> str:
     password = mtproto_password(user_id, username, sub_revoked_at)
-    mode = MTPROTO_SECRET_MODE.lower().strip()
+    mode = _secret_mode()
 
     if mode == "dd":
         return f"dd{password}"
 
     if mode == "ee":
-        domain = MTPROTO_TLS_DOMAIN.strip()
-        if not domain:
-            raise ValueError(
-                "MTPROTO_TLS_DOMAIN must be set when MTPROTO_SECRET_MODE=ee"
-            )
+        domain = _tls_domain()
         return f"ee{password}{domain.encode('utf-8').hex()}"
 
     raise ValueError("MTPROTO_SECRET_MODE must be either 'dd' or 'ee'")
+
+
+def _secret_mode() -> str:
+    mode = MTPROTO_SECRET_MODE.lower().strip()
+    if mode not in {"dd", "ee"}:
+        raise ValueError("MTPROTO_SECRET_MODE must be either 'dd' or 'ee'")
+    return mode
+
+
+def _tls_domain() -> str:
+    domain = MTPROTO_TLS_DOMAIN.strip()
+    if not domain:
+        raise ValueError("MTPROTO_TLS_DOMAIN must be set when MTPROTO_SECRET_MODE=ee")
+    return domain
 
 
 def build_tg_mtproto_link(server: str, port: int, secret: str) -> str:
@@ -76,19 +86,12 @@ def _quoted_toml(value: str) -> str:
     return json.dumps(value)
 
 
+def _quoted_toml_list(values: list[str]) -> str:
+    return json.dumps(values)
+
+
 def _dummy_secret() -> str:
-    raw = sha256(f"mtproto-dummy:{get_secret_key()}".encode()).hexdigest()[:32]
-    mode = MTPROTO_SECRET_MODE.lower().strip()
-    if mode == "dd":
-        return f"dd{raw}"
-    if mode == "ee":
-        domain = MTPROTO_TLS_DOMAIN.strip()
-        if not domain:
-            raise ValueError(
-                "MTPROTO_TLS_DOMAIN must be set when MTPROTO_SECRET_MODE=ee"
-            )
-        return f"ee{raw}{domain.encode('utf-8').hex()}"
-    raise ValueError("MTPROTO_SECRET_MODE must be either 'dd' or 'ee'")
+    return sha256(f"mtproto-dummy:{get_secret_key()}".encode()).hexdigest()[:32]
 
 
 def _bind_port() -> int:
@@ -129,19 +132,50 @@ def render_mtproto_config() -> str:
             .all()
         )
 
-    lines = [f"bind-to = {_quoted_toml(MTPROTO_BIND_TO.strip())}"]
+    mode = _secret_mode()
+    bind_port = _bind_port()
+    lines = [
+        "[general]",
+        "use_middle_proxy = false",
+        "",
+        "[general.modes]",
+        "classic = false",
+        f"secure = {'true' if mode == 'dd' else 'false'}",
+        f"tls = {'true' if mode == 'ee' else 'false'}",
+        "",
+        "[server]",
+        f"port = {bind_port}",
+    ]
 
     stats_bind_to = MTPROTO_STATS_BIND_TO.strip()
     if stats_bind_to:
-        lines.append(f"api-bind-to = {_quoted_toml(stats_bind_to)}")
+        lines.extend(
+            [
+                "",
+                "[server.api]",
+                "enabled = true",
+                f"listen = {_quoted_toml(stats_bind_to)}",
+                f"whitelist = {_quoted_toml_list(['127.0.0.1/32', '::1/128'])}",
+                "read_only = true",
+            ]
+        )
 
-    lines.extend(["", "[secrets]"])
+    if mode == "ee":
+        lines.extend(
+            [
+                "",
+                "[censorship]",
+                f"tls_domain = {_quoted_toml(_tls_domain())}",
+            ]
+        )
+
+    lines.extend(["", "[access.users]"])
     lines.append(f'"__disabled__" = {_quoted_toml(_dummy_secret())}')
 
     for user in users:
         lines.append(
             f"{_quoted_toml(user.username)} = "
-            f"{_quoted_toml(mtproto_secret(user.id, user.username, user.sub_revoked_at))}"
+            f"{_quoted_toml(mtproto_password(user.id, user.username, user.sub_revoked_at))}"
         )
 
     lines.append("")

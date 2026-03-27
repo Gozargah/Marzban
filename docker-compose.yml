@@ -23,6 +23,12 @@ services:
     restart: always
     env_file: .env
     network_mode: host
+    cap_add:
+      - NET_BIND_SERVICE
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     depends_on:
       - marzban
     volumes:
