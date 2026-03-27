@@ -1591,9 +1591,6 @@ def confirm_user_command(call: types.CallbackQuery):
     elif data == 'restart':
         m = bot.edit_message_text(
             '🔄 Restarting XRay core...', call.message.chat.id, call.message.message_id)
-        from app.mtproto import sync_mtproto_config
-
-        sync_mtproto_config()
         config = xray.config.include_db_users()
         xray.core.restart(config)
         for node_id, node in list(xray.nodes.items()):

@@ -25,7 +25,6 @@ from app.mtproto import (
     is_mtproto_enabled,
     mtproto_password,
     mtproto_secret,
-    sync_mtproto_config,
 )
 from app.utils import report, responses
 from app.xray.socks import socks5_password, socks5_username
@@ -299,7 +298,6 @@ def reset_users_data_usage(
     """Reset all users data usage"""
     dbadmin = crud.get_admin(db, admin.username)
     crud.reset_all_users_data_usage(db=db, admin=dbadmin)
-    sync_mtproto_config()
     startup_config = xray.config.include_db_users()
     xray.core.restart(startup_config)
     for node_id, node in list(xray.nodes.items()):

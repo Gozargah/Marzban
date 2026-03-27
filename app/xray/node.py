@@ -163,6 +163,12 @@ class ReSTXRayNode:
         res = self.make_request("/", timeout=3)
         return res.get('core_version')
 
+    def get_mtproto_status(self):
+        return self.make_request("/mtproto/status", timeout=5)
+
+    def apply_mtproto_users(self, users: list[dict[str, str]]):
+        return self.make_request("/mtproto/apply", timeout=15, users=users)
+
     def start(self, config: XRayConfig):
         if not self.connected:
             self.connect()

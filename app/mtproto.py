@@ -1,23 +1,19 @@
 from __future__ import annotations
 
-import json
 import logging
 from datetime import datetime
 from hashlib import sha256
-from pathlib import Path
 from urllib.parse import urlencode
 
-from app.db import GetDB
+from app.db import GetDB, crud
 from app.db import models as db_models
 from app.models.user import UserStatus
 from app.utils.jwt import get_secret_key
 from config import (
-    MTPROTO_BIND_TO,
-    MTPROTO_CONFIG_PATH,
+    MTPROTO_NODE_NAME,
     MTPROTO_PUBLIC_HOST,
     MTPROTO_PUBLIC_PORT,
     MTPROTO_SECRET_MODE,
-    MTPROTO_STATS_BIND_TO,
     MTPROTO_TLS_DOMAIN,
 )
 
@@ -33,7 +29,6 @@ def mtproto_password(
     username: str,
     sub_revoked_at: datetime | None = None,
 ) -> str:
-    # Use the same revocation-sensitive source material pattern as SOCKS5.
     revoked_at = int(sub_revoked_at.timestamp()) if sub_revoked_at else 0
     raw = f"{user_id}:{username}:{revoked_at}:{get_secret_key()}:mtproto"
     return sha256(raw.encode()).hexdigest()[:32]
@@ -50,11 +45,8 @@ def mtproto_secret(
     if mode == "dd":
         return f"dd{password}"
 
-    if mode == "ee":
-        domain = _tls_domain()
-        return f"ee{password}{domain.encode('utf-8').hex()}"
-
-    raise ValueError("MTPROTO_SECRET_MODE must be either 'dd' or 'ee'")
+    domain = _tls_domain()
+    return f"ee{password}{domain.encode('utf-8').hex()}"
 
 
 def _secret_mode() -> str:
@@ -82,42 +74,21 @@ def build_tg_mtproto_link(server: str, port: int, secret: str) -> str:
     return f"tg://proxy?{params}"
 
 
-def _quoted_toml(value: str) -> str:
-    return json.dumps(value)
-
-
-def _quoted_toml_list(values: list[str]) -> str:
-    return json.dumps(values)
-
-
-def _dummy_secret() -> str:
-    return sha256(f"mtproto-dummy:{get_secret_key()}".encode()).hexdigest()[:32]
-
-
-def _bind_port() -> int:
-    bind_to = MTPROTO_BIND_TO.strip()
-    if not bind_to or ":" not in bind_to:
-        raise ValueError("MTPROTO_BIND_TO must be in host:port format")
-    return int(bind_to.rsplit(":", 1)[1])
-
-
 def get_mtproto_public_endpoint(request_host: str | None = None) -> tuple[str, int]:
     host = MTPROTO_PUBLIC_HOST.strip() or (request_host or "").strip()
     if not host:
         host = "SERVER_PUBLIC_DOMAIN"
 
-    port = MTPROTO_PUBLIC_PORT or _bind_port()
-    return host, port
+    return host, MTPROTO_PUBLIC_PORT
 
 
 def is_mtproto_enabled() -> bool:
-    return bool(MTPROTO_BIND_TO.strip() and MTPROTO_CONFIG_PATH.strip())
+    return bool(
+        MTPROTO_NODE_NAME.strip() and MTPROTO_PUBLIC_HOST.strip() and MTPROTO_PUBLIC_PORT
+    )
 
 
-def render_mtproto_config() -> str:
-    if not is_mtproto_enabled():
-        raise ValueError("MTProto is not configured")
-
+def _get_mtproto_sync_users() -> list[dict[str, str]]:
     with GetDB() as db:
         users = (
             db.query(
@@ -132,66 +103,65 @@ def render_mtproto_config() -> str:
             .all()
         )
 
-    mode = _secret_mode()
-    bind_port = _bind_port()
-    lines = [
-        "[general]",
-        "use_middle_proxy = false",
-        "",
-        "[general.modes]",
-        "classic = false",
-        f"secure = {'true' if mode == 'dd' else 'false'}",
-        f"tls = {'true' if mode == 'ee' else 'false'}",
-        "",
-        "[server]",
-        f"port = {bind_port}",
+    return [
+        {
+            "username": user.username,
+            "secret": mtproto_password(user.id, user.username, user.sub_revoked_at),
+        }
+        for user in users
     ]
 
-    stats_bind_to = MTPROTO_STATS_BIND_TO.strip()
-    if stats_bind_to:
-        lines.extend(
-            [
-                "",
-                "[server.api]",
-                "enabled = true",
-                f"listen = {_quoted_toml(stats_bind_to)}",
-                f"whitelist = {_quoted_toml_list(['127.0.0.1/32', '::1/128'])}",
-                "read_only = true",
-            ]
-        )
 
-    if mode == "ee":
-        lines.extend(
-            [
-                "",
-                "[censorship]",
-                f"tls_domain = {_quoted_toml(_tls_domain())}",
-            ]
-        )
-
-    lines.extend(["", "[access.users]"])
-    lines.append(f'"__disabled__" = {_quoted_toml(_dummy_secret())}')
-
-    for user in users:
-        lines.append(
-            f"{_quoted_toml(user.username)} = "
-            f"{_quoted_toml(mtproto_password(user.id, user.username, user.sub_revoked_at))}"
-        )
-
-    lines.append("")
-    return "\n".join(lines)
+def build_mtproto_sync_payload() -> dict[str, list[dict[str, str]]]:
+    return {"users": _get_mtproto_sync_users()}
 
 
-def sync_mtproto_config() -> None:
+def sync_mtproto_node(node_id: int | None = None) -> None:
     if not is_mtproto_enabled():
         return
 
-    path = Path(MTPROTO_CONFIG_PATH)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    config_text = render_mtproto_config()
+    target_node_name = MTPROTO_NODE_NAME.strip()
+    with GetDB() as db:
+        dbnode = crud.get_node(db, target_node_name)
 
-    tmp_path = path.with_suffix(path.suffix + ".tmp")
-    tmp_path.write_text(config_text, encoding="utf-8")
-    tmp_path.replace(path)
+    if not dbnode:
+        logger.warning('MTProto target node "%s" was not found', target_node_name)
+        return
 
-    logger.info("MTProto config synced to %s", path)
+    if node_id is not None and dbnode.id != node_id:
+        return
+
+    from app import xray
+
+    node = xray.nodes.get(dbnode.id)
+    if not node or not node.connected:
+        logger.info(
+            'Skipping MTProto sync: target node "%s" is not connected',
+            target_node_name,
+        )
+        return
+
+    if not hasattr(node, "apply_mtproto_users"):
+        logger.warning(
+            'Skipping MTProto sync: node "%s" does not support MTProto sync',
+            target_node_name,
+        )
+        return
+
+    payload = build_mtproto_sync_payload()
+    try:
+        node.apply_mtproto_users(payload["users"])
+    except Exception as exc:
+        detail = getattr(exc, "detail", str(exc))
+        logger.warning(
+            'Failed to sync MTProto config to node "%s": %s',
+            target_node_name,
+            detail,
+        )
+        return
+
+    logger.info(
+        'MTProto config synced to node "%s" with %d users',
+        target_node_name,
+        len(payload["users"]),
+    )

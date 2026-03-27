@@ -3,7 +3,6 @@ import traceback
 
 from app import app, logger, scheduler, xray
 from app.db import GetDB, crud
-from app.mtproto import sync_mtproto_config
 from app.models.node import NodeStatus
 from config import JOB_CORE_HEALTH_CHECK_INTERVAL
 from xray_api import exc as xray_exc
@@ -15,7 +14,6 @@ def core_health_check():
     # main core
     if not xray.core.started:
         if not config:
-            sync_mtproto_config()
             config = xray.config.include_db_users()
         xray.core.restart(config)
 
@@ -27,13 +25,11 @@ def core_health_check():
                 node.api.get_sys_stats(timeout=2)
             except (ConnectionError, xray_exc.XrayError, AssertionError):
                 if not config:
-                    sync_mtproto_config()
                     config = xray.config.include_db_users()
                 xray.operations.restart_node(node_id, config)
 
         if not node.connected:
             if not config:
-                sync_mtproto_config()
                 config = xray.config.include_db_users()
             xray.operations.connect_node(node_id, config)
 
@@ -43,7 +39,6 @@ def start_core():
     logger.info("Generating Xray core config")
 
     start_time = time.time()
-    sync_mtproto_config()
     config = xray.config.include_db_users()
     logger.info(f"Xray core config generated in {(time.time() - start_time):.2f} seconds")
 

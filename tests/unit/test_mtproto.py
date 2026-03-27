@@ -9,10 +9,11 @@ from fastapi.testclient import TestClient
 from app.dependencies import get_validated_sub, get_validated_user
 from app.models.user import UserStatus
 from app.mtproto import (
+    build_mtproto_sync_payload,
     build_tg_mtproto_link,
     mtproto_password,
     mtproto_secret,
-    render_mtproto_config,
+    sync_mtproto_node,
 )
 from app.routers.subscription import router as subscription_router
 from app.routers.user import router as user_router
@@ -102,7 +103,7 @@ class TestMtprotoHelpers:
             "tg://proxy?server=pool.example.com&port=1443&secret=ddabcdef"
         )
 
-    def test_render_config_contains_active_users(self):
+    def test_build_sync_payload_contains_active_users(self):
         rows = [
             SimpleNamespace(
                 id=1,
@@ -117,57 +118,42 @@ class TestMtprotoHelpers:
         ]
 
         with patch("app.mtproto.GetDB", return_value=_FakeDBContext(rows)), patch(
-            "app.mtproto.MTPROTO_BIND_TO", "0.0.0.0:1443"
-        ), patch(
-            "app.mtproto.MTPROTO_CONFIG_PATH", "/tmp/mtproto.toml"
-        ), patch(
-            "app.mtproto.MTPROTO_STATS_BIND_TO", "127.0.0.1:39090"
-        ), patch(
-            "app.mtproto.MTPROTO_SECRET_MODE", "dd"
-        ), patch(
             "app.mtproto.get_secret_key", return_value="jwt-secret"
         ):
-            rendered = render_mtproto_config()
+            payload = build_mtproto_sync_payload()
+            expected = {
+                "users": [
+                    {
+                        "username": "alice",
+                        "secret": mtproto_password(1, "alice", rows[0].sub_revoked_at),
+                    },
+                    {
+                        "username": "bob",
+                        "secret": mtproto_password(2, "bob", None),
+                    },
+                ]
+            }
 
-        assert "[general]" in rendered
-        assert "use_middle_proxy = false" in rendered
-        assert "[general.modes]" in rendered
-        assert "classic = true" not in rendered
-        assert "secure = true" in rendered
-        assert "tls = false" in rendered
-        assert "[server]" in rendered
-        assert "port = 1443" in rendered
-        assert "[server.api]" in rendered
-        assert 'listen = "127.0.0.1:39090"' in rendered
-        assert "[access.users]" in rendered
-        assert '"alice" = "' in rendered
-        assert '"bob" = "' in rendered
-        assert '"alice" = "dd' not in rendered
-        assert '"bob" = "dd' not in rendered
-        assert '"__disabled__"' in rendered
+        assert payload == expected
 
-    def test_render_config_uses_tls_mode_for_ee(self):
-        rows = [SimpleNamespace(id=1, username="alice", sub_revoked_at=None)]
+    def test_sync_mtproto_node_pushes_users_to_target_node(self):
+        fake_node = SimpleNamespace(connected=True)
+        pushed_users = []
+        fake_node.apply_mtproto_users = pushed_users.append
 
-        with patch("app.mtproto.GetDB", return_value=_FakeDBContext(rows)), patch(
-            "app.mtproto.MTPROTO_BIND_TO", "0.0.0.0:443"
+        with patch("app.mtproto.MTPROTO_NODE_NAME", "tg-node"), patch(
+            "app.mtproto.MTPROTO_PUBLIC_HOST", "tg.example.com"
+        ), patch("app.mtproto.MTPROTO_PUBLIC_PORT", 1443), patch(
+            "app.mtproto.GetDB", return_value=_FakeDBContext([])
         ), patch(
-            "app.mtproto.MTPROTO_CONFIG_PATH", "/tmp/mtproto.toml"
+            "app.mtproto.crud.get_node", return_value=SimpleNamespace(id=7, name="tg-node")
         ), patch(
-            "app.mtproto.MTPROTO_STATS_BIND_TO", ""
-        ), patch(
-            "app.mtproto.MTPROTO_SECRET_MODE", "ee"
-        ), patch(
-            "app.mtproto.MTPROTO_TLS_DOMAIN", "cdn.example.com"
-        ), patch(
-            "app.mtproto.get_secret_key", return_value="jwt-secret"
-        ):
-            rendered = render_mtproto_config()
+            "app.mtproto.build_mtproto_sync_payload",
+            return_value={"users": [{"username": "alice", "secret": "abc"}]},
+        ), patch.dict("app.xray.nodes", {7: fake_node}, clear=True):
+            sync_mtproto_node()
 
-        assert "secure = false" in rendered
-        assert "tls = true" in rendered
-        assert "[censorship]" in rendered
-        assert 'tls_domain = "cdn.example.com"' in rendered
+        assert pushed_users == [[{"username": "alice", "secret": "abc"}]]
 
 
 class TestMtprotoRouters:

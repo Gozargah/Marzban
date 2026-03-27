@@ -55,11 +55,3 @@ jobs:
           context: .
           push: true
           tags: maximpyatin/marzban:${{ github.ref_name }}
-
-      - name: Build and push MTProto image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: docker/mtproto/Dockerfile
-          push: true
-          tags: maximpyatin/marzban-mtproto:${{ github.ref_name }}

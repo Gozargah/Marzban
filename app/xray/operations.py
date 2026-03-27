@@ -8,7 +8,7 @@ from app.db import GetDB, crud
 from app.models.node import NodeStatus
 from app.models.proxy import ProxyTypes
 from app.models.user import UserResponse
-from app.mtproto import is_mtproto_enabled, sync_mtproto_config
+from app.mtproto import sync_mtproto_node
 from app.utils.hysteria_cache import invalidate_hysteria_cache
 from app.utils.concurrency import threaded_function
 from app.xray.node import XRayNode
@@ -60,8 +60,6 @@ def _alter_inbound_user(api: XRayAPI, inbound_tag: str, account: Account):
 
 
 def sync_socks_accounts():
-    sync_mtproto_config()
-
     if not xray.config.socks_inbounds_by_tag:
         return
 
@@ -119,8 +117,9 @@ def add_user(dbuser: "DBUser", sync_socks: bool = True):
                     _add_user_to_inbound(node.api, inbound_tag, account)
 
     invalidate_hysteria_cache()
+    sync_mtproto_node()
 
-    if has_reload_protocol or sync_socks or is_mtproto_enabled():
+    if has_reload_protocol or sync_socks:
         sync_socks_accounts()
 
 
@@ -146,8 +145,9 @@ def remove_user(dbuser: "DBUser", sync_socks: bool = True):
                 _remove_user_from_inbound(node.api, inbound_tag, email)
 
     invalidate_hysteria_cache()
+    sync_mtproto_node()
 
-    if has_reload_protocol or sync_socks or is_mtproto_enabled():
+    if has_reload_protocol or sync_socks:
         sync_socks_accounts()
 
 
@@ -214,8 +214,9 @@ def update_user(dbuser: "DBUser", sync_socks: bool = True):
                 _remove_user_from_inbound(node.api, inbound_tag, email)
 
     invalidate_hysteria_cache()
+    sync_mtproto_node()
 
-    if has_reload_protocol or sync_socks or is_mtproto_enabled():
+    if has_reload_protocol or sync_socks:
         sync_socks_accounts()
 
 
@@ -297,6 +298,7 @@ def connect_node(node_id, config=None):
         node.start(config)
         version = node.get_version()
         _change_node_status(node_id, NodeStatus.connected, version=version)
+        sync_mtproto_node(node_id=dbnode.id)
         logger.info(f"Connected to \"{dbnode.name}\" node, xray run on v{version}")
 
     except Exception as e:
