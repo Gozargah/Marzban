@@ -161,14 +161,23 @@ def modify_user(
                 detail=f"Protocol {proxy_type} is disabled on your server",
             )
 
+    previous_sync_state = xray.operations.UserSyncState.from_user(dbuser)
     old_status = dbuser.status
     dbuser = crud.update_user(db, dbuser, modified_user)
     user = UserResponse.model_validate(dbuser)
 
     if user.status in [UserStatus.active, UserStatus.on_hold]:
-        bg.add_task(xray.operations.update_user, dbuser=dbuser)
+        bg.add_task(
+            xray.operations.update_user,
+            dbuser=dbuser,
+            previous_sync_state=previous_sync_state,
+        )
     else:
-        bg.add_task(xray.operations.remove_user, dbuser=dbuser)
+        bg.add_task(
+            xray.operations.remove_user,
+            dbuser=dbuser,
+            previous_sync_state=previous_sync_state,
+        )
 
     bg.add_task(report.user_updated, user=user, user_admin=dbuser.admin, by=admin)
 
@@ -238,10 +247,15 @@ def revoke_user_subscription(
     admin: Admin = Depends(Admin.get_current),
 ):
     """Revoke users subscription (Subscription link and proxies)"""
+    previous_sync_state = xray.operations.UserSyncState.from_user(dbuser)
     dbuser = crud.revoke_user_sub(db=db, dbuser=dbuser)
 
     if dbuser.status in [UserStatus.active, UserStatus.on_hold]:
-        bg.add_task(xray.operations.update_user, dbuser=dbuser)
+        bg.add_task(
+            xray.operations.update_user,
+            dbuser=dbuser,
+            previous_sync_state=previous_sync_state,
+        )
     user = UserResponse.model_validate(dbuser)
     bg.add_task(
         report.user_subscription_revoked, user=user, user_admin=dbuser.admin, by=admin
@@ -298,11 +312,7 @@ def reset_users_data_usage(
     """Reset all users data usage"""
     dbadmin = crud.get_admin(db, admin.username)
     crud.reset_all_users_data_usage(db=db, admin=dbadmin)
-    startup_config = xray.config.include_db_users()
-    xray.core.restart(startup_config)
-    for node_id, node in list(xray.nodes.items()):
-        if node.connected:
-            xray.operations.restart_node(node_id, startup_config)
+    xray.operations.restart_all_cores()
     return {"detail": "Users successfully reset."}
 
 

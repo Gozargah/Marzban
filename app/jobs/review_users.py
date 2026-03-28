@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app import logger, scheduler, xray
 from app.db import (GetDB, get_notification_reminder, get_users,
                     start_user_expire, update_user_status, reset_user_by_next)
+from app.mtproto import sync_mtproto_node
 from app.models.user import ReminderType, UserResponse, UserStatus
 from app.utils import report
 from app.utils.helpers import (calculate_expiration_days,
@@ -54,7 +55,7 @@ def reset_user_by_next_report(db: Session, user: "User"):
 def review():
     now = datetime.utcnow()
     now_ts = now.timestamp()
-    socks_resync_needed = False
+    mtproto_resync_needed = False
     with GetDB() as db:
         for user in get_users(db, status=UserStatus.active):
 
@@ -81,9 +82,9 @@ def review():
                     add_notification_reminders(db, user, now)
                 continue
 
-            xray.operations.remove_user(user, sync_socks=False)
+            xray.operations.remove_user(user, sync_mtproto=False)
             update_user_status(db, user, status)
-            socks_resync_needed = True
+            mtproto_resync_needed = True
 
             report.status_change(username=user.username, status=status,
                                  user=UserResponse.model_validate(user), user_admin=user.admin)
@@ -116,8 +117,8 @@ def review():
 
             logger.info(f"User \"{user.username}\" status changed to {status}")
 
-    if socks_resync_needed:
-        xray.operations.sync_socks_accounts()
+    if mtproto_resync_needed:
+        sync_mtproto_node()
 
 
 scheduler.add_job(review, 'interval',

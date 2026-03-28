@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+from datetime import datetime
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
@@ -7,13 +9,14 @@ from app import logger, xray
 from app.db import GetDB, crud
 from app.models.node import NodeStatus
 from app.models.proxy import ProxyTypes
-from app.models.user import UserResponse
+from app.models.user import UserResponse, UserStatus
 from app.mtproto import sync_mtproto_node
 from app.utils.hysteria_cache import invalidate_hysteria_cache
 from app.utils.concurrency import threaded_function
 from app.xray.node import XRayNode
+from app.xray.socks import socks5_password, socks5_username
 from xray_api import XRay as XRayAPI
-from xray_api.types.account import Account, XTLSFlows
+from xray_api.types.account import Account, SocksAccount, XTLSFlows
 
 if TYPE_CHECKING:
     from app.db import User as DBUser
@@ -59,15 +62,158 @@ def _alter_inbound_user(api: XRayAPI, inbound_tag: str, account: Account):
         pass
 
 
+@dataclass(frozen=True)
+class UserSyncState:
+    user_id: int
+    username: str
+    status: UserStatus | str
+    sub_revoked_at: datetime | None = None
+
+    @classmethod
+    def from_user(cls, user):
+        return cls(
+            user_id=user.id,
+            username=user.username,
+            status=user.status,
+            sub_revoked_at=getattr(user, "sub_revoked_at", None),
+        )
+
+
+def _status_has_socks_access(status: UserStatus | str) -> bool:
+    return status in (UserStatus.active, UserStatus.on_hold)
+
+
+def _socks_email(user: UserSyncState) -> str:
+    return f"{user.user_id}.{user.username}"
+
+
+def _socks_account(user: UserSyncState) -> SocksAccount:
+    return SocksAccount(
+        email=_socks_email(user),
+        username=socks5_username(user.username),
+        password=socks5_password(user.user_id, user.username, user.sub_revoked_at),
+    )
+
+
+def _apply_socks_add(user: UserSyncState) -> None:
+    account = _socks_account(user)
+    for inbound_tag in xray.config.socks_inbounds_by_tag:
+        _add_user_to_inbound(xray.api, inbound_tag, account)
+        for node in list(xray.nodes.values()):
+            if node.connected and node.started:
+                _add_user_to_inbound(node.api, inbound_tag, account)
+
+
+def _apply_socks_remove(user: UserSyncState) -> None:
+    email = _socks_email(user)
+    for inbound_tag in xray.config.socks_inbounds_by_tag:
+        _remove_user_from_inbound(xray.api, inbound_tag, email)
+        for node in list(xray.nodes.values()):
+            if node.connected and node.started:
+                _remove_user_from_inbound(node.api, inbound_tag, email)
+
+
+def _apply_socks_alter(current: UserSyncState, previous: UserSyncState) -> None:
+    old_email = _socks_email(previous)
+    account = _socks_account(current)
+    for inbound_tag in xray.config.socks_inbounds_by_tag:
+        if old_email == account.email:
+            _alter_inbound_user(xray.api, inbound_tag, account)
+            for node in list(xray.nodes.values()):
+                if node.connected and node.started:
+                    _alter_inbound_user(node.api, inbound_tag, account)
+            continue
+
+        _remove_user_from_inbound(xray.api, inbound_tag, old_email)
+        _add_user_to_inbound(xray.api, inbound_tag, account)
+        for node in list(xray.nodes.values()):
+            if node.connected and node.started:
+                _remove_user_from_inbound(node.api, inbound_tag, old_email)
+                _add_user_to_inbound(node.api, inbound_tag, account)
+
+
+def _sync_socks_on_add(dbuser: "DBUser") -> bool:
+    if not xray.config.socks_inbounds_by_tag:
+        return False
+
+    current = UserSyncState.from_user(dbuser)
+    if not _status_has_socks_access(current.status):
+        return False
+
+    _apply_socks_add(current)
+    return True
+
+
+def _sync_socks_on_remove(
+    dbuser: "DBUser",
+    previous_sync_state: UserSyncState | None = None,
+) -> bool:
+    if not xray.config.socks_inbounds_by_tag:
+        return False
+
+    previous = previous_sync_state or UserSyncState.from_user(dbuser)
+    if not _status_has_socks_access(previous.status):
+        return False
+
+    _apply_socks_remove(previous)
+    return True
+
+
+def _sync_socks_on_update(
+    dbuser: "DBUser",
+    previous_sync_state: UserSyncState | None = None,
+) -> bool:
+    if not xray.config.socks_inbounds_by_tag:
+        return False
+
+    current = UserSyncState.from_user(dbuser)
+    previous = previous_sync_state
+
+    if previous is None:
+        if not _status_has_socks_access(current.status):
+            return False
+        _apply_socks_alter(current, current)
+        return True
+
+    current_access = _status_has_socks_access(current.status)
+    previous_access = _status_has_socks_access(previous.status)
+
+    if previous_access and not current_access:
+        _apply_socks_remove(previous)
+        return True
+
+    if not previous_access and current_access:
+        _apply_socks_add(current)
+        return True
+
+    if not previous_access and not current_access:
+        return False
+
+    if (
+        previous.username == current.username
+        and previous.sub_revoked_at == current.sub_revoked_at
+    ):
+        return False
+
+    _apply_socks_alter(current, previous)
+    return True
+
+
+def restart_all_cores(config=None, sync_mtproto: bool = True):
+    if config is None:
+        config = xray.config.include_db_users()
+
+    xray.core.restart(config)
+    for node_id, node in list(xray.nodes.items()):
+        if node.connected:
+            restart_node(node_id, config, sync_mtproto=sync_mtproto)
+
+
 def sync_socks_accounts():
     if not xray.config.socks_inbounds_by_tag:
         return
 
-    startup_config = xray.config.include_db_users()
-    xray.core.restart(startup_config)
-    for node_id, node in list(xray.nodes.items()):
-        if node.connected:
-            restart_node(node_id, startup_config)
+    restart_all_cores()
 
 
 def _needs_config_reload(proxy_type) -> bool:
@@ -75,7 +221,11 @@ def _needs_config_reload(proxy_type) -> bool:
     return proxy_type.account_model is None
 
 
-def add_user(dbuser: "DBUser", sync_socks: bool = True):
+def add_user(
+    dbuser: "DBUser",
+    sync_socks: bool = True,
+    sync_mtproto: bool = True,
+):
     user = UserResponse.model_validate(dbuser)
     email = f"{dbuser.id}.{dbuser.username}"
     has_reload_protocol = False
@@ -117,13 +267,22 @@ def add_user(dbuser: "DBUser", sync_socks: bool = True):
                     _add_user_to_inbound(node.api, inbound_tag, account)
 
     invalidate_hysteria_cache()
-    sync_mtproto_node()
 
-    if has_reload_protocol or sync_socks:
-        sync_socks_accounts()
+    if sync_socks:
+        _sync_socks_on_add(dbuser)
+
+    if has_reload_protocol:
+        restart_all_cores(sync_mtproto=sync_mtproto)
+    elif sync_mtproto:
+        sync_mtproto_node()
 
 
-def remove_user(dbuser: "DBUser", sync_socks: bool = True):
+def remove_user(
+    dbuser: "DBUser",
+    sync_socks: bool = True,
+    sync_mtproto: bool = True,
+    previous_sync_state: UserSyncState | None = None,
+):
     email = f"{dbuser.id}.{dbuser.username}"
     has_reload_protocol = False
 
@@ -145,13 +304,22 @@ def remove_user(dbuser: "DBUser", sync_socks: bool = True):
                 _remove_user_from_inbound(node.api, inbound_tag, email)
 
     invalidate_hysteria_cache()
-    sync_mtproto_node()
 
-    if has_reload_protocol or sync_socks:
-        sync_socks_accounts()
+    if sync_socks:
+        _sync_socks_on_remove(dbuser, previous_sync_state=previous_sync_state)
+
+    if has_reload_protocol:
+        restart_all_cores(sync_mtproto=sync_mtproto)
+    elif sync_mtproto:
+        sync_mtproto_node()
 
 
-def update_user(dbuser: "DBUser", sync_socks: bool = True):
+def update_user(
+    dbuser: "DBUser",
+    sync_socks: bool = True,
+    sync_mtproto: bool = True,
+    previous_sync_state: UserSyncState | None = None,
+):
     user = UserResponse.model_validate(dbuser)
     email = f"{dbuser.id}.{dbuser.username}"
     has_reload_protocol = False
@@ -214,10 +382,14 @@ def update_user(dbuser: "DBUser", sync_socks: bool = True):
                 _remove_user_from_inbound(node.api, inbound_tag, email)
 
     invalidate_hysteria_cache()
-    sync_mtproto_node()
 
-    if has_reload_protocol or sync_socks:
-        sync_socks_accounts()
+    if sync_socks:
+        _sync_socks_on_update(dbuser, previous_sync_state=previous_sync_state)
+
+    if has_reload_protocol:
+        restart_all_cores(sync_mtproto=sync_mtproto)
+    elif sync_mtproto:
+        sync_mtproto_node()
 
 
 def remove_node(node_id: int):
@@ -313,7 +485,7 @@ def connect_node(node_id, config=None):
 
 
 @threaded_function
-def restart_node(node_id, config=None):
+def restart_node(node_id, config=None, sync_mtproto: bool = True):
     with GetDB() as db:
         dbnode = crud.get_node_by_id(db, node_id)
 
@@ -335,6 +507,8 @@ def restart_node(node_id, config=None):
             config = xray.config.include_db_users()
 
         node.restart(config)
+        if sync_mtproto:
+            sync_mtproto_node(node_id=dbnode.id)
         logger.info(f"Xray core of \"{dbnode.name}\" node restarted")
     except Exception as e:
         _change_node_status(node_id, NodeStatus.error, message=str(e))
@@ -350,6 +524,8 @@ __all__ = [
     "remove_user",
     "update_user",
     "sync_socks_accounts",
+    "restart_all_cores",
+    "UserSyncState",
     "add_node",
     "remove_node",
     "connect_node",

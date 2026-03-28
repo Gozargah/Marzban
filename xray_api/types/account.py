@@ -9,6 +9,7 @@ from ..proto.proxy.shadowsocks.config_pb2 import \
     Account as ShadowsocksAccountPb2
 from ..proto.proxy.shadowsocks.config_pb2 import \
     CipherType as ShadowsocksCiphers
+from ..proto.proxy.socks.config_pb2 import Account as SocksAccountPb2
 from ..proto.proxy.trojan.config_pb2 import Account as TrojanAccountPb2
 from ..proto.proxy.vless.account_pb2 import Account as VLESSAccountPb2
 from ..proto.proxy.vmess.account_pb2 import Account as VMessAccountPb2
@@ -76,3 +77,17 @@ class ShadowsocksAccount(Account):
     @property
     def message(self):
         return Message(ShadowsocksAccountPb2(password=self.password, cipher_type=self.cipher_type))
+
+
+class SocksAccount(Account):
+    username: str
+    password: str
+
+    @property
+    def message(self):
+        return Message(
+            SocksAccountPb2(
+                username=self.username,
+                password=self.password,
+            )
+        )
