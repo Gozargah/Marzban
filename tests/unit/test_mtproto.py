@@ -140,10 +140,17 @@ class TestMtprotoHelpers:
         fake_node = SimpleNamespace(connected=True)
         pushed_users = []
         fake_node.apply_mtproto_users = pushed_users.append
+        fake_node.get_mtproto_status = lambda: {
+            "mode": "dd",
+            "domain": "tg.example.com",
+            "port": 1443,
+        }
 
         with patch("app.mtproto.MTPROTO_NODE_NAME", "tg-node"), patch(
             "app.mtproto.MTPROTO_PUBLIC_HOST", "tg.example.com"
         ), patch("app.mtproto.MTPROTO_PUBLIC_PORT", 1443), patch(
+            "app.mtproto.MTPROTO_SECRET_MODE", "dd"
+        ), patch(
             "app.mtproto.GetDB", return_value=_FakeDBContext([])
         ), patch(
             "app.mtproto.crud.get_node", return_value=SimpleNamespace(id=7, name="tg-node")
@@ -154,6 +161,32 @@ class TestMtprotoHelpers:
             sync_mtproto_node()
 
         assert pushed_users == [[{"username": "alice", "secret": "abc"}]]
+
+    def test_sync_mtproto_node_skips_on_runtime_mismatch(self):
+        fake_node = SimpleNamespace(connected=True)
+        pushed_users = []
+        fake_node.apply_mtproto_users = pushed_users.append
+        fake_node.get_mtproto_status = lambda: {
+            "mode": "dd",
+            "domain": "wrong.example.com",
+            "port": 1443,
+        }
+
+        with patch("app.mtproto.MTPROTO_NODE_NAME", "tg-node"), patch(
+            "app.mtproto.MTPROTO_PUBLIC_HOST", "tg.example.com"
+        ), patch("app.mtproto.MTPROTO_PUBLIC_PORT", 1443), patch(
+            "app.mtproto.MTPROTO_SECRET_MODE", "dd"
+        ), patch(
+            "app.mtproto.GetDB", return_value=_FakeDBContext([])
+        ), patch(
+            "app.mtproto.crud.get_node", return_value=SimpleNamespace(id=7, name="tg-node")
+        ), patch(
+            "app.mtproto.build_mtproto_sync_payload",
+            return_value={"users": [{"username": "alice", "secret": "abc"}]},
+        ), patch.dict("app.xray.nodes", {7: fake_node}, clear=True):
+            sync_mtproto_node()
+
+        assert pushed_users == []
 
 
 class TestMtprotoRouters:

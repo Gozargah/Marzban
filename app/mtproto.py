@@ -116,6 +116,26 @@ def build_mtproto_sync_payload() -> dict[str, list[dict[str, str]]]:
     return {"users": _get_mtproto_sync_users()}
 
 
+def _expected_mtproto_node_runtime() -> dict[str, str | int]:
+    return {
+        "mode": _secret_mode(),
+        "domain": MTPROTO_PUBLIC_HOST.strip(),
+        "port": MTPROTO_PUBLIC_PORT,
+    }
+
+
+def _mtproto_runtime_matches_node(status: dict) -> tuple[bool, str | None]:
+    expected = _expected_mtproto_node_runtime()
+    for field, expected_value in expected.items():
+        actual_value = status.get(field)
+        if actual_value != expected_value:
+            return (
+                False,
+                f'{field} mismatch (host={expected_value!r}, node={actual_value!r})',
+            )
+    return True, None
+
+
 def sync_mtproto_node(node_id: int | None = None) -> None:
     if not is_mtproto_enabled():
         return
@@ -147,6 +167,27 @@ def sync_mtproto_node(node_id: int | None = None) -> None:
             target_node_name,
         )
         return
+
+    if hasattr(node, "get_mtproto_status"):
+        try:
+            status = node.get_mtproto_status()
+        except Exception as exc:
+            detail = getattr(exc, "detail", str(exc))
+            logger.warning(
+                'Skipping MTProto sync: failed to fetch runtime status from node "%s": %s',
+                target_node_name,
+                detail,
+            )
+            return
+
+        is_valid, reason = _mtproto_runtime_matches_node(status)
+        if not is_valid:
+            logger.warning(
+                'Skipping MTProto sync: runtime mismatch on node "%s": %s',
+                target_node_name,
+                reason,
+            )
+            return
 
     payload = build_mtproto_sync_payload()
     try:
