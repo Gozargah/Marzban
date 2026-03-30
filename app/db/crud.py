@@ -1253,7 +1253,24 @@ def get_nodes(db: Session,
     if enabled:
         query = query.filter(Node.status != NodeStatus.disabled)
 
-    return query.all()
+    return query.order_by(Node.sort_order.asc(), Node.id.asc()).all()
+
+
+def reorder_nodes(db: Session, node_ids: List[int]) -> None:
+    """
+    Assign sort_order from the given order of node ids (0..n-1).
+    Raises ValueError if node_ids is not a permutation of all nodes in the database.
+    """
+    all_nodes = db.query(Node).all()
+    all_ids = {n.id for n in all_nodes}
+    if len(node_ids) != len(all_ids):
+        raise ValueError("node_ids must contain each node id exactly once")
+    if set(node_ids) != all_ids:
+        raise ValueError("node_ids must contain each node id exactly once")
+    id_order = {nid: i for i, nid in enumerate(node_ids)}
+    for n in all_nodes:
+        n.sort_order = id_order[n.id]
+    db.commit()
 
 
 def get_nodes_usage(db: Session, start: datetime, end: datetime) -> List[NodeUsageResponse]:
@@ -1275,7 +1292,7 @@ def get_nodes_usage(db: Session, start: datetime, end: datetime) -> List[NodeUsa
         downlink=0
     )}
 
-    for node in db.query(Node).all():
+    for node in db.query(Node).order_by(Node.sort_order.asc(), Node.id.asc()).all():
         usages[node.id] = NodeUsageResponse(
             node_id=node.id,
             node_name=node.name,
@@ -1306,10 +1323,15 @@ def create_node(db: Session, node: NodeCreate) -> Node:
     Returns:
         Node: The newly created Node object.
     """
-    dbnode = Node(name=node.name,
-                  address=node.address,
-                  port=node.port,
-                  api_port=node.api_port)
+    max_so = db.query(func.max(Node.sort_order)).scalar()
+    next_sort = (max_so if max_so is not None else -1) + 1
+    dbnode = Node(
+        name=node.name,
+        address=node.address,
+        port=node.port,
+        api_port=node.api_port,
+        sort_order=next_sort,
+    )
 
     db.add(dbnode)
     db.commit()

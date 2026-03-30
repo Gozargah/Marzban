@@ -24,6 +24,10 @@ export const NodeSchema = z.object({
   message: z.string().nullable().optional(),
   add_as_new_host: z.boolean().optional(),
   usage_coefficient: z.number().or(z.string().transform((v) => parseFloat(v))),
+  sort_order: z
+    .number()
+    .or(z.string().transform((v) => parseFloat(v)))
+    .optional(),
 });
 
 export type NodeType = z.infer<typeof NodeSchema>;
@@ -45,6 +49,7 @@ export type NodeStore = {
   fetchNodes: () => Promise<NodeType[]>;
   fetchNodesUsage: (query: FilterUsageType) => Promise<void>;
   updateNode: (node: NodeType) => Promise<unknown>;
+  reorderNodes: (nodeIds: number[]) => Promise<unknown>;
   reconnectNode: (node: NodeType) => Promise<unknown>;
   deletingNode?: NodeType | null;
   deleteNode: () => Promise<unknown>;
@@ -76,6 +81,12 @@ export const useNodes = create<NodeStore>((set, get) => ({
     return fetch(`/node/${body.id}`, {
       method: "PUT",
       body,
+    });
+  },
+  reorderNodes(nodeIds) {
+    return fetch("/nodes/reorder", {
+      method: "PUT",
+      body: { node_ids: nodeIds },
     });
   },
   setDeletingNode(node) {

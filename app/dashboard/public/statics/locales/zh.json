@@ -112,6 +112,8 @@
   "nodes.show-certificate": "如何证书",
   "nodes.title": "使用 Marzban-Node，您可以通过在不同的服务器上添加不同的节点来提供多节点负载。",
   "nodes.usageCoefficient": "使用系数",
+  "nodes.moveUp": "上移",
+  "nodes.moveDown": "下移",
   "on_hold": "在线",
   "password": "密码",
   "previous": "上一页",

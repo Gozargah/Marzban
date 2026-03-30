@@ -113,6 +113,8 @@
   "nodes.show-certificate": "Показать сертификат",
   "nodes.title": "Используя Marzban-Node, Вы можете масштабировать инфраструктуру, добавляя узлы на разных серверах.",
   "nodes.usageCoefficient": "Коэффициент использования",
+  "nodes.moveUp": "Выше",
+  "nodes.moveDown": "Ниже",
   "on_hold": "On Hold",
   "password": "Пароль",
   "previous": "Назад",

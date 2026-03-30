@@ -59,10 +59,15 @@ class NodeModify(Node):
 
 class NodeResponse(Node):
     id: int
+    sort_order: int = 0
     xray_version: Optional[str] = None
     status: NodeStatus
     message: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
+
+
+class NodesReorder(BaseModel):
+    node_ids: List[int]
 
 
 class NodeUsageResponse(BaseModel):

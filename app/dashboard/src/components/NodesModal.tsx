@@ -31,6 +31,8 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import {
+  ChevronDownIcon,
+  ChevronUpIcon,
   EyeIcon,
   EyeSlashIcon,
   PlusIcon as HeroIconPlusIcon,
@@ -95,12 +97,33 @@ const PlusIcon = chakra(HeroIconPlusIcon, {
   },
 });
 
+const ChevronUp = chakra(ChevronUpIcon, {
+  baseStyle: { w: 4, h: 4 },
+});
+
+const ChevronDown = chakra(ChevronDownIcon, {
+  baseStyle: { w: 4, h: 4 },
+});
+
 type AccordionInboundType = {
   toggleAccordion: () => void;
   node: NodeType;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+  isReordering: boolean;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
 };
 
-const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
+const NodeAccordion: FC<AccordionInboundType> = ({
+  toggleAccordion,
+  node,
+  canMoveUp,
+  canMoveDown,
+  isReordering,
+  onMoveUp,
+  onMoveDown,
+}) => {
   const { updateNode, reconnectNode, setDeletingNode } = useNodes();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -146,19 +169,49 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
       w="full"
     >
       <AccordionButton px={2} borderRadius="3px" onClick={toggleAccordion}>
-        <HStack w="full" justifyContent="space-between" pr={2}>
-          <Text
-            as="span"
-            fontWeight="medium"
-            fontSize="sm"
+        <HStack w="full" justifyContent="space-between" pr={2} align="center">
+          <HStack
             flex="1"
-            textAlign="left"
-            color="gray.700"
-            _dark={{ color: "gray.300" }}
+            spacing={2}
+            minW={0}
+            onClick={(e) => e.stopPropagation()}
           >
-            {node.name}
-          </Text>
-          <HStack>
+            <VStack spacing={0} flexShrink={0}>
+              <Tooltip label={t("nodes.moveUp")} placement="left">
+                <IconButton
+                  aria-label={t("nodes.moveUp")}
+                  icon={<ChevronUp />}
+                  size="xs"
+                  variant="ghost"
+                  isDisabled={!canMoveUp || isReordering}
+                  onClick={onMoveUp}
+                />
+              </Tooltip>
+              <Tooltip label={t("nodes.moveDown")} placement="left">
+                <IconButton
+                  aria-label={t("nodes.moveDown")}
+                  icon={<ChevronDown />}
+                  size="xs"
+                  variant="ghost"
+                  isDisabled={!canMoveDown || isReordering}
+                  onClick={onMoveDown}
+                />
+              </Tooltip>
+            </VStack>
+            <Text
+              as="span"
+              fontWeight="medium"
+              fontSize="sm"
+              flex="1"
+              textAlign="left"
+              noOfLines={1}
+              color="gray.700"
+              _dark={{ color: "gray.300" }}
+            >
+              {node.name}
+            </Text>
+          </HStack>
+          <HStack flexShrink={0}>
             {node.xray_version && (
               <Badge
                 colorScheme="blue"
@@ -540,8 +593,33 @@ const NodeForm: NodeFormType = ({
 export const NodesDialog: FC = () => {
   const { isEditingNodes, onEditingNodes } = useDashboard();
   const { t } = useTranslation();
+  const toast = useToast();
+  const queryClient = useQueryClient();
   const [openAccordions, setOpenAccordions] = useState<any>({});
   const { data: nodes, isLoading } = useNodesQuery();
+  const { reorderNodes } = useNodes();
+
+  const { mutate: reorderMutate, isLoading: isReordering } = useMutation(
+    (ids: number[]) => reorderNodes(ids),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(FetchNodesQueryKey);
+      },
+      onError: (e) => {
+        generateErrorMessage(e, toast);
+      },
+    }
+  );
+
+  const handleReorder = (index: number, direction: "up" | "down") => {
+    if (!nodes?.length) return;
+    const j = direction === "up" ? index - 1 : index + 1;
+    if (j < 0 || j >= nodes.length) return;
+    const ids = nodes.map((n) => n.id as number);
+    const newIds = [...ids];
+    [newIds[index], newIds[j]] = [newIds[j], newIds[index]];
+    reorderMutate(newIds);
+  };
 
   const onClose = () => {
     setOpenAccordions({});
@@ -585,8 +663,13 @@ export const NodesDialog: FC = () => {
                     return (
                       <NodeAccordion
                         toggleAccordion={() => toggleAccordion(index)}
-                        key={node.name}
+                        key={node.id ?? node.name}
                         node={node}
+                        canMoveUp={index > 0}
+                        canMoveDown={index < nodes.length - 1}
+                        isReordering={isReordering}
+                        onMoveUp={() => handleReorder(index, "up")}
+                        onMoveDown={() => handleReorder(index, "down")}
                       />
                     );
                   })}

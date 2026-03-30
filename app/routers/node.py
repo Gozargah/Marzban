@@ -16,6 +16,7 @@ from app.models.node import (
     NodeResponse,
     NodeSettings,
     NodeStatus,
+    NodesReorder,
     NodesUsageResponse,
 )
 from app.models.proxy import ProxyHost
@@ -152,6 +153,20 @@ def get_nodes(
     db: Session = Depends(get_db), _: Admin = Depends(Admin.check_sudo_admin)
 ):
     """Retrieve a list of all nodes. Accessible only to sudo admins."""
+    return crud.get_nodes(db)
+
+
+@router.put("/nodes/reorder", response_model=List[NodeResponse])
+def reorder_nodes(
+    payload: NodesReorder,
+    db: Session = Depends(get_db),
+    _: Admin = Depends(Admin.check_sudo_admin),
+):
+    """Replace display order of all nodes. node_ids must list every node id exactly once."""
+    try:
+        crud.reorder_nodes(db, payload.node_ids)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     return crud.get_nodes(db)
 
 

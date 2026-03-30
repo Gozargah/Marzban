@@ -118,6 +118,8 @@
   "nodes.show-certificate": "نمایش دادن گواهی",
   "nodes.title": "با استفاده از Marzban-Node, شما می‌توانید با افزودن گره‌های متفاوت در سرورهای متفاوت، کیفیت اتصال خود را بالاتر ببرید.",
   "nodes.usageCoefficient": "ضریب گره",
+  "nodes.moveUp": "بالا",
+  "nodes.moveDown": "پایین",
   "on_hold": "در انتظار اتصال",
   "password": "گذرواژه",
   "previous": "قبلی",

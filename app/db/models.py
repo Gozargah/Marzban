@@ -310,6 +310,7 @@ class Node(Base):
     user_usages = relationship("NodeUserUsage", back_populates="node", cascade="all, delete-orphan")
     usages = relationship("NodeUsage", back_populates="node", cascade="all, delete-orphan")
     usage_coefficient = Column(Float, nullable=False, server_default=text("1.0"), default=1)
+    sort_order = Column(Integer, nullable=False, server_default=text("0"), default=0)
 
 
 class NodeUserUsage(Base):
