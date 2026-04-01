@@ -101,7 +101,11 @@ class AdminCreate(Admin):
     @field_validator("discord_webhook")
     @classmethod
     def validate_discord_webhook(cls, value):
-        if value and not value.startswith("https://discord.com"):
+        if value and not value.startswith((
+            "https://discord.com/api/webhooks/",
+            "https://ptb.discord.com/api/webhooks/",
+            "https://canary.discord.com/api/webhooks/"
+        )):
             raise ValueError("Discord webhook must start with 'https://discord.com'")
         return value
 
@@ -120,7 +124,11 @@ class AdminModify(BaseModel):
     @field_validator("discord_webhook")
     @classmethod
     def validate_discord_webhook(cls, value):
-        if value and not value.startswith("https://discord.com"):
+        if value and not value.startswith((
+            "https://discord.com/api/webhooks/",
+            "https://ptb.discord.com/api/webhooks/",
+            "https://canary.discord.com/api/webhooks/"
+        )):
             raise ValueError("Discord webhook must start with 'https://discord.com'")
         return value
 
