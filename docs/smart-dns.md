@@ -2,6 +2,144 @@
 
 Marzban can answer DNS queries for regional pool hostnames (for example `eu.vpn.example.com`), returning **one node public IP per query** using weighted random selection from nodes that report healthy metrics. Clients keep the same hostname in their subscription; when a node fails, short TTLs and the metrics poller steer new lookups to other nodes.
 
+---
+
+## Быстрый старт (после `marzban update`)
+
+Ниже — минимальный порядок действий на панели и у регистратора. Подставьте свои домены и IP.
+
+### 1. Панель: миграция и зависимости
+
+После **`marzban update`** (или обновления образа Docker) зависимости обычно подтягиваются сами. Если ставите вручную из исходников:
+
+```bash
+pip install -r requirements.txt
+```
+
+Убедитесь, что есть пакет **`dnslib`** (указан в `requirements.txt`).
+
+**Миграция БД** (колонки `smart_dns_*` у узлов) — если обновление само не применило схему, выполните в том же окружении, где крутится Marzban (часто каталог **`/opt/marzban`**, либо `docker exec` в контейнер панели):
+
+```bash
+alembic upgrade head
+```
+
+(или команда миграций из вашей инструкции по установке — главное, чтобы ревизия **`e5f6a7b8c9d0`** применилась).
+
+### 2. Панель: фрагмент `.env`
+
+Добавьте в `.env` (или в переменные окружения Docker / systemd), заменив домены и серийник:
+
+```env
+SMART_DNS_ENABLED = True
+SMART_DNS_BIND_HOST = 0.0.0.0
+SMART_DNS_PORT = 53
+SMART_DNS_DEFAULT_TTL = 10
+SMART_DNS_METRICS_INTERVAL = 3
+SMART_DNS_METRICS_TIMEOUT = 2
+SMART_DNS_FAIL_THRESHOLD = 3
+SMART_DNS_RATE_LIMIT_QPS = 50
+
+# Имя NS в SOA — то же, что будете объявлять у DNS-провайдера; точка в конце желательна
+SMART_DNS_SOA_MNAME = ns1.eu.vpn.example.com.
+SMART_DNS_SOA_RNAME = hostmaster.example.com.
+SMART_DNS_SOA_SERIAL = 2026040301
+
+# Опционально: алерты в дашборде (> 0 включает порог)
+SMART_DNS_ALERT_MAX_SCORE = 0
+SMART_DNS_ALERT_MAX_CPU = 0
+SMART_DNS_ALERT_MAX_BANDWIDTH_MBPS = 0
+```
+
+Параллельно для Hysteria на панели (если ноды отдают traffic stats):
+
+```env
+HYSTERIA2_TRAFFIC_SECRET = <тот же secret, что trafficStats.secret на нодах>
+```
+
+### 3. Панель: порт 53 и перезапуск
+
+- На фаерволе / в облаке откройте **UDP и TCP 53** на IP сервера с Marzban.
+- Linux: для прослушивания **:53** обычно нужно **`CAP_NET_BIND_SERVICE`** (Docker: `cap_add`) или запуск от root — см. раздел Docker ниже.
+- Убедитесь, что порт 53 не занят (`systemd-resolved` и т.д.; при необходимости отключите или перенастройте).
+- Перезапуск:
+
+```bash
+marzban restart
+# или docker compose restart — как у вас развёрнуто
+```
+
+В логах должны появиться строки о старте Smart DNS (поллер и DNS).
+
+### 4. Свой DNS у регистратора
+
+Задача: запросы к имени пула (например **`eu.vpn.example.com`**) шли на **вашу панель**, которая отвечает авторитативно.
+
+1. Выберите FQDN пула — **точно такой же** потом укажете в Marzban в поле узла **`smart_dns_name`**.
+2. У DNS-провайдера (Cloudflare как «только DNS», REG.RU, и т.д.):
+   - либо создайте **подзону** и пропишите **NS** на имена вроде `ns1.eu.vpn.example.com`, а для них **A-записи на публичный IP панели** (glue);
+   - либо используйте схему делегирования, которую поддерживает провайдер, главное — в итоге **авторитативный сервер** для этого имени должен быть **IP вашей панели** (тот, где слушает Smart DNS на 53).
+3. Имя из **`SMART_DNS_SOA_MNAME`** должно **резолвиться в IP панели** (часто это тот же `ns1...` с A-записью).
+
+Проверка с вашего ПК (подставьте IP панели и FQDN):
+
+```bash
+dig @ПУБЛИЧНЫЙ_IP_ПАНЕЛИ eu.vpn.example.com A
+dig @ПУБЛИЧНЫЙ_IP_ПАНЕЛИ eu.vpn.example.com NS
+```
+
+Ожидается **NOERROR**, для A — непустой ответ (после настройки узлов в п.5).
+
+### 5. Панель: узлы (Node Settings)
+
+Для **каждого** сервера в одном регионе/пуле:
+
+| Поле | Что указать |
+|------|-------------|
+| **Smart DNS pool (FQDN)** | Тот же FQDN, что в п.4, напр. `eu.vpn.example.com` |
+| **Client-facing IP** | Публичный **IPv4**, который получит клиент. Если пусто — используется **Address** узла (должен быть IPv4 для ответа A) |
+| **Address / Port** | Как обычно для связи панели с нодой (REST, порт **62050**) |
+
+Сохраните, дождитесь статуса узла **connected**.
+
+### 6. Marzban-node (после обновления на ветке с `/metrics`)
+
+На каждой ноде:
+
+```bash
+pip install -r requirements.txt   # нужен psutil
+# при необходимости:
+# NODE_METRICS_INTERVAL = 3  в .env ноды
+```
+
+Если используете Hysteria2 и хотите метрики по трафику: в `hysteria.yaml` — **`trafficStats`** (`listen` + `secret`), на панели тот же **`HYSTERIA2_TRAFFIC_SECRET`**, на ноде при необходимости **`HYSTERIA2_ENABLED=true`**. Порт traffic API откройте **только для IP панели**.
+
+Перезапустите сервис ноды.
+
+### 7. Подписка / клиенты
+
+В шаблоне хоста (Hysteria и др.) укажите **server / SNI = FQDN пула** (`eu.vpn.example.com`), не IP ноды. TLS на нодах должен быть валиден для этого имени (wildcard и т.д.).
+
+### 8. Проверка в GUI
+
+В дашборде: меню → **Smart DNS** — пулы, метрики, UP/DOWN (работает только при **`SMART_DNS_ENABLED=True`**).
+
+### Docker (кратко)
+
+В `docker-compose` (или аналоге) для сервиса панели:
+
+```yaml
+cap_add:
+  - NET_BIND_SERVICE
+ports:
+  - "53:53/udp"
+  - "53:53/tcp"
+```
+
+Один контейнер/процесс с Marzban — **не** несколько воркеров с общим :53.
+
+---
+
 ## Requirements
 
 - **Single Marzban process** with Smart DNS enabled (do not run multiple Uvicorn workers; DNS and the poller use background threads).

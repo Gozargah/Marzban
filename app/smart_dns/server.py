@@ -188,19 +188,23 @@ class DNSServer:
         self._threads: list[threading.Thread] = []
 
     def start(self) -> None:
-        self._udp = ThreadedUDPServer((self._host, self._port), UDPHandler)
-        self._udp.resolver = self._resolver
-        u = threading.Thread(target=self._udp.serve_forever, name="smart_dns_udp", daemon=True)
-        u.start()
-        self._threads.append(u)
+        try:
+            self._udp = ThreadedUDPServer((self._host, self._port), UDPHandler)
+            self._udp.resolver = self._resolver
+            u = threading.Thread(target=self._udp.serve_forever, name="smart_dns_udp", daemon=True)
+            u.start()
+            self._threads.append(u)
 
-        self._tcp = ThreadedTCPServer((self._host, self._port), TCPHandler)
-        self._tcp.resolver = self._resolver
-        t = threading.Thread(target=self._tcp.serve_forever, name="smart_dns_tcp", daemon=True)
-        t.start()
-        self._threads.append(t)
+            self._tcp = ThreadedTCPServer((self._host, self._port), TCPHandler)
+            self._tcp.resolver = self._resolver
+            t = threading.Thread(target=self._tcp.serve_forever, name="smart_dns_tcp", daemon=True)
+            t.start()
+            self._threads.append(t)
 
-        logger.info("Smart DNS listening on %s:%s UDP+TCP", self._host, self._port)
+            logger.info("Smart DNS listening on %s:%s UDP+TCP", self._host, self._port)
+        except Exception:
+            self.stop()
+            raise
 
     def stop(self) -> None:
         if self._udp:

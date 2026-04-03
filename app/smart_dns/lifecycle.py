@@ -25,9 +25,11 @@ def start_smart_dns() -> None:
     if not SMART_DNS_ENABLED:
         return
     _poller.start()
+    srv: Optional[DNSServer] = None
     try:
-        _dns_server = DNSServer(_cache, SMART_DNS_BIND_HOST, SMART_DNS_PORT)
-        _dns_server.start()
+        srv = DNSServer(_cache, SMART_DNS_BIND_HOST, SMART_DNS_PORT)
+        srv.start()
+        _dns_server = srv
     except Exception as e:
         logger.error(
             "Smart DNS could not bind to %s:%s: %s",
@@ -35,6 +37,11 @@ def start_smart_dns() -> None:
             SMART_DNS_PORT,
             e,
         )
+        if srv is not None:
+            try:
+                srv.stop()
+            except Exception:
+                logger.exception("Smart DNS cleanup after bind failure")
         _dns_server = None
 
 
