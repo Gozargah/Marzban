@@ -112,7 +112,11 @@ pip install -r requirements.txt   # нужен psutil
 # NODE_METRICS_INTERVAL = 3  в .env ноды
 ```
 
-Если используете Hysteria2 и хотите метрики по трафику: в `hysteria.yaml` — **`trafficStats`** (`listen` + `secret`), на панели тот же **`HYSTERIA2_TRAFFIC_SECRET`**, на ноде при необходимости **`HYSTERIA2_ENABLED=true`**. Порт traffic API откройте **только для IP панели**.
+Файл **`/var/lib/marzban-node/.env`** на сервере ноды (его подхватывает `docker-compose` образа ноды) должен содержать **`HYSTERIA2_TRAFFIC_SECRET`** — **тот же**, что **`trafficStats.secret`** в `hysteria.yaml` на этой машине. Без этого панель покажет **0 connections / 0 Mbps**, хотя узел будет **UP** (CPU с `psutil` всё равно не ноль). При **`HYSTERIA2_ENABLED=true`** и пустом секрете в логах контейнера ноды будет предупреждение.
+
+Метрики **connections** берутся из **`GET /traffic`** и при необходимости дополняются **`GET /online`** (Hysteria: живые сессии при пустом счётчике байт в `/traffic`).
+
+Если используете Hysteria2 и хотите метрики по трафику: в `hysteria.yaml` — **`trafficStats`** (`listen` + `secret`), на панели тот же **`HYSTERIA2_TRAFFIC_SECRET`**, на ноде при необходимости **`HYSTERIA2_ENABLED=true`**. Порт traffic API откройте **только для IP панели** (или `127.0.0.1`, если опрос только с хоста при `network_mode: host`).
 
 Перезапустите сервис ноды.
 
