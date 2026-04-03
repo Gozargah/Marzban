@@ -153,11 +153,17 @@ class MetricsPoller:
                 except Exception:
                     logger.exception("Smart DNS poll worker raised unexpectedly")
         except FuturesTimeoutError:
-            pending = sum(1 for f in futures if not f.done())
+            # Workers are still running in the background (shutdown(wait=False) below).
+            # We MUST call update_node_poll for every node that didn't finish so that
+            # last_poll_ts is always refreshed — otherwise merge_from_db_snapshot will
+            # keep copying the stale timestamp and the UI timer grows forever.
+            timed_out = [nid for f, nid in futures.items() if not f.done()]
+            for nid in timed_out:
+                self._cache.update_node_poll(nid, False, None, "poll timeout")
             logger.warning(
-                "Smart DNS poll cycle exceeded %.1fs deadline; %d node(s) still pending",
+                "Smart DNS poll cycle exceeded %.1fs; %d node(s) timed out",
                 cycle_timeout,
-                pending,
+                len(timed_out),
             )
         finally:
             # Don't stall the next cycle waiting for hung TCP connections.
