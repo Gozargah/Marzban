@@ -72,11 +72,12 @@ type NodeRow = {
   score: number;
   last_error: string | null;
   last_poll_ts: number;
+  seconds_since_poll: number;
   metrics: Metrics | null;
 };
 
 type PoolRow = { name: string; nodes: NodeRow[] };
-type StatusPayload  = { enabled: boolean; fail_threshold: number; pools: PoolRow[] };
+type StatusPayload  = { enabled: boolean; fail_threshold: number; poller_alive: boolean; pools: PoolRow[] };
 type AlertRow       = { severity: string; message: string; node_id: number | null; node_name: string | null };
 type AlertsPayload  = { alerts: AlertRow[] };
 
@@ -95,12 +96,12 @@ const computeShares = (nodes: NodeRow[]): number[] => {
 
 const fmtNum = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n));
 
-const timeAgo = (ts: number): string => {
-  const s = Date.now() / 1000 - ts;
-  if (s < 5)   return "just now";
-  if (s < 60)  return `${Math.round(s)}s ago`;
-  if (s < 3600) return `${Math.round(s / 60)}m ago`;
-  return `${Math.round(s / 3600)}h ago`;
+/** Accepts seconds (server-computed) — no browser/server clock skew. */
+const timeAgo = (seconds: number): string => {
+  if (seconds < 5)    return "just now";
+  if (seconds < 60)   return `${Math.round(seconds)}s ago`;
+  if (seconds < 3600) return `${Math.round(seconds / 60)}m ago`;
+  return `${Math.round(seconds / 3600)}h ago`;
 };
 
 type NodeState = "up" | "grace" | "down";
@@ -368,7 +369,7 @@ const NodeCard: FC<{ node: NodeRow; lbShare: number }> = ({ node, lbShare }) => 
         {/* ── Last polled ── */}
         {node.last_poll_ts > 0 && (
           <Text fontSize="10px" color={dark ? "gray.600" : "gray.400"} mt={2} textAlign="right">
-            {timeAgo(node.last_poll_ts)}
+            {timeAgo(node.seconds_since_poll)}
           </Text>
         )}
       </Box>
@@ -546,6 +547,17 @@ export const SmartDns: FC = () => {
           <Alert status="warning" borderRadius="xl">
             <AlertIcon />
             <AlertDescription>{t("smartDns.disabled")}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* ── Poller dead banner ── */}
+        {status && status.enabled && !status.poller_alive && (
+          <Alert status="error" borderRadius="xl" variant="left-accent">
+            <Box color="red.400" mr={3}><CritIcon /></Box>
+            <Box>
+              <Text fontWeight="semibold" fontSize="sm">{t("smartDns.pollerDead")}</Text>
+              <Text fontSize="xs" mt={0.5}>{t("smartDns.pollerDeadHint")}</Text>
+            </Box>
           </Alert>
         )}
 

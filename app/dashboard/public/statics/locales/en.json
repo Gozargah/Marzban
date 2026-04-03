@@ -146,6 +146,8 @@
   "smartDns.avgCpu": "Avg CPU",
   "smartDns.avgBw": "Avg BW",
   "smartDns.allPoolsHealthy": "All pools healthy",
+  "smartDns.pollerDead": "Metrics poller is not running — data is stale",
+  "smartDns.pollerDeadHint": "Check panel logs. The poller may have failed to create a TLS session or crashed. Restart the panel to recover.",
   "on_hold": "On Hold",
   "password": "Password",
   "previous": "Previous",

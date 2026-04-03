@@ -1,9 +1,11 @@
+import time
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends
 
 from app.models.admin import Admin
 from app.smart_dns import get_metrics_cache
+from app.smart_dns.lifecycle import is_poller_alive
 from config import (
     SMART_DNS_ALERT_MAX_BANDWIDTH_MBPS,
     SMART_DNS_ALERT_MAX_CPU,
@@ -41,6 +43,7 @@ class SmartDnsNodeStatusOut(BaseModel):
     score: float
     last_error: Optional[str] = None
     last_poll_ts: float = 0.0
+    seconds_since_poll: float = 0.0
     metrics: Optional[SmartDnsNodeMetricsOut] = None
 
 
@@ -52,6 +55,7 @@ class SmartDnsPoolStatusOut(BaseModel):
 class SmartDnsStatusResponse(BaseModel):
     enabled: bool
     fail_threshold: int
+    poller_alive: bool
     pools: List[SmartDnsPoolStatusOut]
 
 
@@ -68,6 +72,7 @@ class SmartDnsAlertsResponse(BaseModel):
 
 def _build_status() -> SmartDnsStatusResponse:
     cache = get_metrics_cache()
+    now = time.time()
     pools_map = cache.pools()
     pools: List[SmartDnsPoolStatusOut] = []
     for pname, nodes in sorted(pools_map.items(), key=lambda x: x[0]):
@@ -96,6 +101,7 @@ def _build_status() -> SmartDnsStatusResponse:
                     score=round(sc, 4),
                     last_error=n.last_error,
                     last_poll_ts=n.last_poll_ts,
+                    seconds_since_poll=round(now - n.last_poll_ts, 1) if n.last_poll_ts > 0 else 0.0,
                     metrics=metrics_out,
                 )
             )
@@ -104,6 +110,7 @@ def _build_status() -> SmartDnsStatusResponse:
     return SmartDnsStatusResponse(
         enabled=SMART_DNS_ENABLED,
         fail_threshold=SMART_DNS_FAIL_THRESHOLD,
+        poller_alive=is_poller_alive(),
         pools=pools,
     )
 

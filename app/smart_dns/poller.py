@@ -145,14 +145,26 @@ class MetricsPoller:
                 except Exception:
                     logger.exception("Smart DNS poll worker raised unexpectedly")
 
+    def is_alive(self) -> bool:
+        return self._thread is not None and self._thread.is_alive()
+
     def _run(self) -> None:
-        try:
-            sess = self._session()
-        except Exception:
-            logger.exception(
-                "Smart DNS poller stopped: cannot create TLS client session (check panel TLS in DB)"
-            )
-            return
+        # Retry TLS session creation so a transient DB error at startup
+        # doesn't kill the poller thread permanently.
+        sess = None
+        while not self._stop.is_set():
+            try:
+                sess = self._session()
+                break
+            except Exception:
+                logger.exception(
+                    "Smart DNS poller: TLS session creation failed, retrying in 30 s"
+                )
+                self._stop.wait(30.0)
+
+        if sess is None:
+            return  # stop() was called during retry window
+
         try:
             while not self._stop.is_set():
                 t0 = time.monotonic()
