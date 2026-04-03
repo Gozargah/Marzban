@@ -24,6 +24,8 @@ def start_smart_dns() -> None:
     global _dns_server
     if not SMART_DNS_ENABLED:
         return
+    if _dns_server is not None:
+        return
     _poller.start()
     srv: Optional[DNSServer] = None
     try:

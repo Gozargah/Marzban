@@ -32,6 +32,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+def _startup_smart_dns_first() -> None:
+    """Bind Smart DNS before dashboard / Xray handlers (avoids port 53 races)."""
+    from app.smart_dns import start_smart_dns
+
+    start_smart_dns()
+
+
 from app import dashboard, jobs, routers, telegram  # noqa
 from app.routers import api_router  # noqa
 
