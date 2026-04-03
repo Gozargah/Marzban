@@ -563,6 +563,28 @@ const NodeForm: NodeFormType = ({
             />
           </Box>
         </HStack>
+        <HStack alignItems="flex-start" w="100%">
+          <Box w="100%">
+            <CustomInput
+              label={t("nodes.smartDnsName")}
+              size="sm"
+              placeholder="eu.vpn.example.com"
+              {...form.register("smart_dns_name")}
+              error={form.formState?.errors?.smart_dns_name?.message}
+            />
+          </Box>
+        </HStack>
+        <HStack alignItems="flex-start" w="100%">
+          <Box w="100%">
+            <CustomInput
+              label={t("nodes.smartDnsAnnounceIp")}
+              size="sm"
+              placeholder={t("nodes.smartDnsAnnounceIpHint")}
+              {...form.register("smart_dns_announce_ip")}
+              error={form.formState?.errors?.smart_dns_announce_ip?.message}
+            />
+          </Box>
+        </HStack>
         {addAsHost && (
           <FormControl py={1}>
             <Checkbox {...form.register("add_as_new_host")}>

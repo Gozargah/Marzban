@@ -19,6 +19,7 @@ import {
   CurrencyDollarIcon,
   DocumentMinusIcon,
   LinkIcon,
+  GlobeAltIcon,
   MoonIcon,
   SquaresPlusIcon,
   SunIcon,
@@ -55,6 +56,7 @@ const HostsIcon = chakra(LinkIcon, iconProps);
 const NodesIcon = chakra(SquaresPlusIcon, iconProps);
 const NodesUsageIcon = chakra(ChartPieIcon, iconProps);
 const MonitoringIcon = chakra(ChartBarSquareIcon, iconProps);
+const SmartDnsIcon = chakra(GlobeAltIcon, iconProps);
 const ResetUsageIcon = chakra(DocumentMinusIcon, iconProps);
 const NotificationCircle = chakra(Box, {
   baseStyle: {
@@ -176,6 +178,15 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                       icon={<MonitoringIcon />}
                     >
                       {t("header.monitoring")}
+                    </MenuItem>
+                  </Link>
+                  <Link to="/smart-dns">
+                    <MenuItem
+                      maxW="170px"
+                      fontSize="sm"
+                      icon={<SmartDnsIcon />}
+                    >
+                      {t("header.smartDns")}
                     </MenuItem>
                   </Link>
                   <MenuItem

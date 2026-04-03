@@ -1331,6 +1331,9 @@ def create_node(db: Session, node: NodeCreate) -> Node:
         port=node.port,
         api_port=node.api_port,
         sort_order=next_sort,
+        usage_coefficient=node.usage_coefficient,
+        smart_dns_name=(node.smart_dns_name or "").strip() or None,
+        smart_dns_announce_ip=(node.smart_dns_announce_ip or "").strip() or None,
     )
 
     db.add(dbnode)
@@ -1388,6 +1391,11 @@ def update_node(db: Session, dbnode: Node, modify: NodeModify) -> Node:
 
     if modify.usage_coefficient:
         dbnode.usage_coefficient = modify.usage_coefficient
+
+    if "smart_dns_name" in modify.model_fields_set:
+        dbnode.smart_dns_name = (modify.smart_dns_name or "").strip() or None
+    if "smart_dns_announce_ip" in modify.model_fields_set:
+        dbnode.smart_dns_announce_ip = (modify.smart_dns_announce_ip or "").strip() or None
 
     db.commit()
     db.refresh(dbnode)

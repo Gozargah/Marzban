@@ -28,6 +28,16 @@ export const NodeSchema = z.object({
     .number()
     .or(z.string().transform((v) => parseFloat(v)))
     .optional(),
+  smart_dns_name: z
+    .string()
+    .max(256)
+    .optional()
+    .nullable(),
+  smart_dns_announce_ip: z
+    .string()
+    .max(64)
+    .optional()
+    .nullable(),
 });
 
 export type NodeType = z.infer<typeof NodeSchema>;
@@ -39,6 +49,8 @@ export const getNodeDefaultValues = (): NodeType => ({
   api_port: 62051,
   xray_version: "",
   usage_coefficient: 1,
+  smart_dns_name: "",
+  smart_dns_announce_ip: "",
 });
 
 export const FetchNodesQueryKey = "fetch-nodes-query-key";

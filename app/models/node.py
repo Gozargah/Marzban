@@ -22,6 +22,8 @@ class Node(BaseModel):
     port: int = 62050
     api_port: int = 62051
     usage_coefficient: float = Field(gt=0, default=1.0)
+    smart_dns_name: Optional[str] = Field(None, max_length=256)
+    smart_dns_announce_ip: Optional[str] = Field(None, max_length=64)
 
 
 class NodeCreate(Node):
@@ -45,6 +47,8 @@ class NodeModify(Node):
     api_port: Optional[int] = Field(None, nullable=True)
     status: Optional[NodeStatus] = Field(None, nullable=True)
     usage_coefficient: Optional[float] = Field(None, nullable=True)
+    smart_dns_name: Optional[str] = Field(None, nullable=True, max_length=256)
+    smart_dns_announce_ip: Optional[str] = Field(None, nullable=True, max_length=64)
     model_config = ConfigDict(json_schema_extra={
         "example": {
             "name": "DE node",

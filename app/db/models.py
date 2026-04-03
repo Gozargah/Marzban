@@ -159,6 +159,13 @@ template_inbounds_association = Table(
     Column("inbound_tag", ForeignKey("inbounds.tag")),
 )
 
+balancer_nodes_association = Table(
+    "balancer_nodes",
+    Base.metadata,
+    Column("balancer_id", ForeignKey("balancers.id", ondelete="CASCADE"), primary_key=True),
+    Column("node_id", ForeignKey("nodes.id", ondelete="CASCADE"), primary_key=True),
+)
+
 
 class NextPlan(Base):
     __tablename__ = 'next_plans'
@@ -311,6 +318,8 @@ class Node(Base):
     usages = relationship("NodeUsage", back_populates="node", cascade="all, delete-orphan")
     usage_coefficient = Column(Float, nullable=False, server_default=text("1.0"), default=1)
     sort_order = Column(Integer, nullable=False, server_default=text("0"), default=0)
+    smart_dns_name = Column(String(256), nullable=True)
+    smart_dns_announce_ip = Column(String(64), nullable=True)
 
 
 class NodeUserUsage(Base):

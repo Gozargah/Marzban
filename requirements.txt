@@ -1,5 +1,6 @@
 APScheduler==3.9.1.post1
 Deprecated==1.2.13
+dnslib==0.9.25
 Jinja2==3.1.4
 MarkupSafe==2.1.1
 PyJWT==2.8.0

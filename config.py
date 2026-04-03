@@ -146,6 +146,26 @@ NOTIFY_DAYS_LEFT = config(
 
 DISABLE_RECORDING_NODE_USAGE = config("DISABLE_RECORDING_NODE_USAGE", cast=bool, default=False)
 
+# Smart DNS (authoritative load-balancing DNS, embedded in Marzban)
+SMART_DNS_ENABLED = config("SMART_DNS_ENABLED", cast=bool, default=False)
+SMART_DNS_BIND_HOST = config("SMART_DNS_BIND_HOST", default="0.0.0.0")
+SMART_DNS_PORT = config("SMART_DNS_PORT", cast=int, default=53)
+SMART_DNS_DEFAULT_TTL = config("SMART_DNS_DEFAULT_TTL", cast=int, default=10)
+SMART_DNS_METRICS_INTERVAL = config("SMART_DNS_METRICS_INTERVAL", cast=float, default=3.0)
+SMART_DNS_METRICS_TIMEOUT = config("SMART_DNS_METRICS_TIMEOUT", cast=float, default=2.0)
+SMART_DNS_FAIL_THRESHOLD = config("SMART_DNS_FAIL_THRESHOLD", cast=int, default=3)
+SMART_DNS_SCORE_BW_MULT = config("SMART_DNS_SCORE_BW_MULT", cast=float, default=0.7)
+SMART_DNS_SCORE_CPU_MULT = config("SMART_DNS_SCORE_CPU_MULT", cast=float, default=0.5)
+SMART_DNS_RATE_LIMIT_QPS = config("SMART_DNS_RATE_LIMIT_QPS", cast=float, default=50.0)
+SMART_DNS_SOA_MNAME = config("SMART_DNS_SOA_MNAME", default="ns1.marzban.local.")
+SMART_DNS_SOA_RNAME = config("SMART_DNS_SOA_RNAME", default="hostmaster.marzban.local.")
+SMART_DNS_SOA_SERIAL = config("SMART_DNS_SOA_SERIAL", cast=int, default=2026040301)
+SMART_DNS_ALERT_MAX_SCORE = config("SMART_DNS_ALERT_MAX_SCORE", cast=float, default=0.0)
+SMART_DNS_ALERT_MAX_CPU = config("SMART_DNS_ALERT_MAX_CPU", cast=float, default=0.0)
+SMART_DNS_ALERT_MAX_BANDWIDTH_MBPS = config(
+    "SMART_DNS_ALERT_MAX_BANDWIDTH_MBPS", cast=float, default=0.0
+)
+
 # headers: profile-update-interval, support-url, profile-title, announce (Happ)
 SUB_UPDATE_INTERVAL = config("SUB_UPDATE_INTERVAL", default="12")
 SUB_SUPPORT_URL = config("SUB_SUPPORT_URL", default="https://t.me/")
