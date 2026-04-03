@@ -132,7 +132,9 @@ class MetricsCache:
                     n.last_error = None
                     n.last_metrics_up_ts = time.time()
                 else:
-                    n.consecutive_failures = 0
+                    # Node is reachable but self-reports DOWN — do NOT reset
+                    # consecutive_failures so the grace window is not extended.
+                    n.consecutive_failures += 1
                     st = metrics.get("status")
                     n.last_error = f"metrics unhealthy (status={st!r})"
             else:
@@ -166,9 +168,11 @@ class MetricsCache:
         if not candidates:
             return None
 
-        eps = 1e-6
         scores = [max(0.0, c.compute_score()) for c in candidates]
-        weights = [1.0 / (s + eps) for s in scores]
+        # Use 1/(1+s) so an idle node (s=0) gets weight 1.0 and a node with
+        # one connection (s=1) gets weight 0.5 — a 2:1 ratio instead of the
+        # previous 1 000 000:1 that caused thundering-herd oscillation.
+        weights = [1.0 / (1.0 + s) for s in scores]
         chosen = random.choices(candidates, weights=weights, k=1)[0]
         return chosen.announce_ip.strip()
 

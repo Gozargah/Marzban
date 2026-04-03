@@ -3,9 +3,11 @@ from __future__ import annotations
 
 import ipaddress
 import logging
+import os
 import tempfile
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, List, Optional, Tuple
 
 import requests
@@ -20,6 +22,9 @@ from app.xray.operations import get_tls
 from config import SMART_DNS_METRICS_INTERVAL, SMART_DNS_METRICS_TIMEOUT
 
 logger = logging.getLogger("uvicorn.error")
+
+# Maximum concurrent node polls per cycle.
+_MAX_POLL_WORKERS = 32
 
 
 class SANIgnoringAdaptor(HTTPAdapter):
@@ -95,33 +100,50 @@ class MetricsPoller:
             )
         return out
 
+    def _poll_node(self, sess: requests.Session, node_id: int, node: CachedNode) -> None:
+        """Poll a single node's /metrics endpoint. Called from a thread-pool worker."""
+        url = f"https://{_host_for_https_url(node.address)}:{node.port}/metrics"
+        try:
+            r = sess.get(url, timeout=SMART_DNS_METRICS_TIMEOUT)
+            if r.status_code != 200:
+                self._cache.update_node_poll(
+                    node_id,
+                    False,
+                    None,
+                    f"HTTP {r.status_code}",
+                )
+                return
+            data = r.json()
+            if not isinstance(data, dict):
+                self._cache.update_node_poll(
+                    node_id,
+                    False,
+                    None,
+                    "metrics JSON must be an object",
+                )
+                return
+            self._cache.update_node_poll(node_id, True, data, None)
+        except Exception as e:
+            self._cache.update_node_poll(node_id, False, None, str(e))
+
     def _poll_once(self, sess: requests.Session) -> None:
         self._cache.merge_from_db_snapshot(self._load_nodes())
         snap = self._cache.snapshot()
-        for node_id, node in snap.items():
-            url = f"https://{_host_for_https_url(node.address)}:{node.port}/metrics"
-            try:
-                r = sess.get(url, timeout=SMART_DNS_METRICS_TIMEOUT)
-                if r.status_code != 200:
-                    self._cache.update_node_poll(
-                        node_id,
-                        False,
-                        None,
-                        f"HTTP {r.status_code}",
-                    )
-                    continue
-                data = r.json()
-                if not isinstance(data, dict):
-                    self._cache.update_node_poll(
-                        node_id,
-                        False,
-                        None,
-                        "metrics JSON must be an object",
-                    )
-                    continue
-                self._cache.update_node_poll(node_id, True, data, None)
-            except Exception as e:
-                self._cache.update_node_poll(node_id, False, None, str(e))
+        if not snap:
+            return
+
+        # Poll all nodes in parallel so one slow/dead node cannot stall others.
+        workers = min(len(snap), _MAX_POLL_WORKERS)
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            futures = {
+                executor.submit(self._poll_node, sess, nid, node): nid
+                for nid, node in snap.items()
+            }
+            for future in as_completed(futures):
+                try:
+                    future.result()
+                except Exception:
+                    logger.exception("Smart DNS poll worker raised unexpectedly")
 
     def _run(self) -> None:
         try:
@@ -160,10 +182,15 @@ class MetricsPoller:
         if self._thread:
             self._thread.join(timeout=8.0)
             self._thread = None
+        # Close and delete temp PEM files to avoid accumulation across restarts.
         for f in self._cert_files:
             if f is not None:
                 try:
                     f.close()
+                except Exception:
+                    pass
+                try:
+                    os.unlink(f.name)
                 except Exception:
                     pass
         self._cert_files = (None, None)
