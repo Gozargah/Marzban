@@ -204,7 +204,7 @@ ports:
 | `SMART_DNS_METRICS_INTERVAL` | Seconds between `GET /metrics` polls (e.g. `3`). |
 | `SMART_DNS_METRICS_TIMEOUT` | Per-request timeout seconds. |
 | `SMART_DNS_FAIL_THRESHOLD` | Consecutive poll failures before a node is excluded from answers. |
-| `SMART_DNS_FAIL_GRACE_SECONDS` | After a **successful** `/metrics` read with `status: UP`, allow up to **`2 × threshold − 1`** consecutive failures for this many seconds (default `60`) so brief panel↔node TLS/network errors do not flip the node DOWN while the last JSON snapshot still says UP. |
+| `SMART_DNS_FAIL_GRACE_SECONDS` | After the panel last saw a **healthy** `/metrics` payload (`status` UP or equivalent — see below), allow up to **`2 × threshold − 1`** consecutive **transport** failures for this many seconds (default `60`) while the cached JSON still looks healthy. |
 | `SMART_DNS_SCORE_BW_MULT` | Weight for `bandwidth_mbps` in score (default `0.7`). |
 | `SMART_DNS_SCORE_CPU_MULT` | Weight for `cpu` in score (default `0.5`). |
 | `SMART_DNS_RATE_LIMIT_QPS` | Max sustained DNS queries per second **per source IP** (`0` = disabled). |
@@ -234,6 +234,7 @@ ports:
 - **`HYSTERIA2_TRAFFIC_LISTEN`**: use `0.0.0.0:PORT`, or **`[::]:PORT`** for dual-stack bind (the node maps these to `127.0.0.1` for local HTTP). For a **specific IPv6** use **`[2001:db8::1]:PORT`** so the URL is formed correctly.
 - Panel **node `address`**: if you store an IPv6 literal, you may use **`2001:db8::1`** or **`[2001:db8::1]`**; the Smart DNS poller normalizes it to **`https://[...]:port/metrics`**.
 - **`/metrics`** is protected by the **same mTLS** as the REST control API (panel client certificate).
+- **`status` in JSON**: the panel treats **`UP`**, **`ok`**, **`healthy`**, **`running`**, **`online`**, boolean **`true`**, or **`1`** as healthy. If **`status` is omitted** but the object still has **`cpu`**, **`active_connections`**, or **`bandwidth_mbps`**, it is treated as healthy (so a custom node script that drops `status` does not break Smart DNS). **`DOWN`**, **`false`**, **`0`**, etc. mark the node DOWN.
 
 ## TLS / SNI
 

@@ -19,6 +19,31 @@ def _norm_name(name: str) -> str:
     return (name or "").strip().rstrip(".").lower()
 
 
+def metrics_reports_up(m: Dict[str, Any]) -> bool:
+    """
+    Node /metrics JSON health flag. Accepts common variants; missing `status`
+    is treated as UP only if the payload looks like a real metrics object (so a
+    custom script that drops `status` does not permanently mark the node DOWN).
+    """
+    if not isinstance(m, dict):
+        return False
+    if "status" not in m:
+        return "cpu" in m or "active_connections" in m or "bandwidth_mbps" in m
+    raw = m["status"]
+    if raw is True:
+        return True
+    if raw is False:
+        return False
+    if isinstance(raw, (int, float)):
+        return raw == 1
+    s = str(raw).strip().upper()
+    if s in ("UP", "OK", "HEALTHY", "RUNNING", "TRUE", "1", "ONLINE"):
+        return True
+    if s in ("DOWN", "ERROR", "UNHEALTHY", "FALSE", "0", "OFFLINE"):
+        return False
+    return False
+
+
 def is_valid_metrics_ipv4(value: str) -> bool:
     """dnslib A() only accepts IPv4; invalid values would crash the DNS thread."""
     if not value or not isinstance(value, str):
@@ -42,7 +67,7 @@ class CachedNode:
     last_metrics: Optional[Dict[str, Any]] = None
     last_error: Optional[str] = None
     last_poll_ts: float = field(default_factory=time.time)
-    last_metrics_success_ts: float = 0.0
+    last_metrics_up_ts: float = 0.0
 
     def compute_score(self) -> float:
         m = self.last_metrics
@@ -57,13 +82,13 @@ class CachedNode:
         m = self.last_metrics
         if not isinstance(m, dict):
             return False
-        if str(m.get("status", "")).upper() != "UP":
+        if not metrics_reports_up(m):
             return False
         if self.consecutive_failures < fail_threshold:
             return True
-        if self.last_metrics_success_ts <= 0:
+        if self.last_metrics_up_ts <= 0:
             return False
-        if time.time() - self.last_metrics_success_ts > SMART_DNS_FAIL_GRACE_SECONDS:
+        if time.time() - self.last_metrics_up_ts > SMART_DNS_FAIL_GRACE_SECONDS:
             return False
         return self.consecutive_failures < fail_threshold * 2
 
@@ -84,7 +109,7 @@ class MetricsCache:
                     n.last_metrics = prev.last_metrics
                     n.last_error = prev.last_error
                     n.last_poll_ts = prev.last_poll_ts
-                    n.last_metrics_success_ts = prev.last_metrics_success_ts
+                    n.last_metrics_up_ts = prev.last_metrics_up_ts
                 new[n.node_id] = n
             self._by_id = new
 
@@ -101,10 +126,15 @@ class MetricsCache:
                 return
             n.last_poll_ts = time.time()
             if success and metrics is not None:
-                n.consecutive_failures = 0
                 n.last_metrics = metrics
-                n.last_error = None
-                n.last_metrics_success_ts = time.time()
+                if metrics_reports_up(metrics):
+                    n.consecutive_failures = 0
+                    n.last_error = None
+                    n.last_metrics_up_ts = time.time()
+                else:
+                    n.consecutive_failures = 0
+                    st = metrics.get("status")
+                    n.last_error = f"metrics unhealthy (status={st!r})"
             else:
                 n.consecutive_failures += 1
                 n.last_error = error
