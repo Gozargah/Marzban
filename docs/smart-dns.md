@@ -203,7 +203,8 @@ ports:
 | `SMART_DNS_DEFAULT_TTL` | A/NS/SOA TTL in seconds (e.g. `10`). |
 | `SMART_DNS_METRICS_INTERVAL` | Seconds between `GET /metrics` polls (e.g. `3`). |
 | `SMART_DNS_METRICS_TIMEOUT` | Per-request timeout seconds. |
-| `SMART_DNS_FAIL_THRESHOLD` | Consecutive failures before a node is excluded from answers. |
+| `SMART_DNS_FAIL_THRESHOLD` | Consecutive poll failures before a node is excluded from answers. |
+| `SMART_DNS_FAIL_GRACE_SECONDS` | After a **successful** `/metrics` read with `status: UP`, allow up to **`2 × threshold − 1`** consecutive failures for this many seconds (default `60`) so brief panel↔node TLS/network errors do not flip the node DOWN while the last JSON snapshot still says UP. |
 | `SMART_DNS_SCORE_BW_MULT` | Weight for `bandwidth_mbps` in score (default `0.7`). |
 | `SMART_DNS_SCORE_CPU_MULT` | Weight for `cpu` in score (default `0.5`). |
 | `SMART_DNS_RATE_LIMIT_QPS` | Max sustained DNS queries per second **per source IP** (`0` = disabled). |
@@ -243,5 +244,6 @@ Clients resolve the pool name to a **node IP** but often still present the **reg
 - **`active_connections`** on the node is derived from Hysteria traffic-map size when traffic stats are used; it is a proxy, not a raw TCP connection count.
 - Smart DNS v1 is designed for a **single** Marzban worker process.
 - Answers are **IPv4 `A` records only**. Put a valid IPv4 in **`smart_dns_announce_ip`** (or use the node `address` if it is already IPv4). **IPv6-only** client-facing addresses are not supported until `AAAA` is added.
-- After HTTP failures, a node can still be treated as UP until **`SMART_DNS_FAIL_THRESHOLD`** consecutive failures; this reduces flapping but delays full exclusion by up to `(threshold − 1) × SMART_DNS_METRICS_INTERVAL` seconds.
+- After HTTP failures, a node is excluded only after **`SMART_DNS_FAIL_THRESHOLD`** consecutive failures. If the last successful response had **`status: UP`**, **`SMART_DNS_FAIL_GRACE_SECONDS`** allows roughly double that many failures before exclusion, then the node goes DOWN if polls keep failing or **`SMART_DNS_FAIL_GRACE_SECONDS`** elapses without a new success.
+- If **`/metrics` returns HTTP 200** but JSON has **`status: DOWN`**, Smart DNS treats the node as DOWN regardless of grace; that usually means fix **Marzban-node** (e.g. Hysteria `/traffic` vs `/online` handling) or Xray health, not only the panel.
 - With **`SMART_DNS_ENABLED=false`**, the metrics poller does not run: the Smart DNS dashboard stays empty even if nodes have `smart_dns_name` set.

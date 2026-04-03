@@ -154,6 +154,9 @@ SMART_DNS_DEFAULT_TTL = config("SMART_DNS_DEFAULT_TTL", cast=int, default=10)
 SMART_DNS_METRICS_INTERVAL = config("SMART_DNS_METRICS_INTERVAL", cast=float, default=3.0)
 SMART_DNS_METRICS_TIMEOUT = config("SMART_DNS_METRICS_TIMEOUT", cast=float, default=2.0)
 SMART_DNS_FAIL_THRESHOLD = config("SMART_DNS_FAIL_THRESHOLD", cast=int, default=3)
+# After a successful /metrics read, tolerate extra consecutive poll errors for this many seconds
+# (stale UP) so brief TLS/network glitches do not mark the node DOWN immediately.
+SMART_DNS_FAIL_GRACE_SECONDS = config("SMART_DNS_FAIL_GRACE_SECONDS", cast=float, default=60.0)
 SMART_DNS_SCORE_BW_MULT = config("SMART_DNS_SCORE_BW_MULT", cast=float, default=0.7)
 SMART_DNS_SCORE_CPU_MULT = config("SMART_DNS_SCORE_CPU_MULT", cast=float, default=0.5)
 SMART_DNS_RATE_LIMIT_QPS = config("SMART_DNS_RATE_LIMIT_QPS", cast=float, default=50.0)

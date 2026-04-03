@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 from config import (
+    SMART_DNS_FAIL_GRACE_SECONDS,
     SMART_DNS_SCORE_BW_MULT,
     SMART_DNS_SCORE_CPU_MULT,
 )
@@ -41,6 +42,7 @@ class CachedNode:
     last_metrics: Optional[Dict[str, Any]] = None
     last_error: Optional[str] = None
     last_poll_ts: float = field(default_factory=time.time)
+    last_metrics_success_ts: float = 0.0
 
     def compute_score(self) -> float:
         m = self.last_metrics
@@ -52,12 +54,18 @@ class CachedNode:
         return ac + bw * SMART_DNS_SCORE_BW_MULT + cpu * SMART_DNS_SCORE_CPU_MULT
 
     def is_up(self, fail_threshold: int) -> bool:
-        if self.consecutive_failures >= fail_threshold:
-            return False
         m = self.last_metrics
         if not isinstance(m, dict):
             return False
-        return str(m.get("status", "")).upper() == "UP"
+        if str(m.get("status", "")).upper() != "UP":
+            return False
+        if self.consecutive_failures < fail_threshold:
+            return True
+        if self.last_metrics_success_ts <= 0:
+            return False
+        if time.time() - self.last_metrics_success_ts > SMART_DNS_FAIL_GRACE_SECONDS:
+            return False
+        return self.consecutive_failures < fail_threshold * 2
 
 
 class MetricsCache:
@@ -76,6 +84,7 @@ class MetricsCache:
                     n.last_metrics = prev.last_metrics
                     n.last_error = prev.last_error
                     n.last_poll_ts = prev.last_poll_ts
+                    n.last_metrics_success_ts = prev.last_metrics_success_ts
                 new[n.node_id] = n
             self._by_id = new
 
@@ -95,6 +104,7 @@ class MetricsCache:
                 n.consecutive_failures = 0
                 n.last_metrics = metrics
                 n.last_error = None
+                n.last_metrics_success_ts = time.time()
             else:
                 n.consecutive_failures += 1
                 n.last_error = error
