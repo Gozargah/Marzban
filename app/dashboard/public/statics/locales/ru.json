@@ -146,6 +146,7 @@
   "smartDns.avgCpu": "CPU среднее",
   "smartDns.avgBw": "ПС среднее",
   "smartDns.allPoolsHealthy": "Все пулы в норме",
+  "smartDns.polled": "опрошен",
   "smartDns.pollerDead": "Поллер метрик не работает — данные устарели",
   "smartDns.pollerDeadHint": "Проверьте логи панели. Поллер мог упасть при создании TLS-сессии. Перезапустите панель для восстановления.",
   "on_hold": "On Hold",

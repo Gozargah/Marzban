@@ -367,11 +367,21 @@ const NodeCard: FC<{ node: NodeRow; lbShare: number }> = ({ node, lbShare }) => 
         )}
 
         {/* ── Last polled ── */}
-        {node.last_poll_ts > 0 && (
-          <Text fontSize="10px" color={dark ? "gray.600" : "gray.400"} mt={2} textAlign="right">
-            {timeAgo(node.seconds_since_poll)}
-          </Text>
-        )}
+        {node.last_poll_ts > 0 && (() => {
+          const stale = node.seconds_since_poll > 15;
+          return (
+            <Text
+              fontSize="10px"
+              color={stale ? (dark ? "orange.400" : "orange.500") : (dark ? "gray.600" : "gray.400")}
+              mt={2}
+              textAlign="right"
+              fontWeight={stale ? "semibold" : "normal"}
+            >
+              {t("smartDns.polled")} {timeAgo(node.seconds_since_poll)}
+              {stale && " ⚠"}
+            </Text>
+          );
+        })()}
       </Box>
     </Box>
   );
