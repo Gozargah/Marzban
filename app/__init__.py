@@ -69,9 +69,6 @@ def on_startup():
     from app.utils.hysteria_cache import warmup_cache
     warmup_cache()
 
-    from app.smart_dns import start_smart_dns
-    start_smart_dns()
-
 
 @app.on_event("shutdown")
 def on_shutdown():

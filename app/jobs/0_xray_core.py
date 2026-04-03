@@ -36,6 +36,11 @@ def core_health_check():
 
 @app.on_event("startup")
 def start_core():
+    # Bind Smart DNS before Xray so no inbound can take port 53 first.
+    from app.smart_dns import start_smart_dns
+
+    start_smart_dns()
+
     logger.info("Generating Xray core config")
 
     start_time = time.time()
