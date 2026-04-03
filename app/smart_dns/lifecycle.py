@@ -20,6 +20,10 @@ def get_metrics_cache() -> MetricsCache:
     return _cache
 
 
+def is_poller_alive() -> bool:
+    return _poller.is_alive()
+
+
 def start_smart_dns() -> None:
     global _dns_server
     if not SMART_DNS_ENABLED:
