@@ -7,7 +7,7 @@ import os
 import tempfile
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError, as_completed
 from typing import Any, List, Optional, Tuple
 
 import requests
@@ -133,17 +133,35 @@ class MetricsPoller:
             return
 
         # Poll all nodes in parallel so one slow/dead node cannot stall others.
+        # We do NOT use `with ThreadPoolExecutor(...)` because its __exit__ calls
+        # shutdown(wait=True) which blocks until every worker finishes — a stuck
+        # SSL handshake can hold that for minutes.  Instead we use a hard deadline
+        # via as_completed(timeout=...) and then shutdown(wait=False) so the next
+        # poll cycle starts on time even if some workers are still hanging.
         workers = min(len(snap), _MAX_POLL_WORKERS)
-        with ThreadPoolExecutor(max_workers=workers) as executor:
-            futures = {
-                executor.submit(self._poll_node, sess, nid, node): nid
-                for nid, node in snap.items()
-            }
-            for future in as_completed(futures):
+        executor = ThreadPoolExecutor(max_workers=workers)
+        futures = {
+            executor.submit(self._poll_node, sess, nid, node): nid
+            for nid, node in snap.items()
+        }
+        # Give each node its full timeout, plus a 3-second buffer for overhead.
+        cycle_timeout = SMART_DNS_METRICS_TIMEOUT + 3.0
+        try:
+            for future in as_completed(futures, timeout=cycle_timeout):
                 try:
                     future.result()
                 except Exception:
                     logger.exception("Smart DNS poll worker raised unexpectedly")
+        except FuturesTimeoutError:
+            pending = sum(1 for f in futures if not f.done())
+            logger.warning(
+                "Smart DNS poll cycle exceeded %.1fs deadline; %d node(s) still pending",
+                cycle_timeout,
+                pending,
+            )
+        finally:
+            # Don't stall the next cycle waiting for hung TCP connections.
+            executor.shutdown(wait=False)
 
     def is_alive(self) -> bool:
         return self._thread is not None and self._thread.is_alive()
