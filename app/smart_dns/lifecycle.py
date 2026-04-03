@@ -44,6 +44,8 @@ def start_smart_dns() -> None:
                 srv.stop()
             except Exception:
                 logger.exception("Smart DNS cleanup after bind failure")
+        # Stop the poller too — no point polling if DNS server is dead.
+        _poller.stop()
         _dns_server = None
 
 

@@ -7,31 +7,52 @@ import {
   Button,
   Card,
   CardBody,
-  CardHeader,
   chakra,
-  Heading,
+  Flex,
+  Grid,
   HStack,
+  Progress,
   Spinner,
-  Table,
-  Tbody,
-  Td,
   Text,
-  Th,
-  Thead,
-  Tr,
+  Tooltip,
+  useColorMode,
   VStack,
 } from "@chakra-ui/react";
-import { ArrowLeftIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
-import { FC, useMemo } from "react";
-import ReactApexChart from "react-apexcharts";
+import {
+  ArrowLeftIcon,
+  ArrowPathIcon,
+  BoltIcon,
+  ChartBarIcon,
+  CheckCircleIcon,
+  CpuChipIcon,
+  ExclamationCircleIcon,
+  ExclamationTriangleIcon,
+  GlobeAltIcon,
+  ServerIcon,
+  SignalIcon,
+  XCircleIcon,
+} from "@heroicons/react/24/outline";
+import { FC, ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
 import { Link } from "react-router-dom";
 import { fetch } from "service/http";
 
-const BackIcon = chakra(ArrowLeftIcon, { baseStyle: { w: 4, h: 4 } });
-const RefreshIcon = chakra(ArrowPathIcon, { baseStyle: { w: 4, h: 4 } });
+// ─── Chakra-wrapped icons ────────────────────────────────────────────────────
+const BackIcon    = chakra(ArrowLeftIcon,          { baseStyle: { w: 4, h: 4 } });
+const RefreshIcon = chakra(ArrowPathIcon,           { baseStyle: { w: 4, h: 4 } });
+const PoolIcon    = chakra(GlobeAltIcon,            { baseStyle: { w: 4, h: 4 } });
+const NodeIcon    = chakra(ServerIcon,              { baseStyle: { w: 4, h: 4 } });
+const CpuIcon     = chakra(CpuChipIcon,             { baseStyle: { w: 3, h: 3 } });
+const BwIcon      = chakra(ChartBarIcon,            { baseStyle: { w: 3, h: 3 } });
+const ConnIcon    = chakra(SignalIcon,              { baseStyle: { w: 3, h: 3 } });
+const ScoreIcon   = chakra(BoltIcon,               { baseStyle: { w: 3, h: 3 } });
+const OkIcon      = chakra(CheckCircleIcon,         { baseStyle: { w: 4, h: 4 } });
+const ErrIcon     = chakra(XCircleIcon,             { baseStyle: { w: 4, h: 4 } });
+const WarnIcon    = chakra(ExclamationTriangleIcon, { baseStyle: { w: 4, h: 4 } });
+const CritIcon    = chakra(ExclamationCircleIcon,   { baseStyle: { w: 4, h: 4 } });
 
+// ─── Types ───────────────────────────────────────────────────────────────────
 type Metrics = {
   active_connections: number;
   bandwidth_mbps: number;
@@ -54,39 +75,389 @@ type NodeRow = {
   metrics: Metrics | null;
 };
 
-type PoolRow = {
-  name: string;
-  nodes: NodeRow[];
+type PoolRow = { name: string; nodes: NodeRow[] };
+type StatusPayload  = { enabled: boolean; fail_threshold: number; pools: PoolRow[] };
+type AlertRow       = { severity: string; message: string; node_id: number | null; node_name: string | null };
+type AlertsPayload  = { alerts: AlertRow[] };
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Same formula as the fixed backend: 1/(1+score) */
+const lbWeight = (score: number) => 1.0 / (1.0 + score);
+
+/** Returns traffic-share percentages (0-100) for each node, in order. */
+const computeShares = (nodes: NodeRow[]): number[] => {
+  const weights = nodes.map(n => (n.is_up ? lbWeight(n.score) : 0));
+  const total   = weights.reduce((a, b) => a + b, 0);
+  if (total === 0) return nodes.map(() => 0);
+  return weights.map(w => Math.round((w / total) * 1000) / 10);
 };
 
-type StatusPayload = {
-  enabled: boolean;
-  fail_threshold: number;
-  pools: PoolRow[];
+const fmtNum = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n));
+
+const timeAgo = (ts: number): string => {
+  const s = Date.now() / 1000 - ts;
+  if (s < 5)   return "just now";
+  if (s < 60)  return `${Math.round(s)}s ago`;
+  if (s < 3600) return `${Math.round(s / 60)}m ago`;
+  return `${Math.round(s / 3600)}h ago`;
 };
 
-type AlertRow = {
-  severity: string;
-  message: string;
-  node_id: number | null;
-  node_name: string | null;
+type NodeState = "up" | "grace" | "down";
+const nodeState = (n: NodeRow): NodeState =>
+  !n.is_up ? "down" : n.consecutive_failures > 0 ? "grace" : "up";
+
+const STATE_COLOR: Record<NodeState, string> = {
+  up:    "green",
+  grace: "orange",
+  down:  "red",
 };
 
-type AlertsPayload = {
-  alerts: AlertRow[];
+// Distribution-bar accent palette (hex, intentionally vivid)
+const DIST_HEX = [
+  "#4d7de7", "#9F7AEA", "#38B2AC", "#ED64A6",
+  "#0BC5EA", "#F6AD55", "#68D391", "#FC8181",
+];
+
+// ─── StatCard ────────────────────────────────────────────────────────────────
+const StatCard: FC<{
+  icon: ReactNode;
+  label: string;
+  value: ReactNode;
+  sub?: string;
+  accentColor?: string;
+}> = ({ icon, label, value, sub, accentColor = "blue.400" }) => {
+  const { colorMode } = useColorMode();
+  const dark = colorMode === "dark";
+  return (
+    <Box
+      flex="1"
+      minW="120px"
+      position="relative"
+      bg={dark ? "gray.750" : "white"}
+      border="1px solid"
+      borderColor={dark ? "gray.600" : "gray.200"}
+      borderRadius="xl"
+      overflow="hidden"
+      p={4}
+    >
+      {/* Left accent stripe */}
+      <Box
+        position="absolute"
+        left={0} top={0} bottom={0}
+        w="3px"
+        bg={accentColor}
+        borderRadius="full"
+      />
+      <HStack spacing={1.5} mb={1}>
+        <Box color={dark ? "gray.400" : "gray.500"}>{icon}</Box>
+        <Text
+          fontSize="10px"
+          fontWeight="semibold"
+          textTransform="uppercase"
+          letterSpacing="wider"
+          color={dark ? "gray.400" : "gray.500"}
+        >
+          {label}
+        </Text>
+      </HStack>
+      <Text fontSize="2xl" fontWeight="bold" lineHeight="1.1">{value}</Text>
+      {sub && (
+        <Text fontSize="xs" color={dark ? "gray.500" : "gray.400"} mt={0.5}>{sub}</Text>
+      )}
+    </Box>
+  );
 };
 
+// ─── DistributionBar ─────────────────────────────────────────────────────────
+const DistributionBar: FC<{ nodes: NodeRow[]; shares: number[] }> = ({ nodes, shares }) => {
+  const { colorMode } = useColorMode();
+  const dark = colorMode === "dark";
+  const total = shares.reduce((a, b) => a + b, 0);
+  if (total === 0) return null;
+
+  return (
+    <Box mt={3}>
+      {/* Segmented bar */}
+      <Flex h="6px" borderRadius="full" overflow="hidden" gap="1px" mb={2}>
+        {nodes.map((n, i) =>
+          shares[i] > 0 ? (
+            <Tooltip key={n.node_id} label={`${n.node_name}: ${shares[i]}%`} hasArrow>
+              <Box
+                h="100%"
+                style={{ flex: `${shares[i]} 0 0` }}
+                bg={DIST_HEX[i % DIST_HEX.length]}
+                opacity={n.is_up ? 1 : 0.25}
+                transition="flex 0.5s ease"
+                cursor="default"
+              />
+            </Tooltip>
+          ) : null
+        )}
+      </Flex>
+      {/* Legend */}
+      <HStack spacing={3} flexWrap="wrap">
+        {nodes.map((n, i) => (
+          <HStack key={n.node_id} spacing={1}>
+            <Box
+              w="7px" h="7px"
+              borderRadius="2px"
+              bg={DIST_HEX[i % DIST_HEX.length]}
+              opacity={n.is_up ? 1 : 0.35}
+            />
+            <Text fontSize="xs" color={dark ? "gray.400" : "gray.500"}>
+              {n.node_name}
+              {shares[i] > 0 ? ` ${shares[i]}%` : " —"}
+            </Text>
+          </HStack>
+        ))}
+      </HStack>
+    </Box>
+  );
+};
+
+// ─── NodeCard ────────────────────────────────────────────────────────────────
+const NodeCard: FC<{ node: NodeRow; lbShare: number }> = ({ node, lbShare }) => {
+  const { colorMode } = useColorMode();
+  const dark = colorMode === "dark";
+  const { t } = useTranslation();
+  const state  = nodeState(node);
+  const color  = STATE_COLOR[state];
+  const m      = node.metrics;
+
+  const cpuPct  = m ? Math.min(100, m.cpu) : 0;
+  const bwPct   = m ? Math.min(100, (m.bandwidth_mbps / 1000) * 100) : 0;
+  const cpuScheme = cpuPct > 85 ? "red" : cpuPct > 65 ? "orange" : "green";
+  const bwScheme  = bwPct  > 85 ? "red" : bwPct  > 65 ? "orange" : "blue";
+
+  const stateLabel =
+    state === "up"    ? t("smartDns.up") :
+    state === "grace" ? t("smartDns.grace") :
+                        t("smartDns.down");
+
+  return (
+    <Box
+      bg={dark ? "gray.750" : "white"}
+      border="1px solid"
+      borderColor={dark ? "gray.600" : "gray.200"}
+      borderRadius="xl"
+      overflow="hidden"
+      position="relative"
+      transition="box-shadow 0.2s"
+      _hover={{ boxShadow: dark ? "0 0 0 1px var(--chakra-colors-gray-500)" : "sm" }}
+    >
+      {/* State accent bar */}
+      <Box
+        position="absolute" left={0} top={0} bottom={0}
+        w="3px" bg={`${color}.400`}
+      />
+
+      <Box px={4} py={3} pl={5}>
+        {/* ── Header row ── */}
+        <HStack justify="space-between" mb={2} flexWrap="wrap" gap={1}>
+          <HStack spacing={2} minW={0} flex={1} overflow="hidden">
+            {/* Pulsing status dot */}
+            <Box
+              w="8px" h="8px" borderRadius="full" flexShrink={0}
+              bg={`${color}.${dark ? "300" : "500"}`}
+              boxShadow={state === "up" ? `0 0 0 3px var(--chakra-colors-${color}-${dark ? "800" : "100"})` : "none"}
+            />
+            <Text fontWeight="semibold" fontSize="sm" isTruncated>
+              {node.node_name}
+            </Text>
+          </HStack>
+          <HStack spacing={1} flexShrink={0}>
+            <Badge
+              colorScheme={color}
+              variant={state === "down" ? "solid" : "subtle"}
+              fontSize="2xs"
+            >
+              {stateLabel}
+            </Badge>
+            {node.is_up && lbShare > 0 && (
+              <Badge colorScheme="blue" variant="outline" fontSize="2xs">
+                {lbShare}%
+              </Badge>
+            )}
+          </HStack>
+        </HStack>
+
+        {/* ── IP address ── */}
+        <Text
+          fontSize="xs"
+          fontFamily="mono"
+          color={dark ? "gray.400" : "gray.500"}
+          mb={m ? 3 : 2}
+        >
+          {node.announce_ip}
+        </Text>
+
+        {/* ── Metrics ── */}
+        {m ? (
+          <VStack spacing={2} align="stretch">
+            {/* CPU */}
+            <Box>
+              <HStack justify="space-between" mb="2px">
+                <HStack spacing={1} color={dark ? "gray.400" : "gray.500"}>
+                  <CpuIcon />
+                  <Text fontSize="xs">CPU</Text>
+                </HStack>
+                <Text fontSize="xs" fontWeight="medium">{m.cpu.toFixed(1)}%</Text>
+              </HStack>
+              <Progress value={cpuPct} size="xs" colorScheme={cpuScheme} borderRadius="full" />
+            </Box>
+
+            {/* Bandwidth */}
+            <Box>
+              <HStack justify="space-between" mb="2px">
+                <HStack spacing={1} color={dark ? "gray.400" : "gray.500"}>
+                  <BwIcon />
+                  <Text fontSize="xs">{t("smartDns.bw")}</Text>
+                </HStack>
+                <Text fontSize="xs" fontWeight="medium">{m.bandwidth_mbps.toFixed(0)} Mbps</Text>
+              </HStack>
+              <Progress value={bwPct} size="xs" colorScheme={bwScheme} borderRadius="full" />
+            </Box>
+
+            {/* Connections + Score */}
+            <HStack justify="space-between" pt={1} flexWrap="wrap" gap={2}>
+              <HStack spacing={1} color={dark ? "gray.400" : "gray.500"}>
+                <ConnIcon />
+                <Text fontSize="xs">{t("smartDns.conn")}</Text>
+                <Text fontSize="xs" fontWeight="semibold" color={dark ? "white" : "gray.800"}>
+                  {fmtNum(m.active_connections)}
+                </Text>
+              </HStack>
+              <HStack spacing={1} color={dark ? "gray.400" : "gray.500"}>
+                <ScoreIcon />
+                <Text fontSize="xs">{t("smartDns.score")}</Text>
+                <Text fontSize="xs" fontWeight="semibold" color={dark ? "white" : "gray.800"}>
+                  {node.score.toFixed(1)}
+                </Text>
+              </HStack>
+            </HStack>
+          </VStack>
+        ) : (
+          <Text fontSize="xs" color={dark ? "gray.500" : "gray.400"} fontStyle="italic">
+            {t("smartDns.noMetricsYet")}
+          </Text>
+        )}
+
+        {/* ── Error / failure info ── */}
+        {(node.consecutive_failures > 0 || node.last_error) && (
+          <Box
+            mt={3} p={2}
+            bg={dark ? "red.900" : "red.50"}
+            borderRadius="md"
+            borderLeft="2px solid"
+            borderLeftColor="red.400"
+          >
+            {node.consecutive_failures > 0 && (
+              <Text fontSize="xs" color={dark ? "red.300" : "red.700"} fontWeight="medium">
+                {t("smartDns.pollErrors")}: {node.consecutive_failures}
+              </Text>
+            )}
+            {node.last_error && (
+              <Text fontSize="xs" color={dark ? "red.300" : "red.600"} noOfLines={2} mt={0.5}>
+                {node.last_error}
+              </Text>
+            )}
+          </Box>
+        )}
+
+        {/* ── Last polled ── */}
+        {node.last_poll_ts > 0 && (
+          <Text fontSize="10px" color={dark ? "gray.600" : "gray.400"} mt={2} textAlign="right">
+            {timeAgo(node.last_poll_ts)}
+          </Text>
+        )}
+      </Box>
+    </Box>
+  );
+};
+
+// ─── PoolSection ─────────────────────────────────────────────────────────────
+const PoolSection: FC<{ pool: PoolRow }> = ({ pool }) => {
+  const { colorMode } = useColorMode();
+  const dark = colorMode === "dark";
+  const { t } = useTranslation();
+
+  const upCount  = pool.nodes.filter(n => n.is_up).length;
+  const total    = pool.nodes.length;
+  const allDown  = upCount === 0;
+  const shares   = useMemo(() => computeShares(pool.nodes), [pool.nodes]);
+
+  const headerBg    = dark ? "gray.750" : "gray.50";
+  const borderColor = allDown
+    ? (dark ? "red.500" : "red.300")
+    : (dark ? "gray.600" : "gray.200");
+
+  return (
+    <Card
+      variant="outline"
+      borderColor={borderColor}
+      borderRadius="2xl"
+      overflow="hidden"
+    >
+      {/* Pool header */}
+      <Box
+        px={5} py={3}
+        bg={headerBg}
+        borderBottom="1px solid"
+        borderColor={dark ? "gray.600" : "gray.100"}
+      >
+        <HStack justify="space-between" flexWrap="wrap" gap={2}>
+          <HStack spacing={2}>
+            <Box color={dark ? "blue.300" : "blue.500"}>
+              <PoolIcon />
+            </Box>
+            <Text fontWeight="semibold" fontSize="sm" fontFamily="mono">
+              {pool.name}
+            </Text>
+          </HStack>
+          <Badge
+            colorScheme={allDown ? "red" : upCount < total ? "orange" : "green"}
+            fontSize="xs"
+          >
+            {upCount} / {total} {t("smartDns.up")}
+          </Badge>
+        </HStack>
+
+        {/* Traffic distribution bar */}
+        <DistributionBar nodes={pool.nodes} shares={shares} />
+      </Box>
+
+      {/* Node grid */}
+      <CardBody p={4}>
+        <Grid
+          templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }}
+          gap={3}
+        >
+          {pool.nodes.map((n, i) => (
+            <NodeCard key={n.node_id} node={n} lbShare={shares[i]} />
+          ))}
+        </Grid>
+      </CardBody>
+    </Card>
+  );
+};
+
+// ─── Main Page ───────────────────────────────────────────────────────────────
 const STATUS_KEY = "smart-dns-status";
 const ALERTS_KEY = "smart-dns-alerts";
 
 export const SmartDns: FC = () => {
   const { t } = useTranslation();
+  const { colorMode } = useColorMode();
+  const dark = colorMode === "dark";
+
   const { data: status, isLoading, refetch, isFetching } = useQuery({
     queryKey: STATUS_KEY,
     queryFn: () => fetch("/smart-dns/status") as Promise<StatusPayload>,
     refetchInterval: 4000,
     refetchOnWindowFocus: true,
   });
+
   const { data: alertsData } = useQuery({
     queryKey: ALERTS_KEY,
     queryFn: () => fetch("/smart-dns/alerts") as Promise<AlertsPayload>,
@@ -94,50 +465,74 @@ export const SmartDns: FC = () => {
     refetchOnWindowFocus: true,
   });
 
-  const chartOptions = useMemo(() => {
+  // ── Summary numbers ──────────────────────────────────────────────────────
+  const stats = useMemo(() => {
     const pools = status?.pools ?? [];
-    const categories: string[] = [];
-    pools.forEach((p) => {
-      p.nodes.forEach((n) => {
-        categories.push(`${n.node_name} (${p.name})`);
-      });
-    });
-    return {
-      chart: { type: "bar" as const, toolbar: { show: false } },
-      plotOptions: { bar: { horizontal: true, borderRadius: 4 } },
-      xaxis: { categories },
-      dataLabels: { enabled: true },
-      tooltip: { y: { formatter: (v: number) => String(v) } },
-    };
-  }, [status?.pools]);
+    let totalNodes = 0, upNodes = 0, totalConns = 0;
+    let cpuSum = 0, bwSum = 0, mCount = 0;
 
-  const chartSeries = useMemo(() => {
-    const pools = status?.pools ?? [];
-    const data: number[] = [];
-    pools.forEach((p) => {
-      p.nodes.forEach((n) => data.push(n.score));
-    });
-    return [{ name: t("smartDns.score"), data }];
-  }, [status?.pools, t]);
+    for (const p of pools) {
+      for (const n of p.nodes) {
+        totalNodes++;
+        if (n.is_up) upNodes++;
+        if (n.metrics) {
+          totalConns += n.metrics.active_connections;
+          cpuSum     += n.metrics.cpu;
+          bwSum      += n.metrics.bandwidth_mbps;
+          mCount++;
+        }
+      }
+    }
+    return {
+      poolCount:  pools.length,
+      totalNodes,
+      upNodes,
+      downNodes:  totalNodes - upNodes,
+      totalConns,
+      avgCpu:     mCount > 0 ? cpuSum / mCount : 0,
+      avgBw:      mCount > 0 ? bwSum  / mCount : 0,
+    };
+  }, [status]);
+
+  const alerts         = alertsData?.alerts ?? [];
+  const criticalAlerts = alerts.filter(a => a.severity === "critical");
+  const warningAlerts  = alerts.filter(a => a.severity !== "critical");
 
   return (
-    <Box p={{ base: 3, md: 6 }} maxW="1200px" mx="auto">
-      <VStack align="stretch" spacing={4}>
+    <Box p={{ base: 3, md: 6 }} maxW="1400px" mx="auto">
+      <VStack align="stretch" spacing={5}>
+
+        {/* ── Header ── */}
         <HStack justify="space-between" flexWrap="wrap" gap={2}>
-          <HStack>
-            <Button
-              as={Link}
-              to="/"
-              size="sm"
-              variant="ghost"
-              leftIcon={<BackIcon />}
-            >
+          <HStack spacing={3}>
+            <Button as={Link} to="/" size="sm" variant="ghost" leftIcon={<BackIcon />}>
               {t("smartDns.back")}
             </Button>
-            <Heading size="md">{t("smartDns.title")}</Heading>
+            {/* Live status dot */}
+            <Box
+              w="9px" h="9px" borderRadius="full" flexShrink={0}
+              bg={status?.enabled ? "green.400" : "gray.400"}
+              boxShadow={
+                status?.enabled
+                  ? `0 0 0 3px var(--chakra-colors-green-${dark ? "900" : "100"})`
+                  : "none"
+              }
+            />
+            <Text fontWeight="bold" fontSize="lg">Smart DNS</Text>
+            {status && (
+              <Badge
+                colorScheme={status.enabled ? "green" : "gray"}
+                variant="subtle"
+                fontSize="xs"
+              >
+                {status.enabled ? t("smartDns.enabled") : "DISABLED"}
+              </Badge>
+            )}
           </HStack>
+
           <Button
             size="sm"
+            variant="outline"
             leftIcon={<RefreshIcon />}
             onClick={() => refetch()}
             isLoading={isFetching}
@@ -146,23 +541,49 @@ export const SmartDns: FC = () => {
           </Button>
         </HStack>
 
+        {/* ── Disabled banner ── */}
         {status && !status.enabled && (
-          <Alert status="warning" borderRadius="md">
+          <Alert status="warning" borderRadius="xl">
             <AlertIcon />
             <AlertDescription>{t("smartDns.disabled")}</AlertDescription>
           </Alert>
         )}
 
-        {alertsData && alertsData.alerts.length > 0 && (
-          <Alert status="error" borderRadius="md" variant="left-accent">
-            <AlertIcon />
+        {/* ── Critical alerts ── */}
+        {criticalAlerts.length > 0 && (
+          <Alert status="error" borderRadius="xl" variant="left-accent">
+            <Box color="red.400" mr={3}><CritIcon /></Box>
             <Box>
-              <Text fontWeight="semibold">{t("smartDns.alerts")}</Text>
-              <VStack align="stretch" spacing={1} mt={1}>
-                {alertsData.alerts.map((a, i) => (
-                  <Text key={i} fontSize="sm">
-                    {a.message}
-                    {a.node_name ? ` (${a.node_name})` : ""}
+              <Text fontWeight="semibold" fontSize="sm" mb={criticalAlerts.length > 1 ? 1 : 0}>
+                {criticalAlerts.length === 1
+                  ? criticalAlerts[0].message
+                  : `${criticalAlerts.length} ${t("smartDns.alerts").toLowerCase()}`}
+              </Text>
+              {criticalAlerts.length > 1 && (
+                <VStack align="stretch" spacing={0.5}>
+                  {criticalAlerts.map((a, i) => (
+                    <Text key={i} fontSize="xs">
+                      • {a.message}{a.node_name ? ` (${a.node_name})` : ""}
+                    </Text>
+                  ))}
+                </VStack>
+              )}
+            </Box>
+          </Alert>
+        )}
+
+        {/* ── Warning alerts ── */}
+        {warningAlerts.length > 0 && (
+          <Alert status="warning" borderRadius="xl" variant="left-accent">
+            <Box color="orange.400" mr={3}><WarnIcon /></Box>
+            <Box>
+              <Text fontWeight="semibold" fontSize="sm" mb={1}>
+                {warningAlerts.length} {t("smartDns.alerts").toLowerCase()}
+              </Text>
+              <VStack align="stretch" spacing={0.5}>
+                {warningAlerts.map((a, i) => (
+                  <Text key={i} fontSize="xs">
+                    • {a.message}{a.node_name ? ` (${a.node_name})` : ""}
                   </Text>
                 ))}
               </VStack>
@@ -170,85 +591,103 @@ export const SmartDns: FC = () => {
           </Alert>
         )}
 
-        {alertsData && alertsData.alerts.length === 0 && (
-          <Text fontSize="sm" color="gray.500">
-            {t("smartDns.noAlerts")}
-          </Text>
-        )}
-
+        {/* ── Loading ── */}
         {isLoading && (
-          <HStack>
-            <Spinner size="sm" />
-            <Text>…</Text>
+          <HStack justify="center" py={10}>
+            <Spinner size="md" color="blue.400" />
+            <Text color={dark ? "gray.400" : "gray.500"}>Loading…</Text>
           </HStack>
         )}
 
-        {!isLoading && status && (!status.pools || status.pools.length === 0) && (
-          <Text color="gray.500">{t("smartDns.noData")}</Text>
+        {/* ── Summary stat strip ── */}
+        {status && !isLoading && (
+          <Flex gap={3} flexWrap="wrap">
+            <StatCard
+              icon={<PoolIcon />}
+              label={t("smartDns.totalPools")}
+              value={stats.poolCount}
+              accentColor="blue.400"
+            />
+            <StatCard
+              icon={<OkIcon />}
+              label={t("smartDns.healthyNodes")}
+              value={`${stats.upNodes} / ${stats.totalNodes}`}
+              accentColor="green.400"
+            />
+            {stats.downNodes > 0 && (
+              <StatCard
+                icon={<ErrIcon />}
+                label={t("smartDns.downNodes")}
+                value={stats.downNodes}
+                accentColor="red.400"
+              />
+            )}
+            <StatCard
+              icon={<ConnIcon />}
+              label={t("smartDns.conn")}
+              value={fmtNum(stats.totalConns)}
+              sub="active connections"
+              accentColor="purple.400"
+            />
+            <StatCard
+              icon={<CpuIcon />}
+              label={t("smartDns.avgCpu")}
+              value={`${stats.avgCpu.toFixed(1)}%`}
+              sub="average"
+              accentColor={stats.avgCpu > 80 ? "red.400" : "teal.400"}
+            />
+            <StatCard
+              icon={<BwIcon />}
+              label={t("smartDns.avgBw")}
+              value={`${stats.avgBw.toFixed(0)}`}
+              sub="Mbps avg"
+              accentColor="cyan.400"
+            />
+          </Flex>
         )}
 
-        {status?.pools?.map((pool) => (
-          <Card key={pool.name} variant="outline" size="sm">
-            <CardHeader py={2}>
-              <Heading size="sm">
-                {t("smartDns.pool")}: {pool.name}
-              </Heading>
-            </CardHeader>
-            <CardBody pt={0}>
-              <Table size="sm" variant="simple">
-                <Thead>
-                  <Tr>
-                    <Th>{t("smartDns.node")}</Th>
-                    <Th>{t("smartDns.status")}</Th>
-                    <Th isNumeric>{t("smartDns.score")}</Th>
-                    <Th isNumeric>{t("smartDns.conn")}</Th>
-                    <Th isNumeric>{t("smartDns.bw")}</Th>
-                    <Th isNumeric>{t("smartDns.cpu")}</Th>
-                    <Th>IP</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {pool.nodes.map((n) => (
-                    <Tr key={n.node_id}>
-                      <Td fontWeight="medium">{n.node_name}</Td>
-                      <Td>
-                        <Badge colorScheme={n.is_up ? "green" : "red"}>
-                          {n.is_up ? t("smartDns.up") : t("smartDns.down")}
-                        </Badge>
-                        {n.consecutive_failures > 0 && (
-                          <Text as="span" fontSize="xs" color="gray.500" ml={1}>
-                            ({n.consecutive_failures})
-                          </Text>
-                        )}
-                      </Td>
-                      <Td isNumeric>{n.score}</Td>
-                      <Td isNumeric>{n.metrics?.active_connections ?? "—"}</Td>
-                      <Td isNumeric>{n.metrics?.bandwidth_mbps ?? "—"}</Td>
-                      <Td isNumeric>{n.metrics?.cpu ?? "—"}</Td>
-                      <Td fontSize="xs">{n.announce_ip}</Td>
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-            </CardBody>
-          </Card>
+        {/* ── Empty state ── */}
+        {!isLoading && status && status.pools.length === 0 && (
+          <Box
+            p={12}
+            textAlign="center"
+            border="2px dashed"
+            borderColor={dark ? "gray.600" : "gray.200"}
+            borderRadius="2xl"
+          >
+            <Box
+              mx="auto"
+              w={12} h={12}
+              borderRadius="full"
+              bg={dark ? "gray.700" : "gray.100"}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              mb={3}
+            >
+              <Box color={dark ? "gray.500" : "gray.400"} fontSize="xl">
+                <GlobeAltIcon style={{ width: 24, height: 24 }} />
+              </Box>
+            </Box>
+            <Text fontWeight="medium" color={dark ? "gray.400" : "gray.600"}>
+              {t("smartDns.noData")}
+            </Text>
+          </Box>
+        )}
+
+        {/* ── Pool sections ── */}
+        {status?.pools?.map(pool => (
+          <PoolSection key={pool.name} pool={pool} />
         ))}
 
-        {status && status.pools && status.pools.length > 0 && chartSeries[0].data.length > 0 && (
-          <Card variant="outline">
-            <CardHeader>
-              <Heading size="sm">{t("smartDns.scoreChart")}</Heading>
-            </CardHeader>
-            <CardBody>
-              <ReactApexChart
-                options={chartOptions}
-                series={chartSeries}
-                type="bar"
-                height={120 + chartSeries[0].data.length * 28}
-              />
-            </CardBody>
-          </Card>
+        {/* ── All healthy footer ── */}
+        {!isLoading && alerts.length === 0 && (status?.pools?.length ?? 0) > 0 && (
+          <HStack justify="center" color={dark ? "green.300" : "green.600"} spacing={1.5}>
+            <OkIcon />
+            <Text fontSize="sm">{t("smartDns.allPoolsHealthy")}</Text>
+          </HStack>
         )}
+
       </VStack>
     </Box>
   );
