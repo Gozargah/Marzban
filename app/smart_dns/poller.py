@@ -19,7 +19,12 @@ from app.db.models import Node as DBNode
 from app.models.node import NodeStatus
 from app.smart_dns.cache import CachedNode, MetricsCache
 from app.xray.operations import get_tls
-from config import SMART_DNS_METRICS_INTERVAL, SMART_DNS_METRICS_TIMEOUT
+from config import (
+    SMART_DNS_METRICS_INTERVAL,
+    SMART_DNS_METRICS_PORT,
+    SMART_DNS_METRICS_SECRET,
+    SMART_DNS_METRICS_TIMEOUT,
+)
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -75,6 +80,9 @@ class MetricsPoller:
         sess.mount("https://", SANIgnoringAdaptor())
         sess.cert = (cert_f.name, key_f.name)
         sess.verify = False
+        secret = (SMART_DNS_METRICS_SECRET or "").strip()
+        if secret:
+            sess.headers["X-Metrics-Token"] = secret
         return sess
 
     def _load_nodes(self) -> List[CachedNode]:
@@ -102,7 +110,7 @@ class MetricsPoller:
 
     def _poll_node(self, sess: requests.Session, node_id: int, node: CachedNode) -> None:
         """Poll a single node's /metrics endpoint. Called from a thread-pool worker."""
-        url = f"https://{_host_for_https_url(node.address)}:{node.port}/metrics"
+        url = f"https://{_host_for_https_url(node.address)}:{SMART_DNS_METRICS_PORT}/metrics"
         try:
             r = sess.get(url, timeout=SMART_DNS_METRICS_TIMEOUT)
             if r.status_code != 200:

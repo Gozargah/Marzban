@@ -153,6 +153,8 @@ SMART_DNS_PORT = config("SMART_DNS_PORT", cast=int, default=53)
 SMART_DNS_DEFAULT_TTL = config("SMART_DNS_DEFAULT_TTL", cast=int, default=10)
 SMART_DNS_METRICS_INTERVAL = config("SMART_DNS_METRICS_INTERVAL", cast=float, default=3.0)
 SMART_DNS_METRICS_TIMEOUT = config("SMART_DNS_METRICS_TIMEOUT", cast=float, default=2.0)
+SMART_DNS_METRICS_PORT = config("SMART_DNS_METRICS_PORT", cast=int, default=62053)
+SMART_DNS_METRICS_SECRET = config("SMART_DNS_METRICS_SECRET", default="")
 SMART_DNS_FAIL_THRESHOLD = config("SMART_DNS_FAIL_THRESHOLD", cast=int, default=3)
 # After a successful /metrics read, tolerate extra consecutive poll errors for this many seconds
 # (stale UP) so brief TLS/network glitches do not mark the node DOWN immediately.
