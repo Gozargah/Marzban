@@ -33,23 +33,20 @@ import {
   ExclamationCircleIcon,
   ExclamationTriangleIcon,
   GlobeAltIcon,
-  ServerIcon,
   SignalIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
-import { joinPaths } from "@remix-run/router";
-import type { TFunction } from "i18next";
-import { FC, ReactNode, useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { FC, ReactNode, useMemo } from "react";
 import { useQuery } from "react-query";
 import { Link } from "react-router-dom";
 import { fetch } from "service/http";
+
+import { ru, timeAgoRu, tr } from "./smartDnsRu";
 
 // ─── Chakra-wrapped icons ────────────────────────────────────────────────────
 const BackIcon    = chakra(ArrowLeftIcon,          { baseStyle: { w: 4, h: 4 } });
 const RefreshIcon = chakra(ArrowPathIcon,           { baseStyle: { w: 4, h: 4 } });
 const PoolIcon    = chakra(GlobeAltIcon,            { baseStyle: { w: 4, h: 4 } });
-const NodeIcon    = chakra(ServerIcon,              { baseStyle: { w: 4, h: 4 } });
 const CpuIcon     = chakra(CpuChipIcon,             { baseStyle: { w: 3, h: 3 } });
 const BwIcon      = chakra(ChartBarIcon,            { baseStyle: { w: 3, h: 3 } });
 const ConnIcon    = chakra(SignalIcon,              { baseStyle: { w: 3, h: 3 } });
@@ -102,67 +99,6 @@ const computeShares = (nodes: NodeRow[]): number[] => {
 };
 
 const fmtNum = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n));
-
-/** Accepts seconds (server-computed) — no browser/server clock skew. */
-const timeAgo = (seconds: number, t: TFunction): string => {
-  if (seconds < 5) return t("smartDns.timeAgoNow");
-  if (seconds < 60) return t("smartDns.timeAgoSeconds", { n: Math.round(seconds) });
-  if (seconds < 3600) return t("smartDns.timeAgoMinutes", { n: Math.round(seconds / 60) });
-  return t("smartDns.timeAgoHours", { n: Math.round(seconds / 3600) });
-};
-
-const SMART_DNS_PAGE_LANG = "ru";
-
-/**
- * This page is always Russian, independent of the dashboard language switcher.
- * We fetch `statics/locales/ru.json` and merge into i18n: `loadLanguages("ru")` with
- * i18next-http-backend often never loads a non-active language, so `getFixedT("ru")`
- * was falling back to English.
- */
-function useSmartDnsPageT(): TFunction {
-  const { i18n } = useTranslation();
-  const rawNs = i18n.options.defaultNS;
-  const ns =
-    typeof rawNs === "string"
-      ? rawNs
-      : Array.isArray(rawNs) && rawNs.length > 0
-        ? rawNs[0]
-        : "translation";
-
-  const [bundleEpoch, setBundleEpoch] = useState(0);
-
-  useEffect(() => {
-    if (i18n.hasResourceBundle(SMART_DNS_PAGE_LANG, ns)) {
-      return;
-    }
-    let cancelled = false;
-    const url = joinPaths([
-      import.meta.env.BASE_URL,
-      `statics/locales/${SMART_DNS_PAGE_LANG}.json`,
-    ]);
-    void fetch(url)
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json() as Promise<Record<string, unknown>>;
-      })
-      .then((data) => {
-        if (cancelled) return;
-        i18n.addResourceBundle(SMART_DNS_PAGE_LANG, ns, data, true, true);
-        setBundleEpoch((e) => e + 1);
-      })
-      .catch((err) => {
-        if (!cancelled) console.warn("[Smart DNS] Russian locale load failed:", url, err);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [i18n, ns]);
-
-  return useMemo(
-    () => i18n.getFixedT(SMART_DNS_PAGE_LANG, ns),
-    [i18n, ns, bundleEpoch]
-  );
-}
 
 type NodeState = "up" | "grace" | "down";
 const nodeState = (n: NodeRow): NodeState =>
@@ -281,7 +217,6 @@ const DistributionBar: FC<{ nodes: NodeRow[]; shares: number[] }> = ({ nodes, sh
 const NodeCard: FC<{ node: NodeRow; lbShare: number }> = ({ node, lbShare }) => {
   const { colorMode } = useColorMode();
   const dark = colorMode === "dark";
-  const t = useSmartDnsPageT();
   const state  = nodeState(node);
   const color  = STATE_COLOR[state];
   const m      = node.metrics;
@@ -292,9 +227,9 @@ const NodeCard: FC<{ node: NodeRow; lbShare: number }> = ({ node, lbShare }) => 
   const bwScheme  = bwPct  > 85 ? "red" : bwPct  > 65 ? "orange" : "blue";
 
   const stateLabel =
-    state === "up"    ? t("smartDns.stateUp") :
-    state === "grace" ? t("smartDns.stateGrace") :
-                        t("smartDns.stateDown");
+    state === "up"    ? ru.stateUp :
+    state === "grace" ? ru.stateGrace :
+                        ru.stateDown;
 
   return (
     <Box
@@ -361,7 +296,7 @@ const NodeCard: FC<{ node: NodeRow; lbShare: number }> = ({ node, lbShare }) => 
               <HStack justify="space-between" mb="2px">
                 <HStack spacing={1} color={dark ? "gray.400" : "gray.500"}>
                   <CpuIcon />
-                  <Text fontSize="xs">{t("smartDns.cpu")}</Text>
+                  <Text fontSize="xs">{ru.cpu}</Text>
                 </HStack>
                 <Text fontSize="xs" fontWeight="medium">{m.cpu.toFixed(1)}%</Text>
               </HStack>
@@ -373,10 +308,10 @@ const NodeCard: FC<{ node: NodeRow; lbShare: number }> = ({ node, lbShare }) => 
               <HStack justify="space-between" mb="2px">
                 <HStack spacing={1} color={dark ? "gray.400" : "gray.500"}>
                   <BwIcon />
-                  <Text fontSize="xs">{t("smartDns.bw")}</Text>
+                  <Text fontSize="xs">{ru.bw}</Text>
                 </HStack>
                 <Text fontSize="xs" fontWeight="medium">
-                  {m.bandwidth_mbps.toFixed(0)} {t("smartDns.mbpsUnit")}
+                  {m.bandwidth_mbps.toFixed(0)} {ru.mbpsUnit}
                 </Text>
               </HStack>
               <Progress value={bwPct} size="xs" colorScheme={bwScheme} borderRadius="full" />
@@ -386,14 +321,14 @@ const NodeCard: FC<{ node: NodeRow; lbShare: number }> = ({ node, lbShare }) => 
             <HStack justify="space-between" pt={1} flexWrap="wrap" gap={2}>
               <HStack spacing={1} color={dark ? "gray.400" : "gray.500"}>
                 <ConnIcon />
-                <Text fontSize="xs">{t("smartDns.conn")}</Text>
+                <Text fontSize="xs">{ru.conn}</Text>
                 <Text fontSize="xs" fontWeight="semibold" color={dark ? "white" : "gray.800"}>
                   {fmtNum(m.active_connections)}
                 </Text>
               </HStack>
               <HStack spacing={1} color={dark ? "gray.400" : "gray.500"}>
                 <ScoreIcon />
-                <Text fontSize="xs">{t("smartDns.score")}</Text>
+                <Text fontSize="xs">{ru.score}</Text>
                 <Text fontSize="xs" fontWeight="semibold" color={dark ? "white" : "gray.800"}>
                   {node.score.toFixed(1)}
                 </Text>
@@ -402,7 +337,7 @@ const NodeCard: FC<{ node: NodeRow; lbShare: number }> = ({ node, lbShare }) => 
           </VStack>
         ) : (
           <Text fontSize="xs" color={dark ? "gray.500" : "gray.400"} fontStyle="italic">
-            {t("smartDns.noMetricsYet")}
+            {ru.noMetricsYet}
           </Text>
         )}
 
@@ -417,7 +352,7 @@ const NodeCard: FC<{ node: NodeRow; lbShare: number }> = ({ node, lbShare }) => 
           >
             {node.consecutive_failures > 0 && (
               <Text fontSize="xs" color={dark ? "red.300" : "red.700"} fontWeight="medium">
-                {t("smartDns.pollErrors")}: {node.consecutive_failures}
+                {ru.pollErrors}: {node.consecutive_failures}
               </Text>
             )}
             {node.last_error && (
@@ -439,7 +374,7 @@ const NodeCard: FC<{ node: NodeRow; lbShare: number }> = ({ node, lbShare }) => 
               textAlign="right"
               fontWeight={stale ? "semibold" : "normal"}
             >
-              {t("smartDns.metricsUpdated", { rel: timeAgo(node.seconds_since_poll, t) })}
+              {tr(ru.metricsUpdated, { rel: timeAgoRu(node.seconds_since_poll) })}
               {stale && " ⚠"}
             </Text>
           );
@@ -453,7 +388,6 @@ const NodeCard: FC<{ node: NodeRow; lbShare: number }> = ({ node, lbShare }) => 
 const PoolSection: FC<{ pool: PoolRow }> = ({ pool }) => {
   const { colorMode } = useColorMode();
   const dark = colorMode === "dark";
-  const t = useSmartDnsPageT();
 
   const upCount  = pool.nodes.filter(n => n.is_up).length;
   const total    = pool.nodes.length;
@@ -492,7 +426,7 @@ const PoolSection: FC<{ pool: PoolRow }> = ({ pool }) => {
             colorScheme={allDown ? "red" : upCount < total ? "orange" : "green"}
             fontSize="xs"
           >
-            {t("smartDns.poolSummary", { up: upCount, total })}
+            {tr(ru.poolSummary, { up: upCount, total })}
           </Badge>
         </HStack>
 
@@ -520,7 +454,6 @@ const STATUS_KEY = "smart-dns-status";
 const ALERTS_KEY = "smart-dns-alerts";
 
 export const SmartDns: FC = () => {
-  const t = useSmartDnsPageT();
   const { colorMode } = useColorMode();
   const dark = colorMode === "dark";
 
@@ -579,7 +512,7 @@ export const SmartDns: FC = () => {
         <HStack justify="space-between" flexWrap="wrap" gap={2}>
           <HStack spacing={3}>
             <Button as={Link} to="/" size="sm" variant="ghost" leftIcon={<BackIcon />}>
-              {t("smartDns.back")}
+              {ru.back}
             </Button>
             {/* Live status dot */}
             <Box
@@ -591,14 +524,14 @@ export const SmartDns: FC = () => {
                   : "none"
               }
             />
-            <Text fontWeight="bold" fontSize="lg">{t("smartDns.title")}</Text>
+            <Text fontWeight="bold" fontSize="lg">{ru.title}</Text>
             {status && (
               <Badge
                 colorScheme={status.enabled ? "green" : "gray"}
                 variant="subtle"
                 fontSize="xs"
               >
-                {status.enabled ? t("smartDns.enabled") : t("smartDns.disabledBadge")}
+                {status.enabled ? ru.enabled : ru.disabledBadge}
               </Badge>
             )}
           </HStack>
@@ -610,7 +543,7 @@ export const SmartDns: FC = () => {
             onClick={() => refetch()}
             isLoading={isFetching}
           >
-            {t("smartDns.refresh")}
+            {ru.refresh}
           </Button>
         </HStack>
 
@@ -618,7 +551,7 @@ export const SmartDns: FC = () => {
         {status && !status.enabled && (
           <Alert status="warning" borderRadius="xl">
             <AlertIcon />
-            <AlertDescription>{t("smartDns.disabled")}</AlertDescription>
+            <AlertDescription>{ru.disabled}</AlertDescription>
           </Alert>
         )}
 
@@ -627,8 +560,8 @@ export const SmartDns: FC = () => {
           <Alert status="error" borderRadius="xl" variant="left-accent">
             <Box color="red.400" mr={3}><CritIcon /></Box>
             <Box>
-              <Text fontWeight="semibold" fontSize="sm">{t("smartDns.pollerDead")}</Text>
-              <Text fontSize="xs" mt={0.5}>{t("smartDns.pollerDeadHint")}</Text>
+              <Text fontWeight="semibold" fontSize="sm">{ru.pollerDead}</Text>
+              <Text fontSize="xs" mt={0.5}>{ru.pollerDeadHint}</Text>
             </Box>
           </Alert>
         )}
@@ -641,7 +574,7 @@ export const SmartDns: FC = () => {
               <Text fontWeight="semibold" fontSize="sm" mb={criticalAlerts.length > 1 ? 1 : 0}>
                 {criticalAlerts.length === 1
                   ? criticalAlerts[0].message
-                  : `${criticalAlerts.length} ${t("smartDns.alerts").toLowerCase()}`}
+                  : `${criticalAlerts.length} ${ru.alertsLower}`}
               </Text>
               {criticalAlerts.length > 1 && (
                 <VStack align="stretch" spacing={0.5}>
@@ -662,7 +595,7 @@ export const SmartDns: FC = () => {
             <Box color="orange.400" mr={3}><WarnIcon /></Box>
             <Box>
               <Text fontWeight="semibold" fontSize="sm" mb={1}>
-                {warningAlerts.length} {t("smartDns.alerts").toLowerCase()}
+                {warningAlerts.length} {ru.alertsLower}
               </Text>
               <VStack align="stretch" spacing={0.5}>
                 {warningAlerts.map((a, i) => (
@@ -679,7 +612,7 @@ export const SmartDns: FC = () => {
         {isLoading && (
           <HStack justify="center" py={10}>
             <Spinner size="md" color="blue.400" />
-            <Text color={dark ? "gray.400" : "gray.500"}>{t("smartDns.loading")}</Text>
+            <Text color={dark ? "gray.400" : "gray.500"}>{ru.loading}</Text>
           </HStack>
         )}
 
@@ -688,43 +621,43 @@ export const SmartDns: FC = () => {
           <Flex gap={3} flexWrap="wrap">
             <StatCard
               icon={<PoolIcon />}
-              label={t("smartDns.totalPools")}
+              label={ru.totalPools}
               value={stats.poolCount}
               accentColor="blue.400"
             />
             <StatCard
               icon={<OkIcon />}
-              label={t("smartDns.healthyNodes")}
+              label={ru.healthyNodes}
               value={`${stats.upNodes} / ${stats.totalNodes}`}
               accentColor="green.400"
             />
             {stats.downNodes > 0 && (
               <StatCard
                 icon={<ErrIcon />}
-                label={t("smartDns.downNodes")}
+                label={ru.downNodes}
                 value={stats.downNodes}
                 accentColor="red.400"
               />
             )}
             <StatCard
               icon={<ConnIcon />}
-              label={t("smartDns.conn")}
+              label={ru.conn}
               value={fmtNum(stats.totalConns)}
-              sub={t("smartDns.connSub")}
+              sub={ru.connSub}
               accentColor="purple.400"
             />
             <StatCard
               icon={<CpuIcon />}
-              label={t("smartDns.avgCpu")}
+              label={ru.avgCpu}
               value={`${stats.avgCpu.toFixed(1)}%`}
-              sub={t("smartDns.avgCpuSub")}
+              sub={ru.avgCpuSub}
               accentColor={stats.avgCpu > 80 ? "red.400" : "teal.400"}
             />
             <StatCard
               icon={<BwIcon />}
-              label={t("smartDns.avgBw")}
+              label={ru.avgBw}
               value={`${stats.avgBw.toFixed(0)}`}
-              sub={t("smartDns.avgBwSub")}
+              sub={ru.avgBwSub}
               accentColor="cyan.400"
             />
           </Flex>
@@ -747,7 +680,7 @@ export const SmartDns: FC = () => {
                 _expanded={{ bg: dark ? "gray.750" : "gray.50" }}
               >
                 <Box flex="1" textAlign="left" fontWeight="semibold" fontSize="sm">
-                  {t("smartDns.helpTitle")}
+                  {ru.helpTitle}
                 </Box>
                 <AccordionIcon />
               </AccordionButton>
@@ -758,14 +691,14 @@ export const SmartDns: FC = () => {
                   fontSize="sm"
                   color={dark ? "gray.300" : "gray.600"}
                 >
-                  <Text>{t("smartDns.helpP1")}</Text>
-                  <Text>{t("smartDns.helpP2")}</Text>
-                  <Text>{t("smartDns.helpP3")}</Text>
-                  <Text>{t("smartDns.helpP4")}</Text>
-                  <Text>{t("smartDns.helpP5")}</Text>
-                  <Text>{t("smartDns.helpP6")}</Text>
-                  <Text>{t("smartDns.helpP7")}</Text>
-                  <Text>{t("smartDns.helpP8")}</Text>
+                  <Text>{ru.helpP1}</Text>
+                  <Text>{ru.helpP2}</Text>
+                  <Text>{ru.helpP3}</Text>
+                  <Text>{ru.helpP4}</Text>
+                  <Text>{ru.helpP5}</Text>
+                  <Text>{ru.helpP6}</Text>
+                  <Text>{ru.helpP7}</Text>
+                  <Text>{ru.helpP8}</Text>
                 </VStack>
               </AccordionPanel>
             </AccordionItem>
@@ -796,7 +729,7 @@ export const SmartDns: FC = () => {
               </Box>
             </Box>
             <Text fontWeight="medium" color={dark ? "gray.400" : "gray.600"}>
-              {t("smartDns.noData")}
+              {ru.noData}
             </Text>
           </Box>
         )}
@@ -810,7 +743,7 @@ export const SmartDns: FC = () => {
         {!isLoading && alerts.length === 0 && (status?.pools?.length ?? 0) > 0 && (
           <HStack justify="center" color={dark ? "green.300" : "green.600"} spacing={1.5}>
             <OkIcon />
-            <Text fontSize="sm">{t("smartDns.allPoolsHealthy")}</Text>
+            <Text fontSize="sm">{ru.allPoolsHealthy}</Text>
           </HStack>
         )}
 
