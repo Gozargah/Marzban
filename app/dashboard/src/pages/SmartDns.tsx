@@ -38,7 +38,7 @@ import {
   XCircleIcon,
 } from "@heroicons/react/24/outline";
 import type { TFunction } from "i18next";
-import { FC, ReactNode, useMemo } from "react";
+import { FC, ReactNode, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
 import { Link } from "react-router-dom";
@@ -109,6 +109,37 @@ const timeAgo = (seconds: number, t: TFunction): string => {
   if (seconds < 3600) return t("smartDns.timeAgoMinutes", { n: Math.round(seconds / 60) });
   return t("smartDns.timeAgoHours", { n: Math.round(seconds / 3600) });
 };
+
+const SMART_DNS_PAGE_LANG = "ru";
+
+/** This page is always Russian, independent of the dashboard language switcher. */
+function useSmartDnsPageT(): TFunction {
+  const { i18n } = useTranslation();
+  const rawNs = i18n.options.defaultNS;
+  const ns =
+    typeof rawNs === "string"
+      ? rawNs
+      : Array.isArray(rawNs) && rawNs.length > 0
+        ? rawNs[0]
+        : "translation";
+
+  const [ruReady, setRuReady] = useState(() =>
+    i18n.hasResourceBundle(SMART_DNS_PAGE_LANG, ns)
+  );
+
+  useEffect(() => {
+    if (i18n.hasResourceBundle(SMART_DNS_PAGE_LANG, ns)) {
+      setRuReady(true);
+      return;
+    }
+    void i18n.loadLanguages(SMART_DNS_PAGE_LANG).then(() => setRuReady(true));
+  }, [i18n, ns]);
+
+  return useMemo(
+    () => i18n.getFixedT(SMART_DNS_PAGE_LANG, ns),
+    [i18n, ns, ruReady]
+  );
+}
 
 type NodeState = "up" | "grace" | "down";
 const nodeState = (n: NodeRow): NodeState =>
@@ -227,7 +258,7 @@ const DistributionBar: FC<{ nodes: NodeRow[]; shares: number[] }> = ({ nodes, sh
 const NodeCard: FC<{ node: NodeRow; lbShare: number }> = ({ node, lbShare }) => {
   const { colorMode } = useColorMode();
   const dark = colorMode === "dark";
-  const { t } = useTranslation();
+  const t = useSmartDnsPageT();
   const state  = nodeState(node);
   const color  = STATE_COLOR[state];
   const m      = node.metrics;
@@ -399,7 +430,7 @@ const NodeCard: FC<{ node: NodeRow; lbShare: number }> = ({ node, lbShare }) => 
 const PoolSection: FC<{ pool: PoolRow }> = ({ pool }) => {
   const { colorMode } = useColorMode();
   const dark = colorMode === "dark";
-  const { t } = useTranslation();
+  const t = useSmartDnsPageT();
 
   const upCount  = pool.nodes.filter(n => n.is_up).length;
   const total    = pool.nodes.length;
@@ -466,7 +497,7 @@ const STATUS_KEY = "smart-dns-status";
 const ALERTS_KEY = "smart-dns-alerts";
 
 export const SmartDns: FC = () => {
-  const { t } = useTranslation();
+  const t = useSmartDnsPageT();
   const { colorMode } = useColorMode();
   const dark = colorMode === "dark";
 
