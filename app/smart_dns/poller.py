@@ -219,13 +219,17 @@ class MetricsPoller:
                     pass
 
     def _run(self) -> None:
+        """Never-die main loop.  Catches BaseException (not just Exception)
+        so the poller thread stays alive until stop() is explicitly called."""
         while not self._stop.is_set():
             try:
                 if self._run_loop():
                     break
-            except Exception:
+            except BaseException:
+                if self._stop.is_set():
+                    return
                 logger.exception(
-                    "Smart DNS poller: unexpected failure; retrying in 5 s"
+                    "Smart DNS poller: unexpected failure; restarting in 5 s"
                 )
                 self._stop.wait(5.0)
 
