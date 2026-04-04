@@ -1,6 +1,7 @@
 """Start/stop Smart DNS poller and DNS servers (threads)."""
 from __future__ import annotations
 
+import errno
 import logging
 from typing import Optional
 
@@ -25,10 +26,8 @@ def is_poller_alive() -> bool:
 
 
 def ensure_smart_dns_poller_running() -> None:
-    """If Smart DNS is up but the metrics thread died, restart it (self-heal)."""
+    """If Smart DNS is enabled but the metrics thread died, restart it (self-heal)."""
     if not SMART_DNS_ENABLED:
-        return
-    if _dns_server is None:
         return
     if _poller.is_alive():
         return
@@ -61,9 +60,18 @@ def start_smart_dns() -> None:
                 srv.stop()
             except Exception:
                 logger.exception("Smart DNS cleanup after bind failure")
-        # Stop the poller too — no point polling if DNS server is dead.
-        _poller.stop()
         _dns_server = None
+        # Keep the metrics poller running: load-balancing metrics in the UI stay useful
+        # even when DNS cannot bind, and stopping it here left the dashboard stuck on
+        # "poller not running" (ensure_* could not restart while _dns_server was None).
+        if isinstance(e, OSError) and e.errno in (errno.EADDRINUSE, 10048):
+            logger.warning(
+                "Smart DNS: port %s is already in use (errno %s). "
+                "Another process may hold UDP/TCP 53 (see `ss -tulpen | grep 53`). "
+                "Metrics poller keeps running; fix the port conflict for DNS to work.",
+                SMART_DNS_PORT,
+                e.errno,
+            )
 
 
 def stop_smart_dns() -> None:
