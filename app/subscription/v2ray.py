@@ -932,16 +932,54 @@ class V2rayJsonConfig(str):
         }
 
     @staticmethod
-    def hysteria2_config(address=None, port=None, password=None) -> dict:
-        return {
-            "servers": [
-                {
-                    "address": address,
-                    "port": port,
-                    "password": password,
-                }
-            ]
+    def hysteria2_config(
+        address=None,
+        port=None,
+        password=None,
+        sni: str = "",
+        fp: str = "",
+        alpn=None,
+        allow_insecure: bool = False,
+        pin_sha256: Optional[str] = None,
+        obfs_type: Optional[str] = None,
+        obfs_password: str = "",
+    ) -> dict:
+        """
+        Xray JSON outbound for Hysteria2 (Happ ≥1.63.1, v2rayN, etc.).
+        Plain hy2:// links already carry sni/obfs/tls; JSON must match or clients fail.
+        """
+        server: dict = {
+            "address": address,
+            "port": port,
+            "password": password,
         }
+        tls: dict = {}
+        name = (sni or "").strip() or (address or "")
+        if name:
+            tls["serverName"] = name
+        tls["allowInsecure"] = bool(allow_insecure)
+        if fp:
+            tls["fingerprint"] = fp
+        if alpn:
+            if isinstance(alpn, list):
+                alpn_list = [str(a).strip() for a in alpn if str(a).strip()]
+            else:
+                alpn_list = [a.strip() for a in str(alpn).split(",") if a.strip()]
+            if alpn_list:
+                tls["alpn"] = alpn_list
+        if "alpn" not in tls:
+            tls["alpn"] = ["h3"]
+        if pin_sha256:
+            tls["pinnedPeerCertSha256"] = pin_sha256
+        server["tls"] = tls
+
+        settings: dict = {"servers": [server]}
+        if obfs_type:
+            settings["obfs"] = {
+                "type": obfs_type,
+                "password": obfs_password or "",
+            }
+        return settings
 
     @staticmethod
     def make_fragment(fragment: str) -> dict:
@@ -1131,10 +1169,21 @@ class V2rayJsonConfig(str):
                                                            method=settings['method'])
 
         elif inbound['protocol'] == 'hysteria2':
+            sni_raw = inbound.get("sni", "")
+            if isinstance(sni_raw, list):
+                sni_raw = sni_raw[0] if sni_raw else ""
+            pin = settings.get("pin_sha256") or ""
             outbound["settings"] = self.hysteria2_config(
                 address=address,
                 port=port,
-                password=settings['password'],
+                password=settings["password"],
+                sni=str(sni_raw) if sni_raw is not None else "",
+                fp=inbound.get("fp") or "",
+                alpn=inbound.get("alpn"),
+                allow_insecure=bool(inbound.get("ais")),
+                pin_sha256=pin or None,
+                obfs_type=inbound.get("obfs") or None,
+                obfs_password=inbound.get("obfs_password") or "",
             )
             # Hysteria2 uses its own built-in TLS; streamSettings not applicable
             self.add_config(remarks=remark, outbounds=[outbound], server_description=server_description)

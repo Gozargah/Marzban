@@ -9,7 +9,7 @@ import urllib.parse as urlparse
 
 import pytest
 
-from app.subscription.v2ray import V2rayShareLink
+from app.subscription.v2ray import V2rayJsonConfig, V2rayShareLink
 
 
 class TestHysteria2Link:
@@ -166,3 +166,35 @@ class TestHysteria2Link:
         )
         fragment = link.split("#", 1)[1]
         assert " " not in fragment
+
+
+class TestHysteria2V2rayJson:
+    """v2ray-json subscription (Happ ≥1.63.1) must include TLS/obfs like hy2://."""
+
+    def test_tls_sni_alpn_defaults(self):
+        cfg = V2rayJsonConfig.hysteria2_config(
+            address="10.0.0.1",
+            port=443,
+            password="secret",
+            sni="cdn.example.com",
+        )
+        srv = cfg["servers"][0]
+        assert srv["address"] == "10.0.0.1"
+        assert srv["tls"]["serverName"] == "cdn.example.com"
+        assert srv["tls"]["alpn"] == ["h3"]
+        assert srv["tls"]["allowInsecure"] is False
+        assert "obfs" not in cfg
+
+    def test_obfs_and_insecure(self):
+        cfg = V2rayJsonConfig.hysteria2_config(
+            address="1.2.3.4",
+            port=8443,
+            password="p",
+            sni="",
+            allow_insecure=True,
+            obfs_type="salamander",
+            obfs_password="mask",
+        )
+        assert cfg["servers"][0]["tls"]["serverName"] == "1.2.3.4"
+        assert cfg["servers"][0]["tls"]["allowInsecure"] is True
+        assert cfg["obfs"] == {"type": "salamander", "password": "mask"}
