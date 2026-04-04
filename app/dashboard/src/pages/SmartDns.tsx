@@ -37,6 +37,7 @@ import {
   SignalIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
+import { joinPaths } from "@remix-run/router";
 import type { TFunction } from "i18next";
 import { FC, ReactNode, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -112,7 +113,12 @@ const timeAgo = (seconds: number, t: TFunction): string => {
 
 const SMART_DNS_PAGE_LANG = "ru";
 
-/** This page is always Russian, independent of the dashboard language switcher. */
+/**
+ * This page is always Russian, independent of the dashboard language switcher.
+ * We fetch `statics/locales/ru.json` and merge into i18n: `loadLanguages("ru")` with
+ * i18next-http-backend often never loads a non-active language, so `getFixedT("ru")`
+ * was falling back to English.
+ */
 function useSmartDnsPageT(): TFunction {
   const { i18n } = useTranslation();
   const rawNs = i18n.options.defaultNS;
@@ -123,21 +129,38 @@ function useSmartDnsPageT(): TFunction {
         ? rawNs[0]
         : "translation";
 
-  const [ruReady, setRuReady] = useState(() =>
-    i18n.hasResourceBundle(SMART_DNS_PAGE_LANG, ns)
-  );
+  const [bundleEpoch, setBundleEpoch] = useState(0);
 
   useEffect(() => {
     if (i18n.hasResourceBundle(SMART_DNS_PAGE_LANG, ns)) {
-      setRuReady(true);
       return;
     }
-    void i18n.loadLanguages(SMART_DNS_PAGE_LANG).then(() => setRuReady(true));
+    let cancelled = false;
+    const url = joinPaths([
+      import.meta.env.BASE_URL,
+      `statics/locales/${SMART_DNS_PAGE_LANG}.json`,
+    ]);
+    void fetch(url)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json() as Promise<Record<string, unknown>>;
+      })
+      .then((data) => {
+        if (cancelled) return;
+        i18n.addResourceBundle(SMART_DNS_PAGE_LANG, ns, data, true, true);
+        setBundleEpoch((e) => e + 1);
+      })
+      .catch((err) => {
+        if (!cancelled) console.warn("[Smart DNS] Russian locale load failed:", url, err);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [i18n, ns]);
 
   return useMemo(
     () => i18n.getFixedT(SMART_DNS_PAGE_LANG, ns),
-    [i18n, ns, ruReady]
+    [i18n, ns, bundleEpoch]
   );
 }
 
