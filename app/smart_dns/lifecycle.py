@@ -24,11 +24,24 @@ def is_poller_alive() -> bool:
     return _poller.is_alive()
 
 
+def ensure_smart_dns_poller_running() -> None:
+    """If Smart DNS is up but the metrics thread died, restart it (self-heal)."""
+    if not SMART_DNS_ENABLED:
+        return
+    if _dns_server is None:
+        return
+    if _poller.is_alive():
+        return
+    logger.warning("Smart DNS metrics poller was not running; restarting")
+    _poller.start()
+
+
 def start_smart_dns() -> None:
     global _dns_server
     if not SMART_DNS_ENABLED:
         return
     if _dns_server is not None:
+        ensure_smart_dns_poller_running()
         return
     _poller.start()
     srv: Optional[DNSServer] = None

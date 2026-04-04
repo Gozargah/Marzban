@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 
 from app.models.admin import Admin
 from app.smart_dns import get_metrics_cache
-from app.smart_dns.lifecycle import is_poller_alive
+from app.smart_dns.lifecycle import ensure_smart_dns_poller_running, is_poller_alive
 from config import (
     SMART_DNS_ALERT_MAX_BANDWIDTH_MBPS,
     SMART_DNS_ALERT_MAX_CPU,
@@ -71,6 +71,7 @@ class SmartDnsAlertsResponse(BaseModel):
 
 
 def _build_status() -> SmartDnsStatusResponse:
+    ensure_smart_dns_poller_running()
     cache = get_metrics_cache()
     now = time.time()
     pools_map = cache.pools()

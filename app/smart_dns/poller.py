@@ -180,24 +180,27 @@ class MetricsPoller:
     def is_alive(self) -> bool:
         return self._thread is not None and self._thread.is_alive()
 
-    def _run(self) -> None:
-        # Retry TLS session creation so a transient DB error at startup
-        # doesn't kill the poller thread permanently.
+    def _run_loop(self) -> bool:
+        """
+        One TLS session and its poll loop. Returns True when the poller thread
+        should exit entirely (shutdown). Raises on unexpected errors so the outer
+        _run can recreate the session.
+        """
         sess = None
-        while not self._stop.is_set():
-            try:
-                sess = self._session()
-                break
-            except Exception:
-                logger.exception(
-                    "Smart DNS poller: TLS session creation failed, retrying in 30 s"
-                )
-                self._stop.wait(30.0)
-
-        if sess is None:
-            return  # stop() was called during retry window
-
         try:
+            while not self._stop.is_set():
+                try:
+                    sess = self._session()
+                    break
+                except Exception:
+                    logger.exception(
+                        "Smart DNS poller: TLS session creation failed, retrying in 30 s"
+                    )
+                    self._stop.wait(30.0)
+
+            if sess is None:
+                return True
+
             while not self._stop.is_set():
                 t0 = time.monotonic()
                 try:
@@ -207,11 +210,24 @@ class MetricsPoller:
                 elapsed = time.monotonic() - t0
                 wait = max(0.5, SMART_DNS_METRICS_INTERVAL - elapsed)
                 self._stop.wait(wait)
+            return True
         finally:
+            if sess is not None:
+                try:
+                    sess.close()
+                except Exception:
+                    pass
+
+    def _run(self) -> None:
+        while not self._stop.is_set():
             try:
-                sess.close()
+                if self._run_loop():
+                    break
             except Exception:
-                pass
+                logger.exception(
+                    "Smart DNS poller: unexpected failure; retrying in 5 s"
+                )
+                self._stop.wait(5.0)
 
     def start(self) -> None:
         if self._thread and self._thread.is_alive():
