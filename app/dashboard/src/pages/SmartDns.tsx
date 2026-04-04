@@ -1,4 +1,9 @@
 import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
   Alert,
   AlertDescription,
   AlertIcon,
@@ -32,6 +37,7 @@ import {
   SignalIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
+import type { TFunction } from "i18next";
 import { FC, ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
@@ -97,11 +103,11 @@ const computeShares = (nodes: NodeRow[]): number[] => {
 const fmtNum = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n));
 
 /** Accepts seconds (server-computed) — no browser/server clock skew. */
-const timeAgo = (seconds: number): string => {
-  if (seconds < 5)    return "just now";
-  if (seconds < 60)   return `${Math.round(seconds)}s ago`;
-  if (seconds < 3600) return `${Math.round(seconds / 60)}m ago`;
-  return `${Math.round(seconds / 3600)}h ago`;
+const timeAgo = (seconds: number, t: TFunction): string => {
+  if (seconds < 5) return t("smartDns.timeAgoNow");
+  if (seconds < 60) return t("smartDns.timeAgoSeconds", { n: Math.round(seconds) });
+  if (seconds < 3600) return t("smartDns.timeAgoMinutes", { n: Math.round(seconds / 60) });
+  return t("smartDns.timeAgoHours", { n: Math.round(seconds / 3600) });
 };
 
 type NodeState = "up" | "grace" | "down";
@@ -232,9 +238,9 @@ const NodeCard: FC<{ node: NodeRow; lbShare: number }> = ({ node, lbShare }) => 
   const bwScheme  = bwPct  > 85 ? "red" : bwPct  > 65 ? "orange" : "blue";
 
   const stateLabel =
-    state === "up"    ? t("smartDns.up") :
-    state === "grace" ? t("smartDns.grace") :
-                        t("smartDns.down");
+    state === "up"    ? t("smartDns.stateUp") :
+    state === "grace" ? t("smartDns.stateGrace") :
+                        t("smartDns.stateDown");
 
   return (
     <Box
@@ -301,7 +307,7 @@ const NodeCard: FC<{ node: NodeRow; lbShare: number }> = ({ node, lbShare }) => 
               <HStack justify="space-between" mb="2px">
                 <HStack spacing={1} color={dark ? "gray.400" : "gray.500"}>
                   <CpuIcon />
-                  <Text fontSize="xs">CPU</Text>
+                  <Text fontSize="xs">{t("smartDns.cpu")}</Text>
                 </HStack>
                 <Text fontSize="xs" fontWeight="medium">{m.cpu.toFixed(1)}%</Text>
               </HStack>
@@ -315,7 +321,9 @@ const NodeCard: FC<{ node: NodeRow; lbShare: number }> = ({ node, lbShare }) => 
                   <BwIcon />
                   <Text fontSize="xs">{t("smartDns.bw")}</Text>
                 </HStack>
-                <Text fontSize="xs" fontWeight="medium">{m.bandwidth_mbps.toFixed(0)} Mbps</Text>
+                <Text fontSize="xs" fontWeight="medium">
+                  {m.bandwidth_mbps.toFixed(0)} {t("smartDns.mbpsUnit")}
+                </Text>
               </HStack>
               <Progress value={bwPct} size="xs" colorScheme={bwScheme} borderRadius="full" />
             </Box>
@@ -377,7 +385,7 @@ const NodeCard: FC<{ node: NodeRow; lbShare: number }> = ({ node, lbShare }) => 
               textAlign="right"
               fontWeight={stale ? "semibold" : "normal"}
             >
-              {t("smartDns.polled")} {timeAgo(node.seconds_since_poll)}
+              {t("smartDns.metricsUpdated", { rel: timeAgo(node.seconds_since_poll, t) })}
               {stale && " ⚠"}
             </Text>
           );
@@ -430,7 +438,7 @@ const PoolSection: FC<{ pool: PoolRow }> = ({ pool }) => {
             colorScheme={allDown ? "red" : upCount < total ? "orange" : "green"}
             fontSize="xs"
           >
-            {upCount} / {total} {t("smartDns.up")}
+            {t("smartDns.poolSummary", { up: upCount, total })}
           </Badge>
         </HStack>
 
@@ -529,14 +537,14 @@ export const SmartDns: FC = () => {
                   : "none"
               }
             />
-            <Text fontWeight="bold" fontSize="lg">Smart DNS</Text>
+            <Text fontWeight="bold" fontSize="lg">{t("smartDns.title")}</Text>
             {status && (
               <Badge
                 colorScheme={status.enabled ? "green" : "gray"}
                 variant="subtle"
                 fontSize="xs"
               >
-                {status.enabled ? t("smartDns.enabled") : "DISABLED"}
+                {status.enabled ? t("smartDns.enabled") : t("smartDns.disabledBadge")}
               </Badge>
             )}
           </HStack>
@@ -617,7 +625,7 @@ export const SmartDns: FC = () => {
         {isLoading && (
           <HStack justify="center" py={10}>
             <Spinner size="md" color="blue.400" />
-            <Text color={dark ? "gray.400" : "gray.500"}>Loading…</Text>
+            <Text color={dark ? "gray.400" : "gray.500"}>{t("smartDns.loading")}</Text>
           </HStack>
         )}
 
@@ -648,24 +656,66 @@ export const SmartDns: FC = () => {
               icon={<ConnIcon />}
               label={t("smartDns.conn")}
               value={fmtNum(stats.totalConns)}
-              sub="active connections"
+              sub={t("smartDns.connSub")}
               accentColor="purple.400"
             />
             <StatCard
               icon={<CpuIcon />}
               label={t("smartDns.avgCpu")}
               value={`${stats.avgCpu.toFixed(1)}%`}
-              sub="average"
+              sub={t("smartDns.avgCpuSub")}
               accentColor={stats.avgCpu > 80 ? "red.400" : "teal.400"}
             />
             <StatCard
               icon={<BwIcon />}
               label={t("smartDns.avgBw")}
               value={`${stats.avgBw.toFixed(0)}`}
-              sub="Mbps avg"
+              sub={t("smartDns.avgBwSub")}
               accentColor="cyan.400"
             />
           </Flex>
+        )}
+
+        {status && !isLoading && status.enabled && (
+          <Accordion
+            allowToggle
+            reduceMotion
+            borderRadius="xl"
+            borderWidth="1px"
+            borderColor={dark ? "gray.600" : "gray.200"}
+            bg={dark ? "gray.800" : "white"}
+          >
+            <AccordionItem border="none">
+              <AccordionButton
+                px={4}
+                py={3}
+                borderRadius="xl"
+                _expanded={{ bg: dark ? "gray.750" : "gray.50" }}
+              >
+                <Box flex="1" textAlign="left" fontWeight="semibold" fontSize="sm">
+                  {t("smartDns.helpTitle")}
+                </Box>
+                <AccordionIcon />
+              </AccordionButton>
+              <AccordionPanel px={4} pb={4} pt={0}>
+                <VStack
+                  align="stretch"
+                  spacing={2.5}
+                  fontSize="sm"
+                  color={dark ? "gray.300" : "gray.600"}
+                >
+                  <Text>{t("smartDns.helpP1")}</Text>
+                  <Text>{t("smartDns.helpP2")}</Text>
+                  <Text>{t("smartDns.helpP3")}</Text>
+                  <Text>{t("smartDns.helpP4")}</Text>
+                  <Text>{t("smartDns.helpP5")}</Text>
+                  <Text>{t("smartDns.helpP6")}</Text>
+                  <Text>{t("smartDns.helpP7")}</Text>
+                  <Text>{t("smartDns.helpP8")}</Text>
+                </VStack>
+              </AccordionPanel>
+            </AccordionItem>
+          </Accordion>
         )}
 
         {/* ── Empty state ── */}
