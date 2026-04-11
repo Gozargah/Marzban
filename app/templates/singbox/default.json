@@ -19,6 +19,10 @@
       {
         "outbound": "any",
         "server": "dns-local"
+      },
+      {
+        "rule_set": ["ru-bundle"],
+        "server": "dns-local"
       }
     ],
     "final": "dns-remote",
@@ -68,6 +72,22 @@
     }
   ],
   "route": {
+    "rule_set": [
+      {
+        "type": "remote",
+        "tag": "ru-bundle",
+        "format": "binary",
+        "url": "https://github.com/legiz-ru/sb-rule-sets/raw/main/ru-bundle.srs",
+        "download_detour": "proxy"
+      },
+      {
+        "type": "remote",
+        "tag": "rknasnblock",
+        "format": "binary",
+        "url": "https://github.com/legiz-ru/sb-rule-sets/raw/main/rknasnblock.srs",
+        "download_detour": "proxy"
+      }
+    ],
     "rules": [
       {
         "protocol": "dns",
@@ -75,6 +95,10 @@
       },
       {
         "ip_is_private": true,
+        "outbound": "direct"
+      },
+      {
+        "rule_set": ["ru-bundle", "rknasnblock"],
         "outbound": "direct"
       }
     ],
