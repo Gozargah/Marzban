@@ -1,3 +1,4 @@
+import time
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
@@ -191,13 +192,27 @@ def _change_node_status(node_id: int, status: NodeStatus, message: str = None, v
 global _connecting_nodes
 _connecting_nodes = {}
 
+# Maximum time (in seconds) a node is allowed to stay in the
+# "connecting" state before the guard is considered stale.  If a
+# connect_node thread hangs longer than this, subsequent calls will
+# discard the stale guard and start a new connection attempt instead
+# of silently returning.
+CONNECTING_TIMEOUT = 120
+
 
 @threaded_function
 def connect_node(node_id, config=None):
     global _connecting_nodes
 
-    if _connecting_nodes.get(node_id):
+    started_at = _connecting_nodes.get(node_id)
+    if started_at and (time.monotonic() - started_at) < CONNECTING_TIMEOUT:
         return
+
+    if started_at:
+        logger.warning(
+            f"Connecting guard for node {node_id} expired after "
+            f"{time.monotonic() - started_at:.0f}s, retrying connection"
+        )
 
     with GetDB() as db:
         dbnode = crud.get_node_by_id(db, node_id)
@@ -212,7 +227,7 @@ def connect_node(node_id, config=None):
         node = xray.operations.add_node(dbnode)
 
     try:
-        _connecting_nodes[node_id] = True
+        _connecting_nodes[node_id] = time.monotonic()
 
         _change_node_status(node_id, NodeStatus.connecting)
         logger.info(f"Connecting to \"{dbnode.name}\" node")
