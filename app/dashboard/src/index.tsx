@@ -12,6 +12,7 @@ import { QueryClientProvider } from "react-query";
 import { queryClient } from "utils/react-query";
 import { updateThemeColor } from "utils/themeColor";
 import { theme } from "../chakra.config";
+import { AccentColorProvider } from "contexts/AccentColorContext";
 import App from "./App";
 import "index.scss";
 
@@ -21,14 +22,16 @@ dayjs.extend(utc);
 dayjs.extend(RelativeTime);
 dayjs.extend(Duration);
 
-updateThemeColor(localStorageManager.get() || "light");
+updateThemeColor(localStorageManager.get() || "dark");
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <ChakraProvider theme={theme}>
-      <QueryClientProvider client={queryClient}>
-        <App />
-      </QueryClientProvider>
+      <AccentColorProvider>
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
+      </AccentColorProvider>
     </ChakraProvider>
   </React.StrictMode>
 );

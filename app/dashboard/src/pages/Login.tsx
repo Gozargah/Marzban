@@ -6,7 +6,6 @@ import {
   Button,
   chakra,
   FormControl,
-  FormLabel,
   HStack,
   Text,
   VStack,
@@ -24,6 +23,7 @@ import { removeAuthToken, setAuthToken } from "utils/authStorage";
 import { ReactComponent as Logo } from "assets/logo.svg";
 import { useTranslation } from "react-i18next";
 import { Language } from "components/Language";
+import { useAccentColor } from "contexts/AccentColorContext";
 
 const schema = z.object({
   username: z.string().min(1, "login.fieldRequired"),
@@ -51,6 +51,7 @@ export const Login: FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { accent } = useAccentColor();
   let location = useLocation();
   const {
     register,
@@ -88,24 +89,45 @@ export const Login: FC = () => {
         <HStack justifyContent="end" w="full">
           <Language />
         </HStack>
-        <HStack w="full" justifyContent="center" alignItems="center">
-          <Box w="full" maxW="340px" mt="6">
-            <VStack alignItems="center" w="full">
-              <LogoIcon />
-              <Text fontSize="2xl" fontWeight="semibold">
+        <HStack w="full" justifyContent="center" alignItems="center" mt={8}>
+          <Box
+            w="full"
+            maxW="400px"
+            className="glass"
+            p={8}
+            borderRadius="24px"
+          >
+            <VStack alignItems="center" w="full" spacing={3}>
+              <Box
+                p={3}
+                borderRadius="16px"
+                bg={`linear-gradient(135deg, ${accent.primary}, ${accent.secondary})`}
+                boxShadow={`0 8px 30px ${accent.glow}`}
+                transition="all 0.5s ease"
+              >
+                <LogoIcon color="white" />
+              </Box>
+              <Text
+                fontSize="2xl"
+                fontWeight="bold"
+                bgGradient={`linear(to-r, ${accent.primary}, ${accent.secondary})`}
+                bgClip="text"
+                transition="all 0.5s ease"
+              >
                 {t("login.loginYourAccount")}
               </Text>
-              <Text color="gray.600" _dark={{ color: "gray.400" }}>
+              <Text color="gray.400" fontSize="sm">
                 {t("login.welcomeBack")}
               </Text>
             </VStack>
-            <Box w="full" maxW="300px" m="auto" pt="4">
+            <Box w="full" maxW="320px" m="auto" pt="6">
               <form onSubmit={handleSubmit(login)}>
-                <VStack mt={4} rowGap={2}>
+                <VStack mt={4} rowGap={3}>
                   <FormControl>
                     <Input
                       w="full"
                       placeholder={t("username")}
+                      className="glass-input"
                       {...register("username")}
                       error={t(errors?.username?.message as string)}
                     />
@@ -115,6 +137,7 @@ export const Login: FC = () => {
                       w="full"
                       type="password"
                       placeholder={t("password")}
+                      className="glass-input"
                       {...register("password")}
                       error={t(errors?.password?.message as string)}
                     />
@@ -129,7 +152,10 @@ export const Login: FC = () => {
                     isLoading={loading}
                     type="submit"
                     w="full"
-                    colorScheme="primary"
+                    className="accent-btn"
+                    size="lg"
+                    borderRadius="12px"
+                    mt={2}
                   >
                     {<LoginIcon marginRight={1} />}
                     {t("login")}

@@ -1,10 +1,11 @@
-import { Box, BoxProps, Card, chakra, HStack, Text } from "@chakra-ui/react";
+import { Box, BoxProps, chakra, HStack, Text } from "@chakra-ui/react";
 import {
   ChartBarIcon,
   ChartPieIcon,
   UsersIcon,
 } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
+import { useAccentColor } from "contexts/AccentColorContext";
 import { FC, PropsWithChildren, ReactElement, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
@@ -49,16 +50,11 @@ const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
   content,
   icon,
 }) => {
+  const { accent } = useAccentColor();
   return (
-    <Card
+    <Box
+      className="glass-card"
       p={6}
-      borderWidth="1px"
-      borderColor="light-border"
-      bg="#F9FAFB"
-      _dark={{ borderColor: "gray.600", bg: "gray.750" }}
-      borderStyle="solid"
-      boxShadow="none"
-      borderRadius="12px"
       width="full"
       display="flex"
       justifyContent="space-between"
@@ -74,26 +70,28 @@ const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
             position: "absolute",
             top: 0,
             left: 0,
-            bg: "primary.400",
+            bg: accent.primary,
             display: "block",
             w: "full",
             h: "full",
-            borderRadius: "5px",
-            opacity: ".5",
+            borderRadius: "8px",
+            opacity: ".6",
             z: "1",
+            transition: "all 0.5s ease",
           }}
           _after={{
             content: `""`,
             position: "absolute",
             top: "-5px",
             left: "-5px",
-            bg: "primary.400",
+            bg: accent.primary,
             display: "block",
             w: "calc(100% + 10px)",
             h: "calc(100% + 10px)",
-            borderRadius: "8px",
-            opacity: ".4",
+            borderRadius: "12px",
+            opacity: ".25",
             z: "1",
+            transition: "all 0.5s ease",
           }}
         >
           {icon}
@@ -113,7 +111,7 @@ const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
       <Box fontSize="3xl" fontWeight="semibold" mt="2">
         {content}
       </Box>
-    </Card>
+    </Box>
   );
 };
 export const StatisticsQueryKey = "statistics-query-key";

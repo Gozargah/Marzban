@@ -1,11 +1,25 @@
 import { extendTheme } from "@chakra-ui/react";
 export const theme = extendTheme({
-  shadows: { outline: "0 0 0 2px var(--chakra-colors-primary-200)" },
+  config: {
+    initialColorMode: "dark",
+    useSystemColorMode: false,
+  },
+  shadows: { outline: "0 0 0 2px var(--accent-glow, rgba(59,130,246,0.3))" },
   fonts: {
     body: `Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif`,
   },
+  styles: {
+    global: {
+      body: {
+        bg: "transparent",
+        _dark: {
+          bg: "transparent",
+        },
+      },
+    },
+  },
   colors: {
-    "light-border": "#d2d2d4",
+    "light-border": "rgba(255, 255, 255, 0.2)",
     primary: {
       50: "#9cb7f2",
       100: "#88a9ef",
@@ -19,15 +33,16 @@ export const theme = extendTheme({
       900: "#224389",
     },
     gray: {
-      750: "#222C3B",
+      750: "rgba(30, 41, 59, 0.7)",
     },
   },
   components: {
     Alert: {
       baseStyle: {
         container: {
-          borderRadius: "6px",
+          borderRadius: "12px",
           fontSize: "sm",
+          backdropFilter: "blur(12px)",
         },
       },
     },
@@ -35,11 +50,13 @@ export const theme = extendTheme({
       baseStyle: {
         field: {
           _dark: {
-            borderColor: "gray.600",
-            borderRadius: "6px",
+            borderColor: "rgba(255,255,255,0.1)",
+            borderRadius: "12px",
+            bg: "rgba(15, 23, 42, 0.4)",
           },
           _light: {
-            borderRadius: "6px",
+            borderRadius: "12px",
+            bg: "rgba(255,255,255,0.3)",
           },
         },
       },
@@ -61,28 +78,92 @@ export const theme = extendTheme({
       baseStyle: {
         addon: {
           _dark: {
-            borderColor: "gray.600",
+            borderColor: "rgba(255,255,255,0.1)",
             _placeholder: {
               color: "gray.500",
             },
           },
         },
         field: {
+          borderRadius: "12px",
           _focusVisible: {
-            boxShadow: "none",
-            borderColor: "primary.200",
-            outlineColor: "primary.200",
+            boxShadow: "0 0 0 2px var(--accent-glow)",
+            borderColor: "var(--accent-primary)",
+            outlineColor: "var(--accent-primary)",
           },
           _dark: {
-            borderColor: "gray.600",
+            borderColor: "rgba(255,255,255,0.1)",
+            bg: "rgba(15, 23, 42, 0.4)",
             _disabled: {
               color: "gray.400",
-              borderColor: "gray.500",
+              borderColor: "rgba(255,255,255,0.05)",
             },
             _placeholder: {
               color: "gray.500",
             },
           },
+          _light: {
+            bg: "rgba(255,255,255,0.3)",
+            borderColor: "rgba(255,255,255,0.3)",
+          },
+        },
+      },
+    },
+    Button: {
+      baseStyle: {
+        borderRadius: "12px",
+        fontWeight: "600",
+      },
+    },
+    Menu: {
+      baseStyle: {
+        list: {
+          borderRadius: "16px",
+          border: "1px solid",
+          borderColor: "rgba(255,255,255,0.1)",
+          backdropFilter: "blur(20px)",
+          _dark: {
+            bg: "rgba(15, 23, 42, 0.8)",
+          },
+          _light: {
+            bg: "rgba(255, 255, 255, 0.8)",
+          },
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
+        },
+        item: {
+          borderRadius: "8px",
+          mx: "1",
+          _dark: {
+            bg: "transparent",
+            _hover: {
+              bg: "rgba(255,255,255,0.08)",
+            },
+          },
+          _light: {
+            bg: "transparent",
+            _hover: {
+              bg: "rgba(0,0,0,0.05)",
+            },
+          },
+        },
+      },
+    },
+    Modal: {
+      baseStyle: {
+        dialog: {
+          borderRadius: "20px",
+          border: "1px solid rgba(255,255,255,0.1)",
+          _dark: {
+            bg: "rgba(15, 23, 42, 0.85)",
+            backdropFilter: "blur(20px)",
+          },
+          _light: {
+            bg: "rgba(255, 255, 255, 0.85)",
+            backdropFilter: "blur(20px)",
+          },
+        },
+        overlay: {
+          backdropFilter: "blur(8px)",
         },
       },
     },
@@ -93,48 +174,48 @@ export const theme = extendTheme({
           borderSpacing: 0,
         },
         thead: {
-          borderBottomColor: "light-border",
+          borderBottomColor: "rgba(255,255,255,0.1)",
         },
         th: {
-          background: "#F9FAFB",
-          borderColor: "light-border !important",
-          borderBottomColor: "light-border !important",
+          background: "rgba(255,255,255,0.15)",
+          borderColor: "rgba(255,255,255,0.15) !important",
+          borderBottomColor: "rgba(255,255,255,0.15) !important",
           borderTop: "1px solid ",
-          borderTopColor: "light-border !important",
+          borderTopColor: "rgba(255,255,255,0.15) !important",
           _first: {
             borderLeft: "1px solid",
-            borderColor: "light-border !important",
+            borderColor: "rgba(255,255,255,0.15) !important",
           },
           _last: {
             borderRight: "1px solid",
-            borderColor: "light-border !important",
+            borderColor: "rgba(255,255,255,0.15) !important",
           },
           _dark: {
-            borderColor: "gray.600 !important",
-            background: "gray.750",
+            borderColor: "rgba(255,255,255,0.08) !important",
+            background: "rgba(15, 23, 42, 0.5)",
           },
         },
         td: {
-          transition: "all .1s ease-out",
-          borderColor: "light-border",
-          borderBottomColor: "light-border !important",
+          transition: "all .2s ease-out",
+          borderColor: "rgba(255,255,255,0.1)",
+          borderBottomColor: "rgba(255,255,255,0.1) !important",
           _first: {
             borderLeft: "1px solid",
-            borderColor: "light-border",
+            borderColor: "rgba(255,255,255,0.1)",
             _dark: {
-              borderColor: "gray.600",
+              borderColor: "rgba(255,255,255,0.06)",
             },
           },
           _last: {
             borderRight: "1px solid",
-            borderColor: "light-border",
+            borderColor: "rgba(255,255,255,0.1)",
             _dark: {
-              borderColor: "gray.600",
+              borderColor: "rgba(255,255,255,0.06)",
             },
           },
           _dark: {
-            borderColor: "gray.600",
-            borderBottomColor: "gray.600 !important",
+            borderColor: "rgba(255,255,255,0.06)",
+            borderBottomColor: "rgba(255,255,255,0.06) !important",
           },
         },
         tr: {
@@ -142,11 +223,11 @@ export const theme = extendTheme({
             cursor: "pointer",
             _hover: {
               "& > td": {
-                bg: "gray.200",
+                bg: "rgba(255,255,255,0.08)",
               },
               _dark: {
                 "& > td": {
-                  bg: "gray.750",
+                  bg: "rgba(255,255,255,0.04)",
                 },
               },
             },
@@ -154,10 +235,10 @@ export const theme = extendTheme({
           _last: {
             "& > td": {
               _first: {
-                borderBottomLeftRadius: "8px",
+                borderBottomLeftRadius: "12px",
               },
               _last: {
-                borderBottomRightRadius: "8px",
+                borderBottomRightRadius: "12px",
               },
             },
           },

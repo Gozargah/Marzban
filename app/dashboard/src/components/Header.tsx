@@ -8,6 +8,7 @@ import {
   MenuItem,
   MenuList,
   Text,
+  useBreakpointValue,
   useColorMode,
 } from "@chakra-ui/react";
 import {
@@ -24,6 +25,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { DONATION_URL, REPO_URL } from "constants/Project";
 import { useDashboard } from "contexts/DashboardContext";
+import { useAccentColor } from "contexts/AccentColorContext";
 import differenceInDays from "date-fns/differenceInDays";
 import isValid from "date-fns/isValid";
 import { FC, ReactNode, useState } from "react";
@@ -83,6 +85,8 @@ export const shouldShowDonation = (): boolean => {
 
 export const Header: FC<HeaderProps> = ({ actions }) => {
   const { userData, getUserIsSuccess, getUserIsPending } = useGetUser();
+  const { accent } = useAccentColor();
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   const isSudo = () => {
     if (!getUserIsPending && getUserIsSuccess) {
@@ -119,26 +123,43 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
         },
       }}
       position="relative"
+      className="glass-header"
+      px={4}
+      py={3}
     >
-      <Text as="h1" fontWeight="semibold" fontSize="2xl">
-        {t("users")}
-      </Text>
+      <HStack spacing={3}>
+        <Box
+          className="accent-dot"
+          display={{ base: "block", md: "block" }}
+        />
+        <Text
+          as="h1"
+          fontWeight="bold"
+          fontSize={{ base: "lg", md: "2xl" }}
+          bgGradient={`linear(to-r, ${accent.primary}, ${accent.secondary})`}
+          bgClip="text"
+          transition="all 0.5s ease"
+        >
+          {t("users")}
+        </Text>
+      </HStack>
       {showDonationNotif && (
-        <NotificationCircle top="0" right="0" zIndex={9999} />
+        <NotificationCircle top="2" right="2" zIndex={9999} />
       )}
       <Box overflow="auto" css={{ direction: "rtl" }}>
-        <HStack alignItems="center">
+        <HStack alignItems="center" spacing={2}>
           <Menu>
             <MenuButton
               as={IconButton}
               size="sm"
-              variant="outline"
+              variant="ghost"
               icon={
                 <>
                   <SettingsIcon />
                 </>
               }
               position="relative"
+              _hover={{ bg: "rgba(255,255,255,0.1)" }}
             ></MenuButton>
             <MenuList minW="170px" zIndex={99999} className="menuList">
               {isSudo() && (
@@ -199,11 +220,12 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
             </MenuList>
           </Menu>
 
-          {isSudo() && (
+          {isSudo() && !isMobile && (
             <IconButton
               size="sm"
-              variant="outline"
+              variant="ghost"
               aria-label="core settings"
+              _hover={{ bg: "rgba(255,255,255,0.1)" }}
               onClick={() => {
                 useDashboard.setState({ isEditingCore: true });
               }}
@@ -212,12 +234,13 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
             </IconButton>
           )}
 
-          <Language />
+          {!isMobile && <Language />}
 
           <IconButton
             size="sm"
-            variant="outline"
+            variant="ghost"
             aria-label="switch theme"
+            _hover={{ bg: "rgba(255,255,255,0.1)" }}
             onClick={() => {
               updateThemeColor(colorMode == "dark" ? "light" : "dark");
               toggleColorMode();
@@ -226,27 +249,29 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
             {colorMode === "light" ? <DarkIcon /> : <LightIcon />}
           </IconButton>
 
-          <Box
-            css={{ direction: "ltr" }}
-            display="flex"
-            alignItems="center"
-            pr="2"
-            __css={{
-              "&  span": {
-                display: "inline-flex",
-              },
-            }}
-          >
-            <GitHubButton
-              href={REPO_URL}
-              data-color-scheme={`no-preference: ${gBtnColor}; light: ${gBtnColor}; dark: ${gBtnColor};`}
-              data-size="large"
-              data-show-count="true"
-              aria-label="Star Marzban on GitHub"
+          {!isMobile && (
+            <Box
+              css={{ direction: "ltr" }}
+              display="flex"
+              alignItems="center"
+              pr="2"
+              __css={{
+                "&  span": {
+                  display: "inline-flex",
+                },
+              }}
             >
-              Star
-            </GitHubButton>
-          </Box>
+              <GitHubButton
+                href={REPO_URL}
+                data-color-scheme={`no-preference: ${gBtnColor}; light: ${gBtnColor}; dark: ${gBtnColor};`}
+                data-size="large"
+                data-show-count="true"
+                aria-label="Star Marzban on GitHub"
+              >
+                Star
+              </GitHubButton>
+            </Box>
+          )}
         </HStack>
       </Box>
     </HStack>

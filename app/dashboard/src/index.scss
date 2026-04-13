@@ -1,5 +1,172 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
+/* CSS Variables for accent colors */
+:root {
+  --accent-primary: #3B82F6;
+  --accent-secondary: #60A5FA;
+  --accent-glow: rgba(59,130,246,0.3);
+  --glass-bg-light: rgba(255, 255, 255, 0.25);
+  --glass-bg-dark: rgba(15, 23, 42, 0.45);
+  --glass-border-light: rgba(255, 255, 255, 0.35);
+  --glass-border-dark: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+/* Gradient animated background */
+.gradient-bg {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #0f172a 50%, #1a1a2e 75%, #0f172a 100%);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.gradient-bg::before {
+  content: "";
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 20% 50%, var(--accent-glow) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+              radial-gradient(circle at 50% 80%, rgba(6, 182, 212, 0.1) 0%, transparent 40%);
+  animation: gradient-shift 20s ease-in-out infinite;
+  z-index: 0;
+  pointer-events: none;
+  transition: background 2s ease;
+}
+
+.gradient-bg-light {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #e0e7ff 0%, #f0f9ff 25%, #fdf2f8 50%, #ecfdf5 75%, #eff6ff 100%);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.gradient-bg-light::before {
+  content: "";
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 20% 50%, var(--accent-glow) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
+              radial-gradient(circle at 50% 80%, rgba(6, 182, 212, 0.06) 0%, transparent 40%);
+  animation: gradient-shift 20s ease-in-out infinite;
+  z-index: 0;
+  pointer-events: none;
+  transition: background 2s ease;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(2%, -2%) rotate(1deg); }
+  50% { transform: translate(-1%, 3%) rotate(-1deg); }
+  75% { transform: translate(-3%, -1%) rotate(0.5deg); }
+}
+
+/* Glassmorphism utility classes */
+.glass {
+  background: var(--glass-bg-light);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border-light);
+  border-radius: 16px;
+  box-shadow: var(--glass-shadow);
+  transition: all 0.3s ease;
+}
+
+.chakra-ui-dark .glass {
+  background: var(--glass-bg-dark);
+  border: 1px solid var(--glass-border-dark);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.glass:hover {
+  box-shadow: 0 8px 40px var(--accent-glow);
+  border-color: var(--accent-primary);
+}
+
+.glass-card {
+  background: var(--glass-bg-light);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border-light);
+  border-radius: 16px;
+  box-shadow: var(--glass-shadow);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chakra-ui-dark .glass-card {
+  background: var(--glass-bg-dark);
+  border: 1px solid var(--glass-border-dark);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px var(--accent-glow);
+}
+
+.glass-header {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.chakra-ui-dark .glass-header {
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.3) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.chakra-ui-dark .glass-input {
+  background: rgba(15, 23, 42, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.glass-input:focus {
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 0 2px var(--accent-glow) !important;
+}
+
+/* Accent color transition on buttons */
+.accent-btn {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important;
+  border: none !important;
+  color: white !important;
+  transition: all 0.5s ease !important;
+  box-shadow: 0 4px 15px var(--accent-glow) !important;
+}
+
+.accent-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 25px var(--accent-glow) !important;
+}
+
+/* Accent color dot indicator */
+.accent-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  box-shadow: 0 0 10px var(--accent-glow);
+  transition: all 0.5s ease;
+}
+
 .bg-blue-animate {
   animation: blur-animate 200ms ease-in;
   backdrop-filter: blur(10px);

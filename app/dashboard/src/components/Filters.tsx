@@ -77,9 +77,10 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
         lg: 4,
         base: 0,
       }}
-      bg="var(--chakra-colors-chakra-body-bg)"
+      className="glass-header"
       py={4}
       zIndex="docked"
+      borderRadius="0"
       {...props}
     >
       <GridItem colSpan={{ base: 1, md: 2, lg: 1 }} order={{ base: 2, md: 1 }}>
@@ -127,6 +128,7 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
             size="sm"
             onClick={() => onCreateUser(true)}
             px={5}
+            className="accent-btn"
           >
             {t("createUser")}
           </Button>
