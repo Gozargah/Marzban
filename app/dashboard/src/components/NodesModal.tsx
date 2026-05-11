@@ -431,7 +431,7 @@ const NodeForm: NodeFormType = ({
             <CustomInput
               label={t("nodes.nodeName")}
               size="sm"
-              placeholder="Marzban-S2"
+              placeholder="NeonGate-S2"
               {...form.register("name")}
               error={form.formState?.errors?.name?.message}
             />
