@@ -86,7 +86,7 @@ class SingBoxConfiguration(str):
             config["reality"] = {"enabled": True}
             if pbk:
                 config["reality"]["public_key"] = pbk
-            if sid:
+            if sid is not None:
                 config["reality"]["short_id"] = sid
 
         if fp:

@@ -596,9 +596,9 @@ class V2rayJsonConfig(str):
 
         if pbk:
             realitySettings["publicKey"] = pbk
-        if sid:
+        if sid is not None:
             realitySettings["shortId"] = sid
-        if spx:
+        if spx is not None:
             realitySettings["spiderX"] = spx
 
         return realitySettings
