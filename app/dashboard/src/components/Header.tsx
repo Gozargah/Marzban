@@ -15,6 +15,7 @@ import {
   Bars3Icon,
   ChartPieIcon,
   Cog6ToothIcon,
+  DevicePhoneMobileIcon,
   DocumentMinusIcon,
   LinkIcon,
   MoonIcon,
@@ -48,6 +49,7 @@ const HostsIcon = chakra(LinkIcon, iconProps);
 const NodesIcon = chakra(SquaresPlusIcon, iconProps);
 const NodesUsageIcon = chakra(ChartPieIcon, iconProps);
 const ResetUsageIcon = chakra(DocumentMinusIcon, iconProps);
+const DevicesIcon = chakra(DevicePhoneMobileIcon, iconProps);
 
 export const Header: FC<HeaderProps> = ({ actions }) => {
   const { userData, getUserIsSuccess, getUserIsPending } = useGetUser();
@@ -64,6 +66,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
     onResetAllUsage,
     onEditingNodes,
     onShowingNodesUsage,
+    onShowingDevices,
   } = useDashboard();
   const { t } = useTranslation();
   const { colorMode, toggleColorMode } = useColorMode();
@@ -130,6 +133,14 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                     onClick={onResetAllUsage.bind(null, true)}
                   >
                     {t("resetAllUsage")}
+                  </MenuItem>
+                  <MenuItem
+                    maxW="170px"
+                    fontSize="sm"
+                    icon={<DevicesIcon />}
+                    onClick={onShowingDevices.bind(null, true)}
+                  >
+                    {t("devices.menuItem")}
                   </MenuItem>
                 </>
               )}
