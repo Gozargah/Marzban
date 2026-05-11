@@ -106,8 +106,8 @@ if __name__ == "__main__":
 
             logger.warning(f"""
 {click.style('IMPORTANT!', blink=True, bold=True, fg="yellow")}
-You're running Marzban without specifying {click.style('UVICORN_SSL_CERTFILE', italic=True, fg="magenta")} and {click.style('UVICORN_SSL_KEYFILE', italic=True, fg="magenta")}.
-The application will only be accessible through localhost. This means that {click.style('Marzban and subscription URLs will not be accessible externally', bold=True)}.
+You're running NeonGate without specifying {click.style('UVICORN_SSL_CERTFILE', italic=True, fg="magenta")} and {click.style('UVICORN_SSL_KEYFILE', italic=True, fg="magenta")}.
+The application will only be accessible through localhost. This means that {click.style('NeonGate and subscription URLs will not be accessible externally', bold=True)}.
 
 If you need external access, please provide the SSL files to allow the server to bind to 0.0.0.0. Alternatively, you can run the server on localhost or a Unix socket and use a reverse proxy, such as Nginx or Caddy, to handle SSL termination and provide external access.
 

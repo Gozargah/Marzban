@@ -7,7 +7,7 @@
   </a>
 </p>
 
-<h1 align="center"/>Marzban</h1>
+<h1 align="center"/>NeonGate</h1>
 
 <p align="center">
     Unified GUI Censorship Resistant Solution Powered by <a href="https://github.com/XTLS/Xray-core">Xray</a>
@@ -76,7 +76,7 @@
 
 # 概览
 
-Marzban（Marzban 一词源自波斯语，意为“边境警卫”，发音为 /mærz'ban/）是一个代理管理工具，提供简单易用的用户界面，可管理数百个代理账户，由 [Xray-core](https://github.com/XTLS/Xray-core) 提供支持，使用 Python 和 Reactjs 构建。
+NeonGate 是一个基于 Marzban 构建的代理管理面板，提供简单易用的用户界面，可管理数百个代理账户，由 [Xray-core](https://github.com/XTLS/Xray-core) 提供支持，使用 Python 和 Reactjs 构建。
 
 ## 为什么要使用 Marzban?
 

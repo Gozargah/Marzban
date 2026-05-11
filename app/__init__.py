@@ -13,7 +13,7 @@ from config import ALLOWED_ORIGINS, DOCS, XRAY_SUBSCRIPTION_PATH
 __version__ = "0.8.4"
 
 app = FastAPI(
-    title="MarzbanAPI",
+    title="NeonGateAPI",
     description="Unified GUI Censorship Resistant Solution Powered by Xray",
     version=__version__,
     openapi_url="/openapi.json" if DOCS else None,

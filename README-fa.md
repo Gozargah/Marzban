@@ -7,7 +7,7 @@
   </a>
 </p>
 
-<h1 align="center"/>مرزبان</h1>
+<h1 align="center"/>NeonGate</h1>
 
 <p align="center">
      راه حل یکپارچه برای مدیریت پروتکل های مختلف. قدرت گرفته از <a href="https://github.com/XTLS/Xray-core">Xray</a>
@@ -78,7 +78,7 @@
 
 # بررسی اجمالی
 
-مرزبان یک نرم افزار (وب اپلیکیشن) مدیریت پروکسی است که امکان مدیریت چند صد حساب پروکسی را با قدرت و دسترسی بالا فراهم میکند. مرزبان از [Xray-core](https://github.com/XTLS/Xray-core) قدرت گرفته و با Python و React پیاده سازی شده است.
+NeonGate یک پنل مدیریت پروکسی است که بر اساس Marzban ساخته شده و امکان مدیریت چند صد حساب پروکسی را فراهم میکند. NeonGate از [Xray-core](https://github.com/XTLS/Xray-core) قدرت گرفته و با Python و React پیاده سازی شده است.
 
 ## چرا مرزبان؟
 

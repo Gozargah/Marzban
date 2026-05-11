@@ -7,7 +7,7 @@
   </a>
 </p>
 
-<h1 align="center"/>Marzban</h1>
+<h1 align="center"/>NeonGate</h1>
 
 <p align="center">
     Unified GUI Censorship Resistant Solution Powered by <a href="https://github.com/XTLS/Xray-core">Xray</a>
@@ -62,7 +62,7 @@
 ## Table of Contents
 
 - [Overview](#overview)
-  - [Why using Marzban?](#why-using-marzban)
+  - [Why using NeonGate?](#why-using-neongate)
     - [Features](#features)
 - [Installation guide](#installation-guide)
 - [Configuration](#configuration)
@@ -79,11 +79,11 @@
 
 # Overview
 
-Marzban (the Persian word for "border guard" - pronounced /mærz'ban/) is a proxy management tool that provides a simple and easy-to-use user interface for managing hundreds of proxy accounts powered by [Xray-core](https://github.com/XTLS/Xray-core) and built using Python and Reactjs.
+NeonGate is a proxy management panel built on the Marzban codebase that provides a simple and easy-to-use user interface for managing hundreds of proxy accounts powered by [Xray-core](https://github.com/XTLS/Xray-core) and built using Python and Reactjs.
 
-## Why using Marzban?
+## Why using NeonGate?
 
-Marzban is user-friendly, feature-rich and reliable. It lets you to create different proxies for your users without any complicated configuration. Using its built-in web UI, you are able to monitor, modify and limit users.
+NeonGate is user-friendly, feature-rich and reliable. It lets you to create different proxies for your users without any complicated configuration. Using its built-in web UI, you are able to monitor, modify and limit users.
 
 ### Features
 
