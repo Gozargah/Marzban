@@ -98,6 +98,53 @@ def generate_v2ray_json_subscription(
     )
 
 
+def _generate_hysteria2_link(user) -> "Optional[str]":
+    """Build a hysteria2:// URL for the user if a sidecar is configured via env.
+
+    Required env vars:
+        HYSTERIA_HOST           - server address (domain or IP)
+        HYSTERIA_PORT           - UDP port the sing-box hysteria2 inbound listens on
+        HYSTERIA_OBFS_PASSWORD  - salamander obfs key (must match server)
+    Optional:
+        HYSTERIA_SNI            - TLS SNI (defaults to HYSTERIA_HOST)
+        HYSTERIA_INSECURE       - "1" to skip cert validation (self-signed). default "1"
+
+    Password = user's VLESS UUID, matching /opt/hysteria/sync.py on the server.
+    """
+    import os
+    from urllib.parse import quote
+
+    host = os.getenv("HYSTERIA_HOST")
+    port = os.getenv("HYSTERIA_PORT")
+    obfs_pass = os.getenv("HYSTERIA_OBFS_PASSWORD")
+    if not (host and port and obfs_pass):
+        return None
+
+    password = None
+    proxies = getattr(user, "proxies", None) or {}
+    for proto, settings in (proxies.items() if hasattr(proxies, "items") else []):
+        name = proto.name if hasattr(proto, "name") else str(proto)
+        if name.lower() != "vless":
+            continue
+        if isinstance(settings, dict):
+            password = settings.get("id")
+        else:
+            password = getattr(settings, "id", None)
+        break
+    if not password:
+        return None
+
+    sni = os.getenv("HYSTERIA_SNI", host)
+    insecure = os.getenv("HYSTERIA_INSECURE", "1")
+    username = getattr(user, "username", "user")
+    remark = quote(f"🚀 NeonGate Hysteria 2 ({username})")
+    return (
+        f"hysteria2://{password}@{host}:{port}/?"
+        f"obfs=salamander&obfs-password={obfs_pass}&sni={sni}&insecure={insecure}"
+        f"#{remark}"
+    )
+
+
 def generate_subscription(
         user: "UserResponse",
         config_format: Literal["v2ray", "clash-meta", "clash", "sing-box", "outline", "v2ray-json"],
@@ -112,7 +159,11 @@ def generate_subscription(
     }
 
     if config_format == "v2ray":
-        config = "\n".join(generate_v2ray_links(**kwargs))
+        links = generate_v2ray_links(**kwargs)
+        hy_link = _generate_hysteria2_link(user)
+        if hy_link:
+            links.append(hy_link)
+        config = "\n".join(links)
     elif config_format == "clash-meta":
         config = generate_clash_subscription(**kwargs, is_meta=True)
     elif config_format == "clash":
