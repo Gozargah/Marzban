@@ -29,6 +29,7 @@ import {
   DevicePhoneMobileIcon,
 } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
+import useGetUser from "hooks/useGetUser";
 import { FC, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { fetch } from "service/http";
@@ -68,6 +69,11 @@ type DevicesResponse = {
   error?: string;
 };
 
+type AdminEntry = {
+  username: string;
+  is_sudo: boolean;
+};
+
 const FLAG_COLORS: Record<string, string> = {
   ok: "green",
   sharing: "yellow",
@@ -94,12 +100,13 @@ function relativeTime(iso: string | null): string {
 const UserRow: FC<{ row: UserDeviceRow }> = ({ row }) => {
   const [open, setOpen] = useState(false);
   const subBg = useColorModeValue("gray.50", "gray.700");
+  const hoverBg = useColorModeValue("gray.50", "gray.700");
 
   return (
     <>
       <Tr
         cursor="pointer"
-        _hover={{ bg: useColorModeValue("gray.50", "gray.700") }}
+        _hover={{ bg: hoverBg }}
         onClick={() => setOpen((o) => !o)}
       >
         <Td py={2} pr={1} w="6">
@@ -108,7 +115,10 @@ const UserRow: FC<{ row: UserDeviceRow }> = ({ row }) => {
             variant="ghost"
             size="xs"
             icon={open ? <ChevronDown /> : <ChevronRight />}
-            onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen((o) => !o);
+            }}
           />
         </Td>
         <Td py={2} fontWeight="medium" fontSize="sm">
@@ -121,7 +131,11 @@ const UserRow: FC<{ row: UserDeviceRow }> = ({ row }) => {
           {row.hwid_count}
         </Td>
         <Td py={2}>
-          <Badge colorScheme={FLAG_COLORS[row.flag]} fontSize="xs" borderRadius="md">
+          <Badge
+            colorScheme={FLAG_COLORS[row.flag]}
+            fontSize="xs"
+            borderRadius="md"
+          >
             {row.flag}
           </Badge>
         </Td>
@@ -137,12 +151,24 @@ const UserRow: FC<{ row: UserDeviceRow }> = ({ row }) => {
                 <Table size="sm" variant="unstyled">
                   <Thead>
                     <Tr>
-                      <Th fontSize="xs" color="gray.500">Model</Th>
-                      <Th fontSize="xs" color="gray.500">OS</Th>
-                      <Th fontSize="xs" color="gray.500">App</Th>
-                      <Th fontSize="xs" color="gray.500">IP</Th>
-                      <Th fontSize="xs" color="gray.500">HWID</Th>
-                      <Th fontSize="xs" color="gray.500">Last</Th>
+                      <Th fontSize="xs" color="gray.500">
+                        Model
+                      </Th>
+                      <Th fontSize="xs" color="gray.500">
+                        OS
+                      </Th>
+                      <Th fontSize="xs" color="gray.500">
+                        App
+                      </Th>
+                      <Th fontSize="xs" color="gray.500">
+                        IP
+                      </Th>
+                      <Th fontSize="xs" color="gray.500">
+                        HWID
+                      </Th>
+                      <Th fontSize="xs" color="gray.500">
+                        Last
+                      </Th>
                     </Tr>
                   </Thead>
                   <Tbody>
@@ -151,8 +177,15 @@ const UserRow: FC<{ row: UserDeviceRow }> = ({ row }) => {
                         <Td fontSize="xs">{d.model || "-"}</Td>
                         <Td fontSize="xs">{d.os || "-"}</Td>
                         <Td fontSize="xs">{d.app || "-"}</Td>
-                        <Td fontSize="xs" fontFamily="mono">{d.ip}</Td>
-                        <Td fontSize="xs" fontFamily="mono" maxW="120px" isTruncated>
+                        <Td fontSize="xs" fontFamily="mono">
+                          {d.ip}
+                        </Td>
+                        <Td
+                          fontSize="xs"
+                          fontFamily="mono"
+                          maxW="120px"
+                          isTruncated
+                        >
                           {d.hwid || "-"}
                         </Td>
                         <Td fontSize="xs">{relativeTime(d.last)}</Td>
@@ -171,38 +204,67 @@ const UserRow: FC<{ row: UserDeviceRow }> = ({ row }) => {
 
 export const DevicesModal: FC = () => {
   const { isShowingDevices, onShowingDevices } = useDashboard();
+  const { userData, getUserIsSuccess, getUserIsPending } = useGetUser();
   const { t } = useTranslation();
+
+  const isSudo =
+    !getUserIsPending && getUserIsSuccess ? userData.is_sudo : false;
+
   const [minutes, setMinutes] = useState(60);
+  const [filterAdmin, setFilterAdmin] = useState<string>("");
+  const [adminList, setAdminList] = useState<AdminEntry[]>([]);
   const [data, setData] = useState<DevicesResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const loadData = (m: number) => {
+  const buildUrl = (m: number, fa: string) => {
+    let url = `/devices?minutes=${m}`;
+    if (isSudo && fa) url += `&filter_admin=${encodeURIComponent(fa)}`;
+    return url;
+  };
+
+  const loadData = (m: number, fa: string) => {
     setLoading(true);
-    fetch(`/devices?minutes=${m}`)
+    fetch(buildUrl(m, fa))
       .then((d: DevicesResponse) => setData(d))
       .finally(() => setLoading(false));
   };
 
+  // Fetch admin list once when sudo modal opens
+  useEffect(() => {
+    if (!isShowingDevices || !isSudo) return;
+    fetch("/devices/admins").then((list: AdminEntry[]) => setAdminList(list));
+  }, [isShowingDevices, isSudo]);
+
+  // Load device data + set up auto-refresh
   useEffect(() => {
     if (!isShowingDevices) return;
-    loadData(minutes);
-    intervalRef.current = setInterval(() => loadData(minutes), 30_000);
+    loadData(minutes, filterAdmin);
+    intervalRef.current = setInterval(
+      () => loadData(minutes, filterAdmin),
+      30_000
+    );
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isShowingDevices, minutes]);
+  }, [isShowingDevices, minutes, filterAdmin]);
 
   const onClose = () => {
     onShowingDevices(false);
     if (intervalRef.current) clearInterval(intervalRef.current);
   };
 
-  const suspicious = data?.users.filter((u) => u.flag === "suspicious").length ?? 0;
+  const suspicious =
+    data?.users.filter((u) => u.flag === "suspicious").length ?? 0;
   const sharing = data?.users.filter((u) => u.flag === "sharing").length ?? 0;
 
   return (
-    <Modal isOpen={isShowingDevices} onClose={onClose} size="5xl" scrollBehavior="inside">
+    <Modal
+      isOpen={isShowingDevices}
+      onClose={onClose}
+      size="5xl"
+      scrollBehavior="inside"
+    >
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
       <ModalContent mx="3" w="full">
         <ModalHeader pt={6}>
@@ -216,7 +278,7 @@ export const DevicesModal: FC = () => {
               </Text>
               {loading && <Spinner size="sm" />}
             </HStack>
-            <HStack gap={3} pr={8}>
+            <HStack gap={3} pr={8} flexWrap="wrap">
               {suspicious > 0 && (
                 <Badge colorScheme="red" fontSize="xs">
                   {suspicious} suspicious
@@ -226,6 +288,24 @@ export const DevicesModal: FC = () => {
                 <Badge colorScheme="yellow" fontSize="xs">
                   {sharing} sharing
                 </Badge>
+              )}
+              {/* Admin filter — sudo only */}
+              {isSudo && (
+                <Select
+                  size="sm"
+                  w="150px"
+                  borderRadius="md"
+                  placeholder={t("devices.allAdmins")}
+                  value={filterAdmin}
+                  onChange={(e) => setFilterAdmin(e.target.value)}
+                >
+                  {adminList.map((a) => (
+                    <option key={a.username} value={a.username}>
+                      {a.username}
+                      {a.is_sudo ? " ★" : ""}
+                    </option>
+                  ))}
+                </Select>
               )}
               <Select
                 size="sm"
@@ -252,7 +332,9 @@ export const DevicesModal: FC = () => {
           ) : (
             <VStack align="stretch" gap={2}>
               <Text fontSize="xs" color="gray.500">
-                {data ? `${data.total_users} users · last ${minutes} min` : ""}
+                {data
+                  ? `${data.total_users} ${t("devices.usersLabel")} · ${t("devices.lastLabel")} ${minutes} min`
+                  : ""}
               </Text>
               <Box overflowX="auto">
                 <Table size="sm" variant="simple">

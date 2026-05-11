@@ -3,11 +3,11 @@ import os
 import time
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional
+from typing import List, Optional, Set
 
-from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.utils import responses
 
@@ -15,13 +15,13 @@ CADDY_LOG = os.environ.get("CADDY_LOG", "/var/log/caddy/access.log")
 
 router = APIRouter(tags=["Devices"], prefix="/api", responses={401: responses._401})
 
-# ---- cache -----------------------------------------------------------------
-_cache_result: Optional[dict] = None
+# ---- raw log cache (all users, unfiltered) ----------------------------------
+_cache_all: Optional[dict] = None
 _cache_minutes: int = 0
 _cache_ts: float = 0.0
 _CACHE_TTL = 60  # seconds
-# ---- Telegram alert dedup persisted in memory (same as old sidecar) --------
-_alerted_suspicious: set = set()
+# ---- Telegram alert dedup ---------------------------------------------------
+_alerted_suspicious: Set[str] = set()
 
 
 def _send_telegram(message: str) -> None:
@@ -41,7 +41,8 @@ def _send_telegram(message: str) -> None:
         pass
 
 
-def _parse_devices(minutes: int) -> dict:
+def _parse_all_devices(minutes: int) -> dict:
+    """Parse Caddy log and return all users unfiltered. Called at most once per TTL."""
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=minutes)
     user_devices: dict = defaultdict(dict)
     user_last_seen: dict = {}
@@ -126,65 +127,123 @@ def _parse_devices(minutes: int) -> dict:
         return {"error": f"Log file not found: {CADDY_LOG}"}
 
     users = []
-    for username, devices in user_devices.items():
+    for uname, devices in user_devices.items():
         count = len(devices)
         hwid_count = sum(1 for k in devices if k.startswith("hwid:"))
         flag = "suspicious" if count >= 5 else ("sharing" if count >= 3 else "ok")
 
         users.append({
-            "username": username,
+            "username": uname,
             "device_count": count,
             "hwid_count": hwid_count,
             "flag": flag,
-            "last_seen": user_last_seen.get(username),
+            "last_seen": user_last_seen.get(uname),
             "devices": list(devices.values()),
         })
 
-    users.sort(key=lambda x: -x["device_count"])
-
-    # Telegram alerts for newly suspicious users
-    for u in users:
-        if u["flag"] == "suspicious" and u["username"] not in _alerted_suspicious:
-            _alerted_suspicious.add(u["username"])
+        # Telegram alerts — fire for all suspicious regardless of who's watching
+        if flag == "suspicious" and uname not in _alerted_suspicious:
+            _alerted_suspicious.add(uname)
             lines = [
                 f"  • {d.get('model') or d.get('ip')} ({d.get('app')})"
-                for d in u["devices"][:5]
-            ]
+                for d in devices.values()
+            ][:5]
             _send_telegram(
                 f"🚨 <b>Suspicious user detected</b>\n"
-                f"User: <code>{u['username']}</code>\n"
-                f"Devices: {u['device_count']}  HWID: {u['hwid_count']}\n"
+                f"User: <code>{uname}</code>\n"
+                f"Devices: {count}  HWID: {hwid_count}\n"
                 + "\n".join(lines)
             )
+
+    users.sort(key=lambda x: -x["device_count"])
 
     return {
         "minutes": minutes,
         "generated": datetime.now(timezone.utc).isoformat(),
-        "total_users": len(users),
         "users": users,
     }
 
 
-def _get_devices(minutes: int) -> dict:
-    global _cache_result, _cache_minutes, _cache_ts
+def _cached_all_devices(minutes: int) -> dict:
+    global _cache_all, _cache_minutes, _cache_ts
     now = time.monotonic()
-    if _cache_result is not None and _cache_minutes == minutes and (now - _cache_ts) < _CACHE_TTL:
-        return _cache_result
-    result = _parse_devices(minutes)
-    _cache_result = result
+    if (
+        _cache_all is not None
+        and _cache_minutes == minutes
+        and (now - _cache_ts) < _CACHE_TTL
+    ):
+        return _cache_all
+    result = _parse_all_devices(minutes)
+    _cache_all = result
     _cache_minutes = minutes
     _cache_ts = now
     return result
 
 
+def _owned_usernames(db: Session, admin: Admin) -> Optional[Set[str]]:
+    """Return the set of usernames owned by this admin, or None if sudo (= no filter)."""
+    if admin.is_sudo:
+        return None
+    db_admin = crud.get_admin(db, admin.username)
+    users = crud.get_users(db, admin=db_admin)
+    return {u.username for u in users}
+
+
 @router.get("/devices")
 def get_devices(
     minutes: int = Query(default=60, ge=1, le=10080),
+    filter_admin: Optional[str] = Query(default=None, description="Sudo only: filter by admin username"),
+    db: Session = Depends(get_db),
     admin: Admin = Depends(Admin.get_current),
 ):
     """
     Returns active devices per subscription user parsed from Caddy access logs.
-    Flags accounts with 3+ devices as 'sharing' and 5+ as 'suspicious'.
-    Results are cached for 60 seconds.
+
+    - Regular admins see only their own users.
+    - Sudo admins see all users; pass `filter_admin` to scope to one admin's users.
+
+    Results are cached for 60 seconds (raw parse shared across callers).
     """
-    return _get_devices(minutes)
+    # Determine the username allowlist for scoping
+    if admin.is_sudo:
+        if filter_admin:
+            # Validate the requested admin exists
+            target = crud.get_admin(db, filter_admin)
+            if not target:
+                raise HTTPException(status_code=404, detail=f"Admin '{filter_admin}' not found")
+            users = crud.get_users(db, admin=target)
+            allowed: Optional[Set[str]] = {u.username for u in users}
+        else:
+            allowed = None  # all users
+    else:
+        allowed = _owned_usernames(db, admin)
+
+    raw = _cached_all_devices(minutes)
+    if raw.get("error"):
+        return raw
+
+    filtered_users = raw["users"]
+    if allowed is not None:
+        filtered_users = [u for u in filtered_users if u["username"] in allowed]
+
+    return {
+        "minutes": raw["minutes"],
+        "generated": raw["generated"],
+        "total_users": len(filtered_users),
+        "users": filtered_users,
+    }
+
+
+@router.get("/devices/admins")
+def list_admins_for_devices(
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.get_current),
+):
+    """
+    Returns list of admin usernames for the sudo filter dropdown.
+    Only accessible by sudo admins.
+    """
+    if not admin.is_sudo:
+        raise HTTPException(status_code=403, detail="Sudo required")
+    admins = crud.get_admins(db)
+    return [{"username": a.username, "is_sudo": a.is_sudo} for a in admins]
