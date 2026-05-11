@@ -237,9 +237,8 @@ class SingBoxConfiguration(str):
             "server_port": port,
         }
 
-        if net in ('tcp', 'raw', 'kcp') and headers != 'http' and (tls or tls != 'none'):
-            if flow:
-                config["flow"] = flow
+        if flow and tls in ('tls', 'reality') and net in ('tcp', 'raw', 'kcp') and headers != 'http':
+            config["flow"] = flow
 
         if net == 'h2':
             net = 'http'
