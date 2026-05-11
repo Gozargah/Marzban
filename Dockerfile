@@ -1,9 +1,6 @@
-ARG PYTHON_VERSION=3.12
-
-FROM python:$PYTHON_VERSION-slim AS build
+FROM python:3.12-slim
 
 ENV PYTHONUNBUFFERED=1
-
 WORKDIR /code
 
 RUN apt-get update \
@@ -12,19 +9,8 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY ./requirements.txt /code/
-RUN python3 -m pip install --upgrade pip setuptools \
-    && pip install --no-cache-dir --upgrade -r /code/requirements.txt
-
-FROM python:$PYTHON_VERSION-slim
-
-ENV PYTHON_LIB_PATH=/usr/local/lib/python${PYTHON_VERSION%.*}/site-packages
-WORKDIR /code
-
-RUN rm -rf $PYTHON_LIB_PATH/*
-
-COPY --from=build $PYTHON_LIB_PATH $PYTHON_LIB_PATH
-COPY --from=build /usr/local/bin /usr/local/bin
-COPY --from=build /usr/local/share/xray /usr/local/share/xray
+RUN pip install --no-cache-dir --upgrade pip setuptools \
+    && pip install --no-cache-dir -r /code/requirements.txt
 
 COPY . /code
 
