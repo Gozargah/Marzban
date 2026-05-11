@@ -25,7 +25,7 @@ Copy `example.env` to `.env` then set the backend api address:
 
 | Name          | Description                                                                          |
 | ------------- | ------------------------------------------------------------------------------------ |
-| VITE_BASE_API | The api url of the deployed backend ([NeonGate](https://github.com/Dayanch437/Marzban-1)) |
+| VITE_BASE_API | The api url of the deployed backend (NeonGate) |
 
 ## Start development server
 

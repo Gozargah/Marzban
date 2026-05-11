@@ -1,5 +1,4 @@
-import { BoxProps, HStack, Link, Text } from "@chakra-ui/react";
-import { REPO_URL } from "constants/Project";
+import { BoxProps, HStack, Text } from "@chakra-ui/react";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC } from "react";
 
@@ -14,10 +13,7 @@ export const Footer: FC<BoxProps> = (props) => {
         color="gray.500"
         fontSize="xs"
       >
-        <Link color="blue.400" href={REPO_URL}>
-          NeonGate
-        </Link>
-        {version ? ` (v${version})` : ""}
+        NeonGate{version ? ` (v${version})` : ""}
       </Text>
     </HStack>
   );
