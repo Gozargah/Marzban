@@ -29,7 +29,6 @@
   "disabled": "disabled",
   "expired": "Истекло {{time}} назад",
   "expires": "Истекает через {{time}}",
-  "header.donation": "Пожертвование",
   "header.hostSettings": "Настройки хоста",
   "header.logout": "Выйти",
   "header.nodeSettings": "Настройки узлов",

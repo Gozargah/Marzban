@@ -29,7 +29,6 @@
   "disabled": "禁用",
   "expired": "{{time}}失效",
   "expires": "{{time}}有效",
-  "header.donation": "捐赠",
   "header.hostSettings": "设置",
   "header.logout": "退出",
   "header.nodeSettings": "节点设置",
