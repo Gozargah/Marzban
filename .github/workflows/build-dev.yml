@@ -59,3 +59,14 @@ jobs:
             ghcr.io/dayanch437/marzban-1:dev-${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            docker pull ghcr.io/dayanch437/marzban-1:dev
+            cd /opt/marzban && docker compose up -d
+            docker image prune -f
