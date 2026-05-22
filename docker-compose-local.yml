@@ -12,6 +12,7 @@ services:
     depends_on:
       mariadb:
         condition: service_healthy
+    command: ["sleep", "infinity"]
 
   mariadb:
     image: mariadb:lts

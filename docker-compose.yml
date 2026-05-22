@@ -1,6 +1,6 @@
 services:
   marzban:
-    build: https://github.com/darkringfire/Marzban.git#dev
+    build: https://github.com/darkringfire/Marzban.git
     restart: always
     env_file: .env
     environment:

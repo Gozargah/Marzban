@@ -7,25 +7,13 @@
   </a>
 </p>
 
-<h1 align="center"/>Marzban</h1>
+# Marzban
 
-<p align="center">
-  <a href="https://github.com/gozargah/marzban" target="_blank" rel="noopener noreferrer">
-    Оригинальный репозиторий
-  </a>
-</p>
+[Оригинальный репозиторий](https://github.com/gozargah/marzban)
 
-<p align="center">
-    Унифицированное решение с графическим интерфейсом, устойчивое к цензуре, на базе <a href="https://github.com/XTLS/Xray-core">Xray</a>
-</p>
+Унифицированное решение с графическим интерфейсом, устойчивое к цензуре, на базе [Xray](https://github.com/XTLS/Xray-core)
 
-<br/>
-
-<p align="center">
-  <a href="https://github.com/gozargah/marzban" target="_blank" rel="noopener noreferrer" >
-    <img src="https://github.com/Gozargah/Marzban-docs/raw/master/screenshots/preview.png" alt="Marzban screenshots" width="600" height="auto">
-  </a>
-</p>
+![Marzban screenshots](https://github.com/Gozargah/Marzban-docs/raw/master/screenshots/preview.png)
 
 ## Оглавление
 
@@ -157,7 +145,7 @@ marzban --help
 | USE_CUSTOM_JSON_FOR_STREISAND            | Enable custom JSON config only for Streisand (default: `False`)                                                                |
 | USE_CUSTOM_JSON_FOR_V2RAYN               | Enable custom JSON config only for V2rayN (default: `False`)                                                                   |
 
-# документация
+# Документация
 
 [Документация Marzban](https://gozargah.github.io/marzban/ru/) предоставляет все необходимые руководства для начала работы и доступна на трех языках: фарси, английском и русском. Для полного охвата всех аспектов проекта требуется значительное количество усилий. Мы приветствуем и ценим ваш вклад в улучшение документации. Вы можете внести свой вклад в этот [репозиторий на GitHub](https://github.com/Gozargah/gozargah.github.io).
 
@@ -188,7 +176,7 @@ Marzban поставляется с встроенным ботом Telegram, к
 Установка последней версии Marzban:
 
 ```bash
-sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install-script
+sudo bash -c "$(curl -sL https://github.com/darkringfire/Marzban/raw/master/scripts/marzban.sh)" @ install-script
 ```
 
 Настройка сервиса резервного копирования:
