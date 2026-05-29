@@ -6,7 +6,7 @@ import threading
 import time
 from collections import deque
 from contextlib import contextmanager
-from typing import List
+from typing import ClassVar, List
 
 import grpc
 import requests
@@ -15,6 +15,7 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
 from websocket import WebSocketConnectionClosedException, WebSocketTimeoutException, create_connection
 
+from app import logger
 from app.xray.config import XRayConfig
 from xray_api import XRay as XRayAPI
 
@@ -272,6 +273,13 @@ class ReSTXRayNode:
 
 
 class RPyCXRayNode:
+    # One-shot per-process deprecation notice. Many existing
+    # deployments still run the rpyc-based marzban-node agent and we
+    # don't want to spam the log on every reconnect — the warning
+    # fires exactly once for the lifetime of the panel process.
+    # Removal target: v1.0. See docs/migrating-from-rpyc.md.
+    _deprecation_logged: ClassVar[bool] = False
+
     def __init__(self,
                  address: str,
                  port: int,
@@ -279,6 +287,17 @@ class RPyCXRayNode:
                  ssl_key: str,
                  ssl_cert: str,
                  usage_coefficient: float = 1):
+
+        if not RPyCXRayNode._deprecation_logged:
+            logger.warning(
+                "DEPRECATED: rpyc node transport is in use. The REST "
+                "(uvicorn-based) marzban-node agent is the supported "
+                "transport going forward; rpyc support will be removed "
+                "in v1.0. See docs/migrating-from-rpyc.md for the "
+                "switch-over procedure."
+            )
+            RPyCXRayNode._deprecation_logged = True
+
 
         class Service(rpyc.Service):
             def __init__(self,

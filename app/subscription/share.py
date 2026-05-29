@@ -4,6 +4,7 @@ import secrets
 from collections import defaultdict
 from datetime import datetime as dt
 from datetime import timedelta
+from functools import lru_cache
 from typing import TYPE_CHECKING, List, Literal, Union
 
 from jdatetime import date as jd
@@ -24,8 +25,21 @@ from config import (
     ONHOLD_STATUS_TEXT,
 )
 
-SERVER_IP = get_public_ip()
-SERVER_IPV6 = get_public_ipv6()
+
+# Public-IP resolution is lazy. The previous module-level
+# `SERVER_IP = get_public_ip()` blocked `import app.subscription.share`
+# on up to ~15 s of outbound HTTP (3 services × 5 s timeout). Subscription
+# generators (the only consumers) now call get_server_ip() / get_server_ipv6()
+# instead. lru_cache means the network round-trip still happens at most
+# once per process, just on first use instead of at import.
+@lru_cache(maxsize=1)
+def get_server_ip() -> str:
+    return get_public_ip()
+
+
+@lru_cache(maxsize=1)
+def get_server_ipv6() -> str:
+    return get_public_ipv6()
 
 STATUS_EMOJIS = {
     "active": "✅",
@@ -211,8 +225,8 @@ def setup_format_variables(extra_data: dict) -> dict:
     format_variables = defaultdict(
         lambda: "<missing>",
         {
-            "SERVER_IP": SERVER_IP,
-            "SERVER_IPV6": SERVER_IPV6,
+            "SERVER_IP": get_server_ip(),
+            "SERVER_IPV6": get_server_ipv6(),
             "USERNAME": extra_data.get("username", "{USERNAME}"),
             "DATA_USAGE": readable_size(extra_data.get("used_traffic")),
             "DATA_LIMIT": data_limit,

@@ -2,7 +2,7 @@ from typing import Dict, List, Optional
 
 from pydantic import field_validator, ConfigDict, BaseModel, Field
 
-from app import xray
+from app.db.lookups import get_lookup
 from app.models.proxy import ProxyTypes
 
 
@@ -54,12 +54,12 @@ class UserTemplateResponse(UserTemplate):
     def validate_inbounds(cls, v):
         final = {}
         inbound_tags = [i.tag for i in v]
-        for protocol, inbounds in xray.config.inbounds_by_protocol.items():
-            for inbound in inbounds:
-                if inbound["tag"] in inbound_tags:
+        for protocol, tags in get_lookup().tags_by_protocol().items():
+            for tag in tags:
+                if tag in inbound_tags:
                     if protocol in final:
-                        final[protocol].append(inbound["tag"])
+                        final[protocol].append(tag)
                     else:
-                        final[protocol] = [inbound["tag"]]
+                        final[protocol] = [tag]
         return final
     model_config = ConfigDict(from_attributes=True)

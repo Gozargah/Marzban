@@ -19,6 +19,10 @@ DASHBOARD_PATH = config("DASHBOARD_PATH", default="/dashboard/")
 DEBUG = config("DEBUG", default=False, cast=bool)
 DOCS = config("DOCS", default=False, cast=bool)
 
+# `text` (default) preserves the current uvicorn human-readable log
+# format. `json` emits one JSON object per line via app.utils.log_setup.
+LOG_FORMAT = config("LOG_FORMAT", default="text").lower()
+
 ALLOWED_ORIGINS = config("ALLOWED_ORIGINS", default="*").split(",")
 
 VITE_BASE_API = f"http://127.0.0.1:{UVICORN_PORT}/api/" \

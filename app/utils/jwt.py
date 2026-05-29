@@ -1,3 +1,4 @@
+import binascii
 import time
 import jwt
 from base64 import b64decode, b64encode
@@ -76,7 +77,10 @@ def get_subscription_payload(token: str) -> Union[dict, None]:
                     (u_token.encode('utf-8') + b'=' * (-len(u_token.encode('utf-8')) % 4)),
                     altchars=b'-_', validate=True)
                 u_token_dec_str = u_token_dec.decode('utf-8')
-            except:
+            except (binascii.Error, UnicodeDecodeError):
+                # Behavior unchanged: a malformed/non-base64 or non-UTF-8 token
+                # body is treated as "invalid token" → None. Tightened from a
+                # bare `except:` per docs/CODEBASE_MAP.md §6.5.
                 return
             u_token_resign = b64encode(sha256((u_token+get_secret_key()).encode('utf-8')
                                               ).digest(), altchars=b'-_').decode('utf-8')[:10]

@@ -17,7 +17,12 @@ if TYPE_CHECKING:
     from app.db.models import User
 
 
-def add_notification_reminders(db: Session, user: "User", now: datetime = datetime.utcnow()) -> None:
+def add_notification_reminders(db: Session, user: "User", now: datetime = None) -> None:
+    # `now` must default to None and be resolved at call time. A
+    # `datetime.utcnow()` default would be evaluated once at module import
+    # and every later call that omitted `now` would see the same stale value.
+    if now is None:
+        now = datetime.utcnow()
     if user.data_limit:
         usage_percent = calculate_usage_percent(user.used_traffic, user.data_limit)
 

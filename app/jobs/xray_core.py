@@ -1,7 +1,7 @@
 import time
 import traceback
 
-from app import app, logger, scheduler, xray
+from app import logger, scheduler, xray
 from app.db import GetDB, crud
 from app.models.node import NodeStatus
 from config import JOB_CORE_HEALTH_CHECK_INTERVAL
@@ -34,8 +34,13 @@ def core_health_check():
             xray.operations.connect_node(node_id, config)
 
 
-@app.on_event("startup")
 def start_core():
+    """Lifespan startup hook (registered by app/__init__.py lifespan).
+
+    Builds the Xray config from active+on_hold users, starts the main
+    core, connects each enabled node, and registers the
+    core_health_check interval job.
+    """
     logger.info("Generating Xray core config")
 
     start_time = time.time()
@@ -65,8 +70,13 @@ def start_core():
                       coalesce=True, max_instances=1)
 
 
-@app.on_event("shutdown")
-def app_shutdown():
+def stop_core_and_disconnect_nodes():
+    """Lifespan shutdown hook (registered by app/__init__.py lifespan).
+
+    Stops the local Xray core and disconnects all node connections.
+    Exceptions during node disconnect are swallowed intentionally —
+    we're tearing down.
+    """
     logger.info("Stopping main Xray core")
     xray.core.stop()
 

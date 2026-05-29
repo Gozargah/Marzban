@@ -1,0 +1,60 @@
+# Project metadata is intentionally minimal here — dependencies still live
+# in requirements.txt / requirements-dev.txt to preserve the existing install
+# flow. This file scopes test + lint config only.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = [
+    # SQLAlchemy 2.0 emits DeprecationWarnings inside third-party deps; the
+    # codebase itself is on the 2.0 API.
+    "ignore::DeprecationWarning",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = [
+    # Pre-built dashboard SPA and Alembic migrations are not part of the
+    # Python source we lint. xray_api/proto is generated protobuf code.
+    "app/dashboard/build",
+    "app/dashboard/node_modules",
+    "app/db/migrations/versions",
+    "xray_api/proto",
+]
+
+[tool.ruff.lint]
+# Sensible defaults for a stability release: pyflakes (real bugs),
+# pycodestyle errors, isort (import hygiene), and a few correctness rules.
+# Style nits and line-length are out of scope — we want signal, not noise.
+#
+# A number of categories are silenced because they have pervasive legacy
+# occurrences. Each is tracked in docs/CODEBASE_MAP.md §6 and will be
+# addressed case-by-case in the larger v0.9.0 refactors (Tasks 2/3); we
+# don't bulk-reformat here because Task 1 is strictly additive.
+select = ["E", "F", "I", "B"]
+ignore = [
+    "E501",   # line-too-long — line-length set above; legacy code is not reformatted in v0.9.0
+    "E713",   # not-in-test — cosmetic, legacy occurrences
+    "E722",   # bare-except — Task 1 fixes the highest-risk site (jwt.py:79); rest in CODEBASE_MAP §6.5
+    "E731",   # do-not-assign-lambda — present in legacy code
+    "E741",   # ambiguous variable name (l, I, O) — present in legacy code
+    "B006",   # mutable-default-argument — Task 1 fixes review_users.py:20; others tracked
+    "B008",   # function-call-in-default-argument — FastAPI Depends() pattern relies on this
+    "B904",   # raise-without-from-inside-except — large pre-existing surface, addressed gradually
+    "B007",   # unused-loop-control-variable — legacy occurrences
+    "B905",   # zip-without-explicit-strict — legacy occurrences
+    "B017",   # assert-raises-exception — not relevant to new tests we add now
+    "B018",   # useless-expression — 1 legacy occurrence
+    "F401",   # unused-import — pervasive in legacy __init__.py re-exports
+    "F403",   # star-imports — legacy occurrences in __init__ files
+    "F405",   # may-be-undefined-from-star — companion to F403
+    "F541",   # f-string-without-placeholders — cosmetic, legacy occurrences
+    "F811",   # redefined-while-unused — legacy occurrence
+    "F841",   # unused-variable — legacy occurrences
+    "I001",   # unsorted-imports — touching imports for ordering would conflict with Task 2/3 refactors
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["E402"]  # tests sometimes set env vars before imports
+"app/jobs/__init__.py" = ["F401"]  # dynamic glob-based loader

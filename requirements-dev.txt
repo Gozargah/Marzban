@@ -1,0 +1,13 @@
+# APScheduler 3.9.1 imports `pkg_resources` at module import time. A clean
+# Python 3.12 environment (e.g. the GitHub Actions runner) ships pip but
+# no setuptools, so `from apscheduler... import BackgroundScheduler` fails
+# with ModuleNotFoundError. Pinning <81 because setuptools 81 dropped the
+# pkg_resources shim. Tracked for v0.10+ as part of bumping APScheduler
+# (3.10+ no longer imports pkg_resources).
+setuptools<81
+
+pytest==8.3.4
+pytest-asyncio==0.25.0
+pytest-mock==3.14.0
+httpx==0.28.1
+ruff==0.8.4

@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - main
+      - dev
+      - 'feat/**'
+      - 'fix/**'
+  pull_request:
+
+jobs:
+  lint-and-test:
+    name: Lint & Test (Python 3.12)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Bootstrap pip / setuptools / wheel
+        # Clean Python 3.12 runners ship pip but not setuptools, and
+        # APScheduler 3.9.1 imports `pkg_resources` at module import.
+        # `setuptools<81` is also pinned in requirements-dev.txt; this
+        # step makes the bootstrap explicit and order-independent.
+        run: python -m pip install --upgrade pip 'setuptools<81' wheel
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Ruff lint
+        run: ruff check .
+
+      - name: Pytest
+        run: pytest -v
+
+  docker-build:
+    # Builds the production image end-to-end so "CI green" actually
+    # includes "the image ships". Added after the v0.9.0 Task 3 cycle
+    # because Task 1's setuptools<81 pin landed in requirements-dev.txt
+    # and the lint-and-test job's bootstrap but NOT in the Dockerfile —
+    # so the lint-and-test job stayed green while `docker build` was
+    # silently broken at the marzban-cli completion step (APScheduler
+    # 3.9.1 imports pkg_resources, which setuptools 81+ removed).
+    # Kept as a separate job so the fast lint+test feedback is not
+    # gated on the slower image build.
+    name: Docker image build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: false
+          tags: darzban:ci-test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

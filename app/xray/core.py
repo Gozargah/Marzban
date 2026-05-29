@@ -4,6 +4,7 @@ import subprocess
 import threading
 from collections import deque
 from contextlib import contextmanager
+from functools import cached_property
 
 from app import logger
 from app.xray.config import XRayConfig
@@ -17,7 +18,10 @@ class XRayCore:
         self.executable_path = executable_path
         self.assets_path = assets_path
 
-        self.version = self.get_version()
+        # `version` is a cached_property — the subprocess that asks
+        # Xray for its version is deferred until the first read.
+        # This keeps XRayCore construction side-effect-free, which is
+        # what lets `import app.xray` happen without an Xray binary.
         self.process = None
         self.restarting = False
 
@@ -30,6 +34,10 @@ class XRayCore:
         }
 
         atexit.register(lambda: self.stop() if self.started else None)
+
+    @cached_property
+    def version(self):
+        return self.get_version()
 
     def get_version(self):
         cmd = [self.executable_path, "version"]

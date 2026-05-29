@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from app import xray
+from app.db.lookups import get_lookup
 from app.models.admin import Admin
 from app.models.proxy import ProxySettings, ProxyTypes
 from app.subscription.share import generate_v2ray_links
@@ -153,18 +153,20 @@ class UserCreate(User):
 
     @property
     def excluded_inbounds(self):
+        tags_by_protocol = get_lookup().tags_by_protocol()
         excluded = {}
         for proxy_type in self.proxies:
             excluded[proxy_type] = []
-            for inbound in xray.config.inbounds_by_protocol.get(proxy_type, []):
-                if not inbound["tag"] in self.inbounds.get(proxy_type, []):
-                    excluded[proxy_type].append(inbound["tag"])
+            for tag in tags_by_protocol.get(proxy_type, []):
+                if tag not in self.inbounds.get(proxy_type, []):
+                    excluded[proxy_type].append(tag)
 
         return excluded
 
     @field_validator("inbounds", mode="before")
     def validate_inbounds(cls, inbounds, values, **kwargs):
         proxies = values.data.get("proxies", [])
+        lookup = get_lookup()
 
         # delete inbounds that are for protocols not activated
         for proxy_type in inbounds.copy():
@@ -177,17 +179,16 @@ class UserCreate(User):
 
             if tags:
                 for tag in tags:
-                    if tag not in xray.config.inbounds_by_tag:
+                    if not lookup.tag_exists(tag):
                         raise ValueError(f"Inbound {tag} doesn't exist")
 
             # elif isinstance(tags, list) and not tags:
             #     raise ValueError(f"{proxy_type} inbounds cannot be empty")
 
             else:
-                inbounds[proxy_type] = [
-                    i["tag"]
-                    for i in xray.config.inbounds_by_protocol.get(proxy_type, [])
-                ]
+                inbounds[proxy_type] = list(
+                    lookup.tags_by_protocol().get(proxy_type, [])
+                )
 
         return inbounds
 
@@ -234,12 +235,13 @@ class UserModify(User):
 
     @property
     def excluded_inbounds(self):
+        tags_by_protocol = get_lookup().tags_by_protocol()
         excluded = {}
         for proxy_type in self.inbounds:
             excluded[proxy_type] = []
-            for inbound in xray.config.inbounds_by_protocol.get(proxy_type, []):
-                if not inbound["tag"] in self.inbounds.get(proxy_type, []):
-                    excluded[proxy_type].append(inbound["tag"])
+            for tag in tags_by_protocol.get(proxy_type, []):
+                if tag not in self.inbounds.get(proxy_type, []):
+                    excluded[proxy_type].append(tag)
 
         return excluded
 
@@ -248,13 +250,14 @@ class UserModify(User):
         # check with inbounds, "proxies" is optional on modifying
         # so inbounds particularly can be modified
         if inbounds:
+            lookup = get_lookup()
             for proxy_type, tags in inbounds.items():
 
                 # if not tags:
                 #     raise ValueError(f"{proxy_type} inbounds cannot be empty")
 
                 for tag in tags:
-                    if tag not in xray.config.inbounds_by_tag:
+                    if not lookup.tag_exists(tag):
                         raise ValueError(f"Inbound {tag} doesn't exist")
 
         return inbounds

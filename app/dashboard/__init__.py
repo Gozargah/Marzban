@@ -3,7 +3,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from app import app
+from app import app  # noqa: F401  (kept for back-compat; run_build() mounts to it)
 from config import DEBUG, VITE_BASE_API, DASHBOARD_PATH
 from fastapi.staticfiles import StaticFiles
 
@@ -51,8 +51,12 @@ def run_build():
     )
 
 
-@app.on_event("startup")
 def startup():
+    """Lifespan startup hook (registered by app/__init__.py lifespan).
+
+    If DEBUG, spawn the Vite dev server. Otherwise mount the prebuilt
+    static dashboard. No I/O at import.
+    """
     if DEBUG:
         run_dev()
     else:

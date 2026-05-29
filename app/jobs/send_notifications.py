@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 from fastapi.encoders import jsonable_encoder
 from requests import Session
 
-from app import app, logger, scheduler
+from app import logger, scheduler
 from app.db import GetDB
 from app.db.models import NotificationReminder
 from app.utils.notification import queue
@@ -85,12 +85,17 @@ def delete_expired_reminders() -> None:
         db.commit()
 
 
-if WEBHOOK_ADDRESS:
-    @app.on_event("shutdown")
-    def app_shutdown():
-        logger.info("Sending pending notifications before shutdown...")
-        send_notifications()
+def flush_pending_notifications():
+    """Lifespan shutdown hook (registered by app/__init__.py lifespan).
 
+    Only invoked at shutdown when WEBHOOK_ADDRESS is configured.
+    Flushes any queued notifications synchronously before teardown.
+    """
+    logger.info("Sending pending notifications before shutdown...")
+    send_notifications()
+
+
+if WEBHOOK_ADDRESS:
     logger.info("Send webhook job started")
     scheduler.add_job(send_notifications, "interval",
                       seconds=JOB_SEND_NOTIFICATIONS_INTERVAL,

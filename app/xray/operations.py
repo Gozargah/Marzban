@@ -227,7 +227,10 @@ def connect_node(node_id, config=None):
 
     except Exception as e:
         _change_node_status(node_id, NodeStatus.error, message=str(e))
-        logger.info(f"Unable to connect to \"{dbnode.name}\" node")
+        # Logged at ERROR with full traceback as of v0.9.0 Task 3 —
+        # previously INFO with no exception text, which made node
+        # failures opaque outside of polling Node.message.
+        logger.error(f"Unable to connect to \"{dbnode.name}\" node", exc_info=True)
 
     finally:
         try:
@@ -262,7 +265,8 @@ def restart_node(node_id, config=None):
         logger.info(f"Xray core of \"{dbnode.name}\" node restarted")
     except Exception as e:
         _change_node_status(node_id, NodeStatus.error, message=str(e))
-        logger.info(f"Unable to restart node {node_id}")
+        # See connect_node above: ERROR + exc_info as of v0.9.0 Task 3.
+        logger.error(f"Unable to restart node {node_id}", exc_info=True)
         try:
             node.disconnect()
         except Exception:
