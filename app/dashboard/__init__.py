@@ -1,4 +1,5 @@
 import atexit
+import json
 import os
 import subprocess
 from pathlib import Path
@@ -10,6 +11,14 @@ from fastapi.staticfiles import StaticFiles
 base_dir = Path(__file__).parent
 build_dir = base_dir / 'build'
 statics_dir = build_dir / 'statics'
+
+RUNTIME_CONFIG_FILENAME = 'runtime-config.js'
+
+
+def _generate_runtime_config():
+    config_data = {'baseAPI': VITE_BASE_API}
+    config_js = 'window.__MARZBAN_CONFIG__=' + json.dumps(config_data) + ';\n'
+    (statics_dir / RUNTIME_CONFIG_FILENAME).write_text(config_js, encoding='utf-8')
 
 
 def build():
@@ -38,6 +47,8 @@ def run_dev():
 def run_build():
     if not build_dir.is_dir():
         build()
+
+    _generate_runtime_config()
 
     app.mount(
         DASHBOARD_PATH,
