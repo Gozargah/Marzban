@@ -125,7 +125,7 @@ Then, navigate to {click.style(f'http://{ip}:{UVICORN_PORT}', bold=True)} on you
 
     if DEBUG:
         bind_args['uds'] = None
-        bind_args['host'] = '0.0.0.0'
+        bind_args['host'] = '127.0.0.1'
 
     try:
         uvicorn.run(

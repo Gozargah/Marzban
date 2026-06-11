@@ -110,12 +110,19 @@ def record_node_stats(params: dict, node_id: Union[int, None]):
 def get_users_stats(api: XRayAPI):
     try:
         params = defaultdict(int)
-        for stat in filter(attrgetter('value'), api.get_users_stats(reset=True, timeout=30)):
+        for stat in filter(attrgetter('value'), api.get_users_stats(reset=False, timeout=30)):
             params[stat.name.split('.', 1)[0]] += stat.value
         params = list({"uid": uid, "value": value} for uid, value in params.items())
         return params
     except xray_exc.XrayError:
         return []
+
+
+def reset_users_stats(api: XRayAPI):
+    try:
+        api.get_users_stats(reset=True, timeout=30)
+    except xray_exc.XrayError:
+        pass
 
 
 def get_outbounds_stats(api: XRayAPI):
@@ -138,7 +145,12 @@ def record_user_usages():
 
     with ThreadPoolExecutor(max_workers=10) as executor:
         futures = {node_id: executor.submit(get_users_stats, api) for node_id, api in api_instances.items()}
-    api_params = {node_id: future.result() for node_id, future in futures.items()}
+    api_params = {}
+    for node_id, future in futures.items():
+        try:
+            api_params[node_id] = future.result()
+        except Exception:
+            api_params[node_id] = []
 
     users_usage = defaultdict(int)
     for node_id, params in api_params.items():
@@ -175,6 +187,12 @@ def record_user_usages():
                 where(Admin.id == bindparam('admin_id')). \
                 values(users_usage=Admin.users_usage + bindparam('value'))
             safe_execute(db, admin_update_stmt, admin_data)
+
+    # reset counters only after successful DB write
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        for node_id, api in api_instances.items():
+            if api_params.get(node_id):
+                executor.submit(reset_users_stats, api)
 
     if DISABLE_RECORDING_NODE_USAGE:
         return

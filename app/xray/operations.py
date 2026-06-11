@@ -1,3 +1,4 @@
+import threading
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
@@ -87,7 +88,7 @@ def add_user(dbuser: "DBUser"):
             try:
                 proxy_settings = user.proxies[proxy_type].dict(no_obj=True)
             except KeyError:
-                pass
+                continue
             account = proxy_type.account_model(email=email, **proxy_settings)
 
             # XTLS currently only supports transmission methods of TCP and mKCP
@@ -133,15 +134,15 @@ def update_user(dbuser: "DBUser"):
             try:
                 proxy_settings = user.proxies[proxy_type].dict(no_obj=True)
             except KeyError:
-                pass
+                continue
             account = proxy_type.account_model(email=email, **proxy_settings)
 
             # XTLS currently only supports transmission methods of TCP and mKCP
             if getattr(account, 'flow', None) and (
-                inbound.get('network', 'tcp') not in ('tcp', 'kcp')
+                inbound.get('network', 'tcp') not in ('tcp', 'raw', 'kcp')
                 or
                 (
-                    inbound.get('network', 'tcp') in ('tcp', 'kcp')
+                    inbound.get('network', 'tcp') in ('tcp', 'raw', 'kcp')
                     and
                     inbound.get('tls') not in ('tls', 'reality')
                 )
@@ -208,21 +209,23 @@ def _change_node_status(node_id: int, status: NodeStatus, message: str = None, v
             db.rollback()
 
 
-global _connecting_nodes
-_connecting_nodes = {}
+_connecting_nodes: dict = {}
+_connecting_lock = threading.Lock()
 
 
 @threaded_function
 def connect_node(node_id, config=None):
-    global _connecting_nodes
-
-    if _connecting_nodes.get(node_id):
-        return
+    with _connecting_lock:
+        if _connecting_nodes.get(node_id):
+            return
+        _connecting_nodes[node_id] = True
 
     with GetDB() as db:
         dbnode = crud.get_node_by_id(db, node_id)
 
     if not dbnode:
+        with _connecting_lock:
+            _connecting_nodes.pop(node_id, None)
         return
 
     try:
@@ -232,7 +235,6 @@ def connect_node(node_id, config=None):
         node = xray.operations.add_node(dbnode)
 
     try:
-        _connecting_nodes[node_id] = True
 
         _change_node_status(node_id, NodeStatus.connecting)
         logger.info(f"Connecting to \"{dbnode.name}\" node")
@@ -250,10 +252,8 @@ def connect_node(node_id, config=None):
         logger.info(f"Unable to connect to \"{dbnode.name}\" node")
 
     finally:
-        try:
-            del _connecting_nodes[node_id]
-        except KeyError:
-            pass
+        with _connecting_lock:
+            _connecting_nodes.pop(node_id, None)
 
 
 @threaded_function
