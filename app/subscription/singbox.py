@@ -278,8 +278,7 @@ class SingBoxConfiguration(str):
         mux_config = mux_json["sing-box"]
 
         config['multiplex'] = mux_config
-        if config['multiplex']["enabled"]:
-            config['multiplex']["enabled"] = mux_enable
+        config['multiplex']["enabled"] = mux_enable
 
         return config
 

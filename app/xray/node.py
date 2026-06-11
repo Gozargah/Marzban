@@ -443,10 +443,22 @@ class RPyCXRayNode:
 
     def restart(self, config: XRayConfig):
         self.started = False
+        self._api = None
         config = self._prepare_config(config)
         json_config = config.to_json()
         self.remote.restart(json_config)
         self.started = True
+
+        self._api = XRayAPI(
+            address=self.address,
+            port=self.api_port,
+            ssl_cert=self._node_cert.encode(),
+            ssl_target_name="Gozargah"
+        )
+        try:
+            grpc.channel_ready_future(self._api._channel).result(timeout=5)
+        except grpc.FutureTimeoutError:
+            raise ConnectionError("Failed to reconnect to node's API after restart")
 
     @contextmanager
     def get_logs(self):

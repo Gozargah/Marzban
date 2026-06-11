@@ -589,7 +589,7 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
     dbuser.status = UserStatus.active.value
 
     dbuser.data_limit = dbuser.next_plan.data_limit + \
-        (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit - dbuser.used_traffic)
+        (dbuser.data_limit - dbuser.used_traffic if dbuser.next_plan.add_remaining_traffic else 0)
     dbuser.expire = int((timedelta(seconds=dbuser.next_plan.expire) + datetime.utcnow()).timestamp())
 
     dbuser.used_traffic = 0
@@ -788,7 +788,7 @@ def get_all_users_usages(
             used_traffic=0
         )
 
-    admin_users = set(user.id for user in get_users(db=db, admins=admin))
+    admin_users = set(user.id for user in get_users(db=db, admin=admin))
 
     cond = and_(
         NodeUserUsage.created_at >= start,
@@ -951,7 +951,7 @@ def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify) -> Ad
     Returns:
         Admin: The updated admin object.
     """
-    if modified_admin.is_sudo:
+    if modified_admin.is_sudo is not None:
         dbadmin.is_sudo = modified_admin.is_sudo
     if modified_admin.password is not None and dbadmin.hashed_password != modified_admin.hashed_password:
         dbadmin.hashed_password = modified_admin.hashed_password

@@ -19,7 +19,7 @@ class XRayCore:
 
         self.version = self.get_version()
         self.process = None
-        self.restarting = False
+        self._restart_lock = threading.Lock()
 
         self._logs_buffer = deque(maxlen=100)
         self._temp_log_buffers = {}
@@ -51,10 +51,10 @@ class XRayCore:
                 "public_key": public
             }
 
-    def __capture_process_logs(self):
+    def __capture_process_logs(self, proc):
         def capture_and_debug_log():
-            while self.process:
-                output = self.process.stdout.readline()
+            while proc.poll() is None:
+                output = proc.stdout.readline()
                 if output:
                     output = output.strip()
                     self._logs_buffer.append(output)
@@ -62,25 +62,19 @@ class XRayCore:
                         buf.append(output)
                     logger.debug(output)
 
-                elif not self.process or self.process.poll() is not None:
-                    break
-
         def capture_only():
-            while self.process:
-                output = self.process.stdout.readline()
+            while proc.poll() is None:
+                output = proc.stdout.readline()
                 if output:
                     output = output.strip()
                     self._logs_buffer.append(output)
                     for buf in list(self._temp_log_buffers.values()):
                         buf.append(output)
 
-                elif not self.process or self.process.poll() is not None:
-                    break
-
         if DEBUG:
-            threading.Thread(target=capture_and_debug_log).start()
+            threading.Thread(target=capture_and_debug_log, daemon=True).start()
         else:
-            threading.Thread(target=capture_only).start()
+            threading.Thread(target=capture_only, daemon=True).start()
 
     @contextmanager
     def get_logs(self):
@@ -129,7 +123,7 @@ class XRayCore:
         self.process.stdin.close()
         logger.warning(f"Xray core {self.version} started")
 
-        self.__capture_process_logs()
+        self.__capture_process_logs(self.process)
 
         # execute on start functions
         for func in self._on_start_funcs:
@@ -139,8 +133,13 @@ class XRayCore:
         if not self.started:
             return
 
-        self.process.terminate()
+        proc = self.process
         self.process = None
+        proc.terminate()
+        try:
+            proc.wait(timeout=5)
+        except Exception:
+            proc.kill()
         logger.warning("Xray core stopped")
 
         # execute on stop functions
@@ -148,16 +147,15 @@ class XRayCore:
             threading.Thread(target=func).start()
 
     def restart(self, config: XRayConfig):
-        if self.restarting is True:
+        if not self._restart_lock.acquire(blocking=False):
             return
 
         try:
-            self.restarting = True
             logger.warning("Restarting Xray core...")
             self.stop()
             self.start(config)
         finally:
-            self.restarting = False
+            self._restart_lock.release()
 
     def on_start(self, func: callable):
         self._on_start_funcs.append(func)

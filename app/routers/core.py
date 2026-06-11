@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 import time
 
 import commentjson
@@ -118,11 +119,13 @@ def modify_core_config(
         raise HTTPException(status_code=400, detail=str(err))
 
     xray.config = config
-    with open(XRAY_JSON, "w") as f:
+    tmp_path = XRAY_JSON + ".tmp"
+    with open(tmp_path, "w") as f:
         f.write(json.dumps(payload, indent=4))
 
     startup_config = xray.config.include_db_users()
     xray.core.restart(startup_config)
+    os.replace(tmp_path, XRAY_JSON)
     for node_id, node in list(xray.nodes.items()):
         if node.connected:
             xray.operations.restart_node(node_id, startup_config)

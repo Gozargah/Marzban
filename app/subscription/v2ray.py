@@ -261,7 +261,7 @@ class V2rayShareLink(str):
                 extra["xmux"] = xmux
             if downloadSettings:
                 extra["downloadSettings"] = downloadSettings
-            payload["type"] = mode
+            payload["mode"] = mode
             if extra:
                 payload["extra"] = (json.dumps(extra)).replace(" ", "")
 
@@ -655,6 +655,7 @@ class V2rayJsonConfig(str):
         if host:
             config["host"] = host
         if random_user_agent:
+            config.setdefault("headers", {})
             config["headers"]["User-Agent"] = choice(self.user_agent_list)
         extra = {}
         if sc_max_each_post_bytes is not None:
@@ -775,8 +776,8 @@ class V2rayJsonConfig(str):
         else:
             config["host"] = []
         if random_user_agent:
-            config["headers"]["User-Agent"] = [
-                choice(self.user_agent_list)]
+            config.setdefault("headers", {})
+            config["headers"]["User-Agent"] = [choice(self.user_agent_list)]
 
         return config
 
@@ -998,7 +999,7 @@ class V2rayJsonConfig(str):
         elif net == "kcp":
             network_setting = self.kcp_config(
                 seed=path, host=host, header=headers)
-        elif net in ("tcp", "raw") and tls != "reality":
+        elif net in ("tcp", "raw"):
             network_setting = self.tcp_config(
                 headers=headers, path=path, host=host, random_user_agent=random_user_agent)
         elif net == "quic":
