@@ -213,7 +213,7 @@ class XRayConfig(dict):
                             settings['sni'].extend(get_cert_SANs(cert))
 
                 elif security == 'reality':
-                    settings['fp'] = 'chrome'
+                    settings['fp'] = tls_settings.get('fingerprint', 'chrome')
                     settings['tls'] = 'reality'
                     settings['sni'] = tls_settings.get('serverNames', [])
 
