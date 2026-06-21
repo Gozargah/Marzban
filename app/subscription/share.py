@@ -287,7 +287,7 @@ def process_inbounds_and_tags(
                     sni = random.choice(sni_list).replace("*", salt)
 
                 if sids := inbound.get("sids"):
-                    inbound["sid"] = random.choice(sids)
+                    host_inbound["sid"] = random.choice(sids)
 
                 req_host = ""
                 req_host_list = host["host"] or inbound["host"]
