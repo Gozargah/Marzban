@@ -1,8 +1,15 @@
+version: '3.8'
+
 services:
   marzban:
-    image: gozargah/marzban:latest
+    build: .
+    container_name: marzban
     restart: always
-    env_file: .env
-    network_mode: host
+    ports:
+      - "8000:8000"
     volumes:
-      - /var/lib/marzban:/var/lib/marzban
+      - ./data:/var/lib/marzban
+      - ./xray_config.json:/code/xray_config.json:ro
+    environment:
+      - UVICORN_HOST=0.0.0.0
+      - UVICORN_PORT=8000
