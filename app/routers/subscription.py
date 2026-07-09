@@ -132,7 +132,12 @@ def user_subscription(
             conf = generate_subscription(user=user, config_format="v2ray", as_base64=True, reverse=False)
             return Response(content=conf, media_type="text/plain", headers=response_headers)
 
-
+    elif re.match(r'^InHive/', user_agent):
+        # InHive is a universal client (sing-box fork + Xray parity) that ingests
+        # Xray-JSON natively at any version, so it needs no custom-json flag or
+        # version gate — always serve the full structured v2ray-json config.
+        conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False, reverse=False)
+        return Response(content=conf, media_type="application/json", headers=response_headers)
 
     else:
         conf = generate_subscription(user=user, config_format="v2ray", as_base64=True, reverse=False)
