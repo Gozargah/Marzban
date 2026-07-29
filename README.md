@@ -108,55 +108,26 @@ Marzban is user-friendly, feature-rich and reliable. It lets you to create diffe
 
 # Installation guide
 
-Run the following command to install Marzban with SQLite database:
+Clone the repo onto your server and run the installer — it asks a couple of questions and does everything else itself (docker, nginx, firewall rules if `ufw` is already active, building and starting the panel, creating the admin):
 
 ```bash
-sudo bash -c "$(curl -sL https://github.com/Arsi/Marzban-scripts/raw/master/marzban.sh)" @ install
+git clone -b claude/project-analysis-ywlc9z https://github.com/claudearap-bit/marzban.git /opt/marzban
+cd /opt/marzban
+sudo bash install.sh
 ```
 
-Run the following command to install Marzban with MySQL database:
+It will prompt for:
+- the port to expose the dashboard on (default `8000`)
+- an admin username (default `admin`)
+- an admin password (leave empty to auto-generate one — it's printed at the end)
 
-```bash
-sudo bash -c "$(curl -sL https://github.com/Arsi/Marzban-scripts/raw/master/marzban.sh)" @ install --database mysql
-```
+When it finishes it prints the dashboard URL and the admin credentials. There is nothing else to run afterwards.
 
-Run the following command to install Marzban with MariaDB database:
-```bash
-sudo bash -c "$(curl -sL https://github.com/Arsi/Marzban-scripts/raw/master/marzban.sh)" @ install --database mariadb
-```
-
-Once the installation is complete:
-
-- You will see the logs that you can stop watching them by closing the terminal or pressing `Ctrl+C`
-- The Marzban files will be located at `/opt/marzban`
-- The configuration file can be found at `/opt/marzban/.env` (refer to [configurations](#configuration) section to see variables)
-- The data files will be placed at `/var/lib/marzban`
-- For security reasons, the Marzban dashboard is not accessible via IP address. Therefore, you must [obtain SSL certificate](https://arsi.github.io/marzban/en/examples/issue-ssl-certificate) and access your Marzban dashboard by opening a web browser and navigating to `https://YOUR_DOMAIN:8000/dashboard/` (replace YOUR_DOMAIN with your actual domain)
-- You can also use SSH port forwarding to access the Marzban dashboard locally without a domain. Replace `user@serverip` with your actual SSH username and server IP and Run the command below:
-
-```bash
-ssh -L 8000:localhost:8000 user@serverip
-```
-
-Finally, you can enter the following link in your browser to access your Marzban dashboard:
-
-http://localhost:8000/dashboard/
-
-You will lose access to the dashboard as soon as you close the SSH terminal. Therefore, this method is recommended only for testing purposes.
-
-Next, you need to create a sudo admin for logging into the Marzban dashboard by the following command
-
-```bash
-marzban cli admin create --sudo
-```
-
-That's it! You can login to your dashboard using these credentials
-
-To see the help message of the Marzban script, run the following command
-
-```bash
-marzban --help
-```
+- The Marzban files are wherever you cloned the repo (`/opt/marzban` above)
+- The configuration file is `.env` in that directory (refer to [configurations](#configuration) section to see variables)
+- The data files are placed at `/var/lib/marzban`
+- Without a domain, the dashboard is reachable at `http://YOUR_SERVER_IP:PORT/dashboard/` over plain HTTP (no certificate needed to just try it out). Once you have a domain, put `certbot`-issued SSL in front with nginx the way the [Manual install](#manual-install-advanced) section below shows, so credentials aren't sent in the clear.
+- To remove everything the installer set up: `sudo bash uninstall.sh`
 
 If you are eager to run the project using the source code, check the section below
 <details markdown="1">
