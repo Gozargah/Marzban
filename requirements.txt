@@ -1,4 +1,4 @@
-APScheduler==3.9.1.post1
+APScheduler==3.11.3
 Deprecated==1.2.13
 Jinja2==3.1.4
 MarkupSafe==2.1.1
