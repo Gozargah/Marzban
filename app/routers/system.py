@@ -6,6 +6,7 @@ from app import __version__, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.proxy import ProxyHost, ProxyInbound, ProxyTypes
+from app.models.settings import SubscriptionSettings
 from app.models.system import SystemStats
 from app.models.user import UserStatus
 from app.utils import responses
@@ -101,3 +102,25 @@ def modify_hosts(
     xray.hosts.update()
 
     return {tag: crud.get_hosts(db, tag) for tag in xray.config.inbounds_by_tag}
+
+
+@router.get(
+    "/settings/subscription", response_model=SubscriptionSettings, responses={403: responses._403}
+)
+def get_subscription_settings(
+    db: Session = Depends(get_db), admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Get the panel-editable subscription texts (blank fields use the .env default)."""
+    return crud.get_settings(db)
+
+
+@router.put(
+    "/settings/subscription", response_model=SubscriptionSettings, responses={403: responses._403}
+)
+def modify_subscription_settings(
+    modify: SubscriptionSettings,
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.check_sudo_admin),
+):
+    """Update the panel-editable subscription texts. Leave a field blank to reset it to the .env default."""
+    return crud.update_settings(db, modify)

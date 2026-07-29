@@ -278,6 +278,23 @@ class System(Base):
     downlink = Column(BigInteger, default=0)
 
 
+class Settings(Base):
+    """Singleton row of panel-editable settings. NULL fields fall back to the
+    matching environment variable / config.py default."""
+    __tablename__ = "settings"
+
+    id = Column(Integer, primary_key=True)
+    sub_profile_title = Column(String(256), nullable=True, default=None)
+    sub_support_url = Column(String(1024), nullable=True, default=None)
+    sub_update_interval = Column(String(16), nullable=True, default=None)
+    active_status_text = Column(String(256), nullable=True, default=None)
+    expired_status_text = Column(String(256), nullable=True, default=None)
+    limited_status_text = Column(String(256), nullable=True, default=None)
+    disabled_status_text = Column(String(256), nullable=True, default=None)
+    onhold_status_text = Column(String(256), nullable=True, default=None)
+    device_limit_exceeded_message = Column(String(1024), nullable=True, default=None)
+
+
 class JWT(Base):
     __tablename__ = "jwt"
 

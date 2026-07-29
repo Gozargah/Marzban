@@ -50,6 +50,8 @@ type DashboardStateType = {
   resetUsageUser: User | null;
   revokeSubscriptionUser: User | null;
   isEditingCore: boolean;
+  isEditingSubscriptionSettings: boolean;
+  onEditingSubscriptionSettings: (isEditingSubscriptionSettings: boolean) => void;
   onCreateUser: (isOpen: boolean) => void;
   onEditingUser: (user: User | null) => void;
   onDeletingUser: (user: User | null) => void;
@@ -123,6 +125,10 @@ export const useDashboard = create(
     },
     inbounds: new Map(),
     isEditingCore: false,
+    isEditingSubscriptionSettings: false,
+    onEditingSubscriptionSettings: (isEditingSubscriptionSettings: boolean) => {
+      set({ isEditingSubscriptionSettings });
+    },
     refetchUsers: () => {
       fetchUsers(get().filters);
     },

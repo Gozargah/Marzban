@@ -24,6 +24,7 @@ from app.db.models import (
     ProxyHost,
     ProxyInbound,
     ProxyTypes,
+    Settings,
     System,
     User,
     UserDevice,
@@ -33,6 +34,7 @@ from app.db.models import (
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
 from app.models.node import NodeCreate, NodeModify, NodeStatus, NodeUsageResponse
 from app.models.proxy import ProxyHost as ProxyHostModify
+from app.models.settings import SubscriptionSettings
 from app.models.user import (
     ReminderType,
     UserCreate,
@@ -1543,3 +1545,31 @@ def count_online_users(db: Session, hours: int = 24):
     query = db.query(func.count(User.id)).filter(User.online_at.isnot(
         None), User.online_at >= twenty_four_hours_ago)
     return query.scalar()
+
+
+def get_settings(db: Session) -> Settings:
+    """
+    Returns the singleton Settings row, creating it with all-default (NULL)
+    values on first access.
+    """
+    settings = db.query(Settings).first()
+    if not settings:
+        settings = Settings()
+        db.add(settings)
+        db.commit()
+        db.refresh(settings)
+    return settings
+
+
+def update_settings(db: Session, modify: SubscriptionSettings) -> Settings:
+    """
+    Updates the panel-editable settings. A blank/None field resets that
+    setting back to its environment variable default.
+    """
+    settings = get_settings(db)
+    for field, value in modify.model_dump().items():
+        setattr(settings, field, value or None)
+
+    db.commit()
+    db.refresh(settings)
+    return settings

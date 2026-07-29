@@ -4,7 +4,7 @@ import secrets
 from collections import defaultdict
 from datetime import datetime as dt
 from datetime import timedelta
-from typing import TYPE_CHECKING, List, Literal, Union
+from typing import TYPE_CHECKING, List, Literal, Optional, Union
 
 from jdatetime import date as jd
 
@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 
 from config import (
     ACTIVE_STATUS_TEXT,
+    DEVICE_LIMIT_EXCEEDED_MESSAGE,
     DISABLED_STATUS_TEXT,
     EXPIRED_STATUS_TEXT,
     LIMITED_STATUS_TEXT,
@@ -43,57 +44,71 @@ STATUS_TEXTS = {
     "on_hold": ONHOLD_STATUS_TEXT,
 }
 
+# Statuses that get the real, working configs. Every other status (and a
+# user over their device_limit) gets a single placeholder entry explaining
+# why instead of their real proxies -- see generate_subscription().
+WORKING_STATUSES = {"active", "on_hold"}
 
-def generate_v2ray_links(proxies: dict, inbounds: dict, extra_data: dict, reverse: bool) -> list:
-    format_variables = setup_format_variables(extra_data)
+
+def generate_v2ray_links(
+        proxies: dict, inbounds: dict, extra_data: dict, reverse: bool,
+        status_texts: Optional[dict] = None, remark_override: Optional[str] = None,
+) -> list:
+    format_variables = setup_format_variables(extra_data, status_texts)
     conf = V2rayShareLink()
-    return process_inbounds_and_tags(inbounds, proxies, format_variables, conf=conf, reverse=reverse)
+    return process_inbounds_and_tags(
+        inbounds, proxies, format_variables, conf=conf, reverse=reverse, remark_override=remark_override
+    )
 
 
 def generate_clash_subscription(
-        proxies: dict, inbounds: dict, extra_data: dict, reverse: bool, is_meta: bool = False
+        proxies: dict, inbounds: dict, extra_data: dict, reverse: bool, is_meta: bool = False,
+        status_texts: Optional[dict] = None, remark_override: Optional[str] = None,
 ) -> str:
     if is_meta is True:
         conf = ClashMetaConfiguration()
     else:
         conf = ClashConfiguration()
 
-    format_variables = setup_format_variables(extra_data)
+    format_variables = setup_format_variables(extra_data, status_texts)
     return process_inbounds_and_tags(
-        inbounds, proxies, format_variables, conf=conf, reverse=reverse
+        inbounds, proxies, format_variables, conf=conf, reverse=reverse, remark_override=remark_override
     )
 
 
 def generate_singbox_subscription(
-        proxies: dict, inbounds: dict, extra_data: dict, reverse: bool
+        proxies: dict, inbounds: dict, extra_data: dict, reverse: bool,
+        status_texts: Optional[dict] = None, remark_override: Optional[str] = None,
 ) -> str:
     conf = SingBoxConfiguration()
 
-    format_variables = setup_format_variables(extra_data)
+    format_variables = setup_format_variables(extra_data, status_texts)
     return process_inbounds_and_tags(
-        inbounds, proxies, format_variables, conf=conf, reverse=reverse
+        inbounds, proxies, format_variables, conf=conf, reverse=reverse, remark_override=remark_override
     )
 
 
 def generate_outline_subscription(
         proxies: dict, inbounds: dict, extra_data: dict, reverse: bool,
+        status_texts: Optional[dict] = None, remark_override: Optional[str] = None,
 ) -> str:
     conf = OutlineConfiguration()
 
-    format_variables = setup_format_variables(extra_data)
+    format_variables = setup_format_variables(extra_data, status_texts)
     return process_inbounds_and_tags(
-        inbounds, proxies, format_variables, conf=conf, reverse=reverse
+        inbounds, proxies, format_variables, conf=conf, reverse=reverse, remark_override=remark_override
     )
 
 
 def generate_v2ray_json_subscription(
         proxies: dict, inbounds: dict, extra_data: dict, reverse: bool,
+        status_texts: Optional[dict] = None, remark_override: Optional[str] = None,
 ) -> str:
     conf = V2rayJsonConfig()
 
-    format_variables = setup_format_variables(extra_data)
+    format_variables = setup_format_variables(extra_data, status_texts)
     return process_inbounds_and_tags(
-        inbounds, proxies, format_variables, conf=conf, reverse=reverse
+        inbounds, proxies, format_variables, conf=conf, reverse=reverse, remark_override=remark_override
     )
 
 
@@ -102,12 +117,38 @@ def generate_subscription(
         config_format: Literal["v2ray", "clash-meta", "clash", "sing-box", "outline", "v2ray-json"],
         as_base64: bool,
         reverse: bool,
+        device_limit_exceeded: bool = False,
+        sub_settings: Optional[dict] = None,
 ) -> str:
+    """
+    Renders the user's real configs, unless they're over their device limit
+    or their status isn't active/on_hold (expired, data-limited, disabled) --
+    in which case a single placeholder entry explaining why is rendered
+    instead of their real proxies.
+    """
+    sub_settings = sub_settings or {}
+
+    status_texts = {
+        "active": sub_settings.get("active_status_text") or STATUS_TEXTS["active"],
+        "expired": sub_settings.get("expired_status_text") or STATUS_TEXTS["expired"],
+        "limited": sub_settings.get("limited_status_text") or STATUS_TEXTS["limited"],
+        "disabled": sub_settings.get("disabled_status_text") or STATUS_TEXTS["disabled"],
+        "on_hold": sub_settings.get("onhold_status_text") or STATUS_TEXTS["on_hold"],
+    }
+
+    remark_override = None
+    if device_limit_exceeded:
+        remark_override = sub_settings.get("device_limit_exceeded_message") or DEVICE_LIMIT_EXCEEDED_MESSAGE
+    elif user.status not in WORKING_STATUSES:
+        remark_override = "{STATUS_EMOJI} {STATUS_TEXT}"
+
     kwargs = {
         "proxies": user.proxies,
         "inbounds": user.inbounds,
         "extra_data": user.__dict__,
         "reverse": reverse,
+        "status_texts": status_texts,
+        "remark_override": remark_override,
     }
 
     if config_format == "v2ray":
@@ -154,7 +195,7 @@ def format_time_left(seconds_left: int) -> str:
     return " ".join(result)
 
 
-def setup_format_variables(extra_data: dict) -> dict:
+def setup_format_variables(extra_data: dict, status_texts: Optional[dict] = None) -> dict:
     from app.models.user import UserStatus
 
     user_status = extra_data.get("status")
@@ -206,7 +247,7 @@ def setup_format_variables(extra_data: dict) -> dict:
         data_left = "∞"
 
     status_emoji = STATUS_EMOJIS.get(extra_data.get("status")) or ""
-    status_text = STATUS_TEXTS.get(extra_data.get("status")) or ""
+    status_text = (status_texts or STATUS_TEXTS).get(extra_data.get("status")) or ""
 
     format_variables = defaultdict(
         lambda: "<missing>",
@@ -242,6 +283,7 @@ def process_inbounds_and_tags(
             OutlineConfiguration
         ],
         reverse=False,
+        remark_override: Optional[str] = None,
 ) -> Union[List, str]:
     _inbounds = []
     for protocol, tags in inbounds.items():
@@ -313,12 +355,22 @@ def process_inbounds_and_tags(
                     }
                 )
 
+                remark = (
+                    remark_override.format_map(format_variables)
+                    if remark_override is not None
+                    else host["remark"].format_map(format_variables)
+                )
                 conf.add(
-                    remark=host["remark"].format_map(format_variables),
+                    remark=remark,
                     address=address.format_map(format_variables),
                     inbound=host_inbound,
                     settings=settings.model_dump()
                 )
+
+                # A placeholder subscription only ever needs one entry to
+                # explain why there's no working config right now.
+                if remark_override is not None:
+                    return conf.render(reverse=reverse)
 
     return conf.render(reverse=reverse)
 
