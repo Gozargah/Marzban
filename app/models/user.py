@@ -65,6 +65,9 @@ class User(BaseModel):
     data_limit_reset_strategy: UserDataLimitResetStrategy = (
         UserDataLimitResetStrategy.no_reset
     )
+    device_limit: Optional[int] = Field(
+        ge=0, default=None, description="device_limit can be 0 (unlimited) or greater"
+    )
     inbounds: Dict[ProxyTypes, List[str]] = {}
     note: Optional[str] = Field(None, nullable=True)
     sub_updated_at: Optional[datetime] = Field(None, nullable=True)

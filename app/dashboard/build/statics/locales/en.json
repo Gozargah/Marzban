@@ -144,6 +144,8 @@
   "userDialog.custom": "Custom",
   "userDialog.dataLimit": "Data Limit",
   "userDialog.days": "Days",
+  "userDialog.deviceLimit": "Device Limit",
+  "userDialog.devices": "Devices",
   "userDialog.editUser": "Edit user",
   "userDialog.editUserTitle": "Edit user",
   "userDialog.endDate": "End date",

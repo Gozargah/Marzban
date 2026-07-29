@@ -282,6 +282,16 @@ server {
 By default the app will be run on `http://localhost:8000/dashboard`. You can configure it using changing the `UVICORN_HOST` and `UVICORN_PORT` environment variables.
 </details>
 
+### Uninstall
+
+To fully remove Marzban from a server (systemd service, docker containers/volumes, `/var/lib/marzban`, the xray-core binary, and the `marzban-cli` symlink), run from the project directory:
+
+```
+sudo bash uninstall.sh
+```
+
+Add `-y`/`--yes` to skip the confirmation prompt. The cloned project directory itself is left in place; delete it yourself afterwards if you no longer need the source.
+
 # Configuration
 
 > You can set settings below using environment variables or placing them in `.env` file.
@@ -325,6 +335,12 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | USE_CUSTOM_JSON_FOR_V2RAYNG              | Enable custom JSON config only for V2rayNG (default: `False`)                                                            |
 | USE_CUSTOM_JSON_FOR_STREISAND            | Enable custom JSON config only for Streisand (default: `False`)                                                          |
 | USE_CUSTOM_JSON_FOR_V2RAYN               | Enable custom JSON config only for V2rayN (default: `False`)                                                             |
+| DEVICE_LIMIT_WINDOW_HOURS                | How many hours a device stays "active" towards a user's device limit after last fetching the subscription (default: `24`) |
+| DEVICE_LIMIT_EXCEEDED_MESSAGE            | Message returned instead of the subscription config when a user's device limit is exceeded                              |
+
+### Device limit
+
+Each user can have a per-user **Device Limit** set from the dashboard (User dialog → Device Limit, `0`/empty = unlimited). A "device" is identified by the IP address + user agent that fetched the subscription link. If a new device fetches the subscription after the limit is already reached, it gets `DEVICE_LIMIT_EXCEEDED_MESSAGE` instead of a working config. Devices that haven't fetched the subscription within `DEVICE_LIMIT_WINDOW_HOURS` stop counting towards the limit, so swapping devices doesn't lock users out permanently.
 
 
 # Documentation

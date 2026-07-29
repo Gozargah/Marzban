@@ -26,6 +26,7 @@ from app.db.models import (
     ProxyTypes,
     System,
     User,
+    UserDevice,
     UserTemplate,
     UserUsageResetLogs,
 )
@@ -386,6 +387,7 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None) -> User:
         expire=(user.expire or None),
         admin=admin,
         data_limit_reset_strategy=user.data_limit_reset_strategy,
+        device_limit=(user.device_limit or None),
         note=user.note,
         on_hold_expire_duration=(user.on_hold_expire_duration or None),
         on_hold_timeout=(user.on_hold_timeout or None),
@@ -505,6 +507,9 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
 
     if modify.note is not None:
         dbuser.note = modify.note or None
+
+    if modify.device_limit is not None:
+        dbuser.device_limit = (modify.device_limit or None)
 
     if modify.data_limit_reset_strategy is not None:
         dbuser.data_limit_reset_strategy = modify.data_limit_reset_strategy.value
@@ -644,6 +649,46 @@ def update_user_sub(db: Session, dbuser: User, user_agent: str) -> User:
     db.commit()
     db.refresh(dbuser)
     return dbuser
+
+
+def record_user_device(db: Session, dbuser: User, ip: str, user_agent: str, window_hours: int) -> int:
+    """
+    Records a device (identified by IP + user agent) fetching the user's subscription
+    and returns the number of distinct devices active within the tracking window.
+
+    Args:
+        db (Session): Database session.
+        dbuser (User): The user object whose subscription is being fetched.
+        ip (str): The IP address of the requesting device.
+        user_agent (str): The user agent string of the requesting device.
+        window_hours (int): How many hours a device is considered "active" for.
+
+    Returns:
+        int: Number of distinct devices active within the tracking window.
+    """
+    now = datetime.utcnow()
+    ip = ip or ""
+    user_agent = user_agent or ""
+
+    device = db.query(UserDevice).filter(
+        UserDevice.user_id == dbuser.id,
+        UserDevice.ip == ip,
+        UserDevice.user_agent == user_agent,
+    ).first()
+
+    if device:
+        device.last_seen = now
+    else:
+        device = UserDevice(user=dbuser, ip=ip, user_agent=user_agent, first_seen=now, last_seen=now)
+        db.add(device)
+
+    db.commit()
+
+    window_start = now - timedelta(hours=window_hours)
+    return db.query(UserDevice).filter(
+        UserDevice.user_id == dbuser.id,
+        UserDevice.last_seen >= window_start,
+    ).count()
 
 
 def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):

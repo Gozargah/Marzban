@@ -95,6 +95,10 @@ class User(Base):
     edit_at = Column(DateTime, nullable=True, default=None)
     last_status_change = Column(DateTime, default=datetime.utcnow, nullable=True)
 
+    # * NULL or 0: unlimited devices allowed.
+    device_limit = Column(Integer, nullable=True, default=None)
+    devices = relationship("UserDevice", back_populates="user", cascade="all, delete-orphan")
+
     next_plan = relationship(
         "NextPlan",
         uselist=False,
@@ -338,6 +342,21 @@ class NodeUsage(Base):
     node = relationship("Node", back_populates="usages")
     uplink = Column(BigInteger, default=0)
     downlink = Column(BigInteger, default=0)
+
+
+class UserDevice(Base):
+    __tablename__ = "user_devices"
+    __table_args__ = (
+        UniqueConstraint('user_id', 'ip', 'user_agent', name='uq_user_device'),
+    )
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    user = relationship("User", back_populates="devices")
+    ip = Column(String(64), nullable=False)
+    user_agent = Column(String(512), nullable=False, default="")
+    first_seen = Column(DateTime, default=datetime.utcnow)
+    last_seen = Column(DateTime, default=datetime.utcnow)
 
 
 class NotificationReminder(Base):

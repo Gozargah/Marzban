@@ -10,6 +10,8 @@ from app.models.user import SubscriptionUserResponse, UserResponse
 from app.subscription.share import encode_title, generate_subscription
 from app.templates import render_template
 from config import (
+    DEVICE_LIMIT_EXCEEDED_MESSAGE,
+    DEVICE_LIMIT_WINDOW_HOURS,
     SUB_PROFILE_TITLE,
     SUB_SUPPORT_URL,
     SUB_UPDATE_INTERVAL,
@@ -45,6 +47,16 @@ def get_subscription_user_info(user: UserResponse) -> dict:
     }
 
 
+def is_device_limit_exceeded(db: Session, dbuser, request: Request, user_agent: str) -> bool:
+    """Records the requesting device and reports whether the user's device_limit was exceeded."""
+    if not dbuser.device_limit:
+        return False
+
+    client_ip = request.client.host if request.client else ""
+    active_devices = crud.record_user_device(db, dbuser, client_ip, user_agent, DEVICE_LIMIT_WINDOW_HOURS)
+    return active_devices > dbuser.device_limit
+
+
 @router.get("/{token}/")
 @router.get("/{token}", include_in_schema=False)
 def user_subscription(
@@ -77,6 +89,9 @@ def user_subscription(
             for key, val in get_subscription_user_info(user).items()
         )
     }
+
+    if is_device_limit_exceeded(db, dbuser, request, user_agent):
+        return Response(content=DEVICE_LIMIT_EXCEEDED_MESSAGE, media_type="text/plain", headers=response_headers)
 
     if re.match(r'^([Cc]lash-verge|[Cc]lash[-\.]?[Mm]eta|[Ff][Ll][Cc]lash|[Mm]ihomo)', user_agent):
         conf = generate_subscription(user=user, config_format="clash-meta", as_base64=False, reverse=False)
@@ -184,6 +199,9 @@ def user_subscription_with_client_type(
             for key, val in get_subscription_user_info(user).items()
         )
     }
+
+    if is_device_limit_exceeded(db, dbuser, request, user_agent):
+        return Response(content=DEVICE_LIMIT_EXCEEDED_MESSAGE, media_type="text/plain", headers=response_headers)
 
     config = client_config.get(client_type)
     conf = generate_subscription(user=user,

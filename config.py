@@ -136,6 +136,15 @@ SUB_UPDATE_INTERVAL = config("SUB_UPDATE_INTERVAL", default="12")
 SUB_SUPPORT_URL = config("SUB_SUPPORT_URL", default="https://t.me/")
 SUB_PROFILE_TITLE = config("SUB_PROFILE_TITLE", default="Subscription")
 
+# How long (in hours) a device (ip + user-agent pair) counts towards a user's
+# device_limit after it last fetched the subscription. Devices that haven't
+# fetched the subscription within this window no longer count as "active".
+DEVICE_LIMIT_WINDOW_HOURS = config("DEVICE_LIMIT_WINDOW_HOURS", cast=int, default=24)
+DEVICE_LIMIT_EXCEEDED_MESSAGE = config(
+    "DEVICE_LIMIT_EXCEEDED_MESSAGE",
+    default="Device limit reached. Disconnect another device to use this subscription here."
+)
+
 # discord webhook log
 DISCORD_WEBHOOK_URL = config("DISCORD_WEBHOOK_URL", default="")
 
