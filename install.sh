@@ -48,6 +48,12 @@ else
   GENERATED_PASS=false
 fi
 
+read -r -p "Admin Telegram ID (optional, press Enter to skip): " ADMIN_TELEGRAM_ID
+if [ -n "$ADMIN_TELEGRAM_ID" ] && ! [[ "$ADMIN_TELEGRAM_ID" =~ ^[0-9]+$ ]]; then
+  echo "Invalid Telegram ID '$ADMIN_TELEGRAM_ID' (must be numeric), skipping it." >&2
+  ADMIN_TELEGRAM_ID=""
+fi
+
 INTERNAL_PORT=$((PANEL_PORT + 1))
 if [ "$INTERNAL_PORT" = "$PANEL_PORT" ]; then
   INTERNAL_PORT=$((PANEL_PORT + 2))
@@ -89,8 +95,6 @@ set_env() {
 
 set_env SQLALCHEMY_DATABASE_URL "sqlite:////var/lib/marzban/db.sqlite3"
 set_env UVICORN_PORT "$INTERNAL_PORT"
-set_env SUDO_USERNAME "$ADMIN_USER"
-set_env SUDO_PASSWORD "$ADMIN_PASS"
 
 mkdir -p /var/lib/marzban
 
@@ -147,9 +151,33 @@ done
 
 echo
 if [ "$READY" = true ]; then
+  echo "Creating admin account..."
+  docker compose exec -T \
+    -e ADMIN_USERNAME="$ADMIN_USER" \
+    -e ADMIN_PASSWORD="$ADMIN_PASS" \
+    -e ADMIN_TELEGRAM_ID="$ADMIN_TELEGRAM_ID" \
+    marzban python3 -c "
+import os
+from app.db import GetDB, crud
+from app.models.admin import AdminCreate
+
+username = os.environ['ADMIN_USERNAME']
+password = os.environ['ADMIN_PASSWORD']
+telegram_id = os.environ.get('ADMIN_TELEGRAM_ID') or None
+if telegram_id:
+    telegram_id = int(telegram_id)
+
+with GetDB() as db:
+    if crud.get_admin(db, username):
+        print('Admin already exists, leaving it as-is.')
+    else:
+        crud.create_admin(db, AdminCreate(username=username, password=password, is_sudo=True, telegram_id=telegram_id))
+        print('Admin created.')
+"
   echo "=== Done ==="
 else
   echo "=== Container is still starting; check 'docker compose logs -f marzban' if the dashboard doesn't load in a minute ==="
+  echo "Once it's up, create the admin yourself with: docker compose exec marzban marzban-cli admin create --sudo"
 fi
 
 SERVER_IP=$(curl -fsS -4 https://ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')

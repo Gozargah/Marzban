@@ -311,7 +311,15 @@ Add `-y`/`--yes` to skip the confirmation prompt. The cloned project directory i
 
 ### Device limit
 
-Each user can have a per-user **Device Limit** set from the dashboard (User dialog → Device Limit, `0`/empty = unlimited). A "device" is identified by the IP address + user agent that fetched the subscription link. If a new device fetches the subscription after the limit is already reached, it gets `DEVICE_LIMIT_EXCEEDED_MESSAGE` instead of a working config. Devices that haven't fetched the subscription within `DEVICE_LIMIT_WINDOW_HOURS` stop counting towards the limit, so swapping devices doesn't lock users out permanently.
+Each user can have a per-user **Device Limit** set from the dashboard (User dialog → Device Limit, `0`/empty = unlimited). A "device" is identified by the IP address + user agent that fetched the subscription link. If a new device fetches the subscription after the limit is already reached, that device gets a single placeholder config named after `DEVICE_LIMIT_EXCEEDED_MESSAGE` instead of a working one. Devices that haven't fetched the subscription within `DEVICE_LIMIT_WINDOW_HOURS` stop counting towards the limit, so swapping devices doesn't lock users out permanently. The same placeholder mechanism applies to expired/data-limited/disabled users, using the status texts from Subscription Settings below.
+
+### Subscription settings & Admins (from the dashboard)
+
+The settings menu (gear icon) has two panel-editable sections that used to require SSH:
+- **Subscription Settings** — the subscription title, support URL, update interval, and the placeholder texts shown for each user status / the device limit message. Blank = use the `.env` default.
+- **Admins** — sudo admins can create/edit/delete other admins from here (a restricted admin only ever sees and manages the users it created, and can't touch hosts/nodes/core/subscription settings or other admins). Each admin can have a Telegram ID attached, which shows as a clickable button in the list.
+
+`install.sh` asks for the first admin's Telegram ID too and creates it as a real admin in the database (not just an env-var login), so it's editable from this page from the start.
 
 
 # Documentation
