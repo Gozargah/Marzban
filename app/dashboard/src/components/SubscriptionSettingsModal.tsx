@@ -1,6 +1,7 @@
 import {
   Button,
   chakra,
+  Divider,
   FormControl,
   FormLabel,
   HStack,
@@ -11,14 +12,20 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  SimpleGrid,
   Text,
   Textarea,
   VStack,
   useToast,
 } from "@chakra-ui/react";
-import { Cog6ToothIcon } from "@heroicons/react/24/outline";
+import {
+  Cog6ToothIcon,
+  DocumentTextIcon,
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+} from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
-import { FC, useEffect, useState } from "react";
+import { FC, ReactNode, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { fetch } from "service/http";
@@ -31,6 +38,21 @@ const SettingsIcon = chakra(Cog6ToothIcon, {
     h: 5,
   },
 });
+const SectionIconGeneral = chakra(InformationCircleIcon, { baseStyle: { w: 4, h: 4 } });
+const SectionIconStatus = chakra(DocumentTextIcon, { baseStyle: { w: 4, h: 4 } });
+const SectionIconDeviceLimit = chakra(ExclamationTriangleIcon, { baseStyle: { w: 4, h: 4 } });
+
+const SectionLabel: FC<{ icon: JSX.Element; children: ReactNode }> = ({
+  icon,
+  children,
+}) => (
+  <HStack spacing={1.5} color="gray.500" _dark={{ color: "gray.400" }}>
+    {icon}
+    <Text fontSize="xs" fontWeight="bold" textTransform="uppercase">
+      {children}
+    </Text>
+  </HStack>
+);
 
 type SubscriptionSettingsType = {
   sub_profile_title: string | null;
@@ -56,19 +78,27 @@ const emptyValues: SubscriptionSettingsType = {
   device_limit_exceeded_message: "",
 };
 
-const fields: {
+type FieldDef = {
   name: keyof SubscriptionSettingsType;
   labelKey: string;
   multiline?: boolean;
-}[] = [
+};
+
+const generalFields: FieldDef[] = [
   { name: "sub_profile_title", labelKey: "subscriptionSettings.profileTitle" },
   { name: "sub_support_url", labelKey: "subscriptionSettings.supportUrl" },
   { name: "sub_update_interval", labelKey: "subscriptionSettings.updateInterval" },
+];
+
+const statusFields: FieldDef[] = [
   { name: "active_status_text", labelKey: "subscriptionSettings.activeText" },
   { name: "expired_status_text", labelKey: "subscriptionSettings.expiredText" },
   { name: "limited_status_text", labelKey: "subscriptionSettings.limitedText" },
   { name: "disabled_status_text", labelKey: "subscriptionSettings.disabledText" },
   { name: "onhold_status_text", labelKey: "subscriptionSettings.onholdText" },
+];
+
+const deviceLimitFields: FieldDef[] = [
   {
     name: "device_limit_exceeded_message",
     labelKey: "subscriptionSettings.deviceLimitMessage",
@@ -145,15 +175,82 @@ export const SubscriptionSettingsModal: FC = () => {
             <Text fontSize="sm" color="gray.500" mb="4">
               {t("subscriptionSettings.description")}
             </Text>
-            <VStack spacing="3" align="stretch">
-              {fields.map(({ name, labelKey, multiline }) => (
-                <FormControl key={name}>
-                  <FormLabel fontSize="sm">{t(labelKey)}</FormLabel>
-                  <Controller
-                    control={form.control}
-                    name={name}
-                    render={({ field }) =>
-                      multiline ? (
+            <VStack spacing="4" align="stretch">
+              <VStack spacing="3" align="stretch">
+                <SectionLabel icon={<SectionIconGeneral />}>
+                  {t("subscriptionSettings.sectionGeneral")}
+                </SectionLabel>
+                {generalFields.map(({ name, labelKey, multiline }) => (
+                  <FormControl key={name}>
+                    <FormLabel fontSize="sm">{t(labelKey)}</FormLabel>
+                    <Controller
+                      control={form.control}
+                      name={name}
+                      render={({ field }) =>
+                        multiline ? (
+                          <Textarea
+                            {...field}
+                            value={field.value || ""}
+                            size="sm"
+                            borderRadius="6px"
+                            isDisabled={loading}
+                          />
+                        ) : (
+                          <Input
+                            {...field}
+                            value={field.value || ""}
+                            size="sm"
+                            borderRadius="6px"
+                            disabled={loading}
+                          />
+                        )
+                      }
+                    />
+                  </FormControl>
+                ))}
+              </VStack>
+
+              <Divider />
+
+              <VStack spacing="3" align="stretch">
+                <SectionLabel icon={<SectionIconStatus />}>
+                  {t("subscriptionSettings.sectionStatus")}
+                </SectionLabel>
+                <SimpleGrid columns={{ base: 1, sm: 2 }} spacing="3">
+                  {statusFields.map(({ name, labelKey }) => (
+                    <FormControl key={name}>
+                      <FormLabel fontSize="sm">{t(labelKey)}</FormLabel>
+                      <Controller
+                        control={form.control}
+                        name={name}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            value={field.value || ""}
+                            size="sm"
+                            borderRadius="6px"
+                            disabled={loading}
+                          />
+                        )}
+                      />
+                    </FormControl>
+                  ))}
+                </SimpleGrid>
+              </VStack>
+
+              <Divider />
+
+              <VStack spacing="3" align="stretch">
+                <SectionLabel icon={<SectionIconDeviceLimit />}>
+                  {t("subscriptionSettings.sectionDeviceLimit")}
+                </SectionLabel>
+                {deviceLimitFields.map(({ name, labelKey }) => (
+                  <FormControl key={name}>
+                    <FormLabel fontSize="sm">{t(labelKey)}</FormLabel>
+                    <Controller
+                      control={form.control}
+                      name={name}
+                      render={({ field }) => (
                         <Textarea
                           {...field}
                           value={field.value || ""}
@@ -161,19 +258,11 @@ export const SubscriptionSettingsModal: FC = () => {
                           borderRadius="6px"
                           isDisabled={loading}
                         />
-                      ) : (
-                        <Input
-                          {...field}
-                          value={field.value || ""}
-                          size="sm"
-                          borderRadius="6px"
-                          disabled={loading}
-                        />
-                      )
-                    }
-                  />
-                </FormControl>
-              ))}
+                      )}
+                    />
+                  </FormControl>
+                ))}
+              </VStack>
             </VStack>
           </ModalBody>
           <ModalFooter>

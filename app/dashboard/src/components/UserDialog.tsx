@@ -1,6 +1,7 @@
 import {
   Alert,
   AlertIcon,
+  Badge,
   Box,
   Button,
   Collapse,
@@ -103,6 +104,12 @@ type UserDeviceType = {
   user_agent: string;
   first_seen: string;
   last_seen: string;
+};
+
+const parseDeviceLabel = (userAgent: string): { app: string; version: string } => {
+  if (!userAgent) return { app: "Unknown", version: "" };
+  const [app, version] = userAgent.split("/");
+  return { app: app || userAgent, version: version || "" };
 };
 
 export type UserDialogProps = {};
@@ -874,27 +881,49 @@ export const UserDialog: FC<UserDialogProps> = () => {
                         <Table size="sm">
                           <Thead>
                             <Tr>
-                              <Th>{t("userDialog.deviceIp")}</Th>
                               <Th>{t("userDialog.deviceUserAgent")}</Th>
+                              <Th>{t("userDialog.deviceIp")}</Th>
                               <Th>{t("userDialog.deviceFirstSeen")}</Th>
                               <Th>{t("userDialog.deviceLastSeen")}</Th>
                             </Tr>
                           </Thead>
                           <Tbody>
-                            {devices.map((device, i) => (
-                              <Tr key={i}>
-                                <Td fontSize="xs">{device.ip}</Td>
-                                <Td fontSize="xs" maxW="220px" whiteSpace="normal">
-                                  {device.user_agent || "-"}
-                                </Td>
-                                <Td fontSize="xs">
-                                  {dayjs(device.first_seen + "Z").format("YYYY-MM-DD HH:mm")}
-                                </Td>
-                                <Td fontSize="xs">
-                                  {dayjs(device.last_seen + "Z").format("YYYY-MM-DD HH:mm")}
-                                </Td>
-                              </Tr>
-                            ))}
+                            {devices.map((device, i) => {
+                              const { app, version } = parseDeviceLabel(
+                                device.user_agent
+                              );
+                              const recentlySeen =
+                                dayjs().diff(dayjs(device.last_seen + "Z"), "minute") <
+                                60;
+                              return (
+                                <Tr key={i}>
+                                  <Td fontSize="xs">
+                                    <HStack spacing={1.5}>
+                                      <Text fontWeight="medium">{app}</Text>
+                                      {version && (
+                                        <Badge fontSize="9px" variant="subtle">
+                                          {version}
+                                        </Badge>
+                                      )}
+                                    </HStack>
+                                  </Td>
+                                  <Td fontSize="xs" fontFamily="mono">
+                                    {device.ip || "-"}
+                                  </Td>
+                                  <Td fontSize="xs" color="gray.500">
+                                    {dayjs(device.first_seen + "Z").format("YYYY-MM-DD")}
+                                  </Td>
+                                  <Td fontSize="xs">
+                                    <Badge
+                                      colorScheme={recentlySeen ? "green" : "gray"}
+                                      variant="subtle"
+                                    >
+                                      {dayjs(device.last_seen + "Z").fromNow()}
+                                    </Badge>
+                                  </Td>
+                                </Tr>
+                              );
+                            })}
                           </Tbody>
                         </Table>
                       </Box>

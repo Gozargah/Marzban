@@ -5,6 +5,8 @@ import {
   IconButton,
   Menu,
   MenuButton,
+  MenuDivider,
+  MenuGroup,
   MenuItem,
   MenuList,
   Text,
@@ -18,6 +20,7 @@ import {
   Cog6ToothIcon,
   CurrencyDollarIcon,
   DocumentMinusIcon,
+  GlobeAltIcon,
   LinkIcon,
   MoonIcon,
   SquaresPlusIcon,
@@ -58,6 +61,7 @@ const NodesUsageIcon = chakra(ChartPieIcon, iconProps);
 const ResetUsageIcon = chakra(DocumentMinusIcon, iconProps);
 const SubscriptionSettingsIcon = chakra(ChatBubbleBottomCenterTextIcon, iconProps);
 const AdminsIcon = chakra(UsersIcon, iconProps);
+const DomainsIcon = chakra(GlobeAltIcon, iconProps);
 const NotificationCircle = chakra(Box, {
   baseStyle: {
     bg: "yellow.500",
@@ -102,6 +106,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
     onShowingNodesUsage,
     onEditingSubscriptionSettings,
     onEditingAdmins,
+    onEditingDomains,
   } = useDashboard();
   const { t } = useTranslation();
   const { colorMode, toggleColorMode } = useColorMode();
@@ -146,62 +151,71 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
               }
               position="relative"
             ></MenuButton>
-            <MenuList minW="170px" zIndex={99999} className="menuList">
+            <MenuList minW="220px" zIndex={99999} className="menuList">
               {isSudo() && (
                 <>
-                  <MenuItem
-                    maxW="170px"
-                    fontSize="sm"
-                    icon={<HostsIcon />}
-                    onClick={onEditingHosts.bind(null, true)}
-                  >
-                    {t("header.hostSettings")}
-                  </MenuItem>
-                  <MenuItem
-                    maxW="170px"
-                    fontSize="sm"
-                    icon={<NodesIcon />}
-                    onClick={onEditingNodes.bind(null, true)}
-                  >
-                    {t("header.nodeSettings")}
-                  </MenuItem>
-                  <MenuItem
-                    maxW="170px"
-                    fontSize="sm"
-                    icon={<NodesUsageIcon />}
-                    onClick={onShowingNodesUsage.bind(null, true)}
-                  >
-                    {t("header.nodesUsage")}
-                  </MenuItem>
-                  <MenuItem
-                    maxW="170px"
-                    fontSize="sm"
-                    icon={<ResetUsageIcon />}
-                    onClick={onResetAllUsage.bind(null, true)}
-                  >
-                    {t("resetAllUsage")}
-                  </MenuItem>
-                  <MenuItem
-                    maxW="170px"
-                    fontSize="sm"
-                    icon={<SubscriptionSettingsIcon />}
-                    onClick={onEditingSubscriptionSettings.bind(null, true)}
-                  >
-                    {t("header.subscriptionSettings")}
-                  </MenuItem>
-                  <MenuItem
-                    maxW="170px"
-                    fontSize="sm"
-                    icon={<AdminsIcon />}
-                    onClick={onEditingAdmins.bind(null, true)}
-                  >
-                    {t("header.admins")}
-                  </MenuItem>
+                  <MenuGroup title={t("header.groupProxy")} fontSize="xs">
+                    <MenuItem
+                      fontSize="sm"
+                      icon={<DomainsIcon />}
+                      onClick={onEditingDomains.bind(null, true)}
+                    >
+                      {t("header.domains")}
+                    </MenuItem>
+                    <MenuItem
+                      fontSize="sm"
+                      icon={<HostsIcon />}
+                      onClick={onEditingHosts.bind(null, true)}
+                    >
+                      {t("header.hostSettings")}
+                    </MenuItem>
+                    <MenuItem
+                      fontSize="sm"
+                      icon={<NodesIcon />}
+                      onClick={onEditingNodes.bind(null, true)}
+                    >
+                      {t("header.nodeSettings")}
+                    </MenuItem>
+                    <MenuItem
+                      fontSize="sm"
+                      icon={<NodesUsageIcon />}
+                      onClick={onShowingNodesUsage.bind(null, true)}
+                    >
+                      {t("header.nodesUsage")}
+                    </MenuItem>
+                  </MenuGroup>
+                  <MenuDivider />
+                  <MenuGroup title={t("header.groupSubscription")} fontSize="xs">
+                    <MenuItem
+                      fontSize="sm"
+                      icon={<SubscriptionSettingsIcon />}
+                      onClick={onEditingSubscriptionSettings.bind(null, true)}
+                    >
+                      {t("header.subscriptionSettings")}
+                    </MenuItem>
+                    <MenuItem
+                      fontSize="sm"
+                      icon={<ResetUsageIcon />}
+                      onClick={onResetAllUsage.bind(null, true)}
+                    >
+                      {t("resetAllUsage")}
+                    </MenuItem>
+                  </MenuGroup>
+                  <MenuDivider />
+                  <MenuGroup title={t("header.groupAccess")} fontSize="xs">
+                    <MenuItem
+                      fontSize="sm"
+                      icon={<AdminsIcon />}
+                      onClick={onEditingAdmins.bind(null, true)}
+                    >
+                      {t("header.admins")}
+                    </MenuItem>
+                  </MenuGroup>
+                  <MenuDivider />
                 </>
               )}
               <Link to={DONATION_URL} target="_blank">
                 <MenuItem
-                  maxW="170px"
                   fontSize="sm"
                   icon={<DonationIcon />}
                   position="relative"
@@ -214,7 +228,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                 </MenuItem>
               </Link>
               <Link to="/login">
-                <MenuItem maxW="170px" fontSize="sm" icon={<LogoutIcon />}>
+                <MenuItem fontSize="sm" icon={<LogoutIcon />}>
                   {t("header.logout")}
                 </MenuItem>
               </Link>

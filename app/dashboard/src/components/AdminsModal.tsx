@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   chakra,
+  Divider,
   FormControl,
   FormLabel,
   HStack,
@@ -14,6 +15,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  SimpleGrid,
   Spinner,
   Switch,
   Table,
@@ -30,12 +32,14 @@ import {
   PaperAirplaneIcon,
   PencilIcon,
   PlusIcon,
+  ShieldExclamationIcon,
   TrashIcon,
+  UserCircleIcon,
   UsersIcon,
 } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
 import useGetUser from "hooks/useGetUser";
-import { FC, useEffect, useState } from "react";
+import { FC, ReactNode, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { fetch } from "service/http";
@@ -47,6 +51,20 @@ const EditIcon = chakra(PencilIcon, { baseStyle: { w: 4, h: 4 } });
 const DeleteIcon = chakra(TrashIcon, { baseStyle: { w: 4, h: 4 } });
 const TelegramIcon = chakra(PaperAirplaneIcon, { baseStyle: { w: 4, h: 4 } });
 const AdminsIcon = chakra(UsersIcon, { baseStyle: { w: 5, h: 5 } });
+const SectionIconAccount = chakra(UserCircleIcon, { baseStyle: { w: 4, h: 4 } });
+const SectionIconLimits = chakra(ShieldExclamationIcon, { baseStyle: { w: 4, h: 4 } });
+
+const SectionLabel: FC<{ icon: JSX.Element; children: ReactNode }> = ({
+  icon,
+  children,
+}) => (
+  <HStack spacing={1.5} color="gray.500" _dark={{ color: "gray.400" }}>
+    {icon}
+    <Text fontSize="xs" fontWeight="bold" textTransform="uppercase">
+      {children}
+    </Text>
+  </HStack>
+);
 
 type AdminType = {
   username: string;
@@ -361,96 +379,111 @@ export const AdminsModal: FC = () => {
         {(mode === "create" || mode === "edit") && (
           <form onSubmit={form.handleSubmit(submit)}>
             <ModalBody>
-              <VStack spacing="3" align="stretch">
-                <FormControl>
-                  <FormLabel fontSize="sm">{t("username")}</FormLabel>
-                  <Controller
-                    control={form.control}
-                    name="username"
-                    render={({ field }) => (
-                      <Input {...field} size="sm" disabled={mode === "edit"} />
-                    )}
-                  />
-                </FormControl>
-                <FormControl>
-                  <FormLabel fontSize="sm">
-                    {mode === "edit" ? t("adminsModal.newPassword") : t("password")}
-                  </FormLabel>
-                  <Controller
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <Input {...field} type="password" size="sm" />
-                    )}
-                  />
-                </FormControl>
-                <FormControl>
-                  <FormLabel fontSize="sm">{t("adminsModal.telegramId")}</FormLabel>
-                  <Controller
-                    control={form.control}
-                    name="telegram_id"
-                    render={({ field }) => <Input {...field} size="sm" type="number" />}
-                  />
-                </FormControl>
-                <FormControl display="flex" alignItems="center">
-                  <FormLabel fontSize="sm" mb="0">
-                    {t("adminsModal.sudo")}
-                  </FormLabel>
-                  <Controller
-                    control={form.control}
-                    name="is_sudo"
-                    render={({ field }) => (
-                      <Switch
-                        isChecked={field.value}
-                        onChange={(e) => field.onChange(e.target.checked)}
-                        colorScheme="primary"
+              <VStack spacing="4" align="stretch">
+                <VStack spacing="3" align="stretch">
+                  <SectionLabel icon={<SectionIconAccount />}>
+                    {t("adminsModal.sectionAccount")}
+                  </SectionLabel>
+                  <FormControl>
+                    <FormLabel fontSize="sm">{t("username")}</FormLabel>
+                    <Controller
+                      control={form.control}
+                      name="username"
+                      render={({ field }) => (
+                        <Input {...field} size="sm" disabled={mode === "edit"} />
+                      )}
+                    />
+                  </FormControl>
+                  <SimpleGrid columns={{ base: 1, sm: 2 }} spacing="3">
+                    <FormControl>
+                      <FormLabel fontSize="sm">
+                        {mode === "edit" ? t("adminsModal.newPassword") : t("password")}
+                      </FormLabel>
+                      <Controller
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                          <Input {...field} type="password" size="sm" />
+                        )}
                       />
-                    )}
-                  />
-                </FormControl>
-                <FormControl>
-                  <FormLabel fontSize="sm">{t("adminsModal.usersUsageLimit")}</FormLabel>
-                  <Controller
-                    control={form.control}
-                    name="users_usage_limit_gb"
-                    render={({ field }) => (
-                      <Input {...field} size="sm" type="number" endAdornment="GB" />
-                    )}
-                  />
-                </FormControl>
-                <FormControl>
-                  <FormLabel fontSize="sm">{t("adminsModal.maxUserDataLimit")}</FormLabel>
-                  <Controller
-                    control={form.control}
-                    name="max_users_data_limit_gb"
-                    render={({ field }) => (
-                      <Input {...field} size="sm" type="number" endAdornment="GB" />
-                    )}
-                  />
-                </FormControl>
-                <FormControl>
-                  <FormLabel fontSize="sm">{t("adminsModal.maxUsers")}</FormLabel>
-                  <Controller
-                    control={form.control}
-                    name="max_users"
-                    render={({ field }) => <Input {...field} size="sm" type="number" />}
-                  />
-                </FormControl>
-                <FormControl>
-                  <FormLabel fontSize="sm">{t("adminsModal.expireDate")}</FormLabel>
-                  <Controller
-                    control={form.control}
-                    name="expire_date"
-                    render={({ field }) => (
-                      <Input {...field} size="sm" type="date" />
-                    )}
-                  />
-                </FormControl>
-                <Box>
+                    </FormControl>
+                    <FormControl>
+                      <FormLabel fontSize="sm">{t("adminsModal.telegramId")}</FormLabel>
+                      <Controller
+                        control={form.control}
+                        name="telegram_id"
+                        render={({ field }) => <Input {...field} size="sm" type="number" />}
+                      />
+                    </FormControl>
+                  </SimpleGrid>
+                  <FormControl display="flex" alignItems="center">
+                    <FormLabel fontSize="sm" mb="0">
+                      {t("adminsModal.sudo")}
+                    </FormLabel>
+                    <Controller
+                      control={form.control}
+                      name="is_sudo"
+                      render={({ field }) => (
+                        <Switch
+                          isChecked={field.value}
+                          onChange={(e) => field.onChange(e.target.checked)}
+                          colorScheme="primary"
+                        />
+                      )}
+                    />
+                  </FormControl>
+                </VStack>
+
+                <Divider />
+
+                <VStack spacing="3" align="stretch">
+                  <SectionLabel icon={<SectionIconLimits />}>
+                    {t("adminsModal.sectionLimits")}
+                  </SectionLabel>
+                  <SimpleGrid columns={{ base: 1, sm: 2 }} spacing="3">
+                    <FormControl>
+                      <FormLabel fontSize="sm">{t("adminsModal.usersUsageLimit")}</FormLabel>
+                      <Controller
+                        control={form.control}
+                        name="users_usage_limit_gb"
+                        render={({ field }) => (
+                          <Input {...field} size="sm" type="number" endAdornment="GB" />
+                        )}
+                      />
+                    </FormControl>
+                    <FormControl>
+                      <FormLabel fontSize="sm">{t("adminsModal.maxUserDataLimit")}</FormLabel>
+                      <Controller
+                        control={form.control}
+                        name="max_users_data_limit_gb"
+                        render={({ field }) => (
+                          <Input {...field} size="sm" type="number" endAdornment="GB" />
+                        )}
+                      />
+                    </FormControl>
+                    <FormControl>
+                      <FormLabel fontSize="sm">{t("adminsModal.maxUsers")}</FormLabel>
+                      <Controller
+                        control={form.control}
+                        name="max_users"
+                        render={({ field }) => <Input {...field} size="sm" type="number" />}
+                      />
+                    </FormControl>
+                    <FormControl>
+                      <FormLabel fontSize="sm">{t("adminsModal.expireDate")}</FormLabel>
+                      <Controller
+                        control={form.control}
+                        name="expire_date"
+                        render={({ field }) => (
+                          <Input {...field} size="sm" type="date" />
+                        )}
+                      />
+                    </FormControl>
+                  </SimpleGrid>
                   <Text fontSize="xs" color="gray.500">
                     {t("adminsModal.permissionsHint")}
                   </Text>
-                </Box>
+                </VStack>
               </VStack>
             </ModalBody>
             <ModalFooter>

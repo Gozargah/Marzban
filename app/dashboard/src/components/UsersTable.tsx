@@ -3,6 +3,7 @@ import {
   AccordionButton,
   AccordionItem,
   AccordionPanel,
+  Badge,
   Box,
   Button,
   chakra,
@@ -33,6 +34,7 @@ import {
   LinkIcon,
   PencilIcon,
   QrCodeIcon,
+  UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import { ReactComponent as AddFileIcon } from "assets/add_file.svg";
 import classNames from "classnames";
@@ -65,6 +67,7 @@ const iconProps = {
 };
 const CopyIcon = chakra(ClipboardIcon, iconProps);
 const AccordionArrowIcon = chakra(ChevronDownIcon, iconProps);
+const CreatedByIcon = chakra(UserCircleIcon, { baseStyle: { w: 3, h: 3 } });
 const CopiedIcon = chakra(CheckIcon, iconProps);
 const SubscriptionLinkIcon = chakra(LinkIcon, iconProps);
 const QRIcon = chakra(QrCodeIcon, iconProps);
@@ -445,13 +448,17 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                                   />
                                   <OnlineStatus lastOnline={user.online_at} />
                                   {user.admin && (
-                                    <Text
-                                      fontSize="xs"
-                                      color="gray.500"
-                                      _dark={{ color: "gray.500" }}
+                                    <Badge
+                                      variant="subtle"
+                                      fontWeight="normal"
+                                      fontSize="10px"
+                                      ml="2"
                                     >
-                                      {t("usersTable.createdBy")}: {user.admin.username}
-                                    </Text>
+                                      <HStack spacing={0.5} display="inline-flex">
+                                        <CreatedByIcon />
+                                        <Text as="span">{user.admin.username}</Text>
+                                      </HStack>
+                                    </Badge>
                                   )}
                                 </Box>
                                 <HStack>
@@ -606,9 +613,12 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                       <OnlineStatus lastOnline={user.online_at} />
                     </div>
                     {user.admin && (
-                      <Text fontSize="xs" color="gray.500" _dark={{ color: "gray.500" }}>
-                        {t("usersTable.createdBy")}: {user.admin.username}
-                      </Text>
+                      <Badge variant="subtle" fontWeight="normal" fontSize="10px" mt="0.5">
+                        <HStack spacing={0.5} display="inline-flex">
+                          <CreatedByIcon />
+                          <Text as="span">{user.admin.username}</Text>
+                        </HStack>
+                      </Badge>
                     )}
                   </Td>
                   <Td width="400px" minW="150px">
