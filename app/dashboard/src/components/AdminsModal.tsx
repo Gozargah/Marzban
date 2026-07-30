@@ -56,6 +56,7 @@ type AdminType = {
   users_usage: number;
   users_usage_limit: number | null;
   max_users_data_limit: number | null;
+  max_users: number | null;
   expire_date: string | null;
 };
 
@@ -66,6 +67,7 @@ type AdminFormType = {
   telegram_id: string;
   users_usage_limit_gb: string;
   max_users_data_limit_gb: string;
+  max_users: string;
   expire_date: string;
 };
 
@@ -76,6 +78,7 @@ const emptyForm: AdminFormType = {
   telegram_id: "",
   users_usage_limit_gb: "",
   max_users_data_limit_gb: "",
+  max_users: "",
   expire_date: "",
 };
 
@@ -127,6 +130,7 @@ export const AdminsModal: FC = () => {
       telegram_id: admin.telegram_id ? String(admin.telegram_id) : "",
       users_usage_limit_gb: bytesToGB(admin.users_usage_limit),
       max_users_data_limit_gb: bytesToGB(admin.max_users_data_limit),
+      max_users: admin.max_users ? String(admin.max_users) : "",
       expire_date: admin.expire_date ? admin.expire_date.slice(0, 10) : "",
     });
     setMode("edit");
@@ -140,6 +144,7 @@ export const AdminsModal: FC = () => {
     const limits = {
       users_usage_limit: gbToBytes(values.users_usage_limit_gb),
       max_users_data_limit: gbToBytes(values.max_users_data_limit_gb),
+      max_users: values.max_users ? parseInt(values.max_users, 10) : null,
       expire_date: values.expire_date
         ? new Date(values.expire_date).toISOString()
         : null,
@@ -272,6 +277,11 @@ export const AdminsModal: FC = () => {
                             {admin.max_users_data_limit && (
                               <Text color="gray.500">
                                 {t("adminsModal.maxUserDataLimitShort")}: {bytesToGB(admin.max_users_data_limit)} GB
+                              </Text>
+                            )}
+                            {admin.max_users && (
+                              <Text color="gray.500">
+                                {t("adminsModal.maxUsersShort")}: {admin.max_users}
                               </Text>
                             )}
                             {admin.expire_date && (
@@ -416,6 +426,14 @@ export const AdminsModal: FC = () => {
                     render={({ field }) => (
                       <Input {...field} size="sm" type="number" endAdornment="GB" />
                     )}
+                  />
+                </FormControl>
+                <FormControl>
+                  <FormLabel fontSize="sm">{t("adminsModal.maxUsers")}</FormLabel>
+                  <Controller
+                    control={form.control}
+                    name="max_users"
+                    render={({ field }) => <Input {...field} size="sm" type="number" />}
                   />
                 </FormControl>
                 <FormControl>

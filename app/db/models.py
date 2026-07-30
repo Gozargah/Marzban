@@ -50,6 +50,7 @@ class Admin(Base):
     # * NULL: no cap.
     users_usage_limit = Column(BigInteger, nullable=True, default=None)
     max_users_data_limit = Column(BigInteger, nullable=True, default=None)
+    max_users = Column(Integer, nullable=True, default=None)
     # * When reached, this admin is blocked from logging in and all of its
     # * users get disabled (app/jobs/check_admin_limits.py).
     expire_date = Column(DateTime, nullable=True, default=None)

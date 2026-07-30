@@ -62,6 +62,13 @@ def add_user(
                 detail=f"data_limit cannot exceed {dbadmin.max_users_data_limit} bytes for this admin",
             )
 
+    if not admin.is_sudo and dbadmin.max_users:
+        if crud.get_users_count(db, admin=dbadmin) >= dbadmin.max_users:
+            raise HTTPException(
+                status_code=400,
+                detail=f"You've reached your limit of {dbadmin.max_users} users",
+            )
+
     try:
         dbuser = crud.create_user(
             db, new_user, admin=dbadmin

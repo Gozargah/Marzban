@@ -11,6 +11,8 @@
   "adminsModal.limits": "Лимиты",
   "adminsModal.maxUserDataLimit": "Макс. лимит на одного пользователя",
   "adminsModal.maxUserDataLimitShort": "Макс/польз",
+  "adminsModal.maxUsers": "Макс. количество пользователей",
+  "adminsModal.maxUsersShort": "Макс. польз.",
   "adminsModal.newPassword": "Новый пароль (оставь пустым, чтобы не менять)",
   "adminsModal.permissionsHint": "Sudo-админы управляют хостами, узлами, настройками ядра, настройками подписки и всеми пользователями. Ограниченные админы видят и управляют только теми пользователями, которых создали сами.",
   "adminsModal.restricted": "Ограниченный",

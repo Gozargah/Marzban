@@ -11,6 +11,8 @@
   "adminsModal.limits": "Limits",
   "adminsModal.maxUserDataLimit": "Max data limit per user",
   "adminsModal.maxUserDataLimitShort": "Max/user",
+  "adminsModal.maxUsers": "Max number of users",
+  "adminsModal.maxUsersShort": "Max users",
   "adminsModal.newPassword": "New password (leave blank to keep unchanged)",
   "adminsModal.permissionsHint": "Sudo admins can manage hosts, nodes, core settings, subscription settings and every user. Restricted admins only see and manage the users they create.",
   "adminsModal.restricted": "Restricted",

@@ -27,10 +27,11 @@ class Admin(BaseModel):
     users_usage: Optional[int] = None
     users_usage_limit: Optional[int] = None
     max_users_data_limit: Optional[int] = None
+    max_users: Optional[int] = None
     expire_date: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)
 
-    @field_validator("users_usage", "users_usage_limit", "max_users_data_limit", mode='before')
+    @field_validator("users_usage", "users_usage_limit", "max_users_data_limit", "max_users", mode='before')
     def cast_to_int(cls, v):
         if v is None:  # Allow None values
             return v
@@ -120,9 +121,10 @@ class AdminModify(BaseModel):
     discord_webhook: Optional[str] = None
     users_usage_limit: Optional[int] = None
     max_users_data_limit: Optional[int] = None
+    max_users: Optional[int] = None
     expire_date: Optional[datetime] = None
 
-    @field_validator("users_usage_limit", "max_users_data_limit", mode='before')
+    @field_validator("users_usage_limit", "max_users_data_limit", "max_users", mode='before')
     def cast_to_int(cls, v):
         if v is None:
             return v

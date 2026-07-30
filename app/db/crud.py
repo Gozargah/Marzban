@@ -981,6 +981,7 @@ def create_admin(db: Session, admin: AdminCreate) -> Admin:
         discord_webhook=admin.discord_webhook if admin.discord_webhook else None,
         users_usage_limit=admin.users_usage_limit,
         max_users_data_limit=admin.max_users_data_limit,
+        max_users=admin.max_users,
         expire_date=admin.expire_date,
     )
     db.add(dbadmin)
@@ -1012,6 +1013,7 @@ def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify) -> Ad
         dbadmin.discord_webhook = modified_admin.discord_webhook
     dbadmin.users_usage_limit = modified_admin.users_usage_limit or None
     dbadmin.max_users_data_limit = modified_admin.max_users_data_limit or None
+    dbadmin.max_users = modified_admin.max_users or None
     dbadmin.expire_date = modified_admin.expire_date
 
     db.commit()
