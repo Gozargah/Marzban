@@ -48,13 +48,11 @@ def get_subscription_user_info(user: UserResponse) -> dict:
 
 
 def is_device_limit_exceeded(db: Session, dbuser, request: Request, user_agent: str) -> bool:
-    """Records the requesting device and reports whether the user's device_limit was exceeded."""
-    if not dbuser.device_limit:
-        return False
-
+    """Always records the requesting device (shown on the user's Devices tab), and
+    reports whether it pushed the user over their device_limit, if one is set."""
     client_ip = request.client.host if request.client else ""
     active_devices = crud.record_user_device(db, dbuser, client_ip, user_agent, DEVICE_LIMIT_WINDOW_HOURS)
-    return active_devices > dbuser.device_limit
+    return bool(dbuser.device_limit) and active_devices > dbuser.device_limit
 
 
 def get_resolved_sub_settings(db: Session) -> dict:

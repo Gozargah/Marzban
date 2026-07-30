@@ -10,6 +10,7 @@ from app.dependencies import get_expired_users_list, get_validated_user, validat
 from app.models.admin import Admin
 from app.models.user import (
     UserCreate,
+    UserDeviceResponse,
     UserModify,
     UserResponse,
     UsersResponse,
@@ -290,6 +291,17 @@ def get_user_usage(
     usages = crud.get_user_usages(db, dbuser, start, end)
 
     return {"usages": usages, "username": dbuser.username}
+
+
+@router.get(
+    "/user/{username}/devices", response_model=List[UserDeviceResponse], responses={403: responses._403, 404: responses._404}
+)
+def get_user_devices(
+    dbuser: UserResponse = Depends(get_validated_user),
+    db: Session = Depends(get_db),
+):
+    """List the devices (ip + user-agent) that have fetched this user's subscription."""
+    return crud.get_user_devices(db, dbuser)
 
 
 @router.post("/user/{username}/active-next", response_model=UserResponse, responses={403: responses._403, 404: responses._404})

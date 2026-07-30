@@ -51,6 +51,7 @@ export type User = {
   inbounds: UserInbounds;
   note: string;
   online_at: string;
+  admin: { username: string; is_sudo: boolean } | null;
 };
 
 export type UserCreate = Pick<

@@ -693,6 +693,13 @@ def record_user_device(db: Session, dbuser: User, ip: str, user_agent: str, wind
     ).count()
 
 
+def get_user_devices(db: Session, dbuser: User) -> List[UserDevice]:
+    """Returns a user's recorded devices (ip + user-agent pairs), most recently seen first."""
+    return db.query(UserDevice).filter(
+        UserDevice.user_id == dbuser.id
+    ).order_by(UserDevice.last_seen.desc()).all()
+
+
 def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):
     """
     Resets the data usage for all users or users under a specific admin.

@@ -367,3 +367,11 @@ class UserUsagesResponse(BaseModel):
 
 class UsersUsagesResponse(BaseModel):
     usages: List[UserUsageResponse]
+
+
+class UserDeviceResponse(BaseModel):
+    ip: str
+    user_agent: str
+    first_seen: datetime
+    last_seen: datetime
+    model_config = ConfigDict(from_attributes=True)

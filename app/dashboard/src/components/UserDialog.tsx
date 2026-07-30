@@ -23,9 +23,15 @@ import {
   Select,
   Spinner,
   Switch,
+  Table,
+  Tbody,
+  Td,
   Text,
   Textarea,
+  Th,
+  Thead,
   Tooltip,
+  Tr,
   VStack,
   chakra,
   useColorMode,
@@ -33,6 +39,7 @@ import {
 } from "@chakra-ui/react";
 import {
   ChartPieIcon,
+  DevicePhoneMobileIcon,
   PencilIcon,
   UserPlusIcon,
 } from "@heroicons/react/24/outline";
@@ -61,6 +68,7 @@ import { RadioGroup } from "./RadioGroup";
 import { UsageFilter, createUsageConfig } from "./UsageFilter";
 import { ReloadIcon } from "./Filters";
 import classNames from "classnames";
+import { fetch } from "service/http";
 
 const AddUserIcon = chakra(UserPlusIcon, {
   baseStyle: {
@@ -82,6 +90,20 @@ const UserUsageIcon = chakra(ChartPieIcon, {
     h: 5,
   },
 });
+
+const UserDevicesIcon = chakra(DevicePhoneMobileIcon, {
+  baseStyle: {
+    w: 5,
+    h: 5,
+  },
+});
+
+type UserDeviceType = {
+  ip: string;
+  user_agent: string;
+  first_seen: string;
+  last_seen: string;
+};
 
 export type UserDialogProps = {};
 
@@ -246,6 +268,24 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const [usageVisible, setUsageVisible] = useState(false);
   const handleUsageToggle = () => {
     setUsageVisible((current) => !current);
+    setDevicesVisible(false);
+  };
+
+  const [devicesVisible, setDevicesVisible] = useState(false);
+  const [devices, setDevices] = useState<UserDeviceType[]>([]);
+  const [devicesLoading, setDevicesLoading] = useState(false);
+  const handleDevicesToggle = () => {
+    setUsageVisible(false);
+    setDevicesVisible((current) => {
+      const next = !current;
+      if (next && editingUser) {
+        setDevicesLoading(true);
+        fetch(`/user/${editingUser.username}/devices`)
+          .then((data: UserDeviceType[]) => setDevices(data))
+          .finally(() => setDevicesLoading(false));
+      }
+      return next;
+    });
   };
 
   const form = useForm<FormType>({
@@ -291,6 +331,8 @@ export const UserDialog: FC<UserDialogProps> = () => {
       fetchUsageWithFilter({
         start: dayjs().utc().subtract(30, "day").format("YYYY-MM-DDTHH:00:00"),
       });
+      setDevicesVisible(false);
+      setDevices([]);
     }
   }, [editingUser]);
 
@@ -817,6 +859,48 @@ export const UserDialog: FC<UserDialogProps> = () => {
                     </VStack>
                   </GridItem>
                 )}
+                {isEditing && devicesVisible && (
+                  <GridItem pt={6} colSpan={{ base: 1, md: 2 }}>
+                    {devicesLoading ? (
+                      <HStack justifyContent="center" py="4">
+                        <Spinner size="sm" />
+                      </HStack>
+                    ) : devices.length === 0 ? (
+                      <Text fontSize="sm" color="gray.500" textAlign="center" py="4">
+                        {t("userDialog.noDevices")}
+                      </Text>
+                    ) : (
+                      <Box overflowX="auto">
+                        <Table size="sm">
+                          <Thead>
+                            <Tr>
+                              <Th>{t("userDialog.deviceIp")}</Th>
+                              <Th>{t("userDialog.deviceUserAgent")}</Th>
+                              <Th>{t("userDialog.deviceFirstSeen")}</Th>
+                              <Th>{t("userDialog.deviceLastSeen")}</Th>
+                            </Tr>
+                          </Thead>
+                          <Tbody>
+                            {devices.map((device, i) => (
+                              <Tr key={i}>
+                                <Td fontSize="xs">{device.ip}</Td>
+                                <Td fontSize="xs" maxW="220px" whiteSpace="normal">
+                                  {device.user_agent || "-"}
+                                </Td>
+                                <Td fontSize="xs">
+                                  {dayjs(device.first_seen + "Z").format("YYYY-MM-DD HH:mm")}
+                                </Td>
+                                <Td fontSize="xs">
+                                  {dayjs(device.last_seen + "Z").format("YYYY-MM-DD HH:mm")}
+                                </Td>
+                              </Tr>
+                            ))}
+                          </Tbody>
+                        </Table>
+                      </Box>
+                    )}
+                  </GridItem>
+                )}
               </Grid>
               {error && (
                 <Alert
@@ -867,6 +951,15 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           onClick={handleUsageToggle}
                         >
                           <UserUsageIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip label={t("userDialog.devices")} placement="top">
+                        <IconButton
+                          aria-label="devices"
+                          size="sm"
+                          onClick={handleDevicesToggle}
+                        >
+                          <UserDevicesIcon />
                         </IconButton>
                       </Tooltip>
                       <Button onClick={handleResetUsage} size="sm">

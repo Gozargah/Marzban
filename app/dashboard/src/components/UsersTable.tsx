@@ -444,6 +444,15 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                                     status={user.status}
                                   />
                                   <OnlineStatus lastOnline={user.online_at} />
+                                  {user.admin && (
+                                    <Text
+                                      fontSize="xs"
+                                      color="gray.500"
+                                      _dark={{ color: "gray.500" }}
+                                    >
+                                      {t("usersTable.createdBy")}: {user.admin.username}
+                                    </Text>
+                                  )}
                                 </Box>
                                 <HStack>
                                   <ActionButtons user={user} />
@@ -596,6 +605,11 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                       {user.username}
                       <OnlineStatus lastOnline={user.online_at} />
                     </div>
+                    {user.admin && (
+                      <Text fontSize="xs" color="gray.500" _dark={{ color: "gray.500" }}>
+                        {t("usersTable.createdBy")}: {user.admin.username}
+                      </Text>
+                    )}
                   </Td>
                   <Td width="400px" minW="150px">
                     <StatusBadge
