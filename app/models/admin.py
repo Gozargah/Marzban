@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from fastapi import Depends, HTTPException, status
@@ -24,9 +25,12 @@ class Admin(BaseModel):
     telegram_id: Optional[int] = None
     discord_webhook: Optional[str] = None
     users_usage: Optional[int] = None
+    users_usage_limit: Optional[int] = None
+    max_users_data_limit: Optional[int] = None
+    expire_date: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)
 
-    @field_validator("users_usage",  mode='before')
+    @field_validator("users_usage", "users_usage_limit", "max_users_data_limit", mode='before')
     def cast_to_int(cls, v):
         if v is None:  # Allow None values
             return v
@@ -47,6 +51,9 @@ class Admin(BaseModel):
 
         dbadmin = crud.get_admin(db, payload['username'])
         if not dbadmin:
+            return
+
+        if dbadmin.expire_date and dbadmin.expire_date <= datetime.utcnow():
             return
 
         if dbadmin.password_reset_at:
@@ -111,6 +118,19 @@ class AdminModify(BaseModel):
     is_sudo: bool
     telegram_id: Optional[int] = None
     discord_webhook: Optional[str] = None
+    users_usage_limit: Optional[int] = None
+    max_users_data_limit: Optional[int] = None
+    expire_date: Optional[datetime] = None
+
+    @field_validator("users_usage_limit", "max_users_data_limit", mode='before')
+    def cast_to_int(cls, v):
+        if v is None:
+            return v
+        if isinstance(v, float):
+            return int(v)
+        if isinstance(v, int):
+            return v
+        raise ValueError("must be an integer or a float, not a string")
 
     @property
     def hashed_password(self):

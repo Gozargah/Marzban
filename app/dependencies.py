@@ -14,7 +14,10 @@ def validate_admin(db: Session, username: str, password: str) -> Optional[AdminV
         return AdminValidationResult(username=username, is_sudo=True)
 
     dbadmin = crud.get_admin(db, username)
-    if dbadmin and AdminInDB.model_validate(dbadmin).verify_password(password):
+    if not dbadmin or (dbadmin.expire_date and dbadmin.expire_date <= datetime.utcnow()):
+        return None
+
+    if AdminInDB.model_validate(dbadmin).verify_password(password):
         return AdminValidationResult(username=dbadmin.username, is_sudo=dbadmin.is_sudo)
 
     return None

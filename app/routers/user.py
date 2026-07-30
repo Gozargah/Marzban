@@ -54,9 +54,17 @@ def add_user(
                 detail=f"Protocol {proxy_type} is disabled on your server",
             )
 
+    dbadmin = crud.get_admin(db, admin.username)
+    if not admin.is_sudo and dbadmin.max_users_data_limit:
+        if not new_user.data_limit or new_user.data_limit > dbadmin.max_users_data_limit:
+            raise HTTPException(
+                status_code=400,
+                detail=f"data_limit cannot exceed {dbadmin.max_users_data_limit} bytes for this admin",
+            )
+
     try:
         dbuser = crud.create_user(
-            db, new_user, admin=crud.get_admin(db, admin.username)
+            db, new_user, admin=dbadmin
         )
     except IntegrityError:
         db.rollback()
@@ -107,6 +115,15 @@ def modify_user(
                 status_code=400,
                 detail=f"Protocol {proxy_type} is disabled on your server",
             )
+
+    if not admin.is_sudo and modified_user.data_limit is not None:
+        dbadmin = crud.get_admin(db, admin.username)
+        if dbadmin.max_users_data_limit:
+            if not modified_user.data_limit or modified_user.data_limit > dbadmin.max_users_data_limit:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"data_limit cannot exceed {dbadmin.max_users_data_limit} bytes for this admin",
+                )
 
     old_status = dbuser.status
     dbuser = crud.update_user(db, dbuser, modified_user)

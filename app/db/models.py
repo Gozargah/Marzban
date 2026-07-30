@@ -47,6 +47,13 @@ class Admin(Base):
     users_usage = Column(BigInteger, nullable=False, default=0)
     usage_logs = relationship("AdminUsageLogs", back_populates="admin")
 
+    # * NULL: no cap.
+    users_usage_limit = Column(BigInteger, nullable=True, default=None)
+    max_users_data_limit = Column(BigInteger, nullable=True, default=None)
+    # * When reached, this admin is blocked from logging in and all of its
+    # * users get disabled (app/jobs/check_admin_limits.py).
+    expire_date = Column(DateTime, nullable=True, default=None)
+
 
 class AdminUsageLogs(Base):
     __tablename__ = "admin_usage_logs"

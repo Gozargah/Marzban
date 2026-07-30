@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -33,6 +34,15 @@ def admin_token(
 ):
     """Authenticate an admin and issue a token."""
     client_ip = get_client_ip(request)
+
+    existing_admin = crud.get_admin(db, form_data.username)
+    if existing_admin and existing_admin.expire_date and existing_admin.expire_date <= datetime.utcnow():
+        report.login(form_data.username, form_data.password, client_ip, False)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="This admin account has expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     dbadmin = validate_admin(db, form_data.username, form_data.password)
     if not dbadmin:

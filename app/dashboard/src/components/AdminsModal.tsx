@@ -53,6 +53,10 @@ type AdminType = {
   is_sudo: boolean;
   telegram_id: number | null;
   discord_webhook: string | null;
+  users_usage: number;
+  users_usage_limit: number | null;
+  max_users_data_limit: number | null;
+  expire_date: string | null;
 };
 
 type AdminFormType = {
@@ -60,6 +64,9 @@ type AdminFormType = {
   password: string;
   is_sudo: boolean;
   telegram_id: string;
+  users_usage_limit_gb: string;
+  max_users_data_limit_gb: string;
+  expire_date: string;
 };
 
 const emptyForm: AdminFormType = {
@@ -67,7 +74,15 @@ const emptyForm: AdminFormType = {
   password: "",
   is_sudo: false,
   telegram_id: "",
+  users_usage_limit_gb: "",
+  max_users_data_limit_gb: "",
+  expire_date: "",
 };
+
+const GB = 1073741824;
+const bytesToGB = (bytes: number | null) => (bytes ? String(bytes / GB) : "");
+const gbToBytes = (gb: string): number | null =>
+  gb ? Math.round(parseFloat(gb) * GB) : null;
 
 export const AdminsModal: FC = () => {
   const { isEditingAdmins, onEditingAdmins } = useDashboard();
@@ -110,6 +125,9 @@ export const AdminsModal: FC = () => {
       password: "",
       is_sudo: admin.is_sudo,
       telegram_id: admin.telegram_id ? String(admin.telegram_id) : "",
+      users_usage_limit_gb: bytesToGB(admin.users_usage_limit),
+      max_users_data_limit_gb: bytesToGB(admin.max_users_data_limit),
+      expire_date: admin.expire_date ? admin.expire_date.slice(0, 10) : "",
     });
     setMode("edit");
   };
@@ -119,9 +137,17 @@ export const AdminsModal: FC = () => {
 
   const submit = (values: AdminFormType) => {
     setSaving(true);
+    const limits = {
+      users_usage_limit: gbToBytes(values.users_usage_limit_gb),
+      max_users_data_limit: gbToBytes(values.max_users_data_limit_gb),
+      expire_date: values.expire_date
+        ? new Date(values.expire_date).toISOString()
+        : null,
+    };
     const body = {
       is_sudo: values.is_sudo,
       telegram_id: values.telegram_id ? Number(values.telegram_id) : null,
+      ...limits,
       ...(values.password ? { password: values.password } : {}),
     };
 
@@ -129,7 +155,13 @@ export const AdminsModal: FC = () => {
       mode === "create"
         ? fetch("/admin", {
             method: "POST",
-            body: { username: values.username, password: values.password, is_sudo: values.is_sudo, telegram_id: body.telegram_id },
+            body: {
+              username: values.username,
+              password: values.password,
+              is_sudo: values.is_sudo,
+              telegram_id: body.telegram_id,
+              ...limits,
+            },
           })
         : fetch(`/admin/${values.username}`, { method: "PUT", body });
 
@@ -211,12 +243,16 @@ export const AdminsModal: FC = () => {
                     <Tr>
                       <Th>{t("username")}</Th>
                       <Th>{t("adminsModal.sudo")}</Th>
+                      <Th>{t("adminsModal.limits")}</Th>
                       <Th>{t("adminsModal.telegram")}</Th>
                       <Th></Th>
                     </Tr>
                   </Thead>
                   <Tbody>
-                    {admins.map((admin) => (
+                    {admins.map((admin) => {
+                      const isExpired =
+                        !!admin.expire_date && new Date(admin.expire_date) <= new Date();
+                      return (
                       <Tr key={admin.username}>
                         <Td>{admin.username}</Td>
                         <Td>
@@ -225,6 +261,25 @@ export const AdminsModal: FC = () => {
                           ) : (
                             <Badge>{t("adminsModal.restricted")}</Badge>
                           )}
+                        </Td>
+                        <Td fontSize="xs">
+                          <VStack align="start" spacing={0}>
+                            {admin.users_usage_limit && (
+                              <Text>
+                                {bytesToGB(admin.users_usage)} / {bytesToGB(admin.users_usage_limit)} GB
+                              </Text>
+                            )}
+                            {admin.max_users_data_limit && (
+                              <Text color="gray.500">
+                                {t("adminsModal.maxUserDataLimitShort")}: {bytesToGB(admin.max_users_data_limit)} GB
+                              </Text>
+                            )}
+                            {admin.expire_date && (
+                              <Badge colorScheme={isExpired ? "red" : "gray"}>
+                                {admin.expire_date.slice(0, 10)}
+                              </Badge>
+                            )}
+                          </VStack>
                         </Td>
                         <Td>
                           {admin.telegram_id ? (
@@ -268,7 +323,8 @@ export const AdminsModal: FC = () => {
                           </HStack>
                         </Td>
                       </Tr>
-                    ))}
+                      );
+                    })}
                   </Tbody>
                 </Table>
               )}
@@ -339,6 +395,36 @@ export const AdminsModal: FC = () => {
                         onChange={(e) => field.onChange(e.target.checked)}
                         colorScheme="primary"
                       />
+                    )}
+                  />
+                </FormControl>
+                <FormControl>
+                  <FormLabel fontSize="sm">{t("adminsModal.usersUsageLimit")}</FormLabel>
+                  <Controller
+                    control={form.control}
+                    name="users_usage_limit_gb"
+                    render={({ field }) => (
+                      <Input {...field} size="sm" type="number" endAdornment="GB" />
+                    )}
+                  />
+                </FormControl>
+                <FormControl>
+                  <FormLabel fontSize="sm">{t("adminsModal.maxUserDataLimit")}</FormLabel>
+                  <Controller
+                    control={form.control}
+                    name="max_users_data_limit_gb"
+                    render={({ field }) => (
+                      <Input {...field} size="sm" type="number" endAdornment="GB" />
+                    )}
+                  />
+                </FormControl>
+                <FormControl>
+                  <FormLabel fontSize="sm">{t("adminsModal.expireDate")}</FormLabel>
+                  <Controller
+                    control={form.control}
+                    name="expire_date"
+                    render={({ field }) => (
+                      <Input {...field} size="sm" type="date" />
                     )}
                   />
                 </FormControl>

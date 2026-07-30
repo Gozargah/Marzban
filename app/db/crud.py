@@ -978,7 +978,10 @@ def create_admin(db: Session, admin: AdminCreate) -> Admin:
         hashed_password=admin.hashed_password,
         is_sudo=admin.is_sudo,
         telegram_id=admin.telegram_id if admin.telegram_id else None,
-        discord_webhook=admin.discord_webhook if admin.discord_webhook else None
+        discord_webhook=admin.discord_webhook if admin.discord_webhook else None,
+        users_usage_limit=admin.users_usage_limit,
+        max_users_data_limit=admin.max_users_data_limit,
+        expire_date=admin.expire_date,
     )
     db.add(dbadmin)
     db.commit()
@@ -1007,6 +1010,9 @@ def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify) -> Ad
         dbadmin.telegram_id = modified_admin.telegram_id
     if modified_admin.discord_webhook:
         dbadmin.discord_webhook = modified_admin.discord_webhook
+    dbadmin.users_usage_limit = modified_admin.users_usage_limit or None
+    dbadmin.max_users_data_limit = modified_admin.max_users_data_limit or None
+    dbadmin.expire_date = modified_admin.expire_date
 
     db.commit()
     db.refresh(dbadmin)
