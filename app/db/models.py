@@ -91,6 +91,7 @@ class User(Base):
     sub_last_user_agent = Column(String(512), nullable=True, default=None)
     created_at = Column(DateTime, default=datetime.utcnow)
     note = Column(String(500), nullable=True, default=None)
+    email = Column(String(254), nullable=True, default=None)
     online_at = Column(DateTime, nullable=True, default=None)
     on_hold_expire_duration = Column(BigInteger, nullable=True, default=None)
     on_hold_timeout = Column(DateTime, nullable=True, default=None)
@@ -301,6 +302,14 @@ class Settings(Base):
     disabled_status_text = Column(String(256), nullable=True, default=None)
     onhold_status_text = Column(String(256), nullable=True, default=None)
     device_limit_exceeded_message = Column(String(1024), nullable=True, default=None)
+
+    # SMTP, used to email subscription links to users (e.g. via Gmail:
+    # smtp.gmail.com, port 587, an app password -- not the account password).
+    smtp_host = Column(String(256), nullable=True, default=None)
+    smtp_port = Column(Integer, nullable=True, default=None)
+    smtp_username = Column(String(256), nullable=True, default=None)
+    smtp_password = Column(String(256), nullable=True, default=None)
+    smtp_from_email = Column(String(254), nullable=True, default=None)
 
 
 class JWT(Base):

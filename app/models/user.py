@@ -14,6 +14,7 @@ from app.utils.jwt import create_subscription_token
 from config import XRAY_SUBSCRIPTION_PATH, XRAY_SUBSCRIPTION_URL_PREFIX
 
 USERNAME_REGEXP = re.compile(r"^(?=\w{3,32}\b)[a-zA-Z0-9-_@.]+(?:_[a-zA-Z0-9-_@.]+)*$")
+EMAIL_REGEXP = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
 class ReminderType(str, Enum):
@@ -70,6 +71,7 @@ class User(BaseModel):
     )
     inbounds: Dict[ProxyTypes, List[str]] = {}
     note: Optional[str] = Field(None, nullable=True)
+    email: Optional[str] = Field(None, nullable=True)
     sub_updated_at: Optional[datetime] = Field(None, nullable=True)
     sub_last_user_agent: Optional[str] = Field(None, nullable=True)
     online_at: Optional[datetime] = Field(None, nullable=True)
@@ -114,6 +116,13 @@ class User(BaseModel):
     def validate_note(cls, v):
         if v and len(v) > 500:
             raise ValueError("User's note can be a maximum of 500 character")
+        return v
+
+    @field_validator("email", check_fields=False)
+    @classmethod
+    def validate_email(cls, v):
+        if v and not EMAIL_REGEXP.match(v):
+            raise ValueError("Invalid email address")
         return v
 
     @field_validator("on_hold_expire_duration", "on_hold_timeout", mode="before")

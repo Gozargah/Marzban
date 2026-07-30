@@ -14,3 +14,22 @@ class SubscriptionSettings(BaseModel):
     onhold_status_text: Optional[str] = None
     device_limit_exceeded_message: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
+
+
+class EmailSettings(BaseModel):
+    smtp_host: Optional[str] = None
+    smtp_port: Optional[int] = None
+    smtp_username: Optional[str] = None
+    smtp_password: Optional[str] = None
+    smtp_from_email: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
+
+
+class EmailSettingsResponse(BaseModel):
+    """Same as EmailSettings but never echoes the password back to the panel."""
+    smtp_host: Optional[str] = None
+    smtp_port: Optional[int] = None
+    smtp_username: Optional[str] = None
+    smtp_password_set: bool = False
+    smtp_from_email: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)

@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Union
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 from sqlalchemy.exc import IntegrityError
 
 from app import logger, xray
@@ -19,6 +19,7 @@ from app.models.user import (
     UserUsagesResponse,
 )
 from app.utils import report, responses
+from app.utils.email import EmailSendError, send_subscription_email
 
 router = APIRouter(tags=["User"], prefix="/api", responses={401: responses._401})
 
@@ -302,6 +303,49 @@ def get_user_devices(
 ):
     """List the devices (ip + user-agent) that have fetched this user's subscription."""
     return crud.get_user_devices(db, dbuser)
+
+
+@router.post(
+    "/user/{username}/send-subscription-email", responses={400: responses._400, 403: responses._403, 404: responses._404}
+)
+def send_subscription_email_endpoint(
+    request: Request,
+    dbuser: UserResponse = Depends(get_validated_user),
+    db: Session = Depends(get_db),
+):
+    """Emails the user's subscription link to their configured email address."""
+    if not dbuser.email:
+        raise HTTPException(status_code=400, detail="This user has no email address set")
+
+    settings = crud.get_settings(db)
+    if not (settings.smtp_host and settings.smtp_port and settings.smtp_username
+            and settings.smtp_password and settings.smtp_from_email):
+        raise HTTPException(
+            status_code=400,
+            detail="SMTP isn't configured yet. Set it up in Settings -> Email first.",
+        )
+
+    user = UserResponse.model_validate(dbuser)
+    subscription_url = user.subscription_url
+    if subscription_url.startswith("/"):
+        subscription_url = str(request.base_url).rstrip("/") + subscription_url
+
+    try:
+        send_subscription_email(
+            to_email=user.email,
+            username=user.username,
+            subscription_url=subscription_url,
+            smtp_host=settings.smtp_host,
+            smtp_port=settings.smtp_port,
+            smtp_username=settings.smtp_username,
+            smtp_password=settings.smtp_password,
+            from_email=settings.smtp_from_email,
+        )
+    except EmailSendError as e:
+        raise HTTPException(status_code=400, detail=f"Failed to send email: {e}")
+
+    logger.info(f'Subscription email sent to "{dbuser.email}" for user "{dbuser.username}"')
+    return {"detail": "Email sent"}
 
 
 @router.post("/user/{username}/active-next", response_model=UserResponse, responses={403: responses._403, 404: responses._404})

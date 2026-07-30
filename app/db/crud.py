@@ -34,7 +34,7 @@ from app.db.models import (
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
 from app.models.node import NodeCreate, NodeModify, NodeStatus, NodeUsageResponse
 from app.models.proxy import ProxyHost as ProxyHostModify
-from app.models.settings import SubscriptionSettings
+from app.models.settings import EmailSettings, SubscriptionSettings
 from app.models.user import (
     ReminderType,
     UserCreate,
@@ -391,6 +391,7 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None) -> User:
         data_limit_reset_strategy=user.data_limit_reset_strategy,
         device_limit=(user.device_limit or None),
         note=user.note,
+        email=user.email,
         on_hold_expire_duration=(user.on_hold_expire_duration or None),
         on_hold_timeout=(user.on_hold_timeout or None),
         auto_delete_in_days=user.auto_delete_in_days,
@@ -509,6 +510,9 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
 
     if modify.note is not None:
         dbuser.note = modify.note or None
+
+    if modify.email is not None:
+        dbuser.email = modify.email or None
 
     if modify.device_limit is not None:
         dbuser.device_limit = (modify.device_limit or None)
@@ -1583,6 +1587,23 @@ def update_settings(db: Session, modify: SubscriptionSettings) -> Settings:
     """
     settings = get_settings(db)
     for field, value in modify.model_dump().items():
+        setattr(settings, field, value or None)
+
+    db.commit()
+    db.refresh(settings)
+    return settings
+
+
+def update_email_settings(db: Session, modify: EmailSettings) -> Settings:
+    """
+    Updates the SMTP settings. A blank smtp_password leaves the existing
+    password untouched (it's never sent back to the panel), every other
+    blank field clears that setting.
+    """
+    settings = get_settings(db)
+    for field, value in modify.model_dump().items():
+        if field == "smtp_password" and not value:
+            continue
         setattr(settings, field, value or None)
 
     db.commit()

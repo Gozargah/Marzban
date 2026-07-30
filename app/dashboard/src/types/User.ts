@@ -50,6 +50,7 @@ export type User = {
   subscription_url: string;
   inbounds: UserInbounds;
   note: string;
+  email: string | null;
   online_at: string;
   admin: { username: string; is_sudo: boolean } | null;
 };
@@ -66,6 +67,7 @@ export type UserCreate = Pick<
   | "username"
   | "status"
   | "note"
+  | "email"
 >;
 
 export type UserApi = {

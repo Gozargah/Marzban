@@ -56,6 +56,8 @@ type DashboardStateType = {
   onEditingAdmins: (isEditingAdmins: boolean) => void;
   isEditingDomains: boolean;
   onEditingDomains: (isEditingDomains: boolean) => void;
+  isEditingEmailSettings: boolean;
+  onEditingEmailSettings: (isEditingEmailSettings: boolean) => void;
   onCreateUser: (isOpen: boolean) => void;
   onEditingUser: (user: User | null) => void;
   onDeletingUser: (user: User | null) => void;
@@ -140,6 +142,10 @@ export const useDashboard = create(
     isEditingDomains: false,
     onEditingDomains: (isEditingDomains: boolean) => {
       set({ isEditingDomains });
+    },
+    isEditingEmailSettings: false,
+    onEditingEmailSettings: (isEditingEmailSettings: boolean) => {
+      set({ isEditingEmailSettings });
     },
     refetchUsers: () => {
       fetchUsers(get().filters);

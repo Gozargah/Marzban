@@ -6,7 +6,7 @@ from app import __version__, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.proxy import ProxyHost, ProxyInbound, ProxyTypes
-from app.models.settings import SubscriptionSettings
+from app.models.settings import EmailSettings, EmailSettingsResponse, SubscriptionSettings
 from app.models.system import SystemStats
 from app.models.user import UserStatus
 from app.utils import responses
@@ -124,3 +124,39 @@ def modify_subscription_settings(
 ):
     """Update the panel-editable subscription texts. Leave a field blank to reset it to the .env default."""
     return crud.update_settings(db, modify)
+
+
+@router.get(
+    "/settings/email", response_model=EmailSettingsResponse, responses={403: responses._403}
+)
+def get_email_settings(
+    db: Session = Depends(get_db), admin: Admin = Depends(Admin.check_sudo_admin)
+):
+    """Get the SMTP settings used to email subscription links (the password is never returned)."""
+    settings = crud.get_settings(db)
+    return EmailSettingsResponse(
+        smtp_host=settings.smtp_host,
+        smtp_port=settings.smtp_port,
+        smtp_username=settings.smtp_username,
+        smtp_password_set=bool(settings.smtp_password),
+        smtp_from_email=settings.smtp_from_email,
+    )
+
+
+@router.put(
+    "/settings/email", response_model=EmailSettingsResponse, responses={403: responses._403}
+)
+def modify_email_settings(
+    modify: EmailSettings,
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.check_sudo_admin),
+):
+    """Update the SMTP settings. Leave the password blank to keep the existing one."""
+    settings = crud.update_email_settings(db, modify)
+    return EmailSettingsResponse(
+        smtp_host=settings.smtp_host,
+        smtp_port=settings.smtp_port,
+        smtp_username=settings.smtp_username,
+        smtp_password_set=bool(settings.smtp_password),
+        smtp_from_email=settings.smtp_from_email,
+    )

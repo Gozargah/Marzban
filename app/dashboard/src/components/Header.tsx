@@ -20,6 +20,7 @@ import {
   Cog6ToothIcon,
   CurrencyDollarIcon,
   DocumentMinusIcon,
+  EnvelopeIcon,
   GlobeAltIcon,
   LinkIcon,
   MoonIcon,
@@ -62,6 +63,7 @@ const ResetUsageIcon = chakra(DocumentMinusIcon, iconProps);
 const SubscriptionSettingsIcon = chakra(ChatBubbleBottomCenterTextIcon, iconProps);
 const AdminsIcon = chakra(UsersIcon, iconProps);
 const DomainsIcon = chakra(GlobeAltIcon, iconProps);
+const EmailSettingsIcon = chakra(EnvelopeIcon, iconProps);
 const NotificationCircle = chakra(Box, {
   baseStyle: {
     bg: "yellow.500",
@@ -107,6 +109,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
     onEditingSubscriptionSettings,
     onEditingAdmins,
     onEditingDomains,
+    onEditingEmailSettings,
   } = useDashboard();
   const { t } = useTranslation();
   const { colorMode, toggleColorMode } = useColorMode();
@@ -199,6 +202,13 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                       onClick={onResetAllUsage.bind(null, true)}
                     >
                       {t("resetAllUsage")}
+                    </MenuItem>
+                    <MenuItem
+                      fontSize="sm"
+                      icon={<EmailSettingsIcon />}
+                      onClick={onEditingEmailSettings.bind(null, true)}
+                    >
+                      {t("header.emailSettings")}
                     </MenuItem>
                   </MenuGroup>
                   <MenuDivider />

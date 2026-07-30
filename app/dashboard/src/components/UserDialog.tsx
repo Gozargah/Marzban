@@ -41,6 +41,7 @@ import {
 import {
   ChartPieIcon,
   DevicePhoneMobileIcon,
+  EnvelopeIcon,
   PencilIcon,
   UserPlusIcon,
 } from "@heroicons/react/24/outline";
@@ -99,6 +100,13 @@ const UserDevicesIcon = chakra(DevicePhoneMobileIcon, {
   },
 });
 
+const SendEmailIcon = chakra(EnvelopeIcon, {
+  baseStyle: {
+    w: 4,
+    h: 4,
+  },
+});
+
 type UserDeviceType = {
   ip: string;
   user_agent: string;
@@ -146,6 +154,7 @@ const getDefaultValues = (): FormType => {
     status: "active",
     on_hold_expire_duration: null,
     note: "",
+    email: "",
     inbounds,
     proxies: {
       vless: { id: "", flow: "" },
@@ -179,6 +188,12 @@ const baseSchema = {
     message: "userDialog.selectOneProtocol",
   }),
   note: z.string().nullable(),
+  email: z
+    .string()
+    .nullable()
+    .refine((v) => !v || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v), {
+      message: "userDialog.invalidEmail",
+    }),
   proxies: z
     .record(z.string(), z.record(z.string(), z.any()))
     .transform((ins) => {
@@ -417,6 +432,34 @@ export const UserDialog: FC<UserDialogProps> = () => {
 
   const handleRevokeSubscription = () => {
     useDashboard.setState({ revokeSubscriptionUser: editingUser });
+  };
+
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const handleSendEmail = () => {
+    if (!editingUser) return;
+    setSendingEmail(true);
+    fetch(`/user/${editingUser.username}/send-subscription-email`, {
+      method: "POST",
+    })
+      .then(() => {
+        toast({
+          title: t("userDialog.emailSent"),
+          status: "success",
+          isClosable: true,
+          position: "top",
+          duration: 3000,
+        });
+      })
+      .catch((err) => {
+        toast({
+          title: err?.response?._data?.detail || t("userDialog.emailSendFailed"),
+          status: "error",
+          isClosable: true,
+          position: "top",
+          duration: 4000,
+        });
+      })
+      .finally(() => setSendingEmail(false));
   };
 
   const disabled = loading;
@@ -778,6 +821,32 @@ export const UserDialog: FC<UserDialogProps> = () => {
 
                       <FormControl
                         mb={"10px"}
+                        isInvalid={!!form.formState.errors.email}
+                      >
+                        <FormLabel>{t("userDialog.email")}</FormLabel>
+                        <Controller
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <Input
+                              {...field}
+                              value={field.value || ""}
+                              type="email"
+                              size="sm"
+                              borderRadius="6px"
+                              placeholder="user@example.com"
+                              error={
+                                form.formState.errors.email?.message
+                                  ? t(form.formState.errors.email.message as string)
+                                  : undefined
+                              }
+                            />
+                          )}
+                        />
+                      </FormControl>
+
+                      <FormControl
+                        mb={"10px"}
                         isInvalid={!!form.formState.errors.note}
                       >
                         <FormLabel>{t("userDialog.note")}</FormLabel>
@@ -997,6 +1066,23 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       <Button onClick={handleRevokeSubscription} size="sm">
                         {t("userDialog.revokeSubscription")}
                       </Button>
+                      {editingUser?.email && (
+                        <Tooltip
+                          label={t("userDialog.sendEmailTooltip", {
+                            email: editingUser.email,
+                          })}
+                          placement="top"
+                        >
+                          <Button
+                            onClick={handleSendEmail}
+                            size="sm"
+                            isLoading={sendingEmail}
+                            leftIcon={<SendEmailIcon />}
+                          >
+                            {t("userDialog.sendEmail")}
+                          </Button>
+                        </Tooltip>
+                      )}
                     </>
                   )}
                 </HStack>
