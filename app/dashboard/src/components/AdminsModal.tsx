@@ -25,6 +25,7 @@ import {
   Th,
   Thead,
   Tr,
+  useBreakpointValue,
   useToast,
   VStack,
 } from "@chakra-ui/react";
@@ -104,6 +105,56 @@ const GB = 1073741824;
 const bytesToGB = (bytes: number | null) => (bytes ? String(bytes / GB) : "");
 const gbToBytes = (gb: string): number | null =>
   gb ? Math.round(parseFloat(gb) * GB) : null;
+// Unlike bytesToGB (used for optional limit form fields, where 0/null should
+// stay blank), this is for read-only display of an actual usage number,
+// where 0 must render as "0", not an empty string.
+const formatGB = (bytes: number | null | undefined) => {
+  const value = (bytes || 0) / GB;
+  return value % 1 === 0 ? String(value) : value.toFixed(2);
+};
+
+const AdminLimitsSummary: FC<{ admin: AdminType; t: (key: string) => string }> = ({
+  admin,
+  t,
+}) => {
+  const isExpired = !!admin.expire_date && new Date(admin.expire_date) <= new Date();
+  if (
+    !admin.users_usage_limit &&
+    !admin.max_users_data_limit &&
+    !admin.max_users &&
+    !admin.expire_date
+  ) {
+    return (
+      <Text fontSize="xs" color="gray.400">
+        {t("adminsModal.noLimits")}
+      </Text>
+    );
+  }
+  return (
+    <VStack align="start" spacing={0.5} fontSize="xs">
+      {admin.users_usage_limit && (
+        <Text>
+          {formatGB(admin.users_usage)} / {bytesToGB(admin.users_usage_limit)} GB
+        </Text>
+      )}
+      {admin.max_users_data_limit && (
+        <Text color="gray.500">
+          {t("adminsModal.maxUserDataLimitShort")}: {bytesToGB(admin.max_users_data_limit)} GB
+        </Text>
+      )}
+      {admin.max_users && (
+        <Text color="gray.500">
+          {t("adminsModal.maxUsersShort")}: {admin.max_users}
+        </Text>
+      )}
+      {admin.expire_date && (
+        <Badge colorScheme={isExpired ? "red" : "gray"} fontSize="9px">
+          {admin.expire_date.slice(0, 10)}
+        </Badge>
+      )}
+    </VStack>
+  );
+};
 
 export const AdminsModal: FC = () => {
   const { isEditingAdmins, onEditingAdmins } = useDashboard();
@@ -118,6 +169,7 @@ export const AdminsModal: FC = () => {
   const [saving, setSaving] = useState(false);
 
   const form = useForm<AdminFormType>({ defaultValues: emptyForm });
+  const useTable = useBreakpointValue({ base: false, md: true });
 
   const fetchAdmins = () => {
     setLoading(true);
@@ -260,57 +312,100 @@ export const AdminsModal: FC = () => {
                 <HStack justifyContent="center" py="8">
                   <Spinner size="sm" />
                 </HStack>
+              ) : useTable ? (
+                <Box overflowX="auto">
+                  <Table size="sm">
+                    <Thead>
+                      <Tr>
+                        <Th>{t("username")}</Th>
+                        <Th>{t("adminsModal.sudo")}</Th>
+                        <Th>{t("adminsModal.limits")}</Th>
+                        <Th>{t("adminsModal.telegram")}</Th>
+                        <Th></Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {admins.map((admin) => (
+                        <Tr key={admin.username}>
+                          <Td>{admin.username}</Td>
+                          <Td>
+                            {admin.is_sudo ? (
+                              <Badge colorScheme="primary">{t("adminsModal.sudo")}</Badge>
+                            ) : (
+                              <Badge>{t("adminsModal.restricted")}</Badge>
+                            )}
+                          </Td>
+                          <Td>
+                            <AdminLimitsSummary admin={admin} t={t} />
+                          </Td>
+                          <Td>
+                            {admin.telegram_id ? (
+                              <IconButton
+                                as="a"
+                                href={`tg://user?id=${admin.telegram_id}`}
+                                target="_blank"
+                                aria-label="telegram"
+                                size="xs"
+                                variant="outline"
+                              >
+                                <TelegramIcon />
+                              </IconButton>
+                            ) : (
+                              "-"
+                            )}
+                          </Td>
+                          <Td>
+                            <HStack justifyContent="flex-end">
+                              {canManage(admin) && (
+                                <IconButton
+                                  aria-label="edit"
+                                  size="xs"
+                                  variant="outline"
+                                  onClick={() => openEdit(admin)}
+                                >
+                                  <EditIcon />
+                                </IconButton>
+                              )}
+                              {canManage(admin) && admin.username !== currentAdmin.username && (
+                                <IconButton
+                                  aria-label="delete"
+                                  size="xs"
+                                  variant="outline"
+                                  colorScheme="red"
+                                  onClick={() => setDeletingAdmin(admin)}
+                                >
+                                  <DeleteIcon />
+                                </IconButton>
+                              )}
+                            </HStack>
+                          </Td>
+                        </Tr>
+                      ))}
+                    </Tbody>
+                  </Table>
+                </Box>
               ) : (
-                <Table size="sm">
-                  <Thead>
-                    <Tr>
-                      <Th>{t("username")}</Th>
-                      <Th>{t("adminsModal.sudo")}</Th>
-                      <Th>{t("adminsModal.limits")}</Th>
-                      <Th>{t("adminsModal.telegram")}</Th>
-                      <Th></Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {admins.map((admin) => {
-                      const isExpired =
-                        !!admin.expire_date && new Date(admin.expire_date) <= new Date();
-                      return (
-                      <Tr key={admin.username}>
-                        <Td>{admin.username}</Td>
-                        <Td>
+                <VStack spacing="3" align="stretch">
+                  {admins.map((admin) => (
+                    <Box
+                      key={admin.username}
+                      borderWidth="1px"
+                      borderColor="gray.200"
+                      _dark={{ borderColor: "gray.600" }}
+                      borderRadius="md"
+                      p={3}
+                    >
+                      <HStack justifyContent="space-between" mb="2" align="start">
+                        <VStack align="start" spacing={1}>
+                          <Text fontWeight="semibold">{admin.username}</Text>
                           {admin.is_sudo ? (
                             <Badge colorScheme="primary">{t("adminsModal.sudo")}</Badge>
                           ) : (
                             <Badge>{t("adminsModal.restricted")}</Badge>
                           )}
-                        </Td>
-                        <Td fontSize="xs">
-                          <VStack align="start" spacing={0}>
-                            {admin.users_usage_limit && (
-                              <Text>
-                                {bytesToGB(admin.users_usage)} / {bytesToGB(admin.users_usage_limit)} GB
-                              </Text>
-                            )}
-                            {admin.max_users_data_limit && (
-                              <Text color="gray.500">
-                                {t("adminsModal.maxUserDataLimitShort")}: {bytesToGB(admin.max_users_data_limit)} GB
-                              </Text>
-                            )}
-                            {admin.max_users && (
-                              <Text color="gray.500">
-                                {t("adminsModal.maxUsersShort")}: {admin.max_users}
-                              </Text>
-                            )}
-                            {admin.expire_date && (
-                              <Badge colorScheme={isExpired ? "red" : "gray"}>
-                                {admin.expire_date.slice(0, 10)}
-                              </Badge>
-                            )}
-                          </VStack>
-                        </Td>
-                        <Td>
-                          {admin.telegram_id ? (
+                        </VStack>
+                        <HStack spacing={1}>
+                          {admin.telegram_id && (
                             <IconButton
                               as="a"
                               href={`tg://user?id=${admin.telegram_id}`}
@@ -321,40 +416,34 @@ export const AdminsModal: FC = () => {
                             >
                               <TelegramIcon />
                             </IconButton>
-                          ) : (
-                            "-"
                           )}
-                        </Td>
-                        <Td>
-                          <HStack justifyContent="flex-end">
-                            {canManage(admin) && (
-                              <IconButton
-                                aria-label="edit"
-                                size="xs"
-                                variant="outline"
-                                onClick={() => openEdit(admin)}
-                              >
-                                <EditIcon />
-                              </IconButton>
-                            )}
-                            {canManage(admin) && admin.username !== currentAdmin.username && (
-                              <IconButton
-                                aria-label="delete"
-                                size="xs"
-                                variant="outline"
-                                colorScheme="red"
-                                onClick={() => setDeletingAdmin(admin)}
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            )}
-                          </HStack>
-                        </Td>
-                      </Tr>
-                      );
-                    })}
-                  </Tbody>
-                </Table>
+                          {canManage(admin) && (
+                            <IconButton
+                              aria-label="edit"
+                              size="xs"
+                              variant="outline"
+                              onClick={() => openEdit(admin)}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                          )}
+                          {canManage(admin) && admin.username !== currentAdmin.username && (
+                            <IconButton
+                              aria-label="delete"
+                              size="xs"
+                              variant="outline"
+                              colorScheme="red"
+                              onClick={() => setDeletingAdmin(admin)}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          )}
+                        </HStack>
+                      </HStack>
+                      <AdminLimitsSummary admin={admin} t={t} />
+                    </Box>
+                  ))}
+                </VStack>
               )}
               {!loading && admins.length === 0 && (
                 <Text fontSize="sm" color="gray.500" textAlign="center" py="4">
