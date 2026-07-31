@@ -11,6 +11,7 @@ from app.models.user import SubscriptionUserResponse, UserResponse
 from app.subscription.share import encode_title, generate_subscription
 from app.templates import render_template
 from config import (
+    DEVICE_LIMIT_IP_CHANGE_GRACE_MINUTES,
     DEVICE_LIMIT_WINDOW_HOURS,
     SUB_PROFILE_TITLE,
     SUB_SUPPORT_URL,
@@ -51,7 +52,9 @@ def is_device_limit_exceeded(db: Session, dbuser, request: Request, user_agent: 
     """Always records the requesting device (shown on the user's Devices tab), and
     reports whether it pushed the user over their device_limit, if one is set."""
     client_ip = request.client.host if request.client else ""
-    active_devices = crud.record_user_device(db, dbuser, client_ip, user_agent, DEVICE_LIMIT_WINDOW_HOURS)
+    active_devices = crud.record_user_device(
+        db, dbuser, client_ip, user_agent, DEVICE_LIMIT_WINDOW_HOURS, DEVICE_LIMIT_IP_CHANGE_GRACE_MINUTES
+    )
     return bool(dbuser.device_limit) and active_devices > dbuser.device_limit
 
 

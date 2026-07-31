@@ -657,7 +657,10 @@ def update_user_sub(db: Session, dbuser: User, user_agent: str) -> User:
     return dbuser
 
 
-def record_user_device(db: Session, dbuser: User, ip: str, user_agent: str, window_hours: int) -> int:
+def record_user_device(
+    db: Session, dbuser: User, ip: str, user_agent: str, window_hours: int,
+    ip_change_grace_minutes: int = 0,
+) -> int:
     """
     Records a device (identified by IP + user agent) fetching the user's subscription
     and returns the number of distinct devices active within the tracking window.
@@ -668,6 +671,11 @@ def record_user_device(db: Session, dbuser: User, ip: str, user_agent: str, wind
         ip (str): The IP address of the requesting device.
         user_agent (str): The user agent string of the requesting device.
         window_hours (int): How many hours a device is considered "active" for.
+        ip_change_grace_minutes (int): If a device with the same user agent was last
+            seen within this many minutes (regardless of its previous IP), the new IP
+            is folded into that same device instead of counting as a new one. This
+            absorbs ordinary IP churn (cellular handoffs, DHCP renewals) that would
+            otherwise make one physical device look like several.
 
     Returns:
         int: Number of distinct devices active within the tracking window.
@@ -681,6 +689,17 @@ def record_user_device(db: Session, dbuser: User, ip: str, user_agent: str, wind
         UserDevice.ip == ip,
         UserDevice.user_agent == user_agent,
     ).first()
+
+    if not device and ip_change_grace_minutes > 0:
+        grace_start = now - timedelta(minutes=ip_change_grace_minutes)
+        recent_same_agent = db.query(UserDevice).filter(
+            UserDevice.user_id == dbuser.id,
+            UserDevice.user_agent == user_agent,
+            UserDevice.last_seen >= grace_start,
+        ).order_by(UserDevice.last_seen.desc()).first()
+        if recent_same_agent:
+            recent_same_agent.ip = ip
+            device = recent_same_agent
 
     if device:
         device.last_seen = now
