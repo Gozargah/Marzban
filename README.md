@@ -381,8 +381,8 @@ For more information, You can read [Marzban CLI's documentation](./cli/README.md
 
 # Marzban Node
 
-The Marzban project introduces the [Marzban-node](https://github.com/arsi/marzban-node), which revolutionizes infrastructure distribution. With Marzban-node, you can distribute your infrastructure across multiple locations, unlocking benefits such as redundancy, high availability, scalability, flexibility. Marzban-node empowers users to connect to different servers, offering them the flexibility to choose and connect to multiple servers instead of being limited to only one server.
-For more detailed information and installation instructions, please refer to the [Marzban-node official documentation](https://github.com/arsi/marzban-node)
+The Marzban project introduces Marzban-node, which revolutionizes infrastructure distribution. With Marzban-node, you can distribute your infrastructure across multiple locations, unlocking benefits such as redundancy, high availability, scalability, flexibility. Marzban-node empowers users to connect to different servers, offering them the flexibility to choose and connect to multiple servers instead of being limited to only one server.
+This fork doesn't maintain its own copy of the node agent; it runs the upstream [Marzban-node](https://github.com/Gozargah/Marzban-node) project unmodified (it's a headless gRPC service with no dashboard branding). See its README for the full docker-compose setup.
 
 # Webhook notifications
 
