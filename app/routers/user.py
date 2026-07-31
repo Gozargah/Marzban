@@ -305,6 +305,20 @@ def get_user_devices(
     return crud.get_user_devices(db, dbuser)
 
 
+@router.delete(
+    "/user/{username}/devices/{device_id}", responses={403: responses._403, 404: responses._404}
+)
+def remove_user_device(
+    device_id: int,
+    dbuser: UserResponse = Depends(get_validated_user),
+    db: Session = Depends(get_db),
+):
+    """Removes a recorded device, freeing up a device_limit (HWID limit) slot."""
+    if not crud.delete_user_device(db, dbuser, device_id):
+        raise HTTPException(status_code=404, detail="Device not found")
+    return {"detail": "Device removed"}
+
+
 @router.post(
     "/user/{username}/send-subscription-email", responses={400: responses._400, 403: responses._403, 404: responses._404}
 )

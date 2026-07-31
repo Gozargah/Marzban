@@ -658,40 +658,45 @@ def update_user_sub(db: Session, dbuser: User, user_agent: str) -> User:
 
 
 def record_user_device(
-    db: Session, dbuser: User, ip: str, user_agent: str, window_hours: int,
+    db: Session, dbuser: User, ip: str, user_agent: str, device_limit: int,
     ip_change_grace_minutes: int = 0, hwid: str = None, device_os: str = None,
     device_model: str = None,
-) -> int:
+) -> bool:
     """
-    Records a device fetching the user's subscription and returns the number of
-    distinct devices active within the tracking window (HWID limit).
+    Recognizes/records the device fetching this user's subscription and returns
+    whether this request is over the user's device_limit.
+
+    Devices are permanent slots, not a rolling activity window: once a device is
+    recognized, it keeps working indefinitely -- there's no time-based expiry
+    that could let it "fall out" and free up its slot for someone else. The only
+    way a slot frees up is an admin removing that device (delete_user_device).
 
     If the client sends a stable hardware id (hwid, from the `x-hwid` header --
     supported by HWID-aware clients such as Happ/v2rayNG forks), that id is the
-    single source of truth for "is this the same device": it's matched/stored on
-    its own and never affected by IP or user-agent changes.
+    single source of truth for "is this the same device": matched by itself,
+    forever, regardless of IP.
 
-    Otherwise, falls back to matching by IP + user agent, which is what most
-    ordinary clients are limited to identifying a device by.
+    Otherwise, falls back to matching by IP + user agent (what most ordinary
+    clients can be identified by at all). A reconnect with the same user agent
+    within ip_change_grace_minutes of that device's last request is folded into
+    the same slot even if its IP changed (absorbs ordinary IP churn -- cellular
+    handoffs, DHCP renewals -- instead of it wrongly claiming a new slot).
 
     Args:
         db (Session): Database session.
         dbuser (User): The user object whose subscription is being fetched.
         ip (str): The IP address of the requesting device.
         user_agent (str): The user agent string of the requesting device.
-        window_hours (int): How many hours a device is considered "active" for.
-        ip_change_grace_minutes (int): For devices without a hwid: if a device with
-            the same user agent was last seen within this many minutes (regardless
-            of its previous IP), the new IP is folded into that same device instead
-            of counting as a new one. This absorbs ordinary IP churn (cellular
-            handoffs, DHCP renewals) that would otherwise make one physical device
-            look like several.
+        device_limit (int): Max number of permanent device slots. 0/None = unlimited
+            (the device is still recorded, for visibility in the Devices tab, but
+            never rejected).
+        ip_change_grace_minutes (int): See above.
         hwid (str): Stable client-reported hardware id, if the client sent one.
         device_os (str): Client-reported OS name, if sent (display only).
         device_model (str): Client-reported device model, if sent (display only).
 
     Returns:
-        int: Number of distinct devices active within the tracking window.
+        bool: True if this device does NOT have (and couldn't be granted) a slot.
     """
     now = datetime.utcnow()
     ip = ip or ""
@@ -731,21 +736,23 @@ def record_user_device(
             device.device_os = device_os
         if device_model:
             device.device_model = device_model
-    else:
-        device = UserDevice(
-            user=dbuser, ip=ip, user_agent=user_agent, hwid=hwid,
-            device_os=device_os, device_model=device_model,
-            first_seen=now, last_seen=now,
-        )
-        db.add(device)
+        db.commit()
+        return False
 
+    # Genuinely unrecognized device: grant it a new permanent slot if there's
+    # room, otherwise reject it without recording anything for it at all.
+    if device_limit:
+        occupied_slots = db.query(UserDevice).filter(UserDevice.user_id == dbuser.id).count()
+        if occupied_slots >= device_limit:
+            return True
+
+    db.add(UserDevice(
+        user=dbuser, ip=ip, user_agent=user_agent, hwid=hwid,
+        device_os=device_os, device_model=device_model,
+        first_seen=now, last_seen=now,
+    ))
     db.commit()
-
-    window_start = now - timedelta(hours=window_hours)
-    return db.query(UserDevice).filter(
-        UserDevice.user_id == dbuser.id,
-        UserDevice.last_seen >= window_start,
-    ).count()
+    return False
 
 
 def get_user_devices(db: Session, dbuser: User) -> List[UserDevice]:
@@ -753,6 +760,19 @@ def get_user_devices(db: Session, dbuser: User) -> List[UserDevice]:
     return db.query(UserDevice).filter(
         UserDevice.user_id == dbuser.id
     ).order_by(UserDevice.last_seen.desc()).all()
+
+
+def delete_user_device(db: Session, dbuser: User, device_id: int) -> bool:
+    """Removes a recorded device, freeing up a device_limit slot. Returns False if not found."""
+    device = db.query(UserDevice).filter(
+        UserDevice.id == device_id,
+        UserDevice.user_id == dbuser.id,
+    ).first()
+    if not device:
+        return False
+    db.delete(device)
+    db.commit()
+    return True
 
 
 def reset_all_users_data_usage(db: Session, admin: Optional[Admin] = None):

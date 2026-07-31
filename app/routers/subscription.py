@@ -12,7 +12,6 @@ from app.subscription.share import encode_title, generate_subscription
 from app.templates import render_template
 from config import (
     DEVICE_LIMIT_IP_CHANGE_GRACE_MINUTES,
-    DEVICE_LIMIT_WINDOW_HOURS,
     SUB_PROFILE_TITLE,
     SUB_SUPPORT_URL,
     SUB_UPDATE_INTERVAL,
@@ -52,18 +51,18 @@ def is_device_limit_exceeded(
     db: Session, dbuser, request: Request, user_agent: str,
     hwid: str = None, device_os: str = None, device_model: str = None,
 ) -> bool:
-    """Always records the requesting device (shown on the user's Devices tab), and
-    reports whether it pushed the user over their device_limit (HWID limit), if one
-    is set. Devices that send an x-hwid header are identified by that alone; others
-    fall back to matching by ip + user agent."""
+    """Always records/recognizes the requesting device (shown on the user's Devices
+    tab) as a permanent slot, and reports whether it couldn't get one because the
+    user's device_limit (HWID limit) is already full. Devices that send an x-hwid
+    header are identified by that alone, forever; others fall back to matching by
+    ip + user agent."""
     client_ip = request.client.host if request.client else ""
-    active_devices = crud.record_user_device(
-        db, dbuser, client_ip, user_agent, DEVICE_LIMIT_WINDOW_HOURS, DEVICE_LIMIT_IP_CHANGE_GRACE_MINUTES,
+    return crud.record_user_device(
+        db, dbuser, client_ip, user_agent, dbuser.device_limit or 0, DEVICE_LIMIT_IP_CHANGE_GRACE_MINUTES,
         hwid=(hwid or "").strip() or None,
         device_os=(device_os or "").strip() or None,
         device_model=(device_model or "").strip() or None,
     )
-    return bool(dbuser.device_limit) and active_devices > dbuser.device_limit
 
 
 def get_resolved_sub_settings(db: Session) -> dict:

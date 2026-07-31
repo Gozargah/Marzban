@@ -379,6 +379,7 @@ class UsersUsagesResponse(BaseModel):
 
 
 class UserDeviceResponse(BaseModel):
+    id: int
     ip: str
     user_agent: str
     hwid: Optional[str] = None

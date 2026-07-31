@@ -108,6 +108,7 @@ const SendEmailIcon = chakra(EnvelopeIcon, {
 });
 
 type UserDeviceType = {
+  id: number;
   ip: string;
   user_agent: string;
   hwid?: string | null;
@@ -116,6 +117,8 @@ type UserDeviceType = {
   first_seen: string;
   last_seen: string;
 };
+
+const MAX_VERSION_LABEL_LENGTH = 28;
 
 const parseDeviceLabel = (userAgent: string): { app: string; version: string } => {
   if (!userAgent) return { app: "Unknown", version: "" };
@@ -299,6 +302,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const [devicesVisible, setDevicesVisible] = useState(false);
   const [devices, setDevices] = useState<UserDeviceType[]>([]);
   const [devicesLoading, setDevicesLoading] = useState(false);
+  const [deletingDeviceId, setDeletingDeviceId] = useState<number | null>(null);
   const handleDevicesToggle = () => {
     setUsageVisible(false);
     setDevicesVisible((current) => {
@@ -311,6 +315,33 @@ export const UserDialog: FC<UserDialogProps> = () => {
       }
       return next;
     });
+  };
+  const handleDeleteDevice = (deviceId: number) => {
+    if (!editingUser) return;
+    setDeletingDeviceId(deviceId);
+    fetch(`/user/${editingUser.username}/devices/${deviceId}`, {
+      method: "DELETE",
+    })
+      .then(() => {
+        setDevices((current) => current.filter((d) => d.id !== deviceId));
+        toast({
+          title: t("userDialog.deviceRemoved"),
+          status: "success",
+          isClosable: true,
+          position: "top",
+          duration: 2000,
+        });
+      })
+      .catch(() => {
+        toast({
+          title: t("userDialog.deviceRemoveFailed"),
+          status: "error",
+          isClosable: true,
+          position: "top",
+          duration: 3000,
+        });
+      })
+      .finally(() => setDeletingDeviceId(null));
   };
 
   const form = useForm<FormType>({
@@ -710,6 +741,9 @@ export const UserDialog: FC<UserDialogProps> = () => {
                             );
                           }}
                         />
+                        <FormHelperText fontSize="xs">
+                          {t("userDialog.deviceLimitHint")}
+                        </FormHelperText>
                       </FormControl>
 
                       <FormControl mb={"10px"}>
@@ -957,13 +991,19 @@ export const UserDialog: FC<UserDialogProps> = () => {
                               <Th>{t("userDialog.deviceIp")}</Th>
                               <Th>{t("userDialog.deviceFirstSeen")}</Th>
                               <Th>{t("userDialog.deviceLastSeen")}</Th>
+                              <Th></Th>
                             </Tr>
                           </Thead>
                           <Tbody>
-                            {devices.map((device, i) => {
+                            {devices.map((device) => {
                               const { app, version } = parseDeviceLabel(
                                 device.user_agent
                               );
+                              const versionTooLong =
+                                version.length > MAX_VERSION_LABEL_LENGTH;
+                              const versionLabel = versionTooLong
+                                ? version.slice(0, MAX_VERSION_LABEL_LENGTH) + "…"
+                                : version;
                               const recentlySeen =
                                 dayjs().diff(dayjs(device.last_seen + "Z"), "minute") <
                                 60;
@@ -971,14 +1011,24 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                 .filter(Boolean)
                                 .join(" · ");
                               return (
-                                <Tr key={i}>
-                                  <Td fontSize="xs">
-                                    <HStack spacing={1.5}>
+                                <Tr key={device.id}>
+                                  <Td fontSize="xs" maxW="220px">
+                                    <HStack spacing={1.5} flexWrap="wrap">
                                       <Text fontWeight="medium">{app}</Text>
                                       {version && (
-                                        <Badge fontSize="9px" variant="subtle">
-                                          {version}
-                                        </Badge>
+                                        <Tooltip
+                                          label={versionTooLong ? version : ""}
+                                          isDisabled={!versionTooLong}
+                                        >
+                                          <Badge
+                                            fontSize="9px"
+                                            variant="subtle"
+                                            textTransform="none"
+                                            whiteSpace="nowrap"
+                                          >
+                                            {versionLabel}
+                                          </Badge>
+                                        </Tooltip>
                                       )}
                                       {device.hwid && (
                                         <Tooltip
@@ -1009,6 +1059,20 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                     >
                                       {dayjs(device.last_seen + "Z").fromNow()}
                                     </Badge>
+                                  </Td>
+                                  <Td fontSize="xs">
+                                    <Tooltip label={t("userDialog.deviceRemove")}>
+                                      <IconButton
+                                        aria-label="remove device"
+                                        size="xs"
+                                        variant="ghost"
+                                        colorScheme="red"
+                                        isLoading={deletingDeviceId === device.id}
+                                        onClick={() => handleDeleteDevice(device.id)}
+                                      >
+                                        <DeleteIcon />
+                                      </IconButton>
+                                    </Tooltip>
                                   </Td>
                                 </Tr>
                               );
