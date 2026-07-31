@@ -381,6 +381,9 @@ class UsersUsagesResponse(BaseModel):
 class UserDeviceResponse(BaseModel):
     ip: str
     user_agent: str
+    hwid: Optional[str] = None
+    device_os: Optional[str] = None
+    device_model: Optional[str] = None
     first_seen: datetime
     last_seen: datetime
     model_config = ConfigDict(from_attributes=True)

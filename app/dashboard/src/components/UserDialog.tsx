@@ -110,6 +110,9 @@ const SendEmailIcon = chakra(EnvelopeIcon, {
 type UserDeviceType = {
   ip: string;
   user_agent: string;
+  hwid?: string | null;
+  device_os?: string | null;
+  device_model?: string | null;
   first_seen: string;
   last_seen: string;
 };
@@ -964,6 +967,9 @@ export const UserDialog: FC<UserDialogProps> = () => {
                               const recentlySeen =
                                 dayjs().diff(dayjs(device.last_seen + "Z"), "minute") <
                                 60;
+                              const osModel = [device.device_os, device.device_model]
+                                .filter(Boolean)
+                                .join(" · ");
                               return (
                                 <Tr key={i}>
                                   <Td fontSize="xs">
@@ -974,7 +980,21 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                           {version}
                                         </Badge>
                                       )}
+                                      {device.hwid && (
+                                        <Tooltip
+                                          label={t("userDialog.deviceHwid") + ": " + device.hwid}
+                                        >
+                                          <Badge fontSize="9px" colorScheme="purple">
+                                            HWID
+                                          </Badge>
+                                        </Tooltip>
+                                      )}
                                     </HStack>
+                                    {osModel && (
+                                      <Text fontSize="10px" color="gray.500" mt={0.5}>
+                                        {osModel}
+                                      </Text>
+                                    )}
                                   </Td>
                                   <Td fontSize="xs" fontFamily="mono">
                                     {device.ip || "-"}

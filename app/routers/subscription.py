@@ -48,12 +48,20 @@ def get_subscription_user_info(user: UserResponse) -> dict:
     }
 
 
-def is_device_limit_exceeded(db: Session, dbuser, request: Request, user_agent: str) -> bool:
+def is_device_limit_exceeded(
+    db: Session, dbuser, request: Request, user_agent: str,
+    hwid: str = None, device_os: str = None, device_model: str = None,
+) -> bool:
     """Always records the requesting device (shown on the user's Devices tab), and
-    reports whether it pushed the user over their device_limit, if one is set."""
+    reports whether it pushed the user over their device_limit (HWID limit), if one
+    is set. Devices that send an x-hwid header are identified by that alone; others
+    fall back to matching by ip + user agent."""
     client_ip = request.client.host if request.client else ""
     active_devices = crud.record_user_device(
-        db, dbuser, client_ip, user_agent, DEVICE_LIMIT_WINDOW_HOURS, DEVICE_LIMIT_IP_CHANGE_GRACE_MINUTES
+        db, dbuser, client_ip, user_agent, DEVICE_LIMIT_WINDOW_HOURS, DEVICE_LIMIT_IP_CHANGE_GRACE_MINUTES,
+        hwid=(hwid or "").strip() or None,
+        device_os=(device_os or "").strip() or None,
+        device_model=(device_model or "").strip() or None,
     )
     return bool(dbuser.device_limit) and active_devices > dbuser.device_limit
 
@@ -69,7 +77,10 @@ def user_subscription(
     request: Request,
     db: Session = Depends(get_db),
     dbuser: UserResponse = Depends(get_validated_sub),
-    user_agent: str = Header(default="")
+    user_agent: str = Header(default=""),
+    x_hwid: str = Header(default=None),
+    x_device_os: str = Header(default=None),
+    x_device_model: str = Header(default=None),
 ):
     """Provides a subscription link based on the user agent (Clash, V2Ray, etc.)."""
     user: UserResponse = UserResponse.model_validate(dbuser)
@@ -85,7 +96,9 @@ def user_subscription(
 
     crud.update_user_sub(db, dbuser, user_agent)
     sub_settings = get_resolved_sub_settings(db)
-    device_limit_exceeded = is_device_limit_exceeded(db, dbuser, request, user_agent)
+    device_limit_exceeded = is_device_limit_exceeded(
+        db, dbuser, request, user_agent, x_hwid, x_device_os, x_device_model
+    )
     response_headers = {
         "content-disposition": f'attachment; filename="{user.username}"',
         "profile-web-page-url": str(request.url),
@@ -192,7 +205,10 @@ def user_subscription_with_client_type(
     dbuser: UserResponse = Depends(get_validated_sub),
     client_type: str = Path(..., regex="sing-box|clash-meta|clash|outline|v2ray|v2ray-json"),
     db: Session = Depends(get_db),
-    user_agent: str = Header(default="")
+    user_agent: str = Header(default=""),
+    x_hwid: str = Header(default=None),
+    x_device_os: str = Header(default=None),
+    x_device_model: str = Header(default=None),
 ):
     """Provides a subscription link based on the specified client type (e.g., Clash, V2Ray)."""
     user: UserResponse = UserResponse.model_validate(dbuser)
@@ -210,7 +226,9 @@ def user_subscription_with_client_type(
         )
     }
 
-    device_limit_exceeded = is_device_limit_exceeded(db, dbuser, request, user_agent)
+    device_limit_exceeded = is_device_limit_exceeded(
+        db, dbuser, request, user_agent, x_hwid, x_device_os, x_device_model
+    )
     config = client_config.get(client_type)
     conf = generate_subscription(
         user=user,

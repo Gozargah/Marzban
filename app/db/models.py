@@ -382,6 +382,7 @@ class UserDevice(Base):
     __tablename__ = "user_devices"
     __table_args__ = (
         UniqueConstraint('user_id', 'ip', 'user_agent', name='uq_user_device'),
+        UniqueConstraint('user_id', 'hwid', name='uq_user_device_hwid'),
     )
 
     id = Column(Integer, primary_key=True)
@@ -389,6 +390,13 @@ class UserDevice(Base):
     user = relationship("User", back_populates="devices")
     ip = Column(String(64), nullable=False)
     user_agent = Column(String(512), nullable=False, default="")
+    # Stable client-reported hardware id (x-hwid header), when the client sends one.
+    # Devices identified this way don't depend on ip/user-agent matching at all, so
+    # they aren't affected by IP churn -- this is the preferred identification method
+    # whenever a client supports it.
+    hwid = Column(String(128), nullable=True)
+    device_os = Column(String(64), nullable=True)
+    device_model = Column(String(128), nullable=True)
     first_seen = Column(DateTime, default=datetime.utcnow)
     last_seen = Column(DateTime, default=datetime.utcnow)
 

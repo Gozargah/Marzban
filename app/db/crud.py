@@ -659,11 +659,20 @@ def update_user_sub(db: Session, dbuser: User, user_agent: str) -> User:
 
 def record_user_device(
     db: Session, dbuser: User, ip: str, user_agent: str, window_hours: int,
-    ip_change_grace_minutes: int = 0,
+    ip_change_grace_minutes: int = 0, hwid: str = None, device_os: str = None,
+    device_model: str = None,
 ) -> int:
     """
-    Records a device (identified by IP + user agent) fetching the user's subscription
-    and returns the number of distinct devices active within the tracking window.
+    Records a device fetching the user's subscription and returns the number of
+    distinct devices active within the tracking window (HWID limit).
+
+    If the client sends a stable hardware id (hwid, from the `x-hwid` header --
+    supported by HWID-aware clients such as Happ/v2rayNG forks), that id is the
+    single source of truth for "is this the same device": it's matched/stored on
+    its own and never affected by IP or user-agent changes.
+
+    Otherwise, falls back to matching by IP + user agent, which is what most
+    ordinary clients are limited to identifying a device by.
 
     Args:
         db (Session): Database session.
@@ -671,11 +680,15 @@ def record_user_device(
         ip (str): The IP address of the requesting device.
         user_agent (str): The user agent string of the requesting device.
         window_hours (int): How many hours a device is considered "active" for.
-        ip_change_grace_minutes (int): If a device with the same user agent was last
-            seen within this many minutes (regardless of its previous IP), the new IP
-            is folded into that same device instead of counting as a new one. This
-            absorbs ordinary IP churn (cellular handoffs, DHCP renewals) that would
-            otherwise make one physical device look like several.
+        ip_change_grace_minutes (int): For devices without a hwid: if a device with
+            the same user agent was last seen within this many minutes (regardless
+            of its previous IP), the new IP is folded into that same device instead
+            of counting as a new one. This absorbs ordinary IP churn (cellular
+            handoffs, DHCP renewals) that would otherwise make one physical device
+            look like several.
+        hwid (str): Stable client-reported hardware id, if the client sent one.
+        device_os (str): Client-reported OS name, if sent (display only).
+        device_model (str): Client-reported device model, if sent (display only).
 
     Returns:
         int: Number of distinct devices active within the tracking window.
@@ -683,28 +696,47 @@ def record_user_device(
     now = datetime.utcnow()
     ip = ip or ""
     user_agent = user_agent or ""
+    hwid = hwid or None
 
-    device = db.query(UserDevice).filter(
-        UserDevice.user_id == dbuser.id,
-        UserDevice.ip == ip,
-        UserDevice.user_agent == user_agent,
-    ).first()
-
-    if not device and ip_change_grace_minutes > 0:
-        grace_start = now - timedelta(minutes=ip_change_grace_minutes)
-        recent_same_agent = db.query(UserDevice).filter(
+    if hwid:
+        device = db.query(UserDevice).filter(
             UserDevice.user_id == dbuser.id,
+            UserDevice.hwid == hwid,
+        ).first()
+    else:
+        device = db.query(UserDevice).filter(
+            UserDevice.user_id == dbuser.id,
+            UserDevice.ip == ip,
             UserDevice.user_agent == user_agent,
-            UserDevice.last_seen >= grace_start,
-        ).order_by(UserDevice.last_seen.desc()).first()
-        if recent_same_agent:
-            recent_same_agent.ip = ip
-            device = recent_same_agent
+            UserDevice.hwid.is_(None),
+        ).first()
+
+        if not device and ip_change_grace_minutes > 0:
+            grace_start = now - timedelta(minutes=ip_change_grace_minutes)
+            recent_same_agent = db.query(UserDevice).filter(
+                UserDevice.user_id == dbuser.id,
+                UserDevice.user_agent == user_agent,
+                UserDevice.hwid.is_(None),
+                UserDevice.last_seen >= grace_start,
+            ).order_by(UserDevice.last_seen.desc()).first()
+            if recent_same_agent:
+                recent_same_agent.ip = ip
+                device = recent_same_agent
 
     if device:
         device.last_seen = now
+        device.ip = ip or device.ip
+        device.user_agent = user_agent or device.user_agent
+        if device_os:
+            device.device_os = device_os
+        if device_model:
+            device.device_model = device_model
     else:
-        device = UserDevice(user=dbuser, ip=ip, user_agent=user_agent, first_seen=now, last_seen=now)
+        device = UserDevice(
+            user=dbuser, ip=ip, user_agent=user_agent, hwid=hwid,
+            device_os=device_os, device_model=device_model,
+            first_seen=now, last_seen=now,
+        )
         db.add(device)
 
     db.commit()

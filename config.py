@@ -136,25 +136,30 @@ SUB_UPDATE_INTERVAL = config("SUB_UPDATE_INTERVAL", default="12")
 SUB_SUPPORT_URL = config("SUB_SUPPORT_URL", default="https://t.me/")
 SUB_PROFILE_TITLE = config("SUB_PROFILE_TITLE", default="Subscription")
 
-# How long (in hours) a device (ip + user-agent pair) counts towards a user's
-# device_limit after it last fetched the subscription. Devices that haven't
-# fetched the subscription within this window no longer count as "active".
-# Kept well below the default subscription auto-refresh interval (12h, see
-# SUB_UPDATE_INTERVAL) on purpose: mobile/dynamic IPs routinely change
-# between two scheduled refreshes of the very same physical device, and a
-# window longer than the refresh interval would count that as two devices.
+# HWID device limit. Clients that send an `x-hwid` header (a stable, client-
+# generated hardware id) are identified by that id alone -- reliable regardless
+# of IP changes. Clients that don't send one fall back to matching by ip +
+# user-agent, governed by the two settings below.
+#
+# How long (in hours) a non-HWID device (ip + user-agent pair) counts towards a
+# user's device_limit after it last fetched the subscription. Devices that
+# haven't fetched the subscription within this window no longer count as
+# "active". Kept well below the default subscription auto-refresh interval
+# (12h, see SUB_UPDATE_INTERVAL) on purpose: mobile/dynamic IPs routinely
+# change between two scheduled refreshes of the very same physical device, and
+# a window longer than the refresh interval would count that as two devices.
 DEVICE_LIMIT_WINDOW_HOURS = config("DEVICE_LIMIT_WINDOW_HOURS", cast=int, default=6)
 
-# If a device's IP changes but it fetches again with the same user-agent
-# within this many minutes of its last fetch, it's treated as the same
-# device that just got a new IP (common on cellular networks) instead of a
-# brand new device. Set to 0 to disable this and match strictly on ip+UA.
+# If a non-HWID device's IP changes but it fetches again with the same
+# user-agent within this many minutes of its last fetch, it's treated as the
+# same device that just got a new IP (common on cellular networks) instead of
+# a brand new device. Set to 0 to disable this and match strictly on ip+UA.
 DEVICE_LIMIT_IP_CHANGE_GRACE_MINUTES = config(
     "DEVICE_LIMIT_IP_CHANGE_GRACE_MINUTES", cast=int, default=20
 )
 DEVICE_LIMIT_EXCEEDED_MESSAGE = config(
     "DEVICE_LIMIT_EXCEEDED_MESSAGE",
-    default="Device limit reached. Disconnect another device to use this subscription here."
+    default="HWID limit reached. Disconnect another device to use this subscription here."
 )
 
 # discord webhook log
