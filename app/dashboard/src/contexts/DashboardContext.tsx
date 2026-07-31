@@ -49,6 +49,8 @@ type DashboardStateType = {
   isResetingAllUsage: boolean;
   resetUsageUser: User | null;
   revokeSubscriptionUser: User | null;
+  encryptSubUser: User | null;
+  setEncryptSubUser: (user: User | null) => void;
   isEditingCore: boolean;
   isEditingSubscriptionSettings: boolean;
   onEditingSubscriptionSettings: (isEditingSubscriptionSettings: boolean) => void;
@@ -124,6 +126,7 @@ export const useDashboard = create(
     isShowingNodesUsage: false,
     resetUsageUser: null,
     revokeSubscriptionUser: null,
+    encryptSubUser: null,
     filters: {
       username: "",
       limit: getUsersPerPageLimitSize(),
@@ -217,6 +220,9 @@ export const useDashboard = create(
     },
     setSubLink: (subscribeUrl) => {
       set({ subscribeUrl });
+    },
+    setEncryptSubUser: (user) => {
+      set({ encryptSubUser: user });
     },
     resetDataUsage: (user) => {
       return fetch(`/user/${user.username}/reset`, { method: "POST" }).then(

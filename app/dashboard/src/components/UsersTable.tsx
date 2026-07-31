@@ -32,6 +32,7 @@ import {
   ChevronDownIcon,
   ClipboardIcon,
   LinkIcon,
+  LockClosedIcon,
   PencilIcon,
   QrCodeIcon,
   UserCircleIcon,
@@ -71,6 +72,7 @@ const CreatedByIcon = chakra(UserCircleIcon, { baseStyle: { w: 3, h: 3 } });
 const CopiedIcon = chakra(CheckIcon, iconProps);
 const SubscriptionLinkIcon = chakra(LinkIcon, iconProps);
 const QRIcon = chakra(QrCodeIcon, iconProps);
+const EncryptIcon = chakra(LockClosedIcon, iconProps);
 const EditIcon = chakra(PencilIcon, iconProps);
 const SortIcon = chakra(ChevronDownIcon, {
   baseStyle: {
@@ -661,7 +663,7 @@ type ActionButtonsProps = {
 };
 
 const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
-  const { setQRCode, setSubLink } = useDashboard();
+  const { setQRCode, setSubLink, setEncryptSubUser } = useDashboard();
 
   const proxyLinks = user.links.join("\r\n");
 
@@ -777,6 +779,27 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
           }}
         >
           <QRIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip label={t("usersTable.copyEncrypted")} placement="top">
+        <IconButton
+          p="0 !important"
+          aria-label="copy encrypted subscription link"
+          bg="transparent"
+          _dark={{
+            _hover: {
+              bg: "gray.700",
+            },
+          }}
+          size={{
+            base: "sm",
+            md: "md",
+          }}
+          onClick={() => {
+            setEncryptSubUser(user);
+          }}
+        >
+          <EncryptIcon />
         </IconButton>
       </Tooltip>
     </HStack>

@@ -3,6 +3,7 @@ import { AdminsModal } from "components/AdminsModal";
 import { CoreSettingsModal } from "components/CoreSettingsModal";
 import { DomainsModal } from "components/DomainsModal";
 import { EmailSettingsModal } from "components/EmailSettingsModal";
+import { EncryptSubscriptionModal } from "components/EncryptSubscriptionModal";
 import { DeleteUserModal } from "components/DeleteUserModal";
 import { Filters } from "components/Filters";
 import { Footer } from "components/Footer";
@@ -47,6 +48,7 @@ export const Dashboard: FC = () => {
         <AdminsModal />
         <DomainsModal />
         <EmailSettingsModal />
+        <EncryptSubscriptionModal />
       </Box>
       <Footer />
     </VStack>
