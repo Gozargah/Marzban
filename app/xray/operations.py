@@ -17,6 +17,37 @@ if TYPE_CHECKING:
     from app.db.models import Node as DBNode
 
 
+def _with_node_relay(config, dbnode: "DBNode"):
+    """Returns a copy of config with an extra dokodemo-door inbound appended, if
+    this node has relay target settings configured. Traffic hitting
+    relay_listen_port on this node is transparently forwarded to
+    relay_target_address:relay_target_port, so this node's IP can act as a
+    public entry point in front of a backend server that shouldn't be exposed
+    directly (e.g. its own IP is blocked for some users).
+
+    Note: unlike a PROXY-protocol-aware relay, this does NOT preserve the real
+    client IP to the backend -- Xray makes a fresh outbound connection from
+    this node's own IP, so the backend (and its HWID/device limit) will see
+    every relayed client as this node's IP.
+    """
+    if not (dbnode.relay_listen_port and dbnode.relay_target_address and dbnode.relay_target_port):
+        return config
+
+    config = config.copy()
+    config["inbounds"].append({
+        "tag": f"relay-node-{dbnode.id}",
+        "listen": "0.0.0.0",
+        "port": dbnode.relay_listen_port,
+        "protocol": "dokodemo-door",
+        "settings": {
+            "address": dbnode.relay_target_address,
+            "port": dbnode.relay_target_port,
+            "network": "tcp,udp",
+        },
+    })
+    return config
+
+
 @lru_cache(maxsize=None)
 def get_tls():
     from app.db import GetDB, get_tls_certificate
@@ -219,6 +250,7 @@ def connect_node(node_id, config=None):
 
         if config is None:
             config = xray.config.include_db_users()
+        config = _with_node_relay(config, dbnode)
 
         node.start(config)
         version = node.get_version()
@@ -257,6 +289,7 @@ def restart_node(node_id, config=None):
 
         if config is None:
             config = xray.config.include_db_users()
+        config = _with_node_relay(config, dbnode)
 
         node.restart(config)
         logger.info(f"Xray core of \"{dbnode.name}\" node restarted")

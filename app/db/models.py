@@ -348,6 +348,14 @@ class Node(Base):
     usages = relationship("NodeUsage", back_populates="node", cascade="all, delete-orphan")
     usage_coefficient = Column(Float, nullable=False, server_default=text("1.0"), default=1)
 
+    # Optional: makes this node transparently relay traffic to a backend server
+    # instead of (or in addition to) serving its own inbounds directly. Useful
+    # when this node's IP is reachable but a backend server's isn't. Uses Xray's
+    # own dokodemo-door protocol -- no extra software needed on this node.
+    relay_listen_port = Column(Integer, nullable=True)
+    relay_target_address = Column(String(256), nullable=True)
+    relay_target_port = Column(Integer, nullable=True)
+
 
 class NodeUserUsage(Base):
     __tablename__ = "node_user_usages"

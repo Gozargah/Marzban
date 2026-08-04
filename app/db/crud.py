@@ -1444,7 +1444,10 @@ def create_node(db: Session, node: NodeCreate) -> Node:
     dbnode = Node(name=node.name,
                   address=node.address,
                   port=node.port,
-                  api_port=node.api_port)
+                  api_port=node.api_port,
+                  relay_listen_port=node.relay_listen_port or None,
+                  relay_target_address=node.relay_target_address or None,
+                  relay_target_port=node.relay_target_port or None)
 
     db.add(dbnode)
     db.commit()
@@ -1501,6 +1504,15 @@ def update_node(db: Session, dbnode: Node, modify: NodeModify) -> Node:
 
     if modify.usage_coefficient:
         dbnode.usage_coefficient = modify.usage_coefficient
+
+    if modify.relay_listen_port is not None:
+        dbnode.relay_listen_port = modify.relay_listen_port or None
+
+    if modify.relay_target_address is not None:
+        dbnode.relay_target_address = modify.relay_target_address or None
+
+    if modify.relay_target_port is not None:
+        dbnode.relay_target_port = modify.relay_target_port or None
 
     db.commit()
     db.refresh(dbnode)

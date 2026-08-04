@@ -24,6 +24,17 @@ export const NodeSchema = z.object({
   message: z.string().nullable().optional(),
   add_as_new_host: z.boolean().optional(),
   usage_coefficient: z.number().or(z.string().transform((v) => parseFloat(v))),
+  relay_listen_port: z
+    .number()
+    .nullable()
+    .optional()
+    .or(z.string().transform((v) => (v ? parseFloat(v) : null))),
+  relay_target_address: z.string().nullable().optional(),
+  relay_target_port: z
+    .number()
+    .nullable()
+    .optional()
+    .or(z.string().transform((v) => (v ? parseFloat(v) : null))),
 });
 
 export type NodeType = z.infer<typeof NodeSchema>;
@@ -35,6 +46,9 @@ export const getNodeDefaultValues = (): NodeType => ({
   api_port: 62051,
   xray_version: "",
   usage_coefficient: 1,
+  relay_listen_port: null,
+  relay_target_address: "",
+  relay_target_port: null,
 });
 
 export const FetchNodesQueryKey = "fetch-nodes-query-key";

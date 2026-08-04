@@ -22,6 +22,9 @@ class Node(BaseModel):
     port: int = 62050
     api_port: int = 62051
     usage_coefficient: float = Field(gt=0, default=1.0)
+    relay_listen_port: Optional[int] = None
+    relay_target_address: Optional[str] = None
+    relay_target_port: Optional[int] = None
 
 
 class NodeCreate(Node):

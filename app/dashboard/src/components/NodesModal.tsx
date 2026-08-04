@@ -326,6 +326,9 @@ const NodeForm: NodeFormType = ({
 }) => {
   const { t } = useTranslation();
   const [showCertificate, setShowCertificate] = useState(false);
+  const [showRelay, setShowRelay] = useState(
+    Boolean(form.getValues("relay_listen_port") || form.getValues("relay_target_address"))
+  );
   const { data: nodeSettings, isLoading: nodeSettingsLoading } = useQuery({
     queryKey: "node-settings",
     queryFn: () =>
@@ -510,6 +513,53 @@ const NodeForm: NodeFormType = ({
             />
           </Box>
         </HStack>
+
+        <Button
+          size="xs"
+          variant="link"
+          alignSelf="flex-start"
+          onClick={() => setShowRelay((v) => !v)}
+        >
+          {showRelay ? t("nodes.hideRelay") : t("nodes.showRelay")}
+        </Button>
+        <Collapse in={showRelay} style={{ width: "100%" }}>
+          <VStack alignItems="flex-start" w="full" pt={2}>
+            <Alert status="info" fontSize="xs" rounded="md">
+              <AlertIcon />
+              {t("nodes.relayHint")}
+            </Alert>
+            <HStack alignItems="flex-start" w="100%">
+              <Box>
+                <CustomInput
+                  label={t("nodes.relayListenPort")}
+                  size="sm"
+                  placeholder="8443"
+                  {...form.register("relay_listen_port")}
+                  error={form.formState?.errors?.relay_listen_port?.message}
+                />
+              </Box>
+              <Box flexGrow={1}>
+                <CustomInput
+                  label={t("nodes.relayTargetAddress")}
+                  size="sm"
+                  placeholder="103.31.78.83"
+                  {...form.register("relay_target_address")}
+                  error={form.formState?.errors?.relay_target_address?.message}
+                />
+              </Box>
+              <Box>
+                <CustomInput
+                  label={t("nodes.relayTargetPort")}
+                  size="sm"
+                  placeholder="443"
+                  {...form.register("relay_target_port")}
+                  error={form.formState?.errors?.relay_target_port?.message}
+                />
+              </Box>
+            </HStack>
+          </VStack>
+        </Collapse>
+
         {addAsHost && (
           <FormControl py={1}>
             <Checkbox {...form.register("add_as_new_host")}>
