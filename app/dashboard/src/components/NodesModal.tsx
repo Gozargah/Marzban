@@ -14,6 +14,7 @@ import {
   chakra,
   Checkbox,
   Collapse,
+  Flex,
   FormControl,
   FormLabel,
   HStack,
@@ -549,8 +550,13 @@ const NodeForm: NodeFormType = ({
                 borderRadius="md"
                 _dark={{ borderColor: "gray.700" }}
               >
-                <HStack alignItems="flex-start" w="100%" flexWrap="wrap">
-                  <Box>
+                <Flex
+                  direction={{ base: "column", md: "row" }}
+                  alignItems={{ base: "stretch", md: "flex-start" }}
+                  w="100%"
+                  gap={{ base: 2, md: 0 }}
+                >
+                  <Box w={{ base: "full", md: "auto" }}>
                     <CustomInput
                       label={t("nodes.relayListenPort")}
                       size="sm"
@@ -562,7 +568,7 @@ const NodeForm: NodeFormType = ({
                       }
                     />
                   </Box>
-                  <Box flexGrow={1}>
+                  <Box w={{ base: "full", md: "auto" }} flexGrow={1}>
                     <CustomInput
                       label={t("nodes.relayTargetAddress")}
                       size="sm"
@@ -574,7 +580,7 @@ const NodeForm: NodeFormType = ({
                       }
                     />
                   </Box>
-                  <Box>
+                  <Box w={{ base: "full", md: "auto" }}>
                     <CustomInput
                       label={t("nodes.relayTargetPort")}
                       size="sm"
@@ -586,7 +592,7 @@ const NodeForm: NodeFormType = ({
                       }
                     />
                   </Box>
-                </HStack>
+                </Flex>
                 <Button
                   size="xs"
                   variant="ghost"

@@ -25,12 +25,14 @@ import {
   Tooltip,
   Tr,
   useBreakpointValue,
+  useToast,
   VStack,
 } from "@chakra-ui/react";
 import {
   CheckIcon,
   ChevronDownIcon,
   ClipboardIcon,
+  EnvelopeIcon,
   LinkIcon,
   LockClosedIcon,
   PencilIcon,
@@ -47,6 +49,7 @@ import CopyToClipboard from "react-copy-to-clipboard";
 import { useTranslation } from "react-i18next";
 import { User } from "types/User";
 import { formatBytes } from "utils/formatByte";
+import { fetch } from "service/http";
 import { OnlineBadge } from "./OnlineBadge";
 import { OnlineStatus } from "./OnlineStatus";
 import { Pagination } from "./Pagination";
@@ -73,6 +76,7 @@ const CopiedIcon = chakra(CheckIcon, iconProps);
 const SubscriptionLinkIcon = chakra(LinkIcon, iconProps);
 const QRIcon = chakra(QrCodeIcon, iconProps);
 const EncryptIcon = chakra(LockClosedIcon, iconProps);
+const EmailIcon = chakra(EnvelopeIcon, iconProps);
 const EditIcon = chakra(PencilIcon, iconProps);
 const SortIcon = chakra(ChevronDownIcon, {
   baseStyle: {
@@ -664,6 +668,7 @@ type ActionButtonsProps = {
 
 const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
   const { setQRCode, setSubLink, setEncryptSubUser } = useDashboard();
+  const toast = useToast();
 
   const proxyLinks = user.links.join("\r\n");
 
@@ -675,6 +680,33 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
       }, 1000);
     }
   }, [copied]);
+
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const handleSendEmail = () => {
+    setSendingEmail(true);
+    fetch(`/user/${user.username}/send-subscription-email`, {
+      method: "POST",
+    })
+      .then(() => {
+        toast({
+          title: t("userDialog.emailSent"),
+          status: "success",
+          isClosable: true,
+          position: "top",
+          duration: 3000,
+        });
+      })
+      .catch((err) => {
+        toast({
+          title: err?.response?._data?.detail || t("userDialog.emailSendFailed"),
+          status: "error",
+          isClosable: true,
+          position: "top",
+          duration: 4000,
+        });
+      })
+      .finally(() => setSendingEmail(false));
+  };
   return (
     <HStack
       justifyContent="flex-end"
@@ -802,6 +834,31 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user }) => {
           <EncryptIcon />
         </IconButton>
       </Tooltip>
+      {user.email && (
+        <Tooltip
+          label={t("userDialog.sendEmailTooltip", { email: user.email })}
+          placement="top"
+        >
+          <IconButton
+            p="0 !important"
+            aria-label="send subscription email"
+            bg="transparent"
+            isLoading={sendingEmail}
+            _dark={{
+              _hover: {
+                bg: "gray.700",
+              },
+            }}
+            size={{
+              base: "sm",
+              md: "md",
+            }}
+            onClick={handleSendEmail}
+          >
+            <EmailIcon />
+          </IconButton>
+        </Tooltip>
+      )}
     </HStack>
   );
 };
