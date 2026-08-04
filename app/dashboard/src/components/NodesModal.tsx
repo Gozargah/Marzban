@@ -538,56 +538,66 @@ const NodeForm: NodeFormType = ({
             </Alert>
 
             {relayFields.map((field, index) => (
-              <HStack key={field.id} alignItems="flex-start" w="100%">
-                <Box>
-                  <CustomInput
-                    label={t("nodes.relayListenPort")}
-                    size="sm"
-                    placeholder="8443"
-                    {...form.register(`relays.${index}.listen_port`)}
-                    error={
-                      form.formState?.errors?.relays?.[index]?.listen_port
-                        ?.message
-                    }
-                  />
-                </Box>
-                <Box flexGrow={1}>
-                  <CustomInput
-                    label={t("nodes.relayTargetAddress")}
-                    size="sm"
-                    placeholder="103.31.78.83"
-                    {...form.register(`relays.${index}.target_address`)}
-                    error={
-                      form.formState?.errors?.relays?.[index]?.target_address
-                        ?.message
-                    }
-                  />
-                </Box>
-                <Box>
-                  <CustomInput
-                    label={t("nodes.relayTargetPort")}
-                    size="sm"
-                    placeholder="443"
-                    {...form.register(`relays.${index}.target_port`)}
-                    error={
-                      form.formState?.errors?.relays?.[index]?.target_port
-                        ?.message
-                    }
-                  />
-                </Box>
-                <Tooltip label={t("nodes.removeRelay")} placement="top">
-                  <IconButton
-                    aria-label="remove relay"
-                    size="sm"
-                    mt="22px"
-                    colorScheme="red"
-                    variant="ghost"
-                    onClick={() => removeRelay(index)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
-              </HStack>
+              <VStack
+                key={field.id}
+                w="100%"
+                alignItems="stretch"
+                spacing={1}
+                p={2}
+                border="1px solid"
+                borderColor="gray.100"
+                borderRadius="md"
+                _dark={{ borderColor: "gray.700" }}
+              >
+                <HStack alignItems="flex-start" w="100%" flexWrap="wrap">
+                  <Box>
+                    <CustomInput
+                      label={t("nodes.relayListenPort")}
+                      size="sm"
+                      placeholder="8443"
+                      {...form.register(`relays.${index}.listen_port`)}
+                      error={
+                        form.formState?.errors?.relays?.[index]?.listen_port
+                          ?.message
+                      }
+                    />
+                  </Box>
+                  <Box flexGrow={1}>
+                    <CustomInput
+                      label={t("nodes.relayTargetAddress")}
+                      size="sm"
+                      placeholder="103.31.78.83"
+                      {...form.register(`relays.${index}.target_address`)}
+                      error={
+                        form.formState?.errors?.relays?.[index]
+                          ?.target_address?.message
+                      }
+                    />
+                  </Box>
+                  <Box>
+                    <CustomInput
+                      label={t("nodes.relayTargetPort")}
+                      size="sm"
+                      placeholder="443"
+                      {...form.register(`relays.${index}.target_port`)}
+                      error={
+                        form.formState?.errors?.relays?.[index]?.target_port
+                          ?.message
+                      }
+                    />
+                  </Box>
+                </HStack>
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  colorScheme="red"
+                  alignSelf="flex-end"
+                  leftIcon={<DeleteIcon />}
+                  onClick={() => removeRelay(index)}
+                >
+                  {t("nodes.removeRelay")}
+                </Button>
+              </VStack>
             ))}
 
             <Button

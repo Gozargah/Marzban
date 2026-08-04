@@ -973,7 +973,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                   </GridItem>
                 )}
                 {isEditing && devicesVisible && (
-                  <GridItem pt={6} colSpan={{ base: 1, md: 2 }}>
+                  <GridItem pt={6} colSpan={{ base: 1, md: 2 }} minW={0}>
                     {devicesLoading ? (
                       <HStack justifyContent="center" py="4">
                         <Spinner size="sm" />
