@@ -1361,7 +1361,7 @@ def get_node_by_id(db: Session, node_id: int) -> Optional[Node]:
     Returns:
         Optional[Node]: The Node object if found, None otherwise.
     """
-    return db.query(Node).filter(Node.id == node_id).first()
+    return db.query(Node).options(joinedload(Node.relays)).filter(Node.id == node_id).first()
 
 
 def get_nodes(db: Session,
@@ -1378,7 +1378,7 @@ def get_nodes(db: Session,
     Returns:
         List[Node]: A list of Node objects matching the criteria.
     """
-    query = db.query(Node)
+    query = db.query(Node).options(joinedload(Node.relays))
 
     if status:
         if isinstance(status, list):
