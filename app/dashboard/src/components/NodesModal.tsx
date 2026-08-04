@@ -46,7 +46,12 @@ import {
   useNodesQuery,
 } from "contexts/NodesContext";
 import { FC, ReactNode, useState } from "react";
-import { Controller, useForm, UseFormReturn } from "react-hook-form";
+import {
+  Controller,
+  useFieldArray,
+  useForm,
+  UseFormReturn,
+} from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import {
   UseMutateFunction,
@@ -326,9 +331,12 @@ const NodeForm: NodeFormType = ({
 }) => {
   const { t } = useTranslation();
   const [showCertificate, setShowCertificate] = useState(false);
-  const [showRelay, setShowRelay] = useState(
-    Boolean(form.getValues("relay_listen_port") || form.getValues("relay_target_address"))
-  );
+  const {
+    fields: relayFields,
+    append: appendRelay,
+    remove: removeRelay,
+  } = useFieldArray({ control: form.control, name: "relays" });
+  const [showRelay, setShowRelay] = useState(relayFields.length > 0);
   const { data: nodeSettings, isLoading: nodeSettingsLoading } = useQuery({
     queryKey: "node-settings",
     queryFn: () =>
@@ -523,40 +531,74 @@ const NodeForm: NodeFormType = ({
           {showRelay ? t("nodes.hideRelay") : t("nodes.showRelay")}
         </Button>
         <Collapse in={showRelay} style={{ width: "100%" }}>
-          <VStack alignItems="flex-start" w="full" pt={2}>
+          <VStack alignItems="flex-start" w="full" pt={2} spacing={3}>
             <Alert status="info" fontSize="xs" rounded="md">
               <AlertIcon />
               {t("nodes.relayHint")}
             </Alert>
-            <HStack alignItems="flex-start" w="100%">
-              <Box>
-                <CustomInput
-                  label={t("nodes.relayListenPort")}
-                  size="sm"
-                  placeholder="8443"
-                  {...form.register("relay_listen_port")}
-                  error={form.formState?.errors?.relay_listen_port?.message}
-                />
-              </Box>
-              <Box flexGrow={1}>
-                <CustomInput
-                  label={t("nodes.relayTargetAddress")}
-                  size="sm"
-                  placeholder="103.31.78.83"
-                  {...form.register("relay_target_address")}
-                  error={form.formState?.errors?.relay_target_address?.message}
-                />
-              </Box>
-              <Box>
-                <CustomInput
-                  label={t("nodes.relayTargetPort")}
-                  size="sm"
-                  placeholder="443"
-                  {...form.register("relay_target_port")}
-                  error={form.formState?.errors?.relay_target_port?.message}
-                />
-              </Box>
-            </HStack>
+
+            {relayFields.map((field, index) => (
+              <HStack key={field.id} alignItems="flex-start" w="100%">
+                <Box>
+                  <CustomInput
+                    label={t("nodes.relayListenPort")}
+                    size="sm"
+                    placeholder="8443"
+                    {...form.register(`relays.${index}.listen_port`)}
+                    error={
+                      form.formState?.errors?.relays?.[index]?.listen_port
+                        ?.message
+                    }
+                  />
+                </Box>
+                <Box flexGrow={1}>
+                  <CustomInput
+                    label={t("nodes.relayTargetAddress")}
+                    size="sm"
+                    placeholder="103.31.78.83"
+                    {...form.register(`relays.${index}.target_address`)}
+                    error={
+                      form.formState?.errors?.relays?.[index]?.target_address
+                        ?.message
+                    }
+                  />
+                </Box>
+                <Box>
+                  <CustomInput
+                    label={t("nodes.relayTargetPort")}
+                    size="sm"
+                    placeholder="443"
+                    {...form.register(`relays.${index}.target_port`)}
+                    error={
+                      form.formState?.errors?.relays?.[index]?.target_port
+                        ?.message
+                    }
+                  />
+                </Box>
+                <Tooltip label={t("nodes.removeRelay")} placement="top">
+                  <IconButton
+                    aria-label="remove relay"
+                    size="sm"
+                    mt="22px"
+                    colorScheme="red"
+                    variant="ghost"
+                    onClick={() => removeRelay(index)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
+              </HStack>
+            ))}
+
+            <Button
+              size="xs"
+              leftIcon={<PlusIcon />}
+              onClick={() =>
+                appendRelay({ listen_port: 0, target_address: "", target_port: 0 })
+              }
+            >
+              {t("nodes.addRelay")}
+            </Button>
           </VStack>
         </Collapse>
 

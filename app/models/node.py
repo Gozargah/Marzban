@@ -16,15 +16,21 @@ class NodeSettings(BaseModel):
     certificate: str
 
 
+class NodeRelayItem(BaseModel):
+    id: Optional[int] = None
+    listen_port: int
+    target_address: str
+    target_port: int
+    model_config = ConfigDict(from_attributes=True)
+
+
 class Node(BaseModel):
     name: str
     address: str
     port: int = 62050
     api_port: int = 62051
     usage_coefficient: float = Field(gt=0, default=1.0)
-    relay_listen_port: Optional[int] = None
-    relay_target_address: Optional[str] = None
-    relay_target_port: Optional[int] = None
+    relays: List[NodeRelayItem] = []
 
 
 class NodeCreate(Node):

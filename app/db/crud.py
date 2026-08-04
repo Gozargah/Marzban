@@ -17,6 +17,7 @@ from app.db.models import (
     AdminUsageLogs,
     NextPlan,
     Node,
+    NodeRelay,
     NodeUsage,
     NodeUserUsage,
     NotificationReminder,
@@ -1445,9 +1446,14 @@ def create_node(db: Session, node: NodeCreate) -> Node:
                   address=node.address,
                   port=node.port,
                   api_port=node.api_port,
-                  relay_listen_port=node.relay_listen_port or None,
-                  relay_target_address=node.relay_target_address or None,
-                  relay_target_port=node.relay_target_port or None)
+                  relays=[
+                      NodeRelay(
+                          listen_port=relay.listen_port,
+                          target_address=relay.target_address,
+                          target_port=relay.target_port,
+                      )
+                      for relay in node.relays
+                  ])
 
     db.add(dbnode)
     db.commit()
@@ -1505,14 +1511,17 @@ def update_node(db: Session, dbnode: Node, modify: NodeModify) -> Node:
     if modify.usage_coefficient:
         dbnode.usage_coefficient = modify.usage_coefficient
 
-    if modify.relay_listen_port is not None:
-        dbnode.relay_listen_port = modify.relay_listen_port or None
-
-    if modify.relay_target_address is not None:
-        dbnode.relay_target_address = modify.relay_target_address or None
-
-    if modify.relay_target_port is not None:
-        dbnode.relay_target_port = modify.relay_target_port or None
+    # Full replace: the dashboard always submits the complete current list of
+    # relays together with the rest of the form, so syncing by wiping and
+    # re-inserting is simpler (and just as correct) as diffing by id.
+    dbnode.relays = [
+        NodeRelay(
+            listen_port=relay.listen_port,
+            target_address=relay.target_address,
+            target_port=relay.target_port,
+        )
+        for relay in modify.relays
+    ]
 
     db.commit()
     db.refresh(dbnode)
