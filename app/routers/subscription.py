@@ -70,6 +70,28 @@ def get_resolved_sub_settings(db: Session) -> dict:
     return SubscriptionSettings.model_validate(crud.get_settings(db)).model_dump()
 
 
+def build_response_headers(request: Request, user: UserResponse, sub_settings: dict) -> dict:
+    """Headers shared by both subscription endpoints: profile metadata, the
+    traffic/expiry summary, and (if set) the announcement text shown by
+    clients that support it (e.g. v2RayTun, Happ) under the usage bar."""
+    headers = {
+        "content-disposition": f'attachment; filename="{user.username}"',
+        "profile-web-page-url": str(request.url),
+        "support-url": sub_settings.get("sub_support_url") or SUB_SUPPORT_URL,
+        "profile-title": encode_title(sub_settings.get("sub_profile_title") or SUB_PROFILE_TITLE),
+        "profile-update-interval": sub_settings.get("sub_update_interval") or SUB_UPDATE_INTERVAL,
+        "subscription-userinfo": "; ".join(
+            f"{key}={val}"
+            for key, val in get_subscription_user_info(user).items()
+        )
+    }
+    if sub_settings.get("sub_announce"):
+        headers["announce"] = encode_title(sub_settings["sub_announce"])
+    if sub_settings.get("sub_announce_url"):
+        headers["announce-url"] = sub_settings["sub_announce_url"]
+    return headers
+
+
 @router.get("/{token}/")
 @router.get("/{token}", include_in_schema=False)
 def user_subscription(
@@ -98,17 +120,7 @@ def user_subscription(
     device_limit_exceeded = is_device_limit_exceeded(
         db, dbuser, request, user_agent, x_hwid, x_device_os, x_device_model
     )
-    response_headers = {
-        "content-disposition": f'attachment; filename="{user.username}"',
-        "profile-web-page-url": str(request.url),
-        "support-url": sub_settings.get("sub_support_url") or SUB_SUPPORT_URL,
-        "profile-title": encode_title(sub_settings.get("sub_profile_title") or SUB_PROFILE_TITLE),
-        "profile-update-interval": sub_settings.get("sub_update_interval") or SUB_UPDATE_INTERVAL,
-        "subscription-userinfo": "; ".join(
-            f"{key}={val}"
-            for key, val in get_subscription_user_info(user).items()
-        )
-    }
+    response_headers = build_response_headers(request, user, sub_settings)
 
     def gen(config_format: str, as_base64: bool, reverse: bool = False) -> str:
         return generate_subscription(
@@ -213,17 +225,7 @@ def user_subscription_with_client_type(
     user: UserResponse = UserResponse.model_validate(dbuser)
 
     sub_settings = get_resolved_sub_settings(db)
-    response_headers = {
-        "content-disposition": f'attachment; filename="{user.username}"',
-        "profile-web-page-url": str(request.url),
-        "support-url": sub_settings.get("sub_support_url") or SUB_SUPPORT_URL,
-        "profile-title": encode_title(sub_settings.get("sub_profile_title") or SUB_PROFILE_TITLE),
-        "profile-update-interval": sub_settings.get("sub_update_interval") or SUB_UPDATE_INTERVAL,
-        "subscription-userinfo": "; ".join(
-            f"{key}={val}"
-            for key, val in get_subscription_user_info(user).items()
-        )
-    }
+    response_headers = build_response_headers(request, user, sub_settings)
 
     device_limit_exceeded = is_device_limit_exceeded(
         db, dbuser, request, user_agent, x_hwid, x_device_os, x_device_model

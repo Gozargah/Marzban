@@ -23,6 +23,7 @@ import {
   DocumentTextIcon,
   ExclamationTriangleIcon,
   InformationCircleIcon,
+  MegaphoneIcon,
 } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC, ReactNode, useEffect, useState } from "react";
@@ -41,6 +42,7 @@ const SettingsIcon = chakra(Cog6ToothIcon, {
 const SectionIconGeneral = chakra(InformationCircleIcon, { baseStyle: { w: 4, h: 4 } });
 const SectionIconStatus = chakra(DocumentTextIcon, { baseStyle: { w: 4, h: 4 } });
 const SectionIconDeviceLimit = chakra(ExclamationTriangleIcon, { baseStyle: { w: 4, h: 4 } });
+const SectionIconAnnounce = chakra(MegaphoneIcon, { baseStyle: { w: 4, h: 4 } });
 
 const SectionLabel: FC<{ icon: JSX.Element; children: ReactNode }> = ({
   icon,
@@ -58,6 +60,8 @@ type SubscriptionSettingsType = {
   sub_profile_title: string | null;
   sub_support_url: string | null;
   sub_update_interval: string | null;
+  sub_announce: string | null;
+  sub_announce_url: string | null;
   active_status_text: string | null;
   expired_status_text: string | null;
   limited_status_text: string | null;
@@ -70,6 +74,8 @@ const emptyValues: SubscriptionSettingsType = {
   sub_profile_title: "",
   sub_support_url: "",
   sub_update_interval: "",
+  sub_announce: "",
+  sub_announce_url: "",
   active_status_text: "",
   expired_status_text: "",
   limited_status_text: "",
@@ -88,6 +94,11 @@ const generalFields: FieldDef[] = [
   { name: "sub_profile_title", labelKey: "subscriptionSettings.profileTitle" },
   { name: "sub_support_url", labelKey: "subscriptionSettings.supportUrl" },
   { name: "sub_update_interval", labelKey: "subscriptionSettings.updateInterval" },
+];
+
+const announceFields: FieldDef[] = [
+  { name: "sub_announce", labelKey: "subscriptionSettings.announce", multiline: true },
+  { name: "sub_announce_url", labelKey: "subscriptionSettings.announceUrl" },
 ];
 
 const statusFields: FieldDef[] = [
@@ -181,6 +192,45 @@ export const SubscriptionSettingsModal: FC = () => {
                   {t("subscriptionSettings.sectionGeneral")}
                 </SectionLabel>
                 {generalFields.map(({ name, labelKey, multiline }) => (
+                  <FormControl key={name}>
+                    <FormLabel fontSize="sm">{t(labelKey)}</FormLabel>
+                    <Controller
+                      control={form.control}
+                      name={name}
+                      render={({ field }) =>
+                        multiline ? (
+                          <Textarea
+                            {...field}
+                            value={field.value || ""}
+                            size="sm"
+                            borderRadius="6px"
+                            isDisabled={loading}
+                          />
+                        ) : (
+                          <Input
+                            {...field}
+                            value={field.value || ""}
+                            size="sm"
+                            borderRadius="6px"
+                            disabled={loading}
+                          />
+                        )
+                      }
+                    />
+                  </FormControl>
+                ))}
+              </VStack>
+
+              <Divider />
+
+              <VStack spacing="3" align="stretch">
+                <SectionLabel icon={<SectionIconAnnounce />}>
+                  {t("subscriptionSettings.sectionAnnounce")}
+                </SectionLabel>
+                <Text fontSize="xs" color="gray.500">
+                  {t("subscriptionSettings.announceHint")}
+                </Text>
+                {announceFields.map(({ name, labelKey, multiline }) => (
                   <FormControl key={name}>
                     <FormLabel fontSize="sm">{t(labelKey)}</FormLabel>
                     <Controller

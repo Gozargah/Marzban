@@ -7,6 +7,8 @@ class SubscriptionSettings(BaseModel):
     sub_profile_title: Optional[str] = None
     sub_support_url: Optional[str] = None
     sub_update_interval: Optional[str] = None
+    sub_announce: Optional[str] = None
+    sub_announce_url: Optional[str] = None
     active_status_text: Optional[str] = None
     expired_status_text: Optional[str] = None
     limited_status_text: Optional[str] = None

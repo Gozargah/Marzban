@@ -296,6 +296,8 @@ class Settings(Base):
     sub_profile_title = Column(String(256), nullable=True, default=None)
     sub_support_url = Column(String(1024), nullable=True, default=None)
     sub_update_interval = Column(String(16), nullable=True, default=None)
+    sub_announce = Column(String(1024), nullable=True, default=None)
+    sub_announce_url = Column(String(1024), nullable=True, default=None)
     active_status_text = Column(String(256), nullable=True, default=None)
     expired_status_text = Column(String(256), nullable=True, default=None)
     limited_status_text = Column(String(256), nullable=True, default=None)
