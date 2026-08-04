@@ -40,6 +40,12 @@ i18n
                     import.meta.env.BASE_URL,
                     `statics/locales/{{lng}}.json`,
                 ]),
+                // Unlike the JS bundle (fingerprinted filename, safe to cache forever),
+                // this file's name never changes between builds, so browsers/proxies can
+                // keep serving an old cached copy indefinitely after a deploy -- newly
+                // added translation keys then show up as raw "namespace.key" text. This
+                // query param changes once per page load, forcing a fresh fetch every time.
+                queryStringParams: { v: String(Date.now()) },
             },
         },
         function (err, t) {
