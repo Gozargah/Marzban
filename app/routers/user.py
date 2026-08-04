@@ -20,6 +20,7 @@ from app.models.user import (
 )
 from app.utils import report, responses
 from app.utils.email import EmailSendError, send_subscription_email
+from app.utils.happ_crypt import HappCryptError, encrypt_happ_link
 
 router = APIRouter(tags=["User"], prefix="/api", responses={401: responses._401})
 
@@ -360,6 +361,30 @@ def send_subscription_email_endpoint(
 
     logger.info(f'Subscription email sent to "{dbuser.email}" for user "{dbuser.username}"')
     return {"detail": "Email sent"}
+
+
+@router.post(
+    "/user/{username}/happ-crypt", responses={400: responses._400, 403: responses._403, 404: responses._404}
+)
+def get_happ_crypt_link(
+    request: Request,
+    dbuser: UserResponse = Depends(get_validated_user),
+):
+    """Encrypts the user's subscription link into Happ's proprietary
+    happ://cryptN/... format via Happ's own online encryption service.
+    Note: this sends the real subscription URL to a third-party server
+    (crypto.happ.su, operated by Happ) in order to obtain the encrypted link."""
+    user = UserResponse.model_validate(dbuser)
+    subscription_url = user.subscription_url
+    if subscription_url.startswith("/"):
+        subscription_url = str(request.base_url).rstrip("/") + subscription_url
+
+    try:
+        link = encrypt_happ_link(subscription_url)
+    except HappCryptError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    return {"link": link}
 
 
 @router.post("/user/{username}/active-next", response_model=UserResponse, responses={403: responses._403, 404: responses._404})
