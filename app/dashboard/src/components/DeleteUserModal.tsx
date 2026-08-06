@@ -49,8 +49,17 @@ export const DeleteUserModal: FC<DeleteUserModalProps> = () => {
             position: "top",
             duration: 3000,
           });
+          onClose();
         })
-        .then(onClose)
+        .catch((err) => {
+          toast({
+            title: err?.response?._data?.detail || t("deleteUser.deleteFailed"),
+            status: "error",
+            isClosable: true,
+            position: "top",
+            duration: 4000,
+          });
+        })
         .finally(setLoading.bind(null, false));
     }
   };

@@ -7,6 +7,7 @@ import { EncryptSubscriptionModal } from "components/EncryptSubscriptionModal";
 import { DeleteUserModal } from "components/DeleteUserModal";
 import { Filters } from "components/Filters";
 import { Footer } from "components/Footer";
+import { HappCryptModal } from "components/HappCryptModal";
 import { Header } from "components/Header";
 import { HostsDialog } from "components/HostsDialog";
 import { NodesDialog } from "components/NodesModal";
@@ -49,6 +50,7 @@ export const Dashboard: FC = () => {
         <DomainsModal />
         <EmailSettingsModal />
         <EncryptSubscriptionModal />
+        <HappCryptModal />
       </Box>
       <Footer />
     </VStack>

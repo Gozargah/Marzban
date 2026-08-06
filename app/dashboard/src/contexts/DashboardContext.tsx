@@ -60,6 +60,8 @@ type DashboardStateType = {
   onEditingDomains: (isEditingDomains: boolean) => void;
   isEditingEmailSettings: boolean;
   onEditingEmailSettings: (isEditingEmailSettings: boolean) => void;
+  isHappCryptOpen: boolean;
+  onHappCryptOpen: (isHappCryptOpen: boolean) => void;
   onCreateUser: (isOpen: boolean) => void;
   onEditingUser: (user: User | null) => void;
   onDeletingUser: (user: User | null) => void;
@@ -150,6 +152,10 @@ export const useDashboard = create(
     onEditingEmailSettings: (isEditingEmailSettings: boolean) => {
       set({ isEditingEmailSettings });
     },
+    isHappCryptOpen: false,
+    onHappCryptOpen: (isHappCryptOpen: boolean) => {
+      set({ isHappCryptOpen });
+    },
     refetchUsers: () => {
       fetchUsers(get().filters);
     },
@@ -182,7 +188,13 @@ export const useDashboard = create(
     deleteUser: (user: User) => {
       set({ editingUser: null });
       return fetch(`/user/${user.username}`, { method: "DELETE" }).then(() => {
-        set({ deletingUser: null });
+        set((state) => ({
+          deletingUser: null,
+          users: {
+            users: state.users.users.filter((u) => u.username !== user.username),
+            total: Math.max(0, state.users.total - 1),
+          },
+        }));
         get().refetchUsers();
         queryClient.invalidateQueries(StatisticsQueryKey);
       });

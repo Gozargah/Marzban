@@ -24,6 +24,7 @@ import {
   GlobeAltIcon,
   LinkIcon,
   MoonIcon,
+  ShieldCheckIcon,
   SquaresPlusIcon,
   SunIcon,
   UsersIcon,
@@ -64,6 +65,7 @@ const SubscriptionSettingsIcon = chakra(ChatBubbleBottomCenterTextIcon, iconProp
 const AdminsIcon = chakra(UsersIcon, iconProps);
 const DomainsIcon = chakra(GlobeAltIcon, iconProps);
 const EmailSettingsIcon = chakra(EnvelopeIcon, iconProps);
+const HappCryptIcon = chakra(ShieldCheckIcon, iconProps);
 const NotificationCircle = chakra(Box, {
   baseStyle: {
     bg: "yellow.500",
@@ -110,6 +112,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
     onEditingAdmins,
     onEditingDomains,
     onEditingEmailSettings,
+    onHappCryptOpen,
   } = useDashboard();
   const { t } = useTranslation();
   const { colorMode, toggleColorMode } = useColorMode();
@@ -209,6 +212,13 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                       onClick={onEditingEmailSettings.bind(null, true)}
                     >
                       {t("header.emailSettings")}
+                    </MenuItem>
+                    <MenuItem
+                      fontSize="sm"
+                      icon={<HappCryptIcon />}
+                      onClick={onHappCryptOpen.bind(null, true)}
+                    >
+                      {t("header.happCrypt")}
                     </MenuItem>
                   </MenuGroup>
                   <MenuDivider />

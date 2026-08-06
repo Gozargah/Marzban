@@ -3,7 +3,6 @@ import {
   AlertIcon,
   Button,
   chakra,
-  Divider,
   FormControl,
   FormLabel,
   HStack,
@@ -24,12 +23,10 @@ import {
   CheckIcon,
   ClipboardIcon,
   LockClosedIcon,
-  ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import { FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDashboard } from "contexts/DashboardContext";
-import { fetch } from "service/http";
 import { encryptText, generatePassphrase } from "utils/crypt";
 import { Icon } from "./Icon";
 import { Input } from "./Input";
@@ -38,7 +35,6 @@ const ModalIcon = chakra(LockClosedIcon, { baseStyle: { w: 5, h: 5 } });
 const RegenerateIcon = chakra(ArrowPathIcon, { baseStyle: { w: 4, h: 4 } });
 const CopyBtnIcon = chakra(ClipboardIcon, { baseStyle: { w: 4, h: 4 } });
 const CopiedBtnIcon = chakra(CheckIcon, { baseStyle: { w: 4, h: 4 } });
-const HappIcon = chakra(ShieldCheckIcon, { baseStyle: { w: 4, h: 4 } });
 
 export const EncryptSubscriptionModal: FC = () => {
   const { encryptSubUser, setEncryptSubUser } = useDashboard();
@@ -47,12 +43,8 @@ export const EncryptSubscriptionModal: FC = () => {
 
   const [passphrase, setPassphrase] = useState("");
   const [encrypted, setEncrypted] = useState("");
-  const [copied, setCopied] = useState<"text" | "pass" | "happ" | null>(null);
+  const [copied, setCopied] = useState<"text" | "pass" | null>(null);
   const [error, setError] = useState("");
-
-  const [happLink, setHappLink] = useState("");
-  const [happLoading, setHappLoading] = useState(false);
-  const [happError, setHappError] = useState("");
 
   const subLink = encryptSubUser
     ? encryptSubUser.subscription_url.startsWith("/")
@@ -72,8 +64,6 @@ export const EncryptSubscriptionModal: FC = () => {
       setEncrypted("");
       setError("");
       setCopied(null);
-      setHappLink("");
-      setHappError("");
       regenerate();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -90,27 +80,11 @@ export const EncryptSubscriptionModal: FC = () => {
 
   const onClose = () => setEncryptSubUser(null);
 
-  const copy = (value: string, which: "text" | "pass" | "happ") => {
+  const copy = (value: string, which: "text" | "pass") => {
     navigator.clipboard.writeText(value).then(() => {
       setCopied(which);
       setTimeout(() => setCopied(null), 1500);
     });
-  };
-
-  const getHappLink = () => {
-    if (!encryptSubUser) return;
-    setHappLoading(true);
-    setHappError("");
-    fetch(`/user/${encryptSubUser.username}/happ-crypt`, { method: "POST" })
-      .then((data: { link: string }) => {
-        setHappLink(data.link);
-      })
-      .catch((err) => {
-        setHappError(
-          err?.response?._data?.detail || t("encryptSubModal.happError")
-        );
-      })
-      .finally(() => setHappLoading(false));
   };
 
   return (
@@ -202,59 +176,6 @@ export const EncryptSubscriptionModal: FC = () => {
             <Text fontSize="xs" _dark={{ color: "gray.400" }} color="gray.600">
               {t("encryptSubModal.decryptHint", { url: decryptUrl })}
             </Text>
-
-            <Divider />
-
-            <VStack spacing={2} alignItems="stretch">
-              <HStack spacing={1.5} color="gray.500" _dark={{ color: "gray.400" }}>
-                <HappIcon />
-                <Text fontSize="xs" fontWeight="bold" textTransform="uppercase">
-                  {t("encryptSubModal.happTitle")}
-                </Text>
-              </HStack>
-              <Text fontSize="xs" _dark={{ color: "gray.400" }} color="gray.600">
-                {t("encryptSubModal.happDescription")}
-              </Text>
-
-              {!happLink ? (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  isLoading={happLoading}
-                  onClick={getHappLink}
-                >
-                  {t("encryptSubModal.happGenerate")}
-                </Button>
-              ) : (
-                <FormControl>
-                  <HStack>
-                    <Input value={happLink} isReadOnly fontFamily="mono" fontSize="xs" />
-                    <Tooltip
-                      label={
-                        copied === "happ"
-                          ? t("usersTable.copied")
-                          : t("encryptSubModal.copyEncrypted")
-                      }
-                    >
-                      <IconButton
-                        aria-label="copy happ link"
-                        size="sm"
-                        onClick={() => copy(happLink, "happ")}
-                      >
-                        {copied === "happ" ? <CopiedBtnIcon /> : <CopyBtnIcon />}
-                      </IconButton>
-                    </Tooltip>
-                  </HStack>
-                </FormControl>
-              )}
-
-              {happError && (
-                <Alert status="error" rounded="md" fontSize="sm">
-                  <AlertIcon />
-                  {happError}
-                </Alert>
-              )}
-            </VStack>
           </VStack>
         </ModalBody>
         <ModalFooter display="flex">

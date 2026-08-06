@@ -1,6 +1,7 @@
 from typing import Dict, List, Union
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 
 from app import __version__, xray
 from app.db import Session, crud, get_db
@@ -10,6 +11,7 @@ from app.models.settings import EmailSettings, EmailSettingsResponse, Subscripti
 from app.models.system import SystemStats
 from app.models.user import UserStatus
 from app.utils import responses
+from app.utils.happ_crypt import HappCryptError, encrypt_happ_link
 from app.utils.system import cpu_usage, memory_usage, realtime_bandwidth
 
 router = APIRouter(tags=["System"], prefix="/api", responses={401: responses._401})
@@ -62,6 +64,31 @@ def get_system_stats(
         incoming_bandwidth_speed=realtime_bandwidth_stats.incoming_bytes,
         outgoing_bandwidth_speed=realtime_bandwidth_stats.outgoing_bytes,
     )
+
+
+class HappCryptRequest(BaseModel):
+    url: str
+
+
+@router.post("/utils/happ-crypt", responses={400: responses._400})
+def get_happ_crypt_link(
+    body: HappCryptRequest,
+    admin: Admin = Depends(Admin.get_current),
+):
+    """Encrypts an arbitrary subscription link into Happ's proprietary
+    happ://cryptN/... format via Happ's own online encryption service.
+    Note: this sends the given URL to a third-party server (crypto.happ.su,
+    operated by Happ) in order to obtain the encrypted link."""
+    url = body.url.strip()
+    if not url:
+        raise HTTPException(status_code=400, detail="Subscription link is required")
+
+    try:
+        link = encrypt_happ_link(url)
+    except HappCryptError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    return {"link": link}
 
 
 @router.get("/inbounds", response_model=Dict[ProxyTypes, List[ProxyInbound]])
