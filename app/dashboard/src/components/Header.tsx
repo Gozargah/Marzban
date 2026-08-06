@@ -21,7 +21,6 @@ import {
   CurrencyDollarIcon,
   DocumentMinusIcon,
   EnvelopeIcon,
-  GlobeAltIcon,
   LinkIcon,
   MoonIcon,
   ShieldCheckIcon,
@@ -63,7 +62,6 @@ const NodesUsageIcon = chakra(ChartPieIcon, iconProps);
 const ResetUsageIcon = chakra(DocumentMinusIcon, iconProps);
 const SubscriptionSettingsIcon = chakra(ChatBubbleBottomCenterTextIcon, iconProps);
 const AdminsIcon = chakra(UsersIcon, iconProps);
-const DomainsIcon = chakra(GlobeAltIcon, iconProps);
 const EmailSettingsIcon = chakra(EnvelopeIcon, iconProps);
 const HappCryptIcon = chakra(ShieldCheckIcon, iconProps);
 const NotificationCircle = chakra(Box, {
@@ -110,7 +108,6 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
     onShowingNodesUsage,
     onEditingSubscriptionSettings,
     onEditingAdmins,
-    onEditingDomains,
     onEditingEmailSettings,
     onHappCryptOpen,
   } = useDashboard();
@@ -161,13 +158,6 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
               {isSudo() && (
                 <>
                   <MenuGroup title={t("header.groupProxy")} fontSize="xs">
-                    <MenuItem
-                      fontSize="sm"
-                      icon={<DomainsIcon />}
-                      onClick={onEditingDomains.bind(null, true)}
-                    >
-                      {t("header.domains")}
-                    </MenuItem>
                     <MenuItem
                       fontSize="sm"
                       icon={<HostsIcon />}

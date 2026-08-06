@@ -1,7 +1,6 @@
 import { Box, VStack } from "@chakra-ui/react";
 import { AdminsModal } from "components/AdminsModal";
 import { CoreSettingsModal } from "components/CoreSettingsModal";
-import { DomainsModal } from "components/DomainsModal";
 import { EmailSettingsModal } from "components/EmailSettingsModal";
 import { EncryptSubscriptionModal } from "components/EncryptSubscriptionModal";
 import { DeleteUserModal } from "components/DeleteUserModal";
@@ -47,7 +46,6 @@ export const Dashboard: FC = () => {
         <CoreSettingsModal />
         <SubscriptionSettingsModal />
         <AdminsModal />
-        <DomainsModal />
         <EmailSettingsModal />
         <EncryptSubscriptionModal />
         <HappCryptModal />

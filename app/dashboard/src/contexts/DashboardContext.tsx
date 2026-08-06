@@ -56,8 +56,6 @@ type DashboardStateType = {
   onEditingSubscriptionSettings: (isEditingSubscriptionSettings: boolean) => void;
   isEditingAdmins: boolean;
   onEditingAdmins: (isEditingAdmins: boolean) => void;
-  isEditingDomains: boolean;
-  onEditingDomains: (isEditingDomains: boolean) => void;
   isEditingEmailSettings: boolean;
   onEditingEmailSettings: (isEditingEmailSettings: boolean) => void;
   isHappCryptOpen: boolean;
@@ -143,10 +141,6 @@ export const useDashboard = create(
     isEditingAdmins: false,
     onEditingAdmins: (isEditingAdmins: boolean) => {
       set({ isEditingAdmins });
-    },
-    isEditingDomains: false,
-    onEditingDomains: (isEditingDomains: boolean) => {
-      set({ isEditingDomains });
     },
     isEditingEmailSettings: false,
     onEditingEmailSettings: (isEditingEmailSettings: boolean) => {
