@@ -43,12 +43,16 @@ class XRayCore:
         if private_key:
             cmd.extend(['-i', private_key])
         output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode('utf-8')
-        m = re.match(r'Private key: (.+)\nPublic key: (.+)', output)
-        if m:
-            private, public = m.groups()
+
+        # Newer Xray releases relabeled this output (e.g. "PrivateKey:" /
+        # "Password (PublicKey):" instead of the older "Private key:" /
+        # "Public key:"), so match loosely enough to cover both.
+        private_match = re.search(r'Private\s*[Kk]ey:\s*(\S+)', output)
+        public_match = re.search(r'(?:Public\s*[Kk]ey\)?|Password\s*\(PublicKey\))\s*:\s*(\S+)', output)
+        if private_match and public_match:
             return {
-                "private_key": private,
-                "public_key": public
+                "private_key": private_match.group(1),
+                "public_key": public_match.group(1)
             }
 
     def __capture_process_logs(self):
