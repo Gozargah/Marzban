@@ -1,6 +1,7 @@
 import {
   Button,
   chakra,
+  Divider,
   FormControl,
   FormLabel,
   HStack,
@@ -16,7 +17,7 @@ import {
   VStack,
   useToast,
 } from "@chakra-ui/react";
-import { EnvelopeIcon } from "@heroicons/react/24/outline";
+import { BoltIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -31,8 +32,12 @@ const SettingsIcon = chakra(EnvelopeIcon, {
     h: 5,
   },
 });
+const ResendIcon = chakra(BoltIcon, { baseStyle: { w: 4, h: 4 } });
+const SmtpIcon = chakra(EnvelopeIcon, { baseStyle: { w: 4, h: 4 } });
 
 type EmailFormType = {
+  resend_api_key: string;
+  resend_from_email: string;
   smtp_host: string;
   smtp_port: string;
   smtp_username: string;
@@ -41,6 +46,8 @@ type EmailFormType = {
 };
 
 const emptyValues: EmailFormType = {
+  resend_api_key: "",
+  resend_from_email: "",
   smtp_host: "",
   smtp_port: "",
   smtp_username: "",
@@ -55,6 +62,7 @@ export const EmailSettingsModal: FC = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [passwordSet, setPasswordSet] = useState(false);
+  const [apiKeySet, setApiKeySet] = useState(false);
 
   const form = useForm<EmailFormType>({ defaultValues: emptyValues });
 
@@ -64,6 +72,8 @@ export const EmailSettingsModal: FC = () => {
     fetch("/settings/email")
       .then((data: any) => {
         form.reset({
+          resend_api_key: "",
+          resend_from_email: data.resend_from_email || "",
           smtp_host: data.smtp_host || "",
           smtp_port: data.smtp_port ? String(data.smtp_port) : "",
           smtp_username: data.smtp_username || "",
@@ -71,6 +81,7 @@ export const EmailSettingsModal: FC = () => {
           smtp_from_email: data.smtp_from_email || "",
         });
         setPasswordSet(!!data.smtp_password_set);
+        setApiKeySet(!!data.resend_api_key_set);
       })
       .finally(() => setLoading(false));
   }, [isEditingEmailSettings]);
@@ -128,82 +139,136 @@ export const EmailSettingsModal: FC = () => {
             <Text fontSize="sm" color="gray.500" mb="4">
               {t("emailSettings.description")}
             </Text>
-            <VStack spacing="3" align="stretch">
-              <FormControl>
-                <FormLabel fontSize="sm">{t("emailSettings.smtpHost")}</FormLabel>
-                <Controller
-                  control={form.control}
-                  name="smtp_host"
-                  render={({ field }) => (
-                    <Input
-                      {...field}
-                      size="sm"
-                      placeholder="smtp.gmail.com"
-                      disabled={loading}
+            <VStack spacing="4" align="stretch">
+              <VStack spacing="3" align="stretch">
+                <HStack spacing={1.5} color="gray.500" _dark={{ color: "gray.400" }}>
+                  <ResendIcon />
+                  <Text fontSize="xs" fontWeight="bold" textTransform="uppercase">
+                    {t("emailSettings.sectionResend")}
+                  </Text>
+                </HStack>
+                <Text fontSize="xs" color="gray.500">
+                  {t("emailSettings.resendHint")}
+                </Text>
+                <FormControl>
+                  <FormLabel fontSize="sm">
+                    {apiKeySet
+                      ? t("emailSettings.resendApiKeySet")
+                      : t("emailSettings.resendApiKey")}
+                  </FormLabel>
+                  <Controller
+                    control={form.control}
+                    name="resend_api_key"
+                    render={({ field }) => (
+                      <Input {...field} type="password" size="sm" disabled={loading} placeholder="re_..." />
+                    )}
+                  />
+                </FormControl>
+                <FormControl>
+                  <FormLabel fontSize="sm">{t("emailSettings.resendFromEmail")}</FormLabel>
+                  <Controller
+                    control={form.control}
+                    name="resend_from_email"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        size="sm"
+                        placeholder="onboarding@resend.dev"
+                        disabled={loading}
+                      />
+                    )}
+                  />
+                </FormControl>
+              </VStack>
+
+              <Divider />
+
+              <VStack spacing="3" align="stretch">
+                <HStack spacing={1.5} color="gray.500" _dark={{ color: "gray.400" }}>
+                  <SmtpIcon />
+                  <Text fontSize="xs" fontWeight="bold" textTransform="uppercase">
+                    {t("emailSettings.sectionSmtp")}
+                  </Text>
+                </HStack>
+                <Text fontSize="xs" color="gray.500">
+                  {t("emailSettings.smtpFallbackHint")}
+                </Text>
+                <FormControl>
+                  <FormLabel fontSize="sm">{t("emailSettings.smtpHost")}</FormLabel>
+                  <Controller
+                    control={form.control}
+                    name="smtp_host"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        size="sm"
+                        placeholder="smtp.gmail.com"
+                        disabled={loading}
+                      />
+                    )}
+                  />
+                </FormControl>
+                <SimpleGrid columns={{ base: 1, sm: 2 }} spacing="3">
+                  <FormControl>
+                    <FormLabel fontSize="sm">{t("emailSettings.smtpPort")}</FormLabel>
+                    <Controller
+                      control={form.control}
+                      name="smtp_port"
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          size="sm"
+                          type="number"
+                          placeholder="587"
+                          disabled={loading}
+                        />
+                      )}
                     />
-                  )}
-                />
-              </FormControl>
-              <SimpleGrid columns={{ base: 1, sm: 2 }} spacing="3">
+                  </FormControl>
+                  <FormControl>
+                    <FormLabel fontSize="sm">{t("emailSettings.fromEmail")}</FormLabel>
+                    <Controller
+                      control={form.control}
+                      name="smtp_from_email"
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          size="sm"
+                          placeholder="you@gmail.com"
+                          disabled={loading}
+                        />
+                      )}
+                    />
+                  </FormControl>
+                </SimpleGrid>
                 <FormControl>
-                  <FormLabel fontSize="sm">{t("emailSettings.smtpPort")}</FormLabel>
+                  <FormLabel fontSize="sm">{t("emailSettings.smtpUsername")}</FormLabel>
                   <Controller
                     control={form.control}
-                    name="smtp_port"
+                    name="smtp_username"
                     render={({ field }) => (
-                      <Input
-                        {...field}
-                        size="sm"
-                        type="number"
-                        placeholder="587"
-                        disabled={loading}
-                      />
+                      <Input {...field} size="sm" disabled={loading} />
                     )}
                   />
                 </FormControl>
                 <FormControl>
-                  <FormLabel fontSize="sm">{t("emailSettings.fromEmail")}</FormLabel>
+                  <FormLabel fontSize="sm">
+                    {passwordSet
+                      ? t("emailSettings.smtpPasswordSet")
+                      : t("emailSettings.smtpPassword")}
+                  </FormLabel>
                   <Controller
                     control={form.control}
-                    name="smtp_from_email"
+                    name="smtp_password"
                     render={({ field }) => (
-                      <Input
-                        {...field}
-                        size="sm"
-                        placeholder="you@gmail.com"
-                        disabled={loading}
-                      />
+                      <Input {...field} type="password" size="sm" disabled={loading} />
                     )}
                   />
                 </FormControl>
-              </SimpleGrid>
-              <FormControl>
-                <FormLabel fontSize="sm">{t("emailSettings.smtpUsername")}</FormLabel>
-                <Controller
-                  control={form.control}
-                  name="smtp_username"
-                  render={({ field }) => (
-                    <Input {...field} size="sm" disabled={loading} />
-                  )}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel fontSize="sm">
-                  {passwordSet
-                    ? t("emailSettings.smtpPasswordSet")
-                    : t("emailSettings.smtpPassword")}
-                </FormLabel>
-                <Controller
-                  control={form.control}
-                  name="smtp_password"
-                  render={({ field }) => (
-                    <Input {...field} type="password" size="sm" disabled={loading} />
-                  )}
-                />
-              </FormControl>
-              <Text fontSize="xs" color="gray.500">
-                {t("emailSettings.gmailHint")}
-              </Text>
+                <Text fontSize="xs" color="gray.500">
+                  {t("emailSettings.gmailHint")}
+                </Text>
+              </VStack>
             </VStack>
           </ModalBody>
           <ModalFooter>

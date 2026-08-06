@@ -313,6 +313,11 @@ class Settings(Base):
     smtp_password = Column(String(256), nullable=True, default=None)
     smtp_from_email = Column(String(254), nullable=True, default=None)
 
+    # Resend (HTTP API, https://resend.com) -- an alternative to SMTP for
+    # hosts that block outbound SMTP ports; sends over plain HTTPS instead.
+    resend_api_key = Column(String(256), nullable=True, default=None)
+    resend_from_email = Column(String(254), nullable=True, default=None)
+
 
 class JWT(Base):
     __tablename__ = "jwt"

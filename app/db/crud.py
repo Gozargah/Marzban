@@ -1707,13 +1707,13 @@ def update_settings(db: Session, modify: SubscriptionSettings) -> Settings:
 
 def update_email_settings(db: Session, modify: EmailSettings) -> Settings:
     """
-    Updates the SMTP settings. A blank smtp_password leaves the existing
-    password untouched (it's never sent back to the panel), every other
-    blank field clears that setting.
+    Updates the SMTP/Resend settings. A blank smtp_password or resend_api_key
+    leaves the existing secret untouched (they're never sent back to the
+    panel), every other blank field clears that setting.
     """
     settings = get_settings(db)
     for field, value in modify.model_dump().items():
-        if field == "smtp_password" and not value:
+        if field in ("smtp_password", "resend_api_key") and not value:
             continue
         setattr(settings, field, value or None)
 

@@ -19,7 +19,7 @@ from app.models.user import (
     UserUsagesResponse,
 )
 from app.utils import report, responses
-from app.utils.email import EmailSendError, send_subscription_email
+from app.utils.email import EmailSendError, send_subscription_email, send_subscription_email_via_resend
 
 router = APIRouter(tags=["User"], prefix="/api", responses={401: responses._401})
 
@@ -327,16 +327,20 @@ def send_subscription_email_endpoint(
     dbuser: UserResponse = Depends(get_validated_user),
     db: Session = Depends(get_db),
 ):
-    """Emails the user's subscription link to their configured email address."""
+    """Emails the user's subscription link to their configured email address.
+    Uses Resend (HTTP API) if configured -- preferred, since it works even
+    when the host blocks outbound SMTP ports -- otherwise falls back to SMTP."""
     if not dbuser.email:
         raise HTTPException(status_code=400, detail="This user has no email address set")
 
     settings = crud.get_settings(db)
-    if not (settings.smtp_host and settings.smtp_port and settings.smtp_username
-            and settings.smtp_password and settings.smtp_from_email):
+    use_resend = bool(settings.resend_api_key and settings.resend_from_email)
+    use_smtp = bool(settings.smtp_host and settings.smtp_port and settings.smtp_username
+                     and settings.smtp_password and settings.smtp_from_email)
+    if not use_resend and not use_smtp:
         raise HTTPException(
             status_code=400,
-            detail="SMTP isn't configured yet. Set it up in Settings -> Email first.",
+            detail="Email sending isn't configured yet. Set it up in Settings -> Email first.",
         )
 
     user = UserResponse.model_validate(dbuser)
@@ -345,16 +349,25 @@ def send_subscription_email_endpoint(
         subscription_url = str(request.base_url).rstrip("/") + subscription_url
 
     try:
-        send_subscription_email(
-            to_email=user.email,
-            username=user.username,
-            subscription_url=subscription_url,
-            smtp_host=settings.smtp_host,
-            smtp_port=settings.smtp_port,
-            smtp_username=settings.smtp_username,
-            smtp_password=settings.smtp_password,
-            from_email=settings.smtp_from_email,
-        )
+        if use_resend:
+            send_subscription_email_via_resend(
+                to_email=user.email,
+                username=user.username,
+                subscription_url=subscription_url,
+                api_key=settings.resend_api_key,
+                from_email=settings.resend_from_email,
+            )
+        else:
+            send_subscription_email(
+                to_email=user.email,
+                username=user.username,
+                subscription_url=subscription_url,
+                smtp_host=settings.smtp_host,
+                smtp_port=settings.smtp_port,
+                smtp_username=settings.smtp_username,
+                smtp_password=settings.smtp_password,
+                from_email=settings.smtp_from_email,
+            )
     except EmailSendError as e:
         raise HTTPException(status_code=400, detail=f"Failed to send email: {e}")
 
