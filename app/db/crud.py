@@ -7,6 +7,7 @@ from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
 from sqlalchemy import and_, delete, func, or_
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Query, Session, joinedload
 from sqlalchemy.sql.functions import coalesce
 
@@ -737,7 +738,14 @@ def record_user_device(
             device.device_os = device_os
         if device_model:
             device.device_model = device_model
-        db.commit()
+        try:
+            db.commit()
+        except IntegrityError:
+            # Another concurrent request (same device firing parallel
+            # requests, common for some clients) already updated this row
+            # to the same ip+user_agent -- the device is still recognized,
+            # just not by this particular request's write.
+            db.rollback()
         return False
 
     # Genuinely unrecognized device: grant it a new permanent slot if there's
@@ -752,7 +760,13 @@ def record_user_device(
         device_os=device_os, device_model=device_model,
         first_seen=now, last_seen=now,
     ))
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # Lost a race with a concurrent request recording the same device
+        # (same user_id+ip+user_agent, or same hwid) -- it's now recorded
+        # either way, so treat it as recognized rather than erroring out.
+        db.rollback()
     return False
 
 
