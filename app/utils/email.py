@@ -3,6 +3,7 @@ import smtplib
 import socket
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.utils import formataddr
 from typing import Optional
 
 import requests
@@ -135,6 +136,7 @@ def send_subscription_email(
     smtp_password: str,
     from_email: str,
     brand_name: str = "Marzban",
+    from_name: Optional[str] = None,
     rules_text: Optional[str] = None,
     subject: Optional[str] = None,
 ) -> None:
@@ -142,7 +144,7 @@ def send_subscription_email(
 
     message = MIMEMultipart("alternative")
     message["Subject"] = subject or f"Ваша подписка — {brand_name}"
-    message["From"] = from_email
+    message["From"] = formataddr((from_name, from_email)) if from_name else from_email
     message["To"] = to_email
     message.attach(MIMEText(text, "plain"))
     message.attach(MIMEText(html, "html"))
@@ -164,6 +166,7 @@ def send_subscription_email_via_resend(
     api_key: str,
     from_email: str,
     brand_name: str = "Marzban",
+    from_name: Optional[str] = None,
     rules_text: Optional[str] = None,
     subject: Optional[str] = None,
 ) -> None:
@@ -177,7 +180,7 @@ def send_subscription_email_via_resend(
             RESEND_API_URL,
             headers={"Authorization": f"Bearer {api_key}"},
             json={
-                "from": from_email,
+                "from": formataddr((from_name, from_email)) if from_name else from_email,
                 "to": [to_email],
                 "subject": subject or f"Ваша подписка — {brand_name}",
                 "html": html,

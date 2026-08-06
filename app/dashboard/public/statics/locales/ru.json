@@ -65,6 +65,8 @@
   "disabled": "disabled",
   "emailSettings.description": "Настрой Resend или SMTP, чтобы одной кнопкой отправлять пользователям ссылку на подписку по почте. Если заданы оба — используется Resend. Название бренда в письме берётся из Subscription Settings -> Profile Title.",
   "emailSettings.fromEmail": "Адрес отправителя",
+  "emailSettings.fromName": "Имя отправителя",
+  "emailSettings.fromNameHint": "Показывается как имя отправителя в почте получателя (и для Resend, и для SMTP). Если оставить пустым — по умолчанию будет «Support {брендНазвание}».",
   "emailSettings.gmailHint": "Для Gmail: хост smtp.gmail.com, порт 587, и пароль приложения (не обычный пароль от Google) — создаётся на myaccount.google.com/apppasswords, требует включённой двухфакторной аутентификации. Учти: некоторые хостинги полностью блокируют исходящий SMTP — если отправка падает по таймауту, используй Resend выше.",
   "emailSettings.resendApiKey": "API-ключ",
   "emailSettings.resendApiKeySet": "API-ключ (уже задан, оставь пустым чтобы не менять)",

@@ -65,6 +65,8 @@
   "disabled": "disabled",
   "emailSettings.description": "Configure Resend or SMTP so you can email users their subscription link with one click. If both are set, Resend is used. The brand name shown in the email comes from Subscription Settings -> Profile Title.",
   "emailSettings.fromEmail": "From address",
+  "emailSettings.fromName": "Sender name",
+  "emailSettings.fromNameHint": "Shown as the sender's name in the recipient's inbox (both Resend and SMTP). Leave blank to default to \"Support {brand}\".",
   "emailSettings.gmailHint": "For Gmail: host smtp.gmail.com, port 587, and an App Password (not your normal Google password) generated at myaccount.google.com/apppasswords -- requires 2-Step Verification to be enabled. Note: some hosts block outbound SMTP ports entirely -- if sending fails with a timeout, use Resend above instead.",
   "emailSettings.resendApiKey": "API key",
   "emailSettings.resendApiKeySet": "API key (already set, leave blank to keep it)",

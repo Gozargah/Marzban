@@ -45,12 +45,14 @@ type EmailFormType = {
   smtp_username: string;
   smtp_password: string;
   smtp_from_email: string;
+  email_from_name: string;
   email_rules_text: string;
 };
 
 const emptyValues: EmailFormType = {
   resend_api_key: "",
   resend_from_email: "",
+  email_from_name: "",
   smtp_host: "",
   smtp_port: "",
   smtp_username: "",
@@ -78,6 +80,7 @@ export const EmailSettingsModal: FC = () => {
         form.reset({
           resend_api_key: "",
           resend_from_email: data.resend_from_email || "",
+          email_from_name: data.email_from_name || "",
           smtp_host: data.smtp_host || "",
           smtp_port: data.smtp_port ? String(data.smtp_port) : "",
           smtp_username: data.smtp_username || "",
@@ -183,6 +186,24 @@ export const EmailSettingsModal: FC = () => {
                       />
                     )}
                   />
+                </FormControl>
+                <FormControl>
+                  <FormLabel fontSize="sm">{t("emailSettings.fromName")}</FormLabel>
+                  <Controller
+                    control={form.control}
+                    name="email_from_name"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        size="sm"
+                        placeholder="Support Golden Cloud"
+                        disabled={loading}
+                      />
+                    )}
+                  />
+                  <Text fontSize="xs" color="gray.500" mt={1}>
+                    {t("emailSettings.fromNameHint")}
+                  </Text>
                 </FormControl>
               </VStack>
 

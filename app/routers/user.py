@@ -350,6 +350,7 @@ def send_subscription_email_endpoint(
         subscription_url = str(request.base_url).rstrip("/") + subscription_url
 
     brand_name = settings.sub_profile_title or SUB_PROFILE_TITLE
+    from_name = settings.email_from_name or f"Support {brand_name}"
     rules_text = settings.email_rules_text
 
     try:
@@ -361,6 +362,7 @@ def send_subscription_email_endpoint(
                 api_key=settings.resend_api_key,
                 from_email=settings.resend_from_email,
                 brand_name=brand_name,
+                from_name=from_name,
                 rules_text=rules_text,
             )
         else:
@@ -374,6 +376,7 @@ def send_subscription_email_endpoint(
                 smtp_password=settings.smtp_password,
                 from_email=settings.smtp_from_email,
                 brand_name=brand_name,
+                from_name=from_name,
                 rules_text=rules_text,
             )
     except EmailSendError as e:

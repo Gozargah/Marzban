@@ -26,6 +26,7 @@ class EmailSettings(BaseModel):
     smtp_from_email: Optional[str] = None
     resend_api_key: Optional[str] = None
     resend_from_email: Optional[str] = None
+    email_from_name: Optional[str] = None
     email_rules_text: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
@@ -39,5 +40,6 @@ class EmailSettingsResponse(BaseModel):
     smtp_from_email: Optional[str] = None
     resend_api_key_set: bool = False
     resend_from_email: Optional[str] = None
+    email_from_name: Optional[str] = None
     email_rules_text: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
