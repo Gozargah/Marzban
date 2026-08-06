@@ -30,6 +30,15 @@ def _connect_ipv4(server: smtplib.SMTP, host: str, port: int) -> None:
     server._host = host
 
 
+_CONNECT_STEPS = [
+    "Скачайте приложение Happ -- happ.su, App Store или Google Play.",
+    "Скопируйте ссылку на подписку (кнопка выше или ссылка ниже).",
+    "Откройте Happ и нажмите на значок ⋮ (три точки) в правом верхнем углу.",
+    "Выберите «Добавить из буфера обмена».",
+    "Нажмите на появившийся профиль, затем на большую кнопку питания по центру экрана -- готово, VPN подключён.",
+]
+
+
 def _build_subscription_email_body(
     username: str,
     subscription_url: str,
@@ -41,7 +50,10 @@ def _build_subscription_email_body(
         "",
         f"Ваша ссылка на подписку {brand_name}:",
         subscription_url,
+        "",
+        "Как подключиться:",
     ]
+    text_lines += [f"{i}. {step}" for i, step in enumerate(_CONNECT_STEPS, 1)]
     if rules_text:
         text_lines += ["", "Правила использования:", rules_text]
     text = "\n".join(text_lines) + "\n"
@@ -49,6 +61,11 @@ def _build_subscription_email_body(
     safe_username = html_module.escape(username)
     safe_brand = html_module.escape(brand_name)
     safe_url = html_module.escape(subscription_url)
+
+    steps_html = "".join(
+        f'<li style="margin:0 0 10px;padding-left:4px;">{html_module.escape(step)}</li>'
+        for step in _CONNECT_STEPS
+    )
 
     rules_html = ""
     if rules_text:
@@ -68,12 +85,12 @@ def _build_subscription_email_body(
     <td align="center">
       <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06);max-width:480px;">
         <tr>
-          <td style="background:#4f46e5;padding:28px 32px;">
+          <td style="background:#4f46e5;padding:28px 32px;" align="center">
             <p style="margin:0;font-size:20px;font-weight:700;color:#ffffff;">{safe_brand}</p>
           </td>
         </tr>
         <tr>
-          <td style="padding:28px 32px 8px;">
+          <td style="padding:28px 32px 8px;" align="center">
             <p style="margin:0 0 12px;font-size:16px;color:#111827;">Здравствуйте, {safe_username}!</p>
             <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#4b5563;">Ваша ссылка на подписку {safe_brand} готова. Нажмите на кнопку ниже, чтобы открыть её в приложении.</p>
           </td>
@@ -84,8 +101,16 @@ def _build_subscription_email_body(
           </td>
         </tr>
         <tr>
-          <td style="padding:0 32px 28px;">
+          <td style="padding:0 32px 28px;" align="center">
             <p style="margin:0;font-size:12px;color:#9ca3af;word-break:break-all;">Или скопируйте ссылку вручную:<br><a href="{safe_url}" style="color:#6366f1;">{safe_url}</a></p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 32px 28px;">
+            <div style="background:#f4f6fb;border-radius:10px;padding:18px 20px;">
+              <p style="margin:0 0 10px;font-size:13px;font-weight:600;color:#4b5563;text-transform:uppercase;letter-spacing:.04em;">Как подключиться</p>
+              <ol style="margin:0;padding:0 0 0 18px;font-size:14px;line-height:1.5;color:#374151;">{steps_html}</ol>
+            </div>
           </td>
         </tr>{rules_html}
         <tr>
