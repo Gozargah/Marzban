@@ -64,7 +64,7 @@ import { Trans, useTranslation } from "react-i18next";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
 import { z } from "zod";
-import { useDashboard } from "../contexts/DashboardContext";
+import { fetchInbounds, useDashboard } from "../contexts/DashboardContext";
 import { DeleteIcon } from "./DeleteUserModal";
 import { Icon } from "./Icon";
 import { Input as CustomInput } from "./Input";
@@ -666,7 +666,7 @@ const AccordionInbound: FC<AccordionInboundType> = ({
                             <Input
                               size="sm"
                               borderRadius="4px"
-                              placeholder={String(inbound.port || "8080")}
+                              placeholder={String(inbound?.port || "8080")}
                               type="number"
                               {...form.register(
                                 hostKey + "." + index + ".port"
@@ -1207,7 +1207,14 @@ export const HostsDialog: FC = () => {
   const [openAccordions, setOpenAccordions] = useState<any>({});
 
   useEffect(() => {
-    if (isEditingHosts) fetchHosts();
+    if (isEditingHosts) {
+      fetchHosts();
+      // Inbounds are only fetched once when the dashboard first loads, so if
+      // the Xray config was edited since then (e.g. new inbound tags added
+      // via Core Settings), that cache is stale -- refresh it here so every
+      // host tag has a matching inbound instead of crashing the render below.
+      fetchInbounds();
+    }
   }, [isEditingHosts]);
   const form = useForm<z.infer<typeof hostsSchema>>({
     resolver: zodResolver(hostsSchema),
