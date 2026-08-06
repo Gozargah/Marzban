@@ -1147,7 +1147,10 @@ def partial_update_admin(db: Session, dbadmin: Admin, modified_admin: AdminParti
 
 def remove_admin(db: Session, dbadmin: Admin) -> Admin:
     """
-    Removes an admin from the database.
+    Removes an admin from the database, along with every user they created.
+
+    Without this, a deleted admin's users are left behind ownerless
+    (admin_id nulled out by the FK) instead of being removed with them.
 
     Args:
         db (Session): Database session.
@@ -1156,6 +1159,8 @@ def remove_admin(db: Session, dbadmin: Admin) -> Admin:
     Returns:
         Admin: The removed admin object.
     """
+    for dbuser in list(dbadmin.users):
+        db.delete(dbuser)
     db.delete(dbadmin)
     db.commit()
     return dbadmin

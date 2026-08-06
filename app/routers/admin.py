@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import IntegrityError
 
@@ -107,18 +107,27 @@ def modify_admin(
     responses={403: responses._403},
 )
 def remove_admin(
+    bg: BackgroundTasks,
     dbadmin: Admin = Depends(get_admin_by_username),
     db: Session = Depends(get_db),
     current_admin: Admin = Depends(Admin.check_sudo_admin),
 ):
-    """Remove an admin from the database."""
+    """Remove an admin from the database, along with every user they created."""
     if dbadmin.is_sudo:
         raise HTTPException(
             status_code=403,
             detail="You're not allowed to delete sudo accounts. Use marzban-cli instead.",
         )
 
+    removed_users = list(dbadmin.users)
     crud.remove_admin(db, dbadmin)
+
+    for dbuser in removed_users:
+        bg.add_task(xray.operations.remove_user, dbuser=dbuser)
+        bg.add_task(
+            report.user_deleted, username=dbuser.username, user_admin=Admin.model_validate(dbadmin), by=current_admin
+        )
+
     return {"detail": "Admin removed successfully"}
 
 
