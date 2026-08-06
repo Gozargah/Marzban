@@ -20,6 +20,7 @@ from app.models.user import (
 )
 from app.utils import report, responses
 from app.utils.email import EmailSendError, send_subscription_email, send_subscription_email_via_resend
+from config import SUB_PROFILE_TITLE
 
 router = APIRouter(tags=["User"], prefix="/api", responses={401: responses._401})
 
@@ -348,6 +349,9 @@ def send_subscription_email_endpoint(
     if subscription_url.startswith("/"):
         subscription_url = str(request.base_url).rstrip("/") + subscription_url
 
+    brand_name = settings.sub_profile_title or SUB_PROFILE_TITLE
+    rules_text = settings.email_rules_text
+
     try:
         if use_resend:
             send_subscription_email_via_resend(
@@ -356,6 +360,8 @@ def send_subscription_email_endpoint(
                 subscription_url=subscription_url,
                 api_key=settings.resend_api_key,
                 from_email=settings.resend_from_email,
+                brand_name=brand_name,
+                rules_text=rules_text,
             )
         else:
             send_subscription_email(
@@ -367,6 +373,8 @@ def send_subscription_email_endpoint(
                 smtp_username=settings.smtp_username,
                 smtp_password=settings.smtp_password,
                 from_email=settings.smtp_from_email,
+                brand_name=brand_name,
+                rules_text=rules_text,
             )
     except EmailSendError as e:
         raise HTTPException(status_code=400, detail=f"Failed to send email: {e}")

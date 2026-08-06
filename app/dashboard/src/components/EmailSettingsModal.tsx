@@ -14,10 +14,11 @@ import {
   ModalOverlay,
   SimpleGrid,
   Text,
+  Textarea,
   VStack,
   useToast,
 } from "@chakra-ui/react";
-import { BoltIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
+import { BoltIcon, DocumentTextIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
 import { FC, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -34,6 +35,7 @@ const SettingsIcon = chakra(EnvelopeIcon, {
 });
 const ResendIcon = chakra(BoltIcon, { baseStyle: { w: 4, h: 4 } });
 const SmtpIcon = chakra(EnvelopeIcon, { baseStyle: { w: 4, h: 4 } });
+const RulesIcon = chakra(DocumentTextIcon, { baseStyle: { w: 4, h: 4 } });
 
 type EmailFormType = {
   resend_api_key: string;
@@ -43,6 +45,7 @@ type EmailFormType = {
   smtp_username: string;
   smtp_password: string;
   smtp_from_email: string;
+  email_rules_text: string;
 };
 
 const emptyValues: EmailFormType = {
@@ -53,6 +56,7 @@ const emptyValues: EmailFormType = {
   smtp_username: "",
   smtp_password: "",
   smtp_from_email: "",
+  email_rules_text: "",
 };
 
 export const EmailSettingsModal: FC = () => {
@@ -79,6 +83,7 @@ export const EmailSettingsModal: FC = () => {
           smtp_username: data.smtp_username || "",
           smtp_password: "",
           smtp_from_email: data.smtp_from_email || "",
+          email_rules_text: data.email_rules_text || "",
         });
         setPasswordSet(!!data.smtp_password_set);
         setApiKeySet(!!data.resend_api_key_set);
@@ -268,6 +273,29 @@ export const EmailSettingsModal: FC = () => {
                 <Text fontSize="xs" color="gray.500">
                   {t("emailSettings.gmailHint")}
                 </Text>
+              </VStack>
+
+              <Divider />
+
+              <VStack spacing="3" align="stretch">
+                <HStack spacing={1.5} color="gray.500" _dark={{ color: "gray.400" }}>
+                  <RulesIcon />
+                  <Text fontSize="xs" fontWeight="bold" textTransform="uppercase">
+                    {t("emailSettings.sectionRules")}
+                  </Text>
+                </HStack>
+                <Text fontSize="xs" color="gray.500">
+                  {t("emailSettings.rulesHint")}
+                </Text>
+                <FormControl>
+                  <Controller
+                    control={form.control}
+                    name="email_rules_text"
+                    render={({ field }) => (
+                      <Textarea {...field} size="sm" rows={4} disabled={loading} />
+                    )}
+                  />
+                </FormControl>
               </VStack>
             </VStack>
           </ModalBody>

@@ -317,6 +317,7 @@ class Settings(Base):
     # hosts that block outbound SMTP ports; sends over plain HTTPS instead.
     resend_api_key = Column(String(256), nullable=True, default=None)
     resend_from_email = Column(String(254), nullable=True, default=None)
+    email_rules_text = Column(String(2048), nullable=True, default=None)
 
 
 class JWT(Base):

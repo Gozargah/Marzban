@@ -1,7 +1,9 @@
+import html as html_module
 import smtplib
 import socket
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from typing import Optional
 
 import requests
 
@@ -28,13 +30,73 @@ def _connect_ipv4(server: smtplib.SMTP, host: str, port: int) -> None:
     server._host = host
 
 
-def _build_subscription_email_body(username: str, subscription_url: str) -> tuple[str, str]:
-    text = f"Hi {username},\n\nHere is your subscription link:\n{subscription_url}\n"
-    html = (
-        f"<p>Hi {username},</p>"
-        f"<p>Here is your subscription link:</p>"
-        f'<p><a href="{subscription_url}">{subscription_url}</a></p>'
-    )
+def _build_subscription_email_body(
+    username: str,
+    subscription_url: str,
+    brand_name: str,
+    rules_text: Optional[str] = None,
+) -> tuple[str, str]:
+    text_lines = [
+        f"Здравствуйте, {username}!",
+        "",
+        f"Ваша ссылка на подписку {brand_name}:",
+        subscription_url,
+    ]
+    if rules_text:
+        text_lines += ["", "Правила использования:", rules_text]
+    text = "\n".join(text_lines) + "\n"
+
+    safe_username = html_module.escape(username)
+    safe_brand = html_module.escape(brand_name)
+    safe_url = html_module.escape(subscription_url)
+
+    rules_html = ""
+    if rules_text:
+        safe_rules = html_module.escape(rules_text).replace("\n", "<br>")
+        rules_html = f"""
+        <tr>
+          <td style="padding:0 32px 28px;">
+            <div style="background:#f4f6fb;border-radius:10px;padding:18px 20px;">
+              <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#4b5563;text-transform:uppercase;letter-spacing:.04em;">Правила использования</p>
+              <p style="margin:0;font-size:14px;line-height:1.6;color:#374151;">{safe_rules}</p>
+            </div>
+          </td>
+        </tr>"""
+
+    html = f"""<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef1f6;padding:32px 0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06);max-width:480px;">
+        <tr>
+          <td style="background:#4f46e5;padding:28px 32px;">
+            <p style="margin:0;font-size:20px;font-weight:700;color:#ffffff;">{safe_brand}</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px 32px 8px;">
+            <p style="margin:0 0 12px;font-size:16px;color:#111827;">Здравствуйте, {safe_username}!</p>
+            <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#4b5563;">Ваша ссылка на подписку {safe_brand} готова. Нажмите на кнопку ниже, чтобы открыть её в приложении.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 32px 24px;" align="center">
+            <a href="{safe_url}" style="display:inline-block;background:#4f46e5;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 28px;border-radius:8px;">Открыть подписку</a>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 32px 28px;">
+            <p style="margin:0;font-size:12px;color:#9ca3af;word-break:break-all;">Или скопируйте ссылку вручную:<br><a href="{safe_url}" style="color:#6366f1;">{safe_url}</a></p>
+          </td>
+        </tr>{rules_html}
+        <tr>
+          <td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #eef0f3;">
+            <p style="margin:0;font-size:12px;color:#9ca3af;">Это письмо отправлено автоматически, отвечать на него не нужно. Если у вас возникли вопросы — свяжитесь с администратором {safe_brand}.</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>"""
     return text, html
 
 
@@ -47,12 +109,14 @@ def send_subscription_email(
     smtp_username: str,
     smtp_password: str,
     from_email: str,
-    subject: str = "Your subscription",
+    brand_name: str = "Marzban",
+    rules_text: Optional[str] = None,
+    subject: Optional[str] = None,
 ) -> None:
-    text, html = _build_subscription_email_body(username, subscription_url)
+    text, html = _build_subscription_email_body(username, subscription_url, brand_name, rules_text)
 
     message = MIMEMultipart("alternative")
-    message["Subject"] = subject
+    message["Subject"] = subject or f"Ваша подписка — {brand_name}"
     message["From"] = from_email
     message["To"] = to_email
     message.attach(MIMEText(text, "plain"))
@@ -74,12 +138,14 @@ def send_subscription_email_via_resend(
     subscription_url: str,
     api_key: str,
     from_email: str,
-    subject: str = "Your subscription",
+    brand_name: str = "Marzban",
+    rules_text: Optional[str] = None,
+    subject: Optional[str] = None,
 ) -> None:
     """Sends over Resend's HTTP API (https://resend.com) instead of SMTP --
     useful when the host's outbound SMTP ports (587/465) are blocked, since
     this goes out over plain HTTPS (443) instead."""
-    text, html = _build_subscription_email_body(username, subscription_url)
+    text, html = _build_subscription_email_body(username, subscription_url, brand_name, rules_text)
 
     try:
         resp = requests.post(
@@ -88,7 +154,7 @@ def send_subscription_email_via_resend(
             json={
                 "from": from_email,
                 "to": [to_email],
-                "subject": subject,
+                "subject": subject or f"Ваша подписка — {brand_name}",
                 "html": html,
                 "text": text,
             },
