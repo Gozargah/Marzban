@@ -19,11 +19,15 @@ from app.models.node import (
     NodesUsageResponse,
 )
 from app.models.proxy import ProxyHost
-from app.utils import responses
+from app.utils import audit, responses
 
 router = APIRouter(
     tags=["Node"], prefix="/api", responses={401: responses._401, 403: responses._403}
 )
+
+# node fields recorded in the admin action history
+_NODE_FIELDS = ("id", "name", "address", "port", "api_port", "status",
+                "usage_coefficient")
 
 
 def add_host_if_needed(new_node: NodeCreate, db: Session):
@@ -66,6 +70,7 @@ def add_node(
     bg.add_task(xray.operations.connect_node, node_id=dbnode.id)
     bg.add_task(add_host_if_needed, new_node, db)
 
+    audit.detail(target_name=dbnode.name, after=audit.snapshot(dbnode, _NODE_FIELDS))
     logger.info(f'New node "{dbnode.name}" added')
     return dbnode
 
@@ -164,7 +169,10 @@ def modify_node(
     _: Admin = Depends(Admin.check_sudo_admin),
 ):
     """Update a node's details. Only accessible to sudo admins."""
+    before = audit.snapshot(dbnode, _NODE_FIELDS)
     updated_node = crud.update_node(db, dbnode, modified_node)
+    audit.detail(target_name=updated_node.name, before=before,
+                 after=audit.snapshot(updated_node, _NODE_FIELDS))
     xray.operations.remove_node(updated_node.id)
     if updated_node.status != NodeStatus.disabled:
         bg.add_task(xray.operations.connect_node, node_id=updated_node.id)
@@ -180,6 +188,7 @@ def reconnect_node(
     _: Admin = Depends(Admin.check_sudo_admin),
 ):
     """Trigger a reconnection for the specified node. Only accessible to sudo admins."""
+    audit.detail(target_name=dbnode.name)
     bg.add_task(xray.operations.connect_node, node_id=dbnode.id)
     return {"detail": "Reconnection task scheduled"}
 
@@ -191,6 +200,7 @@ def remove_node(
     admin: Admin = Depends(Admin.check_sudo_admin),
 ):
     """Delete a node and remove it from xray in the background."""
+    audit.detail(target_name=dbnode.name, before=audit.snapshot(dbnode, _NODE_FIELDS))
     crud.remove_node(db, dbnode)
     xray.operations.remove_node(dbnode.id)
 

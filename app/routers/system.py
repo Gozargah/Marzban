@@ -6,12 +6,19 @@ from app import __version__, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.proxy import ProxyHost, ProxyInbound, ProxyTypes
-from app.models.system import SystemStats
+from app.models.system import DeviceStats, SystemStats
 from app.models.user import UserStatus
-from app.utils import responses
+from app.utils import audit, responses
 from app.utils.system import cpu_usage, memory_usage, realtime_bandwidth
 
 router = APIRouter(tags=["System"], prefix="/api", responses={401: responses._401})
+
+# host fields recorded in the admin action history
+_HOST_FIELDS = (
+    "remark", "address", "port", "path", "sni", "host", "security", "alpn",
+    "fingerprint", "allowinsecure", "is_disabled", "mux_enable",
+    "random_user_agent", "use_sni_as_host", "auto_select",
+)
 
 
 @router.get("/system", response_model=SystemStats)
@@ -63,6 +70,14 @@ def get_system_stats(
     )
 
 
+@router.get("/system/devices", response_model=DeviceStats)
+def get_device_stats(
+    db: Session = Depends(get_db), admin: Admin = Depends(Admin.get_current)
+):
+    """Aggregate HWID device metrics for the dashboard."""
+    return crud.get_device_stats(db)
+
+
 @router.get("/inbounds", response_model=Dict[ProxyTypes, List[ProxyInbound]])
 def get_inbounds(admin: Admin = Depends(Admin.get_current)):
     """Retrieve inbound configurations grouped by protocol."""
@@ -95,9 +110,18 @@ def modify_hosts(
                 status_code=400, detail=f"Inbound {inbound_tag} doesn't exist"
             )
 
+    # snapshot only the tags being touched, so the history diff stays readable
+    before = {tag: [audit.snapshot(h, _HOST_FIELDS) for h in crud.get_hosts(db, tag)]
+              for tag in modified_hosts}
+
     for inbound_tag, hosts in modified_hosts.items():
         crud.update_hosts(db, inbound_tag, hosts)
 
     xray.hosts.update()
+
+    after = {tag: [audit.snapshot(h, _HOST_FIELDS) for h in crud.get_hosts(db, tag)]
+             for tag in modified_hosts}
+    audit.detail(target_name=",".join(list(modified_hosts)[:3]) or None,
+                 before=before, after=after)
 
     return {tag: crud.get_hosts(db, tag) for tag in xray.config.inbounds_by_tag}

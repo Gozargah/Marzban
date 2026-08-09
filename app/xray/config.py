@@ -310,6 +310,12 @@ class XRayConfig(dict):
                     settings['xmux'] = net_settings.get('xmux', {})
                     settings["mode"] = net_settings.get("mode", "auto")
                     settings["noGRPCHeader"] = net_settings.get("noGRPCHeader", False)
+                    settings["uplinkHTTPMethod"] = net_settings.get("uplinkHTTPMethod", "")
+                    settings["xPaddingKey"] = net_settings.get("xPaddingKey", "")
+                    settings["xPaddingMethod"] = net_settings.get("xPaddingMethod", "")
+                    settings["xPaddingObfsMode"] = net_settings.get("xPaddingObfsMode", False)
+                    settings["xPaddingPlacement"] = net_settings.get("xPaddingPlacement", "")
+                    settings["scStreamUpServerSecs"] = net_settings.get("scStreamUpServerSecs", "")
                     settings["keepAlivePeriod"] = net_settings.get("keepAlivePeriod", 0)
 
                 elif net == 'kcp':

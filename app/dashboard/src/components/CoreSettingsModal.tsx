@@ -8,6 +8,13 @@ import {
   FormLabel,
   HStack,
   IconButton,
+  Select,
+  Text,
+  Tooltip,
+  useToast,
+  useColorMode,
+} from "@chakra-ui/react";
+import {
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -15,12 +22,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Select,
-  Text,
-  Tooltip,
-  useToast,
-  useColorMode
-} from "@chakra-ui/react";
+} from "./PageOrModal";
 import {
   ArrowPathIcon,
   ArrowsPointingInIcon,

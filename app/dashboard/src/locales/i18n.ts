@@ -40,6 +40,12 @@ i18n
                     import.meta.env.BASE_URL,
                     `statics/locales/{{lng}}.json`,
                 ]),
+                // Bust the browser cache of the locale JSONs after key changes.
+                // Bump this on every locale edit: the files carry no
+                // Cache-Control, i18next fetches them by XHR, and an XHR is not
+                // covered by the browser's hard-reload cache bypass — a stale
+                // copy otherwise survives until the heuristic freshness expires.
+                queryStringParams: { v: "redesign-1" },
             },
         },
         function (err, t) {

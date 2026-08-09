@@ -145,6 +145,75 @@ def update_user(dbuser: "DBUser"):
                 _remove_user_from_inbound(node.api, inbound_tag, email)
 
 
+def _build_account(user: UserResponse, proxy_type, inbound_tag: str, email: str):
+    """Build the xray Account for one inbound, applying the same XTLS-flow
+    normalisation as add_user/update_user."""
+    inbound = xray.config.inbounds_by_tag.get(inbound_tag, {})
+    try:
+        proxy_settings = user.proxies[proxy_type].dict(no_obj=True)
+    except KeyError:
+        proxy_settings = {}
+    account = proxy_type.account_model(email=email, **proxy_settings)
+    if getattr(account, 'flow', None) and (
+        inbound.get('network', 'tcp') not in ('tcp', 'kcp')
+        or (
+            inbound.get('network', 'tcp') in ('tcp', 'kcp')
+            and inbound.get('tls') not in ('tls', 'reality')
+        )
+        or inbound.get('header_type') == 'http'
+    ):
+        account.flow = XTLSFlows.NONE
+    return account
+
+
+def _group_apis(node_ids, include_master: bool):
+    """APIs to act on for a host group: the group's connected nodes (+ the main
+    core if the group meters the master). Returns a list of XRayAPI."""
+    apis = []
+    if include_master:
+        apis.append(xray.api)
+    for nid in node_ids:
+        node = xray.nodes.get(nid)
+        if node and node.connected and node.started:
+            apis.append(node.api)
+    return apis
+
+
+def block_user_group(dbuser: "DBUser", inbound_tags, node_ids, include_master: bool):
+    """Cut the user off from a host group's inbound tags on the group's nodes
+    (and the master, if metered). Idempotent — safe to call every cycle, which
+    is how we re-apply the block after a node restart silently re-adds the user.
+    Enforcement is per inbound-tag per node: only the group's own nodes/master
+    are touched, so the user keeps working on every other country."""
+    if not inbound_tags:
+        return  # nothing to scope the cut to -> never over-cut
+    email = f"{dbuser.id}.{dbuser.username}"
+    for api in _group_apis(node_ids, include_master):
+        for tag in inbound_tags:
+            _remove_user_from_inbound(api, tag, email)
+
+
+def unblock_user_group(dbuser: "DBUser", inbound_tags, node_ids, include_master: bool):
+    """Re-add the user to a host group's inbound tags (after a reset / the limit
+    was raised / membership removed). Only re-adds the tags the user actually
+    has in their proxies."""
+    if not inbound_tags:
+        return
+    user = UserResponse.model_validate(dbuser)
+    email = f"{dbuser.id}.{dbuser.username}"
+    apis = _group_apis(node_ids, include_master)
+    if not apis:
+        return
+    wanted = set(inbound_tags)
+    for proxy_type, tags in user.inbounds.items():
+        for inbound_tag in tags:
+            if inbound_tag not in wanted:
+                continue
+            account = _build_account(user, proxy_type, inbound_tag, email)
+            for api in apis:
+                _add_user_to_inbound(api, inbound_tag, account)
+
+
 def remove_node(node_id: int):
     if node_id in xray.nodes:
         try:
@@ -272,6 +341,8 @@ def restart_node(node_id, config=None):
 __all__ = [
     "add_user",
     "remove_user",
+    "block_user_group",
+    "unblock_user_group",
     "add_node",
     "remove_node",
     "connect_node",

@@ -355,7 +355,23 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                       >
                         <div className="flex-status">
                           <OnlineBadge lastOnline={user.online_at} />
-                          <Text isTruncated>{user.username}</Text>
+                          <Text isTruncated flexShrink={1} minW={0}>
+                            {user.username}
+                          </Text>
+                          <Text
+                            as="span"
+                            fontSize="xs"
+                            color="gray.500"
+                            whiteSpace="nowrap"
+                            flexShrink={0}
+                            title="devices"
+                          >
+                            📱
+                            {user.device_count ?? 0}
+                            {(user.device_limit ?? 0) > 0
+                              ? "/" + user.device_limit
+                              : ""}
+                          </Text>
                         </div>
                       </Td>
                       <Td borderBottom={0} minW="50px" pl={0} pr={0}>
@@ -436,6 +452,27 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                                   />
                                 </Box>
                               </VStack>
+                              <VStack
+                                alignItems="flex-start"
+                                w="full"
+                                spacing={-1}
+                              >
+                                <Text
+                                  textTransform="capitalize"
+                                  fontSize="xs"
+                                  fontWeight="bold"
+                                  color="gray.600"
+                                  _dark={{ color: "gray.400" }}
+                                >
+                                  📱 {t("userDialog.devicesList")}
+                                </Text>
+                                <Text fontSize="sm">
+                                  {user.device_count}
+                                  {(user.device_limit ?? 0) > 0
+                                    ? " / " + user.device_limit
+                                    : " (∞)"}
+                                </Text>
+                              </VStack>
                               <HStack w="full" justifyContent="space-between">
                                 <Box width="full">
                                   <StatusBadge
@@ -502,6 +539,19 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               <HStack>
                 <span>{t("username")}</span>
                 <Sort sort={filters.sort} column="username" />
+              </HStack>
+            </Th>
+            <Th
+              position="sticky"
+              top={{ base: "unset", md: top }}
+              width="130px"
+              minW="110px"
+              cursor={"pointer"}
+              onClick={handleSort.bind(null, "device_count")}
+            >
+              <HStack>
+                <span>Устройства</span>
+                <Sort sort={filters.sort} column="device_count" />
               </HStack>
             </Th>
             <Th
@@ -597,6 +647,14 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                       <OnlineStatus lastOnline={user.online_at} />
                     </div>
                   </Td>
+                  <Td width="130px" minW="110px">
+                    <Text fontSize="sm" whiteSpace="nowrap" color="gray.500">
+                      {user.device_count ?? 0}
+                      {(user.device_limit ?? 0) > 0
+                        ? " / " + user.device_limit
+                        : ""}
+                    </Text>
+                  </Td>
                   <Td width="400px" minW="150px">
                     <StatusBadge
                       expiryDate={user.expire}
@@ -620,7 +678,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
             })}
           {users.length == 0 && (
             <Tr>
-              <Td colSpan={4}>
+              <Td colSpan={5}>
                 <EmptySection isFiltered={isFiltered} />
               </Td>
             </Tr>

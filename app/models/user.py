@@ -65,6 +65,10 @@ class User(BaseModel):
     data_limit_reset_strategy: UserDataLimitResetStrategy = (
         UserDataLimitResetStrategy.no_reset
     )
+    device_limit: Optional[int] = Field(
+        ge=0, default=None,
+        description="Max distinct HWID devices. 0 or null = unlimited"
+    )
     inbounds: Dict[ProxyTypes, List[str]] = {}
     note: Optional[str] = Field(None, nullable=True)
     sub_updated_at: Optional[datetime] = Field(None, nullable=True)
@@ -280,10 +284,12 @@ class UserModify(User):
 
 
 class UserResponse(User):
+    id: Optional[int] = None
     username: str
     status: UserStatus
     used_traffic: int
     lifetime_used_traffic: int = 0
+    device_count: int = 0
     created_at: datetime
     links: List[str] = []
     subscription_url: str = ""
@@ -339,6 +345,25 @@ class SubscriptionUserResponse(UserResponse):
 class UsersResponse(BaseModel):
     users: List[UserResponse]
     total: int
+
+
+class UserDeviceResponse(BaseModel):
+    id: int
+    hwid: str
+    platform: Optional[str] = None
+    os_version: Optional[str] = None
+    device_model: Optional[str] = None
+    user_agent: Optional[str] = None
+    status: str = "active"
+    created_at: datetime
+    last_seen: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserDevicesResponse(BaseModel):
+    devices: List[UserDeviceResponse]
+    total: int
+    device_limit: Optional[int] = None
 
 
 class UserUsageResponse(BaseModel):

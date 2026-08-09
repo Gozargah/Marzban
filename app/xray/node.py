@@ -119,15 +119,18 @@ class ReSTXRayNode:
         if not self._session_id:
             return False
         try:
-            self.make_request("/ping", timeout=3)
+            self.make_request("/ping", timeout=15)
             return True
         except NodeAPIError:
             return False
 
     @property
     def started(self):
-        res = self.make_request("/", timeout=3)
-        return res.get('started', False)
+        try:
+            res = self.make_request("/", timeout=15)
+            return res.get('started', False)
+        except NodeAPIError:
+            return False
 
     @property
     def api(self):
@@ -152,11 +155,11 @@ class ReSTXRayNode:
         self._node_certfile = string_to_temp_file(self._node_cert)
         self.session.verify = self._node_certfile.name
 
-        res = self.make_request("/connect", timeout=3)
+        res = self.make_request("/connect", timeout=15)
         self._session_id = res['session_id']
 
     def disconnect(self):
-        self.make_request("/disconnect", timeout=3)
+        self.make_request("/disconnect", timeout=10)
         self._session_id = None
 
     def get_version(self):

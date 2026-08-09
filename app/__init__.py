@@ -32,6 +32,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# YUKU: admin action history — records every mutating /api request
+from app.utils.audit import AuditMiddleware  # noqa: E402
+
+app.add_middleware(AuditMiddleware)
 from app import dashboard, jobs, routers, telegram  # noqa
 from app.routers import api_router  # noqa
 
@@ -61,6 +66,8 @@ def on_startup():
 @app.on_event("shutdown")
 def on_shutdown():
     scheduler.shutdown()
+    from app.utils.concurrency import shutdown_xray_executor
+    shutdown_xray_executor(wait=True)
 
 
 @app.exception_handler(RequestValidationError)

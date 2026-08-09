@@ -8,6 +8,7 @@ from app.models.admin import Admin
 from app.models.user_template import (UserTemplateCreate, UserTemplateModify,
                                       UserTemplateResponse)
 from app.dependencies import get_user_template
+from app.utils import audit
 
 router = APIRouter(tags=['User Template'], prefix='/api')
 
@@ -26,7 +27,9 @@ def add_user_template(
     - **inbounds** dictionary of protocol:inbound_tags, empty means all inbounds
     """
     try:
-        return crud.create_user_template(db, new_user_template)
+        template = crud.create_user_template(db, new_user_template)
+        audit.detail(target_name=template.name, after=audit.snapshot(template))
+        return template
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=409, detail="Template by this name already exists")
@@ -56,7 +59,11 @@ def modify_user_template(
     - **inbounds** dictionary of protocol:inbound_tags, empty means all inbounds
     """
     try:
-        return crud.update_user_template(db, dbuser_template, modify_user_template)
+        before = audit.snapshot(dbuser_template)
+        updated = crud.update_user_template(db, dbuser_template, modify_user_template)
+        audit.detail(target_name=updated.name, before=before,
+                     after=audit.snapshot(updated))
+        return updated
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=409, detail="Template by this name already exists")
@@ -69,6 +76,8 @@ def remove_user_template(
     dbuser_template: UserTemplateResponse = Depends(get_user_template)
 ):
     """Remove a User Template by its ID"""
+    audit.detail(target_name=dbuser_template.name,
+                 before=audit.snapshot(dbuser_template))
     return crud.remove_user_template(db, dbuser_template)
 
 

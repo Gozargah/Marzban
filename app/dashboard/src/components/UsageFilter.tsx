@@ -380,3 +380,52 @@ export function createUsageConfig(
     } as ApexOptions,
   };
 }
+
+// Horizontal bar variant — a "graph" rather than a donut diagram.
+export function createBarUsageConfig(
+  colorMode: ColorMode,
+  title: string,
+  series: any = [],
+  labels: any = []
+) {
+  const total = formatBytes((series as number[]).reduce((t, c) => t + c, 0));
+  const axisColor = colorMode === "dark" ? "#CBD5E0" : undefined;
+  return {
+    series: [{ name: "Usage", data: series }],
+    options: {
+      chart: {
+        type: "bar",
+        height: "100%",
+        toolbar: { show: false },
+        animations: { enabled: false },
+      },
+      plotOptions: {
+        bar: { horizontal: true, borderRadius: 4, barHeight: "62%" },
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: (val: number) => formatBytes(Number(val), 1),
+        style: { fontSize: "11px", colors: ["#fff"] },
+      },
+      xaxis: {
+        categories: labels,
+        labels: {
+          formatter: (val: string) => formatBytes(Number(val), 0),
+          style: { colors: axisColor },
+        },
+      },
+      yaxis: { labels: { style: { colors: axisColor } } },
+      title: {
+        text: `${title}${total}`,
+        align: "center",
+        style: {
+          fontWeight: "var(--chakra-fontWeights-medium)",
+          color: colorMode === "dark" ? "var(--chakra-colors-gray-300)" : undefined,
+        },
+      },
+      tooltip: { y: { formatter: (val: number) => formatBytes(Number(val), 1) } },
+      grid: { borderColor: colorMode === "dark" ? "#2D3748" : "#E2E8F0" },
+      colors: ["#3182CE"],
+    } as ApexOptions,
+  };
+}

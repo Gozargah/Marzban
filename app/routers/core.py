@@ -10,7 +10,7 @@ from app import xray
 from app.db import Session, get_db
 from app.models.admin import Admin
 from app.models.core import CoreStats
-from app.utils import responses
+from app.utils import audit, responses
 from app.xray import XRayConfig
 from config import XRAY_JSON
 
@@ -117,9 +117,26 @@ def modify_core_config(
     except ValueError as err:
         raise HTTPException(status_code=400, detail=str(err))
 
+    # the full xray config is far too big for a log row: record which top-level
+    # sections changed plus the inbound tags before/after
+    try:
+        with open(XRAY_JSON, "r") as f:
+            old_payload = commentjson.loads(f.read())
+    except Exception:
+        old_payload = {}
+
     xray.config = config
     with open(XRAY_JSON, "w") as f:
         f.write(json.dumps(payload, indent=4))
+
+    audit.detail(details={
+        "changed_sections": sorted(
+            k for k in set(old_payload) | set(payload)
+            if old_payload.get(k) != payload.get(k)
+        ),
+        "inbound_tags_before": [i.get("tag") for i in (old_payload.get("inbounds") or [])],
+        "inbound_tags_after": [i.get("tag") for i in (payload.get("inbounds") or [])],
+    })
 
     startup_config = xray.config.include_db_users()
     xray.core.restart(startup_config)

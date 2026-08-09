@@ -8,21 +8,15 @@ from app import xray
 from app.db import Session, crud, get_db
 from app.dependencies import get_admin_by_username, validate_admin
 from app.models.admin import Admin, AdminCreate, AdminModify, Token
-from app.utils import report, responses
+from app.utils import audit, report, responses
+from app.utils.audit import get_client_ip
 from app.utils.jwt import create_admin_token
 from config import LOGIN_NOTIFY_WHITE_LIST
 
 router = APIRouter(tags=["Admin"], prefix="/api", responses={401: responses._401})
 
-
-def get_client_ip(request: Request) -> str:
-    """Extract the client's IP address from the request headers or client."""
-    forwarded_for = request.headers.get("X-Forwarded-For")
-    if forwarded_for:
-        return forwarded_for.split(",")[0].strip()
-    if request.client:
-        return request.client.host
-    return "Unknown"
+# admin fields worth keeping in the history (no password hashes)
+_ADMIN_FIELDS = ("username", "is_sudo", "telegram_id", "discord_webhook")
 
 
 @router.post("/admin/token", response_model=Token)
@@ -36,12 +30,19 @@ def admin_token(
 
     dbadmin = validate_admin(db, form_data.username, form_data.password)
     if not dbadmin:
+        # history records who tried and from where — never the password itself
+        audit.detail(action="login_failed", admin_username=form_data.username,
+                     target_type="admin", target_name=form_data.username)
         report.login(form_data.username, form_data.password, client_ip, False)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    audit.detail(action="login", admin_username=form_data.username,
+                 target_type="admin", target_name=form_data.username,
+                 details={"is_sudo": bool(dbadmin.is_sudo)})
 
     if client_ip not in LOGIN_NOTIFY_WHITE_LIST:
         report.login(form_data.username, "🔒", client_ip, True)
@@ -66,6 +67,8 @@ def create_admin(
         db.rollback()
         raise HTTPException(status_code=409, detail="Admin already exists")
 
+    audit.detail(target_name=dbadmin.username,
+                 after=audit.snapshot(dbadmin, _ADMIN_FIELDS))
     return dbadmin
 
 
@@ -87,8 +90,13 @@ def modify_admin(
             detail="You're not allowed to edit another sudoer's account. Use marzban-cli instead.",
         )
 
+    before = audit.snapshot(dbadmin, _ADMIN_FIELDS)
+    password_changed = bool(getattr(modified_admin, "password", None))
     updated_admin = crud.update_admin(db, dbadmin, modified_admin)
 
+    audit.detail(target_name=updated_admin.username,
+                 before=before, after=audit.snapshot(updated_admin, _ADMIN_FIELDS),
+                 details={"password_changed": password_changed})
     return updated_admin
 
 
@@ -108,6 +116,8 @@ def remove_admin(
             detail="You're not allowed to delete sudo accounts. Use marzban-cli instead.",
         )
 
+    audit.detail(target_name=dbadmin.username,
+                 before=audit.snapshot(dbadmin, _ADMIN_FIELDS))
     crud.remove_admin(db, dbadmin)
     return {"detail": "Admin removed successfully"}
 

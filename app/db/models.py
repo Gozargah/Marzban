@@ -15,6 +15,7 @@ from sqlalchemy import (
     Table,
     UniqueConstraint,
     func,
+    or_,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
@@ -95,6 +96,12 @@ class User(Base):
     edit_at = Column(DateTime, nullable=True, default=None)
     last_status_change = Column(DateTime, default=datetime.utcnow, nullable=True)
 
+    # Max number of distinct HWID devices allowed. 0 or NULL = unlimited.
+    device_limit = Column(Integer, nullable=True, default=0)
+    devices = relationship(
+        "UserDevice", back_populates="user", cascade="all, delete-orphan"
+    )
+
     next_plan = relationship(
         "NextPlan",
         uselist=False,
@@ -112,6 +119,20 @@ class User(Base):
             select(func.sum(UserUsageResetLogs.used_traffic_at_reset)).
             where(UserUsageResetLogs.user_id == cls.id).
             label('reseted_usage')
+        )
+
+    @hybrid_property
+    def device_count(self) -> int:
+        # mirror the limit: revoked devices don't count
+        return sum(1 for d in self.devices if d.status != "revoked")
+
+    @device_count.expression
+    def device_count(cls):
+        return (
+            select(func.count(UserDevice.id)).
+            where(UserDevice.user_id == cls.id).
+            where(or_(UserDevice.status.is_(None), UserDevice.status != "revoked")).
+            label('device_count')
         )
 
     @property
@@ -143,6 +164,28 @@ class User(Base):
                     _[proxy.type].append(inbound["tag"])
 
         return _
+
+
+class UserDevice(Base):
+    __tablename__ = "user_devices"
+    __table_args__ = (
+        UniqueConstraint("user_id", "hwid", name="uq_user_device_hwid"),
+    )
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user = relationship("User", back_populates="devices")
+    # indexed for panel search by HWID: the (user_id, hwid) unique constraint
+    # can't serve a lookup by hwid alone
+    hwid = Column(String(255), nullable=False, index=True)
+    platform = Column(String(64), nullable=True, default=None)
+    os_version = Column(String(64), nullable=True, default=None)
+    device_model = Column(String(128), nullable=True, default=None)
+    user_agent = Column(String(512), nullable=True, default=None)
+    # "active" counts toward device_limit; "revoked" = soft-banned, kept for history
+    status = Column(String(16), nullable=False, default="active", server_default="active")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    last_seen = Column(DateTime, default=datetime.utcnow)
 
 
 excluded_inbounds_association = Table(
@@ -264,6 +307,9 @@ class ProxyHost(Base):
     noise_setting = Column(String(2000), nullable=True)
     random_user_agent = Column(Boolean, nullable=False, default=False, server_default='0')
     use_sni_as_host = Column(Boolean, nullable=False, default=False, server_default="0")
+    # auto-select group the host belongs to: 0 = none, N = group N
+    # (v2ray-json subscriptions only)
+    auto_select = Column(Integer, nullable=False, default=0, server_default="0")
 
 
 class System(Base):
@@ -272,6 +318,13 @@ class System(Base):
     id = Column(Integer, primary_key=True)
     uplink = Column(BigInteger, default=0)
     downlink = Column(BigInteger, default=0)
+
+
+class YukuSetting(Base):
+    __tablename__ = "yuku_settings"
+
+    key = Column(String(128), primary_key=True)
+    value = Column(String(4096), nullable=True, default=None)
 
 
 class JWT(Base):
@@ -338,6 +391,93 @@ class NodeUsage(Base):
     node = relationship("Node", back_populates="usages")
     uplink = Column(BigInteger, default=0)
     downlink = Column(BigInteger, default=0)
+
+
+# --- YUKU host traffic groups (per-user limit on a group of hosts/nodes) -----
+
+host_group_hosts = Table(
+    "host_group_hosts",
+    Base.metadata,
+    Column("group_id", ForeignKey("host_groups.id", ondelete="CASCADE"), primary_key=True),
+    Column("host_id", ForeignKey("hosts.id", ondelete="CASCADE"), primary_key=True),
+)
+
+host_group_nodes = Table(
+    "host_group_nodes",
+    Base.metadata,
+    Column("group_id", ForeignKey("host_groups.id", ondelete="CASCADE"), primary_key=True),
+    # unique: a node meters into at most one group
+    Column("node_id", ForeignKey("nodes.id", ondelete="CASCADE"), primary_key=True, unique=True),
+)
+
+
+class HostGroup(Base):
+    __tablename__ = "host_groups"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(128), unique=True, nullable=False)
+    # per-user limit in bytes; 0/NULL = unlimited (still tracked & shown)
+    traffic_limit = Column(BigInteger, nullable=True)
+    reset_strategy = Column(String(16), nullable=False, default="no_reset",
+                            server_default="no_reset")
+    notice_text = Column(String(512), nullable=True)
+    # also meter the panel's own xray (node_id NULL) for this group
+    include_master = Column(Boolean, nullable=False, default=False, server_default=text("0"))
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    hosts = relationship("ProxyHost", secondary=host_group_hosts, lazy="selectin")
+    nodes = relationship("Node", secondary=host_group_nodes, lazy="selectin")
+    user_usages = relationship("UserGroupUsage", back_populates="group",
+                               cascade="all, delete-orphan")
+
+
+class UserGroupUsage(Base):
+    __tablename__ = "user_group_usage"
+    __table_args__ = (
+        UniqueConstraint("user_id", "group_id", name="uq_user_group_usage"),
+    )
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),
+                     nullable=False, index=True)
+    group_id = Column(Integer, ForeignKey("host_groups.id", ondelete="CASCADE"),
+                      nullable=False, index=True)
+    used_traffic = Column(BigInteger, nullable=False, default=0, server_default="0")
+    # per-user override of the group's limit; NULL = use group default
+    traffic_limit = Column(BigInteger, nullable=True)
+    # only members see the limit / get enforced; non-members are untouched
+    member = Column(Boolean, nullable=False, default=False, server_default=text("0"))
+    # True while the user is actively cut off from the group's inbounds for
+    # exceeding the group limit (so we know when to re-add them)
+    enforced = Column(Boolean, nullable=False, default=False, server_default=text("0"))
+    reset_at = Column(DateTime, nullable=True)
+
+    group = relationship("HostGroup", back_populates="user_usages")
+
+
+class AdminAuditLog(Base):
+    """One row per mutating panel request: who, from where, what changed.
+
+    admin_username is stored as plain text (not only a FK) because the
+    env-configured sudoer (SUDO_USERNAME) has no row in `admins` at all —
+    see Admin.get_admin in app/models/admin.py.
+    """
+    __tablename__ = "admin_audit_logs"
+
+    id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    admin_username = Column(String(34), nullable=True, index=True)
+    admin_id = Column(Integer, ForeignKey("admins.id", ondelete="SET NULL"), nullable=True)
+    action = Column(String(64), nullable=False, index=True)
+    target_type = Column(String(32), nullable=True)
+    target_name = Column(String(128), nullable=True, index=True)
+    method = Column(String(8), nullable=True)
+    path = Column(String(256), nullable=True)
+    status_code = Column(Integer, nullable=True)
+    ip = Column(String(64), nullable=True)
+    user_agent = Column(String(512), nullable=True)
+    # {"before": {...}, "after": {...}} — only changed fields, secrets stripped
+    details = Column(JSON, nullable=True)
 
 
 class NotificationReminder(Base):

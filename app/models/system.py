@@ -1,4 +1,20 @@
+from typing import List
+
 from pydantic import BaseModel
+
+
+class DevicePlatformCount(BaseModel):
+    platform: str
+    count: int
+
+
+class DeviceStats(BaseModel):
+    total_devices: int
+    active_devices: int
+    revoked_devices: int
+    users_with_limit: int
+    users_over_limit: int
+    by_platform: List[DevicePlatformCount]
 
 
 class SystemStats(BaseModel):

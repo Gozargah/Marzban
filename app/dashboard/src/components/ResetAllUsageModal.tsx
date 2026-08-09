@@ -1,6 +1,11 @@
 import {
   Button,
   chakra,
+  Spinner,
+  Text,
+  useToast,
+} from "@chakra-ui/react";
+import {
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -8,10 +13,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Spinner,
-  Text,
-  useToast,
-} from "@chakra-ui/react";
+} from "./PageOrModal";
 import { FC, useState } from "react";
 import { DocumentMinusIcon } from "@heroicons/react/24/outline";
 import { Icon } from "./Icon";

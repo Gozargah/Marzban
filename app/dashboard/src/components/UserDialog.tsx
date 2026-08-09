@@ -1,8 +1,10 @@
 import {
   Alert,
   AlertIcon,
+  Badge,
   Box,
   Button,
+  Checkbox,
   Collapse,
   Flex,
   FormControl,
@@ -53,6 +55,7 @@ import {
   UserInbounds,
 } from "types/User";
 import { relativeExpiryDate } from "utils/dateFormatter";
+import { fetch } from "service/http";
 import { z } from "zod";
 import { DeleteIcon } from "./DeleteUserModal";
 import { Icon } from "./Icon";
@@ -110,6 +113,7 @@ const getDefaultValues = (): FormType => {
   return {
     selected_proxies: Object.keys(defaultInbounds) as ProxyKeys,
     data_limit: null,
+    device_limit: null,
     expire: null,
     username: "",
     data_limit_reset_strategy: "no_reset",
@@ -175,6 +179,14 @@ const baseSchema = {
     }),
   expire: z.number().nullable(),
   data_limit_reset_strategy: z.string(),
+  device_limit: z
+    .string()
+    .or(z.number())
+    .nullable()
+    .transform((v) => {
+      if (v) return parseInt(String(v));
+      return 0;
+    }),
   inbounds: z.record(z.string(), z.array(z.string())).transform((ins) => {
     Object.keys(ins).forEach((protocol) => {
       if (Array.isArray(ins[protocol]) && !ins[protocol]?.length)
@@ -238,6 +250,93 @@ export const UserDialog: FC<UserDialogProps> = () => {
     setUsageVisible((current) => !current);
   };
 
+  type DeviceItem = {
+    id: number;
+    hwid: string;
+    platform?: string | null;
+    os_version?: string | null;
+    device_model?: string | null;
+    user_agent?: string | null;
+    status?: string | null;
+    created_at?: string | null;
+    last_seen?: string | null;
+  };
+  const [devices, setDevices] = useState<DeviceItem[]>([]);
+  const [devicesLoading, setDevicesLoading] = useState(false);
+  const loadDevices = (username: string) => {
+    setDevicesLoading(true);
+    fetch(`/user/${username}/devices`)
+      .then((data: any) => setDevices(data.devices || []))
+      .catch(() => setDevices([]))
+      .finally(() => setDevicesLoading(false));
+  };
+  const deleteDevice = (deviceId: number) => {
+    if (!editingUser) return;
+    fetch(`/user/${editingUser.username}/devices/${deviceId}`, { method: "DELETE" })
+      .then(() => setDevices((prev) => prev.filter((d) => d.id !== deviceId)))
+      .catch(() => {});
+  };
+  const revokeDevice = (deviceId: number) => {
+    if (!editingUser) return;
+    fetch(`/user/${editingUser.username}/devices/${deviceId}/revoke`, { method: "POST" })
+      .then(() =>
+        setDevices((prev) =>
+          prev.map((d) => (d.id === deviceId ? { ...d, status: "revoked" } : d))
+        )
+      )
+      .catch(() => {});
+  };
+
+  const GB = 1024 ** 3;
+  type GroupUsage = {
+    group_id: number;
+    group_name: string;
+    member: boolean;
+    used_traffic: number;
+    traffic_limit: number | null;
+    group_default_limit: number | null;
+    limit_override: number | null;
+    limit_source: string;
+  };
+  const [groupUsages, setGroupUsages] = useState<GroupUsage[]>([]);
+  const [groupInputs, setGroupInputs] = useState<Record<number, string>>({});
+  const loadGroupUsages = (username: string) => {
+    fetch(`/user/${username}/group-usage`)
+      .then((data: any) => {
+        const list: GroupUsage[] = data || [];
+        setGroupUsages(list);
+        const inputs: Record<number, string> = {};
+        list.forEach((g) => {
+          inputs[g.group_id] = g.limit_override
+            ? String(Math.round((g.limit_override / GB) * 100) / 100)
+            : "";
+        });
+        setGroupInputs(inputs);
+      })
+      .catch(() => setGroupUsages([]));
+  };
+  const saveGroupLimit = (groupId: number) => {
+    if (!editingUser) return;
+    const raw = groupInputs[groupId];
+    const gb = parseFloat(raw);
+    const traffic_limit = raw && !isNaN(gb) ? Math.round(gb * GB) : 0;
+    fetch(`/user/${editingUser.username}/group/${groupId}`, {
+      method: "PUT",
+      body: { traffic_limit, set_limit: true },
+    })
+      .then(() => loadGroupUsages(editingUser.username))
+      .catch(() => {});
+  };
+  const toggleGroupMember = (groupId: number, member: boolean) => {
+    if (!editingUser) return;
+    fetch(`/user/${editingUser.username}/group/${groupId}`, {
+      method: "PUT",
+      body: { member },
+    })
+      .then(() => loadGroupUsages(editingUser.username))
+      .catch(() => {});
+  };
+
   const form = useForm<FormType>({
     defaultValues: getDefaultValues(),
     resolver: zodResolver(schema),
@@ -281,6 +380,12 @@ export const UserDialog: FC<UserDialogProps> = () => {
       fetchUsageWithFilter({
         start: dayjs().utc().subtract(30, "day").format("YYYY-MM-DDTHH:00:00"),
       });
+
+      loadDevices(editingUser.username);
+      loadGroupUsages(editingUser.username);
+    } else {
+      setDevices([]);
+      setGroupUsages([]);
     }
   }, [editingUser]);
 
@@ -582,6 +687,217 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           />
                         </FormControl>
                       </Collapse>
+
+                      <FormControl mb={"10px"}>
+                        <FormLabel>{t("userDialog.deviceLimit")}</FormLabel>
+                        <Controller
+                          control={form.control}
+                          name="device_limit"
+                          render={({ field }) => {
+                            return (
+                              <Input
+                                endAdornment={t("userDialog.devices")}
+                                type="number"
+                                size="sm"
+                                borderRadius="6px"
+                                placeholder="0 = ∞"
+                                onChange={field.onChange}
+                                disabled={disabled}
+                                error={
+                                  form.formState.errors.device_limit?.message
+                                }
+                                value={field.value ? String(field.value) : ""}
+                              />
+                            );
+                          }}
+                        />
+                      </FormControl>
+
+                      {isEditing && (
+                        <FormControl mb={"10px"}>
+                          <FormLabel>
+                            {t("userDialog.devicesList")} (
+                            {devices.filter((d) => d.status !== "revoked").length})
+                          </FormLabel>
+                          {devicesLoading ? (
+                            <Spinner size="sm" />
+                          ) : devices.length === 0 ? (
+                            <Text fontSize="xs" color="gray.500">
+                              {t("userDialog.noDevices")}
+                            </Text>
+                          ) : (
+                            <VStack align="stretch" spacing="4px">
+                              {devices.map((d) => {
+                                const revoked = d.status === "revoked";
+                                const fmt = (s?: string | null) => {
+                                  if (!s) return "—";
+                                  const dt = new Date(s);
+                                  return isNaN(dt.getTime())
+                                    ? s
+                                    : dt.toLocaleString();
+                                };
+                                const rows: [string, string][] = [
+                                  [t("userDialog.deviceHwid"), d.hwid || "—"],
+                                  [t("userDialog.deviceModel"), d.device_model || "—"],
+                                  [t("userDialog.deviceOs"), d.platform || "—"],
+                                  [t("userDialog.deviceOsVer"), d.os_version || "—"],
+                                  [t("userDialog.deviceUserAgent"), d.user_agent || "—"],
+                                  [t("userDialog.deviceFirstSeen"), fmt(d.created_at)],
+                                  [t("userDialog.deviceLastSeen"), fmt(d.last_seen)],
+                                ];
+                                return (
+                                  <Box
+                                    key={d.id}
+                                    borderWidth="1px"
+                                    borderRadius="6px"
+                                    px="10px"
+                                    py="8px"
+                                    opacity={revoked ? 0.55 : 1}
+                                  >
+                                    <HStack justify="space-between" align="start" mb="6px">
+                                      <HStack spacing="6px" overflow="hidden">
+                                        <Text fontSize="sm" fontWeight="600" noOfLines={1}>
+                                          {d.device_model || d.hwid}
+                                        </Text>
+                                        {revoked && (
+                                          <Badge colorScheme="red" fontSize="9px">
+                                            {t("userDialog.deviceRevoked")}
+                                          </Badge>
+                                        )}
+                                      </HStack>
+                                      <HStack spacing="4px" flexShrink={0}>
+                                        {!revoked && (
+                                          <Tooltip
+                                            label={t("userDialog.revokeDevice")}
+                                            placement="top"
+                                          >
+                                            <IconButton
+                                              aria-label="revoke device"
+                                              size="sm"
+                                              variant="outline"
+                                              colorScheme="orange"
+                                              icon={<Text fontSize="18px" lineHeight="1">⊘</Text>}
+                                              onClick={() => revokeDevice(d.id)}
+                                            />
+                                          </Tooltip>
+                                        )}
+                                        <Tooltip label={t("delete")} placement="top">
+                                          <IconButton
+                                            aria-label="delete device"
+                                            size="sm"
+                                            variant="outline"
+                                            colorScheme="red"
+                                            icon={<DeleteIcon />}
+                                            onClick={() => deleteDevice(d.id)}
+                                          />
+                                        </Tooltip>
+                                      </HStack>
+                                    </HStack>
+                                    <VStack align="stretch" spacing="1px">
+                                      {rows.map(([label, value]) => (
+                                        <HStack
+                                          key={label}
+                                          align="start"
+                                          spacing="6px"
+                                          fontSize="11px"
+                                        >
+                                          <Text color="gray.500" flexShrink={0} minW="84px">
+                                            {label}
+                                          </Text>
+                                          <Text
+                                            wordBreak="break-all"
+                                            color="gray.700"
+                                            _dark={{ color: "gray.300" }}
+                                          >
+                                            {value}
+                                          </Text>
+                                        </HStack>
+                                      ))}
+                                    </VStack>
+                                  </Box>
+                                );
+                              })}
+                            </VStack>
+                          )}
+                        </FormControl>
+                      )}
+
+                      {isEditing && groupUsages.length > 0 && (
+                        <FormControl mb={"10px"}>
+                          <FormLabel>{t("userDialog.groupLimits")}</FormLabel>
+                          <VStack align="stretch" spacing="6px">
+                            {groupUsages.map((g) => {
+                              const usedGb =
+                                Math.round((g.used_traffic / (1024 ** 3)) * 100) / 100;
+                              const limitGb = g.traffic_limit
+                                ? Math.round((g.traffic_limit / (1024 ** 3)) * 100) / 100
+                                : null;
+                              return (
+                                <Box
+                                  key={g.group_id}
+                                  borderWidth="1px"
+                                  borderRadius="6px"
+                                  px="10px"
+                                  py="8px"
+                                >
+                                  <HStack justify="space-between" mb="4px">
+                                    <Checkbox
+                                      isChecked={g.member}
+                                      onChange={(e) =>
+                                        toggleGroupMember(g.group_id, e.target.checked)
+                                      }
+                                    >
+                                      <Text fontSize="sm" fontWeight="600">
+                                        {g.group_name}
+                                      </Text>
+                                    </Checkbox>
+                                    <Text fontSize="11px" color="gray.500">
+                                      {usedGb} / {limitGb ?? "∞"} ГБ
+                                      {g.limit_source === "user" && (
+                                        <Badge ml="6px" colorScheme="purple" fontSize="9px">
+                                          {t("userDialog.groupOverride")}
+                                        </Badge>
+                                      )}
+                                    </Text>
+                                  </HStack>
+                                  <HStack>
+                                    <Input
+                                      size="xs"
+                                      type="number"
+                                      placeholder={
+                                        g.group_default_limit
+                                          ? `${Math.round((g.group_default_limit / (1024 ** 3)) * 100) / 100} (по умолч.)`
+                                          : "0 = безлимит"
+                                      }
+                                      value={groupInputs[g.group_id] ?? ""}
+                                      onChange={(e: any) =>
+                                        setGroupInputs((prev) => ({
+                                          ...prev,
+                                          // custom Input passes a string for
+                                          // type=number, an event otherwise
+                                          [g.group_id]:
+                                            typeof e === "string"
+                                              ? e
+                                              : e?.target?.value ?? "",
+                                        }))
+                                      }
+                                    />
+                                    <Button
+                                      size="xs"
+                                      onClick={() => saveGroupLimit(g.group_id)}
+                                    >
+                                      {t("userDialog.groupSetLimit")}
+                                    </Button>
+                                  </HStack>
+                                </Box>
+                              );
+                            })}
+                          </VStack>
+                          <Text fontSize="10px" color="gray.500" mt="4px">
+                            {t("userDialog.groupLimitsHint")}
+                          </Text>
+                        </FormControl>
+                      )}
 
                       <FormControl mb={"10px"}>
                         <FormLabel>

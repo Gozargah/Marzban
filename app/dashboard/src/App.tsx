@@ -4,8 +4,10 @@ import { RouterProvider } from "react-router-dom";
 import { router } from "./pages/Router";
 
 function App() {
+    // no padding here: the sidebar sits flush against the edge and the page
+    // column brings its own
     return (
-        <main className="p-8">
+        <main>
             <RouterProvider router={router} />
         </main>
     );

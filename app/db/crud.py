@@ -7,6 +7,7 @@ from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
 from sqlalchemy import and_, delete, func, or_
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Query, Session, joinedload
 from sqlalchemy.sql.functions import coalesce
 
@@ -14,7 +15,9 @@ from app.db.models import (
     JWT,
     TLS,
     Admin,
+    AdminAuditLog,
     AdminUsageLogs,
+    HostGroup,
     NextPlan,
     Node,
     NodeUsage,
@@ -26,10 +29,15 @@ from app.db.models import (
     ProxyTypes,
     System,
     User,
+    UserDevice,
+    UserGroupUsage,
     UserTemplate,
     UserUsageResetLogs,
+    YukuSetting,
+    host_group_hosts,
 )
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
+from app.models.host_group import HostGroupCreate, HostGroupModify
 from app.models.node import NodeCreate, NodeModify, NodeStatus, NodeUsageResponse
 from app.models.proxy import ProxyHost as ProxyHostModify
 from app.models.user import (
@@ -43,7 +51,12 @@ from app.models.user import (
 )
 from app.models.user_template import UserTemplateCreate, UserTemplateModify
 from app.utils.helpers import calculate_expiration_days, calculate_usage_percent
-from config import NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT, USERS_AUTODELETE_DAYS
+from config import (
+    DEVICE_TOUCH_DEBOUNCE_SECONDS,
+    NOTIFY_DAYS_LEFT,
+    NOTIFY_REACHED_USAGE_PERCENT,
+    USERS_AUTODELETE_DAYS,
+)
 
 
 def add_default_host(db: Session, inbound: ProxyInbound):
@@ -127,9 +140,71 @@ def add_host(db: Session, inbound_tag: str, host: ProxyHostModify) -> List[Proxy
     return inbound.hosts
 
 
+_HOST_EDITABLE_FIELDS = (
+    "remark", "address", "port", "path", "sni", "host", "security", "alpn",
+    "fingerprint", "allowinsecure", "is_disabled", "mux_enable",
+    "fragment_setting", "noise_setting", "random_user_agent", "use_sni_as_host",
+    "auto_select",
+)
+
+# fields that identify "the same host" well enough to re-pair it after an edit
+_HOST_IDENTITY_FIELDS = ("remark", "address", "port", "path", "sni", "host")
+
+
+def _host_identity(host) -> tuple:
+    return tuple(getattr(host, f, None) for f in _HOST_IDENTITY_FIELDS)
+
+
+def _host_column_value(field: str, value):
+    """Value to write for a host column, applying the column default for a NULL
+    on a NOT NULL column — an INSERT would do this for us, an UPDATE would not.
+    """
+    column = ProxyHost.__table__.columns.get(field)
+    if value is not None or column is None or column.nullable:
+        return value
+    default = column.default
+    if default is None:
+        return value
+    return default.arg(None) if callable(default.arg) else default.arg
+
+
+def _pair_hosts(existing: List[ProxyHost], modified_hosts: list) -> dict:
+    """Maps index in modified_hosts -> the existing row it should update.
+
+    Exact-identity matches are taken first (so an untouched host always keeps
+    its own row even if the list was reordered), then whatever is left is paired
+    positionally — which is what a plain field edit on one host looks like.
+    """
+    pairs = {}
+    unmatched = list(existing)
+
+    for i, incoming in enumerate(modified_hosts):
+        for row in unmatched:
+            if _host_identity(row) == _host_identity(incoming):
+                pairs[i] = row
+                unmatched.remove(row)
+                break
+
+    leftovers = iter(unmatched)
+    for i in range(len(modified_hosts)):
+        if i in pairs:
+            continue
+        row = next(leftovers, None)
+        if row is None:
+            break
+        pairs[i] = row
+
+    return pairs
+
+
 def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostModify]) -> List[ProxyHost]:
     """
     Updates hosts for a given inbound tag.
+
+    Rows are updated in place instead of being recreated. A host's id is
+    referenced by host_group_hosts with ON DELETE CASCADE, so rebuilding the
+    list (the previous behaviour) silently dropped every host out of its
+    traffic group on each save of the hosts dialog.
 
     Args:
         db (Session): Database session.
@@ -140,27 +215,28 @@ def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostMo
         List[ProxyHost]: Updated list of hosts for the inbound.
     """
     inbound = get_or_create_inbound(db, inbound_tag)
-    inbound.hosts = [
-        ProxyHost(
-            remark=host.remark,
-            address=host.address,
-            port=host.port,
-            path=host.path,
-            sni=host.sni,
-            host=host.host,
-            inbound=inbound,
-            security=host.security,
-            alpn=host.alpn,
-            fingerprint=host.fingerprint,
-            allowinsecure=host.allowinsecure,
-            is_disabled=host.is_disabled,
-            mux_enable=host.mux_enable,
-            fragment_setting=host.fragment_setting,
-            noise_setting=host.noise_setting,
-            random_user_agent=host.random_user_agent,
-            use_sni_as_host=host.use_sni_as_host,
-        ) for host in modified_hosts
-    ]
+    existing = list(inbound.hosts)
+    pairs = _pair_hosts(existing, modified_hosts)
+    reused = {id(row) for row in pairs.values()}
+
+    for i, incoming in enumerate(modified_hosts):
+        row = pairs.get(i)
+        if row is None:
+            row = ProxyHost(inbound=inbound)
+            db.add(row)
+        for field in _HOST_EDITABLE_FIELDS:
+            setattr(row, field, _host_column_value(field, getattr(incoming, field)))
+
+    for row in existing:
+        if id(row) not in reused:
+            # SQLite runs with PRAGMA foreign_keys off, so ON DELETE CASCADE on
+            # host_group_hosts never fires: drop the group links explicitly or
+            # they dangle and can later re-attach to a host that reuses the id
+            db.execute(
+                host_group_hosts.delete().where(host_group_hosts.c.host_id == row.id)
+            )
+            db.delete(row)
+
     db.commit()
     db.refresh(inbound)
     return inbound.hosts
@@ -213,11 +289,13 @@ UsersSortingOptions = Enum('UsersSortingOptions', {
     'data_limit': User.data_limit.asc(),
     'expire': User.expire.asc(),
     'created_at': User.created_at.asc(),
+    'device_count': User.device_count.asc(),
     '-username': User.username.desc(),
     '-used_traffic': User.used_traffic.desc(),
     '-data_limit': User.data_limit.desc(),
     '-expire': User.expire.desc(),
     '-created_at': User.created_at.desc(),
+    '-device_count': User.device_count.desc(),
 })
 
 
@@ -240,7 +318,7 @@ def get_users(db: Session,
         offset (Optional[int]): Number of records to skip.
         limit (Optional[int]): Number of records to retrieve.
         usernames (Optional[List[str]]): List of usernames to filter by.
-        search (Optional[str]): Search term to filter by username or note.
+        search (Optional[str]): Search term to filter by username, note or device HWID/model.
         status (Optional[Union[UserStatus, list]]): User status or list of statuses to filter by.
         sort (Optional[List[UsersSortingOptions]]): Sorting options.
         admin (Optional[Admin]): Admin to filter users by.
@@ -254,7 +332,16 @@ def get_users(db: Session,
     query = get_user_queryset(db)
 
     if search:
-        query = query.filter(or_(User.username.ilike(f"%{search}%"), User.note.ilike(f"%{search}%")))
+        # HWID/device-model matching uses .any() (EXISTS) rather than a join so
+        # rows aren't multiplied — return_with_count below counts this query.
+        query = query.filter(or_(
+            User.username.ilike(f"%{search}%"),
+            User.note.ilike(f"%{search}%"),
+            User.devices.any(or_(
+                UserDevice.hwid.ilike(f"%{search}%"),
+                UserDevice.device_model.ilike(f"%{search}%"),
+            )),
+        ))
 
     if usernames:
         query = query.filter(User.username.in_(usernames))
@@ -383,6 +470,10 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None) -> User:
         proxies=proxies,
         status=user.status,
         data_limit=(user.data_limit or None),
+        device_limit=(
+            user.device_limit if user.device_limit is not None
+            else int(get_yuku_setting(db, "default_device_limit", "0") or 0)
+        ),
         expire=(user.expire or None),
         admin=admin,
         data_limit_reset_strategy=user.data_limit_reset_strategy,
@@ -509,6 +600,9 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
     if modify.data_limit_reset_strategy is not None:
         dbuser.data_limit_reset_strategy = modify.data_limit_reset_strategy.value
 
+    if modify.device_limit is not None:
+        dbuser.device_limit = (modify.device_limit or 0)
+
     if modify.on_hold_timeout is not None:
         dbuser.on_hold_timeout = modify.on_hold_timeout
 
@@ -530,6 +624,274 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
     db.commit()
     db.refresh(dbuser)
     return dbuser
+
+
+def get_user_devices(db: Session, user_id: int) -> List[UserDevice]:
+    """Returns all registered HWID devices of a user."""
+    return db.query(UserDevice).filter(UserDevice.user_id == user_id) \
+        .order_by(UserDevice.last_seen.desc()).all()
+
+
+def get_device_stats(db: Session) -> dict:
+    """Aggregate device metrics for the dashboard."""
+    not_revoked = or_(UserDevice.status.is_(None), UserDevice.status != "revoked")
+
+    total = db.query(func.count(UserDevice.id)).scalar() or 0
+    active = db.query(func.count(UserDevice.id)).filter(not_revoked).scalar() or 0
+
+    by_platform = (
+        db.query(func.coalesce(UserDevice.platform, "unknown"), func.count(UserDevice.id))
+        .filter(not_revoked)
+        .group_by(UserDevice.platform)
+        .all()
+    )
+
+    users_with_limit = db.query(func.count(User.id)).filter(
+        User.device_limit.isnot(None), User.device_limit > 0
+    ).scalar() or 0
+
+    # users whose active device count exceeds their limit
+    counts = (
+        db.query(UserDevice.user_id.label("uid"), func.count(UserDevice.id).label("cnt"))
+        .filter(not_revoked)
+        .group_by(UserDevice.user_id)
+        .subquery()
+    )
+    users_over_limit = db.query(func.count(User.id)).join(
+        counts, counts.c.uid == User.id
+    ).filter(
+        User.device_limit.isnot(None),
+        User.device_limit > 0,
+        counts.c.cnt > User.device_limit,
+    ).scalar() or 0
+
+    return {
+        "total_devices": total,
+        "active_devices": active,
+        "revoked_devices": max(total - active, 0),
+        "users_with_limit": users_with_limit,
+        "users_over_limit": users_over_limit,
+        "by_platform": [
+            {"platform": p or "unknown", "count": c}
+            for p, c in sorted(by_platform, key=lambda x: -x[1])
+        ],
+    }
+
+
+# Pseudo-HWID used to track clients that don't send an x-hwid header
+# (e.g. v2rayNG). They are fingerprinted by user-agent instead, so a single
+# UA-less device still occupies one slot rather than bypassing the limit.
+UNKNOWN_HWID = "unknown-device"
+
+
+def count_user_devices(db: Session, user_id: int) -> int:
+    """Number of devices that count toward the limit (revoked excluded)."""
+    return db.query(UserDevice).filter(
+        UserDevice.user_id == user_id,
+        or_(UserDevice.status.is_(None), UserDevice.status != "revoked"),
+    ).count()
+
+
+def get_user_device(db: Session, user_id: int, hwid: str) -> Optional[UserDevice]:
+    """Returns a specific device by user_id + hwid, or None (any status)."""
+    return db.query(UserDevice).filter(
+        UserDevice.user_id == user_id, UserDevice.hwid == hwid
+    ).first()
+
+
+def create_user_device(db: Session, user_id: int, hwid: str,
+                       platform: str = None, os_version: str = None,
+                       device_model: str = None, user_agent: str = None) -> UserDevice:
+    """Registers a new HWID device for a user."""
+    now = datetime.utcnow()
+    device = UserDevice(
+        user_id=user_id, hwid=hwid, platform=platform, os_version=os_version,
+        device_model=device_model, user_agent=user_agent, status="active",
+        created_at=now, last_seen=now,
+    )
+    db.add(device)
+    db.commit()
+    db.refresh(device)
+    return device
+
+
+def _touch_device_metadata(device: UserDevice, platform: str = None,
+                           os_version: str = None, device_model: str = None,
+                           user_agent: str = None) -> None:
+    """Refreshes last_seen + metadata in-place (caller commits)."""
+    device.last_seen = datetime.utcnow()
+    if platform:
+        device.platform = platform
+    if os_version:
+        device.os_version = os_version
+    if device_model:
+        device.device_model = device_model
+    if user_agent:
+        device.user_agent = user_agent
+
+
+def touch_user_device(db: Session, device: UserDevice, platform: str = None,
+                      os_version: str = None, device_model: str = None,
+                      user_agent: str = None) -> UserDevice:
+    """Updates last_seen (and metadata if provided) of an existing device."""
+    _touch_device_metadata(device, platform, os_version, device_model, user_agent)
+    db.commit()
+    db.refresh(device)
+    return device
+
+
+def _unknown_user_agents_match(stored: Optional[str], incoming: Optional[str]) -> bool:
+    """Two UA-less requests are the 'same device' only if their UAs match."""
+    def norm(v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return None
+        s = v.strip()
+        return s or None
+    return norm(stored) == norm(incoming)
+
+
+def register_user_device(db: Session, dbuser, hwid: Optional[str],
+                         platform: str = None, os_version: str = None,
+                         device_model: str = None,
+                         user_agent: str = None) -> tuple[bool, bool]:
+    """Register/refresh the requesting device and apply the device limit.
+
+    Returns ``(registered, unsupported)``:
+      * ``(True, False)``  – device is known/created and is allowed.
+      * ``(False, False)`` – a genuine new device beyond the limit (block it).
+      * ``(False, True)``  – an untrackable UA-less client (let it through).
+    """
+    limit = dbuser.device_limit or 0
+
+    # --- clients without x-hwid: track one pseudo-device per matching UA ---
+    if not hwid:
+        device = get_user_device(db, dbuser.id, UNKNOWN_HWID)
+        if device:
+            if _unknown_user_agents_match(device.user_agent, user_agent):
+                reactivated = device.status == "revoked"
+                if reactivated:
+                    device.status = "active"
+                _touch_device_if_stale(db, device, platform, os_version,
+                                       device_model, user_agent, force=reactivated)
+                return True, False
+            # a different UA-less client — can't fingerprint it, leave untracked
+            return False, True
+        if limit and count_user_devices(db, dbuser.id) >= limit:
+            return False, False
+        return _insert_device(db, dbuser.id, UNKNOWN_HWID, platform,
+                              os_version, device_model, user_agent), False
+
+    # --- normal HWID clients ---
+    device = get_user_device(db, dbuser.id, hwid)
+    if device:
+        if device.status == "revoked":
+            # re-activating a revoked device must respect the limit
+            if limit and count_user_devices(db, dbuser.id) >= limit:
+                _touch_device_if_stale(db, device, platform, os_version,
+                                       device_model, user_agent)  # stay revoked
+                return False, False
+            device.status = "active"
+            _touch_device_if_stale(db, device, platform, os_version,
+                                   device_model, user_agent, force=True)
+            return True, False
+        _touch_device_if_stale(db, device, platform, os_version,
+                               device_model, user_agent)
+        return True, False
+
+    if limit and count_user_devices(db, dbuser.id) >= limit:
+        return False, False
+
+    return _insert_device(db, dbuser.id, hwid, platform,
+                          os_version, device_model, user_agent), False
+
+
+def _touch_device_if_stale(db: Session, device: UserDevice, platform: str = None,
+                           os_version: str = None, device_model: str = None,
+                           user_agent: str = None, force: bool = False) -> None:
+    """Refresh last_seen/metadata, but skip the write entirely if the device was
+    seen recently and nothing new was learned. Keeps the /sub hot path read-only
+    on repeat refreshes (debounced by DEVICE_TOUCH_DEBOUNCE_SECONDS)."""
+    now = datetime.utcnow()
+    stale = (
+        device.last_seen is None
+        or (now - device.last_seen) >= timedelta(seconds=DEVICE_TOUCH_DEBOUNCE_SECONDS)
+    )
+    new_meta = (
+        (platform and platform != device.platform)
+        or (os_version and os_version != device.os_version)
+        or (device_model and device_model != device.device_model)
+        or (user_agent and user_agent != device.user_agent)
+    )
+    if not (force or stale or new_meta):
+        return  # fast path: no DB write on this refresh
+    _touch_device_metadata(device, platform, os_version, device_model, user_agent)
+    db.commit()
+
+
+def _insert_device(db: Session, user_id: int, hwid: str, platform: str = None,
+                   os_version: str = None, device_model: str = None,
+                   user_agent: str = None) -> bool:
+    """Insert a new active device, tolerating concurrent duplicate inserts."""
+    now = datetime.utcnow()
+    device = UserDevice(
+        user_id=user_id, hwid=hwid, platform=platform, os_version=os_version,
+        device_model=device_model, user_agent=user_agent, status="active",
+        created_at=now, last_seen=now,
+    )
+    db.add(device)
+    try:
+        db.commit()
+    except IntegrityError:
+        # a concurrent subscription request already created this (user_id, hwid)
+        db.rollback()
+        return True
+    return True
+
+
+def revoke_user_device(db: Session, device: UserDevice) -> UserDevice:
+    """Soft-bans a device (keeps the row, frees its slot)."""
+    device.status = "revoked"
+    device.last_seen = datetime.utcnow()
+    db.commit()
+    db.refresh(device)
+    return device
+
+
+def remove_user_device(db: Session, device: UserDevice) -> None:
+    """Hard-deletes a registered device."""
+    db.delete(device)
+    db.commit()
+
+
+def get_user_device_by_id(db: Session, user_id: int, device_id: int) -> Optional[UserDevice]:
+    """Returns a device by its id, scoped to a user."""
+    return db.query(UserDevice).filter(
+        UserDevice.id == device_id, UserDevice.user_id == user_id
+    ).first()
+
+
+def get_yuku_settings(db: Session) -> dict:
+    """Returns all YUKU settings as a {key: value} dict."""
+    return {s.key: s.value for s in db.query(YukuSetting).all()}
+
+
+def get_yuku_setting(db: Session, key: str, default: str = None) -> Optional[str]:
+    """Returns a single setting value, or default if missing."""
+    row = db.query(YukuSetting).filter(YukuSetting.key == key).first()
+    return row.value if row is not None else default
+
+
+def set_yuku_settings(db: Session, values: dict) -> dict:
+    """Upserts multiple settings; returns the full settings dict afterwards."""
+    for key, value in values.items():
+        key = str(key)
+        row = db.query(YukuSetting).filter(YukuSetting.key == key).first()
+        if row is None:
+            db.add(YukuSetting(key=key, value=(None if value is None else str(value))))
+        else:
+            row.value = (None if value is None else str(value))
+    db.commit()
+    return get_yuku_settings(db)
 
 
 def reset_user_data_usage(db: Session, dbuser: User) -> User:
@@ -1498,3 +1860,217 @@ def count_online_users(db: Session, hours: int = 24):
     query = db.query(func.count(User.id)).filter(User.online_at.isnot(
         None), User.online_at >= twenty_four_hours_ago)
     return query.scalar()
+
+
+# --- YUKU host traffic groups -------------------------------------------------
+
+def get_host_groups(db: Session) -> List[HostGroup]:
+    return db.query(HostGroup).order_by(HostGroup.name).all()
+
+
+def get_host_group(db: Session, group_id: int) -> Optional[HostGroup]:
+    return db.query(HostGroup).filter(HostGroup.id == group_id).first()
+
+
+def get_host_group_by_name(db: Session, name: str) -> Optional[HostGroup]:
+    return db.query(HostGroup).filter(HostGroup.name == name).first()
+
+
+def _apply_group_members(db: Session, group: HostGroup,
+                         host_ids: Optional[List[int]],
+                         node_ids: Optional[List[int]]) -> None:
+    if host_ids is not None:
+        group.hosts = (
+            db.query(ProxyHost).filter(ProxyHost.id.in_(host_ids)).all()
+            if host_ids else []
+        )
+    if node_ids is not None:
+        group.nodes = (
+            db.query(Node).filter(Node.id.in_(node_ids)).all()
+            if node_ids else []
+        )
+
+
+def create_host_group(db: Session, group: HostGroupCreate) -> HostGroup:
+    dbgroup = HostGroup(
+        name=group.name,
+        traffic_limit=group.traffic_limit or None,
+        reset_strategy=group.reset_strategy or "no_reset",
+        notice_text=group.notice_text,
+        include_master=bool(group.include_master),
+    )
+    db.add(dbgroup)
+    db.flush()
+    _apply_group_members(db, dbgroup, group.host_ids, group.node_ids)
+    db.commit()
+    db.refresh(dbgroup)
+    return dbgroup
+
+
+def update_host_group(db: Session, dbgroup: HostGroup,
+                      modify: HostGroupModify) -> HostGroup:
+    if modify.name is not None:
+        dbgroup.name = modify.name
+    if modify.traffic_limit is not None:
+        dbgroup.traffic_limit = modify.traffic_limit or None
+    if modify.reset_strategy is not None:
+        dbgroup.reset_strategy = modify.reset_strategy
+    if modify.notice_text is not None:
+        dbgroup.notice_text = modify.notice_text
+    if modify.include_master is not None:
+        dbgroup.include_master = bool(modify.include_master)
+    _apply_group_members(db, dbgroup, modify.host_ids, modify.node_ids)
+    db.commit()
+    db.refresh(dbgroup)
+    return dbgroup
+
+
+def remove_host_group(db: Session, dbgroup: HostGroup) -> None:
+    db.delete(dbgroup)
+    db.commit()
+
+
+def get_node_group_map(db: Session) -> dict:
+    """node_id -> group_id, for attributing node usage to a group. Empty when no
+    groups exist (the accounting step then becomes a no-op). The master xray is
+    keyed by None for groups that opt in via include_master."""
+    rows = db.query(HostGroup.id, Node.id).join(HostGroup.nodes).all()
+    m = {node_id: group_id for group_id, node_id in rows}
+    for g in db.query(HostGroup.id).filter(HostGroup.include_master.is_(True)).all():
+        m[None] = g.id  # only one group should include master (router-enforced)
+    return m
+
+
+def get_user_group_usage(db: Session, user_id: int,
+                         group_id: int) -> Optional[UserGroupUsage]:
+    return db.query(UserGroupUsage).filter(
+        UserGroupUsage.user_id == user_id,
+        UserGroupUsage.group_id == group_id,
+    ).first()
+
+
+def get_user_group_usages(db: Session, user_id: int) -> List[UserGroupUsage]:
+    return db.query(UserGroupUsage).filter(
+        UserGroupUsage.user_id == user_id
+    ).all()
+
+
+def reset_user_group_usage(db: Session, user_id: int, group_id: int) -> None:
+    row = get_user_group_usage(db, user_id, group_id)
+    if row:
+        row.used_traffic = 0
+        row.reset_at = datetime.utcnow()
+        db.commit()
+
+
+def set_user_group(db: Session, user_id: int, group_id: int,
+                   member: Optional[bool] = None,
+                   traffic_limit: Optional[int] = None,
+                   set_limit: bool = False) -> UserGroupUsage:
+    """Set a user's group membership and/or per-group limit override. Creates the
+    usage row if needed. ``set_limit`` distinguishes "clear the override" (None)
+    from "don't touch it"."""
+    row = get_user_group_usage(db, user_id, group_id)
+    if not row:
+        row = UserGroupUsage(user_id=user_id, group_id=group_id, used_traffic=0)
+        db.add(row)
+    if member is not None:
+        row.member = bool(member)
+    if set_limit:
+        row.traffic_limit = traffic_limit if traffic_limit else None
+    db.commit()
+    db.refresh(row)
+    return row
+
+
+# --- YUKU admin audit log ---------------------------------------------------
+
+def create_audit_log(db: Session,
+                     action: str,
+                     admin_username: Optional[str] = None,
+                     admin_id: Optional[int] = None,
+                     target_type: Optional[str] = None,
+                     target_name: Optional[str] = None,
+                     method: Optional[str] = None,
+                     path: Optional[str] = None,
+                     status_code: Optional[int] = None,
+                     ip: Optional[str] = None,
+                     user_agent: Optional[str] = None,
+                     details: Optional[dict] = None) -> AdminAuditLog:
+    """Appends one row to the admin action history."""
+    row = AdminAuditLog(
+        action=action,
+        admin_username=admin_username,
+        admin_id=admin_id,
+        target_type=target_type,
+        target_name=(str(target_name)[:128] if target_name is not None else None),
+        method=method,
+        path=path,
+        status_code=status_code,
+        ip=ip,
+        user_agent=user_agent,
+        details=details,
+    )
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+    return row
+
+
+def get_audit_logs(db: Session,
+                   offset: Optional[int] = None,
+                   limit: Optional[int] = None,
+                   admin_username: Optional[str] = None,
+                   action: Optional[str] = None,
+                   target_type: Optional[str] = None,
+                   search: Optional[str] = None,
+                   date_from: Optional[datetime] = None,
+                   date_to: Optional[datetime] = None) -> Tuple[List[AdminAuditLog], int]:
+    """Audit rows newest-first plus the total matching the same filters.
+
+    ``search`` matches the target name, the IP and the request path, so one box
+    covers "what happened to user X" and "what came from that IP".
+    """
+    query = db.query(AdminAuditLog)
+
+    if admin_username:
+        query = query.filter(AdminAuditLog.admin_username == admin_username)
+    if action:
+        query = query.filter(AdminAuditLog.action == action)
+    if target_type:
+        query = query.filter(AdminAuditLog.target_type == target_type)
+    if search:
+        query = query.filter(or_(
+            AdminAuditLog.target_name.ilike(f"%{search}%"),
+            AdminAuditLog.ip.ilike(f"%{search}%"),
+            AdminAuditLog.path.ilike(f"%{search}%"),
+        ))
+    if date_from:
+        query = query.filter(AdminAuditLog.created_at >= date_from)
+    if date_to:
+        query = query.filter(AdminAuditLog.created_at <= date_to)
+
+    count = query.count()
+    query = query.order_by(AdminAuditLog.created_at.desc(), AdminAuditLog.id.desc())
+
+    if offset:
+        query = query.offset(offset)
+    if limit:
+        query = query.limit(limit)
+
+    return query.all(), count
+
+
+def get_audit_log_admins(db: Session) -> List[str]:
+    """Distinct admin usernames present in the history (for the UI filter)."""
+    rows = db.query(AdminAuditLog.admin_username).distinct().all()
+    return sorted({r[0] for r in rows if r[0]})
+
+
+def purge_audit_logs(db: Session, older_than: datetime) -> int:
+    """Deletes audit rows older than ``older_than``; returns the row count."""
+    deleted = db.query(AdminAuditLog).filter(
+        AdminAuditLog.created_at < older_than
+    ).delete(synchronize_session=False)
+    db.commit()
+    return deleted

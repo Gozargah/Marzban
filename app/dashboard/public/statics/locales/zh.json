@@ -38,6 +38,8 @@
   "hostsDialog.advancedOptions": "高级选项",
   "hostsDialog.allowinsecure": "允许不安全连接",
   "hostsDialog.useSniAsHost": "Use sni as host",
+  "hostsDialog.autoSelect": "Auto-select group",
+  "hostsDialog.autoSelect.info": "Auto-select entry this host joins: the client picks the fastest of its servers (v2ray-json only). Groups are configured under Settings → Auto-select",
   "hostsDialog.alpn": "ALPN",
   "hostsDialog.apply": "保存",
   "hostsDialog.currentServer": "当前服务器的 IP 地址",
@@ -189,5 +191,12 @@
   "usersTable.noUserMatched": "没有找到您搜索的用户",
   "usersTable.status": "状态",
   "usersTable.sortByExpire": "按过期时间排序",
-  "usersTable.total": "总共"
+  "usersTable.total": "总共",
+  "hostsDialog.autoSelect.none": "not included",
+  "sidebar.users": "Users",
+  "sidebar.collapse": "Collapse menu",
+  "sidebar.expand": "Expand menu",
+  "header.coreSettings": "核心设置",
+  "hostsDialog.remark": "备注",
+  "hostsDialog.address": "地址"
 }

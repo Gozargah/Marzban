@@ -44,6 +44,7 @@ def hosts(storage: dict):
 
             storage[inbound_tag] = [
                 {
+                    "id": host.id,
                     "remark": host.remark,
                     "address": [i.strip() for i in host.address.split(',')] if host.address else [],
                     "port": host.port,
@@ -63,6 +64,7 @@ def hosts(storage: dict):
                     "noise_setting": host.noise_setting,
                     "random_user_agent": host.random_user_agent,
                     "use_sni_as_host": host.use_sni_as_host,
+                    "auto_select": host.auto_select,
                 } for host in inbound_hosts if not host.is_disabled
             ]
 

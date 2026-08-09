@@ -131,6 +131,32 @@ NOTIFY_DAYS_LEFT = config(
 
 DISABLE_RECORDING_NODE_USAGE = config("DISABLE_RECORDING_NODE_USAGE", cast=bool, default=False)
 
+# YUKU perf: bounded global thread pool for xray ops (add/remove/update user,
+# node mgmt) instead of spawning an unbounded Thread per call. Keeps RAM/threads
+# sane on small VPS. Must comfortably exceed (nodes + concurrent user ops).
+XRAY_THREAD_POOL_SIZE = config("XRAY_THREAD_POOL_SIZE", cast=int, default=20)
+
+# YUKU device-limit: debounce last_seen writes on the /sub hot path. A known
+# device that refreshes more often than this is served read-only (no DB write),
+# so tracking every user — incl. unlimited — doesn't hammer SQLite's writer.
+DEVICE_TOUCH_DEBOUNCE_SECONDS = config("DEVICE_TOUCH_DEBOUNCE_SECONDS", cast=int, default=600)
+
+# YUKU host-group limits: when True, a member who exceeds a group's traffic
+# limit is actively cut off from that group's inbounds (xray remove_inbound_user
+# on the group's nodes / master), like the normal traffic limit — instant, can't
+# be bypassed by not refreshing the subscription. The soft notice still shows.
+# Set to False to fall back to notice-only (soft) enforcement.
+GROUP_LIMIT_HARD_ENFORCE = config("GROUP_LIMIT_HARD_ENFORCE", cast=bool, default=True)
+# how often the hard enforcement pass runs (its own job, not the 10s usage loop).
+# Hourly keeps xray churn low; the trade-off is up to this many seconds before a
+# fresh over-limit cut / a node-restart re-add gets (re)applied.
+JOB_ENFORCE_GROUP_LIMITS_INTERVAL = config(
+    "JOB_ENFORCE_GROUP_LIMITS_INTERVAL", cast=int, default=3600)
+
+# YUKU admin action history: how long rows in admin_audit_logs are kept.
+# 0 keeps them forever (the table grows unbounded — fine for a small panel).
+AUDIT_LOG_RETENTION_DAYS = config("AUDIT_LOG_RETENTION_DAYS", cast=int, default=90)
+
 # headers: profile-update-interval, support-url, profile-title
 SUB_UPDATE_INTERVAL = config("SUB_UPDATE_INTERVAL", default="12")
 SUB_SUPPORT_URL = config("SUB_SUPPORT_URL", default="https://t.me/")

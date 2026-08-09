@@ -10,6 +10,8 @@ from app.dependencies import get_expired_users_list, get_validated_user, validat
 from app.models.admin import Admin
 from app.models.user import (
     UserCreate,
+    UserDeviceResponse,
+    UserDevicesResponse,
     UserModify,
     UserResponse,
     UsersResponse,
@@ -17,9 +19,16 @@ from app.models.user import (
     UsersUsagesResponse,
     UserUsagesResponse,
 )
-from app.utils import report, responses
+from app.utils import audit, report, responses
 
 router = APIRouter(tags=["User"], prefix="/api", responses={401: responses._401})
+
+# user fields worth diffing in the admin action history
+_USER_FIELDS = (
+    "username", "status", "expire", "data_limit", "data_limit_reset_strategy",
+    "used_traffic", "device_limit", "note", "inbounds", "on_hold_expire_duration",
+    "on_hold_timeout", "auto_delete_in_days", "sub_revoked_at",
+)
 
 
 @router.post("/user", response_model=UserResponse, responses={400: responses._400, 409: responses._409})
@@ -64,6 +73,7 @@ def add_user(
 
     bg.add_task(xray.operations.add_user, dbuser=dbuser)
     user = UserResponse.model_validate(dbuser)
+    audit.detail(target_name=user.username, after=audit.snapshot(user, _USER_FIELDS))
     report.user_created(user=user, user_id=dbuser.id, by=admin, user_admin=dbuser.admin)
     logger.info(f'New user "{dbuser.username}" added')
     return user
@@ -109,8 +119,12 @@ def modify_user(
             )
 
     old_status = dbuser.status
+    # snapshot before the update so the history can show old -> new per field
+    before = audit.snapshot(UserResponse.model_validate(dbuser), _USER_FIELDS)
     dbuser = crud.update_user(db, dbuser, modified_user)
     user = UserResponse.model_validate(dbuser)
+    audit.detail(target_name=user.username,
+                 before=before, after=audit.snapshot(user, _USER_FIELDS))
 
     if user.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.update_user, dbuser=dbuser)
@@ -145,6 +159,8 @@ def remove_user(
     admin: Admin = Depends(Admin.get_current),
 ):
     """Remove a user"""
+    audit.detail(target_name=dbuser.username,
+                 before=audit.snapshot(UserResponse.model_validate(dbuser), _USER_FIELDS))
     crud.remove_user(db, dbuser)
     bg.add_task(xray.operations.remove_user, dbuser=dbuser)
 
@@ -164,6 +180,8 @@ def reset_user_data_usage(
     admin: Admin = Depends(Admin.get_current),
 ):
     """Reset user data usage"""
+    audit.detail(target_name=dbuser.username,
+                 details={"used_traffic_before": dbuser.used_traffic})
     dbuser = crud.reset_user_data_usage(db=db, dbuser=dbuser)
     if dbuser.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.add_user, dbuser=dbuser)
@@ -268,6 +286,62 @@ def get_user_usage(
     return {"usages": usages, "username": dbuser.username}
 
 
+@router.get("/user/{username}/devices", response_model=UserDevicesResponse,
+            responses={403: responses._403, 404: responses._404})
+def get_user_devices(
+    dbuser: UserResponse = Depends(get_validated_user),
+    db: Session = Depends(get_db),
+):
+    """List registered HWID devices of a user."""
+    devices = crud.get_user_devices(db, dbuser.id)
+    return {
+        "devices": devices,
+        "total": len(devices),
+        "device_limit": dbuser.device_limit or 0,
+    }
+
+
+@router.delete("/user/{username}/devices/{device_id}",
+               responses={403: responses._403, 404: responses._404})
+def delete_user_device(
+    device_id: int,
+    dbuser: UserResponse = Depends(get_validated_user),
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.get_current),
+):
+    """Remove a registered HWID device from a user."""
+    device = crud.get_user_device_by_id(db, dbuser.id, device_id)
+    if not device:
+        raise HTTPException(status_code=404, detail="Device not found")
+    audit.detail(target_name=dbuser.username, details={
+        "device_id": device.id, "hwid": device.hwid,
+        "device_model": device.device_model, "platform": device.platform,
+    })
+    crud.remove_user_device(db, device)
+    return {"detail": "Device removed"}
+
+
+@router.post("/user/{username}/devices/{device_id}/revoke",
+             responses={403: responses._403, 404: responses._404})
+def revoke_user_device(
+    device_id: int,
+    dbuser: UserResponse = Depends(get_validated_user),
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.get_current),
+):
+    """Soft-ban a device: keep its history but free its slot. The device stays
+    blocked until it (re-)requests the subscription and the limit allows it."""
+    device = crud.get_user_device_by_id(db, dbuser.id, device_id)
+    if not device:
+        raise HTTPException(status_code=404, detail="Device not found")
+    audit.detail(target_name=dbuser.username, details={
+        "device_id": device.id, "hwid": device.hwid,
+        "device_model": device.device_model, "platform": device.platform,
+    })
+    crud.revoke_user_device(db, device)
+    return {"detail": "Device revoked"}
+
+
 @router.post("/user/{username}/active-next", response_model=UserResponse, responses={403: responses._403, 404: responses._404})
 def active_next_plan(
     bg: BackgroundTasks,
@@ -325,8 +399,11 @@ def set_owner(
     if not new_admin:
         raise HTTPException(status_code=404, detail="Admin not found")
 
+    old_owner = dbuser.admin.username if dbuser.admin else None
     dbuser = crud.set_owner(db, dbuser, new_admin)
     user = UserResponse.model_validate(dbuser)
+    audit.detail(target_name=user.username,
+                 details={"owner_before": old_owner, "owner_after": admin_username})
 
     logger.info(f'{user.username}"owner successfully set to{admin.username}')
 
@@ -380,6 +457,7 @@ def delete_expired_users(
             status_code=404, detail="No expired users found in the specified date range"
         )
 
+    audit.detail(details={"count": len(removed_users), "usernames": removed_users})
     crud.remove_users(db, expired_users)
 
     for removed_user in removed_users:

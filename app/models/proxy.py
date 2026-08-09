@@ -155,6 +155,10 @@ class ProxyHost(BaseModel):
     noise_setting: Optional[str] = Field(None, nullable=True)
     random_user_agent: Union[bool, None] = None
     use_sni_as_host: Union[bool, None] = None
+    # 0/None = not in any auto-select group, N = group N. Older panels sent a
+    # bool here, which pydantic would happily coerce to 0/1 — the validator
+    # keeps that meaning explicit rather than accidental.
+    auto_select: Union[int, None] = None
     model_config = ConfigDict(from_attributes=True)
 
     @field_validator("remark", mode="after")
@@ -174,6 +178,21 @@ class ProxyHost(BaseModel):
             raise ValueError("Invalid formatting variables")
 
         return v
+
+    @field_validator("auto_select", mode="before")
+    @classmethod
+    def validate_auto_select(cls, v):
+        if isinstance(v, bool):
+            return 1 if v else 0
+        if v is None or v == "":
+            return None
+        try:
+            group = int(v)
+        except (TypeError, ValueError):
+            raise ValueError("Auto-select group must be a number")
+        if group < 0:
+            raise ValueError("Auto-select group can't be negative")
+        return group
 
     @field_validator("fragment_setting", check_fields=False)
     @classmethod
