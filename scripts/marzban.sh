@@ -347,6 +347,9 @@ install_command() {
     if ! command -v curl >/dev/null 2>&1; then
         install_package curl
     fi
+    if ! command -v git >/dev/null 2>&1; then
+        install_package git
+    fi
     if ! command -v docker >/dev/null 2>&1; then
         install_docker
     fi
