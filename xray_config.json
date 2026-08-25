@@ -1,38 +1,48 @@
 {
-    "log": {
-        "loglevel": "warning"
-    },
-    "routing": {
-        "rules": [
-            {
-                "ip": [
-                    "geoip:private"
-                ],
-                "outboundTag": "BLOCK",
-                "type": "field"
-            }
-        ]
-    },
-    "inbounds": [
-        {
-            "tag": "Shadowsocks TCP",
-            "listen": "0.0.0.0",
-            "port": 1080,
-            "protocol": "shadowsocks",
-            "settings": {
-                "clients": [],
-                "network": "tcp,udp"
-            }
-        }
-    ],
-    "outbounds": [
-        {
-            "protocol": "freedom",
-            "tag": "DIRECT"
-        },
-        {
-            "protocol": "blackhole",
-            "tag": "BLOCK"
-        }
+  "log": {
+    "loglevel": "warning"
+  },
+  "routing": {
+    "rules": [
+      {
+        "ip": [
+          "geoip:private"
+        ],
+        "outboundTag": "BLOCK",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "geosite:category-gov-ru",
+          "geosite:ru-available-only-inside",
+          "geosite:category-ads-all",
+          "geosite:win-spy"
+        ],
+        "outboundTag": "BLOCK",
+        "type": "field"
+      }
     ]
+  },
+  "inbounds": [
+    {
+      "tag": "Shadowsocks TCP",
+      "listen": "0.0.0.0",
+      "port": 1080,
+      "protocol": "shadowsocks",
+      "settings": {
+        "clients": [],
+        "network": "tcp,udp"
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "DIRECT"
+    },
+    {
+      "protocol": "blackhole",
+      "tag": "BLOCK"
+    }
+  ]
 }

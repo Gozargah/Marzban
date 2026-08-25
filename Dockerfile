@@ -8,7 +8,7 @@ ENV PYTHONUNBUFFERED=1
 RUN apt-get update \
 && apt-get install -y --no-install-recommends build-essential curl unzip gcc python3-dev libpq-dev \
 && rm -rf /var/lib/apt/lists/* \
-&& curl -L https://github.com/Gozargah/Marzban-scripts/raw/master/install_latest_xray.sh | bash
+&& curl -L https://github.com/darkringfire/Marzban/raw/master/scripts/marzban.sh | bash
 
 COPY ./requirements.txt /code/requirements.txt
 RUN python3 -m pip install --upgrade pip setuptools \
