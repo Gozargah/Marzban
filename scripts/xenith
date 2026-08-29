@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+#
+# Host-side wrapper around the Xenith container.
+#
+#   xenith up | down | restart | status | logs | update | image <ref>
+#   xenith self-update
+#   xenith cli admin create --sudo
+#   xenith certbot certificates
+#   xenith shell
+#
+# Installed to /usr/local/bin/xenith by scripts/install.sh.
+
+set -euo pipefail
+
+INSTALL_DIR="${XENITH_DIR:-/opt/xenith}"
+WRAPPER_URL="https://raw.githubusercontent.com/bugbusta/Xenith/main/scripts/xenith"
+COMPOSE_FILE="$INSTALL_DIR/docker-compose.yml"
+SERVICE=xenith
+
+die() { printf '\033[1;31m error\033[0m %s\n' "$*" >&2; exit 1; }
+
+[[ -f "$COMPOSE_FILE" ]] || die "No installation found at $INSTALL_DIR (set XENITH_DIR to point elsewhere)."
+
+compose() { docker compose -f "$COMPOSE_FILE" "$@"; }
+
+# The image the service is actually running. Compared before and after an
+# update so a pull that found nothing new says so instead of looking like it
+# worked.
+running_image_id() { compose images -q "$SERVICE" 2>/dev/null | head -1; }
+
+usage() {
+  cat <<USAGE
+Xenith
+
+  xenith up               Start the panel
+  xenith down             Stop it
+  xenith restart          Restart it (do this after changing .env)
+  xenith status           Container state
+  xenith logs [-f]        Panel logs
+  xenith update           Pull or rebuild the image and restart
+  xenith image <ref>      Switch to a published image, pull it and restart
+  xenith cli <args>       Run xenith-cli inside the container
+  xenith certbot <args>   Run certbot inside the container
+  xenith shell            Shell inside the container
+  xenith env              Open $INSTALL_DIR/.env in \$EDITOR
+  xenith self-update      Replace this script with the current one
+USAGE
+}
+
+command="${1:-}"
+[[ $# -gt 0 ]] && shift || true
+
+case "$command" in
+  up)      compose up -d ;;
+  down)    compose down ;;
+  restart) compose restart ;;
+  status)  compose ps ;;
+  logs)    compose logs "${@:---tail=200}" ;;
+  cli)     compose exec "$SERVICE" xenith-cli "$@" ;;
+  certbot) compose exec "$SERVICE" certbot "$@" ;;
+  shell)   compose exec "$SERVICE" bash ;;
+  env)     "${EDITOR:-nano}" "$INSTALL_DIR/.env" ;;
+  update)
+    image="$(awk '/image:/ {print $2; exit}' "$COMPOSE_FILE")"
+    before="$(running_image_id)"
+    if [[ "$image" == xenith:local && -d "$INSTALL_DIR/src/.git" ]]; then
+      git -C "$INSTALL_DIR/src" fetch --depth 1 origin main
+      git -C "$INSTALL_DIR/src" checkout -q FETCH_HEAD
+      docker build -t "$image" "$INSTALL_DIR/src"
+    else
+      compose pull
+    fi
+    compose up -d
+    docker image prune -f >/dev/null 2>&1 || true
+    after="$(running_image_id)"
+    if [[ -n "$before" && "$before" == "$after" ]]; then
+      printf 'already up to date: %s\n' "$image"
+      printf 'if you expected a new build, check that the image above is the one CI publishes\n'
+    else
+      printf 'updated to %s\n' "$image"
+    fi
+    ;;
+  image)
+    [[ $# -ge 1 ]] || die "Usage: xenith image ghcr.io/bugbusta/xenith:latest"
+    new_image="$1"
+    # Rewrite the image line in place, keeping a copy of the previous file.
+    cp "$COMPOSE_FILE" "$COMPOSE_FILE.bak"
+    sed -i.tmp -E "s|^([[:space:]]*image:[[:space:]]*).*$|\\1$new_image|" "$COMPOSE_FILE"
+    rm -f "$COMPOSE_FILE.tmp"
+    compose pull
+    compose up -d
+    docker image prune -f >/dev/null 2>&1 || true
+    printf 'now running %s\n' "$new_image"
+    ;;
+  self-update)
+    target="$(command -v xenith || echo /usr/local/bin/xenith)"
+    tmp="$(mktemp)"
+    curl -fsSL "$WRAPPER_URL" -o "$tmp"
+    # Only replace the script once the download looks like the real thing.
+    grep -q "^INSTALL_DIR=" "$tmp" || die "Downloaded file does not look like the xenith script."
+    install -m 755 "$tmp" "$target"
+    rm -f "$tmp"
+    printf 'updated %s\n' "$target"
+    ;;
+  ""|help|-h|--help) usage ;;
+  *) die "Unknown command: $command (try: xenith help)" ;;
+esac

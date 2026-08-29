@@ -49,9 +49,9 @@ Now, change these variables with your files' names.
 V2RAY_SUBSCRIPTION_TEMPLATE="v2ray/default.json"
 V2RAY_SETTINGS_TEMPLATE="v2ray/settings.json"
 ```
-Now, restart your Marzban and enjoy.
+Now, restart your Xenith and enjoy.
 
-If you have already changed your env variables, and you want to just update the template files, there is no need to restart Marzban.
+If you have already changed your env variables, and you want to just update the template files, there is no need to restart Xenith.
 
 ## Docs
 you can use these docs to find out how to modify template files

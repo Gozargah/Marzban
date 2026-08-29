@@ -92,6 +92,14 @@ class User(Base):
     # * NULL: Uses global settings.
     auto_delete_in_days = Column(Integer, nullable=True, default=None)
 
+    # How many devices may fetch this user's subscription, counted by the
+    # hardware id their client reports. Same shape as the field above:
+    # * Positive values: at most that many devices.
+    # * Zero or less: no device limit for this user, whatever the global is.
+    # * NULL: Uses global settings.
+    hwid_device_limit = Column(Integer, nullable=True, default=None)
+    devices = relationship("UserDevice", back_populates="user", cascade="all, delete-orphan")
+
     edit_at = Column(DateTime, nullable=True, default=None)
     last_status_change = Column(DateTime, default=datetime.utcnow, nullable=True)
 
@@ -171,6 +179,34 @@ class NextPlan(Base):
     fire_on_either = Column(Boolean, nullable=False, default=True, server_default='0')
 
     user = relationship("User", back_populates="next_plan")
+
+
+class UserDevice(Base):
+    """One device that has fetched a user's subscription.
+
+    The hardware id is chosen by the client and opaque to the panel; the rest
+    is what the client said about itself, kept so a row in the device list
+    means something to whoever is reading it. Rows are created by a
+    subscription fetch and only ever removed by an admin, which is what makes
+    the count a limit rather than a rolling window.
+    """
+
+    __tablename__ = "user_devices"
+    __table_args__ = (
+        UniqueConstraint("user_id", "hwid", name="uq_user_devices_user_hwid"),
+    )
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    hwid = Column(String(128), nullable=False)
+    os = Column(String(64), nullable=True, default=None)
+    os_version = Column(String(64), nullable=True, default=None)
+    model = Column(String(64), nullable=True, default=None)
+    user_agent = Column(String(512), nullable=True, default=None)
+    first_seen_at = Column(DateTime, default=datetime.utcnow)
+    last_seen_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="devices")
 
 
 class UserTemplate(Base):
@@ -310,6 +346,10 @@ class Node(Base):
     usages = relationship("NodeUsage", back_populates="node", cascade="all, delete-orphan")
     usage_coefficient = Column(Float, nullable=False, server_default=text("1.0"), default=1)
 
+    # PEM of the certificate this node presented on the first successful
+    # connection. Later connections must present the very same certificate.
+    server_cert = Column(String(4096), nullable=True, default=None)
+
 
 class NodeUserUsage(Base):
     __tablename__ = "node_user_usages"
@@ -350,3 +390,23 @@ class NotificationReminder(Base):
     threshold = Column(Integer, nullable=True)
     expires_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class NetworkProfile(Base):
+    """A named set of kernel tunables that can be applied in one go.
+
+    `settings` holds only keys from the sysctl catalogue; the router validates
+    against it before anything is stored, so a profile can never carry a key
+    the panel would refuse to apply.
+    """
+
+    __tablename__ = "network_profiles"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(64), unique=True, index=True, nullable=False)
+    description = Column(String(512), nullable=True)
+    settings = Column(JSON, nullable=False, default={})
+    # Shipped with the panel: it can be applied and copied, but not edited away.
+    builtin = Column(Boolean, nullable=False, default=False, server_default='0')
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=True)

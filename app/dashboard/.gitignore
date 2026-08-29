@@ -25,3 +25,5 @@ node_modules
 
 stats.html
 yarn.lock
+
+!lib/

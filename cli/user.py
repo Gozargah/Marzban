@@ -5,6 +5,7 @@ from rich.table import Table
 
 from app.db import GetDB, crud
 from app.db.models import User
+from app.utils import hwid
 from app.utils.system import readable_size
 
 from . import utils
@@ -82,3 +83,112 @@ def set_owner(
         crud.set_owner(db, user, dbadmin)
 
         utils.success(f'{username}\'s owner successfully set to "{admin}".')
+
+
+@app.command(name="devices")
+def list_devices(
+    username: str = typer.Option(None, *utils.FLAGS["username"], prompt=True),
+):
+    """
+    Displays the devices that have fetched a user's subscription
+    """
+    with GetDB() as db:
+        user: User = utils.get_user(db, username)
+        devices = crud.get_user_devices(db, user)
+        limit = hwid.effective_limit(user)
+
+        typer.echo(
+            f'{len(devices)} device(s) for "{username}", '
+            + (f"limit {limit}." if limit else "no limit in force.")
+        )
+
+        utils.print_table(
+            table=Table("ID", "Hardware ID", "OS", "Version", "Model", "First seen", "Last seen"),
+            rows=[
+                (
+                    str(device.id),
+                    device.hwid,
+                    device.os or "-",
+                    device.os_version or "-",
+                    device.model or "-",
+                    utils.readable_datetime(device.first_seen_at),
+                    utils.readable_datetime(device.last_seen_at),
+                )
+                for device in devices
+            ],
+        )
+
+
+@app.command(name="reset-devices")
+def reset_devices(
+    username: str = typer.Option(None, *utils.FLAGS["username"], prompt=True),
+    device: Optional[int] = typer.Option(
+        None, "--device", "-d", help="Forget only this device, by its ID"
+    ),
+    yes_to_all: bool = typer.Option(False, *utils.FLAGS["yes_to_all"], help="Skips confirmations"),
+):
+    """
+    Forgets a user's devices, freeing their slots
+
+    NOTE: A forgotten device keeps the configuration it already downloaded. What
+    this frees is the right to fetch a new one; revoke the subscription to cut
+    an existing device off.
+    """
+    with GetDB() as db:
+        user: User = utils.get_user(db, username)
+
+        if device is not None:
+            dbdevice = utils.raise_if_falsy(
+                crud.get_user_device(db, user, device),
+                f'Device {device} does not belong to "{username}".',
+            )
+            crud.remove_user_device(db, dbdevice)
+            utils.success(f'Device {device} forgotten for "{username}".')
+
+        count = crud.count_user_devices(db, user)
+        if not count:
+            utils.success(f'"{username}" has no devices to forget.')
+
+        if not yes_to_all and not typer.confirm(
+            f'This forgets all {count} device(s) of "{username}". Are you sure?'
+        ):
+            utils.error("Aborted.")
+
+        removed = crud.reset_user_devices(db, user)
+        utils.success(f'{removed} device(s) forgotten for "{username}".')
+
+
+@app.command(name="set-device-limit")
+def set_device_limit(
+    username: str = typer.Option(None, *utils.FLAGS["username"], prompt=True),
+    limit: Optional[int] = typer.Option(
+        None, "--limit", "-l", help="Devices allowed; 0 for no limit, omit to fall back to the panel default"
+    ),
+    default: bool = typer.Option(False, "--default", help="Clear the user's own limit"),
+):
+    """
+    Sets how many devices may fetch a user's subscription
+
+    A limit only applies to clients that report a hardware id. With one in
+    force, a client that does not is refused — including a browser opening the
+    subscription page.
+    """
+    if default and limit is not None:
+        utils.error("--default and --limit cannot be given together.")
+    if not default and limit is None:
+        utils.error("Give a --limit, or --default to fall back to the panel setting.")
+
+    with GetDB() as db:
+        user: User = utils.get_user(db, username)
+        # None clears it back to the panel default; the column is nullable and
+        # that null is what "use the global setting" means.
+        user.hwid_device_limit = None if default else limit
+        db.commit()
+        db.refresh(user)
+
+        effective = hwid.effective_limit(user)
+        utils.success(
+            f'"{username}" is now limited to {effective} device(s).'
+            if effective
+            else f'"{username}" now has no device limit.'
+        )

@@ -1,12 +1,13 @@
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Union
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app import __version__, xray
 from app.db import Session, crud, get_db
 from app.models.admin import Admin
 from app.models.proxy import ProxyHost, ProxyInbound, ProxyTypes
-from app.models.system import SystemStats
+from app.models.system import SystemStats, UsagePoint, UsageSeries
 from app.models.user import UserStatus
 from app.utils import responses
 from app.utils.system import cpu_usage, memory_usage, realtime_bandwidth
@@ -61,6 +62,33 @@ def get_system_stats(
         incoming_bandwidth_speed=realtime_bandwidth_stats.incoming_bytes,
         outgoing_bandwidth_speed=realtime_bandwidth_stats.outgoing_bytes,
     )
+
+
+# How far back each period reaches, and whether it is bucketed per day.
+USAGE_PERIODS = {
+    "24h": (timedelta(hours=24), False),
+    "7d": (timedelta(days=7), True),
+    "30d": (timedelta(days=30), True),
+}
+
+
+@router.get("/system/usage", response_model=UsageSeries)
+def get_system_usage_series(
+    period: str = Query("24h", pattern="^(24h|7d|30d)$"),
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.get_current),
+):
+    """Traffic totals over time, bucketed hourly for 24h and daily otherwise."""
+    span, by_day = USAGE_PERIODS[period]
+    end = datetime.now(timezone.utc).replace(tzinfo=None)
+    start = end - span
+
+    points = [
+        UsagePoint(time=time, uplink=uplink, downlink=downlink)
+        for time, uplink, downlink in crud.get_usage_series(db, start, end, by_day=by_day)
+    ]
+
+    return UsageSeries(period=period, granularity="day" if by_day else "hour", points=points)
 
 
 @router.get("/inbounds", response_model=Dict[ProxyTypes, List[ProxyInbound]])

@@ -1,11 +1,6 @@
-export const getAuthToken = () => {
-  return localStorage.getItem("token");
-};
-
-export const setAuthToken = (token: string) => {
-  localStorage.setItem("token", token);
-};
-
-export const removeAuthToken = () => {
+// The session lives in an httpOnly cookie the server sets on login, so no
+// script on the page can read the token. Nothing auth related is kept here
+// any more; this only cleans up after installs that predate the cookie.
+export const clearLegacyToken = () => {
   localStorage.removeItem("token");
 };

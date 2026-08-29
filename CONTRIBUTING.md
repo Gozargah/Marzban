@@ -1,68 +1,104 @@
-# Contribute to Marzban
-Thanks for considering contributing to Marzban!
+# Contributing to Xenith
 
-## Questions
+Thanks for considering contributing to Xenith!
 
-Please don't ask your questions in issues. Instead, use one of the following ways to ask:
-- Ask on our telegram group: [@Gozargah_Marzban](https://t.me/gozargah_marzban)
-- Ask on our [GitHub Discussions](https://github.com/gozargah/marzban/discussions) for long term discussion or larger questions.
-
+Xenith is a fork of [Marzban](https://github.com/Gozargah/Marzban) and is
+licensed under the AGPL-3.0. By submitting a pull request you agree that your
+contribution is distributed under that same license.
 
 ## Reporting issues
 
-Include the following information in your post:
-- Describe what you expected to happen.
-- Describe what actually happened. Include server logs or any error that browser shows.
-- If possible, post your xray json config file and what you have set in env (by censoring critical information).
-- Also tell the version of Marzban, Xray and docker (if you use docker) you are using.
+Security vulnerabilities do not go here — report those privately, the way
+[SECURITY.md](./SECURITY.md) describes.
 
+For everything else, include the following in your report:
 
-# Submitting a Pull Request
-If there is not an open issue for what you want to submit, prefer opening one for discussion before working on a PR. You can work on any issue that doesn't have an open PR linked to it or a maintainer assigned to it. These show up in the sidebar. No need to ask if you can work on an issue that interests you.
+- What you expected to happen and what actually happened.
+- Server logs, or the error shown in the browser.
+- Your Xray JSON config and relevant `.env` settings, with secrets censored.
+- The versions of Xenith, Xray and Docker you are running.
 
-## Branches
-When starting development on this project, please make sure to create a new branch off the `dev` branch. This helps to keep the `master` branch stable and free of any development work that may not be complete or fully tested.
+## Submitting a pull request
 
-## Project Structure
+Branch off `main`. If there is no open issue covering your change, prefer opening
+one first so the approach can be discussed before you invest time in it.
+
+Note anything a user would notice in `CHANGELOG.md`, under *Unreleased*.
+
+## Project structure
+
 ```
 .
-├── app                      # Backend code (FastAPI - Python)
-│   └── dashboard            # Frontend code (React - Typescript)
-├── cli                      # CLI code (Typer - Python)
-└── xray_api                 # Client of Xray's gRPC API
+├── app                      # Backend (FastAPI - Python)
+│   └── dashboard            # Frontend (React - TypeScript)
+├── cli                      # CLI (Typer - Python)
+├── docs/upstream            # Original Marzban documentation, kept for reference
+└── xray_api                 # Client for Xray's gRPC API
 ```
 
 ## Backend
-Backend is built using FastAPI and uses SQLAlchemy as the ORM for database operations. All Pydantic models can be found in the `app/models` directory, while all database-related operations and models are in the `app/db` directory. The migration scripts for the database (Alembic) can be found in the `app/db/migrations` directory.
 
-### Python Code Formatting
-To maintain consistency in the codebase, we require all code to be formatted using 
+FastAPI with SQLAlchemy as the ORM. Pydantic models live in `app/models`,
+database models and queries in `app/db`, and Alembic migrations in
+`app/db/migrations`. Any change to `app/db/models.py` needs a matching migration.
+
+Note that the database schema stays compatible with Marzban so that existing
+installations can migrate — do not rename tables or reorder existing revisions.
+
+### Formatting
+
 ```bash
 autopep8 <file> --max-line-length 120
 ```
 
+### Tests
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+`tests/conftest.py` pins the environment before `config.py` is imported, so the
+suite behaves the same with or without a local `.env`. It hands out an
+in-memory database, a fixed Xray config with one inbound per protocol, a set of
+hosts you can override, and an API client that talks to the real router — see
+the `db`, `xray_config`, `hosts` and `client` fixtures. Calls into the Xray core
+are stubbed and recorded in `no_xray_calls`, so nothing needs the binary.
+
+Tests that describe a known bug are marked `xfail(strict=True)`: they turn into
+a failure the moment the bug is fixed, which is the reminder to delete the mark.
+
+New tests alongside your change are welcome; the API and the database layer are
+the parts most worth adding to.
+
+CI runs the same suite on every push and pull request, and the Docker image is
+only built and published once it passes. See [docs/CI.md](./docs/CI.md) for the
+pipeline, the image tags and how deployment is wired up.
+
 ## Frontend
-Frontend is pre-built and served by FastAPI from the `app/dashboard/build` directory. To rebuild the frontend, first make sure you have the necessary dependencies installed by running `npm install` in the `app/dashboard` directory. Then, simply remove the `app/dashboard/build` directory and run the Python code again, and it will rebuild the frontend automatically.
 
-### Components Library
-Frontend uses `Chakra-UI` as the component library, so please adhere to the Chakra-UI approach when contributing. Strive to create components that are cohesive and serve a single purpose. Keep in mind that readability and maintainability are more important than brevity, so prioritize those factors when writing your code.
+Chakra UI is the component library; follow its conventions. Prefer cohesive,
+single-purpose components, and favour readability over brevity.
 
-## Marzban CLI
-Marzban CLI is built using [Typer](https://typer.tiangolo.com/), and its commands' code can be found in `cli`  directory. Its documentation is generated using [Typer CLI](https://typer.tiangolo.com/typer-cli/) which can be re-generated by navigating to project's root directory and running the following command (`typer-cli` package needs to be installed first):
+The frontend is built inside the Docker image, so `app/dashboard/build` is not
+tracked in git — there is nothing to rebuild before committing. For local work,
+run `pnpm install` in `app/dashboard`, delete the `build` directory and start the
+backend again.
+
+## CLI
+
+Built with [Typer](https://typer.tiangolo.com/). Command code lives in `cli/`.
+Regenerate its documentation with `typer-cli` installed:
 
 ```bash
-$ PYTHONPATH=$(pwd) typer marzban-cli.py utils docs --name "" --output ./cli/README.md
+PYTHONPATH=$(pwd) typer xenith-cli.py utils docs --name "" --output ./cli/README.md
 ```
 
-## Debug Mode
-To run the project in debug mode with auto-reload, you can set the environment variable `DEBUG` to `true`. then by running the `main.py`, the backend and frontend will run separately on different ports.
+## Debug mode
 
-Note that you must first install the necessary npm packages by running npm install inside the app/dashboard directory before running in debug mode.
+Set `DEBUG=true` in `.env` and run `main.py`. Backend and frontend then run
+separately with auto-reload. Install the packages first:
+
 ```bash
-cd app/dashboard
-npm install
-cd ../..
+cd app/dashboard && pnpm install && cd ../..
 ```
-
-If you run the project with debug mode off and delete the `app/dashboard/build` directory, the frontend will be rebuilt automatically on the next run. However, no rebuild will occur while inside debug mode."
-

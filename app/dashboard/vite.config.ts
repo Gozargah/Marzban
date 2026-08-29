@@ -1,18 +1,17 @@
-import react from "@vitejs/plugin-react";
-import { defineConfig, splitVendorChunkPlugin } from "vite";
+import react, { reactCompilerPreset } from '@vitejs/plugin-react'
+import babel from '@rolldown/plugin-babel'
+import { defineConfig } from "vite";
 import svgr from "vite-plugin-svgr";
-import { visualizer } from "rollup-plugin-visualizer";
-import tsconfigPaths from "vite-tsconfig-paths";
+import tailwindcss from '@tailwindcss/vite'
 
-// https://vitejs.dev/config/
 export default defineConfig({
+  resolve: {
+    tsconfigPaths: true
+  },
   plugins: [
-    tsconfigPaths(),
-    react({
-      include: "**/*.tsx",
-    }),
+    react(),
+    babel({ presets: [reactCompilerPreset()] }),
     svgr(),
-    visualizer(),
-    splitVendorChunkPlugin(),
+    tailwindcss()
   ],
 });

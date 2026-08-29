@@ -108,19 +108,26 @@ def check_port(port: int) -> bool:
         s.close()
 
 
+# What one of these lookups is allowed to fail with: the request itself, or a
+# body that turns out not to be the address it was supposed to be
+# (AddressValueError is a ValueError). Caught by name rather than with a bare
+# `except`, which would also swallow a Ctrl-C.
+LOOKUP_ERRORS = (requests.RequestException, ValueError)
+
+
 def get_public_ip():
     try:
         resp = requests.get('http://api4.ipify.org/', timeout=5).text.strip()
         if ipaddress.IPv4Address(resp).is_global:
             return resp
-    except:
+    except LOOKUP_ERRORS:
         pass
 
     try:
         resp = requests.get('http://ipv4.icanhazip.com/', timeout=5).text.strip()
         if ipaddress.IPv4Address(resp).is_global:
             return resp
-    except:
+    except LOOKUP_ERRORS:
         pass
 
     try:
@@ -128,21 +135,23 @@ def get_public_ip():
         resp = requests.get('https://ifconfig.io/ip', timeout=5).text.strip()
         if ipaddress.IPv4Address(resp).is_global:
             return resp
-    except requests.exceptions.RequestException:
+    except LOOKUP_ERRORS:
         pass
     finally:
         requests.packages.urllib3.util.connection.HAS_IPV6 = True
 
+    # No packet is sent by connecting a UDP socket; it only asks the routing
+    # table which address would be used to reach the internet. The socket is
+    # opened inside the try and closed by the `with`: out of descriptors, the
+    # old `finally: sock.close()` raised NameError over the real error.
     try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.connect(('8.8.8.8', 80))
-        resp = sock.getsockname()[0]
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.connect(('8.8.8.8', 80))
+            resp = sock.getsockname()[0]
         if ipaddress.IPv4Address(resp).is_global:
             return resp
-    except (socket.error, IndexError):
+    except (OSError, IndexError, ValueError):
         pass
-    finally:
-        sock.close()
 
     return '127.0.0.1'
 
@@ -152,14 +161,14 @@ def get_public_ipv6():
         resp = requests.get('http://api6.ipify.org/', timeout=5).text.strip()
         if ipaddress.IPv6Address(resp).is_global:
             return '[%s]' % resp
-    except:
+    except LOOKUP_ERRORS:
         pass
 
     try:
         resp = requests.get('http://ipv6.icanhazip.com/', timeout=5).text.strip()
         if ipaddress.IPv6Address(resp).is_global:
             return '[%s]' % resp
-    except:
+    except LOOKUP_ERRORS:
         pass
 
     return '[::1]'
@@ -173,3 +182,38 @@ def readable_size(size_bytes):
     p = math.pow(1024, i)
     s = round(size_bytes / p, 2)
     return f'{s} {size_name[i]}'
+
+
+@dataclass
+class InterfaceStat:
+    name: str
+    mac: str = None
+    mtu: int = None
+    addresses: list = None
+
+
+def network_interfaces() -> list:
+    """Interfaces the host has, loopback aside.
+
+    Reported so the System settings screen can show what it is tuning; the
+    panel never reconfigures an interface, since the request that did it would
+    arrive over the one being changed.
+    """
+    stats = psutil.net_if_stats()
+    interfaces = []
+
+    for name, addresses in psutil.net_if_addrs().items():
+        if name == "lo":
+            continue
+
+        mac = next((a.address for a in addresses if a.family == psutil.AF_LINK), None)
+        ips = [
+            a.address for a in addresses
+            if a.family in (socket.AF_INET, socket.AF_INET6) and a.address
+        ]
+        stat = stats.get(name)
+        interfaces.append(
+            InterfaceStat(name=name, mac=mac, mtu=stat.mtu if stat else None, addresses=ips)
+        )
+
+    return sorted(interfaces, key=lambda interface: interface.name)

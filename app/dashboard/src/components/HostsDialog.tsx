@@ -1,128 +1,14 @@
-import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
-  Badge,
-  Box,
-  Button,
-  Select as ChakraSelect,
-  Checkbox,
-  Container,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  HStack,
-  IconButton,
-  InputGroup,
-  InputRightElement,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  Popover,
-  PopoverArrow,
-  PopoverBody,
-  PopoverCloseButton,
-  PopoverContent,
-  PopoverTrigger,
-  Portal,
-  Switch,
-  Text,
-  Tooltip,
-  VStack,
-  chakra,
-  useToast,
-} from "@chakra-ui/react";
-import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  DocumentDuplicateIcon,
-  InformationCircleIcon,
-  LinkIcon,
-} from "@heroicons/react/24/outline";
+import { useToast } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  proxyALPN,
-  proxyFingerprint,
-  proxyHostSecurity,
-} from "constants/Proxies";
-import { useHosts } from "contexts/HostsContext";
-import { motion } from "framer-motion";
-import { FC, useEffect, useState } from "react";
-import {
-  Controller,
-  FormProvider,
-  useFieldArray,
-  useForm,
-  useFormContext,
-} from "react-hook-form";
-import { Trans, useTranslation } from "react-i18next";
-import "slick-carousel/slick/slick-theme.css";
-import "slick-carousel/slick/slick.css";
+import { ChevronDown, ChevronUp, Copy, Info, Plus, Trash2 } from "lucide-react";
+import { FC, Fragment, useEffect, useState } from "react";
+import { FormProvider, useFieldArray, useForm, useFormContext, useWatch } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
+import { proxyALPN, proxyFingerprint, proxyHostSecurity } from "constants/Proxies";
+import { useHosts } from "contexts/HostsContext";
+import { Checkbox, Field, IconButton, Select } from "xenith/fields";
 import { useDashboard } from "../contexts/DashboardContext";
-import { DeleteIcon } from "./DeleteUserModal";
-import { Icon } from "./Icon";
-import { Input as CustomInput } from "./Input";
-
-export const DuplicateIcon = chakra(DocumentDuplicateIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-  },
-});
-
-export const UpIcon = chakra(ArrowUpIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-  },
-});
-
-export const DownIcon = chakra(ArrowDownIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-  },
-});
-
-const Select = chakra(ChakraSelect, {
-  baseStyle: {
-    bg: "white",
-    _dark: {
-      bg: "gray.700",
-    },
-  },
-});
-
-const Input = chakra(CustomInput, {
-  baseStyle: {
-    bg: "white",
-    _dark: {
-      bg: "gray.700",
-    },
-  },
-});
-
-const ModalIcon = chakra(LinkIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-  },
-});
-
-const InfoIcon = chakra(InformationCircleIcon, {
-  baseStyle: {
-    w: 4,
-    h: 4,
-    color: "gray.400",
-    cursor: "pointer",
-  },
-});
 
 const hostsSchema = z.record(
   z.string().min(1),
@@ -136,8 +22,7 @@ const hostsSchema = z.record(
         .nullable()
         .transform((value) => {
           if (typeof value === "number") return value;
-          if (value !== null && !isNaN(parseInt(value)))
-            return Number(parseInt(value));
+          if (value !== null && !isNaN(parseInt(value))) return Number(parseInt(value));
           return null;
         }),
       path: z.string().nullable(),
@@ -153,1078 +38,357 @@ const hostsSchema = z.record(
       alpn: z.string(),
       fingerprint: z.string(),
       use_sni_as_host: z.boolean().default(false),
-    })
-  )
+    }),
+  ),
 );
 
-const Error = chakra(FormErrorMessage, {
-  baseStyle: {
-    color: "red.400",
-    display: "block",
-    textAlign: "left",
-    w: "100%",
-  },
-});
+type HostsForm = z.infer<typeof hostsSchema>;
 
-type AccordionInboundType = {
-  hostKey: string;
-  isOpen: boolean;
-  toggleAccordion: () => void;
+const EMPTY_HOST = {
+  host: "",
+  sni: "",
+  port: null,
+  path: null,
+  address: "",
+  remark: "",
+  mux_enable: false,
+  allowinsecure: false,
+  is_disabled: false,
+  fragment_setting: "",
+  noise_setting: "",
+  random_user_agent: false,
+  security: "inbound_default",
+  alpn: "",
+  fingerprint: "",
+  use_sni_as_host: false,
 };
 
-const AccordionInbound: FC<AccordionInboundType> = ({
-  hostKey,
-  isOpen,
-  toggleAccordion,
-}) => {
-  const { inbounds } = useDashboard();
-  const inbound = [...inbounds.values()]
-    .flat()
-    .filter((inbound) => inbound.tag === hostKey)[0];
-
-  const form = useFormContext<z.infer<typeof hostsSchema>>();
-  const {
-    fields: hosts,
-    append: addHost,
-    remove: removeHost,
-    insert: insertHost,
-    move: moveHost,
-  } = useFieldArray({
-    control: form.control,
-    name: hostKey,
-  });
-  const { errors } = form.formState;
+/** The variables that can be used in a remark, shown on demand. */
+const VariableHelp: FC = () => {
   const { t } = useTranslation();
-  const accordionErrors = errors[hostKey];
-  const handleAddHost = () => {
-    addHost({
-      host: "",
-      sni: "",
-      port: null,
-      path: null,
-      address: "",
-      remark: "",
-      mux_enable: false,
-      allowinsecure: false,
-      is_disabled: false,
-      fragment_setting: "",
-      noise_setting: "",
-      random_user_agent: false,
-      security: "inbound_default",
-      alpn: "",
-      fingerprint: "",
-      use_sni_as_host: false,
-    });
-  };
-  const duplicateHost = (index: number) => {
-    if (index < 0 || index >= hosts.length) return;
-    const hostToDuplicate = hosts[index];
-    insertHost(index + 1, hostToDuplicate);
-  };
-  useEffect(() => {
-    if (accordionErrors && !isOpen) {
-      toggleAccordion();
-    }
-  }, [accordionErrors]);
+  const [open, setOpen] = useState(false);
 
-  const moveHostPosition = (index: number, direction: "up" | "down") => {
-    if (direction === "up" && index > 0) {
-      moveHost(index, index - 1);
-    } else if (direction === "down" && index < hosts.length - 1) {
-      moveHost(index, index + 1);
-    }
-  };
+  const variables: [string, string][] = [
+    ["SERVER_IP", t("hostsDialog.currentServer")],
+    ["SERVER_IPV6", t("hostsDialog.currentServerv6")],
+    ["USERNAME", t("hostsDialog.username")],
+    ["DATA_USAGE", t("hostsDialog.dataUsage")],
+    ["DATA_LEFT", t("hostsDialog.remainingData")],
+    ["DATA_LIMIT", t("hostsDialog.dataLimit")],
+    ["DAYS_LEFT", t("hostsDialog.remainingDays")],
+    ["EXPIRE_DATE", t("hostsDialog.expireDate")],
+    ["JALALI_EXPIRE_DATE", t("hostsDialog.jalaliExpireDate")],
+    ["TIME_LEFT", t("hostsDialog.remainingTime")],
+    ["STATUS_EMOJI", t("hostsDialog.statusEmoji")],
+    ["STATUS_TEXT", t("hostsDialog.statusText")],
+    ["PROTOCOL", t("hostsDialog.proxyProtocol")],
+    ["TRANSPORT", t("hostsDialog.proxyMethod")],
+  ];
 
   return (
-    <AccordionItem
-      border="1px solid"
-      _dark={{ borderColor: "gray.600" }}
-      _light={{ borderColor: "gray.200" }}
-      borderRadius="4px"
-      p={1}
-      w="full"
-    >
-      <AccordionButton px={2} borderRadius="3px" onClick={toggleAccordion}>
-        <Text
-          as="span"
-          fontWeight="medium"
-          fontSize="sm"
-          flex="1"
-          textAlign="left"
-          color="gray.700"
-          _dark={{ color: "gray.300" }}
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className="xn-link"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          background: "none",
+          border: 0,
+          padding: 0,
+          cursor: "pointer",
+          fontSize: 11.5,
+        }}
+      >
+        <Info size={13} strokeWidth={1.5} />
+        {t("hostsDialog.desc")}
+      </button>
+      {open && (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 190px) 1fr",
+            gap: "4px 12px",
+            padding: "10px 12px",
+            border: "1px solid var(--xn-divider)",
+            fontSize: 11.5,
+            color: "var(--xn-neutral-700)",
+          }}
         >
+          {variables.map(([name, description]) => (
+            <Fragment key={name}>
+              <code className="xn-mono" style={{ fontSize: 11, color: "var(--xn-accent-800)" }}>
+                {`{${name}}`}
+              </code>
+              <span>{description}</span>
+            </Fragment>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+type HostRowProps = {
+  hostKey: string;
+  index: number;
+  total: number;
+  onDuplicate: () => void;
+  onRemove: () => void;
+  onMove: (direction: "up" | "down") => void;
+};
+
+const HostRow: FC<HostRowProps> = ({ hostKey, index, total, onDuplicate, onRemove, onMove }) => {
+  const { t } = useTranslation();
+  const [advanced, setAdvanced] = useState(false);
+  const form = useFormContext<HostsForm>();
+  const errors = (form.formState.errors as any)[hostKey]?.[index];
+  const field = (name: string) => `${hostKey}.${index}.${name}` as const;
+  const disabled = useWatch({ control: form.control, name: field("is_disabled") as never });
+
+  const errorOf = (name: string) => errors?.[name]?.message as string | undefined;
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 12,
+        padding: 14,
+        border: "1px solid var(--xn-divider)",
+        opacity: disabled ? 0.6 : 1,
+      }}
+    >
+      <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+        <Field label={t("hostsDialog.remark")} error={errorOf("remark")} grow>
+          <input className="xn-input" placeholder="🚀 Marz ({USERNAME})" {...form.register(field("remark"))} />
+        </Field>
+        <div style={{ display: "flex", gap: 6, paddingTop: 22 }}>
+          <IconButton title={t("hostsDialog.moveUp")} onClick={() => onMove("up")} disabled={index === 0}>
+            <ChevronUp size={15} strokeWidth={1.5} />
+          </IconButton>
+          <IconButton title={t("hostsDialog.moveDown")} onClick={() => onMove("down")} disabled={index === total - 1}>
+            <ChevronDown size={15} strokeWidth={1.5} />
+          </IconButton>
+          <IconButton title={t("hostsDialog.duplicate")} onClick={onDuplicate}>
+            <Copy size={15} strokeWidth={1.5} />
+          </IconButton>
+          <IconButton title={t("delete")} onClick={onRemove} danger>
+            <Trash2 size={15} strokeWidth={1.5} />
+          </IconButton>
+        </div>
+      </div>
+
+      <Field label={t("hostsDialog.address")} error={errorOf("address")}>
+        <input className="xn-input xn-mono" style={{ fontSize: 13 }} placeholder="{SERVER_IP}" {...form.register(field("address"))} />
+      </Field>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+        <button
+          type="button"
+          onClick={() => setAdvanced((value) => !value)}
+          className="xn-link"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            background: "none",
+            border: 0,
+            padding: 0,
+            cursor: "pointer",
+            fontSize: 12,
+          }}
+        >
+          {advanced ? <ChevronUp size={14} strokeWidth={1.5} /> : <ChevronDown size={14} strokeWidth={1.5} />}
+          {t("hostsDialog.advancedOptions")}
+        </button>
+        <div style={{ marginLeft: "auto" }}>
+          <Checkbox
+            label={t("hostsDialog.enabled")}
+            checked={!disabled}
+            onChange={(event) => form.setValue(field("is_disabled") as never, !event.target.checked as never)}
+          />
+        </div>
+      </div>
+
+      {advanced && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 2 }}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <Field label={t("hostsDialog.port")} error={errorOf("port")} grow>
+              <input className="xn-input xn-mono" style={{ fontSize: 13 }} placeholder="8443" {...form.register(field("port"))} />
+            </Field>
+            <Field label={t("hostsDialog.sni")} error={errorOf("sni")} grow>
+              <input className="xn-input xn-mono" style={{ fontSize: 13 }} {...form.register(field("sni"))} />
+            </Field>
+          </div>
+
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <Field label={t("hostsDialog.host")} error={errorOf("host")} grow>
+              <input className="xn-input xn-mono" style={{ fontSize: 13 }} {...form.register(field("host"))} />
+            </Field>
+            <Field label={t("hostsDialog.path")} error={errorOf("path")} grow>
+              <input className="xn-input xn-mono" style={{ fontSize: 13 }} {...form.register(field("path"))} />
+            </Field>
+          </div>
+
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <Field label={t("hostsDialog.security")} grow>
+              <Select options={proxyHostSecurity} registration={form.register(field("security"))} />
+            </Field>
+            <Field label={t("hostsDialog.alpn")} grow>
+              <Select options={proxyALPN} registration={form.register(field("alpn"))} />
+            </Field>
+            <Field label={t("hostsDialog.fingerprint")} grow>
+              <Select options={proxyFingerprint} registration={form.register(field("fingerprint"))} />
+            </Field>
+          </div>
+
+          <Field label={t("hostsDialog.fragment")} hint={t("hostsDialog.fragment.info")} error={errorOf("fragment_setting")}>
+            <input
+              className="xn-input xn-mono"
+              style={{ fontSize: 13 }}
+              placeholder="100-200,10-20,tlshello"
+              {...form.register(field("fragment_setting"))}
+            />
+          </Field>
+
+          <Field label={t("hostsDialog.noise")} hint={t("hostsDialog.noise.info")} error={errorOf("noise_setting")}>
+            <input
+              className="xn-input xn-mono"
+              style={{ fontSize: 13 }}
+              placeholder="rand:10-20,10-20"
+              {...form.register(field("noise_setting"))}
+            />
+          </Field>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 2 }}>
+            {[
+              { name: "use_sni_as_host", label: t("hostsDialog.useSniAsHost") },
+              { name: "allowinsecure", label: t("hostsDialog.allowinsecure") },
+              { name: "mux_enable", label: t("hostsDialog.muxEnable") },
+              { name: "random_user_agent", label: t("hostsDialog.randomUserAgent") },
+            ].map((option) => {
+              const registration = form.register(field(option.name));
+              return (
+                <Checkbox
+                  key={option.name}
+                  label={option.label}
+                  name={registration.name}
+                  inputRef={registration.ref}
+                  checked={!!form.watch(field(option.name) as never)}
+                  onChange={registration.onChange as never}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/** One inbound and the hosts configured for it. */
+const InboundSection: FC<{ hostKey: string; open: boolean; onToggle: () => void }> = ({ hostKey, open, onToggle }) => {
+  const { t } = useTranslation();
+  const form = useFormContext<HostsForm>();
+  const {
+    fields: hosts,
+    append,
+    remove,
+    insert,
+    move,
+  } = useFieldArray({ control: form.control, name: hostKey as never });
+  const sectionErrors = (form.formState.errors as any)[hostKey];
+
+  // A section with an invalid host has to be visible for the message to land.
+  useEffect(() => {
+    if (sectionErrors && !open) onToggle();
+  }, [sectionErrors]);
+
+  return (
+    <div style={{ border: "1px solid var(--xn-divider)" }}>
+      <button
+        type="button"
+        onClick={onToggle}
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "11px 14px",
+          background: open ? "var(--xn-accent-100)" : "transparent",
+          color: open ? "var(--xn-accent-800)" : "var(--xn-text)",
+          border: 0,
+          borderBottom: open ? "1px solid var(--xn-divider)" : 0,
+          cursor: "pointer",
+          font: "inherit",
+        }}
+      >
+        <span className="xn-mono" style={{ fontSize: 12.5, marginRight: "auto" }}>
           {hostKey}
-        </Text>
-        <AccordionIcon />
-      </AccordionButton>
-      <AccordionPanel px={2} pb={2}>
-        <VStack gap={3}>
-          {hosts.map((host, index) => {
-            return (
-              <motion.div
-                key={host.id}
-                layout
-                initial={false}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{
-                  layout: { type: "spring", stiffness: 500, damping: 30 },
-                  opacity: { duration: 0.1 },
-                }}
-                id={host.id}
-                whileDrag={{ scale: 1.05, zIndex: 10 }}
-                style={{
-                  width: "100%",
-                }}
-              >
-                <VStack
-                  id={host.id}
-                  key={host.id}
-                  border="1px solid"
-                  _dark={{ borderColor: "gray.600", bg: "#273142" }}
-                  _light={{ borderColor: "gray.200", bg: "#fcfbfb" }}
-                  p={2}
-                  w="full"
-                  borderRadius="4px"
-                >
-                  <HStack w="100%" alignItems="flex-start">
-                    <FormControl
-                      position="relative"
-                      zIndex={10}
-                      isInvalid={
-                        !!(accordionErrors && accordionErrors[index]?.remark)
-                      }
-                    >
-                      <InputGroup>
-                        <Input
-                          {...form.register(hostKey + "." + index + ".remark")}
-                          size="sm"
-                          borderRadius="4px"
-                          placeholder="Remark"
-                        />
-                        <InputRightElement>
-                          <Popover isLazy placement="right">
-                            <PopoverTrigger>
-                              <Box mt="-8px">
-                                <InfoIcon />
-                              </Box>
-                            </PopoverTrigger>
-                            <Portal>
-                              <PopoverContent>
-                                <PopoverArrow />
-                                <PopoverCloseButton />
-                                <PopoverBody>
-                                  <Box fontSize="xs">
-                                    <Text pr="20px">
-                                      {t("hostsDialog.desc")}
-                                    </Text>
-                                    <Text>
-                                      <Badge>
-                                        {"{"}SERVER_IP{"}"}
-                                      </Badge>{" "}
-                                      {t("hostsDialog.currentServer")}
-                                    </Text>
-                                    <Text mt={1}>
-                                      <Badge>
-                                        {"{"}SERVER_IPV6{"}"}
-                                      </Badge>{" "}
-                                      {t("hostsDialog.currentServerv6")}
-                                    </Text>
-                                    <Text mt={1}>
-                                      <Badge>
-                                        {"{"}USERNAME{"}"}
-                                      </Badge>{" "}
-                                      {t("hostsDialog.username")}
-                                    </Text>
-                                    <Text mt={1}>
-                                      <Badge>
-                                        {"{"}DATA_USAGE{"}"}
-                                      </Badge>{" "}
-                                      {t("hostsDialog.dataUsage")}
-                                    </Text>
-                                    <Text mt={1}>
-                                      <Badge>
-                                        {"{"}DATA_LEFT{"}"}
-                                      </Badge>{" "}
-                                      {t("hostsDialog.remainingData")}
-                                    </Text>
-                                    <Text mt={1}>
-                                      <Badge>
-                                        {"{"}DATA_LIMIT{"}"}
-                                      </Badge>{" "}
-                                      {t("hostsDialog.dataLimit")}
-                                    </Text>
-                                    <Text mt={1}>
-                                      <Badge>
-                                        {"{"}DAYS_LEFT{"}"}
-                                      </Badge>{" "}
-                                      {t("hostsDialog.remainingDays")}
-                                    </Text>
-                                    <Text mt={1}>
-                                      <Badge>
-                                        {"{"}EXPIRE_DATE{"}"}
-                                      </Badge>{" "}
-                                      {t("hostsDialog.expireDate")}
-                                    </Text>
-                                    <Text mt={1}>
-                                      <Badge>
-                                        {"{"}JALALI_EXPIRE_DATE{"}"}
-                                      </Badge>{" "}
-                                      {t("hostsDialog.jalaliExpireDate")}
-                                    </Text>
-                                    <Text mt={1}>
-                                      <Badge>
-                                        {"{"}TIME_LEFT{"}"}
-                                      </Badge>{" "}
-                                      {t("hostsDialog.remainingTime")}
-                                    </Text>
-                                    <Text mt={1}>
-                                      <Badge>
-                                        {"{"}STATUS_TEXT{"}"}
-                                      </Badge>{" "}
-                                      {t("hostsDialog.statusText")}
-                                    </Text>
-                                    <Text mt={1}>
-                                      <Badge>
-                                        {"{"}STATUS_EMOJI{"}"}
-                                      </Badge>{" "}
-                                      {t("hostsDialog.statusEmoji")}
-                                    </Text>
-                                    <Text mt={1}>
-                                      <Badge>
-                                        {"{"}PROTOCOL{"}"}
-                                      </Badge>{" "}
-                                      {t("hostsDialog.proxyProtocol")}
-                                    </Text>
-                                    <Text mt={1}>
-                                      <Badge>
-                                        {"{"}TRANSPORT{"}"}
-                                      </Badge>{" "}
-                                      {t("hostsDialog.proxyMethod")}
-                                    </Text>
-                                  </Box>
-                                </PopoverBody>
-                              </PopoverContent>
-                            </Portal>
-                          </Popover>
-                        </InputRightElement>
-                      </InputGroup>
-                      {accordionErrors && accordionErrors[index]?.remark && (
-                        <Error>{accordionErrors[index]?.remark?.message}</Error>
-                      )}
-                    </FormControl>
-                  </HStack>
-                  <FormControl
-                    isInvalid={
-                      !!(accordionErrors && accordionErrors[index]?.address)
-                    }
-                  >
-                    <InputGroup>
-                      <Input
-                        size="sm"
-                        borderRadius="4px"
-                        placeholder="Address (e.g. example.com)"
-                        {...form.register(hostKey + "." + index + ".address")}
-                      />
-                      <InputRightElement>
-                        <Popover isLazy placement="right">
-                          <PopoverTrigger>
-                            <Box mt="-8px">
-                              <InfoIcon />
-                            </Box>
-                          </PopoverTrigger>
-                          <Portal>
-                            <PopoverContent>
-                              <PopoverArrow />
-                              <PopoverCloseButton />
-                              <PopoverBody>
-                                <Box fontSize="xs">
-                                  <Text pr="20px">{t("hostsDialog.desc")}</Text>
-                                  <Text>
-                                    <Badge>
-                                      {"{"}SERVER_IP{"}"}
-                                    </Badge>{" "}
-                                    {t("hostsDialog.currentServer")}
-                                  </Text>
-                                  <Text mt={1}>
-                                    <Badge>
-                                      {"{"}SERVER_IPV6{"}"}
-                                    </Badge>{" "}
-                                    {t("hostsDialog.currentServerv6")}
-                                  </Text>
-                                  <Text mt={1}>
-                                    <Badge>
-                                      {"{"}USERNAME{"}"}
-                                    </Badge>{" "}
-                                    {t("hostsDialog.username")}
-                                  </Text>
-                                  <Text mt={1}>
-                                    <Badge>
-                                      {"{"}DATA_USAGE{"}"}
-                                    </Badge>{" "}
-                                    {t("hostsDialog.dataUsage")}
-                                  </Text>
-                                  <Text mt={1}>
-                                    <Badge>
-                                      {"{"}DATA_LEFT{"}"}
-                                    </Badge>{" "}
-                                    {t("hostsDialog.remainingData")}
-                                  </Text>
-                                  <Text mt={1}>
-                                    <Badge>
-                                      {"{"}DATA_LIMIT{"}"}
-                                    </Badge>{" "}
-                                    {t("hostsDialog.dataLimit")}
-                                  </Text>
-                                  <Text mt={1}>
-                                    <Badge>
-                                      {"{"}DAYS_LEFT{"}"}
-                                    </Badge>{" "}
-                                    {t("hostsDialog.remainingDays")}
-                                  </Text>
-                                  <Text mt={1}>
-                                    <Badge>
-                                      {"{"}EXPIRE_DATE{"}"}
-                                    </Badge>{" "}
-                                    {t("hostsDialog.expireDate")}
-                                  </Text>
-                                  <Text mt={1}>
-                                    <Badge>
-                                      {"{"}JALALI_EXPIRE_DATE{"}"}
-                                    </Badge>{" "}
-                                    {t("hostsDialog.jalaliExpireDate")}
-                                  </Text>
-                                  <Text mt={1}>
-                                    <Badge>
-                                      {"{"}TIME_LEFT{"}"}
-                                    </Badge>{" "}
-                                    {t("hostsDialog.remainingTime")}
-                                  </Text>
-                                  <Text mt={1}>
-                                    <Badge>
-                                      {"{"}STATUS_TEXT{"}"}
-                                    </Badge>{" "}
-                                    {t("hostsDialog.statusText")}
-                                  </Text>
-                                  <Text mt={1}>
-                                    <Badge>
-                                      {"{"}STATUS_EMOJI{"}"}
-                                    </Badge>{" "}
-                                    {t("hostsDialog.statusEmoji")}
-                                  </Text>
-                                  <Text mt={1}>
-                                    <Badge>
-                                      {"{"}PROTOCOL{"}"}
-                                    </Badge>{" "}
-                                    {t("hostsDialog.proxyProtocol")}
-                                  </Text>
-                                  <Text mt={1}>
-                                    <Badge>
-                                      {"{"}TRANSPORT{"}"}
-                                    </Badge>{" "}
-                                    {t("hostsDialog.proxyMethod")}
-                                  </Text>
-                                </Box>
-                              </PopoverBody>
-                            </PopoverContent>
-                          </Portal>
-                        </Popover>
-                      </InputRightElement>
-                    </InputGroup>
-                    {accordionErrors && accordionErrors[index]?.address && (
-                      <Error>{accordionErrors[index]?.address?.message}</Error>
-                    )}
-                  </FormControl>
+        </span>
+        <span className="xn-tag xn-tag-neutral">{hosts.length}</span>
+        {open ? <ChevronUp size={15} strokeWidth={1.5} /> : <ChevronDown size={15} strokeWidth={1.5} />}
+      </button>
 
-                  <Accordion w="full" allowToggle>
-                    <AccordionItem border="0">
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        <AccordionButton
-                          display="flex"
-                          px={0}
-                          py={1}
-                          borderRadius={3}
-                          _hover={{ bg: "transparent" }}
-                        >
-                          <Text
-                            flex="3"
-                            align="start"
-                            fontSize="xs"
-                            color="gray.600"
-                            _dark={{ color: "gray.500" }}
-                            pl={1}
-                          >
-                            {t("hostsDialog.advancedOptions")}
-                            <AccordionIcon fontSize="sm" ml={1} />
-                          </Text>
-
-                          <Container flex="1" px="0" display={"contents"}>
-                            <Controller
-                              control={form.control}
-                              name={`${hostKey}.${index}.is_disabled`}
-                              render={({ field }) => {
-                                return (
-                                  <Switch
-                                    mx="1.5"
-                                    colorScheme="primary"
-                                    {...field}
-                                    value={undefined}
-                                    isChecked={!field.value}
-                                    onChange={(e) => {
-                                      console.log(e.target.checked);
-                                      field.onChange(!e.target.checked);
-                                    }}
-                                  />
-                                );
-                              }}
-                            />
-                            <Tooltip label="Delete" placement="top">
-                              <IconButton
-                                aria-label="Delete"
-                                size="sm"
-                                colorScheme="red"
-                                variant="ghost"
-                                onClick={removeHost.bind(null, index)}
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            </Tooltip>
-                          </Container>
-                        </AccordionButton>
-                        <Tooltip label="Duplicate" placement="top">
-                          <IconButton
-                            aria-label="Duplicate"
-                            size="sm"
-                            colorScheme="white"
-                            variant="ghost"
-                            onClick={() => duplicateHost(index)}
-                          >
-                            <DuplicateIcon />
-                          </IconButton>
-                        </Tooltip>
-                        {index < hosts.length - 1 && (
-                          <Tooltip label="Move Down" placement="top">
-                            <IconButton
-                              aria-label="DownIcon"
-                              size="sm"
-                              colorScheme="white"
-                              variant="ghost"
-                              onClick={() => moveHostPosition(index, "down")}
-                            >
-                              <DownIcon />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                        {index > 0 && (
-                          <Tooltip label="Move Up" placement="top">
-                            <IconButton
-                              aria-label="UpIcon"
-                              size="sm"
-                              colorScheme="white"
-                              variant="ghost"
-                              onClick={() => moveHostPosition(index, "up")}
-                            >
-                              <UpIcon />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                      </div>
-                      <AccordionPanel w="full" p={1}>
-                        <VStack key={index} w="full" borderRadius="4px">
-                          <FormControl
-                            isInvalid={
-                              !!(
-                                accordionErrors && accordionErrors[index]?.port
-                              )
-                            }
-                          >
-                            <FormLabel
-                              display="flex"
-                              pb={1}
-                              alignItems="center"
-                              justifyContent="space-between"
-                              gap={1}
-                              m="0"
-                            >
-                              <span>{t("hostsDialog.port")}</span>
-                              <Popover isLazy placement="right">
-                                <PopoverTrigger>
-                                  <InfoIcon />
-                                </PopoverTrigger>
-                                <Portal>
-                                  <PopoverContent p={2}>
-                                    <PopoverArrow />
-                                    <PopoverCloseButton />
-                                    <Text fontSize="xs" pr={5}>
-                                      {t("hostsDialog.port.info")}
-                                    </Text>
-                                  </PopoverContent>
-                                </Portal>
-                              </Popover>
-                            </FormLabel>
-                            <Input
-                              size="sm"
-                              borderRadius="4px"
-                              placeholder={String(inbound.port || "8080")}
-                              type="number"
-                              {...form.register(
-                                hostKey + "." + index + ".port"
-                              )}
-                            />
-                          </FormControl>
-                          <FormControl
-                            isInvalid={
-                              !!(accordionErrors && accordionErrors[index]?.sni)
-                            }
-                          >
-                            <FormLabel
-                              display="flex"
-                              pb={1}
-                              alignItems="center"
-                              gap={1}
-                              justifyContent="space-between"
-                              m="0"
-                            >
-                              <span>{t("hostsDialog.sni")}</span>
-
-                              <Popover isLazy placement="right">
-                                <PopoverTrigger>
-                                  <InfoIcon />
-                                </PopoverTrigger>
-                                <Portal>
-                                  <PopoverContent p={2}>
-                                    <PopoverArrow />
-                                    <PopoverCloseButton />
-                                    <Text fontSize="xs" pr={5}>
-                                      {t("hostsDialog.sni.info")}
-                                    </Text>
-                                    <Text fontSize="xs" mt="2">
-                                      <Trans
-                                        i18nKey="hostsDialog.host.wildcard"
-                                        components={{
-                                          badge: <Badge />,
-                                        }}
-                                      />
-                                    </Text>
-                                    <Text fontSize="xs">
-                                      <Trans
-                                        i18nKey="hostsDialog.host.multiHost"
-                                        components={{
-                                          badge: <Badge />,
-                                        }}
-                                      />
-                                    </Text>
-                                  </PopoverContent>
-                                </Portal>
-                              </Popover>
-                            </FormLabel>
-                            <Input
-                              size="sm"
-                              borderRadius="4px"
-                              placeholder="SNI (e.g. example.com)"
-                              {...form.register(hostKey + "." + index + ".sni")}
-                            />
-                            {accordionErrors && accordionErrors[index]?.sni && (
-                              <Error>
-                                {accordionErrors[index]?.sni?.message}
-                              </Error>
-                            )}
-                          </FormControl>
-                          <FormControl
-                            isInvalid={
-                              !!(
-                                accordionErrors && accordionErrors[index]?.host
-                              )
-                            }
-                          >
-                            <FormLabel
-                              display="flex"
-                              pb={1}
-                              alignItems="center"
-                              gap={1}
-                              justifyContent="space-between"
-                              m="0"
-                            >
-                              <span>{t("hostsDialog.host")}</span>
-
-                              <Popover isLazy placement="right">
-                                <PopoverTrigger>
-                                  <InfoIcon />
-                                </PopoverTrigger>
-                                <Portal>
-                                  <PopoverContent p={2}>
-                                    <PopoverArrow />
-                                    <PopoverCloseButton />
-                                    <Text fontSize="xs" pr={5}>
-                                      {t("hostsDialog.host.info")}
-                                    </Text>
-                                    <Text fontSize="xs" mt="2">
-                                      <Trans
-                                        i18nKey="hostsDialog.host.wildcard"
-                                        components={{
-                                          badge: <Badge />,
-                                        }}
-                                      />
-                                    </Text>
-                                    <Text fontSize="xs">
-                                      <Trans
-                                        i18nKey="hostsDialog.host.multiHost"
-                                        components={{
-                                          badge: <Badge />,
-                                        }}
-                                      />
-                                    </Text>
-                                  </PopoverContent>
-                                </Portal>
-                              </Popover>
-                            </FormLabel>
-                            <Input
-                              size="sm"
-                              borderRadius="4px"
-                              placeholder="Host (e.g. example.com)"
-                              {...form.register(
-                                hostKey + "." + index + ".host"
-                              )}
-                            />
-                            {accordionErrors &&
-                              accordionErrors[index]?.host && (
-                                <Error>
-                                  {accordionErrors[index]?.host?.message}
-                                </Error>
-                              )}
-                          </FormControl>
-
-                          <FormControl
-                            isInvalid={
-                              !!(
-                                accordionErrors && accordionErrors[index]?.path
-                              )
-                            }
-                          >
-                            <FormLabel
-                              display="flex"
-                              pb={1}
-                              alignItems="center"
-                              gap={1}
-                              justifyContent="space-between"
-                              m="0"
-                            >
-                              <span>{t("hostsDialog.path")}</span>
-
-                              <Popover isLazy placement="right">
-                                <PopoverTrigger>
-                                  <InfoIcon />
-                                </PopoverTrigger>
-                                <Portal>
-                                  <PopoverContent p={2}>
-                                    <PopoverArrow />
-                                    <PopoverCloseButton />
-                                    <Text fontSize="xs" pr={5}>
-                                      {t("hostsDialog.path.info")}
-                                    </Text>
-                                  </PopoverContent>
-                                </Portal>
-                              </Popover>
-                            </FormLabel>
-                            <Input
-                              size="sm"
-                              borderRadius="4px"
-                              placeholder="path (e.g. /vless)"
-                              {...form.register(
-                                hostKey + "." + index + ".path"
-                              )}
-                            />
-                            {accordionErrors &&
-                              accordionErrors[index]?.path && (
-                                <Error>
-                                  {accordionErrors[index]?.path?.message}
-                                </Error>
-                              )}
-                          </FormControl>
-
-                          <FormControl height="66px">
-                            <FormLabel
-                              display="flex"
-                              pb={1}
-                              alignItems="center"
-                              gap={1}
-                              justifyContent="space-between"
-                              m="0"
-                            >
-                              <span>{t("hostsDialog.security")}</span>
-
-                              <Popover isLazy placement="right">
-                                <PopoverTrigger>
-                                  <InfoIcon />
-                                </PopoverTrigger>
-                                <Portal>
-                                  <PopoverContent p={2}>
-                                    <PopoverArrow />
-                                    <PopoverCloseButton />
-                                    <Text fontSize="xs" pr={5}>
-                                      {t("hostsDialog.security.info")}
-                                    </Text>
-                                  </PopoverContent>
-                                </Portal>
-                              </Popover>
-                            </FormLabel>
-                            <Select
-                              size="sm"
-                              {...form.register(
-                                hostKey + "." + index + ".security"
-                              )}
-                            >
-                              {proxyHostSecurity.map((s) => {
-                                return (
-                                  <option key={s.value} value={s.value}>
-                                    {s.title}
-                                  </option>
-                                );
-                              })}
-                            </Select>
-                          </FormControl>
-
-                          <FormControl height="66px">
-                            <FormLabel
-                              display="flex"
-                              pb={1}
-                              alignItems="center"
-                              gap={1}
-                              justifyContent="space-between"
-                              m="0"
-                            >
-                              <span>{t("hostsDialog.alpn")}</span>
-                            </FormLabel>
-                            <Select
-                              size="sm"
-                              {...form.register(
-                                hostKey + "." + index + ".alpn"
-                              )}
-                            >
-                              {proxyALPN.map((s) => {
-                                return (
-                                  <option key={s.value} value={s.value}>
-                                    {s.title}
-                                  </option>
-                                );
-                              })}
-                            </Select>
-                          </FormControl>
-
-                          <FormControl height="66px">
-                            <FormLabel
-                              display="flex"
-                              pb={1}
-                              alignItems="center"
-                              gap={1}
-                              justifyContent="space-between"
-                              m="0"
-                            >
-                              <span>{t("hostsDialog.fingerprint")}</span>
-                            </FormLabel>
-                            <Select
-                              size="sm"
-                              {...form.register(
-                                hostKey + "." + index + ".fingerprint"
-                              )}
-                            >
-                              {proxyFingerprint.map((s) => {
-                                return (
-                                  <option key={s.value} value={s.value}>
-                                    {s.title}
-                                  </option>
-                                );
-                              })}
-                            </Select>
-                          </FormControl>
-
-                          <FormControl
-                            isInvalid={
-                              !!(
-                                accordionErrors &&
-                                accordionErrors[index]?.fragment_setting
-                              )
-                            }
-                          >
-                            <FormLabel
-                              display="flex"
-                              pb={1}
-                              alignItems="center"
-                              gap={1}
-                              justifyContent="space-between"
-                              m="0"
-                            >
-                              <span>{t("hostsDialog.fragment")}</span>
-
-                              <Popover isLazy placement="right">
-                                <PopoverTrigger>
-                                  <InfoIcon />
-                                </PopoverTrigger>
-                                <Portal>
-                                  <PopoverContent p={2}>
-                                    <PopoverArrow />
-                                    <PopoverCloseButton />
-                                    <Text fontSize="xs" pr={5}>
-                                      {t("hostsDialog.fragment.info")}
-                                    </Text>
-                                    <Text fontSize="xs" pr={5} pt={2} pb={1}>
-                                      {t("hostsDialog.fragment.info.examples")}
-                                    </Text>
-                                    <Text fontSize="xs" pr={5}>
-                                      100-200,10-20,tlshello
-                                    </Text>
-                                    <Text fontSize="xs" pr={5}>
-                                      100-200,10-20,1-3
-                                    </Text>
-                                    <Text fontSize="xs" pr={5} pt="3">
-                                      {t("hostsDialog.fragment.info.attention")}
-                                    </Text>
-                                  </PopoverContent>
-                                </Portal>
-                              </Popover>
-                            </FormLabel>
-                            <Input
-                              size="sm"
-                              borderRadius="4px"
-                              placeholder="Fragment settings by pattern"
-                              {...form.register(
-                                hostKey + "." + index + ".fragment_setting"
-                              )}
-                            />
-                            {accordionErrors &&
-                              accordionErrors[index]?.fragment_setting && (
-                                <Error>
-                                  {
-                                    accordionErrors[index]?.fragment_setting
-                                      ?.message
-                                  }
-                                </Error>
-                              )}
-                          </FormControl>
-
-                          <FormControl
-                            isInvalid={
-                              !!(
-                                accordionErrors &&
-                                accordionErrors[index]?.noise_setting
-                              )
-                            }
-                          >
-                            <FormLabel
-                              display="flex"
-                              pb={1}
-                              alignItems="center"
-                              gap={1}
-                              justifyContent="space-between"
-                              m="0"
-                            >
-                              <span>{t("hostsDialog.noise")}</span>
-
-                              <Popover isLazy placement="right">
-                                <PopoverTrigger>
-                                  <InfoIcon />
-                                </PopoverTrigger>
-                                <Portal>
-                                  <PopoverContent p={2}>
-                                    <PopoverArrow />
-                                    <PopoverCloseButton />
-                                    <Text fontSize="xs" pr={5}>
-                                      {t("hostsDialog.noise.info")}
-                                    </Text>
-                                    <Text fontSize="xs" pr={5} pt={2} pb={1}>
-                                      {t("hostsDialog.noise.info.examples")}
-                                    </Text>
-                                    <Text fontSize="xs" pr={5}>
-                                      rand:10-20,10-20
-                                    </Text>
-                                    <Text fontSize="xs" pr={5}>
-                                      rand:10-20,10-20&base64:7nQBAAABAAAAAAAABnQtcmluZwZtc2VkZ2UDbmV0AAABAAE=,10-25
-                                    </Text>
-                                    <Text fontSize="xs" pr={5} pt="3">
-                                      {t("hostsDialog.noise.info.attention")}
-                                    </Text>
-                                  </PopoverContent>
-                                </Portal>
-                              </Popover>
-                            </FormLabel>
-                            <Input
-                              size="sm"
-                              borderRadius="4px"
-                              placeholder="Noise settings by pattern"
-                              {...form.register(
-                                hostKey + "." + index + ".noise_setting"
-                              )}
-                            />
-                            {accordionErrors &&
-                              accordionErrors[index]?.noise_setting && (
-                                <Error>
-                                  {
-                                    accordionErrors[index]?.noise_setting
-                                      ?.message
-                                  }
-                                </Error>
-                              )}
-                          </FormControl>
-
-
-                          <FormControl
-                            isInvalid={
-                              !!(
-                                accordionErrors &&
-                                accordionErrors[index]?.use_sni_as_host
-                              )
-                            }
-                          >
-                            <Checkbox
-                              {...form.register(
-                                hostKey + "." + index + ".use_sni_as_host"
-                              )}
-                            >
-                              <FormLabel>
-                                {t("hostsDialog.useSniAsHost")}
-                              </FormLabel>
-                            </Checkbox>
-                            {accordionErrors &&
-                              accordionErrors[index]?.use_sni_as_host && (
-                                <Error>
-                                  {
-                                    accordionErrors[index]?.use_sni_as_host
-                                      ?.message
-                                  }
-                                </Error>
-                              )}
-                        </FormControl>
-                         <FormControl
-                            isInvalid={
-                              !!(
-                                accordionErrors &&
-                                accordionErrors[index]?.allowinsecure
-                              )
-                            }
-                          >
-                            <Checkbox
-                              {...form.register(
-                                hostKey + "." + index + ".allowinsecure"
-                              )}
-                              name={hostKey + "." + index + ".allowinsecure"}
-                            >
-                              <FormLabel>
-                                {t("hostsDialog.allowinsecure")}
-                              </FormLabel>
-                              {accordionErrors &&
-                                accordionErrors[index]?.allowinsecure && (
-                                  <Error>
-                                    {
-                                      accordionErrors[index]?.allowinsecure
-                                        ?.message
-                                    }
-                                  </Error>
-                                )}
-                            </Checkbox>
-                          </FormControl>
-                          <FormControl
-                            isInvalid={
-                              !!(
-                                accordionErrors &&
-                                accordionErrors[index]?.mux_enable
-                              )
-                            }
-                          >
-                            <Checkbox
-                              {...form.register(
-                                hostKey + "." + index + ".mux_enable"
-                              )}
-                            >
-                              <FormLabel>
-                                {t("hostsDialog.muxEnable")}
-                              </FormLabel>
-                            </Checkbox>
-                            {accordionErrors &&
-                              accordionErrors[index]?.mux_enable && (
-                                <Error>
-                                  {accordionErrors[index]?.mux_enable?.message}
-                                </Error>
-                              )}
-                          </FormControl>
-                          <FormControl
-                            isInvalid={
-                              !!(
-                                accordionErrors &&
-                                accordionErrors[index]?.random_user_agent
-                              )
-                            }
-                          >
-                            <Checkbox
-                              {...form.register(
-                                hostKey + "." + index + ".random_user_agent"
-                              )}
-                            >
-                              <FormLabel>
-                                {t("hostsDialog.randomUserAgent")}
-                              </FormLabel>
-                            </Checkbox>
-                            {accordionErrors &&
-                              accordionErrors[index]?.random_user_agent && (
-                                <Error>
-                                  {
-                                    accordionErrors[index]?.random_user_agent
-                                      ?.message
-                                  }
-                                </Error>
-                              )}
-                          </FormControl>
-                        </VStack>
-                      </AccordionPanel>
-                    </AccordionItem>
-                  </Accordion>
-                </VStack>
-              </motion.div>
-            );
-          })}
-          <Button
-            variant="outline"
-            w="full"
-            size="sm"
-            color=""
-            fontWeight={"normal"}
-            onClick={handleAddHost}
+      {open && (
+        <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
+          {hosts.map((host, index) => (
+            <HostRow
+              key={host.id}
+              hostKey={hostKey}
+              index={index}
+              total={hosts.length}
+              onDuplicate={() => insert(index + 1, form.getValues(`${hostKey}.${index}` as never))}
+              onRemove={() => remove(index)}
+              onMove={(direction) => {
+                if (direction === "up" && index > 0) move(index, index - 1);
+                if (direction === "down" && index < hosts.length - 1) move(index, index + 1);
+              }}
+            />
+          ))}
+          <button
+            type="button"
+            className="xn-btn xn-btn-secondary"
+            style={{ width: "100%", fontSize: 12.5 }}
+            onClick={() => append(EMPTY_HOST as never)}
           >
+            <Plus size={15} strokeWidth={1.5} />
             {t("hostsDialog.addHost")}
-          </Button>
-        </VStack>
-      </AccordionPanel>
-    </AccordionItem>
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 
 export const HostsDialog: FC = () => {
-  const { isEditingHosts, onEditingHosts, refetchUsers, inbounds } =
-    useDashboard();
+  const { isEditingHosts, onEditingHosts, refetchUsers } = useDashboard();
   const { isLoading, hosts, fetchHosts, isPostLoading, setHosts } = useHosts();
   const toast = useToast();
   const { t } = useTranslation();
-  const [openAccordions, setOpenAccordions] = useState<any>({});
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+  const form = useForm({ resolver: zodResolver(hostsSchema) });
 
   useEffect(() => {
     if (isEditingHosts) fetchHosts();
   }, [isEditingHosts]);
-  const form = useForm<z.infer<typeof hostsSchema>>({
-    resolver: zodResolver(hostsSchema),
-  });
 
   useEffect(() => {
-    if (hosts && isEditingHosts) {
-      form.reset(hosts);
-    }
+    if (hosts && isEditingHosts) form.reset(hosts);
   }, [hosts]);
 
+  if (!isEditingHosts) return null;
+
   const onClose = () => {
-    setOpenAccordions({});
+    setOpenSections({});
     onEditingHosts(false);
   };
-  const handleFormSubmit = (hosts: z.infer<typeof hostsSchema>) => {
-    setHosts(hosts)
+
+  const onSubmit = (values: HostsForm) => {
+    setHosts(values)
       .then(() => {
         toast({
           title: t("hostsDialog.savedSuccess"),
@@ -1236,7 +400,8 @@ export const HostsDialog: FC = () => {
         refetchUsers();
       })
       .catch((err) => {
-        if (err?.response?.status === 409 || err?.response?.status === 400) {
+        const status = err?.response?.status;
+        if (status === 409 || status === 400) {
           toast({
             title: err.response?._data?.detail,
             status: "error",
@@ -1245,10 +410,10 @@ export const HostsDialog: FC = () => {
             duration: 3000,
           });
         }
-        if (err?.response?.status === 422) {
+        if (status === 422) {
           Object.keys(err.response._data.detail).forEach((key) => {
             toast({
-              title: err.response._data.detail[key] + " (" + key + ")",
+              title: `${err.response._data.detail[key]} (${key})`,
               status: "error",
               isClosable: true,
               position: "top",
@@ -1259,75 +424,77 @@ export const HostsDialog: FC = () => {
       });
   };
 
-  const toggleAccordion = (index: number) => {
-    if (openAccordions[String(index)]) {
-      delete openAccordions[String(index)];
-    } else openAccordions[String(index)] = {};
-
-    setOpenAccordions({ ...openAccordions });
-  };
+  const inboundTags = Object.keys(hosts || {});
 
   return (
-    <Modal isOpen={isEditingHosts} onClose={onClose}>
-      <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
-      <ModalContent mx="3" w="fit-content" maxW="3xl">
-        <ModalHeader pt={6}>
-          <Icon color="primary">
-            <ModalIcon color="white" />
-          </Icon>
-        </ModalHeader>
-        <ModalCloseButton mt={3} />
-        <ModalBody w="440px" pb={3} pt={3}>
-          <FormProvider {...form}>
-            <form onSubmit={form.handleSubmit(handleFormSubmit)}>
-              <Text mb={3} opacity={0.8} fontSize="sm">
-                {t("hostsDialog.title")}
-              </Text>
-              {isLoading && t("hostsDialog.loading")}
-              {!isLoading &&
-                hosts &&
-                (Object.keys(hosts).length > 0 ? (
-                  <Accordion
-                    w="full"
-                    allowToggle
-                    allowMultiple
-                    index={Object.keys(openAccordions).map((i) => parseInt(i))}
-                  >
-                    <VStack w="full">
-                      {Object.keys(hosts).map((hostKey, index) => {
-                        return (
-                          <AccordionInbound
-                            toggleAccordion={() => toggleAccordion(index)}
-                            isOpen={openAccordions[String(index)]}
-                            key={hostKey}
-                            hostKey={hostKey}
-                          />
-                        );
-                      })}
-                    </VStack>
-                  </Accordion>
-                ) : (
-                  "No inbound found. Please check your Xray config file."
-                ))}
+    <div className="xn-dialog-backdrop" onClick={onClose}>
+      <div
+        className="xn-dialog"
+        role="dialog"
+        aria-modal="true"
+        style={{ width: "min(760px, 100%)", gap: 16, overflow: "hidden" }}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, marginRight: "auto" }}>
+            <h3 className="xn-heading" style={{ fontSize: 22, lineHeight: 1.1 }}>
+              {t("header.hostSettings")}
+            </h3>
+            <span style={{ fontSize: 12.5, lineHeight: 1.5, color: "var(--xn-neutral-700)" }}>
+              {t("hostsDialog.title")}
+            </span>
+          </div>
+          <button className="xn-btn xn-btn-ghost" onClick={onClose} aria-label={t("close")} style={{ fontSize: 16 }}>
+            ✕
+          </button>
+        </div>
 
-              <HStack justifyContent="flex-end" py={2}>
-                <Button
-                  variant="solid"
-                  mt="2"
-                  type="submit"
-                  colorScheme="primary"
-                  size="sm"
-                  px={5}
-                  isLoading={isPostLoading}
-                  disabled={isPostLoading}
-                >
-                  {t("hostsDialog.apply")}
-                </Button>
-              </HStack>
-            </form>
-          </FormProvider>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+        <VariableHelp />
+
+        <FormProvider {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            style={{ display: "flex", flexDirection: "column", gap: 16, minHeight: 0, flex: 1 }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+                overflowY: "auto",
+                minHeight: 0,
+                flex: 1,
+                paddingRight: 4,
+              }}
+            >
+              {isLoading && (
+                <span style={{ fontSize: 12.5, color: "var(--xn-neutral-600)" }}>{t("hostsDialog.loading")}</span>
+              )}
+              {!isLoading && inboundTags.length === 0 && (
+                <span style={{ fontSize: 12.5, color: "var(--xn-neutral-600)" }}>{t("hostsDialog.noInbounds")}</span>
+              )}
+              {!isLoading &&
+                inboundTags.map((hostKey) => (
+                  <InboundSection
+                    key={hostKey}
+                    hostKey={hostKey}
+                    open={!!openSections[hostKey]}
+                    onToggle={() => setOpenSections((current) => ({ ...current, [hostKey]: !current[hostKey] }))}
+                  />
+                ))}
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+              <button type="button" className="xn-btn xn-btn-secondary" onClick={onClose}>
+                {t("cancel")}
+              </button>
+              <button type="submit" className="xn-btn xn-btn-primary" disabled={isPostLoading}>
+                {isPostLoading ? t("xenith.working") : t("hostsDialog.apply")}
+              </button>
+            </div>
+          </form>
+        </FormProvider>
+      </div>
+    </div>
   );
 };

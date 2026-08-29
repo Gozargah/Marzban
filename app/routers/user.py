@@ -11,15 +11,25 @@ from app.models.admin import Admin
 from app.models.user import (
     UserCreate,
     UserModify,
+    UserDevicesResponse,
     UserResponse,
     UsersResponse,
     UserStatus,
     UsersUsagesResponse,
     UserUsagesResponse,
 )
-from app.utils import report, responses
+from app.utils import hwid, report, responses
+from config import SUDOERS
 
 router = APIRouter(tags=["User"], prefix="/api", responses={401: responses._401})
+
+# One page of users. The dashboard sends a size of its own, so these are for
+# API clients that send none: that used to mean every user on the panel, each
+# with their proxies and inbounds joined in, which is enough to stall the
+# single worker on a large installation. `total` in the response is what a
+# client pages against.
+USERS_DEFAULT_LIMIT = 100
+USERS_MAX_LIMIT = 1000
 
 
 @router.post("/user", response_model=UserResponse, responses={400: responses._400, 409: responses._409})
@@ -51,7 +61,7 @@ def add_user(
         if not xray.config.inbounds_by_protocol.get(proxy_type):
             raise HTTPException(
                 status_code=400,
-                detail=f"Protocol {proxy_type} is disabled on your server",
+                detail=f"Protocol {proxy_type.value} is disabled on your server",
             )
 
     try:
@@ -105,7 +115,7 @@ def modify_user(
         if not xray.config.inbounds_by_protocol.get(proxy_type):
             raise HTTPException(
                 status_code=400,
-                detail=f"Protocol {proxy_type} is disabled on your server",
+                detail=f"Protocol {proxy_type.value} is disabled on your server",
             )
 
     old_status = dbuser.status
@@ -149,8 +159,10 @@ def remove_user(
     bg.add_task(xray.operations.remove_user, dbuser=dbuser)
 
     bg.add_task(
-        report.user_deleted, username=dbuser.username, user_admin=Admin.model_validate(dbuser.admin), by=admin
-    )
+            report.user_deleted, username=dbuser.username,
+            user_admin=Admin.model_validate(dbuser.admin) if dbuser.admin else None,
+            by=admin
+        )
 
     logger.info(f'User "{dbuser.username}" deleted')
     return {"detail": "User successfully deleted"}
@@ -201,8 +213,8 @@ def revoke_user_subscription(
 
 @router.get("/users", response_model=UsersResponse, responses={400: responses._400, 403: responses._403, 404: responses._404})
 def get_users(
-    offset: int = None,
-    limit: int = None,
+    offset: int = Query(0, ge=0),
+    limit: int = Query(USERS_DEFAULT_LIMIT, ge=1, le=USERS_MAX_LIMIT),
     username: List[str] = Query(None),
     search: Union[str, None] = None,
     owner: Union[List[str], None] = Query(None, alias="admin"),
@@ -211,7 +223,11 @@ def get_users(
     db: Session = Depends(get_db),
     admin: Admin = Depends(Admin.get_current),
 ):
-    """Get all users"""
+    """Get a page of users: 100 per page by default, 1000 at most.
+
+    The response carries `total`, the number of users matching the filters
+    regardless of the page, so a client can walk the list with `offset`.
+    """
     if sort is not None:
         opts = sort.strip(",").split(",")
         sort = []
@@ -268,6 +284,79 @@ def get_user_usage(
     return {"usages": usages, "username": dbuser.username}
 
 
+def _devices_response(db: Session, dbuser) -> dict:
+    """A user's devices plus the limit they are counted against.
+
+    The limit is resolved rather than echoed back: the column is null for
+    anyone who has never been given one of their own, and a caller should not
+    have to know about the panel default to make sense of that.
+    """
+    devices = crud.get_user_devices(db, dbuser)
+    return {
+        "devices": devices,
+        "total": len(devices),
+        "limit": hwid.effective_limit(dbuser),
+        "enforced": hwid.is_enforced(dbuser),
+    }
+
+
+@router.get(
+    "/user/{username}/devices",
+    response_model=UserDevicesResponse,
+    responses={403: responses._403, 404: responses._404},
+)
+def get_user_devices(
+    dbuser: UserResponse = Depends(get_validated_user),
+    db: Session = Depends(get_db),
+):
+    """List the devices that have fetched this user's subscription."""
+    return _devices_response(db, dbuser)
+
+
+@router.delete(
+    "/user/{username}/devices/{device_id}",
+    response_model=UserDevicesResponse,
+    responses={403: responses._403, 404: responses._404},
+)
+def remove_user_device(
+    device_id: int,
+    dbuser: UserResponse = Depends(get_validated_user),
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.get_current),
+):
+    """Forget one device, freeing its slot.
+
+    The device is not cut off: it keeps whatever configuration it already
+    downloaded until the subscription is revoked. What this frees is the
+    right to fetch a new one.
+    """
+    device = crud.get_user_device(db, dbuser, device_id)
+    if not device:
+        raise HTTPException(status_code=404, detail="Device not found")
+
+    crud.remove_user_device(db, device)
+    logger.info(f'Device {device_id} removed from user "{dbuser.username}"')
+
+    return _devices_response(db, dbuser)
+
+
+@router.delete(
+    "/user/{username}/devices",
+    response_model=UserDevicesResponse,
+    responses={403: responses._403, 404: responses._404},
+)
+def reset_user_devices(
+    dbuser: UserResponse = Depends(get_validated_user),
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.get_current),
+):
+    """Forget every device, letting the next ones to ask take the slots."""
+    removed = crud.reset_user_devices(db, dbuser)
+    logger.info(f'{removed} device(s) removed from user "{dbuser.username}"')
+
+    return _devices_response(db, dbuser)
+
+
 @router.post("/user/{username}/active-next", response_model=UserResponse, responses={403: responses._403, 404: responses._404})
 def active_next_plan(
     bg: BackgroundTasks,
@@ -275,13 +364,14 @@ def active_next_plan(
     dbuser: UserResponse = Depends(get_validated_user),
 ):
     """Reset user by next plan"""
-    dbuser = crud.reset_user_by_next(db=db, dbuser=dbuser)
 
     if (dbuser is None or dbuser.next_plan is None):
         raise HTTPException(
             status_code=404,
             detail=f"User doesn't have next plan",
         )
+
+    dbuser = crud.reset_user_by_next(db=db, dbuser=dbuser)
 
     if dbuser.status in [UserStatus.active, UserStatus.on_hold]:
         bg.add_task(xray.operations.add_user, dbuser=dbuser)

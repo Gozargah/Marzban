@@ -20,6 +20,7 @@ from app.models.node import (
 )
 from app.models.proxy import ProxyHost
 from app.utils import responses
+from app.utils.auth_cookie import token_from_websocket
 
 router = APIRouter(
     tags=["Node"], prefix="/api", responses={401: responses._401, 403: responses._403}
@@ -81,9 +82,7 @@ def get_node(
 
 @router.websocket("/node/{node_id}/logs")
 async def node_logs(node_id: int, websocket: WebSocket, db: Session = Depends(get_db)):
-    token = websocket.query_params.get("token") or websocket.headers.get(
-        "Authorization", ""
-    ).removeprefix("Bearer ")
+    token = token_from_websocket(websocket)
     admin = Admin.get_admin(token, db)
     if not admin:
         return await websocket.close(reason="Unauthorized", code=4401)
@@ -103,9 +102,12 @@ async def node_logs(node_id: int, websocket: WebSocket, db: Session = Depends(ge
             interval = float(interval)
         except ValueError:
             return await websocket.close(reason="Invalid interval value", code=4400)
-        if interval > 10:
+        # Zero keeps its old meaning of "send each line as it arrives"; a
+        # negative one used to pass this check and then behave like zero,
+        # while the message said otherwise. Same rule as /api/core/logs.
+        if interval < 0 or interval > 10:
             return await websocket.close(
-                reason="Interval must be more than 0 and at most 10 seconds", code=4400
+                reason="Interval must be between 0 and 10 seconds", code=4400
             )
 
     await websocket.accept()
@@ -182,6 +184,27 @@ def reconnect_node(
     """Trigger a reconnection for the specified node. Only accessible to sudo admins."""
     bg.add_task(xray.operations.connect_node, node_id=dbnode.id)
     return {"detail": "Reconnection task scheduled"}
+
+
+@router.post("/node/{node_id}/reset-certificate")
+def reset_node_certificate(
+    bg: BackgroundTasks,
+    dbnode: NodeResponse = Depends(get_node),
+    db: Session = Depends(get_db),
+    _: Admin = Depends(Admin.check_sudo_admin),
+):
+    """Forget the certificate pinned for a node and reconnect.
+
+    Needed after a node is reinstalled and generates a fresh certificate; the
+    next connection pins whatever the node then presents, so only do this when
+    the change is expected.
+    """
+    crud.set_node_server_cert(db, dbnode, None)
+    xray.operations.remove_node(dbnode.id)
+
+    logger.info(f'Pinned certificate of node "{dbnode.name}" reset')
+    bg.add_task(xray.operations.connect_node, node_id=dbnode.id)
+    return {"detail": "Certificate reset, reconnection task scheduled"}
 
 
 @router.delete("/node/{node_id}")

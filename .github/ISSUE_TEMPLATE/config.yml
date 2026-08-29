@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/bugbusta/Xenith/security/advisories/new
+    about: Report privately instead of opening a public issue. See SECURITY.md.
+  - name: Installing and running the panel
+    url: https://github.com/bugbusta/Xenith/blob/main/docs/INSTALL.md
+    about: Installation, reverse proxies, upgrades, backups and open file limits.
+  - name: Xray-core itself
+    url: https://github.com/XTLS/Xray-core/issues
+    about: Protocol and core behaviour belong upstream, not here.

@@ -1,3 +1,6 @@
+from datetime import datetime
+from typing import List
+
 from pydantic import BaseModel
 
 
@@ -18,3 +21,16 @@ class SystemStats(BaseModel):
     outgoing_bandwidth: int
     incoming_bandwidth_speed: int
     outgoing_bandwidth_speed: int
+
+
+class UsagePoint(BaseModel):
+    """One bucket of the traffic series."""
+    time: datetime
+    uplink: int
+    downlink: int
+
+
+class UsageSeries(BaseModel):
+    period: str
+    granularity: str  # "hour" or "day"
+    points: List[UsagePoint]

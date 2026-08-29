@@ -66,7 +66,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       clearable = false,
       ...props
     },
-    ref
+    ref,
   ) => {
     const clear = () => {
       if (onChange)
@@ -89,8 +89,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               return isNaN(parseFloat(String(value)))
                 ? value
                 : Number(parseFloat(String(value)).toFixed(5)) === 0
-                ? value
-                : Number(parseFloat(String(value)).toFixed(5));
+                  ? value
+                  : Number(parseFloat(String(value)).toFixed(5));
             },
             min: 0,
             step,
@@ -108,6 +108,45 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             size,
           }
         : {};
+    const component = (
+      // @ts-ignore
+      <Component
+        name={name}
+        ref={ref}
+        step={step}
+        className={classNames(className)}
+        type={type}
+        placeholder={placeholder}
+        onChange={onChange}
+        onBlur={onBlur}
+        value={value}
+        onClick={onClick}
+        disabled={disabled}
+        flexGrow={1}
+        _focusVisible={{
+          outline: "none",
+          borderTopColor: "transparent",
+          borderRightColor: "transparent",
+          borderBottomColor: "transparent",
+        }}
+        _disabled={{
+          cursor: "not-allowed",
+        }}
+        {...props}
+        roundedLeft={startAdornment ? "0" : "md"}
+        roundedRight={endAdornment ? "0" : "md"}
+      />
+    );
+    {
+      type == "number" && (
+        <>
+          <NumberInputStepper>
+            <NumberIncrementStepper />
+            <NumberDecrementStepper />
+          </NumberInputStepper>
+        </>
+      );
+    }
     return (
       <FormControl isInvalid={!!error}>
         {label && <FormLabel>{label}</FormLabel>}
@@ -123,49 +162,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           _dark={{ bg: disabled ? "gray.600" : "transparent" }}
         >
           {startAdornment && <InputLeftAddon>{startAdornment}</InputLeftAddon>}
-          <Wrapper {...wrapperProps}>
-            {/* @ts-ignore */}
-            <Component
-              name={name}
-              ref={ref}
-              step={step}
-              className={classNames(className)}
-              type={type}
-              placeholder={placeholder}
-              onChange={onChange}
-              onBlur={onBlur}
-              value={value}
-              onClick={onClick}
-              disabled={disabled}
-              flexGrow={1}
-              _focusVisible={{
-                outline: "none",
-                borderTopColor: "transparent",
-                borderRightColor: "transparent",
-                borderBottomColor: "transparent",
-              }}
-              _disabled={{
-                cursor: "not-allowed",
-              }}
-              {...props}
-              roundedLeft={startAdornment ? "0" : "md"}
-              roundedRight={endAdornment ? "0" : "md"}
-            />
-            {type == "number" && (
-              <>
-                <NumberInputStepper>
-                  <NumberIncrementStepper />
-                  <NumberDecrementStepper />
-                </NumberInputStepper>
-              </>
-            )}
-          </Wrapper>
+          {type == "number" ? <Wrapper {...wrapperProps}>{component}</Wrapper> : component}
           {endAdornment && (
-            <InputRightAddon
-              borderLeftRadius={0}
-              borderRightRadius="6px"
-              bg="transparent"
-            >
+            <InputRightAddon borderLeftRadius={0} borderRightRadius="6px" bg="transparent">
               {endAdornment}
             </InputRightAddon>
           )}
@@ -184,5 +183,5 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {!!error && <FormErrorMessage>{error}</FormErrorMessage>}
       </FormControl>
     );
-  }
+  },
 );

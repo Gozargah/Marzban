@@ -1,0 +1,29 @@
+# Dependency updates. CI already fails on a known advisory in requirements.txt
+# (the `audit` job in test.yml), which says a problem exists but does nothing
+# about it; these open the pull request that fixes it.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      # One pull request for the routine bumps, so a batch of patch releases
+      # does not arrive as eight separate reviews.
+      python-minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /app/dashboard
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      dashboard-minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

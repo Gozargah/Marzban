@@ -110,7 +110,7 @@ def create_admin(
     """
     Creates an admin
 
-    Password can also be set using the `MARZBAN_ADMIN_PASSWORD` environment variable for non-interactive usages.
+    Password can also be set using the `XENITH_ADMIN_PASSWORD` environment variable for non-interactive usages.
     """
     with GetDB() as db:
         try:

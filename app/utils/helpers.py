@@ -1,6 +1,16 @@
 import json
 from datetime import datetime as dt
+from typing import Tuple
 from uuid import UUID
+
+
+def parse_version(version_str: str) -> Tuple[int, ...]:
+    """Parse a dotted numeric version string into a comparable tuple.
+
+    Used to compare client versions taken from the User-Agent header, which the
+    matching regexes constrain to digits and dots.
+    """
+    return tuple(int(part) for part in version_str.split('.'))
 
 
 def calculate_usage_percent(used_traffic: int, data_limit: int) -> float:
@@ -20,4 +30,4 @@ class UUIDEncoder(json.JSONEncoder):
         if isinstance(obj, UUID):
             # if the obj is uuid, we simply return the value of uuid
             return str(obj)
-        return super().default(self, obj)
+        return super().default(obj)

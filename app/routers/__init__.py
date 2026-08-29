@@ -1,7 +1,10 @@
 from fastapi import APIRouter
 from . import (
     admin, 
+    certificate, 
     core, 
+    network, 
+    nginx, 
     node, 
     subscription, 
     system, 
@@ -14,7 +17,10 @@ api_router = APIRouter()
 
 routers = [
     admin.router,
+    certificate.router,
     core.router,
+    network.router,
+    nginx.router,
     node.router,
     subscription.router,
     system.router,

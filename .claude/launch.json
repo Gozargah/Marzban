@@ -1,0 +1,33 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dashboard",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "app/dashboard",
+        "dev"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "backend",
+      "runtimeExecutable": ".venv/bin/python",
+      "runtimeArgs": [
+        "main.py"
+      ],
+      "port": 8000
+    },
+    {
+      "name": "preview",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-c",
+        "UVICORN_PORT=8001 DEBUG=false .venv/bin/python main.py"
+      ],
+      "port": 8001,
+      "url": "http://localhost:8001"
+    }
+  ]
+}

@@ -7,6 +7,7 @@ from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
 from sqlalchemy import and_, delete, func, or_
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Query, Session, joinedload
 from sqlalchemy.sql.functions import coalesce
 
@@ -15,6 +16,7 @@ from app.db.models import (
     TLS,
     Admin,
     AdminUsageLogs,
+    NetworkProfile,
     NextPlan,
     Node,
     NodeUsage,
@@ -26,10 +28,12 @@ from app.db.models import (
     ProxyTypes,
     System,
     User,
+    UserDevice,
     UserTemplate,
     UserUsageResetLogs,
 )
 from app.models.admin import AdminCreate, AdminModify, AdminPartialModify
+from app.models.network import NetworkProfileCreate, NetworkProfileModify
 from app.models.node import NodeCreate, NodeModify, NodeStatus, NodeUsageResponse
 from app.models.proxy import ProxyHost as ProxyHostModify
 from app.models.user import (
@@ -390,6 +394,7 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None) -> User:
         on_hold_expire_duration=(user.on_hold_expire_duration or None),
         on_hold_timeout=(user.on_hold_timeout or None),
         auto_delete_in_days=user.auto_delete_in_days,
+        hwid_device_limit=user.hwid_device_limit,
         next_plan=NextPlan(
             data_limit=user.next_plan.data_limit,
             expire=user.next_plan.expire,
@@ -473,7 +478,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
 
     if modify.data_limit is not None:
         dbuser.data_limit = (modify.data_limit or None)
-        if dbuser.status not in (UserStatus.expired, UserStatus.disabled):
+        if dbuser.status not in [UserStatus.expired, UserStatus.disabled]:
             if not dbuser.data_limit or dbuser.used_traffic < dbuser.data_limit:
                 if dbuser.status != UserStatus.on_hold:
                     dbuser.status = UserStatus.active
@@ -490,7 +495,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
 
     if modify.expire is not None:
         dbuser.expire = (modify.expire or None)
-        if dbuser.status in (UserStatus.active, UserStatus.expired):
+        if dbuser.status in [UserStatus.active, UserStatus.expired]:
             if not dbuser.expire or dbuser.expire > datetime.utcnow().timestamp():
                 dbuser.status = UserStatus.active
                 for days_left in sorted(NOTIFY_DAYS_LEFT):
@@ -514,6 +519,12 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
 
     if modify.on_hold_expire_duration is not None:
         dbuser.on_hold_expire_duration = modify.on_hold_expire_duration
+
+    # Zero is meaningful here — it turns the limit off for this user whatever
+    # the global setting is — so `is not None` rather than a truth test, the
+    # way every other optional field on this model is handled.
+    if modify.hwid_device_limit is not None:
+        dbuser.hwid_device_limit = modify.hwid_device_limit
 
     if modify.next_plan is not None:
         dbuser.next_plan = NextPlan(
@@ -551,7 +562,7 @@ def reset_user_data_usage(db: Session, dbuser: User) -> User:
 
     dbuser.used_traffic = 0
     dbuser.node_usages.clear()
-    if dbuser.status not in (UserStatus.expired or UserStatus.disabled):
+    if dbuser.status not in [UserStatus.expired, UserStatus.disabled]:
         dbuser.status = UserStatus.active.value
 
     if dbuser.next_plan:
@@ -590,7 +601,7 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
 
     dbuser.data_limit = dbuser.next_plan.data_limit + \
         (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit - dbuser.used_traffic)
-    dbuser.expire = dbuser.next_plan.expire
+    dbuser.expire = int((timedelta(seconds=dbuser.next_plan.expire) + datetime.utcnow()).timestamp())
 
     dbuser.used_traffic = 0
     db.delete(dbuser.next_plan)
@@ -624,6 +635,107 @@ def revoke_user_sub(db: Session, dbuser: User) -> User:
     db.commit()
     db.refresh(dbuser)
     return dbuser
+
+
+def get_user_devices(db: Session, dbuser: User) -> List[UserDevice]:
+    """The devices known for a user, most recently seen first."""
+    return (
+        db.query(UserDevice)
+        .filter(UserDevice.user_id == dbuser.id)
+        .order_by(UserDevice.last_seen_at.desc(), UserDevice.id.desc())
+        .all()
+    )
+
+
+def get_user_device(db: Session, dbuser: User, device_id: int) -> Optional[UserDevice]:
+    """One device, but only if it belongs to this user.
+
+    Scoped to the user rather than looked up by id alone, so an admin who may
+    only see their own users cannot reach another admin's device by guessing
+    a number.
+    """
+    return (
+        db.query(UserDevice)
+        .filter(and_(UserDevice.id == device_id, UserDevice.user_id == dbuser.id))
+        .one_or_none()
+    )
+
+
+def count_user_devices(db: Session, dbuser: User) -> int:
+    return db.query(func.count(UserDevice.id)).filter(UserDevice.user_id == dbuser.id).scalar() or 0
+
+
+def touch_user_device(db: Session, dbuser: User, identity, user_agent: str = "") -> UserDevice:
+    """Record that a known device was seen again.
+
+    Returns None when the device is not one of this user's.
+    """
+    device = (
+        db.query(UserDevice)
+        .filter(and_(UserDevice.user_id == dbuser.id, UserDevice.hwid == identity.hwid))
+        .one_or_none()
+    )
+    if device is None:
+        return None
+
+    device.last_seen_at = datetime.utcnow()
+    device.user_agent = user_agent or device.user_agent
+    # What the client reports can change under it — an OS upgrade, a new
+    # build — and the newer answer is the more useful one to show.
+    device.os = identity.os or device.os
+    device.os_version = identity.os_version or device.os_version
+    device.model = identity.model or device.model
+    db.commit()
+    db.refresh(device)
+    return device
+
+
+def add_user_device(db: Session, dbuser: User, identity, user_agent: str = "") -> UserDevice:
+    """Register a device against a user.
+
+    Two requests from one new device can arrive at once, both find no row and
+    both try to write one; the unique constraint settles it and the loser
+    reads back the winner's row rather than failing. Without that, a device
+    could be counted twice and eat two slots of its own limit.
+    """
+    device = UserDevice(
+        user_id=dbuser.id,
+        hwid=identity.hwid,
+        os=identity.os,
+        os_version=identity.os_version,
+        model=identity.model,
+        user_agent=user_agent or None,
+    )
+    db.add(device)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        return touch_user_device(db, dbuser, identity, user_agent)
+
+    db.refresh(device)
+    return device
+
+
+def remove_user_device(db: Session, device: UserDevice) -> None:
+    db.delete(device)
+    db.commit()
+
+
+def reset_user_devices(db: Session, dbuser: User) -> int:
+    """Forget every device for a user, returning how many were removed.
+
+    The user keeps working: the devices re-register themselves on their next
+    fetch, up to the limit. This is the way back for somebody who really did
+    change phones more often than their limit allows.
+    """
+    removed = (
+        db.query(UserDevice)
+        .filter(UserDevice.user_id == dbuser.id)
+        .delete(synchronize_session=False)
+    )
+    db.commit()
+    return removed
 
 
 def update_user_sub(db: Session, dbuser: User, user_agent: str) -> User:
@@ -943,6 +1055,12 @@ def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify) -> Ad
     """
     Updates an admin's details.
 
+    The admin is replaced with what was given: `is_sudo` is applied as sent,
+    and an omitted telegram_id or discord_webhook clears the stored one. Use
+    partial_update_admin when the caller means "leave what I did not send".
+    The password is the exception — there is no such thing as clearing it, so
+    None keeps the current one.
+
     Args:
         db (Session): Database session.
         dbadmin (Admin): The admin object to be updated.
@@ -951,15 +1069,12 @@ def update_admin(db: Session, dbadmin: Admin, modified_admin: AdminModify) -> Ad
     Returns:
         Admin: The updated admin object.
     """
-    if modified_admin.is_sudo:
-        dbadmin.is_sudo = modified_admin.is_sudo
+    dbadmin.is_sudo = modified_admin.is_sudo
     if modified_admin.password is not None and dbadmin.hashed_password != modified_admin.hashed_password:
         dbadmin.hashed_password = modified_admin.hashed_password
         dbadmin.password_reset_at = datetime.utcnow()
-    if modified_admin.telegram_id:
-        dbadmin.telegram_id = modified_admin.telegram_id
-    if modified_admin.discord_webhook:
-        dbadmin.discord_webhook = modified_admin.discord_webhook
+    dbadmin.telegram_id = modified_admin.telegram_id
+    dbadmin.discord_webhook = modified_admin.discord_webhook
 
     db.commit()
     db.refresh(dbadmin)
@@ -1254,6 +1369,42 @@ def get_nodes(db: Session,
     return query.all()
 
 
+def get_usage_series(db: Session, start: datetime, end: datetime, by_day: bool = False) -> List[Tuple[datetime, int, int]]:
+    """
+    Aggregates node traffic into a time series.
+
+    Records are stored one per hour per node, so the hourly series only has to
+    sum across nodes; a daily series folds those hours into their day first.
+
+    Args:
+        db (Session): The database session.
+        start (datetime): Start of the period.
+        end (datetime): End of the period.
+        by_day (bool): Bucket per day instead of per hour.
+
+    Returns:
+        List[Tuple[datetime, int, int]]: (bucket start, uplink, downlink), ordered by time.
+    """
+    rows = db.query(
+        NodeUsage.created_at,
+        func.sum(NodeUsage.uplink),
+        func.sum(NodeUsage.downlink),
+    ).filter(
+        and_(NodeUsage.created_at >= start, NodeUsage.created_at <= end)
+    ).group_by(NodeUsage.created_at).all()
+
+    buckets: Dict[datetime, List[int]] = {}
+    for created_at, uplink, downlink in rows:
+        bucket = created_at.replace(minute=0, second=0, microsecond=0)
+        if by_day:
+            bucket = bucket.replace(hour=0)
+        totals = buckets.setdefault(bucket, [0, 0])
+        totals[0] += uplink or 0
+        totals[1] += downlink or 0
+
+    return [(bucket, totals[0], totals[1]) for bucket, totals in sorted(buckets.items())]
+
+
 def get_nodes_usage(db: Session, start: datetime, end: datetime) -> List[NodeUsageResponse]:
     """
     Retrieves usage data for all nodes within a specified time range.
@@ -1307,7 +1458,9 @@ def create_node(db: Session, node: NodeCreate) -> Node:
     dbnode = Node(name=node.name,
                   address=node.address,
                   port=node.port,
-                  api_port=node.api_port)
+                  api_port=node.api_port,
+                  usage_coefficient=node.usage_coefficient,
+                  )
 
     db.add(dbnode)
     db.commit()
@@ -1388,6 +1541,25 @@ def update_node_status(db: Session, dbnode: Node, status: NodeStatus, message: s
     dbnode.message = message
     dbnode.xray_version = version
     dbnode.last_status_change = datetime.utcnow()
+    db.commit()
+    db.refresh(dbnode)
+    return dbnode
+
+
+def set_node_server_cert(db: Session, dbnode: Node, server_cert: Optional[str]) -> Node:
+    """
+    Pins the certificate a node is expected to present, or clears the pin.
+
+    Args:
+        db (Session): The database session.
+        dbnode (Node): The Node object to be updated.
+        server_cert (Optional[str]): PEM of the node's certificate, or None to
+            drop the pin so that the next connection establishes a new one.
+
+    Returns:
+        Node: The updated Node object.
+    """
+    dbnode.server_cert = server_cert
     db.commit()
     db.refresh(dbnode)
     return dbnode
@@ -1498,3 +1670,87 @@ def count_online_users(db: Session, hours: int = 24):
     query = db.query(func.count(User.id)).filter(User.online_at.isnot(
         None), User.online_at >= twenty_four_hours_ago)
     return query.scalar()
+
+
+BUILTIN_PROFILE_NAME = "Xenith baseline"
+BUILTIN_PROFILE_DESCRIPTION = (
+    "The tuning Xenith ships with: BBR, large socket buffers, a conntrack table "
+    "sized for a proxy, and the hardening defaults."
+)
+
+
+def get_network_profiles(db: Session) -> List[NetworkProfile]:
+    """Every saved profile, with the built-in one created on first use.
+
+    Seeding here rather than in a migration keeps the profile in step with the
+    catalogue: a panel upgrade that retunes a default updates the built-in
+    profile too, instead of leaving a stale copy in the database.
+    """
+    from app.utils.sysctl_catalog import BASELINE
+
+    builtin = db.query(NetworkProfile).filter(NetworkProfile.builtin.is_(True)).first()
+    if builtin is None:
+        builtin = NetworkProfile(
+            name=BUILTIN_PROFILE_NAME,
+            description=BUILTIN_PROFILE_DESCRIPTION,
+            settings=dict(BASELINE),
+            builtin=True,
+        )
+        db.add(builtin)
+        db.commit()
+    elif builtin.settings != BASELINE:
+        builtin.settings = dict(BASELINE)
+        builtin.updated_at = datetime.utcnow()
+        db.commit()
+
+    return db.query(NetworkProfile).order_by(
+        NetworkProfile.builtin.desc(), NetworkProfile.name.asc()
+    ).all()
+
+
+def get_network_profile(db: Session, profile_id: int) -> Optional[NetworkProfile]:
+    return db.query(NetworkProfile).filter(NetworkProfile.id == profile_id).first()
+
+
+def get_network_profile_by_name(db: Session, name: str) -> Optional[NetworkProfile]:
+    return db.query(NetworkProfile).filter(NetworkProfile.name == name).first()
+
+
+def create_network_profile(
+    db: Session, profile: NetworkProfileCreate, settings: Dict[str, str]
+) -> NetworkProfile:
+    dbprofile = NetworkProfile(
+        name=profile.name,
+        description=profile.description,
+        settings=settings,
+        builtin=False,
+    )
+    db.add(dbprofile)
+    db.commit()
+    db.refresh(dbprofile)
+    return dbprofile
+
+
+def update_network_profile(
+    db: Session,
+    dbprofile: NetworkProfile,
+    modify: NetworkProfileModify,
+    settings: Optional[Dict[str, str]] = None,
+) -> NetworkProfile:
+    if modify.name is not None:
+        dbprofile.name = modify.name
+    if modify.description is not None:
+        dbprofile.description = modify.description or None
+    if settings is not None:
+        dbprofile.settings = settings
+
+    dbprofile.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(dbprofile)
+    return dbprofile
+
+
+def remove_network_profile(db: Session, dbprofile: NetworkProfile) -> NetworkProfile:
+    db.delete(dbprofile)
+    db.commit()
+    return dbprofile

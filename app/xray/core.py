@@ -17,7 +17,7 @@ class XRayCore:
         self.executable_path = executable_path
         self.assets_path = assets_path
 
-        self.version = self.get_version()
+        self._version = None
         self.process = None
         self.restarting = False
 
@@ -30,6 +30,17 @@ class XRayCore:
         }
 
         atexit.register(lambda: self.stop() if self.started else None)
+
+    @property
+    def version(self):
+        """Version of the Xray executable, looked up on first access.
+
+        Resolved lazily so that importing this module does not shell out to the
+        Xray binary, which need not be present on a development machine.
+        """
+        if self._version is None:
+            self._version = self.get_version()
+        return self._version
 
     def get_version(self):
         cmd = [self.executable_path, "version"]

@@ -1,175 +1,112 @@
-import {
-  Box,
-  chakra,
-  HStack,
-  IconButton,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  Text,
-  VStack,
-} from "@chakra-ui/react";
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  QrCodeIcon,
-} from "@heroicons/react/24/outline";
+import { useToast } from "@chakra-ui/react";
+import { ChevronLeft, ChevronRight, Copy } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import Slider from "react-slick";
-import "slick-carousel/slick/slick-theme.css";
-import "slick-carousel/slick/slick.css";
 import { useDashboard } from "../contexts/DashboardContext";
-import { Icon } from "./Icon";
 
-const QRCode = chakra(QRCodeCanvas);
-const NextIcon = chakra(ChevronRightIcon, {
-  baseStyle: {
-    w: 6,
-    h: 6,
-    color: "gray.600",
-    _dark: {
-      color: "white",
-    },
-  },
-});
-const PrevIcon = chakra(ChevronLeftIcon, {
-  baseStyle: {
-    w: 6,
-    h: 6,
-    color: "gray.600",
-    _dark: {
-      color: "white",
-    },
-  },
-});
-const QRIcon = chakra(QrCodeIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-  },
-});
-
+/** Subscription QR plus one QR per proxy link, stepped through one at a time. */
 export const QRCodeDialog: FC = () => {
   const { QRcodeLinks, setQRCode, setSubLink, subscribeUrl } = useDashboard();
-  const isOpen = QRcodeLinks !== null;
-  const [index, setIndex] = useState(0);
   const { t } = useTranslation();
-  const onClose = () => {
-    setQRCode(null);
-    setSubLink(null);
-  };
+  const toast = useToast();
+  const [index, setIndex] = useState(0);
+
+  const isOpen = QRcodeLinks !== null || !!subscribeUrl;
+  const links = QRcodeLinks || [];
+
+  useEffect(() => {
+    setIndex(0);
+  }, [QRcodeLinks, subscribeUrl]);
+
+  if (!isOpen) return null;
 
   const subscribeQrLink = String(subscribeUrl).startsWith("/")
     ? window.location.origin + subscribeUrl
     : String(subscribeUrl);
 
+  const showingSubscription = !!subscribeUrl;
+  const value = showingSubscription ? subscribeQrLink : links[index];
+
+  const onClose = () => {
+    setQRCode(null);
+    setSubLink(null);
+  };
+
+  const onCopy = () => {
+    navigator.clipboard?.writeText(value);
+    toast({ title: t("usersTable.copied"), status: "success", position: "top", duration: 1500, isClosable: true });
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
-      <ModalContent mx="3" w="fit-content" maxW="3xl">
-        <ModalHeader pt={6}>
-          <Icon color="primary">
-            <QRIcon color="white" />
-          </Icon>
-        </ModalHeader>
-        <ModalCloseButton mt={3} />
-        {QRcodeLinks && (
-          <ModalBody
-            gap={{
-              base: "20px",
-              lg: "50px",
-            }}
-            pr={{
-              lg: "60px",
-            }}
-            px={{
-              base: "50px",
-            }}
-            display="flex"
-            justifyContent="center"
-            flexDirection={{
-              base: "column",
-              lg: "row",
-            }}
-          >
-            {subscribeUrl && (
-              <VStack>
-                <QRCode
-                  mx="auto"
-                  size={300}
-                  p="2"
-                  level={"L"}
-                  includeMargin={false}
-                  value={subscribeQrLink}
-                  bg="white"
-                />
-                <Text display="block" textAlign="center" pb={3} mt={1}>
-                  {t("qrcodeDialog.sublink")}
-                </Text>
-              </VStack>
-            )}
-            <Box w="300px">
-              <Slider
-                centerPadding="0px"
-                centerMode={true}
-                slidesToShow={1}
-                slidesToScroll={1}
-                dots={false}
-                afterChange={setIndex}
-                onInit={() => setIndex(0)}
-                nextArrow={
-                  <IconButton
-                    size="sm"
-                    position="absolute"
-                    display="flex !important"
-                    _before={{ content: '""' }}
-                    aria-label="next"
-                    mr="-4"
-                  >
-                    <NextIcon />
-                  </IconButton>
-                }
-                prevArrow={
-                  <IconButton
-                    size="sm"
-                    position="absolute"
-                    display="flex !important"
-                    _before={{ content: '""' }}
-                    aria-label="prev"
-                    ml="-4"
-                  >
-                    <PrevIcon />
-                  </IconButton>
-                }
+    <div className="xn-dialog-backdrop" onClick={onClose}>
+      <div
+        className="xn-dialog"
+        role="dialog"
+        aria-modal="true"
+        style={{ width: "min(360px, 100%)", alignItems: "stretch" }}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <h3 className="xn-heading" style={{ fontSize: 20, lineHeight: 1.1 }}>
+          {showingSubscription ? t("qrcodeDialog.subscribeLink") : t("qrcodeDialog.title")}
+        </h3>
+
+        <div
+          style={{
+            display: "grid",
+            placeItems: "center",
+            padding: 16,
+            border: "1px solid var(--xn-divider)",
+            background: "var(--xn-bg)",
+          }}
+        >
+          <QRCodeCanvas value={value} size={240} level="L" bgColor="#f2f2f3" fgColor="#1d1f20" />
+        </div>
+
+        <div
+          className="xn-mono"
+          style={{
+            fontSize: 11,
+            color: "var(--xn-neutral-700)",
+            wordBreak: "break-all",
+            maxHeight: 54,
+            overflow: "auto",
+          }}
+        >
+          {value}
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {!showingSubscription && links.length > 1 && (
+            <>
+              <button
+                className="xn-btn xn-btn-secondary"
+                disabled={index === 0}
+                onClick={() => setIndex((current) => Math.max(0, current - 1))}
               >
-                {QRcodeLinks.map((link, i) => {
-                  return (
-                    <HStack key={i}>
-                      <QRCode
-                        mx="auto"
-                        size={300}
-                        p="2"
-                        level={"L"}
-                        includeMargin={false}
-                        value={link}
-                        bg="white"
-                      />
-                    </HStack>
-                  );
-                })}
-              </Slider>
-              <Text display="block" textAlign="center" pb={3} mt={1}>
-                {index + 1} / {QRcodeLinks.length}
-              </Text>
-            </Box>
-          </ModalBody>
-        )}
-      </ModalContent>
-    </Modal>
+                <ChevronLeft size={15} strokeWidth={1.5} />
+              </button>
+              <span className="xn-mono" style={{ fontSize: 11, color: "var(--xn-neutral-600)" }}>
+                {index + 1} / {links.length}
+              </span>
+              <button
+                className="xn-btn xn-btn-secondary"
+                disabled={index >= links.length - 1}
+                onClick={() => setIndex((current) => Math.min(links.length - 1, current + 1))}
+              >
+                <ChevronRight size={15} strokeWidth={1.5} />
+              </button>
+            </>
+          )}
+          <button className="xn-btn xn-btn-secondary" style={{ marginLeft: "auto" }} onClick={onCopy}>
+            <Copy size={15} strokeWidth={1.5} />
+            {t("usersTable.copyLink")}
+          </button>
+          <button className="xn-btn xn-btn-primary" onClick={onClose}>
+            {t("close")}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };

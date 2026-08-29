@@ -1,0 +1,372 @@
+/* Xenith design system — tokens and component classes from the design handoff.
+   Tokens are prefixed with --xn- and classes with .xn- so the system can live
+   alongside the Tailwind/shadcn tokens already defined in index.css, which own
+   the unprefixed --color-* names. Values themselves are unchanged. */
+
+@import "@fontsource/barlow/400.css";
+@import "@fontsource/barlow/500.css";
+@import "@fontsource/barlow/600.css";
+@import "@fontsource/barlow-condensed/500.css";
+@import "@fontsource/barlow-condensed/600.css";
+@import "@fontsource/barlow-condensed/700.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+:root {
+  --xn-bg: #f2f2f3;
+  --xn-surface: #e9e9ea;
+  --xn-text: #1d1f20;
+  --xn-accent: #5980a6;
+  --xn-divider: rgba(29, 31, 32, 0.16);
+
+  --xn-neutral-100: #f5f5f8;
+  --xn-neutral-200: #e7e7ea;
+  --xn-neutral-300: #d4d4d7;
+  --xn-neutral-400: #b7b7ba;
+  --xn-neutral-500: #98989b;
+  --xn-neutral-600: #7a7a7d;
+  --xn-neutral-700: #5d5d60;
+  --xn-neutral-800: #424244;
+  --xn-neutral-900: #2b2b2d;
+
+  --xn-accent-100: #eef6ff;
+  --xn-accent-200: #d6ebff;
+  --xn-accent-300: #b5d9fd;
+  --xn-accent-400: #94bce3;
+  --xn-accent-500: #749dc4;
+  --xn-accent-600: #597ea3;
+  --xn-accent-700: #416180;
+  --xn-accent-800: #2c455d;
+  --xn-accent-900: #1d2d3d;
+
+  --xn-font-heading: "Barlow Condensed", system-ui, sans-serif;
+  --xn-font-body: "Barlow", system-ui, sans-serif;
+  --xn-font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+/* — the frame every panel is drawn in: square, transparent, hairline — */
+.xn-blueprint {
+  position: relative;
+  border: 1px solid var(--xn-divider);
+  border-radius: 0;
+  background: transparent;
+}
+.xn-corner {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  color: color-mix(in srgb, var(--xn-text) 55%, transparent);
+}
+.xn-corner::before,
+.xn-corner::after {
+  content: "";
+  position: absolute;
+  background: currentColor;
+}
+.xn-corner::before { left: 5px; top: 0; width: 1px; height: 100%; }
+.xn-corner::after { top: 5px; left: 0; width: 100%; height: 1px; }
+.xn-corner.tl { top: -6px; left: -6px; }
+.xn-corner.tr { top: -6px; right: -6px; }
+.xn-corner.bl { bottom: -6px; left: -6px; }
+.xn-corner.br { bottom: -6px; right: -6px; }
+
+/* — buttons — */
+.xn-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: var(--xn-font-heading);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.2;
+  color: var(--xn-text);
+  background: transparent;
+  border: 1px solid var(--xn-divider);
+  border-radius: 0;
+  padding: 6.8px 12.24px;
+}
+.xn-btn svg { display: block; }
+.xn-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.xn-btn-primary {
+  background: var(--xn-accent);
+  color: var(--xn-bg);
+  border-color: var(--xn-accent);
+}
+.xn-btn-primary:hover:not(:disabled) { background: var(--xn-accent-600); border-color: var(--xn-accent-600); }
+.xn-btn-primary:active:not(:disabled) { background: var(--xn-accent-700); border-color: var(--xn-accent-700); }
+.xn-btn-secondary:hover:not(:disabled) { background: color-mix(in srgb, var(--xn-text) 7%, transparent); }
+.xn-btn-secondary:active:not(:disabled) { background: color-mix(in srgb, var(--xn-text) 14%, transparent); }
+.xn-btn-ghost { border-color: transparent; color: var(--xn-accent); padding-inline: 3.4px; }
+.xn-btn-ghost:hover:not(:disabled) { background: color-mix(in srgb, var(--xn-accent) 10%, transparent); }
+.xn-btn-danger { border-color: var(--xn-neutral-900); color: var(--xn-neutral-900); }
+.xn-btn-danger:hover:not(:disabled) { background: var(--xn-neutral-900); color: var(--xn-bg); }
+
+/* — fields — */
+.xn-input {
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 10px;
+  font-family: var(--xn-font-body);
+  font-size: 14px;
+  color: var(--xn-text);
+  caret-color: var(--xn-accent);
+  background: var(--xn-surface);
+  border: 1px solid var(--xn-divider);
+  border-radius: 0;
+}
+.xn-input::placeholder { color: var(--xn-neutral-500); }
+.xn-input:hover { border-color: color-mix(in srgb, var(--xn-text) 45%, transparent); }
+.xn-input:focus-visible { border-color: var(--xn-accent); outline-offset: 0; }
+textarea.xn-input { min-height: 90px; resize: vertical; }
+
+/* — tags — */
+.xn-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  padding: 3px 10px;
+  border-radius: 0;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.xn-tag-accent { background: var(--xn-accent-100); color: var(--xn-accent-800); }
+.xn-tag-neutral { background: var(--xn-neutral-100); color: var(--xn-neutral-800); }
+.xn-tag-outline { border-color: var(--xn-accent); color: var(--xn-accent); }
+
+/* — segmented control — */
+.xn-seg {
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid var(--xn-divider);
+  border-radius: 0;
+}
+.xn-seg-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-family: var(--xn-font-body);
+  font-size: 13px;
+  color: var(--xn-neutral-700);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.xn-seg-opt + .xn-seg-opt { border-left: 1px solid var(--xn-divider); }
+.xn-seg-opt[aria-pressed="true"] { background: var(--xn-accent); color: var(--xn-bg); }
+.xn-seg-opt:not([aria-pressed="true"]):hover { background: color-mix(in srgb, var(--xn-text) 7%, transparent); }
+
+/* — tables — */
+.xn-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.xn-table th {
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: color-mix(in srgb, var(--xn-text) 60%, transparent);
+  padding: 6.8px;
+  border-bottom: 1px solid var(--xn-divider);
+}
+.xn-table td {
+  padding: 6.8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--xn-text) 8%, transparent);
+}
+.xn-table tbody tr:hover { background: color-mix(in srgb, var(--xn-text) 4%, transparent); }
+
+/* — dialogs — */
+.xn-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  display: grid;
+  place-items: center;
+  padding: 13.6px;
+  background: color-mix(in srgb, var(--xn-neutral-900) 50%, transparent);
+}
+.xn-dialog {
+  width: min(440px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  scrollbar-width: thin;
+  display: flex;
+  flex-direction: column;
+  gap: 10.2px;
+  padding: 20px;
+  border-radius: 0;
+  background: var(--xn-bg);
+  border: 1px solid var(--xn-divider);
+}
+
+/* — shared type helpers — */
+.xn-mono { font-family: var(--xn-font-mono); }
+.xn-heading { font-family: var(--xn-font-heading); font-weight: 600; letter-spacing: -0.015em; }
+.xn-kicker {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--xn-accent-700);
+}
+.xn-label {
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--xn-neutral-600);
+}
+.xn-link { color: var(--xn-accent-700); text-decoration: none; }
+.xn-link:hover { color: var(--xn-accent-900); }
+
+/* — the app root: Xenith owns the page background and base type — */
+.xn-root {
+  background: var(--xn-bg);
+  color: var(--xn-text);
+  font-family: var(--xn-font-body);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.xn-root h1, .xn-root h2, .xn-root h3, .xn-root h4 {
+  font-family: var(--xn-font-heading);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+.xn-root :focus-visible { outline: 2px solid var(--xn-accent); outline-offset: 2px; }
+.xn-root ::selection { background: color-mix(in srgb, var(--xn-accent) 30%, transparent); }
+
+/* — login screen — */
+.xn-login {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 552px 1fr;
+}
+.xn-login-brand {
+  background: var(--xn-accent-900);
+  color: var(--xn-bg);
+  padding: 44px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  position: relative;
+  overflow: hidden;
+}
+.xn-login-main {
+  display: grid;
+  place-items: center;
+  padding: 48px;
+}
+/* The brand column is decorative, so it is the first thing dropped. */
+@media (max-width: 980px) {
+  .xn-login { grid-template-columns: 1fr; }
+  .xn-login-brand { display: none; }
+}
+@media (max-width: 560px) {
+  .xn-login-main { padding: 24px 16px; }
+}
+
+/* — application shell — */
+.xn-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 232px 1fr;
+}
+.xn-sidebar {
+  border-right: 1px solid var(--xn-divider);
+  display: flex;
+  flex-direction: column;
+  padding: 22px 0 18px;
+}
+.xn-nav-group {
+  padding: 0 20px 8px;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--xn-neutral-500);
+}
+.xn-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 20px;
+  color: var(--xn-neutral-700);
+  text-decoration: none;
+  cursor: pointer;
+}
+.xn-nav-item:hover { background: var(--xn-neutral-100); color: var(--xn-text); }
+.xn-nav-item.active {
+  background: var(--xn-accent-100);
+  color: var(--xn-accent-800);
+  box-shadow: inset 2px 0 0 var(--xn-accent);
+}
+.xn-sidebar-foot {
+  margin-top: auto;
+  padding: 18px 20px 0;
+  border-top: 1px solid var(--xn-divider);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.xn-main { display: flex; flex-direction: column; min-width: 0; }
+.xn-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--xn-divider);
+}
+.xn-header-search { position: relative; display: flex; align-items: center; }
+.xn-header-profile {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-left: 16px;
+  border-left: 1px solid var(--xn-divider);
+}
+.xn-avatar {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border: 1px solid var(--xn-accent);
+  color: var(--xn-accent-800);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+}
+.xn-content {
+  padding: 24px 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* — panel grids shared by the pages — */
+.xn-grid-split {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+  align-items: start;
+}
+.xn-grid-cells {
+  display: grid;
+  gap: 1px;
+  background: var(--xn-divider);
+  border: 1px solid var(--xn-divider);
+}
+.xn-cell { background: var(--xn-bg); }
+.xn-panel-title { font-size: 19px; line-height: 1; }
+.xn-scroll-x { overflow-x: auto; }
+
+@media (max-width: 1180px) {
+  .xn-grid-split { grid-template-columns: 1fr; }
+}
+@media (max-width: 900px) {
+  .xn-shell { grid-template-columns: 1fr; }
+  .xn-sidebar { display: none; }
+  .xn-header { flex-wrap: wrap; gap: 12px; padding: 14px 16px; }
+  .xn-content { padding: 16px; }
+}

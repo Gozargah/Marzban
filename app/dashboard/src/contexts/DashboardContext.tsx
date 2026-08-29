@@ -1,15 +1,18 @@
-import { StatisticsQueryKey } from "components/Statistics";
+import { router } from "@/pages/Router";
+import debounce from "lodash.debounce";
 import { fetch } from "service/http";
-import { User, UserCreate } from "types/User";
+import { User, UserCreate, UserDevices } from "types/User";
 import { queryClient } from "utils/react-query";
 import { getUsersPerPageLimitSize } from "utils/userPreferenceStorage";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 
+export const StatisticsQueryKey = "statistics-query-key";
+
 export type FilterType = {
-  search?: string;
   limit?: number;
   offset?: number;
+  search?: string;
   sort: string;
   status?: "active" | "disabled" | "limited" | "expired" | "on_hold";
 };
@@ -49,6 +52,7 @@ type DashboardStateType = {
   isResetingAllUsage: boolean;
   resetUsageUser: User | null;
   revokeSubscriptionUser: User | null;
+  devicesUser: User | null;
   isEditingCore: boolean;
   onCreateUser: (isOpen: boolean) => void;
   onEditingUser: (user: User | null) => void;
@@ -56,7 +60,7 @@ type DashboardStateType = {
   onResetAllUsage: (isResetingAllUsage: boolean) => void;
   refetchUsers: () => void;
   resetAllUsage: () => Promise<void>;
-  onFilterChange: (filters: Partial<FilterType>) => void;
+  onFilterChange: (filters: Partial<FilterType>, pushState?: boolean) => void;
   deleteUser: (user: User) => Promise<void>;
   createUser: (user: UserCreate) => Promise<void>;
   editUser: (user: UserCreate) => Promise<void>;
@@ -68,6 +72,9 @@ type DashboardStateType = {
   onShowingNodesUsage: (isShowingNodesUsage: boolean) => void;
   resetDataUsage: (user: User) => Promise<void>;
   revokeSubscription: (user: User) => Promise<void>;
+  fetchUserDevices: (user: User) => Promise<UserDevices>;
+  removeUserDevice: (user: User, deviceId: number) => Promise<UserDevices>;
+  resetUserDevices: (user: User) => Promise<UserDevices>;
 };
 
 const fetchUsers = (query: FilterType): Promise<User[]> => {
@@ -97,6 +104,26 @@ export const fetchInbounds = () => {
     });
 };
 
+const serializeFilters = (f: Partial<FilterType>) => {
+  const filters = { ...f };
+  delete filters.limit;
+  if (filters.sort === "-created_at") delete filters.sort;
+
+  const parsedFilters = Object.keys(filters).reduce(
+    (acc, key) => {
+      const value = filters[key as keyof FilterType];
+      if (value) {
+        acc[key] = String(value);
+      }
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
+
+  // The user list lives at /users now, so filters serialise onto that route.
+  router.navigate(`/users?${new URLSearchParams(parsedFilters).toString()}`, { replace: false });
+};
+
 export const useDashboard = create(
   subscribeWithSelector<DashboardStateType>((set, get) => ({
     version: null,
@@ -116,6 +143,7 @@ export const useDashboard = create(
     isShowingNodesUsage: false,
     resetUsageUser: null,
     revokeSubscriptionUser: null,
+    devicesUser: null,
     filters: {
       username: "",
       limit: getUsersPerPageLimitSize(),
@@ -124,6 +152,7 @@ export const useDashboard = create(
     inbounds: new Map(),
     isEditingCore: false,
     refetchUsers: () => {
+      // cancel prev request first
       fetchUsers(get().filters);
     },
     resetAllUsage: () => {
@@ -140,13 +169,15 @@ export const useDashboard = create(
     onDeletingUser: (deletingUser) => {
       set({ deletingUser });
     },
-    onFilterChange: (filters) => {
+    onFilterChange: (filters, pushState = true) => {
+      const allFilters = {
+        ...get().filters,
+        ...filters,
+      };
       set({
-        filters: {
-          ...get().filters,
-          ...filters,
-        },
+        filters: allFilters,
       });
+      if (pushState) serializeFilters(allFilters);
       get().refetchUsers();
     },
     setQRCode: (QRcodeLinks) => {
@@ -168,17 +199,14 @@ export const useDashboard = create(
       });
     },
     editUser: (body: UserCreate) => {
-      return fetch(`/user/${body.username}`, { method: "PUT", body }).then(
-        () => {
-          get().onEditingUser(null);
-          get().refetchUsers();
-        }
-      );
+      return fetch(`/user/${body.username}`, { method: "PUT", body }).then(() => {
+        get().onEditingUser(null);
+        get().refetchUsers();
+      });
     },
     fetchUserUsage: (body: User, query: FilterUsageType) => {
       for (const key in query) {
-        if (!query[key as keyof FilterUsageType])
-          delete query[key as keyof FilterUsageType];
+        if (!query[key as keyof FilterUsageType]) delete query[key as keyof FilterUsageType];
       }
       return fetch(`/user/${body.username}/usage`, { method: "GET", query });
     },
@@ -195,12 +223,10 @@ export const useDashboard = create(
       set({ subscribeUrl });
     },
     resetDataUsage: (user) => {
-      return fetch(`/user/${user.username}/reset`, { method: "POST" }).then(
-        () => {
-          set({ resetUsageUser: null });
-          get().refetchUsers();
-        }
-      );
+      return fetch(`/user/${user.username}/reset`, { method: "POST" }).then(() => {
+        set({ resetUsageUser: null });
+        get().refetchUsers();
+      });
     },
     revokeSubscription: (user) => {
       return fetch(`/user/${user.username}/revoke_sub`, {
@@ -210,5 +236,17 @@ export const useDashboard = create(
         get().refetchUsers();
       });
     },
-  }))
+    // The three below all answer with the whole device list, so the modal
+    // renders what the server has rather than guessing at the result of a
+    // delete it just made.
+    fetchUserDevices: (user) => {
+      return fetch(`/user/${user.username}/devices`);
+    },
+    removeUserDevice: (user, deviceId) => {
+      return fetch(`/user/${user.username}/devices/${deviceId}`, { method: "DELETE" });
+    },
+    resetUserDevices: (user) => {
+      return fetch(`/user/${user.username}/devices`, { method: "DELETE" });
+    },
+  })),
 );

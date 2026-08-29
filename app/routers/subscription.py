@@ -1,5 +1,4 @@
 import re
-from distutils.version import LooseVersion
 
 from fastapi import APIRouter, Depends, Header, Path, Request, Response
 from fastapi.responses import HTMLResponse
@@ -9,6 +8,7 @@ from app.dependencies import get_validated_sub, validate_dates
 from app.models.user import SubscriptionUserResponse, UserResponse
 from app.subscription.share import encode_title, generate_subscription
 from app.templates import render_template
+from app.utils.helpers import parse_version
 from config import (
     SUB_PROFILE_TITLE,
     SUB_SUPPORT_URL,
@@ -17,6 +17,7 @@ from config import (
     USE_CUSTOM_JSON_DEFAULT,
     USE_CUSTOM_JSON_FOR_HAPP,
     USE_CUSTOM_JSON_FOR_STREISAND,
+    USE_CUSTOM_JSON_FOR_NPVTUNNEL,
     USE_CUSTOM_JSON_FOR_V2RAYN,
     USE_CUSTOM_JSON_FOR_V2RAYNG,
     XRAY_SUBSCRIPTION_PATH,
@@ -31,6 +32,11 @@ client_config = {
     "v2ray-json": {"config_format": "v2ray-json", "media_type": "application/json", "as_base64": False,
                    "reverse": False}
 }
+
+# Anchored, and built from the table above so the two cannot drift apart: an
+# unanchored pattern matches any path containing one of these names, and the
+# lookup that follows then has nothing to return.
+CLIENT_TYPE_PATTERN = "^(" + "|".join(re.escape(name) for name in client_config) + ")$"
 
 router = APIRouter(tags=['Subscription'], prefix=f'/{XRAY_SUBSCRIPTION_PATH}')
 
@@ -86,7 +92,7 @@ def user_subscription(
         conf = generate_subscription(user=user, config_format="clash", as_base64=False, reverse=False)
         return Response(content=conf, media_type="text/yaml", headers=response_headers)
 
-    elif re.match(r'^(SFA|SFI|SFM|SFT|[Kk]aring|[Hh]iddify[Nn]ext)', user_agent):
+    elif re.match(r'^(SFA|SFI|SFM|SFT|[Kk]aring|[Hh]iddify[Nn]ext)|.*sing[-b]?ox.*', user_agent, re.IGNORECASE):
         conf = generate_subscription(user=user, config_format="sing-box", as_base64=False, reverse=False)
         return Response(content=conf, media_type="application/json", headers=response_headers)
 
@@ -96,7 +102,7 @@ def user_subscription(
 
     elif (USE_CUSTOM_JSON_DEFAULT or USE_CUSTOM_JSON_FOR_V2RAYN) and re.match(r'^v2rayN/(\d+\.\d+)', user_agent):
         version_str = re.match(r'^v2rayN/(\d+\.\d+)', user_agent).group(1)
-        if LooseVersion(version_str) >= LooseVersion("6.40"):
+        if parse_version(version_str) >= parse_version("6.40"):
             conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False, reverse=False)
             return Response(content=conf, media_type="application/json", headers=response_headers)
         else:
@@ -105,10 +111,10 @@ def user_subscription(
 
     elif (USE_CUSTOM_JSON_DEFAULT or USE_CUSTOM_JSON_FOR_V2RAYNG) and re.match(r'^v2rayNG/(\d+\.\d+\.\d+)', user_agent):
         version_str = re.match(r'^v2rayNG/(\d+\.\d+\.\d+)', user_agent).group(1)
-        if LooseVersion(version_str) >= LooseVersion("1.8.29"):
+        if parse_version(version_str) >= parse_version("1.8.29"):
             conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False, reverse=False)
             return Response(content=conf, media_type="application/json", headers=response_headers)
-        elif LooseVersion(version_str) >= LooseVersion("1.8.18"):
+        elif parse_version(version_str) >= parse_version("1.8.18"):
             conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False, reverse=True)
             return Response(content=conf, media_type="application/json", headers=response_headers)
         else:
@@ -125,14 +131,20 @@ def user_subscription(
 
     elif (USE_CUSTOM_JSON_DEFAULT or USE_CUSTOM_JSON_FOR_HAPP) and re.match(r'^Happ/(\d+\.\d+\.\d+)', user_agent):
         version_str = re.match(r'^Happ/(\d+\.\d+\.\d+)', user_agent).group(1)
-        if LooseVersion(version_str) >= LooseVersion("1.63.1"):
+        if parse_version(version_str) >= parse_version("1.11.0"):
             conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False, reverse=False)
             return Response(content=conf, media_type="application/json", headers=response_headers)
         else:
             conf = generate_subscription(user=user, config_format="v2ray", as_base64=True, reverse=False)
             return Response(content=conf, media_type="text/plain", headers=response_headers)
 
-
+    elif USE_CUSTOM_JSON_DEFAULT or USE_CUSTOM_JSON_FOR_NPVTUNNEL:
+        if "ktor-client" in user_agent:
+            conf = generate_subscription(user=user, config_format="v2ray-json", as_base64=False, reverse=False)
+            return Response(content=conf, media_type="application/json", headers=response_headers)
+        else:
+            conf = generate_subscription(user=user, config_format="v2ray", as_base64=True, reverse=False)
+            return Response(content=conf, media_type="text/plain", headers=response_headers)
 
     else:
         conf = generate_subscription(user=user, config_format="v2ray", as_base64=True, reverse=False)
@@ -166,12 +178,17 @@ def user_get_usage(
 def user_subscription_with_client_type(
     request: Request,
     dbuser: UserResponse = Depends(get_validated_sub),
-    client_type: str = Path(..., regex="sing-box|clash-meta|clash|outline|v2ray|v2ray-json"),
+    client_type: str = Path(..., pattern=CLIENT_TYPE_PATTERN),
     db: Session = Depends(get_db),
     user_agent: str = Header(default="")
 ):
     """Provides a subscription link based on the specified client type (e.g., Clash, V2Ray)."""
     user: UserResponse = UserResponse.model_validate(dbuser)
+
+    # Same bookkeeping the user-agent route does. A client pinned to an explicit
+    # format is still a client fetching its config, and without this its user
+    # would show a subscription that had never been updated.
+    crud.update_user_sub(db, dbuser, user_agent)
 
     response_headers = {
         "content-disposition": f'attachment; filename="{user.username}"',
@@ -185,7 +202,7 @@ def user_subscription_with_client_type(
         )
     }
 
-    config = client_config.get(client_type)
+    config = client_config[client_type]
     conf = generate_subscription(user=user,
                                  config_format=config["config_format"],
                                  as_base64=config["as_base64"],

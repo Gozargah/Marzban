@@ -1,0 +1,94 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - "main"
+      - "dev"
+  pull_request:
+  workflow_call:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup python
+        uses: actions/setup-python@v6
+        with:
+          # Keep in sync with the PYTHON_VERSION arg in the Dockerfile.
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run tests
+        run: pytest -q
+
+  # Its own job rather than a step in `pytest`: a new advisory and a failing
+  # test are separate signals, and you want to see both in one run instead of
+  # the first one hiding the second.
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install pip-audit
+        run: python -m pip install --upgrade pip pip-audit
+
+      # Only what ships in the image. pip-audit resolves the pinned tree
+      # itself, so this needs no other dependency installed. A new advisory
+      # against a pinned version fails the run, which also holds back
+      # build.yml — that is the point. Make it advisory with
+      # `continue-on-error: true` if that turns out too strict.
+      - name: Audit dependencies
+        run: pip-audit -r requirements.txt --progress-spinner off
+
+  dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      # setup-node first, then corepack: its own pnpm cache resolves the store
+      # path before corepack has run, which leaves it with nothing to save.
+      - name: Setup nodejs
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Enable corepack
+        run: |
+          npm i -g corepack && corepack enable
+          echo "PNPM_STORE=$(pnpm store path --silent)" >> "$GITHUB_ENV"
+
+      - name: Cache the pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PNPM_STORE }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('app/dashboard/pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Install dependencies
+        working-directory: ./app/dashboard
+        run: pnpm install --frozen-lockfile
+
+      # The bundle is no longer committed, so type errors have to be caught here.
+      - name: Typecheck and build
+        working-directory: ./app/dashboard
+        run: VITE_BASE_API=/api/ pnpm run build --outDir build --assetsDir statics

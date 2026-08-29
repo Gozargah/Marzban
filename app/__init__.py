@@ -8,16 +8,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 
-from config import ALLOWED_ORIGINS, DOCS, XRAY_SUBSCRIPTION_PATH
+from app.utils.cors import cors_policy
+from config import (ALLOWED_ORIGINS, DEBUG, DOCS,
+                    JWT_ACCESS_TOKEN_EXPIRE_MINUTES, XRAY_SUBSCRIPTION_PATH)
 
-__version__ = "0.8.4"
+# Xenith's own version. The 0.8.x tags in this repository are Marzban's, from
+# before the fork; everything since is Xenith and is versioned from 0.9.0 on.
+__version__ = "0.9.0"
 
 app = FastAPI(
-    title="MarzbanAPI",
+    title="XenithAPI",
     description="Unified GUI Censorship Resistant Solution Powered by Xray",
     version=__version__,
-    docs_url="/docs" if DOCS else None,
-    redoc_url="/redoc" if DOCS else None,
+    openapi_url="/openapi.json" if DOCS else None,
 )
 
 scheduler = BackgroundScheduler(
@@ -25,13 +28,17 @@ scheduler = BackgroundScheduler(
 )
 logger = logging.getLogger("uvicorn.error")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+_cors = cors_policy(ALLOWED_ORIGINS, debug=DEBUG)
+if _cors.warning:
+    logger.warning(_cors.warning)
+if _cors.enabled:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_cors.origins,
+        allow_credentials=_cors.allow_credentials,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 from app import dashboard, jobs, routers, telegram  # noqa
 from app.routers import api_router  # noqa
 
@@ -55,6 +62,25 @@ def on_startup():
         raise ValueError(
             f"you can't use /{XRAY_SUBSCRIPTION_PATH}/ as subscription path it reserved for {app.title}"
         )
+
+    from app.utils.jwt import token_expiry_warning  # noqa: circular at import time
+
+    expiry_warning = token_expiry_warning(JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+    if expiry_warning:
+        logger.warning(expiry_warning)
+
+    # A proxy holds two descriptors per connection, so the default soft limit of
+    # 1024 runs out long before anything else does. Raising soft up to hard
+    # needs no privilege, so this is unconditional.
+    from app.utils.limits import raise_own_limits, read_limits  # noqa: circular at import time
+
+    report = raise_own_limits()
+    nofile = next((limit for limit in read_limits() if limit.name == "nofile"), None)
+    if report.raised:
+        logger.info(f"Raised open file limit to {nofile.soft if nofile else '?'}")
+    for problem in report.problems:
+        logger.warning(f"Could not raise resource limit: {problem}")
+
     scheduler.start()
 
 

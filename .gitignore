@@ -160,3 +160,14 @@ xray-core
 *-dev.yml
 *-dev.yaml
 *-debug.*
+node_modules/
+
+# The dashboard is built inside the image (see the dashboard stage in the
+# Dockerfile); the compiled bundle is not tracked.
+app/dashboard/build/
+
+# Claude Code: launch.json is shared (it starts the dev server and the panel),
+# everything else under .claude is per-machine — local permissions, session
+# state and scratch files.
+.claude/*
+!.claude/launch.json

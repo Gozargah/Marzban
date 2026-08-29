@@ -1,0 +1,7 @@
+-r requirements.txt
+# APScheduler 3.9 still imports pkg_resources, which no longer ships with
+# Python 3.12 virtualenvs by default (the Dockerfile installs it explicitly).
+setuptools>=70
+pytest==8.3.4
+# Required by starlette.testclient, which the API tests drive the app through.
+httpx==0.28.1

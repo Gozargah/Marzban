@@ -1,16 +1,24 @@
+import hmac
 from typing import Optional, Union
 from app.models.admin import AdminInDB, AdminValidationResult, Admin
 from app.models.user import UserResponse, UserStatus
 from app.db import Session, crud, get_db
 from config import SUDOERS
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 from datetime import datetime, timezone, timedelta
+from app.utils import hwid
 from app.utils.jwt import get_subscription_payload
 
 
 def validate_admin(db: Session, username: str, password: str) -> Optional[AdminValidationResult]:
     """Validate admin credentials with environment variables or database."""
-    if SUDOERS.get(username) == password:
+    # The .env sudoer's password is stored in the clear, so it is the one
+    # comparison here that is not already constant time — bcrypt's own is.
+    # Encoded first: compare_digest rejects a str holding anything non-ASCII.
+    env_password = SUDOERS.get(username)
+    if env_password is not None and hmac.compare_digest(
+        env_password.encode("utf-8"), password.encode("utf-8")
+    ):
         return AdminValidationResult(username=username, is_sudo=True)
 
     dbadmin = crud.get_admin(db, username)
@@ -64,7 +72,55 @@ def get_user_template(template_id: int, db: Session = Depends(get_db)):
     return dbuser_template
 
 
+# Said to a client that is over its limit or will not identify itself. It is
+# the only place a subscriber learns why, so it says what to do about it
+# rather than only that something is wrong.
+NO_HWID_DETAIL = (
+    "This subscription is limited to a number of devices, and your client did not identify "
+    "itself. Use a client that reports a device id, or ask your provider to lift the limit."
+)
+DEVICE_LIMIT_DETAIL = (
+    "This subscription has reached its device limit. Ask your provider to remove a device "
+    "you no longer use."
+)
+
+
+def enforce_device_limit(db: Session, dbuser, request: Request) -> None:
+    """Register the device this request came from, or refuse it.
+
+    Runs before anything hands out a configuration. A user with no limit is
+    not touched at all — no header is read and no device is recorded — so the
+    feature costs nothing until somebody turns it on, and turning it on for
+    one user does not start tracking every other one.
+
+    With a limit in force, a client that sends no identifier is refused. That
+    is the strict reading and it is worth knowing what it excludes: a browser
+    opening the subscription page, and any client that does not send the
+    header, are both turned away. It is deliberate — the alternative lets
+    anyone opt out of the limit by using a different client.
+    """
+    if not hwid.is_enforced(dbuser):
+        return
+
+    identity = hwid.identity_from_headers(request.headers)
+    if identity is None:
+        raise HTTPException(status_code=403, detail=NO_HWID_DETAIL)
+
+    user_agent = request.headers.get("user-agent", "")
+    if crud.touch_user_device(db, dbuser, identity, user_agent):
+        return
+
+    # A known device is always let through, even once the limit has been
+    # lowered below the number already registered: taking a device away is an
+    # admin's decision, not a side effect of editing a number.
+    if crud.count_user_devices(db, dbuser) >= hwid.effective_limit(dbuser):
+        raise HTTPException(status_code=403, detail=DEVICE_LIMIT_DETAIL)
+
+    crud.add_user_device(db, dbuser, identity, user_agent)
+
+
 def get_validated_sub(
+        request: Request,
         token: str,
         db: Session = Depends(get_db)
 ) -> UserResponse:
@@ -78,6 +134,10 @@ def get_validated_sub(
 
     if dbuser.sub_revoked_at and dbuser.sub_revoked_at > sub['created_at']:
         raise HTTPException(status_code=404, detail="Not Found")
+
+    # After the token is settled and not before: an unknown token must look
+    # the same whether or not the user behind it has a device limit.
+    enforce_device_limit(db, dbuser, request)
 
     return dbuser
 

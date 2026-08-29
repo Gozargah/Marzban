@@ -6,7 +6,8 @@ import threading
 import time
 from collections import deque
 from contextlib import contextmanager
-from typing import List
+from hashlib import sha256
+from typing import List, Optional
 
 import grpc
 import requests
@@ -34,6 +35,35 @@ class SANIgnoringAdaptor(HTTPAdapter):
                                        assert_hostname=False)
 
 
+# Fetching a node's certificate is a plain TLS handshake with no timeout of its
+# own: a node that accepts the connection and then says nothing would otherwise
+# hold the calling thread for as long as the kernel allows.
+CERTIFICATE_FETCH_TIMEOUT = 15
+
+
+def certificate_fingerprint(pem: str) -> str:
+    """SHA-256 fingerprint of a PEM encoded certificate."""
+    return sha256(ssl.PEM_cert_to_DER_cert(pem)).hexdigest()
+
+
+class NodeCertificateMismatch(Exception):
+    """Raised when a node presents a certificate other than the pinned one.
+
+    Either the connection is being intercepted, or the node was reinstalled and
+    generated a fresh certificate. The pinned certificate has to be reset
+    explicitly before such a node can be reached again.
+    """
+
+    def __init__(self, expected: str, presented: str):
+        self.expected = expected
+        self.presented = presented
+        super().__init__(
+            "The node presented a certificate that does not match the pinned one "
+            f"(pinned {expected[:16]}…, got {presented[:16]}…). If you reinstalled "
+            "this node, reset its pinned certificate before reconnecting."
+        )
+
+
 class NodeAPIError(Exception):
     def __init__(self, status_code, detail):
         self.status_code = status_code
@@ -47,7 +77,8 @@ class ReSTXRayNode:
                  api_port: int,
                  ssl_key: str,
                  ssl_cert: str,
-                 usage_coefficient: float = 1):
+                 usage_coefficient: float = 1,
+                 server_cert: Optional[str] = None):
 
         self.address = address
         self.port = port
@@ -66,10 +97,25 @@ class ReSTXRayNode:
         self._session_id = None
         self._rest_api_url = f"https://{self.address.strip('/')}:{self.port}"
 
-        self._ssl_context = ssl.create_default_context()
+        # Nodes present a self-signed certificate, so the pinned certificate is
+        # used as the only trust anchor. Hostname checking stays off because the
+        # certificate's subject does not carry the node's address — which is
+        # what makes the trust store the whole of the check, and why this is
+        # built empty rather than with create_default_context(). That helper
+        # differs from a bare client context in exactly one way, the system
+        # roots it loads, and those have no business here: with the hostname
+        # unchecked, any certificate signed by any public CA would otherwise
+        # be accepted for a node, so anyone able to answer on the node's
+        # address could serve its logs. `verify_mode` is already CERT_REQUIRED
+        # and the protocol floor already TLS 1.2; only the anchors change.
+        self._ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         self._ssl_context.check_hostname = False
-        self._ssl_context.verify_mode = ssl.CERT_NONE
         self._ssl_context.load_cert_chain(certfile=self.session.cert[0], keyfile=self.session.cert[1])
+
+        self._node_cert = None
+        self._node_certfile = None
+        if server_cert:
+            self._pin_certificate(server_cert)
         self._logs_ws_url = f"wss://{self.address.strip('/')}:{self.port}/logs"
         self._logs_queues = []
         self._logs_bg_thread = threading.Thread(target=self._bg_fetch_logs, daemon=True)
@@ -119,14 +165,14 @@ class ReSTXRayNode:
         if not self._session_id:
             return False
         try:
-            self.make_request("/ping", timeout=3)
+            self.make_request("/ping", timeout=30)
             return True
         except NodeAPIError:
             return False
 
     @property
     def started(self):
-        res = self.make_request("/", timeout=3)
+        res = self.make_request("/", timeout=30)
         return res.get('started', False)
 
     @property
@@ -147,20 +193,49 @@ class ReSTXRayNode:
 
         return self._api
 
-    def connect(self):
-        self._node_cert = ssl.get_server_certificate((self.address, self.port))
-        self._node_certfile = string_to_temp_file(self._node_cert)
-        self.session.verify = self._node_certfile.name
+    def _pin_certificate(self, pem: str) -> None:
+        """Trust this certificate, and only this one, for the node.
 
-        res = self.make_request("/connect", timeout=3)
+        Loaded into the log stream's SSL context here rather than where that
+        stream connects: the context outlives every reconnect, so loading it
+        per attempt piles the same certificate into it once every two seconds
+        for as long as anybody is watching the logs.
+        """
+        self._node_cert = pem
+        self._node_certfile = string_to_temp_file(pem)
+        self.session.verify = self._node_certfile.name
+        self._ssl_context.load_verify_locations(self._node_certfile.name)
+
+    @property
+    def server_cert(self) -> Optional[str]:
+        """The certificate pinned for this node, if one has been established."""
+        return self._node_cert
+
+    def connect(self):
+        presented = ssl.get_server_certificate(
+            (self.address, self.port), timeout=CERTIFICATE_FETCH_TIMEOUT
+        )
+
+        if self._node_cert is None:
+            # Trust on first use: nodes generate their own certificate, so the
+            # panel cannot know it in advance. It is persisted by the caller and
+            # enforced from the next connection onwards.
+            self._pin_certificate(presented)
+        elif certificate_fingerprint(presented) != certificate_fingerprint(self._node_cert):
+            raise NodeCertificateMismatch(
+                expected=certificate_fingerprint(self._node_cert),
+                presented=certificate_fingerprint(presented),
+            )
+
+        res = self.make_request("/connect", timeout=30)
         self._session_id = res['session_id']
 
     def disconnect(self):
-        self.make_request("/disconnect", timeout=3)
+        self.make_request("/disconnect", timeout=30)
         self._session_id = None
 
     def get_version(self):
-        res = self.make_request("/", timeout=3)
+        res = self.make_request("/", timeout=30)
         return res.get('core_version')
 
     def start(self, config: XRayConfig):
@@ -171,7 +246,7 @@ class ReSTXRayNode:
         json_config = config.to_json()
 
         try:
-            res = self.make_request("/start", timeout=10, config=json_config)
+            res = self.make_request("/start", timeout=60, config=json_config)
         except NodeAPIError as exc:
             if exc.detail == 'Xray is started already':
                 return self.restart(config)
@@ -188,7 +263,7 @@ class ReSTXRayNode:
         )
 
         try:
-            grpc.channel_ready_future(self._api._channel).result(timeout=5)
+            grpc.channel_ready_future(self._api._channel).result(timeout=35)
         except grpc.FutureTimeoutError:
             raise ConnectionError('Failed to connect to node\'s API')
 
@@ -198,7 +273,7 @@ class ReSTXRayNode:
         if not self.connected:
             self.connect()
 
-        self.make_request('/stop', timeout=5)
+        self.make_request('/stop', timeout=35)
         self._api = None
         self._started = False
 
@@ -209,7 +284,7 @@ class ReSTXRayNode:
         config = self._prepare_config(config)
         json_config = config.to_json()
 
-        res = self.make_request("/restart", timeout=10, config=json_config)
+        res = self.make_request("/restart", timeout=60, config=json_config)
 
         self._started = True
 
@@ -221,7 +296,7 @@ class ReSTXRayNode:
         )
 
         try:
-            grpc.channel_ready_future(self._api._channel).result(timeout=5)
+            grpc.channel_ready_future(self._api._channel).result(timeout=35)
         except grpc.FutureTimeoutError:
             raise ConnectionError('Failed to connect to node\'s API')
 
@@ -231,7 +306,6 @@ class ReSTXRayNode:
         while self._logs_queues:
             try:
                 websocket_url = f"{self._logs_ws_url}?session_id={self._session_id}&interval=0.7"
-                self._ssl_context.load_verify_locations(self.session.verify)
                 ws = create_connection(websocket_url, sslopt={"context": self._ssl_context}, timeout=2)
                 while self._logs_queues:
                     try:
@@ -278,7 +352,8 @@ class RPyCXRayNode:
                  api_port: int,
                  ssl_key: str,
                  ssl_cert: str,
-                 usage_coefficient: float = 1):
+                 usage_coefficient: float = 1,
+                 server_cert: Optional[str] = None):
 
         class Service(rpyc.Service):
             def __init__(self,
@@ -319,6 +394,11 @@ class RPyCXRayNode:
         self._keyfile = string_to_temp_file(ssl_key)
         self._certfile = string_to_temp_file(ssl_cert)
 
+        self._node_cert = None
+        self._node_certfile = None
+        if server_cert:
+            self._pin_certificate(server_cert)
+
         self._service = Service()
         self._api = None
 
@@ -329,14 +409,34 @@ class RPyCXRayNode:
         except AttributeError:
             pass
 
+    def _pin_certificate(self, pem: str) -> None:
+        """Trust this certificate, and only this one, for the node."""
+        self._node_cert = pem
+        self._node_certfile = string_to_temp_file(pem)
+
+    @property
+    def server_cert(self) -> Optional[str]:
+        """The certificate pinned for this node, if one has been established."""
+        return self._node_cert
+
     def connect(self):
         self.disconnect()
+
+        presented = ssl.get_server_certificate(
+            (self.address, self.port), timeout=CERTIFICATE_FETCH_TIMEOUT
+        )
+        if self._node_cert is None:
+            # Trust on first use; see ReSTXRayNode.connect.
+            self._pin_certificate(presented)
+        elif certificate_fingerprint(presented) != certificate_fingerprint(self._node_cert):
+            raise NodeCertificateMismatch(
+                expected=certificate_fingerprint(self._node_cert),
+                presented=certificate_fingerprint(presented),
+            )
 
         tries = 0
         while True:
             tries += 1
-            self._node_cert = ssl.get_server_certificate((self.address, self.port))
-            self._node_certfile = string_to_temp_file(self._node_cert)
             conn = rpyc.ssl_connect(self.address,
                                     self.port,
                                     service=self._service,
@@ -500,7 +600,8 @@ class XRayNode:
                 api_port: int,
                 ssl_key: str,
                 ssl_cert: str,
-                usage_coefficient: float = 1):
+                usage_coefficient: float = 1,
+                server_cert: Optional[str] = None):
 
         # trying to detect what's the server of node
         try:
@@ -517,7 +618,8 @@ class XRayNode:
                 api_port=api_port,
                 ssl_key=ssl_key,
                 ssl_cert=ssl_cert,
-                usage_coefficient=usage_coefficient
+                usage_coefficient=usage_coefficient,
+                server_cert=server_cert
             )
         except Exception:
             # if might be rpyc
@@ -527,5 +629,6 @@ class XRayNode:
                 api_port=api_port,
                 ssl_key=ssl_key,
                 ssl_cert=ssl_cert,
-                usage_coefficient=usage_coefficient
+                usage_coefficient=usage_coefficient,
+                server_cert=server_cert
             )

@@ -26,7 +26,10 @@ class Proxyman(XRayBase):
     def alter_outbound(self, tag: str, operation: TypedMessage, timeout: int = None) -> bool:
         stub = command_pb2_grpc.HandlerServiceStub(self._channel)
         try:
-            stub.AlterInbound(command_pb2.AlterOutboundRequest(tag=tag, operation=operation), timeout=timeout)
+            stub.AlterOutbound(
+                command_pb2.AlterOutboundRequest(tag=tag, operation=operation),
+                timeout=timeout,
+            )
             return True
 
         except grpc.RpcError as e:

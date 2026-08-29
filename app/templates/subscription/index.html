@@ -97,7 +97,7 @@
         {% for link in user.links %}
         <li>
             <input type="text" value="{{ link }}" readonly>
-            <button class="copy-button" onclick="copyLink('{{ link }}', this)">Copy</button>
+            <button class="copy-button" data-link="{{ link }}">Copy</button>
             <button class="qr-button" data-link="{{ link }}">QR Code</button>
         </li>
         {% endfor %}
@@ -111,6 +111,10 @@
     {% endif %}
 
     <script>
+        // The link is read from the element, never interpolated into this
+        // script: an apostrophe in a host remark would otherwise end the
+        // string literal, and HTML escaping does not help inside an attribute
+        // the browser hands to the JS parser.
         function copyLink(link, button) {
             const tempInput = document.createElement('input');
             tempInput.setAttribute('value', link);
@@ -124,6 +128,12 @@
                 button.textContent = 'Copy';
             }, 1500);
         }
+
+        document.querySelectorAll('.copy-button').forEach((copyButton) => {
+            copyButton.addEventListener('click', () => {
+                copyLink(copyButton.dataset.link, copyButton);
+            });
+        });
 
         const qrButtons = document.querySelectorAll('.qr-button');
         const qrPopup = document.getElementById('qrPopup');

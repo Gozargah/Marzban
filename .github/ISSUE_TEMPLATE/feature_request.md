@@ -1,20 +1,27 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
-title: Feature title
+about: Suggest something the panel should be able to do
+title: ''
 labels: enhancement
 assignees: ''
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+### The problem
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+What are you trying to do that the panel makes hard or impossible today?
+Describe the situation rather than the solution — it often has more than one.
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+### What you would like
 
-**Additional context**
-Add any other context or screenshots about the feature request here.
+What the panel would do instead, and where you would expect to find it: the
+dashboard, the API, the CLI, the Telegram bot.
+
+### What you do today
+
+The workaround you use now, if there is one, and why it is not enough.
+
+### Anything else
+
+Whether you would be willing to implement it, and screenshots or links to how
+other tools solve the same problem.

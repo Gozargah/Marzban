@@ -5,9 +5,7 @@
   "routing": {
     "rules": [
       {
-        "ip": [
-          "geoip:private"
-        ],
+        "ip": ["geoip:private"],
         "outboundTag": "BLOCK",
         "type": "field"
       }

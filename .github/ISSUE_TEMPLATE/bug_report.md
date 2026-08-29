@@ -1,33 +1,46 @@
 ---
 name: Bug report
-about: Create a report to help us improve
-title: Bug title
+about: Something in the panel does not work as documented
+title: ''
 labels: bug
 assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**Do not report security vulnerabilities here.** See
+[SECURITY.md](https://github.com/bugbusta/Xenith/blob/main/SECURITY.md) for the private reporting flow.
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+### What happened
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+What you expected, and what happened instead.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+### How to reproduce
 
-**Machine details (please complete the following information):**
- - OS: [e.g. ubuntu 20]
-- Python version: [e.g 3.8]
-- Nodejs version: [e.g 16.17]
-- Browser [e.g. chrome, safari]
+1.
+2.
+3.
 
-**Additional context**
-Add any other context about the problem here.
+### Logs
+
+Server logs around the failure, or the error shown in the browser. Censor
+tokens, passwords and subscription links.
+
+```
+paste here
+```
+
+### Your install
+
+- Xenith version: <!-- shown in the dashboard sidebar, next to the xray-core version -->
+- How it runs: <!-- Docker image / built from source / scripts/install.sh -->
+- OS: <!-- e.g. Ubuntu 24.04 -->
+- Behind a reverse proxy: <!-- no / nginx / Caddy / Cloudflare -->
+- Relevant `.env` settings, secrets censored:
+
+```ini
+paste here
+```
+
+### Anything else
+
+Xray config, screenshots, what you already tried.

@@ -30,12 +30,7 @@ import {
   useToast,
   VStack,
 } from "@chakra-ui/react";
-import {
-  EyeIcon,
-  EyeSlashIcon,
-  PlusIcon as HeroIconPlusIcon,
-  SquaresPlusIcon,
-} from "@heroicons/react/24/outline";
+import { EyeIcon, EyeSlashIcon, PlusIcon as HeroIconPlusIcon, SquaresPlusIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   FetchNodesQueryKey,
@@ -46,25 +41,17 @@ import {
   useNodesQuery,
 } from "contexts/NodesContext";
 import { FC, ReactNode, useState } from "react";
-import { Controller, useForm, UseFormReturn } from "react-hook-form";
+import { Controller, Resolver, useForm, UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import {
-  UseMutateFunction,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "react-query";
+import { UseMutateFunction, useMutation, useQuery, useQueryClient } from "react-query";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
 import { Status } from "types/User";
-import {
-  generateErrorMessage,
-  generateSuccessMessage,
-} from "utils/toastHandler";
+import { generateErrorMessage, generateSuccessMessage } from "utils/toastHandler";
 import { useDashboard } from "../contexts/DashboardContext";
 import { DeleteNodeModal } from "./DeleteNodeModal";
-import { DeleteIcon } from "./DeleteUserModal";
-import { ReloadIcon } from "./Filters";
+import { DeleteIcon } from "./Icon";
+import { ReloadIcon } from "./Icon";
 import { Icon } from "./Icon";
 import { NodeModalStatusBadge } from "./NodeModalStatusBadge";
 
@@ -107,7 +94,7 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
   const toast = useToast();
   const form = useForm<NodeType>({
     defaultValues: node,
-    resolver: zodResolver(NodeSchema),
+    resolver: zodResolver(NodeSchema) as Resolver<NodeType>,
   });
   const handleDeleteNode = setDeletingNode.bind(null, node);
 
@@ -121,20 +108,13 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
     },
   });
 
-  const { isLoading: isReconnecting, mutate: reconnect } = useMutation(
-    reconnectNode.bind(null, node),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(FetchNodesQueryKey);
-      },
-    }
-  );
+  const { isLoading: isReconnecting, mutate: reconnect } = useMutation(reconnectNode.bind(null, node), {
+    onSuccess: () => {
+      queryClient.invalidateQueries(FetchNodesQueryKey);
+    },
+  });
 
-  const nodeStatus: Status = isReconnecting
-    ? "connecting"
-    : node.status
-    ? node.status
-    : "error";
+  const nodeStatus: Status = isReconnecting ? "connecting" : node.status ? node.status : "error";
 
   return (
     <AccordionItem
@@ -160,19 +140,8 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
           </Text>
           <HStack>
             {node.xray_version && (
-              <Badge
-                colorScheme="blue"
-                rounded="full"
-                display="inline-flex"
-                px={3}
-                py={1}
-              >
-                <Text
-                  textTransform="capitalize"
-                  fontSize="0.7rem"
-                  fontWeight="medium"
-                  letterSpacing="tighter"
-                >
+              <Badge colorScheme="blue" rounded="full" display="inline-flex" px={3} py={1}>
+                <Text textTransform="capitalize" fontSize="0.7rem" fontWeight="medium" letterSpacing="tighter">
                   Xray {node.xray_version}
                 </Text>
               </Badge>
@@ -183,8 +152,8 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
         <AccordionIcon />
       </AccordionButton>
       <AccordionPanel px={2} pb={2}>
-        <VStack pb={3} alignItems="flex-start">
-          {nodeStatus === "error" && (
+        {nodeStatus === "error" && (
+          <VStack pb={3} alignItems="flex-start">
             <Alert status="error" size="xs">
               <Box>
                 <HStack w="full">
@@ -199,15 +168,13 @@ const NodeAccordion: FC<AccordionInboundType> = ({ toggleAccordion, node }) => {
                     onClick={() => reconnect()}
                     disabled={isReconnecting}
                   >
-                    {isReconnecting
-                      ? t("nodes.reconnecting")
-                      : t("nodes.reconnect")}
+                    {isReconnecting ? t("nodes.reconnecting") : t("nodes.reconnect")}
                   </Button>
                 </HStack>
               </Box>
             </Alert>
-          )}
-        </VStack>
+          </VStack>
+        )}
         <NodeForm
           form={form}
           mutate={mutate}
@@ -237,16 +204,13 @@ type AddNodeFormType = {
   resetAccordions: () => void;
 };
 
-const AddNodeForm: FC<AddNodeFormType> = ({
-  toggleAccordion,
-  resetAccordions,
-}) => {
+const AddNodeForm: FC<AddNodeFormType> = ({ toggleAccordion, resetAccordions }) => {
   const toast = useToast();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { addNode } = useNodes();
   const form = useForm<NodeType>({
-    resolver: zodResolver(NodeSchema),
+    resolver: zodResolver(NodeSchema) as Resolver<NodeType>,
     defaultValues: {
       ...getNodeDefaultValues(),
       add_as_new_host: false,
@@ -254,10 +218,7 @@ const AddNodeForm: FC<AddNodeFormType> = ({
   });
   const { isLoading, mutate } = useMutation(addNode, {
     onSuccess: () => {
-      generateSuccessMessage(
-        t("nodes.addNodeSuccess", { name: form.getValues("name") }),
-        toast
-      );
+      generateSuccessMessage(t("nodes.addNodeSuccess", { name: form.getValues("name") }), toast);
       queryClient.invalidateQueries(FetchNodesQueryKey);
       form.reset();
       resetAccordions();
@@ -287,13 +248,13 @@ const AddNodeForm: FC<AddNodeFormType> = ({
           display="flex"
           gap={1}
         >
-          <PlusIcon display={"inline-block"} />{" "}
-          <span>{t("nodes.addNewMarzbanNode")}</span>
+          <PlusIcon display={"inline-block"} /> <span>{t("nodes.addNewMarzbanNode")}</span>
         </Text>
       </AccordionButton>
       <AccordionPanel px={2} py={4}>
         <NodeForm
           form={form}
+          showCert
           mutate={mutate}
           isLoading={isLoading}
           submitBtnText={t("nodes.addNode")}
@@ -313,6 +274,7 @@ type NodeFormType = FC<{
   btnProps?: Partial<ButtonProps>;
   btnLeftAdornment?: ReactNode;
   addAsHost?: boolean;
+  showCert?: boolean;
 }>;
 
 const NodeForm: NodeFormType = ({
@@ -323,6 +285,7 @@ const NodeForm: NodeFormType = ({
   btnProps = {},
   btnLeftAdornment,
   addAsHost = false,
+  showCert = false,
 }) => {
   const { t } = useTranslation();
   const [showCertificate, setShowCertificate] = useState(false);
@@ -355,13 +318,9 @@ const NodeForm: NodeFormType = ({
   return (
     <form onSubmit={form.handleSubmit((v) => mutate(v))}>
       <VStack>
-        {nodeSettings && nodeSettings.certificate && (
+        {showCert && nodeSettings && nodeSettings.certificate && (
           <Alert status="info" alignItems="start">
-            <AlertDescription
-              display="flex"
-              flexDirection="column"
-              overflow="hidden"
-            >
+            <AlertDescription display="flex" flexDirection="column" overflow="hidden">
               <span>{t("nodes.connection-hint")}</span>
               <HStack justify="end" py={2}>
                 <Button
@@ -370,38 +329,29 @@ const NodeForm: NodeFormType = ({
                   size="xs"
                   download="ssl_client_cert.pem"
                   href={URL.createObjectURL(
-                    new Blob([nodeSettings.certificate], { type: "text/plain" })
+                    new Blob([nodeSettings.certificate], {
+                      type: "text/plain",
+                    }),
                   )}
                 >
                   {t("nodes.download-certificate")}
                 </Button>
                 <Tooltip
                   placement="top"
-                  label={t(
-                    !showCertificate
-                      ? "nodes.show-certificate"
-                      : "nodes.show-certificate"
-                  )}
+                  label={t(!showCertificate ? "nodes.show-certificate" : "nodes.show-certificate")}
                 >
                   <IconButton
-                    aria-label={t(
-                      !showCertificate
-                        ? "nodes.show-certificate"
-                        : "nodes.show-certificate"
-                    )}
+                    aria-label={t(!showCertificate ? "nodes.show-certificate" : "nodes.show-certificate")}
                     onClick={setShowCertificate.bind(null, !showCertificate)}
                     colorScheme="whiteAlpha"
                     color="primary"
                     size="xs"
                   >
-                    {!showCertificate ? (
-                      <EyeIcon width="15px" />
-                    ) : (
-                      <EyeSlashIcon width="15px" />
-                    )}
+                    {!showCertificate ? <EyeIcon width="15px" /> : <EyeSlashIcon width="15px" />}
                   </IconButton>
                 </Tooltip>
               </HStack>
+              {/* @ts-expect-error the children is not typed, by migrating to shadcn, will be fixed */}
               <Collapse in={showCertificate} animateOpacity>
                 <Text
                   bg="rgba(255,255,255,.5)"
@@ -431,7 +381,7 @@ const NodeForm: NodeFormType = ({
             <CustomInput
               label={t("nodes.nodeName")}
               size="sm"
-              placeholder="Marzban-S2"
+              placeholder="Xenith-S2"
               {...form.register("name")}
               error={form.formState?.errors?.name?.message}
             />
@@ -445,10 +395,7 @@ const NodeForm: NodeFormType = ({
                   <Tooltip
                     key={field.value}
                     placement="top"
-                    label={
-                      `${t("usersTable.status")}: ` +
-                      (field.value !== "disabled" ? t("active") : t("disabled"))
-                    }
+                    label={`${t("usersTable.status")}: ` + (field.value !== "disabled" ? t("active") : t("disabled"))}
                     textTransform="capitalize"
                   >
                     <Box mt="6">
@@ -482,7 +429,7 @@ const NodeForm: NodeFormType = ({
           </Box>
         </HStack>
         <HStack alignItems="flex-start" w="100%">
-        <Box>
+          <Box>
             <CustomInput
               label={t("nodes.nodePort")}
               size="sm"
@@ -559,12 +506,15 @@ export const NodesDialog: FC = () => {
   return (
     <>
       <Modal isOpen={isEditingNodes} onClose={onClose}>
-        <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
+        <ModalOverlay />
         <ModalContent mx="3" w="fit-content" maxW="3xl">
-          <ModalHeader pt={6}>
+          <ModalHeader pt={6} className="flex gap-4 items-center">
             <Icon color="primary">
               <ModalIcon color="white" />
             </Icon>
+            <Text fontWeight="semibold" fontSize="lg">
+              {t("header.nodeSettings")}
+            </Text>
           </ModalHeader>
           <ModalCloseButton mt={3} />
           <ModalBody w="440px" pb={6} pt={3}>
@@ -573,22 +523,12 @@ export const NodesDialog: FC = () => {
             </Text>
             {isLoading && "loading..."}
 
-            <Accordion
-              w="full"
-              allowToggle
-              index={Object.keys(openAccordions).map((i) => parseInt(i))}
-            >
+            <Accordion w="full" allowToggle index={Object.keys(openAccordions).map((i) => parseInt(i))}>
               <VStack w="full">
                 {!isLoading &&
                   nodes &&
                   nodes.map((node, index) => {
-                    return (
-                      <NodeAccordion
-                        toggleAccordion={() => toggleAccordion(index)}
-                        key={node.name}
-                        node={node}
-                      />
-                    );
+                    return <NodeAccordion toggleAccordion={() => toggleAccordion(index)} key={node.name} node={node} />;
                   })}
 
                 <AddNodeForm

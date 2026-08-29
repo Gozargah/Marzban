@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 260" width="960" height="260" role="img" aria-label="Xenith — Xray control panel">
+  <title>Xenith — Xray control panel</title>
+  <rect width="960" height="260" fill="#1d2d3d"/>
+  <g fill="none" stroke="#94bce3" stroke-width="1.5">
+    <rect x="112.75" y="82.75" width="94.5" height="94.5"/>
+  </g>
+  <text x="160" y="130" fill="#f2f2f3" text-anchor="middle" dominant-baseline="central"
+        font-family="'Barlow Condensed','Oswald','Roboto Condensed','Arial Narrow','Helvetica Neue',sans-serif"
+        font-weight="600" font-size="60" letter-spacing="-1">Xe</text>
+  <text x="256" y="118" fill="#f2f2f3"
+        font-family="'Barlow Condensed','Oswald','Roboto Condensed','Arial Narrow','Helvetica Neue',sans-serif"
+        font-weight="600" font-size="66" letter-spacing="6">XENITH</text>
+  <text x="258" y="163" fill="#94bce3"
+        font-family="'Barlow','Helvetica Neue',Arial,sans-serif"
+        font-weight="500" font-size="21" letter-spacing="4.4">XRAY CONTROL PANEL</text>
+</svg>

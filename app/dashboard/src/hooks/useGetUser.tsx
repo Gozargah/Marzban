@@ -1,4 +1,3 @@
-import { getAuthToken } from "utils/authStorage";
 import { fetch } from "service/http";
 import { UserApi, UseGetUserReturn } from "types/User";
 import { useQuery } from "react-query";

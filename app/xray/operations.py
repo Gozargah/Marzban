@@ -32,7 +32,12 @@ def get_tls():
 def _add_user_to_inbound(api: XRayAPI, inbound_tag: str, account: Account):
     try:
         api.add_inbound_user(tag=inbound_tag, user=account, timeout=30)
-    except (xray.exc.EmailExistsError, xray.exc.ConnectionError):
+    except (
+        xray.exc.EmailExistsError,
+        xray.exc.ConnectionError,
+        xray.exc.TagNotFoundError,
+        xray.exc.TimeoutError,
+    ):
         pass
 
 
@@ -40,7 +45,12 @@ def _add_user_to_inbound(api: XRayAPI, inbound_tag: str, account: Account):
 def _remove_user_from_inbound(api: XRayAPI, inbound_tag: str, email: str):
     try:
         api.remove_inbound_user(tag=inbound_tag, email=email, timeout=30)
-    except (xray.exc.EmailNotFoundError, xray.exc.ConnectionError):
+    except (
+        xray.exc.EmailNotFoundError,
+        xray.exc.ConnectionError,
+        xray.exc.TagNotFoundError,
+        xray.exc.TimeoutError,
+    ):
         pass
 
 
@@ -48,11 +58,21 @@ def _remove_user_from_inbound(api: XRayAPI, inbound_tag: str, email: str):
 def _alter_inbound_user(api: XRayAPI, inbound_tag: str, account: Account):
     try:
         api.remove_inbound_user(tag=inbound_tag, email=account.email, timeout=30)
-    except (xray.exc.EmailNotFoundError, xray.exc.ConnectionError):
+    except (
+        xray.exc.EmailNotFoundError,
+        xray.exc.ConnectionError,
+        xray.exc.TagNotFoundError,
+        xray.exc.TimeoutError,
+    ):
         pass
     try:
         api.add_inbound_user(tag=inbound_tag, user=account, timeout=30)
-    except (xray.exc.EmailExistsError, xray.exc.ConnectionError):
+    except (
+        xray.exc.EmailExistsError,
+        xray.exc.ConnectionError,
+        xray.exc.TagNotFoundError,
+        xray.exc.TimeoutError,
+    ):
         pass
 
 
@@ -72,10 +92,10 @@ def add_user(dbuser: "DBUser"):
 
             # XTLS currently only supports transmission methods of TCP and mKCP
             if getattr(account, 'flow', None) and (
-                inbound.get('network', 'tcp') not in ('tcp', 'kcp')
+                inbound.get('network', 'tcp') not in ('tcp', 'raw', 'kcp')
                 or
                 (
-                    inbound.get('network', 'tcp') in ('tcp', 'kcp')
+                    inbound.get('network', 'tcp') in ('tcp', 'raw', 'kcp')
                     and
                     inbound.get('tls') not in ('tls', 'reality')
                 )
@@ -167,7 +187,8 @@ def add_node(dbnode: "DBNode"):
                                      api_port=dbnode.api_port,
                                      ssl_key=tls['key'],
                                      ssl_cert=tls['certificate'],
-                                     usage_coefficient=dbnode.usage_coefficient)
+                                     usage_coefficient=dbnode.usage_coefficient,
+                                     server_cert=dbnode.server_cert)
 
     return xray.nodes[dbnode.id]
 
@@ -193,6 +214,26 @@ _connecting_nodes = {}
 
 
 @threaded_function
+def _store_node_certificate(node_id: int, node) -> None:
+    """Persist the certificate a node presented, the first time we see it.
+
+    Nodes generate their own self-signed certificate, so it cannot be known in
+    advance. Once stored, app.xray.node refuses any other certificate.
+    """
+    server_cert = getattr(node, "server_cert", None)
+    if not server_cert:
+        return
+
+    try:
+        with GetDB() as db:
+            dbnode = crud.get_node_by_id(db, node_id)
+            if dbnode and dbnode.server_cert != server_cert:
+                crud.set_node_server_cert(db, dbnode, server_cert)
+                logger.info(f"Pinned the certificate of \"{dbnode.name}\" node")
+    except SQLAlchemyError:
+        logger.warning(f"Failed to store the certificate of node {node_id}")
+
+
 def connect_node(node_id, config=None):
     global _connecting_nodes
 
@@ -221,6 +262,7 @@ def connect_node(node_id, config=None):
             config = xray.config.include_db_users()
 
         node.start(config)
+        _store_node_certificate(node_id, node)
         version = node.get_version()
         _change_node_status(node_id, NodeStatus.connected, version=version)
         logger.info(f"Connected to \"{dbnode.name}\" node, xray run on v{version}")

@@ -73,10 +73,10 @@ export const NodesUsage: FC<NodesUsageProps> = () => {
 
   return (
     <Modal isOpen={isShowingNodesUsage} onClose={onClose} size="2xl">
-      <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
+      <ModalOverlay />
       <ModalContent mx="3" w="full">
         <ModalHeader pt={6}>
-          <HStack gap={2}>
+          <HStack gap={4}>
             <Icon color="primary">
               <UsageIcon color="white" />
             </Icon>
@@ -97,12 +97,7 @@ export const NodesUsage: FC<NodesUsageProps> = () => {
             />
             <Box justifySelf="center" w="full" maxW="300px" mt="4">
               <Suspense fallback={<CircularProgress isIndeterminate />}>
-                <ReactApexChart
-                  options={usage.options}
-                  series={usage.series}
-                  type="donut"
-                  height="500px"
-                />
+                <ReactApexChart options={usage.options} series={usage.series} type="donut" height="500px" />
               </Suspense>
             </Box>
           </VStack>

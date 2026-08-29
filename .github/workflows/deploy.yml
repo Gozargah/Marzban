@@ -1,0 +1,48 @@
+name: Deploy
+
+# Pulls the freshly published image on the panel host and restarts it. Runs
+# after a successful build on main, and can be triggered by hand from the
+# Actions tab. Needs SSH_HOST, SSH_USER and SSH_KEY as repository secrets;
+# without them the job is skipped rather than failing.
+
+on:
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      image:
+        description: "Image reference to deploy"
+        required: false
+        default: "ghcr.io/bugbusta/xenith:latest"
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the host is configured
+        id: guard
+        run: |
+          if [ -z "${{ secrets.SSH_HOST }}" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::SSH_HOST is not set — skipping deployment."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy over SSH
+        if: steps.guard.outputs.configured == 'true'
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script_stop: true
+          script: |
+            set -e
+            IMAGE="${{ inputs.image || 'ghcr.io/bugbusta/xenith:latest' }}"
+            xenith image "$IMAGE"
+            xenith status

@@ -1,16 +1,24 @@
 from typing import Optional
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from app.db import Session, crud, get_db
+from app.utils.auth_cookie import token_from_cookie
 from app.utils.jwt import get_admin_payload
 from config import SUDOERS
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/admin/token")  # Admin view url
+# auto_error is off so a request carrying only the session cookie is not
+# rejected before get_token gets a chance to look at it.
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/admin/token", auto_error=False)  # Admin view url
+
+
+def get_token(request: Request, token: Optional[str] = Depends(oauth2_scheme)) -> str:
+    """The admin token, from the Authorization header or the session cookie."""
+    return token or token_from_cookie(request) or ""
 
 
 class Token(BaseModel):
@@ -60,7 +68,7 @@ class Admin(BaseModel):
     @classmethod
     def get_current(cls,
                     db: Session = Depends(get_db),
-                    token: str = Depends(oauth2_scheme)):
+                    token: str = Depends(get_token)):
         admin = cls.get_admin(token, db)
         if not admin:
             raise HTTPException(
@@ -73,7 +81,7 @@ class Admin(BaseModel):
     @classmethod
     def check_sudo_admin(cls,
                          db: Session = Depends(get_db),
-                         token: str = Depends(oauth2_scheme)):
+                         token: str = Depends(get_token)):
         admin = cls.get_admin(token, db)
         if not admin:
             raise HTTPException(

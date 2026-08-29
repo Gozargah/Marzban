@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320" role="img" aria-label="Xenith">
+  <title>Xenith</title>
+  <rect width="320" height="320" fill="#1d2d3d"/>
+  <text x="34" y="62" fill="#94bce3"
+        font-family="'Barlow','Helvetica Neue',Arial,sans-serif"
+        font-weight="500" font-size="30">54</text>
+  <text x="160" y="185" fill="#f2f2f3" text-anchor="middle" dominant-baseline="central"
+        font-family="'Barlow Condensed','Oswald','Roboto Condensed','Arial Narrow','Helvetica Neue',sans-serif"
+        font-weight="600" font-size="152" letter-spacing="-3">Xe</text>
+  <text x="34" y="282" fill="#94bce3"
+        font-family="'Barlow','Helvetica Neue',Arial,sans-serif"
+        font-weight="500" font-size="20" letter-spacing="5">XENITH</text>
+</svg>

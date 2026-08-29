@@ -19,12 +19,13 @@ import {
   generateErrorMessage,
   generateSuccessMessage,
 } from "utils/toastHandler";
-import { DeleteIcon, DeleteUserModalProps } from "./DeleteUserModal";
-import { Icon } from "./Icon";
+import { DeleteIcon, Icon } from "./Icon";
 
-export const DeleteNodeModal: FC<DeleteUserModalProps> = ({
-  deleteCallback,
-}) => {
+export type DeleteNodeModalProps = {
+  deleteCallback?: () => void;
+};
+
+export const DeleteNodeModal: FC<DeleteNodeModalProps> = ({ deleteCallback }) => {
   const { deleteNode, deletingNode, setDeletingNode } = useNodes();
   const { t } = useTranslation();
   const toast = useToast();
@@ -50,7 +51,7 @@ export const DeleteNodeModal: FC<DeleteUserModalProps> = ({
 
   return (
     <Modal isCentered isOpen={!!deletingNode} onClose={onClose} size="sm">
-      <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
+      <ModalOverlay />
       <ModalContent mx="3">
         <ModalHeader pt={6}>
           <Icon color="red">

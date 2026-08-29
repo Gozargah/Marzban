@@ -8,43 +8,35 @@ import {
   FormLabel,
   HStack,
   IconButton,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Select,
   Text,
   Tooltip,
   useToast,
-  useColorMode
 } from "@chakra-ui/react";
-import {
-  ArrowPathIcon,
-  ArrowsPointingInIcon,
-  ArrowsPointingOutIcon,
-  Cog6ToothIcon,
-} from "@heroicons/react/24/outline";
-import { joinPaths } from "@remix-run/router";
+import { ArrowPathIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
 import classNames from "classnames";
 import { useCoreSettings } from "contexts/CoreSettingsContext";
 import { useDashboard } from "contexts/DashboardContext";
-import debounce from "lodash.debounce";
-import { FC, useCallback, useEffect, useRef, useState } from "react";
+import { FC, lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "react-query";
-import { ReadyState } from "react-use-websocket";
-import { useWebSocket } from "react-use-websocket/dist/lib/use-websocket";
-import { getAuthToken } from "utils/authStorage";
 import { Icon } from "./Icon";
-import { JsonEditor } from "./JsonEditor";
-import "./JsonEditor/themes.js";
-import { useNodesQuery } from "contexts/NodesContext";
+import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Loader2Icon, PanelRightCloseIcon, XIcon } from "lucide-react";
+import { NodeLogs } from "@/components/NodeLogs";
+import { cn } from "@/lib/utils";
 
-export const MAX_NUMBER_OF_LOGS = 500;
+const JsonEditor = lazy(() => import("./JsonEditor").then((mod) => ({ default: mod.JsonEditor })));
+
+const JsonEditorLoader = () => {
+  return (
+    <div className="w-full h-full flex items-center justify-center dark:bg-[#1D2127] bg-[#FAFAFA] rounded-sm">
+      <Loader2Icon className="animate-spin" />
+    </div>
+  );
+};
+
+window.has_unsaved_changes = false;
 
 const UsageIcon = chakra(Cog6ToothIcon, {
   baseStyle: {
@@ -59,85 +51,10 @@ export const ReloadIcon = chakra(ArrowPathIcon, {
   },
 });
 
-export const FullScreenIcon = chakra(ArrowsPointingOutIcon, {
-  baseStyle: {
-    w: 4,
-    h: 4,
-  },
-});
-export const ExitFullScreenIcon = chakra(ArrowsPointingInIcon, {
-  baseStyle: {
-    w: 3,
-    h: 3,
-  },
-});
-
-const getStatus = (status: string) => {
-  return {
-    [ReadyState.CONNECTING]: "connecting",
-    [ReadyState.OPEN]: "connected",
-    [ReadyState.CLOSING]: "closed",
-    [ReadyState.CLOSED]: "closed",
-    [ReadyState.UNINSTANTIATED]: "closed",
-  }[status];
-};
-
-const getWebsocketUrl = (nodeID: string) => {
-  try {
-    let baseURL = new URL(
-      import.meta.env.VITE_BASE_API.startsWith("/")
-        ? window.location.origin + import.meta.env.VITE_BASE_API
-        : import.meta.env.VITE_BASE_API
-    );
-
-    return (
-      (baseURL.protocol === "https:" ? "wss://" : "ws://") +
-      joinPaths([
-        baseURL.host + baseURL.pathname,
-        !nodeID ? "/core/logs" : `/node/${nodeID}/logs`,
-      ]) +
-      "?interval=1&token=" +
-      getAuthToken()
-    );
-  } catch (e) {
-    console.error("Unable to generate websocket url");
-    console.error(e);
-    return null;
-  }
-};
-
-let logsTmp: string[] = [];
 const CoreSettingModalContent: FC = () => {
-
-  const { colorMode } = useColorMode();
-
-  const { data: nodes } = useNodesQuery();
-  const disabled = false;
-  const [selectedNode, setNode] = useState<string>("");
-
-  const handleLog = (id: string, title: string) => {
-    if (id === selectedNode) return;
-    else if (id === "host") {
-      setNode("");
-      setLogs([]);
-    } else {
-      setNode(id);
-      setLogs([]);
-    }
-  };
-
   const { isEditingCore } = useDashboard();
-  const {
-    fetchCoreSettings,
-    updateConfig,
-    isLoading,
-    config,
-    isPostLoading,
-    version,
-    restartCore,
-  } = useCoreSettings();
-  const logsDiv = useRef<HTMLDivElement | null>(null);
-  const [logs, setLogs] = useState<string[]>([]);
+  const { fetchCoreSettings, updateConfig, isLoading, config, isPostLoading, version, restartCore } = useCoreSettings();
+
   const { t } = useTranslation();
   const toast = useToast();
   const form = useForm({
@@ -152,54 +69,13 @@ const CoreSettingModalContent: FC = () => {
     if (isEditingCore) fetchCoreSettings();
   }, [isEditingCore]);
   "".startsWith;
-  const scrollShouldStayOnEnd = useRef(true);
-  const updateLogs = useCallback(
-    debounce((logs: string[]) => {
-      const isScrollOnEnd =
-        Math.abs(
-          (logsDiv.current?.scrollTop || 0) -
-            (logsDiv.current?.scrollHeight || 0) +
-            (logsDiv.current?.offsetHeight || 0)
-        ) < 10;
-      if (logsDiv.current && isScrollOnEnd)
-        scrollShouldStayOnEnd.current = true;
-      else scrollShouldStayOnEnd.current = false;
-      if (logs.length < 40) setLogs(logs);
-    }, 300),
-    []
-  );
 
-  const { readyState } = useWebSocket(getWebsocketUrl(selectedNode), {
-    onMessage: (e: any) => {
-      logsTmp.push(e.data);
-      if (logsTmp.length > MAX_NUMBER_OF_LOGS)
-        logsTmp = logsTmp.splice(0, logsTmp.length - MAX_NUMBER_OF_LOGS);
-      updateLogs([...logsTmp]);
-    },
-    shouldReconnect: () => true,
-    reconnectAttempts: 10,
-    reconnectInterval: 1000,
-  });
-
-  useEffect(() => {
-    if (logsDiv.current && scrollShouldStayOnEnd.current)
-      logsDiv.current.scrollTop = logsDiv.current?.scrollHeight;
-  }, [logs]);
-
-  useEffect(() => {
-    return () => {
-      logsTmp = [];
-    };
-  }, []);
-
-  const status = getStatus(readyState.toString());
-
-  const { mutate: handleRestartCore, isLoading: isRestarting } =
-    useMutation(restartCore);
+  const { mutate: handleRestartCore, isLoading: isRestarting } = useMutation(restartCore);
 
   const handleOnSave = ({ config }: any) => {
     updateConfig(config)
       .then(() => {
+        window.has_unsaved_changes = false;
         toast({
           title: t("core.successMessage"),
           status: "success",
@@ -211,10 +87,8 @@ const CoreSettingModalContent: FC = () => {
       .catch((e) => {
         let message = t("core.generalErrorMessage");
         if (typeof e.response._data.detail === "object")
-          message =
-            e.response._data.detail[Object.keys(e.response._data.detail)[0]];
-        if (typeof e.response._data.detail === "string")
-          message = e.response._data.detail;
+          message = e.response._data.detail[Object.keys(e.response._data.detail)[0]];
+        if (typeof e.response._data.detail === "string") message = e.response._data.detail;
 
         toast({
           title: message,
@@ -226,24 +100,19 @@ const CoreSettingModalContent: FC = () => {
       });
   };
   const editorRef = useRef<HTMLDivElement>(null);
-  const [isFullScreen, setFullScreen] = useState(false);
-  const handleFullScreen = () => {
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-      setFullScreen(false);
-    } else {
-      editorRef.current?.requestFullscreen();
-      setFullScreen(true);
-    }
-  };
+  const [isFullHeightConfig, setIsFullHeightConfig] = useState(false);
   return (
-    <form onSubmit={form.handleSubmit(handleOnSave)}>
-      <ModalBody>
-        <FormControl>
-          <HStack justifyContent="space-between" alignItems="flex-start">
+    <form onSubmit={form.handleSubmit(handleOnSave)} className="contents h-full overflow-hidden">
+      <div className="px-4 h-full flex flex-col gap-2 overflow-hidden">
+        <FormControl
+          className={cn("grow h-full overflow-hidden flex flex-col", {
+            "max-h-2/3": !isFullHeightConfig,
+            "max-h-full": isFullHeightConfig,
+          })}
+        >
+          <HStack justifyContent="space-between" alignItems="flex-start" className="min-h-7">
             <FormLabel>
-              {t("core.configuration")}{" "}
-              {isLoading && <CircularProgress isIndeterminate size="15px" />}
+              {t("core.configuration")} {isLoading && <CircularProgress isIndeterminate size="15px" />}
             </FormLabel>
             <HStack gap={0}>
               <Tooltip label="Xray Version" placement="top">
@@ -253,14 +122,55 @@ const CoreSettingModalContent: FC = () => {
               </Tooltip>
             </HStack>
           </HStack>
-          <Box position="relative" ref={editorRef} minHeight="300px">
-            <Controller
-              control={form.control}
-              name="config"
-              render={({ field }) => (
-                <JsonEditor json={config} onChange={field.onChange} />
-              )}
-            />
+          <Box
+            position="relative"
+            ref={editorRef}
+            display="flex"
+            flexDirection="column"
+            className="grow"
+            overflow="hidden"
+          >
+            <Box
+              border="1px solid"
+              borderColor="gray.300"
+              _dark={{ borderColor: "gray.500" }}
+              borderRadius={5}
+              h="full"
+              flexGrow="1"
+              minH="full"
+              display="flex"
+              flexDirection="column"
+              overflow="hidden"
+              css={{ "& > div": { height: "100% !important", flexGrow: 1 } }}
+            >
+              <Controller
+                control={form.control}
+                name="config"
+                render={({ field }) => (
+                  <Suspense fallback={<JsonEditorLoader />}>
+                    <JsonEditor
+                      json={config}
+                      onSave={() => {
+                        const submitBtn = document.getElementById("save-core-settings-btn");
+                        if (submitBtn) {
+                          submitBtn.click();
+                        }
+                      }}
+                      onChange={(...props) => {
+                        field.onChange(...props);
+                        const value = props[0];
+                        try {
+                          window.has_unsaved_changes =
+                            JSON.stringify(JSON.parse(value), null, 2) !== JSON.stringify(config, null, 2);
+                        } catch {
+                          window.has_unsaved_changes = true;
+                        }
+                      }}
+                    />
+                  </Suspense>
+                )}
+              />
+            </Box>
             <IconButton
               size="xs"
               aria-label="full screen"
@@ -268,80 +178,25 @@ const CoreSettingModalContent: FC = () => {
               position="absolute"
               top="2"
               right="4"
-              onClick={handleFullScreen}
+              onClick={() => setIsFullHeightConfig((v) => !v)}
             >
-              {!isFullScreen ? <FullScreenIcon /> : <ExitFullScreenIcon />}
+              <PanelRightCloseIcon
+                className={cn("stroke-[1.5px]", { "rotate-90": !isFullHeightConfig, "-rotate-90": isFullHeightConfig })}
+                size="18"
+              />
             </IconButton>
           </Box>
         </FormControl>
-        <FormControl mt="4">
-          <HStack
-            justifyContent="space-between"
-            style={{ paddingBottom: "1rem" }}
-          >
-            <HStack>
-              {nodes?.[0] && (
-                <Select
-                  size="sm"
-                  style={{ width: "auto" }}
-                  disabled={disabled}
-                  bg={disabled ? "gray.100" : "transparent"}
-                  _dark={{
-                    bg: disabled ? "gray.600" : "transparent",
-                  }}
-                  sx={{
-                    option: {
-                      backgroundColor: colorMode === "dark" ? "#222C3B" : "white"
-                    }
-                  }}
-                  onChange={(v) =>
-                    handleLog(
-                      v.currentTarget.value,
-                      v.currentTarget.selectedOptions[0].text
-                    )
-                  }
-                >
-                  <option key={"host"} value={"host"} defaultChecked>
-                    Master
-                  </option>
-                  {nodes &&
-                    nodes.map((s) => {
-                      return (
-                        <option key={s.address} value={String(s.id)}>
-                          {t(s.name)}
-                        </option>
-                      );
-                    })}
-                </Select>
-              )}
-              <FormLabel className="w-au">{t("core.logs")}</FormLabel>
-            </HStack>
-            <Text as={FormLabel}>{t(`core.socket.${status}`)}</Text>
-          </HStack>
-          <Box
-            border="1px solid"
-            borderColor="gray.300"
-            bg="#F9F9F9"
-            _dark={{
-              borderColor: "gray.500",
-              bg: "#2e3440",
-            }}
-            borderRadius={5}
-            minHeight="200px"
-            maxHeight={"250px"}
-            p={2}
-            overflowY="auto"
-            ref={logsDiv}
-          >
-            {logs.map((message, i) => (
-              <Text fontSize="xs" opacity={0.8} key={i} whiteSpace="pre-line">
-                {message}
-              </Text>
-            ))}
-          </Box>
+        <FormControl
+          className={cn("transition-all transform-gpu ease-in-out grow max-h-1/3 flex flex-col gap-2", {
+            "h-0!": isFullHeightConfig,
+            "h-full ": !isFullHeightConfig,
+          })}
+        >
+          <NodeLogs />
         </FormControl>
-      </ModalBody>
-      <ModalFooter>
+      </div>
+      <DrawerFooter>
         <HStack w="full" justifyContent="space-between">
           <HStack>
             <Box>
@@ -370,12 +225,13 @@ const CoreSettingModalContent: FC = () => {
               type="submit"
               isDisabled={isLoading || isPostLoading}
               isLoading={isPostLoading}
+              id="save-core-settings-btn"
             >
               {t("core.save")}
             </Button>
           </HStack>
         </HStack>
-      </ModalFooter>
+      </DrawerFooter>
     </form>
   );
 };
@@ -384,23 +240,49 @@ export const CoreSettingsModal: FC = () => {
   const onClose = useDashboard.setState.bind(null, { isEditingCore: false });
   const { t } = useTranslation();
 
+  const handleOnClose = () => {
+    if (window.has_unsaved_changes) {
+      if (confirm("You have unsaved changes. Are you sure you want to discard them?")) {
+        onClose();
+      } else {
+        const el = document.getElementById("core-settings-pane");
+        if (el) {
+          el.style.transform = "translate3d(0px, 0px, 0px)";
+        }
+      }
+    } else {
+      onClose();
+    }
+  };
   return (
-    <Modal isOpen={isEditingCore} onClose={onClose} size="3xl">
-      <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
-      <ModalContent mx="3" w="full">
-        <ModalHeader pt={6}>
-          <HStack gap={2}>
+    <Drawer open={isEditingCore} onClose={handleOnClose} direction="right">
+      <DrawerContent
+        id="core-settings-pane"
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        className="w-full sm:max-w-3xl! dark:before:bg-[#2D3748] before:bg-[#FFF]"
+      >
+        <DrawerHeader className="relative w-full">
+          <HStack gap={4}>
             <Icon color="primary">
               <UsageIcon color="white" />
             </Icon>
-            <Text fontWeight="semibold" fontSize="lg">
-              {t("core.title")}
-            </Text>
+            <DrawerTitle>
+              <Text fontWeight="semibold" fontSize="lg">
+                {t("core.title")}
+              </Text>
+            </DrawerTitle>
+            <IconButton
+              aria-label="Close core settings"
+              size="sm"
+              icon={<XIcon size="16" />}
+              variant="ghost"
+              className="absolute! right-3 top-4 w-fit"
+              onClick={handleOnClose}
+            />
           </HStack>
-        </ModalHeader>
-        <ModalCloseButton mt={3} />
+        </DrawerHeader>
         <CoreSettingModalContent />
-      </ModalContent>
-    </Modal>
+      </DrawerContent>
+    </Drawer>
   );
 };

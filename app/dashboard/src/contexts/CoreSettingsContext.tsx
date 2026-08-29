@@ -1,3 +1,4 @@
+import { fetchInbounds } from "@/contexts/DashboardContext";
 import { fetch } from "service/http";
 import { create } from "zustand";
 
@@ -23,17 +24,17 @@ export const useCoreSettings = create<CoreSettingsStore>((set) => ({
   fetchCoreSettings: () => {
     set({ isLoading: true });
     Promise.all([
-      fetch("/core").then(({ version, started, logs_websocket }) =>
-        set({ version, started, logs_websocket })
-      ),
+      fetch("/core").then(({ version, started, logs_websocket }) => set({ version, started, logs_websocket })),
       fetch("/core/config").then((config) => set({ config })),
     ]).finally(() => set({ isLoading: false }));
   },
   updateConfig: (body) => {
     set({ isPostLoading: true });
-    return fetch("/core/config", { method: "PUT", body }).finally(() => {
-      set({ isPostLoading: false });
-    });
+    return fetch("/core/config", { method: "PUT", body })
+      .then(() => fetchInbounds().catch())
+      .finally(() => {
+        set({ isPostLoading: false });
+      });
   },
   restartCore: () => {
     return fetch("/core/restart", { method: "POST" });

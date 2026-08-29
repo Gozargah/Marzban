@@ -75,6 +75,16 @@ class User(BaseModel):
 
     auto_delete_in_days: Optional[int] = Field(None, nullable=True)
 
+    hwid_device_limit: Optional[int] = Field(
+        None,
+        nullable=True,
+        description=(
+            "How many devices may fetch this subscription, counted by the hardware id the "
+            "client reports. null uses the panel default, 0 or less means no limit. With a "
+            "limit in force a client that sends no identifier is refused."
+        ),
+    )
+
     next_plan: Optional[NextPlanModel] = Field(None, nullable=True)
 
     @field_validator('data_limit', mode='before')
@@ -333,7 +343,37 @@ class SubscriptionUserResponse(UserResponse):
     note: str | None = Field(None, exclude=True)
     inbounds: Dict[ProxyTypes, List[str]] | None = Field(None, exclude=True)
     auto_delete_in_days: int | None = Field(None, exclude=True)
+    # Admin-side policy, like the field above it. What the subscriber needs to
+    # know when a fetch is refused is in that refusal, not here.
+    hwid_device_limit: int | None = Field(None, exclude=True)
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserDeviceResponse(BaseModel):
+    """One device that has fetched this user's subscription."""
+
+    id: int
+    hwid: str
+    os: Optional[str] = None
+    os_version: Optional[str] = None
+    model: Optional[str] = None
+    user_agent: Optional[str] = None
+    first_seen_at: Optional[datetime] = None
+    last_seen_at: Optional[datetime] = None
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserDevicesResponse(BaseModel):
+    """A user's devices, and the limit they are counted against.
+
+    `limit` is what actually applies after the panel default is taken into
+    account, so a client does not have to work that out from a null.
+    """
+
+    devices: List[UserDeviceResponse]
+    total: int
+    limit: int
+    enforced: bool
 
 
 class UsersResponse(BaseModel):

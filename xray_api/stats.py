@@ -76,14 +76,28 @@ class Stats(XRayBase):
     def query_stats(self, pattern: str, reset: bool = False, timeout: int = None) -> typing.Iterable[StatResponse]:
         try:
             stub = command_pb2_grpc.StatsServiceStub(self._channel)
-            r = stub.QueryStats(command_pb2.QueryStatsRequest(pattern=pattern, reset=reset), timeout=timeout)
-
+            r = stub.QueryStats(
+                command_pb2.QueryStatsRequest(pattern=pattern, reset=reset),
+                timeout=timeout
+            )
         except grpc.RpcError as e:
             raise RelatedError(e)
-
-        for stat in r.stat:
-            type, name, _, link = stat.name.split('>>>')
-            yield StatResponse(name, type, link, stat.value)
+    
+        try:
+            for stat in r.stat:
+                try:
+                    stat_type, name, _, link = stat.name.split('>>>')
+                    yield StatResponse(name, stat_type, link, stat.value)
+                except grpc.RpcError as iter_e:
+                    if iter_e.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
+                        break
+                    else:
+                        raise RelatedError(iter_e)
+        except grpc.RpcError as e:
+            if e.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
+                return
+            else:
+                raise RelatedError(e)
 
     def get_users_stats(self, reset: bool = False, timeout: int = None) -> typing.Iterable[StatResponse]:
         return self.query_stats("user>>>", reset=reset, timeout=timeout)

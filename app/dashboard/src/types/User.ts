@@ -50,6 +50,28 @@ export type User = {
   inbounds: UserInbounds;
   note: string;
   online_at: string;
+  // null means "use the panel default", 0 or less means no limit.
+  hwid_device_limit: number | null;
+};
+
+export type UserDevice = {
+  id: number;
+  hwid: string;
+  os: string | null;
+  os_version: string | null;
+  model: string | null;
+  user_agent: string | null;
+  first_seen_at: string | null;
+  last_seen_at: string | null;
+};
+
+export type UserDevices = {
+  devices: UserDevice[];
+  total: number;
+  // Already resolved against the panel default, so the dashboard does not
+  // have to know about it to render a null.
+  limit: number;
+  enforced: boolean;
 };
 
 export type UserCreate = Pick<
@@ -63,6 +85,7 @@ export type UserCreate = Pick<
   | "username"
   | "status"
   | "note"
+  | "hwid_device_limit"
 >;
 
 export type UserApi = {

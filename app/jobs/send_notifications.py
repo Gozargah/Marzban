@@ -12,7 +12,7 @@ from app.utils.notification import queue
 from config import (JOB_SEND_NOTIFICATIONS_INTERVAL,
                     NUMBER_OF_RECURRENT_NOTIFICATIONS,
                     RECURRENT_NOTIFICATIONS_TIMEOUT, WEBHOOK_ADDRESS,
-                    WEBHOOK_SECRET)
+                    WEBHOOK_REQUEST_TIMEOUT, WEBHOOK_SECRET)
 
 session = Session()
 
@@ -42,7 +42,11 @@ def send(data: List[Dict[Any, Any]]) -> bool:
 def send_req(w_address: str, data):
     try:
         logger.debug(f"Sending {len(data)} webhook updates to {w_address}")
-        r = session.post(w_address, json=data, headers=headers)
+        # Timed out rather than left to hang: this runs on a scheduler thread,
+        # and an address that accepts the connection without ever answering
+        # would hold that thread while the queue grows behind it. A timeout is
+        # a failed delivery like any other, so it is retried on the next pass.
+        r = session.post(w_address, json=data, headers=headers, timeout=WEBHOOK_REQUEST_TIMEOUT)
         if r.ok:
             return True
         logger.error(r)

@@ -6,7 +6,7 @@ from app.models.user import UserDataLimitResetStrategy
 from app.models.admin import Admin
 from telebot.formatting import escape_html
 from app import logger
-from config import DISCORD_WEBHOOK_URL
+from config import DISCORD_WEBHOOK_URL, DISCORD_WEBHOOK_TIMEOUT
 
 
 def send_webhooks(json_data, admin_webhook:str = None):
@@ -17,7 +17,16 @@ def send_webhooks(json_data, admin_webhook:str = None):
 
 
 def send_webhook(json_data, webhook):
-    result = requests.post(webhook, json=json_data)
+    # Timed out rather than left to hang: this runs on the thread that served
+    # the request which triggered the report, and a webhook that accepts the
+    # connection without answering would hold it there indefinitely.
+    try:
+        result = requests.post(webhook, json=json_data, timeout=DISCORD_WEBHOOK_TIMEOUT)
+    except requests.exceptions.RequestException as err:
+        # Callers wrap this in a bare `except Exception: pass`, so without a
+        # line here a webhook that is simply unreachable would fail silently.
+        logger.error(f"Discord webhook delivery failed: {err}")
+        return
 
     try:
         result.raise_for_status()
@@ -202,7 +211,7 @@ def report_user_subscription_revoked(username: str, by: str, admin: Admin = None
         admin_webhook=admin.discord_webhook if admin and admin.discord_webhook else None
         )
 
-def report_login(username: str, password: str, client_ip: str, status: str):
+def report_login(username: str, client_ip: str, status: str):
     login = {
         'content': '',
         'embeds': [
@@ -210,7 +219,6 @@ def report_login(username: str, password: str, client_ip: str, status: str):
                 'title': ':repeat: Login',
                 'description': f"""
                 **Username:** {username}
-**Password:** {password}
 **Client ip**: {client_ip}""",
                 "footer": {
                     "text": f"login status: {status}"

@@ -1,40 +1,41 @@
-# Dashboard UI for marzban
+# Dashboard UI for Xenith
+
+The dashboard is a React + TypeScript app built with Vite and Chakra UI.
+It is served by the backend from `app/dashboard/build`.
 
 ## Requirements
 
-For development, you will only need Node.js installed on your environement.
-
-### Node
-
-[Node](http://nodejs.org/) is really easy to install & now include [NPM](https://npmjs.org/).
-This project has been developed on the Nodejs v16.17.0 so if you faced any issue during installation that may related to the node version, install Node with version >= v16.17.0.
+Node.js >= 16.17.0.
 
 ## Install
 
-    git clone https://github.com/gozargah/marz-manager.git
-    cd marz-manager
-    yarn install
+```bash
+cd app/dashboard
+npm install
+```
 
-### Configure app
+## Configure
 
-Copy `example.env` to `.env` then set the backend api address:
+Copy `example.env` to `.env` and set the backend API address:
 
-    VITE_BASE_API=https://somewhere.com/
+| Name          | Description                                    |
+| ------------- | ---------------------------------------------- |
+| VITE_BASE_API | API url of the deployed Xenith backend       |
 
-#### Environment variables
+## Development server
 
-| Name          | Description                                                                          |
-| ------------- | ------------------------------------------------------------------------------------ |
-| VITE_BASE_API | The api url of the deployed backend ([Marzban](https://github.com/gozargah/Marzban)) |
+```bash
+npm run dev
+```
 
-## Start development server
+Alternatively, set `DEBUG=true` in the project's root `.env` and run `python main.py`
+from the repository root — the backend then starts the dev server automatically.
 
-    yarn dev
+## Production build
 
-## Simple build for production
+```bash
+npm run build -- --outDir build --assetsDir statics
+```
 
-    yarn build
-
-## Contribution
-
-Feel free to contribute. Go on and fork the project. After commiting the changes, make a PR. It means a lot to us.
+Removing the `build` directory and starting the backend with `DEBUG=false`
+rebuilds the dashboard automatically.
