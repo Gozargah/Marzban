@@ -10,20 +10,113 @@
         ],
         "outboundTag": "BLOCK",
         "type": "field"
+      },
+      {
+        "domain": [
+          "geosite:category-gov-ru",
+          "geosite:ru-available-only-inside",
+          "geosite:category-ads-all",
+          "geosite:win-spy"
+        ],
+        "outboundTag": "BLOCK",
+        "type": "field"
       }
     ]
   },
   "inbounds": [
     {
-      "tag": "Shadowsocks TCP",
+      "tag": "VLESS+XHTTP CDN",
+      "listen": "127.0.0.1",
+      "port": 10085,
+      "protocol": "vless",
+      "settings": {
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "xhttpSettings": {
+          "path": "/path",
+          "mode": "packet-up",
+          "extra": {
+            "noReadQuery": true
+          }
+        }
+      }
+    },
+    {
+      "tag": "VLESS TCP REALITY steal from yourself",
       "listen": "0.0.0.0",
-      "port": 1080,
-      "protocol": "shadowsocks",
+      "port": 8443,
+      "protocol": "vless",
       "settings": {
         "clients": [],
-        "network": "tcp,udp"
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "realitySettings": {
+          "show": false,
+          "dest": "7443",
+          "xver": 0,
+          "serverNames": [
+            "example.com"
+          ],
+          "serverName": "example.com",
+          "privateKey": "<<<private_key>>>",
+          "shortIds": [
+            "<<<short_id>>>"
+          ],
+          "shortId": "<<<short_id>>>"
+        }
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ]
+      }
+    },
+    {
+      "tag": "VLESS + XHTTP + REALITY",
+      "listen": "0.0.0.0",
+      "port": 9443,
+      "protocol": "vless",
+      "settings": {
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "xhttpSettings": {
+          "path": "/path/",
+          "mode": "auto"
+        },
+        "security": "reality",
+        "realitySettings": {
+          "show": false,
+          "target": "big.server.com:443",
+          "xver": 0,
+          "serverNames": [
+            "big.server.com"
+          ],
+          "privateKey": "<<<private_key>>>",
+          "shortIds": [
+            "<<<short_id>>>"
+          ]
+        }
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ]
       }
     }
+
   ],
   "outbounds": [
     {

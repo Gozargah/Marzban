@@ -217,9 +217,8 @@ class XRayConfig(dict):
                     settings['tls'] = 'reality'
                     settings['sni'] = tls_settings.get('serverNames', [])
 
-                    try:
-                        settings['pbk'] = tls_settings['publicKey']
-                    except KeyError:
+                    settings['pbk'] = tls_settings.get('password', tls_settings.get('publicKey'))
+                    if not settings['pbk']:
                         pvk = tls_settings.get('privateKey')
                         if not pvk:
                             raise ValueError(
@@ -234,7 +233,7 @@ class XRayConfig(dict):
 
                         if not settings.get('pbk'):
                             raise ValueError(
-                                f"You need to provide publicKey in realitySettings of {inbound['tag']}")
+                                f"You need to provide password (publicKey) in realitySettings of {inbound['tag']}")
 
                     try:
                         settings['sids'] = tls_settings.get('shortIds')
@@ -300,17 +299,31 @@ class XRayConfig(dict):
                     settings['host'] = [host]
 
                 elif net in ('splithttp', 'xhttp'):
-                    settings['path'] = net_settings.get('path', '')
-                    host = net_settings.get('host', '')
-                    settings['host'] = [host]
-                    settings['scMaxEachPostBytes'] = net_settings.get('scMaxEachPostBytes', 1000000)
-                    settings['scMaxConcurrentPosts'] = net_settings.get('scMaxConcurrentPosts', 100)
-                    settings['scMinPostsIntervalMs'] = net_settings.get('scMinPostsIntervalMs', 30)
-                    settings['xPaddingBytes'] = net_settings.get('xPaddingBytes', "100-1000")
-                    settings['xmux'] = net_settings.get('xmux', {})
-                    settings["mode"] = net_settings.get("mode", "auto")
-                    settings["noGRPCHeader"] = net_settings.get("noGRPCHeader", False)
-                    settings["keepAlivePeriod"] = net_settings.get("keepAlivePeriod", 0)
+                    for key in [
+                        'path',
+                        'host',
+                        'scMaxEachPostBytes',
+                        'scMaxConcurrentPosts',
+                        'scMinPostsIntervalMs',
+                        'xPaddingBytes',
+                        'xmux',
+                        "mode",
+                        "noGRPCHeader",
+                        "keepAlivePeriod",
+                    ]:
+                        if key in net_settings:
+                            settings[key] = net_settings[key]
+                    # settings['path'] = net_settings.get('path', '')
+                    # host = net_settings.get('host', '')
+                    # settings['host'] = [host]
+                    # settings['scMaxEachPostBytes'] = net_settings.get('scMaxEachPostBytes', 1000000)
+                    # settings['scMaxConcurrentPosts'] = net_settings.get('scMaxConcurrentPosts', 100)
+                    # settings['scMinPostsIntervalMs'] = net_settings.get('scMinPostsIntervalMs', 30)
+                    # settings['xPaddingBytes'] = net_settings.get('xPaddingBytes', "100-1000")
+                    # settings['xmux'] = net_settings.get('xmux', {})
+                    # settings["mode"] = net_settings.get("mode", "auto")
+                    # settings["noGRPCHeader"] = net_settings.get("noGRPCHeader", False)
+                    # settings["keepAlivePeriod"] = net_settings.get("keepAlivePeriod", 0)
 
                 elif net == 'kcp':
                     header = net_settings.get('header', {})

@@ -2,14 +2,13 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from passlib.context import CryptContext
+import bcrypt
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from app.db import Session, crud, get_db
 from app.utils.jwt import get_admin_payload
 from config import SUDOERS
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/admin/token")  # Admin view url
 
 
@@ -96,7 +95,8 @@ class AdminCreate(Admin):
 
     @property
     def hashed_password(self):
-        return pwd_context.hash(self.password)
+        password_bytes = self.password.encode('utf-8')
+        return bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode('utf-8')
 
     @field_validator("discord_webhook")
     @classmethod
@@ -115,7 +115,8 @@ class AdminModify(BaseModel):
     @property
     def hashed_password(self):
         if self.password:
-            return pwd_context.hash(self.password)
+            password_bytes = self.password.encode('utf-8')
+            return bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode('utf-8')
 
     @field_validator("discord_webhook")
     @classmethod
@@ -134,7 +135,13 @@ class AdminInDB(Admin):
     hashed_password: str
 
     def verify_password(self, plain_password):
-        return pwd_context.verify(plain_password, self.hashed_password)
+        try:
+            return bcrypt.checkpw(
+                plain_password.encode('utf-8'),
+                self.hashed_password.encode('utf-8')
+            )
+        except Exception:
+            return False
 
 
 class AdminValidationResult(BaseModel):

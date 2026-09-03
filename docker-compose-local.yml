@@ -1,6 +1,6 @@
 services:
   marzban:
-    build: https://github.com/darkringfire/Marzban.git
+    build: .
     restart: always
     env_file: .env
     environment:
@@ -12,6 +12,7 @@ services:
     depends_on:
       mariadb:
         condition: service_healthy
+    command: ["sleep", "infinity"]
 
   mariadb:
     image: mariadb:lts
