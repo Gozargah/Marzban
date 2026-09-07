@@ -120,7 +120,9 @@ class XRayCore:
             cmd,
             env=self._env,
             stdin=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            # Xray writes runtime logs to stderr, so merge it into the
+            # stdout stream already drained by the log capture thread.
+            stderr=subprocess.STDOUT,
             stdout=subprocess.PIPE,
             universal_newlines=True
         )
