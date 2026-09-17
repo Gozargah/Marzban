@@ -4,7 +4,9 @@ from datetime import datetime
 from operator import attrgetter
 from typing import Union
 
-from pymysql.err import OperationalError
+import sqlite3
+import time
+from sqlalchemy.exc import OperationalError as SQLAlchemyOperationalError
 from sqlalchemy import and_, bindparam, insert, select, update
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.dml import Insert
@@ -21,28 +23,38 @@ from xray_api import XRay as XRayAPI
 from xray_api import exc as xray_exc
 
 
+def _is_retryable_db_error(dialect_name: str, err: SQLAlchemyOperationalError) -> bool:
+    orig = getattr(err, "orig", None)
+    if not orig:
+        return False
+
+    if dialect_name == "mysql":
+        # Deadlock error 1213 in MySQL/MariaDB
+        args = getattr(orig, "args", None)
+        return bool(args and len(args) > 0 and args[0] == 1213)
+
+    if dialect_name == "sqlite":
+        # Database/table locked in SQLite
+        return isinstance(orig, sqlite3.OperationalError) and "locked" in str(orig).lower()
+
+    return False
+
+
 def safe_execute(db: Session, stmt, params=None):
-    if db.bind.name == 'mysql':
-        if isinstance(stmt, Insert):
-            stmt = stmt.prefix_with('IGNORE')
+    if db.bind.name == 'mysql' and isinstance(stmt, Insert):
+        stmt = stmt.prefix_with('IGNORE')
 
-        tries = 0
-        done = False
-        while not done:
-            try:
-                db.connection().execute(stmt, params)
-                db.commit()
-                done = True
-            except OperationalError as err:
-                if err.args[0] == 1213 and tries < 3:  # Deadlock
-                    db.rollback()
-                    tries += 1
-                    continue
-                raise err
-
-    else:
-        db.connection().execute(stmt, params)
-        db.commit()
+    for attempt in range(4):
+        try:
+            db.connection().execute(stmt, params)
+            db.commit()
+            return
+        except SQLAlchemyOperationalError as err:
+            if attempt < 3 and _is_retryable_db_error(db.bind.name, err):
+                db.rollback()
+                time.sleep(0.5 * (attempt + 1))
+                continue
+            raise
 
 
 def record_user_stats(params: list, node_id: Union[int, None],
