@@ -42,14 +42,38 @@ class XRayCore:
         cmd = [self.executable_path, "x25519"]
         if private_key:
             cmd.extend(['-i', private_key])
-        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode('utf-8')
-        m = re.match(r'Private key: (.+)\nPublic key: (.+)', output)
-        if m:
-            private, public = m.groups()
-            return {
-                "private_key": private,
-                "public_key": public
-            }
+        try:
+            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode('utf-8')
+            priv_match = re.search(r"Private\s*key:\s*([^\r\n]+)", output, re.IGNORECASE)
+            pub_match = re.search(r"(?:Public\s*key|Password(?:\s*\(PublicKey\))?):\s*([^\r\n]+)", output, re.IGNORECASE)
+
+            private_val = priv_match.group(1).strip() if priv_match else private_key
+            public_val = pub_match.group(1).strip() if pub_match else None
+
+            if private_val and not public_val:
+                try:
+                    from app.utils.crypto import get_x25519_public_key
+                    public_val = get_x25519_public_key(private_val)
+                except Exception:
+                    pass
+
+            if private_val and public_val:
+                return {
+                    "private_key": private_val,
+                    "public_key": public_val
+                }
+        except Exception as e:
+            logger.warning(f"Failed to execute xray x25519: {e}")
+            if private_key:
+                try:
+                    from app.utils.crypto import get_x25519_public_key
+                    return {
+                        "private_key": private_key,
+                        "public_key": get_x25519_public_key(private_key)
+                    }
+                except Exception:
+                    pass
+        return None
 
     def __capture_process_logs(self):
         def capture_and_debug_log():
