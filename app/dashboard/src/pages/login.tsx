@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
 import { z } from "zod";
 
-import { ReactComponent as Logo } from "assets/logo.svg";
+import Logo from "assets/logo.svg?react";
 import { Footer } from "@/components/footer";
 import { Language } from "@/components/language";
 import { Alert, AlertDescription } from "@/components/ui/alert";

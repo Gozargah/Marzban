@@ -65,10 +65,11 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "babel-plugin-react-compiler": "^1.0.0",
+    "esbuild": "^0.28.2",
     "shadcn": "^4.21.4",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3",
     "vite": "^8.0.16",
-    "vite-plugin-svgr": "^2.2.2"
+    "vite-plugin-svgr": "^5.2.0"
   }
 }

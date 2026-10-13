@@ -7,7 +7,7 @@ import {
   Pencil,
   RotateCcw,
 } from "lucide-react";
-import { ReactComponent as AddFileIcon } from "assets/add_file.svg";
+import AddFileIcon from "assets/add_file.svg?react";
 import { OnlineBadge } from "@/components/dashboard/table/online-badge";
 import { OnlineStatus } from "@/components/dashboard/table/online-status";
 import { Pagination } from "@/components/dashboard/table/users-pagination";
