@@ -8,7 +8,7 @@ import utc from "dayjs/plugin/utc";
 import "locales/i18n";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { QueryClientProvider } from "react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "utils/react-query";
 import { updateThemeColor } from "utils/themeColor";
 import { theme } from "../chakra.config";
