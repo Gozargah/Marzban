@@ -1,5 +1,4 @@
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
-import { Search, X } from "lucide-react";
+import { RefreshCw, Search, X } from "lucide-react";
 import debounce from "lodash.debounce";
 import React, { FC, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,9 +11,9 @@ import { useDashboard } from "contexts/DashboardContext";
 
 export const ReloadIcon = React.forwardRef<
   SVGSVGElement,
-  React.ComponentProps<typeof ArrowPathIcon>
+  React.ComponentProps<typeof RefreshCw>
 >(({ className, ...props }, ref) => (
-  <ArrowPathIcon ref={ref} className={cn("size-4 shrink-0", className)} {...props} />
+  <RefreshCw ref={ref} className={cn("size-4 shrink-0", className)} {...props} />
 ));
 ReloadIcon.displayName = "ReloadIcon";
 
